@@ -1,8 +1,5 @@
-import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import 'package:fgtracker/app/modules/Messages/Views/new_chat_screen.dart';
 import 'package:fgtracker/app/modules/Track/Views/Tracking_screen.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/WalkieTalkieScreen.dart';
-import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/call/Views/call_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -12,7 +9,6 @@ import 'package:get/get.dart';
 
 import '../../Messages/Views/chatlist_screen.dart';
 import '../../Safe_Zone/views/safety_dashboard_view.dart';
-import 'LiveStatus/components/total_groups.dart';
 
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
@@ -96,10 +92,12 @@ class QuickActionsSection extends StatelessWidget {
             childAspectRatio: 0.98,
             children: [
               _QuickActionCard(
-                title: "Audio/Video Call",
-                imagePath: "assets/icons/new_action_call.png",
-                onTap: () => Get.to(() => CallScreen()),
+                title: "All contact ",
+                imagePath: "assets/icons/new_action_group_chat.png",
+                onTap: () =>
+                    Get.to(() => const NewChatScreen(fromQuickAction: true)),
               ),
+
               _QuickActionCard(
                 title: "Walkie Talkie",
                 subtitle: "1 hr free",
@@ -119,9 +117,9 @@ class QuickActionsSection extends StatelessWidget {
                 onTap: () => Get.to(() => ChatListScreen()),
               ),
               _QuickActionCard(
-                title: "Group Chat",
-                imagePath: "assets/icons/new_action_group_chat.png",
-                onTap: () => Get.to(() => const totalGroup()),
+                title: "Audio/Video Call",
+                imagePath: "assets/icons/new_action_call.png",
+                onTap: () => Get.to(() => CallScreen()),
               ),
               _QuickActionCard(
                 title: "Safe Zone",
@@ -258,4 +256,3 @@ class _QuickActionCard extends StatelessWidget {
     );
   }
 }
-

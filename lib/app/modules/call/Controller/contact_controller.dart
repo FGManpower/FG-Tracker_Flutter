@@ -21,8 +21,11 @@ class ContactController extends GetxController {
 
   final ContactService _contactService = ContactService();
   final Map<String, String> phoneContactNameMap = {};
-  Set<String> get savedContactNumbers =>
-      phoneContactNameMap.keys.toSet();
+  Set<String> get savedContactNumbers => phoneContactNameMap.keys.toSet();
+
+  final Map<int, int> chatIdMap = {};
+  int? chatIdFor(int? userId) => userId == null ? null : chatIdMap[userId];
+
   final RxBool contactLoading = false.obs;
 
   final RxBool isContactPermissionGranted = false.obs;
@@ -39,7 +42,8 @@ class ContactController extends GetxController {
 
   Future<void> checkContactPermission() async {
     try {
-      final bool granted = await FlutterContacts.requestPermission(readonly: true);
+      final bool granted =
+          await FlutterContacts.requestPermission(readonly: true);
       isContactPermissionGranted.value = granted;
       if (granted) {
         hasAllowedContacts.value = true;
@@ -81,6 +85,7 @@ class ContactController extends GetxController {
       responseError.value = "";
       contactPagination.value = 1;
       hasMoreContacts.value = true;
+      chatIdMap.clear();
       allUserProfileData.clear();
       filteredUsers.clear();
     }
@@ -128,6 +133,10 @@ class ContactController extends GetxController {
                   : ((member.name != null && member.name!.trim().isNotEmpty)
                       ? member.name!.trim()
                       : 'Unknown');
+
+          if (member.userId != null && member.chatId != null) {
+            chatIdMap[member.userId!] = member.chatId!;
+          }
 
           return UserListData(
             userId: member.userId,

@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../Model/CallDetail.dart';
 import '../../../Model/MemberDataRes.dart';
+import '../../../Model/recent_call.dart';
 import '../Controller/contact_profile_controller.dart';
 
 class ContactProfileScreen extends StatefulWidget {
@@ -451,8 +452,36 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
       child: Obx(() {
         final bool loading = controller.isLoading.value;
         final String error = controller.errorMessage.value;
+        final bool listMode = controller.isListMode;
         final CallHistoryDetailData? d = controller.detail.value;
-        final bool hasData = !loading && error.isEmpty && d != null;
+        final List<CallingDetail> list = controller.calls.toList();
+
+        final bool hasData = !loading &&
+            error.isEmpty &&
+            (listMode ? list.isNotEmpty : d != null);
+        final int count = listMode ? list.length : 1;
+
+        Widget body;
+        if (loading) {
+          body = _buildSkeletonList();
+        } else if (error.isNotEmpty) {
+          body = _buildError(error);
+        } else if (listMode) {
+          body = list.isEmpty
+              ? _buildEmptyCalls()
+              : Column(
+            children: [
+              for (int i = 0; i < list.length; i++) ...[
+                if (i > 0) _divider(),
+                _buildListTile(context, list[i]),
+              ],
+            ],
+          );
+        } else if (d == null) {
+          body = _buildError(error);
+        } else {
+          body = _buildHistoryTile(context, d);
+        }
 
         return Column(
           children: [
@@ -474,7 +503,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                   ),
                   if (hasData)
                     Text(
-                      "1",
+                      "$count",
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontFamily: FontFamily.interBold,
@@ -485,15 +514,31 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
               ),
             ),
             _divider(),
-            if (loading)
-              _buildSkeletonList()
-            else if (error.isNotEmpty || d == null)
-              _buildError(error)
-            else
-              _buildHistoryTile(context, d),
+            body,
           ],
         );
       }),
+    );
+  }
+
+  Widget _buildEmptyCalls() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 22.h, horizontal: 16.w),
+      child: Column(
+        children: [
+          Icon(Icons.history_rounded, size: 32.sp, color: _grey),
+          SizedBox(height: 8.h),
+          Text(
+            "No recent calls",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontFamily: FontFamily.interMedium,
+              color: _grey,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -599,15 +644,46 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
   }
 
   Widget _buildHistoryTile(BuildContext context, CallHistoryDetailData call) {
-    final String status = (call.status ?? '').toLowerCase();
     final bool isVideo =
         call.isVideo == true || (call.type ?? '').toLowerCase() == 'video';
-    final bool isIncoming = (call.direction ?? '').toLowerCase() == 'incoming';
+    return _buildCallTile(
+      context,
+      status: call.status,
+      isVideo: isVideo,
+      direction: call.direction,
+      subtitleBase: _whenLabel(call.calledAt, call.time),
+      duration: call.formattedDuration,
+    );
+  }
 
-    final bool isMissed = status == 'missed';
+  Widget _buildListTile(BuildContext context, CallingDetail call) {
+    final String type = (call.type ?? '').toLowerCase();
+    return _buildCallTile(
+      context,
+      status: call.status,
+      isVideo: type.contains('video'),
+      direction: call.direction,
+      subtitleBase:
+      _whenLabel(call.calledAt, call.time ?? call.displayTime),
+      duration: call.duration,
+    );
+  }
+
+  Widget _buildCallTile(
+      BuildContext context, {
+        required String? status,
+        required bool isVideo,
+        required String? direction,
+        required String subtitleBase,
+        String? duration,
+      }) {
+    final String st = (status ?? '').toLowerCase();
+    final bool isIncoming = (direction ?? '').toLowerCase() == 'incoming';
+
+    final bool isMissed = st == 'missed';
     final bool isRejected =
-        status == 'rejected' || status == 'declined' || status == 'busy';
-    final bool isCancelled = status == 'cancelled' || status == 'canceled';
+        st == 'rejected' || st == 'declined' || st == 'busy';
+    final bool isCancelled = st == 'cancelled' || st == 'canceled';
 
     final String mediaLabel = isVideo ? "Video Call" : "Audio Call";
     String title;
@@ -640,9 +716,9 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
       iconColor = const Color(0xFF10B981);
     }
 
-    String subtitle = _whenLabel(call);
-    final String dur = call.formattedDuration ?? '';
-    if (status == 'completed' && dur.isNotEmpty && dur != '00:00') {
+    String subtitle = subtitleBase;
+    final String dur = duration?.trim() ?? '';
+    if (st == 'completed' && dur.isNotEmpty && dur != '00:00' && dur != '0') {
       subtitle = "$subtitle  •  $dur";
     }
 
@@ -720,9 +796,9 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
     return '${ConstRes.aImageBaseUrl}$v';
   }
 
-  String _whenLabel(CallHistoryDetailData c) {
-    final String time = c.time ?? '';
-    final DateTime? dt = DateTime.tryParse(c.calledAt ?? '')?.toLocal();
+  String _whenLabel(String? calledAt, String? timeRaw) {
+    final String time = timeRaw ?? '';
+    final DateTime? dt = DateTime.tryParse(calledAt ?? '')?.toLocal();
     if (dt == null) return time;
 
     const months = [
