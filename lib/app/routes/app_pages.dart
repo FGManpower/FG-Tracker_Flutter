@@ -300,5 +300,11 @@ class AppPages {
       transitionDuration: const Duration(milliseconds: 400),
     ),
 
+    GetPage(
+      name: _Paths.GroupsList,
+      page: () => const GroupsListScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
   ];
 }
