@@ -51,7 +51,6 @@ class VoiceInputController extends GetxController {
   // Record Voice data
   final RxString recordedAudioPath = ''.obs;
   final RxString voiceToTextAudioPath = ''.obs;
-  String? _voiceToTextRecordingPath;
   final RxBool isAudioPlaying = false.obs;
   final RxDouble audioProgress = 0.0.obs;
   final RxInt audioDurationSeconds = 0.obs;
@@ -169,22 +168,6 @@ class VoiceInputController extends GetxController {
       } catch (_) {}
     }
 
-    // Configure iOS noise cancellation
-    if (Platform.isIOS) {
-      try {
-        final session = await AudioSession.instance;
-        await session.configure(AudioSessionConfiguration(
-          avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
-          avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.defaultToSpeaker |
-              AVAudioSessionCategoryOptions.allowBluetooth,
-          avAudioSessionMode: AVAudioSessionMode.voiceChat,
-        ));
-        await session.setActive(true);
-      } catch (e) {
-        debugPrint('[VoiceInput] iOS AudioSession: $e');
-      }
-    }
-
     final ready = await _initSpeechEngine();
     if (!ready) {
       hintMessage.value = "Microphone unavailable. Please check settings.";
@@ -201,10 +184,13 @@ class VoiceInputController extends GetxController {
       final locales = await _speech.locales();
       final hasExact = locales.any((l) => l.localeId == targetLocale);
       if (!hasExact) {
-        final prefix = targetLocale.split('_').first;
-        final matching = locales
-            .where((l) => l.localeId.toLowerCase().startsWith(prefix.toLowerCase()))
-            .toList();
+        final prefix = targetLocale.split(RegExp(r'[-_]')).first.toLowerCase();
+        final matching = locales.where((l) {
+          final lId = l.localeId.toLowerCase();
+          return lId == targetLocale.toLowerCase() ||
+              lId.startsWith(prefix) ||
+              lId.replaceAll('_', '-') == targetLocale.toLowerCase().replaceAll('_', '-');
+        }).toList();
         if (matching.isNotEmpty) {
           targetLocale = matching.first.localeId;
         } else {
@@ -214,44 +200,16 @@ class VoiceInputController extends GetxController {
       }
     } catch (_) {}
 
-    // 1. Record audio concurrently so user can listen/replay what they spoke
-    try {
-      final dir = await getTemporaryDirectory();
-      final path = "${dir.path}/vt_audio_${DateTime.now().millisecondsSinceEpoch}.m4a";
-      if (await _recorder.hasPermission()) {
-        await _recorder.start(
-          const RecordConfig(
-            encoder: AudioEncoder.aacLc,
-            bitRate: 128000,
-            sampleRate: 16000,
-            numChannels: 1,
-            echoCancel: true,
-            noiseSuppress: true,
-            autoGain: true,
-          ),
-          path: path,
-        );
-        _voiceToTextRecordingPath = path;
-        debugPrint('[VoiceInput] VT concurrent audio recording started at $path');
-      }
-    } catch (e) {
-      debugPrint('[VoiceInput] Concurrent recording note: $e');
-      _voiceToTextRecordingPath = null;
-    }
-
-    // 2. Start speech-to-text recognition
+    // Start speech-to-text recognition
     try {
       await _speech.listen(
         onResult: _handleSpeechResult,
         onSoundLevelChange: _handleSoundLevel,
         listenOptions: SpeechListenOptions(
           localeId: targetLocale,
-          listenMode: ListenMode.deviceDefault,
+          listenMode: ListenMode.dictation,
           partialResults: true,
           autoPunctuation: true,
-          onDevice: false,
-          listenFor: const Duration(seconds: 60),
-          pauseFor: const Duration(seconds: 4),
           cancelOnError: false,
         ),
       );
@@ -370,21 +328,6 @@ class VoiceInputController extends GetxController {
       await _speech.stop();
     } catch (_) {}
 
-    if (_voiceToTextRecordingPath != null) {
-      try {
-        final path = await _recorder.stop();
-        _voiceToTextRecordingPath = null;
-        if (path != null && File(path).existsSync()) {
-          voiceToTextAudioPath.value = path;
-          audioDurationSeconds.value = timerSeconds.value;
-          await _preparePlayer(path);
-          debugPrint('[VoiceInput] VT audio saved & player prepared at: $path');
-        }
-      } catch (e) {
-        debugPrint('[VoiceInput] Error stopping VT recorder: $e');
-      }
-    }
-
     await Future.delayed(const Duration(milliseconds: 200));
     await _finishListening();
     _isStopping = false;
@@ -392,25 +335,11 @@ class VoiceInputController extends GetxController {
 
   Future<void> _finishListening() async {
     _stopTimer();
-    if (_voiceToTextRecordingPath != null) {
-      try {
-        final path = await _recorder.stop();
-        _voiceToTextRecordingPath = null;
-        if (path != null && File(path).existsSync()) {
-          voiceToTextAudioPath.value = path;
-          audioDurationSeconds.value = timerSeconds.value;
-          await _preparePlayer(path);
-          debugPrint('[VoiceInput] VT audio saved in finish: $path');
-        }
-      } catch (e) {
-        debugPrint('[VoiceInput] Error stopping VT recorder in finish: $e');
-      }
-    }
-
     final text = recognizedWords.value.trim();
-    if (text.isEmpty && voiceToTextAudioPath.value.isEmpty) {
+    if (text.isEmpty) {
       didntCatchThat.value = true;
       hintMessage.value = "Didn't catch that. Tap the mic and speak a little louder.";
+      mode.value = VoiceInputMode.voiceToTextListening;
     } else {
       didntCatchThat.value = false;
       mode.value = VoiceInputMode.voiceToTextReview;
@@ -690,7 +619,6 @@ class VoiceInputController extends GetxController {
       } catch (_) {}
       voiceToTextAudioPath.value = '';
     }
-    _voiceToTextRecordingPath = null;
   }
 
   void _startTimer() {
