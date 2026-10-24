@@ -70,7 +70,7 @@ dependencies:
   audio_streamer: ^4.3.0
   system_alert_window: ^2.0.7
   android_intent_plus: ^6.0.0
-  audio_session: ^0.2.2
+  audio_session: ^0.2.4
   wakelock_plus: ^1.4.0
   record: ^6.2.0
   just_audio: ^0.10.5

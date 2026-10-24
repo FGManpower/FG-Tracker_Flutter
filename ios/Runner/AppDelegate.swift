@@ -19,11 +19,7 @@ private let candidateTokenPrefKeys = [
     "user_token_key",
     "flutter.native_access_token",
     "flutter.token",
-    "flutter.access_token",
-    "token",
-    "access_token",
-    "authToken",
-    "auth_token"
+    "flutter.access_token"
 ]
 
 @main
@@ -37,6 +33,16 @@ private let candidateTokenPrefKeys = [
     private var audioGeneration = 0
     private var currentCallIsVideo = false
     private var manualAudioRoute: String?
+    private var bluetoothKnownName: String?
+    private var bluetoothSeenInCall = false
+    private var routeObserverToken: NSObjectProtocol?
+    private var isApplyingAudioRoute = false
+    private var routeChangeQuietUntil: Date?
+    private let routeChangeQuietWindow: TimeInterval = 0.45
+    private var userSelectedRoute = false
+    private var lastAppliedRoute: String?
+    private var lastAppliedAt: Date?
+    private let duplicateApplyWindow: TimeInterval = 0.4
 
     private var activeBgTasks: [UUID: UIBackgroundTaskIdentifier] = [:]
     private var handledDeclineCallIds = Set<String>()
@@ -103,13 +109,33 @@ private let candidateTokenPrefKeys = [
                 let args = call.arguments as? [String: Any]
                 let route = (args?["route"] as? String) ?? "earpiece"
                 let isVideo = (args?["isVideo"] as? Bool) ?? self.currentCallIsVideo
-                let state = self.applyRequestedAudioRoute(route: route, isVideo: isVideo)
+                let isManual = (args?["isManual"] as? Bool) ?? true
+                let state = self.applyRequestedAudioRoute(
+                    route: route,
+                    isVideo: isVideo,
+                    userInitiated: isManual
+                )
                 result(state)
             case "getAudioState":
                 result(self.readAudioState())
             case "resetAudioRoute":
                 self.manualAudioRoute = nil
+                self.bluetoothKnownName = nil
+                self.bluetoothSeenInCall = false
+                self.userSelectedRoute = false
+                self.lastAppliedRoute = nil
+                self.lastAppliedAt = nil
                 self.clearPreferredInputSelection()
+                result(nil)
+            case "startAudioRouteMonitoring":
+                let args = call.arguments as? [String: Any]
+                if let isVideo = args?["isVideo"] as? Bool {
+                    self.currentCallIsVideo = isVideo
+                }
+                self.startAudioRouteMonitoring()
+                result(self.readAudioState())
+            case "stopAudioRouteMonitoring":
+                self.stopAudioRouteMonitoring()
                 result(nil)
             default:
                 result(FlutterMethodNotImplemented)
@@ -214,35 +240,9 @@ private let candidateTokenPrefKeys = [
 
         let p = payload.dictionaryPayload
 
-        var extraDict: [String: Any] = [:]
-        for containerKey in ["extra", "callData"] {
-            if let nestedDict = p[containerKey] as? [String: Any] {
-                extraDict.merge(nestedDict) { _, new in new }
-            } else if let nestedJson = p[containerKey] as? String,
-                      let jsonData = nestedJson.data(using: .utf8),
-                      let parsed = (try? JSONSerialization.jsonObject(with: jsonData)) as? [String: Any] {
-                extraDict.merge(parsed) { _, new in new }
-            }
-        }
-        if let nestedCallData = extraDict["callData"] as? [String: Any] {
-            extraDict.merge(nestedCallData) { _, new in new }
-        } else if let nestedCallDataStr = extraDict["callData"] as? String,
-                  let jsonData = nestedCallDataStr.data(using: .utf8),
-                  let parsed = (try? JSONSerialization.jsonObject(with: jsonData)) as? [String: Any] {
-            extraDict.merge(parsed) { _, new in new }
-        }
-
-        for key in ["callId", "call_id", "caller_id", "groupId", "group_id", "sessionId", "session_id", "callerId", "isVideo"] {
-            if extraDict[key] == nil, let topVal = p[key] {
-                extraDict[key] = topVal
-            }
-        }
-
         let rawId = Self.stringValue(p["id"])
             ?? Self.stringValue(p["sessionId"])
             ?? Self.stringValue(p["session_id"])
-            ?? Self.stringValue(extraDict["sessionId"])
-            ?? Self.stringValue(extraDict["session_id"])
         let id = Self.ensureValidUuid(rawId)
 
         let signal = Self.stringValue(p["signal_type"])
@@ -253,16 +253,24 @@ private let candidateTokenPrefKeys = [
         let name = Self.stringValue(p["nameCaller"])
             ?? Self.stringValue(p["callerName"])
             ?? Self.stringValue(p["caller_name"])
-            ?? Self.stringValue(extraDict["callerName"])
-            ?? Self.stringValue(extraDict["caller_name"])
             ?? "Unknown"
 
-        let avatar = Self.stringValue(p["avatar"])
-            ?? Self.stringValue(p["callerAvatar"])
-            ?? Self.stringValue(extraDict["callerProfileImage"])
-            ?? ""
-        let isVideo = Self.parseIsVideo(p) || Self.parseIsVideo(extraDict)
+        let avatar = Self.stringValue(p["avatar"]) ?? Self.stringValue(p["callerAvatar"]) ?? ""
+        let isVideo = Self.parseIsVideo(p)
 
+        var extraDict: [String: Any] = [:]
+        if let nestedDict = p["extra"] as? [String: Any] {
+            extraDict.merge(nestedDict) { _, new in new }
+        } else if let nestedJson = p["extra"] as? String,
+                  let jsonData = nestedJson.data(using: .utf8),
+                  let parsed = (try? JSONSerialization.jsonObject(with: jsonData)) as? [String: Any] {
+            extraDict.merge(parsed) { _, new in new }
+        }
+        for key in ["callId", "call_id", "caller_id", "groupId", "group_id", "sessionId", "session_id", "callerId"] {
+            if extraDict[key] == nil, let topVal = p[key] {
+                extraDict[key] = topVal
+            }
+        }
         if extraDict["sessionId"] == nil {
             extraDict["sessionId"] = id
         }
@@ -298,15 +306,15 @@ private let candidateTokenPrefKeys = [
             let incomingCallId = Self.stringValue(extraDict["callId"])
                 ?? Self.stringValue(extraDict["call_id"])
                 ?? ""
-            let rawCallerId = Self.stringValue(extraDict["callerId"])
-                ?? Self.stringValue(extraDict["caller_id"])
-                ?? "0"
-            let callerIdInt = Int(rawCallerId) ?? 0
+            let callerIdInt = Int(
+                Self.stringValue(extraDict["callerId"])
+                    ?? Self.stringValue(extraDict["caller_id"])
+                    ?? "0"
+            ) ?? 0
 
             updateCallingStatusViaApi(
                 callId: incomingCallId,
                 remoteUserId: callerIdInt,
-                remoteUserIdRaw: rawCallerId,
                 callingStatus: "Ringing"
             )
 
@@ -351,7 +359,11 @@ private let candidateTokenPrefKeys = [
                 rtcAudio.isAudioEnabled = true
             }
             if let manual = self.manualAudioRoute {
-                _ = self.applyRequestedAudioRoute(route: manual, isVideo: self.currentCallIsVideo)
+                _ = self.applyRequestedAudioRoute(
+                    route: manual,
+                    isVideo: self.currentCallIsVideo,
+                    force: true
+                )
             } else {
                 self.applyInitialOutputPort(isVideo: isVideo)
             }
@@ -377,9 +389,22 @@ private let candidateTokenPrefKeys = [
 
     func onEnd(_ call: Call, _ action: CXEndCallAction) {
         print("[AppDelegate] onEnd")
+        var bgTask: UIBackgroundTaskIdentifier = .invalid
+        bgTask = UIApplication.shared.beginBackgroundTask(withName: "CallEndCleanup") {
+            if bgTask != .invalid {
+                UIApplication.shared.endBackgroundTask(bgTask)
+                bgTask = .invalid
+            }
+        }
         audioGeneration += 1
         releaseCallKitManualAudio()
         action.fulfill()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            if bgTask != .invalid {
+                UIApplication.shared.endBackgroundTask(bgTask)
+                bgTask = .invalid
+            }
+        }
     }
 
     func onTimeOut(_ call: Call) {
@@ -389,13 +414,18 @@ private let candidateTokenPrefKeys = [
     }
 
     func didActivateAudioSession(_ audioSession: AVAudioSession) {
+        startAudioRouteMonitoring()
         configureDefaultWebRTCAudio(isVideo: currentCallIsVideo)
         let rtcAudio = RTCAudioSession.sharedInstance()
         rtcAudio.useManualAudio = true
         rtcAudio.audioSessionDidActivate(audioSession)
         rtcAudio.isAudioEnabled = true
         if let manual = manualAudioRoute {
-            _ = applyRequestedAudioRoute(route: manual, isVideo: currentCallIsVideo)
+            _ = applyRequestedAudioRoute(
+                route: manual,
+                isVideo: currentCallIsVideo,
+                force: true
+            )
         } else {
             applyInitialOutputPort(isVideo: currentCallIsVideo)
         }
@@ -424,17 +454,196 @@ private let candidateTokenPrefKeys = [
         config.mode = isVideo
             ? AVAudioSession.Mode.videoChat.rawValue
             : AVAudioSession.Mode.voiceChat.rawValue
-        if isVideo {
-            config.categoryOptions = [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker]
-        } else {
-            config.categoryOptions = [.allowBluetooth, .allowBluetoothA2DP]
-        }
+        config.categoryOptions = categoryOptions(
+            forRoute: manualAudioRoute,
+            isVideo: isVideo
+        )
         RTCAudioSessionConfiguration.setWebRTC(config)
     }
 
-    private func applyRequestedAudioRoute(route: String, isVideo: Bool) -> [String: Any] {
+    private func categoryOptions(
+        forRoute route: String?,
+        isVideo: Bool
+    ) -> AVAudioSession.CategoryOptions {
+        let name = route ?? ""
+
+        if name == "earpiece" || name == "headset" {
+            if shouldSuppressBluetooth(forRoute: name) {
+                return []
+            }
+            return [.allowBluetooth, .allowBluetoothA2DP]
+        }
+
+        if name == "speaker" {
+            return [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker]
+        }
+
+        if name == "bluetooth" {
+            return [.allowBluetooth, .allowBluetoothA2DP]
+        }
+
+        return isVideo
+            ? [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker]
+            : [.allowBluetooth, .allowBluetoothA2DP]
+    }
+
+    private func bluetoothPort(
+        in ports: [AVAudioSessionPortDescription]
+    ) -> AVAudioSessionPortDescription? {
+        return ports.first {
+            $0.portType == .bluetoothHFP ||
+                $0.portType == .bluetoothLE ||
+                $0.portType == .carAudio
+        }
+    }
+
+    private func currentBluetoothPort() -> AVAudioSessionPortDescription? {
+        return bluetoothPort(in: AVAudioSession.sharedInstance().availableInputs ?? [])
+    }
+
+    private func isBluetoothSuppressed() -> Bool {
+        return manualAudioRoute == "earpiece" || manualAudioRoute == "headset"
+    }
+
+    private func shouldSuppressBluetooth(forRoute route: String) -> Bool {
+        guard route == "earpiece" || route == "headset" else { return false }
+        if let port = currentBluetoothPort() {
+            bluetoothSeenInCall = true
+            if !port.portName.isEmpty {
+                bluetoothKnownName = port.portName
+            }
+            return true
+        }
+        return bluetoothSeenInCall
+    }
+
+    private func rememberBluetoothPort(_ port: AVAudioSessionPortDescription?) {
+        guard let port = port else { return }
+        bluetoothSeenInCall = true
+        if !port.portName.isEmpty {
+            bluetoothKnownName = port.portName
+        }
+    }
+
+    private func startAudioRouteMonitoring() {
+        guard routeObserverToken == nil else { return }
+
+        userSelectedRoute = false
+        lastAppliedRoute = nil
+        lastAppliedAt = nil
+
+        routeObserverToken = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.routeChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            self?.handleAudioRouteChange(notification)
+        }
+    }
+
+    private func stopAudioRouteMonitoring() {
+        if let token = routeObserverToken {
+            NotificationCenter.default.removeObserver(token)
+            routeObserverToken = nil
+        }
+    }
+
+    private func pushAudioState() {
+        guard let channel = audioRouteChannel else { return }
+        channel.invokeMethod("onAudioRouteChanged", arguments: readAudioState())
+    }
+
+    private func handleAudioRouteChange(_ notification: Notification) {
+        guard routeObserverToken != nil else { return }
+        guard !isApplyingAudioRoute else { return }
+        if let until = routeChangeQuietUntil, Date() < until {
+            return
+        }
+
+        guard
+            let raw = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
+            let reason = AVAudioSession.RouteChangeReason(rawValue: raw)
+        else {
+            pushAudioState()
+            return
+        }
+
+        let session = AVAudioSession.sharedInstance()
+        let inputs = session.availableInputs ?? []
+
+        switch reason {
+        case .newDeviceAvailable:
+            if let port = bluetoothPort(in: inputs) {
+                rememberBluetoothPort(port)
+                if shouldAutoSelectBluetooth() {
+                    manualAudioRoute = "bluetooth"
+                    _ = applyRequestedAudioRoute(
+                        route: "bluetooth",
+                        isVideo: currentCallIsVideo
+                    )
+                }
+            }
+
+        case .oldDeviceUnavailable:
+            let stillConnected = bluetoothPort(in: inputs) != nil ||
+                bluetoothPort(in: Array(session.currentRoute.outputs)) != nil
+
+            if !stillConnected && !isBluetoothSuppressed() {
+                bluetoothSeenInCall = false
+                bluetoothKnownName = nil
+            }
+
+            if manualAudioRoute == "bluetooth" {
+                let fallback = currentCallIsVideo ? "speaker" : "earpiece"
+                manualAudioRoute = fallback
+                userSelectedRoute = false
+                _ = applyRequestedAudioRoute(
+                    route: fallback,
+                    isVideo: currentCallIsVideo
+                )
+            }
+
+        default:
+            break
+        }
+
+        pushAudioState()
+    }
+
+    private func shouldAutoSelectBluetooth() -> Bool {
+        if userSelectedRoute { return false }
+        guard let current = manualAudioRoute else { return false }
+        if current == "bluetooth" { return false }
+        return current == "earpiece" || current == "speaker"
+    }
+
+    private func applyRequestedAudioRoute(
+        route: String,
+        isVideo: Bool,
+        userInitiated: Bool = false,
+        force: Bool = false
+    ) -> [String: Any] {
+        if userInitiated {
+            userSelectedRoute = true
+        }
+
+        if !force,
+           !userInitiated,
+           route == lastAppliedRoute,
+           let appliedAt = lastAppliedAt,
+           Date().timeIntervalSince(appliedAt) < duplicateApplyWindow {
+            return readAudioState()
+        }
+
         manualAudioRoute = route
         currentCallIsVideo = isVideo
+        lastAppliedRoute = route
+        lastAppliedAt = Date()
+        isApplyingAudioRoute = true
+        routeChangeQuietUntil = Date().addingTimeInterval(routeChangeQuietWindow)
+        defer {
+            isApplyingAudioRoute = false
+        }
 
         let rtcSession = RTCAudioSession.sharedInstance()
         let session = AVAudioSession.sharedInstance()
@@ -444,15 +653,7 @@ private let candidateTokenPrefKeys = [
         config.mode = isVideo
             ? AVAudioSession.Mode.videoChat.rawValue
             : AVAudioSession.Mode.voiceChat.rawValue
-
-        switch route {
-        case "speaker":
-            config.categoryOptions = [.allowBluetooth, .defaultToSpeaker]
-        case "bluetooth":
-            config.categoryOptions = [.allowBluetooth, .allowBluetoothA2DP]
-        default:
-            config.categoryOptions = [.allowBluetooth]
-        }
+        config.categoryOptions = categoryOptions(forRoute: route, isVideo: isVideo)
         RTCAudioSessionConfiguration.setWebRTC(config)
 
         rtcSession.lockForConfiguration()
@@ -465,39 +666,41 @@ private let candidateTokenPrefKeys = [
         }
 
         let inputs = session.availableInputs ?? []
+        let builtInMic = inputs.first { $0.portType == .builtInMic }
+        let bluetoothPort = inputs.first {
+            $0.portType == .bluetoothHFP ||
+                $0.portType == .bluetoothLE ||
+                $0.portType == .carAudio
+        }
+        let wiredPort = inputs.first {
+            $0.portType == .headsetMic || $0.portType == .usbAudio
+        }
 
         switch route {
         case "speaker":
-            if let builtInMic = inputs.first(where: { $0.portType == .builtInMic }) {
-                try? rtcSession.setPreferredInput(builtInMic)
-            }
             try? rtcSession.overrideOutputAudioPort(.speaker)
+            try? session.setPreferredInput(builtInMic)
 
         case "bluetooth":
             try? rtcSession.overrideOutputAudioPort(.none)
-            if let btPort = inputs.first(where: {
-                $0.portType == .bluetoothHFP ||
-                    $0.portType == .bluetoothLE ||
-                    $0.portType == .carAudio
-            }) {
-                try? rtcSession.setPreferredInput(btPort)
+            if let port = bluetoothPort {
+                try? rtcSession.setPreferredInput(port)
+                rememberBluetoothPort(port)
             } else {
+                bluetoothSeenInCall = false
+                bluetoothKnownName = nil
                 try? session.setPreferredInput(nil)
             }
 
         case "headset":
             try? rtcSession.overrideOutputAudioPort(.none)
-            if let wiredPort = inputs.first(where: {
-                $0.portType == .headsetMic || $0.portType == .usbAudio
-            }) {
-                try? rtcSession.setPreferredInput(wiredPort)
+            if let port = wiredPort {
+                try? rtcSession.setPreferredInput(port)
             }
 
         default:
             try? rtcSession.overrideOutputAudioPort(.none)
-            if let builtInMic = inputs.first(where: { $0.portType == .builtInMic }) {
-                try? rtcSession.setPreferredInput(builtInMic)
-            }
+            try? session.setPreferredInput(builtInMic)
         }
 
         return readAudioState()
@@ -517,18 +720,19 @@ private let candidateTokenPrefKeys = [
         let outputs = session.currentRoute.outputs
 
         var isBt = false
-        var btName = "Bluetooth"
+        var btName = bluetoothKnownName ?? "Bluetooth"
         var isWired = false
         var hsName = "Headset"
 
-        for port in inputs {
+        for port in inputs + outputs {
             if port.portType == .bluetoothHFP ||
                    port.portType == .bluetoothLE ||
                    port.portType == .bluetoothA2DP ||
                    port.portType == .carAudio {
                 isBt = true
-                if !port.portName.isEmpty && btName == "Bluetooth" {
+                if !port.portName.isEmpty {
                     btName = port.portName
+                    bluetoothKnownName = port.portName
                 }
             } else if port.portType == .headsetMic ||
                           port.portType == .headphones ||
@@ -540,22 +744,12 @@ private let candidateTokenPrefKeys = [
             }
         }
 
-        for port in outputs {
-            if port.portType == .bluetoothHFP ||
-                   port.portType == .bluetoothLE ||
-                   port.portType == .bluetoothA2DP ||
-                   port.portType == .carAudio {
-                isBt = true
-                if !port.portName.isEmpty && btName == "Bluetooth" {
-                    btName = port.portName
-                }
-            } else if port.portType == .headphones ||
-                          port.portType == .headsetMic ||
-                          port.portType == .usbAudio {
-                isWired = true
-                if !port.portName.isEmpty && hsName == "Headset" {
-                    hsName = port.portName
-                }
+        if isBt {
+            bluetoothSeenInCall = true
+        } else if bluetoothSeenInCall && isBluetoothSuppressed() {
+            isBt = true
+            if let known = bluetoothKnownName, !known.isEmpty {
+                btName = known
             }
         }
 
@@ -585,25 +779,36 @@ private let candidateTokenPrefKeys = [
     private func applyInitialOutputPort(isVideo: Bool) {
         let session = AVAudioSession.sharedInstance()
         let inputs = session.availableInputs ?? []
-        let hasExternalRoute = inputs.contains { port in
-            port.portType == .bluetoothHFP ||
-                port.portType == .bluetoothLE ||
-                port.portType == .headsetMic ||
-                port.portType == .usbAudio
-        } || session.currentRoute.outputs.contains { port in
-            port.portType == .bluetoothHFP ||
-                port.portType == .bluetoothA2DP ||
-                port.portType == .bluetoothLE ||
-                port.portType == .headphones ||
-                port.portType == .headsetMic ||
-                port.portType == .usbAudio
+
+        if let port = bluetoothPort(in: inputs) {
+            rememberBluetoothPort(port)
+            manualAudioRoute = "bluetooth"
+            _ = applyRequestedAudioRoute(
+                route: "bluetooth",
+                isVideo: isVideo
+            )
+            return
         }
-        guard !hasExternalRoute else { return }
+
+        let wiredPort = inputs.first {
+            $0.portType == .headsetMic || $0.portType == .usbAudio
+        }
+
+        if wiredPort != nil {
+            manualAudioRoute = "headset"
+            _ = applyRequestedAudioRoute(
+                route: "headset",
+                isVideo: isVideo
+            )
+            return
+        }
+
+        let fallback = isVideo ? "speaker" : "earpiece"
+        manualAudioRoute = fallback
         _ = applyRequestedAudioRoute(
-            route: isVideo ? "speaker" : "earpiece",
+            route: fallback,
             isVideo: isVideo
         )
-        manualAudioRoute = nil
     }
 
     private func prepareCallKitManualAudio(isVideo: Bool) {
@@ -614,8 +819,16 @@ private let candidateTokenPrefKeys = [
     }
 
     private func releaseCallKitManualAudio() {
+        stopAudioRouteMonitoring()
+        isApplyingAudioRoute = false
+        routeChangeQuietUntil = nil
+        userSelectedRoute = false
+        lastAppliedRoute = nil
+        lastAppliedAt = nil
         manualAudioRoute = nil
         currentCallIsVideo = false
+        bluetoothKnownName = nil
+        bluetoothSeenInCall = false
         clearPreferredInputSelection()
         configureDefaultWebRTCAudio(isVideo: false)
         let rtcAudio = RTCAudioSession.sharedInstance()
@@ -626,7 +839,6 @@ private let candidateTokenPrefKeys = [
     private func updateCallingStatusViaApi(
         callId: String,
         remoteUserId: Int,
-        remoteUserIdRaw: String,
         callingStatus: String,
         endpointIndex: Int = 0
     ) {
@@ -657,10 +869,9 @@ private let candidateTokenPrefKeys = [
             return
         }
 
-        let remoteIdValue: Any = remoteUserId > 0 ? remoteUserId : remoteUserIdRaw
         let bodyDict: [String: Any] = [
             "callId": callId,
-            "remoteUserId": remoteIdValue,
+            "remoteUserId": remoteUserId,
             "callingStatus": callingStatus
         ]
 
@@ -694,13 +905,12 @@ private let candidateTokenPrefKeys = [
             if let http = response as? HTTPURLResponse {
                 let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
                 print("[AppDelegate] updateCallingStatusViaApi \(path) HTTP status=\(http.statusCode) body=\(body)")
-                if (http.statusCode < 200 || http.statusCode >= 300) && endpointIndex + 1 < callingStatusEndpoints.count {
+                if http.statusCode == 404 && endpointIndex + 1 < callingStatusEndpoints.count {
                     DispatchQueue.main.async {
                         self?.finishBackgroundTask(for: taskKey)
                         self?.updateCallingStatusViaApi(
                             callId: callId,
                             remoteUserId: remoteUserId,
-                            remoteUserIdRaw: remoteUserIdRaw,
                             callingStatus: callingStatus,
                             endpointIndex: endpointIndex + 1
                         )
@@ -781,42 +991,9 @@ private let candidateTokenPrefKeys = [
     }
 
     private static func readAccessToken() -> String? {
-        let fm = FileManager.default
-        let searchDirs: [FileManager.SearchPathDirectory] = [
-            .documentDirectory,
-            .applicationSupportDirectory
-        ]
-        for dir in searchDirs {
-            if let baseUrl = fm.urls(for: dir, in: .userDomainMask).first {
-                let gsUrl = baseUrl.appendingPathComponent("GetStorage.gs")
-                if let data = try? Foundation.Data(contentsOf: gsUrl),
-                   let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] {
-                    for key in candidateTokenPrefKeys {
-                        if let val = json[key] as? String, !val.isEmpty {
-                            return val
-                        }
-                    }
-                    for (k, v) in json {
-                        let lower = k.lowercased()
-                        if lower.contains("token") && !lower.contains("voip") && !lower.contains("device") && !lower.contains("fcm"),
-                           let val = v as? String, !val.isEmpty {
-                            return val
-                        }
-                    }
-                }
-            }
-        }
-
         let defaults = UserDefaults.standard
         for key in candidateTokenPrefKeys {
             if let val = defaults.string(forKey: key), !val.isEmpty {
-                return val
-            }
-        }
-        for (k, v) in defaults.dictionaryRepresentation() {
-            let lower = k.lowercased()
-            if lower.contains("token") && !lower.contains("voip") && !lower.contains("device") && !lower.contains("fcm"),
-               let val = v as? String, !val.isEmpty {
                 return val
             }
         }
