@@ -2,11 +2,13 @@ import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/newChat_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -23,18 +25,29 @@ class NewChatScreen extends StatefulWidget {
   State<NewChatScreen> createState() => _NewChatScreenState();
 }
 
-class _NewChatScreenState extends State<NewChatScreen> {
+class _NewChatScreenState extends State<NewChatScreen>
+    with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
 
   final RxBool _isSearchCollapsed = false.obs;
   final RxBool _showSearchInAppBar = false.obs;
 
-  final NewChatController controller = Get.put(NewChatController());
+  final RxBool _permissionChecked = false.obs;
+  final RxBool _permissionGranted = false.obs;
+  bool _waitingForSettings = false;
+
+  late final NewChatController controller;
+
+  // ⚡ Initials cache — same naam pe baar baar compute nahi hoga
+  final Map<String, String> _initialsCache = {};
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    controller =
+        Get.put(NewChatController(autoLoad: !widget.fromQuickAction));
     _scrollController.addListener(() {
       if (_scrollController.offset > 40 && !_isSearchCollapsed.value) {
         _isSearchCollapsed.value = true;
@@ -43,24 +56,83 @@ class _NewChatScreenState extends State<NewChatScreen> {
         _showSearchInAppBar.value = false;
       }
     });
+
+    if (widget.fromQuickAction) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _requestContactPermission();
+      });
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        _waitingForSettings &&
+        widget.fromQuickAction) {
+      _waitingForSettings = false;
+      _recheckPermission();
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
     _searchController.dispose();
+    _initialsCache.clear(); // ⚡
     super.dispose();
   }
 
-  String _getInitials(String name) {
-    final trimmed = name.trim();
-    if (trimmed.isEmpty) return "?";
-    final parts = trimmed.split(RegExp(r'\s+'));
-    String first(String s) => String.fromCharCodes(s.runes.take(1));
-    if (parts.length > 1) {
-      return (first(parts[0]) + first(parts[1])).toUpperCase();
+  void _applyGranted() {
+    final bool wasGranted = _permissionGranted.value;
+    _permissionGranted.value = true;
+    _permissionChecked.value = true;
+    if (!wasGranted) {
+      controller.getRegisteredContacts();
     }
-    return first(parts[0]).toUpperCase();
+  }
+
+  Future<void> _requestContactPermission() async {
+    final bool granted =
+    await FlutterContacts.requestPermission(readonly: true);
+    _permissionChecked.value = true;
+    if (granted) {
+      _applyGranted();
+    }
+  }
+
+  Future<void> _onAllowAccessTap() async {
+    final bool granted =
+    await FlutterContacts.requestPermission(readonly: true);
+    if (granted) {
+      _applyGranted();
+      return;
+    }
+    _waitingForSettings = true;
+    await openAppSettings();
+  }
+
+  Future<void> _recheckPermission() async {
+    final PermissionStatus status = await Permission.contacts.status;
+    if (status.isGranted || status.isLimited) {
+      _applyGranted();
+    }
+  }
+
+  bool get _isGated => widget.fromQuickAction && !_permissionGranted.value;
+
+  // ⚡ Cached initials computation
+  String _getInitials(String name) {
+    return _initialsCache.putIfAbsent(name, () {
+      final trimmed = name.trim();
+      if (trimmed.isEmpty) return "?";
+      final parts = trimmed.split(RegExp(r'\s+'));
+      String first(String s) => String.fromCharCodes(s.runes.take(1));
+      if (parts.length > 1) {
+        return (first(parts[0]) + first(parts[1])).toUpperCase();
+      }
+      return first(parts[0]).toUpperCase();
+    });
   }
 
   Color _getAvatarColor(String name) {
@@ -83,6 +155,8 @@ class _NewChatScreenState extends State<NewChatScreen> {
         child: Column(
           children: [
             Obx(() {
+              if (_isGated) return const SizedBox.shrink();
+
               final hasData = controller.matchedUsers.isNotEmpty ||
                   controller.otherUsers.isNotEmpty;
 
@@ -102,6 +176,10 @@ class _NewChatScreenState extends State<NewChatScreen> {
             }),
             Expanded(
               child: Obx(() {
+                if (_isGated) {
+                  return _buildPermissionView();
+                }
+
                 if (controller.responseError.value.isNotEmpty) {
                   return LostinternetConnection(
                     retry: () => controller.getRegisteredContacts(),
@@ -136,21 +214,29 @@ class _NewChatScreenState extends State<NewChatScreen> {
                   );
                 }
 
-                return ListView(
+                return CustomScrollView(
                   controller: _scrollController,
-                  padding: EdgeInsets.only(bottom: 40.h),
-                  children: [
-                    SizedBox(height: 12.h),
+                  // ⚡ cacheExtent badhao — scroll smooth hoga, rows pre-build hongi
+                  cacheExtent: 500,
+                  slivers: [
+                    SliverToBoxAdapter(child: SizedBox(height: 12.h)),
                     if (direct.isNotEmpty) ...[
                       if (!widget.fromQuickAction)
-                        _buildSectionTitle("Start a New Chat (Contacts)"),
-                      _buildContactsCard(direct, isInvite: false),
-                      SizedBox(height: 16.h),
+                        SliverToBoxAdapter(
+                          child:
+                          _buildSectionTitle("Start a New Chat (Contacts)"),
+                        ),
+                      _buildContactsSliver(direct, isInvite: false),
+                      SliverToBoxAdapter(child: SizedBox(height: 16.h)),
                     ],
                     if (invite.isNotEmpty) ...[
-                      _buildSectionTitle("Invite to Chat (Unregistered Contacts)"),
-                      _buildContactsCard(invite, isInvite: true),
+                      SliverToBoxAdapter(
+                        child: _buildSectionTitle(
+                            "Invite to Chat (Unregistered Contacts)"),
+                      ),
+                      _buildContactsSliver(invite, isInvite: true),
                     ],
+                    SliverToBoxAdapter(child: SizedBox(height: 40.h)),
                   ],
                 );
               }),
@@ -161,36 +247,104 @@ class _NewChatScreenState extends State<NewChatScreen> {
     );
   }
 
-  Widget _buildContactsCard(List<UserListData> items,
-      {required bool isInvite}) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(vertical: 4.h),
-        itemCount: items.length,
-        separatorBuilder: (_, __) => Divider(
-          height: 1,
-          indent: 16.w,
-          endIndent: 16.w,
-          color: Colors.grey.withValues(alpha: 0.12),
+  Widget _buildPermissionView() {
+    if (!_permissionChecked.value) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF6C5DD3)),
+      );
+    }
+
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 84.w,
+              height: 84.w,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEDE9FE),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.contacts_rounded,
+                size: 40.sp,
+                color: const Color(0xFF6C5DD3),
+              ),
+            ),
+            SizedBox(height: 20.h),
+            reausabletext(
+              "Allow contacts access",
+              fontsize: 17.sp,
+              fontfamily: FontFamily.interBold,
+              color: Colors.black87,
+              align: TextAlign.center,
+            ),
+            SizedBox(height: 8.h),
+            reausabletext(
+              "We need access to your contacts to show who is on FG Tracker and to let you start a chat or send an invite.",
+              fontsize: 12.sp,
+              color: Colors.grey.shade600,
+              align: TextAlign.center,
+            ),
+            SizedBox(height: 24.h),
+            GestureDetector(
+              onTap: _onAllowAccessTap,
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6C5DD3),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: Center(
+                  child: reausabletext(
+                    "Allow Access",
+                    fontsize: 14.sp,
+                    fontfamily: FontFamily.interSemiBold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-        itemBuilder: (context, index) {
-          final user = items[index];
-          return _buildContactRow(user, isInvite: isInvite);
-        },
+      ),
+    );
+  }
+
+  Widget _buildContactsSliver(List<UserListData> items,
+      {required bool isInvite}) {
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      sliver: DecoratedSliver(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        sliver: SliverPadding(
+          padding: EdgeInsets.symmetric(vertical: 4.h),
+          sliver: SliverList.separated(
+            itemCount: items.length,
+            separatorBuilder: (_, __) => Divider(
+              height: 1,
+              indent: 16.w,
+              endIndent: 16.w,
+              color: Colors.grey.withValues(alpha: 0.12),
+            ),
+            itemBuilder: (context, index) {
+              return _buildContactRow(items[index], isInvite: isInvite);
+            },
+          ),
+        ),
       ),
     );
   }
@@ -202,22 +356,29 @@ class _NewChatScreenState extends State<NewChatScreen> {
     final String displayName = (user.name?.trim().isNotEmpty == true)
         ? user.name!.trim()
         : (user.mobileNo ?? 'Unknown User');
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 25.r,
-            backgroundColor: hasAvatar ? Colors.grey.shade200 : _getAvatarColor(displayName),
-            backgroundImage: hasAvatar ? NetworkImage(imageUrl) : null,
-            child: !hasAvatar
-                ? reausabletext(
-              _getInitials(displayName),
-              fontsize: 13.sp,
-              fontfamily: FontFamily.interBold,
-              color: Colors.white,
-            )
-                : null,
+          // ⚡ RepaintBoundary — avatar alag paint hoga, scroll smooth
+          RepaintBoundary(
+            child: CircleAvatar(
+              radius: 25.r,
+              backgroundColor:
+              hasAvatar ? Colors.grey.shade200 : _getAvatarColor(displayName),
+              backgroundImage: hasAvatar
+                  ? ResizeImage(NetworkImage(imageUrl), width: 120)
+                  : null,
+              child: !hasAvatar
+                  ? reausabletext(
+                _getInitials(displayName),
+                fontsize: 13.sp,
+                fontfamily: FontFamily.interBold,
+                color: Colors.white,
+              )
+                  : null,
+            ),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -276,7 +437,6 @@ class _NewChatScreenState extends State<NewChatScreen> {
       ),
     );
   }
-
 
   String _buildInviteMessage(UserListData user) {
     const String playStoreLink =
@@ -478,7 +638,6 @@ class _NewChatScreenState extends State<NewChatScreen> {
     );
   }
 
-
   void _handleOnAction(UserListData user, {required bool isInvite}) async {
     if (isInvite) {
       _showInviteOptions(user);
@@ -564,7 +723,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
             ),
           ),
           Obx(() {
-            if (!_isSearchCollapsed.value) {
+            if (!_isSearchCollapsed.value || _isGated) {
               return const SizedBox.shrink();
             }
             return GestureDetector(

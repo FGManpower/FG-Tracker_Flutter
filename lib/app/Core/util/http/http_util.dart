@@ -19,7 +19,14 @@ class HttpUtil {
   ConstRes api = ConstRes();
 
   HttpUtil._internal() {
-    api.sendRequest.interceptors.add(PrettyDioLogger());
+    api.sendRequest.interceptors.add(PrettyDioLogger(
+      requestHeader: true,
+      requestBody: true,
+      responseBody: false,   // ⚡ YE ADD KIYA — bada JSON print nahi hoga
+      responseHeader: false,
+      error: true,
+      compact: true,
+    ));
   }
 
   Future<dynamic> post(String path,
