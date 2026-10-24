@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'dart:math' hide log;
 
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
+import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart:.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/call_model.dart';
@@ -999,16 +1001,32 @@ class firebaseNotificationServices {
         }
       }
 
-      if (message.data['screen_name'] == "incomingCall") {
-        final callData = jsonDecode(message.data['callData']);
+      if (message.data['screen_name'] == 'incomingCall') {
+        try {
+          final callData = CallKitService.decodeCallData(
+            message.data['callData'],
+          );
 
-        final originalCallId = callData['callId'].toString();
-        socket?.emit("CallingStatus", {
-          "callId": originalCallId,
-          "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
-          "callingStatus": "Ringing",
-        });
+          final callId = callData['callId'].toString();
+          final remoteUserId =
+              int.tryParse(callData['callerId'].toString()) ?? 0;
 
+          if (socket != null && socket!.connected) {
+            socket?.emit('CallingStatus', {
+              'callId': callId,
+              'remoteUserId': remoteUserId,
+              'callingStatus': 'Ringing',
+            });
+          } else {
+            await CallRepo.updateCallingStatus(
+              callId: callId,
+              callingStatus: 'Ringing',
+              remoteUserId: remoteUserId,
+            );
+          }
+        } catch (e) {
+          log('Ringing status error: $e');
+        }
       }
 
       if (message.data['screen_name'] == "incomingGroupCall") {
@@ -1019,7 +1037,6 @@ class firebaseNotificationServices {
           "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
           "callingStatus": "Ringing",
         });
-
       }
 
       if (message.data['screen_name'] == "missedCall") {

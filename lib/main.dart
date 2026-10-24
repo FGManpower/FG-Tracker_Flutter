@@ -153,8 +153,10 @@ void _setupCallKit() {
         'callId': callId,
         'remoteUserId': extra['callerId']?.toString(),
       });
+      print("========rejectCallsocketCalled");
     } else {
       await rejectCallViaRest(callId);
+      print("========rejectCallApiCalled");
     }
   };
 

@@ -15,17 +15,19 @@ void _ck(String msg) {
   print('[CK] $msg');
 }
 
-class CallKitService {
+class CallKitService with WidgetsBindingObserver {
   CallKitService._();
   static final instance = CallKitService._();
 
   StreamSubscription? _sub;
   bool _inited = false;
   bool _appReady = false;
+  bool _usingOnAny = false;
 
   Map<String, dynamic>? pendingAccept;
 
   static final Set<String> _selfEnded = {};
+  static DateTime? _selfEndedAllAt;
 
   static final Set<String> _accepted = {};
 
@@ -34,6 +36,33 @@ class CallKitService {
   static final Map<String, DateTime> _shown = {};
 
   static final Map<String, String> _uuidByKey = {};
+
+  static const Set<String> _socketEndEvents = {
+    'callEnded',
+    'endCall',
+    'call_ended',
+    'callRejected',
+    'cancelCall',
+    'groupCallEnded',
+  };
+
+  static const Set<String> _socketMissedEvents = {
+    'missedCall',
+    'missCall',
+    'missedGroupCall',
+  };
+
+  static const Set<String> _terminalStatuses = {
+    'missed',
+    'missedcall',
+    'ended',
+    'callended',
+    'rejected',
+    'declined',
+    'cancelled',
+    'canceled',
+    'disconnected',
+  };
 
   CallActionCallback? onAcceptCall;
   CallActionCallback? onDeclineCall;
@@ -231,8 +260,10 @@ class CallKitService {
     }
   }
 
-  static Future<bool> _isAccepted(String sessionId) async {
+  static Future<bool> _isAccepted(String sessionId, {String callId = ''}) async {
     final targetUuid = _uuidByKey[sessionId] ?? sessionId;
+    final targetCallUuid =
+    callId.isNotEmpty ? (_uuidByKey[callId] ?? callId) : '';
     try {
       final calls = await FlutterCallkitIncoming.activeCalls();
       if (calls is List) {
@@ -241,7 +272,15 @@ class CallKitService {
           final extra = _asMap(_field(c, 'extra'));
           final sid =
               extra['session_id']?.toString() ?? extra['sessionId']?.toString();
-          if (cid == targetUuid || cid == sessionId || sid == sessionId) {
+          final extraCallId =
+              extra['callId']?.toString() ?? extra['call_id']?.toString() ?? '';
+          if (cid == targetUuid ||
+              cid == sessionId ||
+              sid == sessionId ||
+              (callId.isNotEmpty &&
+                  (cid == targetCallUuid ||
+                      cid == callId ||
+                      extraCallId == callId))) {
             return _field(c, 'isAccepted') == true;
           }
         }
@@ -266,6 +305,8 @@ class CallKitService {
     if (_inited) return;
     _inited = true;
 
+    WidgetsBinding.instance.addObserver(this);
+
     _sub?.cancel();
     _sub = FlutterCallkitIncoming.onEvent.listen(
           (dynamic e) => _onEvent(e),
@@ -286,13 +327,22 @@ class CallKitService {
     unawaited(_postInitBackgroundTasks(skipPermissions: hasActiveCallNow));
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _ensureSocketHandlersAttached();
+    if (state == AppLifecycleState.resumed) {
+      unawaited(restoreActiveCalls());
+    }
+  }
+
   Future<void> _postInitBackgroundTasks({required bool skipPermissions}) async {
     if (!skipPermissions) {
       try {
         await FlutterCallkitIncoming.requestNotificationPermission({
           'title': 'Notification permission',
           'rationaleMessagePermission': 'Needed to show incoming calls.',
-          'postNotificationMessageRequired': 'Enable notifications in Settings.',
+          'postNotificationMessageRequired':
+          'Enable notifications in Settings.',
         });
         if (Platform.isAndroid) {
           final ok = await FlutterCallkitIncoming.canUseFullScreenIntent();
@@ -413,6 +463,7 @@ class CallKitService {
         extra: <String, dynamic>{
           ...extra,
           'callId': callId,
+          'call_id': callId,
           'session_id': id,
           'sessionId': id,
         },
@@ -449,17 +500,40 @@ class CallKitService {
     }
   }
 
-  static Future<void> dismiss(String sessionId) async {
-    if (sessionId.isEmpty) return;
+  static Future<void> dismiss(
+      String sessionId, {
+        String callId = '',
+        bool endAllUnaccepted = false,
+      }) async {
+    if (sessionId.isEmpty && callId.isEmpty && !endAllUnaccepted) return;
 
-    final resolvedUuid = _uuidByKey.remove(sessionId) ?? sessionId;
-    final idsToEnd = <String>{resolvedUuid, sessionId};
+    final resolvedUuid =
+    sessionId.isNotEmpty ? (_uuidByKey.remove(sessionId) ?? sessionId) : '';
+    final resolvedCallUuid =
+    callId.isNotEmpty ? (_uuidByKey.remove(callId) ?? callId) : '';
+
+    final lookupKeys = <String>{
+      if (sessionId.isNotEmpty) sessionId,
+      if (resolvedUuid.isNotEmpty) resolvedUuid,
+      if (callId.isNotEmpty) callId,
+      if (resolvedCallUuid.isNotEmpty) resolvedCallUuid,
+    };
+
+    _uuidByKey.removeWhere(
+          (k, v) => lookupKeys.contains(k) || lookupKeys.contains(v),
+    );
+
+    final idsToEnd = <String>{...lookupKeys};
+    bool matchedActiveCall = false;
+    bool hasUnacceptedActiveCall = false;
+    bool hasAcceptedDifferentCall = false;
 
     try {
       final calls = await FlutterCallkitIncoming.activeCalls();
       if (calls is List) {
         for (final c in calls) {
           final activeId = _field(c, 'id')?.toString() ?? '';
+          final isAccepted = _field(c, 'isAccepted') == true;
           final extra = _asMap(_field(c, 'extra'));
           final sid = extra['session_id']?.toString() ??
               extra['sessionId']?.toString() ??
@@ -467,24 +541,43 @@ class CallKitService {
           final cid = extra['callId']?.toString() ??
               extra['call_id']?.toString() ??
               '';
-          if (activeId.isNotEmpty &&
-              (activeId == sessionId ||
-                  activeId == resolvedUuid ||
-                  sid == sessionId ||
-                  cid == sessionId)) {
-            idsToEnd.add(activeId);
+
+          final activeIdentifiers = <String>{
+            if (activeId.isNotEmpty) activeId,
+            if (sid.isNotEmpty) sid,
+            if (cid.isNotEmpty) cid,
+          };
+
+          final isMatch =
+          activeIdentifiers.any((id) => lookupKeys.contains(id));
+
+          if (isMatch) {
+            matchedActiveCall = true;
+            if (activeId.isNotEmpty) idsToEnd.add(activeId);
+            if (sid.isNotEmpty) idsToEnd.add(sid);
+          } else if (!isAccepted) {
+            if (cid.isEmpty || callId.isEmpty || cid == callId) {
+              hasUnacceptedActiveCall = true;
+              if (endAllUnaccepted && activeId.isNotEmpty) {
+                idsToEnd.add(activeId);
+              }
+            }
+          } else {
+            hasAcceptedDifferentCall = true;
           }
         }
       }
     } catch (_) {}
 
     instance._clearPendingAcceptMatching(
-      uuid: resolvedUuid,
+      uuid: resolvedUuid.isNotEmpty ? resolvedUuid : resolvedCallUuid,
       sessionId: sessionId,
-      callId: sessionId,
+      callId: callId,
     );
 
-    _ck('dismiss targets=$idsToEnd (requested=$sessionId)');
+    _ck('dismiss targets=$idsToEnd matched=$matchedActiveCall '
+        '(requested=$sessionId callId=$callId endAllUnaccepted=$endAllUnaccepted)');
+
     for (final target in idsToEnd) {
       if (target.isEmpty) continue;
       _selfEnded.add(target);
@@ -492,15 +585,33 @@ class CallKitService {
       _accepted.remove(target);
       _shown.remove(target);
       try {
+        await FlutterCallkitIncoming.hideCallkitIncoming(
+          CallKitParams(id: target),
+        );
+      } catch (_) {}
+      try {
         await FlutterCallkitIncoming.endCall(target);
       } catch (e) {
         _ck('dismiss error for $target: $e');
+      }
+    }
+
+    if (endAllUnaccepted &&
+        !hasAcceptedDifferentCall &&
+        (_accepted.isEmpty || hasUnacceptedActiveCall || !matchedActiveCall)) {
+      _selfEndedAllAt = DateTime.now();
+      _shown.clear();
+      try {
+        await FlutterCallkitIncoming.endAllCalls();
+      } catch (e) {
+        _ck('dismiss endAllCalls fallback error: $e');
       }
     }
   }
 
   static Future<void> dismissAll() async {
     instance._clearPendingAcceptMatching(forceAll: true);
+    _selfEndedAllAt = DateTime.now();
     _accepted.clear();
     _shown.clear();
     _uuidByKey.clear();
@@ -518,14 +629,14 @@ class CallKitService {
     required bool isVideo,
   }) async {
     final id = sessionId;
-    final accepted = await _isAccepted(id);
+    final accepted = await _isAccepted(id, callId: callId);
     _ck('markMissed sessionId=$id callId=$callId accepted=$accepted');
     if (accepted) return;
-    await dismiss(id);
+    await dismiss(id, callId: callId, endAllUnaccepted: true);
     if (Platform.isAndroid) {
       try {
         await FlutterCallkitIncoming.showMissCallNotification(CallKitParams(
-          id: id,
+          id: id.isNotEmpty ? id : callId,
           nameCaller: callerName,
           handle: callerName,
           type: isVideo ? 1 : 0,
@@ -567,19 +678,21 @@ class CallKitService {
         '')
         .toString();
     final callId =
-    (cd['callId'] ?? d['callId'] ?? d['call_id'] ?? '').toString();
+    (cd['callId'] ?? cd['call_id'] ?? d['callId'] ?? d['call_id'] ?? '')
+        .toString();
     final isVideo = cd['isVideo'].toString() == "true" ? true : false;
 
     switch (screen) {
       case 'incomingCall':
       case 'incomingGroupCall':
         if (Platform.isIOS) return true;
-        if (sessionId.isEmpty) {
+        final incomingId = sessionId.isNotEmpty ? sessionId : callId;
+        if (incomingId.isEmpty) {
           _ck('handlePush incoming with EMPTY sessionId');
           return true;
         }
         await showIncoming(
-          sessionId: sessionId,
+          sessionId: incomingId,
           callId: callId,
           callerName: screen == 'incomingGroupCall'
               ? (cd['groupName'] ?? 'Group call').toString()
@@ -592,33 +705,47 @@ class CallKitService {
 
       case 'callEnded':
       case 'groupCallEnded':
-        final endTarget =
-        (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
-        await dismiss(endTarget.isNotEmpty ? endTarget : callId);
-        return true;
-
       case 'missedCall':
       case 'missedGroupCall':
-        // await markMissed(
-        //   sessionId:
-        //   (d['session_id'] ?? d['sessionId'] ?? sessionId).toString(),
-        //   callId: callId,
-        //   callerName: (cd['callerName'] ?? 'Someone').toString(),
-        //   isVideo: isVideo,
-        // );
+        final endTarget =
+        (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
+        await dismiss(
+          endTarget.isNotEmpty ? endTarget : callId,
+          callId: callId,
+          endAllUnaccepted: true,
+        );
         return true;
     }
 
     if (d['signal_type'] == 'endCall') {
       final endTarget =
       (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
-      await dismiss(endTarget.isNotEmpty ? endTarget : callId);
+      await dismiss(
+        endTarget.isNotEmpty ? endTarget : callId,
+        callId: callId,
+        endAllUnaccepted: true,
+      );
       return true;
     }
     return false;
   }
 
   dynamic _boundSocket;
+
+  static MapEntry<String, String> _extractEndIds(dynamic data) {
+    final m = _asMap(data);
+    final cd = decodeCallData(m['callData']);
+    final sessionId = (m['session_id'] ??
+        m['sessionId'] ??
+        cd['session_id'] ??
+        cd['sessionId'] ??
+        '')
+        .toString();
+    final callId =
+    (m['callId'] ?? m['call_id'] ?? cd['callId'] ?? cd['call_id'] ?? '')
+        .toString();
+    return MapEntry<String, String>(sessionId, callId);
+  }
 
   late final void Function(dynamic) _hNewCall = (data) {
     final state = WidgetsBinding.instance.lifecycleState;
@@ -635,9 +762,10 @@ class CallKitService {
         '')
         .toString();
     final callId = (m['callId'] ?? cd['callId'] ?? '').toString();
-    if (sessionId.isEmpty) return;
+    final incomingId = sessionId.isNotEmpty ? sessionId : callId;
+    if (incomingId.isEmpty) return;
     showIncoming(
-      sessionId: sessionId,
+      sessionId: incomingId,
       callId: callId,
       callerName:
       (m['caller_name'] ?? cd['callerName'] ?? 'Unknown').toString(),
@@ -649,44 +777,130 @@ class CallKitService {
   };
 
   late final void Function(dynamic) _hEnded = (data) {
-    final m = _asMap(data);
-    final sessionId =
-    (m['session_id'] ?? m['sessionId'] ?? m['callId'] ?? '').toString();
-    _ck('socket callEnded/endCall sessionId=$sessionId data=$m');
-    if (sessionId.isNotEmpty) dismiss(sessionId);
+    final ids = _extractEndIds(data);
+    final sessionId = ids.key;
+    final callId = ids.value;
+    _ck('socket callEnded/endCall sessionId=$sessionId callId=$callId data=$data');
+    dismiss(
+      sessionId.isNotEmpty ? sessionId : callId,
+      callId: callId,
+      endAllUnaccepted: true,
+    );
   };
 
   late final void Function(dynamic) _hMissed = (data) {
-    final m = _asMap(data);
-    final sessionId =
-    (m['session_id'] ?? m['sessionId'] ?? m['callId'] ?? '').toString();
-    _ck('socket missedCall sessionId=$sessionId data=$m');
-    if (sessionId.isNotEmpty) dismiss(sessionId);
+    final ids = _extractEndIds(data);
+    final sessionId = ids.key;
+    final callId = ids.value;
+    _ck('socket missedCall sessionId=$sessionId callId=$callId data=$data');
+    dismiss(
+      sessionId.isNotEmpty ? sessionId : callId,
+      callId: callId,
+      endAllUnaccepted: true,
+    );
   };
+
+  late final void Function(dynamic) _hStatus = (data) {
+    final m = _asMap(data);
+    final status =
+    (m['status'] ?? m['callingStatus'] ?? '').toString().trim().toLowerCase();
+    if (!_terminalStatuses.contains(status)) return;
+    final ids = _extractEndIds(data);
+    final sessionId = ids.key;
+    final callId = ids.value;
+    _ck('socket terminal callStatus=$status sessionId=$sessionId callId=$callId');
+    dismiss(
+      sessionId.isNotEmpty ? sessionId : callId,
+      callId: callId,
+      endAllUnaccepted: true,
+    );
+  };
+
+  late final void Function(String, dynamic) _hAny = (event, data) {
+    if (event == 'newCall') {
+      _hNewCall(data);
+    } else if (_socketEndEvents.contains(event)) {
+      _hEnded(data);
+    } else if (_socketMissedEvents.contains(event)) {
+      _hMissed(data);
+    } else if (event == 'callStatus') {
+      _hStatus(data);
+    }
+  };
+
+  late final void Function(dynamic) _hConnect = (_) {
+    _ck('socket reconnected -> checking active calls');
+    unawaited(restoreActiveCalls());
+  };
+
+  void _detachSocket(dynamic sock) {
+    if (sock == null) return;
+    try {
+      if (_usingOnAny) {
+        sock.offAny(_hAny);
+      } else {
+        sock.off('newCall', _hNewCall);
+        for (final ev in _socketEndEvents) {
+          sock.off(ev, _hEnded);
+        }
+        for (final ev in _socketMissedEvents) {
+          sock.off(ev, _hMissed);
+        }
+        sock.off('callStatus', _hStatus);
+      }
+      sock.off('connect', _hConnect);
+    } catch (_) {}
+  }
+
+  void _ensureSocketHandlersAttached() {
+    final sock = _boundSocket;
+    if (sock == null || _usingOnAny) return;
+    try {
+      if (sock.hasListeners('missedCall') != true) {
+        sock.on('missedCall', _hMissed);
+      }
+      if (sock.hasListeners('missCall') != true) {
+        sock.on('missCall', _hMissed);
+      }
+      if (sock.hasListeners('callEnded') != true) {
+        sock.on('callEnded', _hEnded);
+      }
+      if (sock.hasListeners('endCall') != true) {
+        sock.on('endCall', _hEnded);
+      }
+      if (sock.hasListeners('newCall') != true) {
+        sock.on('newCall', _hNewCall);
+      }
+    } catch (_) {}
+  }
 
   void bindSocket(dynamic socket) {
     if (socket == null) return;
     _ck('bindSocket');
-    const endEvents = [
-      'callEnded',
-      'endCall',
-      'call_ended',
-      'callRejected',
-      'cancelCall',
-    ];
     if (_boundSocket != null) {
-      _boundSocket.off('newCall', _hNewCall);
-      for (final ev in endEvents) {
-        _boundSocket.off(ev, _hEnded);
-      }
-      _boundSocket.off('missedCall', _hMissed);
+      _detachSocket(_boundSocket);
     }
     _boundSocket = socket;
-    socket.on('newCall', _hNewCall);
-    for (final ev in endEvents) {
-      socket.on(ev, _hEnded);
+    _usingOnAny = false;
+
+    try {
+      socket.onAny(_hAny);
+      _usingOnAny = true;
+      _ck('bindSocket attached via immune onAny listener');
+    } catch (_) {
+      socket.on('newCall', _hNewCall);
+      for (final ev in _socketEndEvents) {
+        socket.on(ev, _hEnded);
+      }
+      for (final ev in _socketMissedEvents) {
+        socket.on(ev, _hMissed);
+      }
+      socket.on('callStatus', _hStatus);
     }
-    socket.on('missedCall', _hMissed);
+
+    try {
+      socket.on('connect', _hConnect);
+    } catch (_) {}
   }
 
   void _onEvent(dynamic e) {
@@ -742,7 +956,10 @@ class CallKitService {
             sessionId: sessionId,
             callId: callId,
           );
-          if ((uuid != null && _selfEnded.remove(uuid)) ||
+          final selfEndedAllRecent = _selfEndedAllAt != null &&
+              DateTime.now().difference(_selfEndedAllAt!).inSeconds < 5;
+          if (selfEndedAllRecent ||
+              (uuid != null && _selfEnded.remove(uuid)) ||
               (sessionId.isNotEmpty && _selfEnded.remove(sessionId))) {
             _ck('ENDED ignored (our own dismiss)');
             break;
@@ -852,13 +1069,15 @@ class CallKitService {
             (extra['session_id'] ?? extra['sessionId'] ?? _field(c, 'id'))
                 ?.toString() ??
                 '';
-        final callId = extra['callId']?.toString();
-        if (callId == null || callId.isEmpty) continue;
+        final callId = extra['callId']?.toString() ??
+            extra['call_id']?.toString() ??
+            '';
+        if (callId.isEmpty) continue;
         if (getCallStatus != null) {
           final status = (await getCallStatus!(callId))?.toLowerCase();
           _ck('restoreActiveCalls callId=$callId sessionId=$sessionId status=$status');
           if (status != null && status != 'ringing') {
-            if (sessionId.isNotEmpty) dismiss(sessionId);
+            await dismiss(sessionId, callId: callId, endAllUnaccepted: true);
           }
         }
       }

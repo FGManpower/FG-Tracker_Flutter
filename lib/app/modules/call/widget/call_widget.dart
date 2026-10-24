@@ -67,6 +67,7 @@ Widget ctrl({
   required bool isVideo,
   required VoidCallback onTap,
   bool active = false,
+  bool videoInactive = false,
   Color? iconColor,
 }) {
   final Color baseIcon =
@@ -84,7 +85,7 @@ Widget ctrl({
           width: 46.r,
           height: 46.r,
           decoration: BoxDecoration(
-            color: bg,
+            color: videoInactive?Colors.grey:bg,
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: baseIcon, size: 22.sp),

@@ -302,7 +302,7 @@ class CallingScreen extends StatelessWidget {
               ),
             ),
           ),
-          if (!showingRemote && c.isVideoOn)
+          if (c.isVideoOn)
             Positioned(
               top: 0,
               right: 0,
@@ -400,10 +400,11 @@ class CallingScreen extends StatelessWidget {
                 children: [
                   GestureDetector(
                     onTap: () async {
-                      if (c.callStatus.value != "Connected") {
-                        await c.missedCall();
-                      } else {
+                      if (c.callDurationRx.value > 0 ||
+                          c.args["callType"] != "outGoing") {
                         await c.endCall();
+                      } else {
+                        await c.missedCall();
                       }
                     },
                     child: Container(
@@ -466,12 +467,19 @@ class CallingScreen extends StatelessWidget {
                   icon: Icons.videocam_rounded,
                   label: "Video",
                   isVideo: isVideo,
-                  iconColor: AppColors.primaryPurple,
+                  iconColor: c.callStatus.toString() == "busy"
+                      ? Colors.white
+                      : AppColors.primaryPurple,
+                  videoInactive:
+                  c.callStatus.toString() == "busy" ? true : false,
                   onTap: () {
-                    c.upgradeToVideoCall();
-                    c.showControlsTemporarily();
+                    if (c.callStatus.toString() != "busy") {
+                      c.upgradeToVideoCall();
+                      c.showControlsTemporarily();
+                    }
                   },
                 ),
+
             ],
           ),
         ),
@@ -479,7 +487,4 @@ class CallingScreen extends StatelessWidget {
     );
   }
 }
-
-
-
 
