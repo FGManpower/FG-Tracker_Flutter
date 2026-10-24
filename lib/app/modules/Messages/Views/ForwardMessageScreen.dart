@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -18,12 +19,16 @@ class ForwardMessageScreen extends StatefulWidget {
 
 class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
   final ForwardMessageController controller =
-      Get.find<ForwardMessageController>();
+  Get.find<ForwardMessageController>();
 
   final ScrollController _scrollController = ScrollController();
 
   bool _isSearchCollapsed = false;
   bool _showSearchInAppBar = false;
+
+  final ValueNotifier<bool> _draggingThumb = ValueNotifier<bool>(false);
+  final ValueNotifier<int> _metricsTick = ValueNotifier<int>(0);
+  bool _metricsScheduled = false;
 
   @override
   void initState() {
@@ -64,12 +69,15 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _draggingThumb.dispose();
+    _metricsTick.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60.h),
@@ -100,17 +108,17 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
                 duration: const Duration(milliseconds: 250),
                 child: _isSearchCollapsed && !_showSearchInAppBar
                     ? IconButton(
-                        key: const ValueKey("search"),
-                        onPressed: _showSearch,
-                        icon: const Icon(
-                          Icons.search,
-                          color: Colors.white,
-                        ),
-                      )
+                  key: const ValueKey("search"),
+                  onPressed: _showSearch,
+                  icon: const Icon(
+                    Icons.search,
+                    color: Colors.white,
+                  ),
+                )
                     : const SizedBox(
-                        key: ValueKey("empty"),
-                        width: 0,
-                      ),
+                  key: ValueKey("empty"),
+                  width: 0,
+                ),
               ),
             ],
           ),
@@ -135,25 +143,121 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
               child: (!_isSearchCollapsed || _showSearchInAppBar)
                   ? _searchBar()
                   : const SizedBox(
-                      width: double.infinity,
-                    ),
+                width: double.infinity,
+              ),
             ),
             SizedBox(height: 8.h),
             Expanded(
-              child: RefreshIndicator(
-                color: ToggleThemeData.darkPurple,
-                onRefresh: controller.refreshForwardList,
-                child: _destinationList(),
+              child: Stack(
+                children: [
+                  RefreshIndicator(
+                    color: ToggleThemeData.darkPurple,
+                    onRefresh: controller.refreshForwardList,
+                    child: _destinationList(),
+                  ),
+                  _scrollThumb(),
+                ],
               ),
             ),
           ],
         );
       }),
-      bottomNavigationBar:Obx(
+      bottomNavigationBar: Obx(
             () => controller.selectedDestinations.isNotEmpty
             ? _sendButton()
             : const SizedBox.shrink(),
+      ),
+    );
+  }
 
+  void _scheduleMetricsRefresh() {
+    if (_metricsScheduled) return;
+    _metricsScheduled = true;
+
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _metricsScheduled = false;
+      if (mounted) _metricsTick.value++;
+    });
+  }
+
+  Widget _scrollThumb() {
+    return Positioned(
+      right: 0,
+      top: 0,
+      bottom: 0,
+      width: 16.w,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final trackHeight = constraints.maxHeight;
+          final thumbHeight = 56.h.clamp(24.0, trackHeight).toDouble();
+
+          return AnimatedBuilder(
+            animation: Listenable.merge([_scrollController, _metricsTick]),
+            builder: (context, _) {
+              if (!_scrollController.hasClients ||
+                  !_scrollController.position.hasContentDimensions) {
+                _scheduleMetricsRefresh();
+                return const SizedBox.shrink();
+              }
+
+              final position = _scrollController.position;
+              final maxExtent = position.maxScrollExtent;
+
+              if (maxExtent <= 0) return const SizedBox.shrink();
+
+              final ratio = (position.pixels / maxExtent).clamp(0.0, 1.0);
+              final travel = trackHeight - thumbHeight;
+
+              return Stack(
+                children: [
+                  Positioned(
+                    top: ratio * travel,
+                    right: 0,
+                    width: 16.w,
+                    height: thumbHeight,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onVerticalDragStart: (_) =>
+                      _draggingThumb.value = true,
+                      onVerticalDragEnd: (_) =>
+                      _draggingThumb.value = false,
+                      onVerticalDragCancel: () =>
+                      _draggingThumb.value = false,
+                      onVerticalDragUpdate: (d) {
+                        if (travel <= 0 || !_scrollController.hasClients) {
+                          return;
+                        }
+                        final pos = _scrollController.position;
+                        final target = (pos.pixels +
+                            d.delta.dy * pos.maxScrollExtent / travel)
+                            .clamp(0.0, pos.maxScrollExtent);
+                        _scrollController.jumpTo(target);
+                      },
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: _draggingThumb,
+                          builder: (context, dragging, _) {
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 120),
+                              width: dragging ? 8.w : 5.w,
+                              margin: EdgeInsets.only(right: 2.w),
+                              decoration: BoxDecoration(
+                                color: ToggleThemeData.darkPurple
+                                    .withValues(alpha: dragging ? 1 : 0.75),
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -242,10 +346,15 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
   }
 
   Widget _destinationList() {
-    final users = controller.users;
-    final groups = controller.groups;
+    final recent = controller.recentChats;
+    final groups = controller.allGroups;
+    final contacts = controller.myContacts;
+    final otherContacts = controller.otherContacts;
 
-    if (users.isEmpty && groups.isEmpty) {
+    if (recent.isEmpty &&
+        groups.isEmpty &&
+        contacts.isEmpty &&
+        otherContacts.isEmpty) {
       return ListView(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
@@ -273,17 +382,35 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
       ),
       padding: EdgeInsets.only(
         top: 4.h,
-        bottom: 100.h,
+        bottom: 100.h + MediaQuery.of(context).viewInsets.bottom,
+        right: 20.w,
       ),
       children: [
-        if (users.isNotEmpty) ...[
-          _sectionTitle("PEOPLE"),
-          ...users.map(_userTile),
+        if (recent.isNotEmpty) ...[
+          _sectionTitle("RECENT CHATS"),
+          ...recent.map(
+                (item) => item.isGroup
+                ? _groupTile(item)
+                : _userTile(item),
+          ),
         ],
+
         if (groups.isNotEmpty) ...[
           SizedBox(height: 10.h),
           _sectionTitle("GROUPS"),
           ...groups.map(_groupTile),
+        ],
+
+        if (contacts.isNotEmpty) ...[
+          SizedBox(height: 10.h),
+          _sectionTitle("MY CONTACTS"),
+          ...contacts.map(_userTile),
+        ],
+
+        if (otherContacts.isNotEmpty) ...[
+          SizedBox(height: 10.h),
+          _sectionTitle("OTHER CONTACTS"),
+          ...otherContacts.map(_userTile),
         ],
       ],
     );
@@ -307,6 +434,33 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
     );
   }
 
+  Widget _avatar(String image, IconData icon, Color iconColor) {
+    final hasImage =
+        image.isNotEmpty && !image.toLowerCase().contains('default-profile');
+    final url = image.startsWith("http")
+        ? image
+        : "${ConstRes.aImageBaseUrl}$image";
+
+    final fallback = Icon(icon, color: iconColor, size: 28.sp);
+
+    return CircleAvatar(
+      radius: 27.r,
+      backgroundColor: Colors.grey.shade200,
+      child: hasImage
+          ? ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: url,
+          width: 54.r,
+          height: 54.r,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => const SizedBox.shrink(),
+          errorWidget: (_, __, ___) => fallback,
+        ),
+      )
+          : fallback,
+    );
+  }
+
   Widget _userTile(ForwardDestination user) {
     return Obx(() {
       final selected = controller.isSelected(user);
@@ -325,24 +479,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
             children: [
               Stack(
                 children: [
-                  CircleAvatar(
-                    radius: 27.r,
-                    backgroundColor: Colors.grey.shade200,
-                    backgroundImage: image.isNotEmpty
-                        ? CachedNetworkImageProvider(
-                            image.startsWith("http")
-                                ? image
-                                : "${ConstRes.aImageBaseUrl}$image",
-                          )
-                        : null,
-                    child: image.isEmpty
-                        ? Icon(
-                            Icons.person,
-                            color: Colors.grey.shade500,
-                            size: 28.sp,
-                          )
-                        : null,
-                  ),
+                  _avatar(image, Icons.person, Colors.grey.shade500),
                   if (selected)
                     Positioned.fill(
                       child: Container(
@@ -397,24 +534,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
             children: [
               Stack(
                 children: [
-                  CircleAvatar(
-                    radius: 27.r,
-                    backgroundColor: Colors.grey.shade200,
-                    backgroundImage: image.isNotEmpty
-                        ? CachedNetworkImageProvider(
-                            image.startsWith("http")
-                                ? image
-                                : "${ConstRes.aImageBaseUrl}$image",
-                          )
-                        : null,
-                    child: image.isEmpty
-                        ? Icon(
-                            Icons.groups,
-                            color: ToggleThemeData.darkPurple,
-                            size: 28.sp,
-                          )
-                        : null,
-                  ),
+                  _avatar(image, Icons.groups_rounded, ToggleThemeData.darkPurple),
                   if (selected)
                     Positioned.fill(
                       child: Container(
@@ -466,10 +586,10 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
       ),
       child: selected
           ? Icon(
-              Icons.check,
-              color: Colors.white,
-              size: 16.sp,
-            )
+        Icons.check,
+        color: Colors.white,
+        size: 16.sp,
+      )
           : null,
     );
   }
@@ -486,23 +606,23 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
         child: SizedBox(
           height: 52.h,
           child: Obx(
-            () => ElevatedButton.icon(
+                () => ElevatedButton.icon(
               onPressed: controller.isForwarding.value
                   ? null
                   : controller.forwardMessage,
               icon: controller.isForwarding.value
                   ? SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                width: 20.w,
+                height: 20.w,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
                   : const Icon(
-                      Icons.send,
-                      color: Colors.white,
-                    ),
+                Icons.send,
+                color: Colors.white,
+              ),
               label: Text(
                 controller.isForwarding.value
                     ? "Sending..."
@@ -516,7 +636,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: ToggleThemeData.darkPurple,
                 disabledBackgroundColor:
-                    ToggleThemeData.darkPurple.withValues(alpha: 0.7),
+                ToggleThemeData.darkPurple.withValues(alpha: 0.7),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14.r),
                 ),

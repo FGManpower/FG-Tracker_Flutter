@@ -11,6 +11,35 @@ enum WalkieRole { caller, receiver }
 
 enum WalkieAudioState { idle, listening, talking }
 
+enum WalkieNetworkQuality {
+  unknown,
+  disconnected,
+  weak,
+  fair,
+  good,
+  strong,
+}
+
+enum WalkieMicPermissionState {
+  granted,
+  denied,
+  permanentlyDenied,
+  checking,
+}
+
+enum WalkieInitStage {
+  notStarted,
+  checkingPrerequisites,
+  loadingChannel,
+  connecting,
+  preparingAudio,
+  ready,
+  permissionRequired,
+  offline,
+  recovering,
+  failed,
+}
+
 class WalkieParticipant {
   final String userId;
   final String name;
@@ -75,7 +104,21 @@ class GroupWalkieController extends GetxController {
   final isSelfLocked = false.obs;
   final isChannelLocked = false.obs;
   final isConnected = false.obs;
-  final hasMicPermission = true.obs;
+  final hasMicPermission = false.obs;
+  final micPermissionState = WalkieMicPermissionState.checking.obs;
+  final initStage = WalkieInitStage.notStarted.obs;
+
+  bool get isMicGranted =>
+      micPermissionState.value == WalkieMicPermissionState.granted;
+
+  void setMicPermissionState(WalkieMicPermissionState state) {
+    micPermissionState.value = state;
+    hasMicPermission.value = state == WalkieMicPermissionState.granted;
+  }
+
+  void setInitStage(WalkieInitStage stage) {
+    initStage.value = stage;
+  }
 
   final isPressed = false.obs;
   final dragOffset = 0.0.obs;
@@ -89,27 +132,72 @@ class GroupWalkieController extends GetxController {
   final activeSpeakerName = "".obs;
   final activeSpeakerImage = "".obs;
 
+  final networkQuality = WalkieNetworkQuality.unknown.obs;
+  final networkLatencyMs = 0.obs;
+
   final statusMessage = "".obs;
   final showStatus = false.obs;
   final statusColor = Rx<Color>(Colors.orange);
 
   String? currentGroupId;
+  Future<void> Function(Map<String, dynamic> newArgs)? onSwitchGroupRequested;
   Timer? _bannerTimer;
   Timer? _lockCountdownTimer;
+  Timer? _speakerWatchdogTimer;
 
   bool get isTalking => audioState.value == WalkieAudioState.talking;
   bool get isListening => audioState.value == WalkieAudioState.listening;
   bool get hasActiveSpeaker => activeSpeakerId.value.isNotEmpty;
+  String get _safeSelfUserId {
+    final serviceId = GroupWalkieService.instance.selfUserId;
+    if (serviceId != null && serviceId.isNotEmpty) return serviceId.trim();
+    try {
+      final storageId = Global.storageServices.get(PrefConst.userId)?.toString();
+      if (storageId != null) return storageId.trim();
+    } catch (_) {}
+    return '';
+  }
+
   bool get isVoiceActive => isTalking || hasActiveSpeaker;
+
+  bool get isRemoteSpeakerActive {
+    final activeId = activeSpeakerId.value.trim();
+    if (activeId.isEmpty) return false;
+    final selfId = _safeSelfUserId;
+    if (selfId.isNotEmpty) {
+      if (activeId == selfId) return false;
+      final activeNum = int.tryParse(activeId);
+      final selfNum = int.tryParse(selfId);
+      if (activeNum != null && selfNum != null && activeNum == selfNum) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void updateNetworkQuality(WalkieNetworkQuality quality, int latencyMs) {
+    networkQuality.value = quality;
+    networkLatencyMs.value = latencyMs;
+  }
 
   Map<String, dynamic>? args = Get.arguments;
 
+  List<WalkieParticipant>? _sortedParticipantsCache;
+
+  void _invalidateSortedCache() {
+    _sortedParticipantsCache = null;
+  }
+
   List<WalkieParticipant> get sortedParticipants {
-    if (participants.isEmpty) return const [];
+    if (participants.isEmpty) {
+      _sortedParticipantsCache = const [];
+      return const [];
+    }
+    if (_sortedParticipantsCache != null) {
+      return _sortedParticipantsCache!;
+    }
     final list = List<WalkieParticipant>.from(participants);
-    final selfId = GroupWalkieService.instance.selfUserId ??
-        Global.storageServices.get(PrefConst.userId)?.toString() ??
-        '';
+    final selfId = _safeSelfUserId;
 
     list.sort((a, b) {
       if (selfId.isNotEmpty) {
@@ -120,6 +208,7 @@ class GroupWalkieController extends GetxController {
       if (!a.isSpeaking && b.isSpeaking) return 1;
       return a.name.toLowerCase().compareTo(b.name.toLowerCase());
     });
+    _sortedParticipantsCache = list;
     return list;
   }
 
@@ -141,6 +230,8 @@ class GroupWalkieController extends GetxController {
   void onClose() {
     _bannerTimer?.cancel();
     _lockCountdownTimer?.cancel();
+    _speakerWatchdogTimer?.cancel();
+    onSwitchGroupRequested = null;
     reset();
     super.onClose();
   }
@@ -180,9 +271,7 @@ class GroupWalkieController extends GetxController {
 
   void setMuteFromService(bool muted) {
     isMuted.value = muted;
-    final selfId = GroupWalkieService.instance.selfUserId ??
-        Global.storageServices.get(PrefConst.userId)?.toString() ??
-        '';
+    final selfId = _safeSelfUserId;
     if (selfId.isNotEmpty) {
       setParticipantMuted(selfId, muted);
     }
@@ -224,7 +313,12 @@ class GroupWalkieController extends GetxController {
       );
     }
     totalParticipants.value = participants.length;
+    _invalidateSortedCache();
     participants.refresh();
+  }
+
+  void updateParticipantMute(String userId, bool isMuted) {
+    setParticipantMuted(userId, isMuted);
   }
 
   IconData get audioRouteIcon {
@@ -259,6 +353,35 @@ class GroupWalkieController extends GetxController {
     }
   }
 
+  void addOrUpdateParticipantsBatch(List<WalkieParticipant> newParticipants) {
+    if (newParticipants.isEmpty) return;
+    final map = <String, WalkieParticipant>{};
+    for (final p in participants) {
+      map[p.userId.trim()] = p;
+    }
+    for (final p in newParticipants) {
+      if (p.userId.isEmpty) continue;
+      final cleanId = p.userId.trim();
+      final existing = map[cleanId];
+      if (existing != null) {
+        map[cleanId] = WalkieParticipant(
+          userId: p.userId,
+          name: (p.name.isNotEmpty && p.name != 'User') ? p.name : existing.name,
+          image: p.image.isNotEmpty ? p.image : existing.image,
+          isMuted: p.hasExplicitMute ? p.isMuted : existing.isMuted,
+          isListening: p.isListening,
+          isSpeaking: p.isSpeaking,
+          hasExplicitMute: p.hasExplicitMute || existing.hasExplicitMute,
+        );
+      } else {
+        map[cleanId] = p;
+      }
+    }
+    participants.assignAll(map.values.toList());
+    totalParticipants.value = participants.length;
+    _invalidateSortedCache();
+  }
+
   void addOrUpdateParticipant(WalkieParticipant p) {
     if (p.userId.isEmpty) return;
     final cleanId = p.userId.trim();
@@ -281,6 +404,7 @@ class GroupWalkieController extends GetxController {
       participants.add(p);
     }
     totalParticipants.value = participants.length;
+    _invalidateSortedCache();
     participants.refresh();
   }
 
@@ -292,6 +416,7 @@ class GroupWalkieController extends GetxController {
         (int.tryParse(p.userId) != null &&
             int.tryParse(p.userId) == int.tryParse(cleanId)));
     totalParticipants.value = participants.length;
+    _invalidateSortedCache();
     participants.refresh();
   }
 
@@ -343,6 +468,7 @@ class GroupWalkieController extends GetxController {
         p.isSpeaking = false;
       }
     }
+    _invalidateSortedCache();
     participants.refresh();
   }
 
@@ -351,6 +477,12 @@ class GroupWalkieController extends GetxController {
     required String speakerName,
     required String speakerImage,
   }) {
+    _speakerWatchdogTimer?.cancel();
+    // Auto-expire after 15 seconds in case release packet is dropped
+    _speakerWatchdogTimer = Timer(const Duration(seconds: 15), () {
+      onSpeakerStopped();
+    });
+
     activeSpeakerId.value = speakerId;
     activeSpeakerName.value = speakerName;
     activeSpeakerImage.value = speakerImage;
@@ -391,18 +523,29 @@ class GroupWalkieController extends GetxController {
       }
     }
     totalParticipants.value = participants.length;
+    _invalidateSortedCache();
     participants.refresh();
   }
 
   void onSpeakerStopped() {
+    _speakerWatchdogTimer?.cancel();
+    _speakerWatchdogTimer = null;
+    final hadActiveSpeaker = activeSpeakerId.value.isNotEmpty;
     activeSpeakerId.value = "";
     activeSpeakerName.value = "";
     activeSpeakerImage.value = "";
 
+    bool hadSpeakingParticipant = false;
     for (final p in participants) {
-      p.isSpeaking = false;
+      if (p.isSpeaking) {
+        p.isSpeaking = false;
+        hadSpeakingParticipant = true;
+      }
     }
-    participants.refresh();
+    if (hadActiveSpeaker || hadSpeakingParticipant) {
+      _invalidateSortedCache();
+      participants.refresh();
+    }
 
     if (!isTalking) {
       audioState.value = WalkieAudioState.listening;
@@ -417,6 +560,15 @@ class GroupWalkieController extends GetxController {
   void stopTalking() {
     if (audioState.value == WalkieAudioState.talking) {
       audioState.value = WalkieAudioState.listening;
+    }
+    final selfId = _safeSelfUserId;
+    final activeId = activeSpeakerId.value.trim();
+    if (activeId.isNotEmpty && selfId.isNotEmpty) {
+      if (activeId == selfId ||
+          (int.tryParse(activeId) != null &&
+              int.tryParse(activeId) == int.tryParse(selfId))) {
+        onSpeakerStopped();
+      }
     }
   }
 
@@ -522,14 +674,18 @@ class GroupWalkieController extends GetxController {
     );
   }
 
-  void _displayBanner(String msg, Color color) {
+  void showStatusMessage(String msg, Color color, {Duration duration = const Duration(seconds: 3)}) {
     _bannerTimer?.cancel();
     statusMessage.value = msg;
     statusColor.value = color;
     showStatus.value = true;
-    _bannerTimer = Timer(const Duration(seconds: 2), () {
+    _bannerTimer = Timer(duration, () {
       showStatus.value = false;
     });
+  }
+
+  void _displayBanner(String msg, Color color) {
+    showStatusMessage(msg, color, duration: const Duration(seconds: 2));
   }
 
   String get currentGroupName {
@@ -592,8 +748,12 @@ class GroupWalkieController extends GetxController {
   void reset() {
     _bannerTimer?.cancel();
     _lockCountdownTimer?.cancel();
+    _speakerWatchdogTimer?.cancel();
     _bannerTimer = null;
     _lockCountdownTimer = null;
+    _speakerWatchdogTimer = null;
+    networkQuality.value = WalkieNetworkQuality.unknown;
+    networkLatencyMs.value = 0;
     role.value = WalkieRole.caller;
     audioState.value = WalkieAudioState.idle;
     isChannelLocked.value = false;
@@ -602,6 +762,7 @@ class GroupWalkieController extends GetxController {
     isPressed.value = false;
     dragOffset.value = 0.0;
     lockRemainingSeconds.value = 0;
+    _invalidateSortedCache();
     participants.clear();
     totalParticipants.value = 0;
     activeSpeakerId.value = "";

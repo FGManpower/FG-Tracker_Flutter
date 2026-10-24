@@ -2,6 +2,7 @@ import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Model/MemberModel.dart';
 import 'package:geocoding/geocoding.dart' hide Location;
+import 'package:geolocator/geolocator.dart';
 
 class UsersWithinRadiusRes {
   bool? status;
@@ -412,30 +413,42 @@ class UsersWithinRadiusData {
   }) {
     String formattedDistance = "Nearby you";
 
-    // Strictly use backend calculated distance without local calculation
     if (distance != null &&
         distance.toString().trim().isNotEmpty &&
         !distance.toString().toLowerCase().contains("nan")) {
       final str = distance.toString().trim();
       final cleaned = str.replaceAll(RegExp(r'[^\d.]'), '');
       final numVal = double.tryParse(cleaned);
-      if (numVal != null && numVal <= 0.05) {
-        formattedDistance = "Nearby you";
-      } else if (str.startsWith("0.0") ||
-          str == "0 m" ||
-          str == "0 m away" ||
-          str.toLowerCase() == "nearby" ||
-          str.toLowerCase() == "nearby you") {
-        formattedDistance = "Nearby you";
-      } else if (str.contains("away")) {
+      if (str.contains("away")) {
         formattedDistance = str;
       } else if (str.contains("km") || str.contains("m")) {
         formattedDistance = "$str away";
+      } else if (numVal != null) {
+        formattedDistance = "${numVal.toStringAsFixed(2)} km away";
       } else {
-        formattedDistance = "$str km away";
+        formattedDistance = str;
+      }
+    } else if (currentUserLat != null &&
+        currentUserLong != null &&
+        currentUserLat != 0.0 &&
+        currentUserLong != 0.0 &&
+        latitude != null &&
+        longitude != null &&
+        latitude != 0.0 &&
+        longitude != 0.0) {
+      final meters = Geolocator.distanceBetween(
+        currentUserLat,
+        currentUserLong,
+        latitude!,
+        longitude!,
+      );
+      if (meters < 1000) {
+        formattedDistance = "${meters.round()} m away";
+      } else {
+        formattedDistance = "${(meters / 1000.0).toStringAsFixed(2)} km away";
       }
     } else {
-      formattedDistance = "Nearby you";
+      formattedDistance = "Location unavailable";
     }
 
     int? finalBattery;

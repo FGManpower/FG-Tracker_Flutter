@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import '../Controller/chat_list_controller.dart';
 import '../Controller/MessageController.dart';
 import '../widgets/custom_dropdown_menu.dart';
+import '../widgets/custom_dropdown_menu.dart' as CustomDropdownMenu;
 import 'Chat_Screen.dart';
 
 class ArchivedChatsScreen extends StatelessWidget {
@@ -206,7 +207,9 @@ class ArchivedChatsScreen extends StatelessWidget {
                   child: imageUrl.isEmpty
                       ? Center(
                     child: Icon(
-                      Icons.person,
+                      chat.isGroup == true
+                          ? Icons.groups_rounded
+                          : Icons.person,
                       size: 24.sp,
                       color: const Color(0xFF6B4DFF),
                     ),

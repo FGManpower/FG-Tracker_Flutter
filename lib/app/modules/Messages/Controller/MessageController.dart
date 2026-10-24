@@ -9,6 +9,7 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
+import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
@@ -20,8 +21,10 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
+import '../../../Data/Services/Tracking.dart';
 import '../../../routes/app_pages.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+import '../../../Data/Services/chat_translation_service.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class MessageController extends GetxController with WidgetsBindingObserver {
@@ -55,7 +58,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxBool isUploadingVideo = false.obs;
   final RxDouble uploadProgress = 0.0.obs;
   late MemberData memberData;
-  Map<String, dynamic>? arguments = Get.arguments;
+  Map<String, dynamic>? arguments;
   RxBool isCreator = false.obs;
   final Rxn<MessageData> pinnedMessage = Rxn<MessageData>();
   final RxBool showPinnedBanner = true.obs;
@@ -77,7 +80,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxBool isUnblocking = false.obs;
   final RxBool isBlocked = false.obs;
   final RxBool blockedByMe = false.obs;
-
+  final RxBool isPeerOnline = false.obs;
+  final RxString peerLastSeen = "Offline".obs;
   RxString privateChatId = "".obs;
 
   RxInt privateCurrentPage = 1.obs;
@@ -87,19 +91,79 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   Timer? _floatingDateTimer;
 
+
   @override
   void onInit() {
     super.onInit();
+    arguments = Get.arguments is Map
+        ? Map<String, dynamic>.from(Get.arguments as Map)
+        : null;
+
+    log("CHAT ROUTE ARGUMENTS => $arguments");
+    log("CHAT ROUTE chatId => ${arguments?['chatId']}");
+    log("CHAT ROUTE userData => ${arguments?['userData']}");
+
+    log("========== CHAT DEBUG 1: onInit START ==========");
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      log("========== CHAT DEBUG 2: POST FRAME CALLBACK ==========");
+
+      if (!isClosed) {
+        log("========== CHAT DEBUG 3: RESET VISIBILITY START ==========");
+
+        try {
+          ChatTranslationService.instance.resetVisibility();
+          log("========== CHAT DEBUG 4: RESET VISIBILITY SUCCESS ==========");
+        } catch (e, stackTrace) {
+          log("CHAT DEBUG: RESET VISIBILITY ERROR => $e");
+          log("$stackTrace");
+        }
+      } else {
+        log("CHAT DEBUG: Controller already closed");
+      }
+    });
+
+    log("========== CHAT DEBUG 5: ADD OBSERVER ==========");
+
     WidgetsBinding.instance.addObserver(this);
+
+    log("========== CHAT DEBUG 6: GET ARGUMENTS ==========");
+    log("CHAT ARGUMENTS => $arguments");
+
     memberData = arguments?['userData'];
 
-    _initializeChat();
-    itemPositionsListener.itemPositions.addListener(_onScrollDateChanged);
-    itemPositionsListener.itemPositions.addListener(_onScrollForOlderMessages);
+    log("========== CHAT DEBUG 7: MEMBER DATA ==========");
+    log("MEMBER DATA => $memberData");
+    log("MEMBER USER ID => ${memberData?.userId}");
+
+    log("========== CHAT DEBUG 8: BEFORE INITIALIZE ==========");
+
+    try {
+      _initializeChat();
+
+      log("========== CHAT DEBUG 9: INITIALIZE CALLED ==========");
+    } catch (e, stackTrace) {
+      log("CHAT DEBUG: INITIALIZE ERROR => $e");
+      log("$stackTrace");
+    }
+
+    log("========== CHAT DEBUG 10: ADD SCROLL LISTENERS ==========");
+
+    itemPositionsListener.itemPositions.addListener(
+      _onScrollDateChanged,
+    );
+
+    itemPositionsListener.itemPositions.addListener(
+      _onScrollForOlderMessages,
+    );
+
+    log("========== CHAT DEBUG 11: onInit COMPLETE ==========");
   }
 
   @override
   void onClose() {
+    ChatTranslationService.instance.resetVisibility();
+    ChatTranslationService.instance.stopAudio();
     WidgetsBinding.instance.removeObserver(this);
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
@@ -189,24 +253,32 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   Future<void> scrollToMessage(int messageId) async {
     final index = _messages.indexWhere((e) => e.id == messageId);
 
-    if (index == -1) return;
+    if (index == -1 || !itemScrollController.isAttached) return;
 
     highlightedMessageId.value = messageId;
 
-    await itemScrollController.scrollTo(
-      index: index,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-    );
+    try {
+      await itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
 
-    await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
 
-    highlightedMessageId.value = -1;
+      if (!isClosed) {
+        highlightedMessageId.value = -1;
+      }
+    } catch (e) {
+      log("Scroll to message error: $e");
+    }
   }
 
   void _initializeChat() {
+    final stopwatch = Stopwatch()..start();
+
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final receiverId = memberData.userId.toString();
 
@@ -222,9 +294,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     log("RECEIVER ID => $receiverId");
     log("GROUP ID => ${memberData.groupId}");
     log("=================================");
+    log("[CHAT-PERF] 1. Initialization started: ${stopwatch.elapsedMilliseconds} ms");
 
     try {
       GroupTrackingController.instance.initializeLocation();
+      log("[CHAT-PERF] Location initialization called: ${stopwatch.elapsedMilliseconds} ms");
     } catch (e) {
       log("==============MessageException======${e.toString()}");
     }
@@ -232,23 +306,51 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     ChatStateTracker.isChatCallScreenOpen = true;
 
     if (isPrivateChat) {
+      final passedChatId = arguments?['chatId']?.toString();
+
       isLoadingInitialMessages.value = true;
+      final hasPassedChatId = passedChatId != null &&
+          passedChatId.isNotEmpty &&
+          passedChatId != 'null';
+
+      if (!hasPassedChatId) {
+        Future.delayed(const Duration(seconds: 8), () {
+          if (!isClosed && privateChatId.value.isEmpty) {
+            isLoadingInitialMessages.value = false;
+          }
+        });
+      }
+      if (passedChatId != null &&
+          passedChatId.isNotEmpty &&
+          passedChatId != 'null') {
+        privateChatId.value = passedChatId;
+
+        getPrivateMessageHistory(passedChatId).then((_) {
+          if (!isClosed) {
+            socketService.markPrivateSeen(
+              chatId: passedChatId,
+              userId: currentUserId,
+              otherUserId: receiverId,
+            );
+          }
+        });
+      }
+
+      log("[CHAT-PERF] 2. Private chat socket initialization starting: ${stopwatch.elapsedMilliseconds} ms");
 
       socketService.initPrivateChat(
         ConstRes.socketUrl,
         userId: currentUserId,
         receiverId: receiverId,
         onJoined: (data) async {
-          log("=================================");
-          log("PRIVATE CHAT JOINED");
-          log("JOINED DATA => $data");
-          log("=================================");
+          log("[CHAT-PERF] 3. Socket joined after: ${stopwatch.elapsedMilliseconds} ms");
 
           final chatId = data["chatId"]?.toString() ??
               socketService.privateChatId?.toString();
 
           if (chatId == null || chatId.isEmpty) {
-            log("PRIVATE CHAT ID NOT FOUND");
+            log("[CHAT-PERF] ERROR: PRIVATE CHAT ID NOT FOUND after ${stopwatch.elapsedMilliseconds} ms");
+            isLoadingInitialMessages.value = false;
             return;
           }
 
@@ -256,28 +358,96 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
           log("PRIVATE CHAT ID => $chatId");
 
-          await getPrivateMessageHistory(chatId);
+          if (passedChatId == null ||
+              passedChatId.isEmpty ||
+              passedChatId == 'null') {
+            await getPrivateMessageHistory(chatId);
 
-          socketService.markPrivateSeen(
-            chatId: chatId,
-            userId: currentUserId,
-            otherUserId: receiverId,
-          );
+            socketService.markPrivateSeen(
+              chatId: chatId,
+              userId: currentUserId,
+              otherUserId: receiverId,
+            );
+          }
         },
       );
+
+      // socketService.initPrivateChatListSocket(
+      //   ConstRes.socketUrl,
+      //   userId: currentUserId,
+      // );
+      // socketService.listenPrivateChatListUpdated(
+      //   callback: (data) {
+      //     log("CHAT SCREEN PRESENCE EVENT => $data");
+      //
+      //     if (data is! Map) return;
+      //
+      //     final payload = Map<String, dynamic>.from(data);
+      //
+      //     final user = payload['user'] is Map
+      //         ? Map<String, dynamic>.from(payload['user'])
+      //         : <String, dynamic>{};
+      //
+      //     final updatedUserId =
+      //         (user['id'] ?? payload['userId'] ?? '').toString();
+      //
+      //     final receiverId = memberData.userId.toString();
+      //
+      //     if (updatedUserId.isNotEmpty && updatedUserId != receiverId) {
+      //       return;
+      //     }
+      //
+      //     final onlineValue = payload['isOnline'] ?? user['isOnline'];
+      //
+      //     if (onlineValue is bool) {
+      //       isPeerOnline.value = onlineValue;
+      //       memberData.isOnline = onlineValue;
+      //     } else if (onlineValue is num) {
+      //       isPeerOnline.value = onlineValue != 0;
+      //       memberData.isOnline = onlineValue != 0;
+      //     } else if (onlineValue is String) {
+      //       final value = onlineValue.toLowerCase().trim();
+      //
+      //       if (['true', '1', 'yes'].contains(value)) {
+      //         isPeerOnline.value = true;
+      //         memberData.isOnline = true;
+      //       } else if (['false', '0', 'no'].contains(value)) {
+      //         isPeerOnline.value = false;
+      //         memberData.isOnline = false;
+      //       }
+      //     }
+      //
+      //     final lastSeenValue = payload['lastSeen'] ?? user['lastSeen'];
+      //
+      //     if (lastSeenValue != null) {
+      //       memberData.lastSeen = lastSeenValue.toString();
+      //     }
+      //
+      //     peerLastSeen.value = isPeerOnline.value
+      //         ? 'Online'
+      //         : (memberData.lastSeen?.trim().isNotEmpty == true
+      //             ? memberData.lastSeen!.trim()
+      //             : 'Offline');
+      //
+      //     log(
+      //       'PRIVATE CHAT PRESENCE UPDATED => '
+      //       'userId=$updatedUserId, '
+      //       'isOnline=${isPeerOnline.value}, '
+      //       'lastSeen=${peerLastSeen.value}',
+      //     );
+      //   },
+      // );
 
       socketService.receivePrivateMessage(
         senderId: currentUserId,
         receiverId: receiverId,
         callback: (message) {
-          print("PRIVATE RECEIVE MESSAGE => $message");
-
           try {
             final messageData =
-                MessageData.fromJson(Map<String, dynamic>.from(message));
+            MessageData.fromJson(Map<String, dynamic>.from(message));
 
             final alreadyExists = _messages.any(
-              (msg) => msg.id == messageData.id && messageData.id != null,
+                  (msg) => msg.id == messageData.id && messageData.id != null,
             );
 
             if (!alreadyExists) {
@@ -301,19 +471,16 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                 otherUserId: receiverId,
               );
             }
-          } catch (e) {
-            log("PRIVATE MESSAGE PARSE ERROR => $e");
-          }
+          } catch (e) {}
         },
       );
+
       socketService.listenPrivateChatCleared(
         handlePrivateChatCleared,
       );
 
       socketService.listenPrivateMessagesDelivered(
-        callback: (data) {
-          print("PRIVATE MESSAGES DELIVERED =====> $data");
-        },
+        callback: (data) {},
       );
 
       socketService.listenPrivateMessagesSeenUpdate(
@@ -330,7 +497,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
           for (var msg in _messages) {
             if (updatedIds.any(
-              (id) => id.toString() == msg.id.toString(),
+                  (id) => id.toString() == msg.id.toString(),
             )) {
               msg.seenCount = (msg.seenCount ?? 0) + 1;
             }
@@ -342,10 +509,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
       socketService.listenMessageEdited(
         callback: (data) {
-          log("PRIVATE EDIT SOCKET CALLBACK => $data");
-
           if (data is! Map) {
-            log("PRIVATE EDIT INVALID DATA => $data");
             return;
           }
 
@@ -355,35 +519,23 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             );
 
             final index = _messages.indexWhere(
-              (message) => message.id == editedMessage.id,
+                  (message) => message.id == editedMessage.id,
             );
 
             if (index == -1) {
-              log(
-                "PRIVATE EDIT MESSAGE NOT FOUND => messageId=${editedMessage.id}",
-              );
               return;
             }
 
             _messages[index] = editedMessage;
 
             updateMessageStream();
-
-            log(
-              "PRIVATE EDIT APPLIED FROM SOCKET => messageId=${editedMessage.id}, content=${editedMessage.content}, isEdited=${editedMessage.isEdited}",
-            );
-          } catch (e) {
-            log("PRIVATE EDIT PARSE ERROR => $e");
-          }
+          } catch (e) {}
         },
       );
 
       socketService.listenMessageDeleted(
         callback: (data) {
-          log("PRIVATE DELETE SOCKET CALLBACK => $data");
-
           if (data is! Map) {
-            log("PRIVATE DELETE INVALID DATA => $data");
             return;
           }
 
@@ -395,50 +547,32 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             final deleteType = data["deleteType"]?.toString();
 
             if (messageId == null) {
-              log("PRIVATE DELETE MESSAGE ID NOT FOUND => $data");
               return;
             }
 
             final index = _messages.indexWhere(
-              (message) => message.id == messageId,
+                  (message) => message.id == messageId,
             );
 
             if (index == -1) {
-              log("PRIVATE DELETE MESSAGE NOT FOUND => messageId=$messageId");
               return;
             }
 
             if (deleteType == "for_me") {
               _messages.removeAt(index);
-
-              log(
-                "PRIVATE DELETE FOR ME APPLIED => messageId=$messageId",
-              );
             } else if (deleteType == "for_everyone") {
               _messages[index].content = "This message was deleted";
               _messages[index].messageType = "text";
-
-              log(
-                "PRIVATE DELETE FOR EVERYONE APPLIED => messageId=$messageId",
-              );
             }
 
             updateMessageStream();
-
-            log(
-              "PRIVATE DELETE STREAM UPDATED => messageId=$messageId",
-            );
-          } catch (e) {
-            log("PRIVATE DELETE PARSE ERROR => $e");
-          }
+          } catch (e) {}
         },
       );
     } else {}
 
     socketService.listenPinMessage(
       callback: (data) {
-        print("📌 MESSAGE PINNED =====> $data");
-
         final messageId = int.tryParse(
           data["messageId"].toString(),
         );
@@ -448,7 +582,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-            Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -464,7 +598,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         }
 
         final msg = _messages.firstWhereOrNull(
-          (e) => e.id == messageId,
+              (e) => e.id == messageId,
         );
 
         if (msg != null) {
@@ -478,12 +612,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     socketService.listenUnpinMessage(
       callback: (data) {
-        print("📌 MESSAGE UNPINNED =====> $data");
-
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-            Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -500,12 +632,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         showPinnedBanner.value = false;
 
         updateMessageStream();
-
-        print("✅ PRIVATE PIN REMOVED FROM UI");
       },
     );
-  }
 
+    log("[CHAT-PERF] Initialization method completed: ${stopwatch.elapsedMilliseconds} ms");
+  }
   bool isUserAtBottom() {
     if (_messages.isEmpty) return true;
 
@@ -533,23 +664,21 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final bool hasMedia = hasImages || hasVideos || hasDocument;
 
     try {
-      if (hasImages) {
+      final bool shouldSendMixedMedia =
+          hasImages && hasVideos || videoPaths.length > 1;
+
+      if (shouldSendMixedMedia) {
         final imagesCopy = List<File>.from(imagePaths);
+        final videosCopy = List<String>.from(videoPaths);
+        final uploadedImages = <String>[];
+        final uploadedVideos = <Map<String, dynamic>>[];
+        final successfulVideoIndexes = <int>[];
 
         for (final image in imagesCopy) {
           final result = await MessageRepo.uploadChatImage(image);
 
           if (result.status == true && result.filename != null) {
-            socketService.sendPrivateMessage(
-              messageType: "image",
-              receiverId: memberData.userId.toString(),
-              content: result.filename!,
-              caption: text,
-              replyId: replyMessage.value?.id,
-              replyMessage: replyMessage.value?.content,
-              replyType: replyMessage.value?.messageType,
-              replySender: replyMessage.value?.senderName,
-            );
+            uploadedImages.add(result.filename!);
           } else {
             CommonDialog.errorMessage(
               "Failed to upload ${image.path}",
@@ -557,30 +686,142 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           }
         }
 
-        imagePaths.clear();
-      }
+        for (int i = 0; i < videosCopy.length; i++) {
+          final path = videosCopy[i];
+          final currentIndex = videoPaths.indexOf(path);
 
-      if (hasVideos) {
-        final videosCopy = List<String>.from(videoPaths);
-
-        for (final vPath in videosCopy) {
-          final currentIndex = videoPaths.indexOf(vPath);
           if (currentIndex == -1) continue;
 
           uploadingVideoIndexes.add(currentIndex);
           uploadingVideoIndexes.refresh();
 
-          await uploadVideoAtIndex(
-            vPath,
-            text,
-            currentIndex,
-          );
+          try {
+            final thumbnailPath = await generateThumbnailFile(path);
 
-          uploadingVideoIndexes.remove(currentIndex);
-          videoUploadProgress.remove(currentIndex);
+            if (thumbnailPath == null) {
+              CommonDialog.errorMessage(
+                "Failed to generate video thumbnail",
+              );
+              continue;
+            }
+
+            final result = await MessageRepo.uploadChatVideo(
+              videoPath: path,
+              thumbnailPath: thumbnailPath,
+              onSendProgress: (sent, total) {
+                if (total > 0) {
+                  videoUploadProgress[currentIndex] = sent / total;
+                  videoUploadProgress.refresh();
+                }
+              },
+            );
+
+            if (result.status == true && result.videoUrl != null) {
+              uploadedVideos.add({
+                "videoUrl": result.videoUrl,
+                "thumbnail": result.thumbnail,
+                "duration": result.duration,
+              });
+
+              successfulVideoIndexes.add(currentIndex);
+            } else {
+              CommonDialog.errorMessage(
+                "Failed to upload video",
+              );
+            }
+          } catch (e) {
+            log("Mixed media video upload error: $e");
+          } finally {
+            uploadingVideoIndexes.remove(currentIndex);
+            videoUploadProgress.remove(currentIndex);
+          }
         }
 
-        clearVideos();
+        if (uploadedImages.isNotEmpty || uploadedVideos.isNotEmpty) {
+          socketService.sendPrivateMessage(
+            messageType: "media",
+            receiverId: memberData.userId.toString(),
+            content: "",
+            images: uploadedImages,
+            videos: uploadedVideos,
+            caption: text,
+            replyId: replyMessage.value?.id,
+            replyMessage: replyMessage.value?.content,
+            replyType: replyMessage.value?.messageType,
+            replySender: replyMessage.value?.senderName,
+          );
+
+          imagePaths.clear();
+
+          for (final index in successfulVideoIndexes.reversed) {
+            if (index < videoPaths.length) {
+              removeVideo(index);
+            }
+          }
+        }
+      } else {
+        if (hasImages) {
+          final imagesCopy = List<File>.from(imagePaths);
+          final uploadedImages = <String>[];
+
+          for (final image in imagesCopy) {
+            final result = await MessageRepo.uploadChatImage(image);
+
+            if (result.status == true && result.filename != null) {
+              uploadedImages.add(result.filename!);
+            } else {
+              CommonDialog.errorMessage(
+                "Failed to upload ${image.path}",
+              );
+            }
+          }
+
+          if (uploadedImages.isNotEmpty) {
+            socketService.sendPrivateMessage(
+              messageType: "image",
+              receiverId: memberData.userId.toString(),
+              content: uploadedImages.first,
+              images: uploadedImages,
+              caption: text,
+              replyId: replyMessage.value?.id,
+              replyMessage: replyMessage.value?.content,
+              replyType: replyMessage.value?.messageType,
+              replySender: replyMessage.value?.senderName,
+            );
+          }
+
+          imagePaths.clear();
+        }
+
+        if (hasVideos) {
+          final videosCopy = List<String>.from(videoPaths);
+
+          for (final vPath in videosCopy) {
+            final currentIndex = videoPaths.indexOf(vPath);
+            if (currentIndex == -1) continue;
+
+            uploadingVideoIndexes.add(currentIndex);
+            uploadingVideoIndexes.refresh();
+
+            try {
+              final success = await uploadVideoAtIndex(
+                vPath,
+                text,
+                currentIndex,
+              );
+
+              if (success) {
+                final index = videoPaths.indexOf(vPath);
+                if (index != -1) {
+                  removeVideo(index);
+                }
+              }
+            } finally {
+              uploadingVideoIndexes.remove(currentIndex);
+              videoUploadProgress.remove(currentIndex);
+            }
+          }
+        }
       }
 
       if (hasDocument) {
@@ -780,13 +1021,17 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     required String deleteType,
   }) async {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final otherUserId = memberData.userId.toString();
 
-    log(
-      "DELETE MESSAGE CONTROLLER => messageId=$messageId, userId=$currentUserId, otherUserId=$otherUserId, deleteType=$deleteType",
-    );
+    log("========== PRIVATE DELETE START ==========");
+    log("MESSAGE ID: $messageId");
+    log("DELETE TYPE: $deleteType");
+    log("CURRENT USER: $currentUserId");
+    log("OTHER USER: $otherUserId");
+    log("PRIVATE SOCKET CONNECTED: "
+        "${socketService.isPrivateChatSocketConnected}");
 
     socketService.deleteMessage(
       messageId: messageId,
@@ -794,6 +1039,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       deleteType: deleteType,
       otherUserId: otherUserId,
     );
+
+    log("PRIVATE DELETE EMIT CALLED");
   }
 
   Future<void> getMessageHistory(
@@ -832,7 +1079,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         updateMessageStream();
         isCreator.value = result.isCreator ?? false;
-        scrollToBottom();
+        scrollToBottom(instant: true);
       } else {
         CommonDialog.errorMessage(result.message);
       }
@@ -841,21 +1088,62 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+
   Future<void> getPrivateMessageHistory(String chatId) async {
+    final apiStopwatch = Stopwatch()..start();
+
+    log("========== HISTORY DEBUG 1: METHOD START ==========");
+    log("HISTORY DEBUG => chatId: $chatId");
+    log("HISTORY DEBUG => controller closed: $isClosed");
+
     try {
       privateCurrentPage.value = 1;
       hasMoreOlderMessages.value = true;
 
+      log("========== HISTORY DEBUG 2: BEFORE API CALL ==========");
+      log("HISTORY DEBUG => page: 1, limit: 10");
+
       final result = await MessageRepo.privateChatHistory(
         chatId: chatId,
         page: 1,
-        limit: 50,
+        limit: 10,
       );
 
-      if (result.status == true) {
-        final messages = result.messageData ?? [];
+      log("========== HISTORY DEBUG 3: API RESPONSE RECEIVED ==========");
+      log("HISTORY DEBUG => elapsed: ${apiStopwatch.elapsedMilliseconds} ms");
+      log("HISTORY DEBUG => status: ${result.status}");
+      log("HISTORY DEBUG => response message: ${result.message}");
+      log("HISTORY DEBUG => response item count: ${result.messageData?.length ?? 0}");
 
+      if (result.status == true) {
+        log("========== HISTORY DEBUG 4: PROCESSING SUCCESS RESPONSE ==========");
+
+        memberData.isOnline = result.isOnline ?? memberData.isOnline;
+        memberData.lastSeen = result.lastSeen ?? memberData.lastSeen;
+
+        isPeerOnline.value = memberData.isOnline ?? false;
+
+        final lastSeen = memberData.lastSeen?.trim() ?? "";
+
+        if (isPeerOnline.value) {
+          peerLastSeen.value = "Online";
+        } else if (lastSeen.isNotEmpty) {
+          try {
+            peerLastSeen.value =
+                Tracking().getTimeAgo(DateTime.parse(lastSeen));
+          } catch (e) {
+            log("HISTORY DEBUG => lastSeen parsing error: $e");
+            peerLastSeen.value = lastSeen;
+          }
+        } else {
+          peerLastSeen.value = "Offline";
+        }
+
+        final messages = result.messageData ?? [];
         final blockStatus = result.blockStatus;
+
+        log("HISTORY DEBUG => online: ${isPeerOnline.value}");
+        log("HISTORY DEBUG => incoming messages: ${messages.length}");
 
         if (blockStatus != null) {
           isBlocked.value = blockStatus.isBlocked == true;
@@ -865,11 +1153,20 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           blockedByMe.value = false;
         }
 
+        log("HISTORY DEBUG => isBlocked: ${isBlocked.value}");
+        log("HISTORY DEBUG => blockedByMe: ${blockedByMe.value}");
+
+        log("========== HISTORY DEBUG 5: UPDATING MESSAGE LIST ==========");
+
         _messages
           ..clear()
           ..addAll(messages.reversed);
 
+        log("HISTORY DEBUG => mapped message count: ${_messages.length}");
+
         final pinnedId = result.pinnedMessageId;
+
+        log("HISTORY DEBUG => pinned message ID: $pinnedId");
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
@@ -888,7 +1185,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           showPinnedBanner.value = false;
         }
 
+        log("========== HISTORY DEBUG 6: BEFORE STREAM UPDATE ==========");
+
         updateMessageStream();
+
+        log("HISTORY DEBUG => stream update completed");
+        log("HISTORY DEBUG => stream message count: ${_messages.length}");
 
         isCreator.value = result.isCreator ?? false;
 
@@ -899,18 +1201,38 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           hasMoreOlderMessages.value = false;
         }
 
+        log("HISTORY DEBUG => isCreator: ${isCreator.value}");
+        log("HISTORY DEBUG => hasMoreOlderMessages: ${hasMoreOlderMessages.value}");
+
         if (_messages.isNotEmpty) {
-          scrollToBottom();
+          log("========== HISTORY DEBUG 7: SCROLL TO BOTTOM ==========");
+          scrollToBottom(instant: true);
+        } else {
+          log("HISTORY DEBUG => message list is EMPTY");
         }
+
+        log("========== HISTORY DEBUG 8: PROCESSING COMPLETED ==========");
+        log("HISTORY DEBUG => final count: ${_messages.length}");
+        log("HISTORY DEBUG => total: ${apiStopwatch.elapsedMilliseconds} ms");
       } else {
+        log("========== HISTORY DEBUG ERROR: API STATUS FALSE ==========");
+        log("HISTORY DEBUG => ${result.message}");
+
         CommonDialog.errorMessage(result.message);
       }
-    } catch (e) {
-      log("Private History Error: $e");
+    } catch (e, stackTrace) {
+      log("========== HISTORY DEBUG ERROR: EXCEPTION ==========");
+      log("HISTORY DEBUG => $e");
+      log("HISTORY DEBUG STACKTRACE => $stackTrace");
     } finally {
       isLoadingInitialMessages.value = false;
+
+      log("========== HISTORY DEBUG 9: FINALLY ==========");
+      log("HISTORY DEBUG => loading stopped");
+      log("HISTORY DEBUG => total time: ${apiStopwatch.elapsedMilliseconds} ms");
     }
   }
+
   void setReply(MessageData message) {
     replyMessage.value = message;
   }
@@ -919,17 +1241,37 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     replyMessage.value = null;
   }
 
-  void scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_messages.isEmpty) return;
-      if (itemScrollController.isAttached) {
-        itemScrollController.scrollTo(
-          index: _messages.length - 1,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+  void scrollToBottom({bool instant = false}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottomExecution(instant: instant);
     });
+  }
+
+  void _scrollToBottomExecution({bool instant = false, int retryCount = 0}) {
+    if (_messages.isEmpty) return;
+
+    if (itemScrollController.isAttached) {
+      try {
+        if (instant) {
+          itemScrollController.jumpTo(
+            index: _messages.length - 1,
+          );
+        } else {
+          itemScrollController.scrollTo(
+            index: _messages.length - 1,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      } catch (e) {
+        log("Scroll execution error: $e");
+      }
+    } else if (retryCount < 10) {
+      // Retry a few times if the list layout hasn't fully computed yet
+      Future.delayed(const Duration(milliseconds: 50), () {
+        _scrollToBottomExecution(instant: instant, retryCount: retryCount + 1);
+      });
+    }
   }
 
   void handleBackPressed(
@@ -960,26 +1302,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     Navigator.of(context).pop();
   }
 
-  startCall(
-    BuildContext context, {
-    required String callerId,
-    required String remoteUserId,
-    required bool is_video,
-    dynamic offer,
-    dynamic callerName,
-  }) {
-    Get.toNamed(
-      Routes.callScreen,
-      arguments: {
-        "callerId": callerId,
-        "remoteUserId": remoteUserId,
-        "offer": offer,
-        "is_video": is_video,
-        "callerName": callerName,
-        "callType": "outGoing",
-      },
-    );
-  }
+
 
   void startSearch() {
     isSearching.value = true;
@@ -1338,7 +1661,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       final result = await MessageRepo.privateChatHistory(
         chatId: privateChatId.value,
         page: nextPage,
-        limit: 50,
+        limit: 10,
       );
 
       if (result.status == true) {

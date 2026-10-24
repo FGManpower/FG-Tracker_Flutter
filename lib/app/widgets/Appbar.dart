@@ -80,14 +80,43 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                 child: Stack(
                   children: [
                     ClipOval(
-                      child: CachedNetworkImage(
-                        imageUrl: hasImage
-                            ? '${ConstRes.aImageBaseUrl}$profileImage'
-                            : MyAppTheme.ProfilenotFoundImg,
-                        width: 44.w,
-                        height: 44.w,
-                        fit: BoxFit.cover,
-                      ),
+                      child: hasImage
+                          ? CachedNetworkImage(
+                              imageUrl: '${ConstRes.aImageBaseUrl}$profileImage',
+                              width: 44.w,
+                              height: 44.w,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                width: 44.w,
+                                height: 44.w,
+                                color: const Color(0xFFEDE9FE),
+                                child: Icon(
+                                  Icons.person_rounded,
+                                  size: 24.sp,
+                                  color: const Color(0xFF5D47F1),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                width: 44.w,
+                                height: 44.w,
+                                color: const Color(0xFFEDE9FE),
+                                child: Icon(
+                                  Icons.person_rounded,
+                                  size: 24.sp,
+                                  color: const Color(0xFF5D47F1),
+                                ),
+                              ),
+                            )
+                          : Container(
+                              width: 44.w,
+                              height: 44.w,
+                              color: const Color(0xFFEDE9FE),
+                              child: Icon(
+                                Icons.person_rounded,
+                                size: 24.sp,
+                                color: const Color(0xFF5D47F1),
+                              ),
+                            ),
                     ),
                     Positioned(
                       right: 1.w,
@@ -132,7 +161,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               SizedBox(height: 2.h),
               Text(
-                'Premium',
+                'Premiums',
                 style: TextStyle(
                   fontFamily: FontFamily.interBold,
                   fontSize: 10.sp,

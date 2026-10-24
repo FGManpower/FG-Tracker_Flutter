@@ -8,7 +8,6 @@ import 'package:fgtracker/app/Data/Services/group_call_service.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
-import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -53,6 +52,46 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
     final double maxExtent = _scrollController.position.maxScrollExtent;
     if (maxExtent - position < 300.h) {
       controller.loadMoreRecentCalls();
+    }
+  }
+
+  /// Row tap + DP tap: seedha profile screen, API screen ke andar hit hoti hai.
+  void _openProfile(Map<String, String> call) {
+    final String callId = (call['callId'] ?? call['id'] ?? '').trim();
+    final bool isGroup = call['isGroup'] == 'true';
+
+    if (isGroup) {
+      final String gId = (call['groupId']?.isNotEmpty == true)
+          ? call['groupId']!
+          : (call['callerId'] ?? '');
+
+      Get.to(
+            () => ContactProfileScreen(
+          isGroup: true,
+          groupId: gId,
+          groupName: call['name'] ?? "Group",
+          groupAvatar: call['avatar'],
+          callId: callId,
+        ),
+      );
+    } else {
+      final String phone = (call['mobileNo']?.isNotEmpty == true)
+          ? call['mobileNo']!
+          : (call['phone'] ?? '');
+
+      Get.to(
+            () => ContactProfileScreen(
+          isGroup: false,
+          contactData: MemberData(
+            userId: int.tryParse(call['callerId'] ?? '0'),
+            name: call['name'],
+            mobileNo: phone,
+            profileImage: call['avatar'],
+            isOnline: call['isOnline'] == 'true',
+          ),
+          callId: callId,
+        ),
+      );
     }
   }
 
@@ -101,7 +140,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
         child: ListView(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, isDialOpen ? 390.h : 90.h),
+          padding:
+          EdgeInsets.fromLTRB(16.w, 4.h, 16.w, isDialOpen ? 390.h : 90.h),
           children: [
             for (final entry in groupedCalls.entries) ...[
               Padding(
@@ -139,42 +179,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                           endIndent: 14.w,
                         ),
                       InkWell(
-                        onTap: () {
-                          final isGroup = entry.value[i]['isGroup'] == 'true';
-
-                          if (isGroup) {
-                            final gId = entry.value[i]['groupId'] ??
-                                entry.value[i]['callerId'];
-
-                            if (gId != null && gId.isNotEmpty) {
-                              Get.toNamed(
-                                Routes.groupChatScreen,
-                                arguments: {
-                                  "groupId": gId,
-                                  "groupName": entry.value[i]['name'] ?? "Group",
-                                  "groupProfile": entry.value[i]['avatar'],
-                                },
-                              );
-                            }
-                          } else {
-                            final call = entry.value[i];
-                            final String phone = (call['mobileNo']?.isNotEmpty == true)
-                                ? call['mobileNo']!
-                                : (call['phone'] ?? '');
-
-                            Get.to(
-                              () => ContactProfileScreen(
-                                contactData: MemberData(
-                                  userId: int.tryParse(call['callerId'] ?? ''),
-                                  name: call['name'],
-                                  mobileNo: phone,
-                                  profileImage: call['avatar'],
-                                  isOnline: call['isOnline'] == 'true',
-                                ),
-                              ),
-                            );
-                          }
-                        },
+                        onTap: () => _openProfile(entry.value[i]),
                         borderRadius: BorderRadius.vertical(
                           top: i == 0 ? Radius.circular(20.r) : Radius.zero,
                           bottom: i == entry.value.length - 1
@@ -188,7 +193,9 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                           ),
                           child: _RecentCallTile(
                             call: entry.value[i],
+                            onAvatarTap: () => _openProfile(entry.value[i]),
                             onCallTap: (type) {
+                              print("========EntryValue:${ entry.value[i]}");
                               final isGroup =
                                   entry.value[i]['isGroup'] == 'true';
                               final bool isVideo = type == "video";
@@ -201,26 +208,32 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                   context,
                                   groupId: gId,
                                   groupName:
-                                      entry.value[i]['name'] ?? "Group Call",
+                                  entry.value[i]['name'] ?? "Group Call",
                                   groupProfile: entry.value[i]['avatar'],
                                   isVideo: isVideo,
                                   memberCount: int.tryParse(entry.value[i]
-                                              ['memberCount'] ??
-                                          '0') ??
+                                  ['memberCount'] ??
+                                      '0') ??
                                       0,
                                 );
                               } else {
                                 final remoteId =
-                                    entry.value[i]['callerId']?.toString() ?? '';
+                                    entry.value[i]['callerId']?.toString() ??
+                                        '';
                                 final callerName =
-                                    entry.value[i]['name']?.toString() ?? 'User';
+                                    entry.value[i]['name']?.toString() ??
+                                        'User';
+
+                                final profileImage =
+                                    entry.value[i]['avatar']?.toString() ??
+                                        'User';
 
                                 if (remoteId.isNotEmpty &&
                                     remoteId !=
                                         Global.storageServices
                                             .get(PrefConst.userId)
                                             ?.toString()) {
-                                  CallService().startCall(
+                                  CallService().startOutGoingCall(
                                     context,
                                     callerId: Global.storageServices
                                         .get(PrefConst.userId)
@@ -228,17 +241,20 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                     remoteUserId: remoteId,
                                     is_video: isVideo,
                                     callerName: callerName,
+                                    callerProfile: profileImage
+
                                   );
                                 } else {
-                                  // If remoteId couldn't be resolved, fallback to dialing by controller
-                                  final String phone = entry.value[i]['mobileNo'] ??
+                                  final String phone = entry.value[i]
+                                  ['mobileNo'] ??
                                       entry.value[i]['phone'] ??
                                       '';
                                   if (phone.isNotEmpty) {
                                     controller.dialNumber.value = phone;
                                     controller.makeCall(isVideo: isVideo);
                                   } else {
-                                    Utils().fluttertoast("Unable to call this contact");
+                                    Utils().fluttertoast(
+                                        "Unable to call this contact");
                                   }
                                 }
                               }
@@ -267,10 +283,12 @@ class _RecentCallTile extends StatelessWidget {
   const _RecentCallTile({
     required this.call,
     required this.onCallTap,
+    required this.onAvatarTap,
   });
 
   final Map<String, String> call;
   final void Function(dynamic) onCallTap;
+  final VoidCallback onAvatarTap;
 
   @override
   Widget build(BuildContext context) {
@@ -304,7 +322,11 @@ class _RecentCallTile extends StatelessWidget {
 
     return Row(
       children: [
-        _buildAvatar(name, avatar, isOnline, isGroup: isGroup),
+        GestureDetector(
+          onTap: onAvatarTap,
+          behavior: HitTestBehavior.opaque,
+          child: _buildAvatar(name, avatar, isOnline, isGroup: isGroup),
+        ),
         SizedBox(width: 12.w),
         Expanded(
           child: Column(
@@ -405,10 +427,16 @@ class _RecentCallTile extends StatelessWidget {
 
   String _buildAvatarUrl(String? raw) {
     if (raw == null || raw.trim().isEmpty) return '';
-    raw = raw.trim();
-    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
-    if (raw.startsWith('/')) raw = raw.substring(1);
-    return '${ConstRes.aImageBaseUrl}$raw';
+
+    final String profile = raw.trim();
+
+    if (profile.toLowerCase() == 'null') return '';
+
+    if (profile.startsWith('http://') || profile.startsWith('https://')) {
+      return profile;
+    }
+
+    return '${ConstRes.aImageBaseUrl.replaceFirst(RegExp(r'/+$'), '')}/${profile.replaceFirst(RegExp(r'^/+'), '')}';
   }
 
   Widget _buildAvatar(
@@ -630,4 +658,3 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
-

@@ -1,0 +1,17 @@
+name: walkie_custom_notification
+description: Custom Walkie-Talkie Notification with Native RemoteViews
+version: 0.0.1
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.fg.walkie
+        pluginClass: WalkieCustomNotificationPlugin

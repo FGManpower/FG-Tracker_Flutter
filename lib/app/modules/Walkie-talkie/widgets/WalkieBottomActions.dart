@@ -40,6 +40,8 @@ class WalkieBottomActions extends StatelessWidget {
                 final icon = _effectiveController.audioRouteIcon;
                 final isSpeaker = route == WalkieAudioRoute.speaker;
                 final isBluetooth = route == WalkieAudioRoute.bluetooth;
+                final isHeadset = route == WalkieAudioRoute.headset;
+                final isHighlighted = isSpeaker || isBluetooth || isHeadset;
 
                 return Container(
                   padding: EdgeInsets.symmetric(
@@ -47,12 +49,12 @@ class WalkieBottomActions extends StatelessWidget {
                     horizontal: 10.w.clamp(6.0, 14.0),
                   ),
                   decoration: BoxDecoration(
-                    color: isSpeaker || isBluetooth
+                    color: isHighlighted
                         ? const Color(0xFFF3F0FF)
                         : _cardWhite,
                     borderRadius: BorderRadius.circular(18.r),
                     border: Border.all(
-                      color: isSpeaker || isBluetooth
+                      color: isHighlighted
                           ? _primaryPurple.withOpacity(0.3)
                           : Colors.transparent,
                       width: 1.2,
@@ -70,7 +72,7 @@ class WalkieBottomActions extends StatelessWidget {
                     children: [
                       Icon(
                         icon,
-                        color: isSpeaker || isBluetooth
+                        color: isHighlighted
                             ? _primaryPurple
                             : _textSecondary,
                         size: 20.sp.clamp(18.0, 24.0),
@@ -82,7 +84,7 @@ class WalkieBottomActions extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: isSpeaker || isBluetooth
+                            color: isHighlighted
                                 ? _primaryPurple
                                 : _textDark,
                             fontSize: 13.sp.clamp(11.5, 14.0),

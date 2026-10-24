@@ -1106,78 +1106,7 @@ class GroupTrackingController extends GetxController {
                     ),
                     onTap: () async {
                       if (isGhostMode) {
-                        Get.snackbar(
-                          "",
-                          "",
-                          titleText: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 7, vertical: 2.5),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF3E8FF),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.lock_outline_rounded,
-                                      size: 11,
-                                      color: Color(0xFF7E57C2),
-                                    ),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      "Private",
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF7E57C2),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                "Location Hidden",
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1E1B4B),
-                                ),
-                              ),
-                            ],
-                          ),
-                          messageText: Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(
-                              "${user.name} has paused location sharing. Live location is not available.",
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF64748B),
-                              ),
-                            ),
-                          ),
-                          icon: Container(
-                            margin: const EdgeInsets.only(left: 10),
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF3E8FF),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color(0xFF7E57C2)
-                                    .withValues(alpha: 0.25),
-                                width: 1,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.location_off_rounded,
-                              color: Color(0xFF7E57C2),
-                              size: 20,
-                            ),
-                          ),
+                        Get.rawSnackbar(
                           snackPosition: SnackPosition.TOP,
                           backgroundColor: Colors.white,
                           borderColor: const Color(0xFFE2E8F0),
@@ -1194,6 +1123,91 @@ class GroupTrackingController extends GetxController {
                               horizontal: 14, vertical: 12),
                           borderRadius: 16,
                           duration: const Duration(seconds: 3),
+                          messageText: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 38,
+                                height: 38,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF3E8FF),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFF7E57C2)
+                                        .withValues(alpha: 0.25),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.location_off_rounded,
+                                    color: Color(0xFF7E57C2),
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 7, vertical: 2.5),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF3E8FF),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                          ),
+                                          child: const Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.lock_outline_rounded,
+                                                size: 11,
+                                                color: Color(0xFF7E57C2),
+                                              ),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                "Private",
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF7E57C2),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text(
+                                          "Location Hidden",
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFF1E1B4B),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      "${user.name} has paused location sharing. Live location is not available.",
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF64748B),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         );
                         return;
                       }

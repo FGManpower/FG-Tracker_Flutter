@@ -344,8 +344,10 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                       child: controller.groupImage.isNotEmpty
                           ? ClipOval(
                         child: Image.network(
-                          "${ConstRes.aImageBaseUrl}${controller.groupImage}",
-                          fit: BoxFit.cover,
+                          controller.groupImage.startsWith('http://') ||
+                              controller.groupImage.startsWith('https://')
+                              ? controller.groupImage
+                              : "${ConstRes.aImageBaseUrl}${controller.groupImage}",                          fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Icon(
                             Icons.groups_rounded,
                             color: Colors.white,
@@ -365,17 +367,19 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            controller.groupName.isEmpty
-                                ? "Unknown"
-                                : controller.groupName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 15.sp,
-                              fontWeight: FontWeight.w700,
-                              height: 1.15,
+                          Obx(
+                                () => Text(
+                              controller.groupName.value.isEmpty
+                                  ? "Unknown"
+                                  : controller.groupName.value,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w700,
+                                height: 1.15,
+                              ),
                             ),
                           ),
                           SizedBox(height: 2.h),
@@ -448,20 +452,14 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                   if (value == 0) {
                     controller.startSearch();
                   } else if (value == 1) {
-                    groupController.groupName.text = controller.groupName;
+                    groupController.groupName.text = controller.groupName.value;
+                    groupController.groupDesc.text = controller.groupDesc.value;
+                    groupController.selectedGroupImage.value = null;
+
                     DialogBox().showUpdateGroupBottomSheet(
                       context: context,
                       controller: groupController,
                       groupId: controller.groupId.toString(),
-                    );
-                  } else if (value == 2) {
-                    BottomSheetUi().showMemberBottomSheet(
-                      context,
-                      controller.groupMembers.toList(),
-                      isGroupChat: true,
-                      groupId: controller.groupId,
-                      groupName: controller.groupName,
-                      isDeleteMode: true,
                     );
                   }
                 },
@@ -479,13 +477,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                         icon: Icons.edit_rounded,
                         iconColor: const Color(0xFF5045B9),
                         title: "Update Group",
-                      ),
-                      _buildPopupMenuItem(
-                        value: 2,
-                        icon: Icons.person_remove_rounded,
-                        iconColor: Colors.redAccent,
-                        title: "Delete Member",
-                        isDestructive: true,
                       ),
                     ]
                   ];

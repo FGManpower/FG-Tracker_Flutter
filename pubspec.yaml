@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 2.0.1
+version: 2.0.2
 
 environment:
   sdk: ^3.6.1
@@ -75,8 +75,9 @@ dependencies:
   record: ^6.2.0
   just_audio: ^0.10.5
   waveform_flutter: ^1.2.0
-  connectycube_flutter_call_kit: ^2.8.2
-#  flutter_callkit_incoming: ^3.1.3
+#  connectycube_flutter_call_kit: ^2.8.2
+  walkie_custom_notification:
+    path: packages/walkie_custom_notification
   mobile_scanner: ^7.2.0
   flutter_animarker: ^3.2.0
   gal: ^2.3.0
@@ -98,6 +99,8 @@ dependencies:
   facebook_app_events: ^0.30.5
   flutter_in_app_pip: ^1.7.5
   flutter_timezone: ^5.1.1
+  flutter_callkit_incoming: ^3.1.6
+  speech_to_text: ^7.5.0
 
 
 dependency_overrides:

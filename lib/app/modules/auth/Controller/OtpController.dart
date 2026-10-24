@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
-
-import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
@@ -15,6 +13,7 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:get/get.dart';
 import 'package:otp_autofill/otp_autofill.dart';
 import '../../../Core/constant/const_res.dart';
@@ -55,11 +54,11 @@ class OtpController extends GetxController {
         },
         otpInteractor: otpInteractor,
       )..startListenUserConsent(
-            (code) {
-          final exp = RegExp(r'(\d{4})');
-          return exp.stringMatch(code ?? '') ?? '';
-        },
-      );
+          (code) {
+            final exp = RegExp(r'(\d{4})');
+            return exp.stringMatch(code ?? '') ?? '';
+          },
+        );
     } catch (e) {
       log("OTP autofill initialization error: $e");
     }
@@ -84,7 +83,8 @@ class OtpController extends GetxController {
 
   registerPushTokens() async {
     if (Platform.isIOS) {
-      final String? token = await ConnectycubeFlutterCallKit.getToken();
+      final String? token =
+          await FlutterCallkitIncoming.getDevicePushTokenVoIP();
 
       if (token == null) {
         log("Token is null");
@@ -170,7 +170,6 @@ class OtpController extends GetxController {
         Loading().dismissloading();
 
         try {
-
           if (result.data!.userId != null) {
             SignallingService.instance.init(
               websocketUrl: ConstRes.socketUrl,
