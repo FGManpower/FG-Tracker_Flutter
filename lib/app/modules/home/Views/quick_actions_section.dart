@@ -97,7 +97,6 @@ class QuickActionsSection extends StatelessWidget {
                 onTap: () =>
                     Get.to(() => const NewChatScreen(fromQuickAction: true)),
               ),
-
               _QuickActionCard(
                 title: "Walkie Talkie",
                 subtitle: "1 hr free",
@@ -152,104 +151,106 @@ class _QuickActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isCallIcon = imagePath.contains('new_action_call');
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 3.h),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12.r),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF2B1F70).withValues(alpha: 0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-            border: Border.all(
-              color: const Color(0xFFE8E7F5),
-              width: 1,
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2B1F70).withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Center(
-                  child: Container(
-                    width: 62.w,
-                    height: 62.w,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF1F3FE),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Transform.scale(
-                        scale: isCallIcon ? 1.2 : 1.12,
-                        child: Image.asset(
-                          imagePath,
-                          width: 54.w,
-                          height: 54.w,
-                          fit: BoxFit.contain,
-                          filterQuality: FilterQuality.high,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              Icons.apps_rounded,
-                              color: const Color(0xFF6B4DFF),
-                              size: 32.sp,
-                            );
-                          },
+        ],
+        border: Border.all(
+          color: const Color(0xFFE8E7F5),
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12.r),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 3.h),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Center(
+                    child: Container(
+                      width: 62.w,
+                      height: 62.w,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF1F3FE),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Transform.scale(
+                          scale: isCallIcon ? 1.2 : 1.12,
+                          child: Image.asset(
+                            imagePath,
+                            width: 54.w,
+                            height: 54.w,
+                            fit: BoxFit.contain,
+                            filterQuality: FilterQuality.high,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.apps_rounded,
+                                color: const Color(0xFF6B4DFF),
+                                size: 32.sp,
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: 1.5.h),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: FontFamily.interSemiBold,
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF10153D),
-                  height: 1.1,
-                ),
-              ),
-              if (subtitle != null) ...[
-                SizedBox(height: 1.h),
+                SizedBox(height: 1.5.h),
                 Text(
-                  subtitle!,
+                  title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: FontFamily.interSemiBold,
-                    fontSize: 8.5.sp,
+                    fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF5338EE),
-                    height: 1.0,
+                    color: const Color(0xFF10153D),
+                    height: 1.1,
                   ),
                 ),
-              ],
-              SizedBox(height: 2.h),
-              Container(
-                width: 14.w,
-                height: 2.2.h,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF5338EE),
-                  borderRadius: BorderRadius.circular(2.r),
+                if (subtitle != null) ...[
+                  SizedBox(height: 1.h),
+                  Text(
+                    subtitle!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: FontFamily.interSemiBold,
+                      fontSize: 8.5.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF5338EE),
+                      height: 1.0,
+                    ),
+                  ),
+                ],
+                SizedBox(height: 2.h),
+                Container(
+                  width: 14.w,
+                  height: 2.2.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5338EE),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
                 ),
-              ),
-              SizedBox(height: 1.h),
-            ],
+                SizedBox(height: 1.h),
+              ],
+            ),
           ),
         ),
       ),

@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
+import 'package:fgtracker/app/Model/CommonRes.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Model/recent_call.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
@@ -11,6 +12,7 @@ import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide navigator;
+import 'contact_controller.dart';
 
 class CallController extends GetxController {
   static CallController get instance => Get.isRegistered<CallController>()
@@ -41,10 +43,17 @@ class CallController extends GetxController {
   final RxList<Map<String, String>> recentCallList =
       <Map<String, String>>[].obs;
 
+  final RxBool isSelectionMode = false.obs;
+  final RxSet<String> selectedCallIds = <String>{}.obs;
+  final RxBool isDeletingMultiple = false.obs;
+  final RxBool isClearingAll = false.obs;
+
   final List<_RecentEntry> _recentRaw = <_RecentEntry>[];
 
   final RxBool isDialPadOpen = false.obs;
   final RxString dialNumber = ''.obs;
+  final TextEditingController dialTextController = TextEditingController();
+  final FocusNode dialFocusNode = FocusNode();
   Timer? _rebuildTimer;
 
   void _scheduleRebuild() {
@@ -61,6 +70,13 @@ class CallController extends GetxController {
     loadGroups();
     getRecentCall();
 
+    dialTextController.addListener(() {
+      if (dialNumber.value != dialTextController.text) {
+        dialNumber.value = dialTextController.text;
+        filterUsers(_query);
+      }
+    });
+
     ever(_groupController.groupData, (_) => _scheduleRebuild());
     ever(allUserProfileData, (_) => _scheduleRebuild());
   }
@@ -68,6 +84,8 @@ class CallController extends GetxController {
   @override
   void onClose() {
     searchController.dispose();
+    dialTextController.dispose();
+    dialFocusNode.dispose();
     searchQuery.close();
     selectedTab.close();
     _rebuildTimer?.cancel();
@@ -80,6 +98,10 @@ class CallController extends GetxController {
 
     isDialPadOpen.close();
     dialNumber.close();
+    isSelectionMode.close();
+    selectedCallIds.close();
+    isDeletingMultiple.close();
+    isClearingAll.close();
     super.onClose();
   }
 
@@ -89,8 +111,12 @@ class CallController extends GetxController {
     isDialPadOpen.value = !isDialPadOpen.value;
     if (isDialPadOpen.value) {
       FocusManager.instance.primaryFocus?.unfocus();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        dialFocusNode.requestFocus();
+      });
     } else {
       clearDialNumber();
+      dialFocusNode.unfocus();
     }
     filterUsers(_query);
   }
@@ -99,29 +125,95 @@ class CallController extends GetxController {
     selectedDialUser = user;
     final String raw = (user.mobileNo ?? '').trim();
     final String digits = normalizePhone(raw);
-    dialNumber.value = digits.isNotEmpty ? digits : raw;
+    final String val = digits.isNotEmpty ? digits : raw;
+    dialNumber.value = val;
+    dialTextController.value = TextEditingValue(
+      text: val,
+      selection: TextSelection.collapsed(offset: val.length),
+    );
     isDialPadOpen.value = true;
     filterUsers(_query);
   }
 
   void addDigit(String digit) {
     selectedDialUser = null;
-    if (dialNumber.value.length >= 15) return;
-    dialNumber.value += digit;
+    final text = dialTextController.text;
+    if (text.length >= 15) return;
+
+    final selection = dialTextController.selection;
+    int start = selection.start;
+    int end = selection.end;
+
+    String newText;
+    int newCursorPos;
+
+    if (selection.isValid && start >= 0 && end >= 0) {
+      if (start > end) {
+        final temp = start;
+        start = end;
+        end = temp;
+      }
+      newText = text.replaceRange(start, end, digit);
+      newCursorPos = start + digit.length;
+    } else {
+      newText = text + digit;
+      newCursorPos = newText.length;
+    }
+
+    dialNumber.value = newText;
+    dialTextController.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newCursorPos),
+    );
     filterUsers(_query);
   }
 
   void removeLastDigit() {
     selectedDialUser = null;
-    if (dialNumber.value.isEmpty) return;
-    dialNumber.value =
-        dialNumber.value.substring(0, dialNumber.value.length - 1);
+    final text = dialTextController.text;
+    if (text.isEmpty) return;
+
+    final selection = dialTextController.selection;
+    int start = selection.start;
+    int end = selection.end;
+
+    if (selection.isValid && start >= 0 && end >= 0 && start != end) {
+      if (start > end) {
+        final temp = start;
+        start = end;
+        end = temp;
+      }
+      final newText = text.replaceRange(start, end, '');
+      dialNumber.value = newText;
+      dialTextController.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(offset: start),
+      );
+      filterUsers(_query);
+      return;
+    }
+
+    int cursorPos = selection.isValid && start >= 0 ? start : text.length;
+    if (cursorPos <= 0) return;
+
+    final newText = text.replaceRange(cursorPos - 1, cursorPos, '');
+    final newCursorPos = cursorPos - 1;
+
+    dialNumber.value = newText;
+    dialTextController.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newCursorPos),
+    );
     filterUsers(_query);
   }
 
   void clearDialNumber() {
     selectedDialUser = null;
     dialNumber.value = '';
+    dialTextController.value = const TextEditingValue(
+      text: '',
+      selection: TextSelection.collapsed(offset: 0),
+    );
     filterUsers(_query);
   }
 
@@ -129,6 +221,11 @@ class CallController extends GetxController {
     final String input = dialNumber.value.trim();
     if (input.isEmpty) {
       Utils().fluttertoast("Please enter a phone number");
+      return;
+    }
+
+    // Validate that user is not dialing own phone number
+    if (!CallValidation.validateCall(destinationPhone: input)) {
       return;
     }
 
@@ -167,9 +264,17 @@ class CallController extends GetxController {
     String? remoteUserId;
     String targetName = "User";
 
-    if (targetUser != null && targetUser.userId != null) {
-      remoteUserId = targetUser.userId.toString();
-      targetName = targetUser.name ?? "User";
+    if (targetUser != null) {
+      if (!CallValidation.validateCall(
+        destinationPhone: targetUser.mobileNo,
+        destinationUserId: targetUser.userId?.toString(),
+      )) {
+        return;
+      }
+      if (targetUser.userId != null) {
+        remoteUserId = targetUser.userId.toString();
+        targetName = targetUser.name ?? "User";
+      }
     } else {
       // Check resolved recentCallList
       final recentRowMatch = recentCallList.firstWhereOrNull((r) {
@@ -245,8 +350,10 @@ class CallController extends GetxController {
     }
 
     if (remoteUserId != null && remoteUserId.isNotEmpty) {
-      if (currentUserId == remoteUserId) {
-        Utils().fluttertoast("Cannot call yourself");
+      if (!CallValidation.validateCall(
+        destinationPhone: input,
+        destinationUserId: remoteUserId,
+      )) {
         return;
       }
 
@@ -386,9 +493,21 @@ class CallController extends GetxController {
           final meta = result.pagination;
 
           if (meta != null) {
-            hasMoreRecentCalls.value = meta.hasNextPage ??
-                (meta.totalRecords != null &&
-                    recentCallList.length < meta.totalRecords!);
+            if (meta.currentPage != null) {
+              pagination.value = meta.currentPage!;
+            }
+            if (meta.hasNextPage != null) {
+              hasMoreRecentCalls.value = meta.hasNextPage!;
+            } else if (meta.totalPages != null) {
+              hasMoreRecentCalls.value =
+                  (meta.currentPage ?? pagination.value) < meta.totalPages!;
+            } else if (meta.totalRecords != null) {
+              hasMoreRecentCalls.value =
+                  recentCallList.length < meta.totalRecords!;
+            }
+          } else {
+            hasMoreRecentCalls.value =
+                (data.older != null && data.older!.isNotEmpty);
           }
         } else {
           hasMoreRecentCalls.value = false;
@@ -421,26 +540,41 @@ class CallController extends GetxController {
         final int before = _recentRaw.length;
         final data = result.data;
         if (data != null) {
+          // Pagination: Today and Yesterday are strictly excluded.
+          // All paginated calls are strictly placed into 'older' section.
+          final List<CallingDetail> newOlderCalls = [];
+          if (data.older != null && data.older!.isNotEmpty) {
+            newOlderCalls.addAll(data.older!);
+          }
           if (data.allSections.isNotEmpty) {
             data.allSections.forEach((sec, list) {
-              _addBucket(sec, list);
+              final lower = sec.toLowerCase().trim();
+              if (lower != 'today' && lower != 'yesterday' && lower != 'older') {
+                newOlderCalls.addAll(list);
+              }
             });
-          } else {
-            _addBucket('today', data.today);
-            _addBucket('yesterday', data.yesterday);
-            _addBucket('older', data.older);
+          }
+          if (newOlderCalls.isNotEmpty) {
+            _addBucket('older', newOlderCalls, allowTodayYesterday: false);
           }
         }
         if (_recentRaw.length == before) {
           hasMoreRecentCalls.value = false;
         } else {
-          pagination.value = nextPage;
+          pagination.value = result.pagination?.currentPage ?? nextPage;
           _rebuildRecentDisplay();
           final meta = result.pagination;
           if (meta != null) {
-            hasMoreRecentCalls.value = meta.hasNextPage ??
-                (meta.totalRecords != null &&
-                    recentCallList.length < meta.totalRecords!);
+            if (meta.hasNextPage != null) {
+              hasMoreRecentCalls.value = meta.hasNextPage!;
+            } else if (meta.totalPages != null) {
+              hasMoreRecentCalls.value =
+                  (meta.currentPage ?? nextPage) < meta.totalPages!;
+            } else {
+              hasMoreRecentCalls.value = _recentRaw.length > before;
+            }
+          } else {
+            hasMoreRecentCalls.value = _recentRaw.length > before;
           }
         }
       } else {
@@ -462,9 +596,34 @@ class CallController extends GetxController {
     await getRecentCall();
   }
 
-  void _addBucket(String section, List<CallingDetail>? items) {
-    if (items == null) return;
+  void _addBucket(String section, List<CallingDetail>? items,
+      {bool allowTodayYesterday = true}) {
+    if (items == null || items.isEmpty) return;
+    final lowerSec = section.toLowerCase().trim();
+    if (!allowTodayYesterday &&
+        (lowerSec == 'today' || lowerSec == 'yesterday')) {
+      return;
+    }
+    final Set<String> existingKeys = _recentRaw
+        .map((e) {
+          final id = (e.call.id ?? '').trim();
+          if (id.isNotEmpty) return id;
+          return '${e.call.calledAt}_${e.call.callerId}_${e.call.type}'.trim();
+        })
+        .where((k) => k.isNotEmpty)
+        .toSet();
+
     for (final CallingDetail call in items) {
+      final String id = (call.id ?? '').trim();
+      final String fallbackKey =
+          '${call.calledAt}_${call.callerId}_${call.type}'.trim();
+      final String checkKey = id.isNotEmpty ? id : fallbackKey;
+      if (checkKey.isNotEmpty && existingKeys.contains(checkKey)) {
+        continue;
+      }
+      if (checkKey.isNotEmpty) {
+        existingKeys.add(checkKey);
+      }
       _recentRaw.add(_RecentEntry(section, call));
     }
   }
@@ -477,7 +636,6 @@ class CallController extends GetxController {
     final CallingDetail call = entry.call;
     final RecentContact? contact = call.contact;
     final String rawCallId = (call.id ?? '').trim();
-    final String numericCallId = rawCallId.replaceAll(RegExp(r'[^0-9]'), '');
 
     String name = [
       contact?.firstName,
@@ -624,6 +782,7 @@ class CallController extends GetxController {
       'isGroup': isGroupCall ? 'true' : 'false',
       'groupId': resolvedGroupId,
       'memberCount': memberCount,
+      'localEntryId': entry.localId,
       'id': rawCallId,
       'callId': rawCallId,
       'apiTime': (call.time ?? '').trim(),
@@ -903,6 +1062,7 @@ class CallController extends GetxController {
   void switchTab(int index) {
     if (selectedTab.value != index) {
       selectedTab.value = index;
+      exitSelectionMode();
     }
     if (isDialPadOpen.value) {
       isDialPadOpen.value = false;
@@ -917,11 +1077,240 @@ class CallController extends GetxController {
   }
 
   void loadGroups() => _groupController.getGroupData();
+
+  /// Returns contacts matching current dialNumber digits or T9 input.
+  List<UserListData> get dialSuggestions {
+    final input = dialNumber.value.trim();
+    if (input.isEmpty) return [];
+
+    final String queryDigits = input.replaceAll(RegExp(r'[^0-9]'), '');
+    if (queryDigits.isEmpty) return [];
+
+    final List<UserListData> allSources = [];
+    allSources.addAll(allUserProfileData);
+    if (Get.isRegistered<ContactController>()) {
+      final contactCtrl = Get.find<ContactController>();
+      allSources.addAll(contactCtrl.allUserProfileData);
+      allSources.addAll(contactCtrl.inviteUsers);
+    } else {
+      try {
+        final contactCtrl = ContactController.instance;
+        allSources.addAll(contactCtrl.allUserProfileData);
+        allSources.addAll(contactCtrl.inviteUsers);
+      } catch (_) {}
+    }
+
+    final Set<String> seen = {};
+    final List<UserListData> results = [];
+
+    for (final user in allSources) {
+      final String rawPhone = (user.mobileNo ?? '').trim();
+      final String digitsOnly = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
+      if (digitsOnly.isEmpty && (user.name ?? '').isEmpty) continue;
+
+      final String normPhone = normalizePhone(rawPhone);
+      final String key =
+          (user.userId != null) ? 'u_${user.userId}' : 'p_$normPhone';
+      if (!seen.add(key)) continue;
+
+      final bool phoneMatch =
+          digitsOnly.contains(queryDigits) || normPhone.contains(queryDigits);
+      final bool t9Match =
+          queryDigits.length >= 2 && _matchesT9(user.name ?? '', queryDigits);
+
+      if (phoneMatch || t9Match) {
+        results.add(user);
+        if (results.length >= 10) break;
+      }
+    }
+
+    return results;
+  }
+
+  final Set<String> _deletingCallIds = <String>{};
+  bool isDeletingCall(String callId) => _deletingCallIds.contains(callId);
+
+  /// Deletes an individual recent call record without touching saved contacts.
+  Future<bool> deleteRecentCall(
+    Map<String, String> call, {
+    @visibleForTesting
+    Future<CommonResponse> Function({required String callId})? apiCall,
+  }) async {
+    final String localEntryId = call['localEntryId'] ?? '';
+    final String callId = (call['callId'] ?? call['id'] ?? '').trim();
+
+    if (callId.isEmpty) {
+      Utils().fluttertoast("Call ID not found");
+      return false;
+    }
+
+    if (_deletingCallIds.contains(callId)) {
+      return false;
+    }
+    _deletingCallIds.add(callId);
+
+    try {
+      final CommonResponse response = apiCall != null
+          ? await apiCall(callId: callId)
+          : await CallRepo.deleteSingleCallHistory(callId: callId);
+
+      if (response.status == true) {
+        if (localEntryId.isNotEmpty) {
+          _recentRaw.removeWhere((e) => e.localId == localEntryId);
+          recentCallList.removeWhere((e) => e['localEntryId'] == localEntryId);
+        } else {
+          final idx =
+              _recentRaw.indexWhere((e) => (e.call.id ?? '').trim() == callId);
+          if (idx != -1) {
+            _recentRaw.removeAt(idx);
+          }
+          recentCallList.removeWhere((e) => (e['callId'] ?? e['id']) == callId);
+        }
+
+        if (_recentRaw.isNotEmpty) {
+          _rebuildRecentDisplay();
+        }
+
+        Utils().fluttertoast(response.message?.isNotEmpty == true
+            ? response.message!
+            : "Call entry deleted");
+        return true;
+      } else {
+        Utils().fluttertoast(response.message?.isNotEmpty == true
+            ? response.message!
+            : "Failed to delete call entry");
+        return false;
+      }
+    } catch (e) {
+      Utils().fluttertoast("Failed to delete call entry: $e");
+      return false;
+    } finally {
+      _deletingCallIds.remove(callId);
+    }
+  }
+
+  void enterSelectionMode() {
+    isSelectionMode.value = true;
+    selectedCallIds.clear();
+  }
+
+  void exitSelectionMode() {
+    isSelectionMode.value = false;
+    selectedCallIds.clear();
+  }
+
+  void toggleCallSelection(String callId) {
+    final cleanId = callId.trim();
+    if (cleanId.isEmpty) return;
+    if (selectedCallIds.contains(cleanId)) {
+      selectedCallIds.remove(cleanId);
+    } else {
+      selectedCallIds.add(cleanId);
+    }
+  }
+
+  void selectAllCalls() {
+    final allIds = recentCallList
+        .map((e) => (e['callId'] ?? e['id'] ?? '').trim())
+        .where((id) => id.isNotEmpty);
+    selectedCallIds.addAll(allIds);
+  }
+
+  void clearSelection() {
+    selectedCallIds.clear();
+  }
+
+  /// Deletes only the selected recent call history records via Multiple Call Delete API (callIds).
+  Future<bool> deleteSelectedRecentCalls({
+    @visibleForTesting
+    Future<CommonResponse> Function({required List<String> callIds})? apiCall,
+  }) async {
+    if (selectedCallIds.isEmpty || isDeletingMultiple.value) return false;
+    isDeletingMultiple.value = true;
+    final List<String> idsToDelete = selectedCallIds.toList();
+
+    try {
+      final CommonResponse response = apiCall != null
+          ? await apiCall(callIds: idsToDelete)
+          : await CallRepo.deleteMultipleCallHistory(callIds: idsToDelete);
+
+      if (response.status == true) {
+        final Set<String> toRemove = idsToDelete.toSet();
+        _recentRaw
+            .removeWhere((e) => toRemove.contains((e.call.id ?? '').trim()));
+        recentCallList.removeWhere(
+            (e) => toRemove.contains((e['callId'] ?? e['id'] ?? '').trim()));
+
+        if (_recentRaw.isNotEmpty) {
+          _rebuildRecentDisplay();
+        }
+
+        selectedCallIds.clear();
+        isSelectionMode.value = false;
+
+        Utils().fluttertoast(response.message?.isNotEmpty == true
+            ? response.message!
+            : "Selected calls deleted");
+        return true;
+      } else {
+        Utils().fluttertoast(response.message?.isNotEmpty == true
+            ? response.message!
+            : "Failed to delete selected calls");
+        return false;
+      }
+    } catch (e) {
+      Utils().fluttertoast("Failed to delete selected calls: $e");
+      return false;
+    } finally {
+      isDeletingMultiple.value = false;
+    }
+  }
+
+  /// Clears ALL call history records via Clear All Call History API (clearAll: true).
+  Future<bool> clearAllRecentCalls({
+    @visibleForTesting
+    Future<CommonResponse> Function()? apiCall,
+  }) async {
+    if (isClearingAll.value) return false;
+    isClearingAll.value = true;
+
+    try {
+      final CommonResponse response = apiCall != null
+          ? await apiCall()
+          : await CallRepo.clearAllCallHistory();
+
+      if (response.status == true) {
+        _recentRaw.clear();
+        recentCallList.clear();
+        selectedCallIds.clear();
+        isSelectionMode.value = false;
+        hasMoreRecentCalls.value = false;
+
+        Utils().fluttertoast(response.message?.isNotEmpty == true
+            ? response.message!
+            : "All call history cleared");
+        return true;
+      } else {
+        Utils().fluttertoast(response.message?.isNotEmpty == true
+            ? response.message!
+            : "Failed to clear call history");
+        return false;
+      }
+    } catch (e) {
+      Utils().fluttertoast("Failed to clear call history: $e");
+      return false;
+    } finally {
+      isClearingAll.value = false;
+    }
+  }
 }
 
 class _RecentEntry {
-  _RecentEntry(this.section, this.call);
+  _RecentEntry(this.section, this.call)
+      : localId = '${call.id ?? ""}_${_counter++}';
 
+  static int _counter = 0;
+  final String localId;
   final String section;
   final CallingDetail call;
 }

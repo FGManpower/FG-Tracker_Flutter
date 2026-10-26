@@ -1,4 +1,7 @@
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -194,3 +197,101 @@ String normalizePhone(String phone) {
   }
   return digits;
 }
+
+class CallValidation {
+  /// Warning message displayed when calling own number
+  static const String selfCallWarningMessage = "You cannot call your own number.";
+
+  /// Returns the current logged-in user's phone number if available.
+  static String? get currentUserPhone {
+    try {
+      final phone =
+          Global.storageServices.get(PrefConst.userPhone)?.toString().trim();
+      if (phone != null && phone.isNotEmpty) return phone;
+    } catch (_) {}
+    return null;
+  }
+
+  /// Returns current user's userId.
+  static String? get currentUserId {
+    try {
+      final uid =
+          Global.storageServices.get(PrefConst.userId)?.toString().trim();
+      if (uid != null && uid.isNotEmpty) return uid;
+    } catch (_) {}
+    return null;
+  }
+
+  /// Compares two phone numbers accounting for formatting differences and country codes.
+  static bool isSamePhoneNumber(String? phoneA, String? phoneB) {
+    if (phoneA == null || phoneB == null) return false;
+    final cleanA = phoneA.trim();
+    final cleanB = phoneB.trim();
+    if (cleanA.isEmpty || cleanB.isEmpty) return false;
+
+    final digitsA = cleanA.replaceAll(RegExp(r'[^0-9]'), '');
+    final digitsB = cleanB.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digitsA.isEmpty || digitsB.isEmpty) return false;
+
+    // Exact raw digits match
+    if (digitsA == digitsB) return true;
+
+    // Normalized (national 10-digit) match
+    final normA = normalizePhone(cleanA);
+    final normB = normalizePhone(cleanB);
+    if (normA.isNotEmpty && normB.isNotEmpty && normA == normB) {
+      if (normA.length >= 7) {
+        final bool aHasPlus = cleanA.startsWith('+');
+        final bool bHasPlus = cleanB.startsWith('+');
+        if (aHasPlus && bHasPlus && digitsA != digitsB) {
+          return false;
+        }
+        if (aHasPlus && !cleanA.startsWith('+91') && !bHasPlus) {
+          return false;
+        }
+        if (bHasPlus && !cleanB.startsWith('+91') && !aHasPlus) {
+          return false;
+        }
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /// Checks whether destination phone or userId belongs to current user.
+  static bool isSelfCall(
+      {String? destinationPhone, String? destinationUserId}) {
+    final myId = currentUserId;
+    if (myId != null &&
+        myId.isNotEmpty &&
+        destinationUserId != null &&
+        destinationUserId.isNotEmpty) {
+      if (myId == destinationUserId.trim()) return true;
+    }
+
+    final myPhone = currentUserPhone;
+    if (myPhone != null &&
+        myPhone.isNotEmpty &&
+        destinationPhone != null &&
+        destinationPhone.isNotEmpty) {
+      if (isSamePhoneNumber(myPhone, destinationPhone)) return true;
+    }
+
+    return false;
+  }
+
+  /// Validates before a call. If it's the user's own number, displays warning toast and returns false.
+  static bool validateCall(
+      {String? destinationPhone, String? destinationUserId}) {
+    if (isSelfCall(
+      destinationPhone: destinationPhone,
+      destinationUserId: destinationUserId,
+    )) {
+      Utils().fluttertoast(selfCallWarningMessage);
+      return false;
+    }
+    return true;
+  }
+}
+

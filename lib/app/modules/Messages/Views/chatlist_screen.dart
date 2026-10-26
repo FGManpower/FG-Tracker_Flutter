@@ -38,41 +38,47 @@ class ChatListScreen extends StatelessWidget {
     // Single Unified WhatsApp Chat List Screen:
     // TabBar and legacy separate Groups Tab are commented out as requested.
     // Both 1-to-1 chats and group chats are now presented in a single unified list.
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F7FF),
-      appBar: _buildAppBar(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.to(() => const NewChatScreen()),
-        backgroundColor: const Color(0xFF6B4DFF),
-        shape: const CircleBorder(),
-        elevation: 4,
-        child: const Icon(
-          Icons.chat_bubble_outline,
-          color: Colors.white,
+    return Obx(
+      () => PopScope(
+        canPop: !controller.isSearching.value,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          if (controller.isSearching.value) {
+            controller.closeSearch();
+          }
+        },
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF8F7FF),
+          appBar: _buildAppBar(),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => Get.to(() => const NewChatScreen()),
+            backgroundColor: const Color(0xFF6B4DFF),
+            shape: const CircleBorder(),
+            elevation: 4,
+            child: const Icon(
+              Icons.chat_bubble_outline,
+              color: Colors.white,
+            ),
+          ),
+          bottomNavigationBar: const QuickCommunicationBar(),
+          body: _AllChatsBody(controller: controller),
         ),
       ),
-      bottomNavigationBar: const QuickCommunicationBar(),
-      body: _AllChatsBody(controller: controller),
-      /*
-      // LEGACY TAB BAR UI (Commented out):
-      // body: Column(
-      //   children: [
-      //     _buildCustomTabBar(),
-      //     Expanded(
-      //       child: TabBarView(
-      //         children: [
-      //           _AllChatsBody(controller: controller),
-      //           const _GroupsTabBody(),
-      //         ],
-      //       ),
-      //     ),
-      //   ],
-      // ),
-      */
     );
   }
 
   PreferredSizeWidget _buildAppBar() {
+    return PreferredSize(
+      preferredSize: Size.fromHeight(70.h),
+      child: Obx(
+        () => controller.isSearching.value
+            ? _buildSearchAppBar()
+            : _buildNormalAppBar(),
+      ),
+    );
+  }
+
+  Widget _buildNormalAppBar() {
     return AppBar(
       backgroundColor: const Color(0xFFF8F7FF),
       elevation: 0,
@@ -105,6 +111,72 @@ class ChatListScreen extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          SizedBox(width: 8.w),
+          _circleIcon(
+            Icons.search_rounded,
+            () => controller.openSearch(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 1,
+      shadowColor: Colors.black.withOpacity(0.08),
+      scrolledUnderElevation: 0,
+      toolbarHeight: 70.h,
+      automaticallyImplyLeading: false,
+      title: Row(
+        children: [
+          _circleIcon(
+            Icons.arrow_back,
+            () => controller.closeSearch(),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: TextField(
+              controller: controller.searchController,
+              autofocus: true,
+              onChanged: controller.onSearchChanged,
+              cursorColor: const Color(0xFF6B4DFF),
+              style: TextStyle(
+                fontSize: 14.5.sp,
+                color: Colors.black87,
+                fontFamily: FontFamily.interMedium,
+              ),
+              decoration: InputDecoration(
+                hintText: "Search chats or messages...",
+                hintStyle: TextStyle(
+                  fontSize: 13.5.sp,
+                  color: Colors.grey.shade400,
+                  fontFamily: FontFamily.interRegular,
+                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(vertical: 10.h),
+              ),
+            ),
+          ),
+          Obx(
+            () => controller.searchQuery.value.isNotEmpty
+                ? GestureDetector(
+                    onTap: controller.clearSearch,
+                    child: Container(
+                      padding: EdgeInsets.all(8.w),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 20.sp,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
         ],
       ),
@@ -414,7 +486,11 @@ class _AllChatsBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        StatusSection(),
+        Obx(
+          () => controller.isSearching.value
+              ? const SizedBox.shrink()
+              : StatusSection(),
+        ),
         Expanded(
           child: RefreshIndicator(
             color: const Color(0xFF6B4DFF),
@@ -425,81 +501,30 @@ class _AllChatsBody extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Obx(
-                    () => controller.archivedChats.isNotEmpty
+                    () => (!controller.isSearching.value &&
+                            controller.archivedChats.isNotEmpty)
                         ? _archivedChatsRow()
                         : const SizedBox.shrink(),
                   ),
-                  // Search Bar for Unified WhatsApp Chats
-                  Container(
-                    height: 44.h,
-                    margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                      border: Border.all(
-                        color: Colors.grey.withOpacity(0.12),
-                      ),
-                    ),
-                    child: Obx(
-                      () => TextField(
-                        controller: controller.searchController,
-                        onChanged: controller.onSearchChanged,
-                        decoration: InputDecoration(
-                          hintText: "Search chats or messages...",
-                          hintStyle: TextStyle(
-                            fontSize: 13.sp,
-                            color: Colors.grey.shade400,
-                            fontFamily: FontFamily.interRegular,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search_rounded,
-                            size: 20.sp,
-                            color: Colors.grey.shade400,
-                          ),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 12.h,
-                          ),
-                          suffixIcon: controller.searchQuery.value.isNotEmpty
-                              ? GestureDetector(
-                                  onTap: controller.clearSearch,
-                                  child: Icon(
-                                    Icons.close_rounded,
-                                    size: 18.sp,
-                                    color: Colors.grey.shade400,
-                                  ),
-                                )
-                              : null,
-                        ),
-                      ),
-                    ),
-                  ),
                   Obx(
                     () => _sectionTitle(
-                      "All Chats",
-                      badgeCount: controller.unreadTotalCount.value > 0
+                      controller.isSearching.value ? "Search Results" : "All Chats",
+                      badgeCount: !controller.isSearching.value &&
+                              controller.unreadTotalCount.value > 0
                           ? controller.unreadTotalCount.value
                           : null,
                     ),
                   ),
                   Obx(() {
                     if (controller.isLoading.value &&
-                        controller.privateChats.isEmpty) {
+                        controller.displayedChats.isEmpty) {
                       return _buildSkeletonList();
                     }
 
-                    if (controller.privateChats.isEmpty) {
-                      return _emptyChats();
+                    if (controller.displayedChats.isEmpty) {
+                      return controller.isSearching.value
+                          ? _emptySearchResults()
+                          : _emptyChats();
                     }
 
                     return Container(
@@ -520,7 +545,7 @@ class _AllChatsBody extends StatelessWidget {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         padding: EdgeInsets.zero,
-                        itemCount: controller.privateChats.length,
+                        itemCount: controller.displayedChats.length,
                         separatorBuilder: (_, __) => Divider(
                           color: Colors.grey.withOpacity(0.12),
                           height: 1,
@@ -528,7 +553,7 @@ class _AllChatsBody extends StatelessWidget {
                           endIndent: 16.w,
                         ),
                         itemBuilder: (context, index) {
-                          final chat = controller.privateChats[index];
+                          final chat = controller.displayedChats[index];
 
                           return _chatRow(
                             context: context,
@@ -675,6 +700,45 @@ class _AllChatsBody extends StatelessWidget {
               "Your private chats will appear here.",
               fontsize: 11.sp,
               color: Colors.grey,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _emptySearchResults() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 35.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18.r),
+      ),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.search_off_rounded,
+              size: 40.sp,
+              color: const Color(0xFF6B4DFF),
+            ),
+            SizedBox(height: 10.h),
+            reausabletext(
+              "No chats found",
+              fontsize: 14.sp,
+              fontfamily: FontFamily.interBold,
+              color: Colors.black87,
+            ),
+            SizedBox(height: 5.h),
+            Obx(
+              () => reausabletext(
+                controller.searchQuery.value.isNotEmpty
+                    ? 'No results found for "${controller.searchQuery.value}"'
+                    : "Try searching with a different name or message.",
+                fontsize: 11.sp,
+                color: Colors.grey,
+              ),
             ),
           ],
         ),
@@ -837,9 +901,7 @@ class _AllChatsBody extends StatelessWidget {
               "isCreator": isCreator,
               "isActive": isActive,
             },
-          )?.then((_) {
-            controller.getChatList(isRefresh: false);
-          });
+          );
           return;
         }
 
@@ -866,9 +928,7 @@ class _AllChatsBody extends StatelessWidget {
           binding: BindingsBuilder(() {
             Get.put(MessageController());
           }),
-        )?.then((_) {
-          controller.getChatList(isRefresh: false);
-        });
+        );
       },
       onLongPress: () => _showChatOptions(context, tapPos, chat),
       child: Container(

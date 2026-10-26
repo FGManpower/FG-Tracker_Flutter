@@ -11,6 +11,7 @@ import '../../../Model/CallDetail.dart';
 import '../../../Model/MemberDataRes.dart';
 import '../../../Model/recent_call.dart';
 import '../../../routes/app_pages.dart';
+import '../../call/widget/call_widget.dart';
 import '../../Messages/Controller/MessageController.dart';
 import '../../Messages/Views/Chat_Screen.dart';
 
@@ -122,7 +123,7 @@ class ContactProfileController extends GetxController {
 
       for (int i = 0; i < _maxPages; i++) {
         final recent_Call_Res res =
-        await CallRepo.getRecentCall(page: page.toString());
+            await CallRepo.getRecentCall(page: page.toString());
         if (isClosed) return;
 
         if (res.status != true) {
@@ -133,8 +134,8 @@ class ContactProfileController extends GetxController {
         }
 
         final Iterable<CallingDetail> all =
-        (res.data?.allSections.values ?? const <List<CallingDetail>>[])
-            .expand((List<CallingDetail> e) => e);
+            (res.data?.allSections.values ?? const <List<CallingDetail>>[])
+                .expand((List<CallingDetail> e) => e);
 
         for (final CallingDetail c in all) {
           if (!_matchesUser(c, uid)) continue;
@@ -183,14 +184,24 @@ class ContactProfileController extends GetxController {
       }
     } else {
       final String remoteId = contactData?.userId?.toString() ?? '';
+      final String phone = contactData?.mobileNo ?? '';
+
+      if (!CallValidation.validateCall(
+        destinationPhone: phone,
+        destinationUserId: remoteId,
+      )) {
+        return;
+      }
+
       if (remoteId.isNotEmpty) {
         CallService().startOutGoingCall(
-            context,
-            callerId: Global.storageServices.get(PrefConst.userId).toString(),
-            remoteUserId: remoteId,
-            is_video: isVideo,
-            callerName: contactData?.name ?? 'User',
-            callerProfile: contactData?.profileImage
+          context,
+          callerId: Global.storageServices.get(PrefConst.userId).toString(),
+          remoteUserId: remoteId,
+          is_video: isVideo,
+          callerName: contactData?.name ?? 'User',
+          callerProfile: contactData?.profileImage,
+          destinationPhone: phone,
         );
       } else {
         Utils().fluttertoast("Unable to call this contact");
@@ -228,7 +239,7 @@ class ContactProfileController extends GetxController {
     log("CHAT ID ARGUMENT => ${chatId?.toString()}");
 
     Get.to(
-          () => ChatScreen(),
+      () => ChatScreen(),
       arguments: {
         "userData": MemberData(
           userId: user.userId,
@@ -254,4 +265,5 @@ class ContactProfileController extends GetxController {
         }
       }),
     );
-  }}
+  }
+}
