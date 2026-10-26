@@ -475,6 +475,14 @@ private let candidateTokenPrefKeys = [
         }
 
         if name == "speaker" {
+            // BT connected hai ya pehle dikha tha -> speaker par BT block karo.
+            if let port = currentBluetoothPort() {
+                rememberBluetoothPort(port)
+                return [.defaultToSpeaker]
+            }
+            if bluetoothSeenInCall {
+                return [.defaultToSpeaker]
+            }
             return [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker]
         }
 
@@ -502,19 +510,19 @@ private let candidateTokenPrefKeys = [
     }
 
     private func isBluetoothSuppressed() -> Bool {
-        return manualAudioRoute == "earpiece" || manualAudioRoute == "headset"
+        return manualAudioRoute == "earpiece"
+            || manualAudioRoute == "headset"
+            || manualAudioRoute == "speaker"
     }
 
     private func shouldSuppressBluetooth(forRoute route: String) -> Bool {
         guard route == "earpiece" || route == "headset" else { return false }
         if let port = currentBluetoothPort() {
-            bluetoothSeenInCall = true
-            if !port.portName.isEmpty {
-                bluetoothKnownName = port.portName
-            }
+            rememberBluetoothPort(port)
             return true
         }
-        return bluetoothSeenInCall
+        // User ne khud earpiece/headset chuna hai -> BT port dikhe ya na dikhe, block rakho.
+        return bluetoothSeenInCall || userSelectedRoute
     }
 
     private func rememberBluetoothPort(_ port: AVAudioSessionPortDescription?) {
@@ -678,8 +686,17 @@ private let candidateTokenPrefKeys = [
 
         switch route {
         case "speaker":
-            try? rtcSession.overrideOutputAudioPort(.speaker)
             try? session.setPreferredInput(builtInMic)
+            try? rtcSession.overrideOutputAudioPort(.speaker)
+
+            // Route change override clear kar deta hai, isliye ek baar dobara lagao.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+                guard let self = self, self.manualAudioRoute == "speaker" else { return }
+                let rtc = RTCAudioSession.sharedInstance()
+                rtc.lockForConfiguration()
+                try? rtc.overrideOutputAudioPort(.speaker)
+                rtc.unlockForConfiguration()
+            }
 
         case "bluetooth":
             try? rtcSession.overrideOutputAudioPort(.none)
@@ -777,6 +794,10 @@ private let candidateTokenPrefKeys = [
     }
 
     private func applyInitialOutputPort(isVideo: Bool) {
+        if userSelectedRoute, let manual = manualAudioRoute {
+            _ = applyRequestedAudioRoute(route: manual, isVideo: isVideo, force: true)
+            return
+        }
         let session = AVAudioSession.sharedInstance()
         let inputs = session.availableInputs ?? []
 
