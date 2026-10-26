@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart:.dart';
+
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -70,6 +71,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   bool _audioRouteRestored = false;
   bool _renegotiating = false;
   bool _pendingRenegotiation = false;
+  bool _localOfferPending = false;
 
   Timer? _peerDisconnectTimer;
 
@@ -86,6 +88,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   final RxBool isVideoCall = false.obs;
   final RxBool isUpgradingToVideo = false.obs;
+  final RxBool isRemoteUpgrading = false.obs;
+  Timer? _remoteUpgradeTimer;
 
   bool isLocalVideoMain = false;
 
@@ -307,10 +311,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         }
       }
       await sender.setParameters(params);
-      log(
-        "[CAM] tune sender scaleDown=${scaleDown ?? 'keep'} "
-            "enc=${encodings?.length ?? 0}",
-      );
+      // log(
+      //   "[CAM] tune sender scaleDown=${scaleDown ?? 'keep'} "
+      //       "enc=${encodings?.length ?? 0}",
+      // );
     } catch (e) {
       log("[Call] Video sender tuning skipped: $e");
     }
@@ -342,7 +346,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       final MediaStream stream = await createLocalMediaStream('cam_fallback');
       await stream.addTrack(track);
       _fallbackRemoteStream = stream;
-      log("[CAM] fallback stream built for remote video id=${track.id}");
+      // log("[CAM] fallback stream built for remote video id=${track.id}");
       return stream;
     } catch (e) {
       log("[CAM] fallback stream failed: $e");
@@ -356,10 +360,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       log("[CAM] ensureBound: already bound");
       return;
     }
-    log(
-      "[CAM] ensureBound: binding now track=${_remoteVideoTrack?.id} "
-          "storedVideo=${_remoteMediaStream?.getVideoTracks().length ?? -1}",
-    );
+    // log(
+    //   "[CAM] ensureBound: binding now track=${_remoteVideoTrack?.id} "
+    //       "storedVideo=${_remoteMediaStream?.getVideoTracks().length ?? -1}",
+    // );
 
     final MediaStream? stream = await _remoteStreamForVideo();
     if (stream == null) return;
@@ -425,7 +429,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (_videoSlotReady && slot != null) {
         _localVideoSender = slot.sender;
         await _applyLocalVideoSending(videoTrack);
-        log("[CAM] attach: replaced track on negotiated slot");
+        // log("[CAM] attach: replaced track on negotiated slot");
       } else {
         _localVideoSender = await pc.addTrack(videoTrack, localStream!);
         needsRenegotiation = true;
@@ -467,10 +471,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         rawOffer.type,
       );
       await pc.setLocalDescription(desc);
-      log(
-        "[SDP] local offer ${_sdpInfo(desc.sdp)} "
-            "videoOn=$isVideoOn sender=${_localVideoSender != null}",
-      );
+      _localOfferPending = true;
+      // log(
+      //   "[SDP] local offer ${_sdpInfo(desc.sdp)} "
+      //       "videoOn=$isVideoOn sender=${_localVideoSender != null}",
+      // );
 
       final String myUserId = Global.storageServices
           .get(PrefConst.userId)
@@ -501,10 +506,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       sdp?["sdp"]?.toString(),
       sdp?["type"]?.toString(),
     );
-    log(
-      "[SDP] setRemote type=${desc.type} ${_sdpInfo(desc.sdp)} "
-          "samePeer=${identical(peer, pc)}",
-    );
+    // log(
+    //   "[SDP] setRemote type=${desc.type} ${_sdpInfo(desc.sdp)} "
+    //       "samePeer=${identical(peer, pc)}",
+    // );
     try {
       await pc.setRemoteDescription(desc);
     } catch (e) {
@@ -649,11 +654,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     isRemoteVideoOn = is_video;
     isVideoCall.value = is_video;
 
-    log(
-      "[CAM] init callType=${args["callType"]} is_video=$is_video "
-          "callerId=$callerId remoteUserId=$remoteUserId callId=$callId "
-          "hasOffer=${offer != null} fromCallKit=$fromCallKit",
-    );
+    // log(
+    //   "[CAM] init callType=${args["callType"]} is_video=$is_video "
+    //       "callerId=$callerId remoteUserId=$remoteUserId callId=$callId "
+    //       "hasOffer=${offer != null} fromCallKit=$fromCallKit",
+    // );
 
     _audioRouteTag =
     "call_audio_${callId ?? DateTime.now().microsecondsSinceEpoch}";
@@ -713,7 +718,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       remoteRenderer.srcObject = null;
       if (generic) {
         await remoteRenderer.setSrcObject(stream: stream);
-        log("[CAM] rebind generic stream=${stream.id}");
+        // log("[CAM] rebind generic stream=${stream.id}");
       } else {
         await remoteRenderer.setSrcObject(stream: stream, trackId: trackId);
         log("[CAM] rebind on remote camera on id=$trackId");
@@ -728,7 +733,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (pc == null || isClosed) return -1;
 
     int decoded = -1;
-    log("[STAT] $tag begin");
+    // log("[STAT] $tag begin");
     try {
       final List<StatsReport> reports = await pc.getStats();
       final Map<String, int> types = <String, int>{};
@@ -740,23 +745,23 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
         if (v['framesDecoded'] != null) {
           decoded = int.tryParse('${v['framesDecoded']}') ?? -1;
-          log(
-            "[STAT] $tag IN recv=${v['framesReceived']} "
-                "dec=${v['framesDecoded']} drop=${v['framesDropped']} "
-                "bytes=${v['bytesReceived']} pli=${v['pliCount']} "
-                "size=${v['frameWidth']}x${v['frameHeight']}",
-          );
+          // log(
+          //   "[STAT] $tag IN recv=${v['framesReceived']} "
+          //       "dec=${v['framesDecoded']} drop=${v['framesDropped']} "
+          //       "bytes=${v['bytesReceived']} pli=${v['pliCount']} "
+          //       "size=${v['frameWidth']}x${v['frameHeight']}",
+          // );
         }
         if (v['framesEncoded'] != null) {
-          log(
-            "[STAT] $tag OUT enc=${v['framesEncoded']} "
-                "key=${v['keyFramesEncoded']} sent=${v['framesSent']} "
-                "bytes=${v['bytesSent']} "
-                "qlim=${v['qualityLimitationReason']}",
-          );
+          // log(
+          //   "[STAT] $tag OUT enc=${v['framesEncoded']} "
+          //       "key=${v['keyFramesEncoded']} sent=${v['framesSent']} "
+          //       "bytes=${v['bytesSent']} "
+          //       "qlim=${v['qualityLimitationReason']}",
+          // );
         }
       }
-      log("[STAT] $tag types=$types");
+      // log("[STAT] $tag types=$types");
     } catch (e) {
       log("[STAT] $tag error: $e");
     }
@@ -776,7 +781,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
     if (target.isEmpty || target == myUserId) return;
 
-    log("[CAM] request keyframe from=$target");
+    // log("[CAM] request keyframe from=$target");
     socket?.emit("upgradeToVideo", {
       "callId": callId,
       "remoteUserId": target,
@@ -790,7 +795,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         localStream?.getVideoTracks() ?? <MediaStreamTrack>[];
     if (vids.isEmpty || _localVideoSender == null || !isVideoOn) return;
 
-    log("[CAM] force keyframe: restart sender at half resolution");
+    // log("[CAM] force keyframe: restart sender at half resolution");
     await _tuneLocalVideoSender(scaleDown: 2.0);
     await _applyLocalVideoSending(null);
     await Future<void>.delayed(const Duration(milliseconds: 150));
@@ -802,7 +807,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _qualityTimer?.cancel();
     _qualityTimer = Timer(const Duration(seconds: 10), () {
       if (isClosed || !isVideoOn) return;
-      log("[CAM] restore full resolution");
+      // log("[CAM] restore full resolution");
       unawaited(_tuneLocalVideoSender(scaleDown: 1.0));
     });
   }
@@ -837,16 +842,16 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         timer.cancel();
         isRemoteVideoLoading.value = false;
         update();
-        log("[CAM] first remote frame arrived w=${remoteRenderer.value.width}");
+        // log("[CAM] first remote frame arrived w=${remoteRenderer.value.width}");
         return;
       }
 
       if (timer.tick == 2 || timer.tick == 5 || timer.tick == 9) {
         decodedFrames = await _logStats("wait${timer.tick}s");
-        log(
-          "[CAM] wait ${timer.tick}s: renderW=${remoteRenderer.value.width} "
-              "decoded=$decodedFrames",
-        );
+        // log(
+        //   "[CAM] wait ${timer.tick}s: renderW=${remoteRenderer.value.width} "
+        //       "decoded=$decodedFrames",
+        // );
 
         if (decodedFrames > 0) {
           log("[CAM] decoded but no pixels -> rebind #${timer.tick}");
@@ -987,9 +992,39 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _ensureAudioTracksActive();
+      unawaited(_restoreVideoAfterForeground());
     } else if (state == AppLifecycleState.paused) {
       _keepTracksAliveInBackground();
     }
+  }
+
+  Future<void> _restoreVideoAfterForeground() async {
+    if (isClosed || !isVideoCall.value) return;
+    log(
+      "[CAM] resume: restoring video localOn=$isVideoOn "
+          "remoteOn=$isRemoteVideoOn",
+    );
+
+    if (isVideoOn && localStream != null) {
+      final MediaStreamTrack? v = localStream!.getVideoTracks().firstOrNull;
+      if (v != null) {
+        try {
+          await localRenderer.setSrcObject(stream: localStream, trackId: v.id);
+        } catch (e) {
+          log("[CAM] resume: local rebind failed: $e");
+        }
+      }
+      await _tuneLocalVideoSender();
+    }
+
+    if (isRemoteVideoOn) {
+      await _rebindRemoteForFirstFrames();
+      _startFirstFrameWatchdog();
+      _requestKeyframe();
+      _watchRemoteVideo("resume");
+    }
+
+    update();
   }
 
   void _ensureAudioTracksActive() {
@@ -1130,19 +1165,68 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  void _emitUpgradeIntent() {
+    final String myUserId = Global.storageServices
+        .get(PrefConst.userId)
+        .toString();
+    String target = (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    if (target.isEmpty || target == myUserId) {
+      target = (remoteUserId.isNotEmpty && remoteUserId != myUserId)
+          ? remoteUserId
+          : callerId;
+    }
+    if (target.isEmpty || target == myUserId) return;
+
+    // log("[CAM] announce upgrade intent to=$target");
+    socket?.emit("requestVideoUpgrade", {
+      "callId": callId,
+      "remoteUserId": target,
+      "callerId": myUserId,
+    });
+  }
+
+  void _markRemoteUpgrading(String source) {
+    if (isUpgradingToVideo.value) return;
+    isRemoteUpgrading.value = true;
+    // log("[CAM] remote upgrading ($source) -> video button disabled");
+    _remoteUpgradeTimer?.cancel();
+    _remoteUpgradeTimer = Timer(const Duration(seconds: 20), () {
+      if (isClosed) return;
+      isRemoteUpgrading.value = false;
+      log("[CAM] remote upgrade flag cleared (timeout)");
+      update();
+    });
+    update();
+  }
+
+  void _clearRemoteUpgrading() {
+    if (!isRemoteUpgrading.value) return;
+    _remoteUpgradeTimer?.cancel();
+    _remoteUpgradeTimer = null;
+    isRemoteUpgrading.value = false;
+    log("[CAM] remote upgrade flag cleared");
+    update();
+  }
+
   Future<void> upgradeToVideoCall() async {
     if (isUpgradingToVideo.value) return;
+    if (isRemoteUpgrading.value) {
+      // log("[CAM] upgrade blocked: remote is already upgrading");
+      Utils().fluttertoast("The other person is starting video");
+      return;
+    }
     if (peer == null || localStream == null) {
       Utils().fluttertoast("Call not ready");
       return;
     }
+    _emitUpgradeIntent();
 
     try {
       isUpgradingToVideo.value = true;
-      log(
-        "[CAM] upgrade start videoOn=$isVideoOn remoteOn=$isRemoteVideoOn "
-            "sender=${_localVideoSender != null} slotReady=$_videoSlotReady",
-      );
+      // log(
+      //   "[CAM] upgrade start videoOn=$isVideoOn remoteOn=$isRemoteVideoOn "
+      //       "sender=${_localVideoSender != null} slotReady=$_videoSlotReady",
+      // );
       if (!isVideoCall.value) {
         pipPosition = null;
         await audioRouteController.updateCallType(isVideo: true);
@@ -1151,10 +1235,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       final bool needsRenegotiation = await _ensureLocalVideoTrackAttached(
         peer!,
       );
-      log(
-        "[CAM] upgrade attach done sender=${_localVideoSender != null} "
-            "slotReady=$_videoSlotReady needsReneg=$needsRenegotiation",
-      );
+      // log(
+      //   "[CAM] upgrade attach done sender=${_localVideoSender != null} "
+      //       "slotReady=$_videoSlotReady needsReneg=$needsRenegotiation",
+      // );
 
       isVideoOn = true;
       isLocalVideoMain = !isRemoteVideoOn;
@@ -1170,6 +1254,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
 
       _emitCameraState(true);
+      _clearRemoteUpgrading();
       await _syncVideoState();
 
       if (callTimer == null && callDurationSeconds == 0) {
@@ -1188,6 +1273,12 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     socket?.off("upgradeToVideoAnswer");
     socket?.off("requestVideoUpgrade");
 
+    socket?.on("requestVideoUpgrade", (data) {
+      final String from = data["callerId"]?.toString() ?? "";
+      log("[CAM] requestVideoUpgrade from=$from");
+      _markRemoteUpgrading("intent");
+    });
+
     socket?.on("upgradeToVideo", (data) async {
       try {
         final RTCPeerConnection? pc = peer;
@@ -1198,6 +1289,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
               "cameraState=${data["cameraState"]} from=${data["callerId"]} "
               "videoOn=$isVideoOn remoteOn=$isRemoteVideoOn",
         );
+
+        if (sdp != null && !_localOfferPending) {
+          _markRemoteUpgrading("offer");
+        }
 
         if (sdp == null) {
           if (data["needKeyframe"] == true) {
@@ -1211,6 +1306,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
             _remoteCamStateKnown = true;
             isRemoteVideoOn = state;
             log("[CAM] recv cameraState=$state from=${data["callerId"]}");
+            _clearRemoteUpgrading();
             if (!wasRemoteVideoOn && isRemoteVideoOn) {
               isLocalVideoMain = false;
               await _rebindRemoteForFirstFrames();
@@ -1222,6 +1318,30 @@ class CallingController extends GetxController with WidgetsBindingObserver {
             await _syncVideoState();
           }
           return;
+        }
+
+        if (_localOfferPending) {
+          final String myId = Global.storageServices
+              .get(PrefConst.userId)
+              .toString();
+          final String peerId = data["callerId"]?.toString() ?? "";
+          final bool polite = myId.compareTo(peerId) > 0;
+          log("[CAM] glare offer from=$peerId polite=$polite");
+
+          if (!polite) {
+            log("[CAM] glare: ignoring incoming offer, our offer wins");
+            return;
+          }
+
+          try {
+            await pc.setLocalDescription(RTCSessionDescription('', 'rollback'));
+            log("[CAM] glare: rolled back our offer");
+          } catch (e) {
+            log("[CAM] glare rollback failed: $e");
+          }
+          _localOfferPending = false;
+          _renegotiating = false;
+          _pendingRenegotiation = false;
         }
 
         final bool? remoteCam = _camStateFromSdp(sdp["sdp"]?.toString() ?? '');
@@ -1326,6 +1446,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           "remoteUserId": data["callerId"],
           "sdpAnswer": answer.toMap(),
         });
+        _clearRemoteUpgrading();
 
         callStatus.value = "Connected";
         await _syncVideoState();
@@ -1339,8 +1460,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         final RTCPeerConnection? pc = peer;
         if (pc == null) return;
         final dynamic sdp = data["sdpAnswer"];
-        log("[CAM] upgradeToVideoAnswer recv hasSdp=${sdp != null}");
+        log(
+          "[CAM] upgradeToVideoAnswer recv hasSdp=${sdp != null} "
+              "pending=$_localOfferPending",
+        );
         if (sdp == null) return;
+
+        if (!_localOfferPending) {
+          log("[CAM] ignoring answer: no local offer pending");
+          return;
+        }
+        _localOfferPending = false;
 
         final bool? remoteCam = _camStateFromSdp(sdp["sdp"]?.toString() ?? '');
         final bool remoteSendingVideo = remoteCam ?? isRemoteVideoOn;
@@ -1587,6 +1717,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       _audioRouteRestored = false;
       _renegotiating = false;
       _pendingRenegotiation = false;
+      _localOfferPending = false;
+      isRemoteUpgrading.value = false;
+      _remoteUpgradeTimer?.cancel();
       isRemoteVideoOn = false;
       isRemoteVideoLoading.value = false;
       _pendingRemoteCandidates.clear();
@@ -2146,6 +2279,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     missedCallTimer?.cancel();
     _firstFrameTimer?.cancel();
     _qualityTimer?.cancel();
+    _remoteUpgradeTimer?.cancel();
     callTimer = null;
     missedCallTimer = null;
     _firstFrameTimer = null;

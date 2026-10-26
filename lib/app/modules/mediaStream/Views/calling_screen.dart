@@ -477,23 +477,46 @@ class CallingScreen extends StatelessWidget {
                   },
                 )
               else
-                ctrl(
-                  icon: Icons.videocam_rounded,
-                  label: "Video",
-                  isVideo: isVideo,
-                  iconColor: c.callStatus.toString() == "busy"
-                      ? Colors.white
-                      : AppColors.primaryPurple,
-                  videoInactive: c.callStatus.toString() == "busy"
-                      ? true
-                      : false,
-                  onTap: () {
-                    if (c.callStatus.toString() != "busy") {
+                // ctrl(
+                //   icon: Icons.videocam_rounded,
+                //   label: "Video",
+                //   isVideo: isVideo,
+                //   iconColor: c.callDurationRx.value == 0
+                //       ? Colors.white
+                //       : AppColors.primaryPurple,
+                //   videoInactive:c.callDurationRx.value == 0
+                //       ? true
+                //       : false,
+                //   onTap: () {
+                //     if (c.callDurationRx.value > 0) {
+                //       c.upgradeToVideoCall();
+                //       c.showControlsTemporarily();
+                //     }
+                //   },
+                // ),
+
+                Obx(() {
+                  final bool busy =
+                      c.isUpgradingToVideo.value || c.isRemoteUpgrading.value;
+                  final bool blocked =
+                      c.callStatus.toString() == "busy" ||
+                          c.callDurationRx.value == 0;
+
+                  return ctrl(
+                    icon: busy
+                        ? Icons.hourglass_top_rounded
+                        : Icons.videocam_rounded,
+                    label: busy ? "Connecting" : "Video",
+                    isVideo: isVideo,
+                    iconColor: blocked ? Colors.white : AppColors.primaryPurple,
+                    videoInactive: blocked || busy,
+                    onTap: () {
+                      if (blocked || busy) return;
                       c.upgradeToVideoCall();
                       c.showControlsTemporarily();
-                    }
-                  },
-                ),
+                    },
+                  );
+                }),
             ],
           ),
         ),
