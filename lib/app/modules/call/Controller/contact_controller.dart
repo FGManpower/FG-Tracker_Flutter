@@ -45,15 +45,30 @@ class ContactController extends GetxController {
 
   final RxBool contactLoading = false.obs;
 
+  /// Pehla load (success ya fail) hone se pehle UI hamesha skeleton dikhayega,
+  /// taki "No data found" ka flash na aaye.
+  final RxBool isFirstLoadDone = false.obs;
+
+  /// Permission check complete hua ya nahi (tab tak skeleton).
+  final RxBool permissionChecked = false.obs;
   final RxBool isContactPermissionGranted = false.obs;
   final RxBool hasAllowedContacts = false.obs;
   final RxInt contactPagination = 1.obs;
 
+  /// Server (group member API) page size.
   static const int contactPageLimit = 10;
+
+  /// UI par ek baar me itne registered contacts dikhenge (client-side paging).
+  /// getAllUser API paginated nahi hai (sab users ek saath aate hain), isliye
+  /// merged list ko screen par chunks me dikhate hain.
+  static const int uiPageSize = 20;
 
   static const int _minMatchesPerLoad = 10;
 
   static const int _maxPagesPerLoad = 10;
+
+  /// Itne seconds ke andar dobara non-forced refresh nahi chalega.
+  static const Duration _refreshThrottle = Duration(seconds: 10);
 
   static final RegExp _nonDigit = RegExp(r'[^0-9]');
 
@@ -61,18 +76,39 @@ class ContactController extends GetxController {
   final RxBool hasMoreContacts = true.obs;
 
   final RxString searchQuery = ''.obs;
+
+  /// Poori merged list (server pages + getAllUser), name se sorted.
   var allUserProfileData = <UserListData>[].obs;
+
+  /// UI ye list dekhta hai: search-filtered list ka current page tak ka hissa.
   var filteredUsers = <UserListData>[].obs;
 
   var inviteUsers = <UserListData>[].obs;
   var filteredInviteUsers = <UserListData>[].obs;
 
+  /// Search ke baad poori (unpaged) list. filteredUsers isi ka slice hai.
+  List<UserListData> _fullFiltered = <UserListData>[];
+
+  /// Abhi UI par kitne registered contacts allowed hain.
+  int _visibleCount = uiPageSize;
+
   bool _initialLoadDone = false;
+
+  /// Silent refresh chal raha hai (list screen par rehti hai, clear nahi hoti).
+  bool _isRefreshing = false;
+
+  /// Silent refresh me pehla merge purani list ko replace karega.
+  bool _replaceOnNextMerge = false;
+
+  DateTime? _lastLoadAt;
 
   int _session = 0;
 
   Future<void>? _phoneBookFuture;
   Future<bool>? _allUsersFuture;
+
+  Future<void>? _permCheckFuture;
+  bool _permissionPrompted = false;
 
   final Set<String> _seen = <String>{};
 
@@ -107,40 +143,73 @@ class ContactController extends GetxController {
     }
   }
 
-  Future<void> checkContactPermission() async {
+  // ───────────────────────── Permission ─────────────────────────
+
+  /// Concurrent calls ek hi check share karti hain (dialog 2 baar nahi aayega).
+  /// [prompt] true ho to pehli baar system dialog dikhayega.
+  Future<void> checkContactPermission({bool prompt = true}) {
+    return _permCheckFuture ??=
+        _checkPermission(prompt).whenComplete(() => _permCheckFuture = null);
+  }
+
+  Future<void> _checkPermission(bool prompt) async {
+    bool granted = false;
     try {
-      final bool granted =
-      await FlutterContacts.requestPermission(readonly: true);
-      isContactPermissionGranted.value = granted;
-      if (granted) {
-        hasAllowedContacts.value = true;
-        if (!_initialLoadDone && !contactLoading.value) {
-          await getRegisteredContacts();
-        }
+      final PermissionStatus status = await Permission.contacts.status;
+      granted = status.isGranted || status.isLimited;
+
+      if (!granted && prompt && !_permissionPrompted) {
+        _permissionPrompted = true;
+        granted = await FlutterContacts.requestPermission(readonly: true);
       }
     } catch (e) {
       debugPrint("Error checking contact permission: $e");
     }
-  }
 
-  Future<void> requestContactPermission() async {
-    try {
-      final status = await Permission.contacts.request();
-      if (status.isGranted) {
-        isContactPermissionGranted.value = true;
-        hasAllowedContacts.value = true;
+    isContactPermissionGranted.value = granted;
+    permissionChecked.value = true;
+
+    if (granted) {
+      hasAllowedContacts.value = true;
+      if (!_initialLoadDone && !contactLoading.value && !_isRefreshing) {
         await getRegisteredContacts();
-      } else if (status.isPermanentlyDenied) {
-        openAppSettings();
-      } else {
-        isContactPermissionGranted.value = false;
       }
-    } catch (e) {
-      debugPrint("Error requesting contact permission: $e");
     }
   }
 
-  Future<void> _loadPhoneBook() => _phoneBookFuture ??= _readPhoneBook();
+  /// "Allow Access" button par: dialog dikhata hai. true = granted.
+  /// false aaye to UI settings page par bhejega.
+  Future<bool> requestContactPermission() async {
+    try {
+      final bool granted =
+      await FlutterContacts.requestPermission(readonly: true);
+      if (granted) {
+        isContactPermissionGranted.value = true;
+        hasAllowedContacts.value = true;
+        permissionChecked.value = true;
+        _phoneBookFuture = null;
+        if (!_initialLoadDone) {
+          await getRegisteredContacts();
+        } else {
+          await silentRefresh(force: true);
+        }
+      }
+      return granted;
+    } catch (e) {
+      debugPrint("Error requesting contact permission: $e");
+      return false;
+    }
+  }
+
+  // ───────────────────────── Phone book ─────────────────────────
+
+  Future<void> _loadPhoneBook() {
+    return _phoneBookFuture ??= _readPhoneBook().catchError((Object e) {
+      // fail hua future cache nahi hona chahiye, warna hamesha fail rahega
+      _phoneBookFuture = null;
+      throw e;
+    });
+  }
 
   Future<void> _readPhoneBook() async {
     final List<Contact> deviceContacts = await _contactService.getContacts();
@@ -182,11 +251,16 @@ class ContactController extends GetxController {
     debugPrint("PHONEBOOK KEYS => ${_nameByKey10.length}");
   }
 
+  // ───────────────────────── Merge helpers ─────────────────────────
+
   void _mergeUsers(List<UserListData> incoming) {
     if (incoming.isEmpty) return;
 
-    final List<UserListData> merged =
-    List<UserListData>.from(allUserProfileData);
+    // Silent refresh me pehla merge purani list ko replace karta hai
+    final List<UserListData> merged = _replaceOnNextMerge
+        ? <UserListData>[]
+        : List<UserListData>.from(allUserProfileData);
+    _replaceOnNextMerge = false;
     bool changed = false;
 
     for (final UserListData user in incoming) {
@@ -305,26 +379,50 @@ class ContactController extends GetxController {
     }
   }
 
-  Future<void> getRegisteredContacts({bool loadMore = false}) async {
+  // ───────────────────────── Main loader ─────────────────────────
+
+  /// [silent] = true: list clear nahi hoti, skeleton nahi aata. Naya data
+  /// aate hi purani list replace hoti hai aur current search filter dobara lagta hai.
+  Future<void> getRegisteredContacts({
+    bool loadMore = false,
+    bool silent = false,
+  }) async {
+    if (!isContactPermissionGranted.value) return;
+
     if (loadMore) {
       if (contactLoading.value ||
           contactLoadingMore.value ||
+          _isRefreshing ||
           !hasMoreContacts.value) {
         return;
       }
       contactLoadingMore.value = true;
+    } else if (silent) {
+      if (contactLoading.value || _isRefreshing) return;
+      _isRefreshing = true;
+      responseError.value = "";
+      contactPagination.value = 1;
+      hasMoreContacts.value = true;
+      _seen.clear();
+      _replaceOnNextMerge = true;
+      _session++;
+      _allUsersFuture = null;
+      // silent refresh me _visibleCount reset nahi hota (scroll position bani rahe)
     } else {
-      if (contactLoading.value) return;
+      if (contactLoading.value || _isRefreshing) return;
       contactLoading.value = true;
       responseError.value = "";
       contactPagination.value = 1;
       hasMoreContacts.value = true;
       chatIdMap.clear();
       allUserProfileData.clear();
+      _fullFiltered = <UserListData>[];
       filteredUsers.clear();
       inviteUsers.clear();
       filteredInviteUsers.clear();
       _seen.clear();
+      _replaceOnNextMerge = false;
+      _visibleCount = uiPageSize;
       _session++;
       _allUsersFuture = null;
     }
@@ -395,7 +493,21 @@ class ContactController extends GetxController {
       hasMoreContacts.value = groupApiFailed ? false : apiHasMore;
       _mergeUsers(matchedUsers);
 
-      if (!loadMore && allUserProfileData.isEmpty && _allUsersFuture != null) {
+      if (silent) {
+        // all-users call ka wait karo taki replace sahi ho
+        final bool ok = _allUsersFuture != null ? await _allUsersFuture! : true;
+        if (session != _session) return;
+
+        // Server ne sach me kuch nahi diya -> purani list hata do
+        if (_replaceOnNextMerge && ok && !groupApiFailed) {
+          _replaceOnNextMerge = false;
+          allUserProfileData.clear();
+          _fullFiltered = <UserListData>[];
+          filteredUsers.clear();
+        }
+      } else if (!loadMore &&
+          allUserProfileData.isEmpty &&
+          _allUsersFuture != null) {
         final bool ok = await _allUsersFuture!;
         if (!ok && allUserProfileData.isEmpty && groupApiFailed) {
           responseError.value = "Something went wrong";
@@ -408,33 +520,101 @@ class ContactController extends GetxController {
 
       filterUsers(searchQuery.value);
     } catch (e) {
+      // silent fail par purani list screen par rehti hai
       if (!loadMore) responseError.value = e.toString();
     } finally {
       if (loadMore) {
         contactLoadingMore.value = false;
       } else {
-        contactLoading.value = false;
+        _replaceOnNextMerge = false;
+        _lastLoadAt = DateTime.now();
+        isFirstLoadDone.value = true;
+        if (silent) {
+          _isRefreshing = false;
+        } else {
+          contactLoading.value = false;
+        }
       }
     }
   }
 
-  Future<void> loadMoreContacts() => getRegisteredContacts(loadMore: true);
+  /// Scroll end par call hota hai.
+  /// 1) Pehle local merged list me se agle [uiPageSize] contacts dikhata hai (instant).
+  /// 2) Local list khatam ho gayi to server ka agla page (group member API) laata hai.
+  Future<void> loadMoreContacts() async {
+    if (filteredUsers.length < _fullFiltered.length) {
+      _visibleCount += uiPageSize;
+      _applyPage();
+      return;
+    }
+    await getRegisteredContacts(loadMore: true);
+  }
 
-  Future<void> refreshContacts() async {
-    _phoneBookFuture = null;
-    phoneContactNameMap.clear();
-    _nameByKey10.clear();
-    _nameByKey9.clear();
-    _phoneEntries.clear();
-    await getRegisteredContacts();
+  Future<void> silentRefresh({
+    bool force = false,
+    bool reloadPhoneBook = false,
+  }) async {
+    if (!isContactPermissionGranted.value) return;
+
+    if (!_initialLoadDone) {
+      if (!contactLoading.value && !_isRefreshing) {
+        await getRegisteredContacts();
+      }
+      return;
+    }
+
+    if (contactLoading.value || _isRefreshing) return;
+
+    if (!force &&
+        _lastLoadAt != null &&
+        DateTime.now().difference(_lastLoadAt!) < _refreshThrottle) {
+      return;
+    }
+
+    if (reloadPhoneBook) _phoneBookFuture = null;
+
+    await getRegisteredContacts(silent: true);
+  }
+
+  Future<void> refreshContacts() =>
+      silentRefresh(force: true, reloadPhoneBook: true);
+
+  /// Contacts tab open hone par.
+  Future<void> onTabOpened() async {
+    final bool wasLoaded = _initialLoadDone;
+    await checkContactPermission();
+    if (wasLoaded && isContactPermissionGranted.value) {
+      await silentRefresh(force: true);
+    }
+  }
+
+  /// App background se wapas aane par (settings se permission dekar aane par bhi).
+  Future<void> onAppResumed() async {
+    await checkContactPermission(prompt: false);
+    if (isContactPermissionGranted.value && _initialLoadDone) {
+      await silentRefresh();
+    }
+  }
+
+  // ───────────────────────── Search + paging ─────────────────────────
+
+  /// _fullFiltered ka pehla [_visibleCount] hissa filteredUsers me daalta hai.
+  void _applyPage() {
+    if (_fullFiltered.length <= _visibleCount) {
+      filteredUsers.value = List<UserListData>.from(_fullFiltered);
+    } else {
+      filteredUsers.value =
+      List<UserListData>.from(_fullFiltered.take(_visibleCount));
+    }
   }
 
   void filterUsers(String query) {
     final String q = query.trim().toLowerCase();
 
     if (q.isEmpty) {
-      filteredUsers.value = List<UserListData>.from(allUserProfileData);
+      _fullFiltered = List<UserListData>.from(allUserProfileData);
       filteredInviteUsers.value = List<UserListData>.from(inviteUsers);
+      _applyPage();
       return;
     }
 
@@ -448,13 +628,15 @@ class ContactController extends GetxController {
       return false;
     }
 
-    filteredUsers.value = allUserProfileData.where(match).toList();
+    _fullFiltered = allUserProfileData.where(match).toList();
     filteredInviteUsers.value = inviteUsers.where(match).toList();
+    _applyPage();
   }
 
   void applySearch(String query) {
     if (searchQuery.value == query) return;
     searchQuery.value = query;
+    _visibleCount = uiPageSize; // nayi search = paging dobara pehle page se
     filterUsers(query);
   }
 
@@ -471,6 +653,8 @@ class ContactController extends GetxController {
   void onClose() {
     responseError.close();
     contactLoading.close();
+    isFirstLoadDone.close();
+    permissionChecked.close();
     isContactPermissionGranted.close();
     hasAllowedContacts.close();
     contactPagination.close();

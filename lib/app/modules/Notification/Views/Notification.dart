@@ -47,6 +47,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   final Color textDark = const Color(0xff12113A);
   final Color primaryPurple = const Color(0xff5736F5);
 
+
   @override
   void initState() {
     super.initState();
@@ -407,12 +408,26 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 notificationData["memberData"],
               ),
             );
+            final int? chatId = int.tryParse(
+              (notificationData["chatId"] ??
+                  notificationData["conversationId"] ??
+                  notificationData["privateChatId"] ??
+                  item.chatId ??
+                  item.conversationId ??
+                  item.privateChatId)
+                  ?.toString() ??
+                  "",
+            );
 
+            memberData.chatId = chatId;
+
+            debugPrint("Notification chatId => $chatId");
             Get.toNamed(
               Routes.chatScreen,
               arguments: {
                 "userData": memberData,
                 "groupName": "Test",
+                "chatId": chatId,
                 "type": "chatScreen",
               },
             );

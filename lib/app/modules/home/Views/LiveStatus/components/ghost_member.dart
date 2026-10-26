@@ -394,6 +394,7 @@ class _GhostMemberState extends State<GhostMember> {
           userId: member.userId,
           id: member.userId,
           name: member.displayName,
+          chatId: member.chatId,
           imageUrl: member.profileImage,
           status: false,
           lastSeen: member.lastSeen,
