@@ -97,7 +97,16 @@ class QuickActionsSection extends StatelessWidget {
                 onTap: () =>
                     Get.to(() => const NewChatScreen(fromQuickAction: true)),
               ),
-
+              _QuickActionCard(
+                title: "Audio/Video Call",
+                imagePath: "assets/icons/new_action_call.png",
+                onTap: () => Get.to(() => CallScreen()),
+              ),
+              _QuickActionCard(
+                title: "Chatting",
+                imagePath: "assets/icons/new_action_chat.png",
+                onTap: () => Get.to(() => ChatListScreen()),
+              ),
               _QuickActionCard(
                 title: "Walkie Talkie",
                 subtitle: "1 hr free",
@@ -110,16 +119,6 @@ class QuickActionsSection extends StatelessWidget {
                 title: "Tracking",
                 imagePath: "assets/icons/new_action_tracking.png",
                 onTap: () => Get.to(() => TrackingScreen()),
-              ),
-              _QuickActionCard(
-                title: "Chatting",
-                imagePath: "assets/icons/new_action_chat.png",
-                onTap: () => Get.to(() => ChatListScreen()),
-              ),
-              _QuickActionCard(
-                title: "Audio/Video Call",
-                imagePath: "assets/icons/new_action_call.png",
-                onTap: () => Get.to(() => CallScreen()),
               ),
               _QuickActionCard(
                 title: "Safe Zone",

@@ -557,6 +557,7 @@ class DialogBox {
     String? team,
     int? battery,
     String? rawDistance,
+    int? chatId,
   }) {
     final currentUserId =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
@@ -934,6 +935,7 @@ class DialogBox {
       userId: userId ?? id,
       groupId: groupId ?? 0,
       name: displayName,
+      chatId: chatId,
       profileImage: fullImageUrl ?? resolvedImg ?? '',
       lastSeen: resolvedLastSeen,
       isOnline: isOnline,
@@ -1221,6 +1223,7 @@ class DialogBox {
                               "isCreator": false,
                               "type": "chatScreen",
                               "chatType": "private",
+                              "chatId": currentMemberData.chatId,
                               "groupId": groupId ?? 0,
                             },
                           );

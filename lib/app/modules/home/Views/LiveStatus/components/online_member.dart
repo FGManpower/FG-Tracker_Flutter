@@ -572,6 +572,7 @@ class _OnlineMemberState extends State<OnlineMember> {
           distance: 0,
           userId: member.userId,
           id: member.userId,
+          chatId: member.chatId,
           name: member.displayName,
           imageUrl: member.profileImage,
           status: isOnlineNow,

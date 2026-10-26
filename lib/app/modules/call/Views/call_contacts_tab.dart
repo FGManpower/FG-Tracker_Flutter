@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
@@ -13,6 +16,7 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../Core/constant/pref_res.dart';
@@ -24,7 +28,11 @@ class CallContactsTab extends StatefulWidget {
   State<CallContactsTab> createState() => _CallContactsTabState();
 }
 
-class _CallContactsTabState extends State<CallContactsTab> {
+class _CallContactsTabState extends State<CallContactsTab>
+    with WidgetsBindingObserver {
+  // Settings page ka package id (Play Store link se). Flavor/debug suffix ho to badlo.
+  static const String _androidPackage = 'com.fg.fgtracker';
+
   final CallController controller = CallController.instance;
   final ContactController contactController = ContactController.instance;
   final ScrollController scrollController = ScrollController();
@@ -33,10 +41,19 @@ class _CallContactsTabState extends State<CallContactsTab> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
-    contactController.checkContactPermission();
-    contactController.getRegisteredContacts();
+    // Permission check + (pehli baar) load, ya (baad me) silent refresh
+    contactController.onTabOpened();
     scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Settings se permission dekar aane par load, warna throttled silent refresh
+      contactController.onAppResumed();
+    }
   }
 
   void _onScroll() {
@@ -52,10 +69,98 @@ class _CallContactsTabState extends State<CallContactsTab> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     scrollController.removeListener(_onScroll);
     scrollController.dispose();
     super.dispose();
   }
+
+  // ───────────────────────── Permission ─────────────────────────
+
+  Future<void> _onAllowAccessTap() async {
+    final bool granted = await contactController.requestContactPermission();
+    if (granted) return;
+    await _openPermissionSettings();
+  }
+
+  Future<void> _openPermissionSettings() async {
+    if (Platform.isAndroid) {
+      try {
+        const AndroidIntent intent = AndroidIntent(
+          action: 'android.settings.APPLICATION_DETAILS_SETTINGS',
+          data: 'package:$_androidPackage',
+        );
+        await intent.launch();
+        return;
+      } catch (_) {
+        // fallback neeche
+      }
+    }
+    await openAppSettings();
+  }
+
+  Widget _buildPermissionView() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 84.w,
+              height: 84.w,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEDE9FE),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.contacts_rounded,
+                size: 40.sp,
+                color: const Color(0xFF6C5DD3),
+              ),
+            ),
+            SizedBox(height: 20.h),
+            reausabletext(
+              "Allow contacts access",
+              fontsize: 17.sp,
+              fontfamily: FontFamily.interBold,
+              color: Colors.black87,
+              align: TextAlign.center,
+            ),
+            SizedBox(height: 8.h),
+            reausabletext(
+              "We need access to your contacts to show who is on FG Tracker and to let you call them or send an invite.",
+              fontsize: 12.sp,
+              color: Colors.grey.shade600,
+              align: TextAlign.center,
+            ),
+            SizedBox(height: 24.h),
+            GestureDetector(
+              onTap: _onAllowAccessTap,
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6C5DD3),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: Center(
+                  child: reausabletext(
+                    "Allow Access",
+                    fontsize: 14.sp,
+                    fontfamily: FontFamily.interSemiBold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ───────────────────────── Helpers ─────────────────────────
 
   String _getInitials(String name) {
     final trimmed = name.trim();
@@ -79,9 +184,21 @@ class _CallContactsTabState extends State<CallContactsTab> {
     return colors[name.hashCode.abs() % colors.length];
   }
 
+  // ───────────────────────── Build ─────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      // 1. Permission check hone tak skeleton
+      if (!contactController.permissionChecked.value) {
+        return _buildContactsListUi(isLoading: true);
+      }
+
+      // 2. Permission nahi hai -> Allow UI
+      if (!contactController.isContactPermissionGranted.value) {
+        return _buildPermissionView();
+      }
+
       final List<UserListData> registered = contactController.filteredUsers;
       final List<UserListData> invites = contactController.filteredInviteUsers;
       final bool noData = contactController.allUserProfileData.isEmpty &&
@@ -96,11 +213,14 @@ class _CallContactsTabState extends State<CallContactsTab> {
         );
       }
 
-      if (contactController.contactLoading.value && noData) {
+      // 3. Pehla load poora hone se pehle hamesha skeleton (no "empty" flash)
+      if (noData &&
+          (contactController.contactLoading.value ||
+              !contactController.isFirstLoadDone.value)) {
         return _buildContactsListUi(isLoading: true);
       }
 
-      // Registered aur invite, dono khali ho tabhi empty screen
+      // 4. Registered aur invite, dono khali ho tabhi empty screen
       if (registered.isEmpty && invites.isEmpty) {
         return _buildEmptyUi();
       }
@@ -181,13 +301,6 @@ class _CallContactsTabState extends State<CallContactsTab> {
               ),
               sliver: SliverMainAxisGroup(
                 slivers: [
-                  if (!contactController.isContactPermissionGranted.value &&
-                      !loading)
-                    SliverToBoxAdapter(
-                      child: buildPermissionBanner(
-                          controller: contactController),
-                    ),
-
                   if (showRegisteredHeader)
                     SliverToBoxAdapter(
                       child: Padding(
@@ -204,7 +317,6 @@ class _CallContactsTabState extends State<CallContactsTab> {
                       ),
                     ),
 
-                  // Registered contacts (lazy)
                   SliverList.builder(
                     itemCount: registeredCount,
                     itemBuilder: (context, index) {
@@ -250,8 +362,8 @@ class _CallContactsTabState extends State<CallContactsTab> {
                   if (!loading && inviteData.isNotEmpty) ...[
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding:
-                        EdgeInsets.only(left: 4.w, bottom: 12.h, top: 16.h),
+                        padding: EdgeInsets.only(
+                            left: 4.w, bottom: 12.h, top: 16.h),
                         child: Text(
                           "Invite to FG Tracker",
                           style: TextStyle(
