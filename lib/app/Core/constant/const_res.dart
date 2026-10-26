@@ -34,7 +34,7 @@ class ConstRes {
       baseUrl: aBaseUrl,
     );
     _dio.options = options;
-    _dio.interceptors.add(PrettyDioLogger());
+    _dio.interceptors.add(PrettyDioLogger(enabled: false));
   }
   Dio get sendRequest => _dio;
 }

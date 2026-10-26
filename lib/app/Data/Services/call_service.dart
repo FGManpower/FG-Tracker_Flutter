@@ -24,9 +24,7 @@ class CallService {
       "profileImage": callerProfile ?? MyAppTheme.ProfilenotFoundImg,
       "callType": "outGoing",
     };
-    log("=========OutGoingCallArgumentDetail:${arg}");
 
-    // Call screen band hone (wapas aane) tak yahan wait hoga
     await Get.toNamed(
       Routes.callScreen,
       arguments: arg,
