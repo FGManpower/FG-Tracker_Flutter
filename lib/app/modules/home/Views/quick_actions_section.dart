@@ -98,6 +98,16 @@ class QuickActionsSection extends StatelessWidget {
                     Get.to(() => const NewChatScreen(fromQuickAction: true)),
               ),
               _QuickActionCard(
+                title: "Audio/Video Call",
+                imagePath: "assets/icons/new_action_call.png",
+                onTap: () => Get.to(() => CallScreen()),
+              ),
+              _QuickActionCard(
+                title: "Chatting",
+                imagePath: "assets/icons/new_action_chat.png",
+                onTap: () => Get.to(() => ChatListScreen()),
+              ),
+              _QuickActionCard(
                 title: "Walkie Talkie",
                 subtitle: "1 hr free",
                 imagePath: "assets/icons/new_action_walkie_talkie.png",
@@ -109,16 +119,6 @@ class QuickActionsSection extends StatelessWidget {
                 title: "Tracking",
                 imagePath: "assets/icons/new_action_tracking.png",
                 onTap: () => Get.to(() => TrackingScreen()),
-              ),
-              _QuickActionCard(
-                title: "Chatting",
-                imagePath: "assets/icons/new_action_chat.png",
-                onTap: () => Get.to(() => ChatListScreen()),
-              ),
-              _QuickActionCard(
-                title: "Audio/Video Call",
-                imagePath: "assets/icons/new_action_call.png",
-                onTap: () => Get.to(() => CallScreen()),
               ),
               _QuickActionCard(
                 title: "Safe Zone",
@@ -151,106 +151,104 @@ class _QuickActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isCallIcon = imagePath.contains('new_action_call');
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2B1F70).withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 3.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12.r),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2B1F70).withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+            border: Border.all(
+              color: const Color(0xFFE8E7F5),
+              width: 1,
+            ),
           ),
-        ],
-        border: Border.all(
-          color: const Color(0xFFE8E7F5),
-          width: 1,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12.r),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 3.h),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Center(
-                    child: Container(
-                      width: 62.w,
-                      height: 62.w,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF1F3FE),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Transform.scale(
-                          scale: isCallIcon ? 1.2 : 1.12,
-                          child: Image.asset(
-                            imagePath,
-                            width: 54.w,
-                            height: 54.w,
-                            fit: BoxFit.contain,
-                            filterQuality: FilterQuality.high,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.apps_rounded,
-                                color: const Color(0xFF6B4DFF),
-                                size: 32.sp,
-                              );
-                            },
-                          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Center(
+                  child: Container(
+                    width: 62.w,
+                    height: 62.w,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF1F3FE),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Transform.scale(
+                        scale: isCallIcon ? 1.2 : 1.12,
+                        child: Image.asset(
+                          imagePath,
+                          width: 54.w,
+                          height: 54.w,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.apps_rounded,
+                              color: const Color(0xFF6B4DFF),
+                              size: 32.sp,
+                            );
+                          },
                         ),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: 1.5.h),
+              ),
+              SizedBox(height: 1.5.h),
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: FontFamily.interSemiBold,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF10153D),
+                  height: 1.1,
+                ),
+              ),
+              if (subtitle != null) ...[
+                SizedBox(height: 1.h),
                 Text(
-                  title,
+                  subtitle!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: FontFamily.interSemiBold,
-                    fontSize: 10.sp,
+                    fontSize: 8.5.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF10153D),
-                    height: 1.1,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  SizedBox(height: 1.h),
-                  Text(
-                    subtitle!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: FontFamily.interSemiBold,
-                      fontSize: 8.5.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF5338EE),
-                      height: 1.0,
-                    ),
-                  ),
-                ],
-                SizedBox(height: 2.h),
-                Container(
-                  width: 14.w,
-                  height: 2.2.h,
-                  decoration: BoxDecoration(
                     color: const Color(0xFF5338EE),
-                    borderRadius: BorderRadius.circular(2.r),
+                    height: 1.0,
                   ),
                 ),
-                SizedBox(height: 1.h),
               ],
-            ),
+              SizedBox(height: 2.h),
+              Container(
+                width: 14.w,
+                height: 2.2.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5338EE),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 1.h),
+            ],
           ),
         ),
       ),

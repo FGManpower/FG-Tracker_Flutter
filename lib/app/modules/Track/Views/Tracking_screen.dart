@@ -3370,6 +3370,7 @@ class TrackingScreen extends StatelessWidget {
                   final MemberData memberData = MemberData(
                     id: int.tryParse(member.id?.toString() ?? ''),
                     userId: int.tryParse(memberUserId),
+                    chatId: int.tryParse(member.chatId?.toString() ?? ''),
                     groupId: 0,
                     name: name,
                     profileImage: member.profileImage?.toString(),
@@ -3384,6 +3385,7 @@ class TrackingScreen extends StatelessWidget {
                       "userData": memberData,
                       "groupName": name,
                       "isCreator": false,
+                      "chatId": member.chatId,
                       "type": "chatScreen",
                       "chatType": "private",
                       "groupId": 0,

@@ -92,7 +92,7 @@ class UsersWithinRadiusData {
   String? location;
   String? lastSeen;
   bool isOnline = false;
-
+  int? chatId;
   UsersWithinRadiusData({
     this.userId,
     this.name,
@@ -105,6 +105,7 @@ class UsersWithinRadiusData {
     this.team,
     this.location,
     this.lastSeen,
+    this.chatId,
     this.isOnline = false,
   });
 
@@ -115,6 +116,7 @@ class UsersWithinRadiusData {
   }
 
   UsersWithinRadiusData.fromJson(Map<String, dynamic> json) {
+
     final user = json['user'] is Map
         ? (json['user'] as Map)
         : (json['userData'] is Map
@@ -124,6 +126,21 @@ class UsersWithinRadiusData {
                 : (json['userDetails'] is Map
                     ? (json['userDetails'] as Map)
                     : (json['User'] is Map ? (json['User'] as Map) : null))));
+    final dynamic rawChatId =
+        json['chatId'] ??
+            json['chat_id'] ??
+            json['privateChatId'] ??
+            json['private_chat_id'] ??
+            json['conversationId'] ??
+            json['conversation_id'] ??
+            user?['chatId'] ??
+            user?['chat_id'] ??
+            user?['privateChatId'] ??
+            user?['private_chat_id'] ??
+            user?['conversationId'] ??
+            user?['conversation_id'];
+
+    chatId = int.tryParse(rawChatId?.toString() ?? '');
 
     userId = json['userId'] ??
         json['UserId'] ??
@@ -346,6 +363,7 @@ class UsersWithinRadiusData {
     data['location'] = location;
     data['lastSeen'] = lastSeen;
     data['isOnline'] = isOnline;
+    data['chatId'] = chatId;
     return data;
   }
 
@@ -512,6 +530,7 @@ class UsersWithinRadiusData {
       userId: userId,
       latitude: latitude,
       longitude: longitude,
+      chatId: chatId,
       isOnline: isOnline,
       name: (name != null && name!.trim().isNotEmpty)
           ? name!.trim()
