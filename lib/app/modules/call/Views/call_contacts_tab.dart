@@ -10,6 +10,7 @@ import 'package:fgtracker/app/global_widget/invite_helper.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
 import 'package:fgtracker/app/modules/call/Controller/contact_controller.dart';
 import 'package:fgtracker/app/modules/call/widget/SkeletonContactCard.dart';
+import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/contact_profile_screen.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -464,6 +465,12 @@ class _CallContactsTabState extends State<CallContactsTab>
   }
 
   void _startCall(UserListData user, bool isVideo) {
+    if (!CallValidation.validateCall(
+      destinationPhone: user.mobileNo,
+      destinationUserId: user.userId?.toString(),
+    )) {
+      return;
+    }
     CallService().startOutGoingCall(
         context,
         callerId: Global.storageServices.get(PrefConst.userId).toString(),

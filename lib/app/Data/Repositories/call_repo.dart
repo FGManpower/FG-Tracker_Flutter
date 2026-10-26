@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../Core/constant/const_res.dart' show ConstRes;
 import '../../Core/constant/pref_res.dart';
 import '../../Core/constant/urls.dart';
 import '../../Core/util/http/http_util.dart';
@@ -86,5 +85,76 @@ class CallRepo {
       return CallHistoryDetailRes.fromJson(jsonDecode(response));
     }
     return CallHistoryDetailRes.fromJson(response);
+  }
+
+  static Future<CommonResponse> deleteSingleCallHistory({
+    required String callId,
+  }) async {
+    try {
+      final response = await HttpUtil().Authdelete(
+        Urls.recentCallHistory,
+        queryParameteres: {"callId": callId},
+        data: {"callId": callId},
+      );
+      log("[CallRepo] deleteSingleCallHistory ($callId) Response: $response");
+      if (response is Map<String, dynamic>) {
+        return CommonResponse.fromJson(response);
+      } else if (response is Map) {
+        return CommonResponse.fromJson(Map<String, dynamic>.from(response));
+      }
+      return CommonResponse(
+        status: true,
+        message: "Call history deleted successfully",
+      );
+    } catch (e) {
+      log("[CallRepo] deleteSingleCallHistory ($callId) error: $e");
+      return CommonResponse(status: false, message: e.toString());
+    }
+  }
+
+  static Future<CommonResponse> deleteMultipleCallHistory({
+    required List<String> callIds,
+  }) async {
+    try {
+      final response = await HttpUtil().Authdelete(
+        Urls.recentCallHistory,
+        data: {"callIds": callIds},
+      );
+      log("[CallRepo] deleteMultipleCallHistory ($callIds) Response: $response");
+      if (response is Map<String, dynamic>) {
+        return CommonResponse.fromJson(response);
+      } else if (response is Map) {
+        return CommonResponse.fromJson(Map<String, dynamic>.from(response));
+      }
+      return CommonResponse(
+        status: true,
+        message: "Selected calls deleted successfully",
+      );
+    } catch (e) {
+      log("[CallRepo] deleteMultipleCallHistory error: $e");
+      return CommonResponse(status: false, message: e.toString());
+    }
+  }
+
+  static Future<CommonResponse> clearAllCallHistory() async {
+    try {
+      final response = await HttpUtil().Authdelete(
+        Urls.recentCallHistory,
+        data: {"clearAll": true},
+      );
+      log("[CallRepo] clearAllCallHistory Response: $response");
+      if (response is Map<String, dynamic>) {
+        return CommonResponse.fromJson(response);
+      } else if (response is Map) {
+        return CommonResponse.fromJson(Map<String, dynamic>.from(response));
+      }
+      return CommonResponse(
+        status: true,
+        message: "All call history cleared successfully",
+      );
+    } catch (e) {
+      log("[CallRepo] clearAllCallHistory error: $e");
+      return CommonResponse(status: false, message: e.toString());
+    }
   }
 }
