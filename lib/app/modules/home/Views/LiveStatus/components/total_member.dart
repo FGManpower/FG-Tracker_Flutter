@@ -562,6 +562,7 @@ class _TotalMemberState extends State<TotalMember> {
           distance: 0,
           userId: member.userId,
           id: member.userId,
+          chatId: member.chatId,
           name: member.displayName,
           imageUrl: member.profileImage,
           status: isOnline,

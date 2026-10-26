@@ -441,7 +441,6 @@ class TrackController extends GetxController {
         gm.isOnline = 1;
       }
     }
-
     _refreshMembersAndMap();
   }
 
@@ -1044,6 +1043,7 @@ class TrackController extends GetxController {
           profileImage: loc?.profileImage ?? m?.profileImage,
           isCreator: m?.isCreator ?? loc?.isCreator,
           isOnline: isOnline,
+          chatId: m?.chatId ?? loc?.chatId,
           lastSeen: loc?.lastSeen?.toString() ?? m?.lastSeen?.toString(),
           locationSharing: !isGhost,
           mobileNo: m?.mobileNo ?? loc?.mobileNo?.toString(),
@@ -2558,6 +2558,7 @@ class TrackController extends GetxController {
       distance: dist,
       userId: uId,
       id: uId,
+      chatId: u.chatId,
       name: resolvedName,
       imageUrl: resolvedImg,
       status: u.isOnline,
@@ -2574,6 +2575,9 @@ class TrackController extends GetxController {
   }
 
   void showMemberProfileFromMemberModel(MemberModel m) {
+    print('🔥 MEMBER PROFILE METHOD CALLED');
+    print('🔥 MEMBER ID => ${m.userId}');
+    print('🔥 MEMBER CHAT ID => ${m.chatId}');
     UsersWithinRadiusData? matching;
     for (var u in radiusUsers) {
       if (u.userId?.toString() == m.userId?.toString()) {
@@ -2619,6 +2623,7 @@ class TrackController extends GetxController {
       id: uId,
       name: m.name,
       imageUrl: m.avatarUrl,
+      chatId: m.chatId,
       status: m.isOnline,
       location: m.location,
       team: m.team.isNotEmpty
