@@ -201,7 +201,7 @@ class ContactProfileController extends GetxController {
           is_video: isVideo,
           callerName: contactData?.name ?? 'User',
           callerProfile: contactData?.profileImage,
-          destinationPhone: phone,
+          // destinationPhone: phone,
         );
       } else {
         Utils().fluttertoast("Unable to call this contact");
