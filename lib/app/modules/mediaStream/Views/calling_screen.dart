@@ -46,11 +46,17 @@ class CallingScreen extends StatelessWidget {
                           showLocalInMain
                               ? c.localRenderer
                               : c.remoteRenderer,
+                          key: ValueKey<String>(
+                            showLocalInMain
+                                ? 'main_local_${c.localRenderer.textureId}'
+                                : 'main_remote_${c.remoteRenderer.textureId}',
+                          ),
                           mirror: showLocalInMain && c.isFrontCamera,
                           objectFit: RTCVideoViewObjectFit
                               .RTCVideoViewObjectFitCover,
                         )
                             : Container(
+                          key: const ValueKey<String>('main_video_off'),
                           color: const Color(0xFF12131F),
                           alignment: Alignment.center,
                           child: Column(
@@ -60,7 +66,8 @@ class CallingScreen extends StatelessWidget {
                                 width: 84.r,
                                 height: 84.r,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.10),
+                                  color:
+                                  Colors.white.withOpacity(0.10),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
@@ -75,7 +82,8 @@ class CallingScreen extends StatelessWidget {
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 15.sp,
-                                  fontFamily: FontFamily.interMedium,
+                                  fontFamily:
+                                  FontFamily.interMedium,
                                 ),
                               ),
                             ],
@@ -287,11 +295,17 @@ class CallingScreen extends StatelessWidget {
                 child: pipHasActiveVideo
                     ? RTCVideoView(
                   showingRemote ? c.remoteRenderer : c.localRenderer,
+                  key: ValueKey<String>(
+                    showingRemote
+                        ? 'pip_remote_${c.remoteRenderer.textureId}'
+                        : 'pip_local_${c.localRenderer.textureId}',
+                  ),
                   mirror: !showingRemote && c.isFrontCamera,
                   objectFit:
                   RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                 )
                     : Container(
+                  key: const ValueKey<String>('pip_video_off'),
                   color: const Color(0xFF1A1A2E),
                   child: Icon(
                     Icons.videocam_off,
@@ -470,8 +484,9 @@ class CallingScreen extends StatelessWidget {
                   iconColor: c.callStatus.toString() == "busy"
                       ? Colors.white
                       : AppColors.primaryPurple,
-                  videoInactive:
-                  c.callStatus.toString() == "busy" ? true : false,
+                  videoInactive: c.callStatus.toString() == "busy"
+                      ? true
+                      : false,
                   onTap: () {
                     if (c.callStatus.toString() != "busy") {
                       c.upgradeToVideoCall();
@@ -479,7 +494,6 @@ class CallingScreen extends StatelessWidget {
                     }
                   },
                 ),
-
             ],
           ),
         ),
@@ -487,4 +501,3 @@ class CallingScreen extends StatelessWidget {
     );
   }
 }
-
