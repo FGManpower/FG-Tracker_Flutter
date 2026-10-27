@@ -25,6 +25,7 @@ class CallAudioRouteController extends GetxController {
   };
 
   final Rx<CallAudioRoute> currentRoute = CallAudioRoute.earpiece.obs;
+  final Rx<CallAudioRoute?> pendingRoute = Rx<CallAudioRoute?>(null);
 
   final RxBool isBluetoothConnected = false.obs;
   final RxString bluetoothDeviceName = 'Bluetooth'.obs;
@@ -36,6 +37,7 @@ class CallAudioRouteController extends GetxController {
   bool _isCheckingDevices = false;
   bool _isApplyingRoute = false;
   bool _userSelectedRoute = false;
+  bool _routeInitialized = false;
   int _applySeq = 0;
   bool _iosSessionActivated = false;
   String? _nativeActiveOutput;
@@ -116,6 +118,13 @@ class CallAudioRouteController extends GetxController {
 
   bool get isSwitchingRoute => _isApplyingRoute;
 
+  bool get hasUserSelection => _userSelectedRoute;
+
+  bool get isRouteTransitioning =>
+      _isApplyingRoute && pendingRoute.value != null;
+
+  CallAudioRoute get confirmedRoute => currentRoute.value;
+
   List<CallAudioRoute> get availableRoutes => <CallAudioRoute>[
     if (!isVideoCall.value) CallAudioRoute.earpiece,
     CallAudioRoute.speaker,
@@ -146,8 +155,10 @@ class CallAudioRouteController extends GetxController {
   Future<void> startCall({required bool isVideo}) async {
     _isDisposed = false;
     _userSelectedRoute = false;
+    _routeInitialized = false;
     _lastBluetoothName = null;
     _nativeActiveOutput = null;
+    pendingRoute.value = null;
     _cancelWarmupTimers();
     isVideoCall.value = isVideo;
     currentRoute.value = _defaultRoute;
@@ -175,18 +186,57 @@ class CallAudioRouteController extends GetxController {
   }
 
   Future<void> updateCallType({required bool isVideo}) async {
+    final bool wasVideo = isVideoCall.value;
     isVideoCall.value = isVideo;
 
     if (isVideo) {
       _cancelWarmupTimers();
-      if (currentRoute.value == CallAudioRoute.earpiece) {
-        _userSelectedRoute = false;
-        await _setRoute(CallAudioRoute.speaker);
-        return;
-      }
     }
+    if (wasVideo == isVideo && _routeInitialized) return;
 
-    await _setRoute(currentRoute.value);
+    final CallAudioRoute keep = isVideo
+        ? _preferredOnVideoUpgrade()
+        : _preferredOnAudioDowngrade();
+    _log(
+      'updateCallType(video=$isVideo) keeps $keep (was ${currentRoute.value})',
+    );
+
+    if (keep == currentRoute.value) {
+      await _setRoute(keep, force: true);
+      return;
+    }
+    await _setRoute(keep);
+  }
+
+  CallAudioRoute _preferredOnVideoUpgrade() {
+    final CallAudioRoute current = currentRoute.value;
+    if (current == CallAudioRoute.bluetooth && isBluetoothConnected.value) {
+      return current;
+    }
+    if (current == CallAudioRoute.headset && isHeadsetConnected.value) {
+      return current;
+    }
+    if (_userSelectedRoute && current == CallAudioRoute.speaker) {
+      return current;
+    }
+    if (isBluetoothConnected.value) return CallAudioRoute.bluetooth;
+    if (isHeadsetConnected.value) return CallAudioRoute.headset;
+    return CallAudioRoute.speaker;
+  }
+
+  CallAudioRoute _preferredOnAudioDowngrade() {
+    final CallAudioRoute current = currentRoute.value;
+    if (current == CallAudioRoute.bluetooth && isBluetoothConnected.value) {
+      return current;
+    }
+    if (current == CallAudioRoute.headset && isHeadsetConnected.value) {
+      return current;
+    }
+    if (_userSelectedRoute && current == CallAudioRoute.speaker) {
+      return current;
+    }
+    if (isBluetoothConnected.value) return CallAudioRoute.bluetooth;
+    return CallAudioRoute.earpiece;
   }
 
   Future<void> selectRoute(CallAudioRoute route) async {
@@ -226,9 +276,11 @@ class CallAudioRouteController extends GetxController {
   Future<void> stopCall() async {
     _isDisposed = true;
     _userSelectedRoute = false;
+    _routeInitialized = false;
     _lastBluetoothName = null;
     _nativeActiveOutput = null;
     _isApplyingRoute = false;
+    pendingRoute.value = null;
     _cancelWarmupTimers();
     _deviceDebounce?.cancel();
     _deviceDebounce = null;
@@ -311,12 +363,15 @@ class CallAudioRouteController extends GetxController {
     if (_isDisposed) return;
 
     final CallAudioRoute target = _sanitizeRoute(requested);
+    final CallAudioRoute previous = currentRoute.value;
+    final int seq = ++_applySeq;
+
     _isApplyingRoute = true;
+    pendingRoute.value = target;
+    _safeUpdate();
+
     try {
-      if (currentRoute.value != target) {
-        currentRoute.value = target;
-      }
-      _safeUpdate();
+      bool confirmed = true;
 
       if (Platform.isIOS) {
         await _applyIosRoute(
@@ -324,18 +379,51 @@ class CallAudioRouteController extends GetxController {
           userInitiated: userInitiated,
           force: force,
         );
-        final CallAudioRoute? confirmed = _nativeRoute();
-        if (confirmed != null && confirmed != currentRoute.value) {
-          _log('device reported $confirmed');
-          currentRoute.value = confirmed;
-        }
+        final CallAudioRoute? native = _nativeRoute();
+        if (native != null) confirmed = native == target;
       } else if (Platform.isAndroid) {
-        await _applyAndroidRoute(target);
+        confirmed = await _applyAndroidRoute(target);
+      }
+
+      if (_isDisposed || seq != _applySeq) {
+        _log('route $target dropped (stale seq=$seq current=$_applySeq)');
+        return;
+      }
+
+      if (confirmed) {
+        if (currentRoute.value != target) {
+          currentRoute.value = target;
+        }
+        if (userInitiated) {
+          _userSelectedRoute = true;
+        }
+        _log(
+          'route confirmed $target user=${userInitiated || _userSelectedRoute}',
+        );
+      } else if (!force) {
+        if (userInitiated) {
+          _userSelectedRoute = false;
+        }
+        final CallAudioRoute actual = Platform.isAndroid
+            ? await _readAndroidRoute()
+            : (_nativeRoute() ?? previous);
+        _log('route $target NOT confirmed, reverting to $actual');
+        if (currentRoute.value != actual) {
+          currentRoute.value = actual;
+        }
+      } else {
+        _log('route $target not confirmed but forced, keeping selection');
+        if (userInitiated) {
+          _userSelectedRoute = true;
+        }
       }
 
       await _applyProximity(currentRoute.value);
     } finally {
-      _isApplyingRoute = false;
+      if (seq == _applySeq) {
+        _isApplyingRoute = false;
+        pendingRoute.value = null;
+      }
       _safeUpdate();
     }
   }
@@ -396,19 +484,19 @@ class CallAudioRouteController extends GetxController {
     _applyNativeState(confirm);
   }
 
-  Future<void> _applyAndroidRoute(CallAudioRoute route) async {
+  Future<bool> _applyAndroidRoute(CallAudioRoute route) async {
     final String? outputName = _androidOutputNames[route];
-    if (outputName == null) return;
+    if (outputName == null) return false;
 
-    final int seq = ++_applySeq;
+    final int seq = _applySeq;
 
     try {
       await _rankAndroidOutput(route);
-      if (_isDisposed || seq != _applySeq) return;
+      if (_isDisposed || seq != _applySeq) return false;
 
       await Helper.selectAudioOutput(outputName);
       await Future.delayed(const Duration(milliseconds: 150));
-      if (_isDisposed || seq != _applySeq) return;
+      if (_isDisposed || seq != _applySeq) return false;
 
       bool matched = await _androidRouteMatches(route);
       _log('android route $route -> $outputName matched=$matched');
@@ -416,17 +504,35 @@ class CallAudioRouteController extends GetxController {
       if (!matched) {
         _log('android route $route not applied, re-asserting');
         await _rankAndroidOutput(route);
-        if (_isDisposed || seq != _applySeq) return;
+        if (_isDisposed || seq != _applySeq) return false;
 
         await Helper.selectAudioOutput(outputName);
         await Future.delayed(const Duration(milliseconds: 200));
-        if (_isDisposed || seq != _applySeq) return;
+        if (_isDisposed || seq != _applySeq) return false;
 
         matched = await _androidRouteMatches(route);
         _log('android route $route re-assert matched=$matched');
       }
+      return matched;
     } catch (error) {
       _log('applyAndroidRoute($route) error: $error');
+      return false;
+    }
+  }
+
+  Future<CallAudioRoute> _readAndroidRoute() async {
+    try {
+      final AndroidAudioManager manager = AndroidAudioManager();
+      if (await manager.isSpeakerphoneOn()) return CallAudioRoute.speaker;
+      if (isBluetoothConnected.value) {
+        final bool sco = await manager.isBluetoothScoOn();
+        if (sco) return CallAudioRoute.bluetooth;
+      }
+      if (isHeadsetConnected.value) return CallAudioRoute.headset;
+      if (isBluetoothConnected.value) return CallAudioRoute.bluetooth;
+      return CallAudioRoute.earpiece;
+    } catch (_) {
+      return currentRoute.value;
     }
   }
 
@@ -579,7 +685,7 @@ class CallAudioRouteController extends GetxController {
         _applyNativeState(state);
         return;
       }
-      await _scanAndroidDevices(isInitial: force);
+      await _scanAndroidDevices(isInitial: !_routeInitialized);
     } catch (error) {
       _log('refreshDevices error: $error');
     } finally {
@@ -723,13 +829,14 @@ class CallAudioRouteController extends GetxController {
     isHeadsetConnected.value = isWiredFound;
     headsetDeviceName.value = headsetName;
 
-    if (isInitial) {
+    if (isInitial && !_routeInitialized) {
+      _routeInitialized = true;
       if (!_userSelectedRoute) {
-        await _setRoute(
-          isBtFound
-              ? CallAudioRoute.bluetooth
-              : (isWiredFound ? CallAudioRoute.headset : _defaultRoute),
-        );
+        final CallAudioRoute initial = isBtFound
+            ? CallAudioRoute.bluetooth
+            : (isWiredFound ? CallAudioRoute.headset : _defaultRoute);
+        _log('initial route $initial bt=$isBtFound wired=$isWiredFound');
+        await _setRoute(initial);
       }
       return;
     }

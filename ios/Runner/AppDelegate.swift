@@ -174,6 +174,9 @@ private let candidateTokenPrefKeys = [
         continue userActivity: NSUserActivity,
         restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
     ) -> Bool {
+        if handleRecentsCallback(userActivity) {
+            return true
+        }
         if let url = userActivity.webpageURL,
            let vc = window?.rootViewController as? FlutterViewController {
             let channel = FlutterMethodChannel(
@@ -308,7 +311,7 @@ private let candidateTokenPrefKeys = [
             }
 
             let dummy = flutter_callkit_incoming.Data(
-                id: UUID().uuidString,
+                id: id,
                 nameCaller: name,
                 handle: handleValue,
                 type: isVideo ? 1 : 0
@@ -527,6 +530,11 @@ private let candidateTokenPrefKeys = [
                 return value
             }
         }
+        if let supplied = Self.stringValue(payload["handle"]),
+           !supplied.isEmpty,
+           Self.displayableName(supplied) != nil {
+            return supplied
+        }
         for key in ["callerId", "caller_id"] {
             if let value = Self.stringValue(extra[key]), !value.isEmpty, value != "0" {
                 return value
@@ -616,7 +624,7 @@ private let candidateTokenPrefKeys = [
         }
 
         if name == "speaker" {
-            return [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker]
+            return [.defaultToSpeaker]
         }
 
         if name == "bluetooth" {
@@ -829,8 +837,15 @@ private let candidateTokenPrefKeys = [
 
         switch route {
         case "speaker":
+            try? rtcSession.overrideOutputAudioPort(.none)
             try? rtcSession.overrideOutputAudioPort(.speaker)
-            try? session.setPreferredInput(builtInMic)
+            if let builtInMic {
+                try? session.setPreferredInput(builtInMic)
+            } else {
+                try? session.setPreferredInput(nil)
+            }
+            let outputs = session.currentRoute.outputs.map { $0.portType.rawValue }
+            print("[AppDelegate] speaker route applied outputs=\(outputs)")
 
         case "bluetooth":
             try? rtcSession.overrideOutputAudioPort(.none)
@@ -1140,21 +1155,6 @@ private let candidateTokenPrefKeys = [
         if let bgId = activeBgTasks.removeValue(forKey: key), bgId != .invalid {
             UIApplication.shared.endBackgroundTask(bgId)
         }
-    }
-
-    override func application(
-        _ application: UIApplication,
-        continue userActivity: NSUserActivity,
-        restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
-    ) -> Bool {
-        if handleRecentsCallback(userActivity) {
-            return true
-        }
-        return super.application(
-            application,
-            continue: userActivity,
-            restorationHandler: restorationHandler
-        )
     }
 
     private func handleRecentsCallback(_ activity: NSUserActivity) -> Bool {
