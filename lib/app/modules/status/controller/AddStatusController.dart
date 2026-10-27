@@ -236,12 +236,21 @@ class AddStatusController extends GetxController {
       isRecording.value = true;
       recordDuration.value = 0;
       _recordTimer?.cancel();
-      _recordTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-        recordDuration.value++;
-        if (recordDuration.value >= 30) {
-          stopVideoRecording();
-        }
-      });
+
+      _recordTimer = Timer.periodic(
+        const Duration(seconds: 1),
+            (timer) {
+          recordDuration.value++;
+
+          if (recordDuration.value >= 30) {
+            timer.cancel();
+
+            if (isRecording.value) {
+              stopVideoRecording();
+            }
+          }
+        },
+      );
     } catch (_) {}
   }
 

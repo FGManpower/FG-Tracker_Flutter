@@ -25,7 +25,80 @@ class GroupChatScreen extends GetView<GroupMessageController> {
 
   static const Color _purple = Color(0xFF5045B9);
   static const Color _scaffoldBg = Color(0xFFF5F3FB);
+  Widget buildMessageSkeleton({
+    required bool isMine,
+    required bool isImage,
+  }) {
+    final Color lineColor = const Color(0xFFE7E4EE);
 
+    Widget line(double width) => Container(
+      width: width,
+      height: 10,
+      decoration: BoxDecoration(
+        color: lineColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+    );
+
+    return Align(
+      alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+      child: Row(
+        mainAxisAlignment:
+        isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isMine) ...[
+            const CircleAvatar(
+              radius: 17,
+              backgroundColor: Color(0xFFE8E6ED),
+              child: Icon(Icons.person, color: Color(0xFFAAA7B3)),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Container(
+            width: isImage ? 235 : 220,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isMine ? const Color(0xFFECE7FF) : Colors.white,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (isImage) ...[
+                  Container(
+                    height: 105,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: lineColor,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.image_outlined,
+                      size: 35,
+                      color: Color(0xFFB5B1C0),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+                if (!isImage) ...[
+                  line(150),
+                  const SizedBox(height: 9),
+                  line(95),
+                ],
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: line(38),
+                ),
+              ],
+            ),
+          ),
+          if (isMine) const SizedBox(width: 4),
+        ],
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,8 +129,27 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  GroupChatList(controller: controller),
                   Obx(() {
+                    if (controller.isLoading.value) {
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: 7,
+                        itemBuilder: (context, index) {
+                          final bool isMine = index % 3 == 1;
+
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: buildMessageSkeleton(
+                              isMine: isMine,
+                              isImage: index == 3,
+                            ),
+                          );
+                        },
+                      );
+                    }
+
+                    return GroupChatList(controller: controller);
+                  }),                  Obx(() {
                     final isVisible = controller.showFloatingDate.value;
                     final date = controller.floatingDate.value;
 
