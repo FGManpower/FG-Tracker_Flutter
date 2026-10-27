@@ -86,8 +86,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxBool isUnblocking = false.obs;
   final RxBool isBlocked = false.obs;
   final RxBool blockedByMe = false.obs;
-  final RxBool isPeerOnline = false.obs;
+  RxBool isPeerOnline = false.obs;
   final RxString peerLastSeen = "Offline".obs;
+  final RxBool isPeerTyping = false.obs;
+  Timer? _typingDebounceTimer;
+  Timer? _peerTypingResetTimer;
   RxString privateChatId = "".obs;
 
   RxInt privateCurrentPage = 1.obs;
@@ -181,6 +184,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     textEditingController.dispose();
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
+    _typingDebounceTimer?.cancel();
+    _peerTypingResetTimer?.cancel();
     socketService.disconnectPrivateChatSocket();
     super.onClose();
   }
@@ -283,6 +288,43 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   void hideEmoji() {
     showEmoji.value = false;
+  }
+
+  void onInputTextChanged(String text) {
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId).toString();
+    final receiverId = memberData?.userId?.toString() ?? "";
+
+    if (text.trim().isNotEmpty) {
+      if (_typingDebounceTimer?.isActive != true) {
+        if (privateChatId.value.isNotEmpty && receiverId.isNotEmpty) {
+          socketService.sendPrivateTyping(
+            chatId: privateChatId.value,
+            userId: currentUserId,
+            otherUserId: receiverId,
+          );
+        }
+      }
+      _typingDebounceTimer?.cancel();
+      _typingDebounceTimer = Timer(const Duration(seconds: 2), () {
+        if (privateChatId.value.isNotEmpty && receiverId.isNotEmpty) {
+          socketService.sendPrivateStopTyping(
+            chatId: privateChatId.value,
+            userId: currentUserId,
+            otherUserId: receiverId,
+          );
+        }
+      });
+    } else {
+      _typingDebounceTimer?.cancel();
+      if (privateChatId.value.isNotEmpty && receiverId.isNotEmpty) {
+        socketService.sendPrivateStopTyping(
+          chatId: privateChatId.value,
+          userId: currentUserId,
+          otherUserId: receiverId,
+        );
+      }
+    }
   }
 
   Future<void> scrollToMessage(int messageId) async {
@@ -549,6 +591,26 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           }
 
           updateMessageStream();
+        },
+      );
+
+      socketService.listenPrivateTyping(
+        onTyping: (data) {
+          try {
+            final senderId = (data is Map ? data["userId"] : null)?.toString();
+            final targetUserId = memberData?.userId?.toString();
+            if (senderId == null || senderId == targetUserId) {
+              isPeerTyping.value = true;
+              _peerTypingResetTimer?.cancel();
+              _peerTypingResetTimer = Timer(const Duration(seconds: 3), () {
+                if (!isClosed) isPeerTyping.value = false;
+              });
+            }
+          } catch (_) {}
+        },
+        onStopTyping: (data) {
+          _peerTypingResetTimer?.cancel();
+          isPeerTyping.value = false;
         },
       );
 
@@ -1768,7 +1830,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (result.pagination != null) {
           hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
         } else {
-          hasMoreOlderMessages.value = olderMessages.length >= 50;
+          hasMoreOlderMessages.value = olderMessages.length >= 10;
         }
       }
     } catch (e) {

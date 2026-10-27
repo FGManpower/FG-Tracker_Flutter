@@ -3,6 +3,7 @@ import 'package:fgtracker/app/modules/call/Views/call_groups_tab.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
+import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -25,10 +26,14 @@ class _CallScreenState extends State<CallScreen>
   @override
   void initState() {
     super.initState();
+    SocketService.instance.markCallHistoryViewed();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         controller.switchTab(_tabController.index);
+        if (_tabController.index == 0) {
+          SocketService.instance.markCallHistoryViewed();
+        }
       }
     });
     controller.loadGroups();

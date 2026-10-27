@@ -529,35 +529,44 @@ class ChatScreen extends GetView<MessageController> {
                               height: 1.15,
                             ),
                           ),
-                          SizedBox(height: 2.h),
-                          Row(
-                            children: [
-                              if (isOnline)
-                                Container(
-                                  width: 7.w,
-                                  height: 7.w,
-                                  margin: EdgeInsets.only(right: 5.w),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.green,
-                                    shape: BoxShape.circle,
+                          Obx(() {
+                            final isTyping = controller.isPeerTyping.value;
+                            return Row(
+                              children: [
+                                if (isOnline && !isTyping)
+                                  Container(
+                                    width: 7.w,
+                                    height: 7.w,
+                                    margin: EdgeInsets.only(right: 5.w),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.green,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                Expanded(
+                                  child: Text(
+                                    isTyping
+                                        ? "typing..."
+                                        : (isOnline ? "Online" : lastSeenText),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: (isTyping || isOnline)
+                                          ? Colors.green
+                                          : Colors.grey.shade600,
+                                      fontSize: 11.sp,
+                                      fontWeight: isTyping
+                                          ? FontWeight.w600
+                                          : FontWeight.w500,
+                                      fontStyle: isTyping
+                                          ? FontStyle.italic
+                                          : FontStyle.normal,
+                                    ),
                                   ),
                                 ),
-                              Expanded(
-                                child: Text(
-                                  isOnline ? "Online" : lastSeenText,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: isOnline
-                                        ? Colors.green
-                                        : Colors.grey.shade600,
-                                    fontSize: 11.sp,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            );
+                          }),
                         ],
                       ),
                     ),

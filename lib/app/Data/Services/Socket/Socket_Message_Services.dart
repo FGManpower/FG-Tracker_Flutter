@@ -302,6 +302,45 @@ class SocketMessageService extends GetxService {
     );
   }
 
+  void sendGroupTyping({
+    required int groupId,
+    required String userId,
+    required String userName,
+  }) {
+    if (!isSocketConnected) return;
+    try {
+      socket.emit("group_typing", {
+        "groupId": groupId,
+        "userId": userId,
+        "userName": userName,
+      });
+    } catch (_) {}
+  }
+
+  void sendGroupStopTyping({
+    required int groupId,
+    required String userId,
+  }) {
+    if (!isSocketConnected) return;
+    try {
+      socket.emit("group_stop_typing", {
+        "groupId": groupId,
+        "userId": userId,
+      });
+    } catch (_) {}
+  }
+
+  void listenGroupTyping({
+    required Function(dynamic) onTyping,
+    required Function(dynamic) onStopTyping,
+  }) {
+    if (!isSocketConnected) return;
+    _socket?.off("group_typing");
+    _socket?.off("group_stop_typing");
+    _socket?.on("group_typing", (data) => onTyping(data));
+    _socket?.on("group_stop_typing", (data) => onStopTyping(data));
+  }
+
   Future<void> initPrivateChat(
       String socketUrl, {
         required String userId,
@@ -625,6 +664,47 @@ class SocketMessageService extends GetxService {
         callback(data);
       },
     );
+  }
+
+  void sendPrivateTyping({
+    required String chatId,
+    required String userId,
+    required String otherUserId,
+  }) {
+    if (!isPrivateChatSocketConnected) return;
+    try {
+      _privateChatSocket?.emit("typing", {
+        "chatId": chatId,
+        "userId": userId,
+        "otherUserId": otherUserId,
+      });
+    } catch (_) {}
+  }
+
+  void sendPrivateStopTyping({
+    required String chatId,
+    required String userId,
+    required String otherUserId,
+  }) {
+    if (!isPrivateChatSocketConnected) return;
+    try {
+      _privateChatSocket?.emit("stop_typing", {
+        "chatId": chatId,
+        "userId": userId,
+        "otherUserId": otherUserId,
+      });
+    } catch (_) {}
+  }
+
+  void listenPrivateTyping({
+    required Function(dynamic) onTyping,
+    required Function(dynamic) onStopTyping,
+  }) {
+    if (!isPrivateChatSocketConnected) return;
+    _privateChatSocket?.off("typing");
+    _privateChatSocket?.off("stop_typing");
+    _privateChatSocket?.on("typing", (data) => onTyping(data));
+    _privateChatSocket?.on("stop_typing", (data) => onStopTyping(data));
   }
 
   void initPrivateChatListSocket(

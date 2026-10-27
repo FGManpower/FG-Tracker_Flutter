@@ -367,45 +367,25 @@ class _NotificationBell extends StatelessWidget {
 
             if (unread > 0)
               Positioned(
-                right: -4.w,
-                top: -4.h,
+                right: 2.w,
+                top: 2.h,
                 child: Container(
-                  constraints: BoxConstraints(
-                    minWidth: 19.w,
-                    minHeight: 19.w,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 4.w,
-                    vertical: 1.h,
-                  ),
-                  alignment: Alignment.center,
+                  width: 9.w,
+                  height: 9.w,
                   decoration: BoxDecoration(
-                    color: _Palette.purple,
-                    borderRadius: BorderRadius.circular(10.r),
+                    color: const Color(0xFFEF4444),
+                    shape: BoxShape.circle,
                     border: Border.all(
                       color: Colors.white,
                       width: 1.5.w,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: _Palette.purple.withValues(alpha: 0.3),
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.45),
                         blurRadius: 4,
-                        offset: const Offset(0, 2),
+                        offset: const Offset(0, 1),
                       ),
                     ],
-                  ),
-                  child: Text(
-                    unread > 99 ? '99+' : '$unread',
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.visible,
-                    style: TextStyle(
-                      fontFamily: FontFamily.interSemiBold,
-                      color: Colors.white,
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w700,
-                      height: 1.0,
-                    ),
                   ),
                 ),
               ),

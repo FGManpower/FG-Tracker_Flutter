@@ -7,6 +7,7 @@ import '../../../Core/constant/pref_res.dart';
 import '../../../Core/values/global.dart';
 import '../../../Data/Repositories/GetMessageRepo.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 
 class ChatListController extends GetxController {
   RxList<PrivateChatModel> privateChats = <PrivateChatModel>[].obs;
@@ -92,6 +93,7 @@ class ChatListController extends GetxController {
   void onInit() {
     super.onInit();
 
+    SocketService.instance.markChatListViewed();
     _initializePrivateChatListSocket();
     getPrivateChats();
     loadArchivedChats();

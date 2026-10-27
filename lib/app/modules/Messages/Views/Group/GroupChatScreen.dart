@@ -505,6 +505,22 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                           ),
                           SizedBox(height: 2.h),
                           Obx(() {
+                            final typingUser =
+                                controller.groupTypingUser.value;
+                            if (typingUser.isNotEmpty) {
+                              return Text(
+                                "$typingUser is typing...",
+                                style: TextStyle(
+                                  color: Colors.green,
+                                  fontSize: 11.sp,
+                                  fontWeight: FontWeight.w600,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              );
+                            }
+
                             final total = controller.groupMembers.length;
                             return Text.rich(
                               TextSpan(
