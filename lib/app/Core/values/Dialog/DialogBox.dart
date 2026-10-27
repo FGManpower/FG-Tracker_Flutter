@@ -977,7 +977,10 @@ class DialogBox {
               InkWell(
                 onTap: () {
                   Navigator.pop(ctx);
-                  Get.to(() => UserProfileScreen(userData: currentMemberData));
+                  Get.to(() => UserProfileScreen(
+                    userData: currentMemberData,
+                    chatId: chatId ?? currentMemberData.chatId,
+                  ));
                 },
                 borderRadius: BorderRadius.circular(50.r),
                 child: Stack(
@@ -1008,11 +1011,9 @@ class DialogBox {
                         height: 18.r,
                         width: 18.r,
                         decoration: BoxDecoration(
-                          color: isLocationSharing == false
-                              ? Colors.grey
-                              : (isOnline
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xffFF6B6B)),
+                          color: isOnline
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFF9E9E9E),
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2.5),
                         ),
@@ -1025,7 +1026,10 @@ class DialogBox {
               InkWell(
                 onTap: () {
                   Navigator.pop(ctx);
-                  Get.to(() => UserProfileScreen(userData: currentMemberData));
+                  Get.to(() => UserProfileScreen(
+                    userData: currentMemberData,
+                    chatId: chatId ?? currentMemberData.chatId,
+                  ));
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1064,19 +1068,12 @@ class DialogBox {
               ),
               SizedBox(height: 4.h),
               reausabletext(
-                isLocationSharing == false
-                    ? "Private"
-                    : isOnline
-                        ? "Online"
-                        : "Offline",
+                isOnline ? "Online" : "Offline",
                 fontsize: 12.sp,
                 fontfamily: FontFamily.interMedium,
-                color: isLocationSharing == false
-                    ? Colors.grey
-                    : (isOnline ? Colors.green : const Color(0xffFF6B6B)),
+                color: isOnline ? Colors.green : Colors.grey.shade600,
               ),
               if (!isOnline &&
-                  isLocationSharing &&
                   Utility.isNotNullEmptyOrFalse(resolvedLastSeen))
                 Padding(
                   padding: EdgeInsets.only(top: 2.h),
@@ -1098,7 +1095,28 @@ class DialogBox {
                 ),
                 child: Column(
                   children: [
-                    if (resolvedLocation != null && resolvedLocation.isNotEmpty) ...[
+                    if (isLocationSharing == false) ...[
+                      Row(
+                        children: [
+                          Icon(Icons.location_off_outlined,
+                              color: ToggleThemeData.darkPurple, size: 18.sp),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: Text(
+                              "Location Hidden",
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12.5.sp,
+                                color: Colors.black87,
+                                fontFamily: FontFamily.interSemiBold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Divider(height: 16.h, color: Colors.grey.shade200),
+                    ] else if (resolvedLocation != null && resolvedLocation.isNotEmpty) ...[
                       Row(
                         children: [
                           Icon(Icons.place_outlined,
@@ -1127,6 +1145,8 @@ class DialogBox {
 
                         if (isMe) {
                           displayDistance = "Your current location";
+                        } else if (isLocationSharing == false) {
+                          displayDistance = "Location Hidden";
                         } else if (!hasValidDestination) {
                           displayDistance = "Location unavailable";
                         } else if (raw.isNotEmpty &&
@@ -1154,8 +1174,13 @@ class DialogBox {
 
                         return Row(
                           children: [
-                            Icon(Icons.near_me_outlined,
-                                color: ToggleThemeData.darkPurple, size: 18.sp),
+                            Icon(
+                              isLocationSharing == false
+                                  ? Icons.lock_outline_rounded
+                                  : Icons.near_me_outlined,
+                              color: ToggleThemeData.darkPurple,
+                              size: 18.sp,
+                            ),
                             SizedBox(width: 10.w),
                             Expanded(
                               child: Text(

@@ -3057,12 +3057,11 @@ class TrackingScreen extends StatelessWidget {
         member.locationSharing == 0 ||
         member.locationSharing == '0';
 
-    final bool isOnline = !isGhostMode &&
-        Tracking().isOnline(
-          rawIsOnline: member.isOnline,
-          lastSeen: member.lastSeen,
-          thresholdMinutes: 5,
-        );
+    final bool isOnline = Tracking().isOnline(
+      rawIsOnline: member.isOnline,
+      lastSeen: member.lastSeen,
+      thresholdMinutes: 5,
+    );
 
     final String name = (member.name != null &&
             member.name.toString().trim().isNotEmpty &&
@@ -3080,7 +3079,6 @@ class TrackingScreen extends StatelessWidget {
         : null;
 
     String getLastSeenText() {
-      if (isGhostMode) return "Location Hidden";
       if (isOnline) return "Online";
       if (member.lastSeen == null ||
           member.lastSeen.toString().trim().isEmpty ||
@@ -3264,11 +3262,9 @@ class TrackingScreen extends StatelessWidget {
                     width: 9.5.w,
                     height: 9.5.w,
                     decoration: BoxDecoration(
-                      color: isGhostMode
-                          ? const Color(0xFF7E57C2)
-                          : (isOnline
-                              ? const Color(0xFF10B981)
-                              : const Color(0xFF94A3B8)),
+                      color: isOnline
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF9E9E9E),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 1.5.w),
                     ),
@@ -3328,11 +3324,9 @@ class TrackingScreen extends StatelessWidget {
                       Icon(
                         Icons.circle,
                         size: 6.r,
-                        color: isGhostMode
-                            ? const Color(0xFF7E57C2)
-                            : (isOnline
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFF94A3B8)),
+                        color: isOnline
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFF9E9E9E),
                       ),
                       SizedBox(width: 4.w),
                       Expanded(
@@ -3342,12 +3336,10 @@ class TrackingScreen extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 10.5.sp,
-                            color: isGhostMode
-                                ? const Color(0xFF7E57C2)
-                                : (isOnline
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFF64748B)),
-                            fontWeight: isGhostMode || isOnline
+                            color: isOnline
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFF64748B),
+                            fontWeight: isOnline
                                 ? FontWeight.w600
                                 : FontWeight.w400,
                           ),
