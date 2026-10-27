@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/GroupCountService.dart';
+import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:get/get.dart';
 
@@ -38,23 +39,49 @@ class SocketService extends GetxService {
 
 
       socket.on("location-update-success", (res) {
+        try {
+          if (res is Map) {
+            final dataMap = res['data'];
+            if (dataMap is Map) {
+              dynamic payload = dataMap['dashboardCounts'];
+              if (payload != null && payload.toString().isNotEmpty) {
+                if (Get.isRegistered<GroupCountService>()) {
+                  GroupCountService.instance.updateFromSocket(payload);
+                }
+              }
 
-      dynamic payload = res['data']['dashboardCounts'];
-      if (payload.toString().isEmpty) {
-        return;
-      }
-
-      if (Get.isRegistered<GroupCountService>()) {
-        GroupCountService.instance.updateFromSocket(payload);
-      }
-
-
+              // Option A: notificationMarkers inside location-update-success
+              final markers = dataMap['notificationMarkers'];
+              if (markers is Map) {
+                NotificationMarkerService.instance.updateFromMap(markers);
+              }
+            }
+          }
+        } catch (e) {
+          log("Error parsing location-update-success: $e");
+        }
       });
 
+      // Option B: Dedicated notification_markers socket event
+      socket.on("notification_markers", (res) {
+        log("[SocketService] notification_markers received: $res");
+        try {
+          if (res is Map) {
+            final data = res['data'] ?? res;
+            if (data is Map) {
+              NotificationMarkerService.instance.updateFromMap(data);
+            }
+          }
+        } catch (e) {
+          log("Error parsing notification_markers: $e");
+        }
+      });
 
+      // Request fresh markers on connect
+      requestNotificationMarkers();
 
-      socket.on("location-update-error", (err)  {
-      log("Error Response:${err}", );
+      socket.on("location-update-error", (err) {
+        log("Error Response:${err}");
       });
     });
 
@@ -205,6 +232,13 @@ class SocketService extends GetxService {
       "userId": userId,
     });
     log(" Rejoined group after reconnect: $groupId");
+  }
+
+  void requestNotificationMarkers() {
+    if (isSocketConnected) {
+      _socket?.emit("get_notification_markers");
+      log("[SocketService] Emitted get_notification_markers");
+    }
   }
 
   void deleteGroup({required String groupId}) {

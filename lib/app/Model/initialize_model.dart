@@ -27,6 +27,7 @@ class InitializeData {
   String? serverTime;
   PaymentInitData? payment;
   WalkieInitData? walkie;
+  NotificationMarkers? notificationMarkers;
   dynamic calling;
   dynamic chat;
   dynamic tracking;
@@ -38,6 +39,7 @@ class InitializeData {
     this.serverTime,
     this.payment,
     this.walkie,
+    this.notificationMarkers,
     this.calling,
     this.chat,
     this.tracking,
@@ -56,6 +58,10 @@ class InitializeData {
       walkie: json['walkie'] != null
           ? WalkieInitData.fromJson(json['walkie'])
           : null,
+      notificationMarkers: json['notificationMarkers'] != null
+          ? NotificationMarkers.fromJson(
+              Map<String, dynamic>.from(json['notificationMarkers']))
+          : null,
       calling: json['calling'],
       chat: json['chat'],
       tracking: json['tracking'],
@@ -70,11 +76,40 @@ class InitializeData {
       'serverTime': serverTime,
       'payment': payment?.toJson(),
       'walkie': walkie?.toJson(),
+      'notificationMarkers': notificationMarkers?.toJson(),
       'calling': calling,
       'chat': chat,
       'tracking': tracking,
       'safeRoute': safeRoute,
       'notifications': notifications,
+    };
+  }
+}
+
+class NotificationMarkers {
+  final bool calling;
+  final bool chatting;
+  final bool walkie;
+
+  NotificationMarkers({
+    this.calling = false,
+    this.chatting = false,
+    this.walkie = false,
+  });
+
+  factory NotificationMarkers.fromJson(Map<String, dynamic> json) {
+    return NotificationMarkers(
+      calling: json['calling'] == true,
+      chatting: json['chatting'] == true || json['chat'] == true,
+      walkie: json['walkie'] == true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'calling': calling,
+      'chatting': chatting,
+      'walkie': walkie,
     };
   }
 }
@@ -177,9 +212,9 @@ class WalkieInitData {
           ? WalkieAccess.fromJson(json['access'])
           : null,
       currentSubscription: json['currentSubscription'],
-      subscriptions: json['subscriptions'] != null
+      subscriptions: json['subscriptions'] is List
           ? List<dynamic>.from(json['subscriptions'])
-          : [],
+          : (json['subscriptions'] != null ? [json['subscriptions']] : []),
       trial: json['trial'],
       alerts: json['alerts'] != null
           ? (json['alerts'] as List)
@@ -202,18 +237,155 @@ class WalkieInitData {
       'actions': actions?.toJson(),
     };
   }
+
+  bool get isSubscribed {
+    if (access?.hasIndividualAccess == true ||
+        access?.hasTeamAccess == true) {
+      return true;
+    }
+
+    final accType = access?.accessType?.toLowerCase().trim() ?? '';
+    if (accType == 'individual' ||
+        accType == 'team' ||
+        accType == 'team_seat' ||
+        accType == 'team_member' ||
+        accType == 'subscription' ||
+        accType == 'subscribed') {
+      return true;
+    }
+
+    if (access?.canUseWalkie == true &&
+        accType != 'trial' &&
+        accType != 'none' &&
+        accType.isNotEmpty) {
+      return true;
+    }
+
+    if (currentSubscription != null) {
+      if (currentSubscription is Map) {
+        final status =
+            currentSubscription['status']?.toString().toLowerCase().trim();
+        final isActive = currentSubscription['isActive'] == true;
+        if (isActive || status == 'active') {
+          return true;
+        }
+      } else if (currentSubscription is bool && currentSubscription == true) {
+        return true;
+      }
+    }
+
+    if (subscriptions != null) {
+      if (subscriptions is List) {
+        for (var sub in subscriptions!) {
+          if (sub is Map) {
+            final status = sub['status']?.toString().toLowerCase().trim();
+            final isActive = sub['isActive'] == true;
+            if (isActive || status == 'active') {
+              return true;
+            }
+          }
+        }
+      } else if (subscriptions is Map) {
+        final subMap = subscriptions as Map;
+        if (subMap['hasActiveSubscription'] == true) return true;
+        for (var val in subMap.values) {
+          if (val is Map) {
+            final status = val['status']?.toString().toLowerCase().trim();
+            final isActive = val['isActive'] == true;
+            if (isActive ||
+                status == 'active' ||
+                val['hasActiveSubscription'] == true) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+
+    if (actions?.showSubscribe == false && actions?.showRenew == true) {
+      return true;
+    }
+
+    return false;
+  }
+
+  bool get isTrialExpired {
+    if (isSubscribed) return false;
+
+    if (trial != null && trial is Map) {
+      final trialMap = trial as Map;
+      if (trialMap['isExpired'] == true) return true;
+
+      final status = trialMap['status']?.toString().toLowerCase().trim();
+      if (status == 'expired' || status == 'consumed') return true;
+
+      final remaining = trialMap['remainingSeconds'];
+      final hasReceived = trialMap['hasReceivedTrial'] == true;
+      final isActive = trialMap['isActive'] == true;
+
+      if (remaining is num &&
+          remaining <= 0 &&
+          (hasReceived || status != 'not_started') &&
+          !isActive) {
+        return true;
+      }
+    }
+
+    final accType = access?.accessType?.toLowerCase().trim() ?? '';
+    if (accType == 'expired') return true;
+
+    if (access?.canUseWalkie == false) {
+      if (trial is Map &&
+          trial['isEligibleForTrial'] == false &&
+          trial['hasReceivedTrial'] == true) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  String get statusSubtitle {
+    if (isSubscribed) {
+      return "Subscribed";
+    }
+    if (isTrialExpired) {
+      return "Expired";
+    }
+    return "1 hr free";
+  }
 }
 
 class WalkieAccess {
   bool? canUseWalkie;
   String? accessType;
+  bool? hasIndividualAccess;
+  bool? hasTeamAccess;
+  bool? hasTrialAccess;
 
-  WalkieAccess({this.canUseWalkie, this.accessType});
+  WalkieAccess({
+    this.canUseWalkie,
+    this.accessType,
+    this.hasIndividualAccess,
+    this.hasTeamAccess,
+    this.hasTrialAccess,
+  });
 
   factory WalkieAccess.fromJson(Map<String, dynamic> json) {
+    final canUse = json['canUseWalkie'] == true ||
+        json['canUseWalkieTalkie'] == true ||
+        json['hasAccess'] == true;
+    final accType = json['accessType']?.toString();
     return WalkieAccess(
-      canUseWalkie: json['canUseWalkie'] == true,
-      accessType: json['accessType']?.toString(),
+      canUseWalkie: canUse,
+      accessType: accType,
+      hasIndividualAccess:
+          json['hasIndividualAccess'] == true || accType == 'individual',
+      hasTeamAccess: json['hasTeamAccess'] == true ||
+          accType == 'team' ||
+          accType == 'team_seat' ||
+          accType == 'team_member',
+      hasTrialAccess: json['hasTrialAccess'] == true || accType == 'trial',
     );
   }
 
@@ -221,6 +393,9 @@ class WalkieAccess {
     return {
       'canUseWalkie': canUseWalkie,
       'accessType': accessType,
+      'hasIndividualAccess': hasIndividualAccess,
+      'hasTeamAccess': hasTeamAccess,
+      'hasTrialAccess': hasTrialAccess,
     };
   }
 }

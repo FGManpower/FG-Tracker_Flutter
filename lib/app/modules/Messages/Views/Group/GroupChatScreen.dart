@@ -1,4 +1,3 @@
-import 'package:fgtracker/app/Core/values/BottomSheets/BottomSheetUi.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
@@ -9,6 +8,7 @@ import 'package:fgtracker/app/modules/Messages/widgets/ChatInputArea.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatList.dart';
 import 'package:fgtracker/app/widgets/PinnedMessageBanner.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../Core/constant/const_res.dart';
 import 'package:get/get.dart';
@@ -20,7 +20,6 @@ import '../LocationPickerPage.dart';
 class GroupChatScreen extends GetView<GroupMessageController> {
   GroupChatScreen({super.key});
 
-  final TextEditingController textController = TextEditingController();
   final groupController = Get.put(GroupController());
 
   static const Color _purple = Color(0xFF5045B9);
@@ -40,69 +39,20 @@ class GroupChatScreen extends GetView<GroupMessageController> {
       ),
     );
 
-    return Align(
-      alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
-      child: Row(
-        mainAxisAlignment:
-        isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isMine) ...[
-            const CircleAvatar(
-              radius: 17,
-              backgroundColor: Color(0xFFE8E6ED),
-              child: Icon(Icons.person, color: Color(0xFFAAA7B3)),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Container(
-            width: isImage ? 235 : 220,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isMine ? const Color(0xFFECE7FF) : Colors.white,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (isImage) ...[
-                  Container(
-                    height: 105,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: lineColor,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.image_outlined,
-                      size: 35,
-                      color: Color(0xFFB5B1C0),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                ],
-                if (!isImage) ...[
-                  line(150),
-                  const SizedBox(height: 9),
-                  line(95),
-                ],
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: line(38),
-                ),
-              ],
-            ),
-          ),
-          if (isMine) const SizedBox(width: 4),
-        ],
-      ),
-    );
+  void _dismissKeyboard(BuildContext context) {
+    if (MediaQuery.of(context).viewInsets.bottom > 0) {
+      FocusScope.of(context).unfocus();
+    }
+    if (controller.showEmoji.value) {
+      controller.showEmoji.value = false;
+    }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _scaffoldBg,
+      resizeToAvoidBottomInset: true,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(64.h),
         child: Obx(() {
@@ -111,6 +61,8 @@ class GroupChatScreen extends GetView<GroupMessageController> {
         }),
       ),
       body: SafeArea(
+        top: true,
+        bottom: false,
         child: Column(
           children: [
             Obx(() {
@@ -126,79 +78,75 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               );
             }),
             Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Obx(() {
-                    if (controller.isLoading.value) {
-                      return ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: 7,
-                        itemBuilder: (context, index) {
-                          final bool isMine = index % 3 == 1;
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  if (notification is UserScrollNotification &&
+                      notification.direction != ScrollDirection.idle) {
+                    _dismissKeyboard(context);
+                  }
+                  return false;
+                },
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: () => _dismissKeyboard(context),
+                      child: GroupChatList(controller: controller),
+                    ),
+                    Obx(() {
+                      final isVisible = controller.showFloatingDate.value;
+                      final date = controller.floatingDate.value;
 
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: buildMessageSkeleton(
-                              isMine: isMine,
-                              isImage: index == 3,
-                            ),
-                          );
-                        },
-                      );
-                    }
+                      if (date.isEmpty) return const SizedBox.shrink();
 
-                    return GroupChatList(controller: controller);
-                  }),                  Obx(() {
-                    final isVisible = controller.showFloatingDate.value;
-                    final date = controller.floatingDate.value;
-
-                    if (date.isEmpty) return const SizedBox.shrink();
-
-                    return IgnorePointer(
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        child: AnimatedSlide(
-                          offset:
-                          isVisible ? Offset.zero : const Offset(0, -0.8),
-                          duration: const Duration(milliseconds: 220),
-                          curve: Curves.easeOutCubic,
-                          child: AnimatedOpacity(
-                            opacity: isVisible ? 1.0 : 0.0,
+                      return IgnorePointer(
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: AnimatedSlide(
+                            offset:
+                                isVisible ? Offset.zero : const Offset(0, -0.8),
                             duration: const Duration(milliseconds: 220),
                             curve: Curves.easeOutCubic,
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade300,
-                                  borderRadius: BorderRadius.circular(18),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.10),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                            child: AnimatedOpacity(
+                              opacity: isVisible ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 220),
+                              curve: Curves.easeOutCubic,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade300,
+                                    borderRadius: BorderRadius.circular(18),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black
+                                            .withValues(alpha: 0.10),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    date,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
                                     ),
-                                  ],
-                                ),
-                                child: Text(
-                                  date,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
                                   ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  }),
-                ],
+                      );
+                    }),
+                    _buildScrollToBottomButton(),
+                  ],
+                ),
               ),
             ),
             Obx(() {
@@ -223,43 +171,48 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                   previewText = reply.content?.toString() ?? "";
               }
 
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: const Border(
-                    left: BorderSide(color: _purple, width: 4),
+              return GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => _dismissKeyboard(context),
+                child: Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: const Border(
+                      left: BorderSide(color: _purple, width: 4),
+                    ),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black12, blurRadius: 4),
+                    ],
                   ),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 4),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            reply.senderName ?? "Unknown",
-                            style: const TextStyle(
-                              color: _purple,
-                              fontWeight: FontWeight.bold,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              reply.senderName ?? "Unknown",
+                              style: const TextStyle(
+                                color: _purple,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(previewText,
-                              maxLines: 1, overflow: TextOverflow.ellipsis),
-                        ],
+                            const SizedBox(height: 4),
+                            Text(previewText,
+                                maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      onPressed: controller.clearReply,
-                      icon: const Icon(Icons.close),
-                    ),
-                  ],
+                      IconButton(
+                        onPressed: controller.clearReply,
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }),
@@ -271,13 +224,14 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               videoDurations: controller.videoDurations,
               documentPath: controller.documentPath,
               isSending: controller.isSending,
-              textController: textController,
+              textController: controller.textEditingController,
               groupMembers: controller.groupMembers,
               groupMessageController: controller,
               uploadingVideoIndexes: controller.uploadingVideoIndexes,
               videoUploadProgress: controller.videoUploadProgress,
               onSend: () {
-                controller.sendMessage(textController: textController);
+                controller.sendMessage(
+                    textController: controller.textEditingController);
               },
               onImageSelected: (paths) => controller.imagePaths.addAll(paths),
               onVoiceSend: (voicePath) {
@@ -299,14 +253,14 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               },
               onLocationSelected: () async {
                 final location = await Get.to<LocationMessage>(
-                        () => const LocationPickerPage());
+                    () => const LocationPickerPage());
                 if (location != null) {
                   await controller.sendLocation(location: location);
                 }
               },
               onContactSelected: () async {
                 final contact = await Get.to<ContactMessage>(
-                        () => const ContactPickerPage());
+                    () => const ContactPickerPage());
                 if (contact != null) {
                   await controller.sendContact(contact: contact);
                 }
@@ -316,6 +270,91 @@ class GroupChatScreen extends GetView<GroupMessageController> {
         ),
       ),
     );
+  }
+
+  Widget _buildScrollToBottomButton() {
+    return Obx(() {
+      final isVisible = controller.showScrollToBottom.value;
+      final unreadCount = controller.unreadBelowCount.value;
+
+      return Positioned(
+        bottom: 12.h,
+        right: 14.w,
+        child: AnimatedScale(
+          scale: isVisible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutBack,
+          child: AnimatedOpacity(
+            opacity: isVisible ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 150),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    controller.scrollToBottom();
+                    controller.unreadBelowCount.value = 0;
+                    controller.showScrollToBottom.value = false;
+                  },
+                  child: Container(
+                    width: 38.w,
+                    height: 38.w,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: _purple,
+                        size: 24.sp,
+                      ),
+                    ),
+                  ),
+                ),
+                if (unreadCount > 0)
+                  Positioned(
+                    top: -4.h,
+                    right: -4.w,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 5.w,
+                        vertical: 2.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _purple,
+                        borderRadius: BorderRadius.circular(10.r),
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: 18.w,
+                        minHeight: 18.h,
+                      ),
+                      child: Center(
+                        child: Text(
+                          unreadCount > 99 ? "99+" : "$unreadCount",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildSearchAppBar() {
@@ -351,20 +390,21 @@ class GroupChatScreen extends GetView<GroupMessageController> {
           );
         }),
         Obx(() => IconButton(
-          icon: const Icon(Icons.keyboard_arrow_up, color: Colors.black),
-          onPressed: controller.searchResultIds.isEmpty
-              ? null
-              : controller.previousSearchResult,
-        )),
+              icon: const Icon(Icons.keyboard_arrow_up, color: Colors.black),
+              onPressed: controller.searchResultIds.isEmpty
+                  ? null
+                  : controller.previousSearchResult,
+            )),
         Obx(() => IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
-          onPressed: controller.searchResultIds.isEmpty
-              ? null
-              : controller.nextSearchResult,
-        )),
+              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+              onPressed: controller.searchResultIds.isEmpty
+                  ? null
+                  : controller.nextSearchResult,
+            )),
       ],
     );
   }
+
   Future<void> _initiateGroupCall({
     required bool isVideo,
   }) async {
@@ -393,6 +433,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
       );
     }
   }
+
   Widget _buildNormalAppBar(BuildContext context) {
     return AppBar(
       elevation: 0,
@@ -414,7 +455,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               child: GestureDetector(
                 onTap: () {
                   Get.to(
-                        () => const GroupProfileScreen(),
+                    () => const GroupProfileScreen(),
                     arguments: {
                       "groupCode": Get.arguments?["groupCode"],
                     },
@@ -435,23 +476,25 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                       ),
                       child: controller.groupImage.isNotEmpty
                           ? ClipOval(
-                        child: Image.network(
-                          controller.groupImage.startsWith('http://') ||
-                              controller.groupImage.startsWith('https://')
-                              ? controller.groupImage
-                              : "${ConstRes.aImageBaseUrl}${controller.groupImage}",                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Icon(
-                            Icons.groups_rounded,
-                            color: Colors.white,
-                            size: 22.sp,
-                          ),
-                        ),
-                      )
+                              child: Image.network(
+                                controller.groupImage.startsWith('http://') ||
+                                        controller.groupImage
+                                            .startsWith('https://')
+                                    ? controller.groupImage
+                                    : "${ConstRes.aImageBaseUrl}${controller.groupImage}",
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Icon(
+                                  Icons.groups_rounded,
+                                  color: Colors.white,
+                                  size: 22.sp,
+                                ),
+                              ),
+                            )
                           : Icon(
-                        Icons.groups_rounded,
-                        color: Colors.white,
-                        size: 22.sp,
-                      ),
+                              Icons.groups_rounded,
+                              color: Colors.white,
+                              size: 22.sp,
+                            ),
                     ),
                     SizedBox(width: 8.w),
                     Expanded(
@@ -460,7 +503,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Obx(
-                                () => Text(
+                            () => Text(
                               controller.groupName.value.isEmpty
                                   ? "Unknown"
                                   : controller.groupName.value,
@@ -477,8 +520,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                           SizedBox(height: 2.h),
                           Obx(() {
                             final total = controller.groupMembers.length;
-                            final online =
-                            total > 0 ? (total ~/ 2).clamp(1, total) : 0;
                             return Text.rich(
                               TextSpan(
                                 children: [
@@ -518,8 +559,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               ),
             ),
             SizedBox(width: 2.w),
-
-
             Theme(
               data: Theme.of(context).copyWith(
                 splashColor: Colors.transparent,

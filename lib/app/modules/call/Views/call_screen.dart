@@ -2,6 +2,7 @@ import 'package:fgtracker/app/modules/call/Views/call_contacts_tab.dart';
 import 'package:fgtracker/app/modules/call/Views/call_groups_tab.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -369,10 +370,11 @@ class _CallScreenState extends State<CallScreen>
             fontFamily: FontFamily.interSemiBold,
           ),
           tabs: [
-            _buildTab(
+            Obx(() => _buildTab(
               icon: Icons.access_time_rounded,
               title: "Recent",
-            ),
+              showBadge: NotificationMarkerService.instance.hasCallingMarker.value,
+            )),
             _buildTab(
               icon: Icons.person_outline_rounded,
               title: "Contacts",
@@ -390,6 +392,7 @@ class _CallScreenState extends State<CallScreen>
   Widget _buildTab({
     required String title,
     required IconData icon,
+    bool showBadge = false,
   }) {
     return Tab(
       child: Row(
@@ -406,6 +409,17 @@ class _CallScreenState extends State<CallScreen>
               softWrap: false,
             ),
           ),
+          if (showBadge) ...[
+            SizedBox(width: 4.w),
+            Container(
+              width: 7.w,
+              height: 7.w,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEF4444),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
         ],
       ),
     );
