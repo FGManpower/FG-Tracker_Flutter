@@ -8,6 +8,7 @@ import CallKit
 import AVFAudio
 import AVFoundation
 import UserNotifications
+import Intents
 import CryptoKit
 import WebRTC
 import flutter_callkit_incoming
@@ -43,10 +44,13 @@ private let candidateTokenPrefKeys = [
     private var lastAppliedRoute: String?
     private var lastAppliedAt: Date?
     private let duplicateApplyWindow: TimeInterval = 0.4
+    private var lastCategoryKey: String?
 
     private var activeBgTasks: [UUID: UIBackgroundTaskIdentifier] = [:]
     private var handledDeclineCallIds = Set<String>()
     private var handledRingingCallIds = Set<String>()
+    private var callDisplayNames: [String: String] = [:]
+    private var pendingRecentsCallback: [String: Any]?
 
     override func application(
         _ application: UIApplication,
@@ -77,6 +81,9 @@ private let candidateTokenPrefKeys = [
         hasLaunchedIntoForeground = true
         enteredBackgroundAt = nil
         setupAudioRouteChannelIfNeeded()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
+            self?.flushRecentsCallback()
+        }
         super.applicationDidBecomeActive(application)
     }
 
@@ -110,10 +117,12 @@ private let candidateTokenPrefKeys = [
                 let route = (args?["route"] as? String) ?? "earpiece"
                 let isVideo = (args?["isVideo"] as? Bool) ?? self.currentCallIsVideo
                 let isManual = (args?["isManual"] as? Bool) ?? true
+                let force = (args?["force"] as? Bool) ?? false
                 let state = self.applyRequestedAudioRoute(
                     route: route,
                     isVideo: isVideo,
-                    userInitiated: isManual
+                    userInitiated: isManual,
+                    force: force
                 )
                 result(state)
             case "getAudioState":
@@ -125,6 +134,7 @@ private let candidateTokenPrefKeys = [
                 self.userSelectedRoute = false
                 self.lastAppliedRoute = nil
                 self.lastAppliedAt = nil
+                self.lastCategoryKey = nil
                 self.clearPreferredInputSelection()
                 result(nil)
             case "startAudioRouteMonitoring":
@@ -250,11 +260,6 @@ private let candidateTokenPrefKeys = [
             ?? Self.stringValue(p["action"])
             ?? "startCall"
 
-        let name = Self.stringValue(p["nameCaller"])
-            ?? Self.stringValue(p["callerName"])
-            ?? Self.stringValue(p["caller_name"])
-            ?? "Unknown"
-
         let avatar = Self.stringValue(p["avatar"]) ?? Self.stringValue(p["callerAvatar"]) ?? ""
         let isVideo = Self.parseIsVideo(p)
 
@@ -266,7 +271,7 @@ private let candidateTokenPrefKeys = [
                   let parsed = (try? JSONSerialization.jsonObject(with: jsonData)) as? [String: Any] {
             extraDict.merge(parsed) { _, new in new }
         }
-        for key in ["callId", "call_id", "caller_id", "groupId", "group_id", "sessionId", "session_id", "callerId"] {
+        for key in ["callId", "call_id", "caller_id", "groupId", "group_id", "sessionId", "session_id", "callerId", "callerPhone", "caller_phone", "phone", "mobile"] {
             if extraDict[key] == nil, let topVal = p[key] {
                 extraDict[key] = topVal
             }
@@ -274,27 +279,48 @@ private let candidateTokenPrefKeys = [
         if extraDict["sessionId"] == nil {
             extraDict["sessionId"] = id
         }
+        extraDict = sanitizedExtra(extraDict)
+
+        let name = resolvedCallerName(payload: p, extra: extraDict, id: id)
 
         let endSignals: Set<String> = ["endCall", "callEnded", "cancelCall", "callRejected", "missedCall"]
         if endSignals.contains(signal) {
             releaseCallKitManualAudio()
+            let handleValue = resolvedCallerHandle(
+                payload: p,
+                extra: extraDict,
+                fallbackName: name
+            )
+            let real = flutter_callkit_incoming.Data(
+                id: id,
+                nameCaller: name,
+                handle: handleValue,
+                type: isVideo ? 1 : 0
+            )
+            real.normalHandle = 1
+            real.appName = "FG Tracker"
+
+            if hasLiveCall(id: id) {
+                print("[AppDelegate] endCall push resolves live CallKit call id=\(id) name=\(name)")
+                SwiftFlutterCallkitIncomingPlugin.sharedInstance?.endCall(real)
+                completion()
+                return
+            }
+
             let dummy = flutter_callkit_incoming.Data(
                 id: UUID().uuidString,
                 nameCaller: name,
-                handle: name,
-                type: 0
+                handle: handleValue,
+                type: isVideo ? 1 : 0
             )
+            dummy.normalHandle = 1
+            dummy.appName = "FG Tracker"
+            print("[AppDelegate] endCall push had no live call, reporting+ending id=\(id) name=\(name)")
             SwiftFlutterCallkitIncomingPlugin.sharedInstance?.showCallkitIncoming(
                 dummy,
                 fromPushKit: true
             ) {
                 SwiftFlutterCallkitIncomingPlugin.sharedInstance?.endCall(dummy)
-                let real = flutter_callkit_incoming.Data(
-                    id: id,
-                    nameCaller: name,
-                    handle: name,
-                    type: isVideo ? 1 : 0
-                )
                 SwiftFlutterCallkitIncomingPlugin.sharedInstance?.endCall(real)
                 completion()
             }
@@ -318,12 +344,19 @@ private let candidateTokenPrefKeys = [
                 callingStatus: "Ringing"
             )
 
+            rememberCallerName(name, id: id, extra: extraDict)
+
             let data = flutter_callkit_incoming.Data(
                 id: id,
                 nameCaller: name,
-                handle: name,
+                handle: resolvedCallerHandle(
+                    payload: p,
+                    extra: extraDict,
+                    fallbackName: name
+                ),
                 type: isVideo ? 1 : 0
             )
+            data.normalHandle = 1
             data.appName = "FG Tracker"
             data.supportsVideo = isVideo
             data.audioSessionMode = isVideo ? "videoChat" : "voiceChat"
@@ -446,6 +479,114 @@ private let candidateTokenPrefKeys = [
         releaseCallKitManualAudio()
         handledDeclineCallIds.removeAll()
         handledRingingCallIds.removeAll()
+        callDisplayNames.removeAll()
+    }
+
+    private func resolvedCallerName(
+        payload: [AnyHashable: Any],
+        extra: [String: Any],
+        id: String
+    ) -> String {
+        var candidates: [String?] = [
+            Self.stringValue(payload["nameCaller"]),
+            Self.stringValue(payload["callerName"]),
+            Self.stringValue(payload["caller_name"]),
+            Self.stringValue(extra["callerName"]),
+            Self.stringValue(extra["caller_name"]),
+            Self.stringValue(extra["nameCaller"]),
+            Self.stringValue(payload["handle"]),
+            Self.stringValue(payload["caller"]),
+            callDisplayNames[id]
+        ]
+        for key in ["callId", "call_id", "sessionId", "session_id"] {
+            if let value = Self.stringValue(extra[key]) {
+                candidates.append(callDisplayNames[value])
+            }
+        }
+        for candidate in candidates {
+            if let display = Self.displayableName(candidate) {
+                return display
+            }
+        }
+        return "Unknown"
+    }
+
+    private func resolvedCallerHandle(
+        payload: [AnyHashable: Any],
+        extra: [String: Any],
+        fallbackName: String
+    ) -> String {
+        let phoneKeys = ["callerPhone", "caller_phone", "phone", "mobile", "callerNumber"]
+        for key in phoneKeys {
+            if let value = Self.stringValue(extra[key]), !value.isEmpty {
+                return value
+            }
+        }
+        for key in phoneKeys {
+            if let value = Self.stringValue(payload[key]), !value.isEmpty {
+                return value
+            }
+        }
+        for key in ["callerId", "caller_id"] {
+            if let value = Self.stringValue(extra[key]), !value.isEmpty, value != "0" {
+                return value
+            }
+        }
+        if let display = Self.displayableName(fallbackName) {
+            return display
+        }
+        return "Unknown"
+    }
+
+    private func sanitizedExtra(_ extra: [String: Any]) -> [String: Any] {
+        let blocked = ["token", "jwt", "authorization", "bearer", "password", "secret", "cookie", "api_key", "apikey"]
+        var clean: [String: Any] = [:]
+        for (key, value) in extra {
+            let lowered = key.lowercased()
+            if blocked.contains(where: { lowered.contains($0) }) { continue }
+            clean[key] = value
+        }
+        return clean
+    }
+
+    private func hasLiveCall(id: String) -> Bool {
+        let observer = CXCallObserver()
+        observer.setDelegate(nil, queue: nil)
+        return observer.calls.contains {
+            $0.uuid.uuidString.caseInsensitiveCompare(id) == .orderedSame
+        }
+    }
+
+    private static func displayableName(_ raw: String?) -> String? {
+        let trimmed = (raw ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return nil }
+        let rejected: Set<String> = ["someone", "unknown", "null", "nil", "none", "0"]
+        if rejected.contains(trimmed.lowercased()) { return nil }
+        if looksLikeToken(trimmed) { return nil }
+        return trimmed
+    }
+
+    private static func looksLikeToken(_ value: String) -> Bool {
+        if value.count < 32 { return false }
+        if value.contains(" ") { return false }
+        let allowed = CharacterSet(
+            charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.=+/"
+        )
+        return value.unicodeScalars.allSatisfy { allowed.contains($0) }
+    }
+
+    private func rememberCallerName(_ name: String, id: String, extra: [String: Any]) {
+        guard let trimmed = Self.displayableName(name) else { return }
+        if callDisplayNames.count > 60 {
+            callDisplayNames.removeAll()
+        }
+        callDisplayNames[id] = trimmed
+        for key in ["callId", "call_id", "sessionId", "session_id"] {
+            if let value = Self.stringValue(extra[key]), !value.isEmpty {
+                callDisplayNames[value] = trimmed
+            }
+        }
+        print("[AppDelegate] caller name cached id=\(id) name=\(trimmed)")
     }
 
     private func configureDefaultWebRTCAudio(isVideo: Bool) {
@@ -475,14 +616,6 @@ private let candidateTokenPrefKeys = [
         }
 
         if name == "speaker" {
-            // BT connected hai ya pehle dikha tha -> speaker par BT block karo.
-            if let port = currentBluetoothPort() {
-                rememberBluetoothPort(port)
-                return [.defaultToSpeaker]
-            }
-            if bluetoothSeenInCall {
-                return [.defaultToSpeaker]
-            }
             return [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker]
         }
 
@@ -510,19 +643,19 @@ private let candidateTokenPrefKeys = [
     }
 
     private func isBluetoothSuppressed() -> Bool {
-        return manualAudioRoute == "earpiece"
-            || manualAudioRoute == "headset"
-            || manualAudioRoute == "speaker"
+        return manualAudioRoute == "earpiece" || manualAudioRoute == "headset"
     }
 
     private func shouldSuppressBluetooth(forRoute route: String) -> Bool {
         guard route == "earpiece" || route == "headset" else { return false }
         if let port = currentBluetoothPort() {
-            rememberBluetoothPort(port)
+            bluetoothSeenInCall = true
+            if !port.portName.isEmpty {
+                bluetoothKnownName = port.portName
+            }
             return true
         }
-        // User ne khud earpiece/headset chuna hai -> BT port dikhe ya na dikhe, block rakho.
-        return bluetoothSeenInCall || userSelectedRoute
+        return bluetoothSeenInCall
     }
 
     private func rememberBluetoothPort(_ port: AVAudioSessionPortDescription?) {
@@ -656,21 +789,31 @@ private let candidateTokenPrefKeys = [
         let rtcSession = RTCAudioSession.sharedInstance()
         let session = AVAudioSession.sharedInstance()
 
-        let config = RTCAudioSessionConfiguration.webRTC()
-        config.category = AVAudioSession.Category.playAndRecord.rawValue
-        config.mode = isVideo
-            ? AVAudioSession.Mode.videoChat.rawValue
-            : AVAudioSession.Mode.voiceChat.rawValue
-        config.categoryOptions = categoryOptions(forRoute: route, isVideo: isVideo)
-        RTCAudioSessionConfiguration.setWebRTC(config)
+        let options = categoryOptions(forRoute: route, isVideo: isVideo)
+        let categoryKey = [
+            isVideo ? "video" : "voice",
+            options.contains(.allowBluetooth) ? "bt" : "nobt",
+            options.contains(.defaultToSpeaker) ? "speaker" : "plain"
+        ].joined(separator: "-")
 
-        rtcSession.lockForConfiguration()
-        defer { rtcSession.unlockForConfiguration() }
+        if force || categoryKey != lastCategoryKey {
+            let config = RTCAudioSessionConfiguration.webRTC()
+            config.category = AVAudioSession.Category.playAndRecord.rawValue
+            config.mode = isVideo
+                ? AVAudioSession.Mode.videoChat.rawValue
+                : AVAudioSession.Mode.voiceChat.rawValue
+            config.categoryOptions = options
+            RTCAudioSessionConfiguration.setWebRTC(config)
 
-        do {
-            try rtcSession.setConfiguration(config)
-        } catch {
-            print("[AppDelegate] setConfiguration(\(route)) error: \(error.localizedDescription)")
+            rtcSession.lockForConfiguration()
+            defer { rtcSession.unlockForConfiguration() }
+
+            do {
+                try rtcSession.setConfiguration(config)
+                lastCategoryKey = categoryKey
+            } catch {
+                print("[AppDelegate] setConfiguration(\(route)) error: \(error.localizedDescription)")
+            }
         }
 
         let inputs = session.availableInputs ?? []
@@ -686,17 +829,8 @@ private let candidateTokenPrefKeys = [
 
         switch route {
         case "speaker":
-            try? session.setPreferredInput(builtInMic)
             try? rtcSession.overrideOutputAudioPort(.speaker)
-
-            // Route change override clear kar deta hai, isliye ek baar dobara lagao.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
-                guard let self = self, self.manualAudioRoute == "speaker" else { return }
-                let rtc = RTCAudioSession.sharedInstance()
-                rtc.lockForConfiguration()
-                try? rtc.overrideOutputAudioPort(.speaker)
-                rtc.unlockForConfiguration()
-            }
+            try? session.setPreferredInput(builtInMic)
 
         case "bluetooth":
             try? rtcSession.overrideOutputAudioPort(.none)
@@ -794,10 +928,6 @@ private let candidateTokenPrefKeys = [
     }
 
     private func applyInitialOutputPort(isVideo: Bool) {
-        if userSelectedRoute, let manual = manualAudioRoute {
-            _ = applyRequestedAudioRoute(route: manual, isVideo: isVideo, force: true)
-            return
-        }
         let session = AVAudioSession.sharedInstance()
         let inputs = session.availableInputs ?? []
 
@@ -846,6 +976,7 @@ private let candidateTokenPrefKeys = [
         userSelectedRoute = false
         lastAppliedRoute = nil
         lastAppliedAt = nil
+        lastCategoryKey = nil
         manualAudioRoute = nil
         currentCallIsVideo = false
         bluetoothKnownName = nil
@@ -1008,6 +1139,64 @@ private let candidateTokenPrefKeys = [
     private func finishBackgroundTask(for key: UUID) {
         if let bgId = activeBgTasks.removeValue(forKey: key), bgId != .invalid {
             UIApplication.shared.endBackgroundTask(bgId)
+        }
+    }
+
+    override func application(
+        _ application: UIApplication,
+        continue userActivity: NSUserActivity,
+        restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
+    ) -> Bool {
+        if handleRecentsCallback(userActivity) {
+            return true
+        }
+        return super.application(
+            application,
+            continue: userActivity,
+            restorationHandler: restorationHandler
+        )
+    }
+
+    private func handleRecentsCallback(_ activity: NSUserActivity) -> Bool {
+        guard let interaction = activity.interaction else { return false }
+        var personHandle: String?
+        var isVideo = false
+        if let intent = interaction.intent as? INStartVideoCallIntent {
+            personHandle = intent.contacts?.first?.personHandle?.value
+            isVideo = true
+        } else if let intent = interaction.intent as? INStartAudioCallIntent {
+            personHandle = intent.contacts?.first?.personHandle?.value
+            isVideo = false
+        } else if #available(iOS 13.0, *), let intent = interaction.intent as? INStartCallIntent {
+            personHandle = intent.contacts?.first?.personHandle?.value
+            isVideo = intent.callCapability == .videoCall
+        }
+        guard let handle = personHandle, !handle.isEmpty else { return false }
+        print("[AppDelegate] recents callback handle=\(handle) isVideo=\(isVideo)")
+        sendRecentsCallback(handle: handle, isVideo: isVideo)
+        return true
+    }
+
+    private func sendRecentsCallback(handle: String, isVideo: Bool) {
+        pendingRecentsCallback = [
+            "handle": handle,
+            "isVideo": isVideo,
+            "issuedAt": Int(Date().timeIntervalSince1970)
+        ]
+        flushRecentsCallback()
+    }
+
+    private func flushRecentsCallback() {
+        guard let payload = pendingRecentsCallback else { return }
+        guard let controller = window?.rootViewController as? FlutterViewController else { return }
+        let channel = FlutterMethodChannel(
+            name: "com.fgtracker.callkit_events",
+            binaryMessenger: controller.binaryMessenger
+        )
+        channel.invokeMethod("recentsCallback", arguments: payload) { [weak self] result in
+            if result is FlutterError { return }
+            self?.pendingRecentsCallback = nil
+            print("[AppDelegate] recents callback delivered to Dart")
         }
     }
 
