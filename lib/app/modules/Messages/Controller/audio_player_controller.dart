@@ -89,6 +89,28 @@ class GlobalAudioController extends GetxController {
 
   bool isCurrent(String url) => currentUrl.value == url;
 
+  RxDouble playbackSpeed = 1.0.obs;
+
+  Future<void> seek(Duration newPosition) async {
+    try {
+      await player.seek(newPosition);
+      position.value = newPosition;
+    } catch (_) {}
+  }
+
+  Future<void> toggleSpeed() async {
+    try {
+      if (playbackSpeed.value == 1.0) {
+        playbackSpeed.value = 1.5;
+      } else if (playbackSpeed.value == 1.5) {
+        playbackSpeed.value = 2.0;
+      } else {
+        playbackSpeed.value = 1.0;
+      }
+      await player.setSpeed(playbackSpeed.value);
+    } catch (_) {}
+  }
+
   @override
   void onClose() {
     player.dispose();

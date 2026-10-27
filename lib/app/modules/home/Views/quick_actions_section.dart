@@ -12,6 +12,7 @@ import '../../Messages/Views/chatlist_screen.dart';
 import 'package:fgtracker/features/safety/coming_soon/safety_coming_soon_map_screen.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
+import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
@@ -106,7 +107,10 @@ class QuickActionsSection extends StatelessWidget {
                 showBadge:
                     NotificationMarkerService.instance.hasCallingMarker.value,
                 badgeColor: const Color(0xFFEF4444),
-                onTap: () => Get.to(() => CallScreen()),
+                onTap: () {
+                  SocketService.instance.markCallHistoryViewed();
+                  Get.to(() => const CallScreen());
+                },
               )),
               Obx(() => _QuickActionCard(
                 title: "Chatting",
@@ -114,7 +118,10 @@ class QuickActionsSection extends StatelessWidget {
                 showBadge:
                     NotificationMarkerService.instance.hasChattingMarker.value,
                 badgeColor: const Color(0xFFEF4444),
-                onTap: () => Get.to(() => ChatListScreen()),
+                onTap: () {
+                  SocketService.instance.markChatListViewed();
+                  Get.to(() => ChatListScreen());
+                },
               )),
               Obx(() {
                 final homeController = Get.isRegistered<HomeController>()

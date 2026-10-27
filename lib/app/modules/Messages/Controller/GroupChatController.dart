@@ -88,10 +88,16 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
   RxInt highlightedMessageId = (-1).obs;
   final RxSet<int> uploadingVideoIndexes = <int>{}.obs;
+  RxString groupTypingUser = "".obs;
+  Timer? _groupTypingDebounceTimer;
+  Timer? _groupTypingResetTimer;
   final RxMap<int, double> videoUploadProgress = <int, double>{}.obs;
   final RxString floatingDate = "".obs;
   final RxBool showFloatingDate = false.obs;
   Timer? _floatingDateTimer;
+  RxInt groupCurrentPage = 1.obs;
+  RxBool isLoadingOlderMessages = false.obs;
+  RxBool hasMoreOlderMessages = true.obs;
 
   Future<void> scrollToMessage(int messageId) async {
     final index = _messages.indexWhere((e) => e.id == messageId);
@@ -147,6 +153,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     initializeGroupChat();
     itemPositionsListener.itemPositions.addListener(_onScrollDateChanged);
     itemPositionsListener.itemPositions.addListener(_updateScrollBottomState);
+    itemPositionsListener.itemPositions.addListener(_onScrollForOlderMessages);
   }
 
   void toggleEmoji() {
@@ -325,9 +332,63 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       },
     );
 
+    socketService.listenGroupTyping(
+      onTyping: (data) {
+        try {
+          if (data is Map) {
+            final uid = data["userId"]?.toString();
+            final currentUserId =
+                Global.storageServices.get(PrefConst.userId)?.toString();
+            if (uid != null && uid != currentUserId) {
+              final name = data["userName"]?.toString() ?? "Someone";
+              groupTypingUser.value = name;
+              _groupTypingResetTimer?.cancel();
+              _groupTypingResetTimer = Timer(const Duration(seconds: 3), () {
+                if (!isClosed) groupTypingUser.value = "";
+              });
+            }
+          }
+        } catch (_) {}
+      },
+      onStopTyping: (data) {
+        _groupTypingResetTimer?.cancel();
+        groupTypingUser.value = "";
+      },
+    );
+
     getGroupMessages();
 
     getGroupMembers();
+  }
+
+  void onInputTextChanged(String text) {
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+    final currentUserName =
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? "Someone";
+
+    if (text.trim().isNotEmpty) {
+      if (_groupTypingDebounceTimer?.isActive != true) {
+        socketService.sendGroupTyping(
+          groupId: groupId,
+          userId: currentUserId,
+          userName: currentUserName,
+        );
+      }
+      _groupTypingDebounceTimer?.cancel();
+      _groupTypingDebounceTimer = Timer(const Duration(seconds: 2), () {
+        socketService.sendGroupStopTyping(
+          groupId: groupId,
+          userId: currentUserId,
+        );
+      });
+    } else {
+      _groupTypingDebounceTimer?.cancel();
+      socketService.sendGroupStopTyping(
+        groupId: groupId,
+        userId: currentUserId,
+      );
+    }
   }
 
   Future<void> addVideos(List<String> paths) async {
@@ -1480,11 +1541,99 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     WidgetsBinding.instance.removeObserver(this);
     itemPositionsListener.itemPositions.removeListener(_onScrollDateChanged);
     itemPositionsListener.itemPositions.removeListener(_updateScrollBottomState);
+    itemPositionsListener.itemPositions.removeListener(_onScrollForOlderMessages);
     textEditingController.dispose();
     focusNode.dispose();
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
+    _groupTypingDebounceTimer?.cancel();
+    _groupTypingResetTimer?.cancel();
     super.onClose();
+  }
+
+  void _onScrollForOlderMessages() {
+    if (isLoadingOlderMessages.value) return;
+    if (!hasMoreOlderMessages.value) return;
+    if (_messages.isEmpty) return;
+
+    final positions = itemPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
+
+    final visible =
+        positions.where((position) => position.itemTrailingEdge > 0).toList();
+    if (visible.isEmpty) return;
+
+    visible.sort((a, b) => a.index.compareTo(b.index));
+    final firstVisibleIndex = visible.first.index;
+
+    if (firstVisibleIndex <= 2) {
+      loadOlderGroupMessages();
+    }
+  }
+
+  Future<void> loadOlderGroupMessages() async {
+    if (isLoadingOlderMessages.value) return;
+    if (!hasMoreOlderMessages.value) return;
+    if (_messages.isEmpty) return;
+
+    final positions = itemPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
+
+    final visible =
+        positions.where((position) => position.itemTrailingEdge > 0).toList();
+    if (visible.isEmpty) return;
+
+    visible.sort((a, b) => a.index.compareTo(b.index));
+    final oldFirstVisibleIndex = visible.first.index;
+
+    isLoadingOlderMessages.value = true;
+    try {
+      final nextPage = groupCurrentPage.value + 1;
+      log("OLDER GROUP MESSAGE API CALL => page=$nextPage");
+      final result = await MessageRepo.groupMessageHistory(
+        groupId: groupId,
+        page: nextPage,
+        limit: 20,
+      );
+
+      if (result.status == true) {
+        final olderMessages = result.messageData ?? [];
+        if (olderMessages.isNotEmpty) {
+          final existingIds = _messages.map((m) => m.id).toSet();
+          final newOlder = olderMessages.where((m) => m.id != null && !existingIds.contains(m.id)).toList();
+
+          if (newOlder.isNotEmpty) {
+            newOlder.sort((a, b) {
+              final aTime = DateTime.tryParse(a.timestamp?.toString() ?? '');
+              final bTime = DateTime.tryParse(b.timestamp?.toString() ?? '');
+              if (aTime == null || bTime == null) return 0;
+              return aTime.compareTo(bTime);
+            });
+
+            _messages.insertAll(0, newOlder);
+            groupCurrentPage.value = nextPage;
+            updateMessageStream();
+
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!itemScrollController.isAttached) return;
+              itemScrollController.jumpTo(
+                index: oldFirstVisibleIndex + newOlder.length,
+              );
+            });
+          }
+        }
+
+        if (result.pagination != null) {
+          hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
+        } else {
+          hasMoreOlderMessages.value = olderMessages.length >= 20;
+        }
+      }
+    } catch (e) {
+      log("Load Older Group Messages Error: $e");
+    } finally {
+      isLoadingOlderMessages.value = false;
+    }
   }
 }
 

@@ -339,6 +339,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                 focusNode: focusNode,
                                 onChanged: (val) {
                                   widget.messageText.value = val;
+                                  widget.messageController?.onInputTextChanged(val);
+                                  widget.groupMessageController?.onInputTextChanged(val);
                                   if (widget.groupMembers?.isNotEmpty == true) {
                                     widget.groupMessageController
                                         ?.onTextChanged(
@@ -550,89 +552,99 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                               ),
                             ),
                           ),
-                        if (shouldShowSend &&
-                            !voiceController.isRecording.value)
+                        if (!voiceController.isRecording.value)
                           Padding(
                             padding: EdgeInsets.only(bottom: 2.h),
-                            child: GestureDetector(
-                              onTap: (widget.isSending.value ||
-                                      voiceInputController
-                                          .isBusyListeningOrRecording)
-                                  ? null
-                                  : () {
-                                      if (hasRecordedAudio &&
-                                          widget.onVoiceSend != null) {
-                                        final audioPath = voiceInputController
-                                            .consumeRecordedAudio();
-                                        widget.onVoiceSend!(audioPath);
-                                        return;
-                                      }
-                                      if (voiceInputController
-                                          .isInlinePanelActive) {
-                                        voiceInputController.closeInlinePanel();
-                                      }
-                                      if (isEditing) {
-                                        final newText =
-                                            widget.textController.text.trim();
-                                        if (newText.isEmpty) return;
-                                        if (widget.messageController != null) {
-                                          widget.messageController!
-                                              .updateEditedMessage(
-                                            newText: newText,
-                                          );
-                                        } else if (widget
-                                                .groupMessageController !=
-                                            null) {
-                                          widget.groupMessageController!
-                                              .updateEditedMessage(
-                                            newText: newText,
-                                          );
-                                        }
-                                        widget.textController.clear();
-                                        widget.messageText.value = "";
-                                      } else {
-                                        widget.onSend();
-                                      }
-                                    },
-                              child: CircleAvatar(
-                                radius: 24.r,
-                                backgroundColor: voiceInputController
-                                        .isBusyListeningOrRecording
-                                    ? AppColors.authIconBar
-                                    : AppColors.primaryDarkblue,
-                                child: Icon(
-                                  isEditing ? Icons.check : Icons.send_rounded,
-                                  color: Colors.white,
-                                  size: 20.sp,
-                                ),
-                              ),
-                            ),
-                          )
-                        else if (!voiceController.isRecording.value)
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 2.h),
-                            child: GestureDetector(
-                              onTap: () {
-                                focusNode.unfocus();
-                                VoiceInputSheet.show(
-                                  context: context,
-                                  textController: widget.textController,
-                                  focusNode: focusNode,
-                                  messageText: widget.messageText,
-                                  onSend: widget.onSend,
-                                  onVoiceSend: widget.onVoiceSend,
-                                  type: currentVoiceContextType,
-                                );
-                              },
-                              child: CircleAvatar(
-                                radius: 24.r,
-                                backgroundColor: AppColors.primaryDarkblue,
-                                child: Icon(
-                                  Icons.mic_none_rounded,
-                                  color: Colors.white,
-                                  size: 24.sp,
-                                ),
-                              ),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
+                              transitionBuilder: (child, animation) =>
+                                  ScaleTransition(scale: animation, child: child),
+                              child: shouldShowSend
+                                  ? GestureDetector(
+                                      key: const ValueKey("chat_send_button"),
+                                      onTap: (widget.isSending.value ||
+                                              voiceInputController
+                                                  .isBusyListeningOrRecording)
+                                          ? null
+                                          : () {
+                                              if (hasRecordedAudio &&
+                                                  widget.onVoiceSend != null) {
+                                                final audioPath =
+                                                    voiceInputController
+                                                        .consumeRecordedAudio();
+                                                widget.onVoiceSend!(audioPath);
+                                                return;
+                                              }
+                                              if (voiceInputController
+                                                  .isInlinePanelActive) {
+                                                voiceInputController
+                                                    .closeInlinePanel();
+                                              }
+                                              if (isEditing) {
+                                                final newText = widget
+                                                    .textController.text
+                                                    .trim();
+                                                if (newText.isEmpty) return;
+                                                if (widget.messageController !=
+                                                    null) {
+                                                  widget.messageController!
+                                                      .updateEditedMessage(
+                                                    newText: newText,
+                                                  );
+                                                } else if (widget
+                                                        .groupMessageController !=
+                                                    null) {
+                                                  widget.groupMessageController!
+                                                      .updateEditedMessage(
+                                                    newText: newText,
+                                                  );
+                                                }
+                                                widget.textController.clear();
+                                                widget.messageText.value = "";
+                                              } else {
+                                                widget.onSend();
+                                              }
+                                            },
+                                      child: CircleAvatar(
+                                        radius: 24.r,
+                                        backgroundColor: voiceInputController
+                                                .isBusyListeningOrRecording
+                                            ? AppColors.authIconBar
+                                            : AppColors.primaryDarkblue,
+                                        child: Icon(
+                                          isEditing
+                                              ? Icons.check
+                                              : Icons.send_rounded,
+                                          color: Colors.white,
+                                          size: 20.sp,
+                                        ),
+                                      ),
+                                    )
+                                  : GestureDetector(
+                                      key: const ValueKey("chat_mic_button"),
+                                      onTap: () {
+                                        focusNode.unfocus();
+                                        VoiceInputSheet.show(
+                                          context: context,
+                                          textController: widget.textController,
+                                          focusNode: focusNode,
+                                          messageText: widget.messageText,
+                                          onSend: widget.onSend,
+                                          onVoiceSend: widget.onVoiceSend,
+                                          type: currentVoiceContextType,
+                                        );
+                                      },
+                                      child: CircleAvatar(
+                                        radius: 24.r,
+                                        backgroundColor:
+                                            AppColors.primaryDarkblue,
+                                        child: Icon(
+                                          Icons.mic_none_rounded,
+                                          color: Colors.white,
+                                          size: 24.sp,
+                                        ),
+                                      ),
+                                    ),
                             ),
                           )
                         else

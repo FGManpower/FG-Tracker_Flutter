@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:flutter/material.dart';
@@ -58,39 +59,142 @@ class ChatList extends StatelessWidget {
             itemCount: messages.length,
             itemBuilder: (context, index) {
               final msg = messages[index];
+              final prevMsg = index > 0 ? messages[index - 1] : null;
+              final nextMsg =
+                  index < messages.length - 1 ? messages[index + 1] : null;
 
-              final bubble = ChatBubble(
-                controller: controller,
-                message: msg,
-                context: context,
-              );
-
-              if (_isDeleted(msg)) {
-                return bubble;
+              // WhatsApp Consecutive Clustering
+              bool isSameSenderAsPrev = false;
+              if (prevMsg != null &&
+                  prevMsg.senderId != null &&
+                  msg.senderId != null) {
+                if (prevMsg.senderId.toString() == msg.senderId.toString()) {
+                  final t1 =
+                      DateTime.tryParse(prevMsg.timestamp?.toString() ?? '');
+                  final t2 = DateTime.tryParse(msg.timestamp?.toString() ?? '');
+                  if (t1 != null &&
+                      t2 != null &&
+                      t2.difference(t1).abs().inSeconds <= 60) {
+                    isSameSenderAsPrev = true;
+                  }
+                }
               }
 
-              return Dismissible(
-                key: ValueKey(msg.id ?? index),
-                direction: DismissDirection.startToEnd,
-                dismissThresholds: const {
-                  DismissDirection.startToEnd: 0.25,
-                },
-                confirmDismiss: (_) async {
-                  HapticFeedback.lightImpact();
-                  controller.setReply(msg);
-                  return false;
-                },
-                background: Container(
-                  alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.only(left: 20.w),
-                  color: Colors.transparent,
-                  child: const Icon(
-                    Icons.reply,
-                    color: Colors.green,
-                  ),
+              bool isSameSenderAsNext = false;
+              if (nextMsg != null &&
+                  nextMsg.senderId != null &&
+                  msg.senderId != null) {
+                if (nextMsg.senderId.toString() == msg.senderId.toString()) {
+                  final t1 = DateTime.tryParse(msg.timestamp?.toString() ?? '');
+                  final t2 =
+                      DateTime.tryParse(nextMsg.timestamp?.toString() ?? '');
+                  if (t1 != null &&
+                      t2 != null &&
+                      t2.difference(t1).abs().inSeconds <= 60) {
+                    isSameSenderAsNext = true;
+                  }
+                }
+              }
+
+              // WhatsApp Inline Date Header Separator
+              bool showDateHeader = false;
+              String? dateHeaderText;
+              if (msg.timestamp != null &&
+                  msg.timestamp.toString().trim().isNotEmpty) {
+                try {
+                  final currentDateStr =
+                      formatDateHeader(msg.timestamp.toString());
+                  if (index == 0) {
+                    showDateHeader = true;
+                    dateHeaderText = currentDateStr;
+                  } else if (prevMsg?.timestamp != null &&
+                      prevMsg!.timestamp.toString().trim().isNotEmpty) {
+                    final prevDateStr =
+                        formatDateHeader(prevMsg.timestamp.toString());
+                    if (currentDateStr != prevDateStr) {
+                      showDateHeader = true;
+                      dateHeaderText = currentDateStr;
+                    }
+                  }
+                } catch (_) {}
+              }
+
+              final bubble = RepaintBoundary(
+                child: ChatBubble(
+                  controller: controller,
+                  message: msg,
+                  context: context,
+                  showAvatar: !isSameSenderAsNext,
+                  isDense: isSameSenderAsPrev,
                 ),
-                child: bubble,
               );
+
+              Widget itemWidget;
+              if (_isDeleted(msg)) {
+                itemWidget = bubble;
+              } else {
+                itemWidget = Dismissible(
+                  key: ValueKey(msg.id ?? index),
+                  direction: DismissDirection.startToEnd,
+                  dismissThresholds: const {
+                    DismissDirection.startToEnd: 0.25,
+                  },
+                  confirmDismiss: (_) async {
+                    HapticFeedback.lightImpact();
+                    controller.setReply(msg);
+                    return false;
+                  },
+                  background: Container(
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.only(left: 20.w),
+                    color: Colors.transparent,
+                    child: const Icon(
+                      Icons.reply,
+                      color: Colors.green,
+                    ),
+                  ),
+                  child: bubble,
+                );
+              }
+
+              if (showDateHeader && dateHeaderText != null) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Center(
+                      child: Container(
+                        margin: EdgeInsets.symmetric(vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 5.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(16.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          dateHeaderText,
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ),
+                    itemWidget,
+                  ],
+                );
+              }
+
+              return itemWidget;
             },
           );
         },
@@ -352,40 +456,144 @@ class GroupChatList extends StatelessWidget {
             itemCount: messages.length,
             itemBuilder: (context, index) {
               final msg = messages[index];
+              final prevMsg = index > 0 ? messages[index - 1] : null;
+              final nextMsg =
+                  index < messages.length - 1 ? messages[index + 1] : null;
 
-              final bubble = GroupChatBubble(
-                controller: controller,
-                message: msg,
-                context: context,
-                isGroup: true,
-                groupId: controller.groupId,
-                groupName: controller.groupName.toString(),
-              );
-
-              if (_isDeleted(msg)) {
-                return bubble;
+              // WhatsApp Consecutive Clustering for Group Chat
+              bool isSameSenderAsPrev = false;
+              if (prevMsg != null &&
+                  prevMsg.senderId != null &&
+                  msg.senderId != null) {
+                if (prevMsg.senderId.toString() == msg.senderId.toString()) {
+                  final t1 =
+                      DateTime.tryParse(prevMsg.timestamp?.toString() ?? '');
+                  final t2 = DateTime.tryParse(msg.timestamp?.toString() ?? '');
+                  if (t1 != null &&
+                      t2 != null &&
+                      t2.difference(t1).abs().inSeconds <= 60) {
+                    isSameSenderAsPrev = true;
+                  }
+                }
               }
 
-              return Dismissible(
-                key: ValueKey(msg.id ?? index),
-                direction: DismissDirection.startToEnd,
-                confirmDismiss: (_) async {
-                  HapticFeedback.lightImpact();
-                  controller.setReply(msg);
-                  return false;
-                },
-                background: Container(
-                  alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.only(left: 20.w),
-                  color: Colors.transparent,
-                  child: Icon(
-                    Icons.reply,
-                    color: Colors.deepPurple,
-                    size: 24.sp,
-                  ),
+              bool isSameSenderAsNext = false;
+              if (nextMsg != null &&
+                  nextMsg.senderId != null &&
+                  msg.senderId != null) {
+                if (nextMsg.senderId.toString() == msg.senderId.toString()) {
+                  final t1 = DateTime.tryParse(msg.timestamp?.toString() ?? '');
+                  final t2 =
+                      DateTime.tryParse(nextMsg.timestamp?.toString() ?? '');
+                  if (t1 != null &&
+                      t2 != null &&
+                      t2.difference(t1).abs().inSeconds <= 60) {
+                    isSameSenderAsNext = true;
+                  }
+                }
+              }
+
+              // WhatsApp Inline Date Header Separator
+              bool showDateHeader = false;
+              String? dateHeaderText;
+              if (msg.timestamp != null &&
+                  msg.timestamp.toString().trim().isNotEmpty) {
+                try {
+                  final currentDateStr =
+                      formatDateHeader(msg.timestamp.toString());
+                  if (index == 0) {
+                    showDateHeader = true;
+                    dateHeaderText = currentDateStr;
+                  } else if (prevMsg?.timestamp != null &&
+                      prevMsg!.timestamp.toString().trim().isNotEmpty) {
+                    final prevDateStr =
+                        formatDateHeader(prevMsg.timestamp.toString());
+                    if (currentDateStr != prevDateStr) {
+                      showDateHeader = true;
+                      dateHeaderText = currentDateStr;
+                    }
+                  }
+                } catch (_) {}
+              }
+
+              final bubble = RepaintBoundary(
+                child: GroupChatBubble(
+                  controller: controller,
+                  message: msg,
+                  context: context,
+                  isGroup: true,
+                  groupId: controller.groupId,
+                  groupName: controller.groupName.toString(),
+                  showSenderName: !isSameSenderAsPrev,
+                  showAvatar: !isSameSenderAsNext,
+                  isDense: isSameSenderAsPrev,
                 ),
-                child: bubble,
               );
+
+              Widget itemWidget;
+              if (_isDeleted(msg)) {
+                itemWidget = bubble;
+              } else {
+                itemWidget = Dismissible(
+                  key: ValueKey(msg.id ?? index),
+                  direction: DismissDirection.startToEnd,
+                  confirmDismiss: (_) async {
+                    HapticFeedback.lightImpact();
+                    controller.setReply(msg);
+                    return false;
+                  },
+                  background: Container(
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.only(left: 20.w),
+                    color: Colors.transparent,
+                    child: Icon(
+                      Icons.reply,
+                      color: Colors.deepPurple,
+                      size: 24.sp,
+                    ),
+                  ),
+                  child: bubble,
+                );
+              }
+
+              if (showDateHeader && dateHeaderText != null) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Center(
+                      child: Container(
+                        margin: EdgeInsets.symmetric(vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 5.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(16.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          dateHeaderText,
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ),
+                    itemWidget,
+                  ],
+                );
+              }
+
+              return itemWidget;
             },
           );
         },

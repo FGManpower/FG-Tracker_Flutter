@@ -90,22 +90,39 @@ class _AudioBubbleState extends State<AudioBubble> {
                 ? 0
                 : position.inMilliseconds / duration.inMilliseconds;
 
-            return SizedBox(
-              width: 120.w,
-              height: 40.h,
-              child: AnimatedWaveList(
-                stream: Stream.value(
-                  Amplitude(current: progress * 100, max: 100),
-                ),
-                barBuilder: (animation, amplitude) => WaveFormBar(
-                  animation: animation,
-                  amplitude: amplitude,
-                  color: textColor,
+            return GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: (details) {
+                if (duration.inMilliseconds > 0) {
+                  final fraction = (details.localPosition.dx / 120.w).clamp(0.0, 1.0);
+                  final targetMs = (duration.inMilliseconds * fraction).round();
+                  controller.seek(Duration(milliseconds: targetMs));
+                }
+              },
+              onHorizontalDragUpdate: (details) {
+                if (duration.inMilliseconds > 0) {
+                  final fraction = (details.localPosition.dx / 120.w).clamp(0.0, 1.0);
+                  final targetMs = (duration.inMilliseconds * fraction).round();
+                  controller.seek(Duration(milliseconds: targetMs));
+                }
+              },
+              child: SizedBox(
+                width: 120.w,
+                height: 40.h,
+                child: AnimatedWaveList(
+                  stream: Stream.value(
+                    Amplitude(current: progress * 100, max: 100),
+                  ),
+                  barBuilder: (animation, amplitude) => WaveFormBar(
+                    animation: animation,
+                    amplitude: amplitude,
+                    color: textColor,
+                  ),
                 ),
               ),
             );
           }),
-          SizedBox(width: 10.w),
+          SizedBox(width: 8.w),
           Obx(() {
             final isCurrent = controller.currentUrl.value == widget.audioUrl;
 
@@ -119,12 +136,47 @@ class _AudioBubbleState extends State<AudioBubble> {
 
             final displayTime = playing ? (duration - position) : duration;
 
-            return Text(
-              _format(displayTime),
-              style: TextStyle(
-                fontSize: 11.sp,
-                color: textColor,
-              ),
+            final currentSpeed = controller.playbackSpeed.value;
+            final speedLabel = currentSpeed == 1.0
+                ? "1x"
+                : (currentSpeed == 1.5 ? "1.5x" : "2x");
+
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _format(displayTime),
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: textColor,
+                  ),
+                ),
+                if (playing)
+                  GestureDetector(
+                    onTap: controller.toggleSpeed,
+                    child: Container(
+                      margin: EdgeInsets.only(left: 6.w),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 5.w,
+                        vertical: 2.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: widget.isMe
+                            ? Colors.white.withValues(alpha: 0.25)
+                            : Colors.black.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        speedLabel,
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             );
           }),
         ],

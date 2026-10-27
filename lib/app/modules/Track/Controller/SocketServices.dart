@@ -241,6 +241,24 @@ class SocketService extends GetxService {
     }
   }
 
+  void markCallHistoryViewed() {
+    NotificationMarkerService.instance.clearCallingMarker();
+    final userId = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (userId != null && userId.isNotEmpty && isSocketConnected) {
+      _socket?.emit("call_history_viewed", {"userId": userId});
+      log("[SocketService] Emitted call_history_viewed for $userId");
+    }
+  }
+
+  void markChatListViewed() {
+    NotificationMarkerService.instance.clearChattingMarker();
+    final userId = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (userId != null && userId.isNotEmpty && isSocketConnected) {
+      _socket?.emit("chat_list_viewed", {"userId": userId});
+      log("[SocketService] Emitted chat_list_viewed for $userId");
+    }
+  }
+
   void deleteGroup({required String groupId}) {
     if (isSocketConnected) {
       _socket?.emit("delete-group", {
