@@ -6,7 +6,7 @@ import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart:.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';

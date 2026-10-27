@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
-import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart:.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 class SignallingService {
