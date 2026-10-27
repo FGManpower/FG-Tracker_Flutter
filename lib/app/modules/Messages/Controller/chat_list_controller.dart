@@ -70,6 +70,17 @@ class ChatListController extends GetxController {
     }).toList();
   }
 
+  /// Total count of all chats currently displayed (both private and group chats).
+  int get allChatsCount => displayedChats.length;
+
+  /// Total unread messages count across all chats (both private and group chats).
+  int get totalUnreadCount {
+    return displayedChats.fold<int>(
+      0,
+      (sum, chat) => sum + (chat.unreadCount ?? 0),
+    );
+  }
+
   final socketService = SocketMessageService.instance;
 
   String get currentUserId {
@@ -203,10 +214,6 @@ class ChatListController extends GetxController {
         includeArchived: false,
       );
 
-      if (response.unreadTotalCount != null) {
-        unreadTotalCount.value = response.unreadTotalCount!;
-      }
-
       // WhatsApp Rule (Recent Activity Only):
       // Strictly exclude empty chats (chats with 0 messages / no preview, or invalid name).
       final chats = (response.data ?? []).where((chat) {
@@ -220,6 +227,17 @@ class ChatListController extends GetxController {
         final hasValidName = name != null && name.isNotEmpty && name != "Unknown User";
         return hasMsg && hasValidName;
       }).toList();
+
+      final chatsUnreadSum = chats.fold<int>(
+        0,
+        (sum, chat) => sum + (chat.unreadCount ?? 0),
+      );
+      if (response.unreadTotalCount != null &&
+          response.unreadTotalCount! > chatsUnreadSum) {
+        unreadTotalCount.value = response.unreadTotalCount!;
+      } else {
+        unreadTotalCount.value = chatsUnreadSum;
+      }
 
       final activeSearch = search ??
           (searchQuery.value.trim().isNotEmpty
@@ -436,10 +454,8 @@ class ChatListController extends GetxController {
   void _handleFullChatListSocket(dynamic data) {
     if (data is! Map) return;
     try {
-      final response = PrivateChatResponse.fromJson(Map<String, dynamic>.from(data));
-      if (response.unreadTotalCount != null) {
-        unreadTotalCount.value = response.unreadTotalCount!;
-      }
+      final response =
+          PrivateChatResponse.fromJson(Map<String, dynamic>.from(data));
       final chats = (response.data ?? []).where((chat) {
         if (chat.isArchived == true) return false;
         final hasMsg = (chat.message != null && chat.message!.trim().isNotEmpty) ||
@@ -451,6 +467,17 @@ class ChatListController extends GetxController {
         final hasValidName = name != null && name.isNotEmpty && name != "Unknown User";
         return hasMsg && hasValidName;
       }).toList();
+
+      final chatsUnreadSum = chats.fold<int>(
+        0,
+        (sum, chat) => sum + (chat.unreadCount ?? 0),
+      );
+      if (response.unreadTotalCount != null &&
+          response.unreadTotalCount! > chatsUnreadSum) {
+        unreadTotalCount.value = response.unreadTotalCount!;
+      } else {
+        unreadTotalCount.value = chatsUnreadSum;
+      }
 
       if (chats.isNotEmpty) {
         final uniqueMap = <String, PrivateChatModel>{};
