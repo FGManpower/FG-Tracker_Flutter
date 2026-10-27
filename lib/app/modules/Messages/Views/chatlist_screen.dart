@@ -509,9 +509,8 @@ class _AllChatsBody extends StatelessWidget {
                   Obx(
                     () => _sectionTitle(
                       controller.isSearching.value ? "Search Results" : "All Chats",
-                      badgeCount: !controller.isSearching.value &&
-                              controller.unreadTotalCount.value > 0
-                          ? controller.unreadTotalCount.value
+                      badgeCount: controller.displayedChats.isNotEmpty
+                          ? controller.displayedChats.length
                           : null,
                     ),
                   ),
