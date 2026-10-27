@@ -150,11 +150,11 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
                     width: 48.w,
                     height: 48.w,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF25D366),
+                      color: ToggleThemeData.darkPurple,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF25D366).withOpacity(0.35),
+                          color: ToggleThemeData.darkPurple.withOpacity(0.35),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -504,7 +504,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
             child: Container(
               padding: EdgeInsets.all(2.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF25D366),
+                color: ToggleThemeData.darkPurple,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 1.8),
               ),
@@ -526,9 +526,9 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
       height: 22.w,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isSelected ? const Color(0xFF25D366) : Colors.transparent,
+        color: isSelected ? ToggleThemeData.darkPurple : Colors.transparent,
         border: Border.all(
-          color: isSelected ? const Color(0xFF25D366) : Colors.grey.shade400,
+          color: isSelected ? ToggleThemeData.darkPurple : Colors.grey.shade400,
           width: 1.8,
         ),
       ),

@@ -577,8 +577,11 @@ class _OnlineMemberState extends State<OnlineMember> {
           imageUrl: member.profileImage,
           status: isOnlineNow,
           lastSeen: member.lastSeen,
+          phone: member.phone ?? member.mobileNo,
+          team: member.displayDepartment,
           isGroupChat: false,
           isLocationSharing: member.isLocationSharing ?? true,
+          location: member.displayLocation,
         );
       },
       borderRadius: BorderRadius.circular(16.r),

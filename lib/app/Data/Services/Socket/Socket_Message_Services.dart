@@ -1,12 +1,18 @@
 import 'dart:async';
-import 'dart:developer';
-
+import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:get/get.dart';
 import 'package:socket_io_common/src/util/event_emitter.dart';
+
+void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
+  if (kDebugMode) {
+    developer.log(message, error: error, stackTrace: stackTrace, name: name ?? 'SocketMessageService');
+  }
+}
 
 class SocketMessageService extends GetxService {
   static SocketMessageService get instance => Get.put(SocketMessageService());
@@ -292,14 +298,24 @@ class SocketMessageService extends GetxService {
   void receiveGroupMessage({
     required Function(dynamic) callback,
   }) {
-    socket.off("receive_group_message");
-
-    socket.on(
+    final events = [
       "receive_group_message",
-      (data) {
-        callback(data);
-      },
-    );
+      "group_forward_message",
+      "forward_message",
+      "receive_forward_message",
+      "message_forwarded",
+      "forwarded_message",
+    ];
+
+    for (final event in events) {
+      socket.off(event);
+      socket.on(
+        event,
+        (data) {
+          callback(data);
+        },
+      );
+    }
   }
 
   void sendGroupTyping({
@@ -553,8 +569,18 @@ class SocketMessageService extends GetxService {
       return;
     }
 
+    final events = [
+      "receive_message",
+      "forward_message",
+      "receive_forward_message",
+      "message_forwarded",
+      "forwarded_message",
+    ];
+
     if (_privateMessageHandler != null) {
-      socket.off("receive_message", _privateMessageHandler);
+      for (final event in events) {
+        socket.off(event, _privateMessageHandler);
+      }
     }
 
     _privateMessageHandler = (dynamic data) {
@@ -566,14 +592,33 @@ class SocketMessageService extends GetxService {
         return;
       }
 
-      final dataSenderId = data["senderId"]?.toString();
-      final dataReceiverId = data["receiverId"]?.toString();
+      final dataMap = Map<String, dynamic>.from(data);
+      final inner = dataMap['message'] is Map
+          ? Map<String, dynamic>.from(dataMap['message'])
+          : (dataMap['data'] is Map
+              ? Map<String, dynamic>.from(dataMap['data'])
+              : dataMap);
+
+      final dataSenderId = (inner["senderId"] ??
+              inner["sender_id"] ??
+              inner["userId"] ??
+              inner["user_id"] ??
+              dataMap["senderId"] ??
+              dataMap["sender_id"])
+          ?.toString();
+      final dataReceiverId = (inner["receiverId"] ??
+              inner["receiver_id"] ??
+              inner["targetId"] ??
+              inner["target_id"] ??
+              dataMap["receiverId"] ??
+              dataMap["receiver_id"])
+          ?.toString();
 
       final isSameChat =
-          (dataSenderId == senderId &&
-              dataReceiverId == receiverId) ||
-              (dataSenderId == receiverId &&
-                  dataReceiverId == senderId);
+          (dataSenderId == senderId && dataReceiverId == receiverId) ||
+          (dataSenderId == receiverId && dataReceiverId == senderId) ||
+          (dataReceiverId == receiverId && (dataSenderId == null || dataSenderId == senderId)) ||
+          (dataSenderId == receiverId && (dataReceiverId == null || dataReceiverId == senderId));
 
       log("EXPECTED SENDER => $senderId");
       log("EXPECTED RECEIVER => $receiverId");
@@ -588,12 +633,14 @@ class SocketMessageService extends GetxService {
 
       log("MESSAGE ACCEPTED => CALLING CONTROLLER CALLBACK");
 
-      callback?.call(Map<String, dynamic>.from(data));
+      callback?.call(dataMap);
 
       log("CONTROLLER CALLBACK COMPLETED");
     };
 
-    socket.on("receive_message", _privateMessageHandler!);
+    for (final event in events) {
+      socket.on(event, _privateMessageHandler!);
+    }
 
     log("RECEIVE MESSAGE LISTENER REGISTERED");
   }
@@ -894,13 +941,30 @@ class SocketMessageService extends GetxService {
     );
   }
 
-  void disconnectPrivateChatSocket() {
+  void clearPrivateChatListeners() {
     _privateChatSocket?.off("joined");
     _privateChatSocket?.off("receive_message");
+    _privateChatSocket?.off("forward_message");
+    _privateChatSocket?.off("receive_forward_message");
+    _privateChatSocket?.off("message_forwarded");
+    _privateChatSocket?.off("forwarded_message");
     _privateChatSocket?.off("messages_delivered");
     _privateChatSocket?.off("messages_seen_update");
     _privateChatSocket?.off("private_chat_updated");
     _privateChatSocket?.off("private_chat_cleared");
+    _privateChatSocket?.off("typing");
+    _privateChatSocket?.off("stop_typing");
+    _privateChatSocket?.off("messageEdited");
+    _privateChatSocket?.off("message_deleted");
+    _privateChatSocket?.off("message_pinned");
+    _privateChatSocket?.off("message_unpinned");
+    _privateMessageHandler = null;
+    _privateChatId = null;
+    _privateJoinDebugTimer?.cancel();
+  }
+
+  void disconnectPrivateChatSocket() {
+    clearPrivateChatListeners();
 
     _privateChatSocket?.disconnect();
     _privateChatSocket?.dispose();
@@ -1156,11 +1220,35 @@ class SocketMessageService extends GetxService {
     required int messageId,
     String? receiverId,
     int? groupId,
+    dynamic content,
+    String? messageType,
+    List<String>? images,
+    List<Map<String, dynamic>>? videos,
+    String? caption,
   }) {
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString();
+
     final payload = {
       "messageId": messageId,
-      "receiverId": receiverId,
-      "groupId": groupId,
+      "message_id": messageId,
+      "forwardedFromMessageId": messageId,
+      "forwarded_from_message_id": messageId,
+      "isForwarded": true,
+      "is_forwarded": true,
+      if (content != null) "content": content,
+      if (content != null) "message": content,
+      if (messageType != null) "messageType": messageType,
+      if (messageType != null) "message_type": messageType,
+      if (images != null && images.isNotEmpty) "images": images,
+      if (videos != null && videos.isNotEmpty) "videos": videos,
+      if (caption != null && caption.isNotEmpty) "caption": caption,
+      if (receiverId != null) "receiverId": receiverId,
+      if (receiverId != null) "receiver_id": receiverId,
+      if (groupId != null) "groupId": groupId,
+      if (groupId != null) "group_id": groupId,
+      if (currentUserId != null) "senderId": currentUserId,
+      if (currentUserId != null) "sender_id": currentUserId,
     };
 
     log("========== FORWARD MESSAGE START ==========");
@@ -1173,14 +1261,15 @@ class SocketMessageService extends GetxService {
     log("GROUP SOCKET CONNECTED => $isSocketConnected");
 
     if (receiverId != null && receiverId.isNotEmpty) {
-      if (!isPrivateChatSocketConnected) {
-        log("FORWARD FAILED => PRIVATE SOCKET NOT CONNECTED");
-        return;
+      if (isPrivateChatSocketConnected) {
+        _privateChatSocket!.emit("forward_message", payload);
+        log("FORWARD MESSAGE EMITTED ON PRIVATE SOCKET");
+      } else if (isSocketConnected) {
+        socket.emit("forward_message", payload);
+        log("FORWARD MESSAGE EMITTED ON FALLBACK SOCKET");
+      } else {
+        log("FORWARD FAILED => SOCKET NOT CONNECTED");
       }
-
-      _privateChatSocket!.emit("forward_message", payload);
-
-      log("FORWARD MESSAGE EMITTED ON PRIVATE SOCKET");
       log("========== FORWARD MESSAGE END ==========");
       return;
     }

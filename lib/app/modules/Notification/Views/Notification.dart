@@ -4,13 +4,13 @@ import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 
+import 'dart:convert';
+import 'package:fgtracker/app/modules/mediaStream/Views/contact_profile_screen.dart';
 import 'package:fgtracker/app/modules/call/Views/call_recent_calls_tab.dart';
 import '../../call/Controller/call_controller.dart';
 
@@ -318,15 +318,34 @@ class _NotificationScreenState extends State<NotificationScreen> {
       iconColor = const Color(0xffFF8C00);
       iconBgColor = const Color(0xffFF8C00).withOpacity(0.1);
 
-      final callData = data?["callData"];
+      dynamic callData = data?["callData"];
+      if (callData is String && callData.trim().isNotEmpty) {
+        try {
+          final decoded = jsonDecode(callData);
+          if (decoded is Map) {
+            callData = decoded;
+          }
+        } catch (_) {}
+      }
+
       if (callData is Map) {
-        profileImage = callData["callerImage"]?.toString() ??
+        profileImage = callData["caller_profile_image"]?.toString() ??
+            callData["callerProfileImage"]?.toString() ??
+            callData["callerImage"]?.toString() ??
+            callData["caller_image"]?.toString() ??
+            callData["profile_image"]?.toString() ??
             callData["profileImage"]?.toString() ??
-            callData["callerProfileImage"]?.toString();
+            callData["avatar"]?.toString();
       } else {
-        profileImage = data?["groupImage"]?.toString() ??
+        profileImage = data?["caller_profile_image"]?.toString() ??
+            data?["callerProfileImage"]?.toString() ??
             data?["callerImage"]?.toString() ??
-            data?["profileImage"]?.toString();
+            data?["caller_image"]?.toString() ??
+            data?["groupImage"]?.toString() ??
+            data?["group_image"]?.toString() ??
+            data?["profile_image"]?.toString() ??
+            data?["profileImage"]?.toString() ??
+            data?["avatar"]?.toString();
       }
     }
 
@@ -349,12 +368,153 @@ class _NotificationScreenState extends State<NotificationScreen> {
           final notificationData = item.data;
 
           if (isCallType) {
+            // 1. Decode nested callData if it's a Map or JSON String
+            Map<String, dynamic> callDataMap = {};
+            final rawCallData = notificationData?["callData"];
+            if (rawCallData is Map) {
+              callDataMap = Map<String, dynamic>.from(rawCallData);
+            } else if (rawCallData is String && rawCallData.trim().isNotEmpty) {
+              try {
+                final decoded = jsonDecode(rawCallData);
+                if (decoded is Map) {
+                  callDataMap = Map<String, dynamic>.from(decoded);
+                }
+              } catch (_) {}
+            }
+
+            // 2. Extract callId from all possible keys
+            String callId = (notificationData?["callId"] ??
+                    notificationData?["call_id"] ??
+                    notificationData?["callID"] ??
+                    callDataMap["callId"] ??
+                    callDataMap["call_id"] ??
+                    callDataMap["callID"] ??
+                    callDataMap["sessionId"] ??
+                    callDataMap["session_id"] ??
+                    notificationData?["sessionId"] ??
+                    notificationData?["session_id"] ??
+                    notificationData?["id"] ??
+                    callDataMap["id"] ??
+                    "")
+                .toString()
+                .trim();
+
+            if (callId == "null") callId = "";
+
+            // If callId is pure digits, prepend 'call_' to match backend format (call_9700)
+            if (callId.isNotEmpty && RegExp(r'^\d+$').hasMatch(callId)) {
+              callId = "call_$callId";
+            }
+
+            // 3. Determine if this is a group call
+            final bool isGroup = itemType.contains("group") ||
+                screenName.toLowerCase().contains("group") ||
+                notificationData?["isGroup"] == true ||
+                notificationData?["isGroup"] == "true" ||
+                callDataMap["isGroup"] == true ||
+                callDataMap["isGroup"] == "true" ||
+                (item.groupId != null && item.groupId != 0) ||
+                callDataMap["groupId"] != null;
+
+            final String groupId = (item.groupId ??
+                    notificationData?["groupId"] ??
+                    notificationData?["group_id"] ??
+                    callDataMap["groupId"] ??
+                    callDataMap["group_id"] ??
+                    "")
+                .toString()
+                .trim();
+
+            final String groupName = (notificationData?["groupName"] ??
+                    notificationData?["group_name"] ??
+                    callDataMap["groupName"] ??
+                    callDataMap["name"] ??
+                    item.title ??
+                    "Group")
+                .toString()
+                .trim();
+
+            final String? groupAvatar =
+                notificationData?["groupImage"]?.toString() ??
+                    notificationData?["group_image"]?.toString() ??
+                    notificationData?["groupAvatar"]?.toString() ??
+                    callDataMap["groupImage"]?.toString() ??
+                    callDataMap["avatar"]?.toString();
+
+            // 4. Contact data for 1-to-1 call
+            final String callerName = (callDataMap["callerName"] ??
+                    callDataMap["name"] ??
+                    notificationData?["callerName"] ??
+                    notificationData?["name"] ??
+                    item.title ??
+                    "User")
+                .toString()
+                .trim();
+
+            final String callerPhone = (callDataMap["mobileNo"] ??
+                    callDataMap["phone"] ??
+                    notificationData?["mobileNo"] ??
+                    notificationData?["phone"] ??
+                    "")
+                .toString()
+                .trim();
+
+            final int callerId = int.tryParse(
+                  (callDataMap["callerId"] ??
+                          notificationData?["callerId"] ??
+                          notificationData?["senderId"] ??
+                          item.senderId ??
+                          "0")
+                      .toString(),
+                ) ??
+                0;
+
+            final String? callerAvatar = profileImage ??
+                callDataMap["caller_profile_image"]?.toString() ??
+                callDataMap["callerProfileImage"]?.toString() ??
+                callDataMap["callerImage"]?.toString() ??
+                callDataMap["caller_image"]?.toString() ??
+                callDataMap["profile_image"]?.toString() ??
+                callDataMap["profileImage"]?.toString() ??
+                callDataMap["avatar"]?.toString() ??
+                notificationData?["caller_profile_image"]?.toString() ??
+                notificationData?["callerProfileImage"]?.toString() ??
+                notificationData?["profile_image"]?.toString() ??
+                notificationData?["profileImage"]?.toString() ??
+                notificationData?["avatar"]?.toString();
+
+            // If callId is present, navigate directly to Call Detail screen
+            // which triggers: /getCallDetail?callId=$callId
+            if (callId.isNotEmpty) {
+              Get.to(
+                () => ContactProfileScreen(
+                  isGroup: isGroup,
+                  groupId: groupId.isNotEmpty ? groupId : null,
+                  groupName: isGroup ? groupName : null,
+                  groupAvatar: groupAvatar,
+                  contactData: isGroup
+                      ? null
+                      : MemberData(
+                          userId: callerId,
+                          name: callerName,
+                          mobileNo: callerPhone,
+                          profileImage: callerAvatar,
+                          isOnline: callDataMap["isOnline"] == true ||
+                              callDataMap["isOnline"] == "true",
+                        ),
+                  callId: callId,
+                ),
+              );
+              return;
+            }
+
+            // Fallback to Recent Calls list if no callId could be extracted
             if (!Get.isRegistered<CallController>()) {
               Get.put(CallController());
             }
 
             Get.to(
-                  () => Scaffold(
+              () => Scaffold(
                 backgroundColor: bgColor,
                 appBar: AppBar(
                   elevation: 0,
@@ -505,9 +665,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 child: profileImage != null && profileImage.isNotEmpty
                     ? Image.network(
                   profileImage.startsWith("http://") ||
-                      profileImage.startsWith("https://")
+                          profileImage.startsWith("https://")
                       ? profileImage
-                      : "${ConstRes.aImageBaseUrl}$profileImage",
+                      : "${ConstRes.aImageBaseUrl.replaceAll(RegExp(r'/+$'), '')}/${profileImage.replaceAll(RegExp(r'^/+'), '')}",
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Icon(

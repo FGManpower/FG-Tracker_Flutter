@@ -359,12 +359,12 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             icon: Icons.videocam_outlined,
             label: "Video Call",
             onTap: () => _initiateGroupCall(data, isVideo: true)),
-        SizedBox(width: 10.w),
-        _quickAction(
-          icon: Icons.person_add_alt_1_outlined,
-          label: "Add Members",
-          onTap: () => Utils().fluttertoast("Add members"),
-        ),
+        // SizedBox(width: 10.w),
+        // _quickAction(
+        //   icon: Icons.person_add_alt_1_outlined,
+        //   label: "Add Members",
+        //   onTap: () => Utils().fluttertoast("Add members"),
+        // ),
         SizedBox(width: 10.w),
         _quickAction(
           icon: Icons.search_rounded,
@@ -596,34 +596,34 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       padding: EdgeInsets.zero,
       child: Column(
         children: [
-          _settingTile(
-            icon: Icons.star_border_rounded,
-            iconColor: _purple,
-            title: "Starred Messages",
-            onTap: () {
-              if (chatController.pinnedMessage.value != null) {
-                Get.back();
-                chatController.scrollToPinnedMessage();
-              } else {
-                Utils().fluttertoast("No starred/pinned message");
-              }
-            },
-          ),
-          _divider(),
-          Obx(() => _settingTile(
-                icon: Icons.notifications_none_rounded,
-                iconColor: _purple,
-                title: "Notifications",
-                subtitle: notificationsOn.value ? "All Messages" : "Muted",
-                trailing: Transform.scale(
-                  scale: 0.8,
-                  child: Switch(
-                      value: notificationsOn.value,
-                      activeThumbColor: _purple,
-                      onChanged: (v) => notificationsOn.value = v),
-                ),
-              )),
-          _divider(),
+          // _settingTile(
+          //   icon: Icons.star_border_rounded,
+          //   iconColor: _purple,
+          //   title: "Starred Messages",
+          //   onTap: () {
+          //     if (chatController.pinnedMessage.value != null) {
+          //       Get.back();
+          //       chatController.scrollToPinnedMessage();
+          //     } else {
+          //       Utils().fluttertoast("No starred/pinned message");
+          //     }
+          //   },
+          // ),
+          // _divider(),
+          // Obx(() => _settingTile(
+          //       icon: Icons.notifications_none_rounded,
+          //       iconColor: _purple,
+          //       title: "Notifications",
+          //       subtitle: notificationsOn.value ? "All Messages" : "Muted",
+          //       trailing: Transform.scale(
+          //         scale: 0.8,
+          //         child: Switch(
+          //             value: notificationsOn.value,
+          //             activeThumbColor: _purple,
+          //             onChanged: (v) => notificationsOn.value = v),
+          //       ),
+          //     )),
+          // _divider(),
           _settingTile(
             icon: Icons.reply_rounded,
             iconColor: _purple,

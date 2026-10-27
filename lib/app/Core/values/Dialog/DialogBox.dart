@@ -27,6 +27,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/Model/UsersWithinRadiusRes.dart';
 import 'package:fgtracker/app/modules/Messages/Views/UserProfileScreen.dart';
+import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/chat_list_controller.dart';
 import '../../../Model/MemberDataRes.dart';
 import '../../../global_widget/common_widget.dart';
 import '../../../modules/auth/Auth_Widget/Auth_widget.dart';
@@ -595,6 +597,7 @@ class DialogBox {
     int? resolvedBattery = battery;
     String? resolvedLastSeen = lastSeen;
     bool resolvedIsOnline = status == true;
+    int? resolvedChatId = chatId;
 
     // 1. Current user resolution
     if (isMe) {
@@ -670,6 +673,9 @@ class DialogBox {
           }
           resolvedLastSeen ??= rUser.lastSeen;
           if (rUser.isOnline) resolvedIsOnline = true;
+          if (resolvedChatId == null || resolvedChatId == 0) {
+            resolvedChatId = rUser.chatId;
+          }
         }
 
         // Check onlineGroupMembers & allFetchedMembers
@@ -701,6 +707,9 @@ class DialogBox {
           }
           resolvedLastSeen ??= gMember.lastSeen;
           if (gMember.online) resolvedIsOnline = true;
+          if (resolvedChatId == null || resolvedChatId == 0) {
+            resolvedChatId = gMember.chatId;
+          }
         }
 
         final fMember = tc.allFetchedMembers.firstWhereOrNull(
@@ -719,6 +728,9 @@ class DialogBox {
           }
           if (resolvedTeam == null && fMember.team.trim().isNotEmpty) {
             resolvedTeam = fMember.team.trim();
+          }
+          if (resolvedChatId == null || resolvedChatId == 0) {
+            resolvedChatId = fMember.chatId;
           }
         }
 
@@ -750,6 +762,14 @@ class DialogBox {
                 resolvedPhone = match.mobileNo!.toString().trim();
               }
               resolvedLastSeen ??= match.lastSeen?.toString();
+              if (resolvedChatId == null || resolvedChatId == 0) {
+                resolvedChatId = int.tryParse(match.chatId?.toString() ?? '');
+              }
+              if ((resolvedLocation == null || resolvedLocation.isEmpty) &&
+                  match.location != null &&
+                  match.location.toString().trim().isNotEmpty) {
+                resolvedLocation = match.location.toString().trim();
+              }
               break;
             }
           }
@@ -778,10 +798,18 @@ class DialogBox {
               liveLoc.phone!.trim().isNotEmpty) {
             resolvedPhone = liveLoc.phone!.trim();
           }
-          if (resolvedLocation == null &&
-              liveLoc.address != null &&
-              liveLoc.address!.trim().isNotEmpty) {
-            resolvedLocation = liveLoc.address!.trim();
+          if (resolvedLocation == null || resolvedLocation.isEmpty) {
+            if (liveLoc.address != null && liveLoc.address!.trim().isNotEmpty) {
+              resolvedLocation = liveLoc.address!.trim();
+            } else {
+              final parts = [liveLoc.area, liveLoc.city]
+                  .where((s) => s != null && s.trim().isNotEmpty && s.trim().toLowerCase() != 'null')
+                  .map((s) => s!.trim())
+                  .toList();
+              if (parts.isNotEmpty) {
+                resolvedLocation = parts.join(', ');
+              }
+            }
           }
           if (resolvedTeam == null &&
               liveLoc.team != null &&
@@ -830,36 +858,155 @@ class DialogBox {
               gm.team.toString().trim().isNotEmpty) {
             resolvedTeam = gm.team.toString().trim();
           }
+          if (resolvedChatId == null || resolvedChatId == 0) {
+            resolvedChatId = gm.chatId;
+          }
+        }
+      }
+
+      // Check LivesStatusController
+      if (Get.isRegistered<LivesStatusController>()) {
+        final lsc = Get.find<LivesStatusController>();
+        final member = lsc.allMemberList.firstWhereOrNull((m) => m.userId?.toString() == uidStr) ??
+            lsc.onlineNowList.firstWhereOrNull((m) => m.userId?.toString() == uidStr) ??
+            lsc.recentlyOnlineList.firstWhereOrNull((m) => m.userId?.toString() == uidStr) ??
+            lsc.privateMemberList.firstWhereOrNull((m) => m.userId?.toString() == uidStr);
+        if (member != null) {
+          if (resolvedName == null &&
+              member.displayName.trim().isNotEmpty &&
+              member.displayName.toLowerCase() != 'member') {
+            resolvedName = member.displayName.trim();
+          }
+          if (resolvedImg == null &&
+              member.profileImage != null &&
+              member.profileImage!.trim().isNotEmpty &&
+              member.profileImage!.trim().toLowerCase() != 'null') {
+            resolvedImg = member.profileImage!.trim();
+          }
+          if (resolvedPhone == null && (member.phone ?? member.mobileNo) != null) {
+            resolvedPhone = (member.phone ?? member.mobileNo)!.trim();
+          }
+          if (resolvedTeam == null && member.displayDepartment.trim().isNotEmpty) {
+            resolvedTeam = member.displayDepartment.trim();
+          }
+          if (resolvedChatId == null || resolvedChatId == 0) {
+            resolvedChatId = member.chatId;
+          }
+          resolvedLastSeen ??= member.lastSeen;
+          if (member.isOnline == true) resolvedIsOnline = true;
+          if (resolvedLocation == null || resolvedLocation.isEmpty) {
+            final locStr = member.displayLocation;
+            if (locStr != null && locStr.isNotEmpty) {
+              resolvedLocation = locStr;
+            } else {
+              final parts = [member.location?.area, member.location?.city]
+                  .where((s) => s != null && s.toString().trim().isNotEmpty && s.toString().trim().toLowerCase() != 'null')
+                  .map((s) => s!.toString().trim())
+                  .toList();
+              if (parts.isNotEmpty) {
+                resolvedLocation = parts.join(', ');
+              }
+            }
+          }
+        }
+      }
+
+      // Check ChatListController for existing private chat
+      if ((resolvedChatId == null || resolvedChatId == 0) && Get.isRegistered<ChatListController>()) {
+        final clc = Get.find<ChatListController>();
+        final chat = clc.privateChats.firstWhereOrNull(
+          (c) => c.userId?.toString() == uidStr || (c.chatType == 'private' && c.id?.toString() == uidStr),
+        );
+        if (chat != null) {
+          resolvedChatId = int.tryParse((chat.chatId ?? chat.conversationId ?? chat.id)?.toString() ?? '');
+        }
+      }
+    }
+
+    // Resolve destination coordinates fallback if 0 from registered controllers
+    LatLng finalDestination = destination;
+    if (finalDestination.latitude == 0.0 &&
+        finalDestination.longitude == 0.0 &&
+        effectiveUserId != null) {
+      final uidStr = effectiveUserId.toString();
+
+      // 1. Check TrackController radiusUsers
+      if (Get.isRegistered<TrackController>()) {
+        final tc = Get.find<TrackController>();
+        final found = tc.radiusUsers
+            .firstWhereOrNull((u) => u.userId.toString() == uidStr);
+        if (found != null &&
+            found.latitude != null &&
+            found.latitude != 0.0 &&
+            found.longitude != null &&
+            found.longitude != 0.0) {
+          finalDestination = LatLng(found.latitude!, found.longitude!);
+        }
+      }
+
+      // 2. Check HomeController liveLocations
+      if (finalDestination.latitude == 0.0 && Get.isRegistered<HomeController>()) {
+        final hc = Get.find<HomeController>();
+        final liveLoc = hc.liveLocations.firstWhereOrNull(
+          (l) => l.userId.toString() == uidStr,
+        );
+        if (liveLoc != null && liveLoc.latitude != 0.0 && liveLoc.longitude != 0.0) {
+          finalDestination = LatLng(liveLoc.latitude, liveLoc.longitude);
+        }
+      }
+
+      // 3. Check LivesStatusController member lists
+      if (finalDestination.latitude == 0.0 && Get.isRegistered<LivesStatusController>()) {
+        final lsc = Get.find<LivesStatusController>();
+        final m = lsc.allMemberList.firstWhereOrNull((x) => x.userId?.toString() == uidStr) ??
+            lsc.onlineNowList.firstWhereOrNull((x) => x.userId?.toString() == uidStr) ??
+            lsc.recentlyOnlineList.firstWhereOrNull((x) => x.userId?.toString() == uidStr);
+        if (m != null &&
+            m.location?.latitude != null &&
+            m.location!.latitude != 0.0 &&
+            m.location?.longitude != null &&
+            m.location!.longitude != 0.0) {
+          finalDestination = LatLng(m.location!.latitude!, m.location!.longitude!);
+        }
+      }
+
+      // 4. Check GroupTrackingController groupWiseUserData
+      if (finalDestination.latitude == 0.0) {
+        final trackingUserData = Get.isRegistered<GroupTrackingController>()
+            ? Get.find<GroupTrackingController>().groupWiseUserData
+            : GroupTrackingController.instance.groupWiseUserData;
+        for (final list in trackingUserData.values) {
+          final match = list.firstWhereOrNull((l) => l.userId?.toString() == uidStr);
+          if (match != null && match.latitude != null && match.longitude != null) {
+            final lat = double.tryParse(match.latitude.toString()) ?? 0.0;
+            final lng = double.tryParse(match.longitude.toString()) ?? 0.0;
+            if (lat != 0.0 && lng != 0.0) {
+              finalDestination = LatLng(lat, lng);
+              break;
+            }
+          }
         }
       }
     }
 
     // Fallback address from cache if destination coordinates exist
     if ((resolvedLocation == null || resolvedLocation.isEmpty) &&
-        destination.latitude != 0.0 &&
-        destination.longitude != 0.0) {
+        finalDestination.latitude != 0.0 &&
+        finalDestination.longitude != 0.0) {
       final cacheKey =
-          '${destination.latitude.toStringAsFixed(4)},${destination.longitude.toStringAsFixed(4)}';
+          '${finalDestination.latitude.toStringAsFixed(4)},${finalDestination.longitude.toStringAsFixed(4)}';
       if (UsersWithinRadiusData.addressCache.containsKey(cacheKey)) {
         resolvedLocation = UsersWithinRadiusData.addressCache[cacheKey];
       }
     }
 
-    // Resolve destination coordinates fallback if 0
-    LatLng finalDestination = destination;
-    if (finalDestination.latitude == 0.0 &&
-        finalDestination.longitude == 0.0 &&
-        userId != null) {
-      if (Get.isRegistered<TrackController>()) {
-        final tc = Get.find<TrackController>();
-        final uidStr = userId.toString();
-        final found = tc.radiusUsers
-            .firstWhereOrNull((u) => u.userId.toString() == uidStr);
-        if (found != null &&
-            found.latitude != null &&
-            found.latitude != 0.0) {
-          finalDestination = LatLng(found.latitude!, found.longitude!);
-        }
+    // Resolve effective location sharing (if member is in privateMemberList, force false)
+    bool effectiveLocationSharing = isLocationSharing;
+    if (effectiveUserId != null && Get.isRegistered<LivesStatusController>()) {
+      final lsc = Get.find<LivesStatusController>();
+      final uidStr = effectiveUserId.toString();
+      if (lsc.privateMemberList.any((m) => m.userId?.toString() == uidStr)) {
+        effectiveLocationSharing = false;
       }
     }
 
@@ -935,15 +1082,47 @@ class DialogBox {
       userId: userId ?? id,
       groupId: groupId ?? 0,
       name: displayName,
-      chatId: chatId,
+      chatId: resolvedChatId,
       profileImage: fullImageUrl ?? resolvedImg ?? '',
       lastSeen: resolvedLastSeen,
       isOnline: isOnline,
-      locationSharing: isLocationSharing,
+      locationSharing: effectiveLocationSharing,
       mobileNo: resolvedPhone,
       location: resolvedLocation,
       team: resolvedTeam,
     );
+
+    final String statusText;
+    final Color statusTextColor;
+
+    if (isOnline) {
+      statusText = "Online";
+      statusTextColor = const Color(0xFF10B981);
+    } else {
+      statusTextColor = Colors.grey.shade600;
+      final raw = (resolvedLastSeen ?? '').trim();
+      if (raw.isEmpty ||
+          raw.toLowerCase() == 'null' ||
+          raw.toLowerCase() == 'offline') {
+        statusText = "Offline";
+      } else if (raw.toLowerCase().startsWith('last seen')) {
+        statusText = raw;
+      } else {
+        final parsed = Tracking.parseDateTime(raw);
+        if (parsed != null) {
+          statusText = "${AppText.lastSeen}${Tracking().getTimeAgo(parsed)}";
+        } else {
+          final epoch = int.tryParse(raw);
+          if (epoch != null && epoch > 1000000000) {
+            final ms = raw.length == 10 ? epoch * 1000 : epoch;
+            final dt = DateTime.fromMillisecondsSinceEpoch(ms).toLocal();
+            statusText = "${AppText.lastSeen}${Tracking().getTimeAgo(dt)}";
+          } else {
+            statusText = "${AppText.lastSeen}$raw";
+          }
+        }
+      }
+    }
 
     final String effectiveTeam = (resolvedTeam != null && resolvedTeam.trim().isNotEmpty)
         ? resolvedTeam.trim()
@@ -979,7 +1158,7 @@ class DialogBox {
                   Navigator.pop(ctx);
                   Get.to(() => UserProfileScreen(
                     userData: currentMemberData,
-                    chatId: chatId ?? currentMemberData.chatId,
+                    chatId: resolvedChatId ?? currentMemberData.chatId,
                   ));
                 },
                 borderRadius: BorderRadius.circular(50.r),
@@ -1028,7 +1207,7 @@ class DialogBox {
                   Navigator.pop(ctx);
                   Get.to(() => UserProfileScreen(
                     userData: currentMemberData,
-                    chatId: chatId ?? currentMemberData.chatId,
+                    chatId: resolvedChatId ?? currentMemberData.chatId,
                   ));
                 },
                 child: Row(
@@ -1068,22 +1247,11 @@ class DialogBox {
               ),
               SizedBox(height: 4.h),
               reausabletext(
-                isOnline ? "Online" : "Offline",
+                statusText,
                 fontsize: 12.sp,
                 fontfamily: FontFamily.interMedium,
-                color: isOnline ? Colors.green : Colors.grey.shade600,
+                color: statusTextColor,
               ),
-              if (!isOnline &&
-                  Utility.isNotNullEmptyOrFalse(resolvedLastSeen))
-                Padding(
-                  padding: EdgeInsets.only(top: 2.h),
-                  child: reausabletext(
-                    "${AppText.lastSeen}${Tracking().getTimeAgo(Tracking.parseDateTime(resolvedLastSeen) ?? DateTime.now())}",
-                    fontsize: 12.sp,
-                    fontfamily: FontFamily.interRegular,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
               SizedBox(height: 14.h),
               Container(
                 width: double.infinity,
@@ -1095,7 +1263,7 @@ class DialogBox {
                 ),
                 child: Column(
                   children: [
-                    if (isLocationSharing == false) ...[
+                    if (effectiveLocationSharing == false) ...[
                       Row(
                         children: [
                           Icon(Icons.location_off_outlined,
@@ -1107,7 +1275,7 @@ class DialogBox {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 12.5.sp,
+                                fontSize: 13.sp,
                                 color: Colors.black87,
                                 fontFamily: FontFamily.interSemiBold,
                               ),
@@ -1115,107 +1283,114 @@ class DialogBox {
                           ),
                         ],
                       ),
-                      Divider(height: 16.h, color: Colors.grey.shade200),
-                    ] else if (resolvedLocation != null && resolvedLocation.isNotEmpty) ...[
-                      Row(
-                        children: [
-                          Icon(Icons.place_outlined,
-                              color: ToggleThemeData.darkPurple, size: 18.sp),
-                          SizedBox(width: 10.w),
-                          Expanded(
-                            child: Text(
-                              resolvedLocation,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12.5.sp,
-                                color: Colors.black87,
-                                fontFamily: FontFamily.interRegular,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Divider(height: 16.h, color: Colors.grey.shade200),
-                    ],
-                    Builder(
-                      builder: (context) {
-                        final String raw = (rawDistance ?? '').trim();
-                        String displayDistance;
+                    ] else ...[
+                      Builder(
+                        builder: (context) {
+                          final bool hasAddress =
+                              resolvedLocation != null && resolvedLocation.isNotEmpty;
 
-                        if (isMe) {
-                          displayDistance = "Your current location";
-                        } else if (isLocationSharing == false) {
-                          displayDistance = "Location Hidden";
-                        } else if (!hasValidDestination) {
-                          displayDistance = "Location unavailable";
-                        } else if (raw.isNotEmpty &&
-                            !raw.toLowerCase().contains("nearby") &&
-                            !raw.startsWith("0.0")) {
-                          displayDistance = "${AppText.distance}$raw";
-                        } else if (hasValidDestination && myLat != 0.0 && myLng != 0.0) {
-                          final double meters = effectiveDistance * 1000.0;
-                          if (effectiveDistance >= 1.0) {
-                            displayDistance =
-                                "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km";
-                          } else if (meters >= 1.0) {
-                            displayDistance =
-                                "${AppText.distance}${meters.round()} m";
-                          } else {
-                            displayDistance = "${AppText.distance}0 m";
-                          }
-                        } else if (effectiveDistance > 0.0) {
-                          displayDistance = effectiveDistance >= 1.0
-                              ? "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km"
-                              : "${AppText.distance}${(effectiveDistance * 1000.0).round()} m";
-                        } else {
-                          displayDistance = "Location unavailable";
-                        }
+                          // Compute distance string if available
+                          final String? computedDistance = () {
+                            if (isMe) return "Your current location";
 
-                        return Row(
-                          children: [
-                            Icon(
-                              isLocationSharing == false
-                                  ? Icons.lock_outline_rounded
-                                  : Icons.near_me_outlined,
-                              color: ToggleThemeData.darkPurple,
-                              size: 18.sp,
-                            ),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              child: Text(
-                                displayDistance,
-                                style: TextStyle(
-                                  fontSize: 13.sp,
-                                  fontFamily: FontFamily.interSemiBold,
-                                  color: Colors.black87,
+                            final String raw = (rawDistance ?? '').trim();
+                            if (raw.isNotEmpty &&
+                                !raw.toLowerCase().contains("nearby") &&
+                                !raw.startsWith("0.0")) {
+                              return "${AppText.distance}$raw";
+                            }
+                            if (hasValidDestination && myLat != 0.0 && myLng != 0.0) {
+                              final double meters = effectiveDistance * 1000.0;
+                              if (effectiveDistance >= 1.0) {
+                                return "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km";
+                              } else if (meters >= 1.0) {
+                                return "${AppText.distance}${meters.round()} m";
+                              } else {
+                                return "${AppText.distance}0 m";
+                              }
+                            }
+                            if (effectiveDistance > 0.0) {
+                              return effectiveDistance >= 1.0
+                                  ? "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km"
+                                  : "${AppText.distance}${(effectiveDistance * 1000.0).round()} m";
+                            }
+                            return null;
+                          }();
+
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (hasAddress) ...[
+                                Row(
+                                  children: [
+                                    Icon(Icons.place_outlined,
+                                        color: ToggleThemeData.darkPurple, size: 18.sp),
+                                    SizedBox(width: 10.w),
+                                    Expanded(
+                                      child: Text(
+                                        resolvedLocation,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 12.5.sp,
+                                          color: Colors.black87,
+                                          fontFamily: FontFamily.interRegular,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ),
-                            // if (resolvedBattery != null && resolvedBattery > 0) ...[
-                            //   Icon(
-                            //     resolvedBattery > 20
-                            //         ? Icons.battery_5_bar_rounded
-                            //         : Icons.battery_alert_rounded,
-                            //     size: 16.sp,
-                            //     color: resolvedBattery > 20
-                            //         ? const Color(0xFF10B981)
-                            //         : Colors.orange,
-                            //   ),
-                            //   SizedBox(width: 4.w),
-                            //   Text(
-                            //     "$resolvedBattery%",
-                            //     style: TextStyle(
-                            //       fontSize: 12.sp,
-                            //       color: Colors.grey.shade700,
-                            //       fontFamily: FontFamily.interMedium,
-                            //     ),
-                            //   ),
-                            // ],
-                          ],
-                        );
-                      },
-                    ),
+                                if (computedDistance != null)
+                                  Divider(height: 16.h, color: Colors.grey.shade200),
+                              ],
+                              if (computedDistance != null) ...[
+                                Row(
+                                  children: [
+                                    Icon(
+                                      isMe ? Icons.my_location : Icons.near_me_outlined,
+                                      color: ToggleThemeData.darkPurple,
+                                      size: 18.sp,
+                                    ),
+                                    SizedBox(width: 10.w),
+                                    Expanded(
+                                      child: Text(
+                                        computedDistance,
+                                        style: TextStyle(
+                                          fontSize: 13.sp,
+                                          fontFamily: FontFamily.interSemiBold,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ] else if (!hasAddress) ...[
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.near_me_outlined,
+                                      color: ToggleThemeData.darkPurple,
+                                      size: 18.sp,
+                                    ),
+                                    SizedBox(width: 10.w),
+                                    Expanded(
+                                      child: Text(
+                                        "Location unavailable",
+                                        style: TextStyle(
+                                          fontSize: 13.sp,
+                                          fontFamily: FontFamily.interSemiBold,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          );
+                        },
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -1248,7 +1423,7 @@ class DialogBox {
                               "isCreator": false,
                               "type": "chatScreen",
                               "chatType": "private",
-                              "chatId": currentMemberData.chatId,
+                              "chatId": currentMemberData.chatId ?? resolvedChatId,
                               "groupId": groupId ?? 0,
                             },
                           );
@@ -1323,7 +1498,7 @@ class DialogBox {
                                             remoteUserId:  (effectiveUserId ?? "").toString(),
                                             is_video: false,
                                             callerName: displayName,
-                                            callerProfile: imageUrl);
+                                            callerProfile: fullImageUrl ?? imageUrl);
                                       },
                                       child: Container(
                                         padding: EdgeInsets.symmetric(
@@ -1402,7 +1577,7 @@ class DialogBox {
                                             remoteUserId:   (effectiveUserId ?? "").toString(),
                                             is_video: true,
                                             callerName: displayName,
-                                            callerProfile:imageUrl
+                                            callerProfile: fullImageUrl ?? imageUrl
                                         );
                                       },
                                       child: Container(
@@ -1472,7 +1647,7 @@ class DialogBox {
                 ),
               ],
               SizedBox(height: 14.h),
-              (isLocationSharing == false || isMe)
+              (effectiveLocationSharing == false || isMe)
                   ? const SizedBox()
                   : reausablebutton(
                       title: AppText.getDirections,
@@ -1485,11 +1660,11 @@ class DialogBox {
                       height: 55,
                       ontap: () {
                         Navigator.pop(ctx);
-                        if (destination.latitude != 0.0 &&
-                            destination.longitude != 0.0) {
+                        if (finalDestination.latitude != 0.0 &&
+                            finalDestination.longitude != 0.0) {
                           final Uri mapsUri = Uri.parse(
                             "https://www.google.com/maps/dir/?api=1"
-                            "&destination=${destination.latitude},${destination.longitude}"
+                            "&destination=${finalDestination.latitude},${finalDestination.longitude}"
                             "&travelmode=walking",
                           );
                           launchUrl(

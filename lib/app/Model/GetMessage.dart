@@ -300,30 +300,153 @@ class MessageData {
   }
 
   MessageData.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    senderId = json['senderId'];
-    receiverId = json['receiverId'];
-    messageType = json['messageType'];
-    content = json['content'];
-    timestamp = json['timestamp'] ?? json['createdAt'];
-    seenCount = json['seenCount'];
-    seenBy = json['seenBy'];
-    edited = json['edited'];
-    isEdited = json['isEdited'];
-    editedAt = json['editedAt'];
-    senderName = json['senderName'];
-    senderImage = json['senderImage'];
-    thumbnail = json['thumbnail'];
-    caption = json['caption'];
+    Map<String, dynamic>? nestedSource;
+    if (json['forwardedMessage'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['forwardedMessage']);
+    } else if (json['forwarded_message'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['forwarded_message']);
+    } else if (json['originalMessage'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['originalMessage']);
+    } else if (json['original_message'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['original_message']);
+    } else if (json['forwardedFrom'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['forwardedFrom']);
+    } else if (json['forwarded_from'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['forwarded_from']);
+    } else if (json['sourceMessage'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['sourceMessage']);
+    } else if (json['source_message'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['source_message']);
+    } else if (json['forwardMessage'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['forwardMessage']);
+    } else if (json['forward_message'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['forward_message']);
+    } else if (json['forwardData'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['forwardData']);
+    } else if (json['forward_data'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['forward_data']);
+    } else if (json['message'] is Map) {
+      nestedSource = Map<String, dynamic>.from(json['message']);
+    } else if (json['data'] is Map) {
+      final dataMap = Map<String, dynamic>.from(json['data']);
+      if (dataMap['forwardedMessage'] is Map) {
+        nestedSource = Map<String, dynamic>.from(dataMap['forwardedMessage']);
+      } else if (dataMap['forwarded_message'] is Map) {
+        nestedSource = Map<String, dynamic>.from(dataMap['forwarded_message']);
+      } else if (dataMap['originalMessage'] is Map) {
+        nestedSource = Map<String, dynamic>.from(dataMap['originalMessage']);
+      } else if (dataMap['original_message'] is Map) {
+        nestedSource = Map<String, dynamic>.from(dataMap['original_message']);
+      } else {
+        nestedSource = dataMap;
+      }
+    }
 
-    if (json['images'] is List) {
-      images = (json['images'] as List).map((e) => e.toString()).toList();
+    id = json['id'] ?? nestedSource?['id'];
+    senderId = json['senderId'] ??
+        json['sender_id'] ??
+        json['userId'] ??
+        json['user_id'] ??
+        nestedSource?['senderId'] ??
+        nestedSource?['sender_id'] ??
+        nestedSource?['userId'] ??
+        nestedSource?['user_id'];
+    receiverId = json['receiverId'] ??
+        json['receiver_id'] ??
+        json['targetId'] ??
+        json['target_id'] ??
+        nestedSource?['receiverId'] ??
+        nestedSource?['receiver_id'];
+
+    final rawType = json['messageType'] ??
+        json['message_type'] ??
+        json['type'] ??
+        nestedSource?['messageType'] ??
+        nestedSource?['message_type'] ??
+        nestedSource?['type'];
+    messageType = rawType?.toString();
+
+    final rawContent = json['content'] ??
+        (json['message'] is String ? json['message'] : null) ??
+        json['text'] ??
+        json['msg'] ??
+        json['body'] ??
+        json['caption'] ??
+        json['forwarded_content'] ??
+        json['forwardedContent'] ??
+        json['original_content'] ??
+        json['originalContent'] ??
+        json['source_content'] ??
+        json['sourceContent'] ??
+        json['forward_content'] ??
+        json['forwardContent'] ??
+        json['message_content'] ??
+        json['messageContent'] ??
+        nestedSource?['content'] ??
+        (nestedSource?['message'] is String ? nestedSource!['message'] : null) ??
+        nestedSource?['text'] ??
+        nestedSource?['msg'] ??
+        nestedSource?['body'] ??
+        nestedSource?['caption'] ??
+        nestedSource?['forwarded_content'] ??
+        nestedSource?['original_content'];
+    content = rawContent?.toString();
+
+    timestamp = json['timestamp'] ??
+        json['createdAt'] ??
+        json['created_at'] ??
+        nestedSource?['timestamp'] ??
+        nestedSource?['createdAt'];
+    seenCount = json['seenCount'] ?? json['seen_count'];
+    seenBy = json['seenBy'] ?? json['seen_by'];
+    edited = json['edited'] ?? json['isEdited'] ?? json['is_edited'];
+    isEdited = json['isEdited'] ?? json['is_edited'] ?? json['edited'];
+    editedAt = json['editedAt'] ?? json['edited_at'];
+    senderName = json['senderName'] ??
+        json['sender_name'] ??
+        nestedSource?['senderName'] ??
+        nestedSource?['sender_name'];
+    senderImage = json['senderImage'] ??
+        json['sender_image'] ??
+        nestedSource?['senderImage'] ??
+        nestedSource?['sender_image'];
+    thumbnail = json['thumbnail'] ?? nestedSource?['thumbnail'];
+    caption = json['caption'] ??
+        json['forwarded_caption'] ??
+        json['forwardedCaption'] ??
+        json['original_caption'] ??
+        json['originalCaption'] ??
+        nestedSource?['caption'];
+
+    final rawImages = json['images'] ??
+        json['forwarded_images'] ??
+        json['forwardedImages'] ??
+        json['original_images'] ??
+        json['originalImages'] ??
+        nestedSource?['images'];
+    if (rawImages is List) {
+      images = rawImages.map((e) => e.toString()).toList();
+    } else if (json['image'] != null || nestedSource?['image'] != null) {
+      final singleImg = json['image'] ?? nestedSource?['image'];
+      if (singleImg is String && singleImg.isNotEmpty) {
+        images = [singleImg];
+      } else if (singleImg is List) {
+        images = singleImg.map((e) => e.toString()).toList();
+      } else {
+        images = null;
+      }
     } else {
       images = null;
     }
 
-    if (json['videos'] is List) {
-      videos = (json['videos'] as List)
+    final rawVideos = json['videos'] ??
+        json['forwarded_videos'] ??
+        json['forwardedVideos'] ??
+        json['original_videos'] ??
+        json['originalVideos'] ??
+        nestedSource?['videos'];
+    if (rawVideos is List) {
+      videos = rawVideos
           .where((item) => item is Map)
           .map(
             (item) => MessageVideo.fromJson(
@@ -331,16 +454,68 @@ class MessageData {
         ),
       )
           .toList();
+    } else if (json['video'] != null || nestedSource?['video'] != null) {
+      final singleVid = json['video'] ?? nestedSource?['video'];
+      if (singleVid is Map) {
+        videos = [MessageVideo.fromJson(Map<String, dynamic>.from(singleVid))];
+      } else if (singleVid is String && singleVid.isNotEmpty) {
+        videos = [MessageVideo(videoUrl: singleVid)];
+      } else {
+        videos = null;
+      }
     } else {
       videos = null;
     }
 
-    replyId = json['replyId'] ?? json['reply_id'];
-    replyMessage = json['replyMessage'] ?? json['reply_message'];
-    replyType = json['replyType'] ?? json['reply_type'];
+    final lowerType = messageType?.toLowerCase().trim() ?? '';
+    if (lowerType.isEmpty ||
+        lowerType == 'forward' ||
+        lowerType == 'forwarded' ||
+        lowerType == 'forward_message') {
+      final nestedType = (nestedSource?['messageType'] ??
+              nestedSource?['message_type'] ??
+              nestedSource?['type'])
+          ?.toString()
+          .toLowerCase()
+          .trim();
+      if (nestedType != null &&
+          nestedType.isNotEmpty &&
+          nestedType != 'forward' &&
+          nestedType != 'forwarded' &&
+          nestedType != 'forward_message') {
+        messageType = nestedType;
+      } else if (images != null && images!.isNotEmpty) {
+        messageType = 'media';
+      } else if (videos != null && videos!.isNotEmpty) {
+        messageType = 'video';
+      } else if (content != null &&
+          content.toString().contains("||") &&
+          (content.toString().contains(".pdf") ||
+              content.toString().contains(".doc") ||
+              content.toString().contains(".xls") ||
+              content.toString().contains(".ppt"))) {
+        messageType = 'document';
+      } else {
+        messageType = 'text';
+      }
+    }
+
+    replyId = json['replyId'] ??
+        json['reply_id'] ??
+        nestedSource?['replyId'] ??
+        nestedSource?['reply_id'];
+    replyMessage = json['replyMessage'] ??
+        json['reply_message'] ??
+        nestedSource?['replyMessage'] ??
+        nestedSource?['reply_message'];
+    replyType = json['replyType'] ??
+        json['reply_type'] ??
+        nestedSource?['replyType'] ??
+        nestedSource?['reply_type'];
     replySenderName = json['replySender'] ??
         json['replySenderName'] ??
-        json['reply_sender_name'];
+        json['reply_sender_name'] ??
+        nestedSource?['replySenderName'];
 
     replyStatusId = json['replyStatusId'] ?? json['reply_status_id'];
     statusType = json['statusType'] ?? json['status_type'];
@@ -350,6 +525,10 @@ class MessageData {
     if (json['statusMeta'] is Map) {
       statusMeta = StatusMetaModel.fromJson(
         Map<String, dynamic>.from(json['statusMeta']),
+      );
+    } else if (nestedSource?['statusMeta'] is Map) {
+      statusMeta = StatusMetaModel.fromJson(
+        Map<String, dynamic>.from(nestedSource!['statusMeta']),
       );
     }
 
@@ -367,9 +546,47 @@ class MessageData {
       );
     }
 
-    locationSharing = json['locationSharing'] ?? json['location_sharing'];
-    isForwarded = json['isForwarded'];
-    forwardedFromMessageId = json['forwardedFromMessageId'];
+    locationSharing = json['locationSharing'] ??
+        json['location_sharing'] ??
+        nestedSource?['locationSharing'];
+
+    final rawForwarded = json['isForwarded'] ??
+        json['is_forwarded'] ??
+        json['forwarded'] ??
+        json['is_forward'] ??
+        json['isForward'] ??
+        nestedSource?['isForwarded'] ??
+        nestedSource?['is_forwarded'];
+
+    isForwarded = rawForwarded == true ||
+        rawForwarded == 1 ||
+        rawForwarded?.toString().toLowerCase() == 'true' ||
+        rawForwarded?.toString() == '1' ||
+        json['forwardedFromMessageId'] != null ||
+        json['forwarded_from_message_id'] != null ||
+        json['forwardedMessageId'] != null ||
+        json['forwarded_message_id'] != null ||
+        json['forwardedMessage'] != null ||
+        json['forwarded_message'] != null ||
+        json['originalMessage'] != null ||
+        json['original_message'] != null ||
+        json['forwardMessage'] != null ||
+        json['forward_message'] != null ||
+        rawType?.toString().toLowerCase() == 'forward' ||
+        rawType?.toString().toLowerCase() == 'forwarded' ||
+        rawType?.toString().toLowerCase() == 'forward_message';
+
+    forwardedFromMessageId = json['forwardedFromMessageId'] ??
+        json['forwarded_from_message_id'] ??
+        json['forwardedMessageId'] ??
+        json['forwarded_message_id'] ??
+        json['originalMessageId'] ??
+        json['original_message_id'] ??
+        json['sourceMessageId'] ??
+        json['source_message_id'] ??
+        nestedSource?['forwardedFromMessageId'] ??
+        nestedSource?['forwarded_from_message_id'] ??
+        nestedSource?['id'];
 
     isDeleted = json['isDeleted'] == true ||
         json['is_deleted'] == true ||

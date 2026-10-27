@@ -45,6 +45,11 @@ class SocketDashboardService extends GetxService {
         'transports': ['websocket'],
         'autoConnect': true,
         'forceNew': true,
+        'reconnection': true,
+        'reconnectionAttempts': 10,
+        'reconnectionDelay': 1000,
+        'reconnectionDelayMax': 10000,
+        'randomizationFactor': 0.5,
       },
     );
 

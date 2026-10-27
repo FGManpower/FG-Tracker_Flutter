@@ -56,14 +56,23 @@ class GlobalAudioController extends GetxController {
   }
 
   Future<void> loadDuration(String url) async {
-    if (durationCache.containsKey(url)) return;
+    if (url.trim().isEmpty || durationCache.containsKey(url)) return;
 
-    final tempPlayer = AudioPlayer();
-    await tempPlayer.setUrl(url);
-
-    durationCache[url] = tempPlayer.duration ?? Duration.zero;
-
-    await tempPlayer.dispose();
+    Future.microtask(() async {
+      AudioPlayer? tempPlayer;
+      try {
+        tempPlayer = AudioPlayer();
+        final dur = await tempPlayer
+            .setUrl(url)
+            .timeout(const Duration(seconds: 4));
+        if (dur != null) {
+          durationCache[url] = dur;
+        }
+      } catch (_) {
+      } finally {
+        await tempPlayer?.dispose();
+      }
+    });
   }
 
   Future<void> play(String url) async {

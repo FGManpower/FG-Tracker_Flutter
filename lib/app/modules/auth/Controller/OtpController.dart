@@ -20,7 +20,10 @@ import '../../../Core/constant/const_res.dart';
 import '../../../Core/values/loading.dart';
 import '../../../Core/values/logoutuser.dart';
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
+import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
+import 'package:fgtracker/app/Data/Services/GroupCountService.dart';
+import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 
 class OtpController extends GetxController {
   TextEditingController otpController = TextEditingController();
@@ -162,7 +165,7 @@ class OtpController extends GetxController {
       if (deviceId.value.isEmpty) {
         try {
           final token = await firebaseNotificationServices().getDiviceToken();
-          if (token != null && token.isNotEmpty) {
+          if (token.isNotEmpty) {
             deviceId.value = token;
           }
         } catch (_) {}
@@ -172,8 +175,8 @@ class OtpController extends GetxController {
         "countryCode": arguments?['countryCode'],
         "MobileNo": arguments?['mobNo'],
         "otp": otpController.text,
-        'Device_Id': deviceId.value ?? "",
-        'Voip_Device': voipDeviceId.value ?? "",
+        'Device_Id': deviceId.value,
+        'Voip_Device': voipDeviceId.value,
         'Platform': Platform.isAndroid ? "android" : "ios",
       };
 
@@ -193,6 +196,31 @@ class OtpController extends GetxController {
           PrefConst.userId,
           result.data!.userId.toString(),
         );
+        if (result.data?.locationSharing != null) {
+          await Global.storageServices.setBool(
+            PrefConst.locationSharing,
+            result.data!.locationSharing!,
+          );
+        } else {
+          try {
+            final privateRes = await TrackRepo.getPrivateMembers(limit: 50);
+            final myId = result.data!.userId?.toString();
+            if (privateRes.user?.isLocationSharing != null) {
+              await Global.storageServices.setBool(
+                PrefConst.locationSharing,
+                privateRes.user!.isLocationSharing!,
+              );
+            } else if (myId != null && privateRes.data?.private != null) {
+              final isPrivate = privateRes.data!.private!.any(
+                (m) => m.userId?.toString() == myId,
+              );
+              await Global.storageServices.setBool(
+                PrefConst.locationSharing,
+                !isPrivate,
+              );
+            }
+          } catch (_) {}
+        }
 
         // 2. Establish grace period for this newly logged-in device
         LogoutUser.recordLoginSuccess();
@@ -216,6 +244,9 @@ class OtpController extends GetxController {
             SocketDashboardService().init();
 
             StatusBinding().dependencies();
+
+            GroupCountService.instance;
+            NotificationMarkerService.instance;
           }
         } catch (e) {
           log("login_SocketException====$e");

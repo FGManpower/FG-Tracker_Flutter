@@ -30,6 +30,8 @@ import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import '../../Attendance/models/attendance_poll_model.dart';
 
+import 'chat_list_controller.dart';
+
 class GroupMessageController extends GetxController with WidgetsBindingObserver {
   final socketService = SocketMessageService.instance;
 
@@ -144,6 +146,10 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         ? (arguments!["groupId"] as int)
         : (int.tryParse(arguments?["groupId"]?.toString() ?? '0') ?? 0);
 
+    if (Get.isRegistered<ChatListController>()) {
+      Get.find<ChatListController>().clearManualUnreadForGroup(groupId);
+    }
+
     groupName.value = arguments?["groupName"]?.toString() ?? "";
     groupDesc.value = arguments?["groupDesc"]?.toString() ?? "";
     groupImage = arguments?["groupImage"] ?? arguments?["groupProfile"] ?? "";
@@ -179,18 +185,72 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       userId: currentUserId,
     );
 
+    socketService.markSeen(currentUserId, groupId);
+
+    socketService.listenSeenUpdate(
+      groupId: groupId,
+      callback: (data) {
+        debugPrint("GROUP SEEN UPDATE => $data");
+        if (data is Map) {
+          final userId = data["userId"]?.toString();
+          if (userId != null && userId.isNotEmpty) {
+            for (var msg in _messages) {
+              if (msg.seenBy is List) {
+                if (!(msg.seenBy as List).contains(userId)) {
+                  (msg.seenBy as List).add(userId);
+                }
+              } else {
+                msg.seenBy = [userId];
+              }
+            }
+            updateMessageStream();
+          }
+        }
+      },
+    );
+
     socketService.receiveGroupMessage(
       callback: (message) {
         debugPrint("GROUP RECEIVE EVENT => $message");
 
-        final incomingMessage = MessageData.fromJson(message);
+        if (message is! Map) return;
+
+        final incomingMessage =
+            MessageData.fromJson(Map<String, dynamic>.from(message));
         debugPrint("RECEIVED MESSAGE ID => ${incomingMessage.id}");
 
         final incomingId = incomingMessage.id;
 
-        if (incomingId != null &&
-            _messages.any((item) => item.id == incomingId)) {
+        final existingIndex = incomingId != null
+            ? _messages.indexWhere((item) => item.id == incomingId)
+            : -1;
+
+        if (existingIndex != -1) {
+          final existing = _messages[existingIndex];
+          final hasOldContent = (existing.content?.toString().trim().isNotEmpty ?? false) ||
+              (existing.caption?.toString().trim().isNotEmpty ?? false) ||
+              (existing.images?.isNotEmpty ?? false) ||
+              (existing.videos?.isNotEmpty ?? false);
+          final hasNewContent = (incomingMessage.content?.toString().trim().isNotEmpty ?? false) ||
+              (incomingMessage.caption?.toString().trim().isNotEmpty ?? false) ||
+              (incomingMessage.images?.isNotEmpty ?? false) ||
+              (incomingMessage.videos?.isNotEmpty ?? false);
+          if (!hasOldContent && hasNewContent) {
+            existing.content = incomingMessage.content;
+            existing.caption = incomingMessage.caption;
+            existing.images = incomingMessage.images;
+            existing.videos = incomingMessage.videos;
+            existing.messageType = incomingMessage.messageType;
+            existing.thumbnail = incomingMessage.thumbnail;
+            updateMessageStream();
+          }
           debugPrint("DUPLICATE MESSAGE IGNORED => $incomingId");
+          return;
+        }
+
+        final eventGroupId = message["groupId"] ?? message["group_id"];
+        if (eventGroupId != null && eventGroupId.toString() != groupId.toString()) {
+          debugPrint("GROUP MESSAGE IGNORED => DIFFERENT GROUP $eventGroupId vs $groupId");
           return;
         }
 
@@ -198,6 +258,35 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             Global.storageServices.get(PrefConst.userId)?.toString();
         final isMyMessage = incomingMessage.senderId?.toString() == currentUserId;
         final wasAtBottom = isUserAtBottom();
+
+        final hasContent = (incomingMessage.content?.toString().trim().isNotEmpty ?? false) ||
+            (incomingMessage.caption?.toString().trim().isNotEmpty ?? false) ||
+            (incomingMessage.images?.isNotEmpty ?? false) ||
+            (incomingMessage.videos?.isNotEmpty ?? false);
+
+        if (incomingMessage.isForwarded == true && !hasContent) {
+          final fromId = incomingMessage.forwardedFromMessageId;
+          if (fromId != null) {
+            final source = _messages.firstWhereOrNull(
+              (m) => m.id == fromId || m.id?.toString() == fromId.toString(),
+            );
+            if (source != null) {
+              incomingMessage.content = source.content;
+              incomingMessage.caption = source.caption;
+              incomingMessage.images = source.images;
+              incomingMessage.videos = source.videos;
+              incomingMessage.messageType = source.messageType;
+              incomingMessage.thumbnail = source.thumbnail;
+            }
+          }
+
+          if ((incomingMessage.content?.toString().trim().isEmpty ?? true) &&
+              (incomingMessage.caption?.toString().trim().isEmpty ?? true) &&
+              (incomingMessage.images?.isEmpty ?? true) &&
+              (incomingMessage.videos?.isEmpty ?? true)) {
+            _resolveForwardedGroupMessageContent(incomingMessage);
+          }
+        }
 
         _messages.add(incomingMessage);
         updateMessageStream();
@@ -971,37 +1060,51 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     debugPrint("==========================================");
   }
 
-  Future<void> getGroupMessages() async {
-    isLoading.value = true;
-
-    _messages
-      ..clear()
-      ..addAll(
-        List.generate(
-          7,
-              (index) {
-            final bool isMine = index % 3 == 1;
-            final bool isImage = index == 3;
-
-            return MessageData(
-              senderId: isMine ? 0 : 1,
-              senderName: "",
-              messageType: isImage ? "image" : "text",
-              content: isImage ? "" : "          ",
-              timestamp: DateTime.now().toIso8601String(),
-              seenCount: 0,
-              senderImage: "",
-            );
-          },
-        ),
+  Future<void> _resolveForwardedGroupMessageContent(MessageData target) async {
+    try {
+      final history = await MessageRepo.groupMessageHistory(
+        groupId: groupId,
+        page: 1,
+        limit: 10,
       );
 
-    updateMessageStream();
+      if (history.status == true && history.messageData != null) {
+        final found = history.messageData!.firstWhereOrNull(
+          (m) =>
+              (target.id != null && m.id == target.id) ||
+              (target.forwardedFromMessageId != null &&
+                  m.id?.toString() == target.forwardedFromMessageId?.toString()),
+        );
 
+        if (found != null) {
+          final idx = _messages.indexWhere((m) => m.id == target.id);
+          if (idx != -1) {
+            final m = _messages[idx];
+            m.content = found.content ?? m.content;
+            m.caption = found.caption ?? m.caption;
+            m.images = found.images ?? m.images;
+            m.videos = found.videos ?? m.videos;
+            m.messageType = found.messageType ?? m.messageType;
+            m.thumbnail = found.thumbnail ?? m.thumbnail;
+            updateMessageStream();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error resolving forwarded group message content: $e");
+    }
+  }
+
+  Future<void> getGroupMessages() async {
+    isLoading.value = true;
+    _messages.clear();
+    updateMessageStream();
 
     try {
       final result = await MessageRepo.groupMessageHistory(
         groupId: groupId,
+        page: 1,
+        limit: 15,
       );
 
       if (result.status == true) {
@@ -1554,6 +1657,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   void _onScrollForOlderMessages() {
     if (isLoadingOlderMessages.value) return;
     if (!hasMoreOlderMessages.value) return;
+    if (isLoading.value) return;
     if (_messages.isEmpty) return;
 
     final positions = itemPositionsListener.itemPositions.value;
@@ -1593,7 +1697,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       final result = await MessageRepo.groupMessageHistory(
         groupId: groupId,
         page: nextPage,
-        limit: 20,
+        limit: 15,
       );
 
       if (result.status == true) {
@@ -1626,7 +1730,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         if (result.pagination != null) {
           hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
         } else {
-          hasMoreOlderMessages.value = olderMessages.length >= 20;
+          hasMoreOlderMessages.value = olderMessages.length >= 15;
         }
       }
     } catch (e) {

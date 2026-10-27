@@ -398,8 +398,11 @@ class _GhostMemberState extends State<GhostMember> {
           imageUrl: member.profileImage,
           status: false,
           lastSeen: member.lastSeen,
+          phone: member.phone ?? member.mobileNo,
+          team: member.displayDepartment,
           isGroupChat: false,
           isLocationSharing: false,
+          location: member.displayLocation,
         );
       },
       borderRadius: BorderRadius.circular(16.r),

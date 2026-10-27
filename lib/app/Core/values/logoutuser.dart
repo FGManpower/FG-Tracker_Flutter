@@ -197,7 +197,7 @@ class LogoutUser {
 
     // 8. Delete user-specific GetX controllers to prevent stale data leaking
     try {
-      Get.deleteAll(force: true);
+      Get.deleteAll(force: false);
     } catch (e) {
       log('[LogoutUser] Error in Get.deleteAll: $e');
     }

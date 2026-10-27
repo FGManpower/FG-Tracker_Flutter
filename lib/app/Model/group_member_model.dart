@@ -1409,6 +1409,31 @@ class GroupMemberData {
         json['image']?.toString();
     if (json['location'] != null && json['location'] is Map) {
       location = Location.fromJson(Map<String, dynamic>.from(json['location']));
+    } else if (json['location'] != null && json['location'] is String && json['location'].toString().trim().isNotEmpty) {
+      location = Location(
+        area: json['location'].toString().trim(),
+        city: json['city']?.toString(),
+        latitude: _toDouble(json['latitude'] ?? json['lat']),
+        longitude: _toDouble(json['longitude'] ?? json['lng'] ?? json['lon']),
+      );
+    }
+    if (location == null && (json['area'] != null || json['city'] != null || json['address'] != null)) {
+      location = Location(
+        area: json['area']?.toString() ?? json['address']?.toString(),
+        city: json['city']?.toString(),
+        latitude: _toDouble(json['latitude'] ?? json['lat']),
+        longitude: _toDouble(json['longitude'] ?? json['lng'] ?? json['lon']),
+      );
+    } else if (location != null) {
+      if ((location!.area == null || location!.area!.isEmpty) && json['area'] != null) {
+        location!.area = json['area']?.toString();
+      }
+      if ((location!.city == null || location!.city!.isEmpty) && json['city'] != null) {
+        location!.city = json['city']?.toString();
+      }
+      if ((location!.area == null || location!.area!.isEmpty) && json['address'] != null) {
+        location!.area = json['address']?.toString();
+      }
     }
     isLocationSharing =
         _toBool(json['isLocationSharing'] ?? json['locationSharing']);
@@ -1598,6 +1623,17 @@ class GroupMemberData {
 
   bool get isGhostMode => isLocationSharing == false;
 
+  String? get displayLocation {
+    final parts = [location?.area, location?.city]
+        .where((s) => s != null && s.toString().trim().isNotEmpty && s.toString().trim().toLowerCase() != 'null')
+        .map((s) => s!.toString().trim())
+        .toList();
+    if (parts.isNotEmpty) {
+      return parts.join(', ');
+    }
+    return null;
+  }
+
   String get formattedJoinedAt {
     final raw = joinedAt ?? createdAt;
     if (raw == null || raw.trim().isEmpty) return 'Recent';
@@ -1660,6 +1696,13 @@ class GroupMemberData {
     }
     return null;
   }
+
+  static double? _toDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString());
+  }
 }
 
 typedef Private = GroupMemberData;
@@ -1685,7 +1728,7 @@ class Location {
   Location.fromJson(Map<String, dynamic> json) {
     latitude = _toDouble(json['latitude'] ?? json['lat']);
     longitude = _toDouble(json['longitude'] ?? json['lng'] ?? json['lon']);
-    area = json['area']?.toString();
+    area = json['area']?.toString() ?? json['address']?.toString() ?? json['location']?.toString();
     city = json['city']?.toString();
   }
 

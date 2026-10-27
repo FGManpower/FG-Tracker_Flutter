@@ -14,6 +14,7 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -225,6 +226,18 @@ Future<void> rejectCallViaRest(String callId) async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // In production (Release mode), silence all debugPrint outputs for maximum performance and security
+  if (kReleaseMode) {
+    debugPrint = (String? message, {int? wrapWidth}) {};
+    FlutterError.onError = (FlutterErrorDetails details) {
+      // Discard verbose stack traces in release mode
+    };
+    PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+      return true; // Mark as handled
+    };
+  }
+
   await Firebase.initializeApp();
   await Global.init();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);

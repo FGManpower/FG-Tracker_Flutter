@@ -13,12 +13,15 @@ class CallHistoryDetailRes {
   CallHistoryDetailRes({this.status, this.message, this.data});
 
   factory CallHistoryDetailRes.fromJson(Map<String, dynamic> json) {
+    final rawData = json['data'] ?? json['callDetail'] ?? json['detail'] ?? json['result'];
     return CallHistoryDetailRes(
-      status: json['status'] == true,
+      status: json['status'] == true || json['success'] == true,
       message: json['message']?.toString(),
-      data: json['data'] != null
-          ? CallHistoryDetailData.fromJson(json['data'])
-          : null,
+      data: rawData is Map<String, dynamic>
+          ? CallHistoryDetailData.fromJson(rawData)
+          : (rawData is Map
+              ? CallHistoryDetailData.fromJson(Map<String, dynamic>.from(rawData))
+              : null),
     );
   }
 
@@ -59,6 +62,11 @@ class CallHistoryDetailData {
   CallUser? contact;
   CallUser? caller;
   CallUser? receiver;
+  String? callerName;
+  String? receiverName;
+  String? callerProfileImage;
+  String? receiverProfileImage;
+  String? profileImage;
   MyParticipant? myParticipant;
   int? participantsCount;
   int? joinedParticipantsCount;
@@ -92,6 +100,11 @@ class CallHistoryDetailData {
     this.contact,
     this.caller,
     this.receiver,
+    this.callerName,
+    this.receiverName,
+    this.callerProfileImage,
+    this.receiverProfileImage,
+    this.profileImage,
     this.myParticipant,
     this.participantsCount,
     this.joinedParticipantsCount,
@@ -112,45 +125,116 @@ class CallHistoryDetailData {
   }
 
   factory CallHistoryDetailData.fromJson(Map<String, dynamic> json) {
+    CallUser? parseUser(dynamic raw, String prefix) {
+      if (raw is Map<String, dynamic>) {
+        return CallUser.fromJson(raw);
+      } else if (raw is Map) {
+        return CallUser.fromJson(Map<String, dynamic>.from(raw));
+      }
+      final name = json['${prefix}_name'] ?? json['${prefix}Name'] ?? json['${prefix}_username'];
+      final id = json['${prefix}_id'] ?? json['${prefix}Id'] ?? json['${prefix}_userId'];
+      final phone = json['${prefix}_phone'] ?? json['${prefix}_mobile'] ?? json['${prefix}Phone'] ?? json['${prefix}Mobile'];
+      final avatar = json['${prefix}_profile_image'] ?? json['${prefix}_avatar'] ?? json['${prefix}Avatar'] ?? json['${prefix}ProfileImage'];
+      final email = json['${prefix}_email'] ?? json['${prefix}Email'];
+      if (name != null || id != null || phone != null || avatar != null || email != null) {
+        return CallUser(
+          id: id?.toString(),
+          userId: id?.toString(),
+          name: name?.toString(),
+          avatar: avatar?.toString(),
+          profileImage: avatar?.toString(),
+          phoneNumber: phone?.toString(),
+          email: email?.toString(),
+        );
+      }
+      return null;
+    }
+
+    final parsedCaller = parseUser(json['caller'], 'caller');
+    final parsedReceiver = parseUser(json['receiver'], 'receiver');
+    final parsedContact = parseUser(json['contact'], 'contact');
+
+    final bool isVideoVal = json['isVideo'] == true ||
+        json['is_video'] == true ||
+        json['isVideo'] == 1 ||
+        json['is_video'] == 1 ||
+        (json['type']?.toString().toLowerCase() == 'video') ||
+        (json['callType']?.toString().toLowerCase() == 'video');
+
+    final int dur = _toInt(json['duration'] ?? json['callDuration'] ?? json['call_duration']) ?? 0;
+    String? fmtDur = json['formattedDuration']?.toString() ?? json['duration_formatted']?.toString();
+    if ((fmtDur == null || fmtDur.isEmpty) && dur > 0) {
+      final m = dur ~/ 60;
+      final s = dur % 60;
+      fmtDur = "${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}";
+    }
+
     return CallHistoryDetailData(
-      id: json['id']?.toString(),
-      callId: _toInt(json['callId'] ?? json['id']?.toString().replaceAll(RegExp(r'[^0-9]'), '')),
+      id: json['id']?.toString() ?? json['callId']?.toString() ?? json['call_id']?.toString(),
+      callId: _toInt(json['callId'] ?? json['call_id'] ?? json['id']?.toString().replaceAll(RegExp(r'[^0-9]'), '')),
       chatId: _toInt(json['chatId']),
       privateChatId: _toInt(json['privateChatId']),
-      callType: json['callType']?.toString(),
-      groupId: _toInt(json['groupId']),
+      callType: json['callType']?.toString() ?? (json['group_id'] != null || json['groupId'] != null ? 'group' : 'one_to_one'),
+      groupId: _toInt(json['groupId'] ?? json['group_id']),
       group: json['group'] is Map
           ? GroupInfo.fromJson(Map<String, dynamic>.from(json['group']))
-          : null,
-      type: json['type']?.toString(),
-      isVideo: json['isVideo'] ?? (json['type']?.toString().toLowerCase() == 'video'),
+          : (json['group_name'] != null || json['groupName'] != null
+              ? GroupInfo(
+                  groupId: _toInt(json['groupId'] ?? json['group_id']),
+                  groupName: json['group_name']?.toString() ?? json['groupName']?.toString(),
+                  avatar: json['group_image']?.toString() ?? json['groupImage']?.toString(),
+                  totalMembers: _toInt(json['total_members'] ?? json['totalMembers']),
+                )
+              : null),
+      type: json['type']?.toString() ?? (isVideoVal ? 'video' : 'audio'),
+      isVideo: isVideoVal,
       direction: json['direction']?.toString(),
-      isCaller: json['isCaller'] == true,
-      status: json['status']?.toString(),
-      rawStatus: json['rawStatus']?.toString(),
-      startTime: json['startTime']?.toString() ?? json['called_at']?.toString(),
-      endTime: json['endTime']?.toString() ?? json['ended_at']?.toString(),
-      calledAt: json['called_at']?.toString(),
-      endedAt: json['ended_at']?.toString(),
+      isCaller: json['isCaller'] == true || json['is_caller'] == true,
+      status: json['status']?.toString() ?? json['call_status']?.toString(),
+      rawStatus: json['rawStatus']?.toString() ?? json['status']?.toString(),
+      startTime: json['startTime']?.toString() ?? json['start_time']?.toString() ?? json['called_at']?.toString(),
+      endTime: json['endTime']?.toString() ?? json['end_time']?.toString() ?? json['ended_at']?.toString(),
+      calledAt: json['called_at']?.toString() ?? json['startTime']?.toString() ?? json['start_time']?.toString(),
+      endedAt: json['ended_at']?.toString() ?? json['endTime']?.toString() ?? json['end_time']?.toString(),
       date: json['date']?.toString(),
       time: json['time']?.toString(),
       formattedDate: json['formattedDate']?.toString(),
-      duration: _toInt(json['duration']),
-      formattedDuration: json['formattedDuration']?.toString(),
-      contact: json['contact'] is Map
-          ? CallUser.fromJson(Map<String, dynamic>.from(json['contact']))
-          : null,
-      caller: json['caller'] is Map
-          ? CallUser.fromJson(Map<String, dynamic>.from(json['caller']))
-          : null,
-      receiver: json['receiver'] is Map
-          ? CallUser.fromJson(Map<String, dynamic>.from(json['receiver']))
-          : null,
+      duration: dur,
+      formattedDuration: fmtDur,
+      contact: parsedContact ?? parsedCaller,
+      caller: parsedCaller,
+      receiver: parsedReceiver,
+      callerName: json['caller_name']?.toString() ??
+          json['callerName']?.toString() ??
+          json['caller_username']?.toString() ??
+          parsedCaller?.name,
+      receiverName: json['receiver_name']?.toString() ??
+          json['receiverName']?.toString() ??
+          json['receiver_username']?.toString() ??
+          parsedReceiver?.name,
+      callerProfileImage: json['caller_profile_image']?.toString() ??
+          json['callerProfileImage']?.toString() ??
+          json['caller_image']?.toString() ??
+          json['callerImage']?.toString() ??
+          json['caller_avatar']?.toString() ??
+          parsedCaller?.avatar ??
+          parsedCaller?.profileImage,
+      receiverProfileImage: json['receiver_profile_image']?.toString() ??
+          json['receiverProfileImage']?.toString() ??
+          json['receiver_image']?.toString() ??
+          json['receiverImage']?.toString() ??
+          json['receiver_avatar']?.toString() ??
+          parsedReceiver?.avatar ??
+          parsedReceiver?.profileImage,
+      profileImage: json['profile_image']?.toString() ??
+          json['profileImage']?.toString() ??
+          json['avatar']?.toString() ??
+          json['image']?.toString(),
       myParticipant: json['myParticipant'] is Map
           ? MyParticipant.fromJson(Map<String, dynamic>.from(json['myParticipant']))
           : null,
-      participantsCount: _toInt(json['participantsCount']),
-      joinedParticipantsCount: _toInt(json['joinedParticipantsCount']),
+      participantsCount: _toInt(json['participantsCount'] ?? json['participants_count']),
+      joinedParticipantsCount: _toInt(json['joinedParticipantsCount'] ?? json['joined_participants_count']),
       summary: json['summary'] is Map
           ? CallSummary.fromJson(Map<String, dynamic>.from(json['summary']))
           : null,
@@ -293,9 +377,27 @@ class CallUser {
       name: fullName,
       firstName: json['first_name']?.toString(),
       lastName: json['last_name']?.toString(),
-      avatar: json['avatar']?.toString() ?? json['profileImage']?.toString(),
-      profileImage: json['profileImage']?.toString() ?? json['avatar']?.toString(),
-      phoneNumber: json['phoneNumber']?.toString() ?? json['mobileNo']?.toString(),
+      avatar: (json['avatar'] ??
+              json['profile_image'] ??
+              json['profileImage'] ??
+              json['caller_profile_image'] ??
+              json['callerProfileImage'] ??
+              json['receiver_profile_image'] ??
+              json['receiverProfileImage'] ??
+              json['image'])
+          ?.toString(),
+      profileImage: (json['profileImage'] ??
+              json['profile_image'] ??
+              json['caller_profile_image'] ??
+              json['callerProfileImage'] ??
+              json['receiver_profile_image'] ??
+              json['receiverProfileImage'] ??
+              json['avatar'] ??
+              json['image'])
+          ?.toString(),
+      phoneNumber: json['phoneNumber']?.toString() ??
+          json['mobileNo']?.toString() ??
+          json['phone']?.toString(),
       email: json['email']?.toString(),
     );
   }

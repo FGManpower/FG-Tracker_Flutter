@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../Data/Repositories/GetMessageRepo.dart';
+import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Model/GetMessage.dart';
 import '../../../Model/ForwardMessageModel.dart';
 import '../../../Model/MemberDataRes.dart';
@@ -296,6 +297,11 @@ class ForwardMessageController extends GetxController {
         messageId: message.id!,
         sourceType: sourceType,
         targets: targets,
+        content: message.content?.toString(),
+        messageType: message.messageType?.toString(),
+        images: message.images,
+        videos: message.videos?.map((v) => v.toJson()).toList(),
+        caption: message.caption?.toString(),
       );
 
       if (response.status == false) {
@@ -305,6 +311,35 @@ class ForwardMessageController extends GetxController {
           snackPosition: SnackPosition.BOTTOM,
         );
         return;
+      }
+
+      // Proactively broadcast real-time socket events to recipients so they receive full message data instantly
+      for (final dest in selected) {
+        try {
+          if (dest.isGroup && dest.targetId != null) {
+            SocketMessageService.instance.forwardMessage(
+              messageId: message.id!,
+              groupId: dest.targetId,
+              content: message.content,
+              messageType: message.messageType,
+              images: message.images,
+              videos: message.videos?.map((v) => v.toJson()).toList(),
+              caption: message.caption,
+            );
+          } else if (!dest.isGroup && dest.targetId != null) {
+            SocketMessageService.instance.forwardMessage(
+              messageId: message.id!,
+              receiverId: dest.targetId!.toString(),
+              content: message.content,
+              messageType: message.messageType,
+              images: message.images,
+              videos: message.videos?.map((v) => v.toJson()).toList(),
+              caption: message.caption,
+            );
+          }
+        } catch (socketErr) {
+          debugPrint("Failed to emit forwardMessage socket event: $socketErr");
+        }
       }
 
       Utils().fluttertoast("Message forwarded");
