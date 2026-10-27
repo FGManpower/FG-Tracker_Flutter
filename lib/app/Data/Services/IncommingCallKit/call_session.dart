@@ -1,5 +1,5 @@
 
-import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart:.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 
 class CallSessionState {
   static String? sessionId;
