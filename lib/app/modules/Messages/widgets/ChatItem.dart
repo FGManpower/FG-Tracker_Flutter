@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
@@ -30,18 +31,21 @@ import '../../Attendance/models/attendance_poll_model.dart';
 import '../../Attendance/widgets/attendance_chat_card.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import 'chat_translation_widgets.dart';
-import 'message_Widgets.dart';
 
 class ChatBubble extends StatelessWidget {
   final MessageData message;
   final BuildContext context;
   final MessageController controller;
+  final bool showAvatar;
+  final bool isDense;
 
   const ChatBubble({
     super.key,
     required this.message,
     required this.controller,
     required this.context,
+    this.showAvatar = true,
+    this.isDense = false,
   });
 
   static const Color _purple = Color(0xFF5045B9);
@@ -77,7 +81,7 @@ class ChatBubble extends StatelessWidget {
     );
 
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 6.h),
+      margin: EdgeInsets.symmetric(vertical: isDense ? 2.h : 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
@@ -86,7 +90,8 @@ class ChatBubble extends StatelessWidget {
           if (!isSentByMe)
             Padding(
               padding: EdgeInsets.only(right: 8.w, top: 4.h),
-              child: Builder(builder: (context) {
+              child: showAvatar
+                  ? Builder(builder: (context) {
                 String? avatarUrl;
                 try {
                   avatarUrl = controller.memberData.profileImage;
@@ -109,7 +114,8 @@ class ChatBubble extends StatelessWidget {
                   )
                       : null,
                 );
-              }),
+              })
+                  : SizedBox(width: 32.r, height: 32.r),
             ),
           Flexible(
             child: Builder(
@@ -525,22 +531,28 @@ class ChatBubble extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Image.network(
-                  getMediaUrl(imageList[index]),
+                CachedNetworkImage(
+                  imageUrl: getMediaUrl(imageList[index]),
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  memCacheWidth: 600,
+                  memCacheHeight: 600,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey.shade200,
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 24.w,
+                      height: 24.w,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: _purple,
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
                     color: Colors.grey.shade200,
                     alignment: Alignment.center,
                     child: const Icon(Icons.broken_image_outlined),
                   ),
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
-                    return Container(
-                      color: Colors.grey.shade200,
-                      alignment: Alignment.center,
-                      child: const CircularProgressIndicator(),
-                    );
-                  },
                 ),
                 if (index == 3 && imageList.length > 4)
                   Container(
@@ -1141,10 +1153,12 @@ class ChatBubble extends StatelessWidget {
       return Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(
-            mediaUrl,
+          CachedNetworkImage(
+            imageUrl: mediaUrl,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
+            memCacheWidth: 600,
+            memCacheHeight: 600,
+            errorWidget: (_, __, ___) =>
                 Container(color: Colors.grey.shade300),
           ),
           if (isVideo)
@@ -1533,6 +1547,9 @@ class GroupChatBubble extends StatelessWidget {
   final int? groupId;
   final String? groupName;
   final GroupMessageController controller;
+  final bool showSenderName;
+  final bool showAvatar;
+  final bool isDense;
 
   const GroupChatBubble({
     super.key,
@@ -1542,6 +1559,9 @@ class GroupChatBubble extends StatelessWidget {
     this.isGroup = false,
     this.groupId,
     this.groupName,
+    this.showSenderName = true,
+    this.showAvatar = true,
+    this.isDense = false,
   });
 
   static const Color _purple = Color(0xFF5045B9);
@@ -1578,7 +1598,7 @@ class GroupChatBubble extends StatelessWidget {
     );
 
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 6.h),
+      margin: EdgeInsets.symmetric(vertical: isDense ? 2.h : 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
@@ -1590,7 +1610,8 @@ class GroupChatBubble extends StatelessWidget {
                 right: 8.w,
                 top: 4.h,
               ),
-              child: GestureDetector(
+              child: showAvatar
+                  ? GestureDetector(
                 onTap: () {
                   DialogBox().showRouteDetailsBottomSheet(
                     destination: const LatLng(0, 0),
@@ -1627,7 +1648,8 @@ class GroupChatBubble extends StatelessWidget {
                   )
                       : null,
                 ),
-              ),
+              )
+                  : SizedBox(width: 36.r, height: 36.r),
             ),
           Flexible(
             child: Builder(
@@ -1678,7 +1700,7 @@ class GroupChatBubble extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (isGroup && !isSentByMe)
+                                if (isGroup && !isSentByMe && showSenderName)
                                   Padding(
                                     padding: EdgeInsets.only(
                                       bottom: 4.h,
@@ -2226,10 +2248,12 @@ class GroupChatBubble extends StatelessWidget {
       return Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(
-            mediaUrl,
+          CachedNetworkImage(
+            imageUrl: mediaUrl,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
+            memCacheWidth: 600,
+            memCacheHeight: 600,
+            errorWidget: (_, __, ___) =>
                 Container(color: Colors.grey.shade300),
           ),
           if (isVideo)
@@ -2354,22 +2378,28 @@ class GroupChatBubble extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Image.network(
-                  getMediaUrl(imageList[index]),
+                CachedNetworkImage(
+                  imageUrl: getMediaUrl(imageList[index]),
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  memCacheWidth: 600,
+                  memCacheHeight: 600,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey.shade200,
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 24.w,
+                      height: 24.w,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: _purple,
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
                     color: Colors.grey.shade200,
                     alignment: Alignment.center,
                     child: const Icon(Icons.broken_image_outlined),
                   ),
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
-                    return Container(
-                      color: Colors.grey.shade200,
-                      alignment: Alignment.center,
-                      child: const CircularProgressIndicator(),
-                    );
-                  },
                 ),
                 if (index == 3 && imageList.length > 4)
                   Container(

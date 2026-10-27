@@ -103,8 +103,13 @@ class HomeController extends GetxController {
       if (result.status == true) {
         initializeModel.value = result;
         InitializeResponeMessage.value = "";
-        NotificationMarkerService.instance
-            .updateFromModel(result.data?.notificationMarkers);
+        if (result.data?.notificationMarkers != null) {
+          NotificationMarkerService.instance
+              .updateFromModel(result.data?.notificationMarkers);
+        } else if (result.data != null) {
+          NotificationMarkerService.instance
+              .updateFromMap(result.data?.toJson());
+        }
       }
     } catch (e) {
       InitializeResponeMessage.value = e.toString();

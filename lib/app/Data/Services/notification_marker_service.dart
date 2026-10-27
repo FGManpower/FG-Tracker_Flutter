@@ -21,15 +21,44 @@ class NotificationMarkerService extends GetxService {
   /// Update marker states from a raw map (e.g. from /initialize API or Socket events)
   void updateFromMap(Map<dynamic, dynamic>? markers) {
     if (markers == null) return;
+
+    // If whole data object is passed with notificationMarkers or notifications
+    if (markers['notificationMarkers'] is Map) {
+      updateFromMap(markers['notificationMarkers'] as Map);
+      return;
+    }
+    if (markers['notifications'] is Map) {
+      updateFromMap(markers['notifications'] as Map);
+      return;
+    }
+
     if (markers.containsKey('calling')) {
-      hasCallingMarker.value = markers['calling'] == true;
+      final val = markers['calling'];
+      if (val is bool) {
+        hasCallingMarker.value = val;
+      } else if (val is Map) {
+        hasCallingMarker.value =
+            val['hasMissedCall'] == true || val['hasNotification'] == true;
+      }
     }
     if (markers.containsKey('chatting') || markers.containsKey('chat')) {
-      hasChattingMarker.value =
-          markers['chatting'] == true || markers['chat'] == true;
+      final val = markers['chatting'] ?? markers['chat'];
+      if (val is bool) {
+        hasChattingMarker.value = val;
+      } else if (val is Map) {
+        hasChattingMarker.value =
+            val['hasUnread'] == true || val['hasNotification'] == true;
+      }
     }
     if (markers.containsKey('walkie')) {
-      hasWalkieMarker.value = markers['walkie'] == true;
+      final val = markers['walkie'];
+      if (val is bool) {
+        hasWalkieMarker.value = val;
+      } else if (val is Map) {
+        hasWalkieMarker.value = val['hasNotification'] == true ||
+            val['isChannelSpeaking'] == true ||
+            val['hasActiveTalk'] == true;
+      }
     }
   }
 

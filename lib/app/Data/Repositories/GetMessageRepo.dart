@@ -43,10 +43,13 @@ class MessageRepo {
 
   static Future<GetMessage> groupMessageHistory({
     required int groupId,
+    int? page,
+    int? limit,
   }) async {
-    var response = await HttpUtil().get(
-      "/getGroupMessageHistory?groupId=$groupId",
-    );
+    String url = "/getGroupMessageHistory?groupId=$groupId";
+    if (page != null) url += "&page=$page";
+    if (limit != null) url += "&limit=$limit";
+    var response = await HttpUtil().get(url);
 
     return GetMessage.fromJson(response);
   }
