@@ -8,7 +8,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../Messages/Views/chatlist_screen.dart';
-import '../../Safe_Zone/views/safety_dashboard_view.dart';
+// import '../../Safe_Zone/views/safety_dashboard_view.dart';
+import 'package:fgtracker/features/safety/coming_soon/safety_coming_soon_map_screen.dart';
+import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
@@ -107,14 +109,29 @@ class QuickActionsSection extends StatelessWidget {
                 imagePath: "assets/icons/new_action_chat.png",
                 onTap: () => Get.to(() => ChatListScreen()),
               ),
-              _QuickActionCard(
-                title: "Walkie Talkie",
-                subtitle: "1 hr free",
-                imagePath: "assets/icons/new_action_walkie_talkie.png",
-                onTap: () {
-                  Get.toNamed(Routes.walkieTalkieTrialDetails);
-                },
-              ),
+              Obx(() {
+                final homeController = Get.isRegistered<HomeController>()
+                    ? Get.find<HomeController>()
+                    : null;
+                final subtitle = homeController?.walkieSubtitle ?? "1 hr free";
+                final isExpired = homeController?.isWalkieTrialExpired ?? false;
+                final isSubscribed = homeController?.isWalkieSubscribed ?? false;
+
+                return _QuickActionCard(
+                  title: "Walkie Talkie",
+                  subtitle: subtitle,
+                  subtitleColor: isExpired
+                      ? const Color(0xFFDC2626)
+                      : (isSubscribed
+                          ? const Color(0xFF16A34A)
+                          : const Color(0xFF5338EE)),
+                  imagePath: "assets/icons/new_action_walkie_talkie.png",
+                  onTap: () async {
+                    await Get.toNamed(Routes.walkieTalkieTrialDetails);
+                    homeController?.fetchInitializeData();
+                  },
+                );
+              }),
               _QuickActionCard(
                 title: "Tracking",
                 imagePath: "assets/icons/new_action_tracking.png",
@@ -122,9 +139,9 @@ class QuickActionsSection extends StatelessWidget {
               ),
               _QuickActionCard(
                 title: "Safe Zone",
-                subtitle: "2 people free",
                 imagePath: "assets/icons/new_action_safe_zone.png",
-                onTap: () => Get.to(() => SafetyDashboardView()),
+                // onTap: () => Get.to(() => SafetyDashboardView()),
+                onTap: () => Get.to(() => const SafetyComingSoonMapScreen()),
               ),
             ],
           ),
@@ -139,12 +156,14 @@ class _QuickActionCard extends StatelessWidget {
     required this.title,
     required this.imagePath,
     this.subtitle,
+    this.subtitleColor,
     this.onTap,
   });
 
   final String title;
   final String imagePath;
   final String? subtitle;
+  final Color? subtitleColor;
   final VoidCallback? onTap;
 
   @override
@@ -233,7 +252,7 @@ class _QuickActionCard extends StatelessWidget {
                     fontFamily: FontFamily.interSemiBold,
                     fontSize: 8.5.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF5338EE),
+                    color: subtitleColor ?? const Color(0xFF5338EE),
                     height: 1.0,
                   ),
                 ),

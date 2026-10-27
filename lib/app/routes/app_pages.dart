@@ -26,8 +26,9 @@ import '../modules/Group/Views/QRScanScreen.dart';
 import '../modules/Messages/Bindings/ForwardMessageBinding.dart';
 import '../modules/Messages/Views/Chat_Screen.dart';
 import '../modules/Messages/Views/ForwardMessageScreen.dart';
-import '../modules/Safe_Zone/views/safe_zone_view.dart';
-import '../modules/Safe_Zone/views/safety_dashboard_view.dart';
+// import '../modules/Safe_Zone/views/safe_zone_view.dart';
+// import '../modules/Safe_Zone/views/safety_dashboard_view.dart';
+import 'package:fgtracker/features/safety/coming_soon/safety_coming_soon_map_screen.dart';
 import '../modules/Track/Views/Tracking_screen.dart';
 import '../modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import '../modules/Walkie-talkie/Views/walkie_talkie_trial_details.dart';
@@ -281,7 +282,14 @@ class AppPages {
 
     GetPage(
       name: Routes.SafetyDashboard,
-      page: () => SafetyDashboardView(),
+      // page: () => SafetyDashboardView(),
+      page: () => const SafetyComingSoonMapScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: _Paths.safeZoneScreen,
+      page: () => const SafetyComingSoonMapScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 400),
     ),

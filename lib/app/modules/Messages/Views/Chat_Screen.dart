@@ -5,7 +5,6 @@ import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart' show Utils;
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
@@ -14,6 +13,7 @@ import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/widgets/PinnedMessageBanner.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../widgets/ChatInputArea.dart';
@@ -25,14 +25,22 @@ import 'UserProfileScreen.dart';
 class ChatScreen extends GetView<MessageController> {
   ChatScreen({super.key});
 
-  final TextEditingController _controller = TextEditingController();
   final groupController = Get.put(GroupController());
 
   static const Color _purple = Color(0xFF5045B9);
   static const Color _scaffoldBg = Color(0xFFF5F3FB);
 
   Future<void> _sendMessage() async {
-    await controller.sendMessage(textController: _controller);
+    await controller.sendMessage(textController: controller.textEditingController);
+  }
+
+  void _dismissKeyboard(BuildContext context) {
+    if (MediaQuery.of(context).viewInsets.bottom > 0) {
+      FocusScope.of(context).unfocus();
+    }
+    if (controller.showEmoji.value) {
+      controller.showEmoji.value = false;
+    }
   }
 
   @override
@@ -68,6 +76,8 @@ class ChatScreen extends GetView<MessageController> {
           }),
         ),
         body: SafeArea(
+          top: true,
+          bottom: false,
           child: Column(
             children: [
               Obx(() {
@@ -83,62 +93,76 @@ class ChatScreen extends GetView<MessageController> {
                 );
               }),
               Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    ChatList(controller: controller),
-                    Obx(() {
-                      final isVisible = controller.showFloatingDate.value;
-                      final date = controller.floatingDate.value;
-                      if (date.isEmpty) return const SizedBox.shrink();
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (notification) {
+                    if (notification is UserScrollNotification &&
+                        notification.direction != ScrollDirection.idle) {
+                      _dismissKeyboard(context);
+                    }
+                    return false;
+                  },
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () => _dismissKeyboard(context),
+                        child: ChatList(controller: controller),
+                      ),
+                        Obx(() {
+                          final isVisible = controller.showFloatingDate.value;
+                          final date = controller.floatingDate.value;
+                          if (date.isEmpty) return const SizedBox.shrink();
 
-                      return IgnorePointer(
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: AnimatedSlide(
-                            offset:
-                                isVisible ? Offset.zero : const Offset(0, -0.8),
-                            duration: const Duration(milliseconds: 220),
-                            curve: Curves.easeOutCubic,
-                            child: AnimatedOpacity(
-                              opacity: isVisible ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 220),
-                              curve: Curves.easeOutCubic,
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade300,
-                                    borderRadius: BorderRadius.circular(18),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black
-                                            .withValues(alpha: 0.10),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
+                          return IgnorePointer(
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: AnimatedSlide(
+                                offset:
+                                    isVisible ? Offset.zero : const Offset(0, -0.8),
+                                duration: const Duration(milliseconds: 220),
+                                curve: Curves.easeOutCubic,
+                                child: AnimatedOpacity(
+                                  opacity: isVisible ? 1.0 : 0.0,
+                                  duration: const Duration(milliseconds: 220),
+                                  curve: Curves.easeOutCubic,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade300,
+                                        borderRadius: BorderRadius.circular(18),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black
+                                                .withValues(alpha: 0.10),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                  child: Text(
-                                    date,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black87,
+                                      child: Text(
+                                        date,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ],
+                          );
+                        }),
+                        _buildScrollToBottomButton(),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
               Obx(() {
                 final reply = controller.replyMessage.value;
                 if (reply == null) return const SizedBox.shrink();
@@ -161,44 +185,48 @@ class ChatScreen extends GetView<MessageController> {
                     previewText = reply.content?.toString() ?? "";
                 }
 
-                return Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: const Border(
-                      left: BorderSide(color: _purple, width: 4),
+                return GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () => _dismissKeyboard(context),
+                  child: Container(
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: const Border(
+                        left: BorderSide(color: _purple, width: 4),
+                      ),
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black12, blurRadius: 4),
+                      ],
                     ),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black12, blurRadius: 4),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              reply.senderName ?? "Unknown",
-                              style: const TextStyle(
-                                color: _purple,
-                                fontWeight: FontWeight.bold,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                reply.senderName ?? "Unknown",
+                                style: const TextStyle(
+                                  color: _purple,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(previewText,
-                                maxLines: 1, overflow: TextOverflow.ellipsis),
-                          ],
+                              const SizedBox(height: 4),
+                              Text(previewText,
+                                  maxLines: 1, overflow: TextOverflow.ellipsis),
+                            ],
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: controller.clearReply,
-                        icon: const Icon(Icons.close),
-                      ),
-                    ],
+                        IconButton(
+                          onPressed: controller.clearReply,
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }),
@@ -215,7 +243,7 @@ class ChatScreen extends GetView<MessageController> {
                   videoDurations: controller.videoDurations,
                   documentPath: controller.documentPath,
                   isSending: controller.isSending,
-                  textController: _controller,
+                  textController: controller.textEditingController,
                   messageController: controller,
                   onSend: _sendMessage,
                   uploadingVideoIndexes: controller.uploadingVideoIndexes,
@@ -265,6 +293,91 @@ class ChatScreen extends GetView<MessageController> {
         ),
       ),
     );
+  }
+
+  Widget _buildScrollToBottomButton() {
+    return Obx(() {
+      final isVisible = controller.showScrollToBottom.value;
+      final unreadCount = controller.unreadBelowCount.value;
+
+      return Positioned(
+        bottom: 12.h,
+        right: 14.w,
+        child: AnimatedScale(
+          scale: isVisible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutBack,
+          child: AnimatedOpacity(
+            opacity: isVisible ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 150),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    controller.scrollToBottom();
+                    controller.unreadBelowCount.value = 0;
+                    controller.showScrollToBottom.value = false;
+                  },
+                  child: Container(
+                    width: 38.w,
+                    height: 38.w,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: _purple,
+                        size: 24.sp,
+                      ),
+                    ),
+                  ),
+                ),
+                if (unreadCount > 0)
+                  Positioned(
+                    top: -4.h,
+                    right: -4.w,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 5.w,
+                        vertical: 2.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _purple,
+                        borderRadius: BorderRadius.circular(10.r),
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: 18.w,
+                        minHeight: 18.h,
+                      ),
+                      child: Center(
+                        child: Text(
+                          unreadCount > 99 ? "99+" : "$unreadCount",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildSearchAppBar() {

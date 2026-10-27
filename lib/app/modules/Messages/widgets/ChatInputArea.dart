@@ -131,6 +131,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
+      top: false,
       child: Obx(() {
         final isMessageNotEmpty = widget.messageText.value.trim().isNotEmpty ||
             widget.textController.text.trim().isNotEmpty;
@@ -385,6 +386,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                     children: [
                                       GestureDetector(
                                         onTap: () {
+                                          focusNode.unfocus();
                                           final isGroupAdmin = widget
                                                   .groupMessageController
                                                   ?.isCreator

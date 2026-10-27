@@ -30,7 +30,7 @@ import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import '../../Attendance/models/attendance_poll_model.dart';
 
-class GroupMessageController extends GetxController {
+class GroupMessageController extends GetxController with WidgetsBindingObserver {
   final socketService = SocketMessageService.instance;
 
   final ItemScrollController itemScrollController = ItemScrollController();
@@ -38,6 +38,12 @@ class GroupMessageController extends GetxController {
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
   final List<MessageData> _messages = [];
+
+  late final TextEditingController textEditingController = TextEditingController();
+  final RxBool showScrollToBottom = false.obs;
+  final RxInt unreadBelowCount = 0.obs;
+  bool _wasKeyboardOpen = false;
+  bool _wasAtBottom = true;
 
   final StreamController<List<MessageData>> _messageStreamController =
       StreamController<List<MessageData>>.broadcast();
@@ -137,8 +143,10 @@ class GroupMessageController extends GetxController {
     groupImage = arguments?["groupImage"] ?? arguments?["groupProfile"] ?? "";
     print("isCreator = ${isCreator.value}");
 
+    WidgetsBinding.instance.addObserver(this);
     initializeGroupChat();
     itemPositionsListener.itemPositions.addListener(_onScrollDateChanged);
+    itemPositionsListener.itemPositions.addListener(_updateScrollBottomState);
   }
 
   void toggleEmoji() {
@@ -179,9 +187,20 @@ class GroupMessageController extends GetxController {
           return;
         }
 
+        final currentUserId =
+            Global.storageServices.get(PrefConst.userId)?.toString();
+        final isMyMessage = incomingMessage.senderId?.toString() == currentUserId;
+        final wasAtBottom = isUserAtBottom();
+
         _messages.add(incomingMessage);
         updateMessageStream();
-        scrollToBottom();
+
+        if (isMyMessage || wasAtBottom) {
+          scrollToBottom();
+        } else {
+          unreadBelowCount.value++;
+          showScrollToBottom.value = true;
+        }
       },
     );
     socketService.listenMessageEdited(
@@ -1038,22 +1057,29 @@ class GroupMessageController extends GetxController {
 
     if (itemScrollController.isAttached) {
       try {
+        final targetIndex = _messages.length - 1;
+        if (targetIndex < 0) return;
+
         if (instant) {
           itemScrollController.jumpTo(
-            index: _messages.length - 1,
+            index: targetIndex,
           );
         } else {
           itemScrollController.scrollTo(
-            index: _messages.length - 1,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
+            index: targetIndex,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
           );
         }
       } catch (e) {
         log("Scroll execution error: $e");
+        if (retryCount < 6) {
+          Future.delayed(const Duration(milliseconds: 60), () {
+            _scrollToBottomExecution(instant: instant, retryCount: retryCount + 1);
+          });
+        }
       }
     } else if (retryCount < 10) {
-      // Retry a few times if the list layout hasn't fully computed yet
       Future.delayed(const Duration(milliseconds: 50), () {
         _scrollToBottomExecution(instant: instant, retryCount: retryCount + 1);
       });
@@ -1064,13 +1090,37 @@ class GroupMessageController extends GetxController {
     if (_messages.isEmpty) return true;
 
     final positions = itemPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return true;
 
-    if (positions.isEmpty) return false;
+    final visible = positions
+        .where((e) => e.itemTrailingEdge > 0 && e.itemLeadingEdge < 1.0)
+        .toList();
+
+    if (visible.isEmpty) return true;
 
     final maxVisible =
-        positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
+        visible.map((e) => e.index).reduce((a, b) => a > b ? a : b);
 
     return maxVisible >= _messages.length - 2;
+  }
+
+  void _updateScrollBottomState() {
+    if (_messages.isEmpty) {
+      if (showScrollToBottom.value) showScrollToBottom.value = false;
+      if (unreadBelowCount.value != 0) unreadBelowCount.value = 0;
+      _wasAtBottom = true;
+      return;
+    }
+
+    final atBottom = isUserAtBottom();
+    _wasAtBottom = atBottom;
+
+    if (atBottom) {
+      if (showScrollToBottom.value) showScrollToBottom.value = false;
+      if (unreadBelowCount.value != 0) unreadBelowCount.value = 0;
+    } else {
+      if (!showScrollToBottom.value) showScrollToBottom.value = true;
+    }
   }
 
   void handleBackPressed(BuildContext context) {
@@ -1397,9 +1447,34 @@ class GroupMessageController extends GetxController {
     }
   }
   @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+    try {
+      final views = WidgetsBinding.instance.platformDispatcher.views;
+      if (views.isNotEmpty) {
+        final bottomInset = views.first.viewInsets.bottom;
+        final isKeyboardOpen = bottomInset > 0;
+        if (isKeyboardOpen != _wasKeyboardOpen) {
+          _wasKeyboardOpen = isKeyboardOpen;
+          if (isKeyboardOpen) {
+            // Keep latest messages visible if user was at the bottom
+            if (_wasAtBottom) {
+              scrollToBottom(instant: false);
+            }
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  @override
   void onClose() {
     ChatTranslationService.instance.resetVisibility();
     ChatTranslationService.instance.stopAudio();
+    WidgetsBinding.instance.removeObserver(this);
+    itemPositionsListener.itemPositions.removeListener(_onScrollDateChanged);
+    itemPositionsListener.itemPositions.removeListener(_updateScrollBottomState);
+    textEditingController.dispose();
     focusNode.dispose();
     _messageStreamController.close();
     _floatingDateTimer?.cancel();

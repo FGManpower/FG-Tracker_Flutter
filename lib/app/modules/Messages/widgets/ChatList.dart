@@ -50,6 +50,7 @@ class ChatList extends StatelessWidget {
             itemPositionsListener: controller.itemPositionsListener,
             initialScrollIndex: messages.isNotEmpty ? messages.length - 1 : 0,
             initialAlignment: 0.0,
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.symmetric(
               horizontal: 12.w,
               vertical: 8.h,
@@ -343,6 +344,7 @@ class GroupChatList extends StatelessWidget {
             itemPositionsListener: controller.itemPositionsListener,
             initialScrollIndex: messages.isNotEmpty ? messages.length - 1 : 0,
             initialAlignment: 0.0,
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.symmetric(
               horizontal: 12.w,
               vertical: 8.h,

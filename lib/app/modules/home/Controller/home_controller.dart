@@ -38,6 +38,15 @@ class HomeController extends GetxController {
   bool get canUseWalkie =>
       initializeModel.value?.data?.walkie?.access?.canUseWalkie ?? false;
 
+  bool get isWalkieSubscribed =>
+      initializeModel.value?.data?.walkie?.isSubscribed ?? false;
+
+  bool get isWalkieTrialExpired =>
+      initializeModel.value?.data?.walkie?.isTrialExpired ?? false;
+
+  String get walkieSubtitle =>
+      initializeModel.value?.data?.walkie?.statusSubtitle ?? "1 hr free";
+
   StreamSubscription<Position>? _positionStreamSubscription;
 
   @override
