@@ -27,6 +27,7 @@ class InitializeData {
   String? serverTime;
   PaymentInitData? payment;
   WalkieInitData? walkie;
+  NotificationMarkers? notificationMarkers;
   dynamic calling;
   dynamic chat;
   dynamic tracking;
@@ -38,6 +39,7 @@ class InitializeData {
     this.serverTime,
     this.payment,
     this.walkie,
+    this.notificationMarkers,
     this.calling,
     this.chat,
     this.tracking,
@@ -56,6 +58,10 @@ class InitializeData {
       walkie: json['walkie'] != null
           ? WalkieInitData.fromJson(json['walkie'])
           : null,
+      notificationMarkers: json['notificationMarkers'] != null
+          ? NotificationMarkers.fromJson(
+              Map<String, dynamic>.from(json['notificationMarkers']))
+          : null,
       calling: json['calling'],
       chat: json['chat'],
       tracking: json['tracking'],
@@ -70,11 +76,40 @@ class InitializeData {
       'serverTime': serverTime,
       'payment': payment?.toJson(),
       'walkie': walkie?.toJson(),
+      'notificationMarkers': notificationMarkers?.toJson(),
       'calling': calling,
       'chat': chat,
       'tracking': tracking,
       'safeRoute': safeRoute,
       'notifications': notifications,
+    };
+  }
+}
+
+class NotificationMarkers {
+  final bool calling;
+  final bool chatting;
+  final bool walkie;
+
+  NotificationMarkers({
+    this.calling = false,
+    this.chatting = false,
+    this.walkie = false,
+  });
+
+  factory NotificationMarkers.fromJson(Map<String, dynamic> json) {
+    return NotificationMarkers(
+      calling: json['calling'] == true,
+      chatting: json['chatting'] == true || json['chat'] == true,
+      walkie: json['walkie'] == true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'calling': calling,
+      'chatting': chatting,
+      'walkie': walkie,
     };
   }
 }

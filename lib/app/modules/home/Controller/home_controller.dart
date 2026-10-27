@@ -17,6 +17,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:fgtracker/app/Model/group_member_model.dart';
+import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import '../../../Model/banner_model.dart';
 
 class HomeController extends GetxController {
@@ -102,6 +103,8 @@ class HomeController extends GetxController {
       if (result.status == true) {
         initializeModel.value = result;
         InitializeResponeMessage.value = "";
+        NotificationMarkerService.instance
+            .updateFromModel(result.data?.notificationMarkers);
       }
     } catch (e) {
       InitializeResponeMessage.value = e.toString();

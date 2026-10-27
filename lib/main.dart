@@ -25,6 +25,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
 import 'app/Data/Services/GroupCountService.dart';
+import 'app/Data/Services/notification_marker_service.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
@@ -214,6 +215,7 @@ Future<void> main() async {
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
   Get.put<GroupCountService>(GroupCountService(), permanent: true);
+  Get.put<NotificationMarkerService>(NotificationMarkerService(), permanent: true);
   FacebookAppEvents().setAutoLogAppEventsEnabled(true);
   await FacebookAppEvents().setAdvertiserIdCollectionEnabled(true);
   final shared = await SharedPreferences.getInstance();
