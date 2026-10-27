@@ -547,10 +547,10 @@ class _TotalMemberState extends State<TotalMember> {
   Widget _buildMemberCard(GroupMemberData member) {
     final bool isOnline = member.effectiveIsOnline;
 
-    final String statusText = isOnline ? "Active" : "Inactive";
+    final String statusText = isOnline ? "Active" : member.formattedLastSeen;
 
     final Color statusColor =
-        isOnline ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
+        isOnline ? const Color(0xFF10B981) : const Color(0xFF9E9E9E);
 
     return InkWell(
       onTap: () {

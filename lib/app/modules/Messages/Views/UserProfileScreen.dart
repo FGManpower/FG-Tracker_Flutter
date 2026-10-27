@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
@@ -47,6 +48,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void initState() {
     super.initState();
     int cId = widget.chatId ??
+        int.tryParse(widget.userData?.chatId?.toString() ?? '') ??
         int.tryParse(_chatController?.privateChatId.value.toString() ?? '') ??
         0;
 
@@ -59,13 +61,109 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   ProfileDetailsData? get _profileData {
     final dynamic val = _apiController.profileData.value;
+    ProfileDetailsData? apiData;
     if (val is ProfileDetailsData) {
-      return val;
+      apiData = val;
+    } else if (val is ProfileDetailsModel) {
+      apiData = val.data;
     }
-    if (val is ProfileDetailsModel) {
-      return val.data;
+
+    if (apiData != null && apiData.user != null) {
+      if (widget.userData != null) {
+        final u = widget.userData!;
+        if ((apiData.user!.name == null || apiData.user!.name!.isEmpty) &&
+            u.name != null) {
+          apiData.user!.name = u.name;
+        }
+        if ((apiData.user!.profileImage == null ||
+                apiData.user!.profileImage!.isEmpty) &&
+            u.profileImage != null) {
+          apiData.user!.profileImage = u.profileImage.toString();
+        }
+        if ((apiData.user!.mobileNo == null ||
+                apiData.user!.mobileNo!.isEmpty) &&
+            u.mobileNo != null) {
+          apiData.user!.mobileNo = u.mobileNo.toString();
+          apiData.user!.phone ??= u.mobileNo.toString();
+        }
+        if (apiData.user!.location == null && u.location != null) {
+          apiData.user!.location =
+              LocationData(area: u.location.toString(), city: '');
+        }
+        if (apiData.user!.locationSharing == null &&
+            u.locationSharing != null) {
+          apiData.user!.locationSharing = u.locationSharing;
+        }
+      }
+      return apiData;
     }
-    return null;
+
+    if (widget.userData != null) {
+      return _buildFallbackFromUserData(widget.userData!);
+    }
+
+    return apiData;
+  }
+
+  ProfileDetailsData _buildFallbackFromUserData(MemberData u) {
+    final name = (u.name != null &&
+            u.name.toString().trim().isNotEmpty &&
+            u.name.toString().toLowerCase() != 'null')
+        ? u.name.toString().trim()
+        : 'Member';
+    final phone = u.mobileNo?.toString() ?? '';
+    final locStr = u.location?.toString() ?? '';
+    final isOnline = u.isOnline == true ||
+        Tracking().isOnline(
+          rawIsOnline: u.isOnline,
+          lastSeen: u.lastSeen,
+          thresholdMinutes: 5,
+        );
+    final lastSeenStr = u.lastSeen?.toString();
+
+    String displayLastSeen = "Offline";
+    if (isOnline) {
+      displayLastSeen = "Online";
+    } else if (lastSeenStr != null && lastSeenStr.isNotEmpty) {
+      final parsed = Tracking.parseDateTime(lastSeenStr);
+      if (parsed != null) {
+        displayLastSeen = Tracking().getTimeAgo(parsed);
+      } else {
+        displayLastSeen =
+            lastSeenStr.toLowerCase() == 'offline' ? "Offline" : lastSeenStr;
+      }
+    }
+
+    return ProfileDetailsData(
+      chatId: widget.chatId ?? u.chatId,
+      chatType: "private",
+      user: UserDetails(
+        userId: u.userId ?? u.id,
+        name: name,
+        mobileNo: phone,
+        phone: phone,
+        profileImage: u.profileImage?.toString(),
+        isOnline: isOnline,
+        lastSeen: displayLastSeen,
+        rawLastSeen: lastSeenStr,
+        locationSharing: u.locationSharing,
+        location:
+            locStr.isNotEmpty ? LocationData(area: locStr, city: "") : null,
+      ),
+      mediaSummary: MediaSummary(totalMedia: 0),
+      media: MediaDetails(
+        photos: [],
+        videos: [],
+        audio: [],
+        documents: [],
+        links: [],
+      ),
+      blockStatus: BlockStatus(
+        isBlocked: false,
+        blockedByMe: false,
+        canMessage: true,
+      ),
+    );
   }
 
   ProfileDetailsData _getDummyData() {
@@ -118,7 +216,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
       body: SafeArea(
         child: Obx(() {
-          final bool isLoading = _apiController.isLoading.value;
+          final bool isLoading = _apiController.isLoading.value && widget.userData == null;
           final ProfileDetailsData? data =
               isLoading ? _getDummyData() : _profileData;
 
@@ -660,7 +758,31 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               color: Colors.grey.shade200,
             ),
           ],
-          if (locationStr.trim().isNotEmpty) ...[
+          if (user.locationSharing == false) ...[
+            SizedBox(height: 14.h),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.location_off_outlined,
+                  color: _lightPurple,
+                  size: 20.sp,
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    "Location Hidden",
+                    style: TextStyle(
+                      fontSize: 13.5.sp,
+                      color: Colors.grey.shade700,
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ] else if (locationStr.trim().isNotEmpty) ...[
             SizedBox(height: 14.h),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,

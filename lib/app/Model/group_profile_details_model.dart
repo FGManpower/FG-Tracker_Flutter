@@ -159,20 +159,49 @@ class GroupMemberInfo {
   });
 
   factory GroupMemberInfo.fromJson(Map<String, dynamic> json) {
+    final userMap = json['user'] is Map ? Map<String, dynamic>.from(json['user'] as Map) : null;
+    final dynamic rawLast = json['rawLastSeen'] ??
+        json['lastSeen'] ??
+        json['last_seen'] ??
+        json['lastActive'] ??
+        userMap?['rawLastSeen'] ??
+        userMap?['lastSeen'] ??
+        userMap?['last_seen'] ??
+        userMap?['lastActive'];
+
     return GroupMemberInfo(
-      userId: json['userId'] ?? json['id'],
-      name: json['name'],
-      profileImage: json['profileImage'] ?? json['image'],
-      isAdmin: json['isAdmin'],
-      isMe: json['isMe'],
-      isOnline: json['isOnline'],
-      rawLastSeen: json['rawLastSeen'] ?? json['lastSeen'],
-      lastSeen: json['lastSeen']?.toString(),
-      locationSharing: json['locationSharing'],
-      chatId: int.tryParse(
-        (json['chatId'] ?? json['chat_id'])?.toString() ?? '',
+      userId: _toInt(json['userId'] ?? json['id'] ?? json['user_id'] ?? userMap?['id'] ?? userMap?['userId']),
+      name: (json['name'] ?? json['userName'] ?? userMap?['name'] ?? userMap?['userName'])?.toString(),
+      profileImage: (json['profileImage'] ?? json['image'] ?? json['ProfileImage'] ?? userMap?['profileImage'] ?? userMap?['image'])?.toString(),
+      isAdmin: _toBool(json['isAdmin'] ?? json['is_admin'] ?? userMap?['isAdmin']),
+      isMe: _toBool(json['isMe'] ?? json['is_me']),
+      isOnline: _toBool(json['isOnline'] ?? json['online'] ?? userMap?['isOnline'] ?? userMap?['online']),
+      rawLastSeen: rawLast,
+      lastSeen: rawLast?.toString(),
+      locationSharing: _toBool(json['locationSharing'] ?? json['isLocationSharing'] ?? userMap?['locationSharing'] ?? userMap?['isLocationSharing']),
+      chatId: _toInt(
+        json['chatId'] ?? json['chat_id'] ?? json['conversationId'] ?? userMap?['chatId'],
       ),
     );
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
+  }
+
+  static bool? _toBool(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+      return true;
+    }
+    if (value == 0 || value == '0' || value.toString().toLowerCase() == 'false') {
+      return false;
+    }
+    return null;
   }
 }
 

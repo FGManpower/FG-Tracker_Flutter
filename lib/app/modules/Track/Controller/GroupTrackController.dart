@@ -1035,11 +1035,9 @@ class GroupTrackingController extends GetxController {
                             width: 12,
                             height: 12,
                             decoration: BoxDecoration(
-                              color: isGhostMode
-                                  ? AppColors.grey
-                                  : (isOnline
+                              color: isOnline
                                   ? AppColors.primaryElementStatus
-                                  : AppColors.darkRed),
+                                  : AppColors.grey,
                               shape: BoxShape.circle,
                               border:
                               Border.all(color: AppColors.white, width: 2),
@@ -1056,9 +1054,7 @@ class GroupTrackingController extends GetxController {
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
-                              color: isGhostMode
-                                  ? AppColors.grey
-                                  : AppColors.primaryText,
+                              color: AppColors.primaryText,
                             ),
                           ),
                         ),
@@ -1084,9 +1080,7 @@ class GroupTrackingController extends GetxController {
                       ],
                     ),
                     subtitle: Text(
-                      isGhostMode
-                          ? "Location Hidden"
-                          : isOnline
+                      isOnline
                           ? "Online"
                           : user.lastSeen != null &&
                           user.lastSeen.toString().isNotEmpty
@@ -1096,11 +1090,9 @@ class GroupTrackingController extends GetxController {
                       )
                           : "Offline",
                       style: TextStyle(
-                        color: isGhostMode
-                            ? AppColors.grey
-                            : (isOnline
+                        color: isOnline
                             ? AppColors.primaryElementStatus
-                            : AppColors.grey),
+                            : AppColors.grey,
                         fontSize: 12,
                       ),
                     ),

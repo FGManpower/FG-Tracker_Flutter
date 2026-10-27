@@ -455,7 +455,11 @@ class ChatScreen extends GetView<MessageController> {
             Expanded(
               child: GestureDetector(
                 onTap: () {
-                  Get.to(() => const UserProfileScreen());
+                  final cId = int.tryParse(controller.privateChatId.value.toString());
+                  Get.to(() => UserProfileScreen(
+                    userData: userData,
+                    chatId: cId,
+                  ));
                 },
                 child: Row(
                   children: [

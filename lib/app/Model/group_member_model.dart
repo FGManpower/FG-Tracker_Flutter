@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:intl/intl.dart';
 
 class GroupMemberModel {
@@ -1412,7 +1413,11 @@ class GroupMemberData {
     isLocationSharing =
         _toBool(json['isLocationSharing'] ?? json['locationSharing']);
     isOnline = _toBool(json['isOnline'] ?? json['online']);
-    lastSeen = json['lastSeen']?.toString() ?? json['lastActive']?.toString();
+    final dynamic rawLast = json['rawLastSeen'] ??
+        json['lastSeen'] ??
+        json['last_seen'] ??
+        json['lastActive'];
+    lastSeen = rawLast?.toString();
     chatId = _toInt(
         json['chatId'] ?? json['privateChatId'] ?? json['conversationId']);
     department = json['department']?.toString() ??
@@ -1585,7 +1590,11 @@ class GroupMemberData {
     return '${ConstRes.aImageBaseUrl}$clean';
   }
 
-  bool get effectiveIsOnline => isOnline == true;
+  bool get effectiveIsOnline => Tracking().isOnline(
+        rawIsOnline: isOnline,
+        lastSeen: lastSeen,
+        thresholdMinutes: 5,
+      );
 
   bool get isGhostMode => isLocationSharing == false;
 
@@ -1612,17 +1621,20 @@ class GroupMemberData {
   }
 
   String get formattedLastSeen {
-    if (lastSeen == null || lastSeen!.trim().isEmpty) return 'Offline';
+    if (lastSeen == null ||
+        lastSeen!.trim().isEmpty ||
+        lastSeen!.trim().toLowerCase() == 'null') {
+      return 'Offline';
+    }
+    final parsed = Tracking.parseDateTime(lastSeen);
+    if (parsed == null) {
+      final s = lastSeen!.trim();
+      return s.toLowerCase() == 'offline' ? 'Offline' : s;
+    }
     try {
-      final dt = DateTime.parse(lastSeen!.trim());
-      final diff = DateTime.now().difference(dt);
-      if (diff.inSeconds < 60) return 'Just now';
-      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-      if (diff.inHours < 24) return '${diff.inHours}h ago';
-      if (diff.inDays < 7) return '${diff.inDays}d ago';
-      return DateFormat('dd MMM').format(dt);
+      return Tracking().getTimeAgo(parsed);
     } catch (_) {
-      return lastSeen!.trim();
+      return 'Offline';
     }
   }
 
