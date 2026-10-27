@@ -3,8 +3,8 @@ import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_co
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide navigator;
-import '../../../../gen/fonts.gen.dart';
 
+import '../../../../gen/fonts.gen.dart';
 
 class _RouteUi {
   final String label;
@@ -14,9 +14,9 @@ class _RouteUi {
 }
 
 Future<CallAudioRoute?> showAudioRouteSheet(
-  BuildContext context,
-  CallAudioRouteController controller,
-) {
+    BuildContext context,
+    CallAudioRouteController controller,
+    ) {
   return showModalBottomSheet<CallAudioRoute>(
     context: context,
     backgroundColor: Colors.transparent,
@@ -103,7 +103,6 @@ class _AudioRouteSheet extends StatelessWidget {
 
             return Column(
               children: [
-                // Earpiece is not available during video calls.
                 if (!isVideo)
                   _RouteTile(
                     ui: const _RouteUi(
