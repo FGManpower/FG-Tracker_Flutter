@@ -917,20 +917,26 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       ..clear()
       ..addAll(
         List.generate(
-          8,
-          (index) => MessageData(
-            senderId: index.isEven ? 1 : 2,
-            senderName: "",
-            messageType: "text",
-            content: "                     ",
-            timestamp: DateTime.now().toIso8601String(),
-            seenCount: 0,
-            senderImage: "",
-          ),
+          7,
+              (index) {
+            final bool isMine = index % 3 == 1;
+            final bool isImage = index == 3;
+
+            return MessageData(
+              senderId: isMine ? 0 : 1,
+              senderName: "",
+              messageType: isImage ? "image" : "text",
+              content: isImage ? "" : "          ",
+              timestamp: DateTime.now().toIso8601String(),
+              seenCount: 0,
+              senderImage: "",
+            );
+          },
         ),
       );
 
     updateMessageStream();
+
 
     try {
       final result = await MessageRepo.groupMessageHistory(

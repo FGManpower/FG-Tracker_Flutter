@@ -21,7 +21,7 @@ class HttpUtil {
   HttpUtil._internal() {
     api.sendRequest.interceptors.add(PrettyDioLogger(
       requestHeader: true,
-      requestBody: true,
+      requestBody: false,
       responseBody: false,   // ⚡ YE ADD KIYA — bada JSON print nahi hoga
       responseHeader: false,
       error: true,

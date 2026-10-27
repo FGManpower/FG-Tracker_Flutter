@@ -24,6 +24,20 @@ class GroupChatScreen extends GetView<GroupMessageController> {
 
   static const Color _purple = Color(0xFF5045B9);
   static const Color _scaffoldBg = Color(0xFFF5F3FB);
+  Widget buildMessageSkeleton({
+    required bool isMine,
+    required bool isImage,
+  }) {
+    final Color lineColor = const Color(0xFFE7E4EE);
+
+    Widget line(double width) => Container(
+      width: width,
+      height: 10,
+      decoration: BoxDecoration(
+        color: lineColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+    );
 
   void _dismissKeyboard(BuildContext context) {
     if (MediaQuery.of(context).viewInsets.bottom > 0) {
