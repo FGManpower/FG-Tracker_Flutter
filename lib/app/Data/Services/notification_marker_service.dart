@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import '../../Model/initialize_model.dart';
 
@@ -70,7 +71,27 @@ class NotificationMarkerService extends GetxService {
     hasWalkieMarker.value = markers.walkie;
   }
 
-  void clearCallingMarker() => hasCallingMarker.value = false;
-  void clearChattingMarker() => hasChattingMarker.value = false;
-  void clearWalkieMarker() => hasWalkieMarker.value = false;
+  void clearCallingMarker() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      hasCallingMarker.value = false;
+    });
+  }
+
+  void clearChattingMarker() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      hasChattingMarker.value = false;
+    });
+  }
+
+  void clearWalkieMarker() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      hasWalkieMarker.value = false;
+    });
+  }
+
+  void clearAll() {
+    clearCallingMarker();
+    clearChattingMarker();
+    clearWalkieMarker();
+  }
 }

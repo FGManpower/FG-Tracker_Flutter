@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 
 class Socket_GroupCallService {
@@ -245,10 +246,16 @@ class Socket_GroupCallService {
       "group_call_screen_share_started",
       "group_call_screen_share_stopped",
       "group_call_participants_update",
+      "force_logout",
     ];
     for (final e in events) {
       socket?.off(e);
     }
+
+    socket?.on("force_logout", (data) {
+      _log("force_logout received on groupCall socket: $data");
+      LogoutUser().handleForceLogout();
+    });
 
     socket?.on("group_call_started", (raw) {});
 
@@ -1326,5 +1333,8 @@ class Socket_GroupCallService {
     socket?.dispose();
     socket = null;
     _listenersBound = false;
+    _selfUserId = null;
+    participantMeta.clear();
+    participantStatus.clear();
   }
 }

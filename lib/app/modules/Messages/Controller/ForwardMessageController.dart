@@ -7,9 +7,8 @@ import '../../../Data/Repositories/GetMessageRepo.dart';
 import '../../../Model/GetMessage.dart';
 import '../../../Model/ForwardMessageModel.dart';
 import '../../../Model/MemberDataRes.dart';
+import '../../../routes/app_pages.dart';
 import '../../call/Controller/contact_controller.dart';
-import '../Views/Chat_Screen.dart';
-import '../Views/ChatList_Screen.dart';
 import 'MessageController.dart';
 
 class ForwardMessageController extends GetxController {
@@ -308,14 +307,40 @@ class ForwardMessageController extends GetxController {
         return;
       }
 
-      final bool isSinglePerson = selected.length == 1 &&
-          !selected.first.isGroup &&
-          selected.first.targetId != null;
+      Utils().fluttertoast("Message forwarded");
 
-      if (isSinglePerson) {
-        await _openPrivateChat(selected.first);
+      final bool isSingle = selected.length == 1;
+
+      if (isSingle) {
+        final target = selected.first;
+        Get.back();
+
+        if (target.isGroup) {
+          Get.toNamed(
+            Routes.groupChatScreen,
+            arguments: {
+              "groupId": target.targetId,
+              "groupName": target.displayName,
+              "groupProfile": target.displayImage,
+              "groupImage": target.displayImage,
+            },
+          );
+        } else {
+          final userData = MemberData(
+            userId: target.targetId!,
+            name: target.displayName,
+            profileImage: target.displayImage,
+            groupId: 0,
+          );
+          Get.toNamed(
+            Routes.chatScreen,
+            arguments: {
+              "userData": userData,
+            },
+          );
+        }
       } else {
-        _replaceStackWithChatList(instant: false);
+        Get.back();
       }
     } catch (e) {
       Get.snackbar(
@@ -326,41 +351,6 @@ class ForwardMessageController extends GetxController {
     } finally {
       isForwarding.value = false;
     }
-  }
-
-  void _replaceStackWithChatList({required bool instant}) {
-    Get.offUntil(
-      GetPageRoute(
-        page: () => ChatListScreen(),
-        transition: instant ? Transition.noTransition : null,
-        transitionDuration:
-        instant ? Duration.zero : const Duration(milliseconds: 300),
-      ),
-          (route) => route.isFirst,
-    );
-  }
-
-  Future<void> _openPrivateChat(ForwardDestination destination) async {
-    final userData = MemberData(
-      userId: destination.targetId!,
-      name: destination.displayName,
-      profileImage: destination.displayImage,
-      groupId: 0,
-    );
-
-    _replaceStackWithChatList(instant: true);
-
-    await Future.delayed(const Duration(milliseconds: 50));
-
-    Get.to(
-          () => ChatScreen(),
-      arguments: {
-        "userData": userData,
-      },
-      binding: BindingsBuilder(() {
-        Get.put(MessageController());
-      }),
-    );
   }
 
   @override

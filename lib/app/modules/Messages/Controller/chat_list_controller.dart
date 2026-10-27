@@ -93,7 +93,9 @@ class ChatListController extends GetxController {
   void onInit() {
     super.onInit();
 
-    SocketService.instance.markChatListViewed();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SocketService.instance.markChatListViewed();
+    });
     _initializePrivateChatListSocket();
     getPrivateChats();
     loadArchivedChats();

@@ -1506,4 +1506,19 @@ class SocketMessageService extends GetxService {
       },
     );
   }
+
+  void disconnectAll() {
+    try {
+      _socket?.clearListeners();
+      _socket?.disconnect();
+      _socket?.dispose();
+      _socket = null;
+    } catch (_) {}
+    try {
+      disconnectPrivateChatSocket();
+    } catch (_) {}
+    try {
+      disconnectPrivateChatListSocket();
+    } catch (_) {}
+  }
 }

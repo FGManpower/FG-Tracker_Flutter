@@ -1334,13 +1334,15 @@ class ChatBubble extends StatelessWidget {
                           onTap: () {
                             Navigator.pop(ctx);
 
-                            Get.toNamed(
-                              Routes.forwardMessageScreen,
-                              arguments: {
-                                "message": message,
-                                "sourceType": "private",
-                              },
-                            );
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              Get.toNamed(
+                                Routes.forwardMessageScreen,
+                                arguments: {
+                                  "message": message,
+                                  "sourceType": "private",
+                                },
+                              );
+                            });
                           },
                         ),
                         if (isSentByMe && isText)
@@ -2907,13 +2909,15 @@ class GroupChatBubble extends StatelessWidget {
                           onTap: () {
                             Navigator.pop(ctx);
 
-                            Get.toNamed(
-                              Routes.forwardMessageScreen,
-                              arguments: {
-                                "message": message,
-                                "sourceType": "group",
-                              },
-                            );
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              Get.toNamed(
+                                Routes.forwardMessageScreen,
+                                arguments: {
+                                  "message": message,
+                                  "sourceType": "group",
+                                },
+                              );
+                            });
                           },
                         ),
                         if (isSentByMe && isText)

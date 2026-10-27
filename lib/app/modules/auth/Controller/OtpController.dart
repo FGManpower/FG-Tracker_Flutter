@@ -18,7 +18,9 @@ import 'package:get/get.dart';
 import 'package:otp_autofill/otp_autofill.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/values/loading.dart';
+import '../../../Core/values/logoutuser.dart';
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
+import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
 
 class OtpController extends GetxController {
   TextEditingController otpController = TextEditingController();
@@ -156,6 +158,16 @@ class OtpController extends GetxController {
     _isVerifying = true;
     try {
       Loading().showloading();
+
+      if (deviceId.value.isEmpty) {
+        try {
+          final token = await firebaseNotificationServices().getDiviceToken();
+          if (token != null && token.isNotEmpty) {
+            deviceId.value = token;
+          }
+        } catch (_) {}
+      }
+
       dynamic param = {
         "countryCode": arguments?['countryCode'],
         "MobileNo": arguments?['mobNo'],
@@ -169,6 +181,23 @@ class OtpController extends GetxController {
       if (result.status == true) {
         Loading().dismissloading();
 
+        // 0. Ensure fresh clean storage slate before writing new user credentials
+        await Global.storageServices.clearAllUserData();
+
+        // 1. Save auth credentials FIRST before initializing sockets
+        await Global.storageServices.setString(
+          PrefConst.STORAGE_USER_TOKEN_KEY,
+          result.data!.token.toString(),
+        );
+        await Global.storageServices.setString(
+          PrefConst.userId,
+          result.data!.userId.toString(),
+        );
+
+        // 2. Establish grace period for this newly logged-in device
+        LogoutUser.recordLoginSuccess();
+
+        // 3. Initialize sockets for user
         try {
           if (result.data!.userId != null) {
             SignallingService.instance.init(
@@ -185,19 +214,13 @@ class OtpController extends GetxController {
                 .init(result.data!.userId.toString());
 
             SocketDashboardService().init();
+
+            StatusBinding().dependencies();
           }
         } catch (e) {
           log("login_SocketException====$e");
         }
 
-        Global.storageServices.setString(
-          PrefConst.STORAGE_USER_TOKEN_KEY,
-          result.data!.token.toString(),
-        );
-        Global.storageServices.setString(
-          PrefConst.userId,
-          result.data!.userId.toString(),
-        );
         if (result.data?.isNewUser == true) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             Get.toNamed(Routes.Register, arguments: {

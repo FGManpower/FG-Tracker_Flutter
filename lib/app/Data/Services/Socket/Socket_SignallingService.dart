@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
+import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
@@ -38,6 +39,11 @@ class SignallingService {
 
     s.onConnect((_) {
       log("Call Socket Connected (ID: $selfCallerID)");
+    });
+
+    s.on('force_logout', (data) {
+      log("force_logout received on callSignaling socket: $data");
+      LogoutUser().handleForceLogout();
     });
 
     s.onDisconnect((_) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
@@ -24,6 +25,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
+import 'app/Core/values/logoutuser.dart';
 import 'app/Data/Services/GroupCountService.dart';
 import 'app/Data/Services/notification_marker_service.dart';
 import 'app/Data/Services/NotificationServices.dart';
@@ -48,6 +50,27 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   log("====Background-Bg===${message.data}");
 
   final d = message.data;
+
+  if (d['type'] == 'FORCE_LOGOUT' || d['screen_name'] == 'force_logout') {
+    try {
+      log("FORCE_LOGOUT received in background handler. Clearing credentials...");
+      final shared = await SharedPreferences.getInstance();
+      final introDone = shared.getBool(PrefConst.introStatus) ?? true;
+      final isDark = shared.getBool(PrefConst.isDarkMode);
+      await shared.clear();
+      await shared.setBool(PrefConst.introStatus, introDone);
+      if (isDark != null) {
+        await shared.setBool(PrefConst.isDarkMode, isDark);
+      }
+      await flutterLocalNotificationsPlugin.cancelAll();
+      try {
+        await AwesomeNotifications().cancelAll();
+      } catch (_) {}
+    } catch (e) {
+      log("Error clearing storage on background FORCE_LOGOUT: $e");
+    }
+    return;
+  }
 
   final handled = await CallKitService.handlePush(d);
   if (handled) {
@@ -237,7 +260,17 @@ Future<void> main() async {
   }
   ScreenShareForegroundService.init();
 
-  FirebaseMessaging.onMessage.listen((m) => CallKitService.handlePush(m.data));
+  FirebaseMessaging.onMessage.listen((m) {
+    if (m.data['type'] == 'FORCE_LOGOUT' ||
+        m.data['screen_name'] == 'force_logout') {
+      LogoutUser().handleForceLogout(
+        message: m.notification?.body ??
+            "Session expired. You logged in on another device.",
+      );
+      return;
+    }
+    CallKitService.handlePush(m.data);
+  });
 
   await CallKitService.instance.init();
 
