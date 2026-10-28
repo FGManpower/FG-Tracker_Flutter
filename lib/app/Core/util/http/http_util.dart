@@ -15,7 +15,7 @@ class HttpUtil {
   static final HttpUtil _instance = HttpUtil._internal();
 
   factory HttpUtil() {
-    return _instance;
+    return _instance;chat
   }
 
   ConstRes api = ConstRes();
@@ -24,9 +24,9 @@ class HttpUtil {
     if (kDebugMode) {
       api.sendRequest.interceptors.add(PrettyDioLogger(
         requestHeader: true,
-        requestBody: false,
-        responseBody: false,
-        responseHeader: false,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: true,
         error: true,
         compact: true,
       ));
