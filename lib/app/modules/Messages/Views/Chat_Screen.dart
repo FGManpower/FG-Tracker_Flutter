@@ -231,6 +231,39 @@ class ChatScreen extends GetView<MessageController> {
                 );
               }),
               Obx(() {
+                if (!controller.isPeerTyping.value) return const SizedBox.shrink();
+                final name = userData.name?.toString().trim();
+                final displayName = (name != null && name.isNotEmpty) ? name : "User";
+                return Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                  color: _scaffoldBg,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.edit_rounded,
+                        size: 14.sp,
+                        color: Colors.green.shade600,
+                      ),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          "$displayName is typing...",
+                          style: TextStyle(
+                            color: Colors.green.shade700,
+                            fontSize: 12.sp,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              Obx(() {
                 if (controller.isBlocked.value) {
                   return _buildBlockedMessage();
                 }
@@ -531,9 +564,11 @@ class ChatScreen extends GetView<MessageController> {
                           ),
                           Obx(() {
                             final isTyping = controller.isPeerTyping.value;
+                            final currentOnline = controller.isPeerOnline.value;
+                            final currentLastSeen = controller.peerLastSeen.value;
                             return Row(
                               children: [
-                                if (isOnline && !isTyping)
+                                if (currentOnline && !isTyping)
                                   Container(
                                     width: 7.w,
                                     height: 7.w,
@@ -547,11 +582,11 @@ class ChatScreen extends GetView<MessageController> {
                                   child: Text(
                                     isTyping
                                         ? "typing..."
-                                        : (isOnline ? "Online" : lastSeenText),
+                                        : (currentOnline ? "Online" : currentLastSeen),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      color: (isTyping || isOnline)
+                                      color: (isTyping || currentOnline)
                                           ? Colors.green
                                           : Colors.grey.shade600,
                                       fontSize: 11.sp,

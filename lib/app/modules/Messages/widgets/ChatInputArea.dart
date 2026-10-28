@@ -98,6 +98,9 @@ class _ChatInputAreaState extends State<ChatInputArea> {
         if (voiceInputController.isInlinePanelActive) {
           voiceInputController.closeInlinePanel();
         }
+      } else {
+        widget.messageController?.onInputFocusLost();
+        widget.groupMessageController?.onInputFocusLost();
       }
     });
   }

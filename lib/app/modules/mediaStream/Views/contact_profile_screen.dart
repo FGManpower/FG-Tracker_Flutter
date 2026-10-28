@@ -49,6 +49,9 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
         : "${widget.contactData?.userId ?? '0'}";
     _tag = "${base}_${widget.callId ?? ''}";
 
+    if (Get.isRegistered<ContactProfileController>(tag: _tag)) {
+      Get.delete<ContactProfileController>(tag: _tag, force: true);
+    }
     controller = Get.put(
       ContactProfileController(
         contactData: widget.contactData,
@@ -64,7 +67,9 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
 
   @override
   void dispose() {
-    Get.delete<ContactProfileController>(tag: _tag);
+    if (Get.isRegistered<ContactProfileController>(tag: _tag)) {
+      Get.delete<ContactProfileController>(tag: _tag, force: true);
+    }
     super.dispose();
   }
 
@@ -221,60 +226,62 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 ),
                 SizedBox(height: 14.h),
 
-                // 1. Loading Skeleton for Call Details (Single call mode)
-                Obx(() {
-                  if (controller.isLoading.value && !controller.isListMode) {
-                    return Column(
-                      children: [
-                        _buildCallDetailsSkeleton(),
-                        SizedBox(height: 14.h),
-                      ],
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
+                if (!controller.isListMode) ...[
+                  // 1. Loading Skeleton for Call Details (Single call mode)
+                  Obx(() {
+                    if (controller.isLoading.value) {
+                      return Column(
+                        children: [
+                          _buildCallDetailsSkeleton(),
+                          SizedBox(height: 14.h),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
 
-                // 2. Call Details Card (Single Call Mode when call detail is loaded)
-                Obx(() {
-                  final d = controller.detail.value;
-                  if (!controller.isListMode && d != null) {
-                    return Column(
-                      children: [
-                        _buildCallDetailsCard(d),
-                        SizedBox(height: 14.h),
-                      ],
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
+                  // 2. Call Details Card (Single Call Mode when call detail is loaded)
+                  Obx(() {
+                    final d = controller.detail.value;
+                    if (d != null) {
+                      return Column(
+                        children: [
+                          _buildCallDetailsCard(d),
+                          SizedBox(height: 14.h),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
 
-                // 3. Group Summary Card (if group and summary is present)
-                Obx(() {
-                  final d = controller.detail.value;
-                  if (d != null && (widget.isGroup || d.group != null) && d.summary != null) {
-                    return Column(
-                      children: [
-                        _buildGroupSummaryCard(d),
-                        SizedBox(height: 14.h),
-                      ],
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
+                  // 3. Group Summary Card (if group and summary is present)
+                  Obx(() {
+                    final d = controller.detail.value;
+                    if (d != null && (widget.isGroup || d.group != null) && d.summary != null) {
+                      return Column(
+                        children: [
+                          _buildGroupSummaryCard(d),
+                          SizedBox(height: 14.h),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
 
-                // 4. Participants Card (if participants are present)
-                Obx(() {
-                  final participants = controller.participants;
-                  if (participants.isNotEmpty) {
-                    return Column(
-                      children: [
-                        _buildParticipantsCard(participants),
-                        SizedBox(height: 14.h),
-                      ],
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
+                  // 4. Participants Card (if participants are present)
+                  Obx(() {
+                    final participants = controller.participants;
+                    if (participants.isNotEmpty) {
+                      return Column(
+                        children: [
+                          _buildParticipantsCard(participants),
+                          SizedBox(height: 14.h),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
+                ],
 
                 // 5. Contact / Group Information Card
                 Obx(() {
@@ -292,16 +299,17 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 SizedBox(height: 14.h),
 
                 // 6. Recent Calls (List mode) or error fallback
-                Obx(() {
-                  if (controller.isListMode) {
-                    return _buildRecentCallsCard(context);
-                  } else if (controller.errorMessage.value.isNotEmpty &&
-                      controller.detail.value == null &&
-                      !controller.isLoading.value) {
-                    return _card(child: _buildError(controller.errorMessage.value));
-                  }
-                  return const SizedBox.shrink();
-                }),
+                if (controller.isListMode)
+                  _buildRecentCallsCard(context)
+                else
+                  Obx(() {
+                    if (controller.errorMessage.value.isNotEmpty &&
+                        controller.detail.value == null &&
+                        !controller.isLoading.value) {
+                      return _card(child: _buildError(controller.errorMessage.value));
+                    }
+                    return const SizedBox.shrink();
+                  }),
               ],
             ),
           ),
@@ -351,20 +359,15 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 color: _purple,
               ),
             ),
-          if (d?.status != null && !controller.isListMode) ...[
-            SizedBox(height: 6.h),
-            _buildCallStatusPill(d!.status!),
-          ] else ...[
-            SizedBox(height: 3.h),
-            Text(
-              isOnline ? "Online" : "Offline",
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontFamily: FontFamily.interMedium,
-                color: isOnline ? const Color(0xFF10B981) : _grey,
-              ),
+          SizedBox(height: 3.h),
+          Text(
+            isOnline ? "Online" : "Offline",
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontFamily: FontFamily.interMedium,
+              color: isOnline ? const Color(0xFF10B981) : _grey,
             ),
-          ],
+          ),
         ],
       ],
     );
@@ -574,14 +577,6 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                       style: TextStyle(fontSize: 15.sp),
                     ),
                   ),
-                  Container(
-                    width: 70.w,
-                    height: 22.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey,
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -656,7 +651,6 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                     ),
                   ),
                 ),
-                if (d.status != null) _buildCallStatusPill(d.status!),
               ],
             ),
           ),

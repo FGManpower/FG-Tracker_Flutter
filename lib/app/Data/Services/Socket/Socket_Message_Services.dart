@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Data/Services/Socket/status_socket_service.dart';
+import 'package:fgtracker/app/modules/status/controller/status_feed_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:get/get.dart';
@@ -11,6 +14,7 @@ import 'package:socket_io_common/src/util/event_emitter.dart';
 void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
   if (kDebugMode) {
     developer.log(message, error: error, stackTrace: stackTrace, name: name ?? 'SocketMessageService');
+    debugPrint("[${name ?? 'Socket'}] $message");
   }
 }
 
@@ -129,6 +133,44 @@ class SocketMessageService extends GetxService {
       log("USER ID: $userId");
       log("GROUP ID: ${groupId ?? 'NULL'}");
     });
+
+    void handleStatusDeleted(dynamic data) {
+      if (data == null) return;
+      log("[ChatSocket] status:deleted received: $data");
+      Map<String, dynamic>? map;
+      if (data is Map) {
+        map = Map<String, dynamic>.from(data);
+      } else if (data is String) {
+        try {
+          final decoded = jsonDecode(data);
+          if (decoded is Map) {
+            map = Map<String, dynamic>.from(decoded);
+          }
+        } catch (_) {}
+      }
+      if (map != null) {
+        if (Get.isRegistered<StatusSocketService>()) {
+          Get.find<StatusSocketService>().onStatusDeletedEvent.value = map;
+          Get.find<StatusSocketService>().onStatusDeletedEvent.refresh();
+        } else if (Get.isRegistered<StatusFeedController>()) {
+          final int deletedStatusId = map['statusId'] is int
+              ? map['statusId']
+              : int.tryParse(map['statusId']?.toString() ?? '') ?? 0;
+          final int creatorUserId = map['userId'] is int
+              ? map['userId']
+              : int.tryParse(map['userId']?.toString() ?? '') ?? 0;
+          if (deletedStatusId > 0) {
+            Get.find<StatusFeedController>().onStatusDeletedReceived(
+              deletedStatusId,
+              creatorUserId,
+            );
+          }
+        }
+      }
+    }
+
+    _socket?.on('status:deleted', handleStatusDeleted);
+    _socket?.on('status:delete', handleStatusDeleted);
 
     log("SOCKET INIT COMPLETED — WAITING FOR CONNECTION");
     log("===========================================");
@@ -323,38 +365,69 @@ class SocketMessageService extends GetxService {
     required String userId,
     required String userName,
   }) {
+    final payload = {
+      "groupId": groupId,
+      "userId": userId,
+      "senderId": userId,
+      "userName": userName,
+      "senderName": userName,
+      "isTyping": true,
+    };
+    log("EMIT group_typing => $payload");
     if (!isSocketConnected) return;
     try {
-      socket.emit("group_typing", {
-        "groupId": groupId,
-        "userId": userId,
-        "userName": userName,
-      });
-    } catch (_) {}
+      socket.emit("group_typing", payload);
+    } catch (e) {
+      log("Error emitting group_typing: $e");
+    }
   }
 
   void sendGroupStopTyping({
     required int groupId,
     required String userId,
+    String? userName,
   }) {
+    final payload = {
+      "groupId": groupId,
+      "userId": userId,
+      "senderId": userId,
+      if (userName != null) "userName": userName,
+      if (userName != null) "senderName": userName,
+      "isTyping": false,
+    };
+    log("EMIT group_stop_typing => $payload");
     if (!isSocketConnected) return;
     try {
-      socket.emit("group_stop_typing", {
-        "groupId": groupId,
-        "userId": userId,
-      });
-    } catch (_) {}
+      socket.emit("group_stop_typing", payload);
+    } catch (e) {
+      log("Error emitting group_stop_typing: $e");
+    }
   }
 
   void listenGroupTyping({
     required Function(dynamic) onTyping,
     required Function(dynamic) onStopTyping,
   }) {
-    if (!isSocketConnected) return;
+    final s = _socket;
+    if (s == null) {
+      log("listenGroupTyping skipped: _socket is null");
+      return;
+    }
+    s.off("group_typing");
+    s.off("group_stop_typing");
+    s.on("group_typing", (data) {
+      log("RECEIVED group_typing => $data");
+      onTyping(data);
+    });
+    s.on("group_stop_typing", (data) {
+      log("RECEIVED group_stop_typing => $data");
+      onStopTyping(data);
+    });
+  }
+
+  void stopListeningGroupTyping() {
     _socket?.off("group_typing");
     _socket?.off("group_stop_typing");
-    _socket?.on("group_typing", (data) => onTyping(data));
-    _socket?.on("group_stop_typing", (data) => onStopTyping(data));
   }
 
   Future<void> initPrivateChat(
@@ -382,7 +455,7 @@ class SocketMessageService extends GetxService {
 
           log("SAVED CHAT ID => $_privateChatId");
 
-          onJoined?.call(data);
+          onJoined.call(data);
         });
       }
 
@@ -717,41 +790,76 @@ class SocketMessageService extends GetxService {
     required String chatId,
     required String userId,
     required String otherUserId,
+    String? userName,
   }) {
+    final payload = {
+      "chatId": chatId,
+      "userId": userId,
+      "senderId": userId,
+      "otherUserId": otherUserId,
+      "receiverId": otherUserId,
+      if (userName != null) "userName": userName,
+      if (userName != null) "senderName": userName,
+      "isTyping": true,
+    };
+    log("EMIT private typing => $payload");
     if (!isPrivateChatSocketConnected) return;
     try {
-      _privateChatSocket?.emit("typing", {
-        "chatId": chatId,
-        "userId": userId,
-        "otherUserId": otherUserId,
-      });
-    } catch (_) {}
+      _privateChatSocket?.emit("typing", payload);
+    } catch (e) {
+      log("Error emitting private typing: $e");
+    }
   }
 
   void sendPrivateStopTyping({
     required String chatId,
     required String userId,
     required String otherUserId,
+    String? userName,
   }) {
+    final payload = {
+      "chatId": chatId,
+      "userId": userId,
+      "senderId": userId,
+      "otherUserId": otherUserId,
+      "receiverId": otherUserId,
+      if (userName != null) "userName": userName,
+      if (userName != null) "senderName": userName,
+      "isTyping": false,
+    };
+    log("EMIT private stop_typing => $payload");
     if (!isPrivateChatSocketConnected) return;
     try {
-      _privateChatSocket?.emit("stop_typing", {
-        "chatId": chatId,
-        "userId": userId,
-        "otherUserId": otherUserId,
-      });
-    } catch (_) {}
+      _privateChatSocket?.emit("stop_typing", payload);
+    } catch (e) {
+      log("Error emitting private stop_typing: $e");
+    }
   }
 
   void listenPrivateTyping({
     required Function(dynamic) onTyping,
     required Function(dynamic) onStopTyping,
   }) {
-    if (!isPrivateChatSocketConnected) return;
+    final s = _privateChatSocket;
+    if (s == null) {
+      log("listenPrivateTyping skipped: _privateChatSocket is null");
+      return;
+    }
+    s.off("typing");
+    s.off("stop_typing");
+    s.on("typing", (data) {
+      log("RECEIVED private typing => $data");
+      onTyping(data);
+    });
+    s.on("stop_typing", (data) {
+      log("RECEIVED private stop_typing => $data");
+      onStopTyping(data);
+    });
+  }
+
+  void stopListeningPrivateTyping() {
     _privateChatSocket?.off("typing");
     _privateChatSocket?.off("stop_typing");
-    _privateChatSocket?.on("typing", (data) => onTyping(data));
-    _privateChatSocket?.on("stop_typing", (data) => onStopTyping(data));
   }
 
   void initPrivateChatListSocket(

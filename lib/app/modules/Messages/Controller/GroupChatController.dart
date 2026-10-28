@@ -90,9 +90,12 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
   RxInt highlightedMessageId = (-1).obs;
   final RxSet<int> uploadingVideoIndexes = <int>{}.obs;
+  final RxMap<String, String> groupTypingUsers = <String, String>{}.obs;
+  final RxString groupTypingText = "".obs;
   RxString groupTypingUser = "".obs;
+  DateTime? _lastGroupTypingEmitTime;
   Timer? _groupTypingDebounceTimer;
-  Timer? _groupTypingResetTimer;
+  final Map<String, Timer> _groupTypingUserTimers = {};
   final RxMap<int, double> videoUploadProgress = <int, double>{}.obs;
   final RxString floatingDate = "".obs;
   final RxBool showFloatingDate = false.obs;
@@ -424,24 +427,111 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     socketService.listenGroupTyping(
       onTyping: (data) {
         try {
-          if (data is Map) {
-            final uid = data["userId"]?.toString();
-            final currentUserId =
-                Global.storageServices.get(PrefConst.userId)?.toString();
-            if (uid != null && uid != currentUserId) {
-              final name = data["userName"]?.toString() ?? "Someone";
-              groupTypingUser.value = name;
-              _groupTypingResetTimer?.cancel();
-              _groupTypingResetTimer = Timer(const Duration(seconds: 3), () {
-                if (!isClosed) groupTypingUser.value = "";
-              });
+          if (data is! Map) return;
+          final dataMap = Map<String, dynamic>.from(data);
+          final inner = dataMap['message'] is Map
+              ? Map<String, dynamic>.from(dataMap['message'])
+              : (dataMap['data'] is Map
+                  ? Map<String, dynamic>.from(dataMap['data'])
+                  : dataMap);
+
+          final eventGroupId = int.tryParse(
+            (inner["groupId"] ??
+                    inner["group_id"] ??
+                    dataMap["groupId"] ??
+                    dataMap["group_id"] ??
+                    "")
+                .toString(),
+          );
+
+          if (eventGroupId != null && eventGroupId != groupId) return;
+
+          final uid = (inner["userId"] ??
+                  inner["user_id"] ??
+                  inner["senderId"] ??
+                  inner["sender_id"] ??
+                  dataMap["userId"] ??
+                  dataMap["senderId"])
+              ?.toString();
+
+          final currentUserId =
+              Global.storageServices.get(PrefConst.userId)?.toString();
+
+          if (uid == null || uid.isEmpty || uid == currentUserId) return;
+
+          String? resolvedName;
+          final member = groupMembers.firstWhereOrNull(
+            (m) => m.userId?.toString() == uid,
+          );
+          if (member?.name != null && member!.name!.trim().isNotEmpty) {
+            resolvedName = member.name!.trim();
+          } else {
+            final rawName = (inner["userName"] ??
+                    inner["senderName"] ??
+                    dataMap["userName"] ??
+                    dataMap["senderName"])
+                ?.toString()
+                .trim();
+            if (rawName != null && rawName.isNotEmpty && rawName != "Someone") {
+              resolvedName = rawName;
             }
           }
-        } catch (_) {}
+          final finalName = resolvedName ?? "Someone";
+
+          groupTypingUsers[uid] = finalName;
+          _updateGroupTypingText();
+          debugPrint("[TYPING] Group typing active: ${groupTypingText.value}");
+
+          _groupTypingUserTimers[uid]?.cancel();
+          _groupTypingUserTimers[uid] =
+              Timer(const Duration(milliseconds: 4500), () {
+            if (!isClosed) {
+              groupTypingUsers.remove(uid);
+              _groupTypingUserTimers.remove(uid);
+              _updateGroupTypingText();
+              debugPrint("[TYPING] Group typing timer expired for $uid: ${groupTypingText.value}");
+            }
+          });
+        } catch (e) {
+          debugPrint("Error in onGroupTyping: $e");
+        }
       },
       onStopTyping: (data) {
-        _groupTypingResetTimer?.cancel();
-        groupTypingUser.value = "";
+        try {
+          if (data is! Map) return;
+          final dataMap = Map<String, dynamic>.from(data);
+          final inner = dataMap['message'] is Map
+              ? Map<String, dynamic>.from(dataMap['message'])
+              : (dataMap['data'] is Map
+                  ? Map<String, dynamic>.from(dataMap['data'])
+                  : dataMap);
+
+          final eventGroupId = int.tryParse(
+            (inner["groupId"] ??
+                    inner["group_id"] ??
+                    dataMap["groupId"] ??
+                    dataMap["group_id"] ??
+                    "")
+                .toString(),
+          );
+          if (eventGroupId != null && eventGroupId != groupId) return;
+
+          final uid = (inner["userId"] ??
+                  inner["user_id"] ??
+                  inner["senderId"] ??
+                  inner["sender_id"] ??
+                  dataMap["userId"] ??
+                  dataMap["senderId"])
+              ?.toString();
+
+          if (uid != null && uid.isNotEmpty) {
+            _groupTypingUserTimers[uid]?.cancel();
+            _groupTypingUserTimers.remove(uid);
+            groupTypingUsers.remove(uid);
+            _updateGroupTypingText();
+            debugPrint("[TYPING] Group typing stopped for $uid: ${groupTypingText.value}");
+          }
+        } catch (_) {}
       },
     );
 
@@ -450,34 +540,75 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     getGroupMembers();
   }
 
+  void _updateGroupTypingText() {
+    final count = groupTypingUsers.length;
+    if (count == 0) {
+      groupTypingText.value = "";
+      groupTypingUser.value = "";
+    } else if (count == 1) {
+      final name = groupTypingUsers.values.first;
+      groupTypingText.value = "$name is typing...";
+      groupTypingUser.value = name;
+    } else if (count == 2) {
+      final names = groupTypingUsers.values.toList();
+      groupTypingText.value = "${names[0]}, ${names[1]} are typing...";
+      groupTypingUser.value = "${names[0]}, ${names[1]}";
+    } else {
+      groupTypingText.value = "$count people are typing...";
+      groupTypingUser.value = "$count people";
+    }
+  }
+
   void onInputTextChanged(String text) {
     final currentUserId =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
     final currentUserName =
         Global.storageServices.get(PrefConst.userName)?.toString() ?? "Someone";
 
-    if (text.trim().isNotEmpty) {
-      if (_groupTypingDebounceTimer?.isActive != true) {
+    if (currentUserId.isEmpty) return;
+
+    final trimmed = text.trim();
+    if (trimmed.isNotEmpty) {
+      final now = DateTime.now();
+      // Throttle: emit immediately, then re-emit at most once every 2.5 seconds while typing continues
+      if (_lastGroupTypingEmitTime == null ||
+          now.difference(_lastGroupTypingEmitTime!).inMilliseconds >= 2500) {
+        _lastGroupTypingEmitTime = now;
         socketService.sendGroupTyping(
           groupId: groupId,
           userId: currentUserId,
           userName: currentUserName,
         );
       }
+
+      // Debounce: reset inactivity timer. After 2.5s without typing, emit stop typing
       _groupTypingDebounceTimer?.cancel();
-      _groupTypingDebounceTimer = Timer(const Duration(seconds: 2), () {
-        socketService.sendGroupStopTyping(
-          groupId: groupId,
-          userId: currentUserId,
-        );
+      _groupTypingDebounceTimer = Timer(const Duration(milliseconds: 2500), () {
+        _sendGroupStopTypingNow();
       });
     } else {
-      _groupTypingDebounceTimer?.cancel();
+      _sendGroupStopTypingNow();
+    }
+  }
+
+  void _sendGroupStopTypingNow() {
+    _groupTypingDebounceTimer?.cancel();
+    _lastGroupTypingEmitTime = null;
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+    final currentUserName =
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? "Someone";
+    if (currentUserId.isNotEmpty) {
       socketService.sendGroupStopTyping(
         groupId: groupId,
         userId: currentUserId,
+        userName: currentUserName,
       );
     }
+  }
+
+  void onInputFocusLost() {
+    _sendGroupStopTypingNow();
   }
 
   Future<void> addVideos(List<String> paths) async {
@@ -578,6 +709,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     required TextEditingController textController,
   }) async {
     if (isSending.value) return;
+    _sendGroupStopTypingNow();
     isSending.value = true;
 
     try {
@@ -1638,7 +1770,23 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _sendGroupStopTypingNow();
+    }
+  }
+
+  @override
   void onClose() {
+    _sendGroupStopTypingNow();
+    for (final timer in _groupTypingUserTimers.values) {
+      timer.cancel();
+    }
+    _groupTypingUserTimers.clear();
+    groupTypingUsers.clear();
+    socketService.stopListeningGroupTyping();
     ChatTranslationService.instance.resetVisibility();
     ChatTranslationService.instance.stopAudio();
     WidgetsBinding.instance.removeObserver(this);
@@ -1649,8 +1797,6 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     focusNode.dispose();
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
-    _groupTypingDebounceTimer?.cancel();
-    _groupTypingResetTimer?.cancel();
     super.onClose();
   }
 

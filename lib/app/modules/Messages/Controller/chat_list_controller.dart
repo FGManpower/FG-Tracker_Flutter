@@ -7,6 +7,7 @@ import '../../../Core/constant/pref_res.dart';
 import '../../../Core/values/global.dart';
 import '../../../Data/Repositories/GetMessageRepo.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -184,6 +185,23 @@ class ChatListController extends GetxController {
       manuallyUnreadChatKeys.refresh();
       privateChats.refresh();
       await _saveManuallyUnreadKeys();
+      _syncChattingNotificationMarker();
+    }
+  }
+
+  void _syncChattingNotificationMarker() {
+    if (!Get.isRegistered<NotificationMarkerService>()) return;
+    final markerService = NotificationMarkerService.instance;
+    final hasPrivateUnread = privateChats.any((c) =>
+        (c.isGroup != true && c.chatType != 'group') &&
+        ((c.unreadCount ?? 0) > 0 || isChatMarkedUnread(c)));
+    final hasGroupUnread = privateChats.any((c) =>
+        (c.isGroup == true || c.chatType == 'group') &&
+        ((c.unreadCount ?? 0) > 0 || isChatMarkedUnread(c)));
+
+    markerService.setPrivateChatUnread(hasPrivateUnread);
+    if (hasGroupUnread) {
+      markerService.setGroupChatUnread(true);
     }
   }
 
@@ -432,6 +450,7 @@ class ChatListController extends GetxController {
       }
 
       privateChats.refresh();
+      _syncChattingNotificationMarker();
     } catch (e, stackTrace) {
     } finally {
       isLoading.value = false;
@@ -587,6 +606,7 @@ class ChatListController extends GetxController {
         }
         privateChats.assignAll(_sortPinnedChats(uniqueMap.values.toList()));
         privateChats.refresh();
+        _syncChattingNotificationMarker();
       }
     } catch (_) {}
   }
@@ -780,6 +800,7 @@ class ChatListController extends GetxController {
         privateChats.add(updatedChat);
         privateChats.assignAll(_sortPinnedChats(privateChats));
         privateChats.refresh();
+        _syncChattingNotificationMarker();
 
         return;
       }
@@ -800,6 +821,7 @@ class ChatListController extends GetxController {
       privateChats[index] = mergedChat;
       privateChats.assignAll(_sortPinnedChats(privateChats));
       privateChats.refresh();
+      _syncChattingNotificationMarker();
     } catch (e, stackTrace) {}
   }
 
@@ -1086,6 +1108,7 @@ class ChatListController extends GetxController {
     }
     chat.unreadCount = 0;
     privateChats.refresh();
+    _syncChattingNotificationMarker();
   }
 
   void deleteChat(PrivateChatModel chat) {

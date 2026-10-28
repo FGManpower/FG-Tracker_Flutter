@@ -97,6 +97,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   RxBool isPeerOnline = false.obs;
   final RxString peerLastSeen = "Offline".obs;
   final RxBool isPeerTyping = false.obs;
+  DateTime? _lastTypingEmitTime;
   Timer? _typingDebounceTimer;
   Timer? _peerTypingResetTimer;
   RxString privateChatId = "".obs;
@@ -151,14 +152,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     if (Get.isRegistered<ChatListController>()) {
       Get.find<ChatListController>().clearManualUnreadForPrivate(
-        userId: memberData?.userId,
+        userId: memberData.userId,
         chatId: arguments?['chatId'],
       );
     }
 
     log("========== CHAT DEBUG 7: MEMBER DATA ==========");
     log("MEMBER DATA => $memberData");
-    log("MEMBER USER ID => ${memberData?.userId}");
+    log("MEMBER USER ID => ${memberData.userId}");
 
     log("========== CHAT DEBUG 8: BEFORE INITIALIZE ==========");
 
@@ -199,11 +200,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     textEditingController.dispose();
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
-    _typingDebounceTimer?.cancel();
+    _sendPrivateStopTypingNow();
     _peerTypingResetTimer?.cancel();
     final currentUserId =
         Global.storageServices.get(PrefConst.userId)?.toString();
-    final receiverId = memberData?.userId?.toString();
+    final receiverId = memberData.userId?.toString();
     if (currentUserId != null && receiverId != null) {
       socketService.leavePrivateChat(
         userId: currentUserId,
@@ -237,6 +238,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _sendPrivateStopTypingNow();
+    }
     if (state == AppLifecycleState.resumed) {
       final picker = ImagePicker();
       try {
@@ -316,39 +321,58 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   void onInputTextChanged(String text) {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
-    final receiverId = memberData?.userId?.toString() ?? "";
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+    final currentUserName =
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? "Someone";
+    final receiverId = memberData.userId?.toString() ?? "";
 
-    if (text.trim().isNotEmpty) {
-      if (_typingDebounceTimer?.isActive != true) {
-        if (privateChatId.value.isNotEmpty && receiverId.isNotEmpty) {
-          socketService.sendPrivateTyping(
-            chatId: privateChatId.value,
-            userId: currentUserId,
-            otherUserId: receiverId,
-          );
-        }
-      }
-      _typingDebounceTimer?.cancel();
-      _typingDebounceTimer = Timer(const Duration(seconds: 2), () {
-        if (privateChatId.value.isNotEmpty && receiverId.isNotEmpty) {
-          socketService.sendPrivateStopTyping(
-            chatId: privateChatId.value,
-            userId: currentUserId,
-            otherUserId: receiverId,
-          );
-        }
-      });
-    } else {
-      _typingDebounceTimer?.cancel();
-      if (privateChatId.value.isNotEmpty && receiverId.isNotEmpty) {
-        socketService.sendPrivateStopTyping(
+    if (receiverId.isEmpty || currentUserId.isEmpty) return;
+
+    final trimmed = text.trim();
+    if (trimmed.isNotEmpty) {
+      final now = DateTime.now();
+      // Throttle: emit immediately, then re-emit at most once every 2.5 seconds while typing continues
+      if (_lastTypingEmitTime == null ||
+          now.difference(_lastTypingEmitTime!).inMilliseconds >= 2500) {
+        _lastTypingEmitTime = now;
+        socketService.sendPrivateTyping(
           chatId: privateChatId.value,
           userId: currentUserId,
           otherUserId: receiverId,
+          userName: currentUserName,
         );
       }
+
+      // Debounce: reset inactivity timer. After 2.5s without typing, emit stop typing
+      _typingDebounceTimer?.cancel();
+      _typingDebounceTimer = Timer(const Duration(milliseconds: 2500), () {
+        _sendPrivateStopTypingNow();
+      });
+    } else {
+      _sendPrivateStopTypingNow();
     }
+  }
+
+  void _sendPrivateStopTypingNow() {
+    _typingDebounceTimer?.cancel();
+    _lastTypingEmitTime = null;
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+    final currentUserName =
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? "Someone";
+    final receiverId = memberData.userId?.toString() ?? "";
+    if (receiverId.isNotEmpty && currentUserId.isNotEmpty) {
+      socketService.sendPrivateStopTyping(
+        chatId: privateChatId.value,
+        userId: currentUserId,
+        otherUserId: receiverId,
+        userName: currentUserName,
+      );
+    }
+  }
+
+  void onInputFocusLost() {
+    _sendPrivateStopTypingNow();
   }
 
   Future<void> scrollToMessage(int messageId) async {
@@ -673,20 +697,105 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       socketService.listenPrivateTyping(
         onTyping: (data) {
           try {
-            final senderId = (data is Map ? data["userId"] : null)?.toString();
-            final targetUserId = memberData?.userId?.toString();
-            if (senderId == null || senderId == targetUserId) {
+            if (data is! Map) return;
+            final dataMap = Map<String, dynamic>.from(data);
+            final inner = dataMap['message'] is Map
+                ? Map<String, dynamic>.from(dataMap['message'])
+                : (dataMap['data'] is Map
+                    ? Map<String, dynamic>.from(dataMap['data'])
+                    : dataMap);
+
+            final currentUserId =
+                Global.storageServices.get(PrefConst.userId)?.toString();
+            final targetUserId = memberData.userId?.toString();
+
+            final senderId = (inner["userId"] ??
+                    inner["user_id"] ??
+                    inner["senderId"] ??
+                    inner["sender_id"] ??
+                    dataMap["userId"] ??
+                    dataMap["senderId"])
+                ?.toString();
+
+            final eventChatId = (inner["chatId"] ??
+                    inner["chat_id"] ??
+                    dataMap["chatId"] ??
+                    dataMap["chat_id"])
+                ?.toString();
+
+            // Ignore events sent by myself
+            if (senderId != null && senderId == currentUserId) return;
+
+            // Match if senderId is the peer we are chatting with, or matches chatId
+            final isForThisChat = (targetUserId != null &&
+                    targetUserId.isNotEmpty &&
+                    senderId == targetUserId) ||
+                (privateChatId.value.isNotEmpty &&
+                    eventChatId != null &&
+                    eventChatId == privateChatId.value);
+
+            if (isForThisChat) {
+              debugPrint("[TYPING] Peer typing started: $targetUserId in chat ${privateChatId.value}");
               isPeerTyping.value = true;
               _peerTypingResetTimer?.cancel();
-              _peerTypingResetTimer = Timer(const Duration(seconds: 3), () {
-                if (!isClosed) isPeerTyping.value = false;
+              _peerTypingResetTimer =
+                  Timer(const Duration(milliseconds: 4000), () {
+                if (!isClosed) {
+                  debugPrint("[TYPING] Peer typing reset timer expired");
+                  isPeerTyping.value = false;
+                }
               });
             }
-          } catch (_) {}
+          } catch (e) {
+            log("Error in onTyping listener: $e");
+          }
         },
         onStopTyping: (data) {
-          _peerTypingResetTimer?.cancel();
-          isPeerTyping.value = false;
+          try {
+            if (data is Map) {
+              final dataMap = Map<String, dynamic>.from(data);
+              final inner = dataMap['message'] is Map
+                  ? Map<String, dynamic>.from(dataMap['message'])
+                  : (dataMap['data'] is Map
+                      ? Map<String, dynamic>.from(dataMap['data'])
+                      : dataMap);
+
+              final targetUserId = memberData.userId?.toString();
+              final senderId = (inner["userId"] ??
+                      inner["user_id"] ??
+                      inner["senderId"] ??
+                      inner["sender_id"] ??
+                      dataMap["userId"] ??
+                      dataMap["senderId"])
+                  ?.toString();
+
+              final eventChatId = (inner["chatId"] ??
+                      inner["chat_id"] ??
+                      dataMap["chatId"] ??
+                      dataMap["chat_id"])
+                  ?.toString();
+
+              final isForThisChat = (targetUserId != null &&
+                      targetUserId.isNotEmpty &&
+                      senderId == targetUserId) ||
+                  (privateChatId.value.isNotEmpty &&
+                      eventChatId != null &&
+                      eventChatId == privateChatId.value);
+
+              if (isForThisChat) {
+                debugPrint("[TYPING] Peer typing stopped: $targetUserId in chat ${privateChatId.value}");
+                _peerTypingResetTimer?.cancel();
+                isPeerTyping.value = false;
+              }
+            } else {
+              debugPrint("[TYPING] Peer typing stopped (data not map)");
+              _peerTypingResetTimer?.cancel();
+              isPeerTyping.value = false;
+            }
+          } catch (_) {
+            _peerTypingResetTimer?.cancel();
+            isPeerTyping.value = false;
+          }
         },
       );
 
@@ -861,6 +970,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     required TextEditingController textController,
   }) async {
     if (isSending.value) return;
+    _sendPrivateStopTypingNow();
     isSending.value = true;
 
     final text = textController.text.trim();
