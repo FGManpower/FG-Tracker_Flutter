@@ -624,7 +624,7 @@ private let candidateTokenPrefKeys = [
         }
 
         if name == "speaker" {
-            return [.defaultToSpeaker]
+             return [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker]
         }
 
         if name == "bluetooth" {
