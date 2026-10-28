@@ -64,7 +64,7 @@ class SocketService extends GetxService {
 
       // Option B: Dedicated notification_markers socket event
       socket.on("notification_markers", (res) {
-        log("[SocketService] notification_markers received: $res");
+        // log("[SocketService] notification_markers received: $res");
         try {
           if (res is Map) {
             final data = res['data'] ?? res;
