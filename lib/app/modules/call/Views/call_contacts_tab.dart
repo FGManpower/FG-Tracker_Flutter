@@ -326,6 +326,10 @@ class _CallContactsTabState extends State<CallContactsTab>
                       return ContactCard(
                         user: user,
                         onTapCard: () {
+                          if (controller.isDialPadOpen.value) {
+                            _startCall(user, false);
+                            return;
+                          }
                           Get.to(
                                 () => ContactProfileScreen(
                               contactData: MemberData(

@@ -59,8 +59,6 @@ class ContactController extends GetxController {
   static const int contactPageLimit = 10;
 
   /// UI par ek baar me itne registered contacts dikhenge (client-side paging).
-  /// getAllUser API paginated nahi hai (sab users ek saath aate hain), isliye
-  /// merged list ko screen par chunks me dikhate hain.
   static const int uiPageSize = 20;
 
   static const int _minMatchesPerLoad = 10;
@@ -145,8 +143,6 @@ class ContactController extends GetxController {
 
   // ───────────────────────── Permission ─────────────────────────
 
-  /// Concurrent calls ek hi check share karti hain (dialog 2 baar nahi aayega).
-  /// [prompt] true ho to pehli baar system dialog dikhayega.
   Future<void> checkContactPermission({bool prompt = true}) {
     return _permCheckFuture ??=
         _checkPermission(prompt).whenComplete(() => _permCheckFuture = null);
@@ -177,8 +173,6 @@ class ContactController extends GetxController {
     }
   }
 
-  /// "Allow Access" button par: dialog dikhata hai. true = granted.
-  /// false aaye to UI settings page par bhejega.
   Future<bool> requestContactPermission() async {
     try {
       final bool granted =
@@ -205,7 +199,6 @@ class ContactController extends GetxController {
 
   Future<void> _loadPhoneBook() {
     return _phoneBookFuture ??= _readPhoneBook().catchError((Object e) {
-      // fail hua future cache nahi hona chahiye, warna hamesha fail rahega
       _phoneBookFuture = null;
       throw e;
     });
@@ -256,7 +249,6 @@ class ContactController extends GetxController {
   void _mergeUsers(List<UserListData> incoming) {
     if (incoming.isEmpty) return;
 
-    // Silent refresh me pehla merge purani list ko replace karta hai
     final List<UserListData> merged = _replaceOnNextMerge
         ? <UserListData>[]
         : List<UserListData>.from(allUserProfileData);
@@ -381,8 +373,6 @@ class ContactController extends GetxController {
 
   // ───────────────────────── Main loader ─────────────────────────
 
-  /// [silent] = true: list clear nahi hoti, skeleton nahi aata. Naya data
-  /// aate hi purani list replace hoti hai aur current search filter dobara lagta hai.
   Future<void> getRegisteredContacts({
     bool loadMore = false,
     bool silent = false,
@@ -407,7 +397,6 @@ class ContactController extends GetxController {
       _replaceOnNextMerge = true;
       _session++;
       _allUsersFuture = null;
-      // silent refresh me _visibleCount reset nahi hota (scroll position bani rahe)
     } else {
       if (contactLoading.value || _isRefreshing) return;
       contactLoading.value = true;
@@ -494,11 +483,9 @@ class ContactController extends GetxController {
       _mergeUsers(matchedUsers);
 
       if (silent) {
-        // all-users call ka wait karo taki replace sahi ho
         final bool ok = _allUsersFuture != null ? await _allUsersFuture! : true;
         if (session != _session) return;
 
-        // Server ne sach me kuch nahi diya -> purani list hata do
         if (_replaceOnNextMerge && ok && !groupApiFailed) {
           _replaceOnNextMerge = false;
           allUserProfileData.clear();
@@ -520,7 +507,6 @@ class ContactController extends GetxController {
 
       filterUsers(searchQuery.value);
     } catch (e) {
-      // silent fail par purani list screen par rehti hai
       if (!loadMore) responseError.value = e.toString();
     } finally {
       if (loadMore) {
@@ -538,9 +524,6 @@ class ContactController extends GetxController {
     }
   }
 
-  /// Scroll end par call hota hai.
-  /// 1) Pehle local merged list me se agle [uiPageSize] contacts dikhata hai (instant).
-  /// 2) Local list khatam ho gayi to server ka agla page (group member API) laata hai.
   Future<void> loadMoreContacts() async {
     if (filteredUsers.length < _fullFiltered.length) {
       _visibleCount += uiPageSize;
@@ -579,7 +562,6 @@ class ContactController extends GetxController {
   Future<void> refreshContacts() =>
       silentRefresh(force: true, reloadPhoneBook: true);
 
-  /// Contacts tab open hone par.
   Future<void> onTabOpened() async {
     final bool wasLoaded = _initialLoadDone;
     await checkContactPermission();
@@ -588,7 +570,6 @@ class ContactController extends GetxController {
     }
   }
 
-  /// App background se wapas aane par (settings se permission dekar aane par bhi).
   Future<void> onAppResumed() async {
     await checkContactPermission(prompt: false);
     if (isContactPermissionGranted.value && _initialLoadDone) {
@@ -598,7 +579,6 @@ class ContactController extends GetxController {
 
   // ───────────────────────── Search + paging ─────────────────────────
 
-  /// _fullFiltered ka pehla [_visibleCount] hissa filteredUsers me daalta hai.
   void _applyPage() {
     if (_fullFiltered.length <= _visibleCount) {
       filteredUsers.value = List<UserListData>.from(_fullFiltered);
@@ -607,6 +587,8 @@ class ContactController extends GetxController {
       List<UserListData>.from(_fullFiltered.take(_visibleCount));
     }
   }
+
+  Timer? _searchDebounceTimer;
 
   void filterUsers(String query) {
     final String q = query.trim().toLowerCase();
@@ -620,11 +602,43 @@ class ContactController extends GetxController {
 
     final String digits = q.replaceAll(_nonDigit, '');
 
+    // Extract core query digits without leading country code (91) or trunk prefix (0)
+    String queryCore = digits;
+    if (queryCore.length > 2 && queryCore.startsWith('91')) {
+      queryCore = queryCore.substring(2);
+    } else if (queryCore.length > 1 && queryCore.startsWith('0')) {
+      queryCore = queryCore.substring(1);
+    }
+
     bool match(UserListData user) {
       final String name = (user.name ?? '').toLowerCase();
-      final String phone = (user.mobileNo ?? '').replaceAll(_nonDigit, '');
       if (name.contains(q)) return true;
-      if (digits.isNotEmpty && phone.contains(digits)) return true;
+
+      if (digits.isEmpty) return false;
+
+      final String rawPhone = user.mobileNo ?? '';
+      final String phoneDigits = rawPhone.replaceAll(_nonDigit, '');
+      if (phoneDigits.isEmpty) return false;
+
+      // 1. Direct digit match anywhere (start, middle, end)
+      if (phoneDigits.contains(digits)) return true;
+
+      // 2. Contact phone without 91 or leading 0
+      String phoneCore = phoneDigits;
+      if (phoneCore.length >= 12 && phoneCore.startsWith('91')) {
+        phoneCore = phoneCore.substring(2);
+      } else if (phoneCore.length >= 11 && phoneCore.startsWith('0')) {
+        phoneCore = phoneCore.substring(1);
+      }
+
+      if (phoneCore.contains(digits)) return true;
+
+      // 3. Cross match with query core
+      if (queryCore.isNotEmpty) {
+        if (phoneDigits.contains(queryCore)) return true;
+        if (phoneCore.contains(queryCore)) return true;
+      }
+
       return false;
     }
 
@@ -636,21 +650,39 @@ class ContactController extends GetxController {
   void applySearch(String query) {
     if (searchQuery.value == query) return;
     searchQuery.value = query;
-    _visibleCount = uiPageSize; // nayi search = paging dobara pehle page se
+    _visibleCount = uiPageSize;
     filterUsers(query);
+  }
+
+  void _onSearchOrDialChanged() {
+    if (!Get.isRegistered<CallController>()) return;
+    final callCtrl = CallController.instance;
+    final String query = (callCtrl.isDialPadOpen.value &&
+        callCtrl.dialNumber.value.trim().isNotEmpty)
+        ? callCtrl.dialNumber.value.trim()
+        : callCtrl.searchQuery.value.trim();
+
+    _searchDebounceTimer?.cancel();
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 60), () {
+      applySearch(query);
+    });
   }
 
   @override
   void onInit() {
     super.onInit();
     if (Get.isRegistered<CallController>()) {
-      ever<String>(CallController.instance.searchQuery, applySearch);
+      final callCtrl = CallController.instance;
+      ever<String>(callCtrl.searchQuery, (_) => _onSearchOrDialChanged());
+      ever<String>(callCtrl.dialNumber, (_) => _onSearchOrDialChanged());
+      ever<bool>(callCtrl.isDialPadOpen, (_) => _onSearchOrDialChanged());
     }
     checkContactPermission();
   }
 
   @override
   void onClose() {
+    _searchDebounceTimer?.cancel();
     responseError.close();
     contactLoading.close();
     isFirstLoadDone.close();
