@@ -15,7 +15,7 @@ class HttpUtil {
   static final HttpUtil _instance = HttpUtil._internal();
 
   factory HttpUtil() {
-    return _instance;chat
+    return _instance;
   }
 
   ConstRes api = ConstRes();
