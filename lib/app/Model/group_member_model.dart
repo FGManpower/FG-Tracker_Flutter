@@ -668,6 +668,7 @@ class User {
   bool? isLocationSharing;
   bool? isOnline;
   String? lastSeen;
+  String? privateModeStartedAt;
   bool? isSubscribed;
   String? subscriptionStatus;
   String? accessType;
@@ -681,6 +682,7 @@ class User {
     this.isLocationSharing,
     this.isOnline,
     this.lastSeen,
+    this.privateModeStartedAt,
     this.isSubscribed,
     this.subscriptionStatus,
     this.accessType,
@@ -696,6 +698,8 @@ class User {
         _toBool(json['isLocationSharing'] ?? json['locationSharing']);
     isOnline = _toBool(json['isOnline'] ?? json['online']);
     lastSeen = json['lastSeen']?.toString();
+    privateModeStartedAt = json['privateModeStartedAt']?.toString() ??
+        json['private_mode_started_at']?.toString();
     isSubscribed = _toBool(json['isSubscribed']);
     subscriptionStatus = json['subscriptionStatus']?.toString();
     accessType = json['accessType']?.toString();
@@ -714,6 +718,8 @@ class User {
       'isLocationSharing': isLocationSharing,
       'isOnline': isOnline,
       'lastSeen': lastSeen,
+      if (privateModeStartedAt != null)
+        'privateModeStartedAt': privateModeStartedAt,
       if (isSubscribed != null) 'isSubscribed': isSubscribed,
       if (subscriptionStatus != null) 'subscriptionStatus': subscriptionStatus,
       if (accessType != null) 'accessType': accessType,
@@ -1318,6 +1324,8 @@ class GroupMemberData {
   String? role;
   String? joinedAt;
   String? startedAt;
+  String? privateModeStartedAt;
+  bool? isMe;
   int? chatId;
   String? createdAt;
   String? subscriptionStatus;
@@ -1354,6 +1362,8 @@ class GroupMemberData {
     this.role,
     this.joinedAt,
     this.startedAt,
+    this.privateModeStartedAt,
+    this.isMe,
     this.createdAt,
     this.subscriptionStatus,
     this.subscription,
@@ -1453,6 +1463,9 @@ class GroupMemberData {
         json['joined_at']?.toString() ??
         json['joiningDate']?.toString();
     startedAt = json['startedAt']?.toString() ?? json['started_at']?.toString();
+    privateModeStartedAt = json['privateModeStartedAt']?.toString() ??
+        json['private_mode_started_at']?.toString();
+    isMe = _toBool(json['isMe'] ?? json['is_me']);
     createdAt = json['createdAt']?.toString() ?? json['created_at']?.toString();
     subscriptionStatus = json['subscriptionStatus']?.toString() ??
         json['subscription_status']?.toString();
@@ -1525,6 +1538,12 @@ class GroupMemberData {
     data['role'] = role;
     data['joinedAt'] = joinedAt;
     data['startedAt'] = startedAt;
+    if (privateModeStartedAt != null) {
+      data['privateModeStartedAt'] = privateModeStartedAt;
+    }
+    if (isMe != null) {
+      data['isMe'] = isMe;
+    }
     data['createdAt'] = createdAt;
     if (subscriptionStatus != null) {
       data['subscriptionStatus'] = subscriptionStatus;
@@ -1646,14 +1665,23 @@ class GroupMemberData {
   }
 
   String get formattedStartedAt {
-    final raw = startedAt ?? createdAt ?? lastSeen;
-    if (raw == null || raw.trim().isEmpty) return 'Just now';
-    try {
-      final dt = DateTime.parse(raw.trim());
-      return DateFormat('hh:mm a').format(dt);
-    } catch (_) {
-      return raw.trim();
+    final raw = (privateModeStartedAt != null &&
+            privateModeStartedAt!.trim().isNotEmpty &&
+            privateModeStartedAt!.trim().toLowerCase() != 'null')
+        ? privateModeStartedAt
+        : (startedAt ?? createdAt ?? lastSeen);
+    if (raw == null || raw.trim().isEmpty || raw.trim().toLowerCase() == 'null') {
+      return 'Just now';
     }
+    final parsed = Tracking.parseDateTime(raw);
+    if (parsed != null) {
+      try {
+        return DateFormat('dd MMM, hh:mm a').format(parsed);
+      } catch (_) {
+        return raw.trim();
+      }
+    }
+    return raw.trim();
   }
 
   String get formattedLastSeen {

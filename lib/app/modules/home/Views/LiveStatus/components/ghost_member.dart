@@ -519,7 +519,9 @@ class _GhostMemberState extends State<GhostMember> {
                       ),
                       SizedBox(width: 5.w),
                       Text(
-                        "Started at ${member.formattedStartedAt}",
+                        member.formattedStartedAt.toLowerCase().startsWith('started at')
+                            ? member.formattedStartedAt
+                            : "Started at ${member.formattedStartedAt}",
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interRegular,
