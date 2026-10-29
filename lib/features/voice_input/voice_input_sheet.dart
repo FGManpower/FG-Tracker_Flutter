@@ -13,7 +13,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 
 class VoiceInputSheet {
   static Future<void> show({
@@ -30,42 +29,7 @@ class VoiceInputSheet {
     FocusScope.of(context).unfocus();
 
     // 2. Microphone Permission Check (iOS & Android)
-    bool hasPermission = false;
-
-    if (Platform.isIOS) {
-      // Native iOS request (AVCaptureDevice): shows the system mic popup if not yet asked
-      final recorder = AudioRecorder();
-      hasPermission = await recorder.hasPermission();
-      recorder.dispose();
-      if (kDebugMode) {
-        debugPrint('[VT-iOS] Microphone permission: $hasPermission');
-      }
-      if (!hasPermission) {
-        // Previously denied: guide user to iOS Settings
-        if (!context.mounted) return;
-        _showPermissionDialog(context);
-        return;
-      }
-
-      // Ask Speech Recognition on mic tap too, so its popup shows right away
-      if (!await SpeechToText().hasPermission) {
-        final speechStatus = await Permission.speech.request();
-        if (kDebugMode) {
-          debugPrint('[VT-iOS] Permission.speech.request() result: $speechStatus');
-        }
-      }
-    } else {
-      // Android behaviour stays exactly the same as before
-      final micStatus = await Permission.microphone.request();
-      if (!micStatus.isGranted) {
-        if (!context.mounted) return;
-        _showPermissionDialog(context);
-        return;
-      }
-      hasPermission = true;
-    }
-
-    if (!hasPermission) return;
+    if (!await _ensurePermission(context, Permission.microphone)) return;
 
     final controller = Get.find<VoiceInputController>();
 
@@ -80,9 +44,13 @@ class VoiceInputSheet {
         onSelectVoiceToText: () async {
           Navigator.pop(context);
           // iOS: Voice-to-Text starts only if Speech Recognition is allowed
-          if (Platform.isIOS && !await SpeechToText().hasPermission) {
-            if (!context.mounted) return;
-            _showPermissionDialog(context);
+          if (Platform.isIOS &&
+              !await _ensurePermission(
+                context,
+                Permission.speech,
+                message:
+                    "Speech recognition permission is needed to convert voice to text.",
+              )) {
             return;
           }
           await controller.startVoiceToText(
@@ -106,16 +74,71 @@ class VoiceInputSheet {
     );
   }
 
-  static void _showPermissionDialog(BuildContext context) {
-    showDialog(
+  /// Returns true if [permission] is granted. Otherwise shows the custom dialog:
+  /// "Allow" (then the real system popup) when the system can still ask,
+  /// or "Open settings" when it was denied and can't be asked again.
+  static Future<bool> _ensurePermission(
+    BuildContext context,
+    Permission permission, {
+    String message = "Microphone permission is needed to use voice.",
+  }) async {
+    var status = await permission.status;
+    if (kDebugMode) {
+      debugPrint('[VoiceInput] $permission status: $status');
+    }
+    if (status.isGranted || status.isLimited) return true;
+
+    final canRequest = !status.isPermanentlyDenied && !status.isRestricted;
+    if (!context.mounted) return false;
+    final result = await _showPermissionDialog(
+      context,
+      permission: permission,
+      canRequest: canRequest,
+      message: message,
+    );
+    if (result != true) return false;
+    // Granted from Settings (dialog closed itself on resume)
+    if (!canRequest) return true;
+
+    // User tapped Allow: now show the real system popup
+    if (Platform.isIOS && permission == Permission.microphone) {
+      // Native iOS request (AVCaptureDevice)
+      final recorder = AudioRecorder();
+      final granted = await recorder.hasPermission();
+      recorder.dispose();
+      return granted;
+    }
+    status = await permission.request();
+    return status.isGranted || status.isLimited;
+  }
+
+  static Future<bool?> _showPermissionDialog(
+    BuildContext context, {
+    required Permission permission,
+    required bool canRequest,
+    required String message,
+  }) {
+    return showDialog<bool>(
       context: context,
-      builder: (ctx) => const _PermissionDialog(),
+      builder: (ctx) => _PermissionDialog(
+        permission: permission,
+        canRequest: canRequest,
+        message: message,
+      ),
     );
   }
 }
 
 class _PermissionDialog extends StatefulWidget {
-  const _PermissionDialog();
+  final Permission permission;
+  final bool canRequest;
+  final String message;
+
+  const _PermissionDialog({
+    required this.permission,
+    required this.canRequest,
+    required this.message,
+  });
 
   @override
   State<_PermissionDialog> createState() => _PermissionDialogState();
@@ -137,14 +160,14 @@ class _PermissionDialogState extends State<_PermissionDialog>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Re-check mic permission when returning from iOS Settings
-    if (state == AppLifecycleState.resumed) {
-      Permission.microphone.status.then((status) {
+    // Re-check permission when returning from Settings
+    if (state == AppLifecycleState.resumed && !widget.canRequest) {
+      widget.permission.status.then((status) {
         if (kDebugMode) {
-          debugPrint('[VT-iOS] App resumed, re-checked mic status: $status');
+          debugPrint('[VoiceInput] App resumed, re-checked status: $status');
         }
         if (status.isGranted || status.isLimited) {
-          if (mounted) Navigator.of(context).pop();
+          if (mounted) Navigator.of(context).pop(true);
         }
       });
     }
@@ -200,7 +223,7 @@ class _PermissionDialogState extends State<_PermissionDialog>
             ),
             SizedBox(height: 8.h),
             Text(
-              "Microphone permission is needed to use voice.",
+              widget.message,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14.sp,
@@ -235,7 +258,11 @@ class _PermissionDialogState extends State<_PermissionDialog>
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      openAppSettings();
+                      if (widget.canRequest) {
+                        Navigator.pop(context, true);
+                      } else {
+                        openAppSettings();
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryDarkblue,
@@ -247,7 +274,7 @@ class _PermissionDialogState extends State<_PermissionDialog>
                       ),
                     ),
                     child: Text(
-                      "Open settings",
+                      widget.canRequest ? "Allow" : "Open settings",
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,

@@ -79,7 +79,7 @@ class VoiceInputController extends GetxController {
     // Default to app language
     final appLocaleCode = Get.locale?.languageCode ?? Get.deviceLocale?.languageCode ?? 'en';
     selectedLanguage = VoiceLanguages.defaultLanguage(appLanguageCode: appLocaleCode).obs;
-    _initSpeechEngine();
+    // Speech engine init (asks mic/speech permission) runs on Voice-to-Text tap, not on chat open
   }
 
   Future<bool> _initSpeechEngine() async {
