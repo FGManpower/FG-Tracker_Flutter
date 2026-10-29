@@ -267,7 +267,7 @@ Future<void> main() async {
     );
     groupWalkieInitialize(userId);
     Socket_GroupCallService.instance.init(userId.toString());
-    SocketDashboardService().init();
+    SocketDashboardService.instance.init();
 
     StatusBinding().dependencies();
   }

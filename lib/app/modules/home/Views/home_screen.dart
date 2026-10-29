@@ -3,6 +3,7 @@ import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGuard.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/global_widget/crown_icon.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -107,6 +108,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 : RefreshIndicator(
                     onRefresh: () async {
                       controller.init();
+                      SocketDashboardService.instance.requestGroupCount();
+                      SocketService.instance.requestGroupCount();
+                      SocketService.instance.requestNotificationMarkers();
                     },
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16.w),

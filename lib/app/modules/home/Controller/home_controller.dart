@@ -58,11 +58,10 @@ class HomeController extends GetxController {
 
   init() {
     fetchInitializeData();
-
-
     fetchBanners();
     getProfileData();
-    SocketDashboardService().init();
+    SocketDashboardService.instance.init();
+    SocketDashboardService.instance.requestGroupCount();
   }
 
   Future<void> getProfileData() async {
