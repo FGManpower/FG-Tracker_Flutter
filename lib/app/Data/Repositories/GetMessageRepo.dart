@@ -32,7 +32,7 @@ class MessageRepo {
   static Future<GetMessage> privateChatHistory({
     required String chatId,
     int page = 1,
-    int limit = 10,
+    int limit = 15,
   }) async {
     final response = await HttpUtil().get(
       "/private-chat/$chatId/messages?page=$page&limit=$limit",
@@ -43,12 +43,10 @@ class MessageRepo {
 
   static Future<GetMessage> groupMessageHistory({
     required int groupId,
-    int? page,
-    int? limit,
+    int page = 1,
+    int limit = 15,
   }) async {
-    String url = "/getGroupMessageHistory?groupId=$groupId";
-    if (page != null) url += "&page=$page";
-    if (limit != null) url += "&limit=$limit";
+    final url = "/getGroupMessageHistory?groupId=$groupId&page=$page&limit=$limit";
     var response = await HttpUtil().get(url);
 
     return GetMessage.fromJson(response);
@@ -212,11 +210,21 @@ class MessageRepo {
     required int messageId,
     required String sourceType,
     required List<ForwardTarget> targets,
+    String? content,
+    String? messageType,
+    List<String>? images,
+    List<Map<String, dynamic>>? videos,
+    String? caption,
   }) async {
     final data = {
       "messageId": messageId,
       "sourceType": sourceType,
       "targets": targets.map((target) => target.toJson()).toList(),
+      if (content != null && content.isNotEmpty) "content": content,
+      if (messageType != null && messageType.isNotEmpty) "messageType": messageType,
+      if (images != null && images.isNotEmpty) "images": images,
+      if (videos != null && videos.isNotEmpty) "videos": videos,
+      if (caption != null && caption.isNotEmpty) "caption": caption,
     };
 
     debugPrint("FORWARD REQUEST: $data");

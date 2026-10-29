@@ -124,7 +124,6 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   }
 
   bool _isOnline(GroupMemberInfo m) {
-    if (m.locationSharing == false) return false;
     return Tracking().isOnline(
       rawIsOnline: m.isOnline,
       lastSeen: m.rawLastSeen,
@@ -133,7 +132,6 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   }
 
   String _statusText(GroupMemberInfo m) {
-    if (m.locationSharing == false) return "Location Hidden";
     if (_isOnline(m)) return "Online";
     if (m.rawLastSeen == null || m.rawLastSeen.toString().isEmpty) {
       return "Offline";
@@ -361,12 +359,12 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             icon: Icons.videocam_outlined,
             label: "Video Call",
             onTap: () => _initiateGroupCall(data, isVideo: true)),
-        SizedBox(width: 10.w),
-        _quickAction(
-          icon: Icons.person_add_alt_1_outlined,
-          label: "Add Members",
-          onTap: () => Utils().fluttertoast("Add members"),
-        ),
+        // SizedBox(width: 10.w),
+        // _quickAction(
+        //   icon: Icons.person_add_alt_1_outlined,
+        //   label: "Add Members",
+        //   onTap: () => Utils().fluttertoast("Add members"),
+        // ),
         SizedBox(width: 10.w),
         _quickAction(
           icon: Icons.search_rounded,
@@ -598,34 +596,34 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       padding: EdgeInsets.zero,
       child: Column(
         children: [
-          _settingTile(
-            icon: Icons.star_border_rounded,
-            iconColor: _purple,
-            title: "Starred Messages",
-            onTap: () {
-              if (chatController.pinnedMessage.value != null) {
-                Get.back();
-                chatController.scrollToPinnedMessage();
-              } else {
-                Utils().fluttertoast("No starred/pinned message");
-              }
-            },
-          ),
-          _divider(),
-          Obx(() => _settingTile(
-                icon: Icons.notifications_none_rounded,
-                iconColor: _purple,
-                title: "Notifications",
-                subtitle: notificationsOn.value ? "All Messages" : "Muted",
-                trailing: Transform.scale(
-                  scale: 0.8,
-                  child: Switch(
-                      value: notificationsOn.value,
-                      activeThumbColor: _purple,
-                      onChanged: (v) => notificationsOn.value = v),
-                ),
-              )),
-          _divider(),
+          // _settingTile(
+          //   icon: Icons.star_border_rounded,
+          //   iconColor: _purple,
+          //   title: "Starred Messages",
+          //   onTap: () {
+          //     if (chatController.pinnedMessage.value != null) {
+          //       Get.back();
+          //       chatController.scrollToPinnedMessage();
+          //     } else {
+          //       Utils().fluttertoast("No starred/pinned message");
+          //     }
+          //   },
+          // ),
+          // _divider(),
+          // Obx(() => _settingTile(
+          //       icon: Icons.notifications_none_rounded,
+          //       iconColor: _purple,
+          //       title: "Notifications",
+          //       subtitle: notificationsOn.value ? "All Messages" : "Muted",
+          //       trailing: Transform.scale(
+          //         scale: 0.8,
+          //         child: Switch(
+          //             value: notificationsOn.value,
+          //             activeThumbColor: _purple,
+          //             onChanged: (v) => notificationsOn.value = v),
+          //       ),
+          //     )),
+          // _divider(),
           _settingTile(
             icon: Icons.reply_rounded,
             iconColor: _purple,
@@ -803,17 +801,40 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
         children: [
           GestureDetector(
             onTap: !isMe ? () => _openPrivateChat(m, online) : null,
-            child: CircleAvatar(
-              radius: 22.r,
-              backgroundColor: const Color(0xFFE8E4FF),
-              backgroundImage: img != null ? NetworkImage(img) : null,
-              child: img == null
-                  ? Text(name.isNotEmpty ? name[0].toUpperCase() : "?",
-                      style: TextStyle(
-                          color: _purple,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16.sp))
-                  : null,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                CircleAvatar(
+                  radius: 22.r,
+                  backgroundColor: const Color(0xFFE8E4FF),
+                  backgroundImage: img != null ? NetworkImage(img) : null,
+                  child: img == null
+                      ? Text(name.isNotEmpty ? name[0].toUpperCase() : "?",
+                          style: TextStyle(
+                              color: _purple,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16.sp))
+                      : null,
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    width: 12.r,
+                    height: 12.r,
+                    decoration: BoxDecoration(
+                      color: online
+                          ? const Color(0xFF2BB673)
+                          : const Color(0xFF9E9E9E),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2.r,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           SizedBox(width: 10.w),

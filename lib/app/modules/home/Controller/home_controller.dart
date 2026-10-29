@@ -110,6 +110,19 @@ class HomeController extends GetxController {
           NotificationMarkerService.instance
               .updateFromMap(result.data?.toJson());
         }
+
+        // Non-destructive fallback: if marker is still false, check result.data?.chat
+        if (!NotificationMarkerService.instance.hasChattingMarker.value && result.data != null) {
+          final dynamic chatPayload = result.data?.chat;
+          if (chatPayload != null && NotificationMarkers.parseMarkerBool(chatPayload)) {
+            NotificationMarkerService.instance.hasChattingMarker.value = true;
+          } else {
+            final dynamic notifPayload = result.data?.notifications;
+            if (notifPayload is Map && NotificationMarkers.parseMarkerBool(notifPayload['chat'] ?? notifPayload['chatting'])) {
+              NotificationMarkerService.instance.hasChattingMarker.value = true;
+            }
+          }
+        }
       }
     } catch (e) {
       InitializeResponeMessage.value = e.toString();

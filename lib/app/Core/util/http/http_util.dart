@@ -6,6 +6,8 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter/foundation.dart';
+
 import '../../theme/AppText.dart';
 import 'ApiErrorHandler.dart';
 
@@ -19,14 +21,16 @@ class HttpUtil {
   ConstRes api = ConstRes();
 
   HttpUtil._internal() {
-    api.sendRequest.interceptors.add(PrettyDioLogger(
-      requestHeader: true,
-      requestBody: false,
-      responseBody: false,   // ⚡ YE ADD KIYA — bada JSON print nahi hoga
-      responseHeader: false,
-      error: true,
-      compact: true,
-    ));
+    if (kDebugMode) {
+      api.sendRequest.interceptors.add(PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: true,
+        error: true,
+        compact: true,
+      ));
+    }
   }
 
   Future<dynamic> post(String path,

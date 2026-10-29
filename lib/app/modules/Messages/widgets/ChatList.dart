@@ -248,10 +248,9 @@ class _ChatMessageSkeletonState extends State<ChatMessageSkeleton>
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 1300),
     )..repeat();
   }
 
@@ -266,119 +265,360 @@ class _ChatMessageSkeletonState extends State<ChatMessageSkeleton>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final value = _controller.value;
+        final double value = _controller.value;
+        return ShaderMask(
+          blendMode: BlendMode.srcATop,
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              begin: Alignment(-2.0 + 4.0 * value, -0.3),
+              end: Alignment(-0.5 + 4.0 * value, 0.3),
+              colors: const [
+                Color(0xFFE6E3ED),
+                Color(0xFFFBFBFE),
+                Color(0xFFE6E3ED),
+              ],
+              stops: const [0.0, 0.5, 1.0],
+            ).createShader(bounds);
+          },
+          child: ListView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(
+              horizontal: 14.w,
+              vertical: 12.h,
+            ),
+            children: [
+              // Date Header Pill
+              Center(
+                child: Container(
+                  width: 72.w,
+                  height: 22.h,
+                  margin: EdgeInsets.symmetric(vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE4E1EC),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+              ),
 
-        final shimmerColor = Color.lerp(
-          const Color(0xFFD8D5E0),
-          const Color(0xFFE8E5ED),
-          value,
-        )!;
+              // 1. Incoming Message with Avatar
+              _incomingBubble(
+                width: 220.w,
+                lines: [190.w, 130.w],
+              ),
 
-        return ListView(
-          physics: const NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.symmetric(
-            horizontal: 12.w,
-            vertical: 10.h,
+              // 2. Outgoing Message
+              _outgoingBubble(
+                width: 170.w,
+                lines: [140.w],
+              ),
+
+              // 3. Incoming Media Card (Photo/Video skeleton)
+              _incomingMediaBubble(
+                width: 210.w,
+                height: 130.h,
+              ),
+
+              // 4. Outgoing Message (2 lines)
+              _outgoingBubble(
+                width: 230.w,
+                lines: [200.w, 110.w],
+              ),
+
+              // 5. Incoming Audio / Voice Message
+              _incomingAudioBubble(
+                width: 200.w,
+              ),
+
+              // 6. Incoming Short Message
+              _incomingBubble(
+                width: 140.w,
+                lines: [110.w],
+              ),
+
+              // 7. Outgoing Short Message
+              _outgoingBubble(
+                width: 130.w,
+                lines: [95.w],
+              ),
+            ],
           ),
-          children: [
-            _bubble(
-              alignment: Alignment.centerLeft,
-              width: 185.w,
-              height: 48.h,
-              color: shimmerColor,
-            ),
-            _bubble(
-              alignment: Alignment.centerRight,
-              width: 145.w,
-              height: 38.h,
-              color: shimmerColor,
-            ),
-            _bubble(
-              alignment: Alignment.centerLeft,
-              width: 225.w,
-              height: 58.h,
-              color: shimmerColor,
-            ),
-            _bubble(
-              alignment: Alignment.centerRight,
-              width: 180.w,
-              height: 46.h,
-              color: shimmerColor,
-            ),
-            _bubble(
-              alignment: Alignment.centerLeft,
-              width: 155.w,
-              height: 38.h,
-              color: shimmerColor,
-            ),
-            _bubble(
-              alignment: Alignment.centerRight,
-              width: 210.w,
-              height: 55.h,
-              color: shimmerColor,
-            ),
-            _bubble(
-              alignment: Alignment.centerLeft,
-              width: 195.w,
-              height: 46.h,
-              color: shimmerColor,
-            ),
-            _bubble(
-              alignment: Alignment.centerRight,
-              width: 160.w,
-              height: 40.h,
-              color: shimmerColor,
-            ),
-            _bubble(
-              alignment: Alignment.centerLeft,
-              width: 235.w,
-              height: 62.h,
-              color: shimmerColor,
-            ),
-          ],
         );
       },
     );
   }
 
-  Widget _bubble({
-    required Alignment alignment,
+  Widget _incomingBubble({
     required double width,
-    required double height,
-    required Color color,
+    required List<double> lines,
   }) {
-    final isRight = alignment == Alignment.centerRight;
-
-    return Align(
-      alignment: alignment,
-      child: Container(
-        width: width,
-        height: height,
-        margin: EdgeInsets.symmetric(
-          vertical: 5.h,
-        ),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16.r),
-            topRight: Radius.circular(16.r),
-            bottomLeft: Radius.circular(
-              isRight ? 16.r : 4.r,
-            ),
-            bottomRight: Radius.circular(
-              isRight ? 4.r : 16.r,
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Container(
+            width: 28.r,
+            height: 28.r,
+            margin: EdgeInsets.only(right: 8.w, bottom: 2.h),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFFE4E1EC),
             ),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(
-                alpha: 0.025,
+          Container(
+            width: width,
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16.r),
+                topRight: Radius.circular(16.r),
+                bottomRight: Radius.circular(16.r),
+                bottomLeft: Radius.circular(4.r),
               ),
-              blurRadius: 3,
-              offset: const Offset(0, 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
             ),
-          ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final line in lines) ...[
+                  Container(
+                    width: line,
+                    height: 10.h,
+                    margin: EdgeInsets.only(bottom: 6.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE4E1EC),
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  ),
+                ],
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: Container(
+                    width: 32.w,
+                    height: 8.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE4E1EC),
+                      borderRadius: BorderRadius.circular(3.r),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _outgoingBubble({
+    required double width,
+    required List<double> lines,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Container(
+          width: width,
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEAE6F8),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16.r),
+              topRight: Radius.circular(16.r),
+              bottomLeft: Radius.circular(16.r),
+              bottomRight: Radius.circular(4.r),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final line in lines) ...[
+                Container(
+                  width: line,
+                  height: 10.h,
+                  margin: EdgeInsets.only(bottom: 6.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCD7EB),
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                ),
+              ],
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 30.w,
+                      height: 8.h,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDCD7EB),
+                        borderRadius: BorderRadius.circular(3.r),
+                      ),
+                    ),
+                    SizedBox(width: 4.w),
+                    Container(
+                      width: 12.w,
+                      height: 8.h,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDCD7EB),
+                        borderRadius: BorderRadius.circular(3.r),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _incomingMediaBubble({
+    required double width,
+    required double height,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Container(
+            width: 28.r,
+            height: 28.r,
+            margin: EdgeInsets.only(right: 8.w, bottom: 2.h),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFFE4E1EC),
+            ),
+          ),
+          Container(
+            width: width,
+            height: height,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16.r),
+                topRight: Radius.circular(16.r),
+                bottomRight: Radius.circular(16.r),
+                bottomLeft: Radius.circular(4.r),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(6.r),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE4E1EC),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _incomingAudioBubble({
+    required double width,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Container(
+            width: 28.r,
+            height: 28.r,
+            margin: EdgeInsets.only(right: 8.w, bottom: 2.h),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFFE4E1EC),
+            ),
+          ),
+          Container(
+            width: width,
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16.r),
+                topRight: Radius.circular(16.r),
+                bottomRight: Radius.circular(16.r),
+                bottomLeft: Radius.circular(4.r),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 32.r,
+                  height: 32.r,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFFE4E1EC),
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        height: 12.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE4E1EC),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      Container(
+                        width: 40.w,
+                        height: 8.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE4E1EC),
+                          borderRadius: BorderRadius.circular(3.r),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

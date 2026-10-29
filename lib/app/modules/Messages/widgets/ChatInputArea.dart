@@ -98,6 +98,9 @@ class _ChatInputAreaState extends State<ChatInputArea> {
         if (voiceInputController.isInlinePanelActive) {
           voiceInputController.closeInlinePanel();
         }
+      } else {
+        widget.messageController?.onInputFocusLost();
+        widget.groupMessageController?.onInputFocusLost();
       }
     });
   }
@@ -214,14 +217,13 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                     if (isDocumentSelected) _buildLargeDocumentPreview(),
                     if (voiceController.isRecording.value)
                       Container(
-                        margin: EdgeInsets.only(bottom: 8.h),
                         padding: EdgeInsets.symmetric(
-                          horizontal: 12.w,
-                          vertical: 12.h,
+                          horizontal: 14.w,
+                          vertical: 8.h,
                         ),
                         decoration: BoxDecoration(
                           color: _inputBg,
-                          borderRadius: BorderRadius.circular(30.r),
+                          borderRadius: BorderRadius.circular(28.r),
                         ),
                         child: Row(
                           children: [
@@ -230,46 +232,60 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                 voiceController.deleteRecording();
                               },
                               child: CircleAvatar(
-                                radius: 20.r,
-                                backgroundColor: Colors.red.shade100,
+                                radius: 18.r,
+                                backgroundColor: Colors.red.shade50,
                                 child: Icon(
-                                  Icons.delete_outline,
-                                  color: Colors.red,
-                                  size: 22.sp,
+                                  Icons.delete_outline_rounded,
+                                  color: Colors.redAccent,
+                                  size: 20.sp,
                                 ),
                               ),
                             ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "${voiceController.duration.value}s",
+                            SizedBox(width: 10.w),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 8.w,
+                                  height: 8.w,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.redAccent,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                SizedBox(width: 6.w),
+                                Obx(() {
+                                  final sec = voiceController.duration.value;
+                                  final m = (sec ~/ 60).toString().padLeft(2, '0');
+                                  final s = (sec % 60).toString().padLeft(2, '0');
+                                  return Text(
+                                    "$m:$s",
                                     style: TextStyle(
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w600,
                                       color: _purple,
                                     ),
+                                  );
+                                }),
+                              ],
+                            ),
+                            SizedBox(width: 10.w),
+                            Expanded(
+                              child: SizedBox(
+                                height: 28.h,
+                                child: AnimatedWaveList(
+                                  stream: voiceController.amplitudeStream,
+                                  barBuilder: (animation, amplitude) =>
+                                      WaveFormBar(
+                                    animation: animation,
+                                    amplitude: amplitude,
+                                    color: _purple,
                                   ),
-                                  SizedBox(height: 6.h),
-                                  SizedBox(
-                                    height: 35.h,
-                                    child: AnimatedWaveList(
-                                      stream: voiceController.amplitudeStream,
-                                      barBuilder: (animation, amplitude) =>
-                                          WaveFormBar(
-                                        animation: animation,
-                                        amplitude: amplitude,
-                                        color: _purple,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
-                            SizedBox(width: 12.w),
-                            GestureDetector(
+                            SizedBox(width: 8.w),
+                            Obx(() => GestureDetector(
                               onTap: () {
                                 if (voiceController.isPaused.value) {
                                   voiceController.resumeRecording();
@@ -278,17 +294,17 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                 }
                               },
                               child: CircleAvatar(
-                                radius: 20.r,
-                                backgroundColor: Colors.orange.shade100,
+                                radius: 18.r,
+                                backgroundColor: Colors.amber.shade100,
                                 child: Icon(
                                   voiceController.isPaused.value
                                       ? Icons.play_arrow_rounded
                                       : Icons.pause_rounded,
-                                  color: Colors.orange,
-                                  size: 22.sp,
+                                  color: Colors.amber.shade900,
+                                  size: 20.sp,
                                 ),
                               ),
-                            ),
+                            )),
                             SizedBox(width: 8.w),
                             GestureDetector(
                               onTap: () async {
@@ -299,7 +315,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                 }
                               },
                               child: CircleAvatar(
-                                radius: 22.r,
+                                radius: 20.r,
                                 backgroundColor: _purple,
                                 child: Icon(
                                   Icons.send_rounded,
@@ -310,8 +326,9 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                             ),
                           ],
                         ),
-                      ),
-                    Row(
+                      )
+                    else
+                      Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Expanded(

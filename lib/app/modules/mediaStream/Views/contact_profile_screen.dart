@@ -49,6 +49,9 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
         : "${widget.contactData?.userId ?? '0'}";
     _tag = "${base}_${widget.callId ?? ''}";
 
+    if (Get.isRegistered<ContactProfileController>(tag: _tag)) {
+      Get.delete<ContactProfileController>(tag: _tag, force: true);
+    }
     controller = Get.put(
       ContactProfileController(
         contactData: widget.contactData,
@@ -64,7 +67,9 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
 
   @override
   void dispose() {
-    Get.delete<ContactProfileController>(tag: _tag);
+    if (Get.isRegistered<ContactProfileController>(tag: _tag)) {
+      Get.delete<ContactProfileController>(tag: _tag, force: true);
+    }
     super.dispose();
   }
 
@@ -89,36 +94,61 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
 
   String _displayName(CallHistoryDetailData? d) {
     if (widget.isGroup) {
-      return _firstValid([widget.groupName, d?.group?.name]) ?? "Group";
+      return _firstValid([
+        widget.groupName,
+        d?.group?.name,
+        d?.group?.groupName,
+      ]) ?? "Group";
     }
     return _firstValid([
       widget.contactData?.name,
+      d?.callerName,
+      d?.caller?.name,
       d?.contact?.name,
-      d?.isCaller == true ? d?.receiver?.name : d?.caller?.name,
-    ]) ??
-        "User";
+      d?.receiverName,
+      d?.receiver?.name,
+    ]) ?? "User";
   }
 
   String? _displayAvatar(CallHistoryDetailData? d) {
     if (widget.isGroup) {
-      return _firstValid([widget.groupAvatar, d?.group?.avatar]);
+      return _firstValid([
+        widget.groupAvatar,
+        d?.group?.avatar,
+        d?.group?.groupProfile,
+        d?.profileImage,
+      ]);
     }
     return _firstValid([
       widget.contactData?.profileImage,
+      d?.callerProfileImage,
+      d?.profileImage,
+      d?.caller?.avatar,
+      d?.caller?.profileImage,
       d?.contact?.avatar,
-      d?.isCaller == true ? d?.receiver?.avatar : d?.caller?.avatar,
+      d?.contact?.profileImage,
+      d?.receiverProfileImage,
+      d?.receiver?.avatar,
+      d?.receiver?.profileImage,
     ]);
   }
 
   String _displayPhone(CallHistoryDetailData? d) {
     return _firstValid([
       widget.contactData?.mobileNo,
+      d?.caller?.phoneNumber,
       d?.contact?.phoneNumber,
-      d?.isCaller == true
-          ? d?.receiver?.phoneNumber
-          : d?.caller?.phoneNumber,
-    ]) ??
-        '';
+      d?.receiver?.phoneNumber,
+    ]) ?? '';
+  }
+
+  String? _displayEmail(CallHistoryDetailData? d) {
+    return _firstValid([
+      d?.contact?.email,
+      d?.isCaller == true ? d?.receiver?.email : d?.caller?.email,
+      d?.caller?.email,
+      d?.receiver?.email,
+    ]);
   }
 
 
@@ -196,17 +226,90 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 ),
                 SizedBox(height: 14.h),
 
+                if (!controller.isListMode) ...[
+                  // 1. Loading Skeleton for Call Details (Single call mode)
+                  Obx(() {
+                    if (controller.isLoading.value) {
+                      return Column(
+                        children: [
+                          _buildCallDetailsSkeleton(),
+                          SizedBox(height: 14.h),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
+
+                  // 2. Call Details Card (Single Call Mode when call detail is loaded)
+                  Obx(() {
+                    final d = controller.detail.value;
+                    if (d != null) {
+                      return Column(
+                        children: [
+                          _buildCallDetailsCard(d),
+                          SizedBox(height: 14.h),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
+
+                  // 3. Group Summary Card (if group and summary is present)
+                  Obx(() {
+                    final d = controller.detail.value;
+                    if (d != null && (widget.isGroup || d.group != null) && d.summary != null) {
+                      return Column(
+                        children: [
+                          _buildGroupSummaryCard(d),
+                          SizedBox(height: 14.h),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
+
+                  // 4. Participants Card (if participants are present)
+                  Obx(() {
+                    final participants = controller.participants;
+                    if (participants.isNotEmpty) {
+                      return Column(
+                        children: [
+                          _buildParticipantsCard(participants),
+                          SizedBox(height: 14.h),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
+                ],
+
+                // 5. Contact / Group Information Card
                 Obx(() {
                   final d = controller.detail.value;
                   return _buildInfoCard(
-                    widget.isGroup,
+                    widget.isGroup || (d?.group != null),
                     _displayName(d),
                     _displayPhone(d),
+                    email: _displayEmail(d),
+                    groupCode: d?.group?.groupCode,
+                    totalMembers: d?.group?.totalMembers ?? d?.participantsCount,
+                    groupDesc: d?.group?.groupDesc,
                   );
                 }),
                 SizedBox(height: 14.h),
 
-                _buildRecentCallsCard(context),
+                // 6. Recent Calls (List mode) or error fallback
+                if (controller.isListMode)
+                  _buildRecentCallsCard(context)
+                else
+                  Obx(() {
+                    if (controller.errorMessage.value.isNotEmpty &&
+                        controller.detail.value == null &&
+                        !controller.isLoading.value) {
+                      return _card(child: _buildError(controller.errorMessage.value));
+                    }
+                    return const SizedBox.shrink();
+                  }),
               ],
             ),
           ),
@@ -216,7 +319,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
   }
 
   Widget _buildHeader(CallHistoryDetailData? d) {
-    final bool isGroup = widget.isGroup;
+    final bool isGroup = widget.isGroup || (d?.group != null);
     final String name = _displayName(d);
     final String phone = _displayPhone(d);
     final bool isOnline = widget.contactData?.isOnline == true;
@@ -311,37 +414,43 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
     final String initial = (name.isNotEmpty ? name[0] : '?').toUpperCase();
 
     Widget fallback() => Center(
-      child: isGroup
-          ? Icon(Icons.groups_rounded, size: 40.sp, color: _purple)
-          : Text(
-        initial,
-        style: TextStyle(
-          fontSize: 32.sp,
-          fontFamily: FontFamily.interBold,
-          color: _purple,
-        ),
-      ),
-    );
+          child: isGroup
+              ? Icon(Icons.groups_rounded, size: 42.sp, color: _purple)
+              : Text(
+                  initial,
+                  style: TextStyle(
+                    fontSize: 34.sp,
+                    fontFamily: FontFamily.interBold,
+                    color: _purple,
+                  ),
+                ),
+        );
 
     return Container(
-      width: 96.w,
-      height: 96.w,
-      padding: EdgeInsets.all(3.w),
+      width: 100.w,
+      height: 100.w,
       decoration: BoxDecoration(
         color: Colors.white,
         shape: BoxShape.circle,
-        boxShadow: _softShadow,
+        boxShadow: [
+          BoxShadow(
+            color: _purple.withValues(alpha: 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
+      padding: EdgeInsets.all(3.w),
       child: ClipOval(
         child: Container(
           color: _lavender,
           child: url.isNotEmpty
               ? CachedNetworkImage(
-            imageUrl: url,
-            fit: BoxFit.cover,
-            placeholder: (_, __) => fallback(),
-            errorWidget: (_, __, ___) => fallback(),
-          )
+                  imageUrl: url,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) => fallback(),
+                  errorWidget: (_, __, ___) => fallback(),
+                )
               : fallback(),
         ),
       ),
@@ -383,7 +492,146 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
   }
 
 
-  Widget _buildInfoCard(bool isGroup, String displayName, String phone) {
+  Widget _buildCallStatusPill(String status) {
+    final String st = status.toLowerCase();
+    Color bg;
+    Color fg;
+    IconData icon;
+    String label;
+
+    if (st == 'completed' || st == 'accepted' || st == 'answered') {
+      bg = const Color(0xFFDCFCE7);
+      fg = const Color(0xFF16A34A);
+      icon = Icons.check_circle_rounded;
+      label = "Completed";
+    } else if (st == 'missed') {
+      bg = const Color(0xFFFEE2E2);
+      fg = const Color(0xFFEF4444);
+      icon = Icons.call_missed_rounded;
+      label = "Missed Call";
+    } else if (st == 'rejected' || st == 'declined' || st == 'busy') {
+      bg = const Color(0xFFFFEDD5);
+      fg = const Color(0xFFEA580C);
+      icon = Icons.call_end_rounded;
+      label = st == 'busy' ? "Busy" : "Declined";
+    } else if (st == 'cancelled' || st == 'canceled') {
+      bg = const Color(0xFFF3F4F6);
+      fg = const Color(0xFF6B7280);
+      icon = Icons.cancel_rounded;
+      label = "Cancelled";
+    } else {
+      bg = _lavender;
+      fg = _purple;
+      icon = Icons.phone_in_talk_rounded;
+      label = status.isNotEmpty
+          ? status[0].toUpperCase() + status.substring(1)
+          : "Call";
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12.sp, color: fg),
+          SizedBox(width: 4.w),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11.5.sp,
+              fontFamily: FontFamily.interSemiBold,
+              color: fg,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCallDetailsSkeleton() {
+    return _card(
+      child: Skeletonizer(
+        enabled: true,
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36.w,
+                    height: 36.w,
+                    decoration: const BoxDecoration(
+                      color: Colors.grey,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Text(
+                      "Call Information",
+                      style: TextStyle(fontSize: 15.sp),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _divider(),
+            for (int i = 0; i < 4; i++) ...[
+              if (i > 0) _divider(),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36.w,
+                      height: 36.w,
+                      decoration: const BoxDecoration(
+                        color: Colors.grey,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Call Detail Label",
+                            style: TextStyle(fontSize: 12.sp)),
+                        SizedBox(height: 2.h),
+                        Text("Call Detail Value Here",
+                            style: TextStyle(fontSize: 14.sp)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCallDetailsCard(CallHistoryDetailData d) {
+    final bool isVideo =
+        d.isVideo == true || (d.type ?? '').toLowerCase() == 'video';
+    final String mediaLabel = isVideo ? "Video Call" : "Audio Call";
+    final bool isIncoming = (d.direction ?? '').toLowerCase() == 'incoming';
+    final String dirLabel = isIncoming ? "Incoming" : "Outgoing";
+    final String callTypeFull = "$dirLabel $mediaLabel";
+
+    final String when =
+        d.formattedDate ?? d.date ?? _whenLabel(d.calledAt, d.time);
+    final String? duration = d.formattedDuration ??
+        (d.duration != null && d.duration! > 0 ? "${d.duration}s" : null);
+
+    final String? start = d.startTime ?? d.calledAt;
+    final String? end = d.endTime ?? d.endedAt;
+
     return _card(
       child: Column(
         children: [
@@ -391,7 +639,501 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
             child: Row(
               children: [
-                _iconCircle(Icons.person_rounded),
+                _iconCircle(isVideo ? Icons.videocam_rounded : Icons.call_rounded),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    "Call Information",
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: _dark,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _divider(),
+          _buildDetailRow(
+            icon: isVideo ? Icons.videocam_outlined : Icons.phone_outlined,
+            label: "Call Type",
+            value: callTypeFull,
+          ),
+          _divider(),
+          _buildDetailRow(
+            icon: Icons.calendar_today_rounded,
+            label: "Date & Time",
+            value: d.time?.isNotEmpty == true && !when.contains(d.time!)
+                ? "$when at ${d.time}"
+                : when,
+          ),
+          if (duration != null &&
+              duration.isNotEmpty &&
+              duration != '00:00' &&
+              duration != '0') ...[
+            _divider(),
+            _buildDetailRow(
+              icon: Icons.timelapse_rounded,
+              label: "Duration",
+              value: duration,
+              valueColor: _purple,
+            ),
+          ],
+          if (start != null && start.isNotEmpty) ...[
+            _divider(),
+            _buildDetailRow(
+              icon: Icons.play_arrow_rounded,
+              label: "Start Time",
+              value: _formatDetailTimestamp(start),
+            ),
+          ],
+          if (end != null && end.isNotEmpty) ...[
+            _divider(),
+            _buildDetailRow(
+              icon: Icons.stop_rounded,
+              label: "End Time",
+              value: _formatDetailTimestamp(end),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _formatDetailTimestamp(String raw) {
+    final trimmed = raw.trim();
+    final dt = DateTime.tryParse(trimmed)?.toLocal();
+    if (dt == null) return trimmed;
+    final hour = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
+    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+    final min = dt.minute.toString().padLeft(2, '0');
+    final sec = dt.second.toString().padLeft(2, '0');
+    return "$hour:$min:$sec $ampm";
+  }
+
+  Widget _buildDetailRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    Color? valueColor,
+    Widget? trailingWidget,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _iconCircle(icon, size: 36, iconSize: 16),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontFamily: FontFamily.interMedium,
+                    color: _grey,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontFamily: FontFamily.interSemiBold,
+                    color: valueColor ?? _dark,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (trailingWidget != null) trailingWidget,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupSummaryCard(CallHistoryDetailData d) {
+    final s = d.summary;
+    final total = s?.totalParticipants ?? d.participantsCount ?? 0;
+    final joined = s?.joinedCount ?? d.joinedParticipantsCount ?? 0;
+    final missed = s?.missedCount ?? 0;
+    final rejected = s?.rejectedCount ?? 0;
+
+    return _card(
+      child: Padding(
+        padding: EdgeInsets.all(14.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                _iconCircle(Icons.analytics_rounded),
+                SizedBox(width: 12.w),
+                Text(
+                  "Call Summary",
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontFamily: FontFamily.interBold,
+                    color: _dark,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 14.h),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatPill(
+                    "Total",
+                    "$total",
+                    _purple,
+                    _lavender,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: _buildStatPill(
+                    "Joined",
+                    "$joined",
+                    const Color(0xFF16A34A),
+                    const Color(0xFFDCFCE7),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: _buildStatPill(
+                    "Missed",
+                    "$missed",
+                    const Color(0xFFEF4444),
+                    const Color(0xFFFEE2E2),
+                  ),
+                ),
+                if (rejected > 0) ...[
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: _buildStatPill(
+                      "Declined",
+                      "$rejected",
+                      const Color(0xFFEA580C),
+                      const Color(0xFFFFEDD5),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatPill(
+      String label, String count, Color textColor, Color bgColor) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 8.w),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: Column(
+        children: [
+          Text(
+            count,
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontFamily: FontFamily.interBold,
+              color: textColor,
+            ),
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11.sp,
+              fontFamily: FontFamily.interMedium,
+              color: textColor.withValues(alpha: 0.8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildParticipantsCard(List<CallParticipant> participants) {
+    return _card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            child: Row(
+              children: [
+                _iconCircle(Icons.groups_rounded),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    "Participants",
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: _dark,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: _lavender,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Text(
+                    "${participants.length}",
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: _purple,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _divider(),
+          for (int i = 0; i < participants.length; i++) ...[
+            if (i > 0) _divider(),
+            _buildParticipantTile(participants[i]),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildParticipantTile(CallParticipant p) {
+    final name = p.name?.isNotEmpty == true
+        ? p.name!
+        : (p.phoneNumber?.isNotEmpty == true ? p.phoneNumber! : "Participant");
+    final avatar = p.avatar ?? p.profileImage;
+    final status = (p.status ?? '').toLowerCase();
+    final bool isCaller = p.isCaller == true || p.role?.toLowerCase() == 'host';
+    final dur = p.formattedDuration ??
+        (p.duration != null && p.duration! > 0 ? "${p.duration}s" : null);
+
+    Color statusColor = _grey;
+    String statusText = p.status ?? '';
+    if (status == 'joined' || status == 'completed' || status == 'accepted') {
+      statusColor = const Color(0xFF16A34A);
+      statusText = "Joined";
+    } else if (status == 'missed') {
+      statusColor = const Color(0xFFEF4444);
+      statusText = "Missed";
+    } else if (status == 'declined' || status == 'rejected') {
+      statusColor = const Color(0xFFEA580C);
+      statusText = "Declined";
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+      child: Row(
+        children: [
+          _buildSmallAvatar(name, avatar),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontFamily: FontFamily.interSemiBold,
+                          color: _dark,
+                        ),
+                      ),
+                    ),
+                    if (isCaller) ...[
+                      SizedBox(width: 6.w),
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                        decoration: BoxDecoration(
+                          color: _lavender,
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text(
+                          "Caller",
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            fontFamily: FontFamily.interBold,
+                            color: _purple,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  p.phoneNumber?.isNotEmpty == true
+                      ? p.phoneNumber!
+                      : (dur != null ? "Duration: $dur" : (p.email ?? '')),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontFamily: FontFamily.interMedium,
+                    color: _grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (statusText.isNotEmpty)
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Text(
+                dur != null && status == 'joined' ? dur : statusText,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontFamily: FontFamily.interSemiBold,
+                  color: statusColor,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmallAvatar(String name, String? raw) {
+    final String url = _buildAvatarUrl(raw);
+    final String initial = (name.isNotEmpty ? name[0] : '?').toUpperCase();
+
+    Widget fallback() => Center(
+          child: Text(
+            initial,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontFamily: FontFamily.interBold,
+              color: _purple,
+            ),
+          ),
+        );
+
+    return Container(
+      width: 38.w,
+      height: 38.w,
+      decoration: const BoxDecoration(
+        color: _lavender,
+        shape: BoxShape.circle,
+      ),
+      child: ClipOval(
+        child: url.isNotEmpty
+            ? CachedNetworkImage(
+                imageUrl: url,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => fallback(),
+                errorWidget: (_, __, ___) => fallback(),
+              )
+            : fallback(),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(
+    bool isGroup,
+    String displayName,
+    String phone, {
+    String? email,
+    String? groupDesc,
+    String? groupCode,
+    int? totalMembers,
+  }) {
+    final List<Widget> rows = [];
+
+    if (isGroup) {
+      rows.add(
+        _buildInfoItem(
+          icon: Icons.groups_rounded,
+          title: "Group Name",
+          value: displayName,
+        ),
+      );
+      if (groupCode != null && groupCode.isNotEmpty) {
+        rows.add(_divider());
+        rows.add(
+          _buildInfoItem(
+            icon: Icons.tag_rounded,
+            title: "Group Code",
+            value: groupCode,
+          ),
+        );
+      }
+      if (totalMembers != null && totalMembers > 0) {
+        rows.add(_divider());
+        rows.add(
+          _buildInfoItem(
+            icon: Icons.people_outline_rounded,
+            title: "Total Members",
+            value: "$totalMembers members",
+          ),
+        );
+      }
+      if (groupDesc != null && groupDesc.isNotEmpty) {
+        rows.add(_divider());
+        rows.add(
+          _buildInfoItem(
+            icon: Icons.description_outlined,
+            title: "Description",
+            value: groupDesc,
+          ),
+        );
+      }
+    } else {
+      if (phone.isNotEmpty) {
+        rows.add(
+          _buildInfoItem(
+            icon: Icons.call_rounded,
+            title: "Mobile",
+            value: phone,
+          ),
+        );
+      }
+      if (email != null && email.isNotEmpty) {
+        if (rows.isNotEmpty) rows.add(_divider());
+        rows.add(
+          _buildInfoItem(
+            icon: Icons.email_outlined,
+            title: "Email",
+            value: email,
+          ),
+        );
+      }
+    }
+
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    return _card(
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            child: Row(
+              children: [
+                _iconCircle(
+                    isGroup ? Icons.group_outlined : Icons.person_outline_rounded),
                 SizedBox(width: 12.w),
                 Text(
                   isGroup ? "Group Information" : "Contact Information",
@@ -405,37 +1147,42 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
             ),
           ),
           _divider(),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-            child: Row(
+          ...rows,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem({
+    required IconData icon,
+    required String title,
+    required String value,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      child: Row(
+        children: [
+          _iconCircle(icon),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _iconCircle(
-                    isGroup ? Icons.groups_rounded : Icons.call_rounded),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isGroup ? "Group Name" : "Mobile",
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontFamily: FontFamily.interSemiBold,
-                          color: _dark,
-                        ),
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        isGroup
-                            ? displayName
-                            : (phone.isNotEmpty ? phone : '-'),
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          fontFamily: FontFamily.interMedium,
-                          color: _grey,
-                        ),
-                      ),
-                    ],
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontFamily: FontFamily.interMedium,
+                    color: _grey,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontFamily: FontFamily.interSemiBold,
+                    color: _dark,
                   ),
                 ),
               ],
@@ -788,12 +1535,21 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
   }
 
   String _buildAvatarUrl(String? raw) {
-    if (raw == null || raw.trim().isEmpty) return '';
+    if (raw == null) return '';
     String v = raw.trim();
-    if (v.toLowerCase() == 'null') return '';
-    if (v.startsWith('http://') || v.startsWith('https://')) return v;
-    if (v.startsWith('/')) v = v.substring(1);
-    return '${ConstRes.aImageBaseUrl}$v';
+    if (v.isEmpty ||
+        v.toLowerCase() == 'null' ||
+        v.toLowerCase() == 'undefined' ||
+        v.toLowerCase() == 'unknown') {
+      return '';
+    }
+    v = v.replaceAll('\\', '/');
+    if (v.startsWith('http://') || v.startsWith('https://')) {
+      return v.replaceAll(' ', '%20');
+    }
+    final baseUrl = ConstRes.aImageBaseUrl.replaceAll(RegExp(r'/+$'), '');
+    final cleanPath = v.replaceAll(RegExp(r'^/+'), '');
+    return '$baseUrl/$cleanPath'.replaceAll(' ', '%20');
   }
 
   String _whenLabel(String? calledAt, String? timeRaw) {

@@ -9,6 +9,7 @@ import 'package:record/record.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'services/voice_to_text_audio_recorder.dart';
 import 'voice_languages.dart';
 
 enum VoiceInputMode {
@@ -26,6 +27,7 @@ class VoiceInputController extends GetxController {
   // Engines
   final SpeechToText _speech = SpeechToText();
   final AudioRecorder _recorder = AudioRecorder();
+  final VoiceToTextAudioRecorder _vttAudioRecorder = VoiceToTextAudioRecorder();
   AudioPlayer? _player;
 
   // Observable state
@@ -144,6 +146,9 @@ class VoiceInputController extends GetxController {
         : '';
 
     recognizedWords.value = '';
+    voiceToTextAudioPath.value = '';
+    audioProgress.value = 0.0;
+    audioDurationSeconds.value = 0;
     didntCatchThat.value = false;
     isTooNoisy.value = false;
     timerSeconds.value = 0;
@@ -324,11 +329,45 @@ class VoiceInputController extends GetxController {
     if (_isStopping) return; // already stopping — don't run twice
     _isStopping = true;
     _stopTimer();
-    try {
-      await _speech.stop();
-    } catch (_) {}
 
-    await Future.delayed(const Duration(milliseconds: 200));
+    try {
+      if (_speech.isListening) {
+        await _speech.stop().timeout(
+          const Duration(milliseconds: 600),
+          onTimeout: () async {
+            await _speech.cancel();
+          },
+        );
+      }
+    } catch (_) {
+      try {
+        await _speech.cancel();
+      } catch (_) {}
+    }
+
+    final text = recognizedWords.value.trim();
+    if (text.isNotEmpty) {
+      try {
+        final path = await _vttAudioRecorder.generateAudioForText(
+          text,
+          selectedLanguage.value.code,
+        );
+        if (path != null) {
+          voiceToTextAudioPath.value = path;
+          await _preparePlayer(path);
+          if (_player?.duration != null && _player!.duration!.inSeconds > 0) {
+            audioDurationSeconds.value = _player!.duration!.inSeconds;
+          } else {
+            audioDurationSeconds.value =
+                timerSeconds.value > 0 ? timerSeconds.value : 1;
+          }
+        }
+      } catch (e) {
+        debugPrint('[VoiceInput] VTT audio generation error: $e');
+      }
+    }
+
+    await Future.delayed(const Duration(milliseconds: 100));
     await _finishListening();
     _isStopping = false;
   }
@@ -339,11 +378,10 @@ class VoiceInputController extends GetxController {
     if (text.isEmpty) {
       didntCatchThat.value = true;
       hintMessage.value = "Didn't catch that. Tap the mic and speak a little louder.";
-      mode.value = VoiceInputMode.voiceToTextListening;
     } else {
       didntCatchThat.value = false;
-      mode.value = VoiceInputMode.voiceToTextReview;
     }
+    mode.value = VoiceInputMode.voiceToTextReview;
   }
 
   void openLanguagePicker() {
@@ -510,6 +548,7 @@ class VoiceInputController extends GetxController {
         await _speech.cancel();
       } catch (_) {}
     }
+    await _vttAudioRecorder.cancel();
     if (isRecording) {
       try {
         final path = await _recorder.stop();
@@ -531,6 +570,7 @@ class VoiceInputController extends GetxController {
   Future<void> deleteSession() async {
     _stopTimer();
     await _stopAnyAudioPlayer();
+    await _vttAudioRecorder.cancel();
 
     if (_textController != null) {
       _textController!.text = _initialTextBeforeVoice;
@@ -545,6 +585,7 @@ class VoiceInputController extends GetxController {
   Future<void> reRecord() async {
     _stopTimer();
     await _stopAnyAudioPlayer();
+    await _vttAudioRecorder.cancel();
     _cleanupTempAudio();
 
     final prevMode = mode.value;
@@ -597,6 +638,8 @@ class VoiceInputController extends GetxController {
     try {
       _speech.cancel();
     } catch (_) {}
+    _vttAudioRecorder.cancel();
+    _cleanupTempAudio();
     // Sync reactive message text so the send button becomes visible
     if (_textController != null && _messageTextRx != null) {
       _messageTextRx!.value = _textController!.text;
@@ -654,6 +697,7 @@ class VoiceInputController extends GetxController {
     try {
       _speech.cancel();
     } catch (_) {}
+    _vttAudioRecorder.dispose();
     super.onClose();
   }
 }

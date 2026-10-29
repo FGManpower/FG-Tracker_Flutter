@@ -31,6 +31,8 @@ import '../../Attendance/models/attendance_poll_model.dart';
 import '../../Attendance/widgets/attendance_chat_card.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import 'chat_translation_widgets.dart';
+import 'MessageContextMenu.dart';
+import '../../../widgets/MessageInfoSheet.dart';
 
 class ChatBubble extends StatelessWidget {
   final MessageData message;
@@ -352,8 +354,19 @@ class ChatBubble extends StatelessWidget {
   }
 
   bool _isPlainTextMessage(MessageData message) {
-    final type = message.messageType?.toString() ?? "text";
-    return type == "text" || type == "text_message" || type.isEmpty;
+    final type =
+        (message.messageType?.toString() ?? "text").toLowerCase().trim();
+    if (type == "text" || type == "text_message" || type.isEmpty) {
+      return true;
+    }
+    if ((type == "forward" ||
+            type == "forwarded" ||
+            type == "forward_message") &&
+        (message.images?.isEmpty ?? true) &&
+        (message.videos?.isEmpty ?? true)) {
+      return true;
+    }
+    return false;
   }
 
   Widget _buildTimeRow(bool isSentByMe) {
@@ -419,7 +432,11 @@ class ChatBubble extends StatelessWidget {
       bool isSentByMe,
       ) {
     final query = controller.searchQuery.value;
-    final content = message.content?.toString() ?? "";
+    String content = message.content?.toString() ?? "";
+    if (content.trim().isEmpty &&
+        (message.caption?.toString() ?? "").trim().isNotEmpty) {
+      content = message.caption!.toString();
+    }
 
     if (query.isNotEmpty &&
         content.toLowerCase().contains(query.toLowerCase())) {
@@ -476,11 +493,19 @@ class ChatBubble extends StatelessWidget {
       Color textColor,
       bool isSentByMe,
       ) {
-    if (message.messageType == "media" ||
-        message.messageType == "image" ||
-        message.messageType == "image_text" ||
-        (message.messageType == "video" &&
-            (message.videos?.isNotEmpty ?? false))) {
+    final msgType =
+        (message.messageType?.toString() ?? '').toLowerCase().trim();
+    final hasImages = (message.images?.isNotEmpty ?? false);
+    final hasVideos = (message.videos?.isNotEmpty ?? false);
+
+    if (msgType == "media" ||
+        msgType == "image" ||
+        msgType == "image_text" ||
+        (msgType == "video" && hasVideos) ||
+        ((msgType == "forward" ||
+                msgType == "forwarded" ||
+                msgType == "forward_message") &&
+            (hasImages || hasVideos))) {
       final imageList = (message.images ?? [])
           .where((image) => image.trim().isNotEmpty)
           .toList();
@@ -494,10 +519,11 @@ class ChatBubble extends StatelessWidget {
         }
       }
 
-      final videos =
-      (message.messageType == "media" || message.messageType == "video")
-          ? (message.videos ?? [])
-          : <MessageVideo>[];
+      final videos = (message.videos != null && message.videos!.isNotEmpty)
+          ? message.videos!
+          : ((message.messageType == "media" || message.messageType == "video")
+              ? (message.videos ?? [])
+              : <MessageVideo>[]);
 
       String getMediaUrl(String path) {
         final value = path.trim();
@@ -608,20 +634,7 @@ class ChatBubble extends StatelessWidget {
                   width: 220.w,
                   height: 200.h,
                   child: imageList.isNotEmpty
-                      ? GestureDetector(
-                    onTap: () => openGallery(0),
-                    child: Image.network(
-                      getMediaUrl(imageList.first),
-                      width: 220.w,
-                      height: 200.h,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey.shade200,
-                        alignment: Alignment.center,
-                        child: const Icon(Icons.broken_image_outlined),
-                      ),
-                    ),
-                  )
+                      ? buildImageTile(0, 220.w, 200.h)
                       : buildVideoTile(videos.first, 0),
                 ),
               )
@@ -1220,265 +1233,140 @@ class ChatBubble extends StatelessWidget {
       BuildContext bubbleContext,
       bool isSentByMe,
       ) {
-    // Deleted message pe koi action allowed nahi
     if (_isDeletedMessage) return;
 
     final isPinned = controller.pinnedMessage.value?.id == message.id;
-
     final isText = message.messageType == "text" ||
         message.messageType == "text_message" ||
         (message.messageType ?? "").isEmpty;
 
-    final renderBox = bubbleContext.findRenderObject() as RenderBox;
-
-    final position = renderBox.localToGlobal(Offset.zero);
-
-    final size = renderBox.size;
-
-    final screenSize = MediaQuery.of(bubbleContext).size;
-
-    const menuWidth = 220.0;
-    const menuMargin = 8.0;
-
-    double left = position.dx + size.width + menuMargin;
-
-    if (left + menuWidth > screenSize.width - menuMargin) {
-      left = position.dx - menuWidth - menuMargin;
-    }
-
-    left = left.clamp(
-      menuMargin,
-      screenSize.width - menuWidth - menuMargin,
-    );
-
-    double top = position.dy;
-
-    const menuHeight = 500.0;
-
-    if (top + menuHeight > screenSize.height - menuMargin) {
-      top = screenSize.height - menuHeight - menuMargin;
-    }
-
-    if (top < menuMargin) {
-      top = menuMargin;
-    }
-
-    showDialog(
-      context: bubbleContext,
-      barrierColor: Colors.black.withValues(alpha: 0.18),
-      builder: (ctx) {
-        return Stack(
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => Navigator.pop(ctx),
-                behavior: HitTestBehavior.opaque,
-                child: const SizedBox.expand(),
-              ),
-            ),
-            Positioned(
-              left: left,
-              top: top,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  width: menuWidth,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8F7FC),
-                    borderRadius: BorderRadius.circular(16.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.14),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16.r),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _menuTile(
-                          icon: Icons.reply_rounded,
-                          iconColor: _purple,
-                          title: "Reply",
-                          onTap: () {
-                            Navigator.pop(ctx);
-                            controller.setReply(message);
-                          },
-                        ),
-                        if (isText)
-                          _menuTile(
-                            icon: Icons.copy_rounded,
-                            iconColor: _purple,
-                            title: "Copy",
-                            onTap: () async {
-                              Navigator.pop(ctx);
-
-                              await Clipboard.setData(
-                                ClipboardData(
-                                  text: message.content ?? "",
-                                ),
-                              );
-
-                              Utils().fluttertoast(
-                                "Message copied",
-                              );
-                            },
-                          ),
-                        _menuTile(
-                          icon: Icons.forward_rounded,
-                          iconColor: _purple,
-                          title: "Forward",
-                          onTap: () {
-                            Navigator.pop(ctx);
-
-                            Get.toNamed(
-                              Routes.forwardMessageScreen,
-                              arguments: {
-                                "message": message,
-                                "sourceType": "private",
-                              },
-                            );
-                          },
-                        ),
-                        if (isSentByMe && isText)
-                          _menuTile(
-                            icon: Icons.edit_rounded,
-                            iconColor: _purple,
-                            title: "Edit",
-                            onTap: () {
-                              Navigator.pop(ctx);
-
-                              controller.startEditingMessage(
-                                message,
-                              );
-                            },
-                          ),
-                        _menuTile(
-                          icon: Icons.push_pin_rounded,
-                          iconColor: isPinned ? Colors.redAccent : _purple,
-                          title: isPinned ? "Unpin Message" : "Pin Message",
-                          onTap: () {
-                            Navigator.pop(ctx);
-
-                            if (isPinned) {
-                              controller.unpinMessage();
-                            } else {
-                              controller.pinMessage(message);
-                            }
-                          },
-                        ),
-                        Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: Colors.grey.shade200,
-                          indent: 12,
-                          endIndent: 12,
-                        ),
-                        if (isSentByMe)
-                          _menuTile(
-                            icon: Icons.delete_outline_rounded,
-                            iconColor: Colors.redAccent,
-                            title: "Delete for Everyone",
-                            isDestructive: true,
-                            onTap: () {
-                              Navigator.pop(ctx);
-
-                              CommonDialog.ConfirmationDialog(
-                                title: "Delete for Everyone",
-                                content:
-                                "Are you sure you want to delete this message for everyone?",
-                                cancel: "No",
-                                confirm: "Yes",
-                                icon: Icons.delete_outline_rounded,
-                                onConfirm: () {
-                                  Get.back();
-
-                                  controller.deleteMessage(
-                                    messageId: message.id!,
-                                    deleteType: "for_everyone",
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        _menuTile(
-                          icon: Icons.delete_rounded,
-                          iconColor: Colors.redAccent,
-                          title: "Delete for Me",
-                          isDestructive: true,
-                          onTap: () {
-                            Navigator.pop(ctx);
-
-                            CommonDialog.ConfirmationDialog(
-                              title: "Delete for Me",
-                              content:
-                              "Are you sure you want to delete this message for you?",
-                              cancel: "No",
-                              confirm: "Yes",
-                              icon: Icons.delete_rounded,
-                              onConfirm: () {
-                                Get.back();
-
-                                controller.deleteMessage(
-                                  messageId: message.id!,
-                                  deleteType: "for_me",
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _menuTile({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required VoidCallback onTap,
-    bool isDestructive = false,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 13.h,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 20.sp,
-              color: iconColor,
-            ),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14.5.sp,
-                  fontWeight: FontWeight.w600,
-                  color: isDestructive
-                      ? Colors.redAccent
-                      : const Color(0xFF1A1A1A),
-                ),
-              ),
-            ),
-          ],
-        ),
+    final actions = <MessageContextMenuAction>[
+      MessageContextMenuAction(
+        icon: Icons.reply_rounded,
+        title: "Reply",
+        iconColor: _purple,
+        onTap: () {
+          controller.setReply(message);
+        },
       ),
+      if (isText)
+        MessageContextMenuAction(
+          icon: Icons.copy_rounded,
+          title: "Copy",
+          iconColor: _purple,
+          onTap: () async {
+            await Clipboard.setData(
+              ClipboardData(text: message.content ?? ""),
+            );
+            Utils().fluttertoast("Message copied");
+          },
+        ),
+      MessageContextMenuAction(
+        icon: Icons.forward_rounded,
+        title: "Forward",
+        iconColor: _purple,
+        onTap: () {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Get.toNamed(
+              Routes.forwardMessageScreen,
+              arguments: {
+                "message": message,
+                "sourceType": "private",
+              },
+            );
+          });
+        },
+      ),
+      if (isSentByMe && isText)
+        MessageContextMenuAction(
+          icon: Icons.edit_rounded,
+          title: "Edit",
+          iconColor: _purple,
+          onTap: () {
+            controller.startEditingMessage(message);
+          },
+        ),
+      MessageContextMenuAction(
+        icon: Icons.push_pin_rounded,
+        title: isPinned ? "Unpin Message" : "Pin Message",
+        iconColor: isPinned ? Colors.redAccent : _purple,
+        onTap: () {
+          if (isPinned) {
+            controller.unpinMessage();
+          } else {
+            controller.pinMessage(message);
+          }
+        },
+      ),
+      if (isSentByMe)
+        MessageContextMenuAction(
+          icon: Icons.info_outline_rounded,
+          title: "Message Info",
+          iconColor: _purple,
+          onTap: () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (_) => MessageInfoSheet(
+                  message: message,
+                  memberData: controller.memberData,
+                ),
+              );
+            });
+          },
+        ),
+      if (isSentByMe)
+        MessageContextMenuAction(
+          icon: Icons.delete_outline_rounded,
+          title: "Delete for Everyone",
+          isDestructive: true,
+          onTap: () {
+            CommonDialog.ConfirmationDialog(
+              title: "Delete for Everyone",
+              content: "Are you sure you want to delete this message for everyone?",
+              cancel: "No",
+              confirm: "Yes",
+              icon: Icons.delete_outline_rounded,
+              onConfirm: () {
+                Get.back();
+                controller.deleteMessage(
+                  messageId: message.id!,
+                  deleteType: "for_everyone",
+                );
+              },
+            );
+          },
+        ),
+      MessageContextMenuAction(
+        icon: Icons.delete_rounded,
+        title: "Delete for Me",
+        isDestructive: true,
+        onTap: () {
+          CommonDialog.ConfirmationDialog(
+            title: "Delete for Me",
+            content: "Are you sure you want to delete this message for you?",
+            cancel: "No",
+            confirm: "Yes",
+            icon: Icons.delete_rounded,
+            onConfirm: () {
+              Get.back();
+              controller.deleteMessage(
+                messageId: message.id!,
+                deleteType: "for_me",
+              );
+            },
+          );
+        },
+      ),
+    ];
+
+    MessageContextMenu.show(
+      context: context,
+      bubbleContext: bubbleContext,
+      isSentByMe: isSentByMe,
+      actions: actions,
     );
   }
 
@@ -1893,8 +1781,19 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   bool _isPlainTextMessage(MessageData message) {
-    final type = message.messageType?.toString() ?? "text";
-    return type == "text" || type == "text_message" || type.isEmpty;
+    final type =
+        (message.messageType?.toString() ?? "text").toLowerCase().trim();
+    if (type == "text" || type == "text_message" || type.isEmpty) {
+      return true;
+    }
+    if ((type == "forward" ||
+            type == "forwarded" ||
+            type == "forward_message") &&
+        (message.images?.isEmpty ?? true) &&
+        (message.videos?.isEmpty ?? true)) {
+      return true;
+    }
+    return false;
   }
 
   Widget _buildTimeRow(bool isSentByMe) {
@@ -1955,7 +1854,11 @@ class GroupChatBubble extends StatelessWidget {
       bool isSentByMe,
       ) {
     final query = controller.searchQuery.value;
-    final content = message.content?.toString() ?? "";
+    String content = message.content?.toString() ?? "";
+    if (content.trim().isEmpty &&
+        (message.caption?.toString() ?? "").trim().isNotEmpty) {
+      content = message.caption!.toString();
+    }
 
     if (query.isNotEmpty &&
         content.toLowerCase().contains(query.toLowerCase())) {
@@ -2323,10 +2226,17 @@ class GroupChatBubble extends StatelessWidget {
 
     final hasMultipleVideos = videos.length > 1;
 
+    final hasImages = (message.images?.isNotEmpty ?? false);
+    final hasVideos = (message.videos?.isNotEmpty ?? false);
+
     if (messageType == "media" ||
         messageType == "image" ||
         messageType == "image_text" ||
-        (messageType == "video" && hasMultipleVideos)) {
+        (messageType == "video" && hasMultipleVideos) ||
+        ((messageType == "forward" ||
+                messageType == "forwarded" ||
+                messageType == "forward_message") &&
+            (hasImages || hasVideos))) {
       final imageList = (message.images ?? [])
           .where((image) => image.trim().isNotEmpty)
           .toList();
@@ -2340,9 +2250,11 @@ class GroupChatBubble extends StatelessWidget {
         }
       }
 
-      final videos = (messageType == "media" || messageType == "video")
-          ? (message.videos ?? [])
-          : <MessageVideo>[];
+      final videos = (message.videos != null && message.videos!.isNotEmpty)
+          ? message.videos!
+          : ((messageType == "media" || messageType == "video")
+              ? (message.videos ?? [])
+              : <MessageVideo>[]);
 
       final caption = (message.caption ?? "").trim();
 
@@ -2750,29 +2662,10 @@ class GroupChatBubble extends StatelessWidget {
         textColor: textColor,
       );
     } else {
-      return Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12.r),
-          onLongPress: _isDeletedMessage
-              ? null
-              : () {
-            _showMessageMenu(context, isSentByMe);
-          },
-          onDoubleTap: _isDeletedMessage
-              ? null
-              : () async {
-            await Clipboard.setData(
-              ClipboardData(text: message.content.toString()),
-            );
-            Utils().fluttertoast("Message copied...");
-          },
-          child: _buildTextContent(
-            message,
-            textColor,
-            isSentByMe,
-          ),
-        ),
+      return _buildTextContent(
+        message,
+        textColor,
+        isSentByMe,
       );
     }
   }
@@ -2796,250 +2689,140 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   void _showMessageMenu(BuildContext bubbleContext, bool isSentByMe) {
-    // Deleted message pe koi action allowed nahi
     if (_isDeletedMessage) return;
 
     final isPinned = controller.pinnedMessage.value?.id == message.id;
-
     final isText = message.messageType == "text" ||
         message.messageType == "text_message" ||
         (message.messageType ?? "").isEmpty;
 
-    final renderBox = bubbleContext.findRenderObject() as RenderBox;
-
-    final position = renderBox.localToGlobal(Offset.zero);
-    final size = renderBox.size;
-
-    final screenSize = MediaQuery.of(bubbleContext).size;
-
-    const menuWidth = 220.0;
-    const menuMargin = 8.0;
-
-    double left = position.dx + size.width + menuMargin;
-
-    if (left + menuWidth > screenSize.width - menuMargin) {
-      left = position.dx - menuWidth - menuMargin;
-    }
-
-    left = left.clamp(
-      menuMargin,
-      screenSize.width - menuWidth - menuMargin,
-    );
-
-    double top = position.dy;
-
-    const menuHeight = 500.0;
-
-    if (top + menuHeight > screenSize.height - menuMargin) {
-      top = screenSize.height - menuHeight - menuMargin;
-    }
-
-    if (top < menuMargin) {
-      top = menuMargin;
-    }
-
-    showDialog(
-      context: bubbleContext,
-      barrierColor: Colors.black.withValues(alpha: 0.18),
-      builder: (ctx) {
-        return Stack(
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => Navigator.pop(ctx),
-                behavior: HitTestBehavior.opaque,
-                child: const SizedBox.expand(),
-              ),
-            ),
-            Positioned(
-              left: left,
-              top: top,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  width: menuWidth,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8F7FC),
-                    borderRadius: BorderRadius.circular(16.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.14),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16.r),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _menuTile(
-                          icon: Icons.reply_rounded,
-                          iconColor: _purple,
-                          title: "Reply",
-                          onTap: () {
-                            Navigator.pop(ctx);
-                            controller.setReply(message);
-                          },
-                        ),
-                        if (isText)
-                          _menuTile(
-                            icon: Icons.copy_rounded,
-                            iconColor: _purple,
-                            title: "Copy",
-                            onTap: () async {
-                              Navigator.pop(ctx);
-
-                              await Clipboard.setData(
-                                ClipboardData(
-                                  text: message.content ?? "",
-                                ),
-                              );
-
-                              Utils().fluttertoast("Message copied");
-                            },
-                          ),
-                        _menuTile(
-                          icon: Icons.forward_rounded,
-                          iconColor: _purple,
-                          title: "Forward",
-                          onTap: () {
-                            Navigator.pop(ctx);
-
-                            Get.toNamed(
-                              Routes.forwardMessageScreen,
-                              arguments: {
-                                "message": message,
-                                "sourceType": "group",
-                              },
-                            );
-                          },
-                        ),
-                        if (isSentByMe && isText)
-                          _menuTile(
-                            icon: Icons.edit_rounded,
-                            iconColor: _purple,
-                            title: "Edit",
-                            onTap: () {
-                              Navigator.pop(ctx);
-                              controller.startEditingMessage(message);
-                            },
-                          ),
-                        _menuTile(
-                          icon: Icons.push_pin_rounded,
-                          iconColor: isPinned ? Colors.redAccent : _purple,
-                          title: isPinned ? "Unpin Message" : "Pin Message",
-                          onTap: () {
-                            Navigator.pop(ctx);
-
-                            if (isPinned) {
-                              controller.unpinMessage();
-                            } else {
-                              controller.pinMessage(message);
-                            }
-                          },
-                        ),
-                        Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: Colors.grey.shade200,
-                          indent: 12,
-                          endIndent: 12,
-                        ),
-                        if (isSentByMe)
-                          _menuTile(
-                            icon: Icons.delete_outline_rounded,
-                            iconColor: Colors.redAccent,
-                            title: "Delete for Everyone",
-                            isDestructive: true,
-                            onTap: () {
-                              Navigator.pop(ctx);
-
-                              CommonDialog.ConfirmationDialog(
-                                title: "Delete for Everyone",
-                                content:
-                                "Are you sure you want to delete this message for everyone?",
-                                cancel: "No",
-                                confirm: "Yes",
-                                icon: Icons.delete_outline_rounded,
-                                onConfirm: () {
-                                  Get.back();
-                                  controller.deleteMessage(
-                                    messageId: message.id!,
-                                    deleteType: "for_everyone",
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        _menuTile(
-                          icon: Icons.delete_rounded,
-                          iconColor: Colors.redAccent,
-                          title: "Delete for Me",
-                          isDestructive: true,
-                          onTap: () {
-                            Navigator.pop(ctx);
-
-                            CommonDialog.ConfirmationDialog(
-                              title: "Delete for Me",
-                              content:
-                              "Are you sure you want to delete this message for you?",
-                              cancel: "No",
-                              confirm: "Yes",
-                              icon: Icons.delete_rounded,
-                              onConfirm: () {
-                                Get.back();
-                                controller.deleteMessage(
-                                  messageId: message.id!,
-                                  deleteType: "for_me",
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _menuTile({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required VoidCallback onTap,
-    bool isDestructive = false,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
-        child: Row(
-          children: [
-            Icon(icon, size: 20.sp, color: iconColor),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14.5.sp,
-                  fontWeight: FontWeight.w600,
-                  color: isDestructive
-                      ? Colors.redAccent
-                      : const Color(0xFF1A1A1A),
-                ),
-              ),
-            ),
-          ],
-        ),
+    final actions = <MessageContextMenuAction>[
+      MessageContextMenuAction(
+        icon: Icons.reply_rounded,
+        title: "Reply",
+        iconColor: _purple,
+        onTap: () {
+          controller.setReply(message);
+        },
       ),
+      if (isText)
+        MessageContextMenuAction(
+          icon: Icons.copy_rounded,
+          title: "Copy",
+          iconColor: _purple,
+          onTap: () async {
+            await Clipboard.setData(
+              ClipboardData(text: message.content ?? ""),
+            );
+            Utils().fluttertoast("Message copied");
+          },
+        ),
+      MessageContextMenuAction(
+        icon: Icons.forward_rounded,
+        title: "Forward",
+        iconColor: _purple,
+        onTap: () {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Get.toNamed(
+              Routes.forwardMessageScreen,
+              arguments: {
+                "message": message,
+                "sourceType": "group",
+              },
+            );
+          });
+        },
+      ),
+      if (isSentByMe && isText)
+        MessageContextMenuAction(
+          icon: Icons.edit_rounded,
+          title: "Edit",
+          iconColor: _purple,
+          onTap: () {
+            controller.startEditingMessage(message);
+          },
+        ),
+      MessageContextMenuAction(
+        icon: Icons.push_pin_rounded,
+        title: isPinned ? "Unpin Message" : "Pin Message",
+        iconColor: isPinned ? Colors.redAccent : _purple,
+        onTap: () {
+          if (isPinned) {
+            controller.unpinMessage();
+          } else {
+            controller.pinMessage(message);
+          }
+        },
+      ),
+      if (isSentByMe)
+        MessageContextMenuAction(
+          icon: Icons.info_outline_rounded,
+          title: "Message Info",
+          iconColor: _purple,
+          onTap: () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (_) => MessageInfoSheet(
+                  message: message,
+                  groupController: controller,
+                ),
+              );
+            });
+          },
+        ),
+      if (isSentByMe)
+        MessageContextMenuAction(
+          icon: Icons.delete_outline_rounded,
+          title: "Delete for Everyone",
+          isDestructive: true,
+          onTap: () {
+            CommonDialog.ConfirmationDialog(
+              title: "Delete for Everyone",
+              content: "Are you sure you want to delete this message for everyone?",
+              cancel: "No",
+              confirm: "Yes",
+              icon: Icons.delete_outline_rounded,
+              onConfirm: () {
+                Get.back();
+                controller.deleteMessage(
+                  messageId: message.id!,
+                  deleteType: "for_everyone",
+                );
+              },
+            );
+          },
+        ),
+      MessageContextMenuAction(
+        icon: Icons.delete_rounded,
+        title: "Delete for Me",
+        isDestructive: true,
+        onTap: () {
+          CommonDialog.ConfirmationDialog(
+            title: "Delete for Me",
+            content: "Are you sure you want to delete this message for you?",
+            cancel: "No",
+            confirm: "Yes",
+            icon: Icons.delete_rounded,
+            onConfirm: () {
+              Get.back();
+              controller.deleteMessage(
+                messageId: message.id!,
+                deleteType: "for_me",
+              );
+            },
+          );
+        },
+      ),
+    ];
+
+    MessageContextMenu.show(
+      context: context,
+      bubbleContext: bubbleContext,
+      isSentByMe: isSentByMe,
+      actions: actions,
     );
   }
 }
@@ -3076,8 +2859,11 @@ class GroupImageGallery extends StatefulWidget {
 
 class _GroupImageGalleryState extends State<GroupImageGallery> {
   late final PageController _pageController;
+  late final ScrollController _thumbnailScrollController;
   late int _currentIndex;
   late final List<GroupGalleryMedia> _media;
+  bool _isOverlayVisible = true;
+  bool _isZoomed = false;
 
   @override
   void initState() {
@@ -3109,6 +2895,23 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
     _pageController = PageController(
       initialPage: _currentIndex,
     );
+
+    _thumbnailScrollController = ScrollController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToThumbnail(_currentIndex);
+    });
+  }
+
+  void _scrollToThumbnail(int index) {
+    if (!_thumbnailScrollController.hasClients) return;
+    const itemWidth = 56.0;
+    final targetOffset = (index * itemWidth) - 100.0;
+    _thumbnailScrollController.animateTo(
+      targetOffset.clamp(0.0, _thumbnailScrollController.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOut,
+    );
   }
 
   String _buildMediaUrl(String path) {
@@ -3124,6 +2927,7 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
   @override
   void dispose() {
     _pageController.dispose();
+    _thumbnailScrollController.dispose();
     super.dispose();
   }
 
@@ -3138,120 +2942,297 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
 
   @override
   Widget build(BuildContext context) {
+    if (_media.isEmpty) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Text(
+            "No media available",
+            style: TextStyle(color: Colors.white70),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          _media.isEmpty ? '0 / 0' : '${_currentIndex + 1} / ${_media.length}',
-          style: const TextStyle(color: Colors.white),
-        ),
-      ),
-      body: _media.isEmpty
-          ? const SizedBox.shrink()
-          : PageView.builder(
-        controller: _pageController,
-        itemCount: _media.length,
-        onPageChanged: (index) {
-          setState(() => _currentIndex = index);
-        },
-        itemBuilder: (context, index) {
-          final media = _media[index];
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Main Page View
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isOverlayVisible = !_isOverlayVisible;
+              });
+            },
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: _media.length,
+              physics: _isZoomed
+                  ? const NeverScrollableScrollPhysics()
+                  : const BouncingScrollPhysics(),
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                  _isZoomed = false;
+                });
+                _scrollToThumbnail(index);
+              },
+              itemBuilder: (context, index) {
+                final media = _media[index];
 
-          if (media.isVideo) {
-            return Center(
-              child: GestureDetector(
-                onTap: () => _openVideo(media),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (media.thumbnail != null &&
-                        media.thumbnail!.isNotEmpty)
-                      Image.network(
-                        media.thumbnail!,
-                        fit: BoxFit.contain,
-                        width: double.infinity,
-                        height: double.infinity,
-                        errorBuilder: (_, __, ___) => const Icon(
-                          Icons.videocam_rounded,
-                          color: Colors.white,
-                          size: 64,
-                        ),
-                      )
-                    else
-                      const Icon(
-                        Icons.videocam_rounded,
-                        color: Colors.white,
-                        size: 64,
-                      ),
-                    Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.black54,
-                        shape: BoxShape.circle,
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      child: const Icon(
-                        Icons.play_arrow_rounded,
-                        color: Colors.white,
-                        size: 48,
-                      ),
-                    ),
-                    if ((media.duration ?? '').isNotEmpty)
-                      Positioned(
-                        right: 16,
-                        bottom: 16,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black87,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            media.duration!,
-                            style: const TextStyle(
+                if (media.isVideo) {
+                  return Center(
+                    child: GestureDetector(
+                      onTap: () => _openVideo(media),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          if (media.thumbnail != null &&
+                              media.thumbnail!.isNotEmpty)
+                            CachedNetworkImage(
+                              imageUrl: media.thumbnail!,
+                              fit: BoxFit.contain,
+                              width: double.infinity,
+                              height: double.infinity,
+                              placeholder: (_, __) => const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              errorWidget: (_, __, ___) => const Icon(
+                                Icons.videocam_rounded,
+                                color: Colors.white,
+                                size: 64,
+                              ),
+                            )
+                          else
+                            const Icon(
+                              Icons.videocam_rounded,
                               color: Colors.white,
-                              fontSize: 14,
+                              size: 64,
+                            ),
+                          Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: const Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                              size: 48,
                             ),
                           ),
+                          if ((media.duration ?? '').isNotEmpty)
+                            Positioned(
+                              right: 16,
+                              bottom: 16,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black87,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  media.duration!,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return Center(
+                  child: InteractiveViewer(
+                    minScale: 1.0,
+                    maxScale: 4.0,
+                    onInteractionUpdate: (details) {
+                      final zoomed = details.scale > 1.05;
+                      if (zoomed != _isZoomed) {
+                        setState(() => _isZoomed = zoomed);
+                      }
+                    },
+                    onInteractionEnd: (_) {
+                      // Allow time for reset
+                      Future.delayed(const Duration(milliseconds: 150), () {
+                        if (mounted && _isZoomed) {
+                          setState(() => _isZoomed = false);
+                        }
+                      });
+                    },
+                    child: CachedNetworkImage(
+                      imageUrl: media.url,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      placeholder: (context, url) => const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
                         ),
                       ),
+                      errorWidget: (_, __, ___) => const Center(
+                        child: Icon(
+                          Icons.broken_image_outlined,
+                          color: Colors.white,
+                          size: 48,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // WhatsApp Style Top App Bar
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AnimatedOpacity(
+              opacity: _isOverlayVisible ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: Container(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 4.h,
+                  bottom: 8.h,
+                  left: 8.w,
+                  right: 16.w,
+                ),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.black87, Colors.transparent],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      "${_currentIndex + 1} of ${_media.length}",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               ),
-            );
-          }
+            ),
+          ),
 
-          return Center(
-            child: InteractiveViewer(
-              minScale: 1,
-              maxScale: 4,
-              child: Image.network(
-                media.url,
-                fit: BoxFit.contain,
-                width: double.infinity,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.broken_image_outlined,
-                  color: Colors.white,
-                  size: 48,
-                ),
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
+          // WhatsApp Style Bottom Thumbnail Strip
+          if (_media.length > 1)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: AnimatedOpacity(
+                opacity: _isOverlayVisible ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                child: Container(
+                  padding: EdgeInsets.only(
+                    top: 10.h,
+                    bottom: MediaQuery.of(context).padding.bottom + 10.h,
+                  ),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.transparent, Colors.black87],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                     ),
-                  );
-                },
+                  ),
+                  child: SizedBox(
+                    height: 52.h,
+                    child: ListView.separated(
+                      controller: _thumbnailScrollController,
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      itemCount: _media.length,
+                      separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                      itemBuilder: (context, i) {
+                        final isSelected = i == _currentIndex;
+                        final m = _media[i];
+                        final thumbUrl = m.isVideo ? (m.thumbnail ?? m.url) : m.url;
+
+                        return GestureDetector(
+                          onTap: () {
+                            _pageController.animateToPage(
+                              i,
+                              duration: const Duration(milliseconds: 240),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                          child: Container(
+                            width: 48.w,
+                            height: 48.h,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8.r),
+                              border: Border.all(
+                                color: isSelected ? Colors.white : Colors.transparent,
+                                width: 2.2,
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6.r),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: thumbUrl,
+                                    fit: BoxFit.cover,
+                                    memCacheWidth: 150,
+                                    memCacheHeight: 150,
+                                    placeholder: (_, __) => Container(
+                                      color: Colors.grey.shade900,
+                                    ),
+                                    errorWidget: (_, __, ___) => Container(
+                                      color: Colors.grey.shade900,
+                                      child: const Icon(
+                                        Icons.image,
+                                        color: Colors.white24,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  if (m.isVideo)
+                                    Center(
+                                      child: Icon(
+                                        Icons.play_circle_fill_rounded,
+                                        color: Colors.white,
+                                        size: 20.sp,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
               ),
             ),
-          );
-        },
+        ],
       ),
     );
   }

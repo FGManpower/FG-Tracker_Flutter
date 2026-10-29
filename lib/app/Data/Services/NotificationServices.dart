@@ -20,6 +20,7 @@ import 'dart:io';
 import 'CallStateTracker.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
@@ -734,6 +735,16 @@ class firebaseNotificationServices {
     }
 
     FirebaseMessaging.onMessage.listen((message) async {
+      final data = message.data;
+      if (data['type'] == 'FORCE_LOGOUT' ||
+          data['screen_name'] == 'force_logout') {
+        LogoutUser().handleForceLogout(
+          message: message.notification?.body ??
+              "Session expired. You logged in on another device.",
+        );
+        return;
+      }
+
       final context =
           ContextUtility.navigatorkey.currentState?.overlay?.context;
 
@@ -777,6 +788,15 @@ class firebaseNotificationServices {
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
     print("Notification-MessageData:${message.data}");
+    final data = message.data;
+    if (data['type'] == 'FORCE_LOGOUT' ||
+        data['screen_name'] == 'force_logout') {
+      LogoutUser().handleForceLogout(
+        message: message.notification?.body ??
+            "Session expired. You logged in on another device.",
+      );
+      return;
+    }
     if (type == "frombackground" || type == "recienvedmessage") {
       if (message.data['screen_name'] == "MemberPage") {
         Get.toNamed(Routes.Memberscreen, arguments: {

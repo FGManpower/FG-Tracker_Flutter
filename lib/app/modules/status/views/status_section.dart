@@ -234,21 +234,21 @@ class _StatusSectionState extends State<StatusSection> {
                           Get.to(() => const AddStatusScreen());
                         },
                       ),
-                      Divider(
-                        height: 1,
-                        color: Colors.grey.withValues(alpha: 0.15),
-                        indent: 12.w,
-                        endIndent: 12.w,
-                      ),
-                      _popupTile(
-                        icon: Icons.lock_outline_rounded,
-                        title: 'Status Privacy',
-                        color: Colors.black87,
-                        onTap: () {
-                          _removePopup();
-                          _showPrivacySheet();
-                        },
-                      ),
+                      // Divider(
+                      //   height: 1,
+                      //   color: Colors.grey.withValues(alpha: 0.15),
+                      //   indent: 12.w,
+                      //   endIndent: 12.w,
+                      // ),
+                      // _popupTile(
+                      //   icon: Icons.lock_outline_rounded,
+                      //   title: 'Status Privacy',
+                      //   color: Colors.black87,
+                      //   onTap: () {
+                      //     _removePopup();
+                      //     _showPrivacySheet();
+                      //   },
+                      // ),
                     ],
                   ),
                 ),

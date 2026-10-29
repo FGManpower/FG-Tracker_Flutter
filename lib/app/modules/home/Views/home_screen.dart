@@ -81,55 +81,57 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return UpgradeAlert(
       child: Obx(
-        () => Scaffold(
-          resizeToAvoidBottomInset: false,
-          backgroundColor: const Color(0xFFF4F6FC),
-          key: _scaffoldKey,
-          drawer: Sidemenu(scaffoldKey: _scaffoldKey),
-          appBar: Utility.isNotNullEmptyOrFalse(
-                  controller.InitializeResponeMessage.isNotEmpty)
-              ? null
-              : HomeAppBar(
-                  scaffoldKey: _scaffoldKey,
-                  controller: controller,
-                  trackingController: trackingController,
-                ),
-          body: Utility.isNotNullEmptyOrFalse(
-                  controller.InitializeResponeMessage.isNotEmpty)
-              ? LostinternetConnection(
-                  retry: () async {
-                    controller.init();
-                  },
-                  messgae: controller.InitializeResponeMessage.value,
-                )
-              : RefreshIndicator(
-                  onRefresh: () async {
-                    controller.init();
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: ListView(
-                      padding: EdgeInsets.only(bottom: 8.h),
-                      children: [
-                        BannerUi(),
-                        const StatsGrid(),
-                        SizedBox(height: 10.h),
-                        const _UpgradeToPremiumCard(),
-                        SizedBox(height: 12.h),
-                        QuickActionsSection(),
-                        SizedBox(height: 4.h),
-                      ],
+        () {
+          final bool hasInitError =
+              controller.InitializeResponeMessage.value.trim().isNotEmpty;
+
+          return Scaffold(
+            resizeToAvoidBottomInset: false,
+            backgroundColor: const Color(0xFFF4F6FC),
+            key: _scaffoldKey,
+            drawer: Sidemenu(scaffoldKey: _scaffoldKey),
+            appBar: hasInitError
+                ? null
+                : HomeAppBar(
+                    scaffoldKey: _scaffoldKey,
+                    controller: controller,
+                    trackingController: trackingController,
+                  ),
+            body: hasInitError
+                ? LostinternetConnection(
+                    retry: () async {
+                      controller.init();
+                    },
+                    messgae: controller.InitializeResponeMessage.value,
+                  )
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      controller.init();
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      child: ListView(
+                        padding: EdgeInsets.only(bottom: 8.h),
+                        children: [
+                          BannerUi(),
+                          const StatsGrid(),
+                          SizedBox(height: 10.h),
+                          const _UpgradeToPremiumCard(),
+                          SizedBox(height: 12.h),
+                          QuickActionsSection(),
+                          SizedBox(height: 4.h),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-          bottomNavigationBar: Utility.isNotNullEmptyOrFalse(
-                  controller.InitializeResponeMessage.isNotEmpty)
-              ? null
-              : BottomActionsBar(
-                  groupController: groupController,
-                  joinGroupController: joinGroupController,
-                ),
-        ),
+            bottomNavigationBar: hasInitError
+                ? null
+                : BottomActionsBar(
+                    groupController: groupController,
+                    joinGroupController: joinGroupController,
+                  ),
+          );
+        },
       ),
     );
   }

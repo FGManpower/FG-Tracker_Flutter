@@ -101,20 +101,22 @@ class _CallScreenState extends State<CallScreen>
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  child: isDialOpen ? const CallDialPad() : const SizedBox.shrink(),
+                  child: (isDialOpen && controller.selectedTab.value == 1)
+                      ? const CallDialPad()
+                      : const SizedBox.shrink(),
                 ),
               ],
             ),
           ),
           floatingActionButton: (isDialOpen ||
-                  controller.selectedTab.value != 0 ||
-                  controller.isSelectionMode.value)
+              controller.selectedTab.value != 1 ||
+              controller.isSelectionMode.value)
               ? const SizedBox.shrink()
               : _QuickCallActionButton(
-                  onTap: () {
-                    controller.toggleDialPad();
-                  },
-                ),
+            onTap: () {
+              controller.toggleDialPad();
+            },
+          ),
           floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         ),
       );
@@ -184,7 +186,7 @@ class _CallScreenState extends State<CallScreen>
                 onTap: () => controller.exitSelectionMode(),
                 child: Container(
                   padding:
-                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12.r),

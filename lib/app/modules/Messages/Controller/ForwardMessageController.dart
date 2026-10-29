@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../Data/Repositories/GetMessageRepo.dart';
+import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Model/GetMessage.dart';
 import '../../../Model/ForwardMessageModel.dart';
 import '../../../Model/MemberDataRes.dart';
+import '../../../routes/app_pages.dart';
 import '../../call/Controller/contact_controller.dart';
-import '../Views/Chat_Screen.dart';
-import '../Views/ChatList_Screen.dart';
 import 'MessageController.dart';
 
 class ForwardMessageController extends GetxController {
@@ -297,6 +297,11 @@ class ForwardMessageController extends GetxController {
         messageId: message.id!,
         sourceType: sourceType,
         targets: targets,
+        content: message.content?.toString(),
+        messageType: message.messageType?.toString(),
+        images: message.images,
+        videos: message.videos?.map((v) => v.toJson()).toList(),
+        caption: message.caption?.toString(),
       );
 
       if (response.status == false) {
@@ -308,14 +313,69 @@ class ForwardMessageController extends GetxController {
         return;
       }
 
-      final bool isSinglePerson = selected.length == 1 &&
-          !selected.first.isGroup &&
-          selected.first.targetId != null;
+      // Proactively broadcast real-time socket events to recipients so they receive full message data instantly
+      for (final dest in selected) {
+        try {
+          if (dest.isGroup && dest.targetId != null) {
+            SocketMessageService.instance.forwardMessage(
+              messageId: message.id!,
+              groupId: dest.targetId,
+              content: message.content,
+              messageType: message.messageType,
+              images: message.images,
+              videos: message.videos?.map((v) => v.toJson()).toList(),
+              caption: message.caption,
+            );
+          } else if (!dest.isGroup && dest.targetId != null) {
+            SocketMessageService.instance.forwardMessage(
+              messageId: message.id!,
+              receiverId: dest.targetId!.toString(),
+              content: message.content,
+              messageType: message.messageType,
+              images: message.images,
+              videos: message.videos?.map((v) => v.toJson()).toList(),
+              caption: message.caption,
+            );
+          }
+        } catch (socketErr) {
+          debugPrint("Failed to emit forwardMessage socket event: $socketErr");
+        }
+      }
 
-      if (isSinglePerson) {
-        await _openPrivateChat(selected.first);
+      Utils().fluttertoast("Message forwarded");
+
+      final bool isSingle = selected.length == 1;
+
+      if (isSingle) {
+        final target = selected.first;
+        Get.back();
+
+        if (target.isGroup) {
+          Get.toNamed(
+            Routes.groupChatScreen,
+            arguments: {
+              "groupId": target.targetId,
+              "groupName": target.displayName,
+              "groupProfile": target.displayImage,
+              "groupImage": target.displayImage,
+            },
+          );
+        } else {
+          final userData = MemberData(
+            userId: target.targetId!,
+            name: target.displayName,
+            profileImage: target.displayImage,
+            groupId: 0,
+          );
+          Get.toNamed(
+            Routes.chatScreen,
+            arguments: {
+              "userData": userData,
+            },
+          );
+        }
       } else {
-        _replaceStackWithChatList(instant: false);
+        Get.back();
       }
     } catch (e) {
       Get.snackbar(
@@ -326,41 +386,6 @@ class ForwardMessageController extends GetxController {
     } finally {
       isForwarding.value = false;
     }
-  }
-
-  void _replaceStackWithChatList({required bool instant}) {
-    Get.offUntil(
-      GetPageRoute(
-        page: () => ChatListScreen(),
-        transition: instant ? Transition.noTransition : null,
-        transitionDuration:
-        instant ? Duration.zero : const Duration(milliseconds: 300),
-      ),
-          (route) => route.isFirst,
-    );
-  }
-
-  Future<void> _openPrivateChat(ForwardDestination destination) async {
-    final userData = MemberData(
-      userId: destination.targetId!,
-      name: destination.displayName,
-      profileImage: destination.displayImage,
-      groupId: 0,
-    );
-
-    _replaceStackWithChatList(instant: true);
-
-    await Future.delayed(const Duration(milliseconds: 50));
-
-    Get.to(
-          () => ChatScreen(),
-      arguments: {
-        "userData": userData,
-      },
-      binding: BindingsBuilder(() {
-        Get.put(MessageController());
-      }),
-    );
   }
 
   @override

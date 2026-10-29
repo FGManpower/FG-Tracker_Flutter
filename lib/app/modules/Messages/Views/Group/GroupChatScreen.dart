@@ -202,6 +202,38 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 ),
               );
             }),
+            Obx(() {
+              final typingText = controller.groupTypingText.value;
+              if (typingText.isEmpty) return const SizedBox.shrink();
+              return Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                color: _scaffoldBg,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.edit_rounded,
+                      size: 14.sp,
+                      color: Colors.green.shade600,
+                    ),
+                    SizedBox(width: 6.w),
+                    Expanded(
+                      child: Text(
+                        typingText,
+                        style: TextStyle(
+                          color: Colors.green.shade700,
+                          fontSize: 12.sp,
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
             ChatInputArea(
               messageText: controller.messageText,
               imagePath: controller.imagePaths,
@@ -505,11 +537,11 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                           ),
                           SizedBox(height: 2.h),
                           Obx(() {
-                            final typingUser =
-                                controller.groupTypingUser.value;
-                            if (typingUser.isNotEmpty) {
+                            final typingText =
+                                controller.groupTypingText.value;
+                            if (typingText.isNotEmpty) {
                               return Text(
-                                "$typingUser is typing...",
+                                typingText,
                                 style: TextStyle(
                                   color: Colors.green,
                                   fontSize: 11.sp,

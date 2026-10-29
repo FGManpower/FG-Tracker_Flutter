@@ -90,18 +90,66 @@ class NotificationMarkers {
   final bool calling;
   final bool chatting;
   final bool walkie;
+  final bool? groupChat;
+  final bool? privateChat;
 
   NotificationMarkers({
     this.calling = false,
     this.chatting = false,
     this.walkie = false,
+    this.groupChat,
+    this.privateChat,
   });
 
+  static bool parseMarkerBool(dynamic val) {
+    if (val == null) return false;
+    if (val is bool) return val;
+    if (val is num) return val > 0;
+    if (val is String) {
+      final s = val.toLowerCase().trim();
+      if (s == 'true' || s == '1') return true;
+      final parsedNum = int.tryParse(s);
+      if (parsedNum != null) return parsedNum > 0;
+      return false;
+    }
+    if (val is Map) {
+      if (val['hasUnread'] == true || val['hasNotification'] == true || val['hasMissedCall'] == true) {
+        return true;
+      }
+      final count = val['unreadCount'] ??
+          val['unread_count'] ??
+          val['count'] ??
+          val['unread'] ??
+          val['totalUnread'] ??
+          val['total_unread'];
+      if (count is num && count > 0) return true;
+      if (count is String && (int.tryParse(count.trim()) ?? 0) > 0) return true;
+    }
+    return false;
+  }
+
   factory NotificationMarkers.fromJson(Map<String, dynamic> json) {
+    final bool hasCalling = parseMarkerBool(json['calling']);
+    final bool hasWalkie = parseMarkerBool(json['walkie']);
+
+    final bool isPrivateUnread = parseMarkerBool(json['privateChat']) ||
+        parseMarkerBool(json['private_chat']) ||
+        parseMarkerBool(json['private']);
+    final bool isGroupUnread = parseMarkerBool(json['groupChat']) ||
+        parseMarkerBool(json['group_chat']) ||
+        parseMarkerBool(json['group']);
+
+    final bool isChatting = parseMarkerBool(json['chatting']) ||
+        parseMarkerBool(json['chat']) ||
+        isPrivateUnread ||
+        isGroupUnread;
+
     return NotificationMarkers(
-      calling: json['calling'] == true,
-      chatting: json['chatting'] == true || json['chat'] == true,
-      walkie: json['walkie'] == true,
+      calling: hasCalling,
+      chatting: isChatting,
+      walkie: hasWalkie,
+      groupChat: isGroupUnread ? true : (json.containsKey('groupChat') ? false : null),
+      privateChat: isPrivateUnread ? true : (json.containsKey('privateChat') ? false : null),
     );
   }
 
@@ -110,6 +158,8 @@ class NotificationMarkers {
       'calling': calling,
       'chatting': chatting,
       'walkie': walkie,
+      if (groupChat != null) 'groupChat': groupChat,
+      if (privateChat != null) 'privateChat': privateChat,
     };
   }
 }

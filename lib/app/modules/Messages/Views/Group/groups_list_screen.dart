@@ -394,27 +394,51 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                       height: 50.h,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
-                        color: const Color(0xFFEDE7FF),
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                          ),
+                        ),
+                        alignment: Alignment.center,
                         child: Icon(
                           Icons.groups_rounded,
-                          color: const Color(0xFF6A5AE0),
+                          color: Colors.white,
                           size: 28.sp,
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
-                        color: const Color(0xFFEDE7FF),
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                          ),
+                        ),
+                        alignment: Alignment.center,
                         child: Icon(
                           Icons.groups_rounded,
-                          color: const Color(0xFF6A5AE0),
+                          color: Colors.white,
                           size: 28.sp,
                         ),
                       ),
                     )
                         : Container(
-                      color: const Color(0xFFEDE7FF),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                        ),
+                      ),
+                      alignment: Alignment.center,
                       child: Icon(
                         Icons.groups_rounded,
-                        color: const Color(0xFF6A5AE0),
+                        color: Colors.white,
                         size: 28.sp,
                       ),
                     ),

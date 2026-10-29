@@ -30,6 +30,8 @@ import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import '../../Attendance/models/attendance_poll_model.dart';
 
+import 'chat_list_controller.dart';
+
 class GroupMessageController extends GetxController with WidgetsBindingObserver {
   final socketService = SocketMessageService.instance;
 
@@ -88,9 +90,12 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
   RxInt highlightedMessageId = (-1).obs;
   final RxSet<int> uploadingVideoIndexes = <int>{}.obs;
+  final RxMap<String, String> groupTypingUsers = <String, String>{}.obs;
+  final RxString groupTypingText = "".obs;
   RxString groupTypingUser = "".obs;
+  DateTime? _lastGroupTypingEmitTime;
   Timer? _groupTypingDebounceTimer;
-  Timer? _groupTypingResetTimer;
+  final Map<String, Timer> _groupTypingUserTimers = {};
   final RxMap<int, double> videoUploadProgress = <int, double>{}.obs;
   final RxString floatingDate = "".obs;
   final RxBool showFloatingDate = false.obs;
@@ -144,6 +149,10 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         ? (arguments!["groupId"] as int)
         : (int.tryParse(arguments?["groupId"]?.toString() ?? '0') ?? 0);
 
+    if (Get.isRegistered<ChatListController>()) {
+      Get.find<ChatListController>().clearManualUnreadForGroup(groupId);
+    }
+
     groupName.value = arguments?["groupName"]?.toString() ?? "";
     groupDesc.value = arguments?["groupDesc"]?.toString() ?? "";
     groupImage = arguments?["groupImage"] ?? arguments?["groupProfile"] ?? "";
@@ -179,18 +188,72 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       userId: currentUserId,
     );
 
+    socketService.markSeen(currentUserId, groupId);
+
+    socketService.listenSeenUpdate(
+      groupId: groupId,
+      callback: (data) {
+        debugPrint("GROUP SEEN UPDATE => $data");
+        if (data is Map) {
+          final userId = data["userId"]?.toString();
+          if (userId != null && userId.isNotEmpty) {
+            for (var msg in _messages) {
+              if (msg.seenBy is List) {
+                if (!(msg.seenBy as List).contains(userId)) {
+                  (msg.seenBy as List).add(userId);
+                }
+              } else {
+                msg.seenBy = [userId];
+              }
+            }
+            updateMessageStream();
+          }
+        }
+      },
+    );
+
     socketService.receiveGroupMessage(
       callback: (message) {
         debugPrint("GROUP RECEIVE EVENT => $message");
 
-        final incomingMessage = MessageData.fromJson(message);
+        if (message is! Map) return;
+
+        final incomingMessage =
+            MessageData.fromJson(Map<String, dynamic>.from(message));
         debugPrint("RECEIVED MESSAGE ID => ${incomingMessage.id}");
 
         final incomingId = incomingMessage.id;
 
-        if (incomingId != null &&
-            _messages.any((item) => item.id == incomingId)) {
+        final existingIndex = incomingId != null
+            ? _messages.indexWhere((item) => item.id == incomingId)
+            : -1;
+
+        if (existingIndex != -1) {
+          final existing = _messages[existingIndex];
+          final hasOldContent = (existing.content?.toString().trim().isNotEmpty ?? false) ||
+              (existing.caption?.toString().trim().isNotEmpty ?? false) ||
+              (existing.images?.isNotEmpty ?? false) ||
+              (existing.videos?.isNotEmpty ?? false);
+          final hasNewContent = (incomingMessage.content?.toString().trim().isNotEmpty ?? false) ||
+              (incomingMessage.caption?.toString().trim().isNotEmpty ?? false) ||
+              (incomingMessage.images?.isNotEmpty ?? false) ||
+              (incomingMessage.videos?.isNotEmpty ?? false);
+          if (!hasOldContent && hasNewContent) {
+            existing.content = incomingMessage.content;
+            existing.caption = incomingMessage.caption;
+            existing.images = incomingMessage.images;
+            existing.videos = incomingMessage.videos;
+            existing.messageType = incomingMessage.messageType;
+            existing.thumbnail = incomingMessage.thumbnail;
+            updateMessageStream();
+          }
           debugPrint("DUPLICATE MESSAGE IGNORED => $incomingId");
+          return;
+        }
+
+        final eventGroupId = message["groupId"] ?? message["group_id"];
+        if (eventGroupId != null && eventGroupId.toString() != groupId.toString()) {
+          debugPrint("GROUP MESSAGE IGNORED => DIFFERENT GROUP $eventGroupId vs $groupId");
           return;
         }
 
@@ -198,6 +261,35 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             Global.storageServices.get(PrefConst.userId)?.toString();
         final isMyMessage = incomingMessage.senderId?.toString() == currentUserId;
         final wasAtBottom = isUserAtBottom();
+
+        final hasContent = (incomingMessage.content?.toString().trim().isNotEmpty ?? false) ||
+            (incomingMessage.caption?.toString().trim().isNotEmpty ?? false) ||
+            (incomingMessage.images?.isNotEmpty ?? false) ||
+            (incomingMessage.videos?.isNotEmpty ?? false);
+
+        if (incomingMessage.isForwarded == true && !hasContent) {
+          final fromId = incomingMessage.forwardedFromMessageId;
+          if (fromId != null) {
+            final source = _messages.firstWhereOrNull(
+              (m) => m.id == fromId || m.id?.toString() == fromId.toString(),
+            );
+            if (source != null) {
+              incomingMessage.content = source.content;
+              incomingMessage.caption = source.caption;
+              incomingMessage.images = source.images;
+              incomingMessage.videos = source.videos;
+              incomingMessage.messageType = source.messageType;
+              incomingMessage.thumbnail = source.thumbnail;
+            }
+          }
+
+          if ((incomingMessage.content?.toString().trim().isEmpty ?? true) &&
+              (incomingMessage.caption?.toString().trim().isEmpty ?? true) &&
+              (incomingMessage.images?.isEmpty ?? true) &&
+              (incomingMessage.videos?.isEmpty ?? true)) {
+            _resolveForwardedGroupMessageContent(incomingMessage);
+          }
+        }
 
         _messages.add(incomingMessage);
         updateMessageStream();
@@ -335,24 +427,111 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     socketService.listenGroupTyping(
       onTyping: (data) {
         try {
-          if (data is Map) {
-            final uid = data["userId"]?.toString();
-            final currentUserId =
-                Global.storageServices.get(PrefConst.userId)?.toString();
-            if (uid != null && uid != currentUserId) {
-              final name = data["userName"]?.toString() ?? "Someone";
-              groupTypingUser.value = name;
-              _groupTypingResetTimer?.cancel();
-              _groupTypingResetTimer = Timer(const Duration(seconds: 3), () {
-                if (!isClosed) groupTypingUser.value = "";
-              });
+          if (data is! Map) return;
+          final dataMap = Map<String, dynamic>.from(data);
+          final inner = dataMap['message'] is Map
+              ? Map<String, dynamic>.from(dataMap['message'])
+              : (dataMap['data'] is Map
+                  ? Map<String, dynamic>.from(dataMap['data'])
+                  : dataMap);
+
+          final eventGroupId = int.tryParse(
+            (inner["groupId"] ??
+                    inner["group_id"] ??
+                    dataMap["groupId"] ??
+                    dataMap["group_id"] ??
+                    "")
+                .toString(),
+          );
+
+          if (eventGroupId != null && eventGroupId != groupId) return;
+
+          final uid = (inner["userId"] ??
+                  inner["user_id"] ??
+                  inner["senderId"] ??
+                  inner["sender_id"] ??
+                  dataMap["userId"] ??
+                  dataMap["senderId"])
+              ?.toString();
+
+          final currentUserId =
+              Global.storageServices.get(PrefConst.userId)?.toString();
+
+          if (uid == null || uid.isEmpty || uid == currentUserId) return;
+
+          String? resolvedName;
+          final member = groupMembers.firstWhereOrNull(
+            (m) => m.userId?.toString() == uid,
+          );
+          if (member?.name != null && member!.name!.trim().isNotEmpty) {
+            resolvedName = member.name!.trim();
+          } else {
+            final rawName = (inner["userName"] ??
+                    inner["senderName"] ??
+                    dataMap["userName"] ??
+                    dataMap["senderName"])
+                ?.toString()
+                .trim();
+            if (rawName != null && rawName.isNotEmpty && rawName != "Someone") {
+              resolvedName = rawName;
             }
           }
-        } catch (_) {}
+          final finalName = resolvedName ?? "Someone";
+
+          groupTypingUsers[uid] = finalName;
+          _updateGroupTypingText();
+          debugPrint("[TYPING] Group typing active: ${groupTypingText.value}");
+
+          _groupTypingUserTimers[uid]?.cancel();
+          _groupTypingUserTimers[uid] =
+              Timer(const Duration(milliseconds: 4500), () {
+            if (!isClosed) {
+              groupTypingUsers.remove(uid);
+              _groupTypingUserTimers.remove(uid);
+              _updateGroupTypingText();
+              debugPrint("[TYPING] Group typing timer expired for $uid: ${groupTypingText.value}");
+            }
+          });
+        } catch (e) {
+          debugPrint("Error in onGroupTyping: $e");
+        }
       },
       onStopTyping: (data) {
-        _groupTypingResetTimer?.cancel();
-        groupTypingUser.value = "";
+        try {
+          if (data is! Map) return;
+          final dataMap = Map<String, dynamic>.from(data);
+          final inner = dataMap['message'] is Map
+              ? Map<String, dynamic>.from(dataMap['message'])
+              : (dataMap['data'] is Map
+                  ? Map<String, dynamic>.from(dataMap['data'])
+                  : dataMap);
+
+          final eventGroupId = int.tryParse(
+            (inner["groupId"] ??
+                    inner["group_id"] ??
+                    dataMap["groupId"] ??
+                    dataMap["group_id"] ??
+                    "")
+                .toString(),
+          );
+          if (eventGroupId != null && eventGroupId != groupId) return;
+
+          final uid = (inner["userId"] ??
+                  inner["user_id"] ??
+                  inner["senderId"] ??
+                  inner["sender_id"] ??
+                  dataMap["userId"] ??
+                  dataMap["senderId"])
+              ?.toString();
+
+          if (uid != null && uid.isNotEmpty) {
+            _groupTypingUserTimers[uid]?.cancel();
+            _groupTypingUserTimers.remove(uid);
+            groupTypingUsers.remove(uid);
+            _updateGroupTypingText();
+            debugPrint("[TYPING] Group typing stopped for $uid: ${groupTypingText.value}");
+          }
+        } catch (_) {}
       },
     );
 
@@ -361,34 +540,75 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     getGroupMembers();
   }
 
+  void _updateGroupTypingText() {
+    final count = groupTypingUsers.length;
+    if (count == 0) {
+      groupTypingText.value = "";
+      groupTypingUser.value = "";
+    } else if (count == 1) {
+      final name = groupTypingUsers.values.first;
+      groupTypingText.value = "$name is typing...";
+      groupTypingUser.value = name;
+    } else if (count == 2) {
+      final names = groupTypingUsers.values.toList();
+      groupTypingText.value = "${names[0]}, ${names[1]} are typing...";
+      groupTypingUser.value = "${names[0]}, ${names[1]}";
+    } else {
+      groupTypingText.value = "$count people are typing...";
+      groupTypingUser.value = "$count people";
+    }
+  }
+
   void onInputTextChanged(String text) {
     final currentUserId =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
     final currentUserName =
         Global.storageServices.get(PrefConst.userName)?.toString() ?? "Someone";
 
-    if (text.trim().isNotEmpty) {
-      if (_groupTypingDebounceTimer?.isActive != true) {
+    if (currentUserId.isEmpty) return;
+
+    final trimmed = text.trim();
+    if (trimmed.isNotEmpty) {
+      final now = DateTime.now();
+      // Throttle: emit immediately, then re-emit at most once every 2.5 seconds while typing continues
+      if (_lastGroupTypingEmitTime == null ||
+          now.difference(_lastGroupTypingEmitTime!).inMilliseconds >= 2500) {
+        _lastGroupTypingEmitTime = now;
         socketService.sendGroupTyping(
           groupId: groupId,
           userId: currentUserId,
           userName: currentUserName,
         );
       }
+
+      // Debounce: reset inactivity timer. After 2.5s without typing, emit stop typing
       _groupTypingDebounceTimer?.cancel();
-      _groupTypingDebounceTimer = Timer(const Duration(seconds: 2), () {
-        socketService.sendGroupStopTyping(
-          groupId: groupId,
-          userId: currentUserId,
-        );
+      _groupTypingDebounceTimer = Timer(const Duration(milliseconds: 2500), () {
+        _sendGroupStopTypingNow();
       });
     } else {
-      _groupTypingDebounceTimer?.cancel();
+      _sendGroupStopTypingNow();
+    }
+  }
+
+  void _sendGroupStopTypingNow() {
+    _groupTypingDebounceTimer?.cancel();
+    _lastGroupTypingEmitTime = null;
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+    final currentUserName =
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? "Someone";
+    if (currentUserId.isNotEmpty) {
       socketService.sendGroupStopTyping(
         groupId: groupId,
         userId: currentUserId,
+        userName: currentUserName,
       );
     }
+  }
+
+  void onInputFocusLost() {
+    _sendGroupStopTypingNow();
   }
 
   Future<void> addVideos(List<String> paths) async {
@@ -489,6 +709,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     required TextEditingController textController,
   }) async {
     if (isSending.value) return;
+    _sendGroupStopTypingNow();
     isSending.value = true;
 
     try {
@@ -971,37 +1192,51 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     debugPrint("==========================================");
   }
 
-  Future<void> getGroupMessages() async {
-    isLoading.value = true;
-
-    _messages
-      ..clear()
-      ..addAll(
-        List.generate(
-          7,
-              (index) {
-            final bool isMine = index % 3 == 1;
-            final bool isImage = index == 3;
-
-            return MessageData(
-              senderId: isMine ? 0 : 1,
-              senderName: "",
-              messageType: isImage ? "image" : "text",
-              content: isImage ? "" : "          ",
-              timestamp: DateTime.now().toIso8601String(),
-              seenCount: 0,
-              senderImage: "",
-            );
-          },
-        ),
+  Future<void> _resolveForwardedGroupMessageContent(MessageData target) async {
+    try {
+      final history = await MessageRepo.groupMessageHistory(
+        groupId: groupId,
+        page: 1,
+        limit: 10,
       );
 
-    updateMessageStream();
+      if (history.status == true && history.messageData != null) {
+        final found = history.messageData!.firstWhereOrNull(
+          (m) =>
+              (target.id != null && m.id == target.id) ||
+              (target.forwardedFromMessageId != null &&
+                  m.id?.toString() == target.forwardedFromMessageId?.toString()),
+        );
 
+        if (found != null) {
+          final idx = _messages.indexWhere((m) => m.id == target.id);
+          if (idx != -1) {
+            final m = _messages[idx];
+            m.content = found.content ?? m.content;
+            m.caption = found.caption ?? m.caption;
+            m.images = found.images ?? m.images;
+            m.videos = found.videos ?? m.videos;
+            m.messageType = found.messageType ?? m.messageType;
+            m.thumbnail = found.thumbnail ?? m.thumbnail;
+            updateMessageStream();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error resolving forwarded group message content: $e");
+    }
+  }
+
+  Future<void> getGroupMessages() async {
+    isLoading.value = true;
+    _messages.clear();
+    updateMessageStream();
 
     try {
       final result = await MessageRepo.groupMessageHistory(
         groupId: groupId,
+        page: 1,
+        limit: 15,
       );
 
       if (result.status == true) {
@@ -1535,7 +1770,23 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _sendGroupStopTypingNow();
+    }
+  }
+
+  @override
   void onClose() {
+    _sendGroupStopTypingNow();
+    for (final timer in _groupTypingUserTimers.values) {
+      timer.cancel();
+    }
+    _groupTypingUserTimers.clear();
+    groupTypingUsers.clear();
+    socketService.stopListeningGroupTyping();
     ChatTranslationService.instance.resetVisibility();
     ChatTranslationService.instance.stopAudio();
     WidgetsBinding.instance.removeObserver(this);
@@ -1546,14 +1797,13 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     focusNode.dispose();
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
-    _groupTypingDebounceTimer?.cancel();
-    _groupTypingResetTimer?.cancel();
     super.onClose();
   }
 
   void _onScrollForOlderMessages() {
     if (isLoadingOlderMessages.value) return;
     if (!hasMoreOlderMessages.value) return;
+    if (isLoading.value) return;
     if (_messages.isEmpty) return;
 
     final positions = itemPositionsListener.itemPositions.value;
@@ -1593,7 +1843,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       final result = await MessageRepo.groupMessageHistory(
         groupId: groupId,
         page: nextPage,
-        limit: 20,
+        limit: 15,
       );
 
       if (result.status == true) {
@@ -1626,7 +1876,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         if (result.pagination != null) {
           hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
         } else {
-          hasMoreOlderMessages.value = olderMessages.length >= 20;
+          hasMoreOlderMessages.value = olderMessages.length >= 15;
         }
       }
     } catch (e) {

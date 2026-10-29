@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/Model/live_location_model.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart';
@@ -44,6 +45,11 @@ class SocketDashboardService extends GetxService {
         'transports': ['websocket'],
         'autoConnect': true,
         'forceNew': true,
+        'reconnection': true,
+        'reconnectionAttempts': 10,
+        'reconnectionDelay': 1000,
+        'reconnectionDelayMax': 10000,
+        'randomizationFactor': 0.5,
       },
     );
 
@@ -54,6 +60,11 @@ class SocketDashboardService extends GetxService {
         log('[DashboardSocket] Re-emitting get-user-live-location on connect: $_lastLiveLocationParams');
         _socket?.emit('get-user-live-location', _lastLiveLocationParams);
       }
+    });
+
+    _socket!.on('force_logout', (data) {
+      log('[DashboardSocket] force_logout received: $data');
+      LogoutUser().handleForceLogout();
     });
 
     _socket!.onConnectError((error) {
@@ -155,10 +166,17 @@ class SocketDashboardService extends GetxService {
     );
   }
 
+  void disconnect() {
+    try {
+      _socket?.disconnect();
+      _socket?.dispose();
+      _socket = null;
+    } catch (_) {}
+  }
+
   @override
   void onClose() {
-    _socket?.dispose();
-    _socket = null;
+    disconnect();
 
     _groupCountController.close();
     _liveLocationController.close();

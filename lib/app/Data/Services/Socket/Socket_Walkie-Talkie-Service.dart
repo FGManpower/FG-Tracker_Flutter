@@ -16,6 +16,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
+import 'package:fgtracker/app/Core/values/logoutuser.dart';
 
 enum WalkieAudioRoute { speaker, earpiece, bluetooth, headset }
 
@@ -949,7 +950,10 @@ class GroupWalkieService {
       }
     });
 
-    socket?.on('force_logout', (_) async => dispose());
+    socket?.on('force_logout', (_) async {
+      _log('force_logout received on walkie socket');
+      LogoutUser().handleForceLogout();
+    });
 
     socket?.on('walkie_existing_peers', (data) async {
       if (_isDisposed || data == null || !_isEventForCurrentGroup(data)) return;
@@ -2216,5 +2220,6 @@ class GroupWalkieService {
     socket = null;
     _currentGroupId = null;
     _listenersBound = false;
+    _selfUserId = null;
   }
 }

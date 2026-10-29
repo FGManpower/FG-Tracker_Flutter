@@ -13,6 +13,7 @@ import 'package:fgtracker/features/safety/coming_soon/safety_coming_soon_map_scr
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
+import 'package:fgtracker/app/global_widget/crown_icon.dart';
 
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
@@ -143,6 +144,7 @@ class QuickActionsSection extends StatelessWidget {
                           : const Color(0xFF5338EE)),
                   showBadge: hasWalkieBadge,
                   badgeColor: const Color(0xFFEF4444),
+                  isPremium: isSubscribed,
                   imagePath: "assets/icons/new_action_walkie_talkie.png",
                   onTap: () async {
                     await Get.toNamed(Routes.walkieTalkieTrialDetails);
@@ -178,6 +180,7 @@ class _QuickActionCard extends StatelessWidget {
     this.onTap,
     this.showBadge = false,
     this.badgeColor,
+    this.isPremium = false,
   });
 
   final String title;
@@ -187,6 +190,7 @@ class _QuickActionCard extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showBadge;
   final Color? badgeColor;
+  final bool isPremium;
 
   @override
   Widget build(BuildContext context) {
@@ -272,6 +276,42 @@ class _QuickActionCard extends StatelessWidget {
                                   offset: const Offset(0, 1),
                                 ),
                               ],
+                            ),
+                          ),
+                        ),
+                      if (isPremium)
+                        Positioned(
+                          top: 2.h,
+                          left: 2.w,
+                          child: Container(
+                            width: 16.w,
+                            height: 16.w,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFB800), Color(0xFFFF8A00)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5.w,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFF8A00)
+                                      .withValues(alpha: 0.4),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: CrownIcon(
+                                width: 9.w,
+                                height: 7.h,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),

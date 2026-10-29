@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/Data/Services/GroupCountService.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -35,6 +36,11 @@ class SocketService extends GetxService {
       for (String groupId in connectedGroupIds) {
         _rejoinGroup(groupId);
       }
+
+      _socket?.on('force_logout', (data) {
+        log("force_logout received on location socket: $data");
+        LogoutUser().handleForceLogout();
+      });
 
 
 
@@ -271,10 +277,19 @@ class SocketService extends GetxService {
     }
   }
 
+  void disconnect() {
+    try {
+      connectedGroupIds.clear();
+      _socket?.clearListeners();
+      _socket?.disconnect();
+      _socket?.dispose();
+      _socket = null;
+    } catch (_) {}
+  }
+
   @override
   void onClose() {
-    _socket?.disconnect();
-    _socket?.dispose();
+    disconnect();
     super.onClose();
   }
 }

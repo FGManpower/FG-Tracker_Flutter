@@ -7,7 +7,9 @@ import '../../../Core/constant/pref_res.dart';
 import '../../../Core/values/global.dart';
 import '../../../Data/Repositories/GetMessageRepo.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatListController extends GetxController {
   RxList<PrivateChatModel> privateChats = <PrivateChatModel>[].obs;
@@ -17,6 +19,9 @@ class ChatListController extends GetxController {
   RxList<PrivateChatModel> archivedChats = <PrivateChatModel>[].obs;
 
   RxInt unreadTotalCount = 0.obs;
+  RxSet<String> manuallyUnreadChatKeys = <String>{}.obs;
+  static const String _prefUnreadKeyPrefix = 'manual_unread_chat_keys_';
+  String get _prefUnreadKey => '$_prefUnreadKeyPrefix$currentUserId';
   RxString searchQuery = "".obs;
   final searchController = TextEditingController();
   RxBool isSearching = false.obs;
@@ -38,6 +43,9 @@ class ChatListController extends GetxController {
 
     final validChats = privateChats.where((chat) {
       if (chat.isArchived == true) return false;
+      if (archivedChats.any((archived) => _isSameChat(archived, chat))) {
+        return false;
+      }
       final hasMsg = (chat.message != null && chat.message!.trim().isNotEmpty) ||
           (chat.preview != null && chat.preview!.trim().isNotEmpty) ||
           (chat.messageType != null &&
@@ -71,6 +79,11 @@ class ChatListController extends GetxController {
     }).toList();
   }
 
+  List<PrivateChatModel> get displayedArchivedChats {
+    return archivedChats.where((chat) => chat.isArchived != false).toList();
+  }
+
+
   /// Total count of all chats currently displayed (both private and group chats).
   int get allChatsCount => displayedChats.length;
 
@@ -93,10 +106,103 @@ class ChatListController extends GetxController {
   void onInit() {
     super.onInit();
 
-    SocketService.instance.markChatListViewed();
+    _loadManuallyUnreadKeys();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SocketService.instance.markChatListViewed();
+    });
     _initializePrivateChatListSocket();
     getPrivateChats();
     loadArchivedChats();
+  }
+
+  Future<void> _loadManuallyUnreadKeys() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getStringList(_prefUnreadKey) ?? [];
+      manuallyUnreadChatKeys.assignAll(saved);
+    } catch (_) {}
+  }
+
+  Future<void> _saveManuallyUnreadKeys() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_prefUnreadKey, manuallyUnreadChatKeys.toList());
+    } catch (_) {}
+  }
+
+  List<String> _getAllChatKeys(PrivateChatModel chat) {
+    final isGroup =
+        chat.isGroup == true || chat.chatType == "group" || chat.groupId != null;
+    final keys = <String>[];
+    if (isGroup) {
+      if (chat.groupId != null) keys.add('group_${chat.groupId}');
+      if (chat.id != null) keys.add('group_${chat.id}');
+      if (chat.chatId != null) keys.add('group_${chat.chatId}');
+      if (chat.conversationId != null) keys.add('group_${chat.conversationId}');
+    } else {
+      if (chat.userId != null) keys.add('private_${chat.userId}');
+      if (chat.chatId != null) keys.add('private_${chat.chatId}');
+      if (chat.conversationId != null) keys.add('private_${chat.conversationId}');
+      if (chat.id != null) keys.add('private_${chat.id}');
+    }
+    return keys;
+  }
+
+  bool isChatMarkedUnread(PrivateChatModel chat) {
+    final keys = _getAllChatKeys(chat);
+    return keys.any((k) => manuallyUnreadChatKeys.contains(k));
+  }
+
+  Future<void> markChatAsUnread(PrivateChatModel chat) async {
+    final keys = _getAllChatKeys(chat);
+    if (keys.isEmpty) return;
+    manuallyUnreadChatKeys.addAll(keys);
+    manuallyUnreadChatKeys.refresh();
+    privateChats.refresh();
+    await _saveManuallyUnreadKeys();
+  }
+
+  Future<void> clearManualUnreadForGroup(dynamic groupId) async {
+    if (groupId == null) return;
+    final target = 'group_$groupId';
+    if (manuallyUnreadChatKeys.contains(target)) {
+      manuallyUnreadChatKeys.remove(target);
+      manuallyUnreadChatKeys.refresh();
+      privateChats.refresh();
+      await _saveManuallyUnreadKeys();
+    }
+  }
+
+  Future<void> clearManualUnreadForPrivate({dynamic userId, dynamic chatId}) async {
+    bool changed = false;
+    if (userId != null) {
+      if (manuallyUnreadChatKeys.remove('private_$userId')) changed = true;
+    }
+    if (chatId != null) {
+      if (manuallyUnreadChatKeys.remove('private_$chatId')) changed = true;
+    }
+    if (changed) {
+      manuallyUnreadChatKeys.refresh();
+      privateChats.refresh();
+      await _saveManuallyUnreadKeys();
+      _syncChattingNotificationMarker();
+    }
+  }
+
+  void _syncChattingNotificationMarker() {
+    if (!Get.isRegistered<NotificationMarkerService>()) return;
+    final markerService = NotificationMarkerService.instance;
+    final hasPrivateUnread = privateChats.any((c) =>
+        (c.isGroup != true && c.chatType != 'group') &&
+        ((c.unreadCount ?? 0) > 0 || isChatMarkedUnread(c)));
+    final hasGroupUnread = privateChats.any((c) =>
+        (c.isGroup == true || c.chatType == 'group') &&
+        ((c.unreadCount ?? 0) > 0 || isChatMarkedUnread(c)));
+
+    markerService.setPrivateChatUnread(hasPrivateUnread);
+    if (hasGroupUnread) {
+      markerService.setGroupChatUnread(true);
+    }
   }
 
   void openSearch() {
@@ -175,12 +281,18 @@ class ChatListController extends GetxController {
       if (a.id != null && b.id != null) return a.id == b.id;
       if (a.chatId != null && b.chatId != null) return a.chatId == b.chatId;
       if (a.conversationId != null && b.conversationId != null) return a.conversationId == b.conversationId;
+      final aAny = a.groupId ?? a.id ?? a.chatId ?? a.conversationId;
+      final bAny = b.groupId ?? b.id ?? b.chatId ?? b.conversationId;
+      if (aAny != null && bAny != null && aAny == bAny) return true;
       return false;
     } else {
       if (a.userId != null && b.userId != null) return a.userId == b.userId;
       if (a.chatId != null && b.chatId != null) return a.chatId == b.chatId;
       if (a.conversationId != null && b.conversationId != null) return a.conversationId == b.conversationId;
       if (a.id != null && b.id != null) return a.id == b.id;
+      final aConv = a.conversationId ?? a.chatId ?? a.id;
+      final bConv = b.conversationId ?? b.chatId ?? b.id;
+      if (aConv != null && bConv != null && aConv == bConv) return true;
       return false;
     }
   }
@@ -338,6 +450,7 @@ class ChatListController extends GetxController {
       }
 
       privateChats.refresh();
+      _syncChattingNotificationMarker();
     } catch (e, stackTrace) {
     } finally {
       isLoading.value = false;
@@ -493,6 +606,7 @@ class ChatListController extends GetxController {
         }
         privateChats.assignAll(_sortPinnedChats(uniqueMap.values.toList()));
         privateChats.refresh();
+        _syncChattingNotificationMarker();
       }
     } catch (_) {}
   }
@@ -637,7 +751,9 @@ class ChatListController extends GetxController {
             archivedChats[archivedIndex],
             updatedChat,
           );
+          archivedChats[archivedIndex].isArchived = true;
         } else {
+          updatedChat.isArchived = true;
           archivedChats.insert(0, updatedChat);
         }
 
@@ -645,6 +761,9 @@ class ChatListController extends GetxController {
         archivedChats.refresh();
 
         return;
+      } else {
+        archivedChats.removeWhere((chat) => _isSameChat(chat, updatedChat));
+        archivedChats.refresh();
       }
 
       final hasMsg = (updatedChat.message != null && updatedChat.message!.trim().isNotEmpty) ||
@@ -681,6 +800,7 @@ class ChatListController extends GetxController {
         privateChats.add(updatedChat);
         privateChats.assignAll(_sortPinnedChats(privateChats));
         privateChats.refresh();
+        _syncChattingNotificationMarker();
 
         return;
       }
@@ -701,6 +821,7 @@ class ChatListController extends GetxController {
       privateChats[index] = mergedChat;
       privateChats.assignAll(_sortPinnedChats(privateChats));
       privateChats.refresh();
+      _syncChattingNotificationMarker();
     } catch (e, stackTrace) {}
   }
 
@@ -885,54 +1006,70 @@ class ChatListController extends GetxController {
   }
 
   void archiveChat(PrivateChatModel chat) {
-    if (chat.id == null) {
-      return;
+    final effectiveId =
+        chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId ?? chat.userId;
+    if (effectiveId != null) {
+      socketService.archivePrivateChat(
+        userId: currentUserId,
+        chatId: effectiveId.toString(),
+      );
     }
 
-    final chatId = chat.id!.toString();
-
-    socketService.archivePrivateChat(
-      userId: currentUserId,
-      chatId: chatId,
-    );
+    chat.isArchived = true;
+    chat.isPinned = false;
 
     privateChats.removeWhere(
-      (item) => item.id == chat.id,
+      (item) => _isSameChat(item, chat),
     );
 
+    final existingArchivedIndex = archivedChats.indexWhere(
+      (item) => _isSameChat(item, chat),
+    );
+    if (existingArchivedIndex == -1) {
+      archivedChats.insert(0, chat);
+    } else {
+      final merged = _mergePrivateChat(
+        archivedChats[existingArchivedIndex],
+        chat,
+      );
+      merged.isArchived = true;
+      archivedChats[existingArchivedIndex] = merged;
+    }
+
     privateChats.refresh();
+    archivedChats.refresh();
   }
 
   void unarchiveChat(PrivateChatModel chat) {
-    if (chat.id == null) {
-      return;
+    final effectiveId =
+        chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId ?? chat.userId;
+    if (effectiveId != null) {
+      socketService.unarchivePrivateChat(
+        userId: currentUserId,
+        chatId: effectiveId.toString(),
+      );
     }
-
-    final chatId = chat.id!.toString();
-
-    socketService.unarchivePrivateChat(
-      userId: currentUserId,
-      chatId: chatId,
-    );
 
     chat.isArchived = false;
     chat.isPinned = false;
 
     archivedChats.removeWhere(
-      (item) => item.id == chat.id,
+      (item) => _isSameChat(item, chat),
     );
 
     final existingIndex = privateChats.indexWhere(
-      (item) => item.id == chat.id,
+      (item) => _isSameChat(item, chat),
     );
 
     if (existingIndex == -1) {
-      privateChats.add(chat);
+      privateChats.insert(0, chat);
     } else {
-      privateChats[existingIndex] = _mergePrivateChat(
+      final merged = _mergePrivateChat(
         privateChats[existingIndex],
         chat,
       );
+      merged.isArchived = false;
+      privateChats[existingIndex] = merged;
     }
 
     privateChats.assignAll(_sortPinnedChats(privateChats));
@@ -941,7 +1078,7 @@ class ChatListController extends GetxController {
     privateChats.refresh();
   }
 
-  void markChatAsRead(PrivateChatModel chat) {
+  Future<void> markChatAsRead(PrivateChatModel chat) async {
     if (chat.isGroup == true) {
       final gId = chat.groupId ?? chat.id;
       if (gId != null) {
@@ -957,6 +1094,13 @@ class ChatListController extends GetxController {
       }
     }
 
+    final keys = _getAllChatKeys(chat);
+    if (keys.isNotEmpty) {
+      manuallyUnreadChatKeys.removeAll(keys);
+      manuallyUnreadChatKeys.refresh();
+      await _saveManuallyUnreadKeys();
+    }
+
     final cUnread = chat.unreadCount ?? 0;
     if (cUnread > 0) {
       unreadTotalCount.value =
@@ -964,6 +1108,7 @@ class ChatListController extends GetxController {
     }
     chat.unreadCount = 0;
     privateChats.refresh();
+    _syncChattingNotificationMarker();
   }
 
   void deleteChat(PrivateChatModel chat) {
@@ -1068,10 +1213,24 @@ class ChatListController extends GetxController {
               Map<String, dynamic>.from(item),
             ),
           )
-          .where((chat) => chat.id != null)
+          .where((chat) =>
+              chat.id != null ||
+              chat.chatId != null ||
+              chat.userId != null ||
+              chat.groupId != null)
           .toList();
 
+      for (final chat in chats) {
+        chat.isArchived = true;
+      }
+
       archivedChats.value = chats;
+
+      // Ensure mutual exclusivity: remove any archived chats from privateChats
+      for (final a in chats) {
+        privateChats.removeWhere((p) => _isSameChat(p, a));
+      }
+      privateChats.refresh();
 
       final pagination = data["pagination"];
 

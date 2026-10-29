@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:developer';
+import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
@@ -26,6 +27,13 @@ import '../../../routes/app_pages.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'chat_list_controller.dart';
+
+void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
+  if (kDebugMode) {
+    developer.log(message, error: error, stackTrace: stackTrace, name: name ?? 'MessageController');
+  }
+}
 
 class MessageController extends GetxController with WidgetsBindingObserver {
   final socketService = SocketMessageService.instance;
@@ -89,6 +97,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   RxBool isPeerOnline = false.obs;
   final RxString peerLastSeen = "Offline".obs;
   final RxBool isPeerTyping = false.obs;
+  DateTime? _lastTypingEmitTime;
   Timer? _typingDebounceTimer;
   Timer? _peerTypingResetTimer;
   RxString privateChatId = "".obs;
@@ -141,9 +150,16 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     memberData = arguments?['userData'];
 
+    if (Get.isRegistered<ChatListController>()) {
+      Get.find<ChatListController>().clearManualUnreadForPrivate(
+        userId: memberData.userId,
+        chatId: arguments?['chatId'],
+      );
+    }
+
     log("========== CHAT DEBUG 7: MEMBER DATA ==========");
     log("MEMBER DATA => $memberData");
-    log("MEMBER USER ID => ${memberData?.userId}");
+    log("MEMBER USER ID => ${memberData.userId}");
 
     log("========== CHAT DEBUG 8: BEFORE INITIALIZE ==========");
 
@@ -184,9 +200,18 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     textEditingController.dispose();
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
-    _typingDebounceTimer?.cancel();
+    _sendPrivateStopTypingNow();
     _peerTypingResetTimer?.cancel();
-    socketService.disconnectPrivateChatSocket();
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString();
+    final receiverId = memberData.userId?.toString();
+    if (currentUserId != null && receiverId != null) {
+      socketService.leavePrivateChat(
+        userId: currentUserId,
+        receiverId: receiverId,
+      );
+    }
+    socketService.clearPrivateChatListeners();
     super.onClose();
   }
 
@@ -213,6 +238,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _sendPrivateStopTypingNow();
+    }
     if (state == AppLifecycleState.resumed) {
       final picker = ImagePicker();
       try {
@@ -292,39 +321,58 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   void onInputTextChanged(String text) {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
-    final receiverId = memberData?.userId?.toString() ?? "";
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+    final currentUserName =
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? "Someone";
+    final receiverId = memberData.userId?.toString() ?? "";
 
-    if (text.trim().isNotEmpty) {
-      if (_typingDebounceTimer?.isActive != true) {
-        if (privateChatId.value.isNotEmpty && receiverId.isNotEmpty) {
-          socketService.sendPrivateTyping(
-            chatId: privateChatId.value,
-            userId: currentUserId,
-            otherUserId: receiverId,
-          );
-        }
-      }
-      _typingDebounceTimer?.cancel();
-      _typingDebounceTimer = Timer(const Duration(seconds: 2), () {
-        if (privateChatId.value.isNotEmpty && receiverId.isNotEmpty) {
-          socketService.sendPrivateStopTyping(
-            chatId: privateChatId.value,
-            userId: currentUserId,
-            otherUserId: receiverId,
-          );
-        }
-      });
-    } else {
-      _typingDebounceTimer?.cancel();
-      if (privateChatId.value.isNotEmpty && receiverId.isNotEmpty) {
-        socketService.sendPrivateStopTyping(
+    if (receiverId.isEmpty || currentUserId.isEmpty) return;
+
+    final trimmed = text.trim();
+    if (trimmed.isNotEmpty) {
+      final now = DateTime.now();
+      // Throttle: emit immediately, then re-emit at most once every 2.5 seconds while typing continues
+      if (_lastTypingEmitTime == null ||
+          now.difference(_lastTypingEmitTime!).inMilliseconds >= 2500) {
+        _lastTypingEmitTime = now;
+        socketService.sendPrivateTyping(
           chatId: privateChatId.value,
           userId: currentUserId,
           otherUserId: receiverId,
+          userName: currentUserName,
         );
       }
+
+      // Debounce: reset inactivity timer. After 2.5s without typing, emit stop typing
+      _typingDebounceTimer?.cancel();
+      _typingDebounceTimer = Timer(const Duration(milliseconds: 2500), () {
+        _sendPrivateStopTypingNow();
+      });
+    } else {
+      _sendPrivateStopTypingNow();
     }
+  }
+
+  void _sendPrivateStopTypingNow() {
+    _typingDebounceTimer?.cancel();
+    _lastTypingEmitTime = null;
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+    final currentUserName =
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? "Someone";
+    final receiverId = memberData.userId?.toString() ?? "";
+    if (receiverId.isNotEmpty && currentUserId.isNotEmpty) {
+      socketService.sendPrivateStopTyping(
+        chatId: privateChatId.value,
+        userId: currentUserId,
+        otherUserId: receiverId,
+        userName: currentUserName,
+      );
+    }
+  }
+
+  void onInputFocusLost() {
+    _sendPrivateStopTypingNow();
   }
 
   Future<void> scrollToMessage(int messageId) async {
@@ -373,12 +421,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     log("=================================");
     log("[CHAT-PERF] 1. Initialization started: ${stopwatch.elapsedMilliseconds} ms");
 
-    try {
-      GroupTrackingController.instance.initializeLocation();
-      log("[CHAT-PERF] Location initialization called: ${stopwatch.elapsedMilliseconds} ms");
-    } catch (e) {
-      log("==============MessageException======${e.toString()}");
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        GroupTrackingController.instance.initializeLocation();
+        log("[CHAT-PERF] Location initialization called: ${stopwatch.elapsedMilliseconds} ms");
+      } catch (e) {
+        log("==============MessageException======${e.toString()}");
+      }
+    });
 
     ChatStateTracker.isChatCallScreenOpen = true;
 
@@ -523,14 +573,62 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             final messageData =
             MessageData.fromJson(Map<String, dynamic>.from(message));
 
-            final alreadyExists = _messages.any(
-                  (msg) => msg.id == messageData.id && messageData.id != null,
+            final existingIndex = _messages.indexWhere(
+              (msg) => msg.id == messageData.id && messageData.id != null,
             );
 
-            if (!alreadyExists) {
+            if (existingIndex != -1) {
+              final existing = _messages[existingIndex];
+              final hasOldContent = (existing.content?.toString().trim().isNotEmpty ?? false) ||
+                  (existing.caption?.toString().trim().isNotEmpty ?? false) ||
+                  (existing.images?.isNotEmpty ?? false) ||
+                  (existing.videos?.isNotEmpty ?? false);
+              final hasNewContent = (messageData.content?.toString().trim().isNotEmpty ?? false) ||
+                  (messageData.caption?.toString().trim().isNotEmpty ?? false) ||
+                  (messageData.images?.isNotEmpty ?? false) ||
+                  (messageData.videos?.isNotEmpty ?? false);
+              if (!hasOldContent && hasNewContent) {
+                existing.content = messageData.content;
+                existing.caption = messageData.caption;
+                existing.images = messageData.images;
+                existing.videos = messageData.videos;
+                existing.messageType = messageData.messageType;
+                existing.thumbnail = messageData.thumbnail;
+                updateMessageStream();
+              }
+            } else {
               final wasAtBottom = isUserAtBottom();
               final isMyMessage =
                   messageData.senderId?.toString() == currentUserId.toString();
+
+              final hasContent = (messageData.content?.toString().trim().isNotEmpty ?? false) ||
+                  (messageData.caption?.toString().trim().isNotEmpty ?? false) ||
+                  (messageData.images?.isNotEmpty ?? false) ||
+                  (messageData.videos?.isNotEmpty ?? false);
+
+              if (messageData.isForwarded == true && !hasContent) {
+                final fromId = messageData.forwardedFromMessageId;
+                if (fromId != null) {
+                  final source = _messages.firstWhereOrNull(
+                    (m) => m.id == fromId || m.id?.toString() == fromId.toString(),
+                  );
+                  if (source != null) {
+                    messageData.content = source.content;
+                    messageData.caption = source.caption;
+                    messageData.images = source.images;
+                    messageData.videos = source.videos;
+                    messageData.messageType = source.messageType;
+                    messageData.thumbnail = source.thumbnail;
+                  }
+                }
+
+                if ((messageData.content?.toString().trim().isEmpty ?? true) &&
+                    (messageData.caption?.toString().trim().isEmpty ?? true) &&
+                    (messageData.images?.isEmpty ?? true) &&
+                    (messageData.videos?.isEmpty ?? true)) {
+                  _resolveForwardedMessageContent(messageData);
+                }
+              }
 
               _messages.add(messageData);
               updateMessageStream();
@@ -558,7 +656,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                 otherUserId: receiverId,
               );
             }
-          } catch (e) {}
+          } catch (e) {
+            log("Error handling private socket message: $e");
+          }
         },
       );
 
@@ -597,20 +697,105 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       socketService.listenPrivateTyping(
         onTyping: (data) {
           try {
-            final senderId = (data is Map ? data["userId"] : null)?.toString();
-            final targetUserId = memberData?.userId?.toString();
-            if (senderId == null || senderId == targetUserId) {
+            if (data is! Map) return;
+            final dataMap = Map<String, dynamic>.from(data);
+            final inner = dataMap['message'] is Map
+                ? Map<String, dynamic>.from(dataMap['message'])
+                : (dataMap['data'] is Map
+                    ? Map<String, dynamic>.from(dataMap['data'])
+                    : dataMap);
+
+            final currentUserId =
+                Global.storageServices.get(PrefConst.userId)?.toString();
+            final targetUserId = memberData.userId?.toString();
+
+            final senderId = (inner["userId"] ??
+                    inner["user_id"] ??
+                    inner["senderId"] ??
+                    inner["sender_id"] ??
+                    dataMap["userId"] ??
+                    dataMap["senderId"])
+                ?.toString();
+
+            final eventChatId = (inner["chatId"] ??
+                    inner["chat_id"] ??
+                    dataMap["chatId"] ??
+                    dataMap["chat_id"])
+                ?.toString();
+
+            // Ignore events sent by myself
+            if (senderId != null && senderId == currentUserId) return;
+
+            // Match if senderId is the peer we are chatting with, or matches chatId
+            final isForThisChat = (targetUserId != null &&
+                    targetUserId.isNotEmpty &&
+                    senderId == targetUserId) ||
+                (privateChatId.value.isNotEmpty &&
+                    eventChatId != null &&
+                    eventChatId == privateChatId.value);
+
+            if (isForThisChat) {
+              debugPrint("[TYPING] Peer typing started: $targetUserId in chat ${privateChatId.value}");
               isPeerTyping.value = true;
               _peerTypingResetTimer?.cancel();
-              _peerTypingResetTimer = Timer(const Duration(seconds: 3), () {
-                if (!isClosed) isPeerTyping.value = false;
+              _peerTypingResetTimer =
+                  Timer(const Duration(milliseconds: 4000), () {
+                if (!isClosed) {
+                  debugPrint("[TYPING] Peer typing reset timer expired");
+                  isPeerTyping.value = false;
+                }
               });
             }
-          } catch (_) {}
+          } catch (e) {
+            log("Error in onTyping listener: $e");
+          }
         },
         onStopTyping: (data) {
-          _peerTypingResetTimer?.cancel();
-          isPeerTyping.value = false;
+          try {
+            if (data is Map) {
+              final dataMap = Map<String, dynamic>.from(data);
+              final inner = dataMap['message'] is Map
+                  ? Map<String, dynamic>.from(dataMap['message'])
+                  : (dataMap['data'] is Map
+                      ? Map<String, dynamic>.from(dataMap['data'])
+                      : dataMap);
+
+              final targetUserId = memberData.userId?.toString();
+              final senderId = (inner["userId"] ??
+                      inner["user_id"] ??
+                      inner["senderId"] ??
+                      inner["sender_id"] ??
+                      dataMap["userId"] ??
+                      dataMap["senderId"])
+                  ?.toString();
+
+              final eventChatId = (inner["chatId"] ??
+                      inner["chat_id"] ??
+                      dataMap["chatId"] ??
+                      dataMap["chat_id"])
+                  ?.toString();
+
+              final isForThisChat = (targetUserId != null &&
+                      targetUserId.isNotEmpty &&
+                      senderId == targetUserId) ||
+                  (privateChatId.value.isNotEmpty &&
+                      eventChatId != null &&
+                      eventChatId == privateChatId.value);
+
+              if (isForThisChat) {
+                debugPrint("[TYPING] Peer typing stopped: $targetUserId in chat ${privateChatId.value}");
+                _peerTypingResetTimer?.cancel();
+                isPeerTyping.value = false;
+              }
+            } else {
+              debugPrint("[TYPING] Peer typing stopped (data not map)");
+              _peerTypingResetTimer?.cancel();
+              isPeerTyping.value = false;
+            }
+          } catch (_) {
+            _peerTypingResetTimer?.cancel();
+            isPeerTyping.value = false;
+          }
         },
       );
 
@@ -785,6 +970,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     required TextEditingController textController,
   }) async {
     if (isSending.value) return;
+    _sendPrivateStopTypingNow();
     isSending.value = true;
 
     final text = textController.text.trim();
@@ -1175,6 +1361,49 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     log("PRIVATE DELETE EMIT CALLED");
   }
 
+  Future<void> _resolveForwardedMessageContent(MessageData target) async {
+    try {
+      GetMessage? history;
+      if (privateChatId.value.isNotEmpty) {
+        history = await MessageRepo.privateChatHistory(
+          chatId: privateChatId.value,
+          page: 1,
+          limit: 10,
+        );
+      } else if (memberData.userId != null) {
+        history = await MessageRepo.MessageHistory(
+          recieverId: memberData.userId.toString(),
+          groupId: 0,
+        );
+      }
+
+      if (history?.status == true && history?.messageData != null) {
+        final found = history!.messageData!.firstWhereOrNull(
+          (m) =>
+              (target.id != null && m.id == target.id) ||
+              (target.forwardedFromMessageId != null &&
+                  m.id?.toString() == target.forwardedFromMessageId?.toString()),
+        );
+
+        if (found != null) {
+          final idx = _messages.indexWhere((m) => m.id == target.id);
+          if (idx != -1) {
+            final m = _messages[idx];
+            m.content = found.content ?? m.content;
+            m.caption = found.caption ?? m.caption;
+            m.images = found.images ?? m.images;
+            m.videos = found.videos ?? m.videos;
+            m.messageType = found.messageType ?? m.messageType;
+            m.thumbnail = found.thumbnail ?? m.thumbnail;
+            updateMessageStream();
+          }
+        }
+      }
+    } catch (e) {
+      log("Error resolving forwarded message content in MessageController: $e");
+    }
+  }
+
   Future<void> getMessageHistory(
     String recieverId,
     int groupId,
@@ -1233,12 +1462,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       hasMoreOlderMessages.value = true;
 
       log("========== HISTORY DEBUG 2: BEFORE API CALL ==========");
-      log("HISTORY DEBUG => page: 1, limit: 10");
+      log("HISTORY DEBUG => page: 1, limit: 30");
 
       final result = await MessageRepo.privateChatHistory(
         chatId: chatId,
         page: 1,
-        limit: 10,
+        limit: 15,
       );
 
       log("========== HISTORY DEBUG 3: API RESPONSE RECEIVED ==========");
@@ -1426,7 +1655,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       receiverId: receiverId,
     );
 
-    socketService.disconnectPrivateChatSocket();
+    socketService.clearPrivateChatListeners();
 
     _messages.clear();
     messageText.value = "";
@@ -1666,6 +1895,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   void _onScrollForOlderMessages() {
     if (isLoadingOlderMessages.value) return;
     if (!hasMoreOlderMessages.value) return;
+    if (isLoadingInitialMessages.value) return;
     if (_messages.isEmpty) return;
 
     final positions = itemPositionsListener.itemPositions.value;
@@ -1800,7 +2030,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       final result = await MessageRepo.privateChatHistory(
         chatId: privateChatId.value,
         page: nextPage,
-        limit: 10,
+        limit: 15,
       );
 
       if (result.status == true) {
@@ -1830,7 +2060,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (result.pagination != null) {
           hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
         } else {
-          hasMoreOlderMessages.value = olderMessages.length >= 10;
+          hasMoreOlderMessages.value = olderMessages.length >= 15;
         }
       }
     } catch (e) {

@@ -26,7 +26,7 @@ class CallRecentCallsTab extends StatefulWidget {
 }
 
 class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
-  final CallController controller = Get.find<CallController>();
+  final CallController controller = CallController.instance;
   final ScrollController _scrollController = ScrollController();
   final _SwipeActionCoordinator _swipeCoordinator = _SwipeActionCoordinator();
 

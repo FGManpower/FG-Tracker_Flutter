@@ -1,8 +1,8 @@
+import 'dart:developer';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 
 import 'package:get/get.dart';
 
-import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../Core/values/loading.dart';
 import '../../../Core/values/logoutuser.dart';
 import '../../../Data/Repositories/Auth_repo.dart';
@@ -12,18 +12,17 @@ class logOutController extends GetxController {
     try {
       Loading().showloading();
 
-      var result = await AuthRepo.logOutUser();
-      if (result.status == true) {
-        Loading().dismissloading();
-        Utils().fluttertoast(result.message.toString());
-        LogoutUser().logout();
-      } else {
-        Loading().dismissloading();
-        Utils().fluttertoast(result.message.toString());
+      try {
+        var result = await AuthRepo.logOutUser();
+        if (result.message != null && result.message!.toString().trim().isNotEmpty) {
+          Utils().fluttertoast(result.message.toString());
+        }
+      } catch (e) {
+        log("logOutUser API error: $e");
       }
-    } catch (e) {
+    } finally {
       Loading().dismissloading();
-      CommonDialog.errorMessage(e.toString());
+      await LogoutUser().logout();
     }
   }
 }

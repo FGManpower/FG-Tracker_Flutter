@@ -1,17 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/global_widget/crown_icon.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../modules/home/Views/LiveStatus/components/ghost_member.dart';
@@ -85,6 +81,10 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                               imageUrl: '${ConstRes.aImageBaseUrl}$profileImage',
                               width: 44.w,
                               height: 44.w,
+                              memCacheWidth: 120,
+                              memCacheHeight: 120,
+                              maxWidthDiskCache: 300,
+                              maxHeightDiskCache: 300,
                               fit: BoxFit.cover,
                               placeholder: (context, url) => Container(
                                 width: 44.w,
@@ -146,34 +146,6 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
       actions: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            Get.toNamed(Routes.walkieTalkieTrialDetails);
-          },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CrownIcon(
-                width: 21.w,
-                height: 15.5.h,
-                color: const Color(0xFF5338EE),
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                'Premiums',
-                style: TextStyle(
-                  fontFamily: FontFamily.interBold,
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF5338EE),
-                  height: 1.1,
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(width: 10.w),
         _LocationStatus(trackingController: trackingController),
         SizedBox(width: 8.w),
         _NotificationBell(

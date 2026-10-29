@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:intl/intl.dart';
 
 class GroupMemberModel {
@@ -667,6 +668,7 @@ class User {
   bool? isLocationSharing;
   bool? isOnline;
   String? lastSeen;
+  String? privateModeStartedAt;
   bool? isSubscribed;
   String? subscriptionStatus;
   String? accessType;
@@ -680,6 +682,7 @@ class User {
     this.isLocationSharing,
     this.isOnline,
     this.lastSeen,
+    this.privateModeStartedAt,
     this.isSubscribed,
     this.subscriptionStatus,
     this.accessType,
@@ -695,6 +698,8 @@ class User {
         _toBool(json['isLocationSharing'] ?? json['locationSharing']);
     isOnline = _toBool(json['isOnline'] ?? json['online']);
     lastSeen = json['lastSeen']?.toString();
+    privateModeStartedAt = json['privateModeStartedAt']?.toString() ??
+        json['private_mode_started_at']?.toString();
     isSubscribed = _toBool(json['isSubscribed']);
     subscriptionStatus = json['subscriptionStatus']?.toString();
     accessType = json['accessType']?.toString();
@@ -713,6 +718,8 @@ class User {
       'isLocationSharing': isLocationSharing,
       'isOnline': isOnline,
       'lastSeen': lastSeen,
+      if (privateModeStartedAt != null)
+        'privateModeStartedAt': privateModeStartedAt,
       if (isSubscribed != null) 'isSubscribed': isSubscribed,
       if (subscriptionStatus != null) 'subscriptionStatus': subscriptionStatus,
       if (accessType != null) 'accessType': accessType,
@@ -1317,6 +1324,8 @@ class GroupMemberData {
   String? role;
   String? joinedAt;
   String? startedAt;
+  String? privateModeStartedAt;
+  bool? isMe;
   int? chatId;
   String? createdAt;
   String? subscriptionStatus;
@@ -1353,6 +1362,8 @@ class GroupMemberData {
     this.role,
     this.joinedAt,
     this.startedAt,
+    this.privateModeStartedAt,
+    this.isMe,
     this.createdAt,
     this.subscriptionStatus,
     this.subscription,
@@ -1408,11 +1419,40 @@ class GroupMemberData {
         json['image']?.toString();
     if (json['location'] != null && json['location'] is Map) {
       location = Location.fromJson(Map<String, dynamic>.from(json['location']));
+    } else if (json['location'] != null && json['location'] is String && json['location'].toString().trim().isNotEmpty) {
+      location = Location(
+        area: json['location'].toString().trim(),
+        city: json['city']?.toString(),
+        latitude: _toDouble(json['latitude'] ?? json['lat']),
+        longitude: _toDouble(json['longitude'] ?? json['lng'] ?? json['lon']),
+      );
+    }
+    if (location == null && (json['area'] != null || json['city'] != null || json['address'] != null)) {
+      location = Location(
+        area: json['area']?.toString() ?? json['address']?.toString(),
+        city: json['city']?.toString(),
+        latitude: _toDouble(json['latitude'] ?? json['lat']),
+        longitude: _toDouble(json['longitude'] ?? json['lng'] ?? json['lon']),
+      );
+    } else if (location != null) {
+      if ((location!.area == null || location!.area!.isEmpty) && json['area'] != null) {
+        location!.area = json['area']?.toString();
+      }
+      if ((location!.city == null || location!.city!.isEmpty) && json['city'] != null) {
+        location!.city = json['city']?.toString();
+      }
+      if ((location!.area == null || location!.area!.isEmpty) && json['address'] != null) {
+        location!.area = json['address']?.toString();
+      }
     }
     isLocationSharing =
         _toBool(json['isLocationSharing'] ?? json['locationSharing']);
     isOnline = _toBool(json['isOnline'] ?? json['online']);
-    lastSeen = json['lastSeen']?.toString() ?? json['lastActive']?.toString();
+    final dynamic rawLast = json['rawLastSeen'] ??
+        json['lastSeen'] ??
+        json['last_seen'] ??
+        json['lastActive'];
+    lastSeen = rawLast?.toString();
     chatId = _toInt(
         json['chatId'] ?? json['privateChatId'] ?? json['conversationId']);
     department = json['department']?.toString() ??
@@ -1423,6 +1463,9 @@ class GroupMemberData {
         json['joined_at']?.toString() ??
         json['joiningDate']?.toString();
     startedAt = json['startedAt']?.toString() ?? json['started_at']?.toString();
+    privateModeStartedAt = json['privateModeStartedAt']?.toString() ??
+        json['private_mode_started_at']?.toString();
+    isMe = _toBool(json['isMe'] ?? json['is_me']);
     createdAt = json['createdAt']?.toString() ?? json['created_at']?.toString();
     subscriptionStatus = json['subscriptionStatus']?.toString() ??
         json['subscription_status']?.toString();
@@ -1495,6 +1538,12 @@ class GroupMemberData {
     data['role'] = role;
     data['joinedAt'] = joinedAt;
     data['startedAt'] = startedAt;
+    if (privateModeStartedAt != null) {
+      data['privateModeStartedAt'] = privateModeStartedAt;
+    }
+    if (isMe != null) {
+      data['isMe'] = isMe;
+    }
     data['createdAt'] = createdAt;
     if (subscriptionStatus != null) {
       data['subscriptionStatus'] = subscriptionStatus;
@@ -1585,9 +1634,24 @@ class GroupMemberData {
     return '${ConstRes.aImageBaseUrl}$clean';
   }
 
-  bool get effectiveIsOnline => isOnline == true;
+  bool get effectiveIsOnline => Tracking().isOnline(
+        rawIsOnline: isOnline,
+        lastSeen: lastSeen,
+        thresholdMinutes: 5,
+      );
 
   bool get isGhostMode => isLocationSharing == false;
+
+  String? get displayLocation {
+    final parts = [location?.area, location?.city]
+        .where((s) => s != null && s.toString().trim().isNotEmpty && s.toString().trim().toLowerCase() != 'null')
+        .map((s) => s!.toString().trim())
+        .toList();
+    if (parts.isNotEmpty) {
+      return parts.join(', ');
+    }
+    return null;
+  }
 
   String get formattedJoinedAt {
     final raw = joinedAt ?? createdAt;
@@ -1601,28 +1665,40 @@ class GroupMemberData {
   }
 
   String get formattedStartedAt {
-    final raw = startedAt ?? createdAt ?? lastSeen;
-    if (raw == null || raw.trim().isEmpty) return 'Just now';
-    try {
-      final dt = DateTime.parse(raw.trim());
-      return DateFormat('hh:mm a').format(dt);
-    } catch (_) {
-      return raw.trim();
+    final raw = (privateModeStartedAt != null &&
+            privateModeStartedAt!.trim().isNotEmpty &&
+            privateModeStartedAt!.trim().toLowerCase() != 'null')
+        ? privateModeStartedAt
+        : (startedAt ?? createdAt ?? lastSeen);
+    if (raw == null || raw.trim().isEmpty || raw.trim().toLowerCase() == 'null') {
+      return 'Just now';
     }
+    final parsed = Tracking.parseDateTime(raw);
+    if (parsed != null) {
+      try {
+        return DateFormat('dd MMM, hh:mm a').format(parsed);
+      } catch (_) {
+        return raw.trim();
+      }
+    }
+    return raw.trim();
   }
 
   String get formattedLastSeen {
-    if (lastSeen == null || lastSeen!.trim().isEmpty) return 'Offline';
+    if (lastSeen == null ||
+        lastSeen!.trim().isEmpty ||
+        lastSeen!.trim().toLowerCase() == 'null') {
+      return 'Offline';
+    }
+    final parsed = Tracking.parseDateTime(lastSeen);
+    if (parsed == null) {
+      final s = lastSeen!.trim();
+      return s.toLowerCase() == 'offline' ? 'Offline' : s;
+    }
     try {
-      final dt = DateTime.parse(lastSeen!.trim());
-      final diff = DateTime.now().difference(dt);
-      if (diff.inSeconds < 60) return 'Just now';
-      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-      if (diff.inHours < 24) return '${diff.inHours}h ago';
-      if (diff.inDays < 7) return '${diff.inDays}d ago';
-      return DateFormat('dd MMM').format(dt);
+      return Tracking().getTimeAgo(parsed);
     } catch (_) {
-      return lastSeen!.trim();
+      return 'Offline';
     }
   }
 
@@ -1647,6 +1723,13 @@ class GroupMemberData {
       return false;
     }
     return null;
+  }
+
+  static double? _toDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString());
   }
 }
 
@@ -1673,7 +1756,7 @@ class Location {
   Location.fromJson(Map<String, dynamic> json) {
     latitude = _toDouble(json['latitude'] ?? json['lat']);
     longitude = _toDouble(json['longitude'] ?? json['lng'] ?? json['lon']);
-    area = json['area']?.toString();
+    area = json['area']?.toString() ?? json['address']?.toString() ?? json['location']?.toString();
     city = json['city']?.toString();
   }
 

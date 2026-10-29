@@ -929,7 +929,10 @@ class _AllChatsBody extends StatelessWidget {
           }),
         );
       },
-      onLongPress: () => _showChatOptions(context, tapPos, chat),
+      onLongPressStart: (details) {
+        tapPos = details.globalPosition;
+        _showChatOptions(context, details.globalPosition, chat);
+      },
       child: Container(
         color: Colors.transparent,
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
@@ -939,6 +942,7 @@ class _AllChatsBody extends StatelessWidget {
           msg: msg,
           time: time,
           unreadCount: unreadCount,
+          isMarkedUnread: controller.isChatMarkedUnread(chat),
           statusColor: statusColor,
           isGroup: isGroup,
           isPinned: chat.isPinned == true,
@@ -960,6 +964,7 @@ class _AllChatsBody extends StatelessWidget {
     required String msg,
     required String time,
     int unreadCount = 0,
+    bool isMarkedUnread = false,
     Color? statusColor,
     bool isGroup = false,
     bool isPinned = false,
@@ -998,30 +1003,51 @@ class _AllChatsBody extends StatelessWidget {
                           height: 52.r,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
-                            color: colors['bg'],
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                              ),
+                            ),
                             alignment: Alignment.center,
                             child: Icon(
                               Icons.groups_rounded,
-                              color: colors['icon'],
+                              color: Colors.white,
                               size: 26.sp,
                             ),
                           ),
                           errorWidget: (context, url, error) => Container(
-                            color: colors['bg'],
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                              ),
+                            ),
                             alignment: Alignment.center,
                             child: Icon(
                               Icons.groups_rounded,
-                              color: colors['icon'],
+                              color: Colors.white,
                               size: 26.sp,
                             ),
                           ),
                         )
                       : Container(
-                          color: colors['bg'],
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                            ),
+                          ),
                           alignment: Alignment.center,
                           child: Icon(
                             Icons.groups_rounded,
-                            color: colors['icon'],
+                            color: Colors.white,
                             size: 26.sp,
                           ),
                         ),
@@ -1217,7 +1243,9 @@ class _AllChatsBody extends StatelessWidget {
             reausabletext(
               time,
               fontsize: 9.sp,
-              color: const Color(0xFF6B4DFF),
+              color: (unreadCount > 0 || isMarkedUnread)
+                  ? const Color(0xFF6B4DFF)
+                  : Colors.grey,
               maxline: 1,
             ),
             SizedBox(height: 6.h),
@@ -1239,8 +1267,17 @@ class _AllChatsBody extends StatelessWidget {
                   ),
                 ),
               )
+            else if (isMarkedUnread)
+              Container(
+                width: 10.w,
+                height: 10.w,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF6B4DFF),
+                  shape: BoxShape.circle,
+                ),
+              )
             else
-              SizedBox(height: 20.w),
+              SizedBox(height: 18.w),
           ],
         ),
         SizedBox(width: 16.w),
@@ -1259,7 +1296,8 @@ class _AllChatsBody extends StatelessWidget {
     PrivateChatModel chat,
   ) {
     final bool isPinned = chat.isPinned == true;
-    final bool isMuted = chat.isMuted == true;
+    final bool isUnread = (chat.unreadCount != null && chat.unreadCount! > 0) ||
+        controller.isChatMarkedUnread(chat);
     CustomDropdownMenu.show(
       context: context,
       position: position,
@@ -1277,23 +1315,16 @@ class _AllChatsBody extends StatelessWidget {
           },
         ),
         DropdownMenuItemData(
-          icon: isMuted
-              ? Icons.notifications_active_outlined
-              : Icons.notifications_off_outlined,
-          title: isMuted ? "Unmute Notifications" : "Mute Notifications",
+          icon: isUnread
+              ? Icons.mark_email_read_outlined
+              : Icons.mark_email_unread_outlined,
+          title: isUnread ? "Mark as Read" : "Mark as Unread",
           onTap: () {
-            if (isMuted) {
-              controller.unmuteChat(chat);
+            if (isUnread) {
+              controller.markChatAsRead(chat);
             } else {
-              _showMuteOptions(context, chat);
+              controller.markChatAsUnread(chat);
             }
-          },
-        ),
-        DropdownMenuItemData(
-          icon: Icons.mark_email_read_outlined,
-          title: "Mark as Read",
-          onTap: () {
-            controller.markChatAsRead(chat);
           },
         ),
         DropdownMenuItemData(
@@ -1862,17 +1893,67 @@ class _GroupsTabBody extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                width: 48.w,
-                height: 48.w,
-                decoration: BoxDecoration(
-                  color: colors['bg'],
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.groups_rounded,
-                  color: colors['icon'],
-                  size: 24.sp,
+              ClipOval(
+                child: SizedBox(
+                  width: 48.w,
+                  height: 48.w,
+                  child: (group.groupProfile != null &&
+                          group.groupProfile!.isNotEmpty &&
+                          !_isPlaceholderImage(group.groupProfile))
+                      ? CachedNetworkImage(
+                          imageUrl: _formatImageUrl(group.groupProfile),
+                          width: 48.w,
+                          height: 48.w,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.groups_rounded,
+                              color: Colors.white,
+                              size: 24.sp,
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.groups_rounded,
+                              color: Colors.white,
+                              size: 24.sp,
+                            ),
+                          ),
+                        )
+                      : Container(
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.groups_rounded,
+                            color: Colors.white,
+                            size: 24.sp,
+                          ),
+                        ),
                 ),
               ),
               SizedBox(width: 14.w),

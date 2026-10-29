@@ -1,4 +1,6 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 
@@ -16,132 +18,117 @@ class DropdownMenuItemData {
   });
 }
 
-
 Future<void> show({
   required BuildContext context,
   required Offset position,
   required List<DropdownMenuItemData> items,
-  double width = 200,
+  double width = 210,
 }) async {
-  final overlay = Overlay.of(context)
-      .context
-      .findRenderObject() as RenderBox;
+  HapticFeedback.mediumImpact();
 
-  final screenSize = overlay.size;
+  final mediaQuery = MediaQuery.of(context);
+  final screenSize = mediaQuery.size;
   final menuWidth = width.w;
 
-  const horizontalMargin = 10.0;
-  const verticalMargin = 10.0;
+  const horizontalMargin = 12.0;
+  const verticalMargin = 12.0;
+  final menuHeight = items.length * 48.0.h + 16.h;
 
-  final menuHeight = items.fold<double>(
-    0,
-        (height, item) {
-      final textStyle = TextStyle(
-        fontSize: 12.sp,
-        fontFamily: FontFamily.interSemiBold,
-      );
-
-      final textPainter = TextPainter(
-        text: TextSpan(text: item.title, style: textStyle),
-        textDirection: Directionality.of(context),
-        maxLines: 2,
-      )..layout(maxWidth: menuWidth - 60.w);
-
-      return height +
-          (textPainter.height > 18.sp
-              ? textPainter.height
-              : 18.sp) +
-          24.h +
-          (height == 0 ? 0 : 0);
-    },
-  ) +
-      (items.isNotEmpty ? (items.length - 1) * 0.8 : 0);
+  final minSafeTop = mediaQuery.padding.top + kToolbarHeight + 12.h;
+  final maxSafeTop = (screenSize.height - menuHeight - mediaQuery.padding.bottom - 16.h)
+      .clamp(minSafeTop, screenSize.height);
 
   final maxLeft = screenSize.width - menuWidth - horizontalMargin;
+  double left = position.dx == 0 ? (screenSize.width - menuWidth) / 2 : position.dx;
+  left = left.clamp(horizontalMargin, maxLeft < horizontalMargin ? horizontalMargin : maxLeft);
 
-  final left = position.dx
-      .clamp(horizontalMargin, maxLeft < horizontalMargin
-      ? horizontalMargin
-      : maxLeft)
-      .toDouble();
-
-  final availableBelow =
-      screenSize.height - position.dy - verticalMargin;
-
-  final openAbove = availableBelow < menuHeight &&
-      position.dy > menuHeight + verticalMargin;
-
-  final estimatedMenuHeight = menuHeight.clamp(
-    0.0,
-    screenSize.height - (verticalMargin * 2),
-  );
-
-  final double top;
-
-  if (availableBelow >= estimatedMenuHeight) {
+  double top;
+  if (position == Offset.zero || position.dy < minSafeTop) {
+    top = minSafeTop;
+  } else if (position.dy + menuHeight <= screenSize.height - mediaQuery.padding.bottom - 16.h) {
     top = position.dy;
   } else {
-    top = (position.dy - estimatedMenuHeight)
-        .clamp(
-      verticalMargin,
-      screenSize.height - estimatedMenuHeight - verticalMargin,
-    )
-        .toDouble();
+    top = position.dy - menuHeight;
   }
 
-  await showDialog<void>(
+  top = top.clamp(minSafeTop, maxSafeTop);
+
+  await showGeneralDialog<void>(
     context: context,
-    barrierColor: Colors.transparent,
-    useSafeArea: false,
-    builder: (ctx) {
+    barrierDismissible: true,
+    barrierLabel: "DropdownMenu",
+    barrierColor: Colors.black.withValues(alpha: 0.28),
+    transitionDuration: const Duration(milliseconds: 180),
+    pageBuilder: (ctx, animation, secondaryAnimation) {
       return Stack(
         children: [
           Positioned.fill(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () => Navigator.of(ctx).pop(),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                child: Container(
+                  color: Colors.transparent,
+                ),
+              ),
             ),
           ),
           Positioned(
             left: left,
-            top: top.clamp(
-              verticalMargin,
-              screenSize.height - verticalMargin,
-            ),
+            top: top,
             child: Material(
               color: Colors.transparent,
-              child: Container(
-                width: menuWidth,
-                constraints: BoxConstraints(
-                  maxHeight: screenSize.height -
-                      verticalMargin * 2,
+              child: ScaleTransition(
+                scale: CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutBack,
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
+                alignment: position.dx > screenSize.width / 2
+                    ? Alignment.topRight
+                    : Alignment.topLeft,
+                child: FadeTransition(
+                  opacity: animation,
+                  child: Container(
+                    width: menuWidth,
+                    constraints: BoxConstraints(
+                      maxHeight: screenSize.height - minSafeTop - mediaQuery.padding.bottom - 16.h,
                     ),
-                  ],
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(items.length, (i) {
-                      final item = items[i];
-
-                      return _DropdownItem(
-                        item: item,
-                        isLast: i == items.length - 1,
-                        onTap: () {
-                          Navigator.of(ctx).pop();
-                          item.onTap?.call();
-                        },
-                      );
-                    }),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.14),
+                          blurRadius: 24,
+                          spreadRadius: 1,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(18.r),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(items.length, (i) {
+                            final item = items[i];
+                            return _DropdownItem(
+                              item: item,
+                              isLast: i == items.length - 1,
+                              onTap: () {
+                                Navigator.of(ctx).pop();
+                                item.onTap?.call();
+                              },
+                            );
+                          }),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -167,33 +154,37 @@ class _DropdownItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color color =
-    item.isDestructive ? Colors.red : const Color(0xFF6B4DFF);
+        item.isDestructive ? const Color(0xFFE53935) : const Color(0xFF5045B9);
 
     return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14.r),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
         decoration: BoxDecoration(
           border: isLast
               ? null
               : Border(
-            bottom: BorderSide(
-              color: Colors.grey.withValues(alpha: 0.08),
-              width: 0.8,
-            ),
-          ),
+                  bottom: BorderSide(
+                    color: Colors.grey.withValues(alpha: 0.08),
+                    width: 0.8,
+                  ),
+                ),
         ),
         child: Row(
           children: [
-            Icon(item.icon, color: color, size: 18.sp),
+            Icon(item.icon, color: color, size: 19.sp),
             SizedBox(width: 12.w),
-            Text(
-              item.title,
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: item.isDestructive ? Colors.red : Colors.black87,
-                fontFamily: FontFamily.interSemiBold,
+            Expanded(
+              child: Text(
+                item.title,
+                style: TextStyle(
+                  fontSize: 12.5.sp,
+                  color: item.isDestructive ? const Color(0xFFE53935) : Colors.black87,
+                  fontFamily: FontFamily.interSemiBold,
+                ),
               ),
             ),
           ],

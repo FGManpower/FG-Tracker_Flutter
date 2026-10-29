@@ -398,8 +398,11 @@ class _GhostMemberState extends State<GhostMember> {
           imageUrl: member.profileImage,
           status: false,
           lastSeen: member.lastSeen,
+          phone: member.phone ?? member.mobileNo,
+          team: member.displayDepartment,
           isGroupChat: false,
           isLocationSharing: false,
+          location: member.displayLocation,
         );
       },
       borderRadius: BorderRadius.circular(16.r),
@@ -516,7 +519,9 @@ class _GhostMemberState extends State<GhostMember> {
                       ),
                       SizedBox(width: 5.w),
                       Text(
-                        "Started at ${member.formattedStartedAt}",
+                        member.formattedStartedAt.toLowerCase().startsWith('started at')
+                            ? member.formattedStartedAt
+                            : "Started at ${member.formattedStartedAt}",
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interRegular,

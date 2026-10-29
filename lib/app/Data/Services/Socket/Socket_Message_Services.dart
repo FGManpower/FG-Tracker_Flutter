@@ -1,12 +1,22 @@
 import 'dart:async';
-import 'dart:developer';
-
+import 'dart:convert';
+import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Data/Services/Socket/status_socket_service.dart';
+import 'package:fgtracker/app/modules/status/controller/status_feed_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:get/get.dart';
 import 'package:socket_io_common/src/util/event_emitter.dart';
+
+void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
+  if (kDebugMode) {
+    developer.log(message, error: error, stackTrace: stackTrace, name: name ?? 'SocketMessageService');
+    debugPrint("[${name ?? 'Socket'}] $message");
+  }
+}
 
 class SocketMessageService extends GetxService {
   static SocketMessageService get instance => Get.put(SocketMessageService());
@@ -123,6 +133,44 @@ class SocketMessageService extends GetxService {
       log("USER ID: $userId");
       log("GROUP ID: ${groupId ?? 'NULL'}");
     });
+
+    void handleStatusDeleted(dynamic data) {
+      if (data == null) return;
+      log("[ChatSocket] status:deleted received: $data");
+      Map<String, dynamic>? map;
+      if (data is Map) {
+        map = Map<String, dynamic>.from(data);
+      } else if (data is String) {
+        try {
+          final decoded = jsonDecode(data);
+          if (decoded is Map) {
+            map = Map<String, dynamic>.from(decoded);
+          }
+        } catch (_) {}
+      }
+      if (map != null) {
+        if (Get.isRegistered<StatusSocketService>()) {
+          Get.find<StatusSocketService>().onStatusDeletedEvent.value = map;
+          Get.find<StatusSocketService>().onStatusDeletedEvent.refresh();
+        } else if (Get.isRegistered<StatusFeedController>()) {
+          final int deletedStatusId = map['statusId'] is int
+              ? map['statusId']
+              : int.tryParse(map['statusId']?.toString() ?? '') ?? 0;
+          final int creatorUserId = map['userId'] is int
+              ? map['userId']
+              : int.tryParse(map['userId']?.toString() ?? '') ?? 0;
+          if (deletedStatusId > 0) {
+            Get.find<StatusFeedController>().onStatusDeletedReceived(
+              deletedStatusId,
+              creatorUserId,
+            );
+          }
+        }
+      }
+    }
+
+    _socket?.on('status:deleted', handleStatusDeleted);
+    _socket?.on('status:delete', handleStatusDeleted);
 
     log("SOCKET INIT COMPLETED — WAITING FOR CONNECTION");
     log("===========================================");
@@ -292,14 +340,24 @@ class SocketMessageService extends GetxService {
   void receiveGroupMessage({
     required Function(dynamic) callback,
   }) {
-    socket.off("receive_group_message");
-
-    socket.on(
+    final events = [
       "receive_group_message",
-      (data) {
-        callback(data);
-      },
-    );
+      "group_forward_message",
+      "forward_message",
+      "receive_forward_message",
+      "message_forwarded",
+      "forwarded_message",
+    ];
+
+    for (final event in events) {
+      socket.off(event);
+      socket.on(
+        event,
+        (data) {
+          callback(data);
+        },
+      );
+    }
   }
 
   void sendGroupTyping({
@@ -307,38 +365,69 @@ class SocketMessageService extends GetxService {
     required String userId,
     required String userName,
   }) {
+    final payload = {
+      "groupId": groupId,
+      "userId": userId,
+      "senderId": userId,
+      "userName": userName,
+      "senderName": userName,
+      "isTyping": true,
+    };
+    log("EMIT group_typing => $payload");
     if (!isSocketConnected) return;
     try {
-      socket.emit("group_typing", {
-        "groupId": groupId,
-        "userId": userId,
-        "userName": userName,
-      });
-    } catch (_) {}
+      socket.emit("group_typing", payload);
+    } catch (e) {
+      log("Error emitting group_typing: $e");
+    }
   }
 
   void sendGroupStopTyping({
     required int groupId,
     required String userId,
+    String? userName,
   }) {
+    final payload = {
+      "groupId": groupId,
+      "userId": userId,
+      "senderId": userId,
+      if (userName != null) "userName": userName,
+      if (userName != null) "senderName": userName,
+      "isTyping": false,
+    };
+    log("EMIT group_stop_typing => $payload");
     if (!isSocketConnected) return;
     try {
-      socket.emit("group_stop_typing", {
-        "groupId": groupId,
-        "userId": userId,
-      });
-    } catch (_) {}
+      socket.emit("group_stop_typing", payload);
+    } catch (e) {
+      log("Error emitting group_stop_typing: $e");
+    }
   }
 
   void listenGroupTyping({
     required Function(dynamic) onTyping,
     required Function(dynamic) onStopTyping,
   }) {
-    if (!isSocketConnected) return;
+    final s = _socket;
+    if (s == null) {
+      log("listenGroupTyping skipped: _socket is null");
+      return;
+    }
+    s.off("group_typing");
+    s.off("group_stop_typing");
+    s.on("group_typing", (data) {
+      log("RECEIVED group_typing => $data");
+      onTyping(data);
+    });
+    s.on("group_stop_typing", (data) {
+      log("RECEIVED group_stop_typing => $data");
+      onStopTyping(data);
+    });
+  }
+
+  void stopListeningGroupTyping() {
     _socket?.off("group_typing");
     _socket?.off("group_stop_typing");
-    _socket?.on("group_typing", (data) => onTyping(data));
-    _socket?.on("group_stop_typing", (data) => onStopTyping(data));
   }
 
   Future<void> initPrivateChat(
@@ -366,7 +455,7 @@ class SocketMessageService extends GetxService {
 
           log("SAVED CHAT ID => $_privateChatId");
 
-          onJoined?.call(data);
+          onJoined.call(data);
         });
       }
 
@@ -553,8 +642,18 @@ class SocketMessageService extends GetxService {
       return;
     }
 
+    final events = [
+      "receive_message",
+      "forward_message",
+      "receive_forward_message",
+      "message_forwarded",
+      "forwarded_message",
+    ];
+
     if (_privateMessageHandler != null) {
-      socket.off("receive_message", _privateMessageHandler);
+      for (final event in events) {
+        socket.off(event, _privateMessageHandler);
+      }
     }
 
     _privateMessageHandler = (dynamic data) {
@@ -566,14 +665,33 @@ class SocketMessageService extends GetxService {
         return;
       }
 
-      final dataSenderId = data["senderId"]?.toString();
-      final dataReceiverId = data["receiverId"]?.toString();
+      final dataMap = Map<String, dynamic>.from(data);
+      final inner = dataMap['message'] is Map
+          ? Map<String, dynamic>.from(dataMap['message'])
+          : (dataMap['data'] is Map
+              ? Map<String, dynamic>.from(dataMap['data'])
+              : dataMap);
+
+      final dataSenderId = (inner["senderId"] ??
+              inner["sender_id"] ??
+              inner["userId"] ??
+              inner["user_id"] ??
+              dataMap["senderId"] ??
+              dataMap["sender_id"])
+          ?.toString();
+      final dataReceiverId = (inner["receiverId"] ??
+              inner["receiver_id"] ??
+              inner["targetId"] ??
+              inner["target_id"] ??
+              dataMap["receiverId"] ??
+              dataMap["receiver_id"])
+          ?.toString();
 
       final isSameChat =
-          (dataSenderId == senderId &&
-              dataReceiverId == receiverId) ||
-              (dataSenderId == receiverId &&
-                  dataReceiverId == senderId);
+          (dataSenderId == senderId && dataReceiverId == receiverId) ||
+          (dataSenderId == receiverId && dataReceiverId == senderId) ||
+          (dataReceiverId == receiverId && (dataSenderId == null || dataSenderId == senderId)) ||
+          (dataSenderId == receiverId && (dataReceiverId == null || dataReceiverId == senderId));
 
       log("EXPECTED SENDER => $senderId");
       log("EXPECTED RECEIVER => $receiverId");
@@ -588,12 +706,14 @@ class SocketMessageService extends GetxService {
 
       log("MESSAGE ACCEPTED => CALLING CONTROLLER CALLBACK");
 
-      callback?.call(Map<String, dynamic>.from(data));
+      callback?.call(dataMap);
 
       log("CONTROLLER CALLBACK COMPLETED");
     };
 
-    socket.on("receive_message", _privateMessageHandler!);
+    for (final event in events) {
+      socket.on(event, _privateMessageHandler!);
+    }
 
     log("RECEIVE MESSAGE LISTENER REGISTERED");
   }
@@ -670,41 +790,76 @@ class SocketMessageService extends GetxService {
     required String chatId,
     required String userId,
     required String otherUserId,
+    String? userName,
   }) {
+    final payload = {
+      "chatId": chatId,
+      "userId": userId,
+      "senderId": userId,
+      "otherUserId": otherUserId,
+      "receiverId": otherUserId,
+      if (userName != null) "userName": userName,
+      if (userName != null) "senderName": userName,
+      "isTyping": true,
+    };
+    log("EMIT private typing => $payload");
     if (!isPrivateChatSocketConnected) return;
     try {
-      _privateChatSocket?.emit("typing", {
-        "chatId": chatId,
-        "userId": userId,
-        "otherUserId": otherUserId,
-      });
-    } catch (_) {}
+      _privateChatSocket?.emit("typing", payload);
+    } catch (e) {
+      log("Error emitting private typing: $e");
+    }
   }
 
   void sendPrivateStopTyping({
     required String chatId,
     required String userId,
     required String otherUserId,
+    String? userName,
   }) {
+    final payload = {
+      "chatId": chatId,
+      "userId": userId,
+      "senderId": userId,
+      "otherUserId": otherUserId,
+      "receiverId": otherUserId,
+      if (userName != null) "userName": userName,
+      if (userName != null) "senderName": userName,
+      "isTyping": false,
+    };
+    log("EMIT private stop_typing => $payload");
     if (!isPrivateChatSocketConnected) return;
     try {
-      _privateChatSocket?.emit("stop_typing", {
-        "chatId": chatId,
-        "userId": userId,
-        "otherUserId": otherUserId,
-      });
-    } catch (_) {}
+      _privateChatSocket?.emit("stop_typing", payload);
+    } catch (e) {
+      log("Error emitting private stop_typing: $e");
+    }
   }
 
   void listenPrivateTyping({
     required Function(dynamic) onTyping,
     required Function(dynamic) onStopTyping,
   }) {
-    if (!isPrivateChatSocketConnected) return;
+    final s = _privateChatSocket;
+    if (s == null) {
+      log("listenPrivateTyping skipped: _privateChatSocket is null");
+      return;
+    }
+    s.off("typing");
+    s.off("stop_typing");
+    s.on("typing", (data) {
+      log("RECEIVED private typing => $data");
+      onTyping(data);
+    });
+    s.on("stop_typing", (data) {
+      log("RECEIVED private stop_typing => $data");
+      onStopTyping(data);
+    });
+  }
+
+  void stopListeningPrivateTyping() {
     _privateChatSocket?.off("typing");
     _privateChatSocket?.off("stop_typing");
-    _privateChatSocket?.on("typing", (data) => onTyping(data));
-    _privateChatSocket?.on("stop_typing", (data) => onStopTyping(data));
   }
 
   void initPrivateChatListSocket(
@@ -894,13 +1049,30 @@ class SocketMessageService extends GetxService {
     );
   }
 
-  void disconnectPrivateChatSocket() {
+  void clearPrivateChatListeners() {
     _privateChatSocket?.off("joined");
     _privateChatSocket?.off("receive_message");
+    _privateChatSocket?.off("forward_message");
+    _privateChatSocket?.off("receive_forward_message");
+    _privateChatSocket?.off("message_forwarded");
+    _privateChatSocket?.off("forwarded_message");
     _privateChatSocket?.off("messages_delivered");
     _privateChatSocket?.off("messages_seen_update");
     _privateChatSocket?.off("private_chat_updated");
     _privateChatSocket?.off("private_chat_cleared");
+    _privateChatSocket?.off("typing");
+    _privateChatSocket?.off("stop_typing");
+    _privateChatSocket?.off("messageEdited");
+    _privateChatSocket?.off("message_deleted");
+    _privateChatSocket?.off("message_pinned");
+    _privateChatSocket?.off("message_unpinned");
+    _privateMessageHandler = null;
+    _privateChatId = null;
+    _privateJoinDebugTimer?.cancel();
+  }
+
+  void disconnectPrivateChatSocket() {
+    clearPrivateChatListeners();
 
     _privateChatSocket?.disconnect();
     _privateChatSocket?.dispose();
@@ -1156,11 +1328,35 @@ class SocketMessageService extends GetxService {
     required int messageId,
     String? receiverId,
     int? groupId,
+    dynamic content,
+    String? messageType,
+    List<String>? images,
+    List<Map<String, dynamic>>? videos,
+    String? caption,
   }) {
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString();
+
     final payload = {
       "messageId": messageId,
-      "receiverId": receiverId,
-      "groupId": groupId,
+      "message_id": messageId,
+      "forwardedFromMessageId": messageId,
+      "forwarded_from_message_id": messageId,
+      "isForwarded": true,
+      "is_forwarded": true,
+      if (content != null) "content": content,
+      if (content != null) "message": content,
+      if (messageType != null) "messageType": messageType,
+      if (messageType != null) "message_type": messageType,
+      if (images != null && images.isNotEmpty) "images": images,
+      if (videos != null && videos.isNotEmpty) "videos": videos,
+      if (caption != null && caption.isNotEmpty) "caption": caption,
+      if (receiverId != null) "receiverId": receiverId,
+      if (receiverId != null) "receiver_id": receiverId,
+      if (groupId != null) "groupId": groupId,
+      if (groupId != null) "group_id": groupId,
+      if (currentUserId != null) "senderId": currentUserId,
+      if (currentUserId != null) "sender_id": currentUserId,
     };
 
     log("========== FORWARD MESSAGE START ==========");
@@ -1173,14 +1369,15 @@ class SocketMessageService extends GetxService {
     log("GROUP SOCKET CONNECTED => $isSocketConnected");
 
     if (receiverId != null && receiverId.isNotEmpty) {
-      if (!isPrivateChatSocketConnected) {
-        log("FORWARD FAILED => PRIVATE SOCKET NOT CONNECTED");
-        return;
+      if (isPrivateChatSocketConnected) {
+        _privateChatSocket!.emit("forward_message", payload);
+        log("FORWARD MESSAGE EMITTED ON PRIVATE SOCKET");
+      } else if (isSocketConnected) {
+        socket.emit("forward_message", payload);
+        log("FORWARD MESSAGE EMITTED ON FALLBACK SOCKET");
+      } else {
+        log("FORWARD FAILED => SOCKET NOT CONNECTED");
       }
-
-      _privateChatSocket!.emit("forward_message", payload);
-
-      log("FORWARD MESSAGE EMITTED ON PRIVATE SOCKET");
       log("========== FORWARD MESSAGE END ==========");
       return;
     }
@@ -1505,5 +1702,20 @@ class SocketMessageService extends GetxService {
         }
       },
     );
+  }
+
+  void disconnectAll() {
+    try {
+      _socket?.clearListeners();
+      _socket?.disconnect();
+      _socket?.dispose();
+      _socket = null;
+    } catch (_) {}
+    try {
+      disconnectPrivateChatSocket();
+    } catch (_) {}
+    try {
+      disconnectPrivateChatListSocket();
+    } catch (_) {}
   }
 }

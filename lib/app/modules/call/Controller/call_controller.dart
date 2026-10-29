@@ -217,161 +217,97 @@ class CallController extends GetxController {
     filterUsers(_query);
   }
 
-  void makeCall({bool isVideo = false}) {
+  String _normalizeToCore10(String phone) {
+    String digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.length > 10 && digits.startsWith('91')) {
+      digits = digits.substring(2);
+    } else if (digits.length > 10 && digits.startsWith('0')) {
+      digits = digits.substring(1);
+    }
+    if (digits.length > 10) {
+      digits = digits.substring(digits.length - 10);
+    }
+    return digits;
+  }
+
+  Future<void> makeCall({bool isVideo = false}) async {
     final String input = dialNumber.value.trim();
     if (input.isEmpty) {
       Utils().fluttertoast("Please enter a phone number");
       return;
     }
 
-    // Validate that user is not dialing own phone number
     if (!CallValidation.validateCall(destinationPhone: input)) {
       return;
     }
 
     final String inputDigits = normalizePhone(input);
+    final String inputCore10 = _normalizeToCore10(input);
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId)?.toString();
+    Global.storageServices.get(PrefConst.userId)?.toString();
 
     if (currentUserId == null || currentUserId.isEmpty) {
       Utils().fluttertoast("Please login to make a call");
       return;
     }
 
-    // 1. Try selectedDialUser if available AND matches current input
+    // Registered contacts pool merge
+    final List<UserListData> contactPool = [
+      ...allUserProfileData,
+      if (Get.isRegistered<ContactController>())
+        ...ContactController.instance.allUserProfileData,
+    ];
+
     UserListData? targetUser;
+
+    // 1. Agar list se tap kiya hua user pehle se selected ho
     if (selectedDialUser != null) {
       final String selDigits = normalizePhone(selectedDialUser?.mobileNo ?? '');
-      if (selDigits.isNotEmpty &&
-          (selDigits == inputDigits || selDigits.endsWith(inputDigits))) {
+      final String selCore = _normalizeToCore10(selectedDialUser?.mobileNo ?? '');
+      if (selDigits == inputDigits || (inputCore10.isNotEmpty && selCore == inputCore10)) {
         targetUser = selectedDialUser;
-      } else {
-        selectedDialUser = null;
       }
     }
 
-    // 2. Try finding exact or ending mobile number match in allUserProfileData
-    if (targetUser == null && inputDigits.isNotEmpty) {
-      targetUser = allUserProfileData.firstWhereOrNull(
-        (u) =>
-            normalizePhone(u.mobileNo ?? '') == inputDigits ||
-            (inputDigits.length >= 10 &&
-                normalizePhone(u.mobileNo ?? '').endsWith(inputDigits)),
+    // 2. Contacts pool me exact ya 10-digit number match dhoondo
+    targetUser ??= contactPool.firstWhereOrNull((u) {
+      final String pDigits = normalizePhone(u.mobileNo ?? '');
+      final String pCore = _normalizeToCore10(u.mobileNo ?? '');
+      return pDigits == inputDigits ||
+          (inputCore10.isNotEmpty && pCore == inputCore10);
+    });
+
+    // STRICT RULE: Agar contacts me nahi mila to call bilkul nahi jayegi
+    if (targetUser == null || targetUser.userId == null) {
+      Utils().fluttertoast("Not exist in your contacts");
+      return;
+    }
+
+    final String remoteUserId = targetUser.userId.toString();
+    final String targetName = (targetUser.name?.trim().isNotEmpty == true)
+        ? targetUser.name!.trim()
+        : "User";
+
+    if (!CallValidation.validateCall(
+      destinationPhone: targetUser.mobileNo,
+      destinationUserId: remoteUserId,
+    )) {
+      return;
+    }
+
+    isDialPadOpen.value = false;
+    selectedDialUser = null;
+
+    final ctx = Get.context;
+    if (ctx != null) {
+      CallService().startOutGoingCall(
+        ctx,
+        callerId: currentUserId,
+        remoteUserId: remoteUserId,
+        is_video: isVideo,
+        callerName: targetName,
+        callerProfile: targetUser.profileImage,
       );
-    }
-
-    // 3. Try finding match from recent calls by phone number or callerId
-    String? remoteUserId;
-    String targetName = "User";
-
-    if (targetUser != null) {
-      if (!CallValidation.validateCall(
-        destinationPhone: targetUser.mobileNo,
-        destinationUserId: targetUser.userId?.toString(),
-      )) {
-        return;
-      }
-      if (targetUser.userId != null) {
-        remoteUserId = targetUser.userId.toString();
-        targetName = targetUser.name ?? "User";
-      }
-    } else {
-      // Check resolved recentCallList
-      final recentRowMatch = recentCallList.firstWhereOrNull((r) {
-        final phone = normalizePhone(r['mobileNo'] ?? r['phone'] ?? '');
-        final cId = (r['callerId'] ?? '').trim();
-        return (phone.isNotEmpty &&
-                (phone == inputDigits ||
-                    (inputDigits.length >= 10 &&
-                        phone.endsWith(inputDigits)))) ||
-            cId == input ||
-            cId == inputDigits;
-      });
-
-      if (recentRowMatch != null) {
-        final rId = (recentRowMatch['callerId'] ?? '').trim();
-        if (rId.isNotEmpty && rId != currentUserId) {
-          remoteUserId = rId;
-          targetName = recentRowMatch['name'] ?? formatPhoneForDisplay(input);
-        }
-      }
-
-      // Also check raw recent call records
-      if (remoteUserId == null) {
-        final recentMatch = _recentRaw.firstWhereOrNull((r) {
-          final phone = normalizePhone(r.call.contact?.phoneNumber ?? '');
-          final cId =
-              (r.call.contact?.id ?? r.call.callerId ?? r.call.receiverId ?? '')
-                  .trim();
-          return (phone.isNotEmpty &&
-                  (phone == inputDigits ||
-                      (inputDigits.length >= 10 &&
-                          phone.endsWith(inputDigits)))) ||
-              cId == input ||
-              cId == inputDigits;
-        });
-
-        if (recentMatch != null) {
-          final call = recentMatch.call;
-          final contact = call.contact;
-          String rId = (contact?.id ?? '').trim();
-          if (rId.isEmpty || rId == currentUserId) {
-            if ((call.callerId ?? '').isNotEmpty &&
-                call.callerId != currentUserId) {
-              rId = call.callerId!.trim();
-            } else if ((call.receiverId ?? '').isNotEmpty &&
-                call.receiverId != currentUserId) {
-              rId = call.receiverId!.trim();
-            }
-          }
-          if (rId.isNotEmpty) {
-            remoteUserId = rId;
-            targetName = [contact?.firstName, contact?.lastName]
-                .whereType<String>()
-                .join(' ')
-                .trim();
-            if (targetName.isEmpty || targetName.toLowerCase() == 'unknown') {
-              targetName = call.callerName ?? formatPhoneForDisplay(input);
-            }
-          }
-        }
-      }
-
-      // 4. If not found in recents, try matching by userId directly from registered users
-      if (remoteUserId == null) {
-        final userById = allUserProfileData.firstWhereOrNull(
-          (u) => u.userId?.toString() == input,
-        );
-        if (userById != null && userById.userId != null) {
-          remoteUserId = userById.userId.toString();
-          targetName = userById.name ?? "User";
-        }
-      }
-    }
-
-    if (remoteUserId != null && remoteUserId.isNotEmpty) {
-      if (!CallValidation.validateCall(
-        destinationPhone: input,
-        destinationUserId: remoteUserId,
-      )) {
-        return;
-      }
-
-      isDialPadOpen.value = false;
-      selectedDialUser = null;
-
-      final ctx = Get.context;
-      if (ctx != null) {
-        CallService().startOutGoingCall(ctx,
-            callerId: currentUserId,
-            remoteUserId: remoteUserId,
-            is_video: isVideo,
-            callerName: targetName,
-            callerProfile: targetUser?.profileImage);
-      }
-    } else {
-      selectedDialUser = null;
-      Utils().fluttertoast("No contact found");
     }
   }
 
@@ -419,7 +355,6 @@ class CallController extends GetxController {
     final fullT9 = _nameToT9(nameLower);
     if (fullT9.contains(queryDigits)) return true;
 
-    // Check each word in name (e.g. John Doe)
     final words = nameLower.split(RegExp(r'\s+'));
     for (final word in words) {
       if (_nameToT9(word).startsWith(queryDigits)) return true;
@@ -507,7 +442,7 @@ class CallController extends GetxController {
             }
           } else {
             hasMoreRecentCalls.value =
-                (data.older != null && data.older!.isNotEmpty);
+            (data.older != null && data.older!.isNotEmpty);
           }
         } else {
           hasMoreRecentCalls.value = false;
@@ -540,8 +475,6 @@ class CallController extends GetxController {
         final int before = _recentRaw.length;
         final data = result.data;
         if (data != null) {
-          // Pagination: Today and Yesterday are strictly excluded.
-          // All paginated calls are strictly placed into 'older' section.
           final List<CallingDetail> newOlderCalls = [];
           if (data.older != null && data.older!.isNotEmpty) {
             newOlderCalls.addAll(data.older!);
@@ -606,17 +539,17 @@ class CallController extends GetxController {
     }
     final Set<String> existingKeys = _recentRaw
         .map((e) {
-          final id = (e.call.id ?? '').trim();
-          if (id.isNotEmpty) return id;
-          return '${e.call.calledAt}_${e.call.callerId}_${e.call.type}'.trim();
-        })
+      final id = (e.call.id ?? '').trim();
+      if (id.isNotEmpty) return id;
+      return '${e.call.calledAt}_${e.call.callerId}_${e.call.type}'.trim();
+    })
         .where((k) => k.isNotEmpty)
         .toSet();
 
     for (final CallingDetail call in items) {
       final String id = (call.id ?? '').trim();
       final String fallbackKey =
-          '${call.calledAt}_${call.callerId}_${call.type}'.trim();
+      '${call.calledAt}_${call.callerId}_${call.type}'.trim();
       final String checkKey = id.isNotEmpty ? id : fallbackKey;
       if (checkKey.isNotEmpty && existingKeys.contains(checkKey)) {
         continue;
@@ -661,21 +594,21 @@ class CallController extends GetxController {
     }
 
     final String targetGroupId =
-        (call.groupId ?? contact?.groupId ?? '').trim();
+    (call.groupId ?? contact?.groupId ?? '').trim();
 
     GroupsResData? matchedGroup;
     if (targetGroupId.isNotEmpty) {
       final int? gId = int.tryParse(targetGroupId);
       matchedGroup = _groupController.groupData.firstWhereOrNull(
-        (g) =>
-            (g.id != null && g.id == gId) || g.id?.toString() == targetGroupId,
+            (g) =>
+        (g.id != null && g.id == gId) || g.id?.toString() == targetGroupId,
       );
     }
 
     if (matchedGroup == null && callerId.isNotEmpty) {
       final int? cId = int.tryParse(callerId);
       matchedGroup = _groupController.groupData.firstWhereOrNull(
-        (g) => (g.id != null && g.id == cId) || g.id?.toString() == callerId,
+            (g) => (g.id != null && g.id == cId) || g.id?.toString() == callerId,
       );
     }
 
@@ -695,9 +628,9 @@ class CallController extends GetxController {
           (targetGroupId.isNotEmpty ? targetGroupId : callerId);
 
       final String groupNameFound = (matchedGroup?.groupName ??
-              call.groupName ??
-              contact?.groupName ??
-              '')
+          call.groupName ??
+          contact?.groupName ??
+          '')
           .trim();
 
       if (groupNameFound.isNotEmpty) {
@@ -709,7 +642,7 @@ class CallController extends GetxController {
       }
 
       final String groupImg =
-          (matchedGroup?.groupProfile ?? call.groupProfile ?? '').trim();
+      (matchedGroup?.groupProfile ?? call.groupProfile ?? '').trim();
       if (groupImg.isNotEmpty) {
         avatar = groupImg;
       }
@@ -723,7 +656,7 @@ class CallController extends GetxController {
         final int? contactUserId = int.tryParse(callerId);
         if (contactUserId != null) {
           matchedUser = allUserProfileData.firstWhereOrNull(
-            (user) => user.userId == contactUserId,
+                (user) => user.userId == contactUserId,
           );
         }
       }
@@ -732,7 +665,7 @@ class CallController extends GetxController {
         final String normMobile = normalizePhone(mobileNo);
         if (normMobile.isNotEmpty) {
           matchedUser = allUserProfileData.firstWhereOrNull(
-            (user) => normalizePhone(user.mobileNo ?? '') == normMobile,
+                (user) => normalizePhone(user.mobileNo ?? '') == normMobile,
           );
         }
       }
@@ -861,7 +794,7 @@ class CallController extends GetxController {
 
     String cleanTime = apiTime
         .replaceAll(
-            RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
+        RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
         .trim();
 
     if (cleanTime.isEmpty && (call.calledAt ?? '').isNotEmpty) {
@@ -984,11 +917,11 @@ class CallController extends GetxController {
       final bool nameMatch = query.isNotEmpty && name.contains(query);
 
       final bool callerIdMatch = (query.isNotEmpty &&
-              callerId.contains(query)) ||
+          callerId.contains(query)) ||
           (queryDigits.isNotEmpty && normalizedCallerId.contains(queryDigits));
 
       final bool mobileMatch = (query.isNotEmpty &&
-              (mobileNo.contains(query) || phone.contains(query))) ||
+          (mobileNo.contains(query) || phone.contains(query))) ||
           (queryDigits.isNotEmpty &&
               (normalizedMobileNo.contains(queryDigits) ||
                   normalizedPhone.contains(queryDigits)));
@@ -1078,7 +1011,6 @@ class CallController extends GetxController {
 
   void loadGroups() => _groupController.getGroupData();
 
-  /// Returns contacts matching current dialNumber digits or T9 input.
   List<UserListData> get dialSuggestions {
     final input = dialNumber.value.trim();
     if (input.isEmpty) return [];
@@ -1110,7 +1042,7 @@ class CallController extends GetxController {
 
       final String normPhone = normalizePhone(rawPhone);
       final String key =
-          (user.userId != null) ? 'u_${user.userId}' : 'p_$normPhone';
+      (user.userId != null) ? 'u_${user.userId}' : 'p_$normPhone';
       if (!seen.add(key)) continue;
 
       final bool phoneMatch =
@@ -1130,12 +1062,11 @@ class CallController extends GetxController {
   final Set<String> _deletingCallIds = <String>{};
   bool isDeletingCall(String callId) => _deletingCallIds.contains(callId);
 
-  /// Deletes an individual recent call record without touching saved contacts.
   Future<bool> deleteRecentCall(
-    Map<String, String> call, {
-    @visibleForTesting
-    Future<CommonResponse> Function({required String callId})? apiCall,
-  }) async {
+      Map<String, String> call, {
+        @visibleForTesting
+        Future<CommonResponse> Function({required String callId})? apiCall,
+      }) async {
     final String localEntryId = call['localEntryId'] ?? '';
     final String callId = (call['callId'] ?? call['id'] ?? '').trim();
 
@@ -1160,7 +1091,7 @@ class CallController extends GetxController {
           recentCallList.removeWhere((e) => e['localEntryId'] == localEntryId);
         } else {
           final idx =
-              _recentRaw.indexWhere((e) => (e.call.id ?? '').trim() == callId);
+          _recentRaw.indexWhere((e) => (e.call.id ?? '').trim() == callId);
           if (idx != -1) {
             _recentRaw.removeAt(idx);
           }
@@ -1220,7 +1151,6 @@ class CallController extends GetxController {
     selectedCallIds.clear();
   }
 
-  /// Deletes only the selected recent call history records via Multiple Call Delete API (callIds).
   Future<bool> deleteSelectedRecentCalls({
     @visibleForTesting
     Future<CommonResponse> Function({required List<String> callIds})? apiCall,
@@ -1239,7 +1169,7 @@ class CallController extends GetxController {
         _recentRaw
             .removeWhere((e) => toRemove.contains((e.call.id ?? '').trim()));
         recentCallList.removeWhere(
-            (e) => toRemove.contains((e['callId'] ?? e['id'] ?? '').trim()));
+                (e) => toRemove.contains((e['callId'] ?? e['id'] ?? '').trim()));
 
         if (_recentRaw.isNotEmpty) {
           _rebuildRecentDisplay();
@@ -1266,7 +1196,6 @@ class CallController extends GetxController {
     }
   }
 
-  /// Clears ALL call history records via Clear All Call History API (clearAll: true).
   Future<bool> clearAllRecentCalls({
     @visibleForTesting
     Future<CommonResponse> Function()? apiCall,

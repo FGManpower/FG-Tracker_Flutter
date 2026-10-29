@@ -8,10 +8,12 @@ import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
+import 'package:fgtracker/app/Data/Repositories/Profile_Repo.dart';
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
+import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/app/modules/Track/Controller/LocationService.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackingController.dart';
@@ -34,7 +36,8 @@ class GroupTrackingController extends GetxController {
   Map<String, dynamic>? arguments = Get.arguments;
 
   final joinedGroupIds = <String>[].obs;
-  final RxBool isLocationSharing = true.obs;
+  final RxBool isLocationSharing =
+      (Global.storageServices.getBoolSync(PrefConst.locationSharing) ?? false).obs;
   final LocationService locationService = LocationService.instance;
 
   final SocketService socketService = SocketService.instance;
@@ -243,13 +246,12 @@ class GroupTrackingController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    final bool? storedVal = Global.storageServices.getBoolSync(PrefConst.locationSharing);
-    if (storedVal == null) {
-      isLocationSharing.value = true;
-      Global.storageServices.setBool(PrefConst.locationSharing, true);
-    } else {
+    final bool? storedVal =
+        Global.storageServices.getBoolSync(PrefConst.locationSharing);
+    if (storedVal != null) {
       isLocationSharing.value = storedVal;
     }
+    loadLocationSharing();
   }
 
   void removeUserMarker(String userId) {
@@ -867,19 +869,92 @@ class GroupTrackingController extends GetxController {
   }
 
   Future<void> loadLocationSharing() async {
-    try {
-      final value = await Global.storageServices.getBool(
-        PrefConst.locationSharing,
-      );
+    final bool? cachedVal = Global.storageServices.getBoolSync(
+      PrefConst.locationSharing,
+    );
+    if (cachedVal != null) {
+      isLocationSharing.value = cachedVal;
+      if (Get.isRegistered<LivesStatusController>()) {
+        Get.find<LivesStatusController>().isMyPrivateModeOn.value = !cachedVal;
+      }
+    }
 
-      if (value == null) {
-        isLocationSharing.value = true;
-        await Global.storageServices.setBool(PrefConst.locationSharing, true);
-      } else {
-        isLocationSharing.value = value;
+    await syncLocationSharingFromBackend();
+  }
+
+  Future<void> syncLocationSharingFromBackend() async {
+    final myUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (myUserId == null || myUserId.isEmpty) return;
+
+    // 1. Check Private Members list (/all-group-members?filter=private)
+    try {
+      final privateMembers = await TrackRepo.getPrivateMembers(limit: 100);
+
+      if (privateMembers.user?.isLocationSharing != null) {
+        _applyServerLocationSharing(privateMembers.user!.isLocationSharing!);
+        return;
+      }
+
+      final privateList = privateMembers.data?.private;
+      if (privateMembers.status == true && privateList != null) {
+        final bool isPrivate = privateList.any(
+          (m) => m.userId?.toString() == myUserId,
+        );
+        if (isPrivate) {
+          _applyServerLocationSharing(false);
+          return;
+        } else if (privateList.isNotEmpty ||
+            (privateMembers.pagination != null &&
+                privateMembers.pagination?.totalRecords == 0)) {
+          _applyServerLocationSharing(true);
+          return;
+        }
       }
     } catch (e) {
-      isLocationSharing.value = true;
+      debugPrint("⚠️ [GroupTrackController] sync from privateMembers failed: $e");
+    }
+
+    // 2. Check Profile API (/getProfile)
+    try {
+      final profileRes = await ProfileRepo.getProfileData();
+      if (profileRes.data?.locationSharing != null) {
+        _applyServerLocationSharing(profileRes.data!.locationSharing!);
+        return;
+      }
+    } catch (e) {
+      debugPrint("⚠️ [GroupTrackController] sync from getProfile failed: $e");
+    }
+
+    // 3. Fallback: Query all group members (/all-group-members?filter=all)
+    try {
+      final allMembersRes =
+          await TrackRepo.getGroupMember(filter: 'all', limit: 100);
+      if (allMembersRes.user?.isLocationSharing != null) {
+        _applyServerLocationSharing(allMembersRes.user!.isLocationSharing!);
+        return;
+      }
+      final allList = allMembersRes.data?.allMember?.memberList;
+      if (allList != null && allList.isNotEmpty) {
+        for (final m in allList) {
+          if (m.userId?.toString() == myUserId) {
+            if (m.isLocationSharing != null) {
+              _applyServerLocationSharing(m.isLocationSharing!);
+              return;
+            }
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("⚠️ [GroupTrackController] sync from allGroupMembers failed: $e");
+    }
+  }
+
+  void _applyServerLocationSharing(bool isSharing) {
+    isLocationSharing.value = isSharing;
+    Global.storageServices.setBool(PrefConst.locationSharing, isSharing);
+    if (Get.isRegistered<LivesStatusController>()) {
+      Get.find<LivesStatusController>().isMyPrivateModeOn.value = !isSharing;
     }
   }
 
@@ -1035,11 +1110,9 @@ class GroupTrackingController extends GetxController {
                             width: 12,
                             height: 12,
                             decoration: BoxDecoration(
-                              color: isGhostMode
-                                  ? AppColors.grey
-                                  : (isOnline
+                              color: isOnline
                                   ? AppColors.primaryElementStatus
-                                  : AppColors.darkRed),
+                                  : AppColors.grey,
                               shape: BoxShape.circle,
                               border:
                               Border.all(color: AppColors.white, width: 2),
@@ -1056,9 +1129,7 @@ class GroupTrackingController extends GetxController {
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
-                              color: isGhostMode
-                                  ? AppColors.grey
-                                  : AppColors.primaryText,
+                              color: AppColors.primaryText,
                             ),
                           ),
                         ),
@@ -1084,9 +1155,7 @@ class GroupTrackingController extends GetxController {
                       ],
                     ),
                     subtitle: Text(
-                      isGhostMode
-                          ? "Location Hidden"
-                          : isOnline
+                      isOnline
                           ? "Online"
                           : user.lastSeen != null &&
                           user.lastSeen.toString().isNotEmpty
@@ -1096,11 +1165,9 @@ class GroupTrackingController extends GetxController {
                       )
                           : "Offline",
                       style: TextStyle(
-                        color: isGhostMode
-                            ? AppColors.grey
-                            : (isOnline
+                        color: isOnline
                             ? AppColors.primaryElementStatus
-                            : AppColors.grey),
+                            : AppColors.grey,
                         fontSize: 12,
                       ),
                     ),
