@@ -273,8 +273,8 @@ class _GhostMemberState extends State<GhostMember> {
                   SizedBox(height: 3.h),
                   Text(
                     isPrivate
-                        ? "When Private Mode is ON, others can't see your online status or last seen."
-                        : "When Private Mode is OFF, others can see your online status and last seen.",
+                    ? "When Private Mode is ON, others can't see your location."
+                    : "When Private Mode is OFF, others can see your location.",
                     style: TextStyle(
                       fontSize: 11.5.sp,
                       fontFamily: FontFamily.interRegular,
