@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/features/voice_input/voice_input_controller.dart';
 import 'package:fgtracker/features/voice_input/widgets/choose_view.dart';
 import 'package:fgtracker/features/voice_input/widgets/language_list.dart';
@@ -151,37 +152,114 @@ class _PermissionDialogState extends State<_PermissionDialog>
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: Colors.white,
+    return Dialog(
+      backgroundColor: AppColors.white,
+      surfaceTintColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(horizontal: 32.w),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(24.r),
       ),
-      title: Text(
-        "Permission Required",
-        style: TextStyle(
-          fontSize: 16.sp,
-          fontWeight: FontWeight.w700,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(24.w, 28.h, 24.w, 20.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Mic icon in soft purple circle
+            Container(
+              width: 72.w,
+              height: 72.w,
+              decoration: const BoxDecoration(
+                color: AppColors.authIconBgCircle,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Container(
+                width: 48.w,
+                height: 48.w,
+                decoration: const BoxDecoration(
+                  color: AppColors.primaryDarkblue,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.mic_rounded,
+                  color: AppColors.white,
+                  size: 26.sp,
+                ),
+              ),
+            ),
+            SizedBox(height: 18.h),
+            Text(
+              "Permission Required",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+                color: AppColors.darkText,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              "Microphone permission is needed to use voice.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                height: 1.4,
+                color: AppColors.primarySecondaryElementText,
+              ),
+            ),
+            SizedBox(height: 24.h),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primaryDarkblue,
+                      side: const BorderSide(color: AppColors.authIconBar),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
+                    ),
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      openAppSettings();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryDarkblue,
+                      foregroundColor: AppColors.white,
+                      elevation: 0,
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
+                    ),
+                    child: Text(
+                      "Open settings",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
-      content: Text(
-        "Microphone permission is needed to use voice.",
-        style: TextStyle(
-          fontSize: 13.sp,
-          color: Colors.grey.shade700,
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Cancel"),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            openAppSettings();
-          },
-          child: const Text("Open settings"),
-        ),
-      ],
     );
   }
 }
