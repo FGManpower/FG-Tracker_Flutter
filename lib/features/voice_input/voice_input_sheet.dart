@@ -12,6 +12,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 class VoiceInputSheet {
   static Future<void> show({
@@ -31,41 +32,26 @@ class VoiceInputSheet {
     bool hasPermission = false;
 
     if (Platform.isIOS) {
-      var micStatus = await Permission.microphone.status;
+      // Native iOS request (AVCaptureDevice): shows the system mic popup if not yet asked
+      final recorder = AudioRecorder();
+      hasPermission = await recorder.hasPermission();
+      recorder.dispose();
       if (kDebugMode) {
-        final speechStatus = await Permission.speech.status;
-        final recorderHasPerm = await AudioRecorder().hasPermission();
-        debugPrint('[VT-iOS] Permission.microphone.status: $micStatus');
-        debugPrint('[VT-iOS] Permission.speech.status: $speechStatus');
-        debugPrint('[VT-iOS] AudioRecorder().hasPermission(): $recorderHasPerm');
+        debugPrint('[VT-iOS] Microphone permission: $hasPermission');
       }
-
-      // If already allowed (granted or limited in iOS 17+), proceed immediately
-      if (micStatus.isGranted || micStatus.isLimited) {
-        hasPermission = true;
-      } else if (micStatus.isDenied) {
-        // First-time or unprompted: request() shows the native iOS system popup
-        micStatus = await Permission.microphone.request();
-        if (kDebugMode) {
-          debugPrint('[VT-iOS] Permission.microphone.request() result: $micStatus');
-        }
-        if (micStatus.isGranted || micStatus.isLimited) {
-          hasPermission = true;
-        } else if (micStatus.isPermanentlyDenied || micStatus.isRestricted) {
-          if (!context.mounted) return;
-          _showPermissionDialog(context);
-          return;
-        } else {
-          return;
-        }
-      } else if (micStatus.isPermanentlyDenied || micStatus.isRestricted) {
-        if (kDebugMode) {
-          debugPrint(
-              '[VT-iOS] Showing permission dialog because: permanentlyDenied/restricted ($micStatus)');
-        }
+      if (!hasPermission) {
+        // Previously denied: guide user to iOS Settings
         if (!context.mounted) return;
         _showPermissionDialog(context);
         return;
+      }
+
+      // Ask Speech Recognition on mic tap too, so its popup shows right away
+      if (!await SpeechToText().hasPermission) {
+        final speechStatus = await Permission.speech.request();
+        if (kDebugMode) {
+          debugPrint('[VT-iOS] Permission.speech.request() result: $speechStatus');
+        }
       }
     } else {
       // Android behaviour stays exactly the same as before
@@ -92,6 +78,12 @@ class VoiceInputSheet {
       builder: (_) => ChooseView(
         onSelectVoiceToText: () async {
           Navigator.pop(context);
+          // iOS: Voice-to-Text starts only if Speech Recognition is allowed
+          if (Platform.isIOS && !await SpeechToText().hasPermission) {
+            if (!context.mounted) return;
+            _showPermissionDialog(context);
+            return;
+          }
           await controller.startVoiceToText(
             textController: textController,
             focusNode: focusNode,
