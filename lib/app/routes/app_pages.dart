@@ -40,7 +40,9 @@ import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/GroupTrackLocationScreen.dart';
 import '../modules/Walkie-talkie/Views/WalkieTalkieScreen.dart';
 
+import '../modules/home/Bindings/permission_setup_binding.dart';
 import '../modules/home/Views/LiveStatus/components/total_groups.dart';
+import '../modules/home/Views/permission_setup_screen.dart';
 import '../modules/mediaStream/Bindings/group_call_binding.dart';
 import '../modules/mediaStream/Bindings/group_incoming_call_binding.dart';
 import '../modules/mediaStream/Views/Group/group_calling_screen.dart';
@@ -313,6 +315,12 @@ class AppPages {
       page: () => const GroupsListScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 400),
+    ),
+
+    GetPage(
+      name: Routes.permissionSetup,
+      page: () => const PermissionSetupScreen(),
+      binding: PermissionSetupBinding(), // ← This line fixes the error
     ),
   ];
 }
