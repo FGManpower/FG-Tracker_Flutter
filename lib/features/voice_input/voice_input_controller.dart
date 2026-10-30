@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:audio_session/audio_session.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/audio_player_controller.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
@@ -425,8 +427,37 @@ class VoiceInputController extends GetxController {
       return;
     }
 
-    final dir = await getTemporaryDirectory();
-    final path = "${dir.path}/voice_input_${DateTime.now().millisecondsSinceEpoch}.m4a";
+    if (Platform.isIOS) {
+      // Stop chat bubble player before recording
+      if (Get.isRegistered<GlobalAudioController>()) {
+        await Get.find<GlobalAudioController>().pause();
+      }
+      try {
+        final s = await AudioSession.instance;
+        await s.configure(AudioSessionConfiguration(
+          avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
+          avAudioSessionCategoryOptions:
+              AVAudioSessionCategoryOptions.defaultToSpeaker |
+                  AVAudioSessionCategoryOptions.allowBluetooth,
+          // Not voiceChat (walkie sets it app-wide at launch)
+          avAudioSessionMode: AVAudioSessionMode.defaultMode,
+        ));
+        await s.setActive(true);
+      } catch (e) {
+        if (kDebugMode) debugPrint('[VM] iOS record session error: $e');
+      }
+    }
+
+    final String path;
+    if (Platform.isIOS) {
+      final docs = await getApplicationDocumentsDirectory();
+      final voiceDir = Directory('${docs.path}/voice')
+        ..createSync(recursive: true);
+      path = '${voiceDir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    } else {
+      final dir = await getTemporaryDirectory();
+      path = "${dir.path}/voice_input_${DateTime.now().millisecondsSinceEpoch}.m4a";
+    }
     recordedAudioPath.value = path;
     timerSeconds.value = 0;
     normalizedSoundLevel.value = 0.2;
@@ -434,17 +465,25 @@ class VoiceInputController extends GetxController {
     _updateRecordingHint();
 
     await _recorder.start(
-      const RecordConfig(
-        encoder: AudioEncoder.aacLc,
-        bitRate: 128000,
-        sampleRate: 16000,
-        numChannels: 1,
-        echoCancel: true,
-        noiseSuppress: true,
-        autoGain: true,
-      ),
+      Platform.isIOS
+          ? const RecordConfig(
+              encoder: AudioEncoder.aacLc,
+              sampleRate: 44100,
+              bitRate: 64000,
+              numChannels: 1,
+            )
+          : const RecordConfig(
+              encoder: AudioEncoder.aacLc,
+              bitRate: 128000,
+              sampleRate: 16000,
+              numChannels: 1,
+              echoCancel: true,
+              noiseSuppress: true,
+              autoGain: true,
+            ),
       path: path,
     );
+    await _vmIosLog('record started (aacLc 44100 64000 mono)', path: path);
 
     mode.value = VoiceInputMode.recordVoiceRecording;
     _startTimer();
@@ -467,7 +506,12 @@ class VoiceInputController extends GetxController {
   Future<void> stopRecordVoice() async {
     _stopTimer();
     final path = await _recorder.stop();
-    if (path != null && timerSeconds.value >= 1) {
+    await _vmIosLog('after stop', path: path);
+    // iOS: reject empty/unfinished files (< 1 KB)
+    final tooSmall = Platform.isIOS &&
+        path != null &&
+        (!File(path).existsSync() || File(path).lengthSync() < 1024);
+    if (path != null && timerSeconds.value >= 1 && !tooSmall) {
       recordedAudioPath.value = path;
       audioDurationSeconds.value = timerSeconds.value;
       await _preparePlayer(path);
@@ -484,9 +528,15 @@ class VoiceInputController extends GetxController {
 
   Future<void> _preparePlayer(String path) async {
     await _stopAnyAudioPlayer();
+    if (Platform.isIOS) await _setIosPlaybackSession();
     _player = AudioPlayer();
     try {
-      await _player!.setFilePath(path);
+      if (Platform.isIOS) {
+        await _vmIosLog('before setAudioSource(AudioSource.file)', path: path);
+        await _player!.setAudioSource(AudioSource.file(path));
+      } else {
+        await _player!.setFilePath(path);
+      }
       _player!.playerStateStream.listen((state) {
         isAudioPlaying.value = state.playing;
         if (state.processingState == ProcessingState.completed) {
@@ -502,7 +552,34 @@ class VoiceInputController extends GetxController {
       });
     } catch (e) {
       debugPrint('[VoiceInput] player setup error: $e');
+      if (kDebugMode && Platform.isIOS) {
+        debugPrint('[VM] review load failed: ${e is PlayerException ? 'code=${e.code} message=${e.message}' : e}');
+      }
     }
+  }
+
+  // iOS: playback session for voice notes (plays with silent switch ON, on speaker)
+  Future<void> _setIosPlaybackSession() async {
+    try {
+      final s = await AudioSession.instance;
+      await s.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
+      ));
+      await s.setActive(true);
+    } catch (e) {
+      if (kDebugMode) debugPrint('[VM] iOS playback session error: $e');
+    }
+  }
+
+  Future<void> _vmIosLog(String where, {String? path}) async {
+    if (!kDebugMode || !Platform.isIOS) return;
+    final c = (await AudioSession.instance).configuration;
+    final f = path == null ? null : File(path);
+    final exists = f?.existsSync() ?? false;
+    debugPrint('[VM] $where cat=${c?.avAudioSessionCategory} '
+        'mode=${c?.avAudioSessionMode} opts=${c?.avAudioSessionCategoryOptions?.value}'
+        '${f == null ? '' : ' path=$path exists=$exists bytes=${exists ? f.lengthSync() : 0}'}');
   }
 
   Future<void> togglePlayPause() async {
@@ -513,7 +590,22 @@ class VoiceInputController extends GetxController {
       if (_player!.processingState == ProcessingState.completed) {
         await _player!.seek(Duration.zero);
       }
-      await _player!.play();
+      if (Platform.isIOS) {
+        try {
+          await _setIosPlaybackSession();
+          await _vmIosLog('before review play');
+          unawaited(_player!.play());
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('[VM] review play failed: ${e is PlayerException ? 'code=${e.code} message=${e.message}' : e}');
+          }
+          isAudioPlaying.value = false;
+          audioProgress.value = 0.0;
+          hintMessage.value = "Couldn't play voice message";
+        }
+      } else {
+        await _player!.play();
+      }
     }
   }
 
