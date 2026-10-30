@@ -274,7 +274,7 @@ class OtpChargesView extends GetView<OtpChargesController> {
                   ),
                   TextSpan(
                     text:
-                        ' From now on, every OTP sent to your number, including resends, will be charged.',
+                        ' From now on, each login OTP to your number is charged. Resending the OTP is free (up to 3 attempts).',
                   ),
                 ],
               ),
@@ -379,21 +379,24 @@ class OtpChargesView extends GetView<OtpChargesController> {
   }
 
   Widget _bottomBar() {
+    // Side menu has no charge token, nothing to pay for
+    if (!controller.canPay) return const SizedBox.shrink();
     // Full-width Pay button, no white bar behind it
     return Padding(
       padding: EdgeInsets.only(top: 8.h),
       child: Obx(() {
         final loading = controller.isLoading.value;
+        final enabled = !loading && controller.isPaymentEnabled.value;
         return Semantics(
           button: true,
-          enabled: !loading,
+          enabled: enabled,
           excludeSemantics: true,
           label: 'Pay ${_spokenRupees(controller.totalPerOtp)}',
           child: SizedBox(
             width: double.infinity,
             height: 52.h,
             child: ElevatedButton(
-              onPressed: loading ? null : controller.onPay,
+              onPressed: enabled ? controller.onPay : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryDarkblue,
                 disabledBackgroundColor:

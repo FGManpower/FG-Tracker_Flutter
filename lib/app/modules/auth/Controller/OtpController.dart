@@ -5,7 +5,8 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
+import 'package:fgtracker/app/Data/Repositories/otp_charge_repo.dart';
+import 'package:fgtracker/app/Model/otp_charge_model.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
@@ -39,6 +40,9 @@ class OtpController extends GetxController {
   final otpErrorText = ''.obs;
   late FocusNode phoneFocusNode;
   bool _isVerifying = false;
+  final isResendBlocked = false.obs;
+  final resendAttemptsRemaining = RxnInt();
+  final resendBlockedUntil = Rxn<DateTime>();
 
   Map<String, dynamic>? arguments = Get.arguments;
 
@@ -69,6 +73,7 @@ class OtpController extends GetxController {
     }
 
     mobileNumber.value = arguments?['mobNo'] ?? '';
+    _applyResendInfo(arguments?['otpResend'] as OtpResendInfo?);
   }
 
   bool validateOtp() {
@@ -121,7 +126,43 @@ class OtpController extends GetxController {
     });
   }
 
+  /// v2 resend limit: 3 attempts, then a 6-hour block
+  void _applyResendInfo(OtpResendInfo? info) {
+    if (info == null) return;
+    isResendBlocked.value = info.isBlocked;
+    resendAttemptsRemaining.value = info.attemptsRemaining;
+    resendBlockedUntil.value = info.blockedUntil ??
+        (info.retryAfterSeconds > 0
+            ? DateTime.now().add(Duration(seconds: info.retryAfterSeconds))
+            : null);
+  }
+
+  bool get resendBlocked {
+    final until = resendBlockedUntil.value;
+    return isResendBlocked.value &&
+        (until == null || DateTime.now().isBefore(until));
+  }
+
+  /// "Too many OTP requests. Please wait 6 hours."
+  String get resendBlockedText {
+    final until = resendBlockedUntil.value;
+    if (until == null) return "Too many OTP requests. Please try again later.";
+    final minutes = until.difference(DateTime.now()).inMinutes + 1;
+    final hours = (minutes / 60).ceil();
+    return hours > 1
+        ? "Too many OTP requests. Please wait $hours hours."
+        : "Too many OTP requests. Please wait $minutes minute${minutes == 1 ? '' : 's'}.";
+  }
+
+  /// "Resend It (2 attempts remaining)"
+  String get resendLabel {
+    final left = resendAttemptsRemaining.value;
+    if (left == null || left > 2) return "Resend It";
+    return "Resend It ($left attempt${left == 1 ? '' : 's'} remaining)";
+  }
+
   void resendOtp() async {
+    if (resendBlocked) return;
     try {
       Loading().showloading();
       dynamic param = {
@@ -129,8 +170,9 @@ class OtpController extends GetxController {
         "countryCode": arguments?['countryCode'],
       };
 
-      var result = await AuthRepo.ResendOtp(param);
+      var result = await OtpChargeRepo.resendOtp(param);
       Loading().dismissloading();
+      _applyResendInfo(result.otpResend);
 
       if (result.status == true) {
         Utils().fluttertoast(result.message.toString());
@@ -180,7 +222,7 @@ class OtpController extends GetxController {
         'Platform': Platform.isAndroid ? "android" : "ios",
       };
 
-      var result = await AuthRepo.VeriefyOtp(param);
+      var result = await OtpChargeRepo.verifyOtp(param);
       if (result.status == true) {
         Loading().dismissloading();
 

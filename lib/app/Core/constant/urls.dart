@@ -7,6 +7,19 @@ class Urls {
   static const String verifyOtp = '${ConstRes.aBaseUrl}verify-otp';
   static const String logOut = '${ConstRes.aBaseUrl}logOut';
   static const String resendOtp = '${ConstRes.aBaseUrl}resendOtp';
+
+  // v2: send-otp returns nextStep / otpCharge for non-India numbers
+  static const String v2SendOtp = '${ConstRes.aBaseUrl}v2/send-otp';
+  static const String v2ResendOtp = '${ConstRes.aBaseUrl}v2/resend-otp';
+  static const String v2VerifyOtp = '${ConstRes.aBaseUrl}v2/verify-otp';
+  static const String otpChargeConfig =
+      '${ConstRes.aBaseUrl}v2/otp-charge/config';
+  static const String otpChargeCreateOrder =
+      '${ConstRes.aBaseUrl}v2/otp-charge/create-order';
+  static const String otpChargePaymentSuccess =
+      '${ConstRes.aBaseUrl}v2/otp-charge/payment-success';
+  static const String otpChargePaymentFailed =
+      '${ConstRes.aBaseUrl}v2/otp-charge/payment-failed';
   static const String updateProfile = '${ConstRes.aBaseUrl}updateProfile';
   static const String banner = '${ConstRes.aBaseUrl}banners';
   static const String getAllGroup = '${ConstRes.aBaseUrl}get-all-group';

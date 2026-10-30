@@ -826,7 +826,7 @@ class _WalkieTalkiePaymentFailedScreenState
                     ),
                     SizedBox(height: 3.h),
                     Text(
-                      "Charged for every OTP, including resend",
+                      "Charged per login. Resending the OTP is free",
                       style: TextStyle(
                         fontSize: 10.5.sp,
                         fontFamily: FontFamily.interRegular,
