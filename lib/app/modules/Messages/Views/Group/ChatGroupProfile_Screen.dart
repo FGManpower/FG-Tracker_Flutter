@@ -175,6 +175,8 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                     context: context,
                     controller: groupController,
                     groupId: chatController.groupId.toString(),
+                    currentImage:
+                        currentGroup?.groupProfile ?? chatController.groupImage,
                   );
                 },
               ),
@@ -242,14 +244,28 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
 
   Widget _buildProfileHeader(GroupProfileData data) {
     final group = data.group!;
-    final summary = data.membersSummary;
+    // final summary = data.membersSummary; // used by the hidden Members • Online line
     final img = group.groupProfile ?? "";
     final name = group.groupName ?? "Unknown Group";
-    final description = (group.description ?? '').trim();
+    // Profile API may not send description → fall back to the group list's groupDesc
+    final String apiDesc = (group.description ?? '').trim();
+    final description =
+        (apiDesc.isNotEmpty && apiDesc.toLowerCase() != 'null')
+            ? apiDesc
+            : chatController.groupDesc.value.trim();
+
+    final bool hasImg = img.isNotEmpty && img.toLowerCase() != 'null';
+    final String imgUrl =
+        (img.startsWith('http://') || img.startsWith('https://'))
+            ? img
+            : "${ConstRes.aImageBaseUrl}$img";
 
     return Column(
       children: [
-        Container(
+        // Tap → full screen group photo
+        GestureDetector(
+          onTap: hasImg ? () => _openFullImage(imgUrl, name) : null,
+          child: Container(
           height: 88.w,
           width: 88.w,
           decoration: const BoxDecoration(
@@ -260,18 +276,17 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               end: Alignment.bottomRight,
             ),
           ),
-          child: (img.isNotEmpty && img.toLowerCase() != 'null')
+          child: hasImg
               ? ClipOval(
                   child: Image.network(
-                    (img.startsWith('http://') || img.startsWith('https://'))
-                        ? img
-                        : "${ConstRes.aImageBaseUrl}$img",
+                    imgUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Icon(Icons.groups_rounded,
                         color: Colors.white, size: 40.sp),
                   ),
                 )
               : Icon(Icons.groups_rounded, color: Colors.white, size: 40.sp),
+        ),
         ),
         SizedBox(height: 12.h),
         Text(
@@ -282,13 +297,17 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               fontWeight: FontWeight.w800,
               color: Colors.black87),
         ),
-        if (description.isNotEmpty) ...[
+        // Description (from API) replaces the "Members • Online" line;
+        // without a description the Members / Online line shows as before
+        if (description.isNotEmpty && description.toLowerCase() != 'null') ...[
           SizedBox(height: 6.h),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: Text(
               description,
               textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12.sp,
                 color: Colors.grey.shade600,
@@ -297,33 +316,97 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             ),
           ),
         ],
-        SizedBox(height: 6.h),
-        Text.rich(
-          TextSpan(
+        // "Members • Online" line hidden (removed from header as requested)
+        // SizedBox(height: 6.h),
+        // Text.rich(
+        //   TextSpan(
+        //     children: [
+        //       TextSpan(
+        //         text:
+        //             "${(summary?.totalMembers ?? 0).toString().padLeft(2, '0')} Members",
+        //         style: TextStyle(
+        //             fontSize: 12.sp,
+        //             color: Colors.grey.shade600,
+        //             fontWeight: FontWeight.w500),
+        //       ),
+        //       TextSpan(
+        //         text: "  •  ",
+        //         style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade500),
+        //       ),
+        //       TextSpan(
+        //         text: "${summary?.onlineMembersCount ?? 0} Online",
+        //         style: TextStyle(
+        //             fontSize: 12.sp,
+        //             color: const Color(0xFF2BB673),
+        //             fontWeight: FontWeight.w600),
+        //       ),
+        //     ],
+        //   ),
+        // ),
+      ],
+    );
+  }
+
+  // Same style as chat image viewer: black bg, pinch zoom, close button
+  void _openFullImage(String url, String title) {
+    Get.dialog(
+      Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Stack(
             children: [
-              TextSpan(
-                text:
-                    "${(summary?.totalMembers ?? 0).toString().padLeft(2, '0')} Members",
-                style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500),
+              Center(
+                child: InteractiveViewer(
+                  minScale: 1,
+                  maxScale: 4,
+                  child: Image.network(
+                    url,
+                    fit: BoxFit.contain,
+                    width: double.infinity,
+                    loadingBuilder: (context, child, progress) =>
+                        progress == null
+                            ? child
+                            : const Center(
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2),
+                              ),
+                    errorBuilder: (_, __, ___) => Icon(Icons.broken_image,
+                        color: Colors.white54, size: 60.sp),
+                  ),
+                ),
               ),
-              TextSpan(
-                text: "  •  ",
-                style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade500),
-              ),
-              TextSpan(
-                text: "${summary?.onlineMembersCount ?? 0} Online",
-                style: TextStyle(
-                    fontSize: 12.sp,
-                    color: const Color(0xFF2BB673),
-                    fontWeight: FontWeight.w600),
+              Positioned(
+                top: 8.h,
+                left: 8.w,
+                right: 8.w,
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Get.back(),
+                      icon: Icon(Icons.arrow_back,
+                          color: Colors.white, size: 24.sp),
+                    ),
+                    SizedBox(width: 4.w),
+                    Expanded(
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
-      ],
+      ),
+      useSafeArea: false,
     );
   }
 
@@ -654,6 +737,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   context: context,
                   controller: groupController,
                   groupId: data.group?.groupId.toString() ?? "",
+                  currentImage: data.group?.groupProfile,
                 );
               },
             ),

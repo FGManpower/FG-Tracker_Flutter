@@ -127,7 +127,16 @@ class DialogBox {
   void showUpdateGroupBottomSheet(
       {required BuildContext context,
       required GroupController controller,
-      required String groupId}) {
+      required String groupId,
+      String? currentImage}) {
+    // Existing group image (shown until the user picks a new one)
+    final String rawImg = (currentImage ?? '').trim();
+    final String currentImageUrl =
+        (rawImg.isEmpty || rawImg.toLowerCase() == 'null')
+            ? ''
+            : (rawImg.startsWith('http://') || rawImg.startsWith('https://'))
+                ? rawImg
+                : '${ConstRes.aImageBaseUrl.replaceFirst(RegExp(r'/+$'), '')}/${rawImg.replaceFirst(RegExp(r'^/+'), '')}';
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -173,9 +182,12 @@ class DialogBox {
                             CircleAvatar(
                               radius: 42.r,
                               backgroundColor: const Color(0xFFEDE7FF),
-                              backgroundImage:
-                              image != null ? FileImage(File(image.path)) : null,
-                              child: image == null
+                              backgroundImage: image != null
+                                  ? FileImage(File(image.path))
+                                  : (currentImageUrl.isNotEmpty
+                                      ? CachedNetworkImageProvider(currentImageUrl)
+                                      : null) as ImageProvider?,
+                              child: (image == null && currentImageUrl.isEmpty)
                                   ? Icon(
                                 Icons.camera_alt_outlined,
                                 size: 30.sp,
@@ -197,6 +209,21 @@ class DialogBox {
                                       size: 14.sp,
                                       color: Colors.white,
                                     ),
+                                  ),
+                                ),
+                              ),
+                            // Camera badge: tap to change the existing image
+                            if (image == null && currentImageUrl.isNotEmpty)
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: CircleAvatar(
+                                  radius: 13.r,
+                                  backgroundColor: const Color(0xFF6B4DFF),
+                                  child: Icon(
+                                    Icons.camera_alt_rounded,
+                                    size: 14.sp,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),

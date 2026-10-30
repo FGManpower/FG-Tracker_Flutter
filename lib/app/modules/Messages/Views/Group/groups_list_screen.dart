@@ -231,31 +231,32 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
               : const SizedBox.shrink(key: ValueKey('empty_search')),
         )),
 
-        Padding(
-          padding: EdgeInsets.only(right: 20.w),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Icon(
-                Icons.notifications_none_rounded,
-                size: 28.sp,
-                color: const Color(0xff5045B9),
-              ),
-              Positioned(
-                right: 2,
-                top: 2,
-                child: Container(
-                  height: 8.h,
-                  width: 8.h,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        // Notification bell hidden here; only the Home screen shows it
+//         Padding(
+//           padding: EdgeInsets.only(right: 20.w),
+//           child: Stack(
+//             clipBehavior: Clip.none,
+//             children: [
+//               Icon(
+//                 Icons.notifications_none_rounded,
+//                 size: 28.sp,
+//                 color: const Color(0xff5045B9),
+//               ),
+//               Positioned(
+//                 right: 2,
+//                 top: 2,
+//                 child: Container(
+//                   height: 8.h,
+//                   width: 8.h,
+//                   decoration: const BoxDecoration(
+//                     color: Colors.red,
+//                     shape: BoxShape.circle,
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
       ],
     );
   }
@@ -361,6 +362,9 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
             })?.then((value) {
               if (value == true) {
                 groupController.getGroupData();
+              } else {
+                // Name / image may have changed inside the group → refresh quietly
+                groupController.refreshGroupListSilently();
               }
             });
           }

@@ -16,6 +16,12 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:developer';
 import '../../../Model/MemberDataRes.dart';
 import '../../../routes/app_pages.dart';
+import 'UserProfileScreen.dart';
+import '../../../Core/constant/pref_res.dart';
+import '../../../Core/values/Utils.dart';
+import '../../../Core/values/global.dart';
+import '../../../Data/Services/call_service.dart';
+import '../../call/widget/call_widget.dart';
 
 class NewChatScreen extends StatefulWidget {
   final bool fromQuickAction;
@@ -496,7 +502,10 @@ class _NewChatScreenState extends State<NewChatScreen>
       child: Row(
         children: [
           // ⚡ RepaintBoundary — avatar alag paint hoga, scroll smooth
-          RepaintBoundary(
+          // Avatar tap → WhatsApp style photo popup
+          GestureDetector(
+            onTap: () => _showPhotoPopup(user, isInvite: isInvite),
+            child: RepaintBoundary(
             child: CircleAvatar(
               radius: 25.r,
               backgroundColor: hasAvatar
@@ -515,9 +524,14 @@ class _NewChatScreenState extends State<NewChatScreen>
                   : null,
             ),
           ),
+          ),
           SizedBox(width: 12.w),
           Expanded(
-            child: Column(
+            // Name tap → contact profile screen (app users only)
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: isInvite ? null : () => _openUserProfile(user),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 reausabletext(
@@ -533,6 +547,7 @@ class _NewChatScreenState extends State<NewChatScreen>
                   color: Colors.grey.shade600,
                 ),
               ],
+            ),
             ),
           ),
           if (isInvite)
@@ -570,6 +585,205 @@ class _NewChatScreenState extends State<NewChatScreen>
             ),
         ],
       ),
+    );
+  }
+
+  MemberData _toMemberData(UserListData user) {
+    final int? chatId =
+        user.privateChatId ?? user.chatId ?? user.conversationId;
+    return MemberData(
+      userId: user.userId,
+      name: user.name,
+      profileImage: user.profileImage,
+      chatId: chatId,
+      groupId: 0,
+    );
+  }
+
+  void _openUserProfile(UserListData user) {
+    final MemberData memberData = _toMemberData(user);
+    Get.to(() => UserProfileScreen(
+          userData: memberData,
+          chatId: memberData.chatId,
+        ));
+  }
+
+  /// WhatsApp style: name on top, big photo, actions at the bottom
+  void _showPhotoPopup(UserListData user, {required bool isInvite}) {
+    final String? avatar = user.profileImage;
+    final bool hasAvatar = avatar != null && avatar.isNotEmpty;
+    final String imageUrl = hasAvatar ? (ConstRes.aImageBaseUrl + avatar) : '';
+    final String displayName = (user.name?.trim().isNotEmpty == true)
+        ? user.name!.trim()
+        : (user.mobileNo ?? 'Unknown User');
+    // Responsive square photo: 72% of screen width, max 320
+    final double screenW = MediaQuery.of(context).size.width;
+    final double size = (screenW * 0.72).clamp(220.0, 320.0);
+
+    Get.dialog(
+      barrierDismissible: true,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      Center(
+        child: Container(
+          width: size,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Material(
+            color: Colors.white,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  children: [
+                    SizedBox(
+                      width: size,
+                      height: size,
+                      child: hasAvatar
+                          ? Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, progress) =>
+                                  progress == null
+                                      ? child
+                                      : Container(
+                                          color: Colors.grey.shade200,
+                                          alignment: Alignment.center,
+                                          child: const CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Color(0xFF6B4DFF),
+                                          ),
+                                        ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  _popupInitials(displayName),
+                            )
+                          : _popupInitials(displayName),
+                    ),
+                    // Name strip on top of the photo
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: EdgeInsets.fromLTRB(14.w, 10.h, 14.w, 18.h),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.55),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                        child: Text(
+                          displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            fontFamily: FontFamily.interSemiBold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      top: BorderSide(color: Color(0xFFEFEBFD), width: 1),
+                    ),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 4.h),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: isInvite
+                        ? [
+                            _popupAction(Icons.person_add_alt_1_rounded, () {
+                              Get.back();
+                              _handleOnAction(user, isInvite: true);
+                            }),
+                          ]
+                        : [
+                            _popupAction(Icons.chat_bubble_outline, () {
+                              Get.back();
+                              _handleOnAction(user, isInvite: false);
+                            }),
+                            _popupAction(Icons.call_outlined, () {
+                              Get.back();
+                              _startCall(user, isVideo: false);
+                            }),
+                            _popupAction(Icons.videocam_outlined, () {
+                              Get.back();
+                              _startCall(user, isVideo: true);
+                            }),
+                            _popupAction(Icons.info_outline_rounded, () {
+                              Get.back();
+                              _openUserProfile(user);
+                            }),
+                          ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Same call flow as contact profile (validation + CallService)
+  void _startCall(UserListData user, {required bool isVideo}) {
+    final String remoteId = user.userId?.toString() ?? '';
+    if (!CallValidation.validateCall(
+      destinationPhone: user.mobileNo ?? '',
+      destinationUserId: remoteId,
+    )) {
+      return;
+    }
+    if (remoteId.isEmpty) {
+      Utils().fluttertoast("Unable to call this contact");
+      return;
+    }
+    CallService().startOutGoingCall(
+      context,
+      callerId: Global.storageServices.get(PrefConst.userId).toString(),
+      remoteUserId: remoteId,
+      is_video: isVideo,
+      callerName: user.name ?? 'User',
+      callerProfile: user.profileImage,
+    );
+  }
+
+  Widget _popupInitials(String displayName) {
+    return Container(
+      color: _getAvatarColor(displayName),
+      alignment: Alignment.center,
+      child: reausabletext(
+        _getInitials(displayName),
+        fontsize: 64.sp,
+        fontfamily: FontFamily.interBold,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _popupAction(IconData icon, VoidCallback onTap) {
+    return IconButton(
+      onPressed: onTap,
+      icon: Icon(icon, size: 22.sp, color: const Color(0xFF6B4DFF)),
     );
   }
 

@@ -4,7 +4,7 @@ import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../../../routes/app_pages.dart';
+// import '../../../routes/app_pages.dart';
 import '../../Notification/Controller/Notification_Controller.dart';
 import '../controller/safety_dashboard_controller.dart';
 import '../Widgets/safe_common_widgets.dart';
@@ -165,72 +165,73 @@ class SafetyDashboardView extends StatelessWidget {
         ),
       ),
       actions: [
-        Obx(() {
-          final count = notificationController.unreadCount.value;
-
-          return Center(
-            child: GestureDetector(
-              onTap: () {
-                Get.toNamed(Routes.notificationScreen);
-              },
-              child: Container(
-                margin: EdgeInsets.only(right: 16.w),
-                width: 40.w,
-                height: 40.w,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12.r),
-                  boxShadow: _cardShadow,
-                ),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.center,
-                  children: [
-                    Icon(
-                      Icons.notifications_none_rounded,
-                      color: _primaryColor,
-                      size: 22.sp,
-                    ),
-
-                    if (count > 0)
-                      Positioned(
-                        top: -5.h,
-                        right: -5.w,
-                        child: Container(
-                          constraints: BoxConstraints(
-                            minWidth: 18.w,
-                            minHeight: 18.w,
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 4.w,
-                            vertical: 2.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white,
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              count > 99 ? "99+" : count.toString(),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 9.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }),
+        // Notification bell hidden here; only the Home screen shows it
+//         Obx(() {
+//           final count = notificationController.unreadCount.value;
+// 
+//           return Center(
+//             child: GestureDetector(
+//               onTap: () {
+//                 Get.toNamed(Routes.notificationScreen);
+//               },
+//               child: Container(
+//                 margin: EdgeInsets.only(right: 16.w),
+//                 width: 40.w,
+//                 height: 40.w,
+//                 decoration: BoxDecoration(
+//                   color: Colors.white,
+//                   borderRadius: BorderRadius.circular(12.r),
+//                   boxShadow: _cardShadow,
+//                 ),
+//                 child: Stack(
+//                   clipBehavior: Clip.none,
+//                   alignment: Alignment.center,
+//                   children: [
+//                     Icon(
+//                       Icons.notifications_none_rounded,
+//                       color: _primaryColor,
+//                       size: 22.sp,
+//                     ),
+// 
+//                     if (count > 0)
+//                       Positioned(
+//                         top: -5.h,
+//                         right: -5.w,
+//                         child: Container(
+//                           constraints: BoxConstraints(
+//                             minWidth: 18.w,
+//                             minHeight: 18.w,
+//                           ),
+//                           padding: EdgeInsets.symmetric(
+//                             horizontal: 4.w,
+//                             vertical: 2.h,
+//                           ),
+//                           decoration: BoxDecoration(
+//                             color: Colors.red,
+//                             shape: BoxShape.circle,
+//                             border: Border.all(
+//                               color: Colors.white,
+//                               width: 1.5,
+//                             ),
+//                           ),
+//                           child: Center(
+//                             child: Text(
+//                               count > 99 ? "99+" : count.toString(),
+//                               style: TextStyle(
+//                                 color: Colors.white,
+//                                 fontSize: 9.sp,
+//                                 fontWeight: FontWeight.bold,
+//                               ),
+//                             ),
+//                           ),
+//                         ),
+//                       ),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           );
+//         }),
       ],
     );
   }

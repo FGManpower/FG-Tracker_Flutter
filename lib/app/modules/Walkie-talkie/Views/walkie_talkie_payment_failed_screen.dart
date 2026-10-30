@@ -4,6 +4,7 @@ import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Controller/razorpay
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Model/razorpay_payment_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_order_summary_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +22,9 @@ class WalkieTalkiePaymentFailedScreen extends StatefulWidget {
   final String? errorMessage;
   final String? orderId;
 
+  /// 'walkie' (default) or 'otp'
+  final String source;
+
   const WalkieTalkiePaymentFailedScreen({
     super.key,
     this.isTeam = true,
@@ -31,6 +35,7 @@ class WalkieTalkiePaymentFailedScreen extends StatefulWidget {
     this.transactionTime,
     this.errorMessage,
     this.orderId,
+    this.source = 'walkie',
   });
 
   @override
@@ -160,9 +165,22 @@ class _WalkieTalkiePaymentFailedScreenState
     return msg;
   }
 
+  bool get _isOtp => widget.source == 'otp';
+
+  /// OTP flow: back to OTP Charges screen (user taps Pay again there).
+  /// Razorpay opened this screen with Get.off, which already removed OTP Charges,
+  /// so replace this screen with it → stack stays Home → OTP Charges.
+  void _backToOtpCharges() {
+    Get.offNamed(Routes.OTP_CHARGES);
+  }
+
   void _handleRetryPayment() {
     HapticFeedback.lightImpact();
-    Get.back();
+    if (_isOtp) {
+      _backToOtpCharges();
+    } else {
+      Get.back();
+    }
   }
 
   void _showSupportDialog() {
@@ -286,7 +304,12 @@ class _WalkieTalkiePaymentFailedScreenState
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isWideScreen = screenWidth > 600;
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_isOtp,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _isOtp) _backToOtpCharges();
+      },
+      child: Scaffold(
       backgroundColor: _bgSoft,
       appBar: _buildAppBar(isWideScreen),
       body: SafeArea(
@@ -346,8 +369,10 @@ class _WalkieTalkiePaymentFailedScreenState
 
                           SizedBox(height: 20.h),
 
-                          // Plan Details Card
-                          _buildPlanDetailsCard(),
+                          // Plan Details Card (OTP charge details for OTP payments)
+                          controller.otpChargeBase.value != null
+                              ? _buildOtpChargeDetailsCard()
+                              : _buildPlanDetailsCard(),
 
                           SizedBox(height: 14.h),
 
@@ -357,7 +382,7 @@ class _WalkieTalkiePaymentFailedScreenState
                           SizedBox(height: 16.h),
 
                           // What you can do next Card
-                          _buildNextStepsCard(),
+                          // _buildNextStepsCard(),
                         ],
                       ),
 
@@ -374,7 +399,7 @@ class _WalkieTalkiePaymentFailedScreenState
           ),
         ),
       ),
-    );
+    ));
   }
 
   PreferredSizeWidget _buildAppBar(bool isWideScreen) {
@@ -387,7 +412,7 @@ class _WalkieTalkiePaymentFailedScreenState
         padding: EdgeInsets.only(left: 16.w),
         child: Center(
           child: InkWell(
-            onTap: () => Get.back(),
+            onTap: _isOtp ? _backToOtpCharges : () => Get.back(),
             borderRadius: BorderRadius.circular(10.r),
             child: Container(
               height: 38.w,
@@ -706,6 +731,166 @@ class _WalkieTalkiePaymentFailedScreenState
   }
 
   // ============================================================
+  // OTP CHARGE DETAILS CARD (used instead of plan card for OTP payments)
+  // ============================================================
+  Widget _buildOtpChargeDetailsCard() {
+    final double charge = controller.otpChargeBase.value ?? 0;
+    final double gstPercent = controller.otpGstPercent.value;
+    final double gst = charge * gstPercent / 100;
+    final String gstLabel = gstPercent == gstPercent.roundToDouble()
+        ? gstPercent.toInt().toString()
+        : gstPercent.toStringAsFixed(1);
+
+    Widget row(String label, double value) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 4.h),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontFamily: FontFamily.interRegular,
+                  color: _textSecondary,
+                ),
+              ),
+            ),
+            Text(
+              "₹${value.toStringAsFixed(2)}",
+              style: TextStyle(
+                fontSize: 12.5.sp,
+                fontFamily: FontFamily.interSemiBold,
+                color: _textDark,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: _cardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "OTP Charge Details",
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontFamily: FontFamily.interBold,
+              color: _textDark,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              Container(
+                width: 38.w,
+                height: 38.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEEF2FF),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(
+                  Icons.sms_rounded,
+                  color: _primaryPurple,
+                  size: 20.sp,
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "OTP charges",
+                      style: TextStyle(
+                        fontSize: 13.5.sp,
+                        fontFamily: FontFamily.interBold,
+                        color: _textDark,
+                      ),
+                    ),
+                    SizedBox(height: 3.h),
+                    Text(
+                      "Charged for every OTP, including resend",
+                      style: TextStyle(
+                        fontSize: 10.5.sp,
+                        fontFamily: FontFamily.interRegular,
+                        color: _textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          row("OTP charge", charge),
+          row("GST ($gstLabel%)", gst),
+          SizedBox(height: 8.h),
+          const Divider(color: _cardBorder, height: 1),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Total per OTP",
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontFamily: FontFamily.interBold,
+                        color: _textDark,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      "Payment failed on $_displayTime",
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontFamily: FontFamily.interRegular,
+                        color: _textSecondary,
+                        height: 1.25,
+                      ),
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Text(
+                "₹${(charge + gst).toStringAsFixed(2)}",
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontFamily: FontFamily.interBold,
+                  color: _primaryPurple,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
   // RED ERROR BANNER
   // ============================================================
   Widget _buildErrorBanner() {
@@ -769,72 +954,72 @@ class _WalkieTalkiePaymentFailedScreenState
   // ============================================================
   // WHAT YOU CAN DO NEXT CARD
   // ============================================================
-  Widget _buildNextStepsCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: _cardBorder),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "What you can do next?",
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontFamily: FontFamily.interBold,
-              color: _textDark,
-            ),
-          ),
-          SizedBox(height: 12.h),
-
-          // Option 1: Try Again
-          _buildActionOptionTile(
-            icon: Icons.refresh_rounded,
-            iconBg: const Color(0xFFEEF2FF),
-            iconColor: _primaryPurple,
-            title: "Try Again",
-            subtitle: "Retry the payment with the same method",
-            onTap: _handleRetryPayment,
-          ),
-
-          SizedBox(height: 8.h),
-
-          // Option 2: Use a Different Payment Method
-          _buildActionOptionTile(
-            icon: Icons.credit_card_rounded,
-            iconBg: const Color(0xFFEEF2FF),
-            iconColor: _primaryPurple,
-            title: "Use a Different Payment Method",
-            subtitle: "Try UPI, Card, Net Banking or Wallet",
-            onTap: _handleRetryPayment,
-          ),
-
-          SizedBox(height: 8.h),
-
-          // Option 3: Contact Support
-          _buildActionOptionTile(
-            icon: Icons.help_outline_rounded,
-            iconBg: const Color(0xFFF5F3FF),
-            iconColor: const Color(0xFF7C3AED),
-            title: "Contact Support",
-            subtitle: "Get help from our support team",
-            onTap: _showSupportDialog,
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildNextStepsCard() {
+  //   return Container(
+  //     width: double.infinity,
+  //     padding: EdgeInsets.all(16.w),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(16.r),
+  //       border: Border.all(color: _cardBorder),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.black.withValues(alpha: 0.03),
+  //           blurRadius: 10,
+  //           offset: const Offset(0, 3),
+  //         ),
+  //       ],
+  //     ),
+  //     // child: Column(
+  //     //   crossAxisAlignment: CrossAxisAlignment.start,
+  //     //   children: [
+  //     //     Text(
+  //     //       "What you can do next?",
+  //     //       style: TextStyle(
+  //     //         fontSize: 14.sp,
+  //     //         fontFamily: FontFamily.interBold,
+  //     //         color: _textDark,
+  //     //       ),
+  //     //     ),
+  //     //     SizedBox(height: 12.h),
+  //     //
+  //     //     // Option 1: Try Again
+  //     //     _buildActionOptionTile(
+  //     //       icon: Icons.refresh_rounded,
+  //     //       iconBg: const Color(0xFFEEF2FF),
+  //     //       iconColor: _primaryPurple,
+  //     //       title: "Try Again",
+  //     //       subtitle: "Retry the payment with the same method",
+  //     //       onTap: _handleRetryPayment,
+  //     //     ),
+  //     //
+  //     //     SizedBox(height: 8.h),
+  //     //
+  //     //     // Option 2: Use a Different Payment Method
+  //     //     _buildActionOptionTile(
+  //     //       icon: Icons.credit_card_rounded,
+  //     //       iconBg: const Color(0xFFEEF2FF),
+  //     //       iconColor: _primaryPurple,
+  //     //       title: "Use a Different Payment Method",
+  //     //       subtitle: "Try UPI, Card, Net Banking or Wallet",
+  //     //       onTap: _handleRetryPayment,
+  //     //     ),
+  //     //
+  //     //     SizedBox(height: 8.h),
+  //     //
+  //     //     // Option 3: Contact Support
+  //     //     _buildActionOptionTile(
+  //     //       icon: Icons.help_outline_rounded,
+  //     //       iconBg: const Color(0xFFF5F3FF),
+  //     //       iconColor: const Color(0xFF7C3AED),
+  //     //       title: "Contact Support",
+  //     //       subtitle: "Get help from our support team",
+  //     //       onTap: _showSupportDialog,
+  //     //     ),
+  //     //   ],
+  //     // ),
+  //   );
+  // }
 
   Widget _buildActionOptionTile({
     required IconData icon,
@@ -947,9 +1132,9 @@ class _WalkieTalkiePaymentFailedScreenState
           ),
         ),
 
+        // View Plan Details Secondary Button (hidden for OTP payments)
+        if (!_isOtp) ...[
         SizedBox(height: 10.h),
-
-        // View Plan Details Secondary Button
         SizedBox(
           width: double.infinity,
           height: 48.h,
@@ -976,6 +1161,7 @@ class _WalkieTalkiePaymentFailedScreenState
             ),
           ),
         ),
+        ],
       ],
     );
   }

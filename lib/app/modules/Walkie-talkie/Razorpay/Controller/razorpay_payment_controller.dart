@@ -35,6 +35,10 @@ class RazorpayPaymentController extends GetxController {
   final RxString paymentMethod = "Razorpay (UPI / Card)".obs;
   final RxString transactionTime = "".obs;
 
+  // Set only for OTP-charge payments (null for Walkie plans)
+  final RxnDouble otpChargeBase = RxnDouble();
+  final RxDouble otpGstPercent = 0.0.obs;
+
   Function(PaymentSuccessResponse)? _customSuccessCallback;
   Function(PaymentFailureResponse)? _customFailureCallback;
   Function(ExternalWalletResponse)? _customWalletCallback;
@@ -139,6 +143,7 @@ class RazorpayPaymentController extends GetxController {
             transactionTime: nowFormatted,
             errorMessage: errorMessage.value,
             orderId: finalOrdId,
+            source: otpChargeBase.value != null ? 'otp' : 'walkie',
           ));
       return;
     }
@@ -234,6 +239,7 @@ class RazorpayPaymentController extends GetxController {
             transactionTime: nowFormatted,
             errorMessage: errorMessage.value,
             orderId: createdRazorpayOrderId ?? successOrderId.value,
+            source: otpChargeBase.value != null ? 'otp' : 'walkie',
           ));
     }
   }
@@ -288,8 +294,13 @@ class RazorpayPaymentController extends GetxController {
     Function(PaymentSuccessResponse)? onSuccess,
     Function(PaymentFailureResponse)? onError,
     Function(ExternalWalletResponse)? onWallet,
+    double? otpCharge,
+    double? otpGstPercent,
   }) async {
     try {
+      // Walkie calls leave these null, which clears any previous OTP payment
+      otpChargeBase.value = otpCharge;
+      this.otpGstPercent.value = otpGstPercent ?? 0.0;
       createdPaymentId = paymentId;
       createdRazorpayOrderId = optionsMap['order_id']?.toString() ??
           optionsMap['orderId']?.toString();

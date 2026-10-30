@@ -231,13 +231,10 @@ class RegistrationController extends GetxController {
     if (registerKey.currentState!.validate()) {
       try {
         Loading().showloading();
-        if (!controller.hasExistingEmail.value) {
-          controller.emailController.clear();
-        }
         var result = await AuthRepo.updateProfile(controller);
         if (result.status == true) {
-          if (controller.hasExistingEmail.value &&
-              controller.emailController.text.trim().isNotEmpty) {
+          if (controller.emailController.text.trim().isNotEmpty) {
+            controller.hasExistingEmail.value = true;
             Global.storageServices.setString(
               PrefConst.userEmail,
               controller.emailController.text.trim(),

@@ -168,7 +168,17 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
+          child: NotificationListener<ScrollNotification>(
+            // Recent calls pagination: load next batch near the bottom
+            onNotification: (ScrollNotification n) {
+              if (controller.isListMode &&
+                  n.metrics.axis == Axis.vertical &&
+                  n.metrics.extentAfter < 200.h) {
+                controller.loadMoreCalls();
+              }
+              return false;
+            },
+            child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 20.h),
             child: Column(
@@ -313,6 +323,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
               ],
             ),
           ),
+          ),
         ),
       ),
     );
@@ -359,15 +370,15 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 color: _purple,
               ),
             ),
-          SizedBox(height: 3.h),
-          Text(
-            isOnline ? "Online" : "Offline",
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontFamily: FontFamily.interMedium,
-              color: isOnline ? const Color(0xFF10B981) : _grey,
-            ),
-          ),
+          // SizedBox(height: 3.h),
+          // Text(
+          //   isOnline ? "Online" : "Offline",
+          //   style: TextStyle(
+          //     fontSize: 12.sp,
+          //     fontFamily: FontFamily.interMedium,
+          //     color: isOnline ? const Color(0xFF10B981) : _grey,
+          //   ),
+          // ),
         ],
       ],
     );
@@ -1222,6 +1233,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 if (i > 0) _divider(),
                 _buildListTile(context, list[i]),
               ],
+              _buildLoadMoreFooter(),
             ],
           );
         } else if (d == null) {
@@ -1265,6 +1277,42 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
           ],
         );
       }),
+    );
+  }
+
+  // Loader while the next batch loads; "Load more" if the list doesn't scroll
+  Widget _buildLoadMoreFooter() {
+    if (controller.isLoadingMore.value) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 14.h),
+        child: SizedBox(
+          width: 20.w,
+          height: 20.w,
+          child: const CircularProgressIndicator(strokeWidth: 2, color: _purple),
+        ),
+      );
+    }
+    if (!controller.hasMore.value) return const SizedBox.shrink();
+    return Column(
+      children: [
+        _divider(),
+        InkWell(
+          onTap: controller.loadMoreCalls,
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 12.h),
+            child: Center(
+              child: Text(
+                "Load more",
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontFamily: FontFamily.interSemiBold,
+                  color: _purple,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

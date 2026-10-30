@@ -32,13 +32,21 @@ class ContactProfileController extends GetxController {
     this.callId,
   });
 
+  // Max API pages scanned per batch (API returns all users' calls)
   static const int _maxPages = 15;
-  static const int _maxCalls = 10;
+  // Calls added per batch (first load + each "load more")
+  static const int _pageSize = 10;
 
   var isLoading = true.obs;
   var errorMessage = ''.obs;
   final detail = Rxn<CallHistoryDetailData>();
   final RxList<CallingDetail> calls = <CallingDetail>[].obs;
+
+  // Pagination state for the recent calls list
+  var isLoadingMore = false.obs;
+  var hasMore = false.obs;
+  int _nextPage = 0;
+  final Set<String> _seenCallKeys = {};
 
   bool get isListMode => !isGroup && (callId?.trim().isEmpty ?? true);
 
@@ -114,61 +122,95 @@ class ContactProfileController extends GetxController {
     isLoading.value = true;
     errorMessage.value = '';
     calls.clear();
+    _seenCallKeys.clear();
+    _nextPage = 0;
+    hasMore.value = false;
 
     try {
-      final List<CallingDetail> found = [];
-      final Set<String> seen = {};
-      int page = 0;
-      int lastPage = -1;
-
-      for (int i = 0; i < _maxPages; i++) {
-        final recent_Call_Res res =
-            await CallRepo.getRecentCall(page: page.toString());
-        if (isClosed) return;
-
-        if (res.status != true) {
-          if (i == 0) {
-            errorMessage.value = res.message ?? "Failed to load recent calls";
-          }
-          break;
-        }
-
-        final Iterable<CallingDetail> all =
-            (res.data?.allSections.values ?? const <List<CallingDetail>>[])
-                .expand((List<CallingDetail> e) => e);
-
-        for (final CallingDetail c in all) {
-          if (!_matchesUser(c, uid)) continue;
-          final String key = c.id ?? '${c.calledAt}_${c.status}_${c.type}';
-          if (seen.add(key)) found.add(c);
-        }
-
-        final Pagination? pg = res.pagination;
-        final int current = pg?.currentPage ?? page;
-        if (pg?.hasNextPage != true) break;
-        if (current == lastPage) break;
-        lastPage = current;
-        page = current + 1;
-
-        if (found.length >= _maxCalls) break;
-      }
-
-      found.sort((CallingDetail a, CallingDetail b) {
-        final DateTime? da = DateTime.tryParse(a.calledAt ?? '');
-        final DateTime? db = DateTime.tryParse(b.calledAt ?? '');
-        if (da == null && db == null) return 0;
-        if (da == null) return 1;
-        if (db == null) return -1;
-        return db.compareTo(da);
-      });
-
-      calls.assignAll(found.take(_maxCalls));
+      await _loadCallsBatch(uid, isFirst: true);
     } catch (e, st) {
       log("[ContactProfile] recent calls error: $e\n$st");
       if (!isClosed) errorMessage.value = "Something went wrong";
     } finally {
       if (!isClosed) isLoading.value = false;
     }
+  }
+
+  /// Next batch of this contact's calls (called on scroll end / "Load more")
+  Future<void> loadMoreCalls() async {
+    if (!isListMode ||
+        isLoading.value ||
+        isLoadingMore.value ||
+        !hasMore.value) {
+      return;
+    }
+    final String uid = contactData?.userId?.toString().trim() ?? '';
+    if (uid.isEmpty) return;
+
+    isLoadingMore.value = true;
+    try {
+      await _loadCallsBatch(uid, isFirst: false);
+    } catch (e, st) {
+      log("[ContactProfile] load more calls error: $e\n$st");
+    } finally {
+      if (!isClosed) isLoadingMore.value = false;
+    }
+  }
+
+  /// Scans API pages from [_nextPage] until [_pageSize] new calls of this
+  /// contact are found, the API has no more pages, or [_maxPages] are scanned.
+  Future<void> _loadCallsBatch(String uid, {required bool isFirst}) async {
+    final List<CallingDetail> found = [];
+    bool apiHasMore = true;
+
+    for (int i = 0; i < _maxPages; i++) {
+      final int page = _nextPage;
+      final recent_Call_Res res =
+          await CallRepo.getRecentCall(page: page.toString());
+      if (isClosed) return;
+
+      if (res.status != true) {
+        if (isFirst && i == 0) {
+          errorMessage.value = res.message ?? "Failed to load recent calls";
+          apiHasMore = false;
+        }
+        // Keep apiHasMore so the user can try loading more again
+        break;
+      }
+
+      final Iterable<CallingDetail> all =
+          (res.data?.allSections.values ?? const <List<CallingDetail>>[])
+              .expand((List<CallingDetail> e) => e);
+
+      for (final CallingDetail c in all) {
+        if (!_matchesUser(c, uid)) continue;
+        final String key = c.id ?? '${c.calledAt}_${c.status}_${c.type}';
+        if (_seenCallKeys.add(key)) found.add(c);
+      }
+
+      final Pagination? pg = res.pagination;
+      final int current = pg?.currentPage ?? page;
+      if (pg?.hasNextPage != true || current < page) {
+        apiHasMore = false;
+        break;
+      }
+      _nextPage = current + 1;
+
+      if (found.length >= _pageSize) break;
+    }
+
+    final List<CallingDetail> merged = [...calls, ...found];
+    merged.sort((CallingDetail a, CallingDetail b) {
+      final DateTime? da = DateTime.tryParse(a.calledAt ?? '');
+      final DateTime? db = DateTime.tryParse(b.calledAt ?? '');
+      if (da == null && db == null) return 0;
+      if (da == null) return 1;
+      if (db == null) return -1;
+      return db.compareTo(da);
+    });
+
+    calls.assignAll(merged);
+    hasMore.value = apiHasMore;
   }
 
   void startCall(BuildContext context, {required bool isVideo}) {

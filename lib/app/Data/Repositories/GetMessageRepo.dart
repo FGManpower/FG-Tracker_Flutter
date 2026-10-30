@@ -286,6 +286,8 @@ class MessageRepo {
     final response = await HttpUtil().get(
       "/chat/profile-details?type=group&groupId=$groupId",
     );
+    // Debug: check whether the API sends the group description
+    debugPrint("[GroupProfile] response => $response");
     return GroupProfileDetailsModel.fromJson(response);
   }
 

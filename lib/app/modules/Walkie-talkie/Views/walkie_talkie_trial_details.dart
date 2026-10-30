@@ -8,6 +8,7 @@ import 'package:fgtracker/app/modules/Walkie-talkie/widgets/walkie_individual_pl
 import 'package:fgtracker/app/modules/Walkie-talkie/widgets/walkie_purchase_bottom_bar.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/widgets/walkie_team_plan_card.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/widgets/walkie_trial_card.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/widgets/walkie_trial_status_card.dart';
 
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
@@ -100,7 +101,13 @@ class _WalkieTalkieTrialDetailsScreenState
                     // 1. TRIAL CARD (Shows whenever trial exists)
                     // =====================================================
                     if (controller.shouldShowTrialCard || isSkeletonLoading) ...[
-                      const WalkieTrialCard(),
+                      // New design for Active / Expired; old card for "not started"
+                      if (controller.isTrialActive ||
+                          controller.isTrialExpired ||
+                          controller.isTrialConsumed)
+                        const WalkieTrialStatusCard()
+                      else
+                        const WalkieTrialCard(),
                       SizedBox(height: 12.h),
                     ],
 

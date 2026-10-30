@@ -241,8 +241,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 _buildMediaCard(data.media, data.mediaSummary),
                 SizedBox(height: 12.h),
                 _buildAboutCard(data.user!),
-                SizedBox(height: 12.h),
-                _buildEncryptionCard(),
+                // SizedBox(height: 12.h),
+                // _buildEncryptionCard(),
                 SizedBox(height: 8.h),
                 _buildClearChatCard(),
                 SizedBox(height: 8.h),
@@ -321,15 +321,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             color: _purple,
           ),
         ),
-        SizedBox(height: 4.h),
-        Text(
-          "FG Tracker Member",
-          style: TextStyle(
-            fontSize: 13.sp,
-            color: _lightPurple.withOpacity(0.8),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        // SizedBox(height: 4.h),
+        // Text(
+        //   "FG Tracker Member",
+        //   style: TextStyle(
+        //     fontSize: 13.sp,
+        //     color: _lightPurple.withOpacity(0.8),
+        //     fontWeight: FontWeight.w500,
+        //   ),
+        // ),
         SizedBox(height: 8.h),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
@@ -807,50 +807,50 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ],
             ),
           ],
-          SizedBox(height: 14.h),
-          Divider(
-            height: 1,
-            thickness: 0.8,
-            color: Colors.grey.shade200,
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.info_outline_rounded,
-                color: _lightPurple,
-                size: 18.sp,
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: Text(
-                  "Available for team communication.",
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: _purple.withOpacity(0.8),
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          // SizedBox(height: 14.h),
+          // Divider(
+          //   height: 1,
+          //   thickness: 0.8,
+          //   color: Colors.grey.shade200,
+          // ),
+          // SizedBox(height: 12.h),
+          // Row(
+          //   crossAxisAlignment: CrossAxisAlignment.start,
+          //   children: [
+          //     Icon(
+          //       Icons.info_outline_rounded,
+          //       color: _lightPurple,
+          //       size: 18.sp,
+          //     ),
+          //     // SizedBox(width: 10.w),
+          //     // Expanded(
+          //     //   child: Text(
+          //     //     "Available for team communication.",
+          //     //     style: TextStyle(
+          //     //       fontSize: 13.sp,
+          //     //       color: _purple.withOpacity(0.8),
+          //     //       fontWeight: FontWeight.w500,
+          //     //       height: 1.4,
+          //     //     ),
+          //     //   ),
+          //     // ),
+          //   ],
+          // ),
         ],
       ),
     );
   }
 
-  Widget _buildEncryptionCard() {
-    return _buildSingleTileCard(
-      icon: Icons.lock_rounded,
-      iconBgColor: const Color(0xFFF3F1FB),
-      iconColor: _lightPurple,
-      title: "Encryption",
-      subtitle: "Messages and calls are end-to-end encrypted.",
-      onTap: () => Utils().fluttertoast("Coming soon"),
-    );
-  }
+  // Widget _buildEncryptionCard() {
+  //   return _buildSingleTileCard(
+  //     icon: Icons.lock_rounded,
+  //     iconBgColor: const Color(0xFFF3F1FB),
+  //     iconColor: _lightPurple,
+  //     title: "Encryption",
+  //     subtitle: "Messages and calls are end-to-end encrypted.",
+  //     onTap: () => Utils().fluttertoast("Coming soon"),
+  //   );
+  // }
 
   Widget _buildClearChatCard() {
     return _buildSingleTileCard(

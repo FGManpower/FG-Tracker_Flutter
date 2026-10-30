@@ -193,13 +193,13 @@ class _GhostMemberState extends State<GhostMember> {
               );
             }),
           ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 10.h),
-              child: _buildBottomPriorityCard(),
-            ),
-          ),
+          // SafeArea(
+          //   top: false,
+          //   child: Padding(
+          //     padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 10.h),
+          //     child: _buildBottomPriorityCard(),
+          //   ),
+          // ),
         ],
       ),
     );
@@ -539,62 +539,62 @@ class _GhostMemberState extends State<GhostMember> {
     );
   }
 
-  Widget _buildBottomPriorityCard() {
-    return Container(
-      padding: EdgeInsets.all(16.r),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF4F1FF),
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(
-          color: const Color(0xFF6B4DFF).withValues(alpha: 0.1),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42.r,
-            height: 42.r,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEDE9FE),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.shield_outlined,
-              color: const Color(0xFF6B4DFF),
-              size: 22.sp,
-            ),
-          ),
-          SizedBox(width: 14.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Your privacy is our priority",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: FontFamily.interBold,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  "Private Mode only hides your activity. You can still send messages and use the app normally.",
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontFamily: FontFamily.interRegular,
-                    color: Colors.grey.shade700,
-                    height: 1.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildBottomPriorityCard() {
+  //   return Container(
+  //     padding: EdgeInsets.all(16.r),
+  //     decoration: BoxDecoration(
+  //       color: const Color(0xFFF4F1FF),
+  //       borderRadius: BorderRadius.circular(18.r),
+  //       border: Border.all(
+  //         color: const Color(0xFF6B4DFF).withValues(alpha: 0.1),
+  //       ),
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         Container(
+  //           width: 42.r,
+  //           height: 42.r,
+  //           decoration: const BoxDecoration(
+  //             color: Color(0xFFEDE9FE),
+  //             shape: BoxShape.circle,
+  //           ),
+  //           child: Icon(
+  //             Icons.shield_outlined,
+  //             color: const Color(0xFF6B4DFF),
+  //             size: 22.sp,
+  //           ),
+  //         ),
+  //         SizedBox(width: 14.w),
+  //         Expanded(
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text(
+  //                 "Your privacy is our priority",
+  //                 style: TextStyle(
+  //                   fontSize: 14.sp,
+  //                   fontWeight: FontWeight.w700,
+  //                   fontFamily: FontFamily.interBold,
+  //                   color: Colors.black87,
+  //                 ),
+  //               ),
+  //               SizedBox(height: 2.h),
+  //               Text(
+  //                 "Private Mode only hides your activity. You can still send messages and use the app normally.",
+  //                 style: TextStyle(
+  //                   fontSize: 11.sp,
+  //                   fontFamily: FontFamily.interRegular,
+  //                   color: Colors.grey.shade700,
+  //                   height: 1.3,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
 
 class _PrivateMemberSkeletonList extends StatelessWidget {

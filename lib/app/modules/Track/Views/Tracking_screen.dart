@@ -2134,8 +2134,8 @@ class TrackingScreen extends StatelessWidget {
               );
             }
           }),
-          SizedBox(height: 6.h),
-          _buildBottomShareButton(),
+          // SizedBox(height: 6.h),
+          // _buildBottomShareButton(),
           SizedBox(height: 24.h),
         ]),
       ),
@@ -2609,80 +2609,80 @@ class TrackingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomShareButton() {
-    return GestureDetector(
-      onTap: () => controller.selectTab(1),
-      child: Container(
-        margin: EdgeInsets.fromLTRB(0, 8.h, 0, 16.h),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEEF2FF),
-          borderRadius: BorderRadius.circular(18.r),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44.w,
-              height: 44.w,
-              decoration: const BoxDecoration(
-                color: Color(0xFF4338CA),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.groups_rounded,
-                color: Colors.white,
-                size: 22.sp,
-              ),
-            ),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Share Live Location",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFF1E1B4B),
-                      fontSize: 14.sp,
-                    ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    "Share your live location with your team",
-                    style: TextStyle(
-                      color: const Color(0xFF6366F1),
-                      fontSize: 11.sp,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 8.r,
-                    offset: Offset(0, 2.h),
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.arrow_forward_rounded,
-                color: const Color(0xFF4338CA),
-                size: 20.sp,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildBottomShareButton() {
+  //   return GestureDetector(
+  //     onTap: () => controller.selectTab(1),
+  //     child: Container(
+  //       margin: EdgeInsets.fromLTRB(0, 8.h, 0, 16.h),
+  //       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+  //       decoration: BoxDecoration(
+  //         color: const Color(0xFFEEF2FF),
+  //         borderRadius: BorderRadius.circular(18.r),
+  //       ),
+  //       // child: Row(
+  //       //   children: [
+  //       //     Container(
+  //       //       width: 44.w,
+  //       //       height: 44.w,
+  //       //       decoration: const BoxDecoration(
+  //       //         color: Color(0xFF4338CA),
+  //       //         shape: BoxShape.circle,
+  //       //       ),
+  //       //       child: Icon(
+  //       //         Icons.groups_rounded,
+  //       //         color: Colors.white,
+  //       //         size: 22.sp,
+  //       //       ),
+  //       //     ),
+  //       //     SizedBox(width: 14.w),
+  //       //     Expanded(
+  //       //       child: Column(
+  //       //         crossAxisAlignment: CrossAxisAlignment.start,
+  //       //         children: [
+  //       //           Text(
+  //       //             "Share Live Location",
+  //       //             style: TextStyle(
+  //       //               fontWeight: FontWeight.w800,
+  //       //               color: const Color(0xFF1E1B4B),
+  //       //               fontSize: 14.sp,
+  //       //             ),
+  //       //           ),
+  //       //           SizedBox(height: 2.h),
+  //       //           Text(
+  //       //             "Share your live location with your team",
+  //       //             style: TextStyle(
+  //       //               color: const Color(0xFF6366F1),
+  //       //               fontSize: 11.sp,
+  //       //             ),
+  //       //           ),
+  //       //         ],
+  //       //       ),
+  //       //     ),
+  //       //     Container(
+  //       //       width: 40.w,
+  //       //       height: 40.w,
+  //       //       decoration: BoxDecoration(
+  //       //         color: Colors.white,
+  //       //         shape: BoxShape.circle,
+  //       //         boxShadow: [
+  //       //           BoxShadow(
+  //       //             color: Colors.black.withValues(alpha: 0.06),
+  //       //             blurRadius: 8.r,
+  //       //             offset: Offset(0, 2.h),
+  //       //           ),
+  //       //         ],
+  //       //       ),
+  //       //       child: Icon(
+  //       //         Icons.arrow_forward_rounded,
+  //       //         color: const Color(0xFF4338CA),
+  //       //         size: 20.sp,
+  //       //       ),
+  //       //     ),
+  //       //   ],
+  //       // ),
+  //     ),
+  //   );
+  // }
 
   Widget _groupCard(GroupsResData group) {
     final String gIdStr = (group.id ?? 0).toString();

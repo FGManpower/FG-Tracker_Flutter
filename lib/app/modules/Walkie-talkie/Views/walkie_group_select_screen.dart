@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/crown_icon.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/BottomSheet/bottom_actions_bar.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
@@ -1315,11 +1316,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.workspace_premium_rounded,
-                    color: Colors.white,
-                    size: 20.sp,
-                  ),
+                  child: GoldenCrownBadge(size: 20.sp),
                 ),
                 SizedBox(width: 10.w),
                 Expanded(
@@ -1458,15 +1455,13 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                       : const Color(0xFFFFF7ED),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  isNoPlan
-                      ? Icons.workspace_premium_rounded
-                      : Icons.groups_rounded,
-                  color: isNoPlan
-                      ? const Color(0xFF6366F1)
-                      : const Color(0xFFEA580C),
-                  size: 32.sp,
-                ),
+                child: isNoPlan
+                    ? Center(child: GoldenCrownBadge(size: 32.sp))
+                    : Icon(
+                        Icons.groups_rounded,
+                        color: const Color(0xFFEA580C),
+                        size: 32.sp,
+                      ),
               ),
               SizedBox(height: 16.h),
               reausabletext(
@@ -1683,9 +1678,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.workspace_premium_rounded,
-                                      size: 13.sp,
-                                      color: const Color(0xFF5B4DFF)),
+                                  GoldenCrownBadge(size: 13.sp),
                                   SizedBox(width: 4.w),
                                   reausabletext(
                                     "${assignedMembers.length}/1 (Individual)",
@@ -1797,13 +1790,13 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                                 : const Color(0xFF5B4DFF),
                             borderRadius: BorderRadius.circular(10.r),
                           ),
-                          child: Icon(
-                            (noPlan || (!hasTeam && isIndiv))
-                                ? Icons.lock_outline_rounded
-                                : Icons.workspace_premium_rounded,
-                            color: Colors.white,
-                            size: 18.sp,
-                          ),
+                          child: (noPlan || (!hasTeam && isIndiv))
+                              ? Icon(
+                                  Icons.lock_outline_rounded,
+                                  color: Colors.white,
+                                  size: 18.sp,
+                                )
+                              : Center(child: GoldenCrownBadge(size: 18.sp)),
                         ),
                         SizedBox(width: 10.w),
                         Expanded(
@@ -2177,11 +2170,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.workspace_premium_rounded,
-                                size: 20.sp,
-                                color: Colors.white,
-                              ),
+                              GoldenCrownBadge(size: 20.sp),
                               SizedBox(width: 8.w),
                               reausabletext(
                                 "Choose a Plan",

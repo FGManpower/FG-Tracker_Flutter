@@ -47,6 +47,8 @@ import '../modules/mediaStream/Bindings/group_call_binding.dart';
 import '../modules/mediaStream/Bindings/group_incoming_call_binding.dart';
 import '../modules/mediaStream/Views/Group/group_calling_screen.dart';
 import '../modules/mediaStream/Views/Group/group_incoming_call_screen.dart';
+import '../modules/OtpCharges/Binding/otp_charges_binding.dart';
+import '../modules/OtpCharges/Views/otp_charges_view.dart';
 import '../modules/sos/SosBinding.dart';
 import '../modules/sos/sos_screen.dart';
 
@@ -321,6 +323,11 @@ class AppPages {
       name: Routes.permissionSetup,
       page: () => const PermissionSetupScreen(),
       binding: PermissionSetupBinding(), // ← This line fixes the error
+    ),
+    GetPage(
+      name: Routes.OTP_CHARGES,
+      page: () => const OtpChargesView(),
+      binding: OtpChargesBinding(),
     ),
   ];
 }
