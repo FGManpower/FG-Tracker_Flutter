@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
+import 'package:fgtracker/app/Core/util/media_url.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
@@ -700,7 +701,7 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "audio") {
       return AudioBubble(
-        audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
+        audioUrl: resolveMediaUrl(message.content ?? ''),
         isMe: false,
       );
     } else if (message.messageType == "video") {
@@ -2468,7 +2469,7 @@ class GroupChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "audio") {
       return AudioBubble(
-        audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
+        audioUrl: resolveMediaUrl(message.content ?? ''),
         isMe: false,
       );
     } else if (messageType == "video") {
