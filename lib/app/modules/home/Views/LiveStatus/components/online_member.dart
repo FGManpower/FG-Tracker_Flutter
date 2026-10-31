@@ -20,7 +20,7 @@ class OnlineMember extends StatefulWidget {
 }
 
 class _OnlineMemberState extends State<OnlineMember> {
-  late final LivesStatusController controller;202
+  late final LivesStatusController controller;
 
   final ScrollController _scrollController = ScrollController();
 
