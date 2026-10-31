@@ -22,6 +22,7 @@ import '../widgets/custom_dropdown_menu.dart';
 import '../widgets/custom_dropdown_menu.dart' as CustomDropdownMenu;
 import 'ArchivedChatsScreen.dart';
 import 'Chat_Screen.dart';
+import '../../../Core/util/profile_navigation.dart';
 import 'new_chat_screen.dart';
 
 import 'package:fgtracker/app/Core/values/colorPool.dart';
@@ -853,11 +854,7 @@ class _AllChatsBody extends StatelessWidget {
   }) {
     Offset tapPos = Offset.zero;
 
-    return GestureDetector(
-      onTapDown: (d) {
-        tapPos = d.globalPosition;
-      },
-      onTap: () async {
+    Future<void> openChat() async {
         if (chat.isGroup == true) {
           final effectiveGroupId =
               chat.groupId?.toString() ?? chat.id?.toString() ?? '';
@@ -928,7 +925,48 @@ class _AllChatsBody extends StatelessWidget {
             Get.put(MessageController());
           }),
         );
+    }
+
+    final bool isGroupChat = chat.isGroup == true;
+
+    void startCall(bool isVideo) => startUserCall(
+          userId: chat.userId,
+          name: chat.name ?? name,
+          profileImage: chat.image,
+          isVideo: isVideo,
+        );
+
+    void openAvatarPopup() {
+      if (isGroupChat) {
+        showGroupQuickProfile(
+          groupId: chat.groupId ?? chat.id,
+          groupName: name,
+          groupProfile: image,
+          memberCount: chat.memberCount,
+          onMessage: openChat,
+        );
+        return;
+      }
+      showProfilePhotoPreview(
+        name: name,
+        imageUrl: _isPlaceholderImage(image) ? '' : _formatImageUrl(image),
+        onMessage: openChat,
+        onAudioCall: () => startCall(false),
+        onVideoCall: () => startCall(true),
+        onInfo: () => openUserProfile(
+          userId: chat.userId,
+          name: chat.name,
+          profileImage: chat.image,
+          chatId: chat.chatId ?? chat.conversationId ?? chat.id,
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTapDown: (d) {
+        tapPos = d.globalPosition;
       },
+      onTap: openChat,
       onLongPressStart: (details) {
         tapPos = details.globalPosition;
         _showChatOptions(context, details.globalPosition, chat);
@@ -953,6 +991,7 @@ class _AllChatsBody extends StatelessWidget {
           forwardedLabel: chat.forwardedLabel ?? "Forwarded",
           image: image,
           colorIndex: (chat.groupId ?? chat.id ?? index ?? name.hashCode).abs(),
+          onAvatarTap: openAvatarPopup,
         ),
       ),
     );
@@ -975,6 +1014,7 @@ class _AllChatsBody extends StatelessWidget {
     String forwardedLabel = "Forwarded",
     String? image,
     int? colorIndex,
+    VoidCallback? onAvatarTap,
   }) {
     final bool isDeleted = isDeletedForEveryone ||
         msg == "This message was deleted" ||
@@ -988,7 +1028,9 @@ class _AllChatsBody extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Stack(
+        GestureDetector(
+          onTap: onAvatarTap,
+          child: Stack(
           clipBehavior: Clip.none,
           children: [
             if (isGroup)
@@ -1112,6 +1154,7 @@ class _AllChatsBody extends StatelessWidget {
                 ),
               ),
           ],
+        ),
         ),
         SizedBox(width: 12.w),
         Expanded(
@@ -1829,10 +1872,7 @@ class _GroupsTabBody extends StatelessWidget {
     final int unreadCount = controller.getUnreadCount(group);
     final String groupDate = controller.getGroupDate(group);
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: 0.h),
-      child: InkWell(
-        onTap: () {
+    void openGroup() {
           final gId = group.groupId?.toString() ?? '';
           if (gId.isEmpty) return;
 
@@ -1870,7 +1910,16 @@ class _GroupsTabBody extends StatelessWidget {
           )?.then((_) {
             controller.getGroupChatList(refresh: true);
           });
-        },
+    }
+
+    final bool hasGroupImage = group.groupProfile != null &&
+        group.groupProfile!.isNotEmpty &&
+        !_isPlaceholderImage(group.groupProfile);
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 0.h),
+      child: InkWell(
+        onTap: openGroup,
         borderRadius: BorderRadius.circular(20.r),
         child: Container(
           padding: EdgeInsets.symmetric(
@@ -1893,7 +1942,15 @@ class _GroupsTabBody extends StatelessWidget {
           ),
           child: Row(
             children: [
-              ClipOval(
+              GestureDetector(
+                onTap: () => showGroupQuickProfile(
+                  groupId: group.groupId,
+                  groupName: groupName,
+                  groupProfile: hasGroupImage ? group.groupProfile : null,
+                  memberCount: memberCount,
+                  onMessage: openGroup,
+                ),
+                child: ClipOval(
                 child: SizedBox(
                   width: 48.w,
                   height: 48.w,
@@ -1955,6 +2012,7 @@ class _GroupsTabBody extends StatelessWidget {
                           ),
                         ),
                 ),
+              ),
               ),
               SizedBox(width: 14.w),
               Expanded(
@@ -2152,3 +2210,4 @@ class _GroupCardSkeleton extends StatelessWidget {
   }
 }
 */
+

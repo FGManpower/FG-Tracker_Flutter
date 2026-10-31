@@ -34,6 +34,7 @@ import '../../../global_widget/common_widget.dart';
 import '../../../modules/auth/Auth_Widget/Auth_widget.dart';
 import '../../../routes/app_pages.dart';
 import '../../constant/pref_res.dart';
+import '../../util/profile_navigation.dart';
 import '../../theme/AppText.dart';
 import '../global.dart';
 import 'Common_dialog.dart';
@@ -1182,11 +1183,22 @@ class DialogBox {
               SizedBox(height: 15.h),
               InkWell(
                 onTap: () {
-                  Navigator.pop(ctx);
-                  Get.to(() => UserProfileScreen(
-                    userData: currentMemberData,
+                  if (isMe) {
+                    Navigator.pop(ctx);
+                    Get.to(() => UserProfileScreen(
+                      userData: currentMemberData,
+                      chatId: resolvedChatId ?? currentMemberData.chatId,
+                    ));
+                    return;
+                  }
+                  // Photo tap → photo popup with Message / Call / Video / Info
+                  showUserQuickProfile(
+                    userId: currentMemberData.userId,
+                    name: displayName,
+                    profileImage: currentMemberData.profileImage,
+                    mobileNo: resolvedPhone,
                     chatId: resolvedChatId ?? currentMemberData.chatId,
-                  ));
+                  );
                 },
                 borderRadius: BorderRadius.circular(50.r),
                 child: Stack(

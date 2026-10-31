@@ -131,6 +131,7 @@ class RegistrationController extends GetxController {
   Future<void> _fetchLatestProfileForEdit() async {
     try {
       var res = await ProfileRepo.getProfileData();
+      print("[EditProfile] getProfile email from backend = ${res.data?.email}");
       if (res.status == true && res.data != null) {
         userData = res.data!;
         final remoteEmail = res.data!.email?.trim();

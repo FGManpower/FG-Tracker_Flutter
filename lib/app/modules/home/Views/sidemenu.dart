@@ -431,16 +431,16 @@ class Sidemenu extends StatelessWidget {
               });
             },
           ),
-          _buildDivider(),
-          _buildDrawerItem(
-            icon: Icons.receipt_long_rounded,
-            title: "OTP Charges",
-            subtitle: "Charges for every OTP",
-            onTap: () {
-              Navigator.pop(context);
-              Get.toNamed(Routes.OTP_CHARGES);
-            },
-          ),
+          // _buildDivider(),
+          // _buildDrawerItem(
+          //   icon: Icons.receipt_long_rounded,
+          //   title: "OTP Charges",
+          //   subtitle: "Charges for every OTP",
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     Get.toNamed(Routes.OTP_CHARGES);
+          //   },
+          // ),
           _buildDivider(),
           _buildDrawerItem(
             icon: Icons.support_agent_rounded,

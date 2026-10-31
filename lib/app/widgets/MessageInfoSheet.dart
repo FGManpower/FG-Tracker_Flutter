@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../Core/constant/const_res.dart';
+import '../Core/util/profile_navigation.dart';
 import '../Model/GetMessage.dart';
 import '../Model/MemberDataRes.dart';
 import '../modules/Messages/Controller/GroupChatController.dart';
@@ -285,6 +286,13 @@ class MessageInfoSheet extends StatelessWidget {
     final image = member.profileImage?.toString() ?? "";
 
     return ListTile(
+      onTap: () => showUserQuickProfile(
+        userId: member.userId,
+        name: name,
+        profileImage: image,
+        mobileNo: member.mobileNo?.toString(),
+        chatId: int.tryParse(member.chatId?.toString() ?? ''),
+      ),
       contentPadding: EdgeInsets.symmetric(
         horizontal: 20.w,
       ),
@@ -355,6 +363,13 @@ class MessageInfoSheet extends StatelessWidget {
         memberData?.profileImage?.toString() ?? "";
 
     return ListTile(
+      onTap: () => showUserQuickProfile(
+        userId: memberData?.userId,
+        name: name,
+        profileImage: image,
+        mobileNo: memberData?.mobileNo,
+        chatId: memberData?.chatId,
+      ),
       contentPadding: EdgeInsets.symmetric(
         horizontal: 20.w,
       ),

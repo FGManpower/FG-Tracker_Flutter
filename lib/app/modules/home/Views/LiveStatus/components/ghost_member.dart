@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
@@ -424,7 +425,17 @@ class _GhostMemberState extends State<GhostMember> {
         ),
         child: Row(
           children: [
-            Stack(
+            GestureDetector(
+              onTap: isMyUserId(member.userId)
+                  ? null
+                  : () => showUserQuickProfile(
+                        userId: member.userId,
+                        name: member.displayName,
+                        profileImage: member.resolvedImageUrl,
+                        mobileNo: member.phone ?? member.mobileNo,
+                        chatId: member.chatId,
+                      ),
+              child: Stack(
               children: [
                 Container(
                   width: 50.r,
@@ -483,6 +494,7 @@ class _GhostMemberState extends State<GhostMember> {
                   ),
                 ),
               ],
+            ),
             ),
             SizedBox(width: 14.w),
             Expanded(

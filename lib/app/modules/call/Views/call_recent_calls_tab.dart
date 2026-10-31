@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
@@ -57,6 +58,33 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
   }
 
   /// Row tap + DP tap: seedha profile screen, API screen ke andar hit hoti hai.
+  void _startGroupCall(Map<String, String> call, bool isVideo) {
+    final gId = call['groupId'] ?? call['callerId'] ?? '';
+    GroupCallService.instance.startGroupCall(
+      context,
+      groupId: gId,
+      groupName: call['name'] ?? "Group Call",
+      groupProfile: call['avatar'],
+      isVideo: isVideo,
+      memberCount: int.tryParse(call['memberCount'] ?? '0') ?? 0,
+    );
+  }
+
+  /// Group call avatar tap → group photo popup with
+  /// Chat / Audio call / Video call / Info (call history profile).
+  void _showGroupCallPopup(Map<String, String> call) {
+    final String gId = (call['groupId']?.isNotEmpty == true)
+        ? call['groupId']!
+        : (call['callerId'] ?? '');
+    showGroupQuickProfile(
+      groupId: gId,
+      groupName: call['name'] ?? "Group",
+      groupProfile: call['avatar'],
+      memberCount: int.tryParse(call['memberCount'] ?? '0'),
+      onInfo: () => _openProfile(call),
+    );
+  }
+
   void _openProfile(Map<String, String> call) {
     final String callId = (call['callId'] ?? call['id'] ?? '').trim();
     final bool isGroup = call['isGroup'] == 'true';
@@ -604,7 +632,17 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                       isSelected: isSelected,
                                       onAvatarTap: isSelectionMode
                                           ? () => controller.toggleCallSelection(callId)
-                                          : () => _openProfile(callItem),
+                                          : callItem['isGroup'] == 'true'
+                                              ? () => _showGroupCallPopup(callItem)
+                                              : () => showUserQuickProfile(
+                                                    userId: callItem['callerId'],
+                                                    name: callItem['name'],
+                                                    profileImage:
+                                                        callItem['avatar'],
+                                                    mobileNo:
+                                                        callItem['mobileNo'] ??
+                                                            callItem['phone'],
+                                                  ),
                                       onCallTap: (type) {
                                         if (isSelectionMode) {
                                           controller.toggleCallSelection(callId);
@@ -615,21 +653,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                         final bool isVideo = type == "video";
 
                                         if (isGroup) {
-                                          final gId = callItem['groupId'] ??
-                                              callItem['callerId'] ??
-                                              '';
-                                          GroupCallService.instance.startGroupCall(
-                                            context,
-                                            groupId: gId,
-                                            groupName:
-                                                callItem['name'] ?? "Group Call",
-                                            groupProfile: callItem['avatar'],
-                                            isVideo: isVideo,
-                                            memberCount: int.tryParse(callItem[
-                                                        'memberCount'] ??
-                                                    '0') ??
-                                                0,
-                                          );
+                                          _startGroupCall(callItem, isVideo);
                                         } else {
                                           final remoteId = callItem['callerId']
                                                   ?.toString() ??

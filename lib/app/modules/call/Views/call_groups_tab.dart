@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../Core/constant/const_res.dart';
+import '../../../Core/util/profile_navigation.dart';
 import '../../../routes/app_pages.dart';
 
 class CallGroupsTab extends StatelessWidget {
@@ -147,7 +148,9 @@ class _GroupTile extends StatelessWidget {
       onTap: _openGroup,
       child: Row(
         children: [
-          ClipOval(
+          GestureDetector(
+            onTap: () => showGroupQuickProfile(groupId: group.id, groupName: groupName, groupProfile: group.groupProfile, memberCount: memberCount, onMessage: _openGroup),
+            child: ClipOval(
             child: SizedBox(
               width: 42.w,
               height: 42.w,
@@ -188,6 +191,7 @@ class _GroupTile extends StatelessWidget {
                       ),
                     ),
             ),
+          ),
           ),
           SizedBox(width: 12.w),
           Expanded(

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
@@ -429,7 +430,20 @@ class ContactCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            _buildAvatar(name, user.profileImage, isOnline),
+            GestureDetector(
+              onTap: user.userId == null
+                  ? null
+                  : () => showUserQuickProfile(
+                        userId: user.userId,
+                        name: user.name,
+                        profileImage: user.profileImage,
+                        mobileNo: user.mobileNo,
+                        chatId: user.privateChatId ??
+                            user.chatId ??
+                            user.conversationId,
+                      ),
+              child: _buildAvatar(name, user.profileImage, isOnline),
+            ),
             SizedBox(width: 14.w),
             Expanded(
               child: Column(

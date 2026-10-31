@@ -50,6 +50,14 @@ class ContactProfileController extends GetxController {
 
   bool get isListMode => !isGroup && (callId?.trim().isEmpty ?? true);
 
+  /// Recent calls with this contact are shown for every 1-to-1 profile
+  /// (list mode and single call mode opened from Recent Calls).
+  bool get showRecentCalls => !isGroup;
+
+  /// Loader for the recent calls list in single call mode
+  /// (isLoading is used by the call detail there).
+  var isCallsLoading = false.obs;
+
   String get _targetGroupId {
     final String g = groupId?.toString().trim() ?? '';
     if (g.isNotEmpty) return g;
@@ -89,6 +97,8 @@ class ContactProfileController extends GetxController {
 
     isLoading.value = true;
     errorMessage.value = '';
+
+    if (showRecentCalls) _fetchRecentCallsForDetail();
 
     try {
       final CallHistoryDetailRes res = await CallRepo.getCallHistoryDetail(id);
@@ -136,10 +146,32 @@ class ContactProfileController extends GetxController {
     }
   }
 
+  /// Recent calls list in single call mode; uses its own loader so the
+  /// call detail's loading / error state is not affected.
+  Future<void> _fetchRecentCallsForDetail() async {
+    final String uid = contactData?.userId?.toString().trim() ?? '';
+    if (uid.isEmpty) return;
+
+    isCallsLoading.value = true;
+    calls.clear();
+    _seenCallKeys.clear();
+    _nextPage = 0;
+    hasMore.value = false;
+
+    try {
+      await _loadCallsBatch(uid, isFirst: false);
+    } catch (e, st) {
+      log("[ContactProfile] recent calls (detail) error: $e\n$st");
+    } finally {
+      if (!isClosed) isCallsLoading.value = false;
+    }
+  }
+
   /// Next batch of this contact's calls (called on scroll end / "Load more")
   Future<void> loadMoreCalls() async {
-    if (!isListMode ||
-        isLoading.value ||
+    if (!showRecentCalls ||
+        isCallsLoading.value ||
+        isLoading.value && isListMode ||
         isLoadingMore.value ||
         !hasMore.value) {
       return;

@@ -1,6 +1,7 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -282,9 +283,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final isOnline = user.isOnline ?? false;
     final statusText = user.lastSeen ?? "Offline";
 
+    final fullImageUrl = profileImageUrl(img);
+
     return Column(
       children: [
-        Container(
+        GestureDetector(
+          onTap: fullImageUrl.isEmpty
+              ? null
+              : () => showFullScreenPhoto(name: name, imageUrl: fullImageUrl),
+          child: Container(
           height: 100.w,
           width: 100.w,
           decoration: BoxDecoration(
@@ -308,6 +315,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                 )
               : Icon(Icons.person, color: Colors.white, size: 45.sp),
+        ),
         ),
         SizedBox(height: 12.h),
         Text(

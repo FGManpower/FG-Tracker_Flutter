@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Model/status_model.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -738,7 +739,17 @@ class StatusOwnFooter extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               child: Row(
                 children: [
-                  CircleAvatar(
+                  GestureDetector(
+                    onTap: isMe
+                        ? null
+                        : () => showUserQuickProfile(
+                              userId: viewer.viewerId,
+                              name: viewer.name,
+                              profileImage: viewer.profileImage,
+                              chatId: int.tryParse(
+                                  viewer.chatId?.toString() ?? ''),
+                            ),
+                    child: CircleAvatar(
                     radius: 22.r,
                     backgroundColor: const Color(0xFF1F2C34),
                     backgroundImage: (viewer.profileImage != null &&
@@ -750,6 +761,7 @@ class StatusOwnFooter extends StatelessWidget {
                         ? Icon(Icons.person_rounded,
                             color: Colors.white54, size: 22.sp)
                         : null,
+                  ),
                   ),
                   SizedBox(width: 14.w),
                   Expanded(

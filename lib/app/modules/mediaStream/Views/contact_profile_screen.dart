@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -171,7 +172,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
           child: NotificationListener<ScrollNotification>(
             // Recent calls pagination: load next batch near the bottom
             onNotification: (ScrollNotification n) {
-              if (controller.isListMode &&
+              if (controller.showRecentCalls &&
                   n.metrics.axis == Axis.vertical &&
                   n.metrics.extentAfter < 200.h) {
                 controller.loadMoreCalls();
@@ -293,33 +294,48 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                   }),
                 ],
 
-                // 5. Contact / Group Information Card
+                // 5. Group Information Card (Contact Information removed
+                //    for 1-to-1 contacts)
                 Obx(() {
                   final d = controller.detail.value;
-                  return _buildInfoCard(
-                    widget.isGroup || (d?.group != null),
-                    _displayName(d),
-                    _displayPhone(d),
-                    email: _displayEmail(d),
-                    groupCode: d?.group?.groupCode,
-                    totalMembers: d?.group?.totalMembers ?? d?.participantsCount,
-                    groupDesc: d?.group?.groupDesc,
+                  final bool isGroupInfo = widget.isGroup || (d?.group != null);
+                  if (!isGroupInfo) return const SizedBox.shrink();
+                  return Column(
+                    children: [
+                      _buildInfoCard(
+                        isGroupInfo,
+                        _displayName(d),
+                        _displayPhone(d),
+                        email: _displayEmail(d),
+                        groupCode: d?.group?.groupCode,
+                        totalMembers:
+                            d?.group?.totalMembers ?? d?.participantsCount,
+                        groupDesc: d?.group?.groupDesc,
+                      ),
+                      SizedBox(height: 14.h),
+                    ],
                   );
                 }),
-                SizedBox(height: 14.h),
 
-                // 6. Recent Calls (List mode) or error fallback
+                // 6. Recent Calls (every 1-to-1 profile) / error fallback
                 if (controller.isListMode)
                   _buildRecentCallsCard(context)
-                else
+                else ...[
                   Obx(() {
                     if (controller.errorMessage.value.isNotEmpty &&
                         controller.detail.value == null &&
                         !controller.isLoading.value) {
-                      return _card(child: _buildError(controller.errorMessage.value));
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 14.h),
+                        child: _card(
+                            child: _buildError(controller.errorMessage.value)),
+                      );
                     }
                     return const SizedBox.shrink();
                   }),
+                  if (controller.showRecentCalls)
+                    _buildRecentCallsCard(context),
+                ],
               ],
             ),
           ),
@@ -437,7 +453,11 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 ),
         );
 
-    return Container(
+    return GestureDetector(
+      onTap: url.isEmpty
+          ? null
+          : () => showFullScreenPhoto(name: name, imageUrl: url),
+      child: Container(
       width: 100.w,
       height: 100.w,
       decoration: BoxDecoration(
@@ -464,6 +484,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 )
               : fallback(),
         ),
+      ),
       ),
     );
   }
@@ -1208,9 +1229,15 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
   Widget _buildRecentCallsCard(BuildContext context) {
     return _card(
       child: Obx(() {
-        final bool loading = controller.isLoading.value;
-        final String error = controller.errorMessage.value;
-        final bool listMode = controller.isListMode;
+        // Single call mode: the list has its own loader and no error state
+        // (the call detail above owns isLoading / errorMessage there).
+        final bool showList = controller.showRecentCalls;
+        final bool loading = controller.isListMode
+            ? controller.isLoading.value
+            : controller.isCallsLoading.value;
+        final String error =
+            controller.isListMode ? controller.errorMessage.value : '';
+        final bool listMode = showList;
         final CallHistoryDetailData? d = controller.detail.value;
         final List<CallingDetail> list = controller.calls.toList();
 

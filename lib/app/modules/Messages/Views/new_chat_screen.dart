@@ -18,6 +18,7 @@ import '../../../Model/MemberDataRes.dart';
 import '../../../routes/app_pages.dart';
 import 'UserProfileScreen.dart';
 import '../../../Core/constant/pref_res.dart';
+import '../../../Core/util/profile_navigation.dart';
 import '../../../Core/values/Utils.dart';
 import '../../../Core/values/global.dart';
 import '../../../Data/Services/call_service.dart';
@@ -645,7 +646,16 @@ class _NewChatScreenState extends State<NewChatScreen>
               children: [
                 Stack(
                   children: [
-                    SizedBox(
+                    GestureDetector(
+                      // Tap photo → full screen (WhatsApp style)
+                      onTap: hasAvatar
+                          ? () {
+                              Get.back();
+                              showFullScreenPhoto(
+                                  name: displayName, imageUrl: imageUrl);
+                            }
+                          : null,
+                      child: SizedBox(
                       width: size,
                       height: size,
                       child: hasAvatar
@@ -667,6 +677,7 @@ class _NewChatScreenState extends State<NewChatScreen>
                                   _popupInitials(displayName),
                             )
                           : _popupInitials(displayName),
+                    ),
                     ),
                     // Name strip on top of the photo
                     Positioned(

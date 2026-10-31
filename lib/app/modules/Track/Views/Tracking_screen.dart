@@ -15,6 +15,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
@@ -3232,8 +3233,18 @@ class TrackingScreen extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Avatar with online status badge
-            Stack(
+            // Avatar with online status badge (tap → photo popup)
+            GestureDetector(
+              onTap: isMe
+                  ? null
+                  : () => showUserQuickProfile(
+                        userId: memberUserId,
+                        name: name,
+                        profileImage: member.profileImage?.toString(),
+                        mobileNo: member.mobileNo?.toString(),
+                        chatId: int.tryParse(member.chatId?.toString() ?? ''),
+                      ),
+              child: Stack(
               clipBehavior: Clip.none,
               children: [
                 CircleAvatar(
@@ -3271,6 +3282,7 @@ class TrackingScreen extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
             ),
             SizedBox(width: 10.w),
             // Name & Status

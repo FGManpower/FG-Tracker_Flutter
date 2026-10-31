@@ -19,6 +19,7 @@ import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../Core/constant/const_res.dart';
+import '../../../../Core/util/profile_navigation.dart';
 
 class GroupsListScreen extends StatefulWidget {
   const GroupsListScreen({super.key});
@@ -387,7 +388,9 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipOval(
+                GestureDetector(
+                  onTap: data == null ? null : () => showGroupQuickProfile(groupId: data.id, groupName: data.groupName, groupProfile: data.groupProfile, memberCount: data.memberCount),
+                  child: ClipOval(
                   child: SizedBox(
                     height: 50.h,
                     width: 50.h,
@@ -447,6 +450,7 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                       ),
                     ),
                   ),
+                ),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(

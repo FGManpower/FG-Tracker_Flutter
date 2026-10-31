@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import '../../../Core/util/profile_navigation.dart';
 import '../Controller/chat_list_controller.dart';
 import '../Controller/MessageController.dart';
 import '../widgets/custom_dropdown_menu.dart';
@@ -195,7 +196,23 @@ class ArchivedChatsScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Container(
+                GestureDetector(
+                  onTap: chat.isGroup == true
+                      ? () => showGroupQuickProfile(
+                            groupId: chat.groupId ?? chat.id,
+                            groupName: chat.name ?? chat.groupName,
+                            groupProfile: chat.image,
+                            memberCount: chat.memberCount,
+                            onMessage: () => _openChat(chat),
+                          )
+                      : () => showUserQuickProfile(
+                            userId: chat.userId,
+                            name: chat.name,
+                            profileImage: chat.image,
+                            chatId:
+                                chat.chatId ?? chat.conversationId ?? chat.id,
+                          ),
+                  child: Container(
                   width: 48.w,
                   height: 48.w,
                   decoration: BoxDecoration(
@@ -230,6 +247,7 @@ class ArchivedChatsScreen extends StatelessWidget {
                     ),
                   )
                       : null,
+                ),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(

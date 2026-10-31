@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
@@ -347,67 +348,9 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
-  // Same style as chat image viewer: black bg, pinch zoom, close button
+  // Common WhatsApp-style full-screen photo viewer
   void _openFullImage(String url, String title) {
-    Get.dialog(
-      Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Center(
-                child: InteractiveViewer(
-                  minScale: 1,
-                  maxScale: 4,
-                  child: Image.network(
-                    url,
-                    fit: BoxFit.contain,
-                    width: double.infinity,
-                    loadingBuilder: (context, child, progress) =>
-                        progress == null
-                            ? child
-                            : const Center(
-                                child: CircularProgressIndicator(
-                                    color: Colors.white, strokeWidth: 2),
-                              ),
-                    errorBuilder: (_, __, ___) => Icon(Icons.broken_image,
-                        color: Colors.white54, size: 60.sp),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 8.h,
-                left: 8.w,
-                right: 8.w,
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Get.back(),
-                      icon: Icon(Icons.arrow_back,
-                          color: Colors.white, size: 24.sp),
-                    ),
-                    SizedBox(width: 4.w),
-                    Expanded(
-                      child: Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      useSafeArea: false,
-    );
+    showFullScreenPhoto(name: title, imageUrl: url);
   }
 
   Future<void> _initiateGroupCall(GroupProfileData data,
@@ -884,7 +827,14 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: !isMe ? () => _openPrivateChat(m, online) : null,
+            onTap: !isMe
+                ? () => showUserQuickProfile(
+                      userId: m.userId,
+                      name: m.name,
+                      profileImage: m.profileImage,
+                      chatId: int.tryParse(m.chatId?.toString() ?? ''),
+                    )
+                : null,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
@@ -963,6 +913,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             _badge("Group Admin", const Color(0xFFE7F8EC),
                 const Color(0xFF2BB673)),
           SizedBox(width: 4.w),
+          if (!isMe)
           PopupMenuButton<String>(
             icon: Icon(Icons.more_vert_rounded,
                 color: Colors.grey.shade500, size: 20.sp),

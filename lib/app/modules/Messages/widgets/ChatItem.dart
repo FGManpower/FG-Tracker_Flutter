@@ -2,7 +2,6 @@ import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Core/util/media_url.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
-import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/DocumentService.dart';
@@ -17,12 +16,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
 import '../../../Core/util/file_helper.dart';
+import '../../../Core/util/profile_navigation.dart';
 import '../../../global_widget/common_widget.dart';
 import '../../status/views/StatusViewScreen.dart';
 import 'AudioPlayerWidget.dart';
@@ -99,7 +98,22 @@ class ChatBubble extends StatelessWidget {
                 try {
                   avatarUrl = controller.memberData.profileImage;
                 } catch (_) {}
-                return CircleAvatar(
+                return GestureDetector(
+                  onTap: () {
+                    try {
+                      final m = controller.memberData;
+                      openUserProfile(
+                        userId: m.userId,
+                        name: m.name,
+                        profileImage: m.profileImage,
+                        mobileNo: m.mobileNo,
+                        chatId: int.tryParse(
+                                controller.privateChatId.value.toString()) ??
+                            m.chatId,
+                      );
+                    } catch (_) {}
+                  },
+                  child: CircleAvatar(
                   radius: 16.r,
                   backgroundColor: const Color(0xFFECEAFD),
                   backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
@@ -116,6 +130,7 @@ class ChatBubble extends StatelessWidget {
                     color: const Color(0xFF4818F0),
                   )
                       : null,
+                  ),
                 );
               })
                   : SizedBox(width: 32.r, height: 32.r),
@@ -1461,6 +1476,42 @@ class GroupChatBubble extends StatelessWidget {
       message.isDeleted == true ||
           message.content?.toString() == "This message was deleted";
 
+  /// Sender avatar / name tap → sender's full profile (WhatsApp style).
+  void _openSenderInfo({bool asPopup = false}) {
+    final String senderId = message.senderId?.toString() ?? '';
+    dynamic member;
+    if (Get.isRegistered<GroupMessageController>()) {
+      member = Get.find<GroupMessageController>()
+          .groupMembers
+          .firstWhereOrNull((m) => m.userId?.toString() == senderId);
+    }
+    final String? name =
+        message.senderName?.toString() ?? member?.name?.toString();
+    final String? image =
+        message.senderImage?.toString() ?? member?.profileImage?.toString();
+    final String? mobileNo = member?.mobileNo?.toString();
+    final int? chatId = int.tryParse(member?.chatId?.toString() ?? '');
+
+    if (asPopup) {
+      // Avatar tap → photo popup with Message / Call / Video / Info
+      showUserQuickProfile(
+        userId: senderId,
+        name: name,
+        profileImage: image,
+        mobileNo: mobileNo,
+        chatId: chatId,
+      );
+      return;
+    }
+    openUserProfile(
+      userId: senderId,
+      name: name,
+      profileImage: image,
+      mobileNo: mobileNo,
+      chatId: chatId,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUserId =
@@ -1501,24 +1552,7 @@ class GroupChatBubble extends StatelessWidget {
               ),
               child: showAvatar
                   ? GestureDetector(
-                onTap: () {
-                  DialogBox().showRouteDetailsBottomSheet(
-                    destination: const LatLng(0, 0),
-                    distance: 0,
-                    userId: int.tryParse(
-                      message.senderId.toString(),
-                    ) ??
-                        0,
-                    groupId: groupId,
-                    groupName: groupName,
-                    name: message.senderName,
-                    imageUrl: message.senderImage,
-                    status: true,
-                    lastSeen: "",
-                    isGroupChat: true,
-                    isLocationSharing: message.locationSharing ?? false,
-                  );
-                },
+                onTap: () => _openSenderInfo(asPopup: true),
                 child: CircleAvatar(
                   radius: 18.r,
                   backgroundColor: Colors.grey.shade200,
@@ -1594,12 +1628,15 @@ class GroupChatBubble extends StatelessWidget {
                                     padding: EdgeInsets.only(
                                       bottom: 4.h,
                                     ),
-                                    child: Text(
-                                      message.senderName?.toString() ?? "",
-                                      style: TextStyle(
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w700,
-                                        color: _purple,
+                                    child: GestureDetector(
+                                      onTap: _openSenderInfo,
+                                      child: Text(
+                                        message.senderName?.toString() ?? "",
+                                        style: TextStyle(
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: _purple,
+                                        ),
                                       ),
                                     ),
                                   ),
