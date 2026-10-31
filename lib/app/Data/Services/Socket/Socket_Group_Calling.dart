@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 
 class Socket_GroupCallService {
@@ -24,7 +25,6 @@ class Socket_GroupCallService {
 
   MediaStream? localStream;
 
-
   MediaStreamTrack? activeVideoTrack;
 
   final Map<String, RTCPeerConnection> _peers = {};
@@ -33,6 +33,10 @@ class Socket_GroupCallService {
   final Set<String> remoteUsers = {};
   final Map<String, bool> remoteCameraStates = {};
   final Map<String, Map<String, dynamic>> participantMeta = {};
+
+  final Set<String> _pendingOfferUserIds = <String>{};
+  final Map<String, String> participantStatus = {};
+  int totalParticipants = 0;
 
   Function()? onParticipantsUpdated;
   Function()? onCallEnded;
@@ -44,9 +48,11 @@ class Socket_GroupCallService {
   Function(String userId, bool isVideoOn)? onParticipantCameraChanged;
   Function(Map<String, dynamic> data)? onIncomingCallReceived;
 
-
   Function(String userId)? onScreenShareStarted;
   Function(String userId)? onScreenShareStopped;
+
+  Function(List<Map<String, dynamic>> participants, int total)?
+  onParticipantsRosterUpdated;
 
   bool _listenersBound = false;
   bool _isDisposed = false;
@@ -94,6 +100,19 @@ class Socket_GroupCallService {
     );
   }
 
+  Set<String> get connectedRemoteIds {
+    final ids = <String>{};
+    ids.addAll(remoteUsers);
+    ids.addAll(_peers.keys);
+    ids.addAll(remoteRenderers.keys);
+    // roster in-call
+    participantStatus.forEach((id, status) {
+      if (id != _selfUserId && _isInCallStatus(id, status)) {
+        ids.add(id);
+      }
+    });
+    return ids;
+  }
   String getParticipantName(String userId) {
     final name = participantMeta[userId]?['name']?.toString();
     if (name != null && name.isNotEmpty) return name;
@@ -106,6 +125,24 @@ class Socket_GroupCallService {
 
   bool getParticipantMuted(String userId) {
     return participantMeta[userId]?['isMuted'] == true;
+  }
+
+  String getParticipantStatus(String userId) {
+    return participantStatus[userId] ?? '';
+  }
+
+  bool _isInCallStatus(String userId, String status) {
+    final s = status.toLowerCase().trim();
+    final isMatch = s.isEmpty ||
+        s == 'accepted' ||
+        s == 'accept' ||
+        s == 'joined' ||
+        s == 'connected' ||
+        s == 'in_call' ||
+        s == 'in-call' ||
+        s == 'active' ||
+        s == 'on_call';
+    return isMatch;
   }
 
   void init(String userId) {
@@ -146,15 +183,14 @@ class Socket_GroupCallService {
     });
 
     socket?.onDisconnect((reason) {
-      _log('🔴 Socket Disconnected: $reason');
+      _log('Socket Disconnected: $reason');
       _listenersBound = false;
     });
 
     socket?.onAny((event, dynamic data) {
-      _log('GroupSocketAllEvent: $event | Data: $data');
+      // _log('GroupSocketAllEvent: $event | Data: $data');
     });
   }
-
 
   Future<bool> _ensureConnected({int timeoutSeconds = 10}) async {
     if (socket != null && socket!.connected) return true;
@@ -174,21 +210,21 @@ class Socket_GroupCallService {
       }
     }
 
-    _log('⏳ Waiting for Socket connection (App Cold Start)...');
+    _log(' Waiting for Socket connection (App Cold Start)...');
     int waitedMs = 0;
     const intervalMs = 200;
     final maxWaitMs = timeoutSeconds * 1000;
 
     while (waitedMs < maxWaitMs) {
       if (socket != null && socket!.connected) {
-        _log('🟢 Socket connected successfully after ${waitedMs}ms');
+        _log('Socket connected successfully after ${waitedMs}ms');
         return true;
       }
       await Future.delayed(const Duration(milliseconds: intervalMs));
       waitedMs += intervalMs;
     }
 
-    _log('❌ Socket connection timed out after $timeoutSeconds seconds');
+    _log('Socket connection timed out after $timeoutSeconds seconds');
     return socket != null && socket!.connected;
   }
 
@@ -207,20 +243,23 @@ class Socket_GroupCallService {
       "group_call_answer",
       "group_call_ice",
       "group_call_ended",
-      // screen share
       "group_call_screen_share_started",
       "group_call_screen_share_stopped",
+      "group_call_participants_update",
+      "force_logout",
     ];
     for (final e in events) {
       socket?.off(e);
     }
 
-    socket?.on("group_call_started", (raw) {
-      // kept commented as in your current file
+    socket?.on("force_logout", (data) {
+      _log("force_logout received on groupCall socket: $data");
+      LogoutUser().handleForceLogout();
     });
 
+    socket?.on("group_call_started", (raw) {});
+
     socket?.on("group_call_participant_joined", (raw) {
-      _log("group_call_participant_joined: $raw");
       if (raw == null) return;
       final data = Map<String, dynamic>.from(raw);
       final joinedUserId = data['userId']?.toString();
@@ -229,12 +268,7 @@ class Socket_GroupCallService {
       final name = (data['name'] ?? data['userName'] ?? '').toString();
       final profileImage =
       (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
-      _log(
-        "JOIN PARTICIPANT PARSED => "
-            "userId=$joinedUserId | "
-            "name=$name | "
-            "profileImage=$profileImage",
-      );
+
       _saveParticipantMeta(
         joinedUserId,
         name: name.isEmpty ? null : name,
@@ -242,23 +276,22 @@ class Socket_GroupCallService {
         isMuted: data['isMuted'] == true,
       );
 
+      participantStatus[joinedUserId] = 'accepted';
+      _addRemoteUser(joinedUserId);
+
       onParticipantJoined?.call(joinedUserId);
       onParticipantsUpdated?.call();
     });
 
     socket?.on("group_call_participant_rejected", (raw) {
       _log("group_call_participant_rejected: $raw");
-
       if (raw == null) return;
 
       final data = Map<String, dynamic>.from(raw);
-
       final userId = data['userId']?.toString();
       if (userId == null || userId.isEmpty) return;
 
-      final userName =
-      (data['userName'] ?? data['name'])?.toString();
-
+      final userName = (data['userName'] ?? data['name'])?.toString();
       final userProfile =
       (data['userProfile'] ?? data['profileImage'])?.toString();
 
@@ -268,15 +301,11 @@ class Socket_GroupCallService {
         profileImage: userProfile,
       );
 
-      onParticipantRejected?.call(
-        userId,
-        userName,
-        userProfile,
-      );
+      onParticipantRejected?.call(userId, userName, userProfile);
     });
 
     socket?.on("group_call_participant_mute", (raw) {
-      _log("🔇 group_call_participant_mute: $raw");
+      _log("group_call_participant_mute: $raw");
       if (raw == null) return;
 
       final data = Map<String, dynamic>.from(raw);
@@ -300,27 +329,21 @@ class Socket_GroupCallService {
       final data = Map<String, dynamic>.from(raw);
       final userId = data['userId']?.toString();
 
-      if (userId == null || userId.isEmpty || userId == _selfUserId) {
-        return;
-      }
+      if (userId == null || userId.isEmpty || userId == _selfUserId) return;
 
       final isVideoOn = data['isVideoOn'] == true;
 
+
       remoteCameraStates[userId] = isVideoOn;
-
-      _log("📹 Remote Camera Updated: $userId => $isVideoOn");
-
       onParticipantCameraChanged?.call(userId, isVideoOn);
+      onParticipantsUpdated?.call(); // add this
     });
 
-
-
-
-
     socket?.on("group_call_participant_left", (raw) async {
-      _log(" group_call_participant_left: $raw");
       final leftUserId = raw is Map ? raw['userId']?.toString() : null;
       if (leftUserId != null) {
+        participantStatus[leftUserId] = 'left';
+        _pendingOfferUserIds.remove(leftUserId);
         await _removeRemotePeer(leftUserId);
       }
     });
@@ -336,7 +359,6 @@ class Socket_GroupCallService {
       CallSessionState.reset();
     });
 
-    // ===================== SCREEN SHARE LISTEN =====================
     socket?.on("group_call_screen_share_started", (raw) {
       _log("🖥️ group_call_screen_share_started: $raw");
       if (raw == null) return;
@@ -382,6 +404,233 @@ class Socket_GroupCallService {
       } catch (e) {
         _log("ice error: $e");
       }
+    });
+
+    socket?.on("group_call_participants_update", (raw) async {
+      await _handleParticipantsUpdate(raw);
+    });
+  }
+
+  Future<void> _handleParticipantsUpdate(dynamic raw) async {
+    if (raw == null) return;
+
+    try {
+      final data = Map<String, dynamic>.from(raw);
+      _log("group_call_participants_update: $data");
+
+      final callId = data['callId']?.toString();
+      final groupId = data['groupId']?.toString();
+
+      if (currentCallId != null &&
+          callId != null &&
+          callId.isNotEmpty &&
+          callId != currentCallId) {
+        _log("Ignoring participants_update for other callId=$callId");
+        return;
+      }
+
+      if (callId != null && callId.isNotEmpty) {
+        currentCallId = callId;
+      }
+      if (groupId != null && groupId.isNotEmpty) {
+        currentGroupId = groupId;
+      }
+
+      totalParticipants =
+          int.tryParse(data['totalParticipants']?.toString() ?? '') ??
+              totalParticipants;
+
+      final list = (data['participants'] as List?) ?? [];
+      final parsed = <Map<String, dynamic>>[];
+      final acceptedIds = <String>{};
+      final allIds = <String>{};
+
+      for (final item in list) {
+        if (item is! Map) continue;
+        final p = Map<String, dynamic>.from(item);
+
+        final uid = p['userId']?.toString();
+        if (uid == null || uid.isEmpty) continue;
+
+        final status = (p['status'] ?? 'accepted').toString().toLowerCase();
+        final name = (p['name'] ?? p['userName'] ?? '').toString();
+        final profileImage =
+        (p['profileImage'] ?? p['userProfileImage'] ?? '').toString();
+        final isMuted =
+            p['isMuted'] == true || p['muted'] == true || p['is_muted'] == true;
+
+        allIds.add(uid);
+        participantStatus[uid] = status;
+
+        _saveParticipantMeta(
+          uid,
+          name: name.isEmpty ? null : name,
+          profileImage: profileImage,
+          isMuted: isMuted,
+        );
+
+        parsed.add({
+          'userId': uid,
+          'status': status,
+          'name': name,
+          'profileImage': profileImage,
+          'isMuted': isMuted,
+        });
+
+        if (_isInCallStatus(uid, status)) {
+          if (uid != _selfUserId) {
+            acceptedIds.add(uid);
+          }
+        }
+      }
+
+      final staleStatus =
+      participantStatus.keys.where((id) => !allIds.contains(id)).toList();
+      for (final id in staleStatus) {
+        participantStatus.remove(id);
+      }
+
+      final toRemove = remoteUsers
+          .where((id) => !acceptedIds.contains(id))
+          .toList(growable: false);
+
+      for (final id in toRemove) {
+        _log("Roster: removing peer $id (left or not accepted)");
+        _pendingOfferUserIds.remove(id);
+        await _removeRemotePeer(id);
+      }
+
+      for (final id in acceptedIds) {
+        final isNew = !remoteUsers.contains(id) && !_peers.containsKey(id);
+        if (isNew) {
+          _log("Roster: new accepted participant $id");
+          _addRemoteUser(id);
+          onParticipantJoined?.call(id);
+
+          if (localStream != null) {
+            if (_shouldCreateOfferTo(id)) {
+              try {
+                await _createOfferTo(id);
+              } catch (e) {
+                _log("Roster offer error to $id: $e");
+              }
+            }
+          } else {
+            _pendingOfferUserIds.add(id);
+            _log("Queued offer for $id (waiting localStream)");
+          }
+        }
+      }
+
+      onParticipantsRosterUpdated?.call(parsed, totalParticipants);
+      onParticipantsUpdated?.call();
+    } catch (e, st) {
+      _log("group_call_participants_update error: $e\n$st");
+    }
+  }
+
+  bool _shouldCreateOfferTo(String remoteUserId) {
+    final me = _selfUserId ?? '';
+    if (me.isEmpty) return true;
+    final a = int.tryParse(me);
+    final b = int.tryParse(remoteUserId);
+    if (a != null && b != null) return a < b;
+    return me.compareTo(remoteUserId) < 0;
+  }
+
+  Future<void> onLocalStreamReady() async {
+    _log("onLocalStreamReady localStream=${localStream != null}");
+    if (localStream == null) return;
+
+    // CRITICAL: peers created while waiting for getUserMedia have NO local tracks
+    for (final entry in _peers.entries.toList()) {
+      try {
+        await _ensureLocalTracksOnPeer(entry.key, entry.value);
+      } catch (e) {
+        _log("ensureLocalTracks ${entry.key}: $e");
+      }
+    }
+
+    final pending = _pendingOfferUserIds.toList();
+    _pendingOfferUserIds.clear();
+
+    for (final id in pending) {
+      if (id == _selfUserId) continue;
+      if (_shouldCreateOfferTo(id)) {
+        try {
+          if (!_peers.containsKey(id)) {
+            await _createOfferTo(id);
+          } else {
+            await _renegotiateIfNeeded(id);
+          }
+        } catch (e) {
+          _log("flush offer $id: $e");
+        }
+      } else {
+        // We are answerer: tracks were just added; remote may need our offer only if no remote desc yet
+        _log("pending $id: waiting for their offer (glare-safe)");
+      }
+    }
+
+    onParticipantsUpdated?.call();
+  }
+
+  Future<void> _ensureLocalTracksOnPeer(
+      String remoteId,
+      RTCPeerConnection pc,
+      ) async {
+    if (localStream == null) return;
+
+    final senders = await pc.getSenders();
+    final hasAudio = senders.any((s) => s.track?.kind == 'audio');
+    final hasVideo = senders.any((s) => s.track?.kind == 'video');
+
+    if (!hasAudio) {
+      for (final track in localStream!.getAudioTracks()) {
+        await pc.addTrack(track, localStream!);
+      }
+    }
+
+    final videoTrack =
+        activeVideoTrack ?? localStream!.getVideoTracks().firstOrNull;
+    if (videoTrack != null) {
+      if (hasVideo) {
+        final vs = senders.firstWhereOrNull((s) => s.track?.kind == 'video');
+        if (vs != null) {
+          await vs.replaceTrack(videoTrack);
+        }
+      } else {
+        await pc.addTrack(videoTrack, localStream!);
+      }
+    }
+
+    // If we added new tracks, renegotiate (only lower userId creates offer)
+    if ((!hasAudio || !hasVideo) && _shouldCreateOfferTo(remoteId)) {
+      await _renegotiateIfNeeded(remoteId);
+    }
+  }
+
+  Future<void> _renegotiateIfNeeded(String remoteId) async {
+    final pc = _peers[remoteId];
+    if (pc == null || currentCallId == null) return;
+
+    final state = pc.signalingState;
+    if (state ==
+        RTCSignalingState.RTCSignalingStateHaveLocalOffer) {
+      _log("skip renegotiate $remoteId (already have-local-offer)");
+      return;
+    }
+
+    final offer = await pc.createOffer({
+      'offerToReceiveAudio': true,
+      'offerToReceiveVideo': true,
+    });
+    await pc.setLocalDescription(offer);
+
+    socket?.emit("group_call_offer", {
+      "callId": int.tryParse(currentCallId!) ?? currentCallId,
+      "targetUserId": remoteId,
+      "description": {"type": offer.type, "sdp": offer.sdp},
     });
   }
 
@@ -482,20 +731,25 @@ class Socket_GroupCallService {
             (p['profileImage'] ?? p['userProfileImage'])?.toString(),
             isMuted: p['isMuted'] == true,
           );
-        }
 
-        int retries = 0;
-        while (localStream == null && retries < 15) {
-          await Future.delayed(const Duration(milliseconds: 200));
-          retries++;
-        }
+          final st = (p['status'] ?? 'accepted').toString();
+          participantStatus[uid] = st;
 
-        if (localStream != null) {
-          for (final p in participants) {
-            if (p is! Map) continue;
-            final remoteUserId = p['userId']?.toString();
-            if (remoteUserId == null || remoteUserId == _selfUserId) continue;
-            await _createOfferTo(remoteUserId);
+          if (_isInCallStatus(uid, st)) {
+            _addRemoteUser(uid);
+            onParticipantJoined?.call(uid);
+
+            if (localStream != null) {
+              if (_shouldCreateOfferTo(uid) && !_peers.containsKey(uid)) {
+                try {
+                  await _createOfferTo(uid);
+                } catch (e) {
+                  _log('join ACK offer error $uid: $e');
+                }
+              }
+            } else {
+              _pendingOfferUserIds.add(uid);
+            }
           }
         }
 
@@ -559,8 +813,6 @@ class Socket_GroupCallService {
     );
   }
 
-  /// Emit: start_group_screen_share
-  /// Params: callId, groupId
   void emitStartScreenShare() {
     if (currentCallId == null || currentGroupId == null) {
       _log('emitStartScreenShare skipped: no active call');
@@ -578,15 +830,13 @@ class Socket_GroupCallService {
     );
   }
 
-  /// Emit: stop_group_screen_share
-  /// Params: callId, groupId
   void emitStopScreenShare() {
     if (currentCallId == null || currentGroupId == null) {
       _log('emitStopScreenShare skipped: no active call');
       return;
     }
 
-    _log('🖥️ emit stop_group_screen_share');
+    _log('emit stop_group_screen_share');
     socket?.emitWithAck(
       "stop_group_screen_share",
       {
@@ -597,8 +847,6 @@ class Socket_GroupCallService {
     );
   }
 
-  /// Replace camera track with screen track (or back to camera)
-  /// without renegotiation restart.
   Future<void> replaceVideoTrack(MediaStreamTrack newTrack) async {
     activeVideoTrack = newTrack;
     _log('🔄 replaceVideoTrack kind=${newTrack.kind}');
@@ -612,62 +860,40 @@ class Socket_GroupCallService {
 
         if (videoSender != null) {
           await videoSender.replaceTrack(newTrack);
-          _log('✅ track replaced for peer ${entry.key}');
+          _log(' track replaced for peer ${entry.key}');
         } else if (localStream != null) {
-          // if no video sender exists yet, add it
           await pc.addTrack(newTrack, localStream!);
           _log('➕ video track added for peer ${entry.key}');
         }
       } catch (e) {
-        _log('❌ replaceVideoTrack error for ${entry.key}: $e');
+        _log(' replaceVideoTrack error for ${entry.key}: $e');
       }
     }
   }
 
-  void leaveGroupCall() {
-    if (currentCallId == null || currentGroupId == null) return;
-    _log('🚀 emit leave_group_call');
-    socket?.emitWithAck(
-      "leave_group_call",
-      {
-        "callId": int.tryParse(currentCallId!) ?? currentCallId,
-        "groupId": int.tryParse(currentGroupId!) ?? currentGroupId,
-      },
-      ack: (r) => _log('leave_group_call ACK: $r'),
-    );
-    endCallLocalCleanup(navigate: false);
-  }
-
-  void endGroupCall() {
-    if (currentCallId == null || currentGroupId == null) return;
-    _log('🚀 emit end_group_call');
-    socket?.emitWithAck(
-      "end_group_call",
-      {
-        "callId": int.tryParse(currentCallId!) ?? currentCallId,
-        "groupId": int.tryParse(currentGroupId!) ?? currentGroupId,
-      },
-      ack: (r) => _log('end_group_call ACK: $r'),
-    );
-    endCallLocalCleanup(navigate: false);
-  }
-
-  // ============================================================
-  // WebRTC
-  // ============================================================
   Future<RTCPeerConnection> _createPeerConnection(String remoteUserId) async {
     final remoteId = remoteUserId.toString();
     if (_peers.containsKey(remoteId)) return _peers[remoteId]!;
 
     final pc = await createPeerConnection(_rtcConfig);
 
+    // Placeholder so UI can list this member before onTrack
+    _addRemoteUser(remoteId);
+    if (!remoteRenderers.containsKey(remoteId)) {
+      try {
+        final renderer = RTCVideoRenderer();
+        await renderer.initialize();
+        remoteRenderers[remoteId] = renderer;
+        onParticipantsUpdated?.call();
+      } catch (e) {
+        _log('early renderer init failed $remoteId: $e');
+      }
+    }
+
     if (localStream != null) {
-      // audio always from localStream
       for (final track in localStream!.getAudioTracks()) {
         await pc.addTrack(track, localStream!);
       }
-
-      // video: prefer activeVideoTrack (screen/camera), fallback to local video
       final videoTrack =
           activeVideoTrack ?? localStream!.getVideoTracks().firstOrNull;
       if (videoTrack != null) {
@@ -689,10 +915,18 @@ class Socket_GroupCallService {
     };
 
     pc.onTrack = (event) async {
-      _log("REMOTE TRACK $remoteId streams=${event.streams.length}");
-      if (event.streams.isEmpty) return;
+      _log(
+        "REMOTE TRACK $remoteId kind=${event.track.kind} "
+            "streams=${event.streams.length} muted=${event.track.muted} "
+            "enabled=${event.track.enabled}",
+      );
 
       _addRemoteUser(remoteId);
+
+      // Always enable incoming media
+      try {
+        event.track.enabled = true;
+      } catch (_) {}
 
       if (!remoteRenderers.containsKey(remoteId)) {
         final renderer = RTCVideoRenderer();
@@ -700,20 +934,82 @@ class Socket_GroupCallService {
         remoteRenderers[remoteId] = renderer;
       }
 
-      remoteRenderers[remoteId]!.srcObject = event.streams.first;
+      final renderer = remoteRenderers[remoteId]!;
+
+      try {
+        if (event.streams.isNotEmpty) {
+          final stream = event.streams.first;
+          // Re-bind even if same stream id (track may be new)
+          renderer.srcObject = stream;
+        } else {
+          // Unified Plan: empty streams[] — build stream manually
+          if (renderer.srcObject == null) {
+            renderer.srcObject =
+            await createLocalMediaStream('remote_$remoteId');
+          }
+          final stream = renderer.srcObject!;
+          final exists = stream.getTracks().any((t) => t.id == event.track.id);
+          if (!exists) {
+            await stream.addTrack(event.track);
+          }
+          // Force view refresh
+          renderer.srcObject = stream;
+        }
+      } catch (e) {
+        _log('onTrack attach error $remoteId: $e');
+      }
+
+      if (event.track.kind == 'video') {
+        remoteCameraStates[remoteId] = true;
+
+        event.track.onEnded = () {
+          remoteCameraStates[remoteId] = false;
+          onParticipantCameraChanged?.call(remoteId, false);
+          onParticipantsUpdated?.call();
+        };
+
+        // Some devices fire unmute when first frame is ready
+        event.track.onUnMute = () {
+          remoteCameraStates[remoteId] = true;
+          onParticipantCameraChanged?.call(remoteId, true);
+          onParticipantsUpdated?.call();
+        };
+      }
+
+      // UI must rebuild AFTER srcObject is set
       onParticipantsUpdated?.call();
     };
 
-    pc.onConnectionState = (state) {
+    pc.onConnectionState = (state) async {
       _log("PC $remoteId => ${state.name}");
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
-          state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
-        _removeRemotePeer(remoteId);
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected ||
+          state == RTCPeerConnectionState.RTCPeerConnectionStateConnecting) {
+        _addRemoteUser(remoteId);
+        onParticipantsUpdated?.call();
+      }
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
+        _log("PC failed $remoteId — ice restart");
+        try {
+          if (_shouldCreateOfferTo(remoteId)) {
+            final offer = await pc.createOffer({'iceRestart': true});
+            await pc.setLocalDescription(offer);
+            socket?.emit("group_call_offer", {
+              "callId": int.tryParse(currentCallId!) ?? currentCallId,
+              "targetUserId": remoteId,
+              "description": {"type": offer.type, "sdp": offer.sdp},
+            });
+          }
+        } catch (e) {
+          _log("ice restart failed $remoteId: $e");
+          await _removeRemotePeer(remoteId);
+        }
+      }
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+        await _removeRemotePeer(remoteId);
       }
     };
 
     _peers[remoteId] = pc;
-    _addRemoteUser(remoteId);
     return pc;
   }
 
@@ -723,7 +1019,11 @@ class Socket_GroupCallService {
 
     _log("Creating offer -> $remoteId");
     final pc = await _createPeerConnection(remoteId);
-    final offer = await pc.createOffer();
+
+    final offer = await pc.createOffer({
+      'offerToReceiveAudio': true,
+      'offerToReceiveVideo': true,
+    });
     await pc.setLocalDescription(offer);
     if (currentCallId == null) return;
 
@@ -739,24 +1039,68 @@ class Socket_GroupCallService {
 
   Future<void> _handleOffer(Map<String, dynamic> data) async {
     final remoteUserId = data['fromUserId'].toString();
-    final pc = await _createPeerConnection(remoteUserId);
     final description = data['description'];
+    if (description == null) return;
+
+    final pc = await _createPeerConnection(remoteUserId);
+
+    final signaling = pc.signalingState;
+    final polite = !_shouldCreateOfferTo(remoteUserId); // higher id = polite
+
+    // Glare: we already sent an offer
+    if (signaling == RTCSignalingState.RTCSignalingStateHaveLocalOffer) {
+      if (!polite) {
+        // Impolite: keep our offer, ignore theirs
+        _log("glare: ignore offer from $remoteUserId (we are impolite)");
+        return;
+      }
+      // Polite: rollback local offer, accept theirs
+      _log("glare: rollback local offer, accept $remoteUserId");
+      try {
+        await pc.setLocalDescription(RTCSessionDescription('', 'rollback'));
+      } catch (e) {
+        _log("rollback failed $remoteUserId: $e");
+        // Fallback: recreate peer
+        await _removeRemotePeer(remoteUserId);
+        final pc2 = await _createPeerConnection(remoteUserId);
+        await pc2.setRemoteDescription(
+          RTCSessionDescription(description['sdp'], description['type']),
+        );
+        await _flushPendingIce(remoteUserId);
+        final answer = await pc2.createAnswer({
+          'offerToReceiveAudio': true,
+          'offerToReceiveVideo': true,
+        });
+        await pc2.setLocalDescription(answer);
+        socket?.emit("group_call_answer", {
+          "callId": data['callId'],
+          "targetUserId": remoteUserId,
+          "description": {"type": answer.type, "sdp": answer.sdp},
+        });
+        return;
+      }
+    }
 
     await pc.setRemoteDescription(
       RTCSessionDescription(description['sdp'], description['type']),
     );
     await _flushPendingIce(remoteUserId);
 
-    final answer = await pc.createAnswer();
+    // Ensure our mic/cam are on this PC before answering
+    if (localStream != null) {
+      await _ensureLocalTracksOnPeer(remoteUserId, pc);
+    }
+
+    final answer = await pc.createAnswer({
+      'offerToReceiveAudio': true,
+      'offerToReceiveVideo': true,
+    });
     await pc.setLocalDescription(answer);
 
     socket?.emit("group_call_answer", {
       "callId": data['callId'],
       "targetUserId": remoteUserId,
-      "description": {
-        "type": answer.type,
-        "sdp": answer.sdp,
-      }
+      "description": {"type": answer.type, "sdp": answer.sdp},
     });
   }
 
@@ -770,6 +1114,144 @@ class Socket_GroupCallService {
       RTCSessionDescription(description['sdp'], description['type']),
     );
     await _flushPendingIce(remoteUserId);
+  }
+
+  /// Full media teardown. Safe to call multiple times.
+  Future<void> cleanupCallMedia() async {
+    await endCallLocalCleanup(navigate: false);
+  }
+
+  Future<void> _stopAndDisposeStream(MediaStream? stream) async {
+    if (stream == null) return;
+    try {
+      final tracks = stream.getTracks();
+      for (final t in tracks) {
+        try {
+          t.enabled = false;
+        } catch (_) {}
+        try {
+          await t.stop();
+        } catch (_) {
+          try {
+            t.stop();
+          } catch (_) {}
+        }
+      }
+      try {
+        await stream.dispose();
+      } catch (_) {}
+    } catch (e) {
+      _log('_stopAndDisposeStream error: $e');
+    }
+  }
+
+  Future<void> endCallLocalCleanup({bool navigate = true}) async {
+    _log('endCallLocalCleanup start');
+
+    // 1) Stop creating new offers / ignore late roster
+    _pendingOfferUserIds.clear();
+    _pendingIce.clear();
+
+    // 2) Close peer connections FIRST (drop senders holding camera track)
+    final pcs = Map<String, RTCPeerConnection>.from(_peers);
+    _peers.clear();
+    for (final entry in pcs.entries) {
+      try {
+        // Best-effort: remove senders so Android releases camera faster
+        try {
+          final senders = await entry.value.getSenders();
+          for (final s in senders) {
+            try {
+              await entry.value.removeTrack(s);
+            } catch (_) {}
+          }
+        } catch (_) {}
+        await entry.value.close();
+        try {
+          await entry.value.dispose();
+        } catch (_) {}
+      } catch (e) {
+        _log('PC close error ${entry.key}: $e');
+      }
+    }
+
+    // 3) Dispose remote renderers
+    final renderers = Map<String, RTCVideoRenderer>.from(remoteRenderers);
+    remoteRenderers.clear();
+    for (final r in renderers.values) {
+      try {
+        r.srcObject = null;
+      } catch (_) {}
+      try {
+        await r.dispose();
+      } catch (_) {}
+    }
+
+    remoteUsers.clear();
+    remoteCameraStates.clear();
+    participantStatus.clear();
+    participantMeta.clear();
+    totalParticipants = 0;
+
+
+    final ls = localStream;
+    localStream = null;
+    activeVideoTrack = null;
+    await _stopAndDisposeStream(ls);
+
+    currentCallId = null;
+    currentGroupId = null;
+
+    _log('endCallLocalCleanup done (localStream stopped)');
+
+    if (navigate && Get.currentRoute == Routes.groupCallingScreen) {
+      Get.offAllNamed(Routes.Home_Screen);
+    }
+  }
+
+  void leaveGroupCall() {
+    // 1. Save IDs before cleanup destroys them!
+    final id = currentCallId;
+    final gid = currentGroupId;
+
+    _log('emit leave_group_call');
+
+    // 2. Emit to server
+    if (id != null && gid != null) {
+      socket?.emitWithAck(
+        "leave_group_call",
+        {
+          "callId": int.tryParse(id) ?? id,
+          "groupId": int.tryParse(gid) ?? gid,
+        },
+        ack: (r) => _log('leave_group_call ACK: $r'),
+      );
+    }
+
+    // 3. NOW release camera and clear IDs locally
+    unawaited(endCallLocalCleanup(navigate: false));
+  }
+
+  void endGroupCall() {
+    // 1. Save IDs before cleanup destroys them!
+    final id = currentCallId;
+    final gid = currentGroupId;
+
+    _log('emit end_group_call');
+
+    // 2. Emit to server
+    if (id != null && gid != null) {
+      socket?.emitWithAck(
+        "end_group_call",
+        {
+          "callId": int.tryParse(id) ?? id,
+          "groupId": int.tryParse(gid) ?? gid,
+        },
+        ack: (r) => _log('end_group_call ACK: $r'),
+      );
+    }
+
+    unawaited(endCallLocalCleanup(navigate: false));
   }
 
   Future<void> _handleRemoteIce(Map<String, dynamic> data) async {
@@ -818,51 +1300,28 @@ class Socket_GroupCallService {
     final remoteId = remoteUserId.toString();
 
     final pc = _peers.remove(remoteId);
-    if (pc != null) await pc.close();
+    final hadState = pc != null ||
+        remoteUsers.contains(remoteId) ||
+        remoteRenderers.containsKey(remoteId);
+
+    if (pc != null) {
+      try { await pc.close(); } catch (_) {}
+    }
 
     _pendingIce.remove(remoteId);
     remoteCameraStates.remove(remoteId);
     final renderer = remoteRenderers.remove(remoteId);
     if (renderer != null) {
       renderer.srcObject = null;
-      await renderer.dispose();
+      try { await renderer.dispose(); } catch (_) {}
     }
 
     remoteUsers.remove(remoteId);
+    participantStatus[remoteId] = 'left';
 
+    if (!hadState) return;
     onParticipantLeft?.call(remoteId);
     onParticipantsUpdated?.call();
-  }
-
-  Future<void> endCallLocalCleanup({bool navigate = true}) async {
-    for (final pc in _peers.values) {
-      await pc.close();
-    }
-    _peers.clear();
-    _pendingIce.clear();
-
-    for (final renderer in remoteRenderers.values) {
-      renderer.srcObject = null;
-      await renderer.dispose();
-    }
-    remoteRenderers.clear();
-    remoteUsers.clear();
-    participantMeta.clear();
-    remoteCameraStates.clear();
-
-    try {
-      localStream?.getTracks().forEach((t) => t.stop());
-      await localStream?.dispose();
-    } catch (_) {}
-    localStream = null;
-    activeVideoTrack = null;
-
-    currentCallId = null;
-    currentGroupId = null;
-
-    if (navigate && Get.currentRoute == Routes.groupCallingScreen) {
-      Get.offAllNamed(Routes.Home_Screen);
-    }
   }
 
   Future<void> dispose() async {
@@ -874,5 +1333,8 @@ class Socket_GroupCallService {
     socket?.dispose();
     socket = null;
     _listenersBound = false;
+    _selfUserId = null;
+    participantMeta.clear();
+    participantStatus.clear();
   }
 }

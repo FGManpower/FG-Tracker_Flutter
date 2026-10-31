@@ -69,7 +69,7 @@ class StatusBackground extends StatelessWidget {
             Center(
               child: AspectRatio(
                 aspectRatio:
-                vc.value.aspectRatio > 0 ? vc.value.aspectRatio : 9 / 16,
+                    vc.value.aspectRatio > 0 ? vc.value.aspectRatio : 9 / 16,
                 child: VideoPlayer(vc),
               ),
             ),
@@ -119,27 +119,27 @@ class StatusBackground extends StatelessWidget {
               maxScale: 3.0,
               child: isNetwork
                   ? Image.network(
-                imageUrl,
-                fit: BoxFit.contain,
-                width: double.infinity,
-                height: double.infinity,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF6B4DFF),
-                    ),
-                  );
-                },
-                errorBuilder: (_, __, ___) => const PlaceholderBg(),
-              )
+                      imageUrl,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      height: double.infinity,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF6B4DFF),
+                          ),
+                        );
+                      },
+                      errorBuilder: (_, __, ___) => const PlaceholderBg(),
+                    )
                   : Image.asset(
-                imageUrl,
-                fit: BoxFit.contain,
-                width: double.infinity,
-                height: double.infinity,
-                errorBuilder: (_, __, ___) => const PlaceholderBg(),
-              ),
+                      imageUrl,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (_, __, ___) => const PlaceholderBg(),
+                    ),
             ),
           ),
         ],
@@ -178,9 +178,8 @@ class StatusStaticPreviewBackground extends StatelessWidget {
       );
     }
 
-    final previewUrl = status.type == 'video'
-        ? status.thumbnailUrl
-        : status.mediaUrl;
+    final previewUrl =
+        status.type == 'video' ? status.thumbnailUrl : status.mediaUrl;
 
     if (previewUrl != null &&
         previewUrl.isNotEmpty &&
@@ -304,7 +303,7 @@ class StatusProgressBars extends StatelessWidget {
                         minHeight: 2.5.h,
                         backgroundColor: Colors.white.withValues(alpha: 0.35),
                         valueColor:
-                        const AlwaysStoppedAnimation<Color>(Colors.white),
+                            const AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     );
                   },
@@ -360,13 +359,13 @@ class StatusTopBar extends StatelessWidget {
               child: (userAvatar != null && userAvatar!.isNotEmpty)
                   ? Image.network(userAvatar!, fit: BoxFit.cover)
                   : Container(
-                color: const Color(0xFFE9E7FF),
-                child: Icon(
-                  Icons.person_rounded,
-                  color: const Color(0xFF6B4DFF),
-                  size: 22.sp,
-                ),
-              ),
+                      color: const Color(0xFFE9E7FF),
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: const Color(0xFF6B4DFF),
+                        size: 22.sp,
+                      ),
+                    ),
             ),
           ),
           SizedBox(width: 10.w),
@@ -511,15 +510,18 @@ class StatusOwnFooter extends StatelessWidget {
   void _openChatWithViewer(StatusViewerModel viewer) {
     if (viewer.viewerId <= 0) return;
 
-    final myId =
-        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+    final myId = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
     if (myId.isNotEmpty && myId == viewer.viewerId.toString()) return;
+
+    final int? chatId = viewer.chatId;
 
     final member = MemberData(
       id: viewer.viewerId,
       userId: viewer.viewerId,
       name: viewer.name,
       profileImage: _memberProfilePath(viewer.profileImage),
+      chatId: chatId,
+      groupId: 0,
     );
 
     if (Get.isBottomSheetOpen == true) {
@@ -533,7 +535,11 @@ class StatusOwnFooter extends StatelessWidget {
         Routes.chatScreen,
         arguments: {
           "userData": member,
-          "type": "",
+          "type": "chatScreen",
+          "chatType": "private",
+          "chatId": chatId?.toString(),
+          "groupId": 0,
+          "groupName": viewer.name,
         },
       );
     });
@@ -550,8 +556,7 @@ class StatusOwnFooter extends StatelessWidget {
             Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
 
         final visibleViewers = current.viewers
-            .where((v) =>
-        myId.isEmpty || v.viewerId.toString() != myId)
+            .where((v) => myId.isEmpty || v.viewerId.toString() != myId)
             .toList();
 
         final selfIncluded = myId.isNotEmpty &&
@@ -559,11 +564,11 @@ class StatusOwnFooter extends StatelessWidget {
 
         final displayCount = selfIncluded
             ? (current.viewsCount > 0
-            ? current.viewsCount - 1
-            : visibleViewers.length)
+                ? current.viewsCount - 1
+                : visibleViewers.length)
             : (current.viewsCount > 0
-            ? current.viewsCount
-            : visibleViewers.length);
+                ? current.viewsCount
+                : visibleViewers.length);
 
         final reactions = _reactionSummary(visibleViewers);
 
@@ -692,8 +697,7 @@ class StatusOwnFooter extends StatelessWidget {
   }
 
   Widget _buildViewersList(List<StatusViewerModel> viewers) {
-    final myId =
-        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+    final myId = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
 
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
@@ -704,8 +708,7 @@ class StatusOwnFooter extends StatelessWidget {
         final viewer = viewers[index];
         final hasReaction = viewer.reactionEmoji != null &&
             viewer.reactionEmoji!.trim().isNotEmpty;
-        final isMe = myId.isNotEmpty &&
-            myId == viewer.viewerId.toString();
+        final isMe = myId.isNotEmpty && myId == viewer.viewerId.toString();
 
         String timeText = '';
         if (viewer.viewedAt != null) {
@@ -718,7 +721,7 @@ class StatusOwnFooter extends StatelessWidget {
           } else {
             final dt = viewer.viewedAt!.toLocal();
             final hour =
-            dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
+                dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
             final minute = dt.minute.toString().padLeft(2, '0');
             final period = dt.hour >= 12 ? 'PM' : 'AM';
             timeText = '$hour:$minute $period';
@@ -739,13 +742,13 @@ class StatusOwnFooter extends StatelessWidget {
                     radius: 22.r,
                     backgroundColor: const Color(0xFF1F2C34),
                     backgroundImage: (viewer.profileImage != null &&
-                        viewer.profileImage!.isNotEmpty)
+                            viewer.profileImage!.isNotEmpty)
                         ? NetworkImage(viewer.profileImage!)
                         : null,
                     child: (viewer.profileImage == null ||
-                        viewer.profileImage!.isEmpty)
+                            viewer.profileImage!.isEmpty)
                         ? Icon(Icons.person_rounded,
-                        color: Colors.white54, size: 22.sp)
+                            color: Colors.white54, size: 22.sp)
                         : null,
                   ),
                   SizedBox(width: 14.w),
@@ -829,24 +832,23 @@ class StatusOwnFooter extends StatelessWidget {
                   Obx(() {
                     final current = controller.currentStatus ?? status;
                     final myId = Global.storageServices
-                        .get(PrefConst.userId)
-                        ?.toString() ??
+                            .get(PrefConst.userId)
+                            ?.toString() ??
                         '';
                     final selfIncluded = myId.isNotEmpty &&
                         current.viewers
                             .any((v) => v.viewerId.toString() == myId);
                     final visibleLen = current.viewers
                         .where((v) =>
-                    myId.isEmpty ||
-                        v.viewerId.toString() != myId)
+                            myId.isEmpty || v.viewerId.toString() != myId)
                         .length;
                     final count = selfIncluded
                         ? (current.viewsCount > 0
-                        ? current.viewsCount - 1
-                        : visibleLen)
+                            ? current.viewsCount - 1
+                            : visibleLen)
                         : (current.viewsCount > 0
-                        ? current.viewsCount
-                        : visibleLen);
+                            ? current.viewsCount
+                            : visibleLen);
                     return reausabletext(
                       '$count Views',
                       fontsize: 12.sp,
@@ -863,6 +865,7 @@ class StatusOwnFooter extends StatelessWidget {
     );
   }
 }
+
 class StatusOtherFooter extends StatelessWidget {
   final StatusViewController controller;
 
@@ -968,15 +971,15 @@ class StatusOtherFooter extends StatelessWidget {
                       border: hasText
                           ? null
                           : Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                      ),
+                              color: Colors.white.withValues(alpha: 0.2),
+                            ),
                     ),
                     child: Icon(
                       hasText
                           ? Icons.send_rounded
                           : (isLiked
-                          ? Icons.favorite_rounded
-                          : Icons.favorite_border_rounded),
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded),
                       color: hasText
                           ? Colors.white
                           : (isLiked ? Colors.redAccent : Colors.white),

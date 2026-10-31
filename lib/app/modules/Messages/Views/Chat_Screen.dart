@@ -5,7 +5,7 @@ import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart' show Utils;
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/Data/Services/Tracking.dart';
+import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -13,6 +13,7 @@ import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/widgets/PinnedMessageBanner.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../widgets/ChatInputArea.dart';
@@ -24,49 +25,27 @@ import 'UserProfileScreen.dart';
 class ChatScreen extends GetView<MessageController> {
   ChatScreen({super.key});
 
-  final TextEditingController _controller = TextEditingController();
   final groupController = Get.put(GroupController());
 
   static const Color _purple = Color(0xFF5045B9);
   static const Color _scaffoldBg = Color(0xFFF5F3FB);
 
   Future<void> _sendMessage() async {
-    await controller.sendMessage(textController: _controller);
+    await controller.sendMessage(textController: controller.textEditingController);
+  }
+
+  void _dismissKeyboard(BuildContext context) {
+    if (MediaQuery.of(context).viewInsets.bottom > 0) {
+      FocusScope.of(context).unfocus();
+    }
+    if (controller.showEmoji.value) {
+      controller.showEmoji.value = false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final userData = controller.memberData;
-
-    debugPrint("");
-    debugPrint("====================================================");
-    debugPrint("=============== CHAT SCREEN OPENED =================");
-    debugPrint("====================================================");
-
-    debugPrint("CHAT MEMBER USER ID   => ${userData.userId}");
-    debugPrint("CHAT MEMBER NAME      => ${userData.name}");
-    debugPrint("CHAT MEMBER IMAGE     => ${userData.profileImage}");
-    debugPrint("CHAT MEMBER GROUP ID  => ${userData.groupId}");
-
-    debugPrint("----------------------------------------------------");
-
-    debugPrint("GET ARGUMENTS => ${Get.arguments}");
-
-    debugPrint("====================================================");
-    debugPrint("");
-    String lastSeenText = "Offline";
-    bool isOnline = false;
-
-    if (userData.lastSeen != null && userData.lastSeen!.trim().isNotEmpty) {
-      final rawLastSeen = userData.lastSeen!.trim();
-      try {
-        lastSeenText = Tracking().getTimeAgo(DateTime.parse(rawLastSeen));
-      } catch (_) {
-        lastSeenText = rawLastSeen;
-      }
-      isOnline = lastSeenText.toLowerCase() == "just now";
-    }
-
     return WillPopScope(
       onWillPop: () async {
         controller.handleBackPressed(
@@ -81,12 +60,24 @@ class ChatScreen extends GetView<MessageController> {
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(64.h),
           child: Obx(() {
-            if (controller.isSearching.value) return _buildSearchAppBar();
+            if (controller.isSearching.value) {
+              return _buildSearchAppBar();
+            }
+
+            final isOnline = controller.isPeerOnline.value;
+            final lastSeenText = controller.peerLastSeen.value;
+
             return _buildNormalAppBar(
-                context, userData, isOnline, lastSeenText);
+              context,
+              userData,
+              isOnline,
+              lastSeenText,
+            );
           }),
         ),
         body: SafeArea(
+          top: true,
+          bottom: false,
           child: Column(
             children: [
               Obx(() {
@@ -102,62 +93,76 @@ class ChatScreen extends GetView<MessageController> {
                 );
               }),
               Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    ChatList(controller: controller),
-                    Obx(() {
-                      final isVisible = controller.showFloatingDate.value;
-                      final date = controller.floatingDate.value;
-                      if (date.isEmpty) return const SizedBox.shrink();
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (notification) {
+                    if (notification is UserScrollNotification &&
+                        notification.direction != ScrollDirection.idle) {
+                      _dismissKeyboard(context);
+                    }
+                    return false;
+                  },
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () => _dismissKeyboard(context),
+                        child: ChatList(controller: controller),
+                      ),
+                        Obx(() {
+                          final isVisible = controller.showFloatingDate.value;
+                          final date = controller.floatingDate.value;
+                          if (date.isEmpty) return const SizedBox.shrink();
 
-                      return IgnorePointer(
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: AnimatedSlide(
-                            offset:
-                                isVisible ? Offset.zero : const Offset(0, -0.8),
-                            duration: const Duration(milliseconds: 220),
-                            curve: Curves.easeOutCubic,
-                            child: AnimatedOpacity(
-                              opacity: isVisible ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 220),
-                              curve: Curves.easeOutCubic,
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade300,
-                                    borderRadius: BorderRadius.circular(18),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black
-                                            .withValues(alpha: 0.10),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
+                          return IgnorePointer(
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: AnimatedSlide(
+                                offset:
+                                    isVisible ? Offset.zero : const Offset(0, -0.8),
+                                duration: const Duration(milliseconds: 220),
+                                curve: Curves.easeOutCubic,
+                                child: AnimatedOpacity(
+                                  opacity: isVisible ? 1.0 : 0.0,
+                                  duration: const Duration(milliseconds: 220),
+                                  curve: Curves.easeOutCubic,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade300,
+                                        borderRadius: BorderRadius.circular(18),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black
+                                                .withValues(alpha: 0.10),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                  child: Text(
-                                    date,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black87,
+                                      child: Text(
+                                        date,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ],
+                          );
+                        }),
+                        _buildScrollToBottomButton(),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
               Obx(() {
                 final reply = controller.replyMessage.value;
                 if (reply == null) return const SizedBox.shrink();
@@ -180,42 +185,79 @@ class ChatScreen extends GetView<MessageController> {
                     previewText = reply.content?.toString() ?? "";
                 }
 
-                return Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: const Border(
-                      left: BorderSide(color: _purple, width: 4),
+                return GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () => _dismissKeyboard(context),
+                  child: Container(
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: const Border(
+                        left: BorderSide(color: _purple, width: 4),
+                      ),
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black12, blurRadius: 4),
+                      ],
                     ),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black12, blurRadius: 4),
-                    ],
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                reply.senderName ?? "Unknown",
+                                style: const TextStyle(
+                                  color: _purple,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(previewText,
+                                  maxLines: 1, overflow: TextOverflow.ellipsis),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: controller.clearReply,
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
                   ),
+                );
+              }),
+              Obx(() {
+                if (!controller.isPeerTyping.value) return const SizedBox.shrink();
+                final name = userData.name?.toString().trim();
+                final displayName = (name != null && name.isNotEmpty) ? name : "User";
+                return Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                  color: _scaffoldBg,
                   child: Row(
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              reply.senderName ?? "Unknown",
-                              style: const TextStyle(
-                                color: _purple,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(previewText,
-                                maxLines: 1, overflow: TextOverflow.ellipsis),
-                          ],
-                        ),
+                      Icon(
+                        Icons.edit_rounded,
+                        size: 14.sp,
+                        color: Colors.green.shade600,
                       ),
-                      IconButton(
-                        onPressed: controller.clearReply,
-                        icon: const Icon(Icons.close),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          "$displayName is typing...",
+                          style: TextStyle(
+                            color: Colors.green.shade700,
+                            fontSize: 12.sp,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
@@ -234,7 +276,7 @@ class ChatScreen extends GetView<MessageController> {
                   videoDurations: controller.videoDurations,
                   documentPath: controller.documentPath,
                   isSending: controller.isSending,
-                  textController: _controller,
+                  textController: controller.textEditingController,
                   messageController: controller,
                   onSend: _sendMessage,
                   uploadingVideoIndexes: controller.uploadingVideoIndexes,
@@ -261,7 +303,7 @@ class ChatScreen extends GetView<MessageController> {
                   },
                   onLocationSelected: () async {
                     final location = await Get.to<LocationMessage>(
-                          () => const LocationPickerPage(),
+                      () => const LocationPickerPage(),
                     );
 
                     if (location != null) {
@@ -270,7 +312,7 @@ class ChatScreen extends GetView<MessageController> {
                   },
                   onContactSelected: () async {
                     final contact = await Get.to<ContactMessage>(
-                          () => const ContactPickerPage(),
+                      () => const ContactPickerPage(),
                     );
 
                     if (contact != null) {
@@ -278,11 +320,97 @@ class ChatScreen extends GetView<MessageController> {
                     }
                   },
                 );
-              })            ],
+              })
+            ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildScrollToBottomButton() {
+    return Obx(() {
+      final isVisible = controller.showScrollToBottom.value;
+      final unreadCount = controller.unreadBelowCount.value;
+
+      return Positioned(
+        bottom: 12.h,
+        right: 14.w,
+        child: AnimatedScale(
+          scale: isVisible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutBack,
+          child: AnimatedOpacity(
+            opacity: isVisible ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 150),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    controller.scrollToBottom();
+                    controller.unreadBelowCount.value = 0;
+                    controller.showScrollToBottom.value = false;
+                  },
+                  child: Container(
+                    width: 38.w,
+                    height: 38.w,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: _purple,
+                        size: 24.sp,
+                      ),
+                    ),
+                  ),
+                ),
+                if (unreadCount > 0)
+                  Positioned(
+                    top: -4.h,
+                    right: -4.w,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 5.w,
+                        vertical: 2.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _purple,
+                        borderRadius: BorderRadius.circular(10.r),
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: 18.w,
+                        minHeight: 18.h,
+                      ),
+                      child: Center(
+                        child: Text(
+                          unreadCount > 99 ? "99+" : "$unreadCount",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildSearchAppBar() {
@@ -351,7 +479,8 @@ class ChatScreen extends GetView<MessageController> {
               onTap: () {
                 controller.handleBackPressed(
                   context,
-                  groupID: int.tryParse(userData.groupId?.toString() ?? "0") ?? 0,
+                  groupID:
+                      int.tryParse(userData.groupId?.toString() ?? "0") ?? 0,
                 );
               },
             ),
@@ -359,7 +488,11 @@ class ChatScreen extends GetView<MessageController> {
             Expanded(
               child: GestureDetector(
                 onTap: () {
-                  Get.to(() => const UserProfileScreen());
+                  final cId = int.tryParse(controller.privateChatId.value.toString());
+                  Get.to(() => UserProfileScreen(
+                    userData: userData,
+                    chatId: cId,
+                  ));
                 },
                 child: Row(
                   children: [
@@ -375,12 +508,25 @@ class ChatScreen extends GetView<MessageController> {
                         ),
                       ),
                       child: (userData.profileImage != null &&
-                              userData.profileImage.toString().trim().isNotEmpty &&
-                              userData.profileImage.toString().trim().toLowerCase() != 'null')
+                              userData.profileImage
+                                  .toString()
+                                  .trim()
+                                  .isNotEmpty &&
+                              userData.profileImage
+                                      .toString()
+                                      .trim()
+                                      .toLowerCase() !=
+                                  'null')
                           ? ClipOval(
                               child: Image.network(
-                                (userData.profileImage.toString().trim().startsWith('http://') ||
-                                        userData.profileImage.toString().trim().startsWith('https://'))
+                                (userData.profileImage
+                                            .toString()
+                                            .trim()
+                                            .startsWith('http://') ||
+                                        userData.profileImage
+                                            .toString()
+                                            .trim()
+                                            .startsWith('https://'))
                                     ? userData.profileImage.toString().trim()
                                     : "${ConstRes.aImageBaseUrl}${userData.profileImage.toString().trim()}",
                                 fit: BoxFit.cover,
@@ -416,35 +562,46 @@ class ChatScreen extends GetView<MessageController> {
                               height: 1.15,
                             ),
                           ),
-                          SizedBox(height: 2.h),
-                          Row(
-                            children: [
-                              if (isOnline)
-                                Container(
-                                  width: 7.w,
-                                  height: 7.w,
-                                  margin: EdgeInsets.only(right: 5.w),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.green,
-                                    shape: BoxShape.circle,
+                          Obx(() {
+                            final isTyping = controller.isPeerTyping.value;
+                            final currentOnline = controller.isPeerOnline.value;
+                            final currentLastSeen = controller.peerLastSeen.value;
+                            return Row(
+                              children: [
+                                if (currentOnline && !isTyping)
+                                  Container(
+                                    width: 7.w,
+                                    height: 7.w,
+                                    margin: EdgeInsets.only(right: 5.w),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.green,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                Expanded(
+                                  child: Text(
+                                    isTyping
+                                        ? "typing..."
+                                        : (currentOnline ? "Online" : currentLastSeen),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: (isTyping || currentOnline)
+                                          ? Colors.green
+                                          : Colors.grey.shade600,
+                                      fontSize: 11.sp,
+                                      fontWeight: isTyping
+                                          ? FontWeight.w600
+                                          : FontWeight.w500,
+                                      fontStyle: isTyping
+                                          ? FontStyle.italic
+                                          : FontStyle.normal,
+                                    ),
                                   ),
                                 ),
-                              Expanded(
-                                child: Text(
-                                  isOnline ? "Online" : lastSeenText,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: isOnline
-                                        ? Colors.green
-                                        : Colors.grey.shade600,
-                                    fontSize: 11.sp,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            );
+                          }),
                         ],
                       ),
                     ),
@@ -456,28 +613,26 @@ class ChatScreen extends GetView<MessageController> {
             _roundIconBtn(
               icon: Icons.call_rounded,
               onTap: () {
-                controller.startCall(
-                  context,
-                  callerId:
-                      Global.storageServices.get(PrefConst.userId).toString(),
-                  remoteUserId: controller.memberData.userId.toString(),
-                  is_video: false,
-                  callerName: controller.memberData.name,
-                );
+                CallService().startOutGoingCall(context,
+                    callerId:
+                        Global.storageServices.get(PrefConst.userId).toString(),
+                    remoteUserId: controller.memberData.userId.toString(),
+                    is_video: false,
+                    callerName: controller.memberData.name.toString(),
+                    callerProfile: controller.memberData.profileImage);
               },
             ),
             SizedBox(width: 6.w),
             _roundIconBtn(
               icon: Icons.videocam_rounded,
               onTap: () {
-                controller.startCall(
-                  context,
-                  callerId:
-                      Global.storageServices.get(PrefConst.userId).toString(),
-                  remoteUserId: controller.memberData.userId.toString(),
-                  is_video: true,
-                  callerName: controller.memberData.name,
-                );
+                CallService().startOutGoingCall(context,
+                    callerId:
+                        Global.storageServices.get(PrefConst.userId).toString(),
+                    remoteUserId: controller.memberData.userId.toString(),
+                    is_video: true,
+                    callerName: controller.memberData.name.toString(),
+                    callerProfile: controller.memberData.profileImage);
               },
             ),
             SizedBox(width: 2.w),
@@ -521,8 +676,7 @@ class ChatScreen extends GetView<MessageController> {
                     return;
                   }
 
-                  final isGroupChat =
-                      (userData.groupId ?? 0) != 0;
+                  final isGroupChat = (userData.groupId ?? 0) != 0;
 
                   if (!isGroupChat) {
                     return;
@@ -541,14 +695,14 @@ class ChatScreen extends GetView<MessageController> {
                     CommonDialog.ConfirmationDialog(
                       title: "Remove Member",
                       content:
-                      "Are you sure you want to remove this member from the group?",
+                          "Are you sure you want to remove this member from the group?",
                       confirm: "Remove",
                       onConfirm: () {
                         groupController.deleteGroupMember(
                           context,
                           groupId: userData.groupId.toString(),
                           groupMemberId:
-                          controller.memberData.userId.toString(),
+                              controller.memberData.userId.toString(),
                           onSuccess: (success) {
                             if (success) {
                               Get.offAllNamed(Routes.Home_Screen);
@@ -560,8 +714,7 @@ class ChatScreen extends GetView<MessageController> {
                   }
                 },
                 itemBuilder: (context) {
-                  final isGroupChat =
-                      (userData.groupId ?? 0) != 0;
+                  final isGroupChat = (userData.groupId ?? 0) != 0;
 
                   return [
                     _buildPopupMenuItem(
@@ -570,7 +723,6 @@ class ChatScreen extends GetView<MessageController> {
                       iconColor: _purple,
                       title: "Search Messages",
                     ),
-
                     _buildPopupMenuItem(
                       value: 1,
                       icon: Icons.delete_outline_rounded,
@@ -578,7 +730,6 @@ class ChatScreen extends GetView<MessageController> {
                       title: "Clear Chat",
                       isDestructive: true,
                     ),
-
                     if (isGroupChat)
                       _buildPopupMenuItem(
                         value: 2,
@@ -586,7 +737,6 @@ class ChatScreen extends GetView<MessageController> {
                         iconColor: _purple,
                         title: "Update Group",
                       ),
-
                     if (isGroupChat)
                       _buildPopupMenuItem(
                         value: 3,
@@ -657,9 +807,6 @@ class ChatScreen extends GetView<MessageController> {
       ),
     );
   }
-
-
-
 
   Widget _buildBlockedMessage() {
     final blockedByMe = controller.blockedByMe.value;

@@ -57,6 +57,7 @@ class UserData {
   String? gender;
   dynamic isOnline;
   String? lastSeen;
+  bool? locationSharing;
   String? get fullName => name;
 
   UserData(
@@ -67,7 +68,8 @@ class UserData {
       this.mobileNo,
       this.gender,
       this.isOnline,
-      this.lastSeen});
+      this.lastSeen,
+      this.locationSharing});
 
   UserData.fromJson(Map<String, dynamic> json) {
     userId = json['UserId'] ?? json['userId'] ?? json['id'] ?? json['Id'];
@@ -117,6 +119,21 @@ class UserData {
         json['online'] ??
         json['status'];
     lastSeen = (json['lastSeen'] ?? json['last_seen'] ?? json['LastSeen'])?.toString();
+
+    final rawLocSharing = json['locationSharing'] ??
+        json['isLocationSharing'] ??
+        json['location_sharing'] ??
+        json['is_location_sharing'];
+    if (rawLocSharing != null) {
+      if (rawLocSharing is bool) {
+        locationSharing = rawLocSharing;
+      } else if (rawLocSharing is num) {
+        locationSharing = rawLocSharing == 1;
+      } else if (rawLocSharing is String) {
+        final s = rawLocSharing.trim().toLowerCase();
+        locationSharing = (s == 'true' || s == '1');
+      }
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -129,6 +146,7 @@ class UserData {
     data['Gender'] = gender;
     data['isOnline'] = isOnline;
     data['lastSeen'] = lastSeen;
+    data['locationSharing'] = locationSharing;
     return data;
   }
 }

@@ -21,45 +21,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
       Get.find<ForwardMessageController>();
 
   final ScrollController _scrollController = ScrollController();
-
-  bool _isSearchCollapsed = false;
-  bool _showSearchInAppBar = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _scrollController.addListener(_onScroll);
-  }
-
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-
-    final position = _scrollController.position.pixels;
-
-    if (position > 40 && !_isSearchCollapsed) {
-      setState(() {
-        _isSearchCollapsed = true;
-      });
-    } else if (position <= 40 && _isSearchCollapsed) {
-      setState(() {
-        _isSearchCollapsed = false;
-        _showSearchInAppBar = false;
-      });
-    }
-  }
-
-  void _showSearch() {
-    setState(() {
-      _showSearchInAppBar = true;
-    });
-
-    _scrollController.animateTo(
-      0,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOut,
-    );
-  }
+  bool _isSearching = false;
 
   @override
   void dispose() {
@@ -72,46 +34,49 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(60.h),
-        child: AppBar(
-          backgroundColor: ToggleThemeData.darkPurple,
-          elevation: 4,
-          titleSpacing: 0,
-          leading: IconButton(
-            onPressed: () => Get.back(),
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
+        preferredSize: Size.fromHeight(58.h),
+        child: Obx(
+          () => AppBar(
+            backgroundColor: ToggleThemeData.darkPurple,
+            elevation: 2,
+            titleSpacing: 0,
+            leading: IconButton(
+              onPressed: () {
+                if (_isSearching) {
+                  setState(() => _isSearching = false);
+                  controller.clearSearch();
+                } else {
+                  Get.back();
+                }
+              },
+              icon: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+              ),
             ),
-          ),
-          title: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  "Forward Message",
-                  style: TextStyle(
+            title: _isSearching ? _buildSearchField() : _buildAppBarTitle(),
+            actions: [
+              if (!_isSearching)
+                IconButton(
+                  onPressed: () {
+                    setState(() => _isSearching = true);
+                  },
+                  icon: const Icon(
+                    Icons.search,
                     color: Colors.white,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w600,
+                  ),
+                )
+              else if (controller.searchController.text.isNotEmpty)
+                IconButton(
+                  onPressed: () {
+                    controller.clearSearch();
+                    setState(() {});
+                  },
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
                   ),
                 ),
-              ),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                child: _isSearchCollapsed && !_showSearchInAppBar
-                    ? IconButton(
-                        key: const ValueKey("search"),
-                        onPressed: _showSearch,
-                        icon: const Icon(
-                          Icons.search,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const SizedBox(
-                        key: ValueKey("empty"),
-                        width: 0,
-                      ),
-              ),
             ],
           ),
         ),
@@ -128,33 +93,452 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
 
         return Column(
           children: [
-            AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              alignment: Alignment.topCenter,
-              child: (!_isSearchCollapsed || _showSearchInAppBar)
-                  ? _searchBar()
-                  : const SizedBox(
-                      width: double.infinity,
-                    ),
-            ),
-            SizedBox(height: 8.h),
+            _buildSelectedStrip(),
             Expanded(
               child: RefreshIndicator(
                 color: ToggleThemeData.darkPurple,
                 onRefresh: controller.refreshForwardList,
-                child: _destinationList(),
+                child: Scrollbar(
+                  controller: _scrollController,
+                  thumbVisibility: false,
+                  child: _buildDestinationList(),
+                ),
               ),
             ),
           ],
         );
       }),
-      bottomNavigationBar:Obx(
-            () => controller.selectedDestinations.isNotEmpty
-            ? _sendButton()
-            : const SizedBox.shrink(),
+      bottomNavigationBar: Obx(() {
+        final selected = controller.selectedDestinations;
+        if (selected.isEmpty) return const SizedBox.shrink();
 
+        final names = selected.map((d) => d.displayName).join(", ");
+        return Container(
+          padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 12.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    names,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.grey.shade800,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                GestureDetector(
+                  onTap: controller.isForwarding.value
+                      ? null
+                      : controller.forwardMessage,
+                  child: Container(
+                    width: 48.w,
+                    height: 48.w,
+                    decoration: BoxDecoration(
+                      color: ToggleThemeData.darkPurple,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: ToggleThemeData.darkPurple.withOpacity(0.35),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: controller.isForwarding.value
+                          ? SizedBox(
+                              width: 22.w,
+                              height: 22.w,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Icon(
+                              Icons.send_rounded,
+                              color: Colors.white,
+                              size: 22.sp,
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildAppBarTitle() {
+    final count = controller.selectedCount;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          "Forward to...",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 17.5.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        if (count > 0)
+          Text(
+            "$count selected",
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSearchField() {
+    return TextField(
+      controller: controller.searchController,
+      autofocus: true,
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 16.sp,
       ),
+      cursorColor: Colors.white,
+      decoration: InputDecoration(
+        hintText: "Search...",
+        hintStyle: TextStyle(
+          color: Colors.white70,
+          fontSize: 16.sp,
+        ),
+        border: InputBorder.none,
+      ),
+      onChanged: (val) {
+        controller.search(val);
+        setState(() {});
+      },
+    );
+  }
+
+  Widget _buildSelectedStrip() {
+    final selected = controller.selectedDestinations;
+    if (selected.isEmpty) return const SizedBox.shrink();
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      height: 94.h,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey.shade200,
+            width: 1,
+          ),
+        ),
+      ),
+      child: ListView.separated(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        scrollDirection: Axis.horizontal,
+        itemCount: selected.length,
+        separatorBuilder: (_, __) => SizedBox(width: 12.w),
+        itemBuilder: (context, index) {
+          final item = selected[index];
+          final firstName = item.displayName.trim().split(' ').first;
+          return GestureDetector(
+            onTap: () => controller.toggleDestination(item),
+            child: SizedBox(
+              width: 58.w,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      _buildAvatar(item, radius: 23.r, showCheck: false),
+                      Positioned(
+                        right: -2.w,
+                        bottom: -2.h,
+                        child: Container(
+                          padding: EdgeInsets.all(2.w),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade600,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                          child: Icon(
+                            Icons.close,
+                            size: 10.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    firstName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: Colors.grey.shade800,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildDestinationList() {
+    final recent = controller.recentChats;
+    final groups = controller.allGroups;
+    final contacts = controller.myContacts;
+    final otherContacts = controller.otherContacts;
+
+    if (recent.isEmpty &&
+        groups.isEmpty &&
+        contacts.isEmpty &&
+        otherContacts.isEmpty) {
+      return ListView(
+        controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(
+            height: 300.h,
+            child: Center(
+              child: Text(
+                "No people or groups found",
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return ListView(
+      controller: _scrollController,
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
+      padding: EdgeInsets.only(
+        top: 6.h,
+        bottom: 24.h,
+      ),
+      children: [
+        if (recent.isNotEmpty) ...[
+          _sectionTitle("RECENT CHATS"),
+          ...recent.map(
+            (item) => _buildTile(item, controller.isSelected(item)),
+          ),
+        ],
+        if (groups.isNotEmpty) ...[
+          SizedBox(height: 10.h),
+          _sectionTitle("GROUPS"),
+          ...groups.map(
+            (item) => _buildTile(item, controller.isSelected(item)),
+          ),
+        ],
+        if (contacts.isNotEmpty) ...[
+          SizedBox(height: 10.h),
+          _sectionTitle("MY CONTACTS"),
+          ...contacts.map(
+            (item) => _buildTile(item, controller.isSelected(item)),
+          ),
+        ],
+        if (otherContacts.isNotEmpty) ...[
+          SizedBox(height: 10.h),
+          _sectionTitle("OTHER CONTACTS"),
+          ...otherContacts.map(
+            (item) => _buildTile(item, controller.isSelected(item)),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: 18.w,
+        vertical: 8.h,
+      ),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w700,
+          color: Colors.grey.shade600,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTile(ForwardDestination item, bool isSelected) {
+    return InkWell(
+      onTap: () => controller.toggleDestination(item),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 9.h,
+        ),
+        child: Row(
+          children: [
+            _buildAvatar(item, radius: 24.r, showCheck: isSelected),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    item.displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 15.5.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1F2937),
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    item.isGroup
+                        ? "Group"
+                        : (item.mobileNo?.isNotEmpty == true
+                            ? item.mobileNo!
+                            : "Hey there! I am using FG Tracker"),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12.5.sp,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _buildSelectionCheck(isSelected),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatar(
+    ForwardDestination item, {
+    required double radius,
+    required bool showCheck,
+  }) {
+    final image = item.displayImage;
+    final hasImage =
+        image.isNotEmpty && !image.toLowerCase().contains('default-profile');
+    final url = image.startsWith("http")
+        ? image
+        : "${ConstRes.aImageBaseUrl}$image";
+
+    final fallbackIcon = item.isGroup ? Icons.groups_rounded : Icons.person;
+
+    return Stack(
+      children: [
+        CircleAvatar(
+          radius: radius,
+          backgroundColor:
+              item.isGroup ? const Color(0xFFEDE9FE) : Colors.grey.shade200,
+          child: hasImage
+              ? ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: url,
+                    width: radius * 2,
+                    height: radius * 2,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => const SizedBox.shrink(),
+                    errorWidget: (_, __, ___) => Icon(
+                      fallbackIcon,
+                      color: item.isGroup
+                          ? ToggleThemeData.darkPurple
+                          : Colors.grey.shade500,
+                      size: radius * 1.1,
+                    ),
+                  ),
+                )
+              : Icon(
+                  fallbackIcon,
+                  color: item.isGroup
+                      ? ToggleThemeData.darkPurple
+                      : Colors.grey.shade500,
+                  size: radius * 1.1,
+                ),
+        ),
+        if (showCheck)
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: EdgeInsets.all(2.w),
+              decoration: BoxDecoration(
+                color: ToggleThemeData.darkPurple,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.8),
+              ),
+              child: Icon(
+                Icons.check,
+                size: 9.sp,
+                color: Colors.white,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSelectionCheck(bool isSelected) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      width: 22.w,
+      height: 22.w,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isSelected ? ToggleThemeData.darkPurple : Colors.transparent,
+        border: Border.all(
+          color: isSelected ? ToggleThemeData.darkPurple : Colors.grey.shade400,
+          width: 1.8,
+        ),
+      ),
+      child: isSelected
+          ? Icon(
+              Icons.check,
+              size: 14.sp,
+              color: Colors.white,
+            )
+          : null,
     );
   }
 
@@ -205,328 +589,6 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
       ),
     );
   }
-
-  Widget _searchBar() {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        16.w,
-        12.h,
-        16.w,
-        8.h,
-      ),
-      child: TextField(
-        controller: controller.searchController,
-        onChanged: controller.search,
-        decoration: InputDecoration(
-          hintText: "Search people or groups",
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: controller.searchController.text.isNotEmpty
-              ? IconButton(
-            onPressed: controller.clearSearch,
-            icon: const Icon(Icons.close),
-          )
-              : const SizedBox.shrink(),
-          filled: true,
-          fillColor: Colors.grey.shade100,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14.r),
-            borderSide: BorderSide.none,
-          ),
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 14.w,
-            vertical: 13.h,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _destinationList() {
-    final users = controller.users;
-    final groups = controller.groups;
-
-    if (users.isEmpty && groups.isEmpty) {
-      return ListView(
-        controller: _scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          SizedBox(
-            height: 300.h,
-            child: Center(
-              child: Text(
-                "No people or groups found",
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    return ListView(
-      controller: _scrollController,
-      physics: const AlwaysScrollableScrollPhysics(
-        parent: BouncingScrollPhysics(),
-      ),
-      padding: EdgeInsets.only(
-        top: 4.h,
-        bottom: 100.h,
-      ),
-      children: [
-        if (users.isNotEmpty) ...[
-          _sectionTitle("PEOPLE"),
-          ...users.map(_userTile),
-        ],
-        if (groups.isNotEmpty) ...[
-          SizedBox(height: 10.h),
-          _sectionTitle("GROUPS"),
-          ...groups.map(_groupTile),
-        ],
-      ],
-    );
-  }
-
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: 18.w,
-        vertical: 8.h,
-      ),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 12.sp,
-          fontWeight: FontWeight.w700,
-          color: Colors.grey.shade600,
-          letterSpacing: 0.8,
-        ),
-      ),
-    );
-  }
-
-  Widget _userTile(ForwardDestination user) {
-    return Obx(() {
-      final selected = controller.isSelected(user);
-      final image = user.displayImage;
-
-      return InkWell(
-        onTap: () {
-          controller.toggleDestination(user);
-        },
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: 16.w,
-            vertical: 9.h,
-          ),
-          child: Row(
-            children: [
-              Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 27.r,
-                    backgroundColor: Colors.grey.shade200,
-                    backgroundImage: image.isNotEmpty
-                        ? CachedNetworkImageProvider(
-                            image.startsWith("http")
-                                ? image
-                                : "${ConstRes.aImageBaseUrl}$image",
-                          )
-                        : null,
-                    child: image.isEmpty
-                        ? Icon(
-                            Icons.person,
-                            color: Colors.grey.shade500,
-                            size: 28.sp,
-                          )
-                        : null,
-                  ),
-                  if (selected)
-                    Positioned.fill(
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.black38,
-                        ),
-                        child: Icon(
-                          Icons.check,
-                          color: Colors.white,
-                          size: 28.sp,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Text(
-                  user.displayName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              _selectionIcon(selected),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-
-  Widget _groupTile(ForwardDestination group) {
-    return Obx(() {
-      final selected = controller.isSelected(group);
-      final image = group.displayImage;
-
-      return InkWell(
-        onTap: () {
-          controller.toggleDestination(group);
-        },
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: 16.w,
-            vertical: 9.h,
-          ),
-          child: Row(
-            children: [
-              Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 27.r,
-                    backgroundColor: Colors.grey.shade200,
-                    backgroundImage: image.isNotEmpty
-                        ? CachedNetworkImageProvider(
-                            image.startsWith("http")
-                                ? image
-                                : "${ConstRes.aImageBaseUrl}$image",
-                          )
-                        : null,
-                    child: image.isEmpty
-                        ? Icon(
-                            Icons.groups,
-                            color: ToggleThemeData.darkPurple,
-                            size: 28.sp,
-                          )
-                        : null,
-                  ),
-                  if (selected)
-                    Positioned.fill(
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.black38,
-                        ),
-                        child: Icon(
-                          Icons.check,
-                          color: Colors.white,
-                          size: 28.sp,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Text(
-                  group.displayName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              _selectionIcon(selected),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-
-  Widget _selectionIcon(bool selected) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      width: 24.w,
-      height: 24.w,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: selected ? ToggleThemeData.darkPurple : Colors.grey.shade400,
-          width: 2,
-        ),
-        color: selected ? ToggleThemeData.darkPurple : Colors.transparent,
-      ),
-      child: selected
-          ? Icon(
-              Icons.check,
-              color: Colors.white,
-              size: 16.sp,
-            )
-          : null,
-    );
-  }
-
-  Widget _sendButton() {
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          16.w,
-          8.h,
-          16.w,
-          12.h,
-        ),
-        child: SizedBox(
-          height: 52.h,
-          child: Obx(
-            () => ElevatedButton.icon(
-              onPressed: controller.isForwarding.value
-                  ? null
-                  : controller.forwardMessage,
-              icon: controller.isForwarding.value
-                  ? SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(
-                      Icons.send,
-                      color: Colors.white,
-                    ),
-              label: Text(
-                controller.isForwarding.value
-                    ? "Sending..."
-                    : "Send (${controller.selectedCount})",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ToggleThemeData.darkPurple,
-                disabledBackgroundColor:
-                    ToggleThemeData.darkPurple.withValues(alpha: 0.7),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _ForwardSkeletonList extends StatelessWidget {
@@ -545,10 +607,10 @@ class _ForwardSkeletonList extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: Container(
-              height: 50.h,
+              height: 48.h,
               decoration: BoxDecoration(
                 color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(14.r),
+                borderRadius: BorderRadius.circular(12.r),
               ),
             ),
           ),
@@ -587,13 +649,13 @@ class _ForwardSkeletonTile extends StatelessWidget {
       child: Row(
         children: [
           CircleAvatar(
-            radius: 27.r,
+            radius: 24.r,
             backgroundColor: Colors.grey.shade200,
           ),
           SizedBox(width: 14.w),
           Expanded(
             child: Text(
-              "Loading user name",
+              "Loading contact name",
               style: TextStyle(
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
@@ -601,13 +663,13 @@ class _ForwardSkeletonTile extends StatelessWidget {
             ),
           ),
           Container(
-            width: 24.w,
-            height: 24.w,
+            width: 22.w,
+            height: 22.w,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
                 color: Colors.grey.shade400,
-                width: 2,
+                width: 1.8,
               ),
             ),
           ),

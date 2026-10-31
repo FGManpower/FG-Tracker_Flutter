@@ -18,8 +18,7 @@ class GlobalAudioController extends GetxController {
   }
 
   Future<void> _init() async {
-    final session = await AudioSession.instance;
-    await session.configure(const AudioSessionConfiguration.speech());
+    await _configureSpeakerSession();
 
     await player.setLoopMode(LoopMode.off);
 
@@ -38,18 +37,46 @@ class GlobalAudioController extends GetxController {
     });
   }
 
+  Future<void> _configureSpeakerSession() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions:
+            AVAudioSessionCategoryOptions.defaultToSpeaker,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
+        androidAudioAttributes: AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.music,
+          usage: AndroidAudioUsage.media,
+        ),
+        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+        androidWillPauseWhenDucked: true,
+      ));
+    } catch (_) {}
+  }
+
   Future<void> loadDuration(String url) async {
-    if (durationCache.containsKey(url)) return;
+    if (url.trim().isEmpty || durationCache.containsKey(url)) return;
 
-    final tempPlayer = AudioPlayer();
-    await tempPlayer.setUrl(url);
-
-    durationCache[url] = tempPlayer.duration ?? Duration.zero;
-
-    await tempPlayer.dispose();
+    Future.microtask(() async {
+      AudioPlayer? tempPlayer;
+      try {
+        tempPlayer = AudioPlayer();
+        final dur = await tempPlayer
+            .setUrl(url)
+            .timeout(const Duration(seconds: 4));
+        if (dur != null) {
+          durationCache[url] = dur;
+        }
+      } catch (_) {
+      } finally {
+        await tempPlayer?.dispose();
+      }
+    });
   }
 
   Future<void> play(String url) async {
+    await _configureSpeakerSession();
     if (currentUrl.value != url) {
       await player.stop();
       await player.setUrl(url);
@@ -70,6 +97,28 @@ class GlobalAudioController extends GetxController {
   }
 
   bool isCurrent(String url) => currentUrl.value == url;
+
+  RxDouble playbackSpeed = 1.0.obs;
+
+  Future<void> seek(Duration newPosition) async {
+    try {
+      await player.seek(newPosition);
+      position.value = newPosition;
+    } catch (_) {}
+  }
+
+  Future<void> toggleSpeed() async {
+    try {
+      if (playbackSpeed.value == 1.0) {
+        playbackSpeed.value = 1.5;
+      } else if (playbackSpeed.value == 1.5) {
+        playbackSpeed.value = 2.0;
+      } else {
+        playbackSpeed.value = 1.0;
+      }
+      await player.setSpeed(playbackSpeed.value);
+    } catch (_) {}
+  }
 
   @override
   void onClose() {

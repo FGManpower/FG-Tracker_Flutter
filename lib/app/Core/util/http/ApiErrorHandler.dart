@@ -17,7 +17,9 @@ class ApiErrorHandler {
       final statusCode = response.statusCode;
 
       if (statusCode == 401) {
-        LogoutUser().logout();
+        LogoutUser().handleForceLogout(
+          message: "Session expired. Please log in again.",
+        );
         return "Session expired. Please log in again.";
       } else if (statusCode == 503) {
         return AppText.OopsSomethingWentWrong;

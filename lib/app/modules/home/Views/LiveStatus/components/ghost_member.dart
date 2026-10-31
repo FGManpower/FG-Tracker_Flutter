@@ -273,8 +273,8 @@ class _GhostMemberState extends State<GhostMember> {
                   SizedBox(height: 3.h),
                   Text(
                     isPrivate
-                        ? "When Private Mode is ON, others can't see your online status or last seen."
-                        : "When Private Mode is OFF, others can see your online status and last seen.",
+                    ? "When Private Mode is ON, others can't see your location."
+                    : "When Private Mode is OFF, others can see your location.",
                     style: TextStyle(
                       fontSize: 11.5.sp,
                       fontFamily: FontFamily.interRegular,
@@ -394,11 +394,15 @@ class _GhostMemberState extends State<GhostMember> {
           userId: member.userId,
           id: member.userId,
           name: member.displayName,
+          chatId: member.chatId,
           imageUrl: member.profileImage,
           status: false,
           lastSeen: member.lastSeen,
+          phone: member.phone ?? member.mobileNo,
+          team: member.displayDepartment,
           isGroupChat: false,
           isLocationSharing: false,
+          location: member.displayLocation,
         );
       },
       borderRadius: BorderRadius.circular(16.r),
@@ -515,7 +519,9 @@ class _GhostMemberState extends State<GhostMember> {
                       ),
                       SizedBox(width: 5.w),
                       Text(
-                        "Started at ${member.formattedStartedAt}",
+                        member.formattedStartedAt.toLowerCase().startsWith('started at')
+                            ? member.formattedStartedAt
+                            : "Started at ${member.formattedStartedAt}",
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interRegular,

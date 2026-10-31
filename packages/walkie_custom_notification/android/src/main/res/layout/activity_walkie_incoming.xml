@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/walkie_incoming_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
+    android:fitsSystemWindows="true"
+    android:paddingStart="14dp"
+    android:paddingTop="20dp"
+    android:paddingEnd="14dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:background="@drawable/card_walkie_bg"
+        android:elevation="8dp"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <include
+            android:id="@+id/walkie_card_include"
+            layout="@layout/custom_walkie_notification_expanded" />
+
+    </LinearLayout>
+
+</FrameLayout>

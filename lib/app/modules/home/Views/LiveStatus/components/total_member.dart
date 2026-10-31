@@ -547,10 +547,10 @@ class _TotalMemberState extends State<TotalMember> {
   Widget _buildMemberCard(GroupMemberData member) {
     final bool isOnline = member.effectiveIsOnline;
 
-    final String statusText = isOnline ? "Active" : "Inactive";
+    final String statusText = isOnline ? "Active" : member.formattedLastSeen;
 
     final Color statusColor =
-        isOnline ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
+        isOnline ? const Color(0xFF10B981) : const Color(0xFF9E9E9E);
 
     return InkWell(
       onTap: () {
@@ -562,12 +562,16 @@ class _TotalMemberState extends State<TotalMember> {
           distance: 0,
           userId: member.userId,
           id: member.userId,
+          chatId: member.chatId,
           name: member.displayName,
           imageUrl: member.profileImage,
           status: isOnline,
           lastSeen: member.lastSeen,
+          phone: member.phone ?? member.mobileNo,
+          team: member.displayDepartment,
           isGroupChat: false,
           isLocationSharing: member.isLocationSharing ?? true,
+          location: member.displayLocation,
         );
       },
       borderRadius: BorderRadius.circular(16.r),
@@ -696,29 +700,6 @@ class _TotalMemberState extends State<TotalMember> {
                   ),
                 ],
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  "Joined",
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontFamily: FontFamily.interRegular,
-                    color: Colors.grey.shade400,
-                  ),
-                ),
-                SizedBox(height: 3.h),
-                Text(
-                  member.formattedJoinedAt,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: FontFamily.interSemiBold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
             ),
           ],
         ),

@@ -61,27 +61,46 @@ class CallDialPad extends StatelessWidget {
   Widget _buildDisplayBox(CallController controller) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 9.h, horizontal: 14.w),
+      padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 14.w),
       decoration: BoxDecoration(
         color: const Color(0xFFF5F4FB),
         borderRadius: BorderRadius.circular(10.r),
       ),
       alignment: Alignment.center,
-      child: Obx(() {
-        final number = controller.dialNumber.value;
-
-        return Text(
-          number.isEmpty ? "Enter number" : number,
-          style: TextStyle(
-            fontSize: number.isEmpty ? 13.sp : 20.sp,
+      child: TextField(
+        controller: controller.dialTextController,
+        focusNode: controller.dialFocusNode,
+        keyboardType: TextInputType.none,
+        showCursor: true,
+        autofocus: false,
+        textAlign: TextAlign.center,
+        cursorColor: const Color(0xFF4818F0),
+        cursorWidth: 2.0,
+        cursorRadius: Radius.circular(2.r),
+        style: TextStyle(
+          fontSize: 20.sp,
+          fontFamily: FontFamily.interBold,
+          color: const Color(0xFF4818F0),
+          letterSpacing: 1.3,
+        ),
+        decoration: InputDecoration(
+          isDense: true,
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(vertical: 7.h),
+          hintText: "Enter number",
+          hintStyle: TextStyle(
+            fontSize: 13.sp,
             fontFamily: FontFamily.interBold,
-            color: number.isEmpty
-                ? Colors.grey
-                : const Color(0xFF4818F0),
-            letterSpacing: number.isEmpty ? 0 : 1.3,
+            color: Colors.grey,
+            letterSpacing: 0,
           ),
-        );
-      }),
+        ),
+        onTap: () {
+          if (!controller.dialFocusNode.hasFocus) {
+            controller.dialFocusNode.requestFocus();
+          }
+        },
+      ),
     );
   }
 

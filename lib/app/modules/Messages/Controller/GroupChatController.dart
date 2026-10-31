@@ -19,6 +19,7 @@ import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
 
 import '../../../Core/values/Dialog/Common_dialog.dart';
+import '../../../Core/values/Utils.dart';
 import '../../../Core/values/global.dart';
 
 import '../../../Data/Repositories/GetMessageRepo.dart';
@@ -26,19 +27,28 @@ import '../../../Data/Repositories/GetMessageRepo.dart';
 import '../../../Model/GetMessage.dart';
 
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+import '../../../Data/Services/chat_translation_service.dart';
 import '../../Attendance/models/attendance_poll_model.dart';
 
-class GroupMessageController extends GetxController {
+import 'chat_list_controller.dart';
+
+class GroupMessageController extends GetxController with WidgetsBindingObserver {
   final socketService = SocketMessageService.instance;
 
   final ItemScrollController itemScrollController = ItemScrollController();
 
   final ItemPositionsListener itemPositionsListener =
-  ItemPositionsListener.create();
+      ItemPositionsListener.create();
   final List<MessageData> _messages = [];
 
+  late final TextEditingController textEditingController = TextEditingController();
+  final RxBool showScrollToBottom = false.obs;
+  final RxInt unreadBelowCount = 0.obs;
+  bool _wasKeyboardOpen = false;
+  bool _wasAtBottom = true;
+
   final StreamController<List<MessageData>> _messageStreamController =
-  StreamController<List<MessageData>>.broadcast();
+      StreamController<List<MessageData>>.broadcast();
 
   Stream<List<MessageData>> get messageStream =>
       _messageStreamController.stream;
@@ -57,7 +67,9 @@ class GroupMessageController extends GetxController {
   RxList<Uint8List?> videoThumbnails = <Uint8List?>[].obs;
   RxList<LocationData> groupMembers = <LocationData>[].obs;
   final Rxn<MessageData> editingMessage = Rxn<MessageData>();
-
+  final RxString groupName = ''.obs;
+  final RxString groupDesc = ''.obs;
+  late String groupImage;
   RxBool isLoadingMembers = false.obs;
   final RxBool isUploadingVideo = false.obs;
   final RxDouble uploadProgress = 0.0.obs;
@@ -78,11 +90,19 @@ class GroupMessageController extends GetxController {
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
   RxInt highlightedMessageId = (-1).obs;
   final RxSet<int> uploadingVideoIndexes = <int>{}.obs;
+  final RxMap<String, String> groupTypingUsers = <String, String>{}.obs;
+  final RxString groupTypingText = "".obs;
+  RxString groupTypingUser = "".obs;
+  DateTime? _lastGroupTypingEmitTime;
+  Timer? _groupTypingDebounceTimer;
+  final Map<String, Timer> _groupTypingUserTimers = {};
   final RxMap<int, double> videoUploadProgress = <int, double>{}.obs;
   final RxString floatingDate = "".obs;
   final RxBool showFloatingDate = false.obs;
-
   Timer? _floatingDateTimer;
+  RxInt groupCurrentPage = 1.obs;
+  RxBool isLoadingOlderMessages = false.obs;
+  RxBool hasMoreOlderMessages = true.obs;
 
   Future<void> scrollToMessage(int messageId) async {
     final index = _messages.indexWhere((e) => e.id == messageId);
@@ -120,25 +140,29 @@ class GroupMessageController extends GetxController {
 
   late int groupId;
 
-  late String groupName;
-
-  late String groupImage;
-
   @override
   void onInit() {
     super.onInit();
+    ChatTranslationService.instance.resetVisibility();
 
     groupId = arguments?["groupId"] is int
         ? (arguments!["groupId"] as int)
         : (int.tryParse(arguments?["groupId"]?.toString() ?? '0') ?? 0);
 
-    groupName = arguments?["groupName"]?.toString() ?? "";
+    if (Get.isRegistered<ChatListController>()) {
+      Get.find<ChatListController>().clearManualUnreadForGroup(groupId);
+    }
 
-    groupImage = arguments?["groupImage"]?.toString() ?? "";
+    groupName.value = arguments?["groupName"]?.toString() ?? "";
+    groupDesc.value = arguments?["groupDesc"]?.toString() ?? "";
+    groupImage = arguments?["groupImage"] ?? arguments?["groupProfile"] ?? "";
     print("isCreator = ${isCreator.value}");
 
+    WidgetsBinding.instance.addObserver(this);
     initializeGroupChat();
     itemPositionsListener.itemPositions.addListener(_onScrollDateChanged);
+    itemPositionsListener.itemPositions.addListener(_updateScrollBottomState);
+    itemPositionsListener.itemPositions.addListener(_onScrollForOlderMessages);
   }
 
   void toggleEmoji() {
@@ -151,7 +175,7 @@ class GroupMessageController extends GetxController {
 
   void initializeGroupChat() {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     socketService.init(
       ConstRes.socketUrl,
@@ -164,17 +188,120 @@ class GroupMessageController extends GetxController {
       userId: currentUserId,
     );
 
-    socketService.receiveGroupMessage(
-      callback: (message) {
-        _messages.add(
-          MessageData.fromJson(message),
-        );
+    socketService.markSeen(currentUserId, groupId);
 
-        updateMessageStream();
-        scrollToBottom();
+    socketService.listenSeenUpdate(
+      groupId: groupId,
+      callback: (data) {
+        debugPrint("GROUP SEEN UPDATE => $data");
+        if (data is Map) {
+          final userId = data["userId"]?.toString();
+          if (userId != null && userId.isNotEmpty) {
+            for (var msg in _messages) {
+              if (msg.seenBy is List) {
+                if (!(msg.seenBy as List).contains(userId)) {
+                  (msg.seenBy as List).add(userId);
+                }
+              } else {
+                msg.seenBy = [userId];
+              }
+            }
+            updateMessageStream();
+          }
+        }
       },
     );
 
+    socketService.receiveGroupMessage(
+      callback: (message) {
+        debugPrint("GROUP RECEIVE EVENT => $message");
+
+        if (message is! Map) return;
+
+        final incomingMessage =
+            MessageData.fromJson(Map<String, dynamic>.from(message));
+        debugPrint("RECEIVED MESSAGE ID => ${incomingMessage.id}");
+
+        final incomingId = incomingMessage.id;
+
+        final existingIndex = incomingId != null
+            ? _messages.indexWhere((item) => item.id == incomingId)
+            : -1;
+
+        if (existingIndex != -1) {
+          final existing = _messages[existingIndex];
+          final hasOldContent = (existing.content?.toString().trim().isNotEmpty ?? false) ||
+              (existing.caption?.toString().trim().isNotEmpty ?? false) ||
+              (existing.images?.isNotEmpty ?? false) ||
+              (existing.videos?.isNotEmpty ?? false);
+          final hasNewContent = (incomingMessage.content?.toString().trim().isNotEmpty ?? false) ||
+              (incomingMessage.caption?.toString().trim().isNotEmpty ?? false) ||
+              (incomingMessage.images?.isNotEmpty ?? false) ||
+              (incomingMessage.videos?.isNotEmpty ?? false);
+          if (!hasOldContent && hasNewContent) {
+            existing.content = incomingMessage.content;
+            existing.caption = incomingMessage.caption;
+            existing.images = incomingMessage.images;
+            existing.videos = incomingMessage.videos;
+            existing.messageType = incomingMessage.messageType;
+            existing.thumbnail = incomingMessage.thumbnail;
+            updateMessageStream();
+          }
+          debugPrint("DUPLICATE MESSAGE IGNORED => $incomingId");
+          return;
+        }
+
+        final eventGroupId = message["groupId"] ?? message["group_id"];
+        if (eventGroupId != null && eventGroupId.toString() != groupId.toString()) {
+          debugPrint("GROUP MESSAGE IGNORED => DIFFERENT GROUP $eventGroupId vs $groupId");
+          return;
+        }
+
+        final currentUserId =
+            Global.storageServices.get(PrefConst.userId)?.toString();
+        final isMyMessage = incomingMessage.senderId?.toString() == currentUserId;
+        final wasAtBottom = isUserAtBottom();
+
+        final hasContent = (incomingMessage.content?.toString().trim().isNotEmpty ?? false) ||
+            (incomingMessage.caption?.toString().trim().isNotEmpty ?? false) ||
+            (incomingMessage.images?.isNotEmpty ?? false) ||
+            (incomingMessage.videos?.isNotEmpty ?? false);
+
+        if (incomingMessage.isForwarded == true && !hasContent) {
+          final fromId = incomingMessage.forwardedFromMessageId;
+          if (fromId != null) {
+            final source = _messages.firstWhereOrNull(
+              (m) => m.id == fromId || m.id?.toString() == fromId.toString(),
+            );
+            if (source != null) {
+              incomingMessage.content = source.content;
+              incomingMessage.caption = source.caption;
+              incomingMessage.images = source.images;
+              incomingMessage.videos = source.videos;
+              incomingMessage.messageType = source.messageType;
+              incomingMessage.thumbnail = source.thumbnail;
+            }
+          }
+
+          if ((incomingMessage.content?.toString().trim().isEmpty ?? true) &&
+              (incomingMessage.caption?.toString().trim().isEmpty ?? true) &&
+              (incomingMessage.images?.isEmpty ?? true) &&
+              (incomingMessage.videos?.isEmpty ?? true)) {
+            _resolveForwardedGroupMessageContent(incomingMessage);
+          }
+        }
+
+        _messages.add(incomingMessage);
+        updateMessageStream();
+
+        if (isMyMessage || wasAtBottom) {
+          scrollToBottom();
+        } else {
+          unreadBelowCount.value++;
+          showScrollToBottom.value = true;
+        }
+      },
+    );
     socketService.listenMessageEdited(
       callback: (data) {
         final messageId = int.tryParse(
@@ -184,7 +311,7 @@ class GroupMessageController extends GetxController {
         if (messageId == null) return;
 
         final index = _messages.indexWhere(
-              (message) => message.id == messageId,
+          (message) => message.id == messageId,
         );
 
         if (index == -1) return;
@@ -203,34 +330,73 @@ class GroupMessageController extends GetxController {
 
     socketService.listenMessageDeleted(
       callback: (data) {
-        final int? messageId = data["messageId"];
+        debugPrint("RAW DELETE EVENT: $data");
+
+        if (data is! Map) return;
+
+        final messageId = int.tryParse(
+          (data["messageId"] ?? data["message_id"] ?? data["id"] ?? "")
+              .toString(),
+        );
+
+        final eventGroupId = int.tryParse(
+          (data["groupId"] ?? data["group_id"] ?? "").toString(),
+        );
+
         if (messageId == null) return;
+        if (eventGroupId != null && eventGroupId != groupId) return;
+
+        final deleteType =
+        (data["deleteType"] ?? data["delete_type"] ?? "for_everyone")
+            .toString();
+
+        final index = _messages.indexWhere((m) => m.id == messageId);
+
+        debugPrint(
+          "DELETE TYPE => $deleteType | INDEX => $index | MSG ID => $messageId",
+        );
+
+        if (index != -1) {
+          if (deleteType == "for_me") {
+            _messages.removeAt(index);
+          } else {
+            final msg = _messages[index];
+            msg.messageType = "text";
+            msg.content = "This message was deleted";
+            msg.caption = null;
+            msg.images = [];
+            msg.videos = [];
+            msg.replyId = null;
+            msg.isDeleted = true;
+          }
+        }
 
         if (pinnedMessage.value?.id == messageId) {
           pinnedMessage.value = null;
           showPinnedBanner.value = false;
         }
 
-        _messages.removeWhere((e) => e.id == messageId);
         updateMessageStream();
-        log("GROUP MESSAGE DELETED => $messageId");
+
+
       },
     );
 
     socketService.listenPinMessage(
       callback: (data) {
-        print("📌 GROUP MESSAGE PINNED =====> $data");
-
-        final messageId = int.tryParse(
-          data["messageId"].toString(),
+        final eventGroupId = int.tryParse(
+          (data["groupId"] ?? data["group_id"] ?? "").toString(),
         );
 
-        if (messageId == null) return;
+        final messageId = int.tryParse(
+          (data["messageId"] ?? data["message_id"] ?? "").toString(),
+        );
 
         if (data["chatType"] != "group") return;
+        if (eventGroupId != groupId || messageId == null) return;
 
         final msg = _messages.firstWhereOrNull(
-              (e) => e.id == messageId,
+          (e) => e.id == messageId,
         );
 
         if (msg != null) {
@@ -258,9 +424,191 @@ class GroupMessageController extends GetxController {
       },
     );
 
+    socketService.listenGroupTyping(
+      onTyping: (data) {
+        try {
+          if (data is! Map) return;
+          final dataMap = Map<String, dynamic>.from(data);
+          final inner = dataMap['message'] is Map
+              ? Map<String, dynamic>.from(dataMap['message'])
+              : (dataMap['data'] is Map
+                  ? Map<String, dynamic>.from(dataMap['data'])
+                  : dataMap);
+
+          final eventGroupId = int.tryParse(
+            (inner["groupId"] ??
+                    inner["group_id"] ??
+                    dataMap["groupId"] ??
+                    dataMap["group_id"] ??
+                    "")
+                .toString(),
+          );
+
+          if (eventGroupId != null && eventGroupId != groupId) return;
+
+          final uid = (inner["userId"] ??
+                  inner["user_id"] ??
+                  inner["senderId"] ??
+                  inner["sender_id"] ??
+                  dataMap["userId"] ??
+                  dataMap["senderId"])
+              ?.toString();
+
+          final currentUserId =
+              Global.storageServices.get(PrefConst.userId)?.toString();
+
+          if (uid == null || uid.isEmpty || uid == currentUserId) return;
+
+          String? resolvedName;
+          final member = groupMembers.firstWhereOrNull(
+            (m) => m.userId?.toString() == uid,
+          );
+          if (member?.name != null && member!.name!.trim().isNotEmpty) {
+            resolvedName = member.name!.trim();
+          } else {
+            final rawName = (inner["userName"] ??
+                    inner["senderName"] ??
+                    dataMap["userName"] ??
+                    dataMap["senderName"])
+                ?.toString()
+                .trim();
+            if (rawName != null && rawName.isNotEmpty && rawName != "Someone") {
+              resolvedName = rawName;
+            }
+          }
+          final finalName = resolvedName ?? "Someone";
+
+          groupTypingUsers[uid] = finalName;
+          _updateGroupTypingText();
+          debugPrint("[TYPING] Group typing active: ${groupTypingText.value}");
+
+          _groupTypingUserTimers[uid]?.cancel();
+          _groupTypingUserTimers[uid] =
+              Timer(const Duration(milliseconds: 4500), () {
+            if (!isClosed) {
+              groupTypingUsers.remove(uid);
+              _groupTypingUserTimers.remove(uid);
+              _updateGroupTypingText();
+              debugPrint("[TYPING] Group typing timer expired for $uid: ${groupTypingText.value}");
+            }
+          });
+        } catch (e) {
+          debugPrint("Error in onGroupTyping: $e");
+        }
+      },
+      onStopTyping: (data) {
+        try {
+          if (data is! Map) return;
+          final dataMap = Map<String, dynamic>.from(data);
+          final inner = dataMap['message'] is Map
+              ? Map<String, dynamic>.from(dataMap['message'])
+              : (dataMap['data'] is Map
+                  ? Map<String, dynamic>.from(dataMap['data'])
+                  : dataMap);
+
+          final eventGroupId = int.tryParse(
+            (inner["groupId"] ??
+                    inner["group_id"] ??
+                    dataMap["groupId"] ??
+                    dataMap["group_id"] ??
+                    "")
+                .toString(),
+          );
+          if (eventGroupId != null && eventGroupId != groupId) return;
+
+          final uid = (inner["userId"] ??
+                  inner["user_id"] ??
+                  inner["senderId"] ??
+                  inner["sender_id"] ??
+                  dataMap["userId"] ??
+                  dataMap["senderId"])
+              ?.toString();
+
+          if (uid != null && uid.isNotEmpty) {
+            _groupTypingUserTimers[uid]?.cancel();
+            _groupTypingUserTimers.remove(uid);
+            groupTypingUsers.remove(uid);
+            _updateGroupTypingText();
+            debugPrint("[TYPING] Group typing stopped for $uid: ${groupTypingText.value}");
+          }
+        } catch (_) {}
+      },
+    );
+
     getGroupMessages();
 
     getGroupMembers();
+  }
+
+  void _updateGroupTypingText() {
+    final count = groupTypingUsers.length;
+    if (count == 0) {
+      groupTypingText.value = "";
+      groupTypingUser.value = "";
+    } else if (count == 1) {
+      final name = groupTypingUsers.values.first;
+      groupTypingText.value = "$name is typing...";
+      groupTypingUser.value = name;
+    } else if (count == 2) {
+      final names = groupTypingUsers.values.toList();
+      groupTypingText.value = "${names[0]}, ${names[1]} are typing...";
+      groupTypingUser.value = "${names[0]}, ${names[1]}";
+    } else {
+      groupTypingText.value = "$count people are typing...";
+      groupTypingUser.value = "$count people";
+    }
+  }
+
+  void onInputTextChanged(String text) {
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+    final currentUserName =
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? "Someone";
+
+    if (currentUserId.isEmpty) return;
+
+    final trimmed = text.trim();
+    if (trimmed.isNotEmpty) {
+      final now = DateTime.now();
+      // Throttle: emit immediately, then re-emit at most once every 2.5 seconds while typing continues
+      if (_lastGroupTypingEmitTime == null ||
+          now.difference(_lastGroupTypingEmitTime!).inMilliseconds >= 2500) {
+        _lastGroupTypingEmitTime = now;
+        socketService.sendGroupTyping(
+          groupId: groupId,
+          userId: currentUserId,
+          userName: currentUserName,
+        );
+      }
+
+      // Debounce: reset inactivity timer. After 2.5s without typing, emit stop typing
+      _groupTypingDebounceTimer?.cancel();
+      _groupTypingDebounceTimer = Timer(const Duration(milliseconds: 2500), () {
+        _sendGroupStopTypingNow();
+      });
+    } else {
+      _sendGroupStopTypingNow();
+    }
+  }
+
+  void _sendGroupStopTypingNow() {
+    _groupTypingDebounceTimer?.cancel();
+    _lastGroupTypingEmitTime = null;
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+    final currentUserName =
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? "Someone";
+    if (currentUserId.isNotEmpty) {
+      socketService.sendGroupStopTyping(
+        groupId: groupId,
+        userId: currentUserId,
+        userName: currentUserName,
+      );
+    }
+  }
+
+  void onInputFocusLost() {
+    _sendGroupStopTypingNow();
   }
 
   Future<void> addVideos(List<String> paths) async {
@@ -314,10 +662,10 @@ class GroupMessageController extends GetxController {
   }
 
   Future<bool> uploadVideoAtIndex(
-      String path,
-      String caption,
-      int index,
-      ) async {
+    String path,
+    String caption,
+    int index,
+  ) async {
     try {
       final thumbnailPath = await generateThumbnailFile(path);
 
@@ -341,7 +689,7 @@ class GroupMessageController extends GetxController {
           groupId: groupId,
           messageType: "video",
           content:
-          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -361,63 +709,195 @@ class GroupMessageController extends GetxController {
     required TextEditingController textController,
   }) async {
     if (isSending.value) return;
+    _sendGroupStopTypingNow();
     isSending.value = true;
 
     try {
       final text = textController.text.trim();
 
-      final bool hasMedia = imagePaths.isNotEmpty ||
-          videoPaths.isNotEmpty ||
-          documentPath.value.isNotEmpty;
+      final bool hasImages = imagePaths.isNotEmpty;
+      final bool hasVideos = videoPaths.isNotEmpty;
+      final bool hasDocument = documentPath.value.isNotEmpty;
+      final bool hasMedia = hasImages || hasVideos || hasDocument;
 
-      if (imagePaths.isNotEmpty) {
+      final bool shouldSendMixedMedia =
+          (hasImages && hasVideos) || videoPaths.length > 1;
+
+      if (shouldSendMixedMedia) {
         final imagesCopy = List<File>.from(imagePaths);
+        final videosCopy = List<String>.from(videoPaths);
+        final uploadedImages = <String>[];
+        final uploadedVideos = <Map<String, dynamic>>[];
+        final successfulVideoIndexes = <int>[];
 
         for (final image in imagesCopy) {
-          final result = await MessageRepo.uploadChatImage(image);
+          try {
+            final result = await MessageRepo.uploadChatImage(image);
 
-          if (result.status == true && result.filename != null) {
-            socketService.sendGroupMessage(
-              groupId: groupId,
-              content: result.filename!,
-              messageType: "image",
-              caption: text,
-              replyId: replyMessage.value?.id,
-              replyMessage: replyMessage.value?.content,
-              replyType: replyMessage.value?.messageType,
-              replySender: replyMessage.value?.senderName,
-            );
-          } else {
+            if (result.status == true && result.filename != null) {
+              uploadedImages.add(result.filename!);
+            } else {
+              CommonDialog.errorMessage(
+                "Failed to upload ${image.path}",
+              );
+            }
+          } catch (e) {
+            log("GROUP IMAGE UPLOAD ERROR => $e");
             CommonDialog.errorMessage(
               "Failed to upload ${image.path}",
             );
           }
         }
 
-        imagePaths.clear();
-      }
+        for (int i = 0; i < videosCopy.length; i++) {
+          final path = videosCopy[i];
+          final currentIndex = videoPaths.indexOf(path);
 
-      if (videoPaths.isNotEmpty) {
-        final videosCopy = List<String>.from(videoPaths);
-
-        for (final vPath in videosCopy) {
-          final currentIndex = videoPaths.indexOf(vPath);
           if (currentIndex == -1) continue;
 
           uploadingVideoIndexes.add(currentIndex);
           uploadingVideoIndexes.refresh();
 
-          final success = await uploadVideoAtIndex(vPath, text, currentIndex);
+          try {
+            final thumbnailPath = await generateThumbnailFile(path);
 
-          if (success) {
-            final idx = videoPaths.indexOf(vPath);
-            if (idx != -1) {
-              removeVideo(idx);
+            if (thumbnailPath == null) continue;
+
+            final result = await MessageRepo.uploadChatVideo(
+              videoPath: path,
+              thumbnailPath: thumbnailPath,
+              onSendProgress: (sent, total) {
+                if (total > 0) {
+                  videoUploadProgress[currentIndex] = sent / total;
+                  videoUploadProgress.refresh();
+                }
+              },
+            );
+
+            if (result.status == true &&
+                result.videoUrl != null &&
+                result.videoUrl.toString().isNotEmpty) {
+              uploadedVideos.add({
+                "videoUrl": result.videoUrl,
+                "thumbnail": result.thumbnail,
+                "duration": result.duration,
+              });
+
+              successfulVideoIndexes.add(currentIndex);
+            } else {
+              CommonDialog.errorMessage(
+                "Failed to upload video",
+              );
+            }
+          } catch (e) {
+            log("GROUP VIDEO UPLOAD ERROR => $e");
+            CommonDialog.errorMessage(
+              "Failed to upload video",
+            );
+          } finally {
+            uploadingVideoIndexes.remove(currentIndex);
+            videoUploadProgress.remove(currentIndex);
+          }
+        }
+
+        if (uploadedImages.isNotEmpty || uploadedVideos.isNotEmpty) {
+          socketService.sendGroupMessage(
+            groupId: groupId,
+            content: "",
+            messageType: "media",
+            images: uploadedImages,
+            videos: uploadedVideos,
+            caption: text,
+            replyId: replyMessage.value?.id,
+            replyMessage: replyMessage.value?.content,
+            replyType: replyMessage.value?.messageType,
+            replySender: replyMessage.value?.senderName,
+          );
+
+          clearReply();
+
+          imagePaths.clear();
+
+          successfulVideoIndexes.sort((a, b) => b.compareTo(a));
+
+          for (final index in successfulVideoIndexes) {
+            if (index < videoPaths.length) {
+              removeVideo(index);
+            }
+          }
+        }
+      } else {
+        if (imagePaths.isNotEmpty) {
+          final imagesCopy = List<File>.from(imagePaths);
+          final uploadedImages = <String>[];
+
+          for (final image in imagesCopy) {
+            try {
+              final result = await MessageRepo.uploadChatImage(image);
+
+              if (result.status == true && result.filename != null) {
+                uploadedImages.add(result.filename!);
+              } else {
+                CommonDialog.errorMessage(
+                  "Failed to upload ${image.path}",
+                );
+              }
+            } catch (e) {
+              log("GROUP IMAGE UPLOAD ERROR => $e");
+              CommonDialog.errorMessage(
+                "Failed to upload ${image.path}",
+              );
             }
           }
 
-          uploadingVideoIndexes.remove(currentIndex);
-          videoUploadProgress.remove(currentIndex);
+          if (uploadedImages.isNotEmpty) {
+            socketService.sendGroupMessage(
+              groupId: groupId,
+              content: "",
+              messageType: "image",
+              images: uploadedImages,
+              caption: text,
+              replyId: replyMessage.value?.id,
+              replyMessage: replyMessage.value?.content,
+              replyType: replyMessage.value?.messageType,
+              replySender: replyMessage.value?.senderName,
+            );
+
+            clearReply();
+          }
+
+          imagePaths.clear();
+        }
+
+        if (videoPaths.isNotEmpty) {
+          final videoPath = videoPaths.first;
+          final currentIndex = videoPaths.indexOf(videoPath);
+
+          if (currentIndex != -1) {
+            uploadingVideoIndexes.add(currentIndex);
+            uploadingVideoIndexes.refresh();
+
+            try {
+              final success = await uploadVideoAtIndex(
+                videoPath,
+                text,
+                currentIndex,
+              );
+
+              if (success) {
+                final index = videoPaths.indexOf(videoPath);
+
+                if (index != -1) {
+                  removeVideo(index);
+                }
+
+                clearReply();
+              }
+            } finally {
+              uploadingVideoIndexes.remove(currentIndex);
+              videoUploadProgress.remove(currentIndex);
+            }
+          }
         }
       }
 
@@ -439,6 +919,7 @@ class GroupMessageController extends GetxController {
       }
 
       textController.clear();
+      messageText.value = "";
       clearReply();
       scrollToBottom();
     } catch (e) {
@@ -455,7 +936,8 @@ class GroupMessageController extends GetxController {
   }) {
     try {
       final currentUserName =
-          Global.storageServices.get(PrefConst.userName)?.toString() ?? "Rahul Verma";
+          Global.storageServices.get(PrefConst.userName)?.toString() ??
+              "Rahul Verma";
 
       final pollData = AttendancePollData(
         id: "att_${DateTime.now().millisecondsSinceEpoch}",
@@ -595,7 +1077,7 @@ class GroupMessageController extends GetxController {
           groupId: groupId,
           messageType: "video",
           content:
-          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -612,9 +1094,9 @@ class GroupMessageController extends GetxController {
   }
 
   Future<void> uploadDocument(
-      String path,
-      String caption,
-      ) async {
+    String path,
+    String caption,
+  ) async {
     try {
       var result = await MessageRepo.uploadChatDocument(path);
 
@@ -687,42 +1169,77 @@ class GroupMessageController extends GetxController {
     required int messageId,
     required String deleteType,
   }) async {
+    final userId =
+    Global.storageServices.get(PrefConst.userId).toString();
+
+    debugPrint("========== DELETE MESSAGE START ==========");
+    debugPrint("DELETE messageId: $messageId");
+    debugPrint("DELETE userId: $userId");
+    debugPrint("DELETE deleteType: $deleteType");
+    debugPrint("DELETE groupId: $groupId");
+
+    debugPrint(
+      "DELETE SOCKET CONNECTED: ${socketService.isSocketConnected}",
+    );
+
     socketService.deleteMessage(
       messageId: messageId,
-      userId: Global.storageServices.get(PrefConst.userId).toString(),
+      userId: userId,
       deleteType: deleteType,
     );
+
+    debugPrint("DELETE MESSAGE EMIT CALLED");
+    debugPrint("==========================================");
+  }
+
+  Future<void> _resolveForwardedGroupMessageContent(MessageData target) async {
+    try {
+      final history = await MessageRepo.groupMessageHistory(
+        groupId: groupId,
+        page: 1,
+        limit: 10,
+      );
+
+      if (history.status == true && history.messageData != null) {
+        final found = history.messageData!.firstWhereOrNull(
+          (m) =>
+              (target.id != null && m.id == target.id) ||
+              (target.forwardedFromMessageId != null &&
+                  m.id?.toString() == target.forwardedFromMessageId?.toString()),
+        );
+
+        if (found != null) {
+          final idx = _messages.indexWhere((m) => m.id == target.id);
+          if (idx != -1) {
+            final m = _messages[idx];
+            m.content = found.content ?? m.content;
+            m.caption = found.caption ?? m.caption;
+            m.images = found.images ?? m.images;
+            m.videos = found.videos ?? m.videos;
+            m.messageType = found.messageType ?? m.messageType;
+            m.thumbnail = found.thumbnail ?? m.thumbnail;
+            updateMessageStream();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error resolving forwarded group message content: $e");
+    }
   }
 
   Future<void> getGroupMessages() async {
     isLoading.value = true;
-
-    _messages
-      ..clear()
-      ..addAll(
-        List.generate(
-          8,
-              (index) => MessageData(
-            senderId: index.isEven ? 1 : 2,
-            senderName: "",
-            messageType: "text",
-            content: "                     ",
-            timestamp: DateTime.now().toIso8601String(),
-            seenCount: 0,
-            senderImage: "",
-          ),
-        ),
-      );
-
+    _messages.clear();
     updateMessageStream();
 
     try {
       final result = await MessageRepo.groupMessageHistory(
         groupId: groupId,
+        page: 1,
+        limit: 15,
       );
 
       if (result.status == true) {
-
         final messages = List<MessageData>.from(
           result.messageData ?? [],
         );
@@ -746,7 +1263,7 @@ class GroupMessageController extends GetxController {
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-                (message) => message.id == pinnedId,
+            (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -763,7 +1280,7 @@ class GroupMessageController extends GetxController {
 
         updateMessageStream();
 
-        scrollToBottom();
+        scrollToBottom(instant: true); // Instantly jumps to the latest message
       } else {
         CommonDialog.errorMessage(result.message);
 
@@ -785,6 +1302,7 @@ class GroupMessageController extends GetxController {
       isLoading.value = false;
     }
   }
+
   Future getGroupMembers() async {
     print(
       "MY USER ID => ${Global.storageServices.get(PrefConst.userId)}",
@@ -805,7 +1323,7 @@ class GroupMessageController extends GetxController {
         groupMembers.value = result.locations ?? [];
 
         final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+            Global.storageServices.get(PrefConst.userId).toString();
 
         // Default
         isCreator.value = false;
@@ -830,31 +1348,81 @@ class GroupMessageController extends GetxController {
     }
   }
 
-  void scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_messages.isEmpty) return;
-
-      if (itemScrollController.isAttached) {
-        itemScrollController.scrollTo(
-          index: _messages.length - 1,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+  void scrollToBottom({bool instant = false}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottomExecution(instant: instant);
     });
+  }
+
+  void _scrollToBottomExecution({bool instant = false, int retryCount = 0}) {
+    if (_messages.isEmpty) return;
+
+    if (itemScrollController.isAttached) {
+      try {
+        final targetIndex = _messages.length - 1;
+        if (targetIndex < 0) return;
+
+        if (instant) {
+          itemScrollController.jumpTo(
+            index: targetIndex,
+          );
+        } else {
+          itemScrollController.scrollTo(
+            index: targetIndex,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      } catch (e) {
+        log("Scroll execution error: $e");
+        if (retryCount < 6) {
+          Future.delayed(const Duration(milliseconds: 60), () {
+            _scrollToBottomExecution(instant: instant, retryCount: retryCount + 1);
+          });
+        }
+      }
+    } else if (retryCount < 10) {
+      Future.delayed(const Duration(milliseconds: 50), () {
+        _scrollToBottomExecution(instant: instant, retryCount: retryCount + 1);
+      });
+    }
   }
 
   bool isUserAtBottom() {
     if (_messages.isEmpty) return true;
 
     final positions = itemPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return true;
 
-    if (positions.isEmpty) return false;
+    final visible = positions
+        .where((e) => e.itemTrailingEdge > 0 && e.itemLeadingEdge < 1.0)
+        .toList();
+
+    if (visible.isEmpty) return true;
 
     final maxVisible =
-    positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
+        visible.map((e) => e.index).reduce((a, b) => a > b ? a : b);
 
     return maxVisible >= _messages.length - 2;
+  }
+
+  void _updateScrollBottomState() {
+    if (_messages.isEmpty) {
+      if (showScrollToBottom.value) showScrollToBottom.value = false;
+      if (unreadBelowCount.value != 0) unreadBelowCount.value = 0;
+      _wasAtBottom = true;
+      return;
+    }
+
+    final atBottom = isUserAtBottom();
+    _wasAtBottom = atBottom;
+
+    if (atBottom) {
+      if (showScrollToBottom.value) showScrollToBottom.value = false;
+      if (unreadBelowCount.value != 0) unreadBelowCount.value = 0;
+    } else {
+      if (!showScrollToBottom.value) showScrollToBottom.value = true;
+    }
   }
 
   void handleBackPressed(BuildContext context) {
@@ -915,11 +1483,10 @@ class GroupMessageController extends GetxController {
     mentionStartIndex!.value = lastAtIndex;
     final query = wordAfterAt.substring(1).toLowerCase().trim();
 
-    // Filter members
     filteredMembers.value = groupMembers
         .where((member) =>
-    (member.name?.toLowerCase().contains(query) ?? false) ||
-        (member.name?.toLowerCase().contains(query) ?? false))
+            (member.name?.toLowerCase().contains(query) ?? false) ||
+            (member.name?.toLowerCase().contains(query) ?? false))
         .toList();
 
     showMentionList.value = filteredMembers.isNotEmpty;
@@ -988,11 +1555,11 @@ class GroupMessageController extends GetxController {
 
     final results = _messages
         .where((msg) =>
-    msg.messageType == "text" &&
-        (msg.content?.toLowerCase().contains(
-          searchQuery.value.toLowerCase(),
-        ) ??
-            false))
+            msg.messageType == "text" &&
+            (msg.content?.toLowerCase().contains(
+                      searchQuery.value.toLowerCase(),
+                    ) ??
+                false))
         .map((msg) => msg.id!)
         .toList();
 
@@ -1106,7 +1673,7 @@ class GroupMessageController extends GetxController {
 
     _floatingDateTimer = Timer(
       const Duration(milliseconds: 800),
-          () {
+      () {
         showFloatingDate.value = false;
       },
     );
@@ -1118,7 +1685,7 @@ class GroupMessageController extends GetxController {
     }
 
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     if (message.senderId.toString() != currentUserId) {
       return;
@@ -1151,12 +1718,172 @@ class GroupMessageController extends GetxController {
     editingMessage.value = null;
   }
 
+  Future<void> clearGroupChat() async {
+    try {
+      final response = await MessageRepo.clearGroupChat(
+        groupId: groupId,
+      );
+
+      if (response['status'] == true) {
+        _messages.clear();
+
+        pinnedMessage.value = null;
+        showPinnedBanner.value = false;
+
+        updateMessageStream();
+
+        Utils().fluttertoast(
+          response['message']?.toString() ??
+              'Group chat cleared successfully',
+        );
+      } else {
+        Utils().fluttertoast(
+          response['message']?.toString() ??
+              'Failed to clear group chat',
+        );
+      }
+    } catch (e) {
+      log('Clear group chat error: $e');
+
+      Utils().fluttertoast('Failed to clear group chat');
+    }
+  }
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+    try {
+      final views = WidgetsBinding.instance.platformDispatcher.views;
+      if (views.isNotEmpty) {
+        final bottomInset = views.first.viewInsets.bottom;
+        final isKeyboardOpen = bottomInset > 0;
+        if (isKeyboardOpen != _wasKeyboardOpen) {
+          _wasKeyboardOpen = isKeyboardOpen;
+          if (isKeyboardOpen) {
+            // Keep latest messages visible if user was at the bottom
+            if (_wasAtBottom) {
+              scrollToBottom(instant: false);
+            }
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _sendGroupStopTypingNow();
+    }
+  }
+
   @override
   void onClose() {
+    _sendGroupStopTypingNow();
+    for (final timer in _groupTypingUserTimers.values) {
+      timer.cancel();
+    }
+    _groupTypingUserTimers.clear();
+    groupTypingUsers.clear();
+    socketService.stopListeningGroupTyping();
+    ChatTranslationService.instance.resetVisibility();
+    ChatTranslationService.instance.stopAudio();
+    WidgetsBinding.instance.removeObserver(this);
+    itemPositionsListener.itemPositions.removeListener(_onScrollDateChanged);
+    itemPositionsListener.itemPositions.removeListener(_updateScrollBottomState);
+    itemPositionsListener.itemPositions.removeListener(_onScrollForOlderMessages);
+    textEditingController.dispose();
     focusNode.dispose();
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
     super.onClose();
+  }
+
+  void _onScrollForOlderMessages() {
+    if (isLoadingOlderMessages.value) return;
+    if (!hasMoreOlderMessages.value) return;
+    if (isLoading.value) return;
+    if (_messages.isEmpty) return;
+
+    final positions = itemPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
+
+    final visible =
+        positions.where((position) => position.itemTrailingEdge > 0).toList();
+    if (visible.isEmpty) return;
+
+    visible.sort((a, b) => a.index.compareTo(b.index));
+    final firstVisibleIndex = visible.first.index;
+
+    if (firstVisibleIndex <= 2) {
+      loadOlderGroupMessages();
+    }
+  }
+
+  Future<void> loadOlderGroupMessages() async {
+    if (isLoadingOlderMessages.value) return;
+    if (!hasMoreOlderMessages.value) return;
+    if (_messages.isEmpty) return;
+
+    final positions = itemPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
+
+    final visible =
+        positions.where((position) => position.itemTrailingEdge > 0).toList();
+    if (visible.isEmpty) return;
+
+    visible.sort((a, b) => a.index.compareTo(b.index));
+    final oldFirstVisibleIndex = visible.first.index;
+
+    isLoadingOlderMessages.value = true;
+    try {
+      final nextPage = groupCurrentPage.value + 1;
+      log("OLDER GROUP MESSAGE API CALL => page=$nextPage");
+      final result = await MessageRepo.groupMessageHistory(
+        groupId: groupId,
+        page: nextPage,
+        limit: 15,
+      );
+
+      if (result.status == true) {
+        final olderMessages = result.messageData ?? [];
+        if (olderMessages.isNotEmpty) {
+          final existingIds = _messages.map((m) => m.id).toSet();
+          final newOlder = olderMessages.where((m) => m.id != null && !existingIds.contains(m.id)).toList();
+
+          if (newOlder.isNotEmpty) {
+            newOlder.sort((a, b) {
+              final aTime = DateTime.tryParse(a.timestamp?.toString() ?? '');
+              final bTime = DateTime.tryParse(b.timestamp?.toString() ?? '');
+              if (aTime == null || bTime == null) return 0;
+              return aTime.compareTo(bTime);
+            });
+
+            _messages.insertAll(0, newOlder);
+            groupCurrentPage.value = nextPage;
+            updateMessageStream();
+
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!itemScrollController.isAttached) return;
+              itemScrollController.jumpTo(
+                index: oldFirstVisibleIndex + newOlder.length,
+              );
+            });
+          }
+        }
+
+        if (result.pagination != null) {
+          hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
+        } else {
+          hasMoreOlderMessages.value = olderMessages.length >= 15;
+        }
+      }
+    } catch (e) {
+      log("Load Older Group Messages Error: $e");
+    } finally {
+      isLoadingOlderMessages.value = false;
+    }
   }
 }
 

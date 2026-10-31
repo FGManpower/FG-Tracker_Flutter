@@ -8,11 +8,18 @@ class Tracking {
     final str = raw.toString().trim();
     if (str.isEmpty || str == 'null') return null;
 
+    final epoch = int.tryParse(str);
+    if (epoch != null && epoch > 1000000000) {
+      final ms = str.length == 10 ? epoch * 1000 : epoch;
+      return DateTime.fromMillisecondsSinceEpoch(ms).toLocal();
+    }
+
     try {
-      DateTime dt = DateTime.parse(str);
+      final normalizedStr = str.replaceAll('/', '-');
+      DateTime dt = DateTime.parse(normalizedStr);
       // If the string does not specify a timezone offset or Z, backend might have stored in UTC
-      if (!str.endsWith('Z') && !str.contains('+')) {
-        final utcDt = DateTime.tryParse('${str.replaceAll(' ', 'T')}Z');
+      if (!normalizedStr.endsWith('Z') && !normalizedStr.contains('+')) {
+        final utcDt = DateTime.tryParse('${normalizedStr.replaceAll(' ', 'T')}Z');
         if (utcDt != null) {
           final now = DateTime.now();
           final diffNormal = now.difference(dt).abs();

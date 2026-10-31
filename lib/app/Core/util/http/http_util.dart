@@ -6,6 +6,8 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter/foundation.dart';
+
 import '../../theme/AppText.dart';
 import 'ApiErrorHandler.dart';
 
@@ -19,7 +21,16 @@ class HttpUtil {
   ConstRes api = ConstRes();
 
   HttpUtil._internal() {
-    api.sendRequest.interceptors.add(PrettyDioLogger());
+    if (kDebugMode) {
+      api.sendRequest.interceptors.add(PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: true,
+        error: true,
+        compact: true,
+      ));
+    }
   }
 
   Future<dynamic> post(String path,
@@ -78,6 +89,35 @@ class HttpUtil {
       api.sendRequest.options.headers['accept'] = 'application/json';
 
       var response = await api.sendRequest.put(
+        path,
+        data: type == "formdata" ? formdata : data,
+        queryParameters: queryParameteres,
+      );
+
+      return response.data;
+    } catch (e) {
+      if (e is DioException) {
+        throw ApiErrorHandler.handleDioError(e);
+      }
+
+      throw AppText.anUnexpectedError;
+    }
+  }
+
+  Future<dynamic> Authpatch(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameteres,
+    FormData? formdata,
+    String? type,
+  }) async {
+    try {
+      api.sendRequest.options.headers["authorization"] =
+          "Bearer ${Global.storageServices.getaccesstoken()!}";
+
+      api.sendRequest.options.headers['accept'] = 'application/json';
+
+      var response = await api.sendRequest.patch(
         path,
         data: type == "formdata" ? formdata : data,
         queryParameters: queryParameteres,

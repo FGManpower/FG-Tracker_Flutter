@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
-
-import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
@@ -15,11 +13,17 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:get/get.dart';
 import 'package:otp_autofill/otp_autofill.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/values/loading.dart';
+import '../../../Core/values/logoutuser.dart';
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
+import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
+import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
+import 'package:fgtracker/app/Data/Services/GroupCountService.dart';
+import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 
 class OtpController extends GetxController {
   TextEditingController otpController = TextEditingController();
@@ -55,11 +59,11 @@ class OtpController extends GetxController {
         },
         otpInteractor: otpInteractor,
       )..startListenUserConsent(
-            (code) {
-          final exp = RegExp(r'(\d{4})');
-          return exp.stringMatch(code ?? '') ?? '';
-        },
-      );
+          (code) {
+            final exp = RegExp(r'(\d{4})');
+            return exp.stringMatch(code ?? '') ?? '';
+          },
+        );
     } catch (e) {
       log("OTP autofill initialization error: $e");
     }
@@ -84,7 +88,8 @@ class OtpController extends GetxController {
 
   registerPushTokens() async {
     if (Platform.isIOS) {
-      final String? token = await ConnectycubeFlutterCallKit.getToken();
+      final String? token =
+          await FlutterCallkitIncoming.getDevicePushTokenVoIP();
 
       if (token == null) {
         log("Token is null");
@@ -156,12 +161,22 @@ class OtpController extends GetxController {
     _isVerifying = true;
     try {
       Loading().showloading();
+
+      if (deviceId.value.isEmpty) {
+        try {
+          final token = await firebaseNotificationServices().getDiviceToken();
+          if (token.isNotEmpty) {
+            deviceId.value = token;
+          }
+        } catch (_) {}
+      }
+
       dynamic param = {
         "countryCode": arguments?['countryCode'],
         "MobileNo": arguments?['mobNo'],
         "otp": otpController.text,
-        'Device_Id': deviceId.value ?? "",
-        'Voip_Device': voipDeviceId.value ?? "",
+        'Device_Id': deviceId.value,
+        'Voip_Device': voipDeviceId.value,
         'Platform': Platform.isAndroid ? "android" : "ios",
       };
 
@@ -169,8 +184,49 @@ class OtpController extends GetxController {
       if (result.status == true) {
         Loading().dismissloading();
 
-        try {
+        // 0. Ensure fresh clean storage slate before writing new user credentials
+        await Global.storageServices.clearAllUserData();
 
+        // 1. Save auth credentials FIRST before initializing sockets
+        await Global.storageServices.setString(
+          PrefConst.STORAGE_USER_TOKEN_KEY,
+          result.data!.token.toString(),
+        );
+        await Global.storageServices.setString(
+          PrefConst.userId,
+          result.data!.userId.toString(),
+        );
+        if (result.data?.locationSharing != null) {
+          await Global.storageServices.setBool(
+            PrefConst.locationSharing,
+            result.data!.locationSharing!,
+          );
+        } else {
+          try {
+            final privateRes = await TrackRepo.getPrivateMembers(limit: 50);
+            final myId = result.data!.userId?.toString();
+            if (privateRes.user?.isLocationSharing != null) {
+              await Global.storageServices.setBool(
+                PrefConst.locationSharing,
+                privateRes.user!.isLocationSharing!,
+              );
+            } else if (myId != null && privateRes.data?.private != null) {
+              final isPrivate = privateRes.data!.private!.any(
+                (m) => m.userId?.toString() == myId,
+              );
+              await Global.storageServices.setBool(
+                PrefConst.locationSharing,
+                !isPrivate,
+              );
+            }
+          } catch (_) {}
+        }
+
+        // 2. Establish grace period for this newly logged-in device
+        LogoutUser.recordLoginSuccess();
+
+        // 3. Initialize sockets for user
+        try {
           if (result.data!.userId != null) {
             SignallingService.instance.init(
               websocketUrl: ConstRes.socketUrl,
@@ -186,19 +242,16 @@ class OtpController extends GetxController {
                 .init(result.data!.userId.toString());
 
             SocketDashboardService().init();
+
+            StatusBinding().dependencies();
+
+            GroupCountService.instance;
+            NotificationMarkerService.instance;
           }
         } catch (e) {
           log("login_SocketException====$e");
         }
 
-        Global.storageServices.setString(
-          PrefConst.STORAGE_USER_TOKEN_KEY,
-          result.data!.token.toString(),
-        );
-        Global.storageServices.setString(
-          PrefConst.userId,
-          result.data!.userId.toString(),
-        );
         if (result.data?.isNewUser == true) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             Get.toNamed(Routes.Register, arguments: {
@@ -206,21 +259,23 @@ class OtpController extends GetxController {
             });
           });
         } else {
-          Global.storageServices.setString(
+          await Global.storageServices.setString(
             PrefConst.userName,
             result.data!.userName ?? "Unknown",
           );
 
-          Global.storageServices.setString(
+          await Global.storageServices.setString(
             PrefConst.profileImage,
             result.data!.profileImage ?? "Unknown",
           );
-          Global.storageServices.setString(
+
+          await Global.storageServices.setString(
             PrefConst.isRegistered,
             "true",
           );
+
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            Get.offNamedUntil(Routes.Home_Screen, (route) => false);
+            Get.offAllNamed(Routes.permissionSetup);
           });
         }
       } else {

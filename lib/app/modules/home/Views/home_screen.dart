@@ -1,7 +1,10 @@
+
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGuard.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/global_widget/crown_icon.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -21,112 +24,147 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:upgrader/upgrader.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with WidgetsBindingObserver {
   final groupController = Get.put(GroupController());
   final controller = Get.put(HomeController());
   final joinGroupController = Get.put(JoinGroupController());
   final trackingController = Get.put(GroupTrackingController());
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  final GlobalKey<ScaffoldState> _scaffoldKey =
+  GlobalKey<ScaffoldState>();
 
   final firebaseNotificationServices notificationServices =
   firebaseNotificationServices();
 
+  bool _isPermissionCheckRunning = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    WidgetsBinding.instance.addObserver(this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      notificationServices.setupInteractMessage(context);
+
+      CallKitService.instance.markAppReady();
+
+      await _checkLocationPermission();
+
       if (mounted) {
-        checkAndRequestPermissions(context);
-        notificationServices.setupInteractMessage(context);
+        _initializeHomeServices();
       }
     });
-    notificationServices.askPermission();
-
-    requestCallPermissions();
   }
 
-  Future<void> requestCallPermissions() async {
-    await [
-      Permission.microphone,
-      Permission.camera,
-      Permission.audio,
-      Permission.notification,
-    ].request();
+  Future<void> _checkLocationPermission() async {
+    if (!mounted || _isPermissionCheckRunning) return;
+
+    _isPermissionCheckRunning = true;
+
+    try {
+      await PermissionGuard.checkAndRequestAllPermissions(
+        context,
+        autoFetchLocation: true,
+      );
+    } catch (e) {
+      debugPrint('Location permission check error: $e');
+    } finally {
+      _isPermissionCheckRunning = false;
+    }
   }
 
-  Future<void> checkAndRequestPermissions(BuildContext context) async {
-    await PermissionGuard.checkAndRequestAllPermissions(
-      context,
-      autoFetchLocation: true,
-    );
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkLocationPermission();
+    }
+  }
 
+  Future<void> _initializeHomeServices() async {
     await trackingController.loadLocationSharing();
+
     await SocketService.instance.init(ConstRes.socketUrl);
+
     trackingController.initializeLocation();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return UpgradeAlert(
       child: Obx(
-            () => Scaffold(
-          resizeToAvoidBottomInset: false,
-          backgroundColor: const Color(0xFFF4F6FC),
-          key: _scaffoldKey,
-          drawer: Sidemenu(scaffoldKey: _scaffoldKey),
-          appBar: Utility.isNotNullEmptyOrFalse(
-              controller.InitializeResponeMessage.isNotEmpty)
-              ? null
-              : HomeAppBar(
-            scaffoldKey: _scaffoldKey,
-            controller: controller,
-            trackingController: trackingController,
-          ),
-          body: Utility.isNotNullEmptyOrFalse(
-              controller.InitializeResponeMessage.isNotEmpty)
-              ? LostinternetConnection(
-            retry: () async {
-              controller.init();
-            },
-            messgae: controller.InitializeResponeMessage.value,
-          )
-              : RefreshIndicator(
-            onRefresh: () async {
-              controller.init();
-            },
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: ListView(
-                padding: EdgeInsets.only(bottom: 8.h),
-                children: [
-                  BannerUi(),
-                  const StatsGrid(),
-                  SizedBox(height: 10.h),
-                  const _UpgradeToPremiumCard(),
-                  SizedBox(height: 12.h),
-                  QuickActionsSection(),
-                  SizedBox(height: 4.h),
-                ],
+            () {
+          final bool hasInitError =
+              controller.InitializeResponeMessage.value.trim().isNotEmpty;
+
+          return Scaffold(
+            resizeToAvoidBottomInset: false,
+            backgroundColor: const Color(0xFFF4F6FC),
+            key: _scaffoldKey,
+            drawer: Sidemenu(scaffoldKey: _scaffoldKey),
+            appBar: hasInitError
+                ? null
+                : HomeAppBar(
+              scaffoldKey: _scaffoldKey,
+              controller: controller,
+              trackingController: trackingController,
+            ),
+            body: hasInitError
+                ? LostinternetConnection(
+              retry: () async {
+                controller.init();
+              },
+              messgae: controller.InitializeResponeMessage.value,
+            )
+                : RefreshIndicator(
+              onRefresh: () async {
+                controller.init();
+                SocketDashboardService.instance.requestGroupCount();
+                SocketService.instance.requestGroupCount();
+                SocketService.instance.requestNotificationMarkers();
+              },
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: ListView(
+                  padding: EdgeInsets.only(bottom: 8.h),
+                  children: [
+                    BannerUi(),
+                    const StatsGrid(),
+                    SizedBox(height: 10.h),
+                    const _UpgradeToPremiumCard(),
+                    SizedBox(height: 12.h),
+                    QuickActionsSection(),
+                    SizedBox(height: 4.h),
+                  ],
+                ),
               ),
             ),
-          ),
-          bottomNavigationBar: Utility.isNotNullEmptyOrFalse(
-              controller.InitializeResponeMessage.isNotEmpty)
-              ? null
-              : BottomActionsBar(
-            groupController: groupController,
-            joinGroupController: joinGroupController,
-          ),
-        ),
+            bottomNavigationBar: hasInitError
+                ? null
+                : BottomActionsBar(
+              groupController: groupController,
+              joinGroupController: joinGroupController,
+            ),
+          );
+        },
       ),
     );
   }

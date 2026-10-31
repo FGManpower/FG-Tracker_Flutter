@@ -195,25 +195,31 @@ class _StatusSectionState extends State<StatusSection> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _popupTile(
-                        icon: Icons.visibility_outlined,
-                        title: 'View My Status',
-                        onTap: () {
-                          _removePopup();
-                          if (controller.myStatuses.isEmpty) {
-                            Get.to(() => const AddStatusScreen());
-                            return;
-                          }
-                          Get.to(
-                                () => StatusViewScreen(
-                              isOwnStatus: true,
-                              userName: 'My Status',
-                              statuses: controller.myStatuses.toList(),
-                              currentIndex: 0,
-                            ),
-                          );
-                        },
-                      ),
+                      if (controller.myStatuses.isNotEmpty)
+                        _popupTile(
+                          icon: Icons.visibility_outlined,
+                          title: 'View My Status',
+                          onTap: () {
+                            _removePopup();
+
+                            Get.to(
+                                  () => StatusViewScreen(
+                                isOwnStatus: true,
+                                userName: 'My Status',
+                                statuses: controller.myStatuses.toList(),
+                                currentIndex: 0,
+                              ),
+                            );
+                          },
+                        ),
+
+                      if (controller.myStatuses.isNotEmpty)
+                        Divider(
+                          height: 1,
+                          color: Colors.grey.withValues(alpha: 0.15),
+                          indent: 12.w,
+                          endIndent: 12.w,
+                        ),
                       Divider(
                         height: 1,
                         color: Colors.grey.withValues(alpha: 0.15),
@@ -228,21 +234,21 @@ class _StatusSectionState extends State<StatusSection> {
                           Get.to(() => const AddStatusScreen());
                         },
                       ),
-                      Divider(
-                        height: 1,
-                        color: Colors.grey.withValues(alpha: 0.15),
-                        indent: 12.w,
-                        endIndent: 12.w,
-                      ),
-                      _popupTile(
-                        icon: Icons.lock_outline_rounded,
-                        title: 'Status Privacy',
-                        color: Colors.black87,
-                        onTap: () {
-                          _removePopup();
-                          _showPrivacySheet();
-                        },
-                      ),
+                      // Divider(
+                      //   height: 1,
+                      //   color: Colors.grey.withValues(alpha: 0.15),
+                      //   indent: 12.w,
+                      //   endIndent: 12.w,
+                      // ),
+                      // _popupTile(
+                      //   icon: Icons.lock_outline_rounded,
+                      //   title: 'Status Privacy',
+                      //   color: Colors.black87,
+                      //   onTap: () {
+                      //     _removePopup();
+                      //     _showPrivacySheet();
+                      //   },
+                      // ),
                     ],
                   ),
                 ),

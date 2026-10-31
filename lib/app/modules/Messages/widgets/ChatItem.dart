@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
@@ -28,23 +29,34 @@ import 'ContactBubbleWidget.dart';
 import 'LocationBubbleWidget.dart';
 import '../../Attendance/models/attendance_poll_model.dart';
 import '../../Attendance/widgets/attendance_chat_card.dart';
-import 'message_Widgets.dart';
+import '../../../Data/Services/chat_translation_service.dart';
+import 'chat_translation_widgets.dart';
+import 'MessageContextMenu.dart';
+import '../../../widgets/MessageInfoSheet.dart';
 
 class ChatBubble extends StatelessWidget {
   final MessageData message;
   final BuildContext context;
   final MessageController controller;
+  final bool showAvatar;
+  final bool isDense;
 
   const ChatBubble({
     super.key,
     required this.message,
     required this.controller,
     required this.context,
+    this.showAvatar = true,
+    this.isDense = false,
   });
 
   static const Color _purple = Color(0xFF5045B9);
   static const Color _myBubbleBg = Color(0xFFDCD6F5);
   static const Color _otherBubbleBg = Colors.white;
+
+  bool get _isDeletedMessage =>
+      message.isDeleted == true ||
+          message.content?.toString() == "This message was deleted";
 
   @override
   Widget build(BuildContext context) {
@@ -71,111 +83,168 @@ class ChatBubble extends StatelessWidget {
     );
 
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 6.h),
+      margin: EdgeInsets.symmetric(vertical: isDense ? 2.h : 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
         isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
+          if (!isSentByMe)
+            Padding(
+              padding: EdgeInsets.only(right: 8.w, top: 4.h),
+              child: showAvatar
+                  ? Builder(builder: (context) {
+                String? avatarUrl;
+                try {
+                  avatarUrl = controller.memberData.profileImage;
+                } catch (_) {}
+                return CircleAvatar(
+                  radius: 16.r,
+                  backgroundColor: const Color(0xFFECEAFD),
+                  backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
+                      ? NetworkImage(
+                    avatarUrl.startsWith('http')
+                        ? avatarUrl
+                        : "${ConstRes.aImageBaseUrl}$avatarUrl",
+                  )
+                      : null,
+                  child: (avatarUrl == null || avatarUrl.isEmpty)
+                      ? Icon(
+                    Icons.person_rounded,
+                    size: 16.sp,
+                    color: const Color(0xFF4818F0),
+                  )
+                      : null,
+                );
+              })
+                  : SizedBox(width: 32.r, height: 32.r),
+            ),
           Flexible(
             child: Builder(
               builder: (bubbleContext) {
                 return Obx(() {
-                  final isAttendance = message.messageType == "attendance";
+                  final isAttendance =
+                      !_isDeletedMessage && message.messageType == "attendance";
 
-                  return GestureDetector(
-                    onLongPress: () =>
-                        _showMessageMenu(bubbleContext, isSentByMe),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      constraints: BoxConstraints(
-                        maxWidth: isAttendance
-                            ? MediaQuery.of(context).size.width * 0.88
-                            : MediaQuery.of(context).size.width * 0.75,
-                      ),
-                      padding: isAttendance
-                          ? EdgeInsets.zero
-                          : EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 8.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isAttendance
-                            ? Colors.transparent
-                            : (controller.highlightedMessageId.value ==
-                            message.id
-                            ? Colors.yellow.withValues(alpha: .35)
-                            : bgColor),
-                        borderRadius: isAttendance
-                            ? BorderRadius.circular(20.r)
-                            : borderRadius,
-                        boxShadow: isAttendance
-                            ? []
-                            : [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                  return Column(
+                    crossAxisAlignment: isSentByMe
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onLongPress: _isDeletedMessage
+                            ? null
+                            : () => _showMessageMenu(bubbleContext, isSentByMe),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          constraints: BoxConstraints(
+                            maxWidth: isAttendance
+                                ? MediaQuery.of(context).size.width * 0.88
+                                : MediaQuery.of(context).size.width * 0.75,
                           ),
-                        ],
-                      ),
-                      child: IntrinsicWidth(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildReplyPreview(
-                              message,
-                              isSentByMe,
-                            ),
-                            if (message.isForwarded == true)
-                              Padding(
-                                padding: EdgeInsets.only(bottom: 5.h),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.forward_rounded,
-                                      size: 14.sp,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                    SizedBox(width: 4.w),
-                                    Text(
-                                      "Forwarded",
-                                      style: TextStyle(
-                                        fontSize: 10.sp,
-                                        fontStyle: FontStyle.italic,
-                                        color: Colors.grey.shade600,
-                                        fontFamily: FontFamily.interMedium,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            if (_isPlainTextMessage(message))
-                              _buildTextWithTime(
-                                message: message,
-                                textColor: textColor,
-                                isSentByMe: isSentByMe,
-                              )
-                            else ...[
-                              _buildMessageContent(
-                                message,
-                                textColor,
-                                isSentByMe,
-                              ),
-                              SizedBox(height: 4.h),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: _buildTimeRow(
-                                  isSentByMe,
-                                ),
+                          padding: isAttendance
+                              ? EdgeInsets.zero
+                              : EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 8.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isAttendance
+                                ? Colors.transparent
+                                : (controller.highlightedMessageId.value ==
+                                message.id
+                                ? Colors.yellow.withValues(alpha: .35)
+                                : bgColor),
+                            borderRadius: isAttendance
+                                ? BorderRadius.circular(20.r)
+                                : borderRadius,
+                            boxShadow: isAttendance
+                                ? []
+                                : [
+                              BoxShadow(
+                                color:
+                                Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
                               ),
                             ],
-                          ],
+                          ),
+                          child: IntrinsicWidth(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (!_isDeletedMessage)
+                                  _buildReplyPreview(
+                                    message,
+                                    isSentByMe,
+                                  ),
+                                if (!_isDeletedMessage &&
+                                    message.isForwarded == true)
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: 5.h),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.forward_rounded,
+                                          size: 14.sp,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                        SizedBox(width: 4.w),
+                                        Text(
+                                          "Forwarded",
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontStyle: FontStyle.italic,
+                                            color: Colors.grey.shade600,
+                                            fontFamily: FontFamily.interMedium,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                if (_isDeletedMessage) ...[
+                                  _buildDeletedContent(isSentByMe),
+                                ] else if (_isPlainTextMessage(message)) ...[
+                                  _buildTextWithTime(
+                                    message: message,
+                                    textColor: textColor,
+                                    isSentByMe: isSentByMe,
+                                  ),
+                                  if (!isSentByMe)
+                                    _buildTranslatedCard(message),
+                                ] else ...[
+                                  _buildMessageContent(
+                                    message,
+                                    textColor,
+                                    isSentByMe,
+                                  ),
+                                  SizedBox(height: 4.h),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: _buildTimeRow(
+                                      isSentByMe,
+                                    ),
+                                  ),
+                                  if (!isSentByMe)
+                                    _buildTranslatedCard(message),
+                                ],
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      if (!isSentByMe &&
+                          !_isDeletedMessage &&
+                          _getTranslatableText(message).isNotEmpty)
+                        ChatMessageActionRow(
+                          messageId: _getMessageTranslationId(message),
+                          originalText: _getTranslatableText(message),
+                          isSentByMe: isSentByMe,
+                        ),
+                    ],
                   );
                 });
               },
@@ -186,16 +255,125 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
+  Widget _buildDeletedContent(bool isSentByMe) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Icon(
+          Icons.block_rounded,
+          size: 14.sp,
+          color: Colors.grey.shade900,
+        ),
+        SizedBox(width: 6.w),
+        Flexible(
+          child: Text(
+            "This message was deleted",
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontStyle: FontStyle.italic,
+              color: Colors.grey.shade900,
+              height: 1.35,
+            ),
+          ),
+        ),
+        SizedBox(width: 14.w),
+        _buildTimeRow(isSentByMe),
+      ],
+    );
+  }
+
+  String _getTranslatableText(MessageData message) {
+    if (_isDeletedMessage) return '';
+
+    if (_isPlainTextMessage(message)) {
+      return (message.content?.toString() ?? '').trim();
+    }
+
+    final caption = (message.caption?.toString() ?? '').trim();
+    if (caption.isNotEmpty) {
+      return caption;
+    }
+
+    if (message.messageType == "document") {
+      final parts = message.content?.split("||") ?? [];
+      final documentUrl = parts.isNotEmpty ? parts[0] : "";
+      String documentName =
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+      documentName = removeDuplicateExtension(documentName).trim();
+      return documentName;
+    }
+
+    if (message.messageType == "contact") {
+      final content = (message.content?.toString() ?? '').trim();
+      if (content.isNotEmpty && !content.startsWith('{')) return content;
+    }
+
+    return '';
+  }
+
+  String _getMessageTranslationId(MessageData message) {
+    if (message.id != null &&
+        message.id.toString().isNotEmpty &&
+        message.id.toString() != "0") {
+      return message.id.toString();
+    }
+    final text = _getTranslatableText(message);
+    final raw = text.isNotEmpty ? text : (message.content?.toString() ?? '');
+    return "msg_${raw.hashCode}";
+  }
+
+  Widget _buildTranslatedCard(MessageData message) {
+    final translatableText = _getTranslatableText(message);
+    if (translatableText.isEmpty) return const SizedBox.shrink();
+
+    return Obx(() {
+      final mId = _getMessageTranslationId(message);
+      final isHindi = RegExp(r'[\u0900-\u097F]').hasMatch(translatableText);
+      final targetLang = isHindi ? 'en' : 'hi';
+      final cacheKey = '${mId}_$targetLang';
+      final translationService = ChatTranslationService.instance;
+      final translated = translationService.translations[cacheKey];
+      final isShown = translationService.showTranslated[cacheKey] == true;
+
+      if (translated != null && translated.isNotEmpty && isShown) {
+        return ChatTranslatedCard(
+          messageId: mId,
+          translatedText: translated,
+          targetLang: targetLang,
+          onToggleOriginal: () {
+            translationService.toggleTranslationVisibility(
+              mId,
+              targetLang: targetLang,
+            );
+          },
+        );
+      }
+      return const SizedBox.shrink();
+    });
+  }
+
   bool _isPlainTextMessage(MessageData message) {
-    final type = message.messageType?.toString() ?? "text";
-    return type == "text" || type == "text_message" || type.isEmpty;
+    final type =
+        (message.messageType?.toString() ?? "text").toLowerCase().trim();
+    if (type == "text" || type == "text_message" || type.isEmpty) {
+      return true;
+    }
+    if ((type == "forward" ||
+            type == "forwarded" ||
+            type == "forward_message") &&
+        (message.images?.isEmpty ?? true) &&
+        (message.videos?.isEmpty ?? true)) {
+      return true;
+    }
+    return false;
   }
 
   Widget _buildTimeRow(bool isSentByMe) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (message.isEdited == true) ...[
+        if (message.isEdited == true && !_isDeletedMessage) ...[
           Text(
             "edited",
             style: TextStyle(
@@ -254,7 +432,11 @@ class ChatBubble extends StatelessWidget {
       bool isSentByMe,
       ) {
     final query = controller.searchQuery.value;
-    final content = message.content?.toString() ?? "";
+    String content = message.content?.toString() ?? "";
+    if (content.trim().isEmpty &&
+        (message.caption?.toString() ?? "").trim().isNotEmpty) {
+      content = message.caption!.toString();
+    }
 
     if (query.isNotEmpty &&
         content.toLowerCase().contains(query.toLowerCase())) {
@@ -311,32 +493,210 @@ class ChatBubble extends StatelessWidget {
       Color textColor,
       bool isSentByMe,
       ) {
-    if (message.messageType == "image" || message.messageType == "image_text") {
-      final imagePart = message.content ?? "";
-      final caption = message.caption ?? "";
+    final msgType =
+        (message.messageType?.toString() ?? '').toLowerCase().trim();
+    final hasImages = (message.images?.isNotEmpty ?? false);
+    final hasVideos = (message.videos?.isNotEmpty ?? false);
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12.r),
-            child: ImageViewerWidget(
-              imageProvider: NetworkImage(
-                "${ConstRes.aImageBaseUrl}$imagePart",
-              ),
-              width: 220,
-              height: 200,
-              borderRadius: 10,
+    if (msgType == "media" ||
+        msgType == "image" ||
+        msgType == "image_text" ||
+        (msgType == "video" && hasVideos) ||
+        ((msgType == "forward" ||
+                msgType == "forwarded" ||
+                msgType == "forward_message") &&
+            (hasImages || hasVideos))) {
+      final imageList = (message.images ?? [])
+          .where((image) => image.trim().isNotEmpty)
+          .toList();
+
+      if (imageList.isEmpty &&
+          (message.messageType == "image" ||
+              message.messageType == "image_text")) {
+        final imagePart = message.content?.toString() ?? "";
+        if (imagePart.trim().isNotEmpty) {
+          imageList.add(imagePart);
+        }
+      }
+
+      final videos = (message.videos != null && message.videos!.isNotEmpty)
+          ? message.videos!
+          : ((message.messageType == "media" || message.messageType == "video")
+              ? (message.videos ?? [])
+              : <MessageVideo>[]);
+
+      String getMediaUrl(String path) {
+        final value = path.trim();
+        if (value.isEmpty) return "";
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+          return value;
+        }
+        return "${ConstRes.aImageBaseUrl}$value";
+      }
+
+      void openGallery(int index) {
+        Get.to(
+              () => GroupImageGallery(
+            images: imageList,
+            videos: videos,
+            initialIndex: index,
+          ),
+        );
+      }
+
+      Widget buildImageTile(
+          int index,
+          double width,
+          double height,
+          ) {
+        return GestureDetector(
+          onTap: () => openGallery(index),
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CachedNetworkImage(
+                  imageUrl: getMediaUrl(imageList[index]),
+                  fit: BoxFit.cover,
+                  memCacheWidth: 600,
+                  memCacheHeight: 600,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey.shade200,
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 24.w,
+                      height: 24.w,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: _purple,
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey.shade200,
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.broken_image_outlined),
+                  ),
+                ),
+                if (index == 3 && imageList.length > 4)
+                  Container(
+                    color: Colors.black54,
+                    alignment: Alignment.center,
+                    child: Text(
+                      "+${imageList.length - 4}",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 26.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
-          if (caption.isNotEmpty) SizedBox(height: 8.h),
-          if (caption.isNotEmpty)
-            reausabletext(
-              caption,
-              color: textColor,
-              fontsize: 12.sp,
-            ),
-        ],
+        );
+      }
+
+      Widget buildVideoTile(MessageVideo video, int videoIndex) {
+        final videoUrl = getMediaUrl(video.videoUrl ?? "");
+        final thumbnailUrl = getMediaUrl(video.thumbnail ?? "");
+        final duration = (video.duration ?? "").trim().isNotEmpty
+            ? video.duration!
+            : "--:--";
+
+        return VideoThumbnailWidget(
+          videoUrl: videoUrl,
+          thumbnail: thumbnailUrl,
+          duration: duration,
+          onTap: () => openGallery(imageList.length + videoIndex),
+        );
+      }
+
+      final mediaCount = imageList.length + videos.length;
+      final caption = (message.caption ?? "").trim();
+
+      if (mediaCount == 0) {
+        return const SizedBox.shrink();
+      }
+
+      return SizedBox(
+        width: 220.w,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (mediaCount == 1)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: SizedBox(
+                  width: 220.w,
+                  height: 200.h,
+                  child: imageList.isNotEmpty
+                      ? buildImageTile(0, 220.w, 200.h)
+                      : buildVideoTile(videos.first, 0),
+                ),
+              )
+            else
+              Builder(
+                builder: (context) {
+                  final totalMedia = imageList.length + videos.length;
+                  final visibleCount = totalMedia > 4 ? 4 : totalMedia;
+
+                  return Wrap(
+                    spacing: 4.w,
+                    runSpacing: 4.w,
+                    children: List.generate(visibleCount, (index) {
+                      final isVideo = index >= imageList.length;
+                      final remainingCount = totalMedia - 4;
+
+                      return SizedBox(
+                        width: 108.w,
+                        height: 108.w,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.r),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              if (isVideo)
+                                buildVideoTile(
+                                  videos[index - imageList.length],
+                                  index - imageList.length,
+                                )
+                              else
+                                buildImageTile(index, 108.w, 108.w),
+                              if (index == 3 && remainingCount > 0)
+                                Container(
+                                  color: Colors.black54,
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    "+$remainingCount",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 26.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  );
+                },
+              ),
+            if (caption.isNotEmpty) ...[
+              SizedBox(height: 8.h),
+              reausabletext(
+                caption,
+                color: textColor,
+                fontsize: 12.sp,
+              ),
+            ],
+          ],
+        ),
       );
     } else if (message.messageType == "audio") {
       return AudioBubble(
@@ -345,17 +705,12 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];
-
       final videoPath = parts.isNotEmpty ? parts[0].trim() : "";
-
       final rawThumbnailPath = parts.length > 1 ? parts[1].trim() : "";
-
       final duration = parts.length > 2 && parts[2].trim().isNotEmpty
           ? parts[2].trim()
           : "--:--";
-
       final videoUrl = _buildMediaUrl(videoPath);
-
       final thumbnailUrl = _buildMediaUrl(rawThumbnailPath);
 
       return Column(
@@ -387,16 +742,11 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "document") {
       final parts = message.content?.split("||") ?? [];
-
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
-
       String documentName =
       parts.length > 1 ? parts[1] : documentUrl.split('/').last;
-
       documentName = removeDuplicateExtension(documentName);
-
       final extension = documentName.split('.').last.toLowerCase();
-
       final fileSize = parts.length > 2 ? parts[2] : "";
 
       IconData icon;
@@ -405,22 +755,18 @@ class ChatBubble extends StatelessWidget {
         case "pdf":
           icon = Icons.picture_as_pdf_rounded;
           break;
-
         case "doc":
         case "docx":
           icon = Icons.description_rounded;
           break;
-
         case "xls":
         case "xlsx":
           icon = Icons.table_chart_rounded;
           break;
-
         case "ppt":
         case "pptx":
           icon = Icons.slideshow_rounded;
           break;
-
         default:
           icon = Icons.insert_drive_file_rounded;
       }
@@ -490,9 +836,21 @@ class ChatBubble extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 6.w),
-                  Obx(
-                        () {
+                  if (!isSentByMe) ...[
+                    SizedBox(width: 6.w),
+                    Obx(() {
                       final url = "${ConstRes.aImageBaseUrl}$documentUrl";
+
+                      if (DocumentService.isDownloading(url)) {
+                        return SizedBox(
+                          width: 20.sp,
+                          height: 20.sp,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: _purple,
+                          ),
+                        );
+                      }
 
                       return Icon(
                         DocumentService.isDownloaded(url)
@@ -501,8 +859,8 @@ class ChatBubble extends StatelessWidget {
                         color: _purple,
                         size: 20.sp,
                       );
-                    },
-                  ),
+                    }),
+                  ],
                 ],
               ),
             ),
@@ -553,7 +911,7 @@ class ChatBubble extends StatelessWidget {
         isAdmin: isCreator,
         currentUserId: currentUserId,
         currentUserName: currentUserName,
-        groupName: groupName,
+        groupName: groupName.toString(),
         onAttendanceSubmitted: (response) {
           if (controller is GroupMessageController && message.id != null) {
             (controller as GroupMessageController).updateAttendanceResponse(
@@ -808,10 +1166,12 @@ class ChatBubble extends StatelessWidget {
       return Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(
-            mediaUrl,
+          CachedNetworkImage(
+            imageUrl: mediaUrl,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
+            memCacheWidth: 600,
+            memCacheHeight: 600,
+            errorWidget: (_, __, ___) =>
                 Container(color: Colors.grey.shade300),
           ),
           if (isVideo)
@@ -873,262 +1233,140 @@ class ChatBubble extends StatelessWidget {
       BuildContext bubbleContext,
       bool isSentByMe,
       ) {
-    final isPinned = controller.pinnedMessage.value?.id == message.id;
+    if (_isDeletedMessage) return;
 
+    final isPinned = controller.pinnedMessage.value?.id == message.id;
     final isText = message.messageType == "text" ||
         message.messageType == "text_message" ||
         (message.messageType ?? "").isEmpty;
 
-    final renderBox = bubbleContext.findRenderObject() as RenderBox;
-
-    final position = renderBox.localToGlobal(Offset.zero);
-
-    final size = renderBox.size;
-
-    final screenSize = MediaQuery.of(bubbleContext).size;
-
-    const menuWidth = 220.0;
-    const menuMargin = 8.0;
-
-    double left = position.dx + size.width + menuMargin;
-
-    if (left + menuWidth > screenSize.width - menuMargin) {
-      left = position.dx - menuWidth - menuMargin;
-    }
-
-    left = left.clamp(
-      menuMargin,
-      screenSize.width - menuWidth - menuMargin,
-    );
-
-    double top = position.dy;
-
-    const menuHeight = 500.0;
-
-    if (top + menuHeight > screenSize.height - menuMargin) {
-      top = screenSize.height - menuHeight - menuMargin;
-    }
-
-    if (top < menuMargin) {
-      top = menuMargin;
-    }
-
-    showDialog(
-      context: bubbleContext,
-      barrierColor: Colors.black.withValues(alpha: 0.18),
-      builder: (ctx) {
-        return Stack(
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => Navigator.pop(ctx),
-                behavior: HitTestBehavior.opaque,
-                child: const SizedBox.expand(),
-              ),
-            ),
-            Positioned(
-              left: left,
-              top: top,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  width: menuWidth,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8F7FC),
-                    borderRadius: BorderRadius.circular(16.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.14),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16.r),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _menuTile(
-                          icon: Icons.reply_rounded,
-                          iconColor: _purple,
-                          title: "Reply",
-                          onTap: () {
-                            Navigator.pop(ctx);
-                            controller.setReply(message);
-                          },
-                        ),
-                        if (isText)
-                          _menuTile(
-                            icon: Icons.copy_rounded,
-                            iconColor: _purple,
-                            title: "Copy",
-                            onTap: () async {
-                              Navigator.pop(ctx);
-
-                              await Clipboard.setData(
-                                ClipboardData(
-                                  text: message.content ?? "",
-                                ),
-                              );
-
-                              Utils().fluttertoast(
-                                "Message copied",
-                              );
-                            },
-                          ),
-                        _menuTile(
-                          icon: Icons.forward_rounded,
-                          iconColor: _purple,
-                          title: "Forward",
-                          onTap: () {
-                            Navigator.pop(ctx);
-
-                            Get.toNamed(
-                              Routes.forwardMessageScreen,
-                              arguments: {
-                                "message": message,
-                                "sourceType": "private",
-                              },
-                            );
-                          },
-                        ),
-                        if (isSentByMe && isText)
-                          _menuTile(
-                            icon: Icons.edit_rounded,
-                            iconColor: _purple,
-                            title: "Edit",
-                            onTap: () {
-                              Navigator.pop(ctx);
-
-                              controller.startEditingMessage(
-                                message,
-                              );
-                            },
-                          ),
-                        _menuTile(
-                          icon: Icons.push_pin_rounded,
-                          iconColor: isPinned ? Colors.redAccent : _purple,
-                          title: isPinned ? "Unpin Message" : "Pin Message",
-                          onTap: () {
-                            Navigator.pop(ctx);
-
-                            if (isPinned) {
-                              controller.unpinMessage();
-                            } else {
-                              controller.pinMessage(message);
-                            }
-                          },
-                        ),
-                        Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: Colors.grey.shade200,
-                          indent: 12,
-                          endIndent: 12,
-                        ),
-                        if (isSentByMe)
-                          _menuTile(
-                            icon: Icons.delete_outline_rounded,
-                            iconColor: Colors.redAccent,
-                            title: "Delete for Everyone",
-                            isDestructive: true,
-                            onTap: () {
-                              Navigator.pop(ctx);
-
-                              CommonDialog.ConfirmationDialog(
-                                title: "Delete for Everyone",
-                                content:
-                                "Are you sure you want to delete this message for everyone?",
-                                cancel: "No",
-                                confirm: "Yes",
-                                icon: Icons.delete_outline_rounded,
-                                onConfirm: () {
-                                  Get.back();
-
-                                  controller.deleteMessage(
-                                    messageId: message.id!,
-                                    deleteType: "for_everyone",
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        _menuTile(
-                          icon: Icons.delete_rounded,
-                          iconColor: Colors.redAccent,
-                          title: "Delete for Me",
-                          isDestructive: true,
-                          onTap: () {
-                            Navigator.pop(ctx);
-
-                            CommonDialog.ConfirmationDialog(
-                              title: "Delete for Me",
-                              content:
-                              "Are you sure you want to delete this message for you?",
-                              cancel: "No",
-                              confirm: "Yes",
-                              icon: Icons.delete_rounded,
-                              onConfirm: () {
-                                Get.back();
-
-                                controller.deleteMessage(
-                                  messageId: message.id!,
-                                  deleteType: "for_me",
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _menuTile({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required VoidCallback onTap,
-    bool isDestructive = false,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 13.h,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 20.sp,
-              color: iconColor,
-            ),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14.5.sp,
-                  fontWeight: FontWeight.w600,
-                  color: isDestructive
-                      ? Colors.redAccent
-                      : const Color(0xFF1A1A1A),
-                ),
-              ),
-            ),
-          ],
-        ),
+    final actions = <MessageContextMenuAction>[
+      MessageContextMenuAction(
+        icon: Icons.reply_rounded,
+        title: "Reply",
+        iconColor: _purple,
+        onTap: () {
+          controller.setReply(message);
+        },
       ),
+      if (isText)
+        MessageContextMenuAction(
+          icon: Icons.copy_rounded,
+          title: "Copy",
+          iconColor: _purple,
+          onTap: () async {
+            await Clipboard.setData(
+              ClipboardData(text: message.content ?? ""),
+            );
+            Utils().fluttertoast("Message copied");
+          },
+        ),
+      MessageContextMenuAction(
+        icon: Icons.forward_rounded,
+        title: "Forward",
+        iconColor: _purple,
+        onTap: () {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Get.toNamed(
+              Routes.forwardMessageScreen,
+              arguments: {
+                "message": message,
+                "sourceType": "private",
+              },
+            );
+          });
+        },
+      ),
+      if (isSentByMe && isText)
+        MessageContextMenuAction(
+          icon: Icons.edit_rounded,
+          title: "Edit",
+          iconColor: _purple,
+          onTap: () {
+            controller.startEditingMessage(message);
+          },
+        ),
+      MessageContextMenuAction(
+        icon: Icons.push_pin_rounded,
+        title: isPinned ? "Unpin Message" : "Pin Message",
+        iconColor: isPinned ? Colors.redAccent : _purple,
+        onTap: () {
+          if (isPinned) {
+            controller.unpinMessage();
+          } else {
+            controller.pinMessage(message);
+          }
+        },
+      ),
+      if (isSentByMe)
+        MessageContextMenuAction(
+          icon: Icons.info_outline_rounded,
+          title: "Message Info",
+          iconColor: _purple,
+          onTap: () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (_) => MessageInfoSheet(
+                  message: message,
+                  memberData: controller.memberData,
+                ),
+              );
+            });
+          },
+        ),
+      if (isSentByMe)
+        MessageContextMenuAction(
+          icon: Icons.delete_outline_rounded,
+          title: "Delete for Everyone",
+          isDestructive: true,
+          onTap: () {
+            CommonDialog.ConfirmationDialog(
+              title: "Delete for Everyone",
+              content: "Are you sure you want to delete this message for everyone?",
+              cancel: "No",
+              confirm: "Yes",
+              icon: Icons.delete_outline_rounded,
+              onConfirm: () {
+                Get.back();
+                controller.deleteMessage(
+                  messageId: message.id!,
+                  deleteType: "for_everyone",
+                );
+              },
+            );
+          },
+        ),
+      MessageContextMenuAction(
+        icon: Icons.delete_rounded,
+        title: "Delete for Me",
+        isDestructive: true,
+        onTap: () {
+          CommonDialog.ConfirmationDialog(
+            title: "Delete for Me",
+            content: "Are you sure you want to delete this message for you?",
+            cancel: "No",
+            confirm: "Yes",
+            icon: Icons.delete_rounded,
+            onConfirm: () {
+              Get.back();
+              controller.deleteMessage(
+                messageId: message.id!,
+                deleteType: "for_me",
+              );
+            },
+          );
+        },
+      ),
+    ];
+
+    MessageContextMenu.show(
+      context: context,
+      bubbleContext: bubbleContext,
+      isSentByMe: isSentByMe,
+      actions: actions,
     );
   }
 
@@ -1197,6 +1435,9 @@ class GroupChatBubble extends StatelessWidget {
   final int? groupId;
   final String? groupName;
   final GroupMessageController controller;
+  final bool showSenderName;
+  final bool showAvatar;
+  final bool isDense;
 
   const GroupChatBubble({
     super.key,
@@ -1206,11 +1447,18 @@ class GroupChatBubble extends StatelessWidget {
     this.isGroup = false,
     this.groupId,
     this.groupName,
+    this.showSenderName = true,
+    this.showAvatar = true,
+    this.isDense = false,
   });
 
   static const Color _purple = Color(0xFF5045B9);
   static const Color _myBubbleBg = Color(0xFFDCD6F5);
   static const Color _otherBubbleBg = Colors.white;
+
+  bool get _isDeletedMessage =>
+      message.isDeleted == true ||
+          message.content?.toString() == "This message was deleted";
 
   @override
   Widget build(BuildContext context) {
@@ -1238,7 +1486,7 @@ class GroupChatBubble extends StatelessWidget {
     );
 
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 6.h),
+      margin: EdgeInsets.symmetric(vertical: isDense ? 2.h : 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
@@ -1250,7 +1498,8 @@ class GroupChatBubble extends StatelessWidget {
                 right: 8.w,
                 top: 4.h,
               ),
-              child: GestureDetector(
+              child: showAvatar
+                  ? GestureDetector(
                 onTap: () {
                   DialogBox().showRouteDetailsBottomSheet(
                     destination: const LatLng(0, 0),
@@ -1287,93 +1536,144 @@ class GroupChatBubble extends StatelessWidget {
                   )
                       : null,
                 ),
-              ),
+              )
+                  : SizedBox(width: 36.r, height: 36.r),
             ),
           Flexible(
             child: Builder(
               builder: (bubbleContext) {
-                return Obx(
-                      () => GestureDetector(
-                    onLongPress: () => _showMessageMenu(
-                      bubbleContext,
-                      isSentByMe,
-                    ),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.75,
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 8.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                        controller.highlightedMessageId.value == message.id
-                            ? Colors.yellow.withValues(
-                          alpha: .35,
-                        )
-                            : bgColor,
-                        borderRadius: borderRadius,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(
-                              alpha: 0.04,
-                            ),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                return Obx(() {
+                  return Column(
+                    crossAxisAlignment: isSentByMe
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onLongPress: _isDeletedMessage
+                            ? null
+                            : () => _showMessageMenu(
+                          bubbleContext,
+                          isSentByMe,
+                        ),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.75,
                           ),
-                        ],
-                      ),
-                      child: IntrinsicWidth(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (isGroup && !isSentByMe)
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  bottom: 4.h,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 8.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: controller.highlightedMessageId.value ==
+                                message.id
+                                ? Colors.yellow.withValues(
+                              alpha: .35,
+                            )
+                                : bgColor,
+                            borderRadius: borderRadius,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(
+                                  alpha: 0.04,
                                 ),
-                                child: Text(
-                                  message.senderName?.toString() ?? "",
-                                  style: TextStyle(
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w700,
-                                    color: _purple,
-                                  ),
-                                ),
-                              ),
-                            _buildReplyPreview(
-                              message,
-                              isSentByMe,
-                            ),
-                            if (_isPlainTextMessage(message))
-                              _buildTextWithTime(
-                                message: message,
-                                textColor: textColor,
-                                isSentByMe: isSentByMe,
-                              )
-                            else ...[
-                              _buildMessageContent(
-                                message,
-                                textColor,
-                                isSentByMe,
-                              ),
-                              SizedBox(height: 4.h),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: _buildTimeRow(
-                                  isSentByMe,
-                                ),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
                               ),
                             ],
-                          ],
+                          ),
+                          child: IntrinsicWidth(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (isGroup && !isSentByMe && showSenderName)
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                      bottom: 4.h,
+                                    ),
+                                    child: Text(
+                                      message.senderName?.toString() ?? "",
+                                      style: TextStyle(
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w700,
+                                        color: _purple,
+                                      ),
+                                    ),
+                                  ),
+                                if (!_isDeletedMessage)
+                                  _buildReplyPreview(
+                                    message,
+                                    isSentByMe,
+                                  ),
+                                if (!_isDeletedMessage &&
+                                    message.isForwarded == true)
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: 5.h),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.forward_rounded,
+                                          size: 14.sp,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                        SizedBox(width: 4.w),
+                                        Text(
+                                          "Forwarded",
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontStyle: FontStyle.italic,
+                                            color: Colors.grey.shade600,
+                                            fontFamily: FontFamily.interMedium,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                if (_isDeletedMessage) ...[
+                                  _buildDeletedContent(isSentByMe),
+                                ] else if (_isPlainTextMessage(message)) ...[
+                                  _buildTextWithTime(
+                                    message: message,
+                                    textColor: textColor,
+                                    isSentByMe: isSentByMe,
+                                  ),
+                                  if (!isSentByMe)
+                                    _buildTranslatedCard(message),
+                                ] else ...[
+                                  _buildMessageContent(
+                                    message,
+                                    textColor,
+                                    isSentByMe,
+                                  ),
+                                  SizedBox(height: 4.h),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: _buildTimeRow(
+                                      isSentByMe,
+                                    ),
+                                  ),
+                                  if (!isSentByMe)
+                                    _buildTranslatedCard(message),
+                                ],
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                );
+                      if (!isSentByMe &&
+                          !_isDeletedMessage &&
+                          _getTranslatableText(message).isNotEmpty)
+                        ChatMessageActionRow(
+                          messageId: _getMessageTranslationId(message),
+                          originalText: _getTranslatableText(message),
+                          isSentByMe: isSentByMe,
+                        ),
+                    ],
+                  );
+                });
               },
             ),
           ),
@@ -1382,16 +1682,125 @@ class GroupChatBubble extends StatelessWidget {
     );
   }
 
+  Widget _buildDeletedContent(bool isSentByMe) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Icon(
+          Icons.block_rounded,
+          size: 14.sp,
+          color: Colors.grey.shade900,
+        ),
+        SizedBox(width: 6.w),
+        Flexible(
+          child: Text(
+            "This message was deleted",
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontStyle: FontStyle.italic,
+              color: Colors.grey.shade900,
+              height: 1.35,
+            ),
+          ),
+        ),
+        SizedBox(width: 14.w),
+        _buildTimeRow(isSentByMe),
+      ],
+    );
+  }
+
+  String _getTranslatableText(MessageData message) {
+    if (_isDeletedMessage) return '';
+
+    if (_isPlainTextMessage(message)) {
+      return (message.content?.toString() ?? '').trim();
+    }
+
+    final caption = (message.caption?.toString() ?? '').trim();
+    if (caption.isNotEmpty) {
+      return caption;
+    }
+
+    if (message.messageType == "document") {
+      final parts = message.content?.split("||") ?? [];
+      final documentUrl = parts.isNotEmpty ? parts[0] : "";
+      String documentName =
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+      documentName = removeDuplicateExtension(documentName).trim();
+      return documentName;
+    }
+
+    if (message.messageType == "contact") {
+      final content = (message.content?.toString() ?? '').trim();
+      if (content.isNotEmpty && !content.startsWith('{')) return content;
+    }
+
+    return '';
+  }
+
+  String _getMessageTranslationId(MessageData message) {
+    if (message.id != null &&
+        message.id.toString().isNotEmpty &&
+        message.id.toString() != "0") {
+      return message.id.toString();
+    }
+    final text = _getTranslatableText(message);
+    final raw = text.isNotEmpty ? text : (message.content?.toString() ?? '');
+    return "msg_${raw.hashCode}";
+  }
+
+  Widget _buildTranslatedCard(MessageData message) {
+    final translatableText = _getTranslatableText(message);
+    if (translatableText.isEmpty) return const SizedBox.shrink();
+
+    return Obx(() {
+      final mId = _getMessageTranslationId(message);
+      final isHindi = RegExp(r'[\u0900-\u097F]').hasMatch(translatableText);
+      final targetLang = isHindi ? 'en' : 'hi';
+      final cacheKey = '${mId}_$targetLang';
+      final translationService = ChatTranslationService.instance;
+      final translated = translationService.translations[cacheKey];
+      final isShown = translationService.showTranslated[cacheKey] == true;
+
+      if (translated != null && translated.isNotEmpty && isShown) {
+        return ChatTranslatedCard(
+          messageId: mId,
+          translatedText: translated,
+          targetLang: targetLang,
+          onToggleOriginal: () {
+            translationService.toggleTranslationVisibility(
+              mId,
+              targetLang: targetLang,
+            );
+          },
+        );
+      }
+      return const SizedBox.shrink();
+    });
+  }
+
   bool _isPlainTextMessage(MessageData message) {
-    final type = message.messageType?.toString() ?? "text";
-    return type == "text" || type == "text_message" || type.isEmpty;
+    final type =
+        (message.messageType?.toString() ?? "text").toLowerCase().trim();
+    if (type == "text" || type == "text_message" || type.isEmpty) {
+      return true;
+    }
+    if ((type == "forward" ||
+            type == "forwarded" ||
+            type == "forward_message") &&
+        (message.images?.isEmpty ?? true) &&
+        (message.videos?.isEmpty ?? true)) {
+      return true;
+    }
+    return false;
   }
 
   Widget _buildTimeRow(bool isSentByMe) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (message.isEdited == true) ...[
+        if (message.isEdited == true && !_isDeletedMessage) ...[
           Text(
             "edited",
             style: TextStyle(
@@ -1415,8 +1824,7 @@ class GroupChatBubble extends StatelessWidget {
           Icon(
             (message.seenCount ?? 0) > 0 ? Icons.done_all : Icons.done,
             size: 14.sp,
-            color:
-            _areAllMembersSeen(message) ? _purple : Colors.grey.shade500,
+            color: _areAllMembersSeen(message) ? _purple : Colors.grey.shade500,
           ),
         ],
       ],
@@ -1446,7 +1854,11 @@ class GroupChatBubble extends StatelessWidget {
       bool isSentByMe,
       ) {
     final query = controller.searchQuery.value;
-    final content = message.content?.toString() ?? "";
+    String content = message.content?.toString() ?? "";
+    if (content.trim().isEmpty &&
+        (message.caption?.toString() ?? "").trim().isNotEmpty) {
+      content = message.caption!.toString();
+    }
 
     if (query.isNotEmpty &&
         content.toLowerCase().contains(query.toLowerCase())) {
@@ -1739,10 +2151,12 @@ class GroupChatBubble extends StatelessWidget {
       return Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(
-            mediaUrl,
+          CachedNetworkImage(
+            imageUrl: mediaUrl,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
+            memCacheWidth: 600,
+            memCacheHeight: 600,
+            errorWidget: (_, __, ___) =>
                 Container(color: Colors.grey.shade300),
           ),
           if (isVideo)
@@ -1805,56 +2219,286 @@ class GroupChatBubble extends StatelessWidget {
       Color textColor,
       bool isSentByMe,
       ) {
-    if (message.messageType == "image" || message.messageType == "image_text") {
-      final imagePart = message.content ?? "";
-      final caption = message.caption ?? "";
+    final messageType =
+    (message.messageType?.toString() ?? '').toLowerCase().trim();
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12.r),
-            child: ImageViewerWidget(
-              imageProvider: NetworkImage(
-                "${ConstRes.aImageBaseUrl}$imagePart",
-              ),
-              width: 220,
-              height: 200,
-              borderRadius: 10,
+    final videos = message.videos ?? [];
+
+    final hasMultipleVideos = videos.length > 1;
+
+    final hasImages = (message.images?.isNotEmpty ?? false);
+    final hasVideos = (message.videos?.isNotEmpty ?? false);
+
+    if (messageType == "media" ||
+        messageType == "image" ||
+        messageType == "image_text" ||
+        (messageType == "video" && hasMultipleVideos) ||
+        ((messageType == "forward" ||
+                messageType == "forwarded" ||
+                messageType == "forward_message") &&
+            (hasImages || hasVideos))) {
+      final imageList = (message.images ?? [])
+          .where((image) => image.trim().isNotEmpty)
+          .toList();
+
+      if (imageList.isEmpty &&
+          (message.messageType == "image" ||
+              message.messageType == "image_text")) {
+        final imagePart = message.content?.toString() ?? "";
+        if (imagePart.trim().isNotEmpty) {
+          imageList.add(imagePart);
+        }
+      }
+
+      final videos = (message.videos != null && message.videos!.isNotEmpty)
+          ? message.videos!
+          : ((messageType == "media" || messageType == "video")
+              ? (message.videos ?? [])
+              : <MessageVideo>[]);
+
+      final caption = (message.caption ?? "").trim();
+
+      String getMediaUrl(String path) {
+        final value = path.trim();
+        if (value.isEmpty) return "";
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+          return value;
+        }
+        return "${ConstRes.aImageBaseUrl}$value";
+      }
+
+      void openGallery(int index) {
+        Get.to(
+              () => GroupImageGallery(
+            images: imageList,
+            videos: videos,
+            initialIndex: index,
+          ),
+        );
+      }
+
+      Widget buildImageTile(
+          int index,
+          double width,
+          double height,
+          ) {
+        return GestureDetector(
+          onTap: () => openGallery(index),
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CachedNetworkImage(
+                  imageUrl: getMediaUrl(imageList[index]),
+                  fit: BoxFit.cover,
+                  memCacheWidth: 600,
+                  memCacheHeight: 600,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey.shade200,
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 24.w,
+                      height: 24.w,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: _purple,
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey.shade200,
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.broken_image_outlined),
+                  ),
+                ),
+                if (index == 3 && imageList.length > 4)
+                  Container(
+                    color: Colors.black54,
+                    alignment: Alignment.center,
+                    child: Text(
+                      "+${imageList.length - 4}",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 26.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
-          if (caption.isNotEmpty) SizedBox(height: 8.h),
-          if (caption.isNotEmpty)
-            reausabletext(
-              caption,
-              color: textColor,
-              fontsize: 12.sp,
-            ),
-        ],
+        );
+      }
+
+      Widget buildVideoTile(MessageVideo video, int videoIndex) {
+        final videoUrl = getMediaUrl(video.videoUrl ?? "");
+        final thumbnailUrl = getMediaUrl(video.thumbnail ?? "");
+        final duration = (video.duration ?? "").trim().isNotEmpty
+            ? video.duration!
+            : "--:--";
+
+        return VideoThumbnailWidget(
+          videoUrl: videoUrl,
+          thumbnail: thumbnailUrl,
+          duration: duration,
+          onTap: () => openGallery(imageList.length + videoIndex),
+        );
+      }
+
+      if (imageList.isEmpty && videos.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      final hasMixedMedia = videos.isNotEmpty;
+      final totalImages = imageList.length;
+      final visibleImages = totalImages > 4 ? 4 : totalImages;
+
+      return SizedBox(
+        width: 220.w,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!hasMixedMedia && totalImages == 1)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: buildImageTile(
+                  0,
+                  220.w,
+                  200.h,
+                ),
+              )
+            else if (!hasMixedMedia && totalImages > 1)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: SizedBox(
+                  width: 220.w,
+                  child: Wrap(
+                    spacing: 3.w,
+                    runSpacing: 3.w,
+                    children: List.generate(
+                      visibleImages,
+                          (index) {
+                        final tileSize = totalImages == 2
+                            ? 108.w
+                            : totalImages == 3 && index == 0
+                            ? 220.w
+                            : 108.w;
+
+                        final tileHeight =
+                        totalImages == 3 && index == 0 ? 130.h : 108.h;
+
+                        return buildImageTile(
+                          index,
+                          tileSize,
+                          tileHeight,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              )
+            else
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: SizedBox(
+                  width: 220.w,
+                  child: Wrap(
+                    spacing: 3.w,
+                    runSpacing: 3.w,
+                    children: List.generate(
+                      (imageList.length + videos.length).clamp(0, 4),
+                          (index) {
+                        final isVideo = index >= imageList.length;
+                        final totalMedia = imageList.length + videos.length;
+
+                        return SizedBox(
+                          width: 108.w,
+                          height: 108.w,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.r),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                if (isVideo)
+                                  buildVideoTile(
+                                    videos[index - imageList.length],
+                                    index - imageList.length,
+                                  )
+                                else
+                                  buildImageTile(
+                                    index,
+                                    108.w,
+                                    108.w,
+                                  ),
+                                if (index == 3 && totalMedia > 4)
+                                  Container(
+                                    color: Colors.black54,
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      "+${totalMedia - 4}",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 26.sp,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            if (caption.isNotEmpty) ...[
+              SizedBox(height: 8.h),
+              reausabletext(
+                caption,
+                color: textColor,
+                fontsize: 12.sp,
+              ),
+            ],
+          ],
+        ),
       );
     } else if (message.messageType == "audio") {
       return AudioBubble(
         audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
         isMe: false,
       );
-    } else if (message.messageType == "video") {
+    } else if (messageType == "video") {
       final parts = message.content?.split("||") ?? [];
-      final videoPath = parts.isNotEmpty ? parts[0] : "";
-      final thumbnailPath = parts.length > 1 ? parts[1] : "";
-      final duration = parts.length > 2 ? parts[2] : "--:--";
+      final videoPath = parts.isNotEmpty ? parts[0].trim() : "";
+      final thumbnailPath = parts.length > 1 ? parts[1].trim() : "";
+      final duration = parts.length > 2 && parts[2].trim().isNotEmpty
+          ? parts[2].trim()
+          : "--:--";
+      final videoUrl =
+      videoPath.startsWith("http://") || videoPath.startsWith("https://")
+          ? videoPath
+          : "${ConstRes.aImageBaseUrl}$videoPath";
+      final thumbnailUrl = thumbnailPath.startsWith("http://") ||
+          thumbnailPath.startsWith("https://")
+          ? thumbnailPath
+          : "${ConstRes.aImageBaseUrl}$thumbnailPath";
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           VideoThumbnailWidget(
-            videoUrl: "${ConstRes.aImageBaseUrl}$videoPath",
-            thumbnail: thumbnailPath,
+            videoUrl: videoUrl,
+            thumbnail: thumbnailUrl,
             duration: duration,
             onTap: () {
               Get.toNamed(
                 Routes.videoPlayerScreen,
                 arguments: {
-                  "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
+                  "videoUrl": videoUrl,
                 },
               );
             },
@@ -1927,7 +2571,11 @@ class GroupChatBubble extends StatelessWidget {
                       color: _purple.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
-                    child: Icon(icon, color: _purple, size: 24.sp),
+                    child: Icon(
+                      icon,
+                      color: _purple,
+                      size: 24.sp,
+                    ),
                   ),
                   SizedBox(width: 10.w),
                   Expanded(
@@ -1960,11 +2608,31 @@ class GroupChatBubble extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 6.w),
-                  Icon(
-                    Icons.download_rounded,
-                    color: _purple,
-                    size: 20.sp,
-                  ),
+                  if (!isSentByMe) ...[
+                    SizedBox(width: 6.w),
+                    Obx(() {
+                      final url = "${ConstRes.aImageBaseUrl}$documentUrl";
+
+                      if (DocumentService.isDownloading(url)) {
+                        return SizedBox(
+                          width: 20.sp,
+                          height: 20.sp,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: _purple,
+                          ),
+                        );
+                      }
+
+                      return Icon(
+                        DocumentService.isDownloaded(url)
+                            ? Icons.download_done_rounded
+                            : Icons.download_rounded,
+                        color: _purple,
+                        size: 20.sp,
+                      );
+                    }),
+                  ],
                 ],
               ),
             ),
@@ -1994,21 +2662,10 @@ class GroupChatBubble extends StatelessWidget {
         textColor: textColor,
       );
     } else {
-      return Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12.r),
-          onLongPress: () {
-            _showMessageMenu(context, isSentByMe);
-          },
-          onDoubleTap: () async {
-            await Clipboard.setData(
-              ClipboardData(text: message.content.toString()),
-            );
-            Utils().fluttertoast("Message copied...");
-          },
-          child: _buildTextContent(message, textColor, isSentByMe),
-        ),
+      return _buildTextContent(
+        message,
+        textColor,
+        isSentByMe,
       );
     }
   }
@@ -2032,246 +2689,550 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   void _showMessageMenu(BuildContext bubbleContext, bool isSentByMe) {
-    final isPinned = controller.pinnedMessage.value?.id == message.id;
+    if (_isDeletedMessage) return;
 
+    final isPinned = controller.pinnedMessage.value?.id == message.id;
     final isText = message.messageType == "text" ||
         message.messageType == "text_message" ||
         (message.messageType ?? "").isEmpty;
 
-    final renderBox = bubbleContext.findRenderObject() as RenderBox;
+    final actions = <MessageContextMenuAction>[
+      MessageContextMenuAction(
+        icon: Icons.reply_rounded,
+        title: "Reply",
+        iconColor: _purple,
+        onTap: () {
+          controller.setReply(message);
+        },
+      ),
+      if (isText)
+        MessageContextMenuAction(
+          icon: Icons.copy_rounded,
+          title: "Copy",
+          iconColor: _purple,
+          onTap: () async {
+            await Clipboard.setData(
+              ClipboardData(text: message.content ?? ""),
+            );
+            Utils().fluttertoast("Message copied");
+          },
+        ),
+      MessageContextMenuAction(
+        icon: Icons.forward_rounded,
+        title: "Forward",
+        iconColor: _purple,
+        onTap: () {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Get.toNamed(
+              Routes.forwardMessageScreen,
+              arguments: {
+                "message": message,
+                "sourceType": "group",
+              },
+            );
+          });
+        },
+      ),
+      if (isSentByMe && isText)
+        MessageContextMenuAction(
+          icon: Icons.edit_rounded,
+          title: "Edit",
+          iconColor: _purple,
+          onTap: () {
+            controller.startEditingMessage(message);
+          },
+        ),
+      MessageContextMenuAction(
+        icon: Icons.push_pin_rounded,
+        title: isPinned ? "Unpin Message" : "Pin Message",
+        iconColor: isPinned ? Colors.redAccent : _purple,
+        onTap: () {
+          if (isPinned) {
+            controller.unpinMessage();
+          } else {
+            controller.pinMessage(message);
+          }
+        },
+      ),
+      if (isSentByMe)
+        MessageContextMenuAction(
+          icon: Icons.info_outline_rounded,
+          title: "Message Info",
+          iconColor: _purple,
+          onTap: () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (_) => MessageInfoSheet(
+                  message: message,
+                  groupController: controller,
+                ),
+              );
+            });
+          },
+        ),
+      if (isSentByMe)
+        MessageContextMenuAction(
+          icon: Icons.delete_outline_rounded,
+          title: "Delete for Everyone",
+          isDestructive: true,
+          onTap: () {
+            CommonDialog.ConfirmationDialog(
+              title: "Delete for Everyone",
+              content: "Are you sure you want to delete this message for everyone?",
+              cancel: "No",
+              confirm: "Yes",
+              icon: Icons.delete_outline_rounded,
+              onConfirm: () {
+                Get.back();
+                controller.deleteMessage(
+                  messageId: message.id!,
+                  deleteType: "for_everyone",
+                );
+              },
+            );
+          },
+        ),
+      MessageContextMenuAction(
+        icon: Icons.delete_rounded,
+        title: "Delete for Me",
+        isDestructive: true,
+        onTap: () {
+          CommonDialog.ConfirmationDialog(
+            title: "Delete for Me",
+            content: "Are you sure you want to delete this message for you?",
+            cancel: "No",
+            confirm: "Yes",
+            icon: Icons.delete_rounded,
+            onConfirm: () {
+              Get.back();
+              controller.deleteMessage(
+                messageId: message.id!,
+                deleteType: "for_me",
+              );
+            },
+          );
+        },
+      ),
+    ];
 
-    final position = renderBox.localToGlobal(Offset.zero);
-    final size = renderBox.size;
+    MessageContextMenu.show(
+      context: context,
+      bubbleContext: bubbleContext,
+      isSentByMe: isSentByMe,
+      actions: actions,
+    );
+  }
+}
 
-    final screenSize = MediaQuery.of(bubbleContext).size;
+class GroupGalleryMedia {
+  final String url;
+  final bool isVideo;
+  final String? thumbnail;
+  final String? duration;
 
-    const menuWidth = 220.0;
-    const menuMargin = 8.0;
+  const GroupGalleryMedia({
+    required this.url,
+    this.isVideo = false,
+    this.thumbnail,
+    this.duration,
+  });
+}
 
-    double left = position.dx + size.width + menuMargin;
+class GroupImageGallery extends StatefulWidget {
+  final List<String> images;
+  final List<MessageVideo> videos;
+  final int initialIndex;
 
-    if (left + menuWidth > screenSize.width - menuMargin) {
-      left = position.dx - menuWidth - menuMargin;
-    }
+  const GroupImageGallery({
+    super.key,
+    this.images = const [],
+    this.videos = const [],
+    this.initialIndex = 0,
+  });
 
-    left = left.clamp(
-      menuMargin,
-      screenSize.width - menuWidth - menuMargin,
+  @override
+  State<GroupImageGallery> createState() => _GroupImageGalleryState();
+}
+
+class _GroupImageGalleryState extends State<GroupImageGallery> {
+  late final PageController _pageController;
+  late final ScrollController _thumbnailScrollController;
+  late int _currentIndex;
+  late final List<GroupGalleryMedia> _media;
+  bool _isOverlayVisible = true;
+  bool _isZoomed = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _media = [
+      ...widget.images.where((image) => image.trim().isNotEmpty).map(
+            (image) => GroupGalleryMedia(
+          url: _buildMediaUrl(image),
+        ),
+      ),
+      ...widget.videos
+          .where((video) => (video.videoUrl ?? '').trim().isNotEmpty)
+          .map(
+            (video) => GroupGalleryMedia(
+          url: _buildMediaUrl(video.videoUrl!),
+          isVideo: true,
+          thumbnail: video.thumbnail == null
+              ? null
+              : _buildMediaUrl(video.thumbnail!),
+          duration: video.duration,
+        ),
+      ),
+    ];
+
+    _currentIndex =
+        widget.initialIndex.clamp(0, _media.isEmpty ? 0 : _media.length - 1);
+
+    _pageController = PageController(
+      initialPage: _currentIndex,
     );
 
-    double top = position.dy;
+    _thumbnailScrollController = ScrollController();
 
-    const menuHeight = 500.0;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToThumbnail(_currentIndex);
+    });
+  }
 
-    if (top + menuHeight > screenSize.height - menuMargin) {
-      top = screenSize.height - menuHeight - menuMargin;
+  void _scrollToThumbnail(int index) {
+    if (!_thumbnailScrollController.hasClients) return;
+    const itemWidth = 56.0;
+    final targetOffset = (index * itemWidth) - 100.0;
+    _thumbnailScrollController.animateTo(
+      targetOffset.clamp(0.0, _thumbnailScrollController.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOut,
+    );
+  }
+
+  String _buildMediaUrl(String path) {
+    final value = path.trim();
+
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return value;
     }
 
-    if (top < menuMargin) {
-      top = menuMargin;
+    return '${ConstRes.aImageBaseUrl}$value';
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _thumbnailScrollController.dispose();
+    super.dispose();
+  }
+
+  void _openVideo(GroupGalleryMedia media) {
+    Get.toNamed(
+      Routes.videoPlayerScreen,
+      arguments: {
+        'videoUrl': media.url,
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_media.isEmpty) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Text(
+            "No media available",
+            style: TextStyle(color: Colors.white70),
+          ),
+        ),
+      );
     }
 
-    showDialog(
-      context: bubbleContext,
-      barrierColor: Colors.black.withValues(alpha: 0.18),
-      builder: (ctx) {
-        return Stack(
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => Navigator.pop(ctx),
-                behavior: HitTestBehavior.opaque,
-                child: const SizedBox.expand(),
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Main Page View
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isOverlayVisible = !_isOverlayVisible;
+              });
+            },
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: _media.length,
+              physics: _isZoomed
+                  ? const NeverScrollableScrollPhysics()
+                  : const BouncingScrollPhysics(),
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                  _isZoomed = false;
+                });
+                _scrollToThumbnail(index);
+              },
+              itemBuilder: (context, index) {
+                final media = _media[index];
+
+                if (media.isVideo) {
+                  return Center(
+                    child: GestureDetector(
+                      onTap: () => _openVideo(media),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          if (media.thumbnail != null &&
+                              media.thumbnail!.isNotEmpty)
+                            CachedNetworkImage(
+                              imageUrl: media.thumbnail!,
+                              fit: BoxFit.contain,
+                              width: double.infinity,
+                              height: double.infinity,
+                              placeholder: (_, __) => const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              errorWidget: (_, __, ___) => const Icon(
+                                Icons.videocam_rounded,
+                                color: Colors.white,
+                                size: 64,
+                              ),
+                            )
+                          else
+                            const Icon(
+                              Icons.videocam_rounded,
+                              color: Colors.white,
+                              size: 64,
+                            ),
+                          Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: const Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                              size: 48,
+                            ),
+                          ),
+                          if ((media.duration ?? '').isNotEmpty)
+                            Positioned(
+                              right: 16,
+                              bottom: 16,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black87,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  media.duration!,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return Center(
+                  child: InteractiveViewer(
+                    minScale: 1.0,
+                    maxScale: 4.0,
+                    onInteractionUpdate: (details) {
+                      final zoomed = details.scale > 1.05;
+                      if (zoomed != _isZoomed) {
+                        setState(() => _isZoomed = zoomed);
+                      }
+                    },
+                    onInteractionEnd: (_) {
+                      // Allow time for reset
+                      Future.delayed(const Duration(milliseconds: 150), () {
+                        if (mounted && _isZoomed) {
+                          setState(() => _isZoomed = false);
+                        }
+                      });
+                    },
+                    child: CachedNetworkImage(
+                      imageUrl: media.url,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      placeholder: (context, url) => const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      ),
+                      errorWidget: (_, __, ___) => const Center(
+                        child: Icon(
+                          Icons.broken_image_outlined,
+                          color: Colors.white,
+                          size: 48,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // WhatsApp Style Top App Bar
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AnimatedOpacity(
+              opacity: _isOverlayVisible ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: Container(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 4.h,
+                  bottom: 8.h,
+                  left: 8.w,
+                  right: 16.w,
+                ),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.black87, Colors.transparent],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      "${_currentIndex + 1} of ${_media.length}",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+          ),
+
+          // WhatsApp Style Bottom Thumbnail Strip
+          if (_media.length > 1)
             Positioned(
-              left: left,
-              top: top,
-              child: Material(
-                color: Colors.transparent,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: AnimatedOpacity(
+                opacity: _isOverlayVisible ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 200),
                 child: Container(
-                  width: menuWidth,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8F7FC),
-                    borderRadius: BorderRadius.circular(16.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.14),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+                  padding: EdgeInsets.only(
+                    top: 10.h,
+                    bottom: MediaQuery.of(context).padding.bottom + 10.h,
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16.r),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _menuTile(
-                          icon: Icons.reply_rounded,
-                          iconColor: _purple,
-                          title: "Reply",
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.transparent, Colors.black87],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                  child: SizedBox(
+                    height: 52.h,
+                    child: ListView.separated(
+                      controller: _thumbnailScrollController,
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      itemCount: _media.length,
+                      separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                      itemBuilder: (context, i) {
+                        final isSelected = i == _currentIndex;
+                        final m = _media[i];
+                        final thumbUrl = m.isVideo ? (m.thumbnail ?? m.url) : m.url;
+
+                        return GestureDetector(
                           onTap: () {
-                            Navigator.pop(ctx);
-                            controller.setReply(message);
-                          },
-                        ),
-                        if (isText)
-                          _menuTile(
-                            icon: Icons.copy_rounded,
-                            iconColor: _purple,
-                            title: "Copy",
-                            onTap: () async {
-                              Navigator.pop(ctx);
-
-                              await Clipboard.setData(
-                                ClipboardData(
-                                  text: message.content ?? "",
-                                ),
-                              );
-
-                              Utils().fluttertoast("Message copied");
-                            },
-                          ),
-                        _menuTile(
-                          icon: Icons.forward_rounded,
-                          iconColor: _purple,
-                          title: "Forward",
-                          onTap: () {
-                            Navigator.pop(ctx);
-
-                            Get.toNamed(
-                              Routes.forwardMessageScreen,
-                              arguments: {
-                                "message": message,
-                                "sourceType": "group",
-                              },
+                            _pageController.animateToPage(
+                              i,
+                              duration: const Duration(milliseconds: 240),
+                              curve: Curves.easeInOut,
                             );
                           },
-                        ),
-                        if (isSentByMe && isText)
-                          _menuTile(
-                            icon: Icons.edit_rounded,
-                            iconColor: _purple,
-                            title: "Edit",
-                            onTap: () {
-                              Navigator.pop(ctx);
-                              controller.startEditingMessage(message);
-                            },
+                          child: Container(
+                            width: 48.w,
+                            height: 48.h,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8.r),
+                              border: Border.all(
+                                color: isSelected ? Colors.white : Colors.transparent,
+                                width: 2.2,
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6.r),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: thumbUrl,
+                                    fit: BoxFit.cover,
+                                    memCacheWidth: 150,
+                                    memCacheHeight: 150,
+                                    placeholder: (_, __) => Container(
+                                      color: Colors.grey.shade900,
+                                    ),
+                                    errorWidget: (_, __, ___) => Container(
+                                      color: Colors.grey.shade900,
+                                      child: const Icon(
+                                        Icons.image,
+                                        color: Colors.white24,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  if (m.isVideo)
+                                    Center(
+                                      child: Icon(
+                                        Icons.play_circle_fill_rounded,
+                                        color: Colors.white,
+                                        size: 20.sp,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
                           ),
-                        _menuTile(
-                          icon: Icons.push_pin_rounded,
-                          iconColor: isPinned ? Colors.redAccent : _purple,
-                          title: isPinned ? "Unpin Message" : "Pin Message",
-                          onTap: () {
-                            Navigator.pop(ctx);
-
-                            if (isPinned) {
-                              controller.unpinMessage();
-                            } else {
-                              controller.pinMessage(message);
-                            }
-                          },
-                        ),
-                        Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: Colors.grey.shade200,
-                          indent: 12,
-                          endIndent: 12,
-                        ),
-                        if (isSentByMe)
-                          _menuTile(
-                            icon: Icons.delete_outline_rounded,
-                            iconColor: Colors.redAccent,
-                            title: "Delete for Everyone",
-                            isDestructive: true,
-                            onTap: () {
-                              Navigator.pop(ctx);
-
-                              CommonDialog.ConfirmationDialog(
-                                title: "Delete for Everyone",
-                                content:
-                                "Are you sure you want to delete this message for everyone?",
-                                cancel: "No",
-                                confirm: "Yes",
-                                icon: Icons.delete_outline_rounded,
-                                onConfirm: () {
-                                  Get.back();
-                                  controller.deleteMessage(
-                                    messageId: message.id!,
-                                    deleteType: "for_everyone",
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        _menuTile(
-                          icon: Icons.delete_rounded,
-                          iconColor: Colors.redAccent,
-                          title: "Delete for Me",
-                          isDestructive: true,
-                          onTap: () {
-                            Navigator.pop(ctx);
-
-                            CommonDialog.ConfirmationDialog(
-                              title: "Delete for Me",
-                              content:
-                              "Are you sure you want to delete this message for you?",
-                              cancel: "No",
-                              confirm: "Yes",
-                              icon: Icons.delete_rounded,
-                              onConfirm: () {
-                                Get.back();
-                                controller.deleteMessage(
-                                  messageId: message.id!,
-                                  deleteType: "for_me",
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
                 ),
               ),
             ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _menuTile({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required VoidCallback onTap,
-    bool isDestructive = false,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
-        child: Row(
-          children: [
-            Icon(icon, size: 20.sp, color: iconColor),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14.5.sp,
-                  fontWeight: FontWeight.w600,
-                  color: isDestructive
-                      ? Colors.redAccent
-                      : const Color(0xFF1A1A1A),
-                ),
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

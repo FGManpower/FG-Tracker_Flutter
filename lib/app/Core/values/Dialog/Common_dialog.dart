@@ -1,11 +1,9 @@
 import 'dart:io';
-
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -308,7 +306,7 @@ class CommonDialog {
             : AppText.wthtLocationAccessWeWont.tr;
 
         return WillPopScope(
-          onWillPop: () async => false, // Disables back button and gesture
+          onWillPop: () async => false,
           child: Center(
             child: Material(
               color: Colors.transparent,
@@ -324,7 +322,6 @@ class CommonDialog {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 20),
-                    // Title
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: reausabletext(
@@ -340,7 +337,6 @@ class CommonDialog {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Content
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
                       child: reausabletext(
@@ -415,7 +411,6 @@ class CommonDialog {
     );
   }
 
-  //********** Location Permission ****************//
   LocationPermission_dialog(
     BuildContext context, {
     void Function()? acceptontap,
@@ -526,4 +521,135 @@ class CommonDialog {
           });
         });
   }
+
+  static bool _isShowingSessionExpiredDialog = false;
+
+  static void sessionExpiredDialog([String? message]) {
+    if (_isShowingSessionExpiredDialog) return;
+
+    final ctx = ContextUtility.context ?? Get.context;
+    if (ctx == null) {
+      if (Get.isSnackbarOpen != true) {
+        Get.snackbar(
+          "Session Expired",
+          message ?? "You have been logged in from another device.",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.shade900,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+        );
+      }
+      return;
+    }
+
+    _isShowingSessionExpiredDialog = true;
+
+    showCupertinoDialog(
+      barrierDismissible: false,
+      context: ctx,
+      builder: (BuildContext context) {
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: Center(
+            child: AlertDialog(
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              contentPadding: EdgeInsets.zero,
+              actionsPadding: EdgeInsets.zero,
+              buttonPadding: EdgeInsets.zero,
+              insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
+              elevation: 10,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0.r),
+              ),
+              content: Container(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                decoration: BoxDecoration(
+                  color: context.isDarkMode
+                      ? ToggleThemeData.backgroundBlack
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(15.0.r),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: 24.h),
+                      child: Container(
+                        width: 70.h,
+                        height: 70.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.blue.withOpacity(0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.phonelink_lock_rounded,
+                            size: 38.sp,
+                            color: AppColors.blue,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                    reausabletext(
+                      "Session Expired",
+                      fontsize: 20,
+                      fontfamily: FontFamily.interSemiBold,
+                      align: TextAlign.center,
+                      color: context.isDarkMode
+                          ? ToggleThemeData.white
+                          : Colors.black,
+                    ),
+                    SizedBox(height: 10.h),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 260.w),
+                      child: reausabletext(
+                        message ??
+                            "You have been logged in from another device. Please log in again.",
+                        align: TextAlign.center,
+                        fontfamily: FontFamily.interRegular,
+                        fontsize: 14,
+                        color: context.isDarkMode
+                            ? Colors.grey.shade300
+                            : Colors.grey.shade700,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        _isShowingSessionExpiredDialog = false;
+                        Navigator.of(context, rootNavigator: true).pop();
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.h),
+                        child: Container(
+                          width: 140.w,
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.symmetric(vertical: 10.h),
+                          decoration: BoxDecoration(
+                            color: AppColors.blue,
+                            borderRadius: BorderRadius.circular(25.r),
+                          ),
+                          child: reausabletext(
+                            "OK",
+                            color: Colors.white,
+                            fontweight: FontWeight.bold,
+                            fontsize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    ).then((_) {
+      _isShowingSessionExpiredDialog = false;
+    });
+  }
 }
+

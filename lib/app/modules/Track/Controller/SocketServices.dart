@@ -1,10 +1,14 @@
 import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/logoutuser.dart';
+import 'package:fgtracker/app/Data/Services/GroupCountService.dart';
+import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
+import 'package:flutter/widgets.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:get/get.dart';
 
-class SocketService extends GetxService {
+class SocketService extends GetxService with WidgetsBindingObserver {
   static SocketService get instance => Get.put(SocketService());
 
   IO.Socket? _socket;
@@ -20,6 +24,23 @@ class SocketService extends GetxService {
     return _socket!;
   }
 
+  @override
+  void onInit() {
+    super.onInit();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      log("[LocationSocket] App resumed, syncing counts & markers");
+      if (isSocketConnected) {
+        requestNotificationMarkers();
+        requestGroupCount();
+      }
+    }
+  }
+
   Future<void> init(String socketUrl) async {
     if (_socket != null && _socket!.connected) return;
 
@@ -33,10 +54,92 @@ class SocketService extends GetxService {
       for (String groupId in connectedGroupIds) {
         _rejoinGroup(groupId);
       }
+      requestNotificationMarkers();
+      requestGroupCount();
+    });
+
+    _socket?.onReconnect((_) {
+      log("Location Socket reconnected");
+      for (String groupId in connectedGroupIds) {
+        _rejoinGroup(groupId);
+      }
+      requestNotificationMarkers();
+      requestGroupCount();
+    });
+
+    _socket?.off('force_logout');
+    _socket?.on('force_logout', (data) {
+      log("force_logout received on location socket: $data");
+      LogoutUser().handleForceLogout();
+    });
+
+    _socket?.off("group_dashboard_counts");
+    _socket?.on("group_dashboard_counts", (res) {
+      log("[LocationSocket] group_dashboard_counts received: $res");
+      try {
+        dynamic payload = res;
+        if (res is Map && res.containsKey('data') && res['data'] != null) {
+          payload = res['data'];
+        }
+        if (payload != null && payload.toString().isNotEmpty) {
+          if (Get.isRegistered<GroupCountService>()) {
+            GroupCountService.instance.updateFromSocket(payload);
+          }
+        }
+      } catch (e) {
+        log("Error parsing group_dashboard_counts: $e");
+      }
+    });
+
+    _socket?.off("location-update-success");
+    _socket?.on("location-update-success", (res) {
+      try {
+        if (res is Map) {
+          final dataMap = res['data'];
+          if (dataMap is Map) {
+            dynamic payload = dataMap['dashboardCounts'];
+            if (payload != null && payload.toString().isNotEmpty) {
+              if (Get.isRegistered<GroupCountService>()) {
+                GroupCountService.instance.updateFromSocket(payload);
+              }
+            }
+
+            // Option A: notificationMarkers inside location-update-success
+            final markers = dataMap['notificationMarkers'];
+            if (markers is Map) {
+              NotificationMarkerService.instance.updateFromMap(markers);
+            }
+          }
+        }
+      } catch (e) {
+        log("Error parsing location-update-success: $e");
+      }
+    });
+
+    _socket?.off("notification_markers");
+    _socket?.on("notification_markers", (res) {
+      try {
+        if (res is Map) {
+          final data = res['data'] ?? res;
+          if (data is Map) {
+            NotificationMarkerService.instance.updateFromMap(data);
+          }
+        }
+      } catch (e) {
+        log("Error parsing notification_markers: $e");
+      }
+    });
+
+    _socket?.off("location-update-error");
+    _socket?.on("location-update-error", (err) {
+      log("Error Response:$err");
     });
 
     _socket?.onDisconnect((_) => log(" Socket disconnected"));
     _socket?.onError((err) => log("Socket error: $err"));
+    _socket?.onAny((event, data) {
+      // print("===========LocationEvent:${event},Data:${data}");
+    });
   }
 
   void joinGroup({required String groupId, required String userId}) {
@@ -88,27 +191,12 @@ class SocketService extends GetxService {
         if (cleanArea != null) "area": cleanArea,
         if (cleanCity != null) "city": cleanCity,
       };
-      _socket?.emit("send-location", payload);
-      log("[SocketService] Emitted send-location (broadcast): $payload");
-    // } else {
-    //   for (String groupId in connectedGroupIds) {
-    //     final payload = <String, dynamic>{
-    //       "userId": userId,
-    //       "groupId": groupId,
-    //       "lat": lat,
-    //       "lng": lng,
-    //       "latitude": lat,
-    //       "longitude": lng,
-    //       "battery": sendBattery,
-    //       if (cleanAddress != null) "address": cleanAddress,
-    //       if (cleanAddress != null) "location": cleanAddress,
-    //       if (cleanArea != null) "area": cleanArea,
-    //       if (cleanCity != null) "city": cleanCity,
-    //     };
-    //     _socket?.emit("send-location", payload);
-    //     log("[SocketService] Emitted send-location to group $groupId: $payload");
-    //   }
-    // }
+      _socket?.emitWithAck("send-location", payload,ack: (response) {
+        print("======SenlocationResponse:${response}");
+      },);
+
+
+
   }
 
   void onGroupLocationUpdate(Function(dynamic) callback) {
@@ -196,6 +284,46 @@ class SocketService extends GetxService {
     log(" Rejoined group after reconnect: $groupId");
   }
 
+  void requestNotificationMarkers() {
+    if (isSocketConnected) {
+      final userId = Global.storageServices.get(PrefConst.userId)?.toString();
+      _socket?.emit("get_notification_markers", {
+        if (userId != null && userId.isNotEmpty) "userId": userId,
+      });
+      log("[SocketService] Emitted get_notification_markers for $userId");
+    }
+  }
+
+  void requestGroupCount() {
+    if (isSocketConnected) {
+      final userId = Global.storageServices.get(PrefConst.userId)?.toString();
+      if (userId != null && userId.isNotEmpty) {
+        _socket?.emit("get_group_dashboard_counts", {
+          "userId": userId,
+        });
+        log("[SocketService] Emitted get_group_dashboard_counts for $userId");
+      }
+    }
+  }
+
+  void markCallHistoryViewed() {
+    NotificationMarkerService.instance.clearCallingMarker();
+    final userId = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (userId != null && userId.isNotEmpty && isSocketConnected) {
+      _socket?.emit("call_history_viewed", {"userId": userId});
+      log("[SocketService] Emitted call_history_viewed for $userId");
+    }
+  }
+
+  void markChatListViewed() {
+    NotificationMarkerService.instance.clearChattingMarker();
+    final userId = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (userId != null && userId.isNotEmpty && isSocketConnected) {
+      _socket?.emit("chat_list_viewed", {"userId": userId});
+      log("[SocketService] Emitted chat_list_viewed for $userId");
+    }
+  }
+
   void deleteGroup({required String groupId}) {
     if (isSocketConnected) {
       _socket?.emit("delete-group", {
@@ -208,10 +336,20 @@ class SocketService extends GetxService {
     }
   }
 
+  void disconnect() {
+    try {
+      connectedGroupIds.clear();
+      _socket?.clearListeners();
+      _socket?.disconnect();
+      _socket?.dispose();
+      _socket = null;
+    } catch (_) {}
+  }
+
   @override
   void onClose() {
-    _socket?.disconnect();
-    _socket?.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    disconnect();
     super.onClose();
   }
 }

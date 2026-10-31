@@ -1,28 +1,50 @@
 import 'dart:async';
 import 'dart:developer';
+
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-import 'package:get/get.dart' hide navigator;
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:get/get.dart' hide navigator;
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+
 import '../../../../gen/assets.gen.dart';
-import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
-import 'package:fgtracker/app/Model/callDetailRes.dart';
-import 'package:intl/intl.dart';
-import '../../../Core/global/launchedFromCall.dart';
+
+import '../../../Data/Services/IncommingCallKit/call_session.dart'
+    show CallSessionState;
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
+import '../Widget/audio_route_sheet.dart';
 
 class CallingController extends GetxController with WidgetsBindingObserver {
+  static const String _camTag = 'a=x-cam-on:';
+
+  RTCPeerConnection? _screenPc;
+  MediaStream? _screenStream;
+  RTCRtpSender? _screenSender;
+  final List<RTCIceCandidate> _screenPendingLocalIce = [];
+  final List<Map<String, dynamic>> _screenPendingRemoteIce = [];
+  bool _screenRemoteDescSet = false;
+  bool _screenShareStarting = false;
+  bool _screenShareAnnounced = false;
+  bool _screenRendererReleased = false;
+  final RxBool isScreenSharing = false.obs;
+  final RxBool isScreenShareLive = false.obs;
+  final RxBool isScreenShareWaiting = false.obs;
+  final RxBool isRemoteScreenSharing = false.obs;
+  MediaStream? _remoteScreenStream;
+  final RTCVideoRenderer screenRenderer = RTCVideoRenderer();
+
   final socket = SignallingService.instance.socket;
 
   final localRenderer = RTCVideoRenderer();
@@ -30,44 +52,567 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   RTCPeerConnection? peer;
   MediaStream? localStream;
+  MediaStream? _remoteMediaStream;
+  MediaStreamTrack? _remoteVideoTrack;
+  RTCRtpSender? _localVideoSender;
+  bool _remoteCamStateKnown = false;
+  RTCRtpTransceiver? _remoteVideoTransceiver;
+  MediaStream? _fallbackRemoteStream;
+  bool _videoSlotReady = false;
+  Timer? _firstFrameTimer;
+  Timer? _qualityTimer;
+  final RxBool isRemoteVideoLoading = false.obs;
 
   List<RTCIceCandidate> iceCandidates = [];
   RxString callStatus = "Calling".obs;
   bool isAudioOn = true;
-  bool isVideoOn = true;
+  bool isVideoOn = false;
+  bool isRemoteVideoOn = false;
   bool isFrontCamera = true;
+  bool _isSwitchingCamera = false;
   dynamic callId;
   late String callerId;
   late String remoteUserId;
   late bool is_video;
   dynamic offer;
-  bool isSpeakerOn = false;
   bool fromCallKit = false;
+  bool _isCleaningUp = false;
+  bool _hasExitedScreen = false;
+  bool _remoteEndSent = false;
+  bool _callKitConnectedSent = false;
+  bool _audioRouteRestored = false;
+  bool _renegotiating = false;
+  bool _pendingRenegotiation = false;
+  bool _localOfferPending = false;
 
+  Timer? _peerDisconnectTimer;
+
+  bool _everConnected = false;
   final args = Get.arguments;
   Timer? callTimer;
   int callDurationSeconds = 0;
+  final RxInt callDurationRx = 0.obs;
   Offset? pipPosition;
-  final Rxn<CallDetail> apiCallDetail = Rxn<CallDetail>();
-
-  final RxBool isBluetoothConnected = false.obs;
-  final RxString currentAudioRoute = "earpiece".obs;
-  Timer? _deviceCheckTimer;
 
   Timer? missedCallTimer;
   var missCallDurationSeconds = 40.obs;
 
   final RxBool isVideoCall = false.obs;
   final RxBool isUpgradingToVideo = false.obs;
+  final RxBool isRemoteUpgrading = false.obs;
+  Timer? _remoteUpgradeTimer;
 
   bool isLocalVideoMain = false;
 
   final RxBool areControlsVisible = true.obs;
   Timer? _controlsTimer;
 
+  late final CallAudioRouteController audioRouteController;
+
+  final List<dynamic> _pendingRemoteCandidates = [];
+  bool _remoteDescriptionSet = false;
+
+  Map<String, dynamic> _videoCaptureConstraints() {
+    final String facing = isFrontCamera ? 'user' : 'environment';
+
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return <String, dynamic>{
+        'facingMode': facing,
+        'width': 1280,
+        'height': 720,
+        'frameRate': 30,
+      };
+    }
+
+    return <String, dynamic>{
+      'facingMode': facing,
+      'width': <String, dynamic>{'ideal': 1280, 'max': 1280},
+      'height': <String, dynamic>{'ideal': 720, 'max': 720},
+      'frameRate': <String, dynamic>{'min': 24, 'ideal': 30, 'max': 30},
+    };
+  }
+
+  String _preferH264InSdp(String sdp) {
+    if (sdp.isEmpty || !sdp.contains('m=video')) return sdp;
+
+    final String lineSep = sdp.contains('\r\n') ? '\r\n' : '\n';
+    final List<String> lines = sdp.split(lineSep);
+
+    int i = 0;
+    while (i < lines.length) {
+      if (!lines[i].startsWith('m=video ')) {
+        i++;
+        continue;
+      }
+
+      final int mLineIdx = i;
+      int sectionEnd = i + 1;
+      while (sectionEnd < lines.length && !lines[sectionEnd].startsWith('m=')) {
+        sectionEnd++;
+      }
+
+      final List<String> h264BaselinePts = <String>[];
+      final List<String> h264OtherPts = <String>[];
+      final Map<String, String> rtxByApt = <String, String>{};
+      final Map<String, String> fmtpByPt = <String, String>{};
+
+      for (int k = mLineIdx + 1; k < sectionEnd; k++) {
+        final String line = lines[k];
+        if (line.startsWith('a=fmtp:')) {
+          final int space = line.indexOf(' ');
+          if (space > 7) {
+            final String pt = line.substring(7, space).trim();
+            final String params = line.substring(space + 1).trim();
+            fmtpByPt[pt] = params.toLowerCase();
+            final RegExpMatch? aptMatch = RegExp(
+              r'(?:^|;\s*)apt=(\d+)',
+            ).firstMatch(params);
+            if (aptMatch != null) {
+              rtxByApt[aptMatch.group(1)!] = pt;
+            }
+          }
+        }
+      }
+
+      for (int k = mLineIdx + 1; k < sectionEnd; k++) {
+        final RegExpMatch? m = RegExp(
+          r'^a=rtpmap:(\d+)\s+H264/90000',
+          caseSensitive: false,
+        ).firstMatch(lines[k]);
+        if (m == null) continue;
+        final String pt = m.group(1)!;
+        final String fmtp = fmtpByPt[pt] ?? '';
+        if (fmtp.contains('42e0') || fmtp.contains('4200')) {
+          h264BaselinePts.add(pt);
+        } else {
+          h264OtherPts.add(pt);
+        }
+      }
+
+      final List<String> orderedH264 = <String>[
+        ...h264BaselinePts,
+        ...h264OtherPts,
+      ];
+
+      if (orderedH264.isNotEmpty) {
+        final List<String> parts = lines[mLineIdx].trim().split(RegExp(r'\s+'));
+        if (parts.length > 4) {
+          final List<String> header = parts.sublist(0, 3);
+          final List<String> origPayloads = parts.sublist(3);
+          final Set<String> origSet = origPayloads.toSet();
+          final List<String> reordered = <String>[];
+
+          for (final String pt in orderedH264) {
+            if (origSet.contains(pt) && !reordered.contains(pt)) {
+              reordered.add(pt);
+            }
+            final String? rtxPt = rtxByApt[pt];
+            if (rtxPt != null &&
+                origSet.contains(rtxPt) &&
+                !reordered.contains(rtxPt)) {
+              reordered.add(rtxPt);
+            }
+          }
+
+          for (final String pt in origPayloads) {
+            if (!reordered.contains(pt)) {
+              reordered.add(pt);
+            }
+          }
+
+          lines[mLineIdx] = <String>[...header, ...reordered].join(' ');
+        }
+      }
+
+      i = sectionEnd;
+    }
+
+    return lines.join(lineSep);
+  }
+
+  String _stripCamTag(String sdp) {
+    if (sdp.isEmpty || !sdp.contains(_camTag)) return sdp;
+    final String sep = sdp.contains('\r\n') ? '\r\n' : '\n';
+    return sdp
+        .split(sep)
+        .where((String line) => !line.trim().startsWith(_camTag))
+        .join(sep);
+  }
+
+  String _withCamTag(String sdp, bool cameraOn) {
+    if (sdp.isEmpty) return sdp;
+    final String sep = sdp.contains('\r\n') ? '\r\n' : '\n';
+    final String tag = '$_camTag${cameraOn ? 1 : 0}';
+    final List<String> out = <String>[];
+    for (final String line in _stripCamTag(sdp).split(sep)) {
+      out.add(line);
+      if (line.startsWith('m=video ')) out.add(tag);
+    }
+    return out.join(sep);
+  }
+
+  bool? _camStateFromSdp(String? sdp) {
+    if (sdp == null || sdp.isEmpty || !sdp.contains(_camTag)) return null;
+    return sdp.contains('${_camTag}1');
+  }
+
+  String _sdpInfo(String? sdp) {
+    if (sdp == null || sdp.isEmpty) return 'sdp=empty';
+
+    final String sep = sdp.contains('\r\n') ? '\r\n' : '\n';
+    final List<String> lines = sdp.split(sep);
+    final List<String> mlines = <String>[];
+    int msid = 0;
+    int ssrc = 0;
+    int ssrcGroup = 0;
+    int rtpmap = 0;
+    int fmtpH264 = 0;
+    String current = '?';
+
+    for (final String raw in lines) {
+      final String line = raw.trim();
+      if (line.startsWith('m=')) {
+        final List<String> p = line.split(RegExp(r'\s+'));
+        current = p.isNotEmpty ? p[0].substring(2) : '?';
+        mlines.add('$current:?');
+      } else if (line.startsWith('a=sendrecv') ||
+          line.startsWith('a=recvonly') ||
+          line.startsWith('a=sendonly') ||
+          line.startsWith('a=inactive')) {
+        if (mlines.isNotEmpty) {
+          mlines[mlines.length - 1] = '$current:${line.substring(2)}';
+        }
+      } else if (line.startsWith('a=msid:')) {
+        msid++;
+      } else if (line.startsWith('a=ssrc:')) {
+        ssrc++;
+      } else if (line.startsWith('a=ssrc-group:')) {
+        ssrcGroup++;
+      } else if (line.startsWith('a=rtpmap:')) {
+        rtpmap++;
+        if (line.toUpperCase().contains('H264')) fmtpH264++;
+      }
+    }
+
+    return 'mlines=${mlines.join(',')} msid=$msid ssrc=$ssrc '
+        'ssrcGroup=$ssrcGroup rtpmap=$rtpmap h264=$fmtpH264';
+  }
+
+  RTCSessionDescription _prepareRemote(String? sdp, String? type) {
+    final String raw = _stripCamTag(sdp ?? '');
+    return RTCSessionDescription(_preferH264InSdp(raw), type);
+  }
+
+  Future<void> _tuneLocalVideoSender({double? scaleDown}) async {
+    if (isScreenSharing.value && defaultTargetPlatform == TargetPlatform.iOS) {
+      log("[SHARE] local sender tune skipped: iOS screen share running");
+      return;
+    }
+    final RTCRtpSender? sender = _localVideoSender;
+    if (sender == null) return;
+    try {
+      final RTCRtpParameters params = sender.parameters;
+      params.degradationPreference =
+          RTCDegradationPreference.MAINTAIN_FRAMERATE;
+      final List<RTCRtpEncoding>? encodings = params.encodings;
+      if (encodings != null && encodings.isNotEmpty) {
+        for (final RTCRtpEncoding enc in encodings) {
+          enc.active = true;
+          enc.maxBitrate = 1800000;
+          enc.maxFramerate = 30;
+          if (scaleDown != null && scaleDown > 0) {
+            enc.scaleResolutionDownBy = scaleDown;
+          }
+        }
+      }
+      await sender.setParameters(params);
+      log(
+        "[CAM] tune sender scaleDown=${scaleDown ?? 'keep'} "
+            "enc=${encodings?.length ?? 0}",
+      );
+    } catch (e) {
+      log("[Call] Video sender tuning skipped: $e");
+    }
+  }
+
+  Future<void> _applyLocalVideoSending(MediaStreamTrack? track) async {
+    final RTCRtpSender? sender = _localVideoSender;
+    if (sender == null) return;
+    try {
+      await sender.replaceTrack(track);
+    } catch (e) {
+      log("[Call] replaceTrack error: $e");
+    }
+  }
+
+  Future<MediaStream?> _remoteStreamForVideo() async {
+    final MediaStream? stored = _remoteMediaStream;
+    if (stored != null && stored.getVideoTracks().isNotEmpty) return stored;
+
+    final MediaStreamTrack? track = _remoteVideoTrack;
+    if (track == null) return null;
+
+    final MediaStream? existing = _fallbackRemoteStream;
+    if (existing != null && existing.getVideoTracks().isNotEmpty) {
+      return existing;
+    }
+
+    try {
+      final MediaStream stream = await createLocalMediaStream('cam_fallback');
+      await stream.addTrack(track);
+      _fallbackRemoteStream = stream;
+      log("[CAM] fallback stream built for remote video id=${track.id}");
+      return stream;
+    } catch (e) {
+      log("[CAM] fallback stream failed: $e");
+      return null;
+    }
+  }
+
+  Future<void> _ensureRemoteVideoBound() async {
+    if (isClosed || peer == null) return;
+    if (remoteRenderer.srcObject != null) {
+      log("[CAM] ensureBound: already bound");
+      return;
+    }
+    log(
+      "[CAM] ensureBound: binding now track=${_remoteVideoTrack?.id} "
+          "storedVideo=${_remoteMediaStream?.getVideoTracks().length ?? -1}",
+    );
+
+    final MediaStream? stream = await _remoteStreamForVideo();
+    if (stream == null) return;
+
+    final String? trackId =
+        _remoteVideoTrack?.id ?? stream.getVideoTracks().last.id;
+
+    await remoteRenderer.setSrcObject(stream: stream, trackId: trackId);
+  }
+
+  Future<void> _syncVideoState() async {
+    if (isVideoOn || isRemoteVideoOn) {
+      isVideoCall.value = true;
+      is_video = true;
+    }
+
+    if (!isVideoCall.value) {
+      isLocalVideoMain = false;
+      update();
+      return;
+    }
+
+    if (isVideoOn && !isRemoteVideoOn) {
+      isLocalVideoMain = true;
+    } else if (!isVideoOn && isRemoteVideoOn) {
+      isLocalVideoMain = false;
+    }
+
+    await _ensureRemoteVideoBound();
+
+    update();
+  }
+
+  Future<bool> _ensureLocalVideoTrackAttached(
+      RTCPeerConnection pc, {
+        bool muted = false,
+      }) async {
+    bool needsRenegotiation = false;
+    if (localStream == null) return needsRenegotiation;
+
+    final List<MediaStreamTrack> existingTracks = localStream!.getVideoTracks();
+    MediaStreamTrack? videoTrack =
+    existingTracks.isNotEmpty ? existingTracks.first : null;
+
+    if (videoTrack == null) {
+      final MediaStream videoStream = await navigator.mediaDevices.getUserMedia(
+        {'audio': false, 'video': _videoCaptureConstraints()},
+      );
+      videoTrack = videoStream.getVideoTracks().firstOrNull;
+      if (videoTrack == null) {
+        throw Exception("No video track available");
+      }
+      await localStream!.addTrack(videoTrack);
+    }
+
+    for (final MediaStreamTrack t in localStream!.getVideoTracks()) {
+      t.enabled = !muted;
+    }
+
+    if (_localVideoSender == null) {
+      final RTCRtpTransceiver? slot = _remoteVideoTransceiver;
+      if (_videoSlotReady && slot != null) {
+        _localVideoSender = slot.sender;
+        await _applyLocalVideoSending(videoTrack);
+        log("[CAM] attach: replaced track on negotiated slot");
+      } else {
+        _localVideoSender = await pc.addTrack(videoTrack, localStream!);
+        needsRenegotiation = true;
+        log("[CAM] attach: addTrack needsRenegotiation=true");
+      }
+    } else {
+      await _applyLocalVideoSending(videoTrack);
+    }
+
+    if (!muted) {
+      await localRenderer.setSrcObject(
+        stream: localStream,
+        trackId: videoTrack.id,
+      );
+    }
+
+    _logCaptureSettings(muted ? "answer-muted" : "upgrade");
+    await _tuneLocalVideoSender();
+    return needsRenegotiation;
+  }
+
+  Future<void> _renegotiateVideo() async {
+    final RTCPeerConnection? pc = peer;
+    if (pc == null || isClosed) return;
+
+    if (_renegotiating) {
+      _pendingRenegotiation = true;
+      return;
+    }
+
+    _renegotiating = true;
+    try {
+      final RTCSessionDescription rawOffer = await pc.createOffer({
+        'offerToReceiveAudio': true,
+        'offerToReceiveVideo': true,
+      });
+      final RTCSessionDescription desc = RTCSessionDescription(
+        _withCamTag(_preferH264InSdp(rawOffer.sdp ?? ''), isVideoOn),
+        rawOffer.type,
+      );
+      await pc.setLocalDescription(desc);
+      _localOfferPending = true;
+      log(
+        "[SDP] local offer ${_sdpInfo(desc.sdp)} "
+            "videoOn=$isVideoOn sender=${_localVideoSender != null}",
+      );
+
+      final String myUserId =
+      Global.storageServices.get(PrefConst.userId).toString();
+      final String targetUser =
+      (myUserId == callerId.toString()) ? remoteUserId : callerId;
+
+      socket?.emit("upgradeToVideo", {
+        "callId": callId,
+        "remoteUserId": targetUser,
+        "sdpOffer": desc.toMap(),
+        "callerId": myUserId,
+      });
+    } catch (e) {
+      log("[Call] renegotiate error: $e");
+    } finally {
+      _renegotiating = false;
+      if (_pendingRenegotiation) {
+        _pendingRenegotiation = false;
+        unawaited(_renegotiateVideo());
+      }
+    }
+  }
+
+  Future<void> _applyRemoteSdp(RTCPeerConnection pc, dynamic sdp) async {
+    final RTCSessionDescription desc = _prepareRemote(
+      sdp?["sdp"]?.toString(),
+      sdp?["type"]?.toString(),
+    );
+    log(
+      "[SDP] setRemote type=${desc.type} ${_sdpInfo(desc.sdp)} "
+          "samePeer=${identical(peer, pc)}",
+    );
+    try {
+      await pc.setRemoteDescription(desc);
+    } catch (e) {
+      log("[Call] setRemoteDescription retry after rollback: $e");
+      try {
+        await pc.setLocalDescription(RTCSessionDescription('', 'rollback'));
+      } catch (_) {}
+      await pc.setRemoteDescription(desc);
+    }
+    await _markRemoteDescriptionSet();
+  }
+
+  void _emitEndCallRealtime({Map<String, dynamic>? customPayload}) {
+    if (_remoteEndSent) return;
+    _remoteEndSent = true;
+
+    final String myUserId =
+    Global.storageServices.get(PrefConst.userId).toString();
+    final String targetUser =
+    myUserId == callerId.toString() ? remoteUserId : callerId;
+
+    final Map<String, dynamic> payload = customPayload ??
+        <String, dynamic>{
+          "callId": callId,
+          "to": targetUser,
+          "remoteUserId": targetUser,
+          "callerId": callerId,
+          "receiverId": remoteUserId,
+          "sessionId": _sessionId,
+        };
+
+    final dynamic s = socket;
+    if (s == null) return;
+
+    try {
+      if (s.connected == true) {
+        s.emit("endCall", payload);
+      } else {
+        s.emit("endCall", payload);
+        s.once("connect", (_) {
+          try {
+            s.emit("endCall", payload);
+          } catch (_) {}
+        });
+        s.connect();
+      }
+    } catch (e) {
+      log("[Call] _emitEndCallRealtime error: $e");
+    }
+  }
+
+  void _exitCallScreen() {
+    if (_hasExitedScreen) return;
+    _hasExitedScreen = true;
+
+    final NavigatorState? nav = Get.key.currentState;
+    if (nav != null) {
+      nav.popUntil((route) => route is! PopupRoute);
+      if (nav.canPop()) {
+        nav.pop();
+
+        String? topRouteName;
+        nav.popUntil((route) {
+          topRouteName = route.settings.name;
+          return true;
+        });
+
+        final String normalized = (topRouteName ?? '').trim().toLowerCase();
+        final bool landedOnSplash = normalized.isEmpty ||
+            normalized == '/' ||
+            normalized.contains('splash') ||
+            (fromCallKit &&
+                !nav.canPop() &&
+                topRouteName != Routes.Home_Screen);
+
+        if (!landedOnSplash) {
+          return;
+        }
+      }
+    }
+
+    Get.offAllNamed(Routes.Home_Screen);
+  }
+
   void toggleVideoViews() {
     if (!isVideoCall.value) return;
-
+    if (!isVideoOn || !isRemoteVideoOn) {
+      showControlsTemporarily();
+      update();
+      return;
+    }
     isLocalVideoMain = !isLocalVideoMain;
     showControlsTemporarily();
     update();
@@ -75,33 +620,25 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   void showControlsTemporarily() {
     areControlsVisible.value = true;
-
     _controlsTimer?.cancel();
-
-    _controlsTimer = Timer(
-      const Duration(seconds: 5),
-      () {
-        if (!isClosed) {
-          areControlsVisible.value = false;
-        }
-      },
-    );
-
+    _controlsTimer = Timer(const Duration(seconds: 5), () {
+      if (!isClosed) {
+        areControlsVisible.value = false;
+      }
+    });
     update();
   }
 
   void toggleControls() {
     areControlsVisible.value = !areControlsVisible.value;
-
     _controlsTimer?.cancel();
-
     update();
   }
 
   @override
   void onInit() {
+    super.onInit();
     WidgetsBinding.instance.addObserver(this);
-    _initForegroundTask();
 
     callerId = args["callerId"]?.toString() ?? "";
     remoteUserId = args["remoteUserId"]?.toString() ?? "";
@@ -116,11 +653,26 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (callId == null && args["sessionId"] != null) {
       callId = args["sessionId"];
     }
-    isVideoCall.value = is_video == true;
-    localRenderer.initialize();
-    remoteRenderer.initialize();
 
-    _setupPeer();
+    if (args["sessionId"] != null && args["sessionId"].toString().isNotEmpty) {
+      CallSessionState.sessionId = args["sessionId"].toString();
+    }
+
+    isVideoOn = is_video;
+    isRemoteVideoOn = is_video;
+    isVideoCall.value = is_video;
+
+    log(
+      "[CAM] init callType=${args["callType"]} is_video=$is_video "
+          "callerId=$callerId remoteUserId=$remoteUserId callId=$callId "
+          "hasOffer=${offer != null} fromCallKit=$fromCallKit",
+    );
+
+    if (Get.isRegistered<CallAudioRouteController>()) {
+      Get.delete<CallAudioRouteController>(force: true);
+    }
+    audioRouteController = Get.put(CallAudioRouteController());
+
     _listenForCallEvents();
 
     if (args["callType"] == "outGoing") {
@@ -128,60 +680,312 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
 
     WakelockPlus.enable();
-    _startForegroundCallService();
 
     try {
       GroupTrackingController.instance.initializeLocation();
     } catch (e) {
-      log("==============CallLocationException======${e.toString()}");
+      log("[Call] Location initialization error: $e");
     }
 
-    if (callId != null) {
-      fetchCallDetail();
-    }
-
-    super.onInit();
+    unawaited(_initializeCall());
   }
 
-  void _initForegroundTask() {
-    FlutterForegroundTask.init(
-      androidNotificationOptions: AndroidNotificationOptions(
-        channelId: 'fgtracker_call_channel',
-        channelName: 'FG Tracker Ongoing Call',
-        channelDescription:
-            'Maintains active microphone and audio in background',
-        channelImportance: NotificationChannelImportance.HIGH,
-        priority: NotificationPriority.HIGH,
-      ),
-      iosNotificationOptions: const IOSNotificationOptions(
-        showNotification: true,
-        playSound: false,
-      ),
-      foregroundTaskOptions: ForegroundTaskOptions(
-        eventAction: ForegroundTaskEventAction.repeat(5000),
-        autoRunOnBoot: false,
-        allowWakeLock: true,
-        allowWifiLock: true,
-      ),
+  void _onRendererFrameEvent([int? width, int? height]) {
+    if (!isClosed) update();
+  }
+
+  void _logCaptureSettings(String tag) {
+    final List<MediaStreamTrack> vids =
+        localStream?.getVideoTracks() ?? <MediaStreamTrack>[];
+    if (vids.isEmpty) {
+      log("[CAM] capture($tag): no video track");
+      return;
+    }
+    final Map<String, dynamic> st = vids.first.getSettings();
+    log(
+      "[CAM] capture($tag): ${st['width']}x${st['height']} "
+          "fps=${st['frameRate']}",
     );
   }
 
-  Future<void> _startForegroundCallService() async {
-    try {
-      if (await FlutterForegroundTask.isRunningService) {
-        await FlutterForegroundTask.restartService();
-      } else {
-        await FlutterForegroundTask.startService(
-          notificationTitle: args["callerName"] != null
-              ? "Call with ${args["callerName"]}"
-              : "Active Call",
-          notificationText: "Microphone active in background",
-        );
-      }
-      log("🎙️ Foreground Service successfully started to keep Background Mic active.");
-    } catch (e) {
-      log("Error starting call foreground task: $e");
+  Future<void> _rebindRemoteForFirstFrames({bool generic = false}) async {
+    if (isClosed || peer == null) return;
+
+    final MediaStream? stream = await _remoteStreamForVideo();
+    if (stream == null) {
+      log("[CAM] rebind skipped: no remote video stream available");
+      return;
     }
+
+    final String? trackId =
+        _remoteVideoTrack?.id ?? stream.getVideoTracks().last.id;
+    try {
+      remoteRenderer.srcObject = null;
+      if (generic) {
+        await remoteRenderer.setSrcObject(stream: stream);
+        log("[CAM] rebind generic stream=${stream.id}");
+      } else {
+        await remoteRenderer.setSrcObject(stream: stream, trackId: trackId);
+        log("[CAM] rebind on remote camera on id=$trackId");
+      }
+    } catch (e) {
+      log("[CAM] rebind failed: $e");
+    }
+  }
+
+  Future<int> _logStats(String tag) async {
+    final RTCPeerConnection? pc = peer;
+    if (pc == null || isClosed) return -1;
+
+    int decoded = -1;
+    log("[STAT] $tag begin");
+    try {
+      final List<StatsReport> reports = await pc.getStats();
+      final Map<String, int> types = <String, int>{};
+
+      for (final StatsReport r in reports) {
+        final Map<dynamic, dynamic> v = r.values;
+        final String type = r.type;
+        types[type] = (types[type] ?? 0) + 1;
+
+        if (v['framesDecoded'] != null) {
+          decoded = int.tryParse('${v['framesDecoded']}') ?? -1;
+          log(
+            "[STAT] $tag IN recv=${v['framesReceived']} "
+                "dec=${v['framesDecoded']} drop=${v['framesDropped']} "
+                "bytes=${v['bytesReceived']} pli=${v['pliCount']} "
+                "size=${v['frameWidth']}x${v['frameHeight']}",
+          );
+        }
+        if (v['framesEncoded'] != null) {
+          log(
+            "[STAT] $tag OUT enc=${v['framesEncoded']} "
+                "key=${v['keyFramesEncoded']} sent=${v['framesSent']} "
+                "bytes=${v['bytesSent']} "
+                "qlim=${v['qualityLimitationReason']}",
+          );
+        }
+      }
+      log("[STAT] $tag types=$types");
+    } catch (e) {
+      log("[STAT] $tag error: $e");
+    }
+    log("[STAT] $tag end");
+    return decoded;
+  }
+
+  void _requestKeyframe() {
+    final String myUserId =
+    Global.storageServices.get(PrefConst.userId).toString();
+    String target = (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    if (target.isEmpty || target == myUserId) {
+      target = (remoteUserId.isNotEmpty && remoteUserId != myUserId)
+          ? remoteUserId
+          : callerId;
+    }
+    if (target.isEmpty || target == myUserId) return;
+
+    log("[CAM] request keyframe from=$target");
+    socket?.emit("upgradeToVideo", {
+      "callId": callId,
+      "remoteUserId": target,
+      "callerId": myUserId,
+      "needKeyframe": true,
+    });
+  }
+
+  Future<void> _forceKeyframe() async {
+    if (isScreenSharing.value) {
+      log("[SHARE] forceKeyframe skipped while screen sharing");
+      return;
+    }
+
+    final List<MediaStreamTrack> vids =
+        localStream?.getVideoTracks() ?? <MediaStreamTrack>[];
+    if (vids.isEmpty || _localVideoSender == null || !isVideoOn) return;
+
+    log("[CAM] force keyframe: restart sender at half resolution");
+    await _tuneLocalVideoSender(scaleDown: 2.0);
+    await _applyLocalVideoSending(null);
+    await Future<void>.delayed(const Duration(milliseconds: 150));
+    await _applyLocalVideoSending(vids.first);
+    _scheduleQualityRestore();
+  }
+
+  void _scheduleQualityRestore() {
+    _qualityTimer?.cancel();
+    _qualityTimer = Timer(const Duration(seconds: 10), () {
+      if (isClosed || !isVideoOn || isScreenSharing.value) return;
+      log("[CAM] restore full resolution");
+      unawaited(_tuneLocalVideoSender(scaleDown: 1.0));
+    });
+  }
+
+  void _startFirstFrameWatchdog() {
+    _firstFrameTimer?.cancel();
+    if (!isRemoteVideoOn) {
+      isRemoteVideoLoading.value = false;
+      return;
+    }
+
+    isRemoteVideoLoading.value = true;
+    update();
+
+    int decodedFrames = -1;
+
+    _firstFrameTimer = Timer.periodic(const Duration(seconds: 1), (
+        timer,
+        ) async {
+      if (isClosed) {
+        timer.cancel();
+        return;
+      }
+      if (!isRemoteVideoOn) {
+        timer.cancel();
+        isRemoteVideoLoading.value = false;
+        update();
+        return;
+      }
+
+      if (remoteRenderer.value.width > 0) {
+        timer.cancel();
+        isRemoteVideoLoading.value = false;
+        update();
+        log("[CAM] first remote frame arrived w=${remoteRenderer.value.width}");
+        return;
+      }
+
+      if (timer.tick == 2 || timer.tick == 5 || timer.tick == 9) {
+        decodedFrames = await _logStats("wait${timer.tick}s");
+        log(
+          "[CAM] wait ${timer.tick}s: renderW=${remoteRenderer.value.width} "
+              "decoded=$decodedFrames",
+        );
+
+        if (decodedFrames > 0) {
+          log("[CAM] decoded but no pixels -> rebind #${timer.tick}");
+          await _rebindRemoteForFirstFrames(generic: timer.tick >= 9);
+        } else {
+          log("[CAM] no decoded frames -> request keyframe");
+          _requestKeyframe();
+        }
+      }
+
+      if (timer.tick >= 15) {
+        timer.cancel();
+        log("[CAM] give up waiting for first frame");
+        update();
+      }
+    });
+  }
+
+  void _watchRemoteVideo(String tag) {
+    final RTCPeerConnection? pc = peer;
+    if (pc == null) return;
+
+    int ticks = 0;
+    bool healed = false;
+
+    Timer.periodic(const Duration(seconds: 2), (timer) async {
+      ticks++;
+      if (isClosed || !identical(peer, pc)) {
+        timer.cancel();
+        return;
+      }
+
+      final int decoded = await _logStats("$tag+${ticks * 2}s");
+
+      if (decoded == 0 && !healed && isRemoteVideoOn) {
+        healed = true;
+        log("[CAM] no decoded frames after ${ticks * 2}s, rebinding");
+        await _rebindRemoteForFirstFrames();
+      }
+
+      if (ticks >= 6) timer.cancel();
+    });
+  }
+
+  void _logRemoteFrameState() {
+    Future<void>.delayed(const Duration(seconds: 3), () {
+      if (isClosed) return;
+      final int w = remoteRenderer.value.width.toInt();
+      final int h = remoteRenderer.value.height.toInt();
+      log("[CAM] after3s render=${remoteRenderer.renderVideo} size=${w}x$h");
+    });
+  }
+
+  Future<void> _initializeCall() async {
+    try {
+      await localRenderer.initialize();
+      await remoteRenderer.initialize();
+      await screenRenderer.initialize();
+
+      localRenderer.onFirstFrameRendered = _onRendererFrameEvent;
+      remoteRenderer.onFirstFrameRendered = _onRendererFrameEvent;
+      localRenderer.onResize = _onRendererFrameEvent;
+      remoteRenderer.onResize = _onRendererFrameEvent;
+
+      await _setupPeer();
+    } catch (e, stackTrace) {
+      log("[Call] Initialization error: $e", stackTrace: stackTrace);
+      await _cleanupCall(notifyRemote: true, navigateBack: true);
+    }
+  }
+
+  Future<void> _cleanupCall({
+    required bool notifyRemote,
+    required bool navigateBack,
+  }) async {
+    if (_isCleaningUp) return;
+    _isCleaningUp = true;
+
+    final String sessionId = _sessionId;
+
+    try {
+      _clearTimers();
+      _controlsTimer?.cancel();
+      _peerDisconnectTimer?.cancel();
+
+      stopSound();
+
+      if (notifyRemote) {
+        _emitEndCallRealtime();
+      }
+
+      CallSessionState.reset();
+
+      if (navigateBack) {
+        _exitCallScreen();
+      }
+
+      await _disposePeerResources();
+      await audioRouteController.stopCall();
+      await _stopForegroundCallService();
+
+      if (sessionId.isNotEmpty) {
+        await CallKitService.dismiss(sessionId);
+        try {
+          await callEnded(sessionId, type: "CallCleanedUp");
+        } catch (e) {
+          log("[Call] Call cleanup error: $e");
+        }
+      }
+
+      await WakelockPlus.disable();
+      await ProximityScreenLock.setActive(false);
+    } catch (e, stackTrace) {
+      log("[Call] General cleanup error: $e", stackTrace: stackTrace);
+    } finally {
+      _isCleaningUp = false;
+    }
+  }
+
+  String get _sessionId {
+    if (CallSessionState.sessionId != null &&
+        CallSessionState.sessionId!.isNotEmpty) {
+      return CallSessionState.sessionId!;
+    }
+    return callId != null ? callId.toString() : "";
   }
 
   Future<void> _stopForegroundCallService() async {
@@ -196,36 +1000,76 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    log("📱 CallingController: AppLifecycleState changed to: $state");
     if (state == AppLifecycleState.resumed) {
-      log("🔄 App Foregrounded: Forcefully restoring audio routes and reactivating WebRTC tracks...");
       _ensureAudioTracksActive();
+      unawaited(_restoreVideoAfterForeground());
     } else if (state == AppLifecycleState.paused) {
-      log("⏸️ App Backgrounded: Keeping WebRTC mic tracks alive...");
       _keepTracksAliveInBackground();
     }
+  }
+
+  Future<void> _restoreVideoAfterForeground() async {
+    if (isClosed || !isVideoCall.value) return;
+    log(
+      "[CAM] resume: restoring video localOn=$isVideoOn "
+          "remoteOn=$isRemoteVideoOn sharing=${isScreenSharing.value}",
+    );
+
+    if (isScreenSharing.value) {
+      log("[CAM] resume: screen share active - camera rebind/tune skipped");
+    } else if (isVideoOn && localStream != null) {
+      final MediaStreamTrack? v = localStream!.getVideoTracks().firstOrNull;
+      if (v != null) {
+        try {
+          await localRenderer.setSrcObject(stream: localStream, trackId: v.id);
+        } catch (e) {
+          log("[CAM] resume: local rebind failed: $e");
+        }
+      }
+      await _tuneLocalVideoSender();
+    }
+
+    if (isRemoteVideoOn) {
+      await _rebindRemoteForFirstFrames();
+      _startFirstFrameWatchdog();
+      _requestKeyframe();
+      _watchRemoteVideo("resume");
+    }
+
+    update();
   }
 
   void _ensureAudioTracksActive() {
     try {
       if (localStream != null) {
-        for (var track in localStream!.getAudioTracks()) {
+        for (final MediaStreamTrack track in localStream!.getAudioTracks()) {
           track.enabled = isAudioOn;
         }
-      }
-      if (remoteRenderer.srcObject != null) {
-        for (var track in remoteRenderer.srcObject!.getAudioTracks()) {
-          track.enabled = true;
+        if (isVideoOn) {
+          for (final MediaStreamTrack track in localStream!.getVideoTracks()) {
+            track.enabled = true;
+          }
         }
       }
-      if (currentAudioRoute.value == "speaker") {
-        enableSpeaker();
-      } else if (currentAudioRoute.value == "bluetooth" &&
-          isBluetoothConnected.value) {
-        selectBluetooth();
-      } else {
-        selectEarpiece();
+
+      final MediaStream? remoteStream =
+          _remoteMediaStream ?? remoteRenderer.srcObject;
+      if (remoteStream != null) {
+        for (final MediaStreamTrack track in remoteStream.getAudioTracks()) {
+          track.enabled = true;
+        }
+        if (isRemoteVideoOn) {
+          for (final MediaStreamTrack track in remoteStream.getVideoTracks()) {
+            track.enabled = true;
+          }
+        }
       }
+
+      if (isRemoteVideoOn) {
+        unawaited(_ensureRemoteVideoBound());
+      }
+
+      unawaited(audioRouteController.restoreCurrentRoute());
     } catch (e) {
       log("Error restoring active WebRTC audio states: $e");
     }
@@ -234,8 +1078,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   void _keepTracksAliveInBackground() {
     try {
       if (localStream != null) {
-        for (var track in localStream!.getAudioTracks()) {
+        for (final MediaStreamTrack track in localStream!.getAudioTracks()) {
           track.enabled = isAudioOn;
+        }
+        for (final MediaStreamTrack track in localStream!.getVideoTracks()) {
+          track.enabled = false;
         }
       }
     } catch (e) {
@@ -243,68 +1090,187 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  Future<void> upgradeToVideoCall() async {
-    isVideoOn = true;
-    is_video = true;
-    isVideoCall.value = true;
-    isLocalVideoMain = false;
-    pipPosition = null;
+  Future<void> _handleRemoteTrack(RTCTrackEvent event) async {
+    try {
+      final MediaStream? stream =
+      event.streams.isNotEmpty ? event.streams.first : null;
+
+      if (peer == null) return;
+
+      final bool isVideoTrack = event.track.kind == 'video';
+
+      if (isVideoTrack) {
+        if (stream != null) {
+          _remoteMediaStream = stream;
+        }
+        _remoteVideoTrack = event.track;
+        _remoteVideoTransceiver = event.transceiver;
+        event.track.enabled = true;
+
+        if (!_remoteCamStateKnown) {
+          isRemoteVideoOn = true;
+        }
+        isLocalVideoMain = isRemoteVideoOn ? false : isVideoOn;
+        is_video = true;
+        isVideoCall.value = true;
+
+        log(
+          "[CAM] onTrack video id=${event.track.id} "
+              "known=$_remoteCamStateKnown remoteOn=$isRemoteVideoOn",
+        );
+
+        log(
+          "[CAM] onTrack streams=${event.streams.length} "
+              "storedVideo=${_remoteMediaStream?.getVideoTracks().length ?? -1}",
+        );
+
+        final MediaStream? targetStream = await _remoteStreamForVideo();
+        if (targetStream == null) {
+          log("[CAM] bind skipped: no remote video stream available");
+        } else {
+          log(
+            "[CAM] bind remote id=${event.track.id} "
+                "stream=${targetStream.id} "
+                "tracks=${targetStream.getVideoTracks().length}",
+          );
+          await remoteRenderer.setSrcObject(
+            stream: targetStream,
+            trackId: event.track.id,
+          );
+          _logRemoteFrameState();
+          _startFirstFrameWatchdog();
+          _watchRemoteVideo("bind");
+        }
+      } else {
+        event.track.enabled = true;
+        if (stream != null) {
+          _remoteMediaStream ??= stream;
+        }
+        unawaited(audioRouteController.onRemoteAudioTrack(event.track));
+        log(
+          "[CAM] onTrack audio id=${event.track.id} "
+              "streams=${event.streams.length} "
+              "storedVideo=${_remoteMediaStream?.getVideoTracks().length ?? -1}",
+        );
+      }
+
+      stopSound();
+      missedCallTimer?.cancel();
+      missedCallTimer = null;
+
+      startCallTimer();
+      callStatus.value = "Connected";
+      update();
+
+      if (!_audioRouteRestored) {
+        _audioRouteRestored = true;
+        unawaited(audioRouteController.restoreCurrentRoute());
+      }
+
+      if (!_callKitConnectedSent &&
+          (fromCallKit || args["callType"] == "Incoming")) {
+        _callKitConnectedSent = true;
+        unawaited(CallKitService.setConnected(_sessionId));
+      }
+    } catch (e, stackTrace) {
+      log("[Call] onTrack error: $e", stackTrace: stackTrace);
+    }
+  }
+
+  void _emitUpgradeIntent() {
+    final String myUserId =
+    Global.storageServices.get(PrefConst.userId).toString();
+    String target = (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    if (target.isEmpty || target == myUserId) {
+      target = (remoteUserId.isNotEmpty && remoteUserId != myUserId)
+          ? remoteUserId
+          : callerId;
+    }
+    if (target.isEmpty || target == myUserId) return;
+
+    log("[CAM] announce upgrade intent to=$target");
+    socket?.emit("requestVideoUpgrade", {
+      "callId": callId,
+      "remoteUserId": target,
+      "callerId": myUserId,
+    });
+  }
+
+  void _markRemoteUpgrading(String source) {
     if (isUpgradingToVideo.value) return;
+    isRemoteUpgrading.value = true;
+    log("[CAM] remote upgrading ($source) -> video button disabled");
+    _remoteUpgradeTimer?.cancel();
+    _remoteUpgradeTimer = Timer(const Duration(seconds: 20), () {
+      if (isClosed) return;
+      isRemoteUpgrading.value = false;
+      log("[CAM] remote upgrade flag cleared (timeout)");
+      update();
+    });
+    update();
+  }
+
+  void _clearRemoteUpgrading() {
+    if (!isRemoteUpgrading.value) return;
+    _remoteUpgradeTimer?.cancel();
+    _remoteUpgradeTimer = null;
+    isRemoteUpgrading.value = false;
+    log("[CAM] remote upgrade flag cleared");
+    update();
+  }
+
+  Future<void> upgradeToVideoCall() async {
+    if (isUpgradingToVideo.value) return;
+    if (isRemoteUpgrading.value) {
+      log("[CAM] upgrade blocked: remote is already upgrading");
+      Utils().fluttertoast("The other person is starting video");
+      return;
+    }
     if (peer == null || localStream == null) {
       Utils().fluttertoast("Call not ready");
       return;
     }
+    _emitUpgradeIntent();
 
     try {
       isUpgradingToVideo.value = true;
-
-      final vids = localStream!.getVideoTracks();
-      if (vids.isEmpty) {
-        final videoStream = await navigator.mediaDevices.getUserMedia({
-          'audio': false,
-          'video': {
-            'facingMode': isFrontCamera ? 'user' : 'environment',
-            'width': {'ideal': 640},
-            'height': {'ideal': 480},
-          },
-        });
-
-        final videoTrack = videoStream.getVideoTracks().firstOrNull;
-        if (videoTrack == null) {
-          throw Exception("No video track available");
-        }
-        await localStream!.addTrack(videoTrack);
-        await peer!.addTrack(videoTrack, localStream!);
-      } else {
-        for (var t in vids) {
-          t.enabled = true;
-        }
+      log(
+        "[CAM] upgrade start videoOn=$isVideoOn remoteOn=$isRemoteVideoOn "
+            "sender=${_localVideoSender != null} slotReady=$_videoSlotReady",
+      );
+      if (!isVideoCall.value) {
+        pipPosition = null;
+        await audioRouteController.updateCallType(isVideo: true);
       }
 
-      localRenderer.srcObject = localStream;
+      final bool needsRenegotiation = await _ensureLocalVideoTrackAttached(
+        peer!,
+      );
+      log(
+        "[CAM] upgrade attach done sender=${_localVideoSender != null} "
+            "slotReady=$_videoSlotReady needsReneg=$needsRenegotiation",
+      );
+
       isVideoOn = true;
-      is_video = true;
-      isVideoCall.value = true;
+      isLocalVideoMain = !isRemoteVideoOn;
 
-      final offer = await peer!.createOffer({
-        'offerToReceiveAudio': true,
-        'offerToReceiveVideo': true,
-      });
-      await peer!.setLocalDescription(offer);
-      await setDefaultAudioRouteForCallType(isVideo: true);
+      await _tuneLocalVideoSender(scaleDown: 2.0);
+      _scheduleQualityRestore();
 
-      final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-      final targetUserId =
-          (myUserId == callerId.toString()) ? remoteUserId : callerId;
+      if (needsRenegotiation || !_videoSlotReady) {
+        log("[CAM] upgrade: renegotiating (video m-line not signalled)");
+        await _renegotiateVideo();
+      } else {
+        log("[CAM] upgrade: slot live, no renegotiation needed");
+      }
 
-      socket?.emit("upgradeToVideo", {
-        "callId": callId,
-        "remoteUserId": targetUserId,
-        "sdpOffer": offer.toMap(),
-        "callerId": myUserId,
-      });
+      _emitCameraState(true);
+      _clearRemoteUpgrading();
+      await _syncVideoState();
 
-      callStatus.value = "Video connecting";
+      if (callTimer == null && callDurationSeconds == 0) {
+        callStatus.value = "Video connecting";
+      }
       update();
     } catch (e) {
       log("upgradeToVideoCall error: $e");
@@ -318,34 +1284,181 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     socket?.off("upgradeToVideoAnswer");
     socket?.off("requestVideoUpgrade");
 
+    socket?.on("requestVideoUpgrade", (data) {
+      final String from = data["callerId"]?.toString() ?? "";
+      log("[CAM] requestVideoUpgrade from=$from");
+      _markRemoteUpgrading("intent");
+    });
+
     socket?.on("upgradeToVideo", (data) async {
       try {
-        if (peer == null) return;
-        final sdp = data["sdpOffer"];
-        if (sdp == null) return;
-
-        await peer!.setRemoteDescription(
-          RTCSessionDescription(sdp["sdp"], sdp["type"]),
+        final RTCPeerConnection? pc = peer;
+        if (pc == null) return;
+        final dynamic sdp = data["sdpOffer"];
+        log(
+          "[CAM] upgradeToVideo recv hasSdp=${sdp != null} "
+              "cameraState=${data["cameraState"]} from=${data["callerId"]} "
+              "videoOn=$isVideoOn remoteOn=$isRemoteVideoOn",
         );
 
-        final answer = await peer!.createAnswer({
-          'offerToReceiveAudio': true,
-          'offerToReceiveVideo': true,
-        });
-        await peer!.setLocalDescription(answer);
+        if (sdp != null && !_localOfferPending) {
+          _markRemoteUpgrading("offer");
+        }
+
+        if (sdp == null) {
+          if (data["needKeyframe"] == true) {
+            await _forceKeyframe();
+            return;
+          }
+
+          final dynamic state = data["cameraState"];
+          if (state is bool) {
+            final bool wasRemoteVideoOn = isRemoteVideoOn;
+            _remoteCamStateKnown = true;
+            isRemoteVideoOn = state;
+            log("[CAM] recv cameraState=$state from=${data["callerId"]}");
+            _clearRemoteUpgrading();
+            if (!wasRemoteVideoOn && isRemoteVideoOn) {
+              isLocalVideoMain = false;
+              await _rebindRemoteForFirstFrames();
+              _startFirstFrameWatchdog();
+              _watchRemoteVideo("camOn");
+            } else if (!state && isVideoOn) {
+              isLocalVideoMain = true;
+            }
+            await _syncVideoState();
+          }
+          return;
+        }
+
+        if (_localOfferPending) {
+          final String myId =
+          Global.storageServices.get(PrefConst.userId).toString();
+          final String peerId = data["callerId"]?.toString() ?? "";
+          final bool polite = myId.compareTo(peerId) > 0;
+          log("[CAM] glare offer from=$peerId polite=$polite");
+
+          if (!polite) {
+            log("[CAM] glare: ignoring incoming offer, our offer wins");
+            return;
+          }
+
+          try {
+            await pc.setLocalDescription(RTCSessionDescription('', 'rollback'));
+            log("[CAM] glare: rolled back our offer");
+          } catch (e) {
+            log("[CAM] glare rollback failed: $e");
+          }
+          _localOfferPending = false;
+          _renegotiating = false;
+          _pendingRenegotiation = false;
+        }
+
+        final bool? remoteCam = _camStateFromSdp(sdp["sdp"]?.toString() ?? '');
+        final bool remoteSendingVideo = remoteCam ?? isRemoteVideoOn;
+        if (remoteCam != null) {
+          _remoteCamStateKnown = true;
+        }
+
+        if (!isVideoCall.value && remoteSendingVideo) {
+          await audioRouteController.updateCallType(isVideo: true);
+        }
+
+        await _applyRemoteSdp(pc, sdp);
+
+        isRemoteVideoOn = remoteSendingVideo;
+        if (isRemoteVideoOn) {
+          isLocalVideoMain = isVideoOn ? isLocalVideoMain : false;
+        } else if (isVideoOn) {
+          isLocalVideoMain = true;
+        }
+
+        if (_localVideoSender == null && !isVideoOn) {
+          try {
+            final bool answerNeedsReneg = await _ensureLocalVideoTrackAttached(
+              pc,
+              muted: true,
+            );
+            log(
+              "[CAM] answer: muted video track attached before answer "
+                  "(reneg=$answerNeedsReneg)",
+            );
+          } catch (e) {
+            log("[CAM] answer: muted attach failed: $e");
+          }
+        }
+
+        bool slotAdvertised = false;
+        try {
+          final RTCRtpTransceiver? slot = _remoteVideoTransceiver;
+          if (slot != null) {
+            await slot.setDirection(TransceiverDirection.SendRecv);
+            slotAdvertised = true;
+            log("[CAM] answer: video slot advertised sendrecv");
+          } else {
+            log("[CAM] answer: no video transceiver captured yet");
+          }
+        } catch (e) {
+          log("[CAM] answer: setDirection failed: $e");
+        }
+
+        RTCSessionDescription rawAnswer;
+        try {
+          rawAnswer = await pc.createAnswer({
+            'offerToReceiveAudio': true,
+            'offerToReceiveVideo': true,
+          });
+        } catch (e) {
+          log("[CAM] answer: createAnswer failed with sendrecv: $e");
+          if (slotAdvertised) {
+            try {
+              await _remoteVideoTransceiver?.setDirection(
+                TransceiverDirection.RecvOnly,
+              );
+            } catch (_) {}
+            slotAdvertised = false;
+          }
+          rawAnswer = await pc.createAnswer({
+            'offerToReceiveAudio': true,
+            'offerToReceiveVideo': true,
+          });
+        }
+
+        final RTCSessionDescription answer = RTCSessionDescription(
+          _withCamTag(_preferH264InSdp(rawAnswer.sdp ?? ''), isVideoOn),
+          rawAnswer.type,
+        );
+        await pc.setLocalDescription(answer);
+        log(
+          "[SDP] answer ${_sdpInfo(answer.sdp)} "
+              "slotAdvertised=$slotAdvertised",
+        );
+
+        if (slotAdvertised) {
+          try {
+            final TransceiverDirection? current =
+            await _remoteVideoTransceiver?.getCurrentDirection();
+            _videoSlotReady = current == TransceiverDirection.SendRecv ||
+                current == TransceiverDirection.SendOnly;
+          } catch (_) {
+            _videoSlotReady = false;
+          }
+          log("[CAM] answer: slotReady=$_videoSlotReady");
+        }
+
+        if (isVideoOn) {
+          await _tuneLocalVideoSender();
+        }
 
         socket?.emit("upgradeToVideoAnswer", {
           "callId": callId,
           "remoteUserId": data["callerId"],
           "sdpAnswer": answer.toMap(),
         });
-
-        is_video = true;
-        isVideoCall.value = true;
+        _clearRemoteUpgrading();
 
         callStatus.value = "Connected";
-        await setDefaultAudioRouteForCallType(isVideo: true);
-        update();
+        await _syncVideoState();
       } catch (e) {
         log("upgradeToVideo handler error: $e");
       }
@@ -353,212 +1466,659 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
     socket?.on("upgradeToVideoAnswer", (data) async {
       try {
-        if (peer == null) return;
-        final sdp = data["sdpAnswer"];
+        final RTCPeerConnection? pc = peer;
+        if (pc == null) return;
+        final dynamic sdp = data["sdpAnswer"];
+        log(
+          "[CAM] upgradeToVideoAnswer recv hasSdp=${sdp != null} "
+              "pending=$_localOfferPending",
+        );
         if (sdp == null) return;
 
-        await peer!.setRemoteDescription(
-          RTCSessionDescription(sdp["sdp"], sdp["type"]),
-        );
+        if (!_localOfferPending) {
+          log("[CAM] ignoring answer: no local offer pending");
+          return;
+        }
+        _localOfferPending = false;
 
-        is_video = true;
-        isVideoOn = true;
-        isVideoCall.value = true;
+        final bool? remoteCam = _camStateFromSdp(sdp["sdp"]?.toString() ?? '');
+        final bool remoteSendingVideo = remoteCam ?? isRemoteVideoOn;
+        if (remoteCam != null) {
+          _remoteCamStateKnown = true;
+        }
+
+        await _applyRemoteSdp(pc, sdp);
+
+        isRemoteVideoOn = remoteSendingVideo;
+        if (isRemoteVideoOn) {
+          isLocalVideoMain = isVideoOn ? isLocalVideoMain : false;
+        } else if (isVideoOn) {
+          isLocalVideoMain = true;
+        }
+
+        if (isVideoOn) {
+          await _tuneLocalVideoSender();
+        }
+
         callStatus.value = "Connected";
-        await setDefaultAudioRouteForCallType(isVideo: true);
-
-        update();
+        await _syncVideoState();
       } catch (e) {
         log("upgradeToVideoAnswer error: $e");
       }
     });
   }
 
+  void _onNewCall(dynamic data) {
+    socket?.emit("CallingStatus", {
+      "callId": data['callId'].toString(),
+      "remoteUserId": int.tryParse(data['callerId'].toString()) ?? 0,
+      "callingStatus": "Ringing",
+    });
+  }
+
+  Future<void> _onCallEnded(dynamic data) async {
+    log("[Socket] callEnded RECEIVED: $data");
+    Utils().fluttertoast('Call Ended By ${args["callerName"] ?? "Unknown"}');
+    await _cleanupCall(notifyRemote: false, navigateBack: true);
+  }
+
+  Future<void> _onMissedCall(dynamic data) async {
+    if (_isCleaningUp) return;
+
+    if (callTimer != null || callDurationSeconds > 0) {
+      return;
+    }
+
+    _isCleaningUp = true;
+    try {
+      _clearTimers();
+      stopSound();
+
+      final String sessionId = data["sessionId"]?.toString().isNotEmpty == true
+          ? data["sessionId"].toString()
+          : _sessionId;
+
+      CallSessionState.reset();
+      _exitCallScreen();
+
+      await resetPeer();
+      await audioRouteController.stopCall();
+
+      if (sessionId.isNotEmpty) {
+        await CallKitService.dismiss(sessionId);
+        await callEnded(sessionId, type: "missedCallFromSocket");
+      }
+
+      await _stopForegroundCallService();
+      await WakelockPlus.disable();
+      await ProximityScreenLock.setActive(false);
+    } finally {
+      _isCleaningUp = false;
+    }
+  }
+
+  void _onCallCreated(dynamic data) {
+    try {
+      if (data['callId'] != null) callId = data['callId'];
+      final sid = data['sessionId'] ?? data['session_id'];
+      if (sid != null && sid.toString().isNotEmpty) {
+        CallSessionState.sessionId = sid.toString();
+      }
+    } catch (e) {
+      log("[Call] callCreated parse error: $e");
+    }
+  }
+
   void _listenForCallEvents() {
     socket?.off("callRejected");
-    socket?.off("callEnded");
-    socket?.off("missedCall");
+    socket?.off("callEnded", _onCallEnded);
+    socket?.off("endCall", _onCallEnded);
+    socket?.off("missedCall", _onMissedCall);
     socket?.off("callStatus");
     socket?.off("callCreated");
-    socket?.off("newCall");
+    socket?.off("newCall", _onNewCall);
     socket?.off("sdpOfferFromCaller");
     socket?.off("callError");
     socket?.off("callBlocked");
+    socket?.off("screen_share_started");
+    socket?.off("screen_share_stopped");
+    socket?.off("screen_share_offer");
+    socket?.off("screen_share_answer");
+    socket?.off("screen_share_ice");
 
-    socket?.on("callError", (data) {
+    socket?.on("callCreated", _onCallCreated);
+
+    socket?.on("callError", (data) async {
       log("CALL ERROR => $data");
-      stopSound();
-      _clearTimers();
-      resetPeer();
-      if (Get.isOverlaysOpen) {
-        Get.back();
-      }
+      await _cleanupCall(notifyRemote: false, navigateBack: true);
       Get.snackbar(
-          "Call Failed", data?['message']?.toString() ?? "Unable to make call");
+        "Call Failed",
+        data?["message"]?.toString() ?? "Unable to make call",
+      );
     });
 
-    socket?.on("callBlocked", (data) {
+    socket?.on("callBlocked", (data) async {
       log("CALL BLOCKED => $data");
-      stopSound();
-      _clearTimers();
-      resetPeer();
-      if (Get.isOverlaysOpen) {
-        Get.back();
-      }
+      await _cleanupCall(notifyRemote: false, navigateBack: true);
       Get.snackbar(
-          "Call unavailable",
-          data?['message']?.toString() ??
-              "Communication is not available with this user");
+        "Call unavailable",
+        data?["message"]?.toString() ??
+            "Communication is not available with this user",
+      );
     });
 
     socket?.on("sdpOfferFromCaller", (data) async {
-      log("====== Received SDP Offer from Caller (CallKit flow) ======");
-      log("Data: $data");
-      if (peer == null) return;
+      final RTCPeerConnection? pc = peer;
+      if (pc == null) return;
 
       try {
-        final sdp = data["sdpOffer"] ?? data["offer"];
+        final dynamic sdp = data["sdpOffer"] ?? data["offer"];
         if (sdp == null) return;
         offer = sdp;
         callId = data["callId"] ?? callId;
 
-        await peer!.setRemoteDescription(
-            RTCSessionDescription(sdp["sdp"], sdp["type"]));
-        final answer = await peer!.createAnswer();
-        await peer!.setLocalDescription(answer);
-
-        peer!.onIceCandidate = (c) {
+        pc.onIceCandidate = (c) {
           if (c.candidate == null) return;
           socket!.emit("IceCandidate", {
             "remoteUserId": callerId,
             "iceCandidate": {
               "id": c.sdpMid,
               "label": c.sdpMLineIndex,
-              "candidate": c.candidate
+              "candidate": c.candidate,
             },
           });
         };
+
+        await _applyRemoteSdp(pc, sdp);
+
+        final RTCSessionDescription rawAnswer = await pc.createAnswer({
+          'offerToReceiveAudio': true,
+          'offerToReceiveVideo': true,
+        });
+        final RTCSessionDescription answer = RTCSessionDescription(
+          _withCamTag(_preferH264InSdp(rawAnswer.sdp ?? ''), isVideoOn),
+          rawAnswer.type,
+        );
+        await pc.setLocalDescription(answer);
+        log("[SDP] callkit answer ${_sdpInfo(answer.sdp)}");
 
         socket!.emit("answerCall", {
           "callId": callId,
           "callerId": callerId,
           "sdpAnswer": answer.toMap(),
         });
-        callStatus.value = "Connecting";
+        if (callTimer == null && callDurationSeconds == 0) {
+          callStatus.value = "Connecting";
+        }
       } catch (e) {
         log("Error handling sdpOfferFromCaller: $e");
       }
     });
 
-    socket!.on("newCall", (data) {
-      socket?.emit("CallingStatus", {
-        "callId": data['callId'].toString(),
-        "remoteUserId": int.tryParse(data['callerId'].toString()) ?? 0,
-        "callingStatus": "Ringing",
-      });
-    });
+    socket?.on("newCall", _onNewCall);
+    socket?.on("callEnded", _onCallEnded);
+    socket?.on("endCall", _onCallEnded);
+    socket?.on("missedCall", _onMissedCall);
 
-    socket!.on("callRejected", (data) async {
-      _clearTimers();
-      if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(),
-            type: "CallRejectedFromController");
+    socket?.on("callRejected", (data) async {
+      if (callTimer != null || callDurationSeconds > 0) {
+        return;
       }
-      resetPeer();
-      Get.back();
-    });
 
-    socket!.on("callEnded", (data) async {
-      _clearTimers();
-      resetPeer();
-      if (CallSessionState.sessionId != null) {
-        callEnded(data['sessionId'].toString(),
-            type: "callEndedFromController");
-      }
-      if (args["callType"] == "outGoing") {
-        stopSound();
-      }
-      if (Get.currentRoute != Routes.Home_Screen) {
-        Get.offAllNamed(Routes.Home_Screen);
-      }
-    });
-
-    socket!.on("missedCall", (data) async {
-      log("==========MissedCallCalled=======$data");
-      _clearTimers();
-      if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(),
-            type: "missedCallFromController");
-      }
-      resetPeer();
-      Get.back();
+      Utils().fluttertoast(
+        'Call Rejected By ${args["callerName"] ?? "Unknown"}',
+        bgColor: Colors.red,
+      );
+      await _cleanupCall(notifyRemote: false, navigateBack: true);
     });
 
     socket?.on("callStatus", (data) {
-      log("CALL STATUS: $data");
-      if (data['status'] != null) {
-        callStatus.value = data['status'];
+      final status = (data["status"] ?? data["callingStatus"])?.toString();
+      if (status == null || status.isEmpty) return;
+
+      if (data['callId'] != null) {
+        callId = data['callId'];
+      }
+
+      final String normalized = status.trim().toLowerCase();
+      if (normalized == "rejected" || normalized == "declined") {
+        if (callTimer == null && callDurationSeconds == 0) {
+          Utils().fluttertoast(
+            'Call Rejected By ${args["callerName"] ?? "Unknown"}',
+            bgColor: Colors.red,
+          );
+          unawaited(_cleanupCall(notifyRemote: false, navigateBack: true));
+          return;
+        }
+      } else if (normalized == "ended" ||
+          normalized == "callended" ||
+          normalized == "disconnected" ||
+          normalized == "cancelled" ||
+          normalized == "canceled") {
+        unawaited(_cleanupCall(notifyRemote: false, navigateBack: true));
+        return;
+      }
+
+      if (callTimer == null && callDurationSeconds == 0) {
+        callStatus.value = status;
       }
     });
 
-    socket?.on("callCreated", (data) {
-      callId = data['callId'];
-      fetchCallDetail();
-      startMissedCallTimer();
+    socket?.on("screen_share_started", (data) {
+      log("[SHARE] remote started: $data");
+      isRemoteScreenSharing.value = true;
+      showControlsTemporarily();
+      update();
+    });
+
+    socket?.on("screen_share_stopped", (data) async {
+      log("[SHARE] remote stopped: $data");
+      isRemoteScreenSharing.value = false;
+      _remoteScreenStream = null;
+      screenRenderer.srcObject = null;
+      showControlsTemporarily();
+
+      if (isScreenSharing.value) {
+        log("[SHARE] stop echo ignored: we are the sharer");
+        update();
+        return;
+      }
+
+      await _teardownScreenStream();
+      update();
+    });
+
+    socket?.on("screen_share_offer", (data) async {
+      try {
+        final sdp = data["sdpOffer"];
+        if (sdp == null) return;
+
+        if (isScreenSharing.value) {
+          log("[SHARE] incoming offer ignored: we are the sharer");
+          return;
+        }
+
+        await _teardownScreenStream();
+
+        final pc = await createPeerConnection({
+          'sdpSemantics': 'unified-plan',
+          'iceServers': [
+            {
+              'urls': ['stun:stun.l.google.com:19302']
+            },
+            {
+              'urls': Urls.rtcUrl,
+              'username': Urls.rtcUserName,
+              'credential': Urls.rtcCredential,
+            },
+          ],
+        });
+        _screenPc = pc;
+
+        pc.onIceCandidate = (c) {
+          if (c.candidate == null) return;
+          if (_screenRemoteDescSet) {
+            socket?.emit("screen_share_ice", {
+              "callId": callId,
+              "remoteUserId": _screenPeerUserId,
+              "iceCandidate": {
+                "id": c.sdpMid,
+                "label": c.sdpMLineIndex,
+                "candidate": c.candidate,
+              },
+            });
+          } else {
+            _screenPendingLocalIce.add(c);
+          }
+        };
+
+        pc.onTrack = (event) async {
+          if (event.track.kind != 'video') return;
+          final stream = event.streams.isNotEmpty
+              ? event.streams.first
+              : await createLocalMediaStream('remote_screen');
+          if (event.streams.isEmpty) await stream.addTrack(event.track);
+          _remoteScreenStream = stream;
+          try {
+            await screenRenderer.setSrcObject(
+              stream: stream,
+              trackId: event.track.id,
+            );
+          } catch (e) {
+            log("[SHARE] remote screen bind error: $e");
+          }
+          isRemoteScreenSharing.value = true;
+          update();
+          log("[SHARE] remote screen track bound id=${event.track.id}");
+        };
+
+        await pc.setRemoteDescription(
+          RTCSessionDescription(sdp["sdp"], sdp["type"]),
+        );
+        _screenRemoteDescSet = true;
+
+        for (final c in _screenPendingRemoteIce) {
+          await pc.addCandidate(
+            RTCIceCandidate(c["candidate"], c["id"], c["label"]),
+          );
+        }
+        _screenPendingRemoteIce.clear();
+
+        final answer = await pc.createAnswer({
+          'offerToReceiveAudio': false,
+          'offerToReceiveVideo': true,
+        });
+        await pc.setLocalDescription(answer);
+
+        socket?.emit("screen_share_answer", {
+          "callId": callId,
+          "remoteUserId":
+          data["sharerId"] ?? data["userId"] ?? _screenPeerUserId,
+          "sdpAnswer": answer.toMap(),
+        });
+
+        for (final c in _screenPendingLocalIce) {
+          socket?.emit("screen_share_ice", {
+            "callId": callId,
+            "remoteUserId": _screenPeerUserId,
+            "iceCandidate": {
+              "id": c.sdpMid,
+              "label": c.sdpMLineIndex,
+              "candidate": c.candidate,
+            },
+          });
+        }
+        _screenPendingLocalIce.clear();
+      } catch (e, st) {
+        log("[SHARE] offer handler error: $e\n$st");
+      }
+    });
+
+    socket?.on("screen_share_answer", (data) async {
+      try {
+        final sdp = data["sdpAnswer"];
+        final pc = _screenPc;
+        if (sdp == null || pc == null) return;
+        await pc.setRemoteDescription(
+          RTCSessionDescription(sdp["sdp"], sdp["type"]),
+        );
+        _screenRemoteDescSet = true;
+
+        for (final c in _screenPendingLocalIce) {
+          socket?.emit("screen_share_ice", {
+            "callId": callId,
+            "remoteUserId": _screenPeerUserId,
+            "iceCandidate": {
+              "id": c.sdpMid,
+              "label": c.sdpMLineIndex,
+              "candidate": c.candidate,
+            },
+          });
+        }
+        _screenPendingLocalIce.clear();
+        for (final c in _screenPendingRemoteIce) {
+          await pc.addCandidate(
+            RTCIceCandidate(c["candidate"], c["id"], c["label"]),
+          );
+        }
+        _screenPendingRemoteIce.clear();
+      } catch (e) {
+        log("[SHARE] answer handler error: $e");
+      }
+    });
+
+    socket?.on("screen_share_ice", (data) async {
+      try {
+        final ice = data["iceCandidate"];
+        if (ice == null) return;
+        final pc = _screenPc;
+        final cand = RTCIceCandidate(ice["candidate"], ice["id"], ice["label"]);
+        if (pc != null && _screenRemoteDescSet) {
+          await pc.addCandidate(cand);
+        } else {
+          _screenPendingRemoteIce.add({
+            "candidate": ice["candidate"],
+            "id": ice["id"],
+            "label": ice["label"],
+          });
+        }
+      } catch (e) {
+        log("[SHARE] ice handler error: $e");
+      }
     });
 
     _listenVideoUpgradeEvents();
   }
 
-  void resetPeer() {
+  Future<void> resetPeer() async {
+    await _disposePeerResources();
+  }
+
+  Future<void> _disposePeerResources() async {
     try {
-      peer?.close();
-      localStream?.dispose();
-    } catch (_) {}
-    peer = null;
-    localStream = null;
+      _peerDisconnectTimer?.cancel();
+      _peerDisconnectTimer = null;
+      screenRenderer.srcObject = null;
+      navigator.mediaDevices.ondevicechange = null;
+
+      final RTCPeerConnection? pc = peer;
+      peer = null;
+      _localVideoSender = null;
+      _remoteMediaStream = null;
+      _remoteVideoTrack = null;
+      _remoteCamStateKnown = false;
+      _remoteVideoTransceiver = null;
+      _videoSlotReady = false;
+      _fallbackRemoteStream = null;
+      _remoteDescriptionSet = false;
+      _audioRouteRestored = false;
+      _renegotiating = false;
+      _pendingRenegotiation = false;
+      _localOfferPending = false;
+      isRemoteUpgrading.value = false;
+      _remoteUpgradeTimer?.cancel();
+      isRemoteVideoOn = false;
+      isRemoteVideoLoading.value = false;
+      _pendingRemoteCandidates.clear();
+
+      if (pc != null) {
+        pc.onIceConnectionState = null;
+        pc.onConnectionState = null;
+        pc.onSignalingState = null;
+        pc.onTrack = null;
+        pc.onIceCandidate = null;
+      }
+
+      localStream?.getTracks().forEach((track) {
+        track.stop();
+      });
+
+      await localStream?.dispose();
+      localStream = null;
+
+      remoteRenderer.srcObject = null;
+      localRenderer.srcObject = null;
+
+      await pc?.close();
+
+      _screenSender = null;
+      final MediaStream? screenStreamToStop = _screenStream;
+      _screenStream = null;
+      try {
+        screenStreamToStop?.getTracks().forEach((t) => t.stop());
+        await screenStreamToStop?.dispose();
+      } catch (_) {}
+      final RTCPeerConnection? screenPcToClose = _screenPc;
+      _screenPc = null;
+      try {
+        await screenPcToClose?.close();
+      } catch (_) {}
+      _screenShareAnnounced = false;
+      _screenRemoteDescSet = false;
+      _screenPendingLocalIce.clear();
+      _screenPendingRemoteIce.clear();
+      isScreenSharing.value = false;
+      isScreenShareLive.value = false;
+
+      socket?.off("IceCandidate");
+      socket?.off("callAnswered");
+    } catch (e, stackTrace) {
+      log("[Call] Peer dispose error: $e", stackTrace: stackTrace);
+    }
   }
 
   void safeAddCandidate(dynamic data) {
-    if (peer == null) return;
-    final c = RTCIceCandidate(
-      data["iceCandidate"]["candidate"],
-      data["iceCandidate"]["id"],
-      data["iceCandidate"]["label"],
-    );
-    peer!.addCandidate(c);
+    try {
+      final ice = data["iceCandidate"];
+      if (ice == null) return;
+
+      if (peer == null || !_remoteDescriptionSet) {
+        _pendingRemoteCandidates.add(data);
+        return;
+      }
+
+      final c = RTCIceCandidate(ice["candidate"], ice["id"], ice["label"]);
+
+      unawaited(
+        peer!.addCandidate(c).catchError((e) {
+          log("[Call] addCandidate error: $e");
+        }),
+      );
+    } catch (e) {
+      log("[Call] safeAddCandidate error: $e");
+    }
+  }
+
+  Future<void> _markRemoteDescriptionSet() async {
+    _remoteDescriptionSet = true;
+
+    if (_pendingRemoteCandidates.isEmpty) return;
+
+    final List<dynamic> pending = List<dynamic>.from(_pendingRemoteCandidates);
+    _pendingRemoteCandidates.clear();
+
+    for (final d in pending) {
+      safeAddCandidate(d);
+    }
+  }
+
+  void _startPeerDisconnectTimer({
+    Duration grace = const Duration(seconds: 30),
+  }) {
+    if (_peerDisconnectTimer?.isActive ?? false) return;
+
+    if (_everConnected && !_isCleaningUp && !isClosed) {
+      callStatus.value = "Reconnecting...";
+      update();
+    }
+
+    _peerDisconnectTimer = Timer(grace, () {
+      final RTCIceConnectionState? ice = peer?.iceConnectionState;
+      final RTCPeerConnectionState? conn = peer?.connectionState;
+
+      final bool recovered =
+          ice == RTCIceConnectionState.RTCIceConnectionStateConnected ||
+              ice == RTCIceConnectionState.RTCIceConnectionStateCompleted ||
+              conn == RTCPeerConnectionState.RTCPeerConnectionStateConnected;
+
+      if (recovered) return;
+
+      _handlePeerDisconnected();
+    });
+  }
+
+  void _cancelPeerDisconnectTimer() {
+    final bool wasWaiting = _peerDisconnectTimer?.isActive ?? false;
+    _peerDisconnectTimer?.cancel();
+    _peerDisconnectTimer = null;
+
+    if (wasWaiting && callStatus.value == "Reconnecting...") {
+      callStatus.value = "Connected";
+      update();
+    }
   }
 
   Future<void> _setupPeer() async {
-    resetPeer();
+    await resetPeer();
+
+    if (socket == null) {
+      throw Exception("Socket is not initialized");
+    }
 
     socket!.off("IceCandidate");
     socket!.off("callAnswered");
 
-    peer = await createPeerConnection({
+    socket!.on("IceCandidate", (data) {
+      safeAddCandidate(data);
+    });
+
+    final RTCPeerConnection pc = await createPeerConnection({
+      'sdpSemantics': 'unified-plan',
       'iceServers': [
         {
-          'urls': ['stun:stun.l.google.com:19302']
+          'urls': ['stun:stun.l.google.com:19302'],
         },
         {
           'urls': Urls.rtcUrl,
           'username': Urls.rtcUserName,
-          'credential': Urls.rtcCredential
-        }
+          'credential': Urls.rtcCredential,
+        },
       ],
       'iceTransportPolicy': 'all',
     });
+    peer = pc;
 
-    peer!.onTrack = (event) {
-      remoteRenderer.srcObject = event.streams[0];
-      update();
+    pc.onIceConnectionState = (state) {
+      if (!identical(peer, pc)) return;
+      log("[Call] ICE state: $state");
 
-      missedCallTimer?.cancel();
-      missedCallTimer = null;
+      if (state == RTCIceConnectionState.RTCIceConnectionStateConnected ||
+          state == RTCIceConnectionState.RTCIceConnectionStateCompleted) {
+        _everConnected = true;
+        _cancelPeerDisconnectTimer();
+        missedCallTimer?.cancel();
+        missedCallTimer = null;
+        return;
+      }
 
-      startCallTimer();
-      callStatus.value = "Connected";
-      fetchCallDetail();
+      if (state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
+        _startPeerDisconnectTimer();
+        return;
+      }
+
+      if (state == RTCIceConnectionState.RTCIceConnectionStateFailed) {
+        _startPeerDisconnectTimer(grace: const Duration(seconds: 12));
+        return;
+      }
+
+      if (state == RTCIceConnectionState.RTCIceConnectionStateClosed) {
+        return;
+      }
+    };
+
+    pc.onConnectionState = (state) {
+      if (!identical(peer, pc)) return;
+      log("[Call] Peer connection state: $state");
+
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
+        _everConnected = true;
+        _cancelPeerDisconnectTimer();
+        return;
+      }
+
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
+        _startPeerDisconnectTimer(grace: const Duration(seconds: 12));
+        return;
+      }
+
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected) {
+        _startPeerDisconnectTimer();
+      }
+    };
+
+    pc.onTrack = (event) {
+      if (!identical(peer, pc)) return;
+      unawaited(_handleRemoteTrack(event));
     };
 
     localStream = await navigator.mediaDevices.getUserMedia({
@@ -566,54 +2126,67 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         'echoCancellation': true,
         'noiseSuppression': true,
         'autoGainControl': true,
-        'googEchoCancellation': true,
-        'googAutoGainControl': true,
-        'googNoiseSuppression': true,
-        'googHighpassFilter': true,
       },
-      'video': is_video == true
-          ? {'facingMode': isFrontCamera ? 'user' : 'environment'}
-          : false,
+      'video': is_video == true ? _videoCaptureConstraints() : false,
     });
 
-    _startDeviceMonitoring();
-
-    await setDefaultAudioRouteForCallType(isVideo: is_video == true);
-
-    for (var t in localStream!.getTracks()) {
-      peer!.addTrack(t, localStream!);
+    for (final MediaStreamTrack t in localStream!.getTracks()) {
+      final RTCRtpSender sender = await pc.addTrack(t, localStream!);
+      if (t.kind == 'video') {
+        _localVideoSender = sender;
+      }
     }
 
-    localRenderer.srcObject = localStream;
+    if (is_video == true) {
+      _logCaptureSettings("setup");
+      await _tuneLocalVideoSender();
+      final MediaStreamTrack? vidTrack =
+          localStream!.getVideoTracks().firstOrNull;
+      if (vidTrack != null) {
+        await localRenderer.setSrcObject(
+          stream: localStream,
+          trackId: vidTrack.id,
+        );
+      } else {
+        localRenderer.srcObject = localStream;
+      }
+    } else {
+      localRenderer.srcObject = null;
+    }
+
+    unawaited(
+      audioRouteController.startCall(isVideo: is_video).catchError((e) {
+        log("[Call] Audio route start error: $e");
+      }),
+    );
+
     update();
 
-    socket!.on("IceCandidate", (data) {
-      if (peer == null) {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (peer != null) safeAddCandidate(data);
-        });
-        return;
-      }
-      safeAddCandidate(data);
-    });
-
     if (offer != null) {
-      await peer!.setRemoteDescription(
-          RTCSessionDescription(offer["sdp"], offer["type"]));
-      final answer = await peer!.createAnswer();
-      await peer!.setLocalDescription(answer);
-
-      peer!.onIceCandidate = (c) {
+      pc.onIceCandidate = (c) {
         if (c.candidate == null) return;
         socket!.emit("IceCandidate", {
           "remoteUserId": callerId,
           "iceCandidate": {
             "id": c.sdpMid,
             "label": c.sdpMLineIndex,
-            "candidate": c.candidate
+            "candidate": c.candidate,
           },
         });
       };
+
+      await _applyRemoteSdp(pc, offer);
+
+      final RTCSessionDescription rawAnswer = await pc.createAnswer({
+        'offerToReceiveAudio': true,
+        'offerToReceiveVideo': true,
+      });
+      final RTCSessionDescription answer = RTCSessionDescription(
+        _withCamTag(_preferH264InSdp(rawAnswer.sdp ?? ''), isVideoOn),
+        rawAnswer.type,
+      );
+      await pc.setLocalDescription(answer);
+      log("[SDP] initial answer ${_sdpInfo(answer.sdp)}");
 
       socket!.emit("answerCall", {
         "callId": callId,
@@ -623,49 +2196,69 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     } else if (fromCallKit ||
         (args["callType"] == "Incoming" && offer == null)) {
       callStatus.value = "Connecting...";
-      socket!.emit("acceptCallFromCallKit", {
+      final acceptPayload = {
         "callerId": callerId,
         "sessionId": CallSessionState.sessionId ?? args["sessionId"],
         "callId": callId,
         "receiverId": Global.storageServices.get(PrefConst.userId),
-      });
+      };
+      socket!.emit("acceptCallFromCallKit", acceptPayload);
     } else {
-      peer!.onIceCandidate = (c) => iceCandidates.add(c);
+      pc.onIceCandidate = (c) => iceCandidates.add(c);
 
       socket!.on("callAnswered", (data) async {
-        await peer!.setRemoteDescription(
-          RTCSessionDescription(
-              data["sdpAnswer"]["sdp"], data["sdpAnswer"]["type"]),
-        );
+        if (!identical(peer, pc) || _remoteDescriptionSet) return;
 
-        for (var c in iceCandidates) {
+        stopSound();
+        missedCallTimer?.cancel();
+        missedCallTimer = null;
+
+        try {
+          await _applyRemoteSdp(pc, data["sdpAnswer"]);
+          if (isVideoCall.value && isVideoOn) {
+            await _tuneLocalVideoSender();
+          }
+        } catch (e) {
+          log("[Call] callAnswered handler error: $e");
+          return;
+        }
+
+        for (final c in iceCandidates) {
           if (c.candidate == null) continue;
           socket!.emit("IceCandidate", {
             "remoteUserId": remoteUserId,
             "iceCandidate": {
               "id": c.sdpMid,
               "label": c.sdpMLineIndex,
-              "candidate": c.candidate
+              "candidate": c.candidate,
             },
           });
         }
         iceCandidates.clear();
 
-        peer!.onIceCandidate = (c) {
+        pc.onIceCandidate = (c) {
           if (c.candidate == null) return;
           socket!.emit("IceCandidate", {
             "remoteUserId": remoteUserId,
             "iceCandidate": {
               "id": c.sdpMid,
               "label": c.sdpMLineIndex,
-              "candidate": c.candidate
+              "candidate": c.candidate,
             },
           });
         };
       });
 
-      final sdpOffer = await peer!.createOffer();
-      await peer!.setLocalDescription(sdpOffer);
+      final RTCSessionDescription rawOffer = await pc.createOffer({
+        'offerToReceiveAudio': true,
+        'offerToReceiveVideo': true,
+      });
+      final RTCSessionDescription sdpOffer = RTCSessionDescription(
+        _withCamTag(_preferH264InSdp(rawOffer.sdp ?? ''), isVideoOn),
+        rawOffer.type,
+      );
+      await pc.setLocalDescription(sdpOffer);
+      log("[SDP] initial offer ${_sdpInfo(sdpOffer.sdp)}");
 
       socket!.emit("makeCall", {
         "remoteUserId": remoteUserId,
@@ -673,43 +2266,48 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         "is_video": is_video,
         "callerId": Global.storageServices.get(PrefConst.userId),
       });
+
+      startMissedCallTimer();
     }
   }
 
   Future<void> endCall({String? type}) async {
-    _clearTimers();
-    await _stopForegroundCallService();
+    if (_isCleaningUp) return;
+    _isCleaningUp = true;
 
-    final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-    final targetUser =
-        (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    final String sid = _sessionId;
 
-    var param = {
-      "callId": callId,
-      "remoteUserId": targetUser.toString(),
-    };
-
-    if (type != "missedCall") {
-      socket?.emit("endCall", param);
-    }
-
-    resetPeer();
-
-    if (CallSessionState.sessionId != null) {
-      callEnded(CallSessionState.sessionId.toString(),
-          type: "endCallMethodHittedFromController-Type:$type");
-    }
-
-    if (args["callType"] == "outGoing") {
+    try {
+      _clearTimers();
       stopSound();
-    }
 
-    await WakelockPlus.disable();
-    await ProximityScreenLock.setActive(false);
+      _emitEndCallRealtime();
 
-    if (Get.currentRoute != Routes.Home_Screen) {
-      Get.offAllNamed(Routes.Home_Screen);
+      CallSessionState.reset();
+      _exitCallScreen();
+
+      await resetPeer();
+      await audioRouteController.stopCall();
+      await _stopForegroundCallService();
+
+      if (sid.isNotEmpty) {
+        await CallKitService.dismiss(sid);
+        await callEnded(
+          sid,
+          type: "endCallMethodHittedFromController-Type:$type",
+        );
+      }
+
+      await WakelockPlus.disable();
+      await ProximityScreenLock.setActive(false);
+    } finally {
+      _isCleaningUp = false;
     }
+  }
+
+  void _handlePeerDisconnected() {
+    if (_isCleaningUp || isClosed) return;
+    unawaited(_cleanupCall(notifyRemote: true, navigateBack: true));
   }
 
   void toggleMic() {
@@ -718,196 +2316,129 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     update();
   }
 
-  void toggleCamera() {
-    if (!isVideoCall.value) return;
+  void _emitCameraState(bool cameraOn) {
+    final String myUserId =
+    Global.storageServices.get(PrefConst.userId).toString();
+    String targetUser =
+    (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
-    final vids = localStream?.getVideoTracks() ?? [];
-    if (vids.isEmpty) {
-      upgradeToVideoCall();
-    } else {
-      isVideoOn = !isVideoOn;
-      for (var t in vids) {
-        t.enabled = isVideoOn;
-      }
-      update();
+    if (targetUser.isEmpty || targetUser == myUserId) {
+      targetUser = (remoteUserId.isNotEmpty && remoteUserId != myUserId)
+          ? remoteUserId
+          : callerId;
     }
-  }
+    if (targetUser.isEmpty || targetUser == myUserId) {
+      log(
+        "[CAM] no peer for cameraState=$cameraOn "
+            "(callerId=$callerId remoteUserId=$remoteUserId)",
+      );
+      return;
+    }
 
-  void switchCamera() {
-    if (!isVideoCall.value || !isVideoOn) return;
-    isFrontCamera = !isFrontCamera;
-    localStream?.getVideoTracks().forEach((t) {
-      Helper.switchCamera(t);
+    log("[CAM] send cameraState=$cameraOn to=$targetUser");
+
+    socket?.emit("upgradeToVideo", {
+      "callId": callId,
+      "remoteUserId": targetUser,
+      "callerId": myUserId,
+      "cameraState": cameraOn,
     });
-    update();
   }
 
-  Future<void> enableSpeaker() async {
-    await Helper.setSpeakerphoneOn(true);
-    isSpeakerOn = true;
-    currentAudioRoute.value = "speaker";
-    await ProximityScreenLock.setActive(false);
-    update();
-  }
+  Future<void> toggleCamera() async {
+    final RTCPeerConnection? pc = peer;
+    if (pc == null) return;
 
-  Future<void> disableSpeaker() async {
-    await Helper.setSpeakerphoneOn(false);
-    isSpeakerOn = false;
-    currentAudioRoute.value =
-        isBluetoothConnected.value ? "bluetooth" : "earpiece";
+    final List<MediaStreamTrack> vids =
+        localStream?.getVideoTracks() ?? <MediaStreamTrack>[];
+    if (vids.isEmpty) {
+      await upgradeToVideoCall();
+      return;
+    }
 
-    if (!isVideoCall.value && !isBluetoothConnected.value) {
-      await ProximityScreenLock.setActive(true);
-    } else {
-      await ProximityScreenLock.setActive(false);
+    isVideoOn = !isVideoOn;
+    for (final MediaStreamTrack t in vids) {
+      t.enabled = isVideoOn;
+    }
+    log(
+      "[CAM] toggle -> on=$isVideoOn tracks=${vids.length} "
+          "sender=${_localVideoSender != null} slotReady=$_videoSlotReady",
+    );
+
+    if (isVideoOn) {
+      if (localStream != null && !isScreenSharing.value) {
+        await localRenderer.setSrcObject(
+          stream: localStream,
+          trackId: vids.first.id,
+        );
+      }
+      if (!isRemoteVideoOn) {
+        isLocalVideoMain = true;
+      }
+    } else if (isRemoteVideoOn) {
+      isLocalVideoMain = false;
     }
     update();
-  }
 
-  Future<void> selectEarpiece() async {
-    await Helper.setSpeakerphoneOn(false);
-    isSpeakerOn = false;
-    currentAudioRoute.value = "earpiece";
-    if (!isVideoCall.value) {
-      await ProximityScreenLock.setActive(true);
+    _emitCameraState(isVideoOn);
+
+    try {
+      await _applyLocalVideoSending(isVideoOn ? vids.first : null);
+      log("[CAM] toggle applied replaceTrack=${isVideoOn ? 'track' : 'null'}");
+      if (isVideoOn && !isScreenSharing.value) {
+        await _tuneLocalVideoSender();
+      }
+      await _syncVideoState();
+    } catch (e) {
+      log("[Call] toggleCamera error: $e");
     }
-    update();
   }
 
-  Future<void> selectBluetooth() async {
-    await Helper.setSpeakerphoneOnButPreferBluetooth();
-    isSpeakerOn = false;
-    currentAudioRoute.value = "bluetooth";
-    await ProximityScreenLock.setActive(false);
-    update();
+  Future<void> switchCamera() async {
+    if (_isSwitchingCamera || !isVideoCall.value || !isVideoOn) return;
+    final List<MediaStreamTrack> tracks =
+        localStream?.getVideoTracks() ?? <MediaStreamTrack>[];
+    if (tracks.isEmpty) return;
+
+    _isSwitchingCamera = true;
+    showControlsTemporarily();
+    try {
+      for (final MediaStreamTrack t in tracks) {
+        await Helper.switchCamera(t);
+      }
+      isFrontCamera = !isFrontCamera;
+      update();
+    } catch (e) {
+      log("[Call] switchCamera error: $e");
+    } finally {
+      _isSwitchingCamera = false;
+    }
   }
 
   Future<void> toggleSpeaker(BuildContext context) async {
     showAudioRoutePicker(context);
   }
 
-  void showAudioRoutePicker(BuildContext context) async {
-    final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    final Offset offset = renderBox.localToGlobal(Offset.zero);
+  Future<void> showAudioRoutePicker(BuildContext context) async {
+    if (!context.mounted) return;
 
-    final RelativeRect position = RelativeRect.fromRect(
-      Rect.fromLTWH(
-        offset.dx,
-        offset.dy - (isBluetoothConnected.value ? 140.h : 95.h),
-        renderBox.size.width,
-        renderBox.size.height,
-      ),
-      Offset.zero & MediaQuery.of(context).size,
+    await audioRouteController.checkDevices();
+    if (!context.mounted) return;
+
+    final CallAudioRoute? selected = await showAudioRouteSheet(
+      context,
+      audioRouteController,
     );
 
-    const Color primaryPurple = Color(0xFF7B58FF);
-
-    final String? selectedRoute = await showMenu<String>(
-      context: context,
-      position: position,
-      color: Colors.white,
-      elevation: 6,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.r),
-        side: BorderSide(
-          color: primaryPurple.withOpacity(0.12),
-          width: 0.8,
-        ),
-      ),
-      constraints: BoxConstraints(
-        minWidth: 105.w,
-        maxWidth: 125.w,
-      ),
-      items: [
-        PopupMenuItem<String>(
-          value: "earpiece",
-          height: 35.h,
-          padding: EdgeInsets.symmetric(horizontal: 8.w),
-          child: _buildRouteRow(
-            icon: Icons.phone_in_talk_rounded,
-            label: "Earpiece",
-            routeKey: "earpiece",
-          ),
-        ),
-        PopupMenuItem<String>(
-          value: "speaker",
-          height: 35.h,
-          padding: EdgeInsets.symmetric(horizontal: 8.w),
-          child: _buildRouteRow(
-            icon: Icons.volume_up_rounded,
-            label: "Speaker",
-            routeKey: "speaker",
-          ),
-        ),
-        if (isBluetoothConnected.value)
-          PopupMenuItem<String>(
-            value: "bluetooth",
-            height: 35.h,
-            padding: EdgeInsets.symmetric(horizontal: 8.w),
-            child: _buildRouteRow(
-              icon: Icons.bluetooth_audio_rounded,
-              label: "Bluetooth",
-              routeKey: "bluetooth",
-            ),
-          ),
-      ],
-    );
-
-    if (selectedRoute != null) {
-      if (selectedRoute == "earpiece") {
-        await selectEarpiece();
-      } else if (selectedRoute == "speaker") {
-        await enableSpeaker();
-      } else if (selectedRoute == "bluetooth") {
-        await selectBluetooth();
-      }
+    if (selected != null) {
+      await audioRouteController.selectRoute(selected);
     }
   }
 
-  Widget _buildRouteRow({
-    required IconData icon,
-    required String label,
-    required String routeKey,
-  }) {
-    final bool isSelected = currentAudioRoute.value == routeKey;
-    const Color primaryPurple = Color(0xFF7B58FF);
-    const Color darkText = Color(0xFF0F0B4C);
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isSelected ? primaryPurple : darkText.withOpacity(0.6),
-          size: 15.sp,
-        ),
-        SizedBox(width: 6.w),
-        Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? primaryPurple : darkText,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        Icon(
-          isSelected
-              ? Icons.radio_button_checked_rounded
-              : Icons.radio_button_off_rounded,
-          color: isSelected ? primaryPurple : darkText.withOpacity(0.2),
-          size: 13.sp,
-        ),
-      ],
-    );
-  }
-
   String get formattedDuration {
-    final minutes = (callDurationSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds = (callDurationSeconds % 60).toString().padLeft(2, '0');
+    final int secs = callDurationRx.value;
+    final minutes = (secs ~/ 60).toString().padLeft(2, '0');
+    final seconds = (secs % 60).toString().padLeft(2, '0');
     if (Utility.isNotNullEmptyOrFalse("$minutes:$seconds")) {
       if (args["callType"] == "outGoing") {
         stopSound();
@@ -916,23 +2447,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     return "$minutes:$seconds";
   }
 
-  Future<void> fetchCallDetail() async {
-    if (callId == null) return;
-    try {
-      final res = await CallRepo.callDetailData(callId.toString());
-      if (res.status == true && res.callDetail != null) {
-        apiCallDetail.value = res.callDetail;
-      }
-    } catch (e) {
-      log("Error fetching call detail: $e");
-    }
-  }
-
   void startCallTimer() {
     if (callTimer != null) return;
     callTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       callDurationSeconds++;
-      update();
+      callDurationRx.value = callDurationSeconds;
+      if (!isVideoCall.value) {
+        update();
+      }
     });
   }
 
@@ -954,17 +2476,27 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     });
   }
 
-  void missedCall() {
-    var param = {"callId": callId, "remoteUserId": remoteUserId};
+  Future<void> missedCall() async {
+    final Map<String, dynamic> param = {
+      "callId": callId,
+      "remoteUserId": remoteUserId,
+    };
+
     socket?.emit("missCall", param);
-    endCall(type: "missedCall");
+
+    await endCall(type: "missedCall");
   }
 
   void _clearTimers() {
     callTimer?.cancel();
     missedCallTimer?.cancel();
+    _firstFrameTimer?.cancel();
+    _qualityTimer?.cancel();
+    _remoteUpgradeTimer?.cancel();
     callTimer = null;
     missedCallTimer = null;
+    _firstFrameTimer = null;
+    _qualityTimer = null;
     missCallDurationSeconds.value = 0;
   }
 
@@ -983,101 +2515,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   Future<void> startAudioCall() async {
     await WakelockPlus.enable();
-    if (!isBluetoothConnected.value) {
+
+    if (!audioRouteController.isBluetoothConnected.value) {
       await ProximityScreenLock.setActive(true);
     }
-  }
-
-  Future<void> setDefaultAudioRouteForCallType({
-    required bool isVideo,
-  }) async {
-    await checkAudioDevices();
-
-    if (isBluetoothConnected.value) {
-      await Helper.setSpeakerphoneOnButPreferBluetooth();
-      isSpeakerOn = false;
-      currentAudioRoute.value = "bluetooth";
-      await ProximityScreenLock.setActive(false);
-    } else if (isVideo) {
-      await enableSpeaker();
-    } else {
-      await selectEarpiece();
-    }
-
-    update();
   }
 
   Future<void> endAudioCall() async {
     await WakelockPlus.disable();
     await ProximityScreenLock.setActive(false);
-  }
-
-  void _startDeviceMonitoring() {
-    checkAudioDevices();
-
-    navigator.mediaDevices.ondevicechange = (event) {
-      log("🔄 Audio Routing Device Changed!");
-      checkAudioDevices();
-    };
-
-    _deviceCheckTimer?.cancel();
-    _deviceCheckTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      checkAudioDevices();
-    });
-  }
-
-  Future<void> checkAudioDevices() async {
-    try {
-      final List<MediaDeviceInfo> devices =
-          await navigator.mediaDevices.enumerateDevices();
-      bool isBtFound = false;
-
-      for (var device in devices) {
-        if (device.kind == 'audiooutput') {
-          final String label = device.label.toLowerCase();
-          if (label.contains('bluetooth') ||
-              label.contains('blue') ||
-              label.contains('buds') ||
-              label.contains('headset') ||
-              label.contains('freebuds') ||
-              label.contains('airpods') ||
-              label.contains('hands-free') ||
-              label.contains('wireless') ||
-              label.contains('hearing aid')) {
-            isBtFound = true;
-            break;
-          }
-        }
-      }
-
-      final bool wasBtConnected = isBluetoothConnected.value;
-      isBluetoothConnected.value = isBtFound;
-
-      if (!wasBtConnected && isBtFound) {
-        await Helper.setSpeakerphoneOnButPreferBluetooth();
-        isSpeakerOn = false;
-        currentAudioRoute.value = "bluetooth";
-        await ProximityScreenLock.setActive(false);
-      } else if (wasBtConnected && !isBtFound) {
-        if (isVideoCall.value) {
-          await enableSpeaker();
-        } else {
-          await selectEarpiece();
-        }
-      } else {
-        if (isSpeakerOn) {
-          currentAudioRoute.value = "speaker";
-        } else if (isBtFound) {
-          currentAudioRoute.value = "bluetooth";
-        } else {
-          currentAudioRoute.value = "earpiece";
-        }
-      }
-
-      update();
-    } catch (e) {
-      log("checkAudioDevices error: $e");
-    }
   }
 
   void updatePipPosition({
@@ -1089,44 +2535,531 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     required double minTop,
     required double maxTop,
   }) {
-    final Offset currentPosition = pipPosition ??
-        Offset(
-          minLeft,
-          maxTop,
-        );
-
+    final Offset currentPosition = pipPosition ?? Offset(minLeft, maxTop);
     final double boundedMaxLeft = maxLeft < minLeft ? minLeft : maxLeft;
-
     final double boundedMaxTop = maxTop < minTop ? minTop : maxTop;
 
     pipPosition = Offset(
-      (currentPosition.dx + delta.dx).clamp(
-        minLeft,
-        boundedMaxLeft,
-      ),
-      (currentPosition.dy + delta.dy).clamp(
-        minTop,
-        boundedMaxTop,
-      ),
+      (currentPosition.dx + delta.dx).clamp(minLeft, boundedMaxLeft),
+      (currentPosition.dy + delta.dy).clamp(minTop, boundedMaxTop),
     );
-
     update();
+  }
+
+  String get _screenPeerUserId {
+    final myId = Global.storageServices.get(PrefConst.userId).toString();
+    return (myId == callerId.toString()) ? remoteUserId : callerId;
+  }
+
+  Future<void> startScreenShare() async {
+    if (_screenShareStarting || isScreenSharing.value) return;
+    if (peer == null || isClosed) {
+      Utils().fluttertoast("Call not ready");
+      return;
+    }
+    if (isRemoteScreenSharing.value) {
+      Utils().fluttertoast("The other person is already sharing the screen");
+      return;
+    }
+
+    _screenShareStarting = true;
+    _screenShareAnnounced = false;
+    _screenRemoteDescSet = false;
+    _screenPendingLocalIce.clear();
+    _screenPendingRemoteIce.clear();
+    isScreenShareWaiting.value = false;
+    log("[SHARE] start begin videoOn=$isVideoOn");
+
+    try {
+      await _startScreenShareForeground();
+
+      final Map<String, dynamic> constraints = WebRTC.platformIsIOS
+          ? <String, dynamic>{
+        'video': <String, dynamic>{'deviceId': 'broadcast'},
+      }
+          : <String, dynamic>{'video': true, 'audio': false};
+
+      final MediaStream? stream =
+      await navigator.mediaDevices.getDisplayMedia(constraints);
+      if (stream == null || stream.getVideoTracks().isEmpty) {
+        log("[SHARE] getDisplayMedia returned no video track");
+        throw Exception("No screen stream");
+      }
+
+      _screenStream = stream;
+      final MediaStreamTrack screenTrack = stream.getVideoTracks().first;
+      screenTrack.enabled = true;
+      log(
+        "[SHARE] getDisplayMedia ok stream=${stream.id} "
+            "track=${screenTrack.id} ios=${WebRTC.platformIsIOS}",
+      );
+
+      screenTrack.onEnded = () {
+        log("[SHARE] screen track onEnded sharing=${isScreenSharing.value}");
+        if (isScreenSharing.value) {
+          unawaited(stopScreenShare());
+        }
+      };
+
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        isScreenShareWaiting.value = true;
+        final bool started = await _waitForIosCapture(stream);
+        isScreenShareWaiting.value = false;
+        if (!started) {
+          log("[SHARE] ios: capture never started - share aborted, remote "
+              "was never notified");
+          await _teardownScreenStream();
+          isScreenSharing.value = false;
+          isScreenShareLive.value = false;
+          update();
+          return;
+        }
+      }
+
+      socket?.emit("start_screen_share", {
+        "callId": callId,
+        "remoteUserId": _screenPeerUserId,
+      });
+      _screenShareAnnounced = true;
+      log("[SHARE] start_screen_share to=$_screenPeerUserId callId=$callId");
+
+      final pc = await createPeerConnection({
+        'sdpSemantics': 'unified-plan',
+        'iceServers': [
+          {
+            'urls': ['stun:stun.l.google.com:19302']
+          },
+          {
+            'urls': Urls.rtcUrl,
+            'username': Urls.rtcUserName,
+            'credential': Urls.rtcCredential,
+          },
+        ],
+      });
+      _screenPc = pc;
+
+      pc.onIceCandidate = (c) {
+        if (c.candidate == null) return;
+        if (_screenRemoteDescSet) {
+          socket?.emit("screen_share_ice", {
+            "callId": callId,
+            "remoteUserId": _screenPeerUserId,
+            "iceCandidate": {
+              "id": c.sdpMid,
+              "label": c.sdpMLineIndex,
+              "candidate": c.candidate,
+            },
+          });
+        } else {
+          _screenPendingLocalIce.add(c);
+        }
+      };
+
+      pc.onConnectionState = (s) {
+        log("[SHARE] screen PC state=$s");
+        if (s == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
+            s == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+          if (isScreenSharing.value && !isClosed) {
+            unawaited(stopScreenShare());
+          }
+        }
+      };
+
+      _screenSender = await pc.addTrack(screenTrack, stream);
+      log("[SHARE] sender ready id=${_screenSender?.track?.id}");
+
+      if (WebRTC.platformIsIOS) {
+        log("[SHARE] sender tune skipped on iOS (broadcast owns the encoder)");
+      } else {
+        await _tuneScreenSender();
+      }
+
+      final RTCSessionDescription raw = await pc.createOffer({
+        'offerToReceiveAudio': false,
+        'offerToReceiveVideo': false,
+      });
+      await pc.setLocalDescription(raw);
+
+      socket?.emit("screen_share_offer", {
+        "callId": callId,
+        "remoteUserId": _screenPeerUserId,
+        "sdpOffer": raw.toMap(),
+      });
+      log("[SHARE] screen_share_offer sent to=$_screenPeerUserId");
+
+      isScreenSharing.value = true;
+      update();
+
+      unawaited(_watchScreenSender());
+    } catch (e, st) {
+      log("[SHARE] start error: $e\n$st");
+      isScreenShareWaiting.value = false;
+      await _teardownScreenStream();
+      isScreenSharing.value = false;
+      Utils().fluttertoast("Unable to share screen");
+    } finally {
+      _screenShareStarting = false;
+      update();
+    }
+  }
+
+  Future<bool> _waitForIosCapture(MediaStream stream) async {
+    final RTCVideoRenderer probe = RTCVideoRenderer();
+    try {
+      await probe.initialize();
+      await probe.setSrcObject(stream: stream);
+      log(
+        "[SHARE] ios: system picker is up - waiting for 'Start Broadcast' "
+            "(share does not start until a frame arrives)",
+      );
+
+      for (int i = 1; i <= 48; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+        if (isClosed || !_screenShareStarting) {
+          log("[SHARE] ios: capture wait cancelled at ${i * 500}ms");
+          return false;
+        }
+
+        final int width = probe.value.width.toInt();
+        if (width > 0) {
+          log("[SHARE] ios: broadcast started at ${i * 500}ms w=$width");
+          return true;
+        }
+
+        if (i % 10 == 0) {
+          log(
+            "[SHARE] ios: still waiting for Start Broadcast "
+                "(${i * 500}ms of 24000ms)",
+          );
+        }
+      }
+
+      log("[SHARE] ios: Start Broadcast not tapped within 24s - giving up");
+      return false;
+    } catch (e) {
+      log("[SHARE] ios: capture wait error: $e");
+      return false;
+    } finally {
+      try {
+        probe.srcObject = null;
+        await probe.dispose();
+      } catch (_) {}
+    }
+  }
+
+  void cancelScreenShare() {
+    if (!isScreenShareWaiting.value) return;
+    log("[SHARE] waiting cancelled by the user");
+    _screenShareStarting = false;
+    isScreenShareWaiting.value = false;
+    update();
+  }
+
+  Future<void> _watchScreenSender() async {
+    bool live = false;
+    int stuckTicks = 0;
+    int baseline = 0;
+
+    final RTCPeerConnection? firstPc = _screenPc;
+    if (firstPc != null) {
+      try {
+        final List<StatsReport> reports = await firstPc.getStats();
+        for (final StatsReport r in reports) {
+          final Map<dynamic, dynamic> v = r.values;
+          if (v['framesEncoded'] != null) {
+            baseline = int.tryParse('${v['framesEncoded']}') ?? 0;
+          }
+        }
+      } catch (_) {}
+    }
+    log("[SHARE] encoder baseline frames=$baseline");
+
+    final bool isIos = defaultTargetPlatform == TargetPlatform.iOS;
+
+    for (int i = 1;; i++) {
+      await Future<void>.delayed(const Duration(seconds: 1));
+
+      final RTCPeerConnection? pc = _screenPc;
+      if (!isScreenSharing.value || isClosed || pc == null) return;
+
+      int outFrames = -1;
+      int outW = 0;
+      int outH = 0;
+      int outBps = 0;
+      try {
+        final List<StatsReport> reports = await pc.getStats();
+        for (final StatsReport r in reports) {
+          final Map<dynamic, dynamic> v = r.values;
+          if (v['framesEncoded'] == null) continue;
+          outFrames = int.tryParse('${v['framesEncoded']}') ?? outFrames;
+          outW = int.tryParse('${v['frameWidth'] ?? 0}') ?? 0;
+          outH = int.tryParse('${v['frameHeight'] ?? 0}') ?? 0;
+          outBps = int.tryParse('${v['mediaBitrateSent'] ?? 0}') ?? 0;
+        }
+      } catch (_) {}
+
+      final int added = outFrames < 0 ? -1 : outFrames - baseline;
+
+      String trackState = 'gone';
+      final List<MediaStreamTrack> screenTracks =
+          _screenStream?.getVideoTracks() ?? <MediaStreamTrack>[];
+      if (screenTracks.isNotEmpty) {
+        trackState = screenTracks.first.muted == true ? 'muted' : 'live';
+      }
+
+      final bool flowing = added > 0 && outW > 0;
+      if (!live || i % 10 == 0 || flowing != live) {
+        log(
+          "[SHARE] frames t=${i}s encodeOut=${outW}x$outH "
+              "newFrames=$added bps=$outBps track=$trackState",
+        );
+      }
+
+      if (flowing) {
+        stuckTicks = 0;
+        if (!live) {
+          live = true;
+          log("[SHARE] screen frames confirmed flowing to peer");
+        }
+        if (!isScreenShareLive.value) {
+          isScreenShareLive.value = true;
+          update();
+        }
+        continue;
+      }
+
+      if (live) {
+        stuckTicks++;
+        log("[SHARE] frames stalled (tick=$stuckTicks of 5) t=${i}s");
+        if (stuckTicks >= 5) {
+          log(
+            "[SHARE] frames stopped for 5s - broadcast ended or sender died, "
+                "stopping the share",
+          );
+          await stopScreenShare();
+          Utils().fluttertoast("Screen sharing stopped");
+          return;
+        }
+        continue;
+      }
+
+      if (isIos) {
+        if (i == 5) {
+          log(
+            "[SHARE] no frames yet - tap Start Broadcast in the picker; "
+                "the share stays open and starts the moment frames arrive",
+          );
+        }
+        if (i == 20 || (i > 20 && i % 30 == 0)) {
+          log(
+            "[SHARE] still no capture at t=${i}s - Start Broadcast not "
+                "tapped (share kept alive on purpose, no abort on iOS)",
+          );
+        }
+        continue;
+      }
+
+      if (i == 8) {
+        log("[SHARE] no encoded screen frames yet (t=8s)");
+      }
+    }
+  }
+
+  Future<void> stopScreenShare() async {
+    if (!isScreenSharing.value && _screenPc == null && _screenStream == null) {
+      return;
+    }
+    log("[SHARE] stop requested announced=$_screenShareAnnounced");
+
+    try {
+      if (_screenShareAnnounced) {
+        socket?.emit("stop_screen_share", {
+          "callId": callId,
+          "remoteUserId": _screenPeerUserId,
+        });
+        log("[SHARE] stop_screen_share to=$_screenPeerUserId callId=$callId");
+      }
+    } catch (_) {}
+
+    _screenShareAnnounced = false;
+
+    await _teardownScreenStream();
+    isScreenSharing.value = false;
+    update();
+  }
+
+  Future<void> _teardownScreenStream() async {
+    try {
+      _screenShareAnnounced = false;
+      _screenSender = null;
+      _screenPendingLocalIce.clear();
+      _screenPendingRemoteIce.clear();
+      _screenRemoteDescSet = false;
+      isScreenShareLive.value = false;
+      isScreenShareWaiting.value = false;
+
+      final MediaStream? stream = _screenStream;
+      _screenStream = null;
+      try {
+        stream?.getTracks().forEach((t) => t.stop());
+        await stream?.dispose();
+      } catch (e) {
+        log("[SHARE] screen stream dispose error: $e");
+      }
+
+      final RTCPeerConnection? pc = _screenPc;
+      _screenPc = null;
+      try {
+        await pc?.close();
+      } catch (e) {
+        log("[SHARE] screen PC close error: $e");
+      }
+
+      await _stopScreenShareForeground();
+      log("[SHARE] teardown done");
+    } catch (e) {
+      log("[SHARE] teardown error: $e");
+    }
+  }
+
+  Future<void> _startScreenShareForeground() async {
+    if (defaultTargetPlatform != TargetPlatform.android) return;
+
+    try {
+      if (!FlutterForegroundTask.isInitialized) {
+        FlutterForegroundTask.init(
+          androidNotificationOptions: AndroidNotificationOptions(
+            channelId: 'fgtracker_call_service',
+            channelName: 'Ongoing call',
+            channelDescription: 'Keeps the call and screen sharing alive',
+          ),
+          iosNotificationOptions: const IOSNotificationOptions(
+            showNotification: false,
+          ),
+          foregroundTaskOptions: ForegroundTaskOptions(
+            eventAction: ForegroundTaskEventAction.nothing(),
+          ),
+        );
+        log("[SHARE] foreground task initialized");
+      }
+
+      if (await FlutterForegroundTask.isRunningService) {
+        await FlutterForegroundTask.stopService();
+        log("[SHARE] old foreground service stopped to add mediaProjection");
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+      }
+
+      final ServiceRequestResult result =
+      await FlutterForegroundTask.startService(
+        serviceId: 9911,
+        serviceTypes: const <ForegroundServiceTypes>[
+          ForegroundServiceTypes.microphone,
+          ForegroundServiceTypes.mediaProjection,
+        ],
+        notificationTitle: 'Screen sharing',
+        notificationText: 'You are sharing your screen',
+      );
+
+      log(
+        "[SHARE] foreground service result=$result running="
+            "${await FlutterForegroundTask.isRunningService}",
+      );
+
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    } catch (e) {
+      log("[SHARE] foreground service start error: $e");
+    }
+  }
+
+  Future<void> _stopScreenShareForeground() async {
+    try {
+      if (await FlutterForegroundTask.isRunningService) {
+        await FlutterForegroundTask.stopService();
+        log("[SHARE] screen share foreground service stopped");
+      }
+    } catch (e) {
+      log("[SHARE] foreground service stop error: $e");
+    }
+  }
+
+  Future<void> _tuneScreenSender() async {
+    final RTCRtpSender? sender = _screenSender;
+    if (sender == null) return;
+    try {
+      final RTCRtpParameters params = sender.parameters;
+      params.degradationPreference =
+          RTCDegradationPreference.MAINTAIN_RESOLUTION;
+      final List<RTCRtpEncoding>? encodings = params.encodings;
+      if (encodings != null && encodings.isNotEmpty) {
+        for (final RTCRtpEncoding enc in encodings) {
+          enc.active = true;
+          enc.maxBitrate = 2500000;
+          enc.maxFramerate = 15;
+          enc.scaleResolutionDownBy = 1.0;
+        }
+      }
+      await sender.setParameters(params);
+      log("[SHARE] screen sender tuned bitrate=2.5M fps=15");
+    } catch (e) {
+      log("[SHARE] screen sender tune error: $e");
+    }
   }
 
   @override
   void onClose() {
+    _isCleaningUp = true;
+
     WidgetsBinding.instance.removeObserver(this);
-    _stopForegroundCallService();
 
+    _peerDisconnectTimer?.cancel();
     _controlsTimer?.cancel();
-    _clearTimers();
-    resetPeer();
-    localRenderer.dispose();
-    remoteRenderer.dispose();
 
-    if (args["callType"] == "outGoing") {
-      stopSound();
+    stopSound();
+
+    navigator.mediaDevices.ondevicechange = null;
+
+    socket?.off("IceCandidate");
+    socket?.off("callAnswered");
+    socket?.off("upgradeToVideo");
+    socket?.off("upgradeToVideoAnswer");
+    socket?.off("callRejected");
+    socket?.off("callEnded", _onCallEnded);
+    socket?.off("endCall", _onCallEnded);
+    socket?.off("missedCall", _onMissedCall);
+    socket?.off("callStatus");
+    socket?.off("callCreated", _onCallCreated);
+    socket?.off("newCall", _onNewCall);
+    socket?.off("sdpOfferFromCaller");
+    socket?.off("callError");
+    socket?.off("callBlocked");
+    socket?.off("screen_share_started");
+    socket?.off("screen_share_stopped");
+    socket?.off("screen_share_offer");
+    socket?.off("screen_share_answer");
+    socket?.off("screen_share_ice");
+
+    if (!_screenRendererReleased) {
+      _screenRendererReleased = true;
+      screenRenderer.srcObject = null;
+      unawaited(screenRenderer.dispose());
     }
+
+    unawaited(_disposePeerResources());
+    unawaited(_stopForegroundCallService());
+    unawaited(audioRouteController.stopCall());
+
+    if (Get.isRegistered<CallAudioRouteController>()) {
+      Get.delete<CallAudioRouteController>(force: true);
+    }
+
+    _clearTimers();
+
+    final sid = _sessionId;
+    if (sid.isNotEmpty) {
+      unawaited(callEnded(sid, type: "onClose"));
+    }
+
+    CallSessionState.reset();
 
     WakelockPlus.disable();
     ProximityScreenLock.setActive(false);

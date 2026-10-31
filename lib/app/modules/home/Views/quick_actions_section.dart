@@ -1,8 +1,5 @@
-import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import 'package:fgtracker/app/modules/Messages/Views/new_chat_screen.dart';
 import 'package:fgtracker/app/modules/Track/Views/Tracking_screen.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/WalkieTalkieScreen.dart';
-import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/call/Views/call_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -11,8 +8,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../Messages/Views/chatlist_screen.dart';
-import '../../Safe_Zone/views/safety_dashboard_view.dart';
-import 'LiveStatus/components/total_groups.dart';
+// import '../../Safe_Zone/views/safety_dashboard_view.dart';
+import 'package:fgtracker/features/safety/coming_soon/safety_coming_soon_map_screen.dart';
+import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
+import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
+import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
+import 'package:fgtracker/app/global_widget/crown_icon.dart';
 
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
@@ -96,38 +97,71 @@ class QuickActionsSection extends StatelessWidget {
             childAspectRatio: 0.98,
             children: [
               _QuickActionCard(
+                title: "All contact ",
+                imagePath: "assets/icons/new_action_group_chat.png",
+                onTap: () =>
+                    Get.to(() => const NewChatScreen(fromQuickAction: true)),
+              ),
+              Obx(() => _QuickActionCard(
                 title: "Audio/Video Call",
                 imagePath: "assets/icons/new_action_call.png",
-                onTap: () => Get.to(() => CallScreen()),
-              ),
-              _QuickActionCard(
-                title: "Walkie Talkie",
-                subtitle: "1 hr free",
-                imagePath: "assets/icons/new_action_walkie_talkie.png",
+                showBadge:
+                    NotificationMarkerService.instance.hasCallingMarker.value,
+                badgeColor: const Color(0xFFEF4444),
                 onTap: () {
-                  Get.toNamed(Routes.walkieTalkieTrialDetails);
+                  SocketService.instance.markCallHistoryViewed();
+                  Get.to(() => const CallScreen());
                 },
-              ),
+              )),
+              Obx(() => _QuickActionCard(
+                title: "Chatting",
+                imagePath: "assets/icons/new_action_chat.png",
+                showBadge:
+                    NotificationMarkerService.instance.hasChattingMarker.value,
+                badgeColor: const Color(0xFFEF4444),
+                onTap: () {
+                  SocketService.instance.markChatListViewed();
+                  Get.to(() => ChatListScreen());
+                },
+              )),
+              Obx(() {
+                final homeController = Get.isRegistered<HomeController>()
+                    ? Get.find<HomeController>()
+                    : null;
+                final subtitle = homeController?.walkieSubtitle ?? "1 hr free";
+                final isExpired = homeController?.isWalkieTrialExpired ?? false;
+                final isSubscribed = homeController?.isWalkieSubscribed ?? false;
+                final hasWalkieBadge =
+                    NotificationMarkerService.instance.hasWalkieMarker.value;
+
+                return _QuickActionCard(
+                  title: "Walkie Talkie",
+                  subtitle: subtitle,
+                  subtitleColor: isExpired
+                      ? const Color(0xFFDC2626)
+                      : (isSubscribed
+                          ? const Color(0xFF16A34A)
+                          : const Color(0xFF5338EE)),
+                  showBadge: hasWalkieBadge,
+                  badgeColor: const Color(0xFFEF4444),
+                  isPremium: isSubscribed,
+                  imagePath: "assets/icons/new_action_walkie_talkie.png",
+                  onTap: () async {
+                    await Get.toNamed(Routes.walkieTalkieTrialDetails);
+                    homeController?.fetchInitializeData();
+                  },
+                );
+              }),
               _QuickActionCard(
                 title: "Tracking",
                 imagePath: "assets/icons/new_action_tracking.png",
                 onTap: () => Get.to(() => TrackingScreen()),
               ),
               _QuickActionCard(
-                title: "Chatting",
-                imagePath: "assets/icons/new_action_chat.png",
-                onTap: () => Get.to(() => ChatListScreen()),
-              ),
-              _QuickActionCard(
-                title: "Group Chat",
-                imagePath: "assets/icons/new_action_group_chat.png",
-                onTap: () => Get.to(() => const totalGroup()),
-              ),
-              _QuickActionCard(
                 title: "Safe Zone",
-                subtitle: "2 people free",
                 imagePath: "assets/icons/new_action_safe_zone.png",
-                onTap: () => Get.to(() => SafetyDashboardView()),
+                // onTap: () => Get.to(() => SafetyDashboardView()),
+                onTap: () => Get.to(() => const SafetyComingSoonMapScreen()),
               ),
             ],
           ),
@@ -142,13 +176,21 @@ class _QuickActionCard extends StatelessWidget {
     required this.title,
     required this.imagePath,
     this.subtitle,
+    this.subtitleColor,
     this.onTap,
+    this.showBadge = false,
+    this.badgeColor,
+    this.isPremium = false,
   });
 
   final String title;
   final String imagePath;
   final String? subtitle;
+  final Color? subtitleColor;
   final VoidCallback? onTap;
+  final bool showBadge;
+  final Color? badgeColor;
+  final bool isPremium;
 
   @override
   Widget build(BuildContext context) {
@@ -182,32 +224,98 @@ class _QuickActionCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Center(
-                  child: Container(
-                    width: 62.w,
-                    height: 62.w,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF1F3FE),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Transform.scale(
-                        scale: isCallIcon ? 1.2 : 1.12,
-                        child: Image.asset(
-                          imagePath,
-                          width: 54.w,
-                          height: 54.w,
-                          fit: BoxFit.contain,
-                          filterQuality: FilterQuality.high,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              Icons.apps_rounded,
-                              color: const Color(0xFF6B4DFF),
-                              size: 32.sp,
-                            );
-                          },
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 62.w,
+                        height: 62.w,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF1F3FE),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Transform.scale(
+                            scale: isCallIcon ? 1.2 : 1.12,
+                            child: Image.asset(
+                              imagePath,
+                              width: 54.w,
+                              height: 54.w,
+                              fit: BoxFit.contain,
+                              filterQuality: FilterQuality.high,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.apps_rounded,
+                                  color: const Color(0xFF6B4DFF),
+                                  size: 32.sp,
+                                );
+                              },
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      if (showBadge)
+                        Positioned(
+                          top: 2.h,
+                          right: 2.w,
+                          child: Container(
+                            width: 10.w,
+                            height: 10.w,
+                            decoration: BoxDecoration(
+                              color: badgeColor ?? const Color(0xFFE53935),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 2.w,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (badgeColor ?? const Color(0xFFE53935))
+                                      .withValues(alpha: 0.45),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      if (isPremium)
+                        Positioned(
+                          top: 2.h,
+                          left: 2.w,
+                          child: Container(
+                            width: 16.w,
+                            height: 16.w,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFB800), Color(0xFFFF8A00)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5.w,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFF8A00)
+                                      .withValues(alpha: 0.4),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: CrownIcon(
+                                width: 9.w,
+                                height: 7.h,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -236,7 +344,7 @@ class _QuickActionCard extends StatelessWidget {
                     fontFamily: FontFamily.interSemiBold,
                     fontSize: 8.5.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF5338EE),
+                    color: subtitleColor ?? const Color(0xFF5338EE),
                     height: 1.0,
                   ),
                 ),
@@ -258,4 +366,3 @@ class _QuickActionCard extends StatelessWidget {
     );
   }
 }
-

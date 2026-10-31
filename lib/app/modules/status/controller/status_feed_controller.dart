@@ -3,6 +3,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/status_repo.dart';
 import 'package:fgtracker/app/Data/Services/Socket/status_socket_service.dart';
 import 'package:fgtracker/app/Model/status_model.dart';
+import 'package:fgtracker/app/modules/status/controller/status_view_controller.dart';
 
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
@@ -52,6 +53,19 @@ class StatusFeedController extends GetxController {
       if (data == null) return;
       fetchMyStatuses();
     });
+
+    ever<Map<String, dynamic>?>(_socket.onStatusDeletedEvent, (data) {
+      if (data == null) return;
+      final int deletedStatusId = data['statusId'] is int
+          ? data['statusId']
+          : int.tryParse(data['statusId']?.toString() ?? '') ?? 0;
+      final int creatorUserId = data['userId'] is int
+          ? data['userId']
+          : int.tryParse(data['userId']?.toString() ?? '') ?? 0;
+      if (deletedStatusId > 0) {
+        onStatusDeletedReceived(deletedStatusId, creatorUserId);
+      }
+    });
   }
 
   Future<void> refreshAll() async {
@@ -86,11 +100,71 @@ class StatusFeedController extends GetxController {
           if (myUserId != null && group.user.id == myUserId) {
             return false;
           }
-          return true;
+          return group.statuses.isNotEmpty;
         }).toList();
         contactGroups.assignAll(filtered);
       }
     } catch (_) {}
+  }
+
+  void onStatusDeletedReceived(int deletedStatusId, int creatorUserId) {
+    void applyUpdate() {
+      // 1. Remove from myStatuses if it was my status
+      myStatuses.removeWhere((item) => item.id == deletedStatusId);
+
+      // 2. Find creator's status group in contactGroups
+      int userFeedIndex = -1;
+      if (creatorUserId > 0) {
+        userFeedIndex = contactGroups.indexWhere(
+          (feed) => feed.user.id == creatorUserId,
+        );
+      }
+      if (userFeedIndex == -1) {
+        userFeedIndex = contactGroups.indexWhere(
+          (feed) => feed.statuses.any((item) => item.id == deletedStatusId),
+        );
+      }
+
+      if (userFeedIndex != -1) {
+        contactGroups[userFeedIndex].statuses.removeWhere(
+          (item) => item.id == deletedStatusId,
+        );
+
+        if (contactGroups[userFeedIndex].statuses.isEmpty) {
+          final removedUserId = contactGroups[userFeedIndex].user.id;
+          highlightedUserIds.remove(removedUserId);
+          contactGroups.removeAt(userFeedIndex);
+        } else {
+          final updatedStatuses = contactGroups[userFeedIndex].statuses;
+          final allViewed = updatedStatuses.every((s) => s.isViewed);
+          contactGroups[userFeedIndex] = ContactStatusGroupModel(
+            user: contactGroups[userFeedIndex].user,
+            isAllViewed: allViewed,
+            latestTimestamp: contactGroups[userFeedIndex].latestTimestamp,
+            statuses: updatedStatuses,
+          );
+          if (allViewed) {
+            highlightedUserIds.remove(contactGroups[userFeedIndex].user.id);
+          }
+          contactGroups.refresh();
+        }
+      }
+
+      // 3. Notify active Story Viewer if open
+      if (Get.isRegistered<StatusViewController>()) {
+        Get.find<StatusViewController>().handleStoryDeletionIfActive(
+          deletedStatusId,
+          creatorUserId: creatorUserId,
+        );
+      }
+    }
+
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => applyUpdate());
+    } else {
+      applyUpdate();
+    }
   }
 
   void markStatusViewedLocally(int statusId, {String? reactionEmoji}) {
@@ -130,7 +204,10 @@ class StatusFeedController extends GetxController {
       final res = await StatusRepo.deleteStatus(statusId);
       final ok = res.status == true;
       if (ok) {
-        myStatuses.removeWhere((s) => s.id == statusId);
+        final myUserId = int.tryParse(
+          Global.storageServices.get(PrefConst.userId)?.toString() ?? '',
+        ) ?? 0;
+        onStatusDeletedReceived(statusId, myUserId);
         await fetchFeed();
       }
       return ok;

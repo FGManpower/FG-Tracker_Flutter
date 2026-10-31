@@ -28,13 +28,15 @@ class OtpveriefyData {
   String? profileImage;
   int? userId;
   bool? isNewUser;
+  bool? locationSharing;
 
   OtpveriefyData(
       {this.token,
       this.userId,
       this.isNewUser,
       this.userName,
-      this.profileImage});
+      this.profileImage,
+      this.locationSharing});
 
   OtpveriefyData.fromJson(Map<String, dynamic> json) {
     token = json['token'];
@@ -42,6 +44,21 @@ class OtpveriefyData {
     isNewUser = json['isNewUser'];
     userName = json['userName'];
     profileImage = json['profileImage'];
+
+    final rawLocSharing = json['locationSharing'] ??
+        json['isLocationSharing'] ??
+        json['location_sharing'] ??
+        json['is_location_sharing'];
+    if (rawLocSharing != null) {
+      if (rawLocSharing is bool) {
+        locationSharing = rawLocSharing;
+      } else if (rawLocSharing is num) {
+        locationSharing = rawLocSharing == 1;
+      } else if (rawLocSharing is String) {
+        final s = rawLocSharing.trim().toLowerCase();
+        locationSharing = (s == 'true' || s == '1');
+      }
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -51,6 +68,7 @@ class OtpveriefyData {
     data['isNewUser'] = isNewUser;
     data['userName'] = userName;
     data['profileImage'] = profileImage;
+    data['locationSharing'] = locationSharing;
     return data;
   }
 }

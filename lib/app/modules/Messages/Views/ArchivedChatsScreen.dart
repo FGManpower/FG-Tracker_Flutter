@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import '../Controller/chat_list_controller.dart';
 import '../Controller/MessageController.dart';
 import '../widgets/custom_dropdown_menu.dart';
+import '../widgets/custom_dropdown_menu.dart' as CustomDropdownMenu;
 import 'Chat_Screen.dart';
 
 class ArchivedChatsScreen extends StatelessWidget {
@@ -99,6 +100,7 @@ class ArchivedChatsScreen extends StatelessWidget {
   }
 
   Widget _buildBody(ChatListController controller) {
+    final archived = controller.displayedArchivedChats;
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       child: Column(
@@ -106,10 +108,10 @@ class ArchivedChatsScreen extends StatelessWidget {
         children: [
           _sectionTitle(),
           SizedBox(height: 4.h),
-          if (controller.archivedChats.isEmpty)
+          if (archived.isEmpty)
             _emptyArchivedChats()
           else
-            _archivedChatsList(controller),
+            _archivedChatsList(controller, archived),
           SizedBox(height: 30.h),
         ],
       ),
@@ -144,15 +146,18 @@ class ArchivedChatsScreen extends StatelessWidget {
     );
   }
 
-  Widget _archivedChatsList(ChatListController controller) {
+  Widget _archivedChatsList(
+    ChatListController controller,
+    List<dynamic> archivedList,
+  ) {
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.symmetric(horizontal: 16.w),
-      itemCount: controller.archivedChats.length,
+      itemCount: archivedList.length,
       separatorBuilder: (_, __) => SizedBox(height: 8.h),
       itemBuilder: (context, index) {
-        final chat = controller.archivedChats[index];
+        final chat = archivedList[index];
         final imageUrl = _getImageUrl(chat.image);
 
         Offset tapPosition = Offset.zero;
@@ -195,7 +200,16 @@ class ArchivedChatsScreen extends StatelessWidget {
                   height: 48.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFE9E7FF),
+                    gradient: (chat.isGroup == true && imageUrl.isEmpty)
+                        ? const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                          )
+                        : null,
+                    color: (chat.isGroup == true && imageUrl.isEmpty)
+                        ? null
+                        : const Color(0xFFE9E7FF),
                     image: imageUrl.isNotEmpty
                         ? DecorationImage(
                       image: NetworkImage(imageUrl),
@@ -206,9 +220,13 @@ class ArchivedChatsScreen extends StatelessWidget {
                   child: imageUrl.isEmpty
                       ? Center(
                     child: Icon(
-                      Icons.person,
+                      chat.isGroup == true
+                          ? Icons.groups_rounded
+                          : Icons.person,
                       size: 24.sp,
-                      color: const Color(0xFF6B4DFF),
+                      color: chat.isGroup == true
+                          ? Colors.white
+                          : const Color(0xFF6B4DFF),
                     ),
                   )
                       : null,
@@ -275,6 +293,15 @@ class ArchivedChatsScreen extends StatelessWidget {
                             color: Colors.white,
                             fontfamily: FontFamily.interBold,
                           ),
+                        ),
+                      )
+                    else if (controller.isChatMarkedUnread(chat))
+                      Container(
+                        width: 10.w,
+                        height: 10.w,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF6B4DFF),
+                          shape: BoxShape.circle,
                         ),
                       ),
                   ],
@@ -388,7 +415,6 @@ class ArchivedChatsScreen extends StatelessWidget {
           title: "Unarchive Chat",
           onTap: () {
             controller.unarchiveChat(chat);
-            Get.back();
           },
         ),
       ],

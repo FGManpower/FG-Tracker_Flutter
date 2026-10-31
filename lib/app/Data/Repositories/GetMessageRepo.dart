@@ -8,11 +8,14 @@ import 'package:fgtracker/app/Model/ForwardMessageModel.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
 
 import '../../Model/GroupChatListModel.dart';
+import '../../Model/group_profile_details_model.dart';
+import '../../Model/profile_details_model.dart';
 
 class MessageRepo {
   static Future<GetMessage> MessageHistory({
@@ -29,7 +32,7 @@ class MessageRepo {
   static Future<GetMessage> privateChatHistory({
     required String chatId,
     int page = 1,
-    int limit = 50,
+    int limit = 15,
   }) async {
     final response = await HttpUtil().get(
       "/private-chat/$chatId/messages?page=$page&limit=$limit",
@@ -40,17 +43,18 @@ class MessageRepo {
 
   static Future<GetMessage> groupMessageHistory({
     required int groupId,
+    int page = 1,
+    int limit = 15,
   }) async {
-    var response = await HttpUtil().get(
-      "/getGroupMessageHistory?groupId=$groupId",
-    );
+    final url = "/getGroupMessageHistory?groupId=$groupId&page=$page&limit=$limit";
+    var response = await HttpUtil().get(url);
 
     return GetMessage.fromJson(response);
   }
 
   static Future<ChatImageUploadResponse> uploadChatImage(
-    File imageFile,
-  ) async {
+      File imageFile,
+      ) async {
     FormData data = FormData.fromMap({
       "chatImage": await MultipartFile.fromFile(
         imageFile.path,
@@ -69,8 +73,8 @@ class MessageRepo {
   }
 
   static Future<ChatImageUploadResponse> uploadChatAudio(
-    String audioPath,
-  ) async {
+      String audioPath,
+      ) async {
     FormData data = FormData.fromMap({
       "chatAudio": await MultipartFile.fromFile(
         audioPath,
@@ -93,12 +97,6 @@ class MessageRepo {
     required String thumbnailPath,
     ProgressCallback? onSendProgress,
   }) async {
-    print("Video Path: $videoPath");
-    print("Thumbnail Path: $thumbnailPath");
-    print("Video Exists: ${await File(videoPath).exists()}");
-    print("Video Size: ${await File(videoPath).length()}");
-    print("Extension: ${p.extension(videoPath)}");
-
     final ext = p.extension(videoPath).replaceFirst('.', '');
 
     FormData data = FormData.fromMap({
@@ -125,8 +123,8 @@ class MessageRepo {
   }
 
   static Future<ChatImageUploadResponse> uploadChatDocument(
-    String documentPath,
-  ) async {
+      String documentPath,
+      ) async {
     final ext = p.extension(documentPath).replaceFirst('.', '');
 
     FormData data = FormData.fromMap({
@@ -156,6 +154,7 @@ class MessageRepo {
     return LocationDataRes.fromJson(response);
   }
 
+  /// Legacy Private Chat List API (Previously used for private chat tab; kept for backward compatibility)
   static Future<PrivateChatResponse> getPrivateChatList({
     int page = 1,
     int limit = 1,
@@ -167,6 +166,7 @@ class MessageRepo {
     return PrivateChatResponse.fromJson(response);
   }
 
+  /// Legacy Group Chat List API (Previously used for groups tab; kept for backward compatibility)
   static Future<GroupChatListResponse> getGroupChatList({
     int page = 1,
     int limit = 20,
@@ -176,6 +176,26 @@ class MessageRepo {
     );
 
     return GroupChatListResponse.fromJson(response);
+  }
+
+  /// Unified Single Chat List API (WhatsApp Behavior)
+  /// GET /api/chat-list
+  /// Merges 1-to-1 private chats and group chats into a single unified list
+  static Future<PrivateChatResponse> getChatList({
+    int page = 1,
+    int limit = 20,
+    String? search,
+    String type = "all", // "all" | "private" | "group"
+    bool includeArchived = false,
+  }) async {
+    String endpoint = "/chat-list?page=$page&limit=$limit&type=$type&includeArchived=$includeArchived";
+    if (search != null && search.trim().isNotEmpty) {
+      endpoint += "&search=${Uri.encodeComponent(search.trim())}";
+    }
+
+    final response = await HttpUtil().get(endpoint);
+
+    return PrivateChatResponse.fromJson(response);
   }
 
   static Future<ForwardListResponse> getForwardList() async {
@@ -190,17 +210,31 @@ class MessageRepo {
     required int messageId,
     required String sourceType,
     required List<ForwardTarget> targets,
+    String? content,
+    String? messageType,
+    List<String>? images,
+    List<Map<String, dynamic>>? videos,
+    String? caption,
   }) async {
     final data = {
       "messageId": messageId,
       "sourceType": sourceType,
       "targets": targets.map((target) => target.toJson()).toList(),
+      if (content != null && content.isNotEmpty) "content": content,
+      if (messageType != null && messageType.isNotEmpty) "messageType": messageType,
+      if (images != null && images.isNotEmpty) "images": images,
+      if (videos != null && videos.isNotEmpty) "videos": videos,
+      if (caption != null && caption.isNotEmpty) "caption": caption,
     };
+
+    debugPrint("FORWARD REQUEST: $data");
 
     final response = await HttpUtil().Authpost(
       "/forward/message",
       data: data,
     );
+
+    debugPrint("FORWARD RESPONSE: $response");
 
     return ForwardMessageResponse.fromJson(response);
   }
@@ -235,4 +269,38 @@ class MessageRepo {
     return response;
   }
 
+  static Future<ProfileDetailsModel> getProfileDetails({
+    required int chatId,
+  }) async {
+    final response = await HttpUtil().get(
+      "/chat/profile-details?type=private&chatId=$chatId",
+    );
+
+    return ProfileDetailsModel.fromJson(response);
+  }
+
+
+  static Future<GroupProfileDetailsModel> getGroupProfileDetails({
+    required int groupId,
+  }) async {
+    final response = await HttpUtil().get(
+      "/chat/profile-details?type=group&groupId=$groupId",
+    );
+    return GroupProfileDetailsModel.fromJson(response);
+  }
+
+
+
+  static Future<Map<String, dynamic>> clearGroupChat({
+    required int groupId,
+  }) async {
+    final response = await HttpUtil().Authpost(
+      "/clearGroupChat",
+      data: {
+        "groupId": groupId,
+      },
+    );
+
+    return Map<String, dynamic>.from(response);
+  }
 }

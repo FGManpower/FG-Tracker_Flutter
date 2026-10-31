@@ -1,34 +1,34 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
-import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_notification_manager.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_in_app_pip/flutter_in_app_pip.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'app/Core/util/CallKit/callkit_service.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
+import 'app/Core/values/logoutuser.dart';
 import 'app/Data/Services/GroupCountService.dart';
+import 'app/Data/Services/notification_marker_service.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
@@ -36,7 +36,9 @@ import 'app/routes/app_pages.dart';
 import 'app/modules/Track/Controller/SocketServices.dart';
 import 'app/modules/Track/Controller/GroupTrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:http/http.dart' as http;
 
 final socket = SignallingService.instance.socket;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -44,251 +46,219 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   log("====Background-Bg===${message.data}");
-  if (message.data['screen_name'] == "incomingCall") {
-    final callData = jsonDecode(message.data['callData']);
-    final originalCallId = callData['callId'].toString();
-    if (Platform.isIOS) {
-      // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
-      return;
-    }
 
-    final Map<String, String> userInfo = {
-      "callId": originalCallId,
-      "callerId": callData['callerId'].toString(),
-      "receiverId": callData['receiverId'].toString(),
-      "isVideo": callData['isVideo'].toString(),
-      "callerName": callData['callerName'].toString(),
-      "callerProfileImage": callData['callerProfileImage'].toString(),
-      "sdpOfferCompressed": callData['sdpOfferCompressed'].toString(),
-      "notificationId": callData['notificationId']?.toString() ?? "",
-      "screen_name": "incomingCall",
-    };
+  final d = message.data;
 
+  if (d['type'] == 'FORCE_LOGOUT' || d['screen_name'] == 'force_logout') {
     try {
-      await ConnectycubeFlutterCallKit.showCallNotification(
-        CallEvent(
-          sessionId: callIdToUuid(originalCallId),
-          callerName: callData['callerName'],
-          callType: callData['isVideo'] == true ? 1 : 0,
-          opponentsIds: {int.parse(callData['callerId'])},
-          callerId: int.parse(callData['callerId']),
-          userInfo: userInfo,
-        ),
-      );
-    } catch (e) {
-      log("showCallNotification error: $e");
-    }
-    try {
-      await CallRepo.updateCallingStatus(
-          callId: originalCallId,
-          callingStatus: "Ringing",
-          remoteUserId: int.tryParse(callData['callerId'].toString()) ?? 0);
-    } catch (e) {
-      log(e.toString());
-    }
-  }
-
-  if (message.data['screen_name'] == "incomingGroupCall") {
-    final callData = jsonDecode(message.data['callData']);
-    final originalCallId = callData['callId'].toString();
-
-    if (Platform.isIOS) {
-      // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
-      return;
-    }
-
-    final Map<String, String> userInfo = callData.map<String, String>(
-        (key, value) => MapEntry(key.toString(), value.toString()));
-    try {
-      await ConnectycubeFlutterCallKit.showCallNotification(
-        CallEvent(
-          sessionId: callIdToUuid(originalCallId),
-          callerName: callData['groupName'],
-          callType: callData['isVideo'] == true ? 1 : 0,
-          opponentsIds: {int.parse(callData['callerId'])},
-          callerId: int.parse(callData['callerId']),
-          userInfo: userInfo,
-        ),
-      );
-    } catch (e) {
-      log("showCallNotification error: $e");
-    }
-    try {
-      await CallRepo.updateCallingStatus(
-          callId: originalCallId,
-          callingStatus: "Ringing",
-          remoteUserId: int.tryParse(callData['callerId'].toString()) ?? 0);
-    } catch (e) {
-      log(e.toString());
-    }
-  } else if (message.data['screen_name'] == "missedCall") {
-    final callData = jsonDecode(message.data['callData']);
-    final sessionId = callData['session_id'].toString();
-    callEnded(sessionId);
-  } else if (message.data['screen_name'] == "missedGroupCall") {
-    final sessionId = message.data['session_id'].toString();
-    CallStateTracker.isIncomingCallScreenOpen = false;
-    callEnded(sessionId);
-    flutterLocalNotificationsPlugin.cancelAll();
-  } else if (message.data['screen_name'] == "group_walkie" ||
-      message.data['screenName'] == "group_walkie" ||
-      message.data['screen_name'] == "groupWalkie" ||
-      message.data['screen'] == "group_walkie") {
-    if (message.notification != null) return;
-    final groupName = (message.data['groupName'] ??
-            message.data['group_name'] ??
-            message.data['title'])
-        ?.toString();
-    final speakerName = (message.data['speakerName'] ??
-            message.data['speaker_name'] ??
-            message.data['callerName'])
-        ?.toString();
-
-    final title = (groupName != null && groupName.trim().isNotEmpty)
-        ? "Walkie-Talkie: $groupName"
-        : "Walkie-Talkie Active";
-    final body = (speakerName != null && speakerName.trim().isNotEmpty)
-        ? "$speakerName is speaking in Walkie-Talkie. Tap to join."
-        : "Active walkie-talkie channel. Tap to join.";
-
-    const AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
-      'walkie_fcm_channel',
-      'Walkie-Talkie Notifications',
-      channelDescription: 'Notifications for active Walkie-Talkie channels',
-      importance: Importance.high,
-      priority: Priority.high,
-      ticker: 'ticker',
-      sound: RawResourceAndroidNotificationSound('recieve_notification'),
-      enableVibration: true,
-    );
-
-    const DarwinNotificationDetails darwinNotificationDetails =
-        DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-      sound: 'recieve_notification.mp3',
-    );
-
-    const NotificationDetails notificationDetails = NotificationDetails(
-      android: androidNotificationDetails,
-      iOS: darwinNotificationDetails,
-    );
-
-    await flutterLocalNotificationsPlugin.show(
-      502,
-      title,
-      body,
-      notificationDetails,
-      payload: jsonEncode(message.data),
-    );
-  }
-  // else if (message.data['screen_name'] == 'groupCallNotify') {
-  //   FlutterRingtonePlayer().play(
-  //     asAlarm: false,
-  //     fromAsset: Assets.music.incomingCall,
-  //   );
-  //   Future.delayed(const Duration(seconds: 10), () {
-  //     FlutterRingtonePlayer().stop();
-  //   });
-  // }
-}
-
-@pragma('vm:entry-point')
-Future<void> onCallRejectedWhenTerminated(CallEvent event) async {
-  await Firebase.initializeApp();
-
-  Map<String, dynamic> data = {};
-  final rawUserInfo = event.userInfo;
-
-  if (rawUserInfo != null && rawUserInfo.isNotEmpty) {
-    if (rawUserInfo.length == 1 &&
-        rawUserInfo.values.first.trim().startsWith("")) {
+      log("FORCE_LOGOUT received in background handler. Clearing credentials...");
+      final shared = await SharedPreferences.getInstance();
+      final introDone = shared.getBool(PrefConst.introStatus) ?? true;
+      final isDark = shared.getBool(PrefConst.isDarkMode);
+      await shared.clear();
+      await shared.setBool(PrefConst.introStatus, introDone);
+      if (isDark != null) {
+        await shared.setBool(PrefConst.isDarkMode, isDark);
+      }
+      await flutterLocalNotificationsPlugin.cancelAll();
       try {
-        data = jsonDecode(rawUserInfo.values.first);
+        await AwesomeNotifications().cancelAll();
+      } catch (_) {}
+    } catch (e) {
+      log("Error clearing storage on background FORCE_LOGOUT: $e");
+    }
+    return;
+  }
+
+  final handled = await CallKitService.handlePush(d);
+  if (handled) {
+    final screen = d['screen_name'];
+    if (Platform.isAndroid &&
+        (screen == 'incomingCall' || screen == 'incomingGroupCall')) {
+      try {
+        final cd = CallKitService.decodeCallData(d['callData']);
+        await CallRepo.updateCallingStatus(
+          callId: cd['callId'].toString(),
+          callingStatus: 'Ringing',
+          remoteUserId: int.tryParse(cd['callerId'].toString()) ?? 0,
+        );
       } catch (e) {
-        data = Map<String, dynamic>.from(rawUserInfo);
-      }
-    } else {
-      data = Map<String, dynamic>.from(rawUserInfo);
-    }
-  }
-
-  if (data.isEmpty) return;
-
-  final callId = int.tryParse(data['callId'].toString());
-  if (callId == null) return;
-  try {
-    if (data['screenName'].toString() == "incomingGroupCall") {
-      CallKitService.instance.declineGroupCall(data);
-    } else {
-      final socket = SignallingService.instance.socket;
-
-      if (socket != null && socket.connected) {
-        socket.emit("rejectCall", {
-          "callId": callId,
-          "remoteUserId": data["callerId"].toString(),
-        });
-        log("========call-rejected via socket");
-      } else {
-        final pref = await SharedPreferences.getInstance();
-        final token = pref.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ?? "";
-
-        if (token.isEmpty) return;
-
-        await http.get(
-          Uri.parse("${ConstRes.aBaseUrl}callRejected?callId=$callId"),
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer $token",
-          },
-        ).timeout(const Duration(seconds: 15));
+        log('ringing status error: $e');
       }
     }
-  } catch (e) {
-    log("[TERMINATED-ANDROID] ERROR: $e");
+    return;
   }
-  await ConnectycubeFlutterCallKit.reportCallEnded(
-    sessionId: event.sessionId,
-  );
-  await ConnectycubeFlutterCallKit.clearCallData(
-    sessionId: event.sessionId,
-  );
+
+  if (d['screen_name'] == "group_walkie" ||
+      d['screenName'] == "group_walkie" ||
+      d['screen_name'] == "groupWalkie" ||
+      d['screen'] == "group_walkie" ||
+      d['screen'] == "walkie") {
+    try {
+      await flutterLocalNotificationsPlugin.cancelAll();
+    } catch (_) {}
+
+    final rawJoinedCount = d['joinedMemberCount'] ??
+        d['joinedCount'] ??
+        d['activeMemberCount'] ??
+        d['totalJoinedMembers'] ??
+        d['membersJoined'];
+    final int? joinedCount =
+        rawJoinedCount != null ? int.tryParse(rawJoinedCount.toString()) : null;
+
+    final groupId = (d['groupId'] ?? d['group_id'] ?? d['id'] ?? '').toString();
+    final groupName =
+        (d['groupName'] ?? d['group_name'] ?? d['title'] ?? 'Walkie-Talkie')
+            .toString();
+    final speakerName =
+        (d['speakerName'] ?? d['speaker_name'] ?? d['name'] ?? 'Someone')
+            .toString();
+    final speakerImage =
+        (d['speakerImage'] ?? d['speaker_image'] ?? '').toString();
+
+    try {
+      await firebaseNotificationServices.showWalkieNotification(
+        groupId: groupId,
+        groupName: groupName,
+        speakerName: speakerName,
+        speakerImage: speakerImage,
+        joinedCount: joinedCount,
+        extraData: Map<String, dynamic>.from(d),
+      );
+    } catch (e, st) {
+      log("Error calling showWalkieNotification: $e\n$st");
+    }
+  }
 }
 
-@pragma('vm:entry-point')
-void onCallEventBackground() {
-  CallKitService.instance.init();
+void _setupCallKit() {
+  final callKit = CallKitService.instance;
+
+  callKit.onAcceptCall = (callId, extra, uuid) async {
+    final isGroup = extra['screen_name'] == 'incomingGroupCall';
+    CallSessionState.sessionId = uuid ?? '';
+
+    if (isGroup) {
+      log('Group call accepted: $extra');
+      return;
+    }
+
+    final callerId = extra['callerId']?.toString() ?? '';
+
+    if (Get.isRegistered<CallingController>() &&
+        Get.currentRoute == Routes.callScreen) {
+      return;
+    }
+
+    log('Incoming call accepted: $extra');
+
+    Get.toNamed(Routes.callScreen, arguments: {
+      'callerId': callerId,
+      'remoteUserId': callerId,
+      'callId': callId,
+      'sessionId': uuid,
+      'is_video': extra['isVideo'] == 'true' || extra['isVideo'] == true,
+      'profileImage': extra['profileImage'],
+      'callType': 'Incoming',
+      'fromCallKit': true,
+      'callerName': extra['callerName'],
+      'offer': CallKitService.decodeOffer(extra['sdpOfferCompressed']),
+    });
+  };
+
+  callKit.onDeclineCall = (callId, extra, uuid) async {
+    if (extra['screen_name'] == 'incomingGroupCall') return;
+
+    final s = SignallingService.instance.socket;
+    if (s != null && s.connected) {
+      s.emit('rejectCall', {
+        'callId': callId,
+        'remoteUserId': extra['callerId']?.toString(),
+      });
+      print("========rejectCallsocketCalled");
+    } else {
+      await rejectCallViaRest(callId);
+      print("========rejectCallApiCalled");
+    }
+  };
+
+  callKit.onEndCall = (callId, extra, uuid) async {
+    if (Get.isRegistered<CallingController>()) {
+      await Get.find<CallingController>().endCall(type: 'callkit');
+    }
+  };
+
+  callKit.onTimeoutCall = (callId, extra, uuid) async {
+    log('Incoming call timed out: $callId');
+  };
+
+  callKit.getCallStatus = (callId) async => null;
+
+  callKit.onVoipToken = (token) async {
+    log('VoIP token: $token');
+  };
+}
+
+Future<void> rejectCallViaRest(String callId) async {
+  try {
+    final shared = await SharedPreferences.getInstance();
+    final token = shared.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ??
+        ''; // adjust key name
+    if (token.isEmpty) return;
+
+    final url = Uri.parse('${ConstRes.aBaseUrl}callRejected?callId=$callId');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    ).timeout(const Duration(seconds: 10));
+
+    log('REST reject status: ${response.statusCode}');
+  } catch (e) {
+    log('REST reject error: $e');
+  }
 }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // In production (Release mode), silence all debugPrint outputs for maximum performance and security
+  if (kReleaseMode) {
+    debugPrint = (String? message, {int? wrapWidth}) {};
+    FlutterError.onError = (FlutterErrorDetails details) {
+      // Discard verbose stack traces in release mode
+    };
+    PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+      return true; // Mark as handled
+    };
+  }
+
   await Firebase.initializeApp();
-  // await RemoteLoggerTest.log("MAIN_BOOT", "App process launched/woken up in background! Platform: ${Platform.operatingSystem}");
   await Global.init();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  ConnectycubeFlutterCallKit.onCallRejectedWhenTerminated =
-      onCallRejectedWhenTerminated;
+
   await firebaseNotificationServices().initialized();
-  CallKitService.instance.init();
-  // await WalkieAwesomeNotificationService.instance.init();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
 
   Get.put<GroupTrackingController>(GroupTrackingController());
-
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
   Get.put<GroupCountService>(GroupCountService(), permanent: true);
+  Get.put<NotificationMarkerService>(NotificationMarkerService(), permanent: true);
   FacebookAppEvents().setAutoLogAppEventsEnabled(true);
   await FacebookAppEvents().setAdvertiserIdCollectionEnabled(true);
   final shared = await SharedPreferences.getInstance();
 
   var userId = shared.get(PrefConst.userId);
+
+  _setupCallKit();
 
   if (userId != null) {
     SignallingService.instance.init(
@@ -297,22 +267,25 @@ Future<void> main() async {
     );
     groupWalkieInitialize(userId);
     Socket_GroupCallService.instance.init(userId.toString());
-    SocketDashboardService().init();
+    SocketDashboardService.instance.init();
 
     StatusBinding().dependencies();
   }
   ScreenShareForegroundService.init();
-  // await WalkieNotificationManager.instance.init();
-  // final launch =
-  //     await FlutterLocalNotificationsPlugin().getNotificationAppLaunchDetails();
-  // if (launch?.didNotificationLaunchApp == true) {
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     final resp = launch!.notificationResponse;
-  //     if (resp != null) {
-  //       WalkieNotificationManager.instance.onNotificationTap(resp);
-  //     }
-  //   });
-  // }
+
+  FirebaseMessaging.onMessage.listen((m) {
+    if (m.data['type'] == 'FORCE_LOGOUT' ||
+        m.data['screen_name'] == 'force_logout') {
+      LogoutUser().handleForceLogout(
+        message: m.notification?.body ??
+            "Session expired. You logged in on another device.",
+      );
+      return;
+    }
+    CallKitService.handlePush(m.data);
+  });
+
+  await CallKitService.instance.init();
 
   runApp(const MyApp());
 }
@@ -333,11 +306,33 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    CallKitService.instance.init();
+    WidgetsBinding.instance.addObserver(this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      CallKitService.instance.markAppReady();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Drop ringing UIs whose call already ended while we were suspended.
+      CallKitService.instance.restoreActiveCalls();
+
+      // Also consume pending accept if app comes back to foreground after
+      // user accepted from notification while app was backgrounded.
+      CallKitService.instance.markAppReady();
+    }
   }
 
   @override
@@ -379,13 +374,7 @@ class _MyAppState extends State<MyApp> {
               Locale('hi', 'IN'),
               Locale('ur', 'PK'),
             ],
-            home:   PiPMaterialApp(
-              debugShowCheckedModeBanner: false,
-            ),
           ),
-
-
-
         ),
       ),
     );
