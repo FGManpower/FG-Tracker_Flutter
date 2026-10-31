@@ -100,10 +100,10 @@
 	<string>We need access to save QR codes to your gallery.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to allow you to set a profile image and upload photos and get QR code from photo library of your site location.</string>
-	<key>RTCAppGroupIdentifier</key>
-	<string>group.com.fg.fgtracker</string>
-	<key>RTCScreenSharingExtension</key>
-	<string>com.fg.fgtracker.broadcast</string>
+    <key>RTCAppGroupIdentifier</key>
+    <string>group.com.fg.fgtracker</string>
+    <key>RTCScreenSharingExtension</key>
+    <string>com.fg.fgtracker.ScreenShare</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

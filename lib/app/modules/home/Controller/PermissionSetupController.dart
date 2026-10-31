@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -26,7 +27,8 @@ class PermissionItem {
 class PermissionSetupController extends GetxController
     with WidgetsBindingObserver {
   final Location _location = Location();
-
+  final firebaseNotificationServices notificationServices =
+  firebaseNotificationServices();
   final RxInt selectedIndex = 0.obs;
 
   final RxSet<int> expandedItems = <int>{0}.obs;
@@ -78,14 +80,14 @@ class PermissionSetupController extends GetxController
           'Helps you receive relevant message alerts, call notifications and other important app updates.',
       icon: Icons.notifications_rounded,
     ),
-    PermissionItem(
-      title: 'Other Permissions',
-      description:
-          'Include only permissions confirmed as needed by actual features, with a clear explanation.',
-      why:
-          'Additional permissions will be requested only when required by a supported feature. Their purpose will be explained before requesting access.',
-      icon: Icons.settings_rounded,
-    ),
+    // PermissionItem(
+    //   title: 'Other Permissions',
+    //   description:
+    //       'Include only permissions confirmed as needed by actual features, with a clear explanation.',
+    //   why:
+    //       'Additional permissions will be requested only when required by a supported feature. Their purpose will be explained before requesting access.',
+    //   icon: Icons.settings_rounded,
+    // ),
   ];
 
   PermissionItem get currentItem => items[selectedIndex.value];
@@ -97,12 +99,66 @@ class PermissionSetupController extends GetxController
     return true;
   }
 
+
   @override
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
+
+    _checkInitialLocationAndContinue();
   }
 
+  Future<void> _checkInitialLocationAndContinue() async {
+    final locationGranted =
+        await _hasAlwaysLocation() && await _location.serviceEnabled();
+
+    if (locationGranted) {
+      Get.offAllNamed(Routes.Home_Screen);
+      return;
+    }
+
+    // Location pending hai, tabhi Permission Setup ke statuses load karo.
+    await checkAllPermissionStatus();
+  }
+
+
+  Future<void> checkAllPermissionStatus() async {
+    grantedItems.clear();
+
+    // LOCATION
+    final locationGranted =
+        await _hasAlwaysLocation() && await _location.serviceEnabled();
+
+    if (locationGranted) {
+      grantedItems.add(0);
+    }
+
+    // CAMERA
+    final camera = await Permission.camera.status;
+    if (camera.isGranted || camera.isLimited) {
+      grantedItems.add(1);
+    }
+
+    // MICROPHONE
+    final microphone = await Permission.microphone.status;
+    if (microphone.isGranted) {
+      grantedItems.add(2);
+    }
+
+    // CONTACTS
+    final contacts = await Permission.contacts.status;
+    if (contacts.isGranted || contacts.isLimited) {
+      grantedItems.add(3);
+    }
+
+    // NOTIFICATIONS
+    final notification = await Permission.notification.status;
+    if (notification.isGranted || notification.isLimited) {
+      grantedItems.add(4);
+    }
+
+    grantedItems.refresh();
+  }
   @override
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -138,39 +194,84 @@ class PermissionSetupController extends GetxController
     try {
       final idx = selectedIndex.value;
 
+      // 0. LOCATION
       if (idx == 0) {
         final granted = await _requestLocation();
+
         if (granted) {
           _markGrantedAndAdvance(idx);
         }
-      } else {
-        final permission = _permissionForIndex(idx);
+        return;
+      }
 
-        if (permission != null) {
-          final status = await permission.status;
+      // 2. MICROPHONE / AUDIO
+      if (idx == 2) {
+        await requestMicrophoneAudioPermission();
+        return;
+      }
 
-          if (status.isGranted) {
-            _markGrantedAndAdvance(idx);
-          } else if (status.isPermanentlyDenied || status.isRestricted) {
-            await _showSettingsDialog();
-          } else {
-            final result = await permission.request();
+    // 4. NOTIFICATIONS
+// 4. NOTIFICATIONS
+      if (idx == 4) {
+        var status = await Permission.notification.status;
 
-            if (result.isGranted || result.isLimited) {
-              _markGrantedAndAdvance(idx);
-            } else if (result.isPermanentlyDenied || result.isRestricted) {
-              await _showSettingsDialog();
-            } else {
-              _showMessage(
-                'Permission was not granted. You can try again or skip.',
-              );
-            }
-          }
+        // Already granted
+        if (status.isGranted || status.isLimited) {
+          _markGrantedAndAdvance(idx);
+          return;
         }
+
+        // Permanently denied: Open Settings
+        if (status.isPermanentlyDenied || status.isRestricted) {
+          await _showSettingsDialog();
+          return;
+        }
+
+        // Not granted: Request native permission popup
+        status = await Permission.notification.request();
+
+        if (status.isGranted || status.isLimited) {
+          _markGrantedAndAdvance(idx);
+        } else if (status.isPermanentlyDenied || status.isRestricted) {
+          await _showSettingsDialog();
+        }
+
+        return;
+      }      // CAMERA, CONTACTS, NOTIFICATIONS
+      final permission = _permissionForIndex(idx);
+
+      if (permission == null) {
+        _showMessage('Permission is not configured.');
+        return;
+      }
+
+      var status = await permission.status;
+
+      if (status.isGranted || status.isLimited) {
+        _markGrantedAndAdvance(idx);
+        return;
+      }
+
+      if (status.isPermanentlyDenied || status.isRestricted) {
+        await _showSettingsDialog();
+        return;
+      }
+
+      // Request permission
+      status = await permission.request();
+
+      if (status.isGranted || status.isLimited) {
+        _markGrantedAndAdvance(idx);
+      } else if (status.isPermanentlyDenied || status.isRestricted) {
+        await _showSettingsDialog();
+      } else {
+        _showMessage(
+          '${currentItem.title} permission was not granted. Please try again.',
+        );
       }
     } on PlatformException catch (e) {
       _showMessage(e.message ?? 'Unable to request permission.');
-    } catch (_) {
+    } catch (e) {
       _showMessage('Something went wrong. Please try again.');
     } finally {
       loading.value = false;
@@ -190,37 +291,79 @@ class PermissionSetupController extends GetxController
     _advanceSelection(index);
   }
 
-  void skipAllRemaining() {
+  Future<void> skipAllRemaining() async {
     if (loading.value) return;
+
+    final locationGranted =
+        await _hasAlwaysLocation() && await _location.serviceEnabled();
+
+    if (!locationGranted) {
+      selectedIndex.value = 0;
+
+      _showMessage(
+        'Location permission and GPS are required to continue.',
+      );
+
+      return;
+    }
 
     Get.offAllNamed(Routes.Home_Screen);
   }
 
   void _advanceSelection(int fromIndex) {
-    for (int i = fromIndex + 1; i < items.length; i++) {
+    // Location is mandatory. Always prioritize it if pending.
+    if (!grantedItems.contains(0)) {
+      _selectAndExpandPermission(0);
+      return;
+    }
+
+    // Find next pending permission.
+    for (int i = 1; i < items.length; i++) {
       if (!grantedItems.contains(i)) {
-        selectedIndex.value = i;
-        if (!expandedItems.contains(i)) {}
+        _selectAndExpandPermission(i);
         return;
       }
     }
+
+    // All permissions completed.
     Get.offAllNamed(Routes.Home_Screen);
   }
 
-  Future<void> verifyCurrentPermission() async {
-    final idx = selectedIndex.value;
-    if (idx == 0) {
-      final always = await _hasAlwaysLocation();
-      final gps = await _location.serviceEnabled();
-      if (always && gps) _markGrantedAndAdvance(idx);
-    } else {
-      final permission = _permissionForIndex(idx);
-      if (permission != null && await permission.isGranted) {
-        _markGrantedAndAdvance(idx);
-      }
-    }
+  void _selectAndExpandPermission(int index) {
+    selectedIndex.value = index;
+
+    expandedItems.clear();
+    expandedItems.add(index);
+
+    expandedItems.refresh();
   }
 
+
+  Future<void> verifyCurrentPermission() async {
+    await checkAllPermissionStatus();
+
+    if (!grantedItems.contains(0)) {
+      selectedIndex.value = 0;
+
+      expandedItems.clear();
+      expandedItems.add(0);
+      expandedItems.refresh();
+
+      return;
+    }
+
+    final nextPendingIndex = items.indexWhere(
+          (item) => !grantedItems.contains(items.indexOf(item)),
+    );
+
+    if (nextPendingIndex != -1) {
+      selectedIndex.value = nextPendingIndex;
+
+      expandedItems.clear();
+      expandedItems.add(nextPendingIndex);
+      expandedItems.refresh();
+    }
+  }
   Future<bool> _hasAlwaysLocation() async {
     if (GetPlatform.isIOS) {
       return await Geolocator.checkPermission() == LocationPermission.always;
@@ -249,7 +392,6 @@ class PermissionSetupController extends GetxController
 
 
   Future<bool> _requestLocation() async {
-    // STEP 1: Foreground location permission
     if (GetPlatform.isAndroid) {
       var foreground = await Permission.locationWhenInUse.status;
 
@@ -333,6 +475,10 @@ class PermissionSetupController extends GetxController
     if (context == null) return;
 
     final idx = selectedIndex.value;
+    if (grantedItems.contains(idx)) {
+      _advanceSelection(idx);
+      return;
+    }
     final isRequired = items[idx].required;
 
     final openSettings = await showDialog<bool>(
@@ -366,10 +512,39 @@ class PermissionSetupController extends GetxController
     }
   }
 
+  Future<void> requestMicrophoneAudioPermission() async {
+    try {
+      var status = await Permission.microphone.status;
+
+      if (status.isGranted) {
+        _markGrantedAndAdvance(2);
+        return;
+      }
+
+      if (status.isPermanentlyDenied || status.isRestricted) {
+        await _showSettingsDialog();
+        return;
+      }
+
+      status = await Permission.microphone.request();
+
+      if (status.isGranted) {
+        _markGrantedAndAdvance(2);
+      } else if (status.isPermanentlyDenied || status.isRestricted) {
+        await _showSettingsDialog();
+      } else {
+        _showMessage(
+          'Microphone permission was not granted. Please try again.',
+        );
+      }
+    } catch (e) {
+      _showMessage('Unable to request Microphone permission.');
+    }
+  }
+
   void _showMessage(String message) {
     final context = Get.context;
     if (context == null) return;
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );

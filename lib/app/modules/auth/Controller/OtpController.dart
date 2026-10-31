@@ -301,21 +301,23 @@ class OtpController extends GetxController {
             });
           });
         } else {
-          Global.storageServices.setString(
+          await Global.storageServices.setString(
             PrefConst.userName,
             result.data!.userName ?? "Unknown",
           );
 
-          Global.storageServices.setString(
+          await Global.storageServices.setString(
             PrefConst.profileImage,
             result.data!.profileImage ?? "Unknown",
           );
-          Global.storageServices.setString(
+
+          await Global.storageServices.setString(
             PrefConst.isRegistered,
             "true",
           );
+
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            Get.offNamedUntil(Routes.Home_Screen, (route) => false);
+            Get.offAllNamed(Routes.permissionSetup);
           });
         }
       } else {
