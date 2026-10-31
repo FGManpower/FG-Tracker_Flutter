@@ -16,6 +16,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'CallStateTracker.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
@@ -136,9 +137,9 @@ class firebaseNotificationServices {
     ];
 
     return DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
       notificationCategories: darwinNotificationCategories,
     );
   }
@@ -561,35 +562,51 @@ class firebaseNotificationServices {
     });
   }
 
-  askPermission() async {
-    await Firebase.initializeApp();
+  Future<bool> askPermission() async {
+    try {
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp();
+      }
 
-    if (Platform.isAndroid) {
-      await messaging.requestPermission(
-        alert: true,
-        announcement: true,
-        badge: true,
-        carPlay: true,
-        criticalAlert: true,
-        provisional: true,
-        sound: true,
-      );
-      await FlutterLocalNotificationsPlugin()
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestNotificationsPermission();
-    } else if (Platform.isIOS) {
-      await FlutterLocalNotificationsPlugin()
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
+      if (Platform.isAndroid) {
+        var status = await Permission.notification.status;
+
+        if (status.isGranted) {
+          return true;
+        }
+
+        if (status.isPermanentlyDenied || status.isRestricted) {
+          return false;
+        }
+
+        status = await Permission.notification.request();
+
+        return status.isGranted;
+      }
+
+      if (Platform.isIOS) {
+        final settings = await messaging.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+          announcement: true,
+          carPlay: true,
+          criticalAlert: true,
+          provisional: true,
+        );
+
+        return settings.authorizationStatus ==
+            AuthorizationStatus.authorized ||
+            settings.authorizationStatus ==
+                AuthorizationStatus.provisional;
+      }
+
+      return false;
+    } catch (e) {
+      debugPrint('Notification permission error: $e');
+      return false;
     }
   }
-
   Future<void> initialized() async {
     getDeviceTokenToSendNotification();
 

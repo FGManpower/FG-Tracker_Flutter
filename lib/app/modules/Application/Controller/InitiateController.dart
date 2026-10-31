@@ -82,9 +82,11 @@ class InitiateController extends GetxController
     });
   }
 
-  void checkLoginStatus() async {
+
+  Future<void> checkLoginStatus() async {
     if (_isCallOrWalkieActive ||
-        (Get.currentRoute.isNotEmpty && Get.currentRoute != Routes.Splash)) {
+        (Get.currentRoute.isNotEmpty &&
+            Get.currentRoute != Routes.Splash)) {
       _splashTimer?.cancel();
       return;
     }
@@ -92,28 +94,31 @@ class InitiateController extends GetxController
     await Future.delayed(const Duration(seconds: 1));
 
     if (_isCallOrWalkieActive ||
-        (Get.currentRoute.isNotEmpty && Get.currentRoute != Routes.Splash)) {
+        (Get.currentRoute.isNotEmpty &&
+            Get.currentRoute != Routes.Splash)) {
       _splashTimer?.cancel();
       return;
     }
 
-    if (Utility.isNotNullEmptyOrFalse(
-            Global.storageServices.getaccesstoken()) &&
-        Utility.isNotNullEmptyOrFalse(
-            Global.storageServices.get(PrefConst.isRegistered))) {
-      Get.offAllNamed(Routes.Home_Screen);
-    } else {
-      final introDone =
-          await Global.storageServices.getBool(PrefConst.introStatus);
+    final token = Global.storageServices.getaccesstoken();
+    final isRegistered =
+    Global.storageServices.get(PrefConst.isRegistered);
 
-      if (introDone == true) {
-        Get.offAllNamed(Routes.Login);
-      } else {
-        Get.offAllNamed(Routes.Intro);
-      }
+    if (Utility.isNotNullEmptyOrFalse(token) &&
+        isRegistered == "true") {
+      Get.offAllNamed(Routes.permissionSetup);
+      return;
+    }
+
+    final introDone =
+    await Global.storageServices.getBool(PrefConst.introStatus);
+
+    if (introDone == true) {
+      Get.offAllNamed(Routes.Login);
+    } else {
+      Get.offAllNamed(Routes.Intro);
     }
   }
-
   @override
   void onClose() {
     _splashTimer?.cancel();

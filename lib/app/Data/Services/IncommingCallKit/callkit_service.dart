@@ -345,8 +345,9 @@ class CallKitService with WidgetsBindingObserver {
 
     await _recoverAcceptedCall();
 
-    unawaited(_postInitBackgroundTasks(skipPermissions: hasActiveCallNow));
-  }
+    unawaited(postInitBackgroundTasks(
+      skipPermissions: true,
+    ));  }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -356,7 +357,7 @@ class CallKitService with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _postInitBackgroundTasks({required bool skipPermissions}) async {
+  Future<void> postInitBackgroundTasks({required bool skipPermissions}) async {
     if (!skipPermissions) {
       try {
         await FlutterCallkitIncoming.requestNotificationPermission({

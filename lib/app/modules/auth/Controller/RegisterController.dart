@@ -215,7 +215,10 @@ class RegistrationController extends GetxController {
               controller.phoneController.text.trim(),
             );
           }
-          _fetchAndSaveProfile(result.message.toString());
+          _fetchAndSaveProfile(result.message.toString(),
+            goToPermissionSetup: true,
+
+          );
         } else {
           Loading().dismissloading();
           CommonDialog.errorMessage(result.message);
@@ -261,19 +264,26 @@ class RegistrationController extends GetxController {
     }
   }
 
-  Future<void> _fetchAndSaveProfile(String successMessage) async {
+  Future<void> _fetchAndSaveProfile(
+      String successMessage, {
+        bool goToPermissionSetup = false,
+      }) async {
     try {
       var profileData = await ProfileRepo.getProfileData();
+
       if (profileData.status == true) {
         Loading().dismissloading();
+
         Global.storageServices.setString(
           PrefConst.userName,
           profileData.data!.name ?? "Unknown",
         );
+
         Global.storageServices.setString(
           PrefConst.profileImage,
           profileData.data!.profileImage ?? "Unknown",
         );
+
         if (profileData.data?.email != null &&
             profileData.data!.email!.isNotEmpty &&
             profileData.data!.email != "null") {
@@ -284,7 +294,9 @@ class RegistrationController extends GetxController {
         } else {
           Global.storageServices.remove(PrefConst.userEmail);
         }
-        if (profileData.data?.mobileNo != null && profileData.data!.mobileNo!.isNotEmpty) {
+
+        if (profileData.data?.mobileNo != null &&
+            profileData.data!.mobileNo!.isNotEmpty) {
           Global.storageServices.setString(
             PrefConst.userPhone,
             profileData.data!.mobileNo!,
@@ -292,7 +304,12 @@ class RegistrationController extends GetxController {
         }
 
         Utils().fluttertoast(successMessage);
-        Get.offAllNamed(Routes.Home_Screen);
+
+        if (goToPermissionSetup) {
+          Get.offAllNamed(Routes.permissionSetup);
+        } else {
+          Get.offAllNamed(Routes.Home_Screen);
+        }
       } else {
         Loading().dismissloading();
         CommonDialog.errorMessage(profileData.message);
@@ -301,5 +318,4 @@ class RegistrationController extends GetxController {
       Loading().dismissloading();
       CommonDialog.errorMessage(e.toString());
     }
-  }
-}
+  }}
