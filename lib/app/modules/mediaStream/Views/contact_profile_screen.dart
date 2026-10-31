@@ -160,15 +160,9 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFEAE6FF), Color(0xFFF7F7FD)],
-            stops: [0.0, 0.35],
-          ),
-        ),
+        color: const Color(0xFFF7F7FD),
         child: SafeArea(
+          top: false,
           child: NotificationListener<ScrollNotification>(
             // Recent calls pagination: load next batch near the bottom
             onNotification: (ScrollNotification n) {
@@ -181,30 +175,49 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
             },
             child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 20.h),
+            padding: EdgeInsets.only(bottom: 20.h),
             child: Column(
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: GestureDetector(
-                    onTap: () => Get.back(),
-                    child: Container(
-                      width: 40.w,
-                      height: 40.w,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12.r),
-                        boxShadow: _softShadow,
+                // Header band: full-width lavender block with back button,
+                // avatar, name and number
+                Container(
+                  width: double.infinity,
+                  color: const Color(0xFFEFECFE),
+                  padding: EdgeInsets.fromLTRB(
+                    16.w,
+                    MediaQuery.of(context).padding.top + 8.h,
+                    16.w,
+                    18.h,
+                  ),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: GestureDetector(
+                          onTap: () => Get.back(),
+                          child: Container(
+                            width: 36.w,
+                            height: 36.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10.r),
+                              boxShadow: _softShadow,
+                            ),
+                            child: Icon(Icons.arrow_back_ios_new_rounded,
+                                size: 15.sp, color: _purple),
+                          ),
+                        ),
                       ),
-                      child: Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 17.sp, color: _purple),
-                    ),
+                      Obx(() => _buildHeader(controller.detail.value)),
+                    ],
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 14.h),
 
-                Obx(() => _buildHeader(controller.detail.value)),
-                SizedBox(height: 18.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Column(
+                    children: [
 
                 Row(
                   children: [
@@ -336,6 +349,9 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                   if (controller.showRecentCalls)
                     _buildRecentCallsCard(context),
                 ],
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -354,19 +370,19 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
     return Column(
       children: [
         _buildBigAvatar(name, _displayAvatar(d), isGroup),
-        SizedBox(height: 12.h),
+        SizedBox(height: 10.h),
         Text(
           name,
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: 20.sp,
+            fontSize: 17.sp,
             fontFamily: FontFamily.interBold,
             color: _dark,
           ),
         ),
-        SizedBox(height: 4.h),
+        SizedBox(height: 2.h),
         if (isGroup)
           Text(
             "Group",
@@ -381,7 +397,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
             Text(
               phone,
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 13.sp,
                 fontFamily: FontFamily.interSemiBold,
                 color: _purple,
               ),
@@ -442,37 +458,39 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
 
     Widget fallback() => Center(
           child: isGroup
-              ? Icon(Icons.groups_rounded, size: 42.sp, color: _purple)
+              ? Icon(Icons.groups_rounded, size: 34.sp, color: _purple)
               : Text(
                   initial,
                   style: TextStyle(
-                    fontSize: 34.sp,
+                    fontSize: 28.sp,
                     fontFamily: FontFamily.interBold,
                     color: _purple,
                   ),
                 ),
         );
 
+    // Compact rounded-square avatar with white border (call info header)
     return GestureDetector(
       onTap: url.isEmpty
           ? null
           : () => showFullScreenPhoto(name: name, imageUrl: url),
       child: Container(
-      width: 100.w,
-      height: 100.w,
+      width: 78.w,
+      height: 78.w,
       decoration: BoxDecoration(
         color: Colors.white,
-        shape: BoxShape.circle,
+        borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: _purple.withValues(alpha: 0.12),
-            blurRadius: 16,
+            color: _purple.withValues(alpha: 0.14),
+            blurRadius: 14,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       padding: EdgeInsets.all(3.w),
-      child: ClipOval(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(21.r),
         child: Container(
           color: _lavender,
           child: url.isNotEmpty
@@ -651,92 +669,256 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
   Widget _buildCallDetailsCard(CallHistoryDetailData d) {
     final bool isVideo =
         d.isVideo == true || (d.type ?? '').toLowerCase() == 'video';
-    final String mediaLabel = isVideo ? "Video Call" : "Audio Call";
     final bool isIncoming = (d.direction ?? '').toLowerCase() == 'incoming';
-    final String dirLabel = isIncoming ? "Incoming" : "Outgoing";
-    final String callTypeFull = "$dirLabel $mediaLabel";
+    final String callTitle =
+        "${isIncoming ? 'Incoming' : 'Outgoing'} ${isVideo ? 'video' : 'audio'} call";
+    final IconData callIcon = isVideo
+        ? Icons.video_call_rounded
+        : (isIncoming
+            ? Icons.phone_callback_rounded
+            : Icons.phone_forwarded_rounded);
 
-    final String when =
-        d.formattedDate ?? d.date ?? _whenLabel(d.calledAt, d.time);
-    final String? duration = d.formattedDuration ??
-        (d.duration != null && d.duration! > 0 ? "${d.duration}s" : null);
+    final String dateLabel = _callDateLabel(d.calledAt ?? d.startTime) ??
+        d.formattedDate ??
+        d.date ??
+        _whenLabel(d.calledAt, d.time);
 
-    final String? start = d.startTime ?? d.calledAt;
-    final String? end = d.endTime ?? d.endedAt;
+    DateTime? startDt = _parseCallTime(d.startTime) ?? _parseCallTime(d.calledAt);
+    DateTime? endDt = _parseCallTime(d.endTime) ?? _parseCallTime(d.endedAt);
+    final int seconds = _callSeconds(d, startDt, endDt);
+    // Fill a missing side from the duration
+    if (seconds > 0) {
+      if (startDt != null && endDt == null) {
+        endDt = startDt.add(Duration(seconds: seconds));
+      } else if (startDt == null && endDt != null) {
+        startDt = endDt.subtract(Duration(seconds: seconds));
+      }
+    }
+    final String? startLabel = startDt != null
+        ? _formatAmPm(startDt)
+        : (d.time?.trim().isNotEmpty == true ? d.time!.trim() : null);
+    final String? endLabel = endDt != null ? _formatAmPm(endDt) : null;
+    final bool hasStart = startLabel != null;
+    final bool hasEnd = endLabel != null;
 
     return _card(
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-            child: Row(
+      child: Padding(
+        padding: EdgeInsets.all(14.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Call Information",
+              style: TextStyle(
+                fontSize: 15.sp,
+                fontFamily: FontFamily.interBold,
+                color: _dark,
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Row(
               children: [
-                _iconCircle(isVideo ? Icons.videocam_rounded : Icons.call_rounded),
+                Container(
+                  width: 44.w,
+                  height: 44.w,
+                  decoration: BoxDecoration(
+                    color: _lavender,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(callIcon, color: _purple, size: 22.sp),
+                ),
                 SizedBox(width: 12.w),
                 Expanded(
-                  child: Text(
-                    "Call Information",
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontFamily: FontFamily.interBold,
-                      color: _dark,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        callTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontFamily: FontFamily.interBold,
+                          color: _dark,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        dateLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontFamily: FontFamily.interMedium,
+                          color: _grey,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                if (seconds > 0)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        _durationLong(seconds),
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontFamily: FontFamily.interBold,
+                          color: _purple,
+                        ),
+                      ),
+                      Text(
+                        "Duration",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontFamily: FontFamily.interMedium,
+                          color: _grey,
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
-          ),
-          _divider(),
-          _buildDetailRow(
-            icon: isVideo ? Icons.videocam_outlined : Icons.phone_outlined,
-            label: "Call Type",
-            value: callTypeFull,
-          ),
-          _divider(),
-          _buildDetailRow(
-            icon: Icons.calendar_today_rounded,
-            label: "Date & Time",
-            value: d.time?.isNotEmpty == true && !when.contains(d.time!)
-                ? "$when at ${d.time}"
-                : when,
-          ),
-          if (duration != null &&
-              duration.isNotEmpty &&
-              duration != '00:00' &&
-              duration != '0') ...[
-            _divider(),
-            _buildDetailRow(
-              icon: Icons.timelapse_rounded,
-              label: "Duration",
-              value: duration,
-              valueColor: _purple,
-            ),
+            if (hasStart || hasEnd) ...[
+              SizedBox(height: 12.h),
+              Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: const Color(0xFFECEAF6)),
+                ),
+                child: Row(
+                  children: [
+                    _timeColumn(
+                      "Started",
+                      startLabel ?? "--",
+                      CrossAxisAlignment.start,
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(child: _durationTimeline(seconds)),
+                    SizedBox(width: 8.w),
+                    _timeColumn(
+                      "Ended",
+                      endLabel ?? "--",
+                      CrossAxisAlignment.end,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
-          if (start != null && start.isNotEmpty) ...[
-            _divider(),
-            _buildDetailRow(
-              icon: Icons.play_arrow_rounded,
-              label: "Start Time",
-              value: _formatDetailTimestamp(start),
-            ),
-          ],
-          if (end != null && end.isNotEmpty) ...[
-            _divider(),
-            _buildDetailRow(
-              icon: Icons.stop_rounded,
-              label: "End Time",
-              value: _formatDetailTimestamp(end),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
 
+  Widget _timeColumn(String label, String value, CrossAxisAlignment align) {
+    return Column(
+      crossAxisAlignment: align,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.sp,
+            fontFamily: FontFamily.interMedium,
+            color: _grey,
+          ),
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontFamily: FontFamily.interBold,
+            color: _dark,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// green dot ── [16s] ── red dot
+  Widget _durationTimeline(int seconds) {
+    Widget dot(Color c) => Container(
+          width: 8.w,
+          height: 8.w,
+          decoration: BoxDecoration(color: c, shape: BoxShape.circle),
+        );
+    Widget line() => Expanded(
+          child: Container(height: 1.5, color: _purple.withValues(alpha: 0.6)),
+        );
+
+    return Row(
+      children: [
+        dot(const Color(0xFF10B981)),
+        line(),
+        if (seconds > 0)
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 4.w),
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+            decoration: BoxDecoration(
+              color: _lavender,
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Text(
+              _durationShort(seconds),
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontFamily: FontFamily.interSemiBold,
+                color: _purple,
+              ),
+            ),
+          ),
+        if (seconds > 0) line(),
+        dot(const Color(0xFFEF4444)),
+      ],
+    );
+  }
+
+  /// 16 -> "16 sec", 75 -> "1 min 15 sec", 3700 -> "1 hr 1 min"
+  String _durationLong(int s) {
+    final h = s ~/ 3600, m = (s % 3600) ~/ 60, sec = s % 60;
+    if (h > 0) return m > 0 ? "$h hr $m min" : "$h hr";
+    if (m > 0) return sec > 0 ? "$m min $sec sec" : "$m min";
+    return "$sec sec";
+  }
+
+  /// 16 -> "16s", 75 -> "1m 15s", 3700 -> "1h 1m"
+  String _durationShort(int s) {
+    final h = s ~/ 3600, m = (s % 3600) ~/ 60, sec = s % 60;
+    if (h > 0) return m > 0 ? "${h}h ${m}m" : "${h}h";
+    if (m > 0) return sec > 0 ? "${m}m ${sec}s" : "${m}m";
+    return "${sec}s";
+  }
+
+  /// "Today, 30 Oct 2026" / "Yesterday, 29 Oct 2026" / "28 Oct 2026"
+  String? _callDateLabel(String? raw) {
+    final dt = DateTime.tryParse(raw?.trim() ?? '')?.toLocal();
+    if (dt == null) return null;
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final String date = "${dt.day} ${months[dt.month - 1]} ${dt.year}";
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final diff = today.difference(DateTime(dt.year, dt.month, dt.day)).inDays;
+    if (diff == 0) return "Today, $date";
+    if (diff == 1) return "Yesterday, $date";
+    return date;
+  }
+
   String _formatDetailTimestamp(String raw) {
     final trimmed = raw.trim();
-    final dt = DateTime.tryParse(trimmed)?.toLocal();
+    final dt = _parseCallTime(trimmed);
     if (dt == null) return trimmed;
+    return _formatAmPm(dt);
+  }
+
+  /// 14:35:31 -> "2:35:31 PM"
+  String _formatAmPm(DateTime dt) {
     final hour = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
     final ampm = dt.hour >= 12 ? 'PM' : 'AM';
     final min = dt.minute.toString().padLeft(2, '0');
@@ -744,48 +926,61 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
     return "$hour:$min:$sec $ampm";
   }
 
-  Widget _buildDetailRow({
-    required IconData icon,
-    required String label,
-    required String value,
-    Color? valueColor,
-    Widget? trailingWidget,
-  }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _iconCircle(icon, size: 36, iconSize: 16),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontFamily: FontFamily.interMedium,
-                    color: _grey,
-                  ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontFamily: FontFamily.interSemiBold,
-                    color: valueColor ?? _dark,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (trailingWidget != null) trailingWidget,
-        ],
-      ),
-    );
+  /// Parses ISO date-time ("2026-10-30T09:05:31Z") or a plain time
+  /// ("14:35:31", "2:35 PM", "02:35:31 pm"). Plain times use today's date.
+  DateTime? _parseCallTime(String? raw) {
+    final String v = raw?.trim() ?? '';
+    if (v.isEmpty || v.toLowerCase() == 'null') return null;
+
+    final DateTime? iso = DateTime.tryParse(v);
+    if (iso != null) return iso.toLocal();
+
+    final m = RegExp(r'^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?$')
+        .firstMatch(v);
+    if (m == null) return null;
+    int h = int.parse(m.group(1)!);
+    final int min = int.parse(m.group(2)!);
+    final int sec = int.tryParse(m.group(3) ?? '') ?? 0;
+    final String? ap = m.group(4)?.toLowerCase();
+    if (ap == 'pm' && h < 12) h += 12;
+    if (ap == 'am' && h == 12) h = 0;
+    if (h > 23 || min > 59 || sec > 59) return null;
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day, h, min, sec);
+  }
+
+  /// Call length in seconds: `duration`, else `formattedDuration`
+  /// ("00:16", "1:02:05", "16s", "16 sec"), else ended - started.
+  int _callSeconds(CallHistoryDetailData d, DateTime? start, DateTime? end) {
+    if ((d.duration ?? 0) > 0) return d.duration!;
+
+    final String f = d.formattedDuration?.trim().toLowerCase() ?? '';
+    if (f.isNotEmpty) {
+      if (f.contains(':')) {
+        final parts = f.split(':').map((p) => int.tryParse(p.trim())).toList();
+        if (parts.every((p) => p != null)) {
+          int total = 0;
+          for (final p in parts) {
+            total = total * 60 + p!;
+          }
+          if (total > 0) return total;
+        }
+      } else {
+        int total = 0;
+        for (final m in RegExp(r'(\d+)\s*(h|hr|m|min|s|sec)').allMatches(f)) {
+          final int n = int.parse(m.group(1)!);
+          final String u = m.group(2)!;
+          total += u.startsWith('h') ? n * 3600 : (u.startsWith('m') ? n * 60 : n);
+        }
+        if (total > 0) return total;
+      }
+    }
+
+    if (start != null && end != null) {
+      final int diff = end.difference(start).inSeconds;
+      if (diff > 0 && diff < 24 * 3600) return diff;
+    }
+    return 0;
   }
 
   Widget _buildGroupSummaryCard(CallHistoryDetailData d) {

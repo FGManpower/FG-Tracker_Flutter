@@ -1,163 +1,251 @@
 import 'dart:convert';
 
+import 'package:intl/intl.dart';
+
+import '../../../Core/constant/const_res.dart';
+
+int _toInt(dynamic value, [int fallback = 0]) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value?.toString() ?? "") ?? fallback;
+}
+
+double? _toDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  return double.tryParse(value.toString());
+}
+
+String? _nonEmpty(dynamic value) {
+  final str = value?.toString().trim();
+  return (str == null || str.isEmpty || str == "null") ? null : str;
+}
+
+/// Builds a full URL from the relative paths the attendance API returns
+/// (e.g. "uploads/Attendance/Photos/xxx.jpg"). Local file paths and absolute
+/// URLs are returned unchanged.
+String? attendanceMediaUrl(String? path) {
+  if (path == null || path.isEmpty) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  if (path.startsWith("/data/") || path.startsWith("/storage/") ||
+      path.startsWith("/var/") || path.startsWith("/private/")) {
+    return path;
+  }
+  final clean = path.startsWith("/") ? path.substring(1) : path;
+  return "${ConstRes.aImageBaseUrl}$clean";
+}
+
 class AttendanceMemberResponse {
   final String userId;
   final String userName;
-  final String? userAvatar;
-  final String status; // "Present" or "Absent"
+  final String? profileImage;
+
+  /// "Present" / "Absent" (or another option label). Null when not responded.
+  final String? response;
   final String? photoUrl;
-  final String time;
-  final String? location;
-  final String? locationDistance;
+  final double? latitude;
+  final double? longitude;
+  final String? locationName;
+  final DateTime? markedAt;
+  final bool hasResponded;
 
   AttendanceMemberResponse({
     required this.userId,
     required this.userName,
-    this.userAvatar,
-    required this.status,
+    this.profileImage,
+    this.response,
     this.photoUrl,
-    required this.time,
-    this.location,
-    this.locationDistance,
+    this.latitude,
+    this.longitude,
+    this.locationName,
+    this.markedAt,
+    this.hasResponded = false,
   });
 
-  Map<String, dynamic> toJson() => {
-    "userId": userId,
-    "userName": userName,
-    "userAvatar": userAvatar,
-    "status": status,
-    "photoUrl": photoUrl,
-    "time": time,
-    "location": location,
-    "locationDistance": locationDistance,
-  };
+  /// Status label shown in the UI.
+  String get status =>
+      hasResponded ? (response ?? "Absent") : "Not responded";
 
-  factory AttendanceMemberResponse.fromJson(Map<String, dynamic> json) =>
-      AttendanceMemberResponse(
-        userId: json["userId"]?.toString() ?? "",
-        userName: json["userName"]?.toString() ?? "Member",
-        userAvatar: json["userAvatar"]?.toString(),
-        status: json["status"]?.toString() ?? "Present",
-        photoUrl: json["photoUrl"]?.toString(),
-        time: json["time"]?.toString() ?? "",
-        location: json["location"]?.toString(),
-        locationDistance: json["locationDistance"]?.toString(),
-      );
+  bool get isPresent => hasResponded && response?.toLowerCase() == "present";
+
+  bool get hasLocation => latitude != null && longitude != null;
+
+  String get time =>
+      markedAt != null ? DateFormat("hh:mm a").format(markedAt!) : "";
+
+  String? get location => locationName;
+
+  String? get photoFullUrl => attendanceMediaUrl(photoUrl);
+
+  String? get profileImageUrl => attendanceMediaUrl(profileImage);
+
+  factory AttendanceMemberResponse.fromJson(Map<String, dynamic> json) {
+    final response = _nonEmpty(json["response"]);
+    return AttendanceMemberResponse(
+      userId: json["userId"]?.toString() ?? "",
+      userName: _nonEmpty(json["name"]) ?? _nonEmpty(json["userName"]) ?? "Member",
+      profileImage: _nonEmpty(json["profileImage"]),
+      response: response,
+      photoUrl: _nonEmpty(json["photoUrl"]),
+      latitude: _toDouble(json["latitude"]),
+      longitude: _toDouble(json["longitude"]),
+      locationName: _nonEmpty(json["locationName"]),
+      markedAt: DateTime.tryParse(json["markedAt"]?.toString() ?? "")?.toLocal(),
+      hasResponded: json["hasResponded"] is bool
+          ? json["hasResponded"] as bool
+          : json["markedAt"] != null,
+    );
+  }
 }
 
 class AttendancePollData {
-  final String id;
+  final int attendanceId;
+  final int? groupId;
   final String question;
+
+  /// ISO date "YYYY-MM-DD" as sent by the backend.
   final String date;
-  final String creatorName;
-  final String creatorAvatar;
+  final List<String> options;
+  final bool isActive;
   final int totalMembers;
-  int presentCount;
-  int absentCount;
-  int respondedCount;
+  final int presentCount;
+  final int absentCount;
+  final int respondedCount;
+
+  /// Current user's response (null if not responded yet).
+  final String? userResponse;
+
+  /// Photo the current user submitted. Only known locally right after marking,
+  /// since the message API does not return it.
+  final String? userPhotoUrl;
   final List<AttendanceMemberResponse> responses;
 
   AttendancePollData({
-    required this.id,
-    required this.question,
-    required this.date,
-    this.creatorName = "Rahul Verma",
-    this.creatorAvatar = "",
-    this.totalMembers = 12,
-    this.presentCount = 2,
-    this.absentCount = 1,
-    this.respondedCount = 3,
-    List<AttendanceMemberResponse>? responses,
-  }) : responses = responses ?? [];
+    required this.attendanceId,
+    this.groupId,
+    this.question = "",
+    this.date = "",
+    this.options = const ["Present", "Absent"],
+    this.isActive = true,
+    this.totalMembers = 0,
+    this.presentCount = 0,
+    this.absentCount = 0,
+    this.respondedCount = 0,
+    this.userResponse,
+    this.userPhotoUrl,
+    this.responses = const [],
+  });
 
-  Map<String, dynamic> toJson() => {
-    "id": id,
-    "question": question,
-    "date": date,
-    "creatorName": creatorName,
-    "creatorAvatar": creatorAvatar,
-    "totalMembers": totalMembers,
-    "presentCount": presentCount,
-    "absentCount": absentCount,
-    "respondedCount": respondedCount,
-    "responses": responses.map((r) => r.toJson()).toList(),
-  };
+  /// "11 Sep" style label for the card header.
+  String get shortDate {
+    final parsed = DateTime.tryParse(date);
+    return parsed != null ? DateFormat("dd MMM").format(parsed) : date;
+  }
+
+  /// "11 Sep 2026, Fri" style label for subtitles.
+  String get longDate {
+    final parsed = DateTime.tryParse(date);
+    return parsed != null ? DateFormat("dd MMM yyyy, EEE").format(parsed) : date;
+  }
 
   factory AttendancePollData.fromJson(Map<String, dynamic> json) {
-    List<AttendanceMemberResponse> resList = [];
-    if (json["responses"] != null && json["responses"] is List) {
-      for (var r in json["responses"]) {
-        if (r is Map<String, dynamic>) {
-          resList.add(AttendanceMemberResponse.fromJson(r));
+    final rawOptions = json["options"];
+    final options = rawOptions is List
+        ? rawOptions.map((e) => e.toString()).toList()
+        : const ["Present", "Absent"];
+
+    final rawMembers = json["members"];
+    final members = <AttendanceMemberResponse>[];
+    if (rawMembers is List) {
+      for (final m in rawMembers) {
+        if (m is Map) {
+          members.add(
+            AttendanceMemberResponse.fromJson(Map<String, dynamic>.from(m)),
+          );
         }
       }
     }
 
     return AttendancePollData(
-      id: json["id"]?.toString() ?? "att_${DateTime.now().millisecondsSinceEpoch}",
-      question: json["question"]?.toString() ?? "Will you be available today?",
-      date: json["date"]?.toString() ?? "11 Sep 2026",
-      creatorName: json["creatorName"]?.toString() ?? "Rahul Verma",
-      creatorAvatar: json["creatorAvatar"]?.toString() ?? "",
-      totalMembers: json["totalMembers"] is int
-          ? json["totalMembers"]
-          : int.tryParse(json["totalMembers"]?.toString() ?? "12") ?? 12,
-      presentCount: json["presentCount"] is int
-          ? json["presentCount"]
-          : int.tryParse(json["presentCount"]?.toString() ?? "2") ?? 2,
-      absentCount: json["absentCount"] is int
-          ? json["absentCount"]
-          : int.tryParse(json["absentCount"]?.toString() ?? "1") ?? 1,
-      respondedCount: json["respondedCount"] is int
-          ? json["respondedCount"]
-          : int.tryParse(json["respondedCount"]?.toString() ?? "3") ?? 3,
-      responses: resList,
+      attendanceId: _toInt(json["attendanceId"] ?? json["id"]),
+      groupId: json["groupId"] != null ? _toInt(json["groupId"]) : null,
+      question: json["question"]?.toString() ?? "",
+      date: json["date"]?.toString() ?? "",
+      options: options.isEmpty ? const ["Present", "Absent"] : options,
+      isActive: json["isActive"] is bool ? json["isActive"] as bool : true,
+      totalMembers: _toInt(json["totalMembers"]),
+      presentCount: _toInt(json["presentCount"]),
+      absentCount: _toInt(json["absentCount"]),
+      respondedCount: _toInt(json["respondedCount"]),
+      userResponse: _nonEmpty(json["userResponse"]),
+      responses: members,
     );
   }
 
-  static AttendancePollData fromRawJson(String raw) {
+  /// Parses the `content` of an attendance chat message:
+  /// {"attendanceId":1,"question":"...","date":"2026-09-11","options":[...]}
+  /// Returns null when the content has no attendance ID.
+  static AttendancePollData? fromMessageContent(dynamic content) {
     try {
-      final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) {
-        return AttendancePollData.fromJson(decoded);
+      final decoded = content is Map ? content : jsonDecode(content.toString());
+      if (decoded is Map) {
+        final data = AttendancePollData.fromJson(
+          Map<String, dynamic>.from(decoded),
+        );
+        if (data.attendanceId > 0) return data;
       }
     } catch (_) {}
+    return null;
+  }
+
+  AttendancePollData copyWith({
+    String? question,
+    String? date,
+    List<String>? options,
+    bool? isActive,
+    int? totalMembers,
+    int? presentCount,
+    int? absentCount,
+    int? respondedCount,
+    String? userResponse,
+    String? userPhotoUrl,
+    List<AttendanceMemberResponse>? responses,
+  }) {
     return AttendancePollData(
-      id: "att_1",
-      question: "Team, please mark your attendance for today.",
-      date: "11 Sep",
-      totalMembers: 12,
-      presentCount: 2,
-      absentCount: 1,
-      respondedCount: 3,
-      responses: [
-        AttendanceMemberResponse(
-          userId: "1",
-          userName: "Rahul",
-          status: "Present",
-          time: "09:12 AM",
-          location: "Ghatkopar, Mumbai",
-          locationDistance: "Just now • Within 50 m",
-          photoUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
-        ),
-        AttendanceMemberResponse(
-          userId: "2",
-          userName: "Sameer",
-          status: "Present",
-          time: "09:20 AM",
-          location: "Pune, Maharashtra",
-          locationDistance: "2 mins ago • 1.2 km away",
-          photoUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
-        ),
-        AttendanceMemberResponse(
-          userId: "3",
-          userName: "Imran",
-          status: "Absent",
-          time: "09:50 AM",
-          location: "- \nNo location available",
-          locationDistance: "",
-        ),
-      ],
+      attendanceId: attendanceId,
+      groupId: groupId,
+      question: question ?? this.question,
+      date: date ?? this.date,
+      options: options ?? this.options,
+      isActive: isActive ?? this.isActive,
+      totalMembers: totalMembers ?? this.totalMembers,
+      presentCount: presentCount ?? this.presentCount,
+      absentCount: absentCount ?? this.absentCount,
+      respondedCount: respondedCount ?? this.respondedCount,
+      userResponse: userResponse ?? this.userResponse,
+      userPhotoUrl: userPhotoUrl ?? this.userPhotoUrl,
+      responses: responses ?? this.responses,
+    );
+  }
+
+  /// Merges fresher data from the API while keeping fields only known locally
+  /// (the user's own submitted photo, and question/date when the update
+  /// payload omits them, e.g. `attendance_updated`).
+  AttendancePollData mergeFrom(AttendancePollData other) {
+    return AttendancePollData(
+      attendanceId: attendanceId,
+      groupId: other.groupId ?? groupId,
+      question: other.question.isNotEmpty ? other.question : question,
+      date: other.date.isNotEmpty ? other.date : date,
+      options: other.options,
+      isActive: other.isActive,
+      totalMembers: other.totalMembers,
+      presentCount: other.presentCount,
+      absentCount: other.absentCount,
+      respondedCount: other.respondedCount,
+      userResponse: other.userResponse ?? userResponse,
+      userPhotoUrl: other.userPhotoUrl ?? userPhotoUrl,
+      responses: other.responses.isNotEmpty ? other.responses : responses,
     );
   }
 }

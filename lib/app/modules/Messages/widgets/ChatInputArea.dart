@@ -503,12 +503,19 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                             },
                                             onAttendance: isGroupAdmin
                                                 ? () {
-                                                    Navigator.pop(context);
+                                                    // The attach menu already closed itself;
+                                                    // popping again would close the chat screen.
+                                                    final groupController =
+                                                        widget.groupMessageController!;
                                                     ChatBottomSheet
                                                         .showCreateAttendance(
                                                       context,
+                                                      groupId:
+                                                          groupController.groupId,
                                                       groupMembers:
                                                           widget.groupMembers,
+                                                      onCreated: groupController
+                                                          .addCreatedAttendanceMessage,
                                                     );
                                                   }
                                                 : null,

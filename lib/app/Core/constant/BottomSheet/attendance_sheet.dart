@@ -3,16 +3,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-import '../../../modules/Messages/Controller/GroupChatController.dart';
 import '../../constant/pref_res.dart';
 import '../../values/global.dart';
-import '../../../modules/Attendance/models/attendance_poll_model.dart';
-import '../../../modules/Attendance/widgets/attendance_chat_card.dart';
+import '../../../modules/Attendance/controller/attendance_controller.dart';
 
 Future<void> showAttendanceSheet({
   BuildContext? context,
+  required int groupId,
   List<dynamic>? groupMembers,
-  VoidCallback? onCreated,
+  void Function(Map<String, dynamic> data)? onCreated,
 }) {
   return showModalBottomSheet(
     context: context ?? Get.context!,
@@ -20,6 +19,7 @@ Future<void> showAttendanceSheet({
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: 0.45),
     builder: (_) => AttendanceSheet(
+      groupId: groupId,
       groupMembers: groupMembers,
       onCreated: onCreated,
     ),
@@ -53,11 +53,16 @@ class AttendanceOptionItem {
 }
 
 class AttendanceSheet extends StatefulWidget {
+  final int groupId;
   final List<dynamic>? groupMembers;
-  final VoidCallback? onCreated;
+
+  /// Receives the create response (attendanceId, messageId, ...) so the chat
+  /// can show the attendance card immediately.
+  final void Function(Map<String, dynamic> data)? onCreated;
 
   const AttendanceSheet({
     super.key,
+    required this.groupId,
     this.groupMembers,
     this.onCreated,
   });
@@ -72,7 +77,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
   static const int _maxQuestionLength = 100;
   static const int _maxOptions = 6;
 
-  final Rx<DateTime> _selectedDate = DateTime(2026, 9, 9).obs;
+  final Rx<DateTime> _selectedDate = DateUtils.dateOnly(DateTime.now()).obs;
 
   final RxList<AttendanceOptionItem> _options = <AttendanceOptionItem>[
     AttendanceOptionItem(index: 1, text: "Present"),
@@ -130,41 +135,26 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
   }
 
   void _initMembers() {
-    if (widget.groupMembers != null && widget.groupMembers!.isNotEmpty) {
-      final List<AttendanceMemberItem> loaded = [];
-      for (int i = 0; i < widget.groupMembers!.length; i++) {
-        final gm = widget.groupMembers![i];
-        final name = gm.name?.toString() ?? "Member ${i + 1}";
-        final phone = gm.mobileNo?.toString() ?? "--";
-        final avatar = gm.profileImage?.toString();
-        loaded.add(
-          AttendanceMemberItem(
-            id: gm.id?.toString() ?? i.toString(),
-            name: name,
-            phone: phone,
-            avatarUrl: avatar,
-            selected: true,
-          ),
-        );
-      }
-      _members.assignAll(loaded);
-    } else {
-      _members.assignAll([
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+    final List<AttendanceMemberItem> loaded = [];
+    for (int i = 0; i < (widget.groupMembers?.length ?? 0); i++) {
+      final gm = widget.groupMembers![i];
+      final userId = gm.userId?.toString() ?? "";
+      // The admin creates the attendance and doesn't mark it.
+      if (userId.isEmpty || userId == currentUserId) continue;
+      loaded.add(
         AttendanceMemberItem(
-          id: "1",
-          name: "Rahul Verma",
-          phone: "+91 98765 43210",
+          id: userId,
+          name: gm.name?.toString() ?? "Member ${i + 1}",
+          phone: gm.mobileNo?.toString() ?? "--",
+          avatarUrl: gm.profileImage?.toString(),
           selected: true,
         ),
-        AttendanceMemberItem(
-          id: "2",
-          name: "Divesh Shinde",
-          phone: "+91 98765 67890",
-          selected: true,
-        ),
-      ]);
+      );
     }
-    _selectAll.value = true;
+    _members.assignAll(loaded);
+    _selectAll.value = loaded.isNotEmpty;
   }
 
   @override
@@ -309,118 +299,88 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
     return isValid;
   }
 
+  void _showError(String title, String message) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFFEF4444),
+      colorText: Colors.white,
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      borderRadius: 12.r,
+    );
+  }
+
   Future<void> _submit() async {
+    debugPrint("[ATTENDANCE_DEBUG] submit tapped (groupId=${widget.groupId})"); // TODO: remove debug log
     if (_isSubmitting.value) return;
 
     final isValid = _validateForm();
+    debugPrint("[ATTENDANCE_DEBUG] validation => $isValid "
+        "q=${_questionError.value} opt=${_optionsError.value} mem=${_membersError.value}"); // TODO: remove debug log
     if (!isValid) {
-      Get.snackbar(
+      _showError(
         "Validation Error",
-        "Please fix the highlighted errors before submitting",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-        margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-        borderRadius: 12.r,
+        _questionError.value ??
+            _optionsError.value ??
+            _membersError.value ??
+            "Please fix the highlighted errors before submitting",
       );
+      return;
+    }
+
+    if (widget.groupId <= 0) {
+      _showError("Attendance Failed", "Invalid group. Please reopen the chat.");
+      return;
+    }
+
+    final memberIds = _members
+        .where((m) => m.isSelected.value)
+        .map((m) => int.tryParse(m.id))
+        .whereType<int>()
+        .toList();
+    if (memberIds.isEmpty) {
+      _showError("Attendance Failed", "No valid group members selected.");
       return;
     }
 
     _isSubmitting.value = true;
     FocusScope.of(context).unfocus();
 
-    await Future.delayed(const Duration(milliseconds: 350));
-
-    if (!mounted) return;
-    _isSubmitting.value = false;
-
-    Navigator.pop(context);
-    widget.onCreated?.call();
-
-    final selectedCount = _members.where((m) => m.isSelected.value).length;
-
-    if (Get.isRegistered<GroupMessageController>()) {
-      Get.find<GroupMessageController>().sendAttendanceMessage(
+    try {
+      debugPrint("[ATTENDANCE_DEBUG] request sent: groupId=${widget.groupId} "
+          "date=${_selectedDate.value} memberIds=$memberIds"); // TODO: remove debug log
+      final data = await AttendanceController.instance.createAttendance(
+        groupId: widget.groupId,
         question: _questionController.text.trim(),
-        date: _formattedDate,
-        totalMembers: selectedCount,
+        date: _selectedDate.value,
+        options: _options.map((o) => o.controller.text.trim()).toList(),
+        memberIds: memberIds,
       );
+      debugPrint("[ATTENDANCE_DEBUG] response received: $data"); // TODO: remove debug log
+
+      widget.onCreated?.call(data);
+      debugPrint("[ATTENDANCE_DEBUG] message added to chat (messageId=${data["messageId"]})"); // TODO: remove debug log
+
+      if (!mounted) return;
+      Navigator.pop(context);
+      debugPrint("[ATTENDANCE_DEBUG] sheet closed"); // TODO: remove debug log
+
+      Get.snackbar(
+        "Attendance Created",
+        "Attendance sent to ${memberIds.length} members",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF5A3EFE),
+        colorText: Colors.white,
+        margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        borderRadius: 12.r,
+      );
+    } catch (e, st) {
+      debugPrint("[ATTENDANCE_DEBUG] create failed: $e\n$st"); // TODO: remove debug log
+      _showError("Attendance Failed", e.toString());
+    } finally {
+      if (mounted) _isSubmitting.value = false;
     }
-
-    final currentUserId =
-        Global.storageServices.get(PrefConst.userId)?.toString() ?? "user_1";
-    final currentUserName =
-        Global.storageServices.get(PrefConst.userName)?.toString() ?? "You";
-
-    final pollData = AttendancePollData(
-      id: "att_${DateTime.now().millisecondsSinceEpoch}",
-      question: _questionController.text.trim(),
-      date: _formattedDate,
-      creatorName: currentUserName,
-      totalMembers: selectedCount > 0 ? selectedCount : 12,
-      presentCount: 0,
-      absentCount: 0,
-      respondedCount: 0,
-      responses: [],
-    );
-
-    Get.snackbar(
-      "Attendance Created",
-      "Attendance poll sent to $selectedCount members",
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF5A3EFE),
-      colorText: Colors.white,
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      borderRadius: 12.r,
-    );
-
-    // Launch Screen 2 (Mark Attendance -> Camera -> Submit -> Admin View)
-    Future.delayed(const Duration(milliseconds: 250), () {
-      final ctx = Get.context;
-      if (ctx != null) {
-        showModalBottomSheet(
-          context: ctx,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          barrierColor: Colors.black.withValues(alpha: 0.45),
-          builder: (sheetCtx) => Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(sheetCtx).size.height * 0.90,
-            ),
-            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 20.h),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 44.w,
-                      height: 4.h,
-                      margin: EdgeInsets.only(bottom: 8.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFCBD5E1),
-                        borderRadius: BorderRadius.circular(20.r),
-                      ),
-                    ),
-                  ),
-                  AttendanceChatCard(
-                    pollData: pollData,
-                    isAdmin: false,
-                    currentUserId: currentUserId,
-                    currentUserName: currentUserName,
-                    groupName: "Site Team",
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      }
-    });
   }
 
   @override

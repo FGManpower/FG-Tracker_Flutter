@@ -907,35 +907,24 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "attendance") {
       final isCreator = controller is GroupMessageController
-          ? (controller as GroupMessageController).isCreator.value
-          : false;
+          ? (controller as GroupMessageController).isCreator
+          : null;
 
-      final pollData = AttendancePollData.fromRawJson(
-        message.content?.toString() ?? "",
-      );
+      final pollData = AttendancePollData.fromMessageContent(message.content);
+      if (pollData == null) {
+        return _buildTextContent(message, textColor, isSentByMe);
+      }
 
-      final currentUserId =
-          Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
-      final currentUserName =
-          Global.storageServices.get(PrefConst.userName)?.toString() ?? "You";
       final groupName = controller is GroupMessageController
-          ? (controller as GroupMessageController).groupName
-          : "Site Team";
+          ? (controller as GroupMessageController).groupName.value
+          : "";
 
       return AttendanceChatCard(
+        key: ValueKey("attendance_${pollData.attendanceId}"),
         pollData: pollData,
         isAdmin: isCreator,
-        currentUserId: currentUserId,
-        currentUserName: currentUserName,
-        groupName: groupName.toString(),
-        onAttendanceSubmitted: (response) {
-          if (controller is GroupMessageController && message.id != null) {
-            (controller as GroupMessageController).updateAttendanceResponse(
-              messageId: message.id!,
-              response: response,
-            );
-          }
-        },
+        senderName: message.senderName?.toString() ?? "",
+        groupName: groupName,
       );
     } else {
       return _buildTextContent(

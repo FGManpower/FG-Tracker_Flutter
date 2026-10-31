@@ -28,7 +28,7 @@ import '../../../Model/GetMessage.dart';
 
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
-import '../../Attendance/models/attendance_poll_model.dart';
+import '../../Attendance/controller/attendance_controller.dart';
 
 import 'chat_list_controller.dart';
 
@@ -164,6 +164,9 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     itemPositionsListener.itemPositions.addListener(_updateScrollBottomState);
     itemPositionsListener.itemPositions.addListener(_onScrollForOlderMessages);
   }
+
+  bool _isOtherGroup(dynamic eventGroupId) =>
+      eventGroupId != null && eventGroupId.toString() != groupId.toString();
 
   void toggleEmoji() {
     showEmoji.toggle();
@@ -421,6 +424,17 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         showPinnedBanner.value = false;
 
         updateMessageStream();
+      },
+    );
+
+    socketService.listenAttendanceEvents(
+      onCreated: (data) {
+        if (data is Map && _isOtherGroup(data["groupId"])) return;
+        AttendanceController.instance.handleCreated(data);
+      },
+      onUpdated: (data) {
+        if (data is Map && _isOtherGroup(data["groupId"])) return;
+        AttendanceController.instance.handleUpdated(data);
       },
     );
 
@@ -929,102 +943,37 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     }
   }
 
-  void sendAttendanceMessage({
-    required String question,
-    required String date,
-    required int totalMembers,
-  }) {
+  /// Called after POST /attendance/create succeeds. The backend broadcasts the
+  /// attendance message over the socket; this adds it locally in case the
+  /// broadcast doesn't reach the sender (duplicates are skipped by id).
+  void addCreatedAttendanceMessage(Map<String, dynamic> data) {
     try {
-      final currentUserName =
-          Global.storageServices.get(PrefConst.userName)?.toString() ??
-              "Rahul Verma";
+      final messageId = int.tryParse(data["messageId"]?.toString() ?? "");
+      if (messageId == null) return;
+      if (_messages.any((m) => m.id == messageId)) return;
 
-      final pollData = AttendancePollData(
-        id: "att_${DateTime.now().millisecondsSinceEpoch}",
-        question: question,
-        date: date,
-        creatorName: currentUserName,
-        totalMembers: totalMembers,
-        presentCount: 0,
-        absentCount: 0,
-        respondedCount: 0,
-        responses: [],
+      final content = jsonEncode({
+        "attendanceId": data["attendanceId"],
+        "question": data["question"],
+        "date": data["date"],
+        "options": data["options"],
+      });
+
+      _messages.add(
+        MessageData(
+          id: messageId,
+          senderId: Global.storageServices.get(PrefConst.userId)?.toString(),
+          senderName: Global.storageServices.get(PrefConst.userName)?.toString(),
+          content: content,
+          messageType: "attendance",
+          timestamp: data["createdAt"]?.toString() ??
+              DateTime.now().toUtc().toIso8601String(),
+        ),
       );
-
-      final content = jsonEncode(pollData.toJson());
-
-      final newMsg = MessageData(
-        id: DateTime.now().millisecondsSinceEpoch,
-        content: content,
-        messageType: "attendance",
-        senderName: currentUserName,
-        timestamp: DateTime.now().toIso8601String(),
-      );
-
-      _messages.add(newMsg);
       updateMessageStream();
-
-      socketService.sendGroupMessage(
-        groupId: groupId,
-        content: content,
-        messageType: "attendance",
-      );
-
       scrollToBottom();
     } catch (e) {
-      log("SEND ATTENDANCE ERROR: $e");
-    }
-  }
-
-  void updateAttendanceResponse({
-    required int messageId,
-    required AttendanceMemberResponse response,
-  }) {
-    try {
-      final index = _messages.indexWhere((m) => m.id == messageId);
-      if (index == -1) return;
-
-      final currentMsg = _messages[index];
-      final pollData = AttendancePollData.fromRawJson(
-        currentMsg.content?.toString() ?? "",
-      );
-
-      final existingIndex =
-          pollData.responses.indexWhere((r) => r.userId == response.userId);
-      if (existingIndex != -1) {
-        final oldStatus = pollData.responses[existingIndex].status;
-        if (oldStatus == "Present" && response.status == "Absent") {
-          pollData.presentCount = (pollData.presentCount - 1).clamp(0, 9999);
-          pollData.absentCount++;
-        } else if (oldStatus == "Absent" && response.status == "Present") {
-          pollData.absentCount = (pollData.absentCount - 1).clamp(0, 9999);
-          pollData.presentCount++;
-        }
-        pollData.responses[existingIndex] = response;
-      } else {
-        if (response.status == "Present") {
-          pollData.presentCount++;
-        } else {
-          pollData.absentCount++;
-        }
-        pollData.respondedCount++;
-        pollData.responses.add(response);
-      }
-
-      final updatedContent = jsonEncode(pollData.toJson());
-      _messages[index].content = updatedContent;
-      updateMessageStream();
-
-      final currentUserId =
-          Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
-
-      socketService.editMessage(
-        messageId: messageId,
-        content: updatedContent,
-        userId: currentUserId,
-      );
-    } catch (e) {
-      log("UPDATE ATTENDANCE RESPONSE ERROR: $e");
+      log("ADD ATTENDANCE MESSAGE ERROR: $e");
     }
   }
 
@@ -1787,6 +1736,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     _groupTypingUserTimers.clear();
     groupTypingUsers.clear();
     socketService.stopListeningGroupTyping();
+    socketService.stopListeningAttendanceEvents();
     ChatTranslationService.instance.resetVisibility();
     ChatTranslationService.instance.stopAudio();
     WidgetsBinding.instance.removeObserver(this);

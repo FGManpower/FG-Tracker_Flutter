@@ -430,6 +430,37 @@ class SocketMessageService extends GetxService {
     _socket?.off("group_stop_typing");
   }
 
+  void listenAttendanceEvents({
+    required Function(dynamic) onCreated,
+    required Function(dynamic) onUpdated,
+    Function(dynamic)? onResponseReceived,
+  }) {
+    final s = _socket;
+    if (s == null) {
+      log("listenAttendanceEvents skipped: _socket is null");
+      return;
+    }
+    stopListeningAttendanceEvents();
+    s.on("attendance_created", (data) {
+      log("RECEIVED attendance_created => $data");
+      onCreated(data);
+    });
+    s.on("attendance_updated", (data) {
+      log("RECEIVED attendance_updated => $data");
+      onUpdated(data);
+    });
+    s.on("attendance_response_received", (data) {
+      log("RECEIVED attendance_response_received => $data");
+      onResponseReceived?.call(data);
+    });
+  }
+
+  void stopListeningAttendanceEvents() {
+    _socket?.off("attendance_created");
+    _socket?.off("attendance_updated");
+    _socket?.off("attendance_response_received");
+  }
+
   Future<void> initPrivateChat(
       String socketUrl, {
         required String userId,
