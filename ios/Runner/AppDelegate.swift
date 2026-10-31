@@ -13,6 +13,7 @@ import CryptoKit
 import WebRTC
 import flutter_callkit_incoming
 
+// private let apiBaseUrl = "http://10.57.204.163:4000/api"
 private let apiBaseUrl = "http://fgtracker.in:3000/api"
 private let callingStatusEndpoints = ["/calling-status"]
 private let candidateTokenPrefKeys = [
@@ -51,6 +52,7 @@ private let candidateTokenPrefKeys = [
     private var handledRingingCallIds = Set<String>()
     private var callDisplayNames: [String: String] = [:]
     private var pendingRecentsCallback: [String: Any]?
+    private var deferredRouteCheck: DispatchWorkItem?
 
     override func application(
         _ application: UIApplication,
@@ -127,6 +129,28 @@ private let candidateTokenPrefKeys = [
                 result(state)
             case "getAudioState":
                 result(self.readAudioState())
+            case "getScreenCaptureState":
+                var payload: [String: Any] = [
+                    "isCaptured": UIScreen.main.isCaptured
+                ]
+                if let group = Bundle.main.object(
+                    forInfoDictionaryKey: "RTCAppGroupIdentifier"
+                ) as? String {
+                    payload["appGroup"] = group
+                }
+                if let ext = Bundle.main.object(
+                    forInfoDictionaryKey: "RTCScreenSharingExtension"
+                ) as? String {
+                    payload["extension"] = ext
+                }
+                var groupOK = false
+                if let group = payload["appGroup"] as? String {
+                    groupOK = FileManager.default.containerURL(
+                        forSecurityApplicationGroupIdentifier: group
+                    ) != nil
+                }
+                payload["appGroupAccessible"] = groupOK
+                result(payload)
             case "resetAudioRoute":
                 self.manualAudioRoute = nil
                 self.bluetoothKnownName = nil
@@ -247,11 +271,17 @@ private let candidateTokenPrefKeys = [
         completion: @escaping () -> Void
     ) {
         guard type == .voIP else {
+            print("[AppDelegate][VoIP] push type is NOT voip, ignoring")
             completion()
             return
         }
 
         let p = payload.dictionaryPayload
+        print(
+            "[AppDelegate][VoIP] PUSH RECEIVED keys=\(Array(p.keys.map { String(describing: $0) })) "
+                + "appState=\(UIApplication.shared.applicationState.rawValue) "
+                + "pluginReady=\(SwiftFlutterCallkitIncomingPlugin.sharedInstance != nil)"
+        )
 
         let rawId = Self.stringValue(p["id"])
             ?? Self.stringValue(p["sessionId"])
@@ -285,8 +315,10 @@ private let candidateTokenPrefKeys = [
         extraDict = sanitizedExtra(extraDict)
 
         let name = resolvedCallerName(payload: p, extra: extraDict, id: id)
+        print("[AppDelegate][VoIP] parsed signal=\(signal) id=\(id) name=\(name) video=\(isVideo)")
 
         let endSignals: Set<String> = ["endCall", "callEnded", "cancelCall", "callRejected", "missedCall"]
+        print("[AppDelegate][VoIP] branch=\(endSignals.contains(signal) ? "END" : "INCOMING")")
         if endSignals.contains(signal) {
             releaseCallKitManualAudio()
             let handleValue = resolvedCallerHandle(
@@ -323,6 +355,7 @@ private let candidateTokenPrefKeys = [
                 dummy,
                 fromPushKit: true
             ) {
+                print("[AppDelegate][VoIP] dummy reportNewIncomingCall returned id=\(id)")
                 SwiftFlutterCallkitIncomingPlugin.sharedInstance?.endCall(dummy)
                 SwiftFlutterCallkitIncomingPlugin.sharedInstance?.endCall(real)
                 completion()
@@ -368,10 +401,18 @@ private let candidateTokenPrefKeys = [
             }
             data.extra = NSDictionary(dictionary: extraDict)
 
-            SwiftFlutterCallkitIncomingPlugin.sharedInstance?.showCallkitIncoming(
+            let plugin = SwiftFlutterCallkitIncomingPlugin.sharedInstance
+            if plugin == nil {
+                print("[AppDelegate][VoIP] CRITICAL plugin instance is nil -> call NOT reported, iOS will kill app")
+            }
+            plugin?.showCallkitIncoming(
                 data,
                 fromPushKit: true
             ) {
+                print(
+                    "[AppDelegate][VoIP] REPORTED to CallKit id=\(id) name=\(name) "
+                        + "video=\(isVideo) state=\(UIApplication.shared.applicationState.rawValue)"
+                )
                 completion()
             }
         }
@@ -624,7 +665,7 @@ private let candidateTokenPrefKeys = [
         }
 
         if name == "speaker" {
-             return [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker]
+            return [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker]
         }
 
         if name == "bluetooth" {
@@ -656,14 +697,66 @@ private let candidateTokenPrefKeys = [
 
     private func shouldSuppressBluetooth(forRoute route: String) -> Bool {
         guard route == "earpiece" || route == "headset" else { return false }
+        guard userSelectedRoute else { return false }
         if let port = currentBluetoothPort() {
-            bluetoothSeenInCall = true
-            if !port.portName.isEmpty {
-                bluetoothKnownName = port.portName
-            }
+            rememberBluetoothPort(port)
             return true
         }
-        return bluetoothSeenInCall
+        bluetoothSeenInCall = false
+        return false
+    }
+
+    private func evaluateBluetoothAvailability() {
+        let session = AVAudioSession.sharedInstance()
+        let inputs = session.availableInputs ?? []
+        guard let port = bluetoothPort(in: inputs) else {
+            print("[AppDelegate] bluetooth route not exposed yet (category options?)")
+            return
+        }
+        rememberBluetoothPort(port)
+        let autoSelect = shouldAutoSelectBluetooth() ||
+            (manualAudioRoute == nil && !userSelectedRoute)
+        guard autoSelect else {
+            print("[AppDelegate] bluetooth available, keeping \(manualAudioRoute ?? "nil")")
+            return
+        }
+        print("[AppDelegate] bluetooth connected -> auto selecting bluetooth")
+        manualAudioRoute = "bluetooth"
+        _ = applyRequestedAudioRoute(
+            route: "bluetooth",
+            isVideo: currentCallIsVideo
+        )
+    }
+
+    private func reassertSpeakerOverrideIfNeeded() {
+        guard manualAudioRoute == "speaker", !isApplyingAudioRoute else { return }
+        let outputs = AVAudioSession.sharedInstance().currentRoute.outputs.map { $0.portType }
+        let onSpeaker = outputs.contains(.builtInSpeaker)
+        print("[AppDelegate] route check speaker onSpeaker=\(onSpeaker) outputs=\(outputs.map { $0.rawValue })")
+        guard !onSpeaker else { return }
+        print("[AppDelegate] speaker override lost, re-applying")
+        _ = applyRequestedAudioRoute(
+            route: "speaker",
+            isVideo: currentCallIsVideo,
+            force: true
+        )
+    }
+
+    private func scheduleDeferredRouteCheck(after delay: TimeInterval) {
+        deferredRouteCheck?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            guard let self = self,
+                  self.routeObserverToken != nil,
+                  !self.isApplyingAudioRoute else { return }
+            self.evaluateBluetoothAvailability()
+            self.reassertSpeakerOverrideIfNeeded()
+            self.pushAudioState()
+        }
+        deferredRouteCheck = work
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + max(0.2, delay),
+            execute: work
+        )
     }
 
     private func rememberBluetoothPort(_ port: AVAudioSessionPortDescription?) {
@@ -695,6 +788,8 @@ private let candidateTokenPrefKeys = [
             NotificationCenter.default.removeObserver(token)
             routeObserverToken = nil
         }
+        deferredRouteCheck?.cancel()
+        deferredRouteCheck = nil
     }
 
     private func pushAudioState() {
@@ -704,8 +799,12 @@ private let candidateTokenPrefKeys = [
 
     private func handleAudioRouteChange(_ notification: Notification) {
         guard routeObserverToken != nil else { return }
-        guard !isApplyingAudioRoute else { return }
+        guard !isApplyingAudioRoute else {
+            scheduleDeferredRouteCheck(after: 0.5)
+            return
+        }
         if let until = routeChangeQuietUntil, Date() < until {
+            scheduleDeferredRouteCheck(after: until.timeIntervalSinceNow + 0.2)
             return
         }
 
@@ -721,17 +820,8 @@ private let candidateTokenPrefKeys = [
         let inputs = session.availableInputs ?? []
 
         switch reason {
-        case .newDeviceAvailable:
-            if let port = bluetoothPort(in: inputs) {
-                rememberBluetoothPort(port)
-                if shouldAutoSelectBluetooth() {
-                    manualAudioRoute = "bluetooth"
-                    _ = applyRequestedAudioRoute(
-                        route: "bluetooth",
-                        isVideo: currentCallIsVideo
-                    )
-                }
-            }
+        case .newDeviceAvailable, .categoryChange, .routeConfigurationChange:
+            evaluateBluetoothAvailability()
 
         case .oldDeviceUnavailable:
             let stillConnected = bluetoothPort(in: inputs) != nil ||
@@ -756,6 +846,7 @@ private let candidateTokenPrefKeys = [
             break
         }
 
+        reassertSpeakerOverrideIfNeeded()
         pushAudioState()
     }
 

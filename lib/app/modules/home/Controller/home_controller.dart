@@ -57,9 +57,21 @@ class HomeController extends GetxController {
   }
 
   init() {
+    final token = Global.storageServices.getaccesstoken();
+    final userId = Global.storageServices.get(PrefConst.userId);
+    final isRegistered =
+    Global.storageServices.get(PrefConst.isRegistered);
+
+    debugPrint('========== HOME INIT DEBUG ==========');
+    debugPrint('TOKEN EXISTS: ${token != null && token.isNotEmpty}');
+    debugPrint('USER ID: $userId');
+    debugPrint('IS REGISTERED: $isRegistered');
+    debugPrint('=====================================');
+
     fetchInitializeData();
     fetchBanners();
     getProfileData();
+
     SocketDashboardService.instance.init();
     SocketDashboardService.instance.requestGroupCount();
   }
@@ -123,9 +135,14 @@ class HomeController extends GetxController {
           }
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('========== INITIALIZE API ERROR ==========');
+      debugPrint('ERROR: $e');
+      debugPrint('STACK TRACE: $stackTrace');
+      debugPrint('==========================================');
+
       InitializeResponeMessage.value = e.toString();
-    } finally {
+    }finally {
       isInitializing.value = false;
     }
   }
