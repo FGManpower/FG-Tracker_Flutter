@@ -12,6 +12,8 @@
 		126607E32FF2778C0022AD4B /* walkie-talkie-ringtone.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 126607E22FF2778C0022AD4B /* walkie-talkie-ringtone.mp3 */; };
 		126607E52FF2778C0022AD4B /* walkie-talkie-ringtone.caf in Resources */ = {isa = PBXBuildFile; fileRef = 126607E42FF2778C0022AD4B /* walkie-talkie-ringtone.caf */; };
 		126607E72FF2778C0022AD4B /* walkie-talkie-ringtone.wav in Resources */ = {isa = PBXBuildFile; fileRef = 126607E62FF2778C0022AD4B /* walkie-talkie-ringtone.wav */; };
+		12F468833094A62200A7B96A /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120CB0B03066A333006553E5 /* ReplayKit.framework */; };
+		12F4688A3094A62200A7B96A /* ScreenShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 12F468823094A62200A7B96A /* ScreenShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
@@ -23,6 +25,7 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		AFE9BFA4801D8E0E1AA46084 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2819CC0A9CE6ABA123A9F2BD /* Pods_RunnerTests.framework */; };
+		B8B8F5C85723CC470172A407 /* Pods_ScreenShare.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0C82679A6533FACC17A4679 /* Pods_ScreenShare.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +43,13 @@
 			remoteGlobalIDString = 12E8B0AE3066A333006553E5;
 			remoteInfo = WalkieNotificationExtension;
 		};
+		12F468883094A62200A7B96A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 12F468813094A62200A7B96A;
+			remoteInfo = ScreenShare;
+		};
 		331C8085294A63A400263BE5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
@@ -50,6 +60,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		12F4688B3094A62200A7B96A /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				12F4688A3094A62200A7B96A /* ScreenShare.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -72,6 +93,7 @@
 		126607E42FF2778C0022AD4B /* walkie-talkie-ringtone.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "walkie-talkie-ringtone.caf"; sourceTree = "<group>"; };
 		126607E62FF2778C0022AD4B /* walkie-talkie-ringtone.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "walkie-talkie-ringtone.wav"; sourceTree = "<group>"; };
 		12E8B0AF3066A333006553E5 /* WalkieNotificationExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WalkieNotificationExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		12F468823094A62200A7B96A /* ScreenShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ScreenShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		2819CC0A9CE6ABA123A9F2BD /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -79,8 +101,10 @@
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		4FECD9BBE93912F651E43A53 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
+		55DEAE45487A1F0CBCD6CA18 /* Pods-ScreenShare.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ScreenShare.profile.xcconfig"; path = "Target Support Files/Pods-ScreenShare/Pods-ScreenShare.profile.xcconfig"; sourceTree = "<group>"; };
 		64DCA17E845EEDAE1905177B /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6FAFE1E0C08AB8DE2E543E0A /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
+		72A0CACC33AE401A8688DF2F /* Pods-ScreenShare.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ScreenShare.release.xcconfig"; path = "Target Support Files/Pods-ScreenShare/Pods-ScreenShare.release.xcconfig"; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		770D262CA2954F437205A5E4 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
@@ -95,13 +119,36 @@
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DEF7FF40E450548A29DB8173 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
+		E0C82679A6533FACC17A4679 /* Pods_ScreenShare.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ScreenShare.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F73DD8E9B69BE638BCFCB1A5 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
+		FE692D484E974EA0F2EC9DEC /* Pods-ScreenShare.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ScreenShare.debug.xcconfig"; path = "Target Support Files/Pods-ScreenShare/Pods-ScreenShare.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		121A2F02309596750097DFBE /* Exceptions for "BroadcastExtension" folder in "ScreenShare" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Atomic.swift,
+				DarwinNotificationCenter.swift,
+				SampleUploader.swift,
+				SocketConnection.swift,
+			);
+			target = 12F468813094A62200A7B96A /* ScreenShare */;
+		};
+		12F4688F3094A62200A7B96A /* Exceptions for "ScreenShare" folder in "ScreenShare" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 12F468813094A62200A7B96A /* ScreenShare */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		120CB0B23066A333006553E5 /* BroadcastExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				121A2F02309596750097DFBE /* Exceptions for "BroadcastExtension" folder in "ScreenShare" target */,
 			);
 			explicitFileTypes = {
 			};
@@ -121,6 +168,18 @@
 			path = WalkieNotificationExtension;
 			sourceTree = "<group>";
 		};
+		12F468843094A62200A7B96A /* ScreenShare */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				12F4688F3094A62200A7B96A /* Exceptions for "ScreenShare" folder in "ScreenShare" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = ScreenShare;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,6 +195,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		12F4687F3094A62200A7B96A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				12F468833094A62200A7B96A /* ReplayKit.framework in Frameworks */,
+				B8B8F5C85723CC470172A407 /* Pods_ScreenShare.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,6 +254,7 @@
 				97C146F01CF9000F007C117D /* Runner */,
 				120CB0B23066A333006553E5 /* BroadcastExtension */,
 				12E8B0B23066A333006553E5 /* WalkieNotificationExtension */,
+				12F468843094A62200A7B96A /* ScreenShare */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				F51337694602EE0DCADEBEEE /* Pods */,
@@ -200,6 +269,7 @@
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
 				120CB0AF3066A333006553E5 /* BroadcastExtension.appex */,
 				12E8B0AF3066A333006553E5 /* WalkieNotificationExtension.appex */,
+				12F468823094A62200A7B96A /* ScreenShare.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -231,6 +301,7 @@
 				64DCA17E845EEDAE1905177B /* Pods_Runner.framework */,
 				2819CC0A9CE6ABA123A9F2BD /* Pods_RunnerTests.framework */,
 				120CB0B03066A333006553E5 /* ReplayKit.framework */,
+				E0C82679A6533FACC17A4679 /* Pods_ScreenShare.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -244,6 +315,9 @@
 				F73DD8E9B69BE638BCFCB1A5 /* Pods-RunnerTests.debug.xcconfig */,
 				6FAFE1E0C08AB8DE2E543E0A /* Pods-RunnerTests.release.xcconfig */,
 				770D262CA2954F437205A5E4 /* Pods-RunnerTests.profile.xcconfig */,
+				FE692D484E974EA0F2EC9DEC /* Pods-ScreenShare.debug.xcconfig */,
+				72A0CACC33AE401A8688DF2F /* Pods-ScreenShare.release.xcconfig */,
+				55DEAE45487A1F0CBCD6CA18 /* Pods-ScreenShare.profile.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -289,6 +363,27 @@
 			productReference = 12E8B0AF3066A333006553E5 /* WalkieNotificationExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		12F468813094A62200A7B96A /* ScreenShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 12F468903094A62200A7B96A /* Build configuration list for PBXNativeTarget "ScreenShare" */;
+			buildPhases = (
+				358C533F53C21123B0ABF944 /* [CP] Check Pods Manifest.lock */,
+				12F4687E3094A62200A7B96A /* Sources */,
+				12F4687F3094A62200A7B96A /* Frameworks */,
+				12F468803094A62200A7B96A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				12F468843094A62200A7B96A /* ScreenShare */,
+			);
+			name = ScreenShare;
+			productName = ScreenShare;
+			productReference = 12F468823094A62200A7B96A /* ScreenShare.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		331C8080294A63A400263BE5 /* RunnerTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 331C8087294A63A400263BE5 /* Build configuration list for PBXNativeTarget "RunnerTests" */;
@@ -317,18 +412,20 @@
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
+				12F4688B3094A62200A7B96A /* Embed Foundation Extensions */,
+				128DF9DF3067ED1A004E76B2 /* Embed Broadcast Extension Script */,
+				12E8B0DF3067ED1A004E76B2 /* Embed Walkie Notification Extension Script */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				22BA94AB4C646D65DD03C69E /* [CP] Embed Pods Frameworks */,
 				3E41A560E8600DC997C4D467 /* [CP] Copy Pods Resources */,
-				128DF9DF3067ED1A004E76B2 /* Embed Broadcast Extension Script */,
-				12E8B0DF3067ED1A004E76B2 /* Embed Walkie Notification Extension Script */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				128DF9CB3067E216004E76B2 /* PBXTargetDependency */,
 				12E8B0CB3067E216004E76B2 /* PBXTargetDependency */,
+				12F468893094A62200A7B96A /* PBXTargetDependency */,
 			);
 			name = Runner;
 			packageProductDependencies = (
@@ -353,6 +450,9 @@
 						CreatedOnToolsVersion = 26.4.1;
 					};
 					12E8B0AE3066A333006553E5 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					12F468813094A62200A7B96A = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
 					331C8080294A63A400263BE5 = {
@@ -385,11 +485,19 @@
 				331C8080294A63A400263BE5 /* RunnerTests */,
 				120CB0AE3066A333006553E5 /* BroadcastExtension */,
 				12E8B0AE3066A333006553E5 /* WalkieNotificationExtension */,
+				12F468813094A62200A7B96A /* ScreenShare */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		12F468803094A62200A7B96A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		331C807F294A63A400263BE5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -432,7 +540,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/sh\nset -e\n\nAPPEX_NAME=\"WalkieNotificationExtension.appex\"\nPLUGINS_DIR=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/PlugIns\"\n\nmkdir -p \"${PLUGINS_DIR}\"\nrm -rf \"${PLUGINS_DIR}/${APPEX_NAME}\"\n\nSRC_PATH=\"\"\n\nfor CANDIDATE in \\\n  \"${BUILT_PRODUCTS_DIR}/${APPEX_NAME}\" \\\n  \"${CONFIGURATION_BUILD_DIR}/${APPEX_NAME}\" \\\n  \"${TARGET_BUILD_DIR}/${APPEX_NAME}\" \\\n  \"${OBJROOT}/UninstalledProducts/${PLATFORM_NAME}/${APPEX_NAME}\" \\\n  \"${OBJROOT}/ArchiveIntermediates/Runner/BuildProductsPath/Release-iphoneos/${APPEX_NAME}\" \\\n  \"${OBJROOT}/ArchiveIntermediates/Runner/UninstalledProducts/iphoneos/${APPEX_NAME}\"\ndo\n  if [ -e \"${CANDIDATE}\" ]; then\n    SRC_PATH=\"${CANDIDATE}\"\n    break\n  fi\ndone\n\nif [ -z \"${SRC_PATH}\" ]; then\n  SRC_PATH=$(find \"${OBJROOT}\" \"${BUILD_DIR}\" -name \"${APPEX_NAME}\" 2>/dev/null | head -n 1)\nfi\n\nif [ -z \"${SRC_PATH}\" ] || [ ! -e \"${SRC_PATH}\" ]; then\n  echo \"error: Could not find ${APPEX_NAME}\"\n  exit 1\nfi\n\nREAL_SRC=\"$(cd \"$(dirname \"${SRC_PATH}\")\" && pwd -P)/$(basename \"${SRC_PATH}\")\"\nif [ -L \"${SRC_PATH}\" ]; then\n  REAL_SRC=\"$(cd \"${SRC_PATH}\" && pwd -P)\"\nelif [ -d \"${SRC_PATH}\" ]; then\n  REAL_SRC=\"$(cd \"${SRC_PATH}\" && pwd -P)\"\nfi\n\n# ditto dereferences symlinks into real directories\nditto \"${REAL_SRC}\" \"${PLUGINS_DIR}/${APPEX_NAME}\"\n\nif [ -n \"${EXPANDED_CODE_SIGN_IDENTITY}\" ] && [ \"${EXPANDED_CODE_SIGN_IDENTITY}\" != \"-\" ]; then\n  codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n    --preserve-metadata=identifier,entitlements,flags \\\n    \"${PLUGINS_DIR}/${APPEX_NAME}\"\nfi\n";
+			shellScript = "#!/bin/sh\nset -e\n\nAPPEX_NAME=\"ScreenShare.appex\"\nPLUGINS_DIR=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/PlugIns\"\n\nmkdir -p \"${PLUGINS_DIR}\"\nrm -rf \"${PLUGINS_DIR}/${APPEX_NAME}\"\n\nSRC_PATH=\"\"\n\nfor CANDIDATE in \\\n  \"${BUILT_PRODUCTS_DIR}/${APPEX_NAME}\" \\\n  \"${CONFIGURATION_BUILD_DIR}/${APPEX_NAME}\" \\\n  \"${TARGET_BUILD_DIR}/${APPEX_NAME}\" \\\n  \"${OBJROOT}/UninstalledProducts/${PLATFORM_NAME}/${APPEX_NAME}\" \\\n  \"${OBJROOT}/ArchiveIntermediates/Runner/BuildProductsPath/Release-iphoneos/${APPEX_NAME}\" \\\n  \"${OBJROOT}/ArchiveIntermediates/Runner/UninstalledProducts/iphoneos/${APPEX_NAME}\"\ndo\n  if [ -e \"${CANDIDATE}\" ]; then\n    SRC_PATH=\"${CANDIDATE}\"\n    break\n  fi\ndone\n\nif [ -z \"${SRC_PATH}\" ]; then\n  SRC_PATH=$(find \"${OBJROOT}\" \"${BUILD_DIR}\" -name \"${APPEX_NAME}\" 2>/dev/null | head -n 1)\nfi\n\nif [ -z \"${SRC_PATH}\" ] || [ ! -e \"${SRC_PATH}\" ]; then\n  echo \"error: Could not find ${APPEX_NAME}\"\n  exit 1\nfi\n\nREAL_SRC=\"$(cd \"$(dirname \"${SRC_PATH}\")\" && pwd -P)/$(basename \"${SRC_PATH}\")\"\nif [ -L \"${SRC_PATH}\" ]; then\n  REAL_SRC=\"$(cd \"${SRC_PATH}\" && pwd -P)\"\nelif [ -d \"${SRC_PATH}\" ]; then\n  REAL_SRC=\"$(cd \"${SRC_PATH}\" && pwd -P)\"\nfi\n\n# ditto dereferences symlinks into real directories\nditto \"${REAL_SRC}\" \"${PLUGINS_DIR}/${APPEX_NAME}\"\n\nif [ -n \"${EXPANDED_CODE_SIGN_IDENTITY}\" ] && [ \"${EXPANDED_CODE_SIGN_IDENTITY}\" != \"-\" ]; then\n  codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n    --preserve-metadata=identifier,entitlements,flags \\\n    \"${PLUGINS_DIR}/${APPEX_NAME}\"\nfi\n";
 		};
 		12E8B0DF3067ED1A004E76B2 /* Embed Walkie Notification Extension Script */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -487,6 +595,28 @@
 			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-Runner-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		358C533F53C21123B0ABF944 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ScreenShare-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -581,6 +711,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		12F4687E3094A62200A7B96A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		331C807D294A63A400263BE5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -611,6 +748,11 @@
 			isa = PBXTargetDependency;
 			target = 12E8B0AE3066A333006553E5 /* WalkieNotificationExtension */;
 			targetProxy = 12E8B0CA3067E216004E76B2 /* PBXContainerItemProxy */;
+		};
+		12F468893094A62200A7B96A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 12F468813094A62200A7B96A /* ScreenShare */;
+			targetProxy = 12F468883094A62200A7B96A /* PBXContainerItemProxy */;
 		};
 		331C8086294A63A400263BE5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -874,6 +1016,135 @@
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fg.fgtracker.WalkieNotificationExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Profile;
+		};
+		12F4688C3094A62200A7B96A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = FE692D484E974EA0F2EC9DEC /* Pods-ScreenShare.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = ScreenShare/ScreenShare.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VH5Y7DS44;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScreenShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ScreenShare;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fg.fgtracker.ScreenShare;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		12F4688D3094A62200A7B96A /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 72A0CACC33AE401A8688DF2F /* Pods-ScreenShare.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = ScreenShare/ScreenShare.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VH5Y7DS44;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScreenShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ScreenShare;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fg.fgtracker.ScreenShare;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		12F4688E3094A62200A7B96A /* Profile */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 55DEAE45487A1F0CBCD6CA18 /* Pods-ScreenShare.profile.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = ScreenShare/ScreenShare.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VH5Y7DS44;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScreenShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ScreenShare;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fg.fgtracker.ScreenShare;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1205,6 +1476,16 @@
 				12E8B0BA3066A333006553E5 /* Debug */,
 				12E8B0BB3066A333006553E5 /* Release */,
 				12E8B0BC3066A333006553E5 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		12F468903094A62200A7B96A /* Build configuration list for PBXNativeTarget "ScreenShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				12F4688C3094A62200A7B96A /* Debug */,
+				12F4688D3094A62200A7B96A /* Release */,
+				12F4688E3094A62200A7B96A /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

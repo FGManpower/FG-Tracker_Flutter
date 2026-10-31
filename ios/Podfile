@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-platform :ios, '16'
+platform :ios, '16.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -42,6 +42,10 @@ target 'Runner' do
   end
 end
 
+target 'ScreenShare' do
+  use_frameworks!
+  pod 'flutter_webrtc', :path => '.symlinks/plugins/flutter_webrtc/ios'
+end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
@@ -59,9 +63,6 @@ post_install do |installer|
         'PERMISSION_CONTACTS=1',
         'PERMISSION_SPEECH_RECOGNIZER=1',
       ]
-      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
-      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'PERMISSION_MICROPHONE=1'
-      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'PERMISSION_SPEECH_RECOGNIZER=1'
     end
   end
 
