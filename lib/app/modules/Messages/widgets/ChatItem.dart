@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Core/util/media_url.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -33,6 +35,16 @@ import '../../../Data/Services/chat_translation_service.dart';
 import 'chat_translation_widgets.dart';
 import 'MessageContextMenu.dart';
 import '../../../widgets/MessageInfoSheet.dart';
+
+/// Text bubbles shrink-wrap via IntrinsicWidth. The attendance card has
+/// full-width bars and buttons (infinite intrinsic width), which crashes
+/// IntrinsicWidth, so it fills the bubble's max width instead.
+Widget _bubbleWidth({required bool isAttendance, required Widget child}) {
+  if (isAttendance) {
+    return SizedBox(width: double.infinity, child: child);
+  }
+  return IntrinsicWidth(child: child);
+}
 
 class ChatBubble extends StatelessWidget {
   final MessageData message;
@@ -186,7 +198,8 @@ class ChatBubble extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: IntrinsicWidth(
+                          child: _bubbleWidth(
+                            isAttendance: isAttendance,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -1573,6 +1586,9 @@ class GroupChatBubble extends StatelessWidget {
             child: Builder(
               builder: (bubbleContext) {
                 return Obx(() {
+                  final isAttendance =
+                      !_isDeletedMessage && message.messageType == "attendance";
+
                   return Column(
                     crossAxisAlignment: isSentByMe
                         ? CrossAxisAlignment.end
@@ -1589,21 +1605,30 @@ class GroupChatBubble extends StatelessWidget {
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.75,
+                            maxWidth: MediaQuery.of(context).size.width *
+                                (isAttendance ? 0.88 : 0.75),
                           ),
-                          padding: EdgeInsets.symmetric(
+                          padding: isAttendance
+                              ? EdgeInsets.zero
+                              : EdgeInsets.symmetric(
                             horizontal: 12.w,
                             vertical: 8.h,
                           ),
                           decoration: BoxDecoration(
-                            color: controller.highlightedMessageId.value ==
+                            color: isAttendance
+                                ? Colors.transparent
+                                : (controller.highlightedMessageId.value ==
                                 message.id
                                 ? Colors.yellow.withValues(
                               alpha: .35,
                             )
-                                : bgColor,
-                            borderRadius: borderRadius,
-                            boxShadow: [
+                                : bgColor),
+                            borderRadius: isAttendance
+                                ? BorderRadius.circular(20.r)
+                                : borderRadius,
+                            boxShadow: isAttendance
+                                ? []
+                                : [
                               BoxShadow(
                                 color: Colors.black.withValues(
                                   alpha: 0.04,
@@ -1613,7 +1638,8 @@ class GroupChatBubble extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: IntrinsicWidth(
+                          child: _bubbleWidth(
+                            isAttendance: isAttendance,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -2694,6 +2720,27 @@ class GroupChatBubble extends StatelessWidget {
         isSentByMe: isSentByMe,
         textColor: textColor,
       );
+    } else if (message.messageType == "attendance") {
+      final embedded = AttendancePoll.fromJson(message.attendance);
+      final pollId = embedded?.id ??
+          int.tryParse(message.attendancePollId?.toString() ?? "") ??
+          _pollIdFromContent(message.content);
+      if (pollId == null || pollId <= 0) {
+        return _buildTextContent(message, textColor, isSentByMe);
+      }
+
+      return AttendanceChatCard(
+        key: ValueKey("attendance_$pollId"),
+        pollId: pollId,
+        initialPoll: embedded,
+        isAdmin: controller.isCreator,
+        groupMembers: controller.groupMembers,
+        // The group bubble already shows the sender's name above the card.
+        senderName: "",
+        groupName: controller.groupName.value,
+        messageTime: message.timestamp?.toString(),
+        onDeleted: controller.markAttendanceDeleted,
+      );
     } else {
       return _buildTextContent(
         message,
@@ -2701,6 +2748,20 @@ class GroupChatBubble extends StatelessWidget {
         isSentByMe,
       );
     }
+  }
+
+  /// Message content is {"attendancePollId":3,...}; used when the message
+  /// arrives without the embedded `attendance` summary.
+  int? _pollIdFromContent(dynamic content) {
+    try {
+      final decoded = jsonDecode(content?.toString() ?? "");
+      if (decoded is Map) {
+        return int.tryParse(
+          (decoded["attendancePollId"] ?? decoded["pollId"])?.toString() ?? "",
+        );
+      }
+    } catch (_) {}
+    return null;
   }
 
   bool _areAllMembersSeen(MessageData message) {

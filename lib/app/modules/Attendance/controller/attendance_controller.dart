@@ -169,6 +169,9 @@ class AttendanceController extends GetxController {
       options: [
         for (int i = 0; i < options.length; i++)
           {
+            // Explicit unique IDs: the backend rejects the poll with
+            // "Option IDs must be unique." when they are omitted.
+            "id": "opt_${i + 1}",
             "label": options[i],
             "order": i + 1,
             ..._defaultOptionStyle(options[i]),
@@ -184,9 +187,8 @@ class AttendanceController extends GetxController {
     }
     final data = Map<String, dynamic>.from(res["data"]);
     final message = data["message"];
-    if (message is Map && message["attendance"] != null) {
-      _apply(message["attendance"]);
-    }
+    _apply(data["poll"] ??
+        (message is Map ? message["attendance"] : null));
     return data;
   }
 

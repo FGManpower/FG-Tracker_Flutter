@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
@@ -947,8 +948,18 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     final message = data["message"] is Map
         ? Map<String, dynamic>.from(data["message"])
         : <String, dynamic>{"id": data["messageId"]};
-    message["id"] ??= data["messageId"];
-    message["pollId"] ??= data["pollId"];
+    final poll = data["poll"] is Map
+        ? Map<String, dynamic>.from(data["poll"])
+        : null;
+    message["id"] ??= data["messageId"] ?? poll?["messageId"];
+    message["pollId"] ??= data["pollId"] ?? poll?["pollId"] ?? poll?["id"];
+    if (poll != null) message["attendance"] ??= poll;
+    message["content"] ??= jsonEncode({
+      "attendancePollId": message["pollId"],
+      "title": poll?["title"],
+      "eventDate": poll?["eventDate"],
+    });
+    message["timestamp"] ??= poll?["createdAt"];
     message["senderId"] ??=
         Global.storageServices.get(PrefConst.userId)?.toString();
     message["senderName"] ??=
