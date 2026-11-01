@@ -7,18 +7,20 @@ class GroupProfileDetailsController extends GetxController {
   RxBool isLoading = true.obs;
   Rx<GroupProfileData?> profileData = Rx<GroupProfileData?>(null);
 
-  Future<void> fetchProfileDetails(int groupId) async {
+  /// [silent] = refresh without the skeleton loader (used after group update)
+  Future<void> fetchProfileDetails(int groupId, {bool silent = false}) async {
     try {
-      isLoading.value = true;
+      if (!silent) isLoading.value = true;
       final response = await MessageRepo.getGroupProfileDetails(groupId: groupId);
 
       if (response.status == true) {
         profileData.value = response.data;
-      } else {
+      } else if (!silent) {
         profileData.value = null;
       }
     } catch (e) {
-      profileData.value = null;
+      // Silent refresh keeps the current data on failure
+      if (!silent) profileData.value = null;
     } finally {
       isLoading.value = false;
     }

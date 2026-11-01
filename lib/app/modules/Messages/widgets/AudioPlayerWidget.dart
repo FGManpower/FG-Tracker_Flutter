@@ -22,12 +22,6 @@ class AudioBubble extends StatefulWidget {
 class _AudioBubbleState extends State<AudioBubble> {
   final GlobalAudioController controller = Get.put(GlobalAudioController());
 
-  @override
-  void initState() {
-    super.initState();
-    controller.loadDuration(widget.audioUrl);
-  }
-
   String _format(Duration d) {
     String two(int n) => n.toString().padLeft(2, '0');
     return "${two(d.inMinutes)}:${two(d.inSeconds % 60)}";
@@ -61,6 +55,8 @@ class _AudioBubbleState extends State<AudioBubble> {
               Obx(() {
                 final isCurrent = controller.currentUrl.value == widget.audioUrl;
                 final playing = isCurrent && controller.isPlaying.value;
+                final loading = controller.loadingUrl.value == widget.audioUrl;
+                final failed = controller.errorUrl.value == widget.audioUrl;
 
                 return GestureDetector(
                   onTap: () {
@@ -79,11 +75,21 @@ class _AudioBubbleState extends State<AudioBubble> {
                           ? Colors.white.withValues(alpha: 0.22)
                           : const Color(0xFF5045B9).withValues(alpha: 0.12),
                     ),
-                    child: Icon(
-                      playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                      color: activeBarColor,
-                      size: 24.sp,
-                    ),
+                    child: loading
+                        ? Padding(
+                            padding: EdgeInsets.all(10.w),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: activeBarColor),
+                          )
+                        : Icon(
+                            failed
+                                ? Icons.refresh_rounded
+                                : playing
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded,
+                            color: activeBarColor,
+                            size: 24.sp,
+                          ),
                   ),
                 );
               }),
@@ -190,6 +196,15 @@ class _AudioBubbleState extends State<AudioBubble> {
 
                   final displayTime = playing ? position : duration;
 
+                  if (controller.errorUrl.value == widget.audioUrl) {
+                    return Text(
+                      "Couldn't play voice message",
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: secondaryTextColor,
+                      ),
+                    );
+                  }
                   return Text(
                     _format(displayTime),
                     style: TextStyle(

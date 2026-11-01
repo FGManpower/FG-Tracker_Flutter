@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fgtracker/app/Model/status_model.dart';
 
 class GetMessage {
@@ -246,6 +248,8 @@ class MessageData {
   StatusMetaModel? statusMeta;
   StatusItemModel? replyStatus;
   bool isDeleted = false;
+  Map<String, dynamic>? attendance;
+  dynamic attendancePollId;
 
   MessageData({
     this.id,
@@ -594,6 +598,36 @@ class MessageData {
         json['deleted_for_everyone'] == true ||
         json['isDeleted']?.toString() == '1' ||
         json['is_deleted']?.toString() == '1';
+
+    // Attendance poll summary sent with messageType "attendance".
+    // History and socket payloads differ: the summary may be a map or a JSON
+    // string, and older rows only carry {"attendancePollId": n} in content.
+    final rawAttendance = json['attendance'] ??
+        json['attendancePoll'] ??
+        nestedSource?['attendance'];
+    if (rawAttendance is Map) {
+      attendance = Map<String, dynamic>.from(rawAttendance);
+    } else if (rawAttendance is String && rawAttendance.trim().startsWith('{')) {
+      try {
+        final decoded = jsonDecode(rawAttendance);
+        if (decoded is Map) attendance = Map<String, dynamic>.from(decoded);
+      } catch (_) {}
+    }
+    attendancePollId = json['pollId'] ??
+        json['attendancePollId'] ??
+        json['attendanceId'] ??
+        nestedSource?['pollId'];
+    if (attendancePollId == null &&
+        messageType?.toString() == 'attendance' &&
+        content != null &&
+        content.toString().trim().startsWith('{')) {
+      try {
+        final decoded = jsonDecode(content.toString());
+        if (decoded is Map) {
+          attendancePollId = decoded['attendancePollId'] ?? decoded['pollId'];
+        }
+      } catch (_) {}
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -638,6 +672,8 @@ class MessageData {
     data['isForwarded'] = isForwarded;
     data['forwardedFromMessageId'] = forwardedFromMessageId;
     data['isDeleted'] = isDeleted;
+    if (attendance != null) data['attendance'] = attendance;
+    if (attendancePollId != null) data['pollId'] = attendancePollId;
 
     return data;
   }

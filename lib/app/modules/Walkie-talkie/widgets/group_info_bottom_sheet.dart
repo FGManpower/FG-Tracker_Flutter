@@ -1,6 +1,7 @@
 
 
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -214,6 +215,24 @@ class GroupInfoBottomSheet extends StatelessWidget {
     );
   }
 
+  void _openMemberProfile(dynamic member, String memberName) {
+    dynamic chatId;
+    dynamic mobileNo;
+    try {
+      chatId = member.chatId;
+    } catch (_) {}
+    try {
+      mobileNo = member.mobileNo;
+    } catch (_) {}
+    showUserQuickProfile(
+      userId: member.userId,
+      name: memberName,
+      profileImage: member.profileImage?.toString(),
+      mobileNo: mobileNo?.toString(),
+      chatId: int.tryParse(chatId?.toString() ?? ''),
+    );
+  }
+
   Widget _buildMembersList() {
     return ListView.separated(
       shrinkWrap: true,
@@ -283,27 +302,33 @@ class GroupInfoBottomSheet extends StatelessWidget {
             ),
             child: Row(
               children: [
-                _buildMemberAvatar(
-                  member,
-                  memberName,
-                  inWalkie: inWalkie,
-                  isSpeaking: isSpeaking,
-                  isMuted: isMuted,
-                  isAppOnline: isAppOnline,
+                GestureDetector(
+                  onTap: () => _openMemberProfile(member, memberName),
+                  child: _buildMemberAvatar(
+                    member,
+                    memberName,
+                    inWalkie: inWalkie,
+                    isSpeaking: isSpeaking,
+                    isMuted: isMuted,
+                    isAppOnline: isAppOnline,
+                  ),
                 ),
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        memberName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: _textDark,
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
+                      GestureDetector(
+                        onTap: () => _openMemberProfile(member, memberName),
+                        child: Text(
+                          memberName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: _textDark,
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       Text(

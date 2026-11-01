@@ -131,6 +131,7 @@ class RegistrationController extends GetxController {
   Future<void> _fetchLatestProfileForEdit() async {
     try {
       var res = await ProfileRepo.getProfileData();
+      print("[EditProfile] getProfile email from backend = ${res.data?.email}");
       if (res.status == true && res.data != null) {
         userData = res.data!;
         final remoteEmail = res.data!.email?.trim();
@@ -234,13 +235,10 @@ class RegistrationController extends GetxController {
     if (registerKey.currentState!.validate()) {
       try {
         Loading().showloading();
-        if (!controller.hasExistingEmail.value) {
-          controller.emailController.clear();
-        }
         var result = await AuthRepo.updateProfile(controller);
         if (result.status == true) {
-          if (controller.hasExistingEmail.value &&
-              controller.emailController.text.trim().isNotEmpty) {
+          if (controller.emailController.text.trim().isNotEmpty) {
+            controller.hasExistingEmail.value = true;
             Global.storageServices.setString(
               PrefConst.userEmail,
               controller.emailController.text.trim(),

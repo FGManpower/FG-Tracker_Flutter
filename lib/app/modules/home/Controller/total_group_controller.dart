@@ -3,6 +3,9 @@ import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../Core/constant/pref_res.dart';
+import '../../../Core/util/message_preview_builder.dart';
+import '../../../Core/values/global.dart';
 import '../../../Data/Repositories/GetMessageRepo.dart';
 
 class TotalGroupController extends GetxController {
@@ -170,41 +173,18 @@ class TotalGroupController extends GetxController {
       return '';
     }
 
-    if (lastMessage.isDeletedForEveryone == 1) {
-      return 'Message deleted';
+    final hasBody = (lastMessage.content?.trim().isNotEmpty ?? false) ||
+        (lastMessage.caption?.trim().isNotEmpty ?? false) ||
+        lastMessage.isDeletedForEveryone == 1 ||
+        MessageTypes.kindOf(lastMessage.messageType) != MessageKind.text;
+    if (!hasBody) {
+      return '';
     }
 
-    final messageType = lastMessage.messageType?.toLowerCase();
-
-    if (messageType == 'audio') {
-      return 'Audio';
-    }
-
-    if (messageType == 'image') {
-      return 'Image';
-    }
-
-    if (messageType == 'video') {
-      return 'Video';
-    }
-
-    if (messageType == 'document') {
-      return 'Document';
-    }
-
-    final content = lastMessage.content?.trim();
-
-    if (content != null && content.isNotEmpty) {
-      return content;
-    }
-
-    final caption = lastMessage.caption?.trim();
-
-    if (caption != null && caption.isNotEmpty) {
-      return caption;
-    }
-
-    return '';
+    return MessagePreviewBuilder.forGroupLastMessage(
+      lastMessage,
+      currentUserId: Global.storageServices.get(PrefConst.userId)?.toString(),
+    ).display;
   }
 
   int getMemberCount(GroupChatData group) {

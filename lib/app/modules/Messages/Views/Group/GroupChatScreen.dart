@@ -625,6 +625,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                       context: context,
                       controller: groupController,
                       groupId: controller.groupId.toString(),
+                      currentImage: controller.groupImage,
                     );
                   }
                 },

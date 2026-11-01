@@ -19,6 +19,7 @@ import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../Core/constant/const_res.dart';
+import '../../../../Core/util/profile_navigation.dart';
 
 class GroupsListScreen extends StatefulWidget {
   const GroupsListScreen({super.key});
@@ -231,31 +232,32 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
               : const SizedBox.shrink(key: ValueKey('empty_search')),
         )),
 
-        Padding(
-          padding: EdgeInsets.only(right: 20.w),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Icon(
-                Icons.notifications_none_rounded,
-                size: 28.sp,
-                color: const Color(0xff5045B9),
-              ),
-              Positioned(
-                right: 2,
-                top: 2,
-                child: Container(
-                  height: 8.h,
-                  width: 8.h,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        // Notification bell hidden here; only the Home screen shows it
+//         Padding(
+//           padding: EdgeInsets.only(right: 20.w),
+//           child: Stack(
+//             clipBehavior: Clip.none,
+//             children: [
+//               Icon(
+//                 Icons.notifications_none_rounded,
+//                 size: 28.sp,
+//                 color: const Color(0xff5045B9),
+//               ),
+//               Positioned(
+//                 right: 2,
+//                 top: 2,
+//                 child: Container(
+//                   height: 8.h,
+//                   width: 8.h,
+//                   decoration: const BoxDecoration(
+//                     color: Colors.red,
+//                     shape: BoxShape.circle,
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
       ],
     );
   }
@@ -361,6 +363,9 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
             })?.then((value) {
               if (value == true) {
                 groupController.getGroupData();
+              } else {
+                // Name / image may have changed inside the group → refresh quietly
+                groupController.refreshGroupListSilently();
               }
             });
           }
@@ -383,7 +388,9 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipOval(
+                GestureDetector(
+                  onTap: data == null ? null : () => showGroupQuickProfile(groupId: data.id, groupName: data.groupName, groupProfile: data.groupProfile, memberCount: data.memberCount),
+                  child: ClipOval(
                   child: SizedBox(
                     height: 50.h,
                     width: 50.h,
@@ -443,6 +450,7 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                       ),
                     ),
                   ),
+                ),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(

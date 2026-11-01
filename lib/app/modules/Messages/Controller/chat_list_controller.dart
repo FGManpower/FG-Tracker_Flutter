@@ -831,6 +831,8 @@ class ChatListController extends GetxController {
     bool fromServer = false,
   }) {
     if (fromServer) {
+      final serverHasMessage =
+          updated.message != null && updated.message!.isNotEmpty;
       final isOnline = updated.isOnline ?? current.isOnline;
       final lastSeen = updated.lastSeen ?? current.lastSeen;
 
@@ -888,6 +890,12 @@ class ChatListController extends GetxController {
         forwardedLabel: updated.forwardedLabel ?? current.forwardedLabel,
         forwardedFromMessageId:
             updated.forwardedFromMessageId ?? current.forwardedFromMessageId,
+        // Sender + raw payload belong to the same message as `message`.
+        senderId: serverHasMessage ? updated.senderId : current.senderId,
+        senderName: serverHasMessage ? updated.senderName : current.senderName,
+        lastMessageData: serverHasMessage
+            ? updated.lastMessageData
+            : current.lastMessageData,
       );
     }
 
@@ -962,6 +970,11 @@ class ChatListController extends GetxController {
       forwardedLabel: updated.forwardedLabel ?? current.forwardedLabel,
       forwardedFromMessageId:
           updated.forwardedFromMessageId ?? current.forwardedFromMessageId,
+      senderId: useUpdatedMessage ? updated.senderId : current.senderId,
+      senderName: useUpdatedMessage ? updated.senderName : current.senderName,
+      lastMessageData: useUpdatedMessage
+          ? updated.lastMessageData
+          : current.lastMessageData,
     );
   }
 

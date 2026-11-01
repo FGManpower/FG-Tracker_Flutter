@@ -95,7 +95,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxBool isBlocked = false.obs;
   final RxBool blockedByMe = false.obs;
   RxBool isPeerOnline = false.obs;
-  final RxString peerLastSeen = "Offline".obs;
+  // Blank until chat history API returns, so "Offline" doesn't flash first
+  final RxString peerLastSeen = "".obs;
   final RxBool isPeerTyping = false.obs;
   DateTime? _lastTypingEmitTime;
   Timer? _typingDebounceTimer;

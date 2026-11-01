@@ -107,6 +107,18 @@ class RegistrationScreen extends GetView<RegistrationController> {
                               hint: "Enter Contact Number",
                               enabled: false,
                             ),
+                            SizedBox(height: 18.h),
+
+                            _buildRegLabel("Email Address"),
+                            SizedBox(height: 8.h),
+                            _buildRegTextField(
+                              controller: controller.emailController,
+                              icon: Icons.email,
+                              hint: "Enter Email Address",
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) =>
+                                  Validator.validateEmail(value),
+                            ),
                             SizedBox(height: 28.h),
 
                             _buildRegLabel("Select Gender"),
@@ -651,19 +663,15 @@ class RegistrationScreen extends GetView<RegistrationController> {
                               enabled: false,
                               keyboardType: TextInputType.phone,
                             ),
-                            Obx(() {
-                              if (!controller.hasExistingEmail.value) {
-                                return const SizedBox.shrink();
-                              }
-                              return _buildEditProfileField(
-                                label: "Email Address",
-                                controller: controller.emailController,
-                                icon: Icons.mail_outline_rounded,
-                                keyboardType: TextInputType.emailAddress,
-                                validator: (value) =>
-                                    Validator.validateEmail(value),
-                              );
-                            }),
+                            // Email is compulsory, shown even if not set yet
+                            _buildEditProfileField(
+                              label: "Email Address",
+                              controller: controller.emailController,
+                              icon: Icons.mail_outline_rounded,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) =>
+                                  Validator.validateEmail(value),
+                            ),
                             SizedBox(height: 26.h),
 
                             // Save Changes with Loading State

@@ -12,6 +12,7 @@ import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart
 import 'package:image_picker/image_picker.dart';
 
 import '../../Messages/Controller/GroupChatController.dart';
+import '../../Messages/Controller/group_profile_details_controller.dart';
 
 class GroupController extends GetxController {
   GlobalKey<FormState> createGroupKey = GlobalKey<FormState>();
@@ -117,16 +118,58 @@ class GroupController extends GetxController {
         if (Get.isRegistered<GroupMessageController>()) {
           final chatController = Get.find<GroupMessageController>();
           chatController.groupName.value = groupName.text.trim();
+          // Keep description in sync so Group Profile shows it right away
+          chatController.groupDesc.value = groupDesc.text.trim();
         }
 
         Get.back();
         Utils().fluttertoast(result.message.toString());
+
+        // Refresh Group Profile screen so new name / image show right away
+        _refreshGroupProfile(groupId);
+        // Refresh All Groups list too (no skeleton loader)
+        _refreshGroupListSilently();
       } else {
         Utils().fluttertoast(result.message.toString());
       }
     } catch (e) {
       Loading().dismissloading();
       Utils().fluttertoast(e.toString());
+    }
+  }
+
+  Future<void> _refreshGroupProfile(String groupId) async {
+    final int? gId = int.tryParse(groupId);
+    if (gId == null || !Get.isRegistered<GroupProfileDetailsController>()) {
+      return;
+    }
+    final profileController = Get.find<GroupProfileDetailsController>();
+    await profileController.fetchProfileDetails(gId, silent: true);
+
+    // Keep the open group chat header image in sync too
+    final String? newImage = profileController.profileData.value?.group?.groupProfile;
+    if (newImage != null && Get.isRegistered<GroupMessageController>()) {
+      Get.find<GroupMessageController>().groupImage = newImage;
+    }
+  }
+
+  /// Refresh All Groups list without the skeleton loader
+  Future<void> refreshGroupListSilently() => _refreshGroupListSilently();
+
+  Future<void> _refreshGroupListSilently() async {
+    try {
+      final result = await GroupRepo.getGroupData();
+      if (result.status != true || result.data?.groupData == null) return;
+      // Update the registered instance (used by All Groups screen) and this one
+      final targets = <GroupController>{this};
+      if (Get.isRegistered<GroupController>()) {
+        targets.add(Get.find<GroupController>());
+      }
+      for (final c in targets) {
+        c.groupData.value = result.data!.groupData!;
+      }
+    } catch (_) {
+      // Keep the current list if the refresh fails
     }
   }
 

@@ -9,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../../Core/constant/const_res.dart';
+import '../../../../../Core/util/profile_navigation.dart';
 import '../../../Controller/total_group_controller.dart';
 
 class totalGroup extends StatelessWidget {
@@ -360,7 +361,9 @@ class totalGroup extends StatelessWidget {
           ),
           child: Row(
             children: [
-              ClipOval(
+              GestureDetector(
+                onTap: () => showGroupQuickProfile(groupId: group.groupId, groupName: groupName, groupProfile: group.groupProfile, memberCount: controller.getMemberCount(group)),
+                child: ClipOval(
                 child: SizedBox(
                   width: 48.w,
                   height: 48.w,
@@ -396,6 +399,7 @@ class totalGroup extends StatelessWidget {
                     ),
                   ),
                 ),
+              ),
               ),
               SizedBox(width: 14.w),
               Expanded(

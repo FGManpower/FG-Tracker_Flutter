@@ -101,6 +101,7 @@ dependencies:
   flutter_timezone: ^5.1.1
   flutter_callkit_incoming: ^3.1.6
   speech_to_text: ^7.5.0
+  google_mlkit_face_detection: ^0.15.0
 
 
 dependency_overrides:

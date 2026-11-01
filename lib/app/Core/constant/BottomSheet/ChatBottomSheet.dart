@@ -8,11 +8,13 @@ import 'attendance_sheet.dart';
 class ChatBottomSheet {
   static Future<void> showCreateAttendance(
     BuildContext context, {
+    required int groupId,
     List<dynamic>? groupMembers,
-    VoidCallback? onCreated,
+    void Function(Map<String, dynamic> data)? onCreated,
   }) {
     return showAttendanceSheet(
       context: context,
+      groupId: groupId,
       groupMembers: groupMembers,
       onCreated: onCreated,
     );
@@ -221,11 +223,7 @@ class ChatBottomSheet {
                       title: "Attendance",
                       onTap: () {
                         Navigator.pop(sheetContext);
-                        if (onAttendance != null) {
-                          onAttendance();
-                        } else {
-                          showAttendanceSheet(context: context);
-                        }
+                        onAttendance?.call();
                       },
                     ),
                 ],

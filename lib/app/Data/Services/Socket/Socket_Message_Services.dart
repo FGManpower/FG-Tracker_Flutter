@@ -23,6 +23,13 @@ class SocketMessageService extends GetxService {
   Timer? _privateJoinDebugTimer;
   IO.Socket? _socket;
   EventHandler<dynamic>? _privateMessageHandler;
+
+  /// Chat currently open on the /chat socket; rejoined on every reconnect.
+  String? _activeUserId;
+  int? _activeGroupId;
+
+  /// Poll whose admin detail room is joined (View Attendance screen).
+  int? _subscribedPollId;
   bool get isSocketConnected => _socket?.connected == true;
 
   IO.Socket get socket {
@@ -67,6 +74,11 @@ class SocketMessageService extends GetxService {
     log("EXISTING SOCKET: ${_socket != null}");
     log("EXISTING SOCKET CONNECTED: ${_socket?.connected ?? false}");
 
+    // Remember the chat currently open, so every (re)connect rejoins the
+    // right group room instead of the group the socket was first created for.
+    _activeUserId = userId;
+    _activeGroupId = groupId;
+
     if (_socket != null && _socket!.connected) {
       log("SOCKET ALREADY CONNECTED");
 
@@ -83,6 +95,14 @@ class SocketMessageService extends GetxService {
       return;
     }
 
+    if (_socket != null) {
+      // Socket exists but is (re)connecting: don't build a second one (that
+      // stacks duplicate handlers). The connect handler joins the active group.
+      log("SOCKET EXISTS BUT NOT CONNECTED — RECONNECTING");
+      _socket!.connect();
+      return;
+    }
+
     log("CREATING NEW SOCKET: $socketUrl/chat");
 
     _socket = IO.io(
@@ -90,28 +110,60 @@ class SocketMessageService extends GetxService {
       {
         "transports": ["websocket"],
         "autoConnect": true,
+        // Opts in to attendance socket events (server checks auth or query).
+        // token: lets the server identify the user for attendance rooms
+        // (attendance:subscribe / sync / my_vote), same as the status socket.
+        "auth": {
+          "attendanceSupported": "1",
+          "token": Global.storageServices.getaccesstoken() ?? "",
+        },
+        "query": {"attendanceSupported": "1"},
       },
     );
 
+    // Realtime debug: every attendance / chat-list event reaching /chat.
+    _socket?.onAny((event, data) {
+      if (event.startsWith("attendance") ||
+          event.contains("chat_list") ||
+          event == "conversation_updated") {
+        debugPrint("[RT_DEBUG] /chat <= $event"); // TODO: remove debug log
+      }
+    });
+
     _socket?.onConnect((_) {
+      final activeUserId = _activeUserId ?? userId;
+      final activeGroupId = _activeGroupId;
       log("========== SOCKET CONNECTED ==========");
       log("SOCKET ID: ${_socket?.id}");
-      log("USER ID: $userId");
-      log("GROUP ID: ${groupId ?? 'NULL'}");
+      log("USER ID: $activeUserId");
+      log("GROUP ID: ${activeGroupId ?? 'NULL'}");
       log("CONNECTED STATUS: ${_socket?.connected}");
 
-      if (groupId != null) {
+      if (activeGroupId != null) {
         log("EMITTING JOIN GROUP");
-        log("JOIN PARAMS: userId=$userId, groupId=$groupId");
-        joinUserInGroup(userId, groupId);
+        log("JOIN PARAMS: userId=$activeUserId, groupId=$activeGroupId");
+        joinUserInGroup(activeUserId, activeGroupId);
+        joinGroupChat(groupId: activeGroupId, userId: activeUserId);
 
         log("EMITTING MARK SEEN");
-        log("MARK SEEN PARAMS: userId=$userId, groupId=$groupId");
-        markSeen(userId, groupId);
+        log("MARK SEEN PARAMS: userId=$activeUserId, groupId=$activeGroupId");
+        markSeen(activeUserId, activeGroupId);
       } else {
         log("GROUP ID IS NULL — JOIN AND MARK SEEN SKIPPED");
       }
+
+      // Re-join the admin detail room the View Attendance screen is showing.
+      if (_subscribedPollId != null) {
+        _emitAttendanceSubscribe(_subscribedPollId!);
+      }
+      debugPrint(
+        "[RT_DEBUG] /chat connected: group=$activeGroupId poll=$_subscribedPollId",
+      ); // TODO: remove debug log
     });
+
+    // The chat list may have registered before this socket existed.
+    _registerChatListListeners(_socket);
+    _registerFullChatListListeners(_socket);
 
     _socket?.onDisconnect((reason) {
       log("========== SOCKET DISCONNECTED ==========");
@@ -428,6 +480,115 @@ class SocketMessageService extends GetxService {
   void stopListeningGroupTyping() {
     _socket?.off("group_typing");
     _socket?.off("group_stop_typing");
+  }
+
+  static const List<String> _attendanceEvents = [
+    "attendance:created",
+    "attendance:updated",
+    "attendance:my_vote",
+    "attendance:edited",
+    "attendance:closed",
+    "attendance:deleted",
+  ];
+  EventHandler<dynamic>? _attendanceReconnectHandler;
+  int _attendanceListenerToken = 0;
+
+  /// Group-room attendance events. [onReconnect] runs on every (re)connect so
+  /// the caller can `attendance:sync` the polls it is showing.
+  /// Returns a token for [stopListeningAttendanceEvents], so a closing chat
+  /// can't remove listeners a newly opened chat already registered.
+  int? listenAttendanceEvents({
+    required void Function(String event, dynamic data) onEvent,
+    void Function()? onReconnect,
+  }) {
+    final s = _socket;
+    if (s == null) {
+      log("listenAttendanceEvents skipped: _socket is null");
+      return null;
+    }
+    _removeAttendanceListeners();
+    final token = ++_attendanceListenerToken;
+    for (final event in _attendanceEvents) {
+      s.on(event, (data) {
+        log("RECEIVED $event => $data");
+        onEvent(event, data);
+      });
+    }
+    if (onReconnect != null) {
+      _attendanceReconnectHandler = (_) => onReconnect();
+      s.on("connect", _attendanceReconnectHandler!);
+    }
+    return token;
+  }
+
+  void stopListeningAttendanceEvents(int? token) {
+    if (token == null || token != _attendanceListenerToken) return;
+    _removeAttendanceListeners();
+  }
+
+  void _removeAttendanceListeners() {
+    for (final event in _attendanceEvents) {
+      _socket?.off(event);
+    }
+    if (_attendanceReconnectHandler != null) {
+      _socket?.off("connect", _attendanceReconnectHandler);
+      _attendanceReconnectHandler = null;
+    }
+  }
+
+  /// Joins the admin detail room for live `attendance:vote_changed` events.
+  /// If the socket isn't connected yet, the connect handler sends the
+  /// subscribe once it is (and again after every reconnect).
+  void subscribeAttendance(
+    int pollId,
+    void Function(dynamic data) onVoteChanged,
+  ) {
+    _subscribedPollId = pollId;
+    final s = _socket;
+    if (s == null) return;
+    s.off("attendance:vote_changed");
+    s.on("attendance:vote_changed", (data) {
+      log("RECEIVED attendance:vote_changed => $data");
+      onVoteChanged(data);
+    });
+    if (isSocketConnected) _emitAttendanceSubscribe(pollId);
+  }
+
+  void _emitAttendanceSubscribe(int pollId) {
+    _socket?.emitWithAck(
+      "attendance:subscribe",
+      {"pollId": pollId},
+      ack: (data) => debugPrint(
+        "[RT_DEBUG] attendance:subscribe poll=$pollId ack => $data",
+      ), // TODO: remove debug log
+    );
+  }
+
+  void unsubscribeAttendance(int pollId) {
+    // A newer screen may already have subscribed to another poll.
+    if (_subscribedPollId != pollId) return;
+    _subscribedPollId = null;
+    _socket?.off("attendance:vote_changed");
+    if (isSocketConnected) {
+      _socket!.emit("attendance:unsubscribe", {"pollId": pollId});
+    }
+  }
+
+  /// Fetches the latest summaries for [pollIds] (reconnect recovery).
+  void syncAttendance(
+    List<int> pollIds,
+    void Function(List<dynamic> polls) onPolls,
+  ) {
+    if (!isSocketConnected || pollIds.isEmpty) return;
+    _socket!.emitWithAck(
+      "attendance:sync",
+      {"pollIds": pollIds},
+      ack: (data) {
+        if (data is Map && data["polls"] is List) {
+          onPolls(data["polls"] as List);
+        }
+      },
+    );
   }
 
   Future<void> initPrivateChat(
@@ -884,7 +1045,11 @@ class SocketMessageService extends GetxService {
       },
     );
 
-    _privateChatListSocket?.onAny((event, data) {});
+    _privateChatListSocket?.onAny((event, data) {
+      if (event.contains("chat_list") || event == "conversation_updated") {
+        debugPrint("[RT_DEBUG] /privateChat <= $event"); // TODO: remove debug log
+      }
+    });
 
     _privateChatListSocket?.on(
       "archived_private_chats",
@@ -962,44 +1127,41 @@ class SocketMessageService extends GetxService {
     required Function(dynamic) callback,
   }) {
     _privateChatListUpdatedCallback = callback;
+    // Register even while a socket is still connecting: listeners attach to
+    // the socket object and fire once it connects. The /chat socket is also
+    // registered when it is created later (see init).
+    _registerChatListListeners(_privateChatListSocket);
+    _registerChatListListeners(_socket);
+  }
 
-    void register(IO.Socket? s) {
-      if (s == null) return;
-      s.off("chat_list_updated");
-      s.off("conversation_updated");
-      s.on("chat_list_updated", (data) {
-        _privateChatListUpdatedCallback?.call(data);
-      });
-      s.on("conversation_updated", (data) {
-        _privateChatListUpdatedCallback?.call(data);
-      });
-    }
-
-    if (_privateChatListSocket != null && _privateChatListSocket!.connected) {
-      register(_privateChatListSocket);
-    }
-    if (_socket != null && _socket!.connected) {
-      register(_socket);
-    }
+  void _registerChatListListeners(IO.Socket? s) {
+    if (s == null || _privateChatListUpdatedCallback == null) return;
+    s.off("chat_list_updated");
+    s.off("conversation_updated");
+    s.on("chat_list_updated", (data) {
+      _privateChatListUpdatedCallback?.call(data);
+    });
+    s.on("conversation_updated", (data) {
+      _privateChatListUpdatedCallback?.call(data);
+    });
   }
 
   void listenFullChatList({
     required Function(dynamic) callback,
   }) {
     _unifiedFullChatListCallback = callback;
+    _registerFullChatListListeners(_privateChatListSocket);
+    _registerFullChatListListeners(_socket);
+  }
 
-    void register(IO.Socket? s) {
-      if (s == null) return;
-      s.off("chat_list");
-      s.off("common_chat_list");
-      s.off("unified_chat_list");
-      s.on("chat_list", (data) => _unifiedFullChatListCallback?.call(data));
-      s.on("common_chat_list", (data) => _unifiedFullChatListCallback?.call(data));
-      s.on("unified_chat_list", (data) => _unifiedFullChatListCallback?.call(data));
-    }
-
-    register(_privateChatListSocket);
-    register(_socket);
+  void _registerFullChatListListeners(IO.Socket? s) {
+    if (s == null || _unifiedFullChatListCallback == null) return;
+    s.off("chat_list");
+    s.off("common_chat_list");
+    s.off("unified_chat_list");
+    s.on("chat_list", (data) => _unifiedFullChatListCallback?.call(data));
+    s.on("common_chat_list", (data) => _unifiedFullChatListCallback?.call(data));
+    s.on("unified_chat_list", (data) => _unifiedFullChatListCallback?.call(data));
   }
 
   void fetchUnifiedChatList({

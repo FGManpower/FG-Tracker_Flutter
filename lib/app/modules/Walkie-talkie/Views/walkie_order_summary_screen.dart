@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class WalkieOrderSummaryScreen extends StatefulWidget {
   final WalkiePaymentOrderModel? order;
@@ -1168,7 +1169,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: _showTermsDialog,
+                  onTap: _openTerms,
                   child: Text(
                     "Terms & Conditions",
                     style: TextStyle(
@@ -1187,76 +1188,17 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
     });
   }
 
-  // ==========================================
-  void _showTermsDialog() {
-    Get.dialog(
-      Dialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
-        child: Padding(
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Terms & Conditions",
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontFamily: FontFamily.interBold,
-                      color: _textDark,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => Get.back(),
-                    child:
-                        const Icon(Icons.close_rounded, color: _textSecondary),
-                  ),
-                ],
-              ),
-              SizedBox(height: 12.h),
-              Text(
-                "• Walkie Talkie plan subscriptions are activated immediately upon payment.\n"
-                "• Subscriptions renew automatically based on chosen billing cycle unless cancelled.\n"
-                "• All payments are processed securely through 256-bit encryption.\n"
-                "• Plans and member allocations can be managed at any time from your settings.",
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontFamily: FontFamily.interRegular,
-                  color: _textSecondary,
-                  height: 1.5,
-                ),
-              ),
-              SizedBox(height: 18.h),
-              SizedBox(
-                width: double.infinity,
-                height: 42.h,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _primaryPurple,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                  onPressed: () => Get.back(),
-                  child: Text(
-                    "I Understand",
-                    style: TextStyle(
-                      fontSize: 13.5.sp,
-                      fontFamily: FontFamily.interBold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  // Same Terms & Conditions page as Side menu → About → Terms & Conditions
+  Future<void> _openTerms() async {
+    try {
+      final Uri url =
+          Uri.parse('https://www.fgmanpower.co.in/terms-conditions/');
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        debugPrint('Could not launch $url');
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 }
 

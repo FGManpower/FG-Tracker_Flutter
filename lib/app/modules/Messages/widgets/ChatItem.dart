@@ -1,7 +1,9 @@
+import 'dart:convert';
+
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
+import 'package:fgtracker/app/Core/util/media_url.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
-import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/DocumentService.dart';
@@ -16,12 +18,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
 import '../../../Core/util/file_helper.dart';
+import '../../../Core/util/profile_navigation.dart';
 import '../../../global_widget/common_widget.dart';
 import '../../status/views/StatusViewScreen.dart';
 import 'AudioPlayerWidget.dart';
@@ -33,6 +35,16 @@ import '../../../Data/Services/chat_translation_service.dart';
 import 'chat_translation_widgets.dart';
 import 'MessageContextMenu.dart';
 import '../../../widgets/MessageInfoSheet.dart';
+
+/// Text bubbles shrink-wrap via IntrinsicWidth. The attendance card has
+/// full-width bars and buttons (infinite intrinsic width), which crashes
+/// IntrinsicWidth, so it fills the bubble's max width instead.
+Widget _bubbleWidth({required bool isAttendance, required Widget child}) {
+  if (isAttendance) {
+    return SizedBox(width: double.infinity, child: child);
+  }
+  return IntrinsicWidth(child: child);
+}
 
 class ChatBubble extends StatelessWidget {
   final MessageData message;
@@ -98,7 +110,22 @@ class ChatBubble extends StatelessWidget {
                 try {
                   avatarUrl = controller.memberData.profileImage;
                 } catch (_) {}
-                return CircleAvatar(
+                return GestureDetector(
+                  onTap: () {
+                    try {
+                      final m = controller.memberData;
+                      openUserProfile(
+                        userId: m.userId,
+                        name: m.name,
+                        profileImage: m.profileImage,
+                        mobileNo: m.mobileNo,
+                        chatId: int.tryParse(
+                                controller.privateChatId.value.toString()) ??
+                            m.chatId,
+                      );
+                    } catch (_) {}
+                  },
+                  child: CircleAvatar(
                   radius: 16.r,
                   backgroundColor: const Color(0xFFECEAFD),
                   backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
@@ -115,6 +142,7 @@ class ChatBubble extends StatelessWidget {
                     color: const Color(0xFF4818F0),
                   )
                       : null,
+                  ),
                 );
               })
                   : SizedBox(width: 32.r, height: 32.r),
@@ -123,6 +151,10 @@ class ChatBubble extends StatelessWidget {
             child: Builder(
               builder: (bubbleContext) {
                 return Obx(() {
+                  // Read the observable unconditionally: an Obx that reads none
+                  // (e.g. for attendance cards) throws "improper use of GetX".
+                  final isHighlighted =
+                      controller.highlightedMessageId.value == message.id;
                   final isAttendance =
                       !_isDeletedMessage && message.messageType == "attendance";
 
@@ -152,8 +184,7 @@ class ChatBubble extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: isAttendance
                                 ? Colors.transparent
-                                : (controller.highlightedMessageId.value ==
-                                message.id
+                                : (isHighlighted
                                 ? Colors.yellow.withValues(alpha: .35)
                                 : bgColor),
                             borderRadius: isAttendance
@@ -170,7 +201,8 @@ class ChatBubble extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: IntrinsicWidth(
+                          child: _bubbleWidth(
+                            isAttendance: isAttendance,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -700,7 +732,7 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "audio") {
       return AudioBubble(
-        audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
+        audioUrl: resolveMediaUrl(message.content ?? ''),
         isMe: false,
       );
     } else if (message.messageType == "video") {
@@ -891,35 +923,30 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "attendance") {
       final isCreator = controller is GroupMessageController
-          ? (controller as GroupMessageController).isCreator.value
-          : false;
+          ? (controller as GroupMessageController).isCreator
+          : null;
 
-      final pollData = AttendancePollData.fromRawJson(
-        message.content?.toString() ?? "",
-      );
+      final groupController = controller is GroupMessageController
+          ? controller as GroupMessageController
+          : null;
 
-      final currentUserId =
-          Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
-      final currentUserName =
-          Global.storageServices.get(PrefConst.userName)?.toString() ?? "You";
-      final groupName = controller is GroupMessageController
-          ? (controller as GroupMessageController).groupName
-          : "Site Team";
+      final embedded = AttendancePoll.fromJson(message.attendance);
+      final pollId = embedded?.id ??
+          int.tryParse(message.attendancePollId?.toString() ?? "");
+      if (pollId == null || pollId <= 0) {
+        return _buildTextContent(message, textColor, isSentByMe);
+      }
 
       return AttendanceChatCard(
-        pollData: pollData,
+        key: ValueKey("attendance_$pollId"),
+        pollId: pollId,
+        initialPoll: embedded,
         isAdmin: isCreator,
-        currentUserId: currentUserId,
-        currentUserName: currentUserName,
-        groupName: groupName.toString(),
-        onAttendanceSubmitted: (response) {
-          if (controller is GroupMessageController && message.id != null) {
-            (controller as GroupMessageController).updateAttendanceResponse(
-              messageId: message.id!,
-              response: response,
-            );
-          }
-        },
+        groupMembers: groupController?.groupMembers,
+        senderName: message.senderName?.toString() ?? "",
+        groupName: groupController?.groupName.value ?? "",
+        messageTime: message.timestamp?.toString(),
+        onDeleted: groupController?.markAttendanceDeleted,
       );
     } else {
       return _buildTextContent(
@@ -1460,6 +1487,42 @@ class GroupChatBubble extends StatelessWidget {
       message.isDeleted == true ||
           message.content?.toString() == "This message was deleted";
 
+  /// Sender avatar / name tap → sender's full profile (WhatsApp style).
+  void _openSenderInfo({bool asPopup = false}) {
+    final String senderId = message.senderId?.toString() ?? '';
+    dynamic member;
+    if (Get.isRegistered<GroupMessageController>()) {
+      member = Get.find<GroupMessageController>()
+          .groupMembers
+          .firstWhereOrNull((m) => m.userId?.toString() == senderId);
+    }
+    final String? name =
+        message.senderName?.toString() ?? member?.name?.toString();
+    final String? image =
+        message.senderImage?.toString() ?? member?.profileImage?.toString();
+    final String? mobileNo = member?.mobileNo?.toString();
+    final int? chatId = int.tryParse(member?.chatId?.toString() ?? '');
+
+    if (asPopup) {
+      // Avatar tap → photo popup with Message / Call / Video / Info
+      showUserQuickProfile(
+        userId: senderId,
+        name: name,
+        profileImage: image,
+        mobileNo: mobileNo,
+        chatId: chatId,
+      );
+      return;
+    }
+    openUserProfile(
+      userId: senderId,
+      name: name,
+      profileImage: image,
+      mobileNo: mobileNo,
+      chatId: chatId,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUserId =
@@ -1500,24 +1563,7 @@ class GroupChatBubble extends StatelessWidget {
               ),
               child: showAvatar
                   ? GestureDetector(
-                onTap: () {
-                  DialogBox().showRouteDetailsBottomSheet(
-                    destination: const LatLng(0, 0),
-                    distance: 0,
-                    userId: int.tryParse(
-                      message.senderId.toString(),
-                    ) ??
-                        0,
-                    groupId: groupId,
-                    groupName: groupName,
-                    name: message.senderName,
-                    imageUrl: message.senderImage,
-                    status: true,
-                    lastSeen: "",
-                    isGroupChat: true,
-                    isLocationSharing: message.locationSharing ?? false,
-                  );
-                },
+                onTap: () => _openSenderInfo(asPopup: true),
                 child: CircleAvatar(
                   radius: 18.r,
                   backgroundColor: Colors.grey.shade200,
@@ -1543,6 +1589,13 @@ class GroupChatBubble extends StatelessWidget {
             child: Builder(
               builder: (bubbleContext) {
                 return Obx(() {
+                  // Read the observable unconditionally: an Obx that reads none
+                  // (e.g. for attendance cards) throws "improper use of GetX".
+                  final isHighlighted =
+                      controller.highlightedMessageId.value == message.id;
+                  final isAttendance =
+                      !_isDeletedMessage && message.messageType == "attendance";
+
                   return Column(
                     crossAxisAlignment: isSentByMe
                         ? CrossAxisAlignment.end
@@ -1559,21 +1612,29 @@ class GroupChatBubble extends StatelessWidget {
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.75,
+                            maxWidth: MediaQuery.of(context).size.width *
+                                (isAttendance ? 0.88 : 0.75),
                           ),
-                          padding: EdgeInsets.symmetric(
+                          padding: isAttendance
+                              ? EdgeInsets.zero
+                              : EdgeInsets.symmetric(
                             horizontal: 12.w,
                             vertical: 8.h,
                           ),
                           decoration: BoxDecoration(
-                            color: controller.highlightedMessageId.value ==
-                                message.id
+                            color: isAttendance
+                                ? Colors.transparent
+                                : (isHighlighted
                                 ? Colors.yellow.withValues(
                               alpha: .35,
                             )
-                                : bgColor,
-                            borderRadius: borderRadius,
-                            boxShadow: [
+                                : bgColor),
+                            borderRadius: isAttendance
+                                ? BorderRadius.circular(20.r)
+                                : borderRadius,
+                            boxShadow: isAttendance
+                                ? []
+                                : [
                               BoxShadow(
                                 color: Colors.black.withValues(
                                   alpha: 0.04,
@@ -1583,7 +1644,8 @@ class GroupChatBubble extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: IntrinsicWidth(
+                          child: _bubbleWidth(
+                            isAttendance: isAttendance,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -1593,12 +1655,15 @@ class GroupChatBubble extends StatelessWidget {
                                     padding: EdgeInsets.only(
                                       bottom: 4.h,
                                     ),
-                                    child: Text(
-                                      message.senderName?.toString() ?? "",
-                                      style: TextStyle(
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w700,
-                                        color: _purple,
+                                    child: GestureDetector(
+                                      onTap: _openSenderInfo,
+                                      child: Text(
+                                        message.senderName?.toString() ?? "",
+                                        style: TextStyle(
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: _purple,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -2468,7 +2533,7 @@ class GroupChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "audio") {
       return AudioBubble(
-        audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
+        audioUrl: resolveMediaUrl(message.content ?? ''),
         isMe: false,
       );
     } else if (messageType == "video") {
@@ -2661,6 +2726,27 @@ class GroupChatBubble extends StatelessWidget {
         isSentByMe: isSentByMe,
         textColor: textColor,
       );
+    } else if (message.messageType == "attendance") {
+      final embedded = AttendancePoll.fromJson(message.attendance);
+      final pollId = embedded?.id ??
+          int.tryParse(message.attendancePollId?.toString() ?? "") ??
+          _pollIdFromContent(message.content);
+      if (pollId == null || pollId <= 0) {
+        return _buildTextContent(message, textColor, isSentByMe);
+      }
+
+      return AttendanceChatCard(
+        key: ValueKey("attendance_$pollId"),
+        pollId: pollId,
+        initialPoll: embedded,
+        isAdmin: controller.isCreator,
+        groupMembers: controller.groupMembers,
+        // The group bubble already shows the sender's name above the card.
+        senderName: "",
+        groupName: controller.groupName.value,
+        messageTime: message.timestamp?.toString(),
+        onDeleted: controller.markAttendanceDeleted,
+      );
     } else {
       return _buildTextContent(
         message,
@@ -2668,6 +2754,20 @@ class GroupChatBubble extends StatelessWidget {
         isSentByMe,
       );
     }
+  }
+
+  /// Message content is {"attendancePollId":3,...}; used when the message
+  /// arrives without the embedded `attendance` summary.
+  int? _pollIdFromContent(dynamic content) {
+    try {
+      final decoded = jsonDecode(content?.toString() ?? "");
+      if (decoded is Map) {
+        return int.tryParse(
+          (decoded["attendancePollId"] ?? decoded["pollId"])?.toString() ?? "",
+        );
+      }
+    } catch (_) {}
+    return null;
   }
 
   bool _areAllMembersSeen(MessageData message) {

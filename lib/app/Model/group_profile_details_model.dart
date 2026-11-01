@@ -74,7 +74,7 @@ class GroupDetailsInfo {
       groupName: json['groupName'] ?? json['name'],
       groupProfile: json['groupProfile'] ?? json['image'],
       groupCode: json['groupCode'] ?? json['code'],
-      description: json['description'],
+      description: json['description'] ?? json['groupDesc'] ?? json['group_desc'],
       createdBy: json['createdBy'],
     );
   }

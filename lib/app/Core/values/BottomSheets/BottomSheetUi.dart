@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -565,7 +566,26 @@ class BottomSheetUi {
                                               Stack(
                                                 clipBehavior: Clip.none,
                                                 children: [
-                                                  CircleAvatar(
+                                                  GestureDetector(
+                                                    onTap: isMe
+                                                        ? null
+                                                        : () =>
+                                                            showUserQuickProfile(
+                                                              userId:
+                                                                  memberUserId,
+                                                              name: name,
+                                                              profileImage: member
+                                                                  .profileImage
+                                                                  ?.toString(),
+                                                              mobileNo: member
+                                                                  .mobileNo
+                                                                  ?.toString(),
+                                                              chatId: int.tryParse(
+                                                                  member.chatId
+                                                                          ?.toString() ??
+                                                                      ''),
+                                                            ),
+                                                    child: CircleAvatar(
                                                     radius: 22.r,
                                                     backgroundColor:
                                                         const Color(0xFFE8E4FF),
@@ -588,6 +608,7 @@ class BottomSheetUi {
                                                             ),
                                                           )
                                                         : null,
+                                                  ),
                                                   ),
                                                   Positioned(
                                                     bottom: 0,
