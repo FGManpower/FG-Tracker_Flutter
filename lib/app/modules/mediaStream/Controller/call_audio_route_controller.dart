@@ -9,41 +9,47 @@ import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 
 enum CallAudioRoute { earpiece, speaker, bluetooth, headset }
 
-class CallAudioRouteController extends GetxController {
-  final Rx<CallAudioRoute> currentRoute = CallAudioRoute.earpiece.obs;
-  final Rx<CallAudioRoute?> pendingRoute = Rx<CallAudioRoute?>(null);
-
-  final RxBool isBluetoothConnected = false.obs;
-  final RxString bluetoothDeviceName = 'Bluetooth'.obs;
-  final RxBool isHeadsetConnected = false.obs;
-  final RxString headsetDeviceName = 'Headset'.obs;
-  final RxBool isVideoCall = false.obs;
+class CallAudioRouteController extends GetxController
+    with WidgetsBindingObserver {
+  static final Rx<CallAudioRoute> _sharedRoute = CallAudioRoute.earpiece.obs;
+  static final RxBool _sharedIsVideo = false.obs;
+  static final RxBool _sharedBluetooth = false.obs;
+  static final RxBool _sharedWired = false.obs;
+  static final List<MediaStreamTrack> _remoteAudioTracks = <MediaStreamTrack>[];
 
   static int _generation = 0;
 
+  static int _androidSdkCache = 0;
+  static bool _userSelectedRoute = false;
+  static bool _routeOwnerActive = false;
+
+  Rx<CallAudioRoute> get currentRoute => _sharedRoute;
+  RxBool get isVideoCall => _sharedIsVideo;
+  RxBool get isBluetoothConnected => _sharedBluetooth;
+  RxBool get isHeadsetConnected => _sharedWired;
+  final Rx<CallAudioRoute?> pendingRoute = Rx<CallAudioRoute?>(null);
+
   int _myGeneration = 0;
   bool _isDisposed = false;
-  bool _isCheckingDevices = false;
+  bool _ownsAudio = false;
+  bool _isIncomingCall = false;
   bool _isApplyingRoute = false;
-  bool _userSelectedRoute = false;
   bool _routeInitialized = false;
   bool _audioSessionReady = false;
-  int _applySeq = 0;
+  bool _keeperRunning = false;
+  int _keeperAttempt = 0;
+  int _keeperStreak = 0;
 
-  String? _bluetoothDeviceId;
-  String? _wiredDeviceId;
-  String? _speakerDeviceId;
-  String? _earpieceDeviceId;
-  String? _bluetoothInputDeviceId;
-  String? _wiredInputDeviceId;
-  String? _lastBluetoothName;
+  bool _hasSpeaker = true;
+  bool _hasEarpiece = true;
+  String _bluetoothName = 'Bluetooth';
+  String _wiredName = 'Headphones';
 
   StreamSubscription<Set<AudioDevice>>? _devicesSub;
   StreamSubscription<AudioInterruptionEvent>? _interruptionSub;
   Timer? _deviceDebounce;
-  Timer? _routeGuardTimer;
-  bool _routeGuardBusy = false;
-  int _routeGuardTicks = 0;
+  Timer? _keeperTimer;
+  Timer? _driftTimer;
   final List<Timer> _warmupRouteTimers = <Timer>[];
 
   Future<void> _routeQueue = Future.value();
@@ -74,9 +80,9 @@ class CallAudioRouteController extends GetxController {
   String get currentAudioRouteLabel {
     switch (currentRoute.value) {
       case CallAudioRoute.bluetooth:
-        return 'Bluetooth';
+        return _bluetoothName;
       case CallAudioRoute.headset:
-        return 'Headset';
+        return _wiredName;
       case CallAudioRoute.speaker:
         return 'Speaker';
       case CallAudioRoute.earpiece:
@@ -84,7 +90,20 @@ class CallAudioRouteController extends GetxController {
     }
   }
 
+  String get bluetoothDeviceName => _bluetoothName;
+
+  String get wiredDeviceName => _wiredName;
+
   bool get isSpeakerOn => currentRoute.value == CallAudioRoute.speaker;
+
+  int get _androidSdk {
+    if (_androidSdkCache == 0) {
+      final RegExpMatch? match =
+      RegExp(r'SDK (\d+)').firstMatch(Platform.operatingSystemVersion);
+      _androidSdkCache = int.tryParse(match?.group(1) ?? '') ?? 0;
+    }
+    return _androidSdkCache;
+  }
 
   bool get isSwitchingRoute => _isApplyingRoute;
 
@@ -96,8 +115,8 @@ class CallAudioRouteController extends GetxController {
   CallAudioRoute get confirmedRoute => currentRoute.value;
 
   List<CallAudioRoute> get availableRoutes => <CallAudioRoute>[
-    if (!isVideoCall.value) CallAudioRoute.earpiece,
-    CallAudioRoute.speaker,
+    if (!isVideoCall.value && _hasEarpiece) CallAudioRoute.earpiece,
+    if (_hasSpeaker) CallAudioRoute.speaker,
     if (isBluetoothConnected.value) CallAudioRoute.bluetooth,
     if (isHeadsetConnected.value) CallAudioRoute.headset,
   ];
@@ -105,352 +124,116 @@ class CallAudioRouteController extends GetxController {
   CallAudioRoute get _defaultRoute =>
       isVideoCall.value ? CallAudioRoute.speaker : CallAudioRoute.earpiece;
 
-  void _cancelWarmupTimers() {
-    for (final Timer timer in _warmupRouteTimers) {
-      timer.cancel();
+  Future<void> prepareCall({required bool isVideo}) async {
+    if (!Platform.isAndroid || _isDisposed) return;
+    try {
+      await _configureAndroidAudioSwitch();
+
+      final AudioSession session = await AudioSession.instance;
+      await session.configure(
+        const AudioSessionConfiguration(
+          avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
+          avAudioSessionMode: AVAudioSessionMode.voiceChat,
+          androidAudioAttributes: AndroidAudioAttributes(
+            usage: AndroidAudioUsage.voiceCommunication,
+            contentType: AndroidAudioContentType.speech,
+          ),
+          androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+        ),
+      );
+
+      final AndroidAudioManager am = AndroidAudioManager();
+      await am.setMode(AndroidAudioHardwareMode.inCommunication);
+      final bool active = await session.setActive(true);
+      _audioSessionReady = active;
+      _log(
+        'prepareCall video=$isVideo mode=inCommunication '
+            'active=$active sdk=$_androidSdk',
+      );
+    } catch (error) {
+      _log('prepareCall error: $error');
     }
-    _warmupRouteTimers.clear();
   }
 
-  Future<void> startCall({required bool isVideo}) async {
+  Future<void> startCall({
+    required bool isVideo,
+    bool isIncoming = false,
+  }) async {
     _myGeneration = ++_generation;
+    _ownsAudio = true;
     _isDisposed = false;
-    _userSelectedRoute = false;
+    _isIncomingCall = isIncoming;
+
+    final bool newOwner = !_routeOwnerActive;
+    _routeOwnerActive = true;
+    if (newOwner) {
+      _userSelectedRoute = false;
+      _remoteAudioTracks.clear();
+    }
+
     _routeInitialized = false;
-    _lastBluetoothName = null;
+    _isApplyingRoute = false;
     pendingRoute.value = null;
     _cancelWarmupTimers();
+    _stopRouteKeeper();
+    _stopDriftWatch();
+
     isVideoCall.value = isVideo;
-    currentRoute.value = _defaultRoute;
+    if (!_userSelectedRoute) {
+      currentRoute.value = _sanitizeRoute(_defaultRoute);
+    }
 
     _log(
-      'startCall video=$isVideo default=$_defaultRoute build=commDevice-pin-v1',
+      'startCall video=$isVideo incoming=$isIncoming os=${Platform.operatingSystemVersion} '
+          'default=$_defaultRoute route=${currentRoute.value} '
+          'newOwner=$newOwner userSel=$_userSelectedRoute '
+          'tracks=${_remoteAudioTracks.length}',
     );
 
-    await _resetNativeAudioForNewCall();
+    await _resetNativeAudio();
+    await _listenAudioSession();
+    await refreshDevices();
+    final CallAudioRoute safe = _sanitizeRoute(currentRoute.value);
+    if (safe != currentRoute.value) {
+      currentRoute.value = safe;
+    }
 
-    await _listenAudioDevices();
-    await _ensurePlaybackPath(forceSession: true);
+    await _configureAndroidAudioSwitch();
+    await _configureAudioSession(route: currentRoute.value);
+    await _applyCurrentAudioRoute();
 
-    _startRouteGuard();
+    WidgetsBinding.instance.addObserver(this);
+    _startRouteKeeper(immediate: true);
 
-    final List<int> warmups = Platform.isIOS
-        ? <int>[700, 1800]
-        : <int>[900, 2500];
+    final List<int> warmups =
+    Platform.isIOS ? <int>[700, 1800] : <int>[900, 2500];
     for (final int ms in warmups) {
       _warmupRouteTimers.add(
         Timer(Duration(milliseconds: ms), () {
           if (!_isDisposed) {
-            unawaited(_reassertCurrentRoute());
+            _log('warmup $ms ms re-assert route=${currentRoute.value}');
+            unawaited(_ensurePlaybackPath(forceSession: true));
           }
         }),
       );
     }
   }
 
-  Future<void> _resetNativeAudioForNewCall() async {
-    if (!Platform.isAndroid) return;
-    try {
-      final AndroidAudioManager am = AndroidAudioManager();
-      await am.stopBluetoothSco();
-    } catch (_) {}
-    try {
-      final AndroidAudioManager am = AndroidAudioManager();
-      await am.setBluetoothScoOn(false);
-    } catch (_) {}
-    try {
-      final AndroidAudioManager am = AndroidAudioManager();
-      await am.setSpeakerphoneOn(false);
-    } catch (_) {}
-    try {
-      await Helper.setSpeakerphoneOn(false);
-    } catch (_) {}
-    try {
-      final AndroidAudioManager am = AndroidAudioManager();
-      await am.clearCommunicationDevice();
-    } catch (_) {}
-    _log('native audio reset for new call (speakerphone off)');
-  }
-
-  void _startRouteGuard() {
-    _routeGuardTimer?.cancel();
-    _routeGuardTicks = 0;
-
-    _routeGuardTimer = Timer.periodic(const Duration(milliseconds: 1500), (
-        timer,
-        ) async {
-      if (_isDisposed) {
-        timer.cancel();
-        return;
-      }
-
-      _routeGuardTicks++;
-      if (_routeGuardTicks > 12) {
-        timer.cancel();
-        _routeGuardTimer = null;
-        return;
-      }
-
-      if (_isApplyingRoute || _routeGuardBusy) return;
-
-      _routeGuardBusy = true;
-      try {
-        final CallAudioRoute want = currentRoute.value;
-
-        if (Platform.isAndroid) {
-          final bool ok = await _androidRouteMatches(want);
-          if (!ok && !_isDisposed) {
-            _log('guard: route drifted, re-applying $want');
-            await _configureAudioSession(route: want);
-            await _applyCurrentAudioRoute(want);
-          } else if (!_isDisposed &&
-              want == CallAudioRoute.speaker &&
-              _routeGuardTicks <= 4) {
-            _log('guard: speaker keep-alive tap');
-            await _forceSpeakerNow();
-            try {
-              await Helper.selectAudioOutput('speaker');
-            } catch (_) {}
-          }
-        } else if (Platform.isIOS &&
-            _routeGuardTicks <= 6 &&
-            _routeGuardTicks.isEven) {
-          _log('guard: ios re-assert $want');
-          await _applyCurrentAudioRoute(want);
-        }
-      } catch (error) {
-        _log('guard error: $error');
-      } finally {
-        _routeGuardBusy = false;
-      }
-    });
-  }
-
-  Future<void> _reassertCurrentRoute() async {
-    if (_isDisposed) return;
-    _log('reassert route=${currentRoute.value}');
-    await _ensurePlaybackPath(forceSession: true);
-  }
-
-  Future<void> updateCallType({required bool isVideo}) async {
-    final bool wasVideo = isVideoCall.value;
-    isVideoCall.value = isVideo;
-
-    if (isVideo) {
-      _cancelWarmupTimers();
-    }
-    if (wasVideo == isVideo && _routeInitialized) return;
-
-    final CallAudioRoute keep = isVideo
-        ? _preferredOnVideoUpgrade()
-        : _preferredOnAudioDowngrade();
+  Future<void> stopCall() async {
     _log(
-      'updateCallType(video=$isVideo) keeps $keep (was ${currentRoute.value})',
+      'stopCall route=${currentRoute.value} gen=$_myGeneration/$_generation '
+          'owns=$_ownsAudio',
     );
 
-    await setRoute(keep);
-  }
-
-  CallAudioRoute _preferredOnVideoUpgrade() {
-    final CallAudioRoute current = currentRoute.value;
-    if (current == CallAudioRoute.bluetooth && isBluetoothConnected.value) {
-      return current;
-    }
-    if (current == CallAudioRoute.headset && isHeadsetConnected.value) {
-      return current;
-    }
-    if (_userSelectedRoute && current == CallAudioRoute.speaker) {
-      return current;
-    }
-    if (isBluetoothConnected.value) return CallAudioRoute.bluetooth;
-    if (isHeadsetConnected.value) return CallAudioRoute.headset;
-    return CallAudioRoute.speaker;
-  }
-
-  CallAudioRoute _preferredOnAudioDowngrade() {
-    final CallAudioRoute current = currentRoute.value;
-    if (current == CallAudioRoute.bluetooth && isBluetoothConnected.value) {
-      return current;
-    }
-    if (current == CallAudioRoute.headset && isHeadsetConnected.value) {
-      return current;
-    }
-    if (_userSelectedRoute && current == CallAudioRoute.speaker) {
-      return current;
-    }
-    if (isBluetoothConnected.value) return CallAudioRoute.bluetooth;
-    return CallAudioRoute.earpiece;
-  }
-
-  Future<void> selectRoute(CallAudioRoute route) async {
-    _log('selectRoute($route) disposed=$_isDisposed');
-    if (_isDisposed) return;
-
-    if (route == CallAudioRoute.earpiece && isVideoCall.value) {
-      route = CallAudioRoute.speaker;
-    }
-
-    if (route == CallAudioRoute.bluetooth || route == CallAudioRoute.headset) {
-      await _refreshDevices(force: true);
-
-      final bool available = route == CallAudioRoute.bluetooth
-          ? isBluetoothConnected.value
-          : isHeadsetConnected.value;
-
-      if (!available) {
-        _log('$route requested but not connected');
-        return;
-      }
-    }
-
-    _userSelectedRoute = true;
-    await setRoute(route, userInitiated: true);
-  }
-
-  Future<void> checkDevices() => _refreshDevices(force: true);
-
-  Future<void> onRemoteAudioTrack(MediaStreamTrack track) async {
-    if (_isDisposed) return;
-
-    try {
-      track.enabled = true;
-    } catch (_) {}
-
-    if (Platform.isAndroid) {
-      final bool speaker = currentRoute.value == CallAudioRoute.speaker;
-      if (speaker) {
-        await _forceSpeakerNow();
-      }
-      try {
-        await Helper.selectAudioOutput(
-          _androidOutputNameOf(currentRoute.value),
-        );
-      } catch (_) {}
-      _log(
-        'remote audio track -> route=${currentRoute.value} speaker=$speaker',
-      );
-    }
-
-    if (Platform.isAndroid && currentRoute.value == CallAudioRoute.speaker) {
-      _startSpeakerBurst();
-    }
-
-    await _ensurePlaybackPath(forceSession: true);
-    _startRouteGuard();
-  }
-
-  Future<void> reapplyCurrentRoute() async {
-    if (_isDisposed) return;
-    _log('reapplyCurrentRoute ${currentRoute.value}');
-    if (Platform.isAndroid && currentRoute.value == CallAudioRoute.speaker) {
-      await _forceSpeakerNow();
-    }
-    await _ensurePlaybackPath(forceSession: true);
-    _startRouteGuard();
-  }
-
-  Timer? _speakerBurstTimer;
-
-  void _cancelSpeakerBurst() {
-    _speakerBurstTimer?.cancel();
-    _speakerBurstTimer = null;
-  }
-
-  void _startSpeakerBurst({int attempts = 10}) {
-    if (!Platform.isAndroid) return;
-    _cancelSpeakerBurst();
-
-    int tick = 0;
-    int confirmed = 0;
-    _speakerBurstTimer = Timer.periodic(const Duration(milliseconds: 600), (
-        timer,
-        ) async {
-      tick++;
-      if (_isDisposed ||
-          currentRoute.value != CallAudioRoute.speaker ||
-          tick > attempts) {
-        timer.cancel();
-        _speakerBurstTimer = null;
-        return;
-      }
-
-      await _forceSpeakerNow();
-
-      bool on = false;
-      AndroidAudioDeviceType? dev;
-      try {
-        final AndroidAudioManager am = AndroidAudioManager();
-        on = await am.isSpeakerphoneOn();
-        dev = (await am.getCommunicationDevice())?.type;
-      } catch (_) {}
-
-      final bool ok =
-          on ||
-              dev == AndroidAudioDeviceType.builtInSpeaker ||
-              dev == AndroidAudioDeviceType.builtInSpeakerSafe;
-      confirmed = ok ? confirmed + 1 : 0;
-
-      _log(
-        'speaker hold ${tick}/${attempts} ok=$ok speakerOn=$on commDevice=$dev',
-      );
-
-      if (confirmed >= 2 && tick >= 3) {
-        _log('speaker hold confirmed at ${tick}/${attempts}');
-        timer.cancel();
-        _speakerBurstTimer = null;
-      }
-    });
-  }
-
-  Future<void> _forceSpeakerNow() async {
-    final AndroidAudioManager am = AndroidAudioManager();
-    try {
-      await am.clearCommunicationDevice();
-    } catch (_) {}
-    try {
-      await am.setMode(AndroidAudioHardwareMode.inCommunication);
-    } catch (_) {}
-    try {
-      await am.setSpeakerphoneOn(true);
-    } catch (_) {}
-    try {
-      await Helper.setSpeakerphoneOn(true);
-    } catch (_) {}
-    try {
-      await Helper.selectAudioOutput('speaker');
-    } catch (_) {}
-
-    bool on = false;
-    AndroidAudioHardwareMode mode = AndroidAudioHardwareMode.normal;
-    AndroidAudioDeviceType? dev;
-    try {
-      on = await am.isSpeakerphoneOn();
-    } catch (_) {}
-    try {
-      mode = await am.getMode();
-    } catch (_) {}
-    try {
-      dev = (await am.getCommunicationDevice())?.type;
-    } catch (_) {}
-    _log('force speaker -> speakerOn=$on mode=$mode commDevice=$dev');
-  }
-
-  Future<void> restoreCurrentRoute() async {
-    if (_isDisposed) return;
-    await _refreshDevices(force: true);
-    await _ensurePlaybackPath(forceSession: true);
-  }
-
-  Future<void> stopCall() async {
     _isDisposed = true;
-    _userSelectedRoute = false;
+    _ownsAudio = false;
     _routeInitialized = false;
-    _lastBluetoothName = null;
+    _isApplyingRoute = false;
     pendingRoute.value = null;
     _cancelWarmupTimers();
-    _routeGuardTimer?.cancel();
-    _routeGuardTimer = null;
-    _cancelSpeakerBurst();
+    _stopRouteKeeper();
+    _stopDriftWatch();
+    WidgetsBinding.instance.removeObserver(this);
     _deviceDebounce?.cancel();
     _deviceDebounce = null;
 
@@ -464,8 +247,7 @@ class CallAudioRouteController extends GetxController {
     } catch (_) {}
 
     if (_myGeneration != _generation) {
-      _log('stopCall skipped global teardown (newer call owns audio)');
-      _audioSessionReady = false;
+      _log('stopCall skipped native teardown (newer call owns audio)');
       return;
     }
 
@@ -493,12 +275,195 @@ class CallAudioRouteController extends GetxController {
       }
       final AudioSession session = await AudioSession.instance;
       await session.setActive(false);
-    } catch (_) {}
+    } catch (error) {
+      _log('stopCall native error: $error');
+    }
 
+    _remoteAudioTracks.clear();
+    _routeOwnerActive = false;
+    _userSelectedRoute = false;
+    _audioSessionReady = false;
     currentRoute.value = CallAudioRoute.earpiece;
     isVideoCall.value = false;
-    _audioSessionReady = false;
-    _log('stopCall done (native reset for next call)');
+    _log('stopCall done');
+  }
+
+  Future<void> updateCallType({required bool isVideo}) async {
+    final bool wasVideo = isVideoCall.value;
+    final bool typeChanged = wasVideo != isVideo;
+    isVideoCall.value = isVideo;
+
+    if (isVideo) {
+      _cancelWarmupTimers();
+    }
+    if (!typeChanged && _routeInitialized) return;
+
+    if (typeChanged) {
+      _userSelectedRoute = false;
+    }
+
+    final CallAudioRoute keep =
+    isVideo ? CallAudioRoute.speaker : CallAudioRoute.earpiece;
+    _log(
+      'updateCallType(video=$isVideo) keeps $keep (was ${currentRoute.value})',
+    );
+
+    await setRoute(keep, force: true);
+  }
+
+  Future<void> selectRoute(CallAudioRoute route) async {
+    _log(
+      'selectRoute($route) disposed=$_isDisposed route=${currentRoute.value} '
+          'available=$availableRoutes',
+    );
+    if (_isDisposed) return;
+
+    if (!availableRoutes.contains(route)) {
+      await refreshDevices();
+      if (!availableRoutes.contains(route)) {
+        _log('$route not available, ignored');
+        return;
+      }
+    }
+
+    await setRoute(route, userInitiated: true);
+  }
+
+  Future<void> checkDevices() => refreshDevices();
+
+  Future<void> refreshDevices() async {
+    if (_isDisposed) return;
+    await _refreshHardwareRoutes();
+  }
+
+  Future<void> onRemoteAudioTrack(MediaStreamTrack track) async {
+    if (_isDisposed) return;
+
+    if (!_remoteAudioTracks.contains(track)) {
+      _remoteAudioTracks.add(track);
+    }
+
+    try {
+      track.enabled = true;
+    } catch (_) {}
+
+    _log(
+      'onRemoteAudioTrack id=${track.id} route=${currentRoute.value} '
+          'incoming=$_isIncomingCall tracks=${_remoteAudioTracks.length}',
+    );
+
+    await _applyCurrentAudioRoute();
+    await _reapplyTracks();
+    _startRouteKeeper(immediate: true);
+
+    _log(
+      'onRemoteAudioTrack settled route=${currentRoute.value} '
+          'actual=${await _readActualRoute()}',
+    );
+  }
+
+  Future<void> reapplyCurrentRoute() async {
+    if (_isDisposed) return;
+    _log('reapplyCurrentRoute ${currentRoute.value}');
+    await _ensurePlaybackPath(forceSession: true);
+    _startRouteKeeper(immediate: true);
+  }
+
+  Future<void> restoreCurrentRoute() async {
+    _log(
+      'restoreCurrentRoute disposed=$_isDisposed route=${currentRoute.value}',
+    );
+    if (_isDisposed) return;
+    await _refreshHardwareRoutes();
+    await _ensurePlaybackPath(forceSession: true);
+  }
+
+  Future<void> setRoute(
+      CallAudioRoute route, {
+        bool userInitiated = false,
+        bool force = false,
+      }) {
+    if (userInitiated) {
+      _userSelectedRoute = true;
+      _log('setRoute($route) user=true immediate');
+      return _setRouteInternal(route, userInitiated: true, force: true);
+    }
+    if (force) {
+      _log('setRoute($route) force=true immediate');
+      return _setRouteInternal(route, force: true);
+    }
+    _log('setRoute($route) user=false queued');
+    _routeQueue = _routeQueue
+        .then((_) => _setRouteInternal(route))
+        .catchError((Object error) {
+      _log('setRoute($route) failed: $error');
+    });
+    return _routeQueue;
+  }
+
+  Future<void> _setRouteInternal(
+      CallAudioRoute requested, {
+        bool userInitiated = false,
+        bool force = false,
+      }) async {
+    if (_isDisposed) {
+      _log('_setRouteInternal skipped: disposed');
+      return;
+    }
+
+    final CallAudioRoute target = _sanitizeRoute(requested);
+
+    if (!userInitiated &&
+        !force &&
+        _userSelectedRoute &&
+        target != currentRoute.value) {
+      _log('setRoute($requested) skipped: user picked ${currentRoute.value}');
+      return;
+    }
+
+    _isApplyingRoute = true;
+    pendingRoute.value = target;
+    _safeUpdate();
+
+    final CallAudioRoute previous = currentRoute.value;
+    currentRoute.value = target;
+    _log(
+      'route state $previous -> $target userSel=$_userSelectedRoute '
+          'user=$userInitiated',
+    );
+
+    try {
+      _log(
+        'apply $target speaker=${target == CallAudioRoute.speaker} '
+            '(requested=$requested user=$userInitiated)',
+      );
+
+      await _configureAudioSession(route: target);
+      await _applyCurrentAudioRoute();
+      await _reapplyTracks();
+
+      if (_isDisposed) return;
+
+      _routeInitialized = true;
+      if (userInitiated) {
+        _userSelectedRoute = true;
+      }
+
+      await _applyProximity(target);
+      _startRouteKeeper(immediate: true);
+
+      final CallAudioRoute? actual = await _readActualRoute();
+      _log('route now $target actual=$actual speaker=$isSpeakerOn');
+    } catch (error) {
+      _log('apply $target error: $error');
+      if (currentRoute.value != previous) {
+        currentRoute.value = previous;
+      }
+    } finally {
+      _isApplyingRoute = false;
+      pendingRoute.value = null;
+      _safeUpdate();
+    }
   }
 
   CallAudioRoute _sanitizeRoute(CallAudioRoute route) {
@@ -513,72 +478,65 @@ class CallAudioRouteController extends GetxController {
           ? CallAudioRoute.bluetooth
           : _defaultRoute;
     }
+    if (route == CallAudioRoute.speaker && !_hasSpeaker) {
+      return CallAudioRoute.earpiece;
+    }
+    if (route == CallAudioRoute.earpiece && !_hasEarpiece) {
+      return CallAudioRoute.speaker;
+    }
     return route;
   }
 
-  Future<void> setRoute(CallAudioRoute route, {bool userInitiated = false}) {
-    if (userInitiated) {
-      _userSelectedRoute = true;
-    }
-    _routeQueue = _routeQueue
-        .then((_) => _setRouteInternal(route, userInitiated: userInitiated))
-        .catchError((Object error) {
-      _log('setRoute($route) failed: $error');
-    });
-    return _routeQueue;
-  }
-
-  Future<void> _setRouteInternal(
-      CallAudioRoute requested, {
-        bool userInitiated = false,
-      }) async {
-    if (_isDisposed) return;
-
-    final CallAudioRoute target = _sanitizeRoute(requested);
-    final int seq = ++_applySeq;
-
-    _isApplyingRoute = true;
-    pendingRoute.value = target;
-    _safeUpdate();
-
-    try {
-      _log('apply $target (requested=$requested user=$userInitiated)');
-
-      await _configureAudioSession(route: target);
-      await _applyCurrentAudioRoute(target);
-
-      if (_isDisposed || seq != _applySeq) {
-        _log('route $target dropped (stale seq=$seq current=$_applySeq)');
-        return;
-      }
-
-      currentRoute.value = target;
-      _routeInitialized = true;
-
-      if (Platform.isAndroid && target == CallAudioRoute.speaker) {
-        await _forceSpeakerNow();
-        _startSpeakerBurst();
-      } else {
-        _cancelSpeakerBurst();
-      }
-
-      await _applyProximity(target);
-      _startRouteGuard();
-      _log('route now $target');
-    } finally {
-      if (seq == _applySeq) {
-        _isApplyingRoute = false;
-        pendingRoute.value = null;
-      }
-      _safeUpdate();
-    }
-  }
-
   Future<void> _applyProximity(CallAudioRoute route) async {
-    final bool enable = route == CallAudioRoute.earpiece && !isVideoCall.value;
+    final bool enable = route == CallAudioRoute.earpiece &&
+        !isVideoCall.value &&
+        !isBluetoothConnected.value &&
+        !isHeadsetConnected.value;
     try {
       await ProximityScreenLock.setActive(enable);
     } catch (_) {}
+  }
+
+  Future<void> _resetNativeAudio() async {
+    if (!Platform.isAndroid) return;
+    final AndroidAudioManager am = AndroidAudioManager();
+    try {
+      await am.stopBluetoothSco();
+    } catch (_) {}
+    try {
+      await am.setBluetoothScoOn(false);
+    } catch (_) {}
+    try {
+      await am.setSpeakerphoneOn(false);
+    } catch (_) {}
+    try {
+      await Helper.setSpeakerphoneOn(false);
+    } catch (_) {}
+    try {
+      await am.clearCommunicationDevice();
+    } catch (_) {}
+    _log('native audio reset for new call (default earpiece path)');
+  }
+
+  Future<void> _configureAndroidAudioSwitch() async {
+    if (!Platform.isAndroid) return;
+    try {
+      await Helper.setAndroidAudioConfiguration(
+        AndroidAudioConfiguration(
+          manageAudioFocus: false,
+          androidAudioMode: AndroidAudioMode.inCommunication,
+          androidAudioStreamType: AndroidAudioStreamType.voiceCall,
+          androidAudioAttributesUsageType:
+          AndroidAudioAttributesUsageType.voiceCommunication,
+          androidAudioAttributesContentType:
+          AndroidAudioAttributesContentType.speech,
+          forceHandleAudioRouting: false,
+        ),
+      );
+      _log('webrtc audio switch focus=off mode=inCommunication');
+    } catch (error) {
+      _log('webrtc audio switch config error: $error');
+    }
   }
 
   Future<void> _configureAudioSession({CallAudioRoute? route}) async {
@@ -593,11 +551,9 @@ class CallAudioRouteController extends GetxController {
         final AVAudioSessionCategoryOptions options = wantsSpeaker
             ? (AVAudioSessionCategoryOptions.allowBluetooth |
         AVAudioSessionCategoryOptions.allowBluetoothA2dp |
-        AVAudioSessionCategoryOptions.allowAirPlay |
         AVAudioSessionCategoryOptions.defaultToSpeaker)
             : (AVAudioSessionCategoryOptions.allowBluetooth |
-        AVAudioSessionCategoryOptions.allowBluetoothA2dp |
-        AVAudioSessionCategoryOptions.allowAirPlay);
+        AVAudioSessionCategoryOptions.allowBluetoothA2dp);
 
         await session.configure(
           AudioSessionConfiguration(
@@ -620,9 +576,9 @@ class CallAudioRouteController extends GetxController {
         );
       }
 
-      await session.setActive(true);
-      _audioSessionReady = true;
-      _log('session configured route=$targetRoute');
+      final bool active = await session.setActive(true);
+      _audioSessionReady = active;
+      _log('session configured route=$targetRoute active=$active');
     } catch (error) {
       _audioSessionReady = false;
       _log('session configure error: $error');
@@ -641,18 +597,35 @@ class CallAudioRouteController extends GetxController {
         } catch (_) {}
       }
 
-      await _applyCurrentAudioRoute(currentRoute.value);
+      await _applyCurrentAudioRoute();
+      await _reapplyTracks();
 
       _log(
         'playback path ready route=${currentRoute.value} '
-            'bt=${isBluetoothConnected.value} wired=${isHeadsetConnected.value}',
+            'speaker=$isSpeakerOn tracks=${_remoteAudioTracks.length} '
+            'available=$availableRoutes',
       );
     } catch (error) {
       _log('ensurePlaybackPath error: $error');
     }
   }
 
-  Future<void> _applyCurrentAudioRoute(CallAudioRoute route) async {
+  Future<void> _reapplyTracks() async {
+    for (final MediaStreamTrack track in _remoteAudioTracks) {
+      try {
+        track.enabled = true;
+      } catch (_) {}
+    }
+
+    try {
+      await Helper.setSpeakerphoneOn(isSpeakerOn);
+    } catch (error) {
+      _log('track speaker push error: $error');
+    }
+  }
+
+  Future<void> _applyCurrentAudioRoute() async {
+    final CallAudioRoute route = currentRoute.value;
     try {
       if (Platform.isAndroid) {
         await _applyAndroidRoute(route);
@@ -665,262 +638,214 @@ class CallAudioRouteController extends GetxController {
   }
 
   Future<void> _applyAndroidRoute(CallAudioRoute route) async {
-    final AndroidAudioManager am = AndroidAudioManager();
-
-    try {
-      await am.setMode(AndroidAudioHardwareMode.inCommunication);
-    } catch (_) {}
-
-    switch (route) {
-      case CallAudioRoute.speaker:
-        try {
-          await am.stopBluetoothSco();
-        } catch (_) {}
-        try {
-          await am.setBluetoothScoOn(false);
-        } catch (_) {}
-        try {
-          await am.clearCommunicationDevice();
-        } catch (_) {}
-        try {
-          await am.setSpeakerphoneOn(true);
-        } catch (error) {
-          _log('speaker raw apply error: $error');
-        }
-        try {
-          await Helper.setSpeakerphoneOn(true);
-        } catch (error) {
-          _log('speaker helper apply error: $error');
-        }
-        try {
-          await Helper.selectAudioOutput('speaker');
-        } catch (error) {
-          _log('speaker selectAudioOutput error: $error');
-        }
-        await Future.delayed(const Duration(milliseconds: 150));
-        try {
-          await am.setMode(AndroidAudioHardwareMode.inCommunication);
-        } catch (_) {}
-        try {
-          await am.setSpeakerphoneOn(true);
-        } catch (_) {}
-        try {
-          await Helper.setSpeakerphoneOn(true);
-        } catch (_) {}
-        break;
-
-      case CallAudioRoute.bluetooth:
-        try {
-          await am.setSpeakerphoneOn(false);
-        } catch (_) {}
-        try {
-          await Helper.setSpeakerphoneOn(false);
-        } catch (_) {}
-        try {
-          await am.startBluetoothSco();
-          await Future.delayed(const Duration(milliseconds: 100));
-          await am.setBluetoothScoOn(true);
-        } catch (error) {
-          _log('bluetooth sco error: $error');
-        }
-        try {
-          await Helper.selectAudioOutput('bluetooth');
-        } catch (_) {}
-        try {
-          await Helper.selectAudioInput('bluetooth');
-        } catch (_) {}
-        break;
-
-      case CallAudioRoute.headset:
-        try {
-          await am.stopBluetoothSco();
-        } catch (_) {}
-        try {
-          await am.setBluetoothScoOn(false);
-        } catch (_) {}
-        try {
-          await am.setSpeakerphoneOn(false);
-        } catch (_) {}
-        try {
-          await Helper.setSpeakerphoneOn(false);
-        } catch (_) {}
-        try {
-          await Helper.selectAudioOutput('wired-headset');
-        } catch (error) {
-          _log('headset apply error: $error');
-        }
-        break;
-
-      case CallAudioRoute.earpiece:
-        try {
-          await am.stopBluetoothSco();
-        } catch (_) {}
-        try {
-          await am.setBluetoothScoOn(false);
-        } catch (_) {}
-        try {
-          await am.setSpeakerphoneOn(false);
-        } catch (_) {}
-        try {
-          await Helper.setSpeakerphoneOn(false);
-        } catch (_) {}
-        try {
-          await Helper.selectAudioOutput('earpiece');
-        } catch (error) {
-          _log('earpiece apply error: $error');
-        }
-        break;
-    }
-
-    await Future.delayed(const Duration(milliseconds: 120));
-
-    bool ok = await _androidRouteMatches(route);
-    _log('android apply -> $route matches=$ok');
-
+    final bool ok = await _assertAndroidDevice(route);
     if (!ok) {
-      _log('android route $route NOT applied, re-asserting once');
-      await _reassertAndroidRoute(route);
-      await Future.delayed(const Duration(milliseconds: 320));
-      ok = await _androidRouteMatches(route);
-      _log('android re-assert -> $route matches=$ok');
+      await Future.delayed(const Duration(milliseconds: 220));
+      final bool retry = await _assertAndroidDevice(route, forceClear: true);
+      _log('android re-assert -> $route matches=$retry');
     }
+    _log(
+      'android apply -> $route matches=$ok '
+          'actual=${await _readActualRoute()} speaker=$isSpeakerOn',
+    );
   }
 
-  Future<void> _reassertAndroidRoute(CallAudioRoute route) async {
+  Future<bool> _assertAndroidDevice(
+      CallAudioRoute route, {
+        bool forceClear = false,
+      }) async {
     final AndroidAudioManager am = AndroidAudioManager();
+    final bool speaker = route == CallAudioRoute.speaker;
+
     try {
       await am.setMode(AndroidAudioHardwareMode.inCommunication);
     } catch (_) {}
 
-    final String deviceName = _androidOutputNameOf(route);
-
-    if (route == CallAudioRoute.speaker) {
+    if (forceClear) {
       try {
         await am.clearCommunicationDevice();
+        await Future.delayed(const Duration(milliseconds: 80));
+        _log('forced clear before re-assert ${route.name}');
       } catch (_) {}
-      try {
-        await Helper.setSpeakerphoneOn(true);
-      } catch (_) {}
-      try {
-        await am.setSpeakerphoneOn(true);
-      } catch (_) {}
-    } else {
-      try {
-        await Helper.setSpeakerphoneOn(false);
-      } catch (_) {}
-      try {
-        await am.setSpeakerphoneOn(false);
-      } catch (_) {}
-      if (route == CallAudioRoute.bluetooth) {
-        try {
-          await am.startBluetoothSco();
-          await Future.delayed(const Duration(milliseconds: 120));
-          await am.setBluetoothScoOn(true);
-        } catch (_) {}
-      }
-    }
-
-    try {
-      await Helper.selectAudioOutput(deviceName);
-    } catch (error) {
-      _log('re-assert selectAudioOutput($deviceName) error: $error');
     }
 
     if (route == CallAudioRoute.bluetooth) {
       try {
-        await Helper.selectAudioInput('bluetooth');
+        await am.startBluetoothSco();
+        await Future.delayed(const Duration(milliseconds: 120));
+        await am.setBluetoothScoOn(true);
+      } catch (error) {
+        _log('bluetooth sco error: $error');
+      }
+    } else {
+      try {
+        await am.stopBluetoothSco();
+      } catch (_) {}
+      try {
+        await am.setBluetoothScoOn(false);
       } catch (_) {}
     }
-  }
 
-  String _androidOutputNameOf(CallAudioRoute route) {
-    switch (route) {
-      case CallAudioRoute.speaker:
-        return 'speaker';
-      case CallAudioRoute.bluetooth:
-        return 'bluetooth';
-      case CallAudioRoute.headset:
-        return 'wired-headset';
-      case CallAudioRoute.earpiece:
-        return 'earpiece';
-    }
-  }
+    final bool written = await _setCommunicationDevice(route);
 
-  Future<CallAudioRoute?> _readAndroidRoute() async {
-    if (!Platform.isAndroid) return null;
     try {
-      final AndroidAudioManager am = AndroidAudioManager();
-
-      bool speakerOn = false;
-      try {
-        speakerOn = await am.isSpeakerphoneOn();
-      } catch (_) {}
-
-      bool scoOn = false;
-      try {
-        scoOn = await am.isBluetoothScoOn();
-      } catch (_) {}
-
-      AndroidAudioDeviceType? devType;
-      try {
-        final AndroidAudioDeviceInfo? device = await am
-            .getCommunicationDevice();
-        devType = device?.type;
-      } catch (_) {}
-
-      AndroidAudioHardwareMode mode = AndroidAudioHardwareMode.normal;
-      try {
-        mode = await am.getMode();
-      } catch (_) {}
-
-      _log(
-        'native state mode=$mode speakerOn=$speakerOn scoOn=$scoOn '
-            'commDevice=$devType bt=${isBluetoothConnected.value} '
-            'wired=${isHeadsetConnected.value}',
-      );
-
-      if (speakerOn) return CallAudioRoute.speaker;
-
-      if (devType == AndroidAudioDeviceType.builtInSpeaker ||
-          devType == AndroidAudioDeviceType.builtInSpeakerSafe) {
-        return CallAudioRoute.speaker;
-      }
-
-      if (scoOn) return CallAudioRoute.bluetooth;
-
-      if (devType == AndroidAudioDeviceType.bluetoothSco ||
-          devType == AndroidAudioDeviceType.bluetoothA2dp) {
-        return CallAudioRoute.bluetooth;
-      }
-
-      if (devType == AndroidAudioDeviceType.wiredHeadset ||
-          devType == AndroidAudioDeviceType.wiredHeadphones ||
-          devType == AndroidAudioDeviceType.usbHeadset ||
-          devType == AndroidAudioDeviceType.usbDevice) {
-        return CallAudioRoute.headset;
-      }
-
-      if (devType == AndroidAudioDeviceType.builtInEarpiece) {
-        return CallAudioRoute.earpiece;
-      }
-
-      if (isHeadsetConnected.value) return CallAudioRoute.headset;
-      if (isBluetoothConnected.value) return CallAudioRoute.bluetooth;
-      return CallAudioRoute.earpiece;
+      await am.setSpeakerphoneOn(speaker);
     } catch (error) {
-      _log('readAndroidRoute error: $error');
-      return null;
+      _log('legacy speakerphone write error: $error');
+    }
+
+    await _syncAudioSwitchSelection(speaker);
+
+    if (speaker) {
+      try {
+        await am.setSpeakerphoneOn(true);
+      } catch (_) {}
+    }
+
+    final CallAudioRoute? actual = await _readActualRoute();
+    final bool legacySpeaker = await _readLegacySpeaker();
+    final bool satisfied = _routeSatisfied(route, actual, legacySpeaker);
+    _log(
+      'assert ${route.name} written=$written actual=$actual '
+          'legacySpeaker=$legacySpeaker satisfied=$satisfied sdk=$_androidSdk '
+          'mode=${await _androidModeName()} devices=${await _deviceSummary()}',
+    );
+
+    return satisfied;
+  }
+
+  Future<void> _syncAudioSwitchSelection(bool speaker) async {
+    for (int pass = 0; pass < 2; pass++) {
+      try {
+        await Helper.setSpeakerphoneOn(speaker);
+      } catch (error) {
+        _log('webrtc speaker sync error pass=$pass: $error');
+      }
+      if (pass == 0) {
+        await Future.delayed(const Duration(milliseconds: 180));
+      }
     }
   }
 
-  Future<bool> _androidRouteMatches(CallAudioRoute route) async {
-    final CallAudioRoute? actual = await _readAndroidRoute();
-    if (actual == null) return true;
-    if (actual == route) return true;
-    if (route == CallAudioRoute.bluetooth && actual == CallAudioRoute.headset) {
+  Future<bool> _readLegacySpeaker() async {
+    if (!Platform.isAndroid) return false;
+    try {
+      return await AndroidAudioManager().isSpeakerphoneOn();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  bool _routeSatisfied(
+      CallAudioRoute want,
+      CallAudioRoute? actual,
+      bool legacySpeaker,
+      ) {
+    if (actual != null) {
+      return actual == want || _routeGroupsMatch(want, actual);
+    }
+    return want == CallAudioRoute.speaker && legacySpeaker;
+  }
+
+  Future<bool> _setCommunicationDevice(CallAudioRoute route) async {
+    final AndroidAudioManager am = AndroidAudioManager();
+
+    try {
+      final List<AndroidAudioDeviceInfo> devices =
+      await am.getAvailableCommunicationDevices();
+
+      AndroidAudioDeviceInfo? target;
+      for (final AndroidAudioDeviceInfo device in devices) {
+        if (_routeOfDevice(device.type) == route) {
+          target = device;
+          break;
+        }
+      }
+
+      if (target == null) {
+        if (route == CallAudioRoute.earpiece) {
+          await am.clearCommunicationDevice();
+          _log('no earpiece device, cleared to platform default');
+          return false;
+        }
+        _log('no ${route.name} device in comm devices, nothing to set');
+        return false;
+      }
+
+      final bool ok = await am.setCommunicationDevice(target);
+      _log(
+        'setCommunicationDevice(${target.type.name}#${target.id}) '
+            'route=${route.name} ok=$ok',
+      );
+      return ok;
+    } catch (error) {
+      _log('comm-device path unavailable (${error.runtimeType}), legacy route');
+      try {
+        await Helper.setSpeakerphoneOn(route == CallAudioRoute.speaker);
+      } catch (_) {}
       return true;
     }
-    _log('android mismatch expected=$route actual=$actual');
+  }
+
+  CallAudioRoute? _routeOfDevice(AndroidAudioDeviceType type) {
+    switch (type) {
+      case AndroidAudioDeviceType.builtInSpeaker:
+      case AndroidAudioDeviceType.builtInSpeakerSafe:
+        return CallAudioRoute.speaker;
+      case AndroidAudioDeviceType.builtInEarpiece:
+        return CallAudioRoute.earpiece;
+      case AndroidAudioDeviceType.bluetoothSco:
+      case AndroidAudioDeviceType.bluetoothA2dp:
+        return CallAudioRoute.bluetooth;
+      case AndroidAudioDeviceType.wiredHeadset:
+      case AndroidAudioDeviceType.wiredHeadphones:
+      case AndroidAudioDeviceType.usbHeadset:
+      case AndroidAudioDeviceType.usbDevice:
+        return CallAudioRoute.headset;
+      default:
+        return null;
+    }
+  }
+
+  CallAudioRoute? _routeOfSessionDevice(AudioDeviceType type) {
+    switch (type) {
+      case AudioDeviceType.bluetoothA2dp:
+      case AudioDeviceType.bluetoothSco:
+      case AudioDeviceType.bluetoothLe:
+        return CallAudioRoute.bluetooth;
+      case AudioDeviceType.wiredHeadset:
+      case AudioDeviceType.wiredHeadphones:
+      case AudioDeviceType.usbAudio:
+        return CallAudioRoute.headset;
+      default:
+        return null;
+    }
+  }
+
+  Future<CallAudioRoute?> _readActualRoute() async {
+    if (Platform.isAndroid) {
+      try {
+        final AndroidAudioManager am = AndroidAudioManager();
+        final AndroidAudioDeviceInfo? device =
+        await am.getCommunicationDevice();
+        if (device == null) return null;
+        return _routeOfDevice(device.type);
+      } catch (error) {
+        _log('readActualRoute error: $error');
+        return null;
+      }
+    }
+
+    return null;
+  }
+
+  bool _routeGroupsMatch(CallAudioRoute want, CallAudioRoute actual) {
+    if (want == CallAudioRoute.bluetooth && actual == CallAudioRoute.headset) {
+      return true;
+    }
+    if (want == CallAudioRoute.headset && actual == CallAudioRoute.bluetooth) {
+      return true;
+    }
     return false;
   }
 
@@ -932,13 +857,9 @@ class CallAudioRouteController extends GetxController {
         } catch (error) {
           _log('ios speaker error: $error');
         }
-        if (_speakerDeviceId != null &&
-            _speakerDeviceId!.isNotEmpty &&
-            _speakerDeviceId != 'speaker') {
-          try {
-            await Helper.selectAudioOutput(_speakerDeviceId!);
-          } catch (_) {}
-        }
+        try {
+          await Helper.selectAudioOutput('speaker');
+        } catch (_) {}
         break;
 
       case CallAudioRoute.bluetooth:
@@ -950,31 +871,25 @@ class CallAudioRouteController extends GetxController {
           } catch (_) {}
         }
         try {
-          await Helper.selectAudioOutput(_bluetoothDeviceId ?? 'bluetooth');
+          await Helper.selectAudioOutput('bluetooth');
         } catch (_) {}
-        if (_bluetoothInputDeviceId != null) {
-          try {
-            await Helper.selectAudioInput(_bluetoothInputDeviceId!);
-          } catch (_) {}
-        }
         break;
 
       case CallAudioRoute.headset:
         try {
           await Helper.setSpeakerphoneOn(false);
-          await Helper.selectAudioOutput(_wiredDeviceId ?? 'wired-headset');
         } catch (_) {}
-        if (_wiredInputDeviceId != null) {
-          try {
-            await Helper.selectAudioInput(_wiredInputDeviceId!);
-          } catch (_) {}
-        }
+        try {
+          await Helper.selectAudioOutput('wired-headset');
+        } catch (_) {}
         break;
 
       case CallAudioRoute.earpiece:
         try {
           await Helper.setSpeakerphoneOn(false);
-          await Helper.selectAudioOutput(_earpieceDeviceId ?? 'earpiece');
+        } catch (_) {}
+        try {
+          await Helper.selectAudioOutput('earpiece');
         } catch (_) {}
         break;
     }
@@ -983,227 +898,251 @@ class CallAudioRouteController extends GetxController {
     _log('ios route applied -> $route');
   }
 
-  bool _isBluetoothLabel(String label, String id) {
-    final String l = label.toLowerCase().trim();
-    final String i = id.toLowerCase().trim();
-    if (l.isEmpty && i.isEmpty) return false;
+  void _startRouteKeeper({bool immediate = false}) {
+    if (!Platform.isAndroid || _isDisposed) return;
 
-    return l.contains('bluetooth') ||
-        l.contains('airpods') ||
-        l.contains('beats') ||
-        l.contains('buds') ||
-        l.contains('hands-free') ||
-        l.contains('handsfree') ||
-        l.contains('headset bt') ||
-        l.contains('hfp') ||
-        l.contains('a2dp') ||
-        l.contains('le audio') ||
-        i.contains('bluetooth') ||
-        i.contains('airpods') ||
-        i.contains('btheadset') ||
-        i.contains('bt_a2dp') ||
-        i.contains('a2dp') ||
-        i.contains('hfp') ||
-        i.contains('sco') ||
-        i == 'bluetooth';
+    _stopRouteKeeper();
+    _keeperRunning = true;
+    _keeperAttempt = 0;
+    _keeperStreak = 0;
+
+    unawaited(_keeperStep(immediate: immediate));
   }
 
-  bool _isWiredLabel(String label, String id) {
-    final String l = label.toLowerCase().trim();
-    final String i = id.toLowerCase().trim();
-    if (l.isEmpty && i.isEmpty) return false;
+  Future<void> _keeperStep({bool immediate = false}) async {
+    if (_isDisposed || !_keeperRunning) return;
 
-    if (_isBluetoothLabel(label, id)) return false;
+    const List<int> backoff = <int>[
+      250,
+      500,
+      800,
+      1200,
+      1500,
+      1800,
+      2200,
+      2500,
+      3000,
+      3000,
+    ];
 
-    if (l.contains('receiver') ||
-        l.contains('earpiece') ||
-        l.contains('handset') ||
-        l.contains('built-in') ||
-        l.contains('speaker') ||
-        i == 'earpiece' ||
-        i == 'speaker' ||
-        i.contains('receiver') ||
-        i.contains('builtin') ||
-        i.contains('built-in')) {
-      return false;
-    }
+    final CallAudioRoute want = currentRoute.value;
+    final bool ok = await _assertAndroidDevice(
+      want,
+      forceClear: _keeperAttempt >= 2,
+    );
 
-    if (i == 'wired-headset' ||
-        i == 'wired_headset' ||
-        i == 'headphones' ||
-        i == 'wired' ||
-        i.contains('usb')) {
-      return true;
-    }
-    if (l.contains('earpods')) return true;
-    if (l.contains('wired')) return true;
-    if (l == 'headphones' || l.contains('headphones')) return true;
-    if (l.contains('headphone') && !l.contains('microphone')) return true;
-    if (l.contains('headset')) return true;
-    if (l.contains('usb-c') ||
-        l.contains('type-c') ||
-        l.contains('lightning')) {
-      return true;
-    }
-
-    return false;
-  }
-
-  Future<void> _checkAudioDevices({bool isInitial = false}) async {
-    if (_isDisposed || _isCheckingDevices) return;
-    _isCheckingDevices = true;
-
-    try {
-      bool isBtFound = false;
-      bool isWiredFound = false;
-      String btName = _lastBluetoothName ?? 'Bluetooth';
-      String headsetName = 'Headset';
-
-      try {
-        final List<MediaDeviceInfo> webrtcDevices = await navigator.mediaDevices
-            .enumerateDevices();
-
-        for (final MediaDeviceInfo d in webrtcDevices) {
-          final String kind = (d.kind ?? '').toLowerCase();
-          final String id = d.deviceId.toLowerCase();
-          final String label = d.label.trim();
-
-          final bool isInput = kind.contains('audioinput');
-          final bool isOutput = kind.contains('audiooutput');
-
-          if (_isBluetoothLabel(label, id)) {
-            isBtFound = true;
-            if (isOutput && d.deviceId.isNotEmpty) {
-              _bluetoothDeviceId = d.deviceId;
-            }
-            if (isInput && d.deviceId.isNotEmpty) {
-              _bluetoothInputDeviceId = d.deviceId;
-            }
-            if (label.isNotEmpty &&
-                !label.toLowerCase().contains('unknown') &&
-                btName == 'Bluetooth') {
-              btName = label;
-            }
-          } else if (_isWiredLabel(label, id)) {
-            isWiredFound = true;
-            if (isOutput && d.deviceId.isNotEmpty) {
-              _wiredDeviceId = d.deviceId;
-            }
-            if (isInput && d.deviceId.isNotEmpty) {
-              _wiredInputDeviceId = d.deviceId;
-            }
-            if (label.isNotEmpty &&
-                !label.toLowerCase().contains('unknown') &&
-                headsetName == 'Headset') {
-              headsetName = label;
-            }
-          } else if (isOutput) {
-            if (id == 'speaker' ||
-                id.contains('speaker') ||
-                label.toLowerCase().contains('speaker')) {
-              _speakerDeviceId = d.deviceId;
-            } else if (id == 'earpiece' ||
-                id.contains('receiver') ||
-                label.toLowerCase().contains('earpiece')) {
-              _earpieceDeviceId = d.deviceId;
-            }
-          }
-        }
-      } catch (error) {
-        _log('WebRTC enumerateDevices error: $error');
-      }
-
-      try {
-        final AudioSession session = await AudioSession.instance;
-        final Iterable<AudioDevice> devices = await session.getDevices();
-
-        for (final AudioDevice d in devices) {
-          if (d.type == AudioDeviceType.bluetoothA2dp ||
-              d.type == AudioDeviceType.bluetoothSco ||
-              d.type == AudioDeviceType.bluetoothLe) {
-            isBtFound = true;
-            if (d.name.trim().isNotEmpty && btName == 'Bluetooth') {
-              btName = d.name.trim();
-            }
-          } else if (d.type == AudioDeviceType.wiredHeadset ||
-              d.type == AudioDeviceType.wiredHeadphones ||
-              d.type == AudioDeviceType.usbAudio) {
-            isWiredFound = true;
-            if (d.name.trim().isNotEmpty && headsetName == 'Headset') {
-              headsetName = d.name.trim();
-            }
-          }
-        }
-      } catch (error) {
-        _log('AudioSession getDevices error: $error');
-      }
-
-      if (isBtFound && btName.isNotEmpty) {
-        _lastBluetoothName = btName;
-      }
-
-      final bool prevBT = isBluetoothConnected.value;
-      final bool prevHS = isHeadsetConnected.value;
-
-      isBluetoothConnected.value = isBtFound;
-      bluetoothDeviceName.value = btName;
-      isHeadsetConnected.value = isWiredFound;
-      headsetDeviceName.value = headsetName;
-
-      _log(
-        'devices bt=$isBtFound($btName) wired=$isWiredFound($headsetName) '
-            'initial=$isInitial',
-      );
-
-      if (isInitial && !_routeInitialized) {
-        _routeInitialized = true;
-        if (!_userSelectedRoute) {
-          final CallAudioRoute initial = isBtFound
-              ? CallAudioRoute.bluetooth
-              : (isWiredFound ? CallAudioRoute.headset : _defaultRoute);
-          await setRoute(initial);
-        }
+    if (ok) {
+      _keeperStreak++;
+      if (_keeperStreak >= 2) {
+        _log(
+          'keeper confirmed ${want.name} after $_keeperAttempt attempt(s) '
+              'actual=${await _readActualRoute()}',
+        );
+        _keeperRunning = false;
+        _startDriftWatch();
         return;
       }
+    } else {
+      _keeperStreak = 0;
+    }
 
-      final bool btPlugged = isBtFound && !prevBT;
-      final bool wiredPlugged = isWiredFound && !prevHS;
-      final bool btUnplugged = !isBtFound && prevBT;
-      final bool wiredUnplugged = !isWiredFound && prevHS;
+    if (_keeperAttempt >= backoff.length) {
+      _keeperRunning = false;
+      _log(
+        'ROUTE_UNSTABLE want=${want.name} '
+            'actual=${await _readActualRoute()} devices=${await _deviceSummary()} '
+            'speaker=$isSpeakerOn mode=${await _androidModeName()}',
+      );
+      _startDriftWatch();
+      return;
+    }
 
-      if (btPlugged) {
-        if (_userSelectedRoute &&
-            currentRoute.value != CallAudioRoute.bluetooth) {
-          _log('bt connected, keeping ${currentRoute.value}');
-        } else {
-          await setRoute(CallAudioRoute.bluetooth);
-        }
-      } else if (wiredPlugged) {
-        if (_userSelectedRoute &&
-            currentRoute.value != CallAudioRoute.headset) {
-          _log('wired connected, keeping ${currentRoute.value}');
-        } else {
-          await setRoute(CallAudioRoute.headset);
-        }
-      } else if (btUnplugged &&
-          currentRoute.value == CallAudioRoute.bluetooth) {
-        _userSelectedRoute = false;
-        await setRoute(isWiredFound ? CallAudioRoute.headset : _defaultRoute);
-      } else if (wiredUnplugged &&
-          currentRoute.value == CallAudioRoute.headset) {
-        _userSelectedRoute = false;
-        await setRoute(isBtFound ? CallAudioRoute.bluetooth : _defaultRoute);
-      } else {
-        await _ensurePlaybackPath(forceSession: true);
+    final int delay = immediate
+        ? backoff[_keeperAttempt.clamp(0, backoff.length - 1)] ~/ 2
+        : backoff[_keeperAttempt.clamp(0, backoff.length - 1)];
+    _keeperAttempt++;
+    _keeperTimer = Timer(Duration(milliseconds: delay), () {
+      unawaited(_keeperStep());
+    });
+  }
+
+  void _stopRouteKeeper() {
+    _keeperRunning = false;
+    _keeperTimer?.cancel();
+    _keeperTimer = null;
+  }
+
+  void _startDriftWatch() {
+    if (!Platform.isAndroid || _isDisposed) return;
+    _driftTimer?.cancel();
+    _driftTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      if (_isDisposed) {
+        timer.cancel();
+        _driftTimer = null;
+        return;
       }
+      if (_isApplyingRoute || _keeperRunning) return;
+
+      final CallAudioRoute want = currentRoute.value;
+      final CallAudioRoute? actual = await _readActualRoute();
+      final bool legacySpeaker = await _readLegacySpeaker();
+      if (_routeSatisfied(want, actual, legacySpeaker)) return;
+
+      _log(
+        'drift detected want=${want.name} actual=$actual '
+            'legacySpeaker=$legacySpeaker',
+      );
+      _startRouteKeeper(immediate: true);
+    });
+  }
+
+  void _stopDriftWatch() {
+    _driftTimer?.cancel();
+    _driftTimer = null;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    if (_isDisposed) return;
+    _log('app resumed -> re-assert route=${currentRoute.value}');
+    _startRouteKeeper(immediate: true);
+  }
+
+  Future<String> _deviceSummary() async {
+    if (!Platform.isAndroid) return 'n/a';
+    try {
+      final AndroidAudioManager am = AndroidAudioManager();
+      final List<AndroidAudioDeviceInfo> devices =
+      await am.getAvailableCommunicationDevices();
+      return devices
+          .map((AndroidAudioDeviceInfo d) => '${d.type.name}#${d.id}')
+          .join('|');
     } catch (error) {
-      _log('checkAudioDevices error: $error');
-    } finally {
-      _isCheckingDevices = false;
+      return 'error:$error';
     }
   }
 
-  Future<void> _listenAudioDevices() async {
+  static const Map<int, String> _androidModeNames = <int, String>{
+    -2: 'invalid',
+    -1: 'current',
+    0: 'normal',
+    1: 'ringtone',
+    2: 'inCall',
+    3: 'inCommunication',
+  };
+
+  Future<String> _androidModeName() async {
+    if (!Platform.isAndroid) return 'n/a';
+    try {
+      final AndroidAudioManager am = AndroidAudioManager();
+      final AndroidAudioHardwareMode mode = await am.getMode();
+      return _androidModeNames[mode.index] ?? 'index:${mode.index}';
+    } catch (error) {
+      return 'error:$error';
+    }
+  }
+
+  Future<void> _refreshHardwareRoutes() async {
+    bool hasSpeaker = Platform.isAndroid ? false : true;
+    bool hasEarpiece = Platform.isAndroid ? false : true;
+    bool hasBluetooth = false;
+    bool hasWired = false;
+    String bluetoothName = _bluetoothName;
+    String wiredName = _wiredName;
+
+    if (Platform.isAndroid) {
+      try {
+        final AndroidAudioManager am = AndroidAudioManager();
+        final List<AndroidAudioDeviceInfo> devices =
+        await am.getAvailableCommunicationDevices();
+
+        if (devices.isNotEmpty) {
+          _log(
+            'comm devices=${devices.map((AndroidAudioDeviceInfo d) => '${d.type.name}#${d.id}').join('|')}',
+          );
+        }
+
+        for (final AndroidAudioDeviceInfo device in devices) {
+          final CallAudioRoute? route = _routeOfDevice(device.type);
+          if (route == CallAudioRoute.speaker) {
+            hasSpeaker = true;
+          } else if (route == CallAudioRoute.earpiece) {
+            hasEarpiece = true;
+          } else if (route == CallAudioRoute.bluetooth) {
+            hasBluetooth = true;
+            if (device.productName.trim().isNotEmpty) {
+              bluetoothName = device.productName.trim();
+            }
+          } else if (route == CallAudioRoute.headset) {
+            hasWired = true;
+            if (device.productName.trim().isNotEmpty) {
+              wiredName = device.productName.trim();
+            }
+          }
+        }
+      } catch (error) {
+        _log('comm devices read error: $error');
+      }
+    }
+
+    try {
+      final AudioSession session = await AudioSession.instance;
+      final Iterable<AudioDevice> devices = await session.getDevices();
+      for (final AudioDevice device in devices) {
+        final CallAudioRoute? route = _routeOfSessionDevice(device.type);
+        if (route == CallAudioRoute.bluetooth) {
+          hasBluetooth = true;
+          final String name = device.name.trim();
+          if (name.isNotEmpty && !name.toLowerCase().contains('unknown')) {
+            bluetoothName = name;
+          }
+        } else if (route == CallAudioRoute.headset) {
+          hasWired = true;
+          final String name = device.name.trim();
+          if (name.isNotEmpty && !name.toLowerCase().contains('unknown')) {
+            wiredName = name;
+          }
+        } else if (device.type == AudioDeviceType.builtInSpeaker) {
+          hasSpeaker = true;
+        } else if (device.type == AudioDeviceType.builtInEarpiece) {
+          hasEarpiece = true;
+        }
+      }
+    } catch (error) {
+      _log('session getDevices error: $error');
+    }
+
+    final bool changed = hasSpeaker != _hasSpeaker ||
+        hasEarpiece != _hasEarpiece ||
+        hasBluetooth != isBluetoothConnected.value ||
+        hasWired != isHeadsetConnected.value;
+
+    _hasSpeaker = hasSpeaker;
+    _hasEarpiece = hasEarpiece;
+    _bluetoothName = bluetoothName;
+    _wiredName = wiredName;
+    isBluetoothConnected.value = hasBluetooth;
+    isHeadsetConnected.value = hasWired;
+
+    _log(
+      'devices speaker=$hasSpeaker earpiece=$hasEarpiece '
+          'bt=$hasBluetooth($bluetoothName) wired=$hasWired($wiredName) '
+          'available=$availableRoutes',
+    );
+
+    if (changed) {
+      final CallAudioRoute safe = _sanitizeRoute(currentRoute.value);
+      if (safe != currentRoute.value && !_isDisposed) {
+        _log('device change -> route ${currentRoute.value} forced to $safe');
+        _userSelectedRoute = false;
+        await setRoute(safe, force: true);
+      }
+      _safeUpdate();
+    }
+  }
+
+  Future<void> _listenAudioSession() async {
     try {
       final AudioSession session = await AudioSession.instance;
 
@@ -1221,10 +1160,8 @@ class CallAudioRouteController extends GetxController {
           await _ensurePlaybackPath(forceSession: true);
         }
       });
-
-      await _checkAudioDevices(isInitial: true);
     } catch (error) {
-      _log('listenAudioDevices error: $error');
+      _log('listenAudioSession error: $error');
     }
   }
 
@@ -1232,24 +1169,35 @@ class CallAudioRouteController extends GetxController {
     if (_isDisposed) return;
     _deviceDebounce?.cancel();
     _deviceDebounce = Timer(const Duration(milliseconds: 160), () {
-      unawaited(_checkAudioDevices());
+      unawaited(_refreshOnDeviceChange());
     });
   }
 
-  Future<void> _refreshDevices({bool force = false}) async {
-    if (_isDisposed) return;
-    await _checkAudioDevices();
+  Future<void> _refreshOnDeviceChange() async {
+    await _refreshHardwareRoutes();
+    if (!_isDisposed) {
+      await _ensurePlaybackPath(forceSession: true);
+    }
+  }
+
+  void _cancelWarmupTimers() {
+    for (final Timer timer in _warmupRouteTimers) {
+      timer.cancel();
+    }
+    _warmupRouteTimers.clear();
   }
 
   @override
   void onClose() {
     _isDisposed = true;
     _cancelWarmupTimers();
-    _routeGuardTimer?.cancel();
-    _routeGuardTimer = null;
-    _cancelSpeakerBurst();
+    _stopRouteKeeper();
+    _stopDriftWatch();
+    WidgetsBinding.instance.removeObserver(this);
     _deviceDebounce?.cancel();
-    unawaited(stopCall());
+    if (_ownsAudio) {
+      unawaited(stopCall());
+    }
     super.onClose();
   }
 }

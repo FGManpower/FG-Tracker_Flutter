@@ -669,9 +669,12 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     );
 
     if (Get.isRegistered<CallAudioRouteController>()) {
-      Get.delete<CallAudioRouteController>(force: true);
+      audioRouteController = Get.find<CallAudioRouteController>();
+      log("[Call] Audio route controller reused (single owner)");
+    } else {
+      audioRouteController = Get.put(CallAudioRouteController());
+      log("[Call] Audio route controller created");
     }
-    audioRouteController = Get.put(CallAudioRouteController());
 
     _listenForCallEvents();
 
@@ -2103,6 +2106,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
         _everConnected = true;
         _cancelPeerDisconnectTimer();
+        unawaited(audioRouteController.reapplyCurrentRoute());
         return;
       }
 
@@ -2120,6 +2124,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (!identical(peer, pc)) return;
       unawaited(_handleRemoteTrack(event));
     };
+
+    await audioRouteController.prepareCall(isVideo: is_video == true);
 
     localStream = await navigator.mediaDevices.getUserMedia({
       'audio': {
@@ -2154,8 +2160,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       localRenderer.srcObject = null;
     }
 
+    final bool isIncomingCall = fromCallKit || args["callType"] == "Incoming";
+    log(
+      "[Call] Audio route start video=$is_video incoming=$isIncomingCall "
+          "fromCallKit=$fromCallKit callType=${args["callType"]}",
+    );
     unawaited(
-      audioRouteController.startCall(isVideo: is_video).catchError((e) {
+      audioRouteController
+          .startCall(isVideo: is_video, isIncoming: isIncomingCall)
+          .catchError((e) {
         log("[Call] Audio route start error: $e");
       }),
     );
