@@ -181,6 +181,14 @@ class PrivateChatModel {
   String? forwardedLabel;
   int? forwardedFromMessageId;
 
+  /// Sender of the last message (used for "You:" / "Name:" in group previews).
+  String? senderId;
+  String? senderName;
+
+  /// Raw last-message map, kept so the preview builder can read
+  /// type-specific fields (poll title, file name, image count, duration).
+  Map<String, dynamic>? lastMessageData;
+
   PrivateChatModel({
     this.id,
     this.chatId,
@@ -215,6 +223,9 @@ class PrivateChatModel {
     this.isForwarded,
     this.forwardedLabel,
     this.forwardedFromMessageId,
+    this.senderId,
+    this.senderName,
+    this.lastMessageData,
   });
 
   factory PrivateChatModel.fromJson(Map<String, dynamic> json) {
@@ -233,6 +244,18 @@ class PrivateChatModel {
         : null;
 
     final activity = lastMessage ?? lastActivity;
+
+    final sender = activity?['sender'] is Map
+        ? Map<String, dynamic>.from(activity!['sender'])
+        : null;
+    final rawSenderId = activity?['senderId'] ??
+        activity?['sender_id'] ??
+        sender?['id'] ??
+        sender?['userId'];
+    final rawSenderName = activity?['senderName'] ??
+        activity?['sender_name'] ??
+        sender?['name'] ??
+        sender?['fullName'];
 
     final rawChatType = _readString(json, ['chatType', 'chat_type', 'type']);
     final isGroupParsed = _parseBool(
@@ -480,6 +503,11 @@ class PrivateChatModel {
             activity?['forwardedFromMessageId'] ??
             activity?['forwarded_from_message_id'],
       ),
+      senderId: rawSenderId?.toString(),
+      senderName: (rawSenderName is String && rawSenderName.trim().isNotEmpty)
+          ? rawSenderName.trim()
+          : null,
+      lastMessageData: activity,
     );
   }
 
@@ -518,6 +546,9 @@ class PrivateChatModel {
       'isForwarded': isForwarded,
       'forwardedLabel': forwardedLabel,
       'forwardedFromMessageId': forwardedFromMessageId,
+      'senderId': senderId,
+      'senderName': senderName,
+      'lastMessage': lastMessageData,
     };
   }
 

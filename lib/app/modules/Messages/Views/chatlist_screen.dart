@@ -12,7 +12,7 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/status/views/status_section.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
-import '../../../Core/util/chatutil.dart';
+import '../../../Core/util/message_preview_builder.dart';
 import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../routes/app_pages.dart';
 import '../../home/Controller/total_group_controller.dart';
@@ -561,8 +561,10 @@ class _AllChatsBody extends StatelessWidget {
                             chat: chat,
                             name: chat.name ?? chat.groupName ?? "Unknown User",
                             role: chat.role ?? "",
-                            msg: chat.preview ??
-                                ChatUtil.formatLastMessage(chat.message),
+                            msg: MessagePreviewBuilder.forChat(
+                              chat,
+                              currentUserId: controller.currentUserId,
+                            ).rowText,
                             time: _formatChatTime(
                               chat.timestamp ?? chat.time ?? "",
                             ),

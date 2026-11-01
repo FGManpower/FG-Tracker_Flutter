@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/Model/PrivateChatModel.dart';
+import '../../../Core/util/message_preview_builder.dart';
 import '../../../Core/util/profile_navigation.dart';
 import '../Controller/chat_list_controller.dart';
 import '../Controller/MessageController.dart';
@@ -332,28 +334,14 @@ class ArchivedChatsScreen extends StatelessWidget {
     );
   }
 
-  String _getMessagePreview(dynamic chat) {
-    final message = chat.message?.toString().trim() ?? '';
+  String _getMessagePreview(PrivateChatModel chat) {
+    final message = chat.message?.trim() ?? '';
+    if (message.isEmpty) return "No messages yet";
 
-    if (message.isNotEmpty) {
-      switch (chat.messageType?.toString().toLowerCase()) {
-        case 'image':
-          return "📷 Photo";
-        case 'video':
-          return "🎥 Video";
-        case 'audio':
-          return "🎵 Audio";
-        case 'document':
-        case 'file':
-          return "📄 Document";
-        case 'location':
-          return "📍 Location";
-        default:
-          return message;
-      }
-    }
-
-    return "No messages yet";
+    final userId = Get.isRegistered<ChatListController>()
+        ? Get.find<ChatListController>().currentUserId
+        : null;
+    return MessagePreviewBuilder.forChat(chat, currentUserId: userId).display;
   }
 
   String _formatChatTime(String value) {
