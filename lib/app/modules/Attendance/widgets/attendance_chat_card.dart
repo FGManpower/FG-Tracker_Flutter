@@ -66,7 +66,14 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
   @override
   void initState() {
     super.initState();
+    _controller.watch(widget.pollId);
     _load();
+  }
+
+  @override
+  void dispose() {
+    _controller.unwatch(widget.pollId);
+    super.dispose();
   }
 
   Future<void> _load({bool force = false}) async {

@@ -92,6 +92,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
   @override
   void initState() {
     super.initState();
+    _controller.watch(widget.pollId);
     _controller.ensureLoaded(widget.pollId, force: true);
     _loadVoters();
     SocketMessageService.instance.subscribeAttendance(
@@ -113,6 +114,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
   @override
   void dispose() {
     _pollWorker?.dispose();
+    _controller.unwatch(widget.pollId);
     SocketMessageService.instance.unsubscribeAttendance(widget.pollId);
     _searchDebounce?.cancel();
     _liveDebounce?.cancel();

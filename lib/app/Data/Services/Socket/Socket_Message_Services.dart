@@ -111,7 +111,12 @@ class SocketMessageService extends GetxService {
         "transports": ["websocket"],
         "autoConnect": true,
         // Opts in to attendance socket events (server checks auth or query).
-        "auth": {"attendanceSupported": "1"},
+        // token: lets the server identify the user for attendance rooms
+        // (attendance:subscribe / sync / my_vote), same as the status socket.
+        "auth": {
+          "attendanceSupported": "1",
+          "token": Global.storageServices.getaccesstoken() ?? "",
+        },
         "query": {"attendanceSupported": "1"},
       },
     );
@@ -149,7 +154,7 @@ class SocketMessageService extends GetxService {
 
       // Re-join the admin detail room the View Attendance screen is showing.
       if (_subscribedPollId != null) {
-        _socket?.emit("attendance:subscribe", {"pollId": _subscribedPollId});
+        _emitAttendanceSubscribe(_subscribedPollId!);
       }
       debugPrint(
         "[RT_DEBUG] /chat connected: group=$activeGroupId poll=$_subscribedPollId",
@@ -546,9 +551,17 @@ class SocketMessageService extends GetxService {
       log("RECEIVED attendance:vote_changed => $data");
       onVoteChanged(data);
     });
-    if (isSocketConnected) {
-      s.emit("attendance:subscribe", {"pollId": pollId});
-    }
+    if (isSocketConnected) _emitAttendanceSubscribe(pollId);
+  }
+
+  void _emitAttendanceSubscribe(int pollId) {
+    _socket?.emitWithAck(
+      "attendance:subscribe",
+      {"pollId": pollId},
+      ack: (data) => debugPrint(
+        "[RT_DEBUG] attendance:subscribe poll=$pollId ack => $data",
+      ), // TODO: remove debug log
+    );
   }
 
   void unsubscribeAttendance(int pollId) {

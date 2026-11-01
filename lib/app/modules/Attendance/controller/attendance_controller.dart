@@ -1,7 +1,10 @@
 import 'dart:developer';
 import 'dart:math' show Random, max;
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/widgets.dart' show AppLifecycleState, WidgetsBinding;
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -48,6 +51,60 @@ class AttendanceController extends GetxController {
 
   SocketMessageService get _socket => SocketMessageService.instance;
 
+  // ---- Live fallback -------------------------------------------------------
+  // Socket events are the primary live channel. If they don't arrive (missed
+  // room join, backend not emitting), polls on screen are refetched every
+  // [_fallbackInterval] so votes still show up live. A poll that got a socket
+  // update within [_socketFreshFor] is skipped, so a working socket means
+  // (almost) no extra requests.
+  static const _fallbackInterval = Duration(seconds: 5);
+  static const _socketFreshFor = Duration(seconds: 15);
+  final Map<int, int> _watchers = {};
+  final Map<int, DateTime> _lastLiveAt = {};
+  final Set<int> _pendingMutations = {};
+  Timer? _fallbackTimer;
+
+  /// Called by widgets showing a poll (chat card, View Attendance).
+  void watch(int pollId) {
+    if (pollId <= 0) return;
+    _watchers[pollId] = (_watchers[pollId] ?? 0) + 1;
+    _fallbackTimer ??= Timer.periodic(_fallbackInterval, (_) => _fallbackTick());
+  }
+
+  void unwatch(int pollId) {
+    final count = (_watchers[pollId] ?? 0) - 1;
+    if (count > 0) {
+      _watchers[pollId] = count;
+    } else {
+      _watchers.remove(pollId);
+    }
+    if (_watchers.isEmpty) {
+      _fallbackTimer?.cancel();
+      _fallbackTimer = null;
+    }
+  }
+
+  void _fallbackTick() {
+    if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+      return;
+    }
+    final now = DateTime.now();
+    for (final pollId in _watchers.keys.toList()) {
+      final poll = polls[pollId];
+      if (poll != null && poll.isClosed) continue;
+      if (_pendingMutations.contains(pollId)) continue;
+      final last = _lastLiveAt[pollId];
+      if (last != null && now.difference(last) < _socketFreshFor) continue;
+      ensureLoaded(pollId, force: true);
+    }
+  }
+
+  @override
+  void onClose() {
+    _fallbackTimer?.cancel();
+    super.onClose();
+  }
+
   /// Forces the next [ensureLoaded] per poll to refetch. Called when a chat
   /// opens, since votes may have changed while it was closed (no socket).
   void markAllStale() => _loaded.clear();
@@ -62,6 +119,8 @@ class AttendanceController extends GetxController {
       final res = await AttendanceRepo.getPoll(pollId);
       final data = res["data"];
       if (res["status"] == true && data is Map) {
+        // A vote started while this was in flight: its response wins.
+        if (_pendingMutations.contains(pollId)) return;
         _apply(data, hasMyVoteField: data.containsKey("myVote"));
         _loaded.add(pollId);
       }
@@ -104,6 +163,7 @@ class AttendanceController extends GetxController {
     final merged = local.mergeServer(incoming, hasMyVoteField: hasMyVoteField);
     polls[incoming.id] = merged;
     if (fromEvent) {
+      _lastLiveAt[incoming.id] = DateTime.now();
       debugPrint(
         "[RT_DEBUG] attendance poll=${incoming.id} applied v${merged.version} total=${merged.totalVotes} ${merged.countsByOption}",
       ); // TODO: remove debug log
@@ -237,6 +297,7 @@ class AttendanceController extends GetxController {
     required String optionId,
     String? photoPath,
   }) async {
+    _pendingMutations.add(pollId);
     final before = polls[pollId];
     if (before != null) {
       polls[pollId] = _withLocalVote(before, optionId, photoPath);
@@ -264,10 +325,13 @@ class AttendanceController extends GetxController {
     } catch (e) {
       _rollback(pollId, before);
       rethrow;
+    } finally {
+      _pendingMutations.remove(pollId);
     }
   }
 
   Future<void> removeVote(int pollId) async {
+    _pendingMutations.add(pollId);
     final before = polls[pollId];
     if (before != null && before.myVote != null) {
       polls[pollId] = _withLocalVote(before, null, null);
@@ -288,6 +352,8 @@ class AttendanceController extends GetxController {
     } catch (e) {
       _rollback(pollId, before);
       rethrow;
+    } finally {
+      _pendingMutations.remove(pollId);
     }
   }
 
