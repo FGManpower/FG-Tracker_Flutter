@@ -328,7 +328,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await sender.setParameters(params);
       log(
         "[CAM] tune sender scaleDown=${scaleDown ?? 'keep'} "
-            "enc=${encodings?.length ?? 0}",
+        "enc=${encodings?.length ?? 0}",
       );
     } catch (e) {
       log("[Call] Video sender tuning skipped: $e");
@@ -377,7 +377,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
     log(
       "[CAM] ensureBound: binding now track=${_remoteVideoTrack?.id} "
-          "storedVideo=${_remoteMediaStream?.getVideoTracks().length ?? -1}",
+      "storedVideo=${_remoteMediaStream?.getVideoTracks().length ?? -1}",
     );
 
     final MediaStream? stream = await _remoteStreamForVideo();
@@ -413,15 +413,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<bool> _ensureLocalVideoTrackAttached(
-      RTCPeerConnection pc, {
-        bool muted = false,
-      }) async {
+    RTCPeerConnection pc, {
+    bool muted = false,
+  }) async {
     bool needsRenegotiation = false;
     if (localStream == null) return needsRenegotiation;
 
     final List<MediaStreamTrack> existingTracks = localStream!.getVideoTracks();
     MediaStreamTrack? videoTrack =
-    existingTracks.isNotEmpty ? existingTracks.first : null;
+        existingTracks.isNotEmpty ? existingTracks.first : null;
 
     if (videoTrack == null) {
       final MediaStream videoStream = await navigator.mediaDevices.getUserMedia(
@@ -488,13 +488,13 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       _localOfferPending = true;
       log(
         "[SDP] local offer ${_sdpInfo(desc.sdp)} "
-            "videoOn=$isVideoOn sender=${_localVideoSender != null}",
+        "videoOn=$isVideoOn sender=${_localVideoSender != null}",
       );
 
       final String myUserId =
-      Global.storageServices.get(PrefConst.userId).toString();
+          Global.storageServices.get(PrefConst.userId).toString();
       final String targetUser =
-      (myUserId == callerId.toString()) ? remoteUserId : callerId;
+          (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
       socket?.emit("upgradeToVideo", {
         "callId": callId,
@@ -520,7 +520,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     );
     log(
       "[SDP] setRemote type=${desc.type} ${_sdpInfo(desc.sdp)} "
-          "samePeer=${identical(peer, pc)}",
+      "samePeer=${identical(peer, pc)}",
     );
     try {
       await pc.setRemoteDescription(desc);
@@ -539,9 +539,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _remoteEndSent = true;
 
     final String myUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
     final String targetUser =
-    myUserId == callerId.toString() ? remoteUserId : callerId;
+        myUserId == callerId.toString() ? remoteUserId : callerId;
 
     final Map<String, dynamic> payload = customPayload ??
         <String, dynamic>{
@@ -664,14 +664,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
     log(
       "[CAM] init callType=${args["callType"]} is_video=$is_video "
-          "callerId=$callerId remoteUserId=$remoteUserId callId=$callId "
-          "hasOffer=${offer != null} fromCallKit=$fromCallKit",
+      "callerId=$callerId remoteUserId=$remoteUserId callId=$callId "
+      "hasOffer=${offer != null} fromCallKit=$fromCallKit",
     );
 
     if (Get.isRegistered<CallAudioRouteController>()) {
-      Get.delete<CallAudioRouteController>(force: true);
+      audioRouteController = Get.find<CallAudioRouteController>();
+      log("[Call] Audio route controller reused (single owner)");
+    } else {
+      audioRouteController = Get.put(CallAudioRouteController());
+      log("[Call] Audio route controller created");
     }
-    audioRouteController = Get.put(CallAudioRouteController());
 
     _listenForCallEvents();
 
@@ -704,7 +707,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     final Map<String, dynamic> st = vids.first.getSettings();
     log(
       "[CAM] capture($tag): ${st['width']}x${st['height']} "
-          "fps=${st['frameRate']}",
+      "fps=${st['frameRate']}",
     );
   }
 
@@ -752,17 +755,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           decoded = int.tryParse('${v['framesDecoded']}') ?? -1;
           log(
             "[STAT] $tag IN recv=${v['framesReceived']} "
-                "dec=${v['framesDecoded']} drop=${v['framesDropped']} "
-                "bytes=${v['bytesReceived']} pli=${v['pliCount']} "
-                "size=${v['frameWidth']}x${v['frameHeight']}",
+            "dec=${v['framesDecoded']} drop=${v['framesDropped']} "
+            "bytes=${v['bytesReceived']} pli=${v['pliCount']} "
+            "size=${v['frameWidth']}x${v['frameHeight']}",
           );
         }
         if (v['framesEncoded'] != null) {
           log(
             "[STAT] $tag OUT enc=${v['framesEncoded']} "
-                "key=${v['keyFramesEncoded']} sent=${v['framesSent']} "
-                "bytes=${v['bytesSent']} "
-                "qlim=${v['qualityLimitationReason']}",
+            "key=${v['keyFramesEncoded']} sent=${v['framesSent']} "
+            "bytes=${v['bytesSent']} "
+            "qlim=${v['qualityLimitationReason']}",
           );
         }
       }
@@ -776,7 +779,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   void _requestKeyframe() {
     final String myUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
     String target = (myUserId == callerId.toString()) ? remoteUserId : callerId;
     if (target.isEmpty || target == myUserId) {
       target = (remoteUserId.isNotEmpty && remoteUserId != myUserId)
@@ -834,8 +837,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     int decodedFrames = -1;
 
     _firstFrameTimer = Timer.periodic(const Duration(seconds: 1), (
-        timer,
-        ) async {
+      timer,
+    ) async {
       if (isClosed) {
         timer.cancel();
         return;
@@ -859,7 +862,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         decodedFrames = await _logStats("wait${timer.tick}s");
         log(
           "[CAM] wait ${timer.tick}s: renderW=${remoteRenderer.value.width} "
-              "decoded=$decodedFrames",
+          "decoded=$decodedFrames",
         );
 
         if (decodedFrames > 0) {
@@ -1012,7 +1015,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (isClosed || !isVideoCall.value) return;
     log(
       "[CAM] resume: restoring video localOn=$isVideoOn "
-          "remoteOn=$isRemoteVideoOn sharing=${isScreenSharing.value}",
+      "remoteOn=$isRemoteVideoOn sharing=${isScreenSharing.value}",
     );
 
     if (isScreenSharing.value) {
@@ -1093,7 +1096,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   Future<void> _handleRemoteTrack(RTCTrackEvent event) async {
     try {
       final MediaStream? stream =
-      event.streams.isNotEmpty ? event.streams.first : null;
+          event.streams.isNotEmpty ? event.streams.first : null;
 
       if (peer == null) return;
 
@@ -1116,12 +1119,12 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
         log(
           "[CAM] onTrack video id=${event.track.id} "
-              "known=$_remoteCamStateKnown remoteOn=$isRemoteVideoOn",
+          "known=$_remoteCamStateKnown remoteOn=$isRemoteVideoOn",
         );
 
         log(
           "[CAM] onTrack streams=${event.streams.length} "
-              "storedVideo=${_remoteMediaStream?.getVideoTracks().length ?? -1}",
+          "storedVideo=${_remoteMediaStream?.getVideoTracks().length ?? -1}",
         );
 
         final MediaStream? targetStream = await _remoteStreamForVideo();
@@ -1130,8 +1133,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         } else {
           log(
             "[CAM] bind remote id=${event.track.id} "
-                "stream=${targetStream.id} "
-                "tracks=${targetStream.getVideoTracks().length}",
+            "stream=${targetStream.id} "
+            "tracks=${targetStream.getVideoTracks().length}",
           );
           await remoteRenderer.setSrcObject(
             stream: targetStream,
@@ -1149,8 +1152,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         unawaited(audioRouteController.onRemoteAudioTrack(event.track));
         log(
           "[CAM] onTrack audio id=${event.track.id} "
-              "streams=${event.streams.length} "
-              "storedVideo=${_remoteMediaStream?.getVideoTracks().length ?? -1}",
+          "streams=${event.streams.length} "
+          "storedVideo=${_remoteMediaStream?.getVideoTracks().length ?? -1}",
         );
       }
 
@@ -1179,7 +1182,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   void _emitUpgradeIntent() {
     final String myUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
     String target = (myUserId == callerId.toString()) ? remoteUserId : callerId;
     if (target.isEmpty || target == myUserId) {
       target = (remoteUserId.isNotEmpty && remoteUserId != myUserId)
@@ -1236,7 +1239,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       isUpgradingToVideo.value = true;
       log(
         "[CAM] upgrade start videoOn=$isVideoOn remoteOn=$isRemoteVideoOn "
-            "sender=${_localVideoSender != null} slotReady=$_videoSlotReady",
+        "sender=${_localVideoSender != null} slotReady=$_videoSlotReady",
       );
       if (!isVideoCall.value) {
         pipPosition = null;
@@ -1248,7 +1251,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       );
       log(
         "[CAM] upgrade attach done sender=${_localVideoSender != null} "
-            "slotReady=$_videoSlotReady needsReneg=$needsRenegotiation",
+        "slotReady=$_videoSlotReady needsReneg=$needsRenegotiation",
       );
 
       isVideoOn = true;
@@ -1297,8 +1300,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         final dynamic sdp = data["sdpOffer"];
         log(
           "[CAM] upgradeToVideo recv hasSdp=${sdp != null} "
-              "cameraState=${data["cameraState"]} from=${data["callerId"]} "
-              "videoOn=$isVideoOn remoteOn=$isRemoteVideoOn",
+          "cameraState=${data["cameraState"]} from=${data["callerId"]} "
+          "videoOn=$isVideoOn remoteOn=$isRemoteVideoOn",
         );
 
         if (sdp != null && !_localOfferPending) {
@@ -1333,7 +1336,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
         if (_localOfferPending) {
           final String myId =
-          Global.storageServices.get(PrefConst.userId).toString();
+              Global.storageServices.get(PrefConst.userId).toString();
           final String peerId = data["callerId"]?.toString() ?? "";
           final bool polite = myId.compareTo(peerId) > 0;
           log("[CAM] glare offer from=$peerId polite=$polite");
@@ -1381,7 +1384,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
             );
             log(
               "[CAM] answer: muted video track attached before answer "
-                  "(reneg=$answerNeedsReneg)",
+              "(reneg=$answerNeedsReneg)",
             );
           } catch (e) {
             log("[CAM] answer: muted attach failed: $e");
@@ -1431,13 +1434,13 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         await pc.setLocalDescription(answer);
         log(
           "[SDP] answer ${_sdpInfo(answer.sdp)} "
-              "slotAdvertised=$slotAdvertised",
+          "slotAdvertised=$slotAdvertised",
         );
 
         if (slotAdvertised) {
           try {
             final TransceiverDirection? current =
-            await _remoteVideoTransceiver?.getCurrentDirection();
+                await _remoteVideoTransceiver?.getCurrentDirection();
             _videoSlotReady = current == TransceiverDirection.SendRecv ||
                 current == TransceiverDirection.SendOnly;
           } catch (_) {
@@ -1471,7 +1474,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         final dynamic sdp = data["sdpAnswer"];
         log(
           "[CAM] upgradeToVideoAnswer recv hasSdp=${sdp != null} "
-              "pending=$_localOfferPending",
+          "pending=$_localOfferPending",
         );
         if (sdp == null) return;
 
@@ -1715,7 +1718,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       log("[SHARE] remote stopped: $data");
       isRemoteScreenSharing.value = false;
       _remoteScreenStream = null;
-      screenRenderer.srcObject = null;
+      _clearScreenRenderer();
       showControlsTemporarily();
 
       if (isScreenSharing.value) {
@@ -1813,7 +1816,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         socket?.emit("screen_share_answer", {
           "callId": callId,
           "remoteUserId":
-          data["sharerId"] ?? data["userId"] ?? _screenPeerUserId,
+              data["sharerId"] ?? data["userId"] ?? _screenPeerUserId,
           "sdpAnswer": answer.toMap(),
         });
 
@@ -1894,11 +1897,23 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     await _disposePeerResources();
   }
 
+  void _clearScreenRenderer() {
+    try {
+      screenRenderer.srcObject = null;
+    } catch (_) {}
+  }
+
+  void _disposeScreenRenderer() {
+    try {
+      screenRenderer.dispose();
+    } catch (_) {}
+  }
+
   Future<void> _disposePeerResources() async {
     try {
       _peerDisconnectTimer?.cancel();
       _peerDisconnectTimer = null;
-      screenRenderer.srcObject = null;
+      _clearScreenRenderer();
       navigator.mediaDevices.ondevicechange = null;
 
       final RTCPeerConnection? pc = peer;
@@ -2103,6 +2118,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
         _everConnected = true;
         _cancelPeerDisconnectTimer();
+        unawaited(audioRouteController.reapplyCurrentRoute());
         return;
       }
 
@@ -2120,6 +2136,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (!identical(peer, pc)) return;
       unawaited(_handleRemoteTrack(event));
     };
+
+    await audioRouteController.prepareCall(isVideo: is_video == true);
 
     localStream = await navigator.mediaDevices.getUserMedia({
       'audio': {
@@ -2154,8 +2172,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       localRenderer.srcObject = null;
     }
 
+    final bool isIncomingCall = fromCallKit || args["callType"] == "Incoming";
+    log(
+      "[Call] Audio route start video=$is_video incoming=$isIncomingCall "
+      "fromCallKit=$fromCallKit callType=${args["callType"]}",
+    );
     unawaited(
-      audioRouteController.startCall(isVideo: is_video).catchError((e) {
+      audioRouteController
+          .startCall(isVideo: is_video, isIncoming: isIncomingCall)
+          .catchError((e) {
         log("[Call] Audio route start error: $e");
       }),
     );
@@ -2318,9 +2343,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   void _emitCameraState(bool cameraOn) {
     final String myUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
     String targetUser =
-    (myUserId == callerId.toString()) ? remoteUserId : callerId;
+        (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
     if (targetUser.isEmpty || targetUser == myUserId) {
       targetUser = (remoteUserId.isNotEmpty && remoteUserId != myUserId)
@@ -2330,7 +2355,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (targetUser.isEmpty || targetUser == myUserId) {
       log(
         "[CAM] no peer for cameraState=$cameraOn "
-            "(callerId=$callerId remoteUserId=$remoteUserId)",
+        "(callerId=$callerId remoteUserId=$remoteUserId)",
       );
       return;
     }
@@ -2362,7 +2387,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
     log(
       "[CAM] toggle -> on=$isVideoOn tracks=${vids.length} "
-          "sender=${_localVideoSender != null} slotReady=$_videoSlotReady",
+      "sender=${_localVideoSender != null} slotReady=$_videoSlotReady",
     );
 
     if (isVideoOn) {
@@ -2571,16 +2596,22 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     log("[SHARE] start begin videoOn=$isVideoOn");
 
     try {
-      await _startScreenShareForeground();
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        final bool ready = await _prepareAndroidProjection();
+        if (!ready) {
+          log("[SHARE] android projection not ready - share aborted");
+          return;
+        }
+      }
 
       final Map<String, dynamic> constraints = WebRTC.platformIsIOS
           ? <String, dynamic>{
-        'video': <String, dynamic>{'deviceId': 'broadcast'},
-      }
+              'video': <String, dynamic>{'deviceId': 'broadcast'},
+            }
           : <String, dynamic>{'video': true, 'audio': false};
 
       final MediaStream? stream =
-      await navigator.mediaDevices.getDisplayMedia(constraints);
+          await navigator.mediaDevices.getDisplayMedia(constraints);
       if (stream == null || stream.getVideoTracks().isEmpty) {
         log("[SHARE] getDisplayMedia returned no video track");
         throw Exception("No screen stream");
@@ -2591,7 +2622,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       screenTrack.enabled = true;
       log(
         "[SHARE] getDisplayMedia ok stream=${stream.id} "
-            "track=${screenTrack.id} ios=${WebRTC.platformIsIOS}",
+        "track=${screenTrack.id} ios=${WebRTC.platformIsIOS}",
       );
 
       screenTrack.onEnded = () {
@@ -2710,7 +2741,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await probe.setSrcObject(stream: stream);
       log(
         "[SHARE] ios: system picker is up - waiting for 'Start Broadcast' "
-            "(share does not start until a frame arrives)",
+        "(share does not start until a frame arrives)",
       );
 
       for (int i = 1; i <= 48; i++) {
@@ -2729,7 +2760,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         if (i % 10 == 0) {
           log(
             "[SHARE] ios: still waiting for Start Broadcast "
-                "(${i * 500}ms of 24000ms)",
+            "(${i * 500}ms of 24000ms)",
           );
         }
       }
@@ -2811,7 +2842,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (!live || i % 10 == 0 || flowing != live) {
         log(
           "[SHARE] frames t=${i}s encodeOut=${outW}x$outH "
-              "newFrames=$added bps=$outBps track=$trackState",
+          "newFrames=$added bps=$outBps track=$trackState",
         );
       }
 
@@ -2834,7 +2865,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         if (stuckTicks >= 5) {
           log(
             "[SHARE] frames stopped for 5s - broadcast ended or sender died, "
-                "stopping the share",
+            "stopping the share",
           );
           await stopScreenShare();
           Utils().fluttertoast("Screen sharing stopped");
@@ -2847,13 +2878,13 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         if (i == 5) {
           log(
             "[SHARE] no frames yet - tap Start Broadcast in the picker; "
-                "the share stays open and starts the moment frames arrive",
+            "the share stays open and starts the moment frames arrive",
           );
         }
         if (i == 20 || (i > 20 && i % 30 == 0)) {
           log(
             "[SHARE] still no capture at t=${i}s - Start Broadcast not "
-                "tapped (share kept alive on purpose, no abort on iOS)",
+            "tapped (share kept alive on purpose, no abort on iOS)",
           );
         }
         continue;
@@ -2922,8 +2953,36 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _startScreenShareForeground() async {
-    if (defaultTargetPlatform != TargetPlatform.android) return;
+  Future<bool> _prepareAndroidProjection() async {
+    if (defaultTargetPlatform != TargetPlatform.android) return true;
+
+    bool granted = false;
+    try {
+      granted = await Helper.requestCapturePermission();
+      log("[SHARE] android capture permission granted=$granted");
+    } catch (e) {
+      log("[SHARE] android capture permission error: $e");
+      Utils().fluttertoast("Could not start screen sharing");
+      return false;
+    }
+
+    if (!granted) {
+      log("[SHARE] android capture permission denied by user");
+      Utils().fluttertoast("Screen sharing permission denied");
+      return false;
+    }
+
+    final bool serviceUp = await _startScreenShareForeground();
+    if (!serviceUp) {
+      log("[SHARE] android projection service failed - share aborted");
+      Utils().fluttertoast("Could not start screen sharing");
+      _stopScreenShareForeground();
+    }
+    return serviceUp;
+  }
+
+  Future<bool> _startScreenShareForeground() async {
+    if (defaultTargetPlatform != TargetPlatform.android) return true;
 
     try {
       if (!FlutterForegroundTask.isInitialized) {
@@ -2943,32 +3002,45 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         log("[SHARE] foreground task initialized");
       }
 
-      if (await FlutterForegroundTask.isRunningService) {
-        await FlutterForegroundTask.stopService();
-        log("[SHARE] old foreground service stopped to add mediaProjection");
-        await Future<void>.delayed(const Duration(milliseconds: 250));
+      for (int attempt = 1; attempt <= 2; attempt++) {
+        if (await FlutterForegroundTask.isRunningService) {
+          await FlutterForegroundTask.stopService();
+          log("[SHARE] old foreground service stopped to add mediaProjection");
+        }
+
+        final ServiceRequestResult result =
+            await FlutterForegroundTask.startService(
+          serviceId: 9911,
+          serviceTypes: const <ForegroundServiceTypes>[
+            ForegroundServiceTypes.microphone,
+            ForegroundServiceTypes.mediaProjection,
+          ],
+          notificationTitle: 'Screen sharing',
+          notificationText: 'You are sharing your screen',
+        );
+
+        log("[SHARE] foreground service attempt=$attempt result=$result");
+
+        if (await _awaitForegroundRunning()) {
+          log("[SHARE] foreground service running with mediaProjection");
+          return true;
+        }
       }
 
-      final ServiceRequestResult result =
-      await FlutterForegroundTask.startService(
-        serviceId: 9911,
-        serviceTypes: const <ForegroundServiceTypes>[
-          ForegroundServiceTypes.microphone,
-          ForegroundServiceTypes.mediaProjection,
-        ],
-        notificationTitle: 'Screen sharing',
-        notificationText: 'You are sharing your screen',
-      );
-
-      log(
-        "[SHARE] foreground service result=$result running="
-            "${await FlutterForegroundTask.isRunningService}",
-      );
-
-      await Future<void>.delayed(const Duration(milliseconds: 300));
+      log("[SHARE] foreground service never reported running");
+      return false;
     } catch (e) {
       log("[SHARE] foreground service start error: $e");
+      return false;
     }
+  }
+
+  Future<bool> _awaitForegroundRunning() async {
+    for (int i = 0; i < 10; i++) {
+      if (await FlutterForegroundTask.isRunningService) return true;
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+    return false;
   }
 
   Future<void> _stopScreenShareForeground() async {
@@ -3040,8 +3112,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
     if (!_screenRendererReleased) {
       _screenRendererReleased = true;
-      screenRenderer.srcObject = null;
-      unawaited(screenRenderer.dispose());
+      _clearScreenRenderer();
+      _disposeScreenRenderer();
     }
 
     unawaited(_disposePeerResources());
