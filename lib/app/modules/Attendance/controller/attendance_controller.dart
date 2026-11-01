@@ -64,6 +64,11 @@ class AttendanceController extends GetxController {
   final Set<int> _pendingMutations = {};
   Timer? _fallbackTimer;
 
+  /// True once a live attendance event has arrived over the socket in this
+  /// session, i.e. the realtime path works. While it holds and the socket is
+  /// connected, the fallback refresh is skipped (no idle polling).
+  bool _socketProven = false;
+
   /// Called by widgets showing a poll (chat card, View Attendance).
   void watch(int pollId) {
     if (pollId <= 0) return;
@@ -88,6 +93,7 @@ class AttendanceController extends GetxController {
     if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
       return;
     }
+    if (_socketProven && _socket.isSocketConnected) return;
     final now = DateTime.now();
     for (final pollId in _watchers.keys.toList()) {
       final poll = polls[pollId];
@@ -164,6 +170,7 @@ class AttendanceController extends GetxController {
     polls[incoming.id] = merged;
     if (fromEvent) {
       _lastLiveAt[incoming.id] = DateTime.now();
+      _socketProven = true;
       debugPrint(
         "[RT_DEBUG] attendance poll=${incoming.id} applied v${merged.version} total=${merged.totalVotes} ${merged.countsByOption}",
       ); // TODO: remove debug log
