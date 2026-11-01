@@ -61,11 +61,22 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
 
   String? _statusError;
   String? _photoError;
+  bool _loadFailed = false;
 
   @override
   void initState() {
     super.initState();
-    _controller.ensureLoaded(widget.pollId);
+    _load();
+  }
+
+  Future<void> _load({bool force = false}) async {
+    if (_loadFailed) setState(() => _loadFailed = false);
+    await _controller.ensureLoaded(widget.pollId, force: force);
+    if (mounted &&
+        _controller.polls[widget.pollId] == null &&
+        widget.initialPoll == null) {
+      setState(() => _loadFailed = true);
+    }
   }
 
   String get _timeLabel {
@@ -89,10 +100,13 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
         _attendancePhoto = File(result);
         _photoError = null;
       });
+      // The camera screen's "Submit" confirms the photo, so submit right away.
+      _submitVote(poll);
     }
   }
 
   Future<void> _submitVote(AttendancePoll poll) async {
+    if (_isSubmitting) return;
     setState(() {
       _statusError = null;
       _photoError = null;
@@ -102,8 +116,9 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
     if (option == null) {
       setState(() => _statusError = "Please select your status");
     } else if (poll.requiresPhoto(option.id) && _attendancePhoto == null) {
-      setState(() => _photoError =
-          "Photo required for ${option.label}. Please take a photo.");
+      // Go straight to the camera; it submits after the photo is confirmed.
+      _openCamera(poll);
+      return;
     }
     if (_statusError != null || _photoError != null) {
       _showSnack("Validation Error", _photoError ?? _statusError!,
@@ -221,10 +236,12 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
 
       final Widget body;
       if (poll == null) {
-        body = _buildLoadingCard();
+        body = _loadFailed ? _buildLoadErrorCard() : _buildLoadingCard();
       } else if (isAdmin || poll.isClosed) {
         body = _buildSummaryCard(poll, memberCount, isAdmin: isAdmin);
-      } else if (poll.myVote != null && !_isChangingVote) {
+      } else if (poll.myVote != null && !_isChangingVote && !_isSubmitting) {
+        // Shown only once the server confirms; while submitting the form
+        // stays visible with its spinner.
         body = _buildVotedCard(poll, memberCount);
       } else {
         body = _buildVoteForm(poll, memberCount);
@@ -305,6 +322,30 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
           offset: const Offset(0, 4),
         ),
       ],
+    );
+  }
+
+  Widget _buildLoadErrorCard() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: _cardDecoration(),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline_rounded, color: _error, size: 20.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              "Couldn't load attendance",
+              style: TextStyle(fontSize: 13.sp, color: _textDark),
+            ),
+          ),
+          TextButton(
+            onPressed: () => _load(force: true),
+            child: const Text("Retry"),
+          ),
+        ],
+      ),
     );
   }
 
@@ -910,13 +951,17 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
     final isSelected = _selectedOptionId == option.id;
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedOptionId = option.id;
-          _statusError = null;
-          if (!poll.requiresPhoto(option.id)) _photoError = null;
-        });
-      },
+      onTap: _isSubmitting
+          ? null
+          : () {
+              setState(() {
+                _selectedOptionId = option.id;
+                _statusError = null;
+                if (!poll.requiresPhoto(option.id)) _photoError = null;
+              });
+              // Warm up GPS so submitting doesn't wait on it.
+              _controller.prefetchLocation();
+            },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 11.h),
         decoration: BoxDecoration(

@@ -442,19 +442,23 @@ class SocketMessageService extends GetxService {
     "attendance:deleted",
   ];
   EventHandler<dynamic>? _attendanceReconnectHandler;
+  int _attendanceListenerToken = 0;
 
   /// Group-room attendance events. [onReconnect] runs on every (re)connect so
   /// the caller can `attendance:sync` the polls it is showing.
-  void listenAttendanceEvents({
+  /// Returns a token for [stopListeningAttendanceEvents], so a closing chat
+  /// can't remove listeners a newly opened chat already registered.
+  int? listenAttendanceEvents({
     required void Function(String event, dynamic data) onEvent,
     void Function()? onReconnect,
   }) {
     final s = _socket;
     if (s == null) {
       log("listenAttendanceEvents skipped: _socket is null");
-      return;
+      return null;
     }
-    stopListeningAttendanceEvents();
+    _removeAttendanceListeners();
+    final token = ++_attendanceListenerToken;
     for (final event in _attendanceEvents) {
       s.on(event, (data) {
         log("RECEIVED $event => $data");
@@ -465,9 +469,15 @@ class SocketMessageService extends GetxService {
       _attendanceReconnectHandler = (_) => onReconnect();
       s.on("connect", _attendanceReconnectHandler!);
     }
+    return token;
   }
 
-  void stopListeningAttendanceEvents() {
+  void stopListeningAttendanceEvents(int? token) {
+    if (token == null || token != _attendanceListenerToken) return;
+    _removeAttendanceListeners();
+  }
+
+  void _removeAttendanceListeners() {
     for (final event in _attendanceEvents) {
       _socket?.off(event);
     }

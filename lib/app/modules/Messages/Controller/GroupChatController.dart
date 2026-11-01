@@ -165,6 +165,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     itemPositionsListener.itemPositions.addListener(_onScrollForOlderMessages);
   }
 
+  int? _attendanceListenerToken;
+
   bool _isOtherGroup(dynamic eventGroupId) =>
       eventGroupId != null && eventGroupId.toString() != groupId.toString();
 
@@ -427,7 +429,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       },
     );
 
-    socketService.listenAttendanceEvents(
+    AttendanceController.instance.markAllStale();
+    _attendanceListenerToken = socketService.listenAttendanceEvents(
       onEvent: _onAttendanceEvent,
       onReconnect: () => AttendanceController.instance.syncPolls(
         _visibleAttendancePollIds(),
@@ -1800,7 +1803,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     _groupTypingUserTimers.clear();
     groupTypingUsers.clear();
     socketService.stopListeningGroupTyping();
-    socketService.stopListeningAttendanceEvents();
+    socketService.stopListeningAttendanceEvents(_attendanceListenerToken);
     ChatTranslationService.instance.resetVisibility();
     ChatTranslationService.instance.stopAudio();
     WidgetsBinding.instance.removeObserver(this);

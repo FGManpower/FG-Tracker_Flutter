@@ -132,7 +132,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
       });
     }
     try {
-      final page = await _controller.fetchVoters(
+      var page = await _controller.fetchVoters(
         pollId: widget.pollId,
         optionId: _filter.optionId,
         notVoted: _filter.notVoted,
@@ -140,6 +140,34 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
         limit: _pageSize,
         search: _searchController.text,
       );
+
+      // If the unfiltered "Responded" list is empty while the poll has votes,
+      // load each option's list and merge them.
+      final poll = _controller.polls[widget.pollId];
+      if (_filter == const _VoterFilter() &&
+          page.voters.isEmpty &&
+          (poll?.totalVotes ?? 0) > 0) {
+        final perOption = await Future.wait([
+          for (final o in poll!.options)
+            _controller.fetchVoters(
+              pollId: widget.pollId,
+              optionId: o.id,
+              limit: _pageSize,
+              search: _searchController.text,
+            ),
+        ]);
+        final merged = perOption.expand((p) => p.voters).toList()
+          ..sort((a, b) => (b.votedAt ?? DateTime(0))
+              .compareTo(a.votedAt ?? DateTime(0)));
+        page = AttendanceVotersPage(
+          voters: merged,
+          total: merged.length,
+          countsByOption: page.countsByOption,
+          notVoted: page.notVoted,
+          hasNext: perOption.any((p) => p.hasNext),
+        );
+      }
+
       if (!mounted) return;
       setState(() {
         _voters

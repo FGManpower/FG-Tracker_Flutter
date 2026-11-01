@@ -177,17 +177,38 @@ class AttendanceVoter {
 
   String? get profileImageUrl => attendanceMediaUrl(profileImage);
 
-  factory AttendanceVoter.fromJson(Map<String, dynamic> json) =>
-      AttendanceVoter(
-        userId: json["userId"]?.toString() ?? "",
-        name: _nonEmpty(json["name"]) ?? "Member",
-        profileImage: _nonEmpty(json["profileImage"]),
-        optionId: _nonEmpty(json["optionId"]),
-        optionLabel: _nonEmpty(json["optionLabel"]),
-        votedAt: _toDate(json["votedAt"]),
-        photoUrl: _nonEmpty(json["photoUrl"]),
-        location: AttendanceLocation.fromJson(json["location"]),
-      );
+  /// Accepts flat rows and rows with a nested `user` (camelCase or the
+  /// PascalCase `UserId/Name/ProfileImage` this backend uses elsewhere).
+  factory AttendanceVoter.fromJson(Map<String, dynamic> json) {
+    final user = _asMap(json["user"]) ?? _asMap(json["User"]) ?? const {};
+    dynamic pick(List<String> keys) {
+      for (final k in keys) {
+        if (_nonEmpty(json[k]) != null) return json[k];
+        if (_nonEmpty(user[k]) != null) return user[k];
+      }
+      return null;
+    }
+
+    final location = AttendanceLocation.fromJson(json["location"]) ??
+        AttendanceLocation.fromJson({
+          "lat": json["latitude"],
+          "lng": json["longitude"],
+          "name": json["locationName"],
+          "accuracy": json["locationAccuracy"],
+        });
+
+    return AttendanceVoter(
+      userId: pick(["userId", "UserId", "id", "Id"])?.toString() ?? "",
+      name: _nonEmpty(pick(["name", "Name", "userName", "fullName"])) ??
+          "Member",
+      profileImage: _nonEmpty(pick(["profileImage", "ProfileImage", "avatar"])),
+      optionId: _nonEmpty(json["optionId"]),
+      optionLabel: _nonEmpty(json["optionLabel"]),
+      votedAt: _toDate(json["votedAt"] ?? json["createdAt"]),
+      photoUrl: _nonEmpty(json["photoUrl"]),
+      location: location,
+    );
+  }
 }
 
 class AttendancePoll {
@@ -216,6 +237,10 @@ class AttendancePoll {
   final DateTime? createdAt;
   final AttendanceVote? myVote;
 
+  /// False when the payload had no `counts` (partial socket updates), so a
+  /// merge must keep the local counts instead of zeroing them.
+  final bool hasCounts;
+
   const AttendancePoll({
     required this.id,
     this.groupId,
@@ -237,6 +262,7 @@ class AttendancePoll {
     this.createdBy,
     this.createdAt,
     this.myVote,
+    this.hasCounts = true,
   });
 
   bool get isOpen => status == "open";
@@ -313,6 +339,7 @@ class AttendancePoll {
       createdBy: _nonEmpty(json["createdBy"]),
       createdAt: _toDate(json["createdAt"]),
       myVote: AttendanceVote.fromJson(outer["myVote"] ?? json["myVote"]),
+      hasCounts: json["counts"] is Map,
     );
   }
 
@@ -367,9 +394,9 @@ class AttendancePoll {
       voterVisibility: server.voterVisibility,
       deadlineAt: server.deadlineAt ?? deadlineAt,
       status: server.status,
-      totalVotes: server.totalVotes,
-      countsByOption: server.countsByOption,
-      version: server.version,
+      totalVotes: server.hasCounts ? server.totalVotes : totalVotes,
+      countsByOption: server.hasCounts ? server.countsByOption : countsByOption,
+      version: server.version > version ? server.version : version,
       createdBy: server.createdBy ?? createdBy,
       createdAt: server.createdAt ?? createdAt,
       myVote: hasMyVoteField ? server.myVote : (server.myVote ?? myVote),

@@ -151,6 +151,10 @@ class ChatBubble extends StatelessWidget {
             child: Builder(
               builder: (bubbleContext) {
                 return Obx(() {
+                  // Read the observable unconditionally: an Obx that reads none
+                  // (e.g. for attendance cards) throws "improper use of GetX".
+                  final isHighlighted =
+                      controller.highlightedMessageId.value == message.id;
                   final isAttendance =
                       !_isDeletedMessage && message.messageType == "attendance";
 
@@ -180,8 +184,7 @@ class ChatBubble extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: isAttendance
                                 ? Colors.transparent
-                                : (controller.highlightedMessageId.value ==
-                                message.id
+                                : (isHighlighted
                                 ? Colors.yellow.withValues(alpha: .35)
                                 : bgColor),
                             borderRadius: isAttendance
@@ -1586,6 +1589,10 @@ class GroupChatBubble extends StatelessWidget {
             child: Builder(
               builder: (bubbleContext) {
                 return Obx(() {
+                  // Read the observable unconditionally: an Obx that reads none
+                  // (e.g. for attendance cards) throws "improper use of GetX".
+                  final isHighlighted =
+                      controller.highlightedMessageId.value == message.id;
                   final isAttendance =
                       !_isDeletedMessage && message.messageType == "attendance";
 
@@ -1617,8 +1624,7 @@ class GroupChatBubble extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: isAttendance
                                 ? Colors.transparent
-                                : (controller.highlightedMessageId.value ==
-                                message.id
+                                : (isHighlighted
                                 ? Colors.yellow.withValues(
                               alpha: .35,
                             )

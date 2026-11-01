@@ -10,6 +10,12 @@ import '../../../Data/Services/Socket/Socket_Message_Services.dart'
     show SocketMessageService;
 import '../models/attendance_poll_model.dart';
 
+class AttendanceLocationFix {
+  final Position position;
+  final String? placeName;
+  const AttendanceLocationFix(this.position, this.placeName);
+}
+
 class AttendanceVotersPage {
   final List<AttendanceVoter> voters;
   final int total;
@@ -41,7 +47,11 @@ class AttendanceController extends GetxController {
 
   SocketMessageService get _socket => SocketMessageService.instance;
 
-  /// Loads the poll + current user's vote once per session.
+  /// Forces the next [ensureLoaded] per poll to refetch. Called when a chat
+  /// opens, since votes may have changed while it was closed (no socket).
+  void markAllStale() => _loaded.clear();
+
+  /// Loads the poll + current user's vote (once until marked stale).
   Future<void> ensureLoaded(int pollId, {bool force = false}) async {
     if (pollId <= 0 || _loading.contains(pollId)) return;
     if (!force && _loaded.contains(pollId)) return;
@@ -75,8 +85,11 @@ class AttendanceController extends GetxController {
       polls[incoming.id] = incoming;
       return incoming;
     }
-    if (fromEvent && incoming.version <= local.version) return local;
-    if (!fromEvent && incoming.version < local.version) return local;
+    // version 0 = payload without a version; don't drop it.
+    if (incoming.version > 0) {
+      if (fromEvent && incoming.version <= local.version) return local;
+      if (!fromEvent && incoming.version < local.version) return local;
+    }
     final merged = local.mergeServer(incoming, hasMyVoteField: hasMyVoteField);
     polls[incoming.id] = merged;
     return merged;
@@ -94,9 +107,11 @@ class AttendanceController extends GetxController {
             ? Map<String, dynamic>.from(map["message"])
             : null;
       case "attendance:updated":
+        // Documented as {poll, version}; also accept a flat poll payload.
         final poll = map["poll"] is Map
-            ? {...Map<String, dynamic>.from(map["poll"]), if (map["version"] != null) "version": map["version"]}
-            : null;
+            ? Map<String, dynamic>.from(map["poll"])
+            : Map<String, dynamic>.from(map);
+        if (map["version"] != null) poll["version"] = map["version"];
         _apply(poll, fromEvent: true);
         break;
       case "attendance:edited":
@@ -205,19 +220,16 @@ class AttendanceController extends GetxController {
     }
 
     try {
-      final position = await _currentPosition();
-      final placeName = position != null
-          ? await _placeName(position.latitude, position.longitude)
-          : null;
+      final fix = await prefetchLocation();
 
       final res = await AttendanceRepo.vote(
         pollId: pollId,
         optionId: optionId,
         clientRequestId: _requestId(),
-        latitude: position?.latitude,
-        longitude: position?.longitude,
-        locationName: placeName,
-        locationAccuracy: position?.accuracy,
+        latitude: fix?.position.latitude,
+        longitude: fix?.position.longitude,
+        locationName: fix?.placeName,
+        locationAccuracy: fix?.position.accuracy,
         photoPath: photoPath,
       );
 
@@ -293,10 +305,16 @@ class AttendanceController extends GetxController {
       limit: limit,
       search: search,
     );
-    final data = res["data"];
-    if (res["status"] != true || data is! Map) {
+    log("ATTENDANCE VOTERS RAW (poll=$pollId option=$optionId notVoted=$notVoted) => $res");
+    if (res["status"] == false) {
       throw res["message"]?.toString() ?? "Unable to load voters";
     }
+    final rawData = res["data"];
+    // `data` is documented as {counts, voters, pagination}; also accept the
+    // list directly or under another common key.
+    final Map data = rawData is Map
+        ? rawData
+        : {"voters": rawData is List ? rawData : const []};
 
     final counts = data["counts"] is Map ? data["counts"] as Map : const {};
     final byOption = <String, int>{};
@@ -305,7 +323,10 @@ class AttendanceController extends GetxController {
         byOption[k.toString()] = int.tryParse(v.toString()) ?? 0;
       });
     }
-    final voters = (data["voters"] is List ? data["voters"] as List : const [])
+    final rawVoters = const ["voters", "members", "items", "rows", "list", "results", "data"]
+        .map((k) => data[k])
+        .firstWhere((v) => v is List, orElse: () => const []) as List;
+    final voters = rawVoters
         .whereType<Map>()
         .map((v) => AttendanceVoter.fromJson(Map<String, dynamic>.from(v)))
         .toList();
@@ -403,6 +424,30 @@ class AttendanceController extends GetxController {
     b[8] = (b[8] & 0x3f) | 0x80;
     final h = b.map((e) => e.toRadixString(16).padLeft(2, '0')).join();
     return "${h.substring(0, 8)}-${h.substring(8, 12)}-${h.substring(12, 16)}-${h.substring(16, 20)}-${h.substring(20)}";
+  }
+
+  Future<AttendanceLocationFix?>? _locationFuture;
+  DateTime? _locationFetchedAt;
+
+  /// Starts (or reuses, for 2 minutes) the GPS + place-name lookup. Called
+  /// when a member picks an option so submitting doesn't wait on GPS.
+  Future<AttendanceLocationFix?> prefetchLocation() {
+    final fresh = _locationFetchedAt != null &&
+        DateTime.now().difference(_locationFetchedAt!) <
+            const Duration(minutes: 2);
+    if (_locationFuture == null || !fresh) {
+      _locationFetchedAt = DateTime.now();
+      _locationFuture = () async {
+        final position = await _currentPosition();
+        if (position == null) {
+          _locationFuture = null; // retry next time
+          return null;
+        }
+        final name = await _placeName(position.latitude, position.longitude);
+        return AttendanceLocationFix(position, name);
+      }();
+    }
+    return _locationFuture!;
   }
 
   Future<Position?> _currentPosition() async {
