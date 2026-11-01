@@ -702,6 +702,7 @@ class CallKitService with WidgetsBindingObserver {
       } catch (e) {
         _ck('dismiss error for $target: $e');
       }
+
     }
 
     if (endAllUnaccepted &&
@@ -711,6 +712,7 @@ class CallKitService with WidgetsBindingObserver {
       _shown.clear();
       try {
         await FlutterCallkitIncoming.endAllCalls();
+
       } catch (e) {
         _ck('dismiss endAllCalls fallback error: $e');
       }
@@ -901,6 +903,8 @@ class CallKitService with WidgetsBindingObserver {
       callId: callId,
       endAllUnaccepted: true,
     );
+
+
   };
 
   late final void Function(dynamic) _hMissed = (data) {

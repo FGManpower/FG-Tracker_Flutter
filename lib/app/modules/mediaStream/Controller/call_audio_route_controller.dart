@@ -99,7 +99,7 @@ class CallAudioRouteController extends GetxController
   int get _androidSdk {
     if (_androidSdkCache == 0) {
       final RegExpMatch? match =
-      RegExp(r'SDK (\d+)').firstMatch(Platform.operatingSystemVersion);
+          RegExp(r'SDK (\d+)').firstMatch(Platform.operatingSystemVersion);
       _androidSdkCache = int.tryParse(match?.group(1) ?? '') ?? 0;
     }
     return _androidSdkCache;
@@ -115,11 +115,11 @@ class CallAudioRouteController extends GetxController
   CallAudioRoute get confirmedRoute => currentRoute.value;
 
   List<CallAudioRoute> get availableRoutes => <CallAudioRoute>[
-    if (!isVideoCall.value && _hasEarpiece) CallAudioRoute.earpiece,
-    if (_hasSpeaker) CallAudioRoute.speaker,
-    if (isBluetoothConnected.value) CallAudioRoute.bluetooth,
-    if (isHeadsetConnected.value) CallAudioRoute.headset,
-  ];
+        if (!isVideoCall.value && _hasEarpiece) CallAudioRoute.earpiece,
+        if (_hasSpeaker) CallAudioRoute.speaker,
+        if (isBluetoothConnected.value) CallAudioRoute.bluetooth,
+        if (isHeadsetConnected.value) CallAudioRoute.headset,
+      ];
 
   CallAudioRoute get _defaultRoute =>
       isVideoCall.value ? CallAudioRoute.speaker : CallAudioRoute.earpiece;
@@ -148,7 +148,7 @@ class CallAudioRouteController extends GetxController
       _audioSessionReady = active;
       _log(
         'prepareCall video=$isVideo mode=inCommunication '
-            'active=$active sdk=$_androidSdk',
+        'active=$active sdk=$_androidSdk',
       );
     } catch (error) {
       _log('prepareCall error: $error');
@@ -185,9 +185,9 @@ class CallAudioRouteController extends GetxController
 
     _log(
       'startCall video=$isVideo incoming=$isIncoming os=${Platform.operatingSystemVersion} '
-          'default=$_defaultRoute route=${currentRoute.value} '
-          'newOwner=$newOwner userSel=$_userSelectedRoute '
-          'tracks=${_remoteAudioTracks.length}',
+      'default=$_defaultRoute route=${currentRoute.value} '
+      'newOwner=$newOwner userSel=$_userSelectedRoute '
+      'tracks=${_remoteAudioTracks.length}',
     );
 
     await _resetNativeAudio();
@@ -206,7 +206,7 @@ class CallAudioRouteController extends GetxController
     _startRouteKeeper(immediate: true);
 
     final List<int> warmups =
-    Platform.isIOS ? <int>[700, 1800] : <int>[900, 2500];
+        Platform.isIOS ? <int>[700, 1800] : <int>[900, 2500];
     for (final int ms in warmups) {
       _warmupRouteTimers.add(
         Timer(Duration(milliseconds: ms), () {
@@ -222,7 +222,7 @@ class CallAudioRouteController extends GetxController
   Future<void> stopCall() async {
     _log(
       'stopCall route=${currentRoute.value} gen=$_myGeneration/$_generation '
-          'owns=$_ownsAudio',
+      'owns=$_ownsAudio',
     );
 
     _isDisposed = true;
@@ -303,7 +303,7 @@ class CallAudioRouteController extends GetxController
     }
 
     final CallAudioRoute keep =
-    isVideo ? CallAudioRoute.speaker : CallAudioRoute.earpiece;
+        isVideo ? CallAudioRoute.speaker : CallAudioRoute.earpiece;
     _log(
       'updateCallType(video=$isVideo) keeps $keep (was ${currentRoute.value})',
     );
@@ -314,7 +314,7 @@ class CallAudioRouteController extends GetxController
   Future<void> selectRoute(CallAudioRoute route) async {
     _log(
       'selectRoute($route) disposed=$_isDisposed route=${currentRoute.value} '
-          'available=$availableRoutes',
+      'available=$availableRoutes',
     );
     if (_isDisposed) return;
 
@@ -349,7 +349,7 @@ class CallAudioRouteController extends GetxController
 
     _log(
       'onRemoteAudioTrack id=${track.id} route=${currentRoute.value} '
-          'incoming=$_isIncomingCall tracks=${_remoteAudioTracks.length}',
+      'incoming=$_isIncomingCall tracks=${_remoteAudioTracks.length}',
     );
 
     await _applyCurrentAudioRoute();
@@ -358,7 +358,7 @@ class CallAudioRouteController extends GetxController
 
     _log(
       'onRemoteAudioTrack settled route=${currentRoute.value} '
-          'actual=${await _readActualRoute()}',
+      'actual=${await _readActualRoute()}',
     );
   }
 
@@ -379,10 +379,10 @@ class CallAudioRouteController extends GetxController
   }
 
   Future<void> setRoute(
-      CallAudioRoute route, {
-        bool userInitiated = false,
-        bool force = false,
-      }) {
+    CallAudioRoute route, {
+    bool userInitiated = false,
+    bool force = false,
+  }) {
     if (userInitiated) {
       _userSelectedRoute = true;
       _log('setRoute($route) user=true immediate');
@@ -402,10 +402,10 @@ class CallAudioRouteController extends GetxController
   }
 
   Future<void> _setRouteInternal(
-      CallAudioRoute requested, {
-        bool userInitiated = false,
-        bool force = false,
-      }) async {
+    CallAudioRoute requested, {
+    bool userInitiated = false,
+    bool force = false,
+  }) async {
     if (_isDisposed) {
       _log('_setRouteInternal skipped: disposed');
       return;
@@ -429,13 +429,13 @@ class CallAudioRouteController extends GetxController
     currentRoute.value = target;
     _log(
       'route state $previous -> $target userSel=$_userSelectedRoute '
-          'user=$userInitiated',
+      'user=$userInitiated',
     );
 
     try {
       _log(
         'apply $target speaker=${target == CallAudioRoute.speaker} '
-            '(requested=$requested user=$userInitiated)',
+        '(requested=$requested user=$userInitiated)',
       );
 
       await _configureAudioSession(route: target);
@@ -527,9 +527,9 @@ class CallAudioRouteController extends GetxController
           androidAudioMode: AndroidAudioMode.inCommunication,
           androidAudioStreamType: AndroidAudioStreamType.voiceCall,
           androidAudioAttributesUsageType:
-          AndroidAudioAttributesUsageType.voiceCommunication,
+              AndroidAudioAttributesUsageType.voiceCommunication,
           androidAudioAttributesContentType:
-          AndroidAudioAttributesContentType.speech,
+              AndroidAudioAttributesContentType.speech,
           forceHandleAudioRouting: false,
         ),
       );
@@ -550,10 +550,10 @@ class CallAudioRouteController extends GetxController
         final bool wantsSpeaker = targetRoute == CallAudioRoute.speaker;
         final AVAudioSessionCategoryOptions options = wantsSpeaker
             ? (AVAudioSessionCategoryOptions.allowBluetooth |
-        AVAudioSessionCategoryOptions.allowBluetoothA2dp |
-        AVAudioSessionCategoryOptions.defaultToSpeaker)
+                AVAudioSessionCategoryOptions.allowBluetoothA2dp |
+                AVAudioSessionCategoryOptions.defaultToSpeaker)
             : (AVAudioSessionCategoryOptions.allowBluetooth |
-        AVAudioSessionCategoryOptions.allowBluetoothA2dp);
+                AVAudioSessionCategoryOptions.allowBluetoothA2dp);
 
         await session.configure(
           AudioSessionConfiguration(
@@ -602,8 +602,8 @@ class CallAudioRouteController extends GetxController
 
       _log(
         'playback path ready route=${currentRoute.value} '
-            'speaker=$isSpeakerOn tracks=${_remoteAudioTracks.length} '
-            'available=$availableRoutes',
+        'speaker=$isSpeakerOn tracks=${_remoteAudioTracks.length} '
+        'available=$availableRoutes',
       );
     } catch (error) {
       _log('ensurePlaybackPath error: $error');
@@ -646,14 +646,14 @@ class CallAudioRouteController extends GetxController
     }
     _log(
       'android apply -> $route matches=$ok '
-          'actual=${await _readActualRoute()} speaker=$isSpeakerOn',
+      'actual=${await _readActualRoute()} speaker=$isSpeakerOn',
     );
   }
 
   Future<bool> _assertAndroidDevice(
-      CallAudioRoute route, {
-        bool forceClear = false,
-      }) async {
+    CallAudioRoute route, {
+    bool forceClear = false,
+  }) async {
     final AndroidAudioManager am = AndroidAudioManager();
     final bool speaker = route == CallAudioRoute.speaker;
 
@@ -707,8 +707,8 @@ class CallAudioRouteController extends GetxController
     final bool satisfied = _routeSatisfied(route, actual, legacySpeaker);
     _log(
       'assert ${route.name} written=$written actual=$actual '
-          'legacySpeaker=$legacySpeaker satisfied=$satisfied sdk=$_androidSdk '
-          'mode=${await _androidModeName()} devices=${await _deviceSummary()}',
+      'legacySpeaker=$legacySpeaker satisfied=$satisfied sdk=$_androidSdk '
+      'mode=${await _androidModeName()} devices=${await _deviceSummary()}',
     );
 
     return satisfied;
@@ -737,10 +737,10 @@ class CallAudioRouteController extends GetxController
   }
 
   bool _routeSatisfied(
-      CallAudioRoute want,
-      CallAudioRoute? actual,
-      bool legacySpeaker,
-      ) {
+    CallAudioRoute want,
+    CallAudioRoute? actual,
+    bool legacySpeaker,
+  ) {
     if (actual != null) {
       return actual == want || _routeGroupsMatch(want, actual);
     }
@@ -752,7 +752,7 @@ class CallAudioRouteController extends GetxController
 
     try {
       final List<AndroidAudioDeviceInfo> devices =
-      await am.getAvailableCommunicationDevices();
+          await am.getAvailableCommunicationDevices();
 
       AndroidAudioDeviceInfo? target;
       for (final AndroidAudioDeviceInfo device in devices) {
@@ -775,7 +775,7 @@ class CallAudioRouteController extends GetxController
       final bool ok = await am.setCommunicationDevice(target);
       _log(
         'setCommunicationDevice(${target.type.name}#${target.id}) '
-            'route=${route.name} ok=$ok',
+        'route=${route.name} ok=$ok',
       );
       return ok;
     } catch (error) {
@@ -827,7 +827,7 @@ class CallAudioRouteController extends GetxController
       try {
         final AndroidAudioManager am = AndroidAudioManager();
         final AndroidAudioDeviceInfo? device =
-        await am.getCommunicationDevice();
+            await am.getCommunicationDevice();
         if (device == null) return null;
         return _routeOfDevice(device.type);
       } catch (error) {
@@ -936,7 +936,7 @@ class CallAudioRouteController extends GetxController
       if (_keeperStreak >= 2) {
         _log(
           'keeper confirmed ${want.name} after $_keeperAttempt attempt(s) '
-              'actual=${await _readActualRoute()}',
+          'actual=${await _readActualRoute()}',
         );
         _keeperRunning = false;
         _startDriftWatch();
@@ -950,8 +950,8 @@ class CallAudioRouteController extends GetxController
       _keeperRunning = false;
       _log(
         'ROUTE_UNSTABLE want=${want.name} '
-            'actual=${await _readActualRoute()} devices=${await _deviceSummary()} '
-            'speaker=$isSpeakerOn mode=${await _androidModeName()}',
+        'actual=${await _readActualRoute()} devices=${await _deviceSummary()} '
+        'speaker=$isSpeakerOn mode=${await _androidModeName()}',
       );
       _startDriftWatch();
       return;
@@ -990,7 +990,7 @@ class CallAudioRouteController extends GetxController
 
       _log(
         'drift detected want=${want.name} actual=$actual '
-            'legacySpeaker=$legacySpeaker',
+        'legacySpeaker=$legacySpeaker',
       );
       _startRouteKeeper(immediate: true);
     });
@@ -1014,7 +1014,7 @@ class CallAudioRouteController extends GetxController
     try {
       final AndroidAudioManager am = AndroidAudioManager();
       final List<AndroidAudioDeviceInfo> devices =
-      await am.getAvailableCommunicationDevices();
+          await am.getAvailableCommunicationDevices();
       return devices
           .map((AndroidAudioDeviceInfo d) => '${d.type.name}#${d.id}')
           .join('|');
@@ -1055,7 +1055,7 @@ class CallAudioRouteController extends GetxController
       try {
         final AndroidAudioManager am = AndroidAudioManager();
         final List<AndroidAudioDeviceInfo> devices =
-        await am.getAvailableCommunicationDevices();
+            await am.getAvailableCommunicationDevices();
 
         if (devices.isNotEmpty) {
           _log(
@@ -1127,8 +1127,8 @@ class CallAudioRouteController extends GetxController
 
     _log(
       'devices speaker=$hasSpeaker earpiece=$hasEarpiece '
-          'bt=$hasBluetooth($bluetoothName) wired=$hasWired($wiredName) '
-          'available=$availableRoutes',
+      'bt=$hasBluetooth($bluetoothName) wired=$hasWired($wiredName) '
+      'available=$availableRoutes',
     );
 
     if (changed) {
@@ -1148,7 +1148,7 @@ class CallAudioRouteController extends GetxController
 
       await _devicesSub?.cancel();
       _devicesSub = session.devicesStream.listen(
-            (_) => _scheduleDeviceRefresh(),
+        (_) => _scheduleDeviceRefresh(),
         onError: (Object error) => _log('devices stream error: $error'),
       );
 
