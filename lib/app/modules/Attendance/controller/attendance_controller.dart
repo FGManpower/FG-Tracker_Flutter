@@ -1,193 +1,406 @@
 import 'dart:developer';
+import 'dart:math' show Random, max;
 
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
-import '../../../Core/constant/pref_res.dart';
-import '../../../Core/values/global.dart';
 import '../../../Data/Repositories/attendance_repo.dart';
+import '../../../Data/Services/Socket/Socket_Message_Services.dart'
+    show SocketMessageService;
 import '../models/attendance_poll_model.dart';
 
-/// Shared store for attendance cards. Cards read from [polls] by
-/// attendanceId so REST refreshes and socket events update them in place.
+class AttendanceVotersPage {
+  final List<AttendanceVoter> voters;
+  final int total;
+  final Map<String, int> countsByOption;
+  final int notVoted;
+  final bool hasNext;
+
+  const AttendanceVotersPage({
+    required this.voters,
+    required this.total,
+    required this.countsByOption,
+    required this.notVoted,
+    required this.hasNext,
+  });
+}
+
+/// Shared store for attendance polls. Chat cards and the detail screen read
+/// [polls] by pollId so REST responses and socket events update them in place.
 class AttendanceController extends GetxController {
   static AttendanceController get instance =>
       Get.isRegistered<AttendanceController>()
           ? Get.find<AttendanceController>()
           : Get.put(AttendanceController(), permanent: true);
 
-  final RxMap<int, AttendancePollData> polls = <int, AttendancePollData>{}.obs;
+  final RxMap<int, AttendancePoll> polls = <int, AttendancePoll>{}.obs;
   final Set<int> _loading = {};
+  final Set<int> _loaded = {};
+  final Random _random = Random();
 
-  String get _currentUserId =>
-      Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+  SocketMessageService get _socket => SocketMessageService.instance;
 
-  /// Fetches the chat-card summary (counts + current user's response).
-  Future<void> loadMessageData(int attendanceId, {bool force = false}) async {
-    if (attendanceId <= 0 || _loading.contains(attendanceId)) return;
-    if (!force && polls.containsKey(attendanceId)) return;
+  /// Loads the poll + current user's vote once per session.
+  Future<void> ensureLoaded(int pollId, {bool force = false}) async {
+    if (pollId <= 0 || _loading.contains(pollId)) return;
+    if (!force && _loaded.contains(pollId)) return;
 
-    _loading.add(attendanceId);
+    _loading.add(pollId);
     try {
-      final res = await AttendanceRepo.getAttendanceMessage(attendanceId);
-      if (res["status"] == true && res["data"] is Map) {
-        _upsert(AttendancePollData.fromJson(
-          Map<String, dynamic>.from(res["data"]),
-        ));
+      final res = await AttendanceRepo.getPoll(pollId);
+      final data = res["data"];
+      if (res["status"] == true && data is Map) {
+        _apply(data, hasMyVoteField: data.containsKey("myVote"));
+        _loaded.add(pollId);
       }
     } catch (e) {
-      log("ATTENDANCE MESSAGE ERROR => $e");
+      log("ATTENDANCE GET POLL ERROR => $e");
     } finally {
-      _loading.remove(attendanceId);
+      _loading.remove(pollId);
     }
   }
 
-  /// Full member list for the admin detail screen.
-  Future<AttendancePollData> fetchDetails(int attendanceId) async {
-    final res = await AttendanceRepo.getAttendanceDetails(attendanceId);
-    if (res["status"] != true || res["data"] is! Map) {
-      throw res["message"]?.toString() ?? "Unable to load attendance";
+  /// Applies a server poll snapshot. Socket events (`fromEvent`) follow the
+  /// version rule: anything not newer than the local copy is dropped.
+  AttendancePoll? _apply(
+    dynamic raw, {
+    bool fromEvent = false,
+    bool hasMyVoteField = false,
+  }) {
+    final incoming = AttendancePoll.fromJson(raw);
+    if (incoming == null) return null;
+    final local = polls[incoming.id];
+    if (local == null) {
+      polls[incoming.id] = incoming;
+      return incoming;
     }
-    final data = AttendancePollData.fromJson(
-      Map<String, dynamic>.from(res["data"]),
-    );
-    _upsert(data);
-    return polls[attendanceId] ?? data;
+    if (fromEvent && incoming.version <= local.version) return local;
+    if (!fromEvent && incoming.version < local.version) return local;
+    final merged = local.mergeServer(incoming, hasMyVoteField: hasMyVoteField);
+    polls[incoming.id] = merged;
+    return merged;
   }
 
-  Future<Map<String, dynamic>> fetchReport(int attendanceId) async {
-    final res = await AttendanceRepo.getAttendanceReport(attendanceId);
-    if (res["status"] != true || res["data"] is! Map) {
-      throw res["message"]?.toString() ?? "Unable to load report";
+  /// Socket events from the group room. Returns the chat message map for
+  /// `attendance:created` so the chat can insert it.
+  Map<String, dynamic>? handleSocketEvent(String event, dynamic data) {
+    if (data is! Map) return null;
+    final map = Map<String, dynamic>.from(data);
+    switch (event) {
+      case "attendance:created":
+        _apply(map["poll"] ?? map["message"]?["attendance"]);
+        return map["message"] is Map
+            ? Map<String, dynamic>.from(map["message"])
+            : null;
+      case "attendance:updated":
+        final poll = map["poll"] is Map
+            ? {...Map<String, dynamic>.from(map["poll"]), if (map["version"] != null) "version": map["version"]}
+            : null;
+        _apply(poll, fromEvent: true);
+        break;
+      case "attendance:edited":
+        _apply(map["poll"], fromEvent: true);
+        break;
+      case "attendance:my_vote":
+        final pollId = int.tryParse(map["pollId"]?.toString() ?? "");
+        final local = pollId != null ? polls[pollId] : null;
+        if (local != null) {
+          final vote = AttendanceVote.fromJson(map["myVote"]);
+          polls[pollId!] = local.copyWith(myVote: vote, clearMyVote: vote == null);
+        }
+        break;
+      case "attendance:closed":
+        final pollId = int.tryParse(map["pollId"]?.toString() ?? "");
+        final local = pollId != null ? polls[pollId] : null;
+        if (local != null) {
+          final version = int.tryParse(map["version"]?.toString() ?? "");
+          final finalCounts = map["finalCounts"] is Map
+              ? Map<String, dynamic>.from(map["finalCounts"])
+              : null;
+          final byOption = <String, int>{};
+          if (finalCounts?["byOption"] is Map) {
+            (finalCounts!["byOption"] as Map).forEach((k, v) {
+              byOption[k.toString()] = int.tryParse(v.toString()) ?? 0;
+            });
+          }
+          polls[pollId!] = local.copyWith(
+            status: "closed",
+            version: version != null && version > local.version ? version : null,
+            totalVotes: int.tryParse(finalCounts?["total"]?.toString() ?? ""),
+            countsByOption: byOption.isNotEmpty ? byOption : null,
+          );
+        }
+        break;
+      case "attendance:deleted":
+        final pollId = int.tryParse(map["pollId"]?.toString() ?? "");
+        if (pollId != null) polls.remove(pollId);
+        break;
     }
-    return Map<String, dynamic>.from(res["data"]);
+    return null;
   }
 
-  /// Creates an attendance. Returns the created data (includes messageId).
-  Future<Map<String, dynamic>> createAttendance({
+  /// Reconnect recovery: refreshes the given polls in one socket round trip.
+  void syncPolls(Iterable<int> pollIds) {
+    final ids = pollIds.where((id) => id > 0).toSet().toList();
+    _socket.syncAttendance(ids, (list) {
+      for (final p in list) {
+        _apply(p, fromEvent: true);
+      }
+    });
+  }
+
+  /// Creates a poll. Returns the API `data` ({pollId, messageId, message}).
+  Future<Map<String, dynamic>> createPoll({
     required int groupId,
-    required String question,
-    required DateTime date,
+    required String title,
+    String? description,
+    required DateTime eventDate,
     required List<String> options,
-    required List<int> memberIds,
+    String? photoRequiredOptionLabel,
+    bool allowVoteChange = true,
+    DateTime? deadlineAt,
   }) async {
-    final isoDate =
-        "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-
-    final res = await AttendanceRepo.createAttendance(
+    final res = await AttendanceRepo.createPoll(
       groupId: groupId,
-      question: question,
-      date: isoDate,
-      options: options,
-      memberIds: memberIds,
+      title: title,
+      description: description,
+      eventDate: _isoDate(eventDate),
+      options: [
+        for (int i = 0; i < options.length; i++)
+          {
+            "label": options[i],
+            "order": i + 1,
+            ..._defaultOptionStyle(options[i]),
+          },
+      ],
+      photoRequiredOptionLabel: photoRequiredOptionLabel,
+      allowVoteChange: allowVoteChange,
+      deadlineAt: deadlineAt,
     );
 
     if (res["status"] != true || res["data"] is! Map) {
       throw res["message"]?.toString() ?? "Unable to create attendance";
     }
-
     final data = Map<String, dynamic>.from(res["data"]);
-    _upsert(AttendancePollData.fromJson({
-      ...data,
-      "totalMembers": data["totalMembers"] ?? memberIds.length,
-    }));
+    final message = data["message"];
+    if (message is Map && message["attendance"] != null) {
+      _apply(message["attendance"]);
+    }
     return data;
   }
 
-  /// Marks the current user's attendance with GPS + optional selfie.
-  Future<void> markAttendance({
-    required int attendanceId,
-    required String response,
+  /// Casts or changes the current user's vote. Counts update optimistically
+  /// and roll back if the request fails.
+  Future<void> vote({
+    required int pollId,
+    required String optionId,
     String? photoPath,
   }) async {
-    final position = await _currentPosition();
-    final locationName = position != null
-        ? await _placeName(position.latitude, position.longitude)
-        : null;
-
-    final res = await AttendanceRepo.markAttendance(
-      attendanceId: attendanceId,
-      response: response,
-      latitude: position?.latitude,
-      longitude: position?.longitude,
-      locationName: locationName,
-      photoPath: photoPath,
-    );
-
-    if (res["status"] != true) {
-      throw res["message"]?.toString() ?? "Unable to mark attendance";
+    final before = polls[pollId];
+    if (before != null) {
+      polls[pollId] = _withLocalVote(before, optionId, photoPath);
     }
 
-    final data = res["data"] is Map
-        ? Map<String, dynamic>.from(res["data"])
-        : <String, dynamic>{};
-    final current = polls[attendanceId];
-    if (current != null) {
-      final alreadyResponded = current.userResponse != null;
-      final isPresent = response.toLowerCase() == "present";
-      polls[attendanceId] = current.copyWith(
-        userResponse: data["response"]?.toString() ?? response,
-        userPhotoUrl: data["photoUrl"]?.toString() ?? photoPath,
-        presentCount: alreadyResponded || !isPresent
-            ? current.presentCount
-            : current.presentCount + 1,
-        absentCount: alreadyResponded || isPresent
-            ? current.absentCount
-            : current.absentCount + 1,
-        respondedCount: alreadyResponded
-            ? current.respondedCount
-            : current.respondedCount + 1,
+    try {
+      final position = await _currentPosition();
+      final placeName = position != null
+          ? await _placeName(position.latitude, position.longitude)
+          : null;
+
+      final res = await AttendanceRepo.vote(
+        pollId: pollId,
+        optionId: optionId,
+        clientRequestId: _requestId(),
+        latitude: position?.latitude,
+        longitude: position?.longitude,
+        locationName: placeName,
+        locationAccuracy: position?.accuracy,
+        photoPath: photoPath,
       );
-    }
 
-    // Re-sync counts with the server; the socket event may also arrive.
-    loadMessageData(attendanceId, force: true);
+      final data = res["data"];
+      if (res["status"] != true || data is! Map) {
+        throw res["message"]?.toString() ?? "Unable to record vote";
+      }
+      _applyMutationResult(pollId, Map<String, dynamic>.from(data), before);
+    } catch (e) {
+      _rollback(pollId, before);
+      rethrow;
+    }
   }
 
-  /// `attendance_created` socket event.
-  void handleCreated(dynamic data) {
-    if (data is! Map) return;
-    final poll = AttendancePollData.fromJson(Map<String, dynamic>.from(data));
-    if (poll.attendanceId > 0) _upsert(poll);
+  Future<void> removeVote(int pollId) async {
+    final before = polls[pollId];
+    if (before != null && before.myVote != null) {
+      polls[pollId] = _withLocalVote(before, null, null);
+    }
+    try {
+      final res = await AttendanceRepo.removeVote(pollId);
+      final data = res["data"];
+      if (res["status"] != true) {
+        throw res["message"]?.toString() ?? "Unable to remove vote";
+      }
+      if (data is Map) {
+        _applyMutationResult(
+          pollId,
+          {...Map<String, dynamic>.from(data), "myVote": null},
+          before,
+        );
+      }
+    } catch (e) {
+      _rollback(pollId, before);
+      rethrow;
+    }
   }
 
-  /// `attendance_updated` socket event: updates counts in place.
-  void handleUpdated(dynamic data) {
-    if (data is! Map) return;
-    final map = Map<String, dynamic>.from(data);
-    final update = AttendancePollData.fromJson(map);
-    final id = update.attendanceId;
-    if (id <= 0) return;
+  Future<void> closePoll(int pollId) async {
+    final res = await AttendanceRepo.closePoll(pollId);
+    if (res["status"] != true) {
+      throw res["message"]?.toString() ?? "Unable to close attendance";
+    }
+    final data = res["data"];
+    if (data is Map && data["poll"] != null) {
+      _apply(data["poll"]);
+    } else if (polls[pollId] != null) {
+      polls[pollId] = polls[pollId]!.copyWith(status: "closed");
+    }
+  }
 
-    final current = polls[id];
-    if (current == null) {
-      loadMessageData(id, force: true);
-      return;
+  Future<void> deletePoll(int pollId) async {
+    final res = await AttendanceRepo.deletePoll(pollId);
+    if (res["status"] != true) {
+      throw res["message"]?.toString() ?? "Unable to delete attendance";
+    }
+    polls.remove(pollId);
+  }
+
+  Future<AttendanceVotersPage> fetchVoters({
+    required int pollId,
+    String? optionId,
+    bool notVoted = false,
+    int page = 1,
+    int limit = 50,
+    String? search,
+  }) async {
+    final res = await AttendanceRepo.getVoters(
+      pollId: pollId,
+      optionId: optionId,
+      notVoted: notVoted,
+      page: page,
+      limit: limit,
+      search: search,
+    );
+    final data = res["data"];
+    if (res["status"] != true || data is! Map) {
+      throw res["message"]?.toString() ?? "Unable to load voters";
     }
 
-    String? myResponse;
-    String? myPhoto;
-    final latest = map["latestResponse"];
-    if (latest is Map && latest["userId"]?.toString() == _currentUserId) {
-      myResponse = latest["response"]?.toString();
-      myPhoto = latest["photoUrl"]?.toString();
+    final counts = data["counts"] is Map ? data["counts"] as Map : const {};
+    final byOption = <String, int>{};
+    if (counts["byOption"] is Map) {
+      (counts["byOption"] as Map).forEach((k, v) {
+        byOption[k.toString()] = int.tryParse(v.toString()) ?? 0;
+      });
     }
+    final voters = (data["voters"] is List ? data["voters"] as List : const [])
+        .whereType<Map>()
+        .map((v) => AttendanceVoter.fromJson(Map<String, dynamic>.from(v)))
+        .toList();
+    final pagination =
+        data["pagination"] is Map ? data["pagination"] as Map : const {};
 
-    polls[id] = current.copyWith(
-      presentCount: update.presentCount,
-      absentCount: update.absentCount,
-      totalMembers: update.totalMembers > 0 ? update.totalMembers : null,
-      respondedCount: update.respondedCount,
-      userResponse: myResponse,
-      userPhotoUrl: myPhoto,
+    return AttendanceVotersPage(
+      voters: voters,
+      total: int.tryParse(counts["total"]?.toString() ?? "") ?? 0,
+      countsByOption: byOption,
+      notVoted: int.tryParse(counts["notVoted"]?.toString() ?? "") ?? 0,
+      hasNext: pagination["hasNext"] == true,
     );
   }
 
-  void _upsert(AttendancePollData data) {
-    final existing = polls[data.attendanceId];
-    polls[data.attendanceId] =
-        existing == null ? data : existing.mergeFrom(data);
+  Future<String> exportCsv(int pollId) => AttendanceRepo.exportCsv(pollId);
+
+  void _applyMutationResult(
+    int pollId,
+    Map<String, dynamic> data,
+    AttendancePoll? before,
+  ) {
+    final poll = data["poll"];
+    if (poll is Map) {
+      // The vote response is authoritative, even at an equal version.
+      final incoming = AttendancePoll.fromJson(poll);
+      final local = polls[pollId] ?? before;
+      if (incoming != null) {
+        polls[pollId] = local == null
+            ? incoming
+            : local.mergeServer(incoming, hasMyVoteField: false);
+      }
+    }
+    final current = polls[pollId];
+    if (current != null && data.containsKey("myVote")) {
+      final vote = AttendanceVote.fromJson(data["myVote"]);
+      polls[pollId] = current.copyWith(myVote: vote, clearMyVote: vote == null);
+    }
+  }
+
+  void _rollback(int pollId, AttendancePoll? before) {
+    if (before != null) polls[pollId] = before;
+    // Resync in case the server did apply part of the change.
+    ensureLoaded(pollId, force: true);
+  }
+
+  AttendancePoll _withLocalVote(
+    AttendancePoll poll,
+    String? optionId,
+    String? photoPath,
+  ) {
+    final counts = Map<String, int>.from(poll.countsByOption);
+    final previous = poll.myVote?.optionId;
+    var total = poll.totalVotes;
+    if (previous != null) {
+      counts[previous] = max(0, (counts[previous] ?? 0) - 1);
+      total = max(0, total - 1);
+    }
+    if (optionId != null) {
+      counts[optionId] = (counts[optionId] ?? 0) + 1;
+      total += 1;
+    }
+    return poll.copyWith(
+      countsByOption: counts,
+      totalVotes: total,
+      myVote: optionId != null
+          ? AttendanceVote(
+              optionId: optionId,
+              votedAt: DateTime.now(),
+              photoUrl: photoPath,
+            )
+          : null,
+      clearMyVote: optionId == null,
+    );
+  }
+
+  Map<String, String> _defaultOptionStyle(String label) {
+    switch (label.trim().toLowerCase()) {
+      case "present":
+        return {"color": "#22C55E", "icon": "check_circle"};
+      case "absent":
+        return {"color": "#EF4444", "icon": "cancel"};
+      default:
+        return {};
+    }
+  }
+
+  String _isoDate(DateTime d) =>
+      "${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
+
+  /// Random v4-style UUID for vote idempotency.
+  String _requestId() {
+    final b = List<int>.generate(16, (_) => _random.nextInt(256));
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    final h = b.map((e) => e.toRadixString(16).padLeft(2, '0')).join();
+    return "${h.substring(0, 8)}-${h.substring(8, 12)}-${h.substring(12, 16)}-${h.substring(16, 20)}-${h.substring(20)}";
   }
 
   Future<Position?> _currentPosition() async {

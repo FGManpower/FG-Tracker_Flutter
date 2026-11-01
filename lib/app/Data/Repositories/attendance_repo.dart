@@ -3,45 +3,72 @@ import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 
+/// Attendance Voting API (backend v1.0.0). Every request carries the
+/// `x-attendance-supported: 1` header via the shared Dio options.
 class AttendanceRepo {
-  /// POST /api/attendance/create (group admin only)
-  static Future<Map<String, dynamic>> createAttendance({
+  static Map<String, dynamic> _map(dynamic response) =>
+      response is Map ? Map<String, dynamic>.from(response) : {};
+
+  /// 5.1 POST /groups/:groupId/attendance (group admin)
+  static Future<Map<String, dynamic>> createPoll({
     required int groupId,
-    required String question,
-    required String date,
-    required List<String> options,
-    required List<int> memberIds,
+    required String title,
+    String? description,
+    required String eventDate,
+    String? eventTime,
+    String? location,
+    required List<Map<String, dynamic>> options,
+    String? photoRequiredOptionLabel,
+    bool allowVoteChange = true,
+    String voterVisibility = "admin",
+    DateTime? deadlineAt,
   }) async {
     final response = await HttpUtil().Authpost(
-      "/attendance/create",
+      "/groups/$groupId/attendance",
       data: {
-        "groupId": groupId,
-        "question": question,
-        "date": date,
+        "title": title,
+        if (description != null && description.isNotEmpty)
+          "description": description,
+        "eventDate": eventDate,
+        if (eventTime != null) "eventTime": eventTime,
+        if (location != null && location.isNotEmpty) "location": location,
         "options": options,
-        "memberIds": memberIds,
+        if (photoRequiredOptionLabel != null)
+          "photoRequiredOptionLabel": photoRequiredOptionLabel,
+        "allowVoteChange": allowVoteChange,
+        "voterVisibility": voterVisibility,
+        if (deadlineAt != null)
+          "deadlineAt": deadlineAt.toUtc().toIso8601String(),
       },
     );
-
-    return Map<String, dynamic>.from(response);
+    return _map(response);
   }
 
-  /// POST /api/attendance/mark (multipart, selfie required for "Present")
-  static Future<Map<String, dynamic>> markAttendance({
-    required int attendanceId,
-    required String response,
+  /// 5.2 GET /attendance/:pollId → { poll, myVote }
+  static Future<Map<String, dynamic>> getPoll(int pollId) async {
+    return _map(await HttpUtil().get("/attendance/$pollId"));
+  }
+
+  /// 5.3 POST /attendance/:pollId/vote (multipart)
+  static Future<Map<String, dynamic>> vote({
+    required int pollId,
+    required String optionId,
+    required String clientRequestId,
     double? latitude,
     double? longitude,
     String? locationName,
+    double? locationAccuracy,
     String? photoPath,
   }) async {
     final formData = FormData.fromMap({
-      "attendanceId": attendanceId,
-      "response": response,
-      if (latitude != null) "latitude": latitude,
-      if (longitude != null) "longitude": longitude,
+      "optionId": optionId,
+      "clientRequestId": clientRequestId,
+      if (latitude != null) "latitude": latitude.toString(),
+      if (longitude != null) "longitude": longitude.toString(),
       if (locationName != null && locationName.isNotEmpty)
         "locationName": locationName,
+      if (locationAccuracy != null)
+        "locationAccuracy": locationAccuracy.toString(),
       if (photoPath != null && photoPath.isNotEmpty)
         "attendancePhoto": await MultipartFile.fromFile(
           photoPath,
@@ -50,45 +77,76 @@ class AttendanceRepo {
         ),
     });
 
-    final result = await HttpUtil().Authpost(
-      "/attendance/mark",
+    final response = await HttpUtil().Authpost(
+      "/attendance/$pollId/vote",
       formdata: formData,
       type: "formdata",
     );
-
-    return Map<String, dynamic>.from(result);
+    return _map(response);
   }
 
-  /// GET /api/attendance/details (admin view: all members)
-  static Future<Map<String, dynamic>> getAttendanceDetails(
-    int attendanceId,
-  ) async {
-    final response = await HttpUtil().get(
-      "/attendance/details?attendanceId=$attendanceId",
-    );
-
-    return Map<String, dynamic>.from(response);
+  /// 5.4 DELETE /attendance/:pollId/vote
+  static Future<Map<String, dynamic>> removeVote(int pollId) async {
+    return _map(await HttpUtil().Authdelete("/attendance/$pollId/vote"));
   }
 
-  /// GET /api/attendance/message (chat card summary + current user's response)
-  static Future<Map<String, dynamic>> getAttendanceMessage(
-    int attendanceId,
-  ) async {
-    final response = await HttpUtil().get(
-      "/attendance/message?attendanceId=$attendanceId",
-    );
-
-    return Map<String, dynamic>.from(response);
+  /// 5.5 GET /attendance/:pollId/voters
+  /// Pass [notVoted] to list members who haven't voted.
+  static Future<Map<String, dynamic>> getVoters({
+    required int pollId,
+    String? optionId,
+    bool notVoted = false,
+    int page = 1,
+    int limit = 50,
+    String? search,
+    String sort = "votedAt",
+  }) async {
+    final query = <String, String>{
+      if (optionId != null) "optionId": optionId,
+      if (notVoted) "status": "notVoted",
+      "page": "$page",
+      "limit": "$limit",
+      if (search != null && search.trim().isNotEmpty) "search": search.trim(),
+      "sort": sort,
+    };
+    final qs = Uri(queryParameters: query).query;
+    return _map(await HttpUtil().get("/attendance/$pollId/voters?$qs"));
   }
 
-  /// GET /api/attendance/report (admin only)
-  static Future<Map<String, dynamic>> getAttendanceReport(
-    int attendanceId,
+  /// 5.6 PUT /attendance/:pollId (group admin)
+  static Future<Map<String, dynamic>> editPoll(
+    int pollId,
+    Map<String, dynamic> changes,
   ) async {
-    final response = await HttpUtil().get(
-      "/attendance/report?attendanceId=$attendanceId",
-    );
+    return _map(await HttpUtil().Authput("/attendance/$pollId", data: changes));
+  }
 
-    return Map<String, dynamic>.from(response);
+  /// 5.7 POST /attendance/:pollId/close (group admin)
+  static Future<Map<String, dynamic>> closePoll(int pollId) async {
+    return _map(await HttpUtil().Authpost("/attendance/$pollId/close"));
+  }
+
+  /// 5.8 DELETE /attendance/:pollId (group admin)
+  static Future<Map<String, dynamic>> deletePoll(int pollId) async {
+    return _map(await HttpUtil().Authdelete("/attendance/$pollId"));
+  }
+
+  /// 5.9 GET /groups/:groupId/attendance
+  static Future<Map<String, dynamic>> getGroupPolls({
+    required int groupId,
+    String? status,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final statusParam = status != null ? "&status=$status" : "";
+    return _map(await HttpUtil().get(
+      "/groups/$groupId/attendance?page=$page&limit=$limit$statusParam",
+    ));
+  }
+
+  /// 5.10 GET /attendance/:pollId/export → CSV text (group admin)
+  static Future<String> exportCsv(int pollId) async {
+    final response = await HttpUtil().get("/attendance/$pollId/export");
+    return response?.toString() ?? "";
   }
 }

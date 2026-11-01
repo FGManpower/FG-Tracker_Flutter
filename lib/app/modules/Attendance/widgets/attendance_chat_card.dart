@@ -3,27 +3,42 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../controller/attendance_controller.dart';
 import '../models/attendance_poll_model.dart';
 import '../views/view_attendance_sheet.dart';
 import '../views/attendance_camera_screen.dart';
 
 class AttendanceChatCard extends StatefulWidget {
-  /// Data parsed from the chat message content (attendanceId, question, date,
-  /// options). Live counts are loaded from the API and socket events.
-  final AttendancePollData pollData;
+  final int pollId;
+
+  /// Poll summary embedded in the chat message (may be stale or missing);
+  /// the live copy comes from [AttendanceController].
+  final AttendancePoll? initialPoll;
 
   /// Group admin flag; reactive because group members load asynchronously.
   final RxBool? isAdmin;
+
+  /// Group members, used for the "X Members" count.
+  final RxList<dynamic>? groupMembers;
   final String senderName;
   final String groupName;
+  final String? messageTime;
+
+  /// Called after the admin deletes the poll, so the chat can update the
+  /// message even if the socket event is not echoed back.
+  final void Function(int pollId)? onDeleted;
 
   const AttendanceChatCard({
     super.key,
-    required this.pollData,
+    required this.pollId,
+    this.initialPoll,
     this.isAdmin,
+    this.groupMembers,
     this.senderName = "",
     this.groupName = "",
+    this.messageTime,
+    this.onDeleted,
   });
 
   @override
@@ -31,35 +46,40 @@ class AttendanceChatCard extends StatefulWidget {
 }
 
 class _AttendanceChatCardState extends State<AttendanceChatCard> {
+  static const _accent = Color(0xFF5A3EFE);
+  static const _textDark = Color(0xFF0F172A);
+  static const _textMuted = Color(0xFF64748B);
+  static const _border = Color(0xFFE2E8F0);
+  static const _error = Color(0xFFEF4444);
+
   final AttendanceController _controller = AttendanceController.instance;
 
-  String? _selectedStatus;
+  String? _selectedOptionId;
   File? _attendancePhoto;
   bool _isSubmitting = false;
+  bool _isChangingVote = false;
 
   String? _statusError;
   String? _photoError;
 
-  int get _attendanceId => widget.pollData.attendanceId;
-
-  AttendancePollData get _poll =>
-      _controller.polls[_attendanceId] ?? widget.pollData;
-
-  bool _requiresPhoto(String? status) => status?.toLowerCase() == "present";
-
   @override
   void initState() {
     super.initState();
-    _controller.loadMessageData(_attendanceId);
+    _controller.ensureLoaded(widget.pollId);
   }
 
-  Future<void> _openCamera() async {
+  String get _timeLabel {
+    final parsed = DateTime.tryParse(widget.messageTime ?? "")?.toLocal();
+    return parsed != null ? DateFormat("hh:mm a").format(parsed) : "";
+  }
+
+  Future<void> _openCamera(AttendancePoll poll) async {
     final result = await Navigator.push<String?>(
       context,
       MaterialPageRoute(
         builder: (_) => AttendanceCameraScreen(
           groupName: widget.groupName,
-          memberCount: _poll.totalMembers,
+          memberCount: widget.groupMembers?.length ?? 0,
         ),
       ),
     );
@@ -72,64 +92,120 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
     }
   }
 
-  Future<void> _submitAttendance() async {
+  Future<void> _submitVote(AttendancePoll poll) async {
     setState(() {
       _statusError = null;
       _photoError = null;
     });
 
-    if (_selectedStatus == null) {
-      setState(() {
-        _statusError = "Please select your status";
-      });
-    } else if (_requiresPhoto(_selectedStatus) && _attendancePhoto == null) {
-      setState(() {
-        _photoError = "Photo required for Present. Please take a photo.";
-      });
+    final option = poll.optionById(_selectedOptionId);
+    if (option == null) {
+      setState(() => _statusError = "Please select your status");
+    } else if (poll.requiresPhoto(option.id) && _attendancePhoto == null) {
+      setState(() => _photoError =
+          "Photo required for ${option.label}. Please take a photo.");
     }
-
     if (_statusError != null || _photoError != null) {
-      _showSnack(
-        "Validation Error",
-        _photoError ?? _statusError!,
-        isError: true,
-      );
+      _showSnack("Validation Error", _photoError ?? _statusError!,
+          isError: true);
       return;
     }
 
-    setState(() {
-      _isSubmitting = true;
-    });
-
+    setState(() => _isSubmitting = true);
     try {
-      await _controller.markAttendance(
-        attendanceId: _attendanceId,
-        response: _selectedStatus!,
-        photoPath: _attendancePhoto?.path,
+      await _controller.vote(
+        pollId: poll.id,
+        optionId: option!.id,
+        photoPath:
+            poll.requiresPhoto(option.id) ? _attendancePhoto?.path : null,
       );
-
-      _showSnack(
-        "Attendance Submitted",
-        "Marked as $_selectedStatus successfully!",
-      );
+      if (!mounted) return;
+      setState(() {
+        _isChangingVote = false;
+        _selectedOptionId = null;
+        _attendancePhoto = null;
+      });
+      _showSnack("Attendance Submitted", "Marked as ${option.label}");
     } catch (e) {
       _showSnack("Attendance Failed", e.toString(), isError: true);
     } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
+      if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  Future<void> _removeVote(AttendancePoll poll) async {
+    final ok = await _confirm(
+      "Remove your response?",
+      "Your attendance for this poll will be cleared.",
+      "Remove",
+    );
+    if (!ok) return;
+    setState(() => _isSubmitting = true);
+    try {
+      await _controller.removeVote(poll.id);
+    } catch (e) {
+      _showSnack("Unable to remove", e.toString(), isError: true);
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _closePoll(AttendancePoll poll) async {
+    final ok = await _confirm(
+      "Close attendance?",
+      "Members won't be able to respond after it is closed.",
+      "Close",
+    );
+    if (!ok) return;
+    try {
+      await _controller.closePoll(poll.id);
+    } catch (e) {
+      _showSnack("Unable to close", e.toString(), isError: true);
+    }
+  }
+
+  Future<void> _deletePoll(AttendancePoll poll) async {
+    final ok = await _confirm(
+      "Delete attendance?",
+      "This removes the attendance and all responses for everyone.",
+      "Delete",
+    );
+    if (!ok) return;
+    try {
+      await _controller.deletePoll(poll.id);
+      widget.onDeleted?.call(poll.id);
+    } catch (e) {
+      _showSnack("Unable to delete", e.toString(), isError: true);
+    }
+  }
+
+  Future<bool> _confirm(String title, String message, String action) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(action, style: const TextStyle(color: _error)),
+          ),
+        ],
+      ),
+    );
+    return result == true;
   }
 
   void _showSnack(String title, String message, {bool isError = false}) {
     Get.snackbar(
       title,
       message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor:
-          isError ? const Color(0xFFEF4444) : const Color(0xFF5A3EFE),
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: isError ? _error : _accent,
       colorText: Colors.white,
       margin: EdgeInsets.all(16.w),
       borderRadius: 12.r,
@@ -139,16 +215,19 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final poll = _poll;
+      final poll = _controller.polls[widget.pollId] ?? widget.initialPoll;
+      final isAdmin = widget.isAdmin?.value == true;
+      final memberCount = widget.groupMembers?.length ?? 0;
+
       final Widget body;
-      if (widget.isAdmin?.value == true) {
-        body = _buildSummaryCard(poll, showViewButton: true);
-      } else if (poll.userResponse != null) {
-        body = _buildRespondedCard(poll);
-      } else if (!poll.isActive) {
-        body = _buildSummaryCard(poll, footerNote: "Attendance closed");
+      if (poll == null) {
+        body = _buildLoadingCard();
+      } else if (isAdmin || poll.isClosed) {
+        body = _buildSummaryCard(poll, memberCount, isAdmin: isAdmin);
+      } else if (poll.myVote != null && !_isChangingVote) {
+        body = _buildVotedCard(poll, memberCount);
       } else {
-        body = _buildMemberCard(poll);
+        body = _buildVoteForm(poll, memberCount);
       }
 
       return Container(
@@ -177,7 +256,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
               style: TextStyle(
                 fontSize: 10.sp,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF5A3EFE),
+                color: _accent,
               ),
             ),
           ),
@@ -189,7 +268,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
               style: TextStyle(
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF5A3EFE),
+                color: _accent,
               ),
             ),
           ),
@@ -214,132 +293,40 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
     );
   }
 
-  // ════════════════════════════════════════════════════════
-  // ── SUMMARY CARD (counts + progress bars) ──
-  // ════════════════════════════════════════════════════════
-  Widget _buildSummaryCard(
-    AttendancePollData poll, {
-    bool showViewButton = false,
-    String? footerNote,
-  }) {
-    final denominator =
-        poll.totalMembers > 0 ? poll.totalMembers : poll.respondedCount;
-    final presentRatio =
-        denominator > 0 ? (poll.presentCount / denominator).clamp(0.0, 1.0) : 0.0;
-    final absentRatio =
-        denominator > 0 ? (poll.absentCount / denominator).clamp(0.0, 1.0) : 0.0;
+  BoxDecoration _cardDecoration({Color color = Colors.white}) {
+    return BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(22.r),
+      border: Border.all(color: _border),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    );
+  }
 
+  Widget _buildLoadingCard() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FE),
-        borderRadius: BorderRadius.circular(22.r),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTitleRow(poll),
-
-          SizedBox(height: 16.h),
-
-          _buildCountRow(
-            label: "Present",
-            icon: Icons.check_rounded,
-            color: const Color(0xFF22C55E),
-            ratio: presentRatio,
-            count: poll.presentCount,
-          ),
-
-          SizedBox(height: 12.h),
-
-          _buildCountRow(
-            label: "Absent",
-            icon: Icons.close_rounded,
-            color: const Color(0xFFEF4444),
-            ratio: absentRatio,
-            count: poll.absentCount,
-          ),
-
-          SizedBox(height: 14.h),
-
-          // Responded Members info
-          Row(
-            children: [
-              Icon(
-                Icons.groups_rounded,
-                color: const Color(0xFF64748B),
-                size: 18.sp,
-              ),
-              SizedBox(width: 6.w),
-              Expanded(
-                child: Text(
-                  "${poll.totalMembers} Members • ${poll.respondedCount} responded",
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: const Color(0xFF64748B),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              if (footerNote != null)
-                Text(
-                  footerNote,
-                  style: TextStyle(
-                    fontSize: 11.5.sp,
-                    color: const Color(0xFF94A3B8),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-            ],
-          ),
-
-          if (showViewButton) ...[
-            SizedBox(height: 14.h),
-            SizedBox(
-              width: double.infinity,
-              height: 44.h,
-              child: OutlinedButton(
-                onPressed: () {
-                  ViewAttendanceSheet.show(
-                    context,
-                    poll,
-                    groupName: widget.groupName,
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  side: const BorderSide(color: Color(0xFF5A3EFE), width: 1.4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                ),
-                child: Text(
-                  "View Attendance",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF5A3EFE),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ],
+      height: 120.h,
+      decoration: _cardDecoration(),
+      child: const Center(
+        child: CircularProgressIndicator(strokeWidth: 2, color: _accent),
       ),
     );
   }
 
-  Widget _buildTitleRow(AttendancePollData poll, {Widget? trailing}) {
+  Widget _buildTitleRow(AttendancePoll poll, {Widget? trailing}) {
+    final subtitle = [
+      if (poll.longDate.isNotEmpty) poll.longDate,
+      if (poll.eventTime != null) poll.eventTime!,
+    ].join(" • ");
+
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           width: 42.w,
@@ -350,7 +337,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
           ),
           child: Icon(
             Icons.calendar_month_rounded,
-            color: const Color(0xFF5A3EFE),
+            color: _accent,
             size: 22.sp,
           ),
         ),
@@ -360,20 +347,20 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Attendance • ${poll.shortDate}",
+                poll.title.isNotEmpty ? poll.title : "Attendance",
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w800,
-                  color: const Color(0xFF0F172A),
+                  color: _textDark,
                 ),
               ),
-              if (poll.question.isNotEmpty) ...[
+              if (subtitle.isNotEmpty) ...[
                 SizedBox(height: 2.h),
                 Text(
-                  poll.question,
+                  subtitle,
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: const Color(0xFF64748B),
+                    color: _textMuted,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -386,30 +373,94 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
     );
   }
 
-  Widget _buildCountRow({
-    required String label,
-    required IconData icon,
-    required Color color,
-    required double ratio,
-    required int count,
-  }) {
+  Widget _buildStatusBadge(String text, Color fg, Color bg, {IconData? icon}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 13.sp, color: fg),
+            SizedBox(width: 3.w),
+          ],
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 11.5.sp,
+              fontWeight: FontWeight.w700,
+              color: fg,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompletedBadge() => _buildStatusBadge(
+        "Completed",
+        const Color(0xFF16A34A),
+        const Color(0xFFE8F9EF),
+      );
+
+  Widget _buildMyVoteBadge(AttendancePoll poll) {
+    final option = poll.optionById(poll.myVote?.optionId);
+    if (option == null) return const SizedBox.shrink();
+    final color = option.displayColor;
+    return _buildStatusBadge(
+      option.label,
+      color,
+      color.withValues(alpha: 0.12),
+      icon: Icons.check_rounded,
+    );
+  }
+
+  Widget _buildCountRows(AttendancePoll poll, int memberCount) {
+    final denominator = memberCount > 0 ? memberCount : poll.totalVotes;
+    return Column(
+      children: [
+        for (final option in poll.options) ...[
+          _buildCountRow(
+            option,
+            poll.countFor(option.id),
+            denominator,
+          ),
+          SizedBox(height: 10.h),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCountRow(AttendanceOption option, int count, int denominator) {
+    final ratio = denominator > 0 ? (count / denominator).clamp(0.0, 1.0) : 0.0;
+    final color = option.displayColor;
+    final label = option.label.toLowerCase();
+    final icon = label == "absent"
+        ? Icons.close_rounded
+        : (label == "present" ? Icons.check_rounded : Icons.circle);
+
     return Row(
       children: [
         Container(
           width: 24.w,
           height: 24.w,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          child: Icon(icon, color: Colors.white, size: 15.sp),
+          child: Icon(icon,
+              color: Colors.white, size: icon == Icons.circle ? 8.sp : 15.sp),
         ),
         SizedBox(width: 10.w),
         SizedBox(
-          width: 58.w,
+          width: 64.w,
           child: Text(
-            label,
+            option.label,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F172A),
+              color: _textDark,
             ),
           ),
         ),
@@ -419,7 +470,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
             child: LinearProgressIndicator(
               value: ratio,
               minHeight: 8.h,
-              backgroundColor: const Color(0xFFE2E8F0),
+              backgroundColor: _border,
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),
@@ -430,72 +481,150 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w800,
-            color: const Color(0xFF0F172A),
+            color: _textDark,
           ),
         ),
       ],
     );
   }
 
+  Widget _buildFooter(AttendancePoll poll, int memberCount) {
+    final members = memberCount > 0 ? "$memberCount Members • " : "";
+    return Row(
+      children: [
+        Icon(Icons.groups_rounded, color: _textMuted, size: 16.sp),
+        SizedBox(width: 6.w),
+        Expanded(
+          child: Text(
+            "$members${poll.totalVotes} responded",
+            style: TextStyle(fontSize: 11.5.sp, color: _textMuted),
+          ),
+        ),
+        if (_timeLabel.isNotEmpty)
+          Text(
+            _timeLabel,
+            style: TextStyle(fontSize: 11.sp, color: const Color(0xFF94A3B8)),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildViewButton(AttendancePoll poll) {
+    return SizedBox(
+      width: double.infinity,
+      height: 44.h,
+      child: OutlinedButton(
+        onPressed: () => ViewAttendanceSheet.show(
+          context,
+          poll.id,
+          groupName: widget.groupName,
+          memberCount: widget.groupMembers?.length ?? 0,
+          isAdmin: widget.isAdmin?.value == true,
+        ),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white,
+          side: const BorderSide(color: _accent, width: 1.4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14.r),
+          ),
+        ),
+        child: Text(
+          "View Attendance",
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w700,
+            color: _accent,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdminMenu(AttendancePoll poll) {
+    return PopupMenuButton<String>(
+      icon: Icon(Icons.more_vert_rounded, color: _textMuted, size: 20.sp),
+      padding: EdgeInsets.zero,
+      onSelected: (value) {
+        if (value == "close") _closePoll(poll);
+        if (value == "delete") _deletePoll(poll);
+      },
+      itemBuilder: (_) => [
+        if (poll.isOpen)
+          const PopupMenuItem(value: "close", child: Text("Close attendance")),
+        const PopupMenuItem(
+          value: "delete",
+          child: Text("Delete attendance", style: TextStyle(color: _error)),
+        ),
+      ],
+    );
+  }
+
   // ════════════════════════════════════════════════════════
-  // ── MEMBER: ALREADY RESPONDED ──
+  // ── SUMMARY CARD (admin, or any user once closed) ──
   // ════════════════════════════════════════════════════════
-  Widget _buildRespondedCard(AttendancePollData poll) {
-    final response = poll.userResponse!;
-    final isPresent = response.toLowerCase() == "present";
-    final color = isPresent ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
-    final photo = attendanceMediaUrl(poll.userPhotoUrl);
+  Widget _buildSummaryCard(
+    AttendancePoll poll,
+    int memberCount, {
+    required bool isAdmin,
+  }) {
+    final canViewVoters = isAdmin || poll.voterVisibility == "all";
 
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22.r),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: _cardDecoration(color: const Color(0xFFF7F8FE)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTitleRow(
             poll,
-            trailing: Container(
-              padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                color: isPresent
-                    ? const Color(0xFFE8F9EF)
-                    : const Color(0xFFFEF2F2),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    isPresent ? Icons.check_rounded : Icons.close_rounded,
-                    size: 13.sp,
-                    color: color,
-                  ),
-                  SizedBox(width: 3.w),
-                  Text(
-                    response,
-                    style: TextStyle(
-                      fontSize: 11.5.sp,
-                      fontWeight: FontWeight.w700,
-                      color: color,
-                    ),
-                  ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (poll.isClosed) _buildCompletedBadge(),
+                if (!isAdmin && poll.myVote != null) ...[
+                  SizedBox(width: 4.w),
+                  _buildMyVoteBadge(poll),
                 ],
-              ),
+                if (isAdmin) _buildAdminMenu(poll),
+              ],
             ),
           ),
+          if (poll.description != null) ...[
+            SizedBox(height: 10.h),
+            Text(
+              poll.description!,
+              style: TextStyle(fontSize: 12.5.sp, color: _textMuted),
+            ),
+          ],
+          SizedBox(height: 14.h),
+          _buildCountRows(poll, memberCount),
+          SizedBox(height: 4.h),
+          _buildFooter(poll, memberCount),
+          if (canViewVoters) ...[
+            SizedBox(height: 14.h),
+            _buildViewButton(poll),
+          ],
+        ],
+      ),
+    );
+  }
 
+  // ════════════════════════════════════════════════════════
+  // ── MEMBER: ALREADY VOTED ──
+  // ════════════════════════════════════════════════════════
+  Widget _buildVotedCard(AttendancePoll poll, int memberCount) {
+    final photo = poll.myVote?.photoFullUrl;
+    final canChange = poll.isOpen && poll.allowVoteChange;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: _cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildTitleRow(poll, trailing: _buildMyVoteBadge(poll)),
           if (photo != null) ...[
             SizedBox(height: 12.h),
             ClipRRect(
@@ -517,9 +646,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                     ),
             ),
           ],
-
           SizedBox(height: 12.h),
-
           Row(
             children: [
               Icon(Icons.check_circle_rounded,
@@ -546,206 +673,122 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                 ),
             ],
           ),
-
-          SizedBox(height: 8.h),
-
-          Row(
-            children: [
-              Icon(
-                Icons.groups_rounded,
-                color: const Color(0xFF64748B),
-                size: 16.sp,
-              ),
-              SizedBox(width: 6.w),
-              Text(
-                "${poll.totalMembers} Members • ${poll.respondedCount} responded",
-                style: TextStyle(
-                  fontSize: 11.5.sp,
-                  color: const Color(0xFF64748B),
+          SizedBox(height: 12.h),
+          _buildCountRows(poll, memberCount),
+          SizedBox(height: 4.h),
+          _buildFooter(poll, memberCount),
+          if (canChange) ...[
+            SizedBox(height: 8.h),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: _isSubmitting
+                      ? null
+                      : () => setState(() {
+                            _isChangingVote = true;
+                            _selectedOptionId = poll.myVote?.optionId;
+                          }),
+                  child: const Text("Change response"),
                 ),
-              ),
-            ],
-          ),
+                const Spacer(),
+                TextButton(
+                  onPressed: _isSubmitting ? null : () => _removeVote(poll),
+                  child: const Text(
+                    "Remove",
+                    style: TextStyle(color: _error),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (poll.voterVisibility == "all") ...[
+            SizedBox(height: 8.h),
+            _buildViewButton(poll),
+          ],
         ],
       ),
     );
   }
 
   // ════════════════════════════════════════════════════════
-  // ── MEMBER: MARK ATTENDANCE CARD ──
+  // ── MEMBER: MARK ATTENDANCE FORM ──
   // ════════════════════════════════════════════════════════
-  Widget _buildMemberCard(AttendancePollData poll) {
-    final needsPhoto = _requiresPhoto(_selectedStatus);
+  Widget _buildVoteForm(AttendancePoll poll, int memberCount) {
+    final selected = poll.optionById(_selectedOptionId);
+    final needsPhoto = poll.requiresPhoto(_selectedOptionId);
 
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22.r),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTitleRow(poll),
-
           SizedBox(height: 16.h),
-
-          // Subtitle
           Text(
             "Mark your attendance",
             style: TextStyle(
               fontSize: 14.5.sp,
               fontWeight: FontWeight.w800,
-              color: const Color(0xFF0F172A),
+              color: _textDark,
             ),
           ),
           SizedBox(height: 2.h),
           Text(
-            "Please select your status for ${poll.longDate}",
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: const Color(0xFF64748B),
-            ),
+            poll.description ?? "Please select your status",
+            style: TextStyle(fontSize: 12.sp, color: _textMuted),
           ),
-
+          if (poll.deadlineAt != null) ...[
+            SizedBox(height: 4.h),
+            Text(
+              "Closes ${DateFormat("dd MMM, hh:mm a").format(poll.deadlineAt!)}",
+              style: TextStyle(
+                fontSize: 11.sp,
+                color: const Color(0xFFF59E0B),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
           if (_statusError != null) ...[
             SizedBox(height: 6.h),
             Text(
               _statusError!,
               style: TextStyle(
                 fontSize: 11.5.sp,
-                color: const Color(0xFFEF4444),
+                color: _error,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ],
-
           SizedBox(height: 12.h),
-
           for (int i = 0; i < poll.options.length; i++) ...[
-            _buildOptionTile(i + 1, poll.options[i]),
+            _buildOptionTile(i + 1, poll.options[i], poll),
             SizedBox(height: 10.h),
           ],
-
-          // Attendance Photo Tile (opens dedicated camera screen)
           if (needsPhoto) ...[
-            GestureDetector(
-              onTap: _openCamera,
-              child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(14.r),
-                  border: Border.all(
-                    color: _photoError != null
-                        ? const Color(0xFFEF4444)
-                        : const Color(0xFFE2E8F0),
-                    width: _photoError != null ? 1.4 : 1.0,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 38.w,
-                      height: 38.w,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Icon(
-                        Icons.camera_alt_rounded,
-                        color: const Color(0xFF5A3EFE),
-                        size: 20.sp,
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Attendance Photo",
-                            style: TextStyle(
-                              fontSize: 13.5.sp,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF0F172A),
-                            ),
-                          ),
-                          SizedBox(height: 2.h),
-                          Text(
-                            _attendancePhoto != null
-                                ? "Photo captured ✓ (Tap to retake)"
-                                : "Take a selfie",
-                            style: TextStyle(
-                              fontSize: 11.5.sp,
-                              color: _attendancePhoto != null
-                                  ? const Color(0xFF16A34A)
-                                  : const Color(0xFF64748B),
-                              fontWeight: _attendancePhoto != null
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (_attendancePhoto != null) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8.r),
-                        child: Image.file(
-                          _attendancePhoto!,
-                          width: 36.w,
-                          height: 36.w,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      SizedBox(width: 6.w),
-                    ],
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color: const Color(0xFF64748B),
-                      size: 22.sp,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
+            _buildPhotoTile(poll, selected!),
             if (_photoError != null) ...[
               SizedBox(height: 4.h),
               Text(
                 _photoError!,
                 style: TextStyle(
                   fontSize: 11.sp,
-                  color: const Color(0xFFEF4444),
+                  color: _error,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ],
-
-            SizedBox(height: 4.h),
+            SizedBox(height: 10.h),
           ],
-
-          SizedBox(height: 4.h),
-
-          // Submit Attendance Button
           SizedBox(
             width: double.infinity,
             height: 46.h,
             child: ElevatedButton(
-              onPressed: _isSubmitting ? null : _submitAttendance,
+              onPressed: _isSubmitting ? null : () => _submitVote(poll),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5A3EFE),
+                backgroundColor: _accent,
+                disabledBackgroundColor: _accent.withValues(alpha: 0.6),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14.r),
@@ -761,7 +804,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                       ),
                     )
                   : Text(
-                      "Mark Attendance",
+                      _isChangingVote ? "Update Attendance" : "Submit Attendance",
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w700,
@@ -770,41 +813,108 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                     ),
             ),
           ),
-
-          SizedBox(height: 10.h),
-
-          // Footer info
-          Row(
-            children: [
-              Icon(
-                Icons.groups_rounded,
-                color: const Color(0xFF64748B),
-                size: 16.sp,
+          if (_isChangingVote)
+            Center(
+              child: TextButton(
+                onPressed: _isSubmitting
+                    ? null
+                    : () => setState(() {
+                          _isChangingVote = false;
+                          _attendancePhoto = null;
+                          _statusError = null;
+                          _photoError = null;
+                        }),
+                child: const Text("Cancel"),
               ),
-              SizedBox(width: 6.w),
-              Text(
-                "${poll.totalMembers} Members • ${poll.respondedCount} responded",
-                style: TextStyle(
-                  fontSize: 11.5.sp,
-                  color: const Color(0xFF64748B),
-                ),
-              ),
-            ],
-          ),
+            ),
+          SizedBox(height: 6.h),
+          _buildFooter(poll, memberCount),
         ],
       ),
     );
   }
 
-  Widget _buildOptionTile(int number, String label) {
-    final isSelected = _selectedStatus == label;
+  Widget _buildPhotoTile(AttendancePoll poll, AttendanceOption option) {
+    return GestureDetector(
+      onTap: () => _openCamera(poll),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+            color: _photoError != null ? _error : _border,
+            width: _photoError != null ? 1.4 : 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38.w,
+              height: 38.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEEF2FF),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Icon(Icons.camera_alt_rounded, color: _accent, size: 20.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Attendance Photo",
+                    style: TextStyle(
+                      fontSize: 13.5.sp,
+                      fontWeight: FontWeight.w700,
+                      color: _textDark,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    _attendancePhoto != null
+                        ? "Photo captured ✓ (Tap to retake)"
+                        : "⚠ Photo required for ${option.label}",
+                    style: TextStyle(
+                      fontSize: 11.5.sp,
+                      color: _attendancePhoto != null
+                          ? const Color(0xFF16A34A)
+                          : const Color(0xFFF59E0B),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (_attendancePhoto != null) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8.r),
+                child: Image.file(
+                  _attendancePhoto!,
+                  width: 36.w,
+                  height: 36.w,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              SizedBox(width: 6.w),
+            ],
+            Icon(Icons.chevron_right_rounded, color: _textMuted, size: 22.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionTile(int number, AttendanceOption option, AttendancePoll poll) {
+    final isSelected = _selectedOptionId == option.id;
 
     return GestureDetector(
       onTap: () {
         setState(() {
-          _selectedStatus = label;
+          _selectedOptionId = option.id;
           _statusError = null;
-          if (!_requiresPhoto(label)) _photoError = null;
+          if (!poll.requiresPhoto(option.id)) _photoError = null;
         });
       },
       child: Container(
@@ -813,9 +923,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
           color: isSelected ? const Color(0xFFF6F8FE) : Colors.white,
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF5A3EFE)
-                : const Color(0xFFE2E8F0),
+            color: isSelected ? _accent : _border,
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
@@ -825,9 +933,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
               width: 28.w,
               height: 28.w,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFF5A3EFE)
-                    : const Color(0xFF818CF8),
+                color: isSelected ? _accent : const Color(0xFF818CF8),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
@@ -843,23 +949,25 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
             SizedBox(width: 12.w),
             Expanded(
               child: Text(
-                label,
+                option.label,
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
+                  color: _textDark,
                 ),
               ),
             ),
+            if (poll.requiresPhoto(option.id)) ...[
+              Icon(Icons.camera_alt_outlined, size: 16.sp, color: _textMuted),
+              SizedBox(width: 8.w),
+            ],
             Container(
               width: 20.w,
               height: 20.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected
-                      ? const Color(0xFF5A3EFE)
-                      : const Color(0xFF94A3B8),
+                  color: isSelected ? _accent : const Color(0xFF94A3B8),
                   width: isSelected ? 2.0 : 1.5,
                 ),
               ),
@@ -870,7 +978,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                         height: 10.w,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Color(0xFF5A3EFE),
+                          color: _accent,
                         ),
                       ),
                     )

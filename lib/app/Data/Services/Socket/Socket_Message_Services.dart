@@ -90,6 +90,9 @@ class SocketMessageService extends GetxService {
       {
         "transports": ["websocket"],
         "autoConnect": true,
+        // Opts in to attendance socket events (server checks auth or query).
+        "auth": {"attendanceSupported": "1"},
+        "query": {"attendanceSupported": "1"},
       },
     );
 
@@ -430,10 +433,21 @@ class SocketMessageService extends GetxService {
     _socket?.off("group_stop_typing");
   }
 
+  static const List<String> _attendanceEvents = [
+    "attendance:created",
+    "attendance:updated",
+    "attendance:my_vote",
+    "attendance:edited",
+    "attendance:closed",
+    "attendance:deleted",
+  ];
+  EventHandler<dynamic>? _attendanceReconnectHandler;
+
+  /// Group-room attendance events. [onReconnect] runs on every (re)connect so
+  /// the caller can `attendance:sync` the polls it is showing.
   void listenAttendanceEvents({
-    required Function(dynamic) onCreated,
-    required Function(dynamic) onUpdated,
-    Function(dynamic)? onResponseReceived,
+    required void Function(String event, dynamic data) onEvent,
+    void Function()? onReconnect,
   }) {
     final s = _socket;
     if (s == null) {
@@ -441,24 +455,67 @@ class SocketMessageService extends GetxService {
       return;
     }
     stopListeningAttendanceEvents();
-    s.on("attendance_created", (data) {
-      log("RECEIVED attendance_created => $data");
-      onCreated(data);
-    });
-    s.on("attendance_updated", (data) {
-      log("RECEIVED attendance_updated => $data");
-      onUpdated(data);
-    });
-    s.on("attendance_response_received", (data) {
-      log("RECEIVED attendance_response_received => $data");
-      onResponseReceived?.call(data);
-    });
+    for (final event in _attendanceEvents) {
+      s.on(event, (data) {
+        log("RECEIVED $event => $data");
+        onEvent(event, data);
+      });
+    }
+    if (onReconnect != null) {
+      _attendanceReconnectHandler = (_) => onReconnect();
+      s.on("connect", _attendanceReconnectHandler!);
+    }
   }
 
   void stopListeningAttendanceEvents() {
-    _socket?.off("attendance_created");
-    _socket?.off("attendance_updated");
-    _socket?.off("attendance_response_received");
+    for (final event in _attendanceEvents) {
+      _socket?.off(event);
+    }
+    if (_attendanceReconnectHandler != null) {
+      _socket?.off("connect", _attendanceReconnectHandler);
+      _attendanceReconnectHandler = null;
+    }
+  }
+
+  /// Joins the admin detail room for live `attendance:vote_changed` events.
+  void subscribeAttendance(
+    int pollId,
+    void Function(dynamic data) onVoteChanged,
+  ) {
+    final s = _socket;
+    if (s == null) return;
+    s.off("attendance:vote_changed");
+    s.on("attendance:vote_changed", (data) {
+      log("RECEIVED attendance:vote_changed => $data");
+      onVoteChanged(data);
+    });
+    if (isSocketConnected) {
+      s.emit("attendance:subscribe", {"pollId": pollId});
+    }
+  }
+
+  void unsubscribeAttendance(int pollId) {
+    _socket?.off("attendance:vote_changed");
+    if (isSocketConnected) {
+      _socket!.emit("attendance:unsubscribe", {"pollId": pollId});
+    }
+  }
+
+  /// Fetches the latest summaries for [pollIds] (reconnect recovery).
+  void syncAttendance(
+    List<int> pollIds,
+    void Function(List<dynamic> polls) onPolls,
+  ) {
+    if (!isSocketConnected || pollIds.isEmpty) return;
+    _socket!.emitWithAck(
+      "attendance:sync",
+      {"pollIds": pollIds},
+      ack: (data) {
+        if (data is Map && data["polls"] is List) {
+          onPolls(data["polls"] as List);
+        }
+      },
+    );
   }
 
   Future<void> initPrivateChat(

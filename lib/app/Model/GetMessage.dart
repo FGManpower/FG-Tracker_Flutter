@@ -246,6 +246,8 @@ class MessageData {
   StatusMetaModel? statusMeta;
   StatusItemModel? replyStatus;
   bool isDeleted = false;
+  Map<String, dynamic>? attendance;
+  dynamic attendancePollId;
 
   MessageData({
     this.id,
@@ -594,6 +596,16 @@ class MessageData {
         json['deleted_for_everyone'] == true ||
         json['isDeleted']?.toString() == '1' ||
         json['is_deleted']?.toString() == '1';
+
+    // Attendance poll summary sent with messageType "attendance".
+    final rawAttendance = json['attendance'] ?? nestedSource?['attendance'];
+    if (rawAttendance is Map) {
+      attendance = Map<String, dynamic>.from(rawAttendance);
+    }
+    attendancePollId = json['pollId'] ??
+        json['attendancePollId'] ??
+        json['attendanceId'] ??
+        nestedSource?['pollId'];
   }
 
   Map<String, dynamic> toJson() {
@@ -638,6 +650,8 @@ class MessageData {
     data['isForwarded'] = isForwarded;
     data['forwardedFromMessageId'] = forwardedFromMessageId;
     data['isDeleted'] = isDeleted;
+    if (attendance != null) data['attendance'] = attendance;
+    if (attendancePollId != null) data['pollId'] = attendancePollId;
 
     return data;
   }

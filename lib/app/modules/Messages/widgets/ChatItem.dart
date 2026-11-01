@@ -910,21 +910,27 @@ class ChatBubble extends StatelessWidget {
           ? (controller as GroupMessageController).isCreator
           : null;
 
-      final pollData = AttendancePollData.fromMessageContent(message.content);
-      if (pollData == null) {
+      final groupController = controller is GroupMessageController
+          ? controller as GroupMessageController
+          : null;
+
+      final embedded = AttendancePoll.fromJson(message.attendance);
+      final pollId = embedded?.id ??
+          int.tryParse(message.attendancePollId?.toString() ?? "");
+      if (pollId == null || pollId <= 0) {
         return _buildTextContent(message, textColor, isSentByMe);
       }
 
-      final groupName = controller is GroupMessageController
-          ? (controller as GroupMessageController).groupName.value
-          : "";
-
       return AttendanceChatCard(
-        key: ValueKey("attendance_${pollData.attendanceId}"),
-        pollData: pollData,
+        key: ValueKey("attendance_$pollId"),
+        pollId: pollId,
+        initialPoll: embedded,
         isAdmin: isCreator,
+        groupMembers: groupController?.groupMembers,
         senderName: message.senderName?.toString() ?? "",
-        groupName: groupName,
+        groupName: groupController?.groupName.value ?? "",
+        messageTime: message.timestamp?.toString(),
+        onDeleted: groupController?.markAttendanceDeleted,
       );
     } else {
       return _buildTextContent(

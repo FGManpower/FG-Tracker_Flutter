@@ -3,8 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-import '../../constant/pref_res.dart';
-import '../../values/global.dart';
 import '../../../modules/Attendance/controller/attendance_controller.dart';
 
 Future<void> showAttendanceSheet({
@@ -24,22 +22,6 @@ Future<void> showAttendanceSheet({
       onCreated: onCreated,
     ),
   );
-}
-
-class AttendanceMemberItem {
-  final String id;
-  final String name;
-  final String phone;
-  final String? avatarUrl;
-  final RxBool isSelected;
-
-  AttendanceMemberItem({
-    required this.id,
-    required this.name,
-    required this.phone,
-    this.avatarUrl,
-    bool selected = true,
-  }) : isSelected = selected.obs;
 }
 
 class AttendanceOptionItem {
@@ -84,9 +66,10 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
     AttendanceOptionItem(index: 2, text: "Absent"),
   ].obs;
 
-  final RxList<AttendanceMemberItem> _members = <AttendanceMemberItem>[].obs;
-  final RxBool _selectAll = true.obs;
+  /// Option that requires a live photo (-1 = none). Defaults to "Present".
   final RxInt _selectedOptionIndex = 0.obs;
+  final RxBool _allowVoteChange = true.obs;
+  final RxBool _autoClose = true.obs;
 
   void _toggleOption(int index) {
     if (_selectedOptionIndex.value == index) {
@@ -99,7 +82,6 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
   // Validation States
   final RxnString _questionError = RxnString();
   final RxnString _optionsError = RxnString();
-  final RxnString _membersError = RxnString();
   final RxBool _isSubmitting = false.obs;
 
   @override
@@ -120,8 +102,6 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
     for (final opt in _options) {
       opt.controller.addListener(_onOptionChanged);
     }
-
-    _initMembers();
   }
 
   void _onOptionChanged() {
@@ -132,29 +112,6 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
         _optionsError.value = null;
       }
     }
-  }
-
-  void _initMembers() {
-    final currentUserId =
-        Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
-    final List<AttendanceMemberItem> loaded = [];
-    for (int i = 0; i < (widget.groupMembers?.length ?? 0); i++) {
-      final gm = widget.groupMembers![i];
-      final userId = gm.userId?.toString() ?? "";
-      // The admin creates the attendance and doesn't mark it.
-      if (userId.isEmpty || userId == currentUserId) continue;
-      loaded.add(
-        AttendanceMemberItem(
-          id: userId,
-          name: gm.name?.toString() ?? "Member ${i + 1}",
-          phone: gm.mobileNo?.toString() ?? "--",
-          avatarUrl: gm.profileImage?.toString(),
-          selected: true,
-        ),
-      );
-    }
-    _members.assignAll(loaded);
-    _selectAll.value = loaded.isNotEmpty;
   }
 
   @override
@@ -222,27 +179,13 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
       final removed = _options.removeAt(index);
       removed.controller.removeListener(_onOptionChanged);
       removed.controller.dispose();
+      final photoIdx = _selectedOptionIndex.value;
+      if (photoIdx == index) {
+        _selectedOptionIndex.value = -1;
+      } else if (photoIdx > index) {
+        _selectedOptionIndex.value = photoIdx - 1;
+      }
       _onOptionChanged();
-    }
-  }
-
-  void _toggleSelectAll(bool? val) {
-    final next = val ?? !_selectAll.value;
-    _selectAll.value = next;
-    for (final m in _members) {
-      m.isSelected.value = next;
-    }
-    if (_membersError.value != null && next) {
-      _membersError.value = null;
-    }
-  }
-
-  void _toggleMember(int index) {
-    _members[index].isSelected.toggle();
-    _selectAll.value = _members.every((m) => m.isSelected.value);
-    if (_membersError.value != null &&
-        _members.any((m) => m.isSelected.value)) {
-      _membersError.value = null;
     }
   }
 
@@ -287,15 +230,6 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
       }
     }
 
-    // 3. Members validation
-    final selectedMembers = _members.where((m) => m.isSelected.value).toList();
-    if (selectedMembers.isEmpty) {
-      _membersError.value = "Please select at least 1 group member";
-      isValid = false;
-    } else {
-      _membersError.value = null;
-    }
-
     return isValid;
   }
 
@@ -317,13 +251,12 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
 
     final isValid = _validateForm();
     debugPrint("[ATTENDANCE_DEBUG] validation => $isValid "
-        "q=${_questionError.value} opt=${_optionsError.value} mem=${_membersError.value}"); // TODO: remove debug log
+        "q=${_questionError.value} opt=${_optionsError.value}"); // TODO: remove debug log
     if (!isValid) {
       _showError(
         "Validation Error",
         _questionError.value ??
             _optionsError.value ??
-            _membersError.value ??
             "Please fix the highlighted errors before submitting",
       );
       return;
@@ -334,13 +267,17 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
       return;
     }
 
-    final memberIds = _members
-        .where((m) => m.isSelected.value)
-        .map((m) => int.tryParse(m.id))
-        .whereType<int>()
-        .toList();
-    if (memberIds.isEmpty) {
-      _showError("Attendance Failed", "No valid group members selected.");
+    final options = _options.map((o) => o.controller.text.trim()).toList();
+    final photoIdx = _selectedOptionIndex.value;
+    final photoOption =
+        photoIdx >= 0 && photoIdx < options.length ? options[photoIdx] : null;
+    final date = _selectedDate.value;
+    final deadline = _autoClose.value
+        ? DateTime(date.year, date.month, date.day, 23, 59)
+        : null;
+    if (deadline != null && deadline.isBefore(DateTime.now())) {
+      _showError("Attendance Failed",
+          "The selected date has already ended. Pick another date or turn off auto-close.");
       return;
     }
 
@@ -349,13 +286,16 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
 
     try {
       debugPrint("[ATTENDANCE_DEBUG] request sent: groupId=${widget.groupId} "
-          "date=${_selectedDate.value} memberIds=$memberIds"); // TODO: remove debug log
-      final data = await AttendanceController.instance.createAttendance(
+          "date=$date photoOption=$photoOption deadline=$deadline"); // TODO: remove debug log
+      final data = await AttendanceController.instance.createPoll(
         groupId: widget.groupId,
-        question: _questionController.text.trim(),
-        date: _selectedDate.value,
-        options: _options.map((o) => o.controller.text.trim()).toList(),
-        memberIds: memberIds,
+        title: "Attendance • ${DateFormat("dd MMM").format(date)}",
+        description: _questionController.text.trim(),
+        eventDate: date,
+        options: options,
+        photoRequiredOptionLabel: photoOption,
+        allowVoteChange: _allowVoteChange.value,
+        deadlineAt: deadline,
       );
       debugPrint("[ATTENDANCE_DEBUG] response received: $data"); // TODO: remove debug log
 
@@ -368,8 +308,8 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
 
       Get.snackbar(
         "Attendance Created",
-        "Attendance sent to ${memberIds.length} members",
-        snackPosition: SnackPosition.BOTTOM,
+        "Attendance sent to the group",
+        snackPosition: SnackPosition.TOP,
         backgroundColor: const Color(0xFF5A3EFE),
         colorText: Colors.white,
         margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -507,8 +447,8 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
 
                   SizedBox(height: 14.h),
 
-                  // ── Group Members ──
-                  _buildMembersSection(),
+                  // ── Settings ──
+                  _buildSettingsSection(),
 
                   SizedBox(height: 18.h),
                 ],
@@ -824,7 +764,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      "Add options for members to respond",
+                      "Select an option to require a live photo for it",
                       style: TextStyle(
                         fontSize: 11.sp,
                         color: const Color(0xFF64748B),
@@ -904,7 +844,9 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Option ${index + 1}",
+                                  isSelected
+                                      ? "Option ${index + 1} • 📷 Photo required"
+                                      : "Option ${index + 1}",
                                   style: TextStyle(
                                     fontSize: 10.sp,
                                     color: const Color(0xFF94A3B8),
@@ -1022,228 +964,98 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
     );
   }
 
-  Widget _buildMembersSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 32.w,
-              height: 32.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFFEEF2FF),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Icon(
-                Icons.groups_rounded,
-                color: const Color(0xFF5A3EFE),
-                size: 18.sp,
-              ),
-            ),
-            SizedBox(width: 8.w),
-            Obx(
-                  () => Text(
-                "Group Members (${_members.length})",
-                style: TextStyle(
-                  fontSize: 13.5.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
-                ),
-              ),
-            ),
-            SizedBox(width: 4.w),
-            Icon(
-              Icons.keyboard_arrow_down_rounded,
-              color: const Color(0xFF5A3EFE),
-              size: 20.sp,
-            ),
-            const Spacer(),
-            Text(
-              "Select All",
-              style: TextStyle(
-                fontSize: 11.5.sp,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF64748B),
-              ),
-            ),
-            SizedBox(width: 6.w),
-            Obx(
-                  () => GestureDetector(
-                onTap: () => _toggleSelectAll(null),
-                child: Container(
-                  width: 18.w,
-                  height: 18.w,
-                  decoration: BoxDecoration(
-                    color: _selectAll.value
-                        ? const Color(0xFF5A3EFE)
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(4.r),
-                    border: Border.all(
-                      color: _selectAll.value
-                          ? const Color(0xFF5A3EFE)
-                          : const Color(0xFFCBD5E1),
-                      width: 1.5,
+  Widget _buildSettingsSection() {
+    Widget toggleRow({
+      required IconData icon,
+      required String title,
+      required String subtitle,
+      required RxBool value,
+    }) {
+      return Obx(
+        () => Container(
+          margin: EdgeInsets.only(top: 8.h),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: const Color(0xFFEEF2F6)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: const Color(0xFF5A3EFE), size: 20.sp),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1E293B),
+                      ),
                     ),
-                  ),
-                  child: _selectAll.value
-                      ? Icon(
-                    Icons.check_rounded,
-                    size: 13.sp,
-                    color: Colors.white,
-                  )
-                      : null,
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
-        ),
-        Obx(() {
-          if (_membersError.value == null) return const SizedBox.shrink();
-          return Padding(
-            padding: EdgeInsets.only(top: 6.h, left: 4.w),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.error_outline_rounded,
-                  color: const Color(0xFFEF4444),
-                  size: 13.sp,
-                ),
-                SizedBox(width: 4.w),
-                Text(
-                  _membersError.value!,
-                  style: TextStyle(
-                    fontSize: 11.5.sp,
-                    color: const Color(0xFFEF4444),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
-        SizedBox(height: 8.h),
-        Obx(
-              () => Column(
-            children: _members.asMap().entries.map((entry) {
-              final index = entry.key;
-              final member = entry.value;
-              return Obx(
-                    () => Container(
-                  margin: EdgeInsets.only(top: 8.h),
-                  padding:
-                  EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: _membersError.value != null &&
-                          !member.isSelected.value
-                          ? const Color(0xFFFCA5A5)
-                          : const Color(0xFFF1F5F9),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 20.r,
-                        backgroundColor: const Color(0xFFE2E8F0),
-                        child: ClipOval(
-                          child: member.avatarUrl != null &&
-                              member.avatarUrl!.isNotEmpty
-                              ? Image.network(
-                            member.avatarUrl!,
-                            fit: BoxFit.cover,
-                            width: 40.r,
-                            height: 40.r,
-                            errorBuilder: (_, __, ___) =>
-                                _avatarFallback(member.name),
-                          )
-                              : _avatarFallback(member.name),
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              member.name,
-                              style: TextStyle(
-                                fontSize: 13.5.sp,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0F172A),
-                              ),
-                            ),
-                            SizedBox(height: 2.h),
-                            Text(
-                              member.phone,
-                              style: TextStyle(
-                                fontSize: 11.5.sp,
-                                color: const Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => _toggleMember(index),
-                        child: Container(
-                          width: 22.w,
-                          height: 22.w,
-                          decoration: BoxDecoration(
-                            color: member.isSelected.value
-                                ? const Color(0xFF5A3EFE)
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(6.r),
-                            border: Border.all(
-                              color: member.isSelected.value
-                                  ? const Color(0xFF5A3EFE)
-                                  : const Color(0xFFCBD5E1),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: member.isSelected.value
-                              ? Icon(
-                            Icons.check_rounded,
-                            size: 16.sp,
-                            color: Colors.white,
-                          )
-                              : null,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
+              Switch(
+                value: value.value,
+                activeThumbColor: Colors.white,
+                activeTrackColor: const Color(0xFF5A3EFE),
+                onChanged: (v) => value.value = v,
+              ),
+            ],
           ),
         ),
-      ],
-    );
-  }
+      );
+    }
 
-  Widget _avatarFallback(String name) {
-    final initials = name.isNotEmpty
-        ? name
-        .trim()
-        .split(" ")
-        .map((e) => e.isNotEmpty ? e[0].toUpperCase() : "")
-        .take(2)
-        .join()
-        : "U";
     return Container(
-      width: 40.r,
-      height: 40.r,
-      color: const Color(0xFFE0E7FF),
-      alignment: Alignment.center,
-      child: Text(
-        initials,
-        style: TextStyle(
-          fontSize: 13.sp,
-          fontWeight: FontWeight.w700,
-          color: const Color(0xFF5A3EFE),
-        ),
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF6F8FE),
+        borderRadius: BorderRadius.circular(18.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Settings",
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            "Sent to all members of this group",
+            style: TextStyle(
+              fontSize: 11.sp,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          toggleRow(
+            icon: Icons.swap_horiz_rounded,
+            title: "Allow changing response",
+            subtitle: "Members can change or remove their response",
+            value: _allowVoteChange,
+          ),
+          toggleRow(
+            icon: Icons.timer_outlined,
+            title: "Close at end of day",
+            subtitle: "Automatically closes at 11:59 PM on the selected date",
+            value: _autoClose,
+          ),
+        ],
       ),
     );
   }

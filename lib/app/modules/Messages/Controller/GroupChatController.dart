@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
@@ -428,14 +427,10 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     );
 
     socketService.listenAttendanceEvents(
-      onCreated: (data) {
-        if (data is Map && _isOtherGroup(data["groupId"])) return;
-        AttendanceController.instance.handleCreated(data);
-      },
-      onUpdated: (data) {
-        if (data is Map && _isOtherGroup(data["groupId"])) return;
-        AttendanceController.instance.handleUpdated(data);
-      },
+      onEvent: _onAttendanceEvent,
+      onReconnect: () => AttendanceController.instance.syncPolls(
+        _visibleAttendancePollIds(),
+      ),
     );
 
     socketService.listenGroupTyping(
@@ -946,36 +941,94 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   /// Called after POST /attendance/create succeeds. The backend broadcasts the
   /// attendance message over the socket; this adds it locally in case the
   /// broadcast doesn't reach the sender (duplicates are skipped by id).
+  /// Called with the create-poll response ({pollId, messageId, message}).
+  /// The backend also emits `attendance:created`; duplicates are skipped by id.
   void addCreatedAttendanceMessage(Map<String, dynamic> data) {
+    final message = data["message"] is Map
+        ? Map<String, dynamic>.from(data["message"])
+        : <String, dynamic>{"id": data["messageId"]};
+    message["id"] ??= data["messageId"];
+    message["pollId"] ??= data["pollId"];
+    message["senderId"] ??=
+        Global.storageServices.get(PrefConst.userId)?.toString();
+    message["senderName"] ??=
+        Global.storageServices.get(PrefConst.userName)?.toString();
+    _insertAttendanceMessage(message);
+  }
+
+  void _insertAttendanceMessage(Map<String, dynamic> raw) {
     try {
-      final messageId = int.tryParse(data["messageId"]?.toString() ?? "");
-      if (messageId == null) return;
-      if (_messages.any((m) => m.id == messageId)) return;
+      final msg = MessageData.fromJson(raw);
+      msg.messageType = "attendance";
+      if (msg.id == null) return;
+      if (_messages.any((m) => m.id == msg.id)) return;
 
-      final content = jsonEncode({
-        "attendanceId": data["attendanceId"],
-        "question": data["question"],
-        "date": data["date"],
-        "options": data["options"],
-      });
-
-      _messages.add(
-        MessageData(
-          id: messageId,
-          senderId: Global.storageServices.get(PrefConst.userId)?.toString(),
-          senderName: Global.storageServices.get(PrefConst.userName)?.toString(),
-          content: content,
-          messageType: "attendance",
-          timestamp: data["createdAt"]?.toString() ??
-              DateTime.now().toUtc().toIso8601String(),
-        ),
-      );
+      final isMine = msg.senderId?.toString() ==
+          Global.storageServices.get(PrefConst.userId)?.toString();
+      final wasAtBottom = isUserAtBottom();
+      _messages.add(msg);
       updateMessageStream();
-      scrollToBottom();
+      if (isMine || wasAtBottom) {
+        scrollToBottom();
+      } else {
+        unreadBelowCount.value++;
+        showScrollToBottom.value = true;
+      }
     } catch (e) {
       log("ADD ATTENDANCE MESSAGE ERROR: $e");
     }
   }
+
+  void _onAttendanceEvent(String event, dynamic data) {
+    if (data is! Map) return;
+    final poll = data["poll"];
+    final eventGroupId = data["groupId"] ??
+        (poll is Map ? poll["groupId"] : null) ??
+        (data["message"] is Map ? data["message"]["groupId"] : null);
+    if (_isOtherGroup(eventGroupId)) return;
+
+    final message =
+        AttendanceController.instance.handleSocketEvent(event, data);
+
+    if (event == "attendance:created" && message != null) {
+      if (poll is Map) {
+        message["attendance"] ??= poll;
+        message["pollId"] ??= poll["id"];
+      }
+      _insertAttendanceMessage(message);
+    } else if (event == "attendance:deleted") {
+      final pollId = int.tryParse(data["pollId"]?.toString() ?? "");
+      if (pollId != null) markAttendanceDeleted(pollId);
+    }
+  }
+
+  /// Shows a deleted poll's message as deleted (existing deleted-message UI).
+  void markAttendanceDeleted(int pollId) {
+    var changed = false;
+    for (final msg in _messages) {
+      if (msg.messageType == "attendance" &&
+          _pollIdOf(msg)?.toString() == pollId.toString()) {
+        msg.messageType = "text";
+        msg.content = "This message was deleted";
+        msg.attendance = null;
+        msg.isDeleted = true;
+        changed = true;
+      }
+    }
+    if (changed) updateMessageStream();
+  }
+
+  dynamic _pollIdOf(MessageData msg) =>
+      msg.attendancePollId ??
+      msg.attendance?["id"] ??
+      msg.attendance?["pollId"] ??
+      (msg.attendance?["poll"] is Map ? msg.attendance!["poll"]["id"] : null);
+
+  List<int> _visibleAttendancePollIds() => _messages
+      .where((m) => m.messageType == "attendance")
+      .map((m) => int.tryParse(_pollIdOf(m)?.toString() ?? ""))
+      .whereType<int>()
+      .toList();
 
   Future<void> uploadAudio(String path) async {
     try {

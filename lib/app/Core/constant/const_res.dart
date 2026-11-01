@@ -32,6 +32,9 @@ class ConstRes {
   ConstRes() {
     BaseOptions options = BaseOptions(
       baseUrl: aBaseUrl,
+      // Declares support for attendance polls; without it the backend sends
+      // attendance messages as plain text.
+      headers: {"x-attendance-supported": "1"},
     );
     _dio.options = options;
     _dio.interceptors.add(PrettyDioLogger(enabled: false));
