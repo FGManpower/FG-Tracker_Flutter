@@ -86,6 +86,9 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
   int _notVotedCount = 0;
   bool _isExporting = false;
 
+  Worker? _pollWorker;
+  String? _countsSignature;
+
   @override
   void initState() {
     super.initState();
@@ -95,10 +98,21 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
       widget.pollId,
       _onVoteChanged,
     );
+    // Also follow the shared poll store: group-room `attendance:updated`
+    // events change the counts there even if `attendance:vote_changed`
+    // (admin detail room) doesn't arrive, and the list must follow.
+    _countsSignature = _signatureOf(_controller.polls[widget.pollId]);
+    _pollWorker = ever<Map<int, AttendancePoll>>(_controller.polls, (map) {
+      final signature = _signatureOf(map[widget.pollId]);
+      if (signature == _countsSignature) return;
+      _countsSignature = signature;
+      _scheduleLiveRefresh();
+    });
   }
 
   @override
   void dispose() {
+    _pollWorker?.dispose();
     SocketMessageService.instance.unsubscribeAttendance(widget.pollId);
     _searchDebounce?.cancel();
     _liveDebounce?.cancel();
@@ -106,13 +120,26 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
     super.dispose();
   }
 
+  String? _signatureOf(AttendancePoll? poll) => poll == null
+      ? null
+      : "${poll.totalVotes}|${poll.countsByOption}|${poll.status}";
+
   void _onVoteChanged(dynamic data) {
     if (data is! Map) return;
-    _controller.handleSocketEvent("attendance:updated", {
-      "poll": data["poll"],
-      "version": data["version"],
-    });
-    // Coalesce bursts of votes into one list refresh.
+    final map = Map<String, dynamic>.from(data);
+    // Accept {poll, version} or a flat payload carrying pollId/counts.
+    _controller.handleSocketEvent(
+      "attendance:updated",
+      map["poll"] is Map
+          ? {"poll": map["poll"], "version": map["version"]}
+          // A flat vote event's own `id` may be the vote's, not the poll's.
+          : {...map, "id": map["pollId"] ?? widget.pollId},
+    );
+    _scheduleLiveRefresh();
+  }
+
+  /// Coalesces bursts of votes into one silent list refresh.
+  void _scheduleLiveRefresh() {
     _liveDebounce?.cancel();
     _liveDebounce = Timer(const Duration(milliseconds: 600), () {
       if (mounted) _loadVoters(silent: true);

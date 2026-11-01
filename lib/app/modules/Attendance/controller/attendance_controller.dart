@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:math' show Random, max;
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -82,16 +83,31 @@ class AttendanceController extends GetxController {
     if (incoming == null) return null;
     final local = polls[incoming.id];
     if (local == null) {
+      // A count-only update for a poll we haven't loaded: fetch the full poll
+      // instead of storing a card with no title/options.
+      if (incoming.options.isEmpty) {
+        ensureLoaded(incoming.id, force: true);
+        return null;
+      }
       polls[incoming.id] = incoming;
       return incoming;
     }
-    // version 0 = payload without a version; don't drop it.
-    if (incoming.version > 0) {
-      if (fromEvent && incoming.version <= local.version) return local;
-      if (!fromEvent && incoming.version < local.version) return local;
+    // Only strictly older snapshots are dropped. An equal version is applied
+    // (idempotent), so a backend that doesn't bump `version` on every vote
+    // still updates counts live. version 0 = payload without a version.
+    if (incoming.version > 0 && incoming.version < local.version) {
+      debugPrint(
+        "[RT_DEBUG] attendance poll=${incoming.id} dropped stale v${incoming.version} < v${local.version}",
+      ); // TODO: remove debug log
+      return local;
     }
     final merged = local.mergeServer(incoming, hasMyVoteField: hasMyVoteField);
     polls[incoming.id] = merged;
+    if (fromEvent) {
+      debugPrint(
+        "[RT_DEBUG] attendance poll=${incoming.id} applied v${merged.version} total=${merged.totalVotes} ${merged.countsByOption}",
+      ); // TODO: remove debug log
+    }
     return merged;
   }
 
@@ -112,7 +128,12 @@ class AttendanceController extends GetxController {
             ? Map<String, dynamic>.from(map["poll"])
             : Map<String, dynamic>.from(map);
         if (map["version"] != null) poll["version"] = map["version"];
-        _apply(poll, fromEvent: true);
+        poll["id"] ??= poll["pollId"] ?? map["pollId"];
+        final applied = _apply(poll, fromEvent: true);
+        // No counts in the event: refetch so the numbers still move live.
+        if (applied != null && poll["counts"] is! Map) {
+          ensureLoaded(applied.id, force: true);
+        }
         break;
       case "attendance:edited":
         _apply(map["poll"], fromEvent: true);
@@ -123,6 +144,8 @@ class AttendanceController extends GetxController {
         if (local != null) {
           final vote = AttendanceVote.fromJson(map["myVote"]);
           polls[pollId!] = local.copyWith(myVote: vote, clearMyVote: vote == null);
+        } else if (pollId != null) {
+          ensureLoaded(pollId, force: true);
         }
         break;
       case "attendance:closed":

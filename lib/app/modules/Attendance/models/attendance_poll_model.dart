@@ -241,6 +241,10 @@ class AttendancePoll {
   /// merge must keep the local counts instead of zeroing them.
   final bool hasCounts;
 
+  /// Top-level keys present in the payload. A partial socket update only
+  /// overrides fields it actually carries (see [mergeServer]).
+  final Set<String> fields;
+
   const AttendancePoll({
     required this.id,
     this.groupId,
@@ -263,6 +267,7 @@ class AttendancePoll {
     this.createdAt,
     this.myVote,
     this.hasCounts = true,
+    this.fields = const {},
   });
 
   bool get isOpen => status == "open";
@@ -340,6 +345,7 @@ class AttendancePoll {
       createdAt: _toDate(json["createdAt"]),
       myVote: AttendanceVote.fromJson(outer["myVote"] ?? json["myVote"]),
       hasCounts: json["counts"] is Map,
+      fields: json.keys.map((k) => k.toString()).toSet(),
     );
   }
 
@@ -390,10 +396,14 @@ class AttendancePoll {
       options: server.options.isNotEmpty ? server.options : options,
       photoRequiredOptionId:
           server.photoRequiredOptionId ?? photoRequiredOptionId,
-      allowVoteChange: server.allowVoteChange,
-      voterVisibility: server.voterVisibility,
+      allowVoteChange: server.fields.contains("allowVoteChange")
+          ? server.allowVoteChange
+          : allowVoteChange,
+      voterVisibility: server.fields.contains("voterVisibility")
+          ? server.voterVisibility
+          : voterVisibility,
       deadlineAt: server.deadlineAt ?? deadlineAt,
-      status: server.status,
+      status: server.fields.contains("status") ? server.status : status,
       totalVotes: server.hasCounts ? server.totalVotes : totalVotes,
       countsByOption: server.hasCounts ? server.countsByOption : countsByOption,
       version: server.version > version ? server.version : version,
