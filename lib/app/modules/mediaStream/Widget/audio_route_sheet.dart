@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:flutter/material.dart';
@@ -36,25 +34,47 @@ class _AudioRouteSheet extends StatelessWidget {
     Navigator.of(sheetContext).pop(route);
   }
 
-  void _warn(String title, String message) {
-    Get.snackbar(
-      title,
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.black87,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
+  String _titleOf(CallAudioRoute route) {
+    switch (route) {
+      case CallAudioRoute.earpiece:
+        return 'Phone';
+      case CallAudioRoute.speaker:
+        return 'Speaker';
+      case CallAudioRoute.bluetooth:
+        return controller.bluetoothDeviceName;
+      case CallAudioRoute.headset:
+        return controller.wiredDeviceName;
+    }
+  }
+
+  String? _subtitleOf(CallAudioRoute route) {
+    switch (route) {
+      case CallAudioRoute.earpiece:
+        return 'Earpiece';
+      case CallAudioRoute.speaker:
+        return null;
+      case CallAudioRoute.bluetooth:
+        return 'Bluetooth';
+      case CallAudioRoute.headset:
+        return 'Wired';
+    }
+  }
+
+  IconData _iconOf(CallAudioRoute route) {
+    switch (route) {
+      case CallAudioRoute.earpiece:
+        return Icons.phone_in_talk_rounded;
+      case CallAudioRoute.speaker:
+        return Icons.volume_up_rounded;
+      case CallAudioRoute.bluetooth:
+        return Icons.bluetooth_audio_rounded;
+      case CallAudioRoute.headset:
+        return Icons.headphones_rounded;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isIOS = Platform.isIOS;
-    final String phoneLabel = isIOS ? 'iPhone' : 'Phone';
-    final IconData phoneIcon = isIOS
-        ? Icons.phone_iphone_rounded
-        : Icons.phone_android_rounded;
-
     return SafeArea(
       child: Center(
         child: ConstrainedBox(
@@ -78,10 +98,13 @@ class _AudioRouteSheet extends StatelessWidget {
             child: Obx(() {
               final CallAudioRoute active = controller.currentRoute.value;
               final bool isVideo = controller.isVideoCall.value;
-              final bool hasBT = controller.isBluetoothConnected.value;
-              final String btName = controller.bluetoothDeviceName.value;
-              final bool hasHeadset = controller.isHeadsetConnected.value;
-              final String headsetName = controller.headsetDeviceName.value;
+              final List<CallAudioRoute> routes =
+              List<CallAudioRoute>.from(controller.availableRoutes);
+              final List<CallAudioRoute> shown = isVideo
+                  ? routes
+                  .where((CallAudioRoute r) => r != CallAudioRoute.earpiece)
+                  .toList()
+                  : routes;
 
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -138,66 +161,19 @@ class _AudioRouteSheet extends StatelessWidget {
                     height: 1,
                     thickness: 1,
                   ),
-                  if (!isVideo)
+                  for (int i = 0; i < shown.length; i++) ...[
+                    if (i > 0) const _RouteDivider(),
                     _RouteItem(
-                      title: phoneLabel,
-                      trailingIcon: phoneIcon,
-                      isSelected: active == CallAudioRoute.earpiece,
+                      title: _titleOf(shown[i]),
+                      subtitle: _subtitleOf(shown[i]),
+                      trailingIcon: _iconOf(shown[i]),
+                      isSelected: active == shown[i],
                       onTap: () {
                         HapticFeedback.mediumImpact();
-                        _close(CallAudioRoute.earpiece);
+                        _close(shown[i]);
                       },
                     ),
-                  if (!isVideo) const _RouteDivider(),
-                  _RouteItem(
-                    title: 'Speaker',
-                    trailingIcon: Icons.volume_up_rounded,
-                    isSelected: active == CallAudioRoute.speaker,
-                    onTap: () {
-                      HapticFeedback.mediumImpact();
-                      _close(CallAudioRoute.speaker);
-                    },
-                  ),
-                  const _RouteDivider(),
-                  _RouteItem(
-                    title: hasBT ? btName : 'Bluetooth',
-                    subtitle: hasBT ? 'Connected' : 'Not connected',
-                    trailingIcon: Icons.bluetooth_audio_rounded,
-                    isSelected: active == CallAudioRoute.bluetooth,
-                    isEnabled: hasBT,
-                    onTap: () {
-                      if (!hasBT) {
-                        _warn(
-                          'Bluetooth',
-                          'No Bluetooth audio device connected. Please pair '
-                              'your Bluetooth headset in settings.',
-                        );
-                        return;
-                      }
-                      HapticFeedback.mediumImpact();
-                      _close(CallAudioRoute.bluetooth);
-                    },
-                  ),
-                  const _RouteDivider(),
-                  _RouteItem(
-                    title: hasHeadset ? headsetName : 'Wired Headphones',
-                    subtitle: hasHeadset ? 'Connected' : 'Not connected',
-                    trailingIcon: Icons.headphones_rounded,
-                    isSelected: active == CallAudioRoute.headset,
-                    isEnabled: hasHeadset,
-                    onTap: () {
-                      if (!hasHeadset) {
-                        _warn(
-                          'Wired Headphones',
-                          'No wired earphones or headset connected. Please '
-                              'plug them into your device.',
-                        );
-                        return;
-                      }
-                      HapticFeedback.mediumImpact();
-                      _close(CallAudioRoute.headset);
-                    },
-                  ),
+                  ],
                   SizedBox(height: 10.h),
                   Container(
                     width: double.infinity,
@@ -247,7 +223,6 @@ class _RouteItem extends StatelessWidget {
   final String? subtitle;
   final IconData trailingIcon;
   final bool isSelected;
-  final bool isEnabled;
   final VoidCallback onTap;
 
   const _RouteItem({
@@ -256,13 +231,10 @@ class _RouteItem extends StatelessWidget {
     required this.isSelected,
     required this.onTap,
     this.subtitle,
-    this.isEnabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bool dim = !isEnabled;
-
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -280,15 +252,12 @@ class _RouteItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: dim
-                            ? const Color(0xFFB4B4C0)
-                            : (isSelected
+                        color: isSelected
                             ? AppColors.primaryPurple
-                            : AppColors.darkText),
+                            : AppColors.darkText,
                         fontSize: 15.sp.clamp(14.0, 17.0),
-                        fontWeight: isSelected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
+                        fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500,
                         fontFamily: FontFamily.interMedium,
                       ),
                     ),
@@ -299,9 +268,7 @@ class _RouteItem extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: dim
-                              ? const Color(0xFFC9C9D4)
-                              : const Color(0xFF94A3B8),
+                          color: const Color(0xFF94A3B8),
                           fontSize: 11.5.sp.clamp(10.5, 13.5),
                           fontFamily: FontFamily.interMedium,
                         ),
@@ -323,11 +290,9 @@ class _RouteItem extends StatelessWidget {
               Icon(
                 trailingIcon,
                 size: 22.sp,
-                color: dim
-                    ? const Color(0xFFC9C9D4)
-                    : (isSelected
+                color: isSelected
                     ? AppColors.primaryPurple
-                    : const Color(0xFF64748B)),
+                    : const Color(0xFF64748B),
               ),
             ],
           ),
