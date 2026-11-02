@@ -147,8 +147,13 @@ class QuickActionsSection extends StatelessWidget {
                   isPremium: isSubscribed,
                   imagePath: "assets/icons/new_action_walkie_talkie.png",
                   onTap: () async {
-                    // Opens the Walkie-Talkie channel list directly
-                    await Get.toNamed(Routes.WalkieGroupSelect);
+                    // Subscribed → channel list; otherwise → trial / plans screen.
+                    // Read live so a just-updated subscription is respected.
+                    final subscribed =
+                        homeController?.isWalkieSubscribed ?? false;
+                    await Get.toNamed(subscribed
+                        ? Routes.WalkieGroupSelect
+                        : Routes.walkieTalkieTrialDetails);
                     homeController?.fetchInitializeData();
                   },
                 );

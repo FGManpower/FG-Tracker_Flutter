@@ -1,8 +1,12 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 class SignallingService {
@@ -84,6 +88,43 @@ class SignallingService {
       log("Cancel missed call timer received");
     });
 
+    s.on("newCall", (data) {
+      if (Get.isRegistered<CallingController>()) {
+        final controller = Get.find<CallingController>();
+        if (Get.currentRoute == Routes.callScreen) {
+          final callKit = CallKitService.instance;
+
+          callKit.onAcceptCall = (callId, extra, uuid) async {
+            CallSessionState.sessionId = uuid ?? '';
+            controller.endCall();
+            CallSessionState.sessionId = uuid ?? '';
+
+            Future.delayed(
+              Duration(seconds: 2),
+              () {
+                final callerId = extra['callerId']?.toString() ?? '';
+
+                log('Incoming call accepted automatic without press to notification: $extra');
+                Get.toNamed(Routes.callScreen, arguments: {
+                  'callerId': callerId,
+                  'remoteUserId': callerId,
+                  'callId': callId,
+                  'sessionId': uuid,
+                  'is_video':
+                      extra['isVideo'] == 'true' || extra['isVideo'] == true,
+                  'profileImage': extra['profileImage'],
+                  'callType': 'Incoming',
+                  'fromCallKit': true,
+                  'callerName': extra['callerName'],
+                  'offer':
+                      CallKitService.decodeOffer(extra['sdpOfferCompressed']),
+                });
+              },
+            );
+          };
+        }
+      }
+    });
     s.onConnectError((err) {
       log("Connect Error: $err");
     });

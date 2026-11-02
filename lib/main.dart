@@ -206,7 +206,7 @@ Future<void> rejectCallViaRest(String callId) async {
   try {
     final shared = await SharedPreferences.getInstance();
     final token = shared.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ??
-        ''; // adjust key name
+        '';
     if (token.isEmpty) return;
 
     final url = Uri.parse('${ConstRes.aBaseUrl}callRejected?callId=$callId');

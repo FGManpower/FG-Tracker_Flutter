@@ -1521,7 +1521,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   Future<void> _onCallEnded(dynamic data) async {
     log("[Socket] callEnded RECEIVED: $data");
-    Utils().fluttertoast('Call Ended By ${args["callerName"] ?? "Unknown"}');
+    // Utils().fluttertoast('Call Ended By ${args["callerName"] ?? "Unknown"}');
     await _cleanupCall(notifyRemote: false, navigateBack: true);
   }
 
@@ -1668,10 +1668,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         return;
       }
 
-      Utils().fluttertoast(
-        'Call Rejected By ${args["callerName"] ?? "Unknown"}',
-        bgColor: Colors.red,
-      );
+      // Utils().fluttertoast(
+      //   'Call Rejected By ${args["callerName"] ?? "Unknown"}',
+      //   bgColor: Colors.red,
+      // );
       await _cleanupCall(notifyRemote: false, navigateBack: true);
     });
 
@@ -1686,10 +1686,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       final String normalized = status.trim().toLowerCase();
       if (normalized == "rejected" || normalized == "declined") {
         if (callTimer == null && callDurationSeconds == 0) {
-          Utils().fluttertoast(
-            'Call Rejected By ${args["callerName"] ?? "Unknown"}',
-            bgColor: Colors.red,
-          );
+          // Utils().fluttertoast(
+          //   'Call Rejected By ${args["callerName"] ?? "Unknown"}',
+          //   bgColor: Colors.red,
+          // );
           unawaited(_cleanupCall(notifyRemote: false, navigateBack: true));
           return;
         }
