@@ -91,6 +91,22 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
     return parsed != null ? DateFormat("hh:mm a").format(parsed) : "";
   }
 
+  /// userId → profile image, from the group's member list (fallback for
+  /// voter rows that come without a picture).
+  Map<String, String> _memberImages() {
+    final map = <String, String>{};
+    for (final m in widget.groupMembers ?? const []) {
+      try {
+        final id = (m as dynamic).userId?.toString();
+        final image = (m as dynamic).profileImage?.toString();
+        if (id != null && image != null && image.isNotEmpty && image != "null") {
+          map[id] = image;
+        }
+      } catch (_) {}
+    }
+    return map;
+  }
+
   Future<void> _openCamera(AttendancePoll poll) async {
     final result = await Navigator.push<String?>(
       context,
@@ -186,19 +202,55 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
     }
   }
 
+  bool _isDeleting = false;
+
   Future<void> _deletePoll(AttendancePoll poll) async {
+    if (_isDeleting || _controller.isDeleted(poll.id)) return;
     final ok = await _confirm(
       "Delete attendance?",
       "This removes the attendance and all responses for everyone.",
       "Delete",
     );
     if (!ok) return;
+    _isDeleting = true;
     try {
       await _controller.deletePoll(poll.id);
       widget.onDeleted?.call(poll.id);
+      _showSnack("Attendance Deleted", "The attendance poll was removed");
     } catch (e) {
       _showSnack("Unable to delete", e.toString(), isError: true);
+    } finally {
+      _isDeleting = false;
     }
+  }
+
+  Widget _buildDeletedCard() {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.block_rounded, size: 16.sp, color: _textMuted),
+          SizedBox(width: 8.w),
+          Flexible(
+            child: Text(
+              "This attendance was deleted",
+              style: TextStyle(
+                fontSize: 12.5.sp,
+                fontStyle: FontStyle.italic,
+                color: _textMuted,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<bool> _confirm(String title, String message, String action) async {
@@ -237,6 +289,11 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      // Deleted (here or on another device): never fall back to the copy
+      // the card was built with.
+      if (_controller.deletedPolls.contains(widget.pollId)) {
+        return _buildDeletedCard();
+      }
       final poll = _controller.polls[widget.pollId] ?? widget.initialPoll;
       final isAdmin = widget.isAdmin?.value == true;
       final memberCount = widget.groupMembers?.length ?? 0;
@@ -568,6 +625,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
           groupName: widget.groupName,
           memberCount: widget.groupMembers?.length ?? 0,
           isAdmin: widget.isAdmin?.value == true,
+          memberImages: _memberImages(),
         ),
         style: OutlinedButton.styleFrom(
           backgroundColor: Colors.white,

@@ -26,6 +26,7 @@ import '../../../Data/Services/Tracking.dart';
 import '../../../routes/app_pages.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
+import '../../../Data/Services/active_chat_tracker.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'chat_list_controller.dart';
 
@@ -190,8 +191,55 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     log("========== CHAT DEBUG 11: onInit COMPLETE ==========");
   }
 
+  // ---- Read state for messages arriving while the private chat is open ----
+  String? _privatePeerId;
+  Timer? _markReadTimer;
+  bool _markReadPending = false;
+
+  /// Debounced chat-list read (`mark_private_chat_read`), so a burst of
+  /// messages sends one event. In the background it waits for resume.
+  void _scheduleMarkPrivateRead() {
+    if (isClosed || _privatePeerId == null) return;
+    if (!ActiveChatTracker.isAppInForeground) {
+      _markReadPending = true;
+      return;
+    }
+    _markReadTimer?.cancel();
+    _markReadTimer = Timer(const Duration(milliseconds: 400), () {
+      if (!isClosed) _emitPrivateRead();
+    });
+  }
+
+  void _emitPrivateRead() {
+    _markReadPending = false;
+    final peerId = _privatePeerId;
+    final chatId = privateChatId.value;
+    final userId = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (peerId == null || chatId.isEmpty || userId == null) return;
+    socketService.markPrivateSeen(
+      chatId: chatId,
+      userId: userId,
+      otherUserId: peerId,
+    );
+    socketService.markPrivateChatRead(userId: userId, chatId: chatId);
+  }
+
   @override
   void onClose() {
+    // Everything shown in this chat has been read: send it once more (covers
+    // a pending debounce) and clear the list badge locally.
+    _markReadTimer?.cancel();
+    final peerId = _privatePeerId;
+    if (peerId != null) {
+      if (ActiveChatTracker.isAppInForeground) _emitPrivateRead();
+      ActiveChatTracker.closePrivate(peerId);
+      if (Get.isRegistered<ChatListController>()) {
+        Get.find<ChatListController>().clearUnreadForOpenedChat(
+          chatId: privateChatId.value,
+          peerUserId: peerId,
+        );
+      }
+    }
     ChatTranslationService.instance.resetVisibility();
     ChatTranslationService.instance.stopAudio();
     WidgetsBinding.instance.removeObserver(this);
@@ -244,6 +292,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       _sendPrivateStopTypingNow();
     }
     if (state == AppLifecycleState.resumed) {
+      if (_markReadPending) _emitPrivateRead();
       final picker = ImagePicker();
       try {
         final LostDataResponse response = await picker.retrieveLostData();
@@ -435,6 +484,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     if (isPrivateChat) {
       final passedChatId = arguments?['chatId']?.toString();
+      _privatePeerId = receiverId;
+      ActiveChatTracker.openPrivate(peerUserId: receiverId, chatId: passedChatId);
 
       isLoadingInitialMessages.value = true;
       final hasPassedChatId = passedChatId != null &&
@@ -483,6 +534,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           }
 
           privateChatId.value = chatId;
+          ActiveChatTracker.setPrivateChatId(receiverId, chatId);
 
           log("PRIVATE CHAT ID => $chatId");
 
@@ -656,6 +708,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                 userId: currentUserId,
                 otherUserId: receiverId,
               );
+            }
+
+            // The user is in this chat: also clear the chat-list unread count.
+            if (messageData.senderId?.toString() != currentUserId.toString()) {
+              _scheduleMarkPrivateRead();
             }
           } catch (e) {
             log("Error handling private socket message: $e");

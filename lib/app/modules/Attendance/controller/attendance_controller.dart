@@ -45,6 +45,30 @@ class AttendanceController extends GetxController {
           : Get.put(AttendanceController(), permanent: true);
 
   final RxMap<int, AttendancePoll> polls = <int, AttendancePoll>{}.obs;
+
+  /// Polls deleted in this session (by this admin or via `attendance:deleted`).
+  /// Cards check this first so a deleted poll never falls back to the copy
+  /// it was built with, and can't be deleted a second time.
+  final RxSet<int> deletedPolls = <int>{}.obs;
+
+  bool isDeleted(int pollId) => deletedPolls.contains(pollId);
+
+  void _markDeleted(int pollId) {
+    polls.remove(pollId);
+    deletedPolls.add(pollId);
+    _loaded.remove(pollId);
+  }
+
+  /// Server says the poll no longer exists (deleted / not found).
+  static bool _isGoneError(Object e) {
+    final s = e.toString().toLowerCase();
+    return s.contains("not found") ||
+        s.contains("deleted") ||
+        s.contains("does not exist") ||
+        s.contains("no longer") ||
+        s.contains("404") ||
+        s.contains("410");
+  }
   final Set<int> _loading = {};
   final Set<int> _loaded = {};
   final Random _random = Random();
@@ -58,7 +82,12 @@ class AttendanceController extends GetxController {
   // update within [_socketFreshFor] is skipped, so a working socket means
   // (almost) no extra requests.
   static const _fallbackInterval = Duration(seconds: 5);
-  static const _socketFreshFor = Duration(seconds: 15);
+
+  /// Refetch a watched poll if nothing fresh arrived for this long: fast
+  /// until the socket has proven it delivers vote broadcasts, then only a
+  /// slow safety net.
+  static const _staleUnproven = Duration(seconds: 5);
+  static const _staleProven = Duration(seconds: 30);
   final Map<int, int> _watchers = {};
   final Map<int, DateTime> _lastLiveAt = {};
   final Set<int> _pendingMutations = {};
@@ -93,14 +122,24 @@ class AttendanceController extends GetxController {
     if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
       return;
     }
-    if (_socketProven && _socket.isSocketConnected) return;
+    final staleAfter = _socketProven && _socket.isSocketConnected
+        ? _staleProven
+        : _staleUnproven;
     final now = DateTime.now();
     for (final pollId in _watchers.keys.toList()) {
       final poll = polls[pollId];
       if (poll != null && poll.isClosed) continue;
-      if (_pendingMutations.contains(pollId)) continue;
+      if (isDeleted(pollId) || _pendingMutations.contains(pollId)) continue;
       final last = _lastLiveAt[pollId];
-      if (last != null && now.difference(last) < _socketFreshFor) continue;
+      // `inMilliseconds + 500`: the timer and the stamp drift a little.
+      if (last != null &&
+          now.difference(last).inMilliseconds + 500 < staleAfter.inMilliseconds) {
+        continue;
+      }
+      _lastLiveAt[pollId] = now;
+      debugPrint(
+        "[RT_DEBUG] fallback refresh poll=$pollId (socketProven=$_socketProven)",
+      ); // TODO: remove debug log
       ensureLoaded(pollId, force: true);
     }
   }
@@ -118,12 +157,17 @@ class AttendanceController extends GetxController {
   /// Loads the poll + current user's vote (once until marked stale).
   Future<void> ensureLoaded(int pollId, {bool force = false}) async {
     if (pollId <= 0 || _loading.contains(pollId)) return;
+    if (isDeleted(pollId)) return;
     if (!force && _loaded.contains(pollId)) return;
 
     _loading.add(pollId);
     try {
       final res = await AttendanceRepo.getPoll(pollId);
       final data = res["data"];
+      if (res["status"] != true && _isGoneError(res["message"] ?? "")) {
+        _markDeleted(pollId);
+        return;
+      }
       if (res["status"] == true && data is Map) {
         // A vote started while this was in flight: its response wins.
         if (_pendingMutations.contains(pollId)) return;
@@ -132,6 +176,7 @@ class AttendanceController extends GetxController {
       }
     } catch (e) {
       log("ATTENDANCE GET POLL ERROR => $e");
+      if (_isGoneError(e)) _markDeleted(pollId);
     } finally {
       _loading.remove(pollId);
     }
@@ -143,9 +188,21 @@ class AttendanceController extends GetxController {
     dynamic raw, {
     bool fromEvent = false,
     bool hasMyVoteField = false,
+    // Only a real server broadcast proves the socket delivers live updates;
+    // a sync reply (request/response) does not.
+    bool provesSocket = false,
   }) {
     final incoming = AttendancePoll.fromJson(raw);
     if (incoming == null) return null;
+    if (provesSocket) {
+      _socketProven = true;
+      _lastLiveAt[incoming.id] = DateTime.now();
+    }
+    if (isDeleted(incoming.id)) return null;
+    if (incoming.status == "deleted") {
+      _markDeleted(incoming.id);
+      return null;
+    }
     final local = polls[incoming.id];
     if (local == null) {
       // A count-only update for a poll we haven't loaded: fetch the full poll
@@ -169,8 +226,6 @@ class AttendanceController extends GetxController {
     final merged = local.mergeServer(incoming, hasMyVoteField: hasMyVoteField);
     polls[incoming.id] = merged;
     if (fromEvent) {
-      _lastLiveAt[incoming.id] = DateTime.now();
-      _socketProven = true;
       debugPrint(
         "[RT_DEBUG] attendance poll=${incoming.id} applied v${merged.version} total=${merged.totalVotes} ${merged.countsByOption}",
       ); // TODO: remove debug log
@@ -196,14 +251,14 @@ class AttendanceController extends GetxController {
             : Map<String, dynamic>.from(map);
         if (map["version"] != null) poll["version"] = map["version"];
         poll["id"] ??= poll["pollId"] ?? map["pollId"];
-        final applied = _apply(poll, fromEvent: true);
+        final applied = _apply(poll, fromEvent: true, provesSocket: true);
         // No counts in the event: refetch so the numbers still move live.
         if (applied != null && poll["counts"] is! Map) {
           ensureLoaded(applied.id, force: true);
         }
         break;
       case "attendance:edited":
-        _apply(map["poll"], fromEvent: true);
+        _apply(map["poll"], fromEvent: true, provesSocket: true);
         break;
       case "attendance:my_vote":
         final pollId = int.tryParse(map["pollId"]?.toString() ?? "");
@@ -239,7 +294,7 @@ class AttendanceController extends GetxController {
         break;
       case "attendance:deleted":
         final pollId = int.tryParse(map["pollId"]?.toString() ?? "");
-        if (pollId != null) polls.remove(pollId);
+        if (pollId != null) _markDeleted(pollId);
         break;
     }
     return null;
@@ -378,11 +433,26 @@ class AttendanceController extends GetxController {
   }
 
   Future<void> deletePoll(int pollId) async {
-    final res = await AttendanceRepo.deletePoll(pollId);
-    if (res["status"] != true) {
-      throw res["message"]?.toString() ?? "Unable to delete attendance";
+    if (isDeleted(pollId)) return; // already gone: never call the API twice
+    try {
+      final res = await AttendanceRepo.deletePoll(pollId);
+      if (res["status"] != true) {
+        final message = res["message"]?.toString() ?? "Unable to delete attendance";
+        // Deleted already (e.g. another device): treat as success.
+        if (_isGoneError(message)) {
+          _markDeleted(pollId);
+          return;
+        }
+        throw message;
+      }
+    } catch (e) {
+      if (_isGoneError(e)) {
+        _markDeleted(pollId);
+        return;
+      }
+      rethrow;
     }
-    polls.remove(pollId);
+    _markDeleted(pollId);
   }
 
   Future<AttendanceVotersPage> fetchVoters({
