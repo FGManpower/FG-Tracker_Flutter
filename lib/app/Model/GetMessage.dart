@@ -248,6 +248,7 @@ class MessageData {
   StatusMetaModel? statusMeta;
   StatusItemModel? replyStatus;
   bool isDeleted = false;
+  bool isDelivered = false;
   Map<String, dynamic>? attendance;
   dynamic attendancePollId;
 
@@ -282,6 +283,7 @@ class MessageData {
     this.statusMeta,
     this.replyStatus,
     this.isDeleted = false,
+    this.isDelivered = false,
   });
 
   bool get isStatusReply {
@@ -599,6 +601,20 @@ class MessageData {
         json['isDeleted']?.toString() == '1' ||
         json['is_deleted']?.toString() == '1';
 
+    final rawDelivered = json['isDelivered'] ??
+        json['is_delivered'] ??
+        json['delivered'] ??
+        nestedSource?['isDelivered'] ??
+        nestedSource?['is_delivered'] ??
+        nestedSource?['delivered'];
+    final rawStatus = (json['status'] ?? nestedSource?['status'])?.toString().toLowerCase();
+    isDelivered = rawDelivered == true ||
+        rawDelivered?.toString() == '1' ||
+        rawDelivered?.toString().toLowerCase() == 'true' ||
+        rawStatus == 'delivered' ||
+        rawStatus == 'seen' ||
+        (int.tryParse(seenCount?.toString() ?? '0') ?? 0) > 0;
+
     // Attendance poll summary sent with messageType "attendance".
     // History and socket payloads differ: the summary may be a map or a JSON
     // string, and older rows only carry {"attendancePollId": n} in content.
@@ -672,6 +688,7 @@ class MessageData {
     data['isForwarded'] = isForwarded;
     data['forwardedFromMessageId'] = forwardedFromMessageId;
     data['isDeleted'] = isDeleted;
+    data['isDelivered'] = isDelivered;
     if (attendance != null) data['attendance'] = attendance;
     if (attendancePollId != null) data['pollId'] = attendancePollId;
 

@@ -735,7 +735,41 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       );
 
       socketService.listenPrivateMessagesDelivered(
-        callback: (data) {},
+        callback: (data) {
+          if (data == null) return;
+          final dataChatId = (data is Map) ? data["chatId"]?.toString() : null;
+
+          if (privateChatId.value.isNotEmpty &&
+              dataChatId != null &&
+              dataChatId != privateChatId.value) {
+            return;
+          }
+
+          final List updatedIds = (data is Map)
+              ? (data["messageIds"] is List
+                  ? data["messageIds"]
+                  : data["messageId"] != null
+                      ? [data["messageId"]]
+                      : [])
+              : [];
+
+          bool changed = false;
+          for (var msg in _messages) {
+            if (updatedIds.isEmpty ||
+                updatedIds.any(
+                  (id) => id.toString() == msg.id.toString(),
+                )) {
+              if (!msg.isDelivered) {
+                msg.isDelivered = true;
+                changed = true;
+              }
+            }
+          }
+
+          if (changed) {
+            updateMessageStream();
+          }
+        },
       );
 
       socketService.listenPrivateMessagesSeenUpdate(
@@ -755,6 +789,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                   (id) => id.toString() == msg.id.toString(),
             )) {
               msg.seenCount = (msg.seenCount ?? 0) + 1;
+              msg.isDelivered = true;
             }
           }
 

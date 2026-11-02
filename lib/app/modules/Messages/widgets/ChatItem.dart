@@ -511,10 +511,12 @@ class ChatBubble extends StatelessWidget {
         if (isSentByMe) ...[
           SizedBox(width: 3.w),
           Icon(
-            (message.seenCount ?? 0) > 0 ? Icons.done_all : Icons.done,
+            ((message.seenCount ?? 0) > 0 || message.isDelivered)
+                ? Icons.done_all
+                : Icons.done,
             size: 14.sp,
             color:
-            (message.seenCount ?? 0) > 0 ? _purple : Colors.grey.shade500,
+                (message.seenCount ?? 0) > 0 ? _purple : Colors.grey.shade500,
           ),
         ],
       ],
@@ -1909,7 +1911,12 @@ class GroupChatBubble extends StatelessWidget {
         if (isSentByMe) ...[
           SizedBox(width: 3.w),
           Icon(
-            (message.seenCount ?? 0) > 0 ? Icons.done_all : Icons.done,
+            ((message.seenCount ?? 0) > 0 ||
+                    message.isDelivered ||
+                    (message.seenBy is List &&
+                        (message.seenBy as List).isNotEmpty))
+                ? Icons.done_all
+                : Icons.done,
             size: 14.sp,
             color: _areAllMembersSeen(message) ? _purple : Colors.grey.shade500,
           ),
