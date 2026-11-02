@@ -1031,7 +1031,9 @@ class CallKitService with WidgetsBindingObserver {
       _ck('_onEvent got NULL event');
       return;
     }
+
     try {
+      _ck('_onEvent got autoAcceptDAta:${e}');
       final name = _eventName(e);
       final acceptPayload = _extractAcceptPayload(e);
       final uuid = acceptPayload['uuid']?.toString();
