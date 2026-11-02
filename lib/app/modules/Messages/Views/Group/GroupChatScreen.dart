@@ -578,20 +578,20 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 ),
               ),
             ),
-            SizedBox(width: 4.w),
-            _roundIconBtn(
-              icon: Icons.call_rounded,
-              onTap: () => _initiateGroupCall(
-                isVideo: false,
-              ),
-            ),
-            SizedBox(width: 6.w),
-            _roundIconBtn(
-              icon: Icons.videocam_rounded,
-              onTap: () => _initiateGroupCall(
-                isVideo: true,
-              ),
-            ),
+            // SizedBox(width: 4.w),
+            // _roundIconBtn(
+            //   icon: Icons.call_rounded,
+            //   onTap: () => _initiateGroupCall(
+            //     isVideo: false,
+            //   ),
+            // ),
+            // SizedBox(width: 6.w),
+            // _roundIconBtn(
+            //   icon: Icons.videocam_rounded,
+            //   onTap: () => _initiateGroupCall(
+            //     isVideo: true,
+            //   ),
+            // ),
             SizedBox(width: 2.w),
             Theme(
               data: Theme.of(context).copyWith(

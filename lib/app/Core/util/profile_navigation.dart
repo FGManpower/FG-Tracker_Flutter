@@ -260,7 +260,6 @@ void showUserQuickProfile({
   );
 }
 
-/// Starts a group audio / video call (same flow as Recent Calls).
 void startGroupCallWith({
   required dynamic groupId,
   String? groupName,
@@ -284,9 +283,7 @@ void startGroupCallWith({
   );
 }
 
-/// Tap on any group's photo: big photo + Message / Call / Video (+ Info).
-/// [onMessage] overrides the default "open group chat" (e.g. to mark read);
-/// [onInfo] is shown only when the caller has a group info screen to open.
+
 void showGroupQuickProfile({
   required dynamic groupId,
   String? groupName,
@@ -332,9 +329,7 @@ void showGroupQuickProfile({
   );
 }
 
-/// WhatsApp-style profile photo popup: name on top, big photo,
-/// actions (message / call / video / info) at the bottom.
-/// Tapping the photo opens a full-screen zoomable view.
+
 void showProfilePhotoPreview({
   required String name,
   required String imageUrl,
@@ -367,8 +362,8 @@ void showProfilePhotoPreview({
 
   final actions = <Widget>[
     if (onMessage != null) action(Icons.chat_bubble_outline, onMessage),
-    if (onAudioCall != null) action(Icons.call_outlined, onAudioCall),
-    if (onVideoCall != null) action(Icons.videocam_outlined, onVideoCall),
+    // if (onAudioCall != null) action(Icons.call_outlined, onAudioCall),
+    // if (onVideoCall != null) action(Icons.videocam_outlined, onVideoCall),
     if (onInfo != null) action(Icons.info_outline_rounded, onInfo),
   ];
 
@@ -480,8 +475,7 @@ void showProfilePhotoPreview({
   );
 }
 
-/// WhatsApp-style full-screen photo: black background, back arrow + name
-/// on top, image fitted to the full screen, pinch to zoom.
+
 void showFullScreenPhoto({required String name, required String imageUrl}) {
   Get.to(
     () => Scaffold(

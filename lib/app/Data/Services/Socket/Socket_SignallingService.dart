@@ -77,7 +77,7 @@ class SignallingService {
     });
 
     s.onAny((event, dynamic data) {
-      log("Event: $event, Data: $data");
+      log("SingleCallEvent: $event, Data: $data");
     });
 
     s.on('cancelMissedCallTimer', (data) {
