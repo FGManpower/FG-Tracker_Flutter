@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
-import 'package:fgtracker/app/Data/Repositories/package_pricing_repo.dart';
 import 'package:fgtracker/app/Model/package_pricing_model.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -370,34 +369,6 @@ class PackageStatusView extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Debug-only strip so sample prices are never mistaken for real ones
-class PackageSampleDataBanner extends StatelessWidget {
-  const PackageSampleDataBanner({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    if (!PackagePricingRepo.useMock) return const SizedBox.shrink();
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF4DE),
-        border: Border.all(color: const Color(0xFFF2C46D)),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Text(
-        'Sample data (debug) — connect the /packages API to show real prices.',
-        style: TextStyle(
-          fontSize: 11.5.sp,
-          fontFamily: FontFamily.interMedium,
-          color: const Color(0xFF5C3D00),
         ),
       ),
     );

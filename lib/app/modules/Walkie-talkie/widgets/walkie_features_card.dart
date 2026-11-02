@@ -9,27 +9,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-class WalkieFeaturesCard extends StatelessWidget {
-  final VoidCallback onStartTrialPressed;
+double _sp(BuildContext context, double size) {
+  final width = MediaQuery.of(context).size.width;
+  if (width > 600) return size;
+  return size.sp.clamp(size * 0.85, size * 1.25);
+}
 
-  const WalkieFeaturesCard({
-    super.key,
-    required this.onStartTrialPressed,
-  });
+class WalkieFeaturesCard extends StatelessWidget {
+  const WalkieFeaturesCard({super.key});
 
   static const Color primaryColor = AppColors.primaryDarkblue;
   static const Color textColor = AppColors.authTextNavy;
 
-  double _sp(BuildContext context, double size) {
-    final width = MediaQuery.of(context).size.width;
-    if (width > 600) return size;
-    return size.sp.clamp(size * 0.85, size * 1.25);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<WalkieTalkieTrialController>();
-
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       padding: EdgeInsets.all(14.w),
@@ -91,89 +84,6 @@ class WalkieFeaturesCard extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 14.h),
-
-          // Dynamic Primary Action CTA
-          Obx(() {
-            final bool canUse = controller.canUseWalkieTalkie;
-            final bool hasTeamPlan = controller.hasActiveTeamSubscription;
-            final bool canOpenWalkie = canUse || hasTeamPlan;
-
-            final bool eligible = controller.isTrialEligible &&
-                controller.trial?.status.toLowerCase() == 'not_started';
-
-            if (!canOpenWalkie && !eligible && controller.data != null) {
-              return SizedBox(
-                width: double.infinity,
-                height: 48.h,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF5B4DFF),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14.r),
-                    ),
-                    elevation: 0,
-                  ),
-                  onPressed: () {
-                    Get.to(() => const WalkieTalkiePlanDetails(initialTabIndex: 0));
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GoldenCrownBadge(size: _sp(context, 20)),
-                      SizedBox(width: 8.w),
-                      reausabletext(
-                        "Purchase / Upgrade Plan",
-                        fontsize: _sp(context, 15),
-                        fontfamily: FontFamily.interBold,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            return SizedBox(
-              width: double.infinity,
-              height: 48.h,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF5B4DFF),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                  elevation: 0,
-                ),
-                onPressed: () {
-                  if (canOpenWalkie) {
-                    Get.to(() => const WalkieGroupSelectScreen());
-                    return;
-                  }
-                  onStartTrialPressed();
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      canOpenWalkie ? Icons.mic_rounded : Icons.play_arrow_rounded,
-                      color: Colors.white,
-                      size: _sp(context, 20),
-                    ),
-                    SizedBox(width: 8.w),
-                    reausabletext(
-                      canOpenWalkie
-                          ? "Open Walkie Talkie"
-                          : "Start ${controller.trialDurationHuman} Free Trial",
-                      fontsize: _sp(context, 15),
-                      fontfamily: FontFamily.interBold,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
         ],
       ),
     );
@@ -214,5 +124,102 @@ class WalkieFeaturesCard extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+/// Main CTA pinned to the bottom of the Walkie-Talkie screen:
+/// Open Walkie Talkie / Start Free Trial / Purchase-Upgrade Plan.
+class WalkiePrimaryActionButton extends StatelessWidget {
+  final VoidCallback onStartTrialPressed;
+
+  const WalkiePrimaryActionButton({
+    super.key,
+    required this.onStartTrialPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.find<WalkieTalkieTrialController>();
+
+    return Obx(() {
+      final bool canUse = controller.canUseWalkieTalkie;
+      final bool hasTeamPlan = controller.hasActiveTeamSubscription;
+      final bool canOpenWalkie = canUse || hasTeamPlan;
+
+      final bool eligible = controller.isTrialEligible &&
+          controller.trial?.status.toLowerCase() == 'not_started';
+
+      if (!canOpenWalkie && !eligible && controller.data != null) {
+        return SizedBox(
+          width: double.infinity,
+          height: 48.h,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF5B4DFF),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+              elevation: 0,
+            ),
+            onPressed: () {
+              Get.to(() => const WalkieTalkiePlanDetails(initialTabIndex: 0));
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                GoldenCrownBadge(size: _sp(context, 20)),
+                SizedBox(width: 8.w),
+                reausabletext(
+                  "Purchase / Upgrade Plan",
+                  fontsize: _sp(context, 15),
+                  fontfamily: FontFamily.interBold,
+                  color: Colors.white,
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      return SizedBox(
+        width: double.infinity,
+        height: 48.h,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF5B4DFF),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            elevation: 0,
+          ),
+          onPressed: () {
+            if (canOpenWalkie) {
+              Get.to(() => const WalkieGroupSelectScreen());
+              return;
+            }
+            onStartTrialPressed();
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                canOpenWalkie ? Icons.mic_rounded : Icons.play_arrow_rounded,
+                color: Colors.white,
+                size: _sp(context, 20),
+              ),
+              SizedBox(width: 8.w),
+              reausabletext(
+                canOpenWalkie
+                    ? "Open Walkie Talkie"
+                    : "Start ${controller.trialDurationHuman} Free Trial",
+                fontsize: _sp(context, 15),
+                fontfamily: FontFamily.interBold,
+                color: Colors.white,
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }

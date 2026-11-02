@@ -75,7 +75,6 @@ class PackagePlanDetailsView extends GetView<PackagePlanDetailsController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const PackageSampleDataBanner(),
           PackageHeroCard(
             style: _style,
             title: details.title,

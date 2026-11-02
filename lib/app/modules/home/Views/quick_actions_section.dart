@@ -147,7 +147,8 @@ class QuickActionsSection extends StatelessWidget {
                   isPremium: isSubscribed,
                   imagePath: "assets/icons/new_action_walkie_talkie.png",
                   onTap: () async {
-                    await Get.toNamed(Routes.walkieTalkieTrialDetails);
+                    // Opens the Walkie-Talkie channel list directly
+                    await Get.toNamed(Routes.WalkieGroupSelect);
                     homeController?.fetchInitializeData();
                   },
                 );

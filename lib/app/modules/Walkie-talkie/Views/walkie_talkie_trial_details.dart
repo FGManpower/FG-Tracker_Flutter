@@ -167,13 +167,9 @@ class _WalkieTalkieTrialDetailsScreenState
                     SizedBox(height: 12.h),
 
                     // =====================================================
-                    // 3. FEATURES CARD & PRIMARY ACTION BUTTON
+                    // 3. FEATURES CARD (primary button is pinned at the bottom)
                     // =====================================================
-                    WalkieFeaturesCard(
-                      onStartTrialPressed: () {
-                        _showStartFreeTrialBottomSheet(context);
-                      },
-                    ),
+                    const WalkieFeaturesCard(),
                     SizedBox(height: 24.h),
                   ],
                 ),
@@ -209,19 +205,29 @@ class _WalkieTalkieTrialDetailsScreenState
           return const SizedBox.shrink();
         }
 
-        // Only show bottom purchase bar when user doesn't have an active subscription
-        if (!controller.shouldShowPurchaseCTA) {
-          return const SizedBox.shrink();
-        }
-
         final bool isSkeletonLoading =
             controller.isLoading.value && controller.data == null;
 
+        // Fixed bottom: purchase strip (only without an active subscription)
+        // + the primary Open Walkie Talkie / Start Trial button.
         Widget bar = Padding(
-          padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
+          padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 10.h),
           child: Skeletonizer(
             enabled: isSkeletonLoading,
-            child: const WalkiePurchaseBottomBar(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (controller.shouldShowPurchaseCTA) ...[
+                  const WalkiePurchaseBottomBar(),
+                  SizedBox(height: 10.h),
+                ],
+                WalkiePrimaryActionButton(
+                  onStartTrialPressed: () {
+                    _showStartFreeTrialBottomSheet(context);
+                  },
+                ),
+              ],
+            ),
           ),
         );
 

@@ -131,9 +131,10 @@ class PackageItem {
             .whereType<String>()
             .toList()
         : <String>[];
+    final moduleKey = _toStr(json['moduleKey']) ?? '';
     return PackageItem(
       id: _toInt(json['id']),
-      moduleKey: _toStr(json['moduleKey']) ?? '',
+      moduleKey: moduleKey,
       title: _toStr(json['title']) ?? 'Package',
       tagline: _toStr(json['tagline']),
       iconUrl: _toStr(json['iconUrl']),
@@ -142,7 +143,10 @@ class PackageItem {
       currency: _toStr(json['currency']) ?? 'INR',
       priceUnit: _toStr(json['priceUnit']),
       badge: _toStr(json['badge']),
-      isAvailable: _toBool(json['isAvailable'], fallback: true),
+      // Only Walkie-Talkie is sold for now; every other module shows
+      // "Coming soon" whatever the backend sends.
+      isAvailable: moduleKey == PackageModuleKey.walkieTalkie &&
+          _toBool(json['isAvailable'], fallback: true),
       isSubscribed: _toBool(json['isSubscribed']),
       activeUntil: _toStr(json['activeUntil']),
       highlights: highlights,
