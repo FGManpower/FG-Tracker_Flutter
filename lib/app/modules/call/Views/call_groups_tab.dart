@@ -11,6 +11,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/util/profile_navigation.dart';
+import '../../../Data/Services/group_call_service.dart';
 import '../../../routes/app_pages.dart';
 
 class CallGroupsTab extends StatelessWidget {
@@ -89,6 +90,10 @@ Future<void> _initiateGroupCall({
   required dynamic group,
   required bool isVideo,
 }) async {
+  if (!GroupCallService.isGroupCallEnabled) {
+    GroupCallService.showComingSoon();
+    return;
+  }
   try {
     Get.toNamed(
       Routes.groupCallingScreen,
@@ -222,22 +227,22 @@ class _GroupTile extends StatelessWidget {
               ],
             ),
           ),
-          // SizedBox(width: 8.w),
-          // CallActionChip(
-          //   icon: Icons.videocam_rounded,
-          //   onTap: () => _initiateGroupCall(
-          //     group: group,
-          //     isVideo: true,
-          //   ),
-          // ),
-          // SizedBox(width: 8.w),
-          // CallActionChip(
-          //   icon: Icons.call_rounded,
-          //   onTap: () => _initiateGroupCall(
-          //     group: group,
-          //     isVideo: false,
-          //   ),
-          // ),
+          SizedBox(width: 8.w),
+          CallActionChip(
+            icon: Icons.videocam_rounded,
+            onTap: () => _initiateGroupCall(
+              group: group,
+              isVideo: true,
+            ),
+          ),
+          SizedBox(width: 8.w),
+          CallActionChip(
+            icon: Icons.call_rounded,
+            onTap: () => _initiateGroupCall(
+              group: group,
+              isVideo: false,
+            ),
+          ),
         ],
       ),
     );

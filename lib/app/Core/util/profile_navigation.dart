@@ -302,20 +302,20 @@ void showGroupQuickProfile({
               groupName: name,
               groupProfile: groupProfile,
             ),
-    // onAudioCall: () => startGroupCallWith(
-    //   groupId: gId,
-    //   groupName: name,
-    //   groupProfile: groupProfile,
-    //   memberCount: memberCount,
-    //   isVideo: false,
-    // ),
-    // onVideoCall: () => startGroupCallWith(
-    //   groupId: gId,
-    //   groupName: name,
-    //   groupProfile: groupProfile,
-    //   memberCount: memberCount,
-    //   isVideo: true,
-    // ),
+    onAudioCall: () => startGroupCallWith(
+      groupId: gId,
+      groupName: name,
+      groupProfile: groupProfile,
+      memberCount: memberCount,
+      isVideo: false,
+    ),
+    onVideoCall: () => startGroupCallWith(
+      groupId: gId,
+      groupName: name,
+      groupProfile: groupProfile,
+      memberCount: memberCount,
+      isVideo: true,
+    ),
     onInfo: onInfo,
   );
 }

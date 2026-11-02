@@ -18,6 +18,7 @@ import '../../widgets/typing_indicator_bubble.dart';
 import '../../../../Core/constant/pref_res.dart';
 import '../../../../Core/util/message_preview_builder.dart';
 import '../../../../Core/values/global.dart';
+import '../../../../Data/Services/group_call_service.dart';
 import '../ContactPickerPage.dart';
 import '../LocationPickerPage.dart';
 
@@ -398,6 +399,10 @@ class GroupChatScreen extends GetView<GroupMessageController> {
   Future<void> _initiateGroupCall({
     required bool isVideo,
   }) async {
+    if (!GroupCallService.isGroupCallEnabled) {
+      GroupCallService.showComingSoon();
+      return;
+    }
     try {
       Get.toNamed(
         Routes.groupCallingScreen,
@@ -550,20 +555,20 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 ),
               ),
             ),
-            // SizedBox(width: 4.w),
-            // _roundIconBtn(
-            //   icon: Icons.call_rounded,
-            //   onTap: () => _initiateGroupCall(
-            //     isVideo: false,
-            //   ),
-            // ),
-            // SizedBox(width: 6.w),
-            // _roundIconBtn(
-            //   icon: Icons.videocam_rounded,
-            //   onTap: () => _initiateGroupCall(
-            //     isVideo: true,
-            //   ),
-            // ),
+            SizedBox(width: 4.w),
+            _roundIconBtn(
+              icon: Icons.call_rounded,
+              onTap: () => _initiateGroupCall(
+                isVideo: false,
+              ),
+            ),
+            SizedBox(width: 6.w),
+            _roundIconBtn(
+              icon: Icons.videocam_rounded,
+              onTap: () => _initiateGroupCall(
+                isVideo: true,
+              ),
+            ),
             SizedBox(width: 2.w),
             Theme(
               data: Theme.of(context).copyWith(
