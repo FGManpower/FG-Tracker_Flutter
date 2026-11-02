@@ -95,7 +95,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
           : (call['callerId'] ?? '');
 
       Get.to(
-            () => ContactProfileScreen(
+        () => ContactProfileScreen(
           isGroup: true,
           groupId: gId,
           groupName: call['name'] ?? "Group",
@@ -109,7 +109,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
           : (call['phone'] ?? '');
 
       Get.to(
-            () => ContactProfileScreen(
+        () => ContactProfileScreen(
           isGroup: false,
           contactData: MemberData(
             userId: int.tryParse(call['callerId'] ?? '0'),
@@ -237,8 +237,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                     setModalState(() {
                                       isProcessing = true;
                                     });
-                                    final bool success = await controller
-                                        .deleteRecentCall(call);
+                                    final bool success =
+                                        await controller.deleteRecentCall(call);
                                     if (sheetContext.mounted) {
                                       if (success) {
                                         Navigator.pop(sheetContext);
@@ -550,7 +550,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                 children: [
                   for (final entry in groupedCalls.entries) ...[
                     Padding(
-                      padding: EdgeInsets.only(top: 10.h, bottom: 8.h, left: 2.w),
+                      padding:
+                          EdgeInsets.only(top: 10.h, bottom: 8.h, left: 2.w),
                       child: Text(
                         entry.key,
                         style: TextStyle(
@@ -614,13 +615,16 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                         : Radius.zero,
                                   ),
                                   onTap: isSelectionMode
-                                      ? () => controller.toggleCallSelection(callId)
+                                      ? () =>
+                                          controller.toggleCallSelection(callId)
                                       : () => _openProfile(callItem),
                                   onLongPress: isSelectionMode
-                                      ? () => controller.toggleCallSelection(callId)
+                                      ? () =>
+                                          controller.toggleCallSelection(callId)
                                       : () => _showDeleteDialog(callItem),
                                   onDeleteTap: () =>
-                                      _showDeleteConfirmationBottomSheet(callItem),
+                                      _showDeleteConfirmationBottomSheet(
+                                          callItem),
                                   child: Padding(
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 14.w,
@@ -631,11 +635,14 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                       isSelectionMode: isSelectionMode,
                                       isSelected: isSelected,
                                       onAvatarTap: isSelectionMode
-                                          ? () => controller.toggleCallSelection(callId)
+                                          ? () => controller
+                                              .toggleCallSelection(callId)
                                           : callItem['isGroup'] == 'true'
-                                              ? () => _showGroupCallPopup(callItem)
+                                              ? () =>
+                                                  _showGroupCallPopup(callItem)
                                               : () => showUserQuickProfile(
-                                                    userId: callItem['callerId'],
+                                                    userId:
+                                                        callItem['callerId'],
                                                     name: callItem['name'],
                                                     profileImage:
                                                         callItem['avatar'],
@@ -645,7 +652,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                                   ),
                                       onCallTap: (type) {
                                         if (isSelectionMode) {
-                                          controller.toggleCallSelection(callId);
+                                          controller
+                                              .toggleCallSelection(callId);
                                           return;
                                         }
                                         final isGroup =
@@ -695,8 +703,10 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                             );
                                           } else {
                                             if (phone.isNotEmpty) {
-                                              controller.dialNumber.value = phone;
-                                              controller.makeCall(isVideo: isVideo);
+                                              controller.dialNumber.value =
+                                                  phone;
+                                              controller.makeCall(
+                                                  isVideo: isVideo);
                                             } else {
                                               Utils().fluttertoast(
                                                   "Unable to call this contact");
@@ -757,18 +767,18 @@ class _RecentCallTile extends StatelessWidget {
     final Color statusColor = missed
         ? const Color(0xFFEF4444)
         : incoming
-        ? const Color(0xFF3B82F6)
-        : cancelled
-        ? const Color(0xFF9CA3AF)
-        : const Color(0xFF10B981);
+            ? const Color(0xFF3B82F6)
+            : cancelled
+                ? const Color(0xFF9CA3AF)
+                : const Color(0xFF10B981);
 
     final IconData statusIcon = missed
         ? Icons.south_west_rounded
         : cancelled
-        ? Icons.call_end_rounded
-        : incoming
-        ? Icons.south_west_rounded
-        : Icons.arrow_outward_rounded;
+            ? Icons.call_end_rounded
+            : incoming
+                ? Icons.south_west_rounded
+                : Icons.arrow_outward_rounded;
 
     final String name = call['name'] ?? '';
     final String? avatar = call['avatar'];
@@ -886,7 +896,7 @@ class _RecentCallTile extends StatelessWidget {
         SizedBox(width: 10.w),
         CallActionChip(
           icon:
-          callType == "video" ? Icons.videocam_rounded : Icons.call_rounded,
+              callType == "video" ? Icons.videocam_rounded : Icons.call_rounded,
           onTap: () {
             onCallTap(callType);
           },
@@ -899,7 +909,7 @@ class _RecentCallTile extends StatelessWidget {
     final String trimmed = raw.trim();
     final String cleaned = trimmed
         .replaceAll(
-        RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
+            RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
         .trim();
     return cleaned.isNotEmpty ? cleaned : trimmed;
   }
@@ -919,11 +929,11 @@ class _RecentCallTile extends StatelessWidget {
   }
 
   Widget _buildAvatar(
-      String name,
-      String? avatar,
-      bool isOnline, {
-        bool isGroup = false,
-      }) {
+    String name,
+    String? avatar,
+    bool isOnline, {
+    bool isGroup = false,
+  }) {
     final String avatarUrl = _buildAvatarUrl(avatar);
     final String initial = (name.isNotEmpty ? name[0] : '?').toUpperCase();
 
@@ -959,12 +969,12 @@ class _RecentCallTile extends StatelessWidget {
             color: const Color(0xFFECEAFD),
             child: avatarUrl.isNotEmpty
                 ? CachedNetworkImage(
-              imageUrl: avatarUrl,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => placeholderOrFallback(),
-              errorWidget: (context, url, error) =>
-                  placeholderOrFallback(),
-            )
+                    imageUrl: avatarUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => placeholderOrFallback(),
+                    errorWidget: (context, url, error) =>
+                        placeholderOrFallback(),
+                  )
                 : placeholderOrFallback(),
           ),
         ),
