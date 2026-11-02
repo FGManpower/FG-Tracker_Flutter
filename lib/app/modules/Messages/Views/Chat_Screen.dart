@@ -18,6 +18,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../widgets/ChatInputArea.dart';
 import '../widgets/ChatList.dart';
+import '../widgets/typing_indicator_bubble.dart';
+import '../../../Core/util/message_preview_builder.dart';
 import 'ContactPickerPage.dart';
 import 'LocationPickerPage.dart';
 import 'UserProfileScreen.dart';
@@ -163,27 +165,25 @@ class ChatScreen extends GetView<MessageController> {
                     ),
                   ),
                 ),
+              // Typing bubble sits at the end of the conversation, right
+              // under the last message (the header also says "typing...").
+              Obx(() => TypingIndicatorSlot(
+                    visible: controller.isPeerTyping.value,
+                    background: _scaffoldBg,
+                  )),
               Obx(() {
                 final reply = controller.replyMessage.value;
                 if (reply == null) return const SizedBox.shrink();
 
-                String previewText;
-                switch (reply.messageType) {
-                  case "image":
-                    previewText = "📷 Photo";
-                    break;
-                  case "video":
-                    previewText = "🎥 Video";
-                    break;
-                  case "audio":
-                    previewText = "🎤 Voice message";
-                    break;
-                  case "document":
-                    previewText = "📄 Document";
-                    break;
-                  default:
-                    previewText = reply.content?.toString() ?? "";
-                }
+                final previewText =
+                    MessagePreviewBuilder.forMessage(reply).display;
+                final myId =
+                    Global.storageServices.get(PrefConst.userId)?.toString();
+                final senderLabel = reply.senderId?.toString() == myId
+                    ? "You"
+                    : (reply.senderName?.toString().trim().isNotEmpty == true
+                        ? reply.senderName.toString()
+                        : (userData.name?.toString() ?? ""));
 
                 return GestureDetector(
                   behavior: HitTestBehavior.translucent,
@@ -209,7 +209,7 @@ class ChatScreen extends GetView<MessageController> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                reply.senderName ?? "Unknown",
+                                senderLabel.isNotEmpty ? senderLabel : "Unknown",
                                 style: const TextStyle(
                                   color: _purple,
                                   fontWeight: FontWeight.bold,
@@ -227,39 +227,6 @@ class ChatScreen extends GetView<MessageController> {
                         ),
                       ],
                     ),
-                  ),
-                );
-              }),
-              Obx(() {
-                if (!controller.isPeerTyping.value) return const SizedBox.shrink();
-                final name = userData.name?.toString().trim();
-                final displayName = (name != null && name.isNotEmpty) ? name : "User";
-                return Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-                  color: _scaffoldBg,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.edit_rounded,
-                        size: 14.sp,
-                        color: Colors.green.shade600,
-                      ),
-                      SizedBox(width: 6.w),
-                      Expanded(
-                        child: Text(
-                          "$displayName is typing...",
-                          style: TextStyle(
-                            color: Colors.green.shade700,
-                            fontSize: 12.sp,
-                            fontStyle: FontStyle.italic,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
                   ),
                 );
               }),

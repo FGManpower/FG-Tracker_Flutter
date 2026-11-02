@@ -14,6 +14,10 @@ import '../../../../Core/constant/const_res.dart';
 import 'package:get/get.dart';
 import '../../../../routes/app_pages.dart';
 import '../../Controller/GroupChatController.dart';
+import '../../widgets/typing_indicator_bubble.dart';
+import '../../../../Core/constant/pref_res.dart';
+import '../../../../Core/util/message_preview_builder.dart';
+import '../../../../Core/values/global.dart';
 import '../ContactPickerPage.dart';
 import '../LocationPickerPage.dart';
 
@@ -135,27 +139,27 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 ),
               ),
             ),
+            // Typing bubble at the end of the conversation, labelled with
+            // who is typing ("Rahul is typing", "2 people are typing").
+            Obx(() {
+              final typingText = controller.groupTypingText.value;
+              return TypingIndicatorSlot(
+                visible: typingText.isNotEmpty,
+                label: typingText.replaceAll('...', '').trim(),
+                background: _scaffoldBg,
+              );
+            }),
             Obx(() {
               final reply = controller.replyMessage.value;
               if (reply == null) return const SizedBox.shrink();
 
-              String previewText;
-              switch (reply.messageType) {
-                case "image":
-                  previewText = "📷 Photo";
-                  break;
-                case "video":
-                  previewText = "🎥 Video";
-                  break;
-                case "audio":
-                  previewText = "🎤 Voice message";
-                  break;
-                case "document":
-                  previewText = "📄 Document";
-                  break;
-                default:
-                  previewText = reply.content?.toString() ?? "";
-              }
+              final previewText =
+                  MessagePreviewBuilder.forMessage(reply).display;
+              final myId =
+                  Global.storageServices.get(PrefConst.userId)?.toString();
+              final senderLabel = reply.senderId?.toString() == myId
+                  ? "You"
+                  : (reply.senderName?.toString().trim() ?? "");
 
               return GestureDetector(
                 behavior: HitTestBehavior.translucent,
@@ -181,7 +185,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              reply.senderName ?? "Unknown",
+                              senderLabel.isNotEmpty ? senderLabel : "Unknown",
                               style: const TextStyle(
                                 color: _purple,
                                 fontWeight: FontWeight.bold,
@@ -199,38 +203,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                       ),
                     ],
                   ),
-                ),
-              );
-            }),
-            Obx(() {
-              final typingText = controller.groupTypingText.value;
-              if (typingText.isEmpty) return const SizedBox.shrink();
-              return Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-                color: _scaffoldBg,
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.edit_rounded,
-                      size: 14.sp,
-                      color: Colors.green.shade600,
-                    ),
-                    SizedBox(width: 6.w),
-                    Expanded(
-                      child: Text(
-                        typingText,
-                        style: TextStyle(
-                          color: Colors.green.shade700,
-                          fontSize: 12.sp,
-                          fontStyle: FontStyle.italic,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
                 ),
               );
             }),

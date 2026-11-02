@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:waveform_flutter/waveform_flutter.dart';
 
 import '../Controller/audio_player_controller.dart';
+import 'missing_media_widget.dart';
 
 class AudioBubble extends StatefulWidget {
   final String audioUrl;
@@ -29,6 +30,17 @@ class _AudioBubbleState extends State<AudioBubble> {
 
   @override
   Widget build(BuildContext context) {
+    // Empty URL or file deleted on the server -> "Media is missing".
+    return MediaAvailabilityGuard(
+      url: widget.audioUrl,
+      type: MissingMediaType.audio,
+      isSentByMe: widget.isMe,
+      width: 240.w,
+      child: _buildPlayer(context),
+    );
+  }
+
+  Widget _buildPlayer(BuildContext context) {
     final bubbleColor =
         widget.isMe ? const Color(0xFF5045B9) : Colors.white;
 

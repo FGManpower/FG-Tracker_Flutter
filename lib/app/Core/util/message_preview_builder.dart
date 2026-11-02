@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/GroupChatListModel.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
 
@@ -176,6 +177,158 @@ class MessagePreviewBuilder {
       senderName: message.senderName,
       currentUserId: currentUserId,
     );
+  }
+
+  /// Text used when nothing readable can be found for a replied-to message.
+  static const String replyFallbackText = 'Message';
+
+  static const String _imageExt = r'jpe?g|png|webp|heic|heif|bmp';
+  static const String _videoExt = r'mp4|mov|mkv|avi|3gp|webm';
+  static const String _audioExt = r'mp3|m4a|aac|wav|ogg|opus|amr|flac';
+  static const String _docExt = r'pdf|docx?|xlsx?|pptx?|txt|csv|zip|rar|apk';
+
+  /// Preview of a full, in-memory message. Used for the reply bar above the
+  /// input and for the quoted message inside a reply bubble.
+  static MessagePreview forMessage(MessageData message) {
+    final type = message.messageType?.toString();
+    final raw = message.content?.toString();
+    final split = _splitPipeContent(type, raw);
+    final data = <String, dynamic>{
+      ...split.data,
+      if (message.images != null) 'images': message.images,
+      if (message.videos != null) 'videos': message.videos,
+      if (message.attendance != null) 'attendance': message.attendance,
+    };
+
+    final preview = build(
+      type: type,
+      content: split.content,
+      caption: message.caption?.toString(),
+      data: data,
+      isDeleted: message.isDeleted == true || _clean(raw) == deletedText,
+    );
+    return _readableReply(preview, split.content);
+  }
+
+  /// Preview of the message quoted by a reply. Prefers the original message
+  /// when it is loaded (most accurate, reflects edits/deletes); otherwise
+  /// uses the reply fields the backend stored. Never returns empty text.
+  static MessagePreview forQuotedReply(
+    MessageData reply, {
+    MessageData? original,
+  }) {
+    if (original != null) return forMessage(original);
+
+    final type = reply.replyType?.toString();
+    var raw = _clean(reply.replyMessage?.toString());
+    if (raw.isEmpty) raw = _clean(reply.replyMessageContent?.toString());
+    final split = _splitPipeContent(type, raw);
+
+    final preview = build(
+      type: type,
+      content: split.content,
+      data: split.data,
+      isDeleted: raw == deletedText,
+    );
+    return _readableReply(preview, split.content);
+  }
+
+  /// Name shown on a quoted reply: "You" for my own message, otherwise the
+  /// stored reply sender name, falling back to the original's sender.
+  static String replySenderLabel(
+    MessageData reply, {
+    MessageData? original,
+    String? currentUserId,
+  }) {
+    final me = _clean(currentUserId);
+    final originalSender = _clean(original?.senderId?.toString());
+    if (me.isNotEmpty && originalSender.isNotEmpty && originalSender == me) {
+      return 'You';
+    }
+    final name = _clean(reply.replySenderName?.toString());
+    if (name.isNotEmpty) return name;
+    return _clean(original?.senderName?.toString());
+  }
+
+  /// Video/document content is stored as "path||name-or-thumb||extra".
+  static ({String content, Map<String, dynamic> data}) _splitPipeContent(
+    String? type,
+    String? content,
+  ) {
+    final value = _clean(content);
+    if (!value.contains('||')) return (content: value, data: const {});
+    final parts = value.split('||').map((e) => e.trim()).toList();
+    final kind = MessageTypes.kindOf(type);
+    final data = <String, dynamic>{
+      if (kind == MessageKind.document &&
+          parts.length > 1 &&
+          parts[1].isNotEmpty)
+        'fileName': parts[1],
+    };
+    return (content: parts.first, data: data);
+  }
+
+  /// Guarantees a reply preview never shows empty text, a raw URL/path or a
+  /// JSON payload. Real text messages (including links) are kept as is.
+  static MessagePreview _readableReply(MessagePreview preview, String content) {
+    if (preview.kind == MessageKind.text) {
+      final inferred = _inferFromContent(content);
+      if (inferred != null) {
+        return MessagePreview(
+          kind: inferred.$1,
+          icon: inferred.$2,
+          text: inferred.$3,
+        );
+      }
+    }
+
+    final text = preview.text.trim();
+    if ((text.isEmpty && preview.icon.isEmpty) || text == fallbackText) {
+      return MessagePreview(kind: preview.kind, text: replyFallbackText);
+    }
+    return preview;
+  }
+
+  /// For replies whose type is missing/"text" but whose content is really a
+  /// media path or a JSON payload.
+  static (MessageKind, String, String)? _inferFromContent(String content) {
+    final value = content.trim();
+    if (value.isEmpty) return null;
+
+    final json = _decodeJson(value);
+    if (json != null) {
+      if (json.containsKey('latitude') || json.containsKey('lat')) {
+        return (MessageKind.location, '📍', 'Location');
+      }
+      final pollTitle = _firstString(json, const ['question', 'pollTitle']);
+      if (pollTitle != null || json.containsKey('options')) {
+        return (MessageKind.poll, '📊', pollTitle ?? 'Poll');
+      }
+      final name =
+          _firstString(json, const ['name', 'contactName', 'fullName']);
+      if (name != null || json.containsKey('phone')) {
+        return (MessageKind.contact, '👤', name ?? 'Contact');
+      }
+      return (MessageKind.unknown, '', replyFallbackText);
+    }
+
+    // Only bare paths/URLs that point at a media file; sentences are text.
+    if (value.contains(' ')) return null;
+    final lower = value.split('?').first.toLowerCase();
+    bool ext(String pattern) => RegExp('\\.($pattern)\$').hasMatch(lower);
+
+    if (ext(_imageExt)) return (MessageKind.image, '📷', 'Photo');
+    if (ext('gif')) return (MessageKind.gif, '', 'GIF');
+    if (ext(_videoExt)) return (MessageKind.video, '🎥', 'Video');
+    if (ext(_audioExt)) return (MessageKind.audio, '🎵', 'Audio');
+    if (ext(_docExt)) {
+      return (
+        MessageKind.document,
+        '📄',
+        _fileNameFromPath(value) ?? 'Document',
+      );
+    }
+    return null;
   }
 
   /// [backendPreview] is the display string the backend already sends

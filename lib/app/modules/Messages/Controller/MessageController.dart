@@ -425,6 +425,16 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     _sendPrivateStopTypingNow();
   }
 
+  /// Loaded message with [id], used to build reply previews.
+  MessageData? findMessageById(dynamic id) {
+    final key = id?.toString().trim() ?? '';
+    if (key.isEmpty || key == 'null') return null;
+    for (final m in _messages) {
+      if (m.id?.toString() == key) return m;
+    }
+    return null;
+  }
+
   Future<void> scrollToMessage(int messageId) async {
     final index = _messages.indexWhere((e) => e.id == messageId);
 

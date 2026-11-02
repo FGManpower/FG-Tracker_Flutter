@@ -1374,7 +1374,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: _openPlanDetails,
+                  onTap: _openChoosePlan,
                   child: Container(
                     padding: EdgeInsets.symmetric(
                         horizontal: 12.w, vertical: 6.h),
@@ -1402,8 +1402,15 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     });
   }
 
-  /// Opens the Walkie-Talkie screen showing only plan / subscription status,
-  /// then refreshes the plan here in case it changed (purchase, renewal).
+  /// Unsubscribed user → Walkie-Talkie "Choose a Plan" screen,
+  /// then refresh so a new purchase shows the Current Plan card.
+  Future<void> _openChoosePlan() async {
+    await Get.to(() => const WalkieTalkiePlanScreen(initialTabIndex: 0));
+    if (mounted) fetchMembersFromApi();
+  }
+
+  /// Subscribed user → Walkie-Talkie screen showing only plan / subscription
+  /// status, then refreshes the plan here in case it changed (renewal).
   Future<void> _openPlanDetails() async {
     await Get.toNamed(
       Routes.walkieTalkieTrialDetails,
