@@ -1369,6 +1369,10 @@ PODS:
   - google_mlkit_commons (0.12.0):
     - Flutter
     - MLKitVision (~> 10.0.0)
+  - google_mlkit_face_detection (0.15.0):
+    - Flutter
+    - google_mlkit_commons
+    - GoogleMLKit/FaceDetection (~> 9.0.0)
   - GoogleDataTransport (10.1.1):
     - nanopb (~> 3.30910.0)
     - PromisesObjC (~> 2.4)
@@ -1378,6 +1382,9 @@ PODS:
   - GoogleMLKit/BarcodeScanning (9.0.0):
     - GoogleMLKit/MLKitCore
     - MLKitBarcodeScanning (~> 8.0.0)
+  - GoogleMLKit/FaceDetection (9.0.0):
+    - GoogleMLKit/MLKitCore
+    - MLKitFaceDetection (~> 8.0.0)
   - GoogleMLKit/MLKitCore (9.0.0):
     - MLKitCommon (~> 14.0.0)
   - GoogleToolboxForMac/Defines (4.2.1)
@@ -1537,6 +1544,9 @@ PODS:
     - GoogleUtilities/Logger (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
+  - MLKitFaceDetection (8.0.0):
+    - MLKitCommon (~> 14.0)
+    - MLKitVision (~> 10.0)
   - MLKitVision (10.0.0):
     - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
     - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
@@ -1637,6 +1647,7 @@ DEPENDENCIES:
   - google_maps_flutter_ios (from `.symlinks/plugins/google_maps_flutter_ios/ios`)
   - google_mlkit_barcode_scanning (from `.symlinks/plugins/google_mlkit_barcode_scanning/ios`)
   - google_mlkit_commons (from `.symlinks/plugins/google_mlkit_commons/ios`)
+  - google_mlkit_face_detection (from `.symlinks/plugins/google_mlkit_face_detection/ios`)
   - image_cropper (from `.symlinks/plugins/image_cropper/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
@@ -1698,6 +1709,7 @@ SPEC REPOS:
     - MLImage
     - MLKitBarcodeScanning
     - MLKitCommon
+    - MLKitFaceDetection
     - MLKitVision
     - nanopb
     - PromisesObjC
@@ -1770,6 +1782,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/google_mlkit_barcode_scanning/ios"
   google_mlkit_commons:
     :path: ".symlinks/plugins/google_mlkit_commons/ios"
+  google_mlkit_face_detection:
+    :path: ".symlinks/plugins/google_mlkit_face_detection/ios"
   image_cropper:
     :path: ".symlinks/plugins/image_cropper/ios"
   image_picker_ios:
@@ -1868,6 +1882,7 @@ SPEC CHECKSUMS:
   google_maps_flutter_ios: 5f2ee3f5cc4fc2398574367f893e3f97bbbcea39
   google_mlkit_barcode_scanning: ec258a9f08c16d43ed3c4f76e4f1f436ffa899df
   google_mlkit_commons: 75b2579ccf522fe01d42e689babda04c4510ba2f
+  google_mlkit_face_detection: d8263f2249be956bab368ce49fc5b5ed12962f9e
   GoogleDataTransport: a24e58982ab3ba2f64d79613e027fe7f57e88539
   GoogleMaps: 306f6ea18af2dc9ef85d98b0d1b41bc7d506df5f
   GoogleMLKit: b1eee21a41c57704fe72483b15c85cb2c0cd7444
@@ -1886,6 +1901,7 @@ SPEC CHECKSUMS:
   MLImage: 0de5c6c2bf9e93b80ef752e2797f0836f03b58c0
   MLKitBarcodeScanning: 39de223e7b1b8a8fbf10816a536dd292d8a39343
   MLKitCommon: 47d47b50a031d00db62f1b0efe5a1d8b09a3b2e6
+  MLKitFaceDetection: 32549f1e70e6e7731261bf9cea2b74095e2531cb
   MLKitVision: 39a5a812db83c4a0794445088e567f3631c11961
   mobile_scanner: 77265f3dc8d580810e91849d4a0811a90467ed5e
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
