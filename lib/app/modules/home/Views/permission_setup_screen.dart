@@ -12,13 +12,20 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F4FF),
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildAppBar(),
-            Expanded(child: _buildList()),
-            _buildBottomButtons(),
-          ],
-        ),
+        child: Obx(() {
+          if (controller.checking.value) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF5145F5)),
+            );
+          }
+          return Column(
+            children: [
+              _buildAppBar(),
+              Expanded(child: _buildList()),
+              _buildBottomButtons(),
+            ],
+          );
+        }),
       ),
     );
   }

@@ -1,4 +1,3 @@
-import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -28,8 +27,6 @@ class PermissionItem {
 class PermissionSetupController extends GetxController
     with WidgetsBindingObserver {
   final Location _location = Location();
-  final firebaseNotificationServices notificationServices =
-  firebaseNotificationServices();
   final RxInt selectedIndex = 0.obs;
 
   final RxSet<int> expandedItems = <int>{0}.obs;
@@ -39,6 +36,13 @@ class PermissionSetupController extends GetxController
   final RxBool loading = false.obs;
 
   bool _waitingForSettings = false;
+
+  /// True while the initial permission check runs. The screen shows a loader
+  /// instead of the permission list so it never flashes when the user already
+  /// has location access and is sent straight to Home.
+  final RxBool checking = true.obs;
+
+  bool _navigatedHome = false;
 
   // ORDER: 0 Location, 1 Notifications, 2 Camera, 3 Microphone, 4 Contacts
   final List<PermissionItem> items = const [
@@ -106,19 +110,36 @@ class PermissionSetupController extends GetxController
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
-    checkAllPermissionStatus();
   }
 
+  @override
+  void onReady() {
+    super.onReady();
+    _checkInitialLocationAndContinue();
+  }
+
+  /// Login / Register always route here. If location ("Allow all the time" +
+  /// GPS) is already granted, skip this screen and go straight to Home —
+  /// the same rule the splash screen uses.
   Future<void> _checkInitialLocationAndContinue() async {
-    final locationGranted =
-        await _hasAlwaysLocation() && await _location.serviceEnabled();
-
-    if (locationGranted) {
-      Get.offAllNamed(Routes.Home_Screen);
-      return;
+    try {
+      await checkAllPermissionStatus();
+      if (grantedItems.contains(0)) {
+        _goHome();
+        return;
+      }
+      _selectAndExpandPermission(0);
+    } catch (_) {
+      // Fall through and show the screen so the user can grant manually.
+    } finally {
+      if (!_navigatedHome) checking.value = false;
     }
+  }
 
-    await checkAllPermissionStatus();
+  void _goHome() {
+    if (_navigatedHome) return;
+    _navigatedHome = true;
+    Get.offAllNamed(Routes.Home_Screen);
   }
 
 
@@ -133,7 +154,9 @@ class PermissionSetupController extends GetxController
     }
 
     final notification = await Permission.notification.status;
-    if (notification.isGranted || notification.isLimited) {
+    if (notification.isGranted ||
+        notification.isLimited ||
+        notification.isProvisional) {
       grantedItems.add(1);
     }
 
@@ -162,7 +185,11 @@ class PermissionSetupController extends GetxController
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _waitingForSettings) {
+    if (state != AppLifecycleState.resumed || _navigatedHome) return;
+    // Re-check whenever the user comes back (from our Settings dialog or after
+    // changing permissions manually in Settings). Skip while a system
+    // permission prompt is in flight — that flow updates state itself.
+    if (_waitingForSettings || (!loading.value && !checking.value)) {
       _waitingForSettings = false;
       verifyCurrentPermission();
     }
@@ -295,7 +322,7 @@ class PermissionSetupController extends GetxController
       return;
     }
 
-    Get.offAllNamed(Routes.Home_Screen);
+    _goHome();
   }
 
   void _advanceSelection(int fromIndex) {
@@ -311,7 +338,7 @@ class PermissionSetupController extends GetxController
       }
     }
 
-    Get.offAllNamed(Routes.Home_Screen);
+    _goHome();
   }
 
   void _selectAndExpandPermission(int index) {
@@ -337,17 +364,21 @@ class PermissionSetupController extends GetxController
       return;
     }
 
-    final nextPendingIndex = items.indexWhere(
-          (item) => !grantedItems.contains(items.indexOf(item)),
-    );
-
-    if (nextPendingIndex != -1) {
-      selectedIndex.value = nextPendingIndex;
-
-      expandedItems.clear();
-      expandedItems.add(nextPendingIndex);
-      expandedItems.refresh();
+    int nextPendingIndex = -1;
+    for (int i = 0; i < items.length; i++) {
+      if (!grantedItems.contains(i)) {
+        nextPendingIndex = i;
+        break;
+      }
     }
+
+    if (nextPendingIndex == -1) {
+      // Everything granted (e.g. user enabled all from Settings) → Home.
+      _goHome();
+      return;
+    }
+
+    _selectAndExpandPermission(nextPendingIndex);
   }
   Future<bool> _hasAlwaysLocation() async {
     if (GetPlatform.isIOS) {
@@ -377,7 +408,8 @@ class PermissionSetupController extends GetxController
 
 
   Future<bool> _requestLocation() async {
-    if (GetPlatform.isAndroid) {
+    // Same platform split as _hasAlwaysLocation (iOS vs. everything else).
+    if (!GetPlatform.isIOS) {
       var foreground = await Permission.locationWhenInUse.status;
 
       if (!foreground.isGranted) {
