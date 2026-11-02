@@ -43,10 +43,6 @@ abstract class Routes {
   static const totalGroup = _Paths.totalGroup;
   static const permissionSetup = _Paths.permissionSetup;
   static const OTP_CHARGES = _Paths.OTP_CHARGES;
-
-
-
-
 }
 
 abstract class _Paths {
@@ -92,5 +88,4 @@ abstract class _Paths {
   static const totalGroup = '/total-group';
   static const permissionSetup = '/permission-setup';
   static const OTP_CHARGES = '/OtpChargesScreen';
-
 }
