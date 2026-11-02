@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -33,12 +37,16 @@ class ViewAttendanceSheet extends StatefulWidget {
   final int memberCount;
   final bool isAdmin;
 
+  /// userId → profile image path from the group's member list.
+  final Map<String, String> memberImages;
+
   const ViewAttendanceSheet({
     super.key,
     required this.pollId,
     this.groupName = "",
     this.memberCount = 0,
     this.isAdmin = true,
+    this.memberImages = const {},
   });
 
   static Future<void> show(
@@ -47,6 +55,7 @@ class ViewAttendanceSheet extends StatefulWidget {
     String groupName = "",
     int memberCount = 0,
     bool isAdmin = true,
+    Map<String, String> memberImages = const {},
   }) {
     return Navigator.push(
       context,
@@ -56,6 +65,7 @@ class ViewAttendanceSheet extends StatefulWidget {
           groupName: groupName,
           memberCount: memberCount,
           isAdmin: isAdmin,
+          memberImages: memberImages,
         ),
       ),
     );
@@ -291,32 +301,196 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
     }
   }
 
+  Widget _buildDeletedScreen() {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: _textDark,
+        title: const Text("View Attendance"),
+      ),
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.block_rounded, size: 40.sp, color: _textMuted),
+              SizedBox(height: 12.h),
+              Text(
+                "This attendance was deleted",
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w700,
+                  color: _textDark,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              OutlinedButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                child: const Text("Go back"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Downloads the CSV, then lets the admin save it to the device, open it,
+  /// or share it. Saving uses the system "Save as" screen (Android Storage
+  /// Access Framework / iOS Files), which needs no storage permission on any
+  /// Android version.
   Future<void> _exportReport(AttendancePoll? poll) async {
     if (_isExporting) return;
     setState(() => _isExporting = true);
+    File? file;
+    String fileName = "";
     try {
-      final csv = await _controller.exportCsv(widget.pollId);
-      if (csv.trim().isEmpty) throw "The report is empty";
+      final csv = (await _controller.exportCsv(widget.pollId)).trim();
+      if (csv.isEmpty) throw "The report is empty";
+      // An error page/JSON instead of CSV means the server failed.
+      if (csv.startsWith("{") || csv.startsWith("<")) {
+        throw "The server returned an invalid report. Please try again.";
+      }
+
+      final date = poll?.eventDate ?? DateFormat("yyyy-MM-dd").format(DateTime.now());
+      final group = widget.groupName
+          .replaceAll(RegExp(r'[^A-Za-z0-9]+'), "_")
+          .replaceAll(RegExp(r'^_+|_+$'), "");
+      fileName =
+          "Attendance_${group.isNotEmpty ? "${group}_" : ""}${date}_${widget.pollId}.csv";
 
       final dir = await getTemporaryDirectory();
-      final stamp = DateTime.now().millisecondsSinceEpoch;
-      final file = File("${dir.path}/attendance_${widget.pollId}_$stamp.csv");
-      await file.writeAsString(csv);
-
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: "text/csv")],
-        subject: "Attendance Report${poll != null ? " • ${poll.title}" : ""}",
+      file = File("${dir.path}/$fileName");
+      // UTF-8 BOM so Excel shows names and symbols (•, ₹, Hindi) correctly.
+      await file.writeAsBytes(
+        [0xEF, 0xBB, 0xBF, ...utf8.encode(csv)],
+        flush: true,
       );
     } catch (e) {
       _showError("Report Failed", e.toString());
+      return;
     } finally {
       if (mounted) setState(() => _isExporting = false);
+    }
+
+    if (!mounted) return;
+    await _showReportActions(file, fileName, poll);
+  }
+
+  Future<void> _showReportActions(
+    File file,
+    String fileName,
+    AttendancePoll? poll,
+  ) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 4.h),
+                child: Text(
+                  "Report ready • $fileName",
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    color: _textMuted,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.download_rounded, color: _accent),
+                title: const Text("Save to device"),
+                subtitle: Text(Platform.isIOS
+                    ? "Save in the Files app"
+                    : "Choose a folder, e.g. Downloads"),
+                onTap: () => Navigator.pop(ctx, "save"),
+              ),
+              ListTile(
+                leading: const Icon(Icons.open_in_new_rounded, color: _accent),
+                title: const Text("Open"),
+                subtitle: const Text("View in Excel, Sheets or another app"),
+                onTap: () => Navigator.pop(ctx, "open"),
+              ),
+              ListTile(
+                leading: const Icon(Icons.share_rounded, color: _accent),
+                title: const Text("Share"),
+                subtitle: const Text("Send via WhatsApp, email…"),
+                onTap: () => Navigator.pop(ctx, "share"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted || action == null) return;
+
+    try {
+      switch (action) {
+        case "save":
+          final savedPath = await FilePicker.saveFile(
+            dialogTitle: "Save attendance report",
+            fileName: fileName,
+            type: FileType.custom,
+            allowedExtensions: const ["csv"],
+            bytes: await file.readAsBytes(),
+          );
+          if (savedPath != null && mounted) {
+            Get.snackbar(
+              "Report Saved",
+              fileName,
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: const Color(0xFF16A34A),
+              colorText: Colors.white,
+              margin: EdgeInsets.all(16.w),
+            );
+          }
+          break;
+        case "open":
+          final result = await OpenFile.open(file.path, type: "text/csv");
+          if (result.type != ResultType.done) {
+            throw result.type == ResultType.noAppToOpen
+                ? "No app found to open CSV files. Use Save or Share instead."
+                : result.message;
+          }
+          break;
+        case "share":
+          final size = MediaQuery.of(context).size;
+          await SharePlus.instance.share(
+            ShareParams(
+              files: [XFile(file.path, mimeType: "text/csv", name: fileName)],
+              subject:
+                  "Attendance Report${poll != null ? " • ${poll.title}" : ""}",
+              // Required on iPad, where the share sheet is a popover.
+              sharePositionOrigin:
+                  Rect.fromLTWH(0, size.height / 2, size.width, 1),
+            ),
+          );
+          break;
+      }
+    } catch (e) {
+      _showError("Report Failed", e.toString());
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      if (_controller.deletedPolls.contains(widget.pollId)) {
+        return _buildDeletedScreen();
+      }
       final poll = _controller.polls[widget.pollId];
 
       return Scaffold(
@@ -879,7 +1053,9 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
   }
 
   Widget _buildAvatar(AttendanceVoter voter) {
-    final avatar = voter.profileImageUrl;
+    // Voter rows without a picture fall back to the group member list.
+    final avatar = voter.profileImageUrl ??
+        attendanceMediaUrl(widget.memberImages[voter.userId]);
     final hasNetworkAvatar = avatar != null && avatar.startsWith("http");
 
     return CircleAvatar(
