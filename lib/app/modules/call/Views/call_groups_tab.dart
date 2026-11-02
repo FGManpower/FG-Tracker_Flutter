@@ -222,22 +222,22 @@ class _GroupTile extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(width: 8.w),
-          CallActionChip(
-            icon: Icons.videocam_rounded,
-            onTap: () => _initiateGroupCall(
-              group: group,
-              isVideo: true,
-            ),
-          ),
-          SizedBox(width: 8.w),
-          CallActionChip(
-            icon: Icons.call_rounded,
-            onTap: () => _initiateGroupCall(
-              group: group,
-              isVideo: false,
-            ),
-          ),
+          // SizedBox(width: 8.w),
+          // CallActionChip(
+          //   icon: Icons.videocam_rounded,
+          //   onTap: () => _initiateGroupCall(
+          //     group: group,
+          //     isVideo: true,
+          //   ),
+          // ),
+          // SizedBox(width: 8.w),
+          // CallActionChip(
+          //   icon: Icons.call_rounded,
+          //   onTap: () => _initiateGroupCall(
+          //     group: group,
+          //     isVideo: false,
+          //   ),
+          // ),
         ],
       ),
     );

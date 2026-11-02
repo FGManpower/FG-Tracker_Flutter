@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../Core/constant/pref_res.dart';
 
 import '../../../Core/values/global.dart';
 import '../../../Core/values/utility.dart';
+import '../../../Model/group_member_model.dart';
 import '../../../routes/app_pages.dart';
 import '../../../Core/global/launchedFromCall.dart';
 import '../../../Core/constant/notification_holder.dart';
@@ -82,11 +85,27 @@ class InitiateController extends GetxController
     });
   }
 
+  Future<bool> _isLocationReady() async {
+    try {
+      bool alwaysGranted;
+      if (GetPlatform.isIOS) {
+        alwaysGranted =
+            await Geolocator.checkPermission() == LocationPermission.always;
+      } else {
+        final whenInUse = await Permission.locationWhenInUse.status;
+        final always = await Permission.locationAlways.status;
+        alwaysGranted = whenInUse.isGranted && always.isGranted;
+      }
+      if (!alwaysGranted) return false;
+      return await Geolocator.isLocationServiceEnabled();
+    } catch (_) {
+      return false;
+    }
+  }
 
   Future<void> checkLoginStatus() async {
     if (_isCallOrWalkieActive ||
-        (Get.currentRoute.isNotEmpty &&
-            Get.currentRoute != Routes.Splash)) {
+        (Get.currentRoute.isNotEmpty && Get.currentRoute != Routes.Splash)) {
       _splashTimer?.cancel();
       return;
     }
@@ -94,24 +113,31 @@ class InitiateController extends GetxController
     await Future.delayed(const Duration(seconds: 1));
 
     if (_isCallOrWalkieActive ||
-        (Get.currentRoute.isNotEmpty &&
-            Get.currentRoute != Routes.Splash)) {
+        (Get.currentRoute.isNotEmpty && Get.currentRoute != Routes.Splash)) {
       _splashTimer?.cancel();
       return;
     }
 
     final token = Global.storageServices.getaccesstoken();
-    final isRegistered =
-    Global.storageServices.get(PrefConst.isRegistered);
+    final isRegistered = Global.storageServices.get(PrefConst.isRegistered);
 
-    if (Utility.isNotNullEmptyOrFalse(token) &&
-        isRegistered == "true") {
-      Get.offAllNamed(Routes.permissionSetup);
+    if (Utility.isNotNullEmptyOrFalse(token) && isRegistered == "true") {
+      final locationReady = await _isLocationReady();
+
+      if (_isCallOrWalkieActive ||
+          (Get.currentRoute.isNotEmpty && Get.currentRoute != Routes.Splash)) {
+        return;
+      }
+
+      if (locationReady) {
+        Get.offAllNamed(Routes.Home_Screen);
+      } else {
+        Get.offAllNamed(Routes.permissionSetup);
+      }
       return;
     }
 
-    final introDone =
-    await Global.storageServices.getBool(PrefConst.introStatus);
+    final introDone = await Global.storageServices.getBool(PrefConst.introStatus);
 
     if (introDone == true) {
       Get.offAllNamed(Routes.Login);

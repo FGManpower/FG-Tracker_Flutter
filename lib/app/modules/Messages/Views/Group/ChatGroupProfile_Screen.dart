@@ -376,15 +376,15 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   Widget _buildQuickActions(GroupProfileData data) {
     return Row(
       children: [
-        _quickAction(
-            icon: Icons.call_outlined,
-            label: "Audio Call",
-            onTap: () => _initiateGroupCall(data, isVideo: false)),
-        SizedBox(width: 10.w),
-        _quickAction(
-            icon: Icons.videocam_outlined,
-            label: "Video Call",
-            onTap: () => _initiateGroupCall(data, isVideo: true)),
+        // _quickAction(
+        //     icon: Icons.call_outlined,
+        //     label: "Audio Call",
+        //     onTap: () => _initiateGroupCall(data, isVideo: false)),
+        // SizedBox(width: 10.w),
+        // _quickAction(
+        //     icon: Icons.videocam_outlined,
+        //     label: "Video Call",
+        //     onTap: () => _initiateGroupCall(data, isVideo: true)),
         // SizedBox(width: 10.w),
         // _quickAction(
         //   icon: Icons.person_add_alt_1_outlined,
