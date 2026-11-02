@@ -75,7 +75,6 @@ class SocketService extends GetxService with WidgetsBindingObserver {
 
     _socket?.off("group_dashboard_counts");
     _socket?.on("group_dashboard_counts", (res) {
-      log("[LocationSocket] group_dashboard_counts received: $res");
       try {
         dynamic payload = res;
         if (res is Map && res.containsKey('data') && res['data'] != null) {
@@ -179,24 +178,25 @@ class SocketService extends GetxService with WidgetsBindingObserver {
     final int sendBattery = battery ?? 85;
 
     // if (connectedGroupIds.isEmpty) {
-      final payload = <String, dynamic>{
-        "userId": userId,
-        "lat": lat,
-        "lng": lng,
-        // "latitude": lat,
-        // "longitude": lng,
-        "battery": sendBattery,
-        if (cleanAddress != null) "address": cleanAddress,
-        if (cleanAddress != null) "location": cleanAddress,
-        if (cleanArea != null) "area": cleanArea,
-        if (cleanCity != null) "city": cleanCity,
-      };
-      _socket?.emitWithAck("send-location", payload,ack: (response) {
+    final payload = <String, dynamic>{
+      "userId": userId,
+      "lat": lat,
+      "lng": lng,
+      // "latitude": lat,
+      // "longitude": lng,
+      "battery": sendBattery,
+      if (cleanAddress != null) "address": cleanAddress,
+      if (cleanAddress != null) "location": cleanAddress,
+      if (cleanArea != null) "area": cleanArea,
+      if (cleanCity != null) "city": cleanCity,
+    };
+    _socket?.emitWithAck(
+      "send-location",
+      payload,
+      ack: (response) {
         print("======SenlocationResponse:${response}");
-      },);
-
-
-
+      },
+    );
   }
 
   void onGroupLocationUpdate(Function(dynamic) callback) {
