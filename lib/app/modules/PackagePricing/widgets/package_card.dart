@@ -15,18 +15,10 @@ class PackageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final style =
         PackageModuleStyle.of(item.moduleKey, hexColor: item.themeColor);
-    final price = item.startingPrice;
-    final activeUntil = formatPackageDate(item.activeUntil);
-
     final semanticsLabel = [
       item.title,
       if (item.tagline != null) item.tagline!,
-      if (!item.isAvailable)
-        'Coming soon'
-      else if (price != null)
-        'Starts at ${formatPackageMoney(price, item.currency)} ${item.priceUnit ?? ''}',
-      if (item.isSubscribed)
-        activeUntil != null ? 'Active until $activeUntil' : 'Active',
+      item.isAvailable ? 'View plans' : 'Coming soon',
     ].join('. ');
 
     return Semantics(
@@ -86,22 +78,7 @@ class PackageCard extends StatelessWidget {
                     SizedBox(height: 12.h),
                     const Divider(height: 1, color: PackageUi.divider),
                     SizedBox(height: 10.h),
-                    Row(
-                      children: [
-                        Expanded(child: _priceLine(price)),
-                        if (item.isSubscribed) ...[
-                          SizedBox(width: 8.w),
-                          PackagePill(
-                            text: activeUntil != null
-                                ? 'Active · till $activeUntil'
-                                : 'Active',
-                            color: PackageUi.green,
-                            background: PackageUi.greenBg,
-                            icon: Icons.check_circle_rounded,
-                          ),
-                        ],
-                      ],
-                    ),
+                    _footerLabel(),
                   ],
                 ),
               ),
@@ -155,53 +132,16 @@ class PackageCard extends StatelessWidget {
     );
   }
 
-  Widget _priceLine(num? price) {
-    if (!item.isAvailable) {
-      return Text(
-        'Coming soon',
-        style: TextStyle(
-          fontSize: 13.sp,
-          fontFamily: FontFamily.interSemiBold,
-          fontWeight: FontWeight.w600,
-          color: PackageUi.textSecondary,
-        ),
-      );
-    }
-    if (price == null) {
-      return Text(
-        'View plans',
-        style: TextStyle(
-          fontSize: 13.sp,
-          fontFamily: FontFamily.interSemiBold,
-          fontWeight: FontWeight.w600,
-          color: PackageUi.accent,
-        ),
-      );
-    }
-    return Text.rich(
-      TextSpan(
-        style: TextStyle(
-          fontSize: 11.5.sp,
-          fontFamily: FontFamily.interRegular,
-          color: PackageUi.textSecondary,
-        ),
-        children: [
-          const TextSpan(text: 'Starts at  '),
-          TextSpan(
-            text: formatPackageMoney(price, item.currency),
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontFamily: FontFamily.interExtraBold,
-              fontWeight: FontWeight.w800,
-              color: PackageUi.text,
-              fontFeatures: PackageUi.tabular,
-            ),
-          ),
-          if (item.priceUnit != null) TextSpan(text: ' ${item.priceUnit}'),
-        ],
+  /// "View plans" / "Coming soon" — no price or active status on the card
+  Widget _footerLabel() {
+    return Text(
+      item.isAvailable ? 'View plans' : 'Coming soon',
+      style: TextStyle(
+        fontSize: 13.sp,
+        fontFamily: FontFamily.interSemiBold,
+        fontWeight: FontWeight.w600,
+        color: item.isAvailable ? PackageUi.accent : PackageUi.textSecondary,
       ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
     );
   }
 }

@@ -3,7 +3,6 @@ import 'dart:math' show Random, max;
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/widgets.dart' show AppLifecycleState, WidgetsBinding;
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -13,6 +12,7 @@ import '../../../Data/Repositories/attendance_repo.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart'
     show SocketMessageService;
 import '../models/attendance_poll_model.dart';
+import '../../../Core/util/rt_log.dart';
 
 class AttendanceLocationFix {
   final Position position;
@@ -137,9 +137,9 @@ class AttendanceController extends GetxController {
         continue;
       }
       _lastLiveAt[pollId] = now;
-      debugPrint(
+      rtLog(
         "[RT_DEBUG] fallback refresh poll=$pollId (socketProven=$_socketProven)",
-      ); // TODO: remove debug log
+      );
       ensureLoaded(pollId, force: true);
     }
   }
@@ -218,17 +218,17 @@ class AttendanceController extends GetxController {
     // (idempotent), so a backend that doesn't bump `version` on every vote
     // still updates counts live. version 0 = payload without a version.
     if (incoming.version > 0 && incoming.version < local.version) {
-      debugPrint(
+      rtLog(
         "[RT_DEBUG] attendance poll=${incoming.id} dropped stale v${incoming.version} < v${local.version}",
-      ); // TODO: remove debug log
+      );
       return local;
     }
     final merged = local.mergeServer(incoming, hasMyVoteField: hasMyVoteField);
     polls[incoming.id] = merged;
     if (fromEvent) {
-      debugPrint(
+      rtLog(
         "[RT_DEBUG] attendance poll=${incoming.id} applied v${merged.version} total=${merged.totalVotes} ${merged.countsByOption}",
-      ); // TODO: remove debug log
+      );
     }
     return merged;
   }

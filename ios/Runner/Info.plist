@@ -79,7 +79,7 @@
     <string>FG Tracker</string>
 
 	<key>NSCameraUsageDescription</key>
-	<string>Need camera access for video calls and scan QR codes</string>
+	<string>FG Tracker uses the camera for video calls, scanning QR codes, and taking a live selfie to mark your attendance.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>FG Tracker uses your contacts to help you find, connect with, and invite people to join your tracking groups.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

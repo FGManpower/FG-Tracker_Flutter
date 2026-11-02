@@ -4,6 +4,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/util/rt_log.dart';
 import 'package:fgtracker/app/Data/Services/Socket/status_socket_service.dart';
 import 'package:fgtracker/app/modules/status/controller/status_feed_controller.dart';
 import 'package:flutter/cupertino.dart';
@@ -126,7 +127,7 @@ class SocketMessageService extends GetxService {
       if (event.startsWith("attendance") ||
           event.contains("chat_list") ||
           event == "conversation_updated") {
-        debugPrint("[RT_DEBUG] /chat <= $event"); // TODO: remove debug log
+        rtLog("[RT_DEBUG] /chat <= $event");
       }
     });
 
@@ -156,9 +157,9 @@ class SocketMessageService extends GetxService {
       if (_subscribedPollId != null) {
         _emitAttendanceSubscribe(_subscribedPollId!);
       }
-      debugPrint(
+      rtLog(
         "[RT_DEBUG] /chat connected: group=$activeGroupId poll=$_subscribedPollId",
-      ); // TODO: remove debug log
+      );
     });
 
     // The chat list may have registered before this socket existed.
@@ -558,9 +559,9 @@ class SocketMessageService extends GetxService {
     _socket?.emitWithAck(
       "attendance:subscribe",
       {"pollId": pollId},
-      ack: (data) => debugPrint(
+      ack: (data) => rtLog(
         "[RT_DEBUG] attendance:subscribe poll=$pollId ack => $data",
-      ), // TODO: remove debug log
+      ),
     );
   }
 
@@ -645,6 +646,7 @@ class SocketMessageService extends GetxService {
         "autoConnect": true,
         "auth": {
           "userId": userId,
+          "token": Global.storageServices.getaccesstoken() ?? "",
         },
       },
     );
@@ -1041,13 +1043,14 @@ class SocketMessageService extends GetxService {
         "autoConnect": true,
         "auth": {
           "userId": userId,
+          "token": Global.storageServices.getaccesstoken() ?? "",
         },
       },
     );
 
     _privateChatListSocket?.onAny((event, data) {
       if (event.contains("chat_list") || event == "conversation_updated") {
-        debugPrint("[RT_DEBUG] /privateChat <= $event"); // TODO: remove debug log
+        rtLog("[RT_DEBUG] /privateChat <= $event");
       }
     });
 

@@ -31,9 +31,15 @@ class _WalkieTalkieTrialDetailsScreenState
     extends State<WalkieTalkieTrialDetailsScreen> {
   late final WalkieTalkieTrialController controller;
 
+  /// Opened from the channel-list plan card: show only the plan /
+  /// subscription status (no intro, features or "Open Walkie Talkie").
+  late final bool planDetailsOnly;
+
   @override
   void initState() {
     super.initState();
+    final args = Get.arguments;
+    planDetailsOnly = args is Map && args['planDetailsOnly'] == true;
     controller = Get.isRegistered<WalkieTalkieTrialController>()
         ? Get.find<WalkieTalkieTrialController>()
         : Get.put(WalkieTalkieTrialController());
@@ -94,6 +100,10 @@ class _WalkieTalkieTrialDetailsScreenState
                         minHeight: 2,
                       ),
                     _buildTopErrorBanner(),
+                    if (planDetailsOnly) ...[
+                      SizedBox(height: 8.h),
+                      ..._buildPlanStatusSections(isSkeletonLoading),
+                    ] else ...[
                      WalkieHeroSection(),
                     SizedBox(height: 8.h),
 
@@ -170,6 +180,7 @@ class _WalkieTalkieTrialDetailsScreenState
                     // 3. FEATURES CARD (primary button is pinned at the bottom)
                     // =====================================================
                     const WalkieFeaturesCard(),
+                    ],
                     SizedBox(height: 24.h),
                   ],
                 ),
@@ -222,6 +233,8 @@ class _WalkieTalkieTrialDetailsScreenState
                   SizedBox(height: 10.h),
                 ],
                 WalkiePrimaryActionButton(
+                  // Came from the channel list → no "Open Walkie Talkie"
+                  hideOpenAction: planDetailsOnly,
                   onStartTrialPressed: () {
                     _showStartFreeTrialBottomSheet(context);
                   },
@@ -252,6 +265,159 @@ class _WalkieTalkieTrialDetailsScreenState
           ),
         );
       }),
+    );
+  }
+
+  // =====================================================
+  // PLAN-DETAILS MODE (status driven)
+  // Active subscription → active plan card(s) only
+  // Otherwise → expired-subscription notice (if bought before)
+  //             + trial card (active / expired / not started)
+  // =====================================================
+
+  List<Widget> _buildPlanStatusSections(bool isSkeletonLoading) {
+    final bool hasActiveSub = controller.hasAnyActiveSubscription;
+
+    if (hasActiveSub && !isSkeletonLoading) {
+      final bool hasIndividual = controller.hasActiveIndividualSubscription;
+      final bool hasTeam = controller.hasActiveTeamSubscription &&
+          controller.activeTeamSubscriptions.isNotEmpty;
+      return [
+        _buildSectionTitle("Active Subscription"),
+        if (hasIndividual) ...[
+          WalkieIndividualPlanCard(
+            plan: controller.activeIndividualSubscription,
+            hasActiveSubscription: true,
+          ),
+          SizedBox(height: 10.h),
+        ],
+        if (hasTeam)
+          for (final plan in controller.activeTeamSubscriptions) ...[
+            WalkieTeamPlanCard(plan: plan, hasActiveSubscription: true),
+            SizedBox(height: 10.h),
+          ],
+        // Access given by a team admin, without plan details of its own
+        if (!hasIndividual && !hasTeam)
+          _buildStatusNotice(
+            icon: Icons.verified_rounded,
+            color: const Color(0xFF16A34A),
+            title: "Subscription Active",
+            message: "You have Walkie Talkie access through your team plan.",
+          ),
+      ];
+    }
+
+    final bool subscriptionExpired = !isSkeletonLoading &&
+        (controller.hasPurchasedIndividualBefore ||
+            controller.hasPurchasedTeamBefore);
+
+    return [
+      if (subscriptionExpired) ...[
+        _buildStatusNotice(
+          icon: Icons.event_busy_rounded,
+          color: const Color(0xFFDC2626),
+          title: "Subscription Expired",
+          message:
+              "Your Walkie Talkie subscription has ended. Renew a plan to keep talking with your team.",
+        ),
+        SizedBox(height: 12.h),
+      ],
+      if (controller.shouldShowTrialCard || isSkeletonLoading) ...[
+        if (controller.isTrialActive ||
+            controller.isTrialExpired ||
+            controller.isTrialConsumed)
+          const WalkieTrialStatusCard()
+        else
+          const WalkieTrialCard(),
+        SizedBox(height: 12.h),
+      ],
+      if (!subscriptionExpired &&
+          !controller.shouldShowTrialCard &&
+          !isSkeletonLoading)
+        _buildStatusNotice(
+          icon: Icons.workspace_premium_outlined,
+          color: primaryColor,
+          title: "No Active Plan",
+          message: "Choose a plan below to start using Walkie Talkie.",
+        ),
+    ];
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
+      child: Row(
+        children: [
+          Icon(Icons.layers_outlined, size: _sp(15), color: primaryColor),
+          SizedBox(width: 6.w),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: _sp(14),
+              fontFamily: FontFamily.interBold,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusNotice({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String message,
+  }) {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40.w,
+            height: 40.w,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(icon, color: color, size: _sp(20)),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: _sp(14),
+                    fontFamily: FontFamily.interBold,
+                    color: textColor,
+                  ),
+                ),
+                SizedBox(height: 3.h),
+                Text(
+                  message,
+                  style: TextStyle(
+                    fontSize: _sp(12),
+                    fontFamily: FontFamily.interRegular,
+                    color: subtitleColor,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -300,7 +466,9 @@ class _WalkieTalkieTrialDetailsScreenState
               ),
               SizedBox(height: 1.h),
               reausabletext(
-                "Instantly communicate with your group",
+                planDetailsOnly
+                    ? "Your plan & subscription status"
+                    : "Instantly communicate with your group",
                 fontsize: _sp(11.5),
                 color: subtitleColor,
               ),

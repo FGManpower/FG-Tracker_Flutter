@@ -132,9 +132,14 @@ class WalkieFeaturesCard extends StatelessWidget {
 class WalkiePrimaryActionButton extends StatelessWidget {
   final VoidCallback onStartTrialPressed;
 
+  /// true = render nothing when the user can already open Walkie-Talkie
+  /// (screen opened from the channel list itself).
+  final bool hideOpenAction;
+
   const WalkiePrimaryActionButton({
     super.key,
     required this.onStartTrialPressed,
+    this.hideOpenAction = false,
   });
 
   @override
@@ -145,6 +150,7 @@ class WalkiePrimaryActionButton extends StatelessWidget {
       final bool canUse = controller.canUseWalkieTalkie;
       final bool hasTeamPlan = controller.hasActiveTeamSubscription;
       final bool canOpenWalkie = canUse || hasTeamPlan;
+      if (hideOpenAction && canOpenWalkie) return const SizedBox.shrink();
 
       final bool eligible = controller.isTrialEligible &&
           controller.trial?.status.toLowerCase() == 'not_started';

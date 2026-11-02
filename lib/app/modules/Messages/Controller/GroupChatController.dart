@@ -225,6 +225,16 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
         if (message is! Map) return;
 
+        // Backend diagnostic: after each vote it echoes the poll on this event
+        // with messageType "attendance_test". It is not a chat message, so it
+        // must never become a bubble; treat it as a live poll update instead.
+        if (message["messageType"]?.toString() == "attendance_test") {
+          if (message["poll"] is Map) {
+            _onAttendanceEvent("attendance:updated", message);
+          }
+          return;
+        }
+
         final incomingMessage =
             MessageData.fromJson(Map<String, dynamic>.from(message));
         debugPrint("RECEIVED MESSAGE ID => ${incomingMessage.id}");

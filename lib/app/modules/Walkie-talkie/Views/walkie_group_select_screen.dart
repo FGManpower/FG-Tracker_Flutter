@@ -14,6 +14,7 @@ import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_tri
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/WalkieTalkieScreen.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
@@ -86,6 +87,11 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   final RxBool isIndividualPlan = false.obs;
   final RxBool hasNoPlan = false.obs;
   final RxString planTitleName = "".obs;
+
+  // Current-plan card on top of the channel list
+  final RxBool planStatusLoaded = false.obs;
+  final RxString planExpiresAt = ''.obs;
+  final RxString planBillingInterval = ''.obs;
 
   // Backend-driven Team Subscription State
   final RxBool hasTeamPlan = false.obs;
@@ -286,6 +292,32 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               teamAssignedSeats.value = 0;
               teamAvailableSeats.value = 0;
             }
+
+            // 5. Current-plan card details (expiry + billing period)
+            final TeamSeatItem? seat = userSub?.teamSeats?.isNotEmpty == true
+                ? userSub!.teamSeats!.first
+                : null;
+            if (teamPlan != null) {
+              planExpiresAt.value = teamPlan.expiresAt ?? '';
+              planBillingInterval.value = teamPlan.billingInterval ?? '';
+            } else if (isAssignedTeamMember) {
+              planExpiresAt.value = seat?.expiresAt ?? userSub?.expiresAt ?? '';
+              planBillingInterval.value = userSub?.billingInterval ?? '';
+            } else if (isIndiv) {
+              planExpiresAt.value =
+                  userSub?.individual?.expiresAt ?? userSub?.expiresAt ?? '';
+              planBillingInterval.value = userSub?.individual?.billingInterval ??
+                  userSub?.billingInterval ??
+                  '';
+              final String? indivName = userSub?.individual?.planName;
+              if (indivName != null && indivName.isNotEmpty) {
+                planTitleName.value = indivName;
+              }
+            } else {
+              planExpiresAt.value = '';
+              planBillingInterval.value = '';
+            }
+            planStatusLoaded.value = true;
 
             debugPrint(
                 "🎯 [Walkie] HasTeam: ${hasTeamPlan.value} | AssignedMember: $isAssignedTeamMember | CanManage: ${canManageMembers.value} | Started: ${teamHasStarted.value} | Seats: ${teamAssignedSeats.value}/${teamPurchasedSeats.value} (Avail: ${teamAvailableSeats.value})");
@@ -1342,8 +1374,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => _showUpgradePrompt(
-                      context: context, isNoPlan: true),
+                  onTap: _openPlanDetails,
                   child: Container(
                     padding: EdgeInsets.symmetric(
                         horizontal: 12.w, vertical: 6.h),
@@ -1365,58 +1396,151 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         );
       }
 
-      if (isIndividualPlan.value) {
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF7ED),
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: const Color(0xFFFFEDD5)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline_rounded,
-                    color: const Color(0xFFEA580C), size: 18.sp),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: Text(
-                    "Individual Plan (1 Member). Upgrade to Team Plan to connect more members.",
-                    style: TextStyle(
-                      fontSize: 11.5.sp,
-                      color: const Color(0xFF9A3412),
-                      fontFamily: FontFamily.interMedium,
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                GestureDetector(
-                  onTap: () => _showUpgradePrompt(
-                      context: context, isNoPlan: false),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 10.w, vertical: 5.h),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEA580C),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: reausabletext(
-                      "Upgrade",
-                      fontsize: 11.sp,
-                      fontfamily: FontFamily.interSemiBold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-
-      return const SizedBox.shrink();
+      // Subscribed → current plan card (hidden until the plan has loaded)
+      if (!planStatusLoaded.value) return const SizedBox.shrink();
+      return _buildCurrentPlanCard();
     });
+  }
+
+  /// Opens the Walkie-Talkie screen showing only plan / subscription status,
+  /// then refreshes the plan here in case it changed (purchase, renewal).
+  Future<void> _openPlanDetails() async {
+    await Get.toNamed(
+      Routes.walkieTalkieTrialDetails,
+      arguments: {'planDetailsOnly': true},
+    );
+    if (mounted) fetchMembersFromApi();
+  }
+
+  String _formatPlanDate(String raw) {
+    final DateTime? d = DateTime.tryParse(raw);
+    if (d == null) return '';
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    final local = d.toLocal();
+    return '${local.day.toString().padLeft(2, '0')} ${months[local.month - 1]} ${local.year}';
+  }
+
+  Widget _buildCurrentPlanCard() {
+    final String title = planTitleName.value.isNotEmpty
+        ? planTitleName.value
+        : (isIndividualPlan.value ? "Individual Plan" : "Team Plan");
+    final String interval = planBillingInterval.value.isNotEmpty
+        ? planBillingInterval.value[0].toUpperCase() +
+            planBillingInterval.value.substring(1)
+        : '';
+    final String expiry = _formatPlanDate(planExpiresAt.value);
+    final String details = [
+      if (interval.isNotEmpty) interval,
+      if (expiry.isNotEmpty) "Valid till $expiry",
+      if (isIndividualPlan.value) "1 member",
+      if (hasTeamPlan.value && teamPurchasedSeats.value > 0)
+        "${teamAssignedSeats.value}/${teamPurchasedSeats.value} seats",
+    ].join(" • ");
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: const Color(0xFFE9E5FF)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF5B4DFF).withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.r),
+              decoration: const BoxDecoration(
+                color: Color(0xFF5B4DFF),
+                shape: BoxShape.circle,
+              ),
+              child: GoldenCrownBadge(size: 20.sp),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13.5.sp,
+                            fontFamily: FontFamily.interBold,
+                            color: const Color(0xFF1E1B4B),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 6.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8FDF2),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text(
+                          "Active",
+                          style: TextStyle(
+                            fontSize: 9.5.sp,
+                            fontFamily: FontFamily.interSemiBold,
+                            color: const Color(0xFF16A34A),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (details.isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      details,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontFamily: FontFamily.interRegular,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            SizedBox(width: 8.w),
+            GestureDetector(
+              onTap: _openPlanDetails,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5B4DFF),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: reausabletext(
+                  "View Plan",
+                  fontsize: 11.5.sp,
+                  fontfamily: FontFamily.interSemiBold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showUpgradePrompt({
