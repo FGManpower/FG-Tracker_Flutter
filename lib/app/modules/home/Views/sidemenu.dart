@@ -431,6 +431,16 @@ class Sidemenu extends StatelessWidget {
               });
             },
           ),
+          _buildDivider(),
+          _buildDrawerItem(
+            icon: Icons.workspace_premium_rounded,
+            title: "Packages & Pricing",
+            subtitle: "Plans for every module",
+            onTap: () {
+              Navigator.pop(context);
+              Get.toNamed(Routes.packagePricing);
+            },
+          ),
           // _buildDivider(),
           // _buildDrawerItem(
           //   icon: Icons.receipt_long_rounded,

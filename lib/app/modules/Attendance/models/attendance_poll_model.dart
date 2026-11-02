@@ -201,7 +201,21 @@ class AttendanceVoter {
       userId: pick(["userId", "UserId", "id", "Id"])?.toString() ?? "",
       name: _nonEmpty(pick(["name", "Name", "userName", "fullName"])) ??
           "Member",
-      profileImage: _nonEmpty(pick(["profileImage", "ProfileImage", "avatar"])),
+      // Same key variants the rest of the app's models accept. Not
+      // "photoUrl": that is the attendance selfie, not the profile picture.
+      profileImage: _nonEmpty(pick([
+        "profileImage",
+        "ProfileImage",
+        "profile_image",
+        "profilePic",
+        "profile_pic",
+        "userImage",
+        "senderImage",
+        "avatar",
+        "avatarUrl",
+        "image",
+        "imageUrl",
+      ])),
       optionId: _nonEmpty(json["optionId"]),
       optionLabel: _nonEmpty(json["optionLabel"]),
       votedAt: _toDate(json["votedAt"] ?? json["createdAt"]),

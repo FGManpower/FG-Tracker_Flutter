@@ -59,6 +59,8 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
   static const int _maxQuestionLength = 100;
   static const int _maxOptions = 6;
 
+  /// Attendance is always for today: the date is fixed (not editable) and is
+  /// re-read on submit, so a sheet left open past midnight uses the new day.
   final Rx<DateTime> _selectedDate = DateUtils.dateOnly(DateTime.now()).obs;
 
   final RxList<AttendanceOptionItem> _options = <AttendanceOptionItem>[
@@ -69,7 +71,8 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
   /// Option that requires a live photo (-1 = none). Defaults to "Present".
   final RxInt _selectedOptionIndex = 0.obs;
   final RxBool _allowVoteChange = true.obs;
-  final RxBool _autoClose = true.obs;
+  /// "Close at end of day" is coming soon: off and not changeable for now.
+  final RxBool _autoClose = false.obs;
 
   void _toggleOption(int index) {
     if (_selectedOptionIndex.value == index) {
@@ -126,35 +129,6 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
 
   String get _formattedDate {
     return DateFormat("dd MMM yyyy, EEE").format(_selectedDate.value);
-  }
-
-  Future<void> _pickDate() async {
-    final now = DateTime.now();
-    final firstDate =
-    _selectedDate.value.isBefore(now) ? _selectedDate.value : now;
-
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate.value,
-      firstDate: firstDate,
-      lastDate: DateTime(2035),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFF5A3EFE),
-              onPrimary: Colors.white,
-              onSurface: Color(0xFF0F172A),
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      _selectedDate.value = picked;
-    }
   }
 
   void _addOption() {
@@ -271,6 +245,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
     final photoIdx = _selectedOptionIndex.value;
     final photoOption =
         photoIdx >= 0 && photoIdx < options.length ? options[photoIdx] : null;
+    _selectedDate.value = DateUtils.dateOnly(DateTime.now());
     final date = _selectedDate.value;
     final deadline = _autoClose.value
         ? DateTime(date.year, date.month, date.day, 23, 59)
@@ -673,9 +648,10 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
         ),
         SizedBox(width: 10.w),
         Expanded(
-          child: InkWell(
-            onTap: _pickDate,
-            borderRadius: BorderRadius.circular(14.r),
+          // Fixed to today: no date picker.
+          child: Semantics(
+            label: "Attendance date, today",
+            readOnly: true,
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
               decoration: BoxDecoration(
@@ -687,7 +663,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Date",
+                    "Date (today)",
                     style: TextStyle(
                       fontSize: 10.5.sp,
                       color: const Color(0xFF94A3B8),
@@ -709,9 +685,9 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                         ),
                       ),
                       Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        color: const Color(0xFF5A3EFE),
-                        size: 24.sp,
+                        Icons.lock_outline_rounded,
+                        color: const Color(0xFF94A3B8),
+                        size: 18.sp,
                       ),
                     ],
                   ),
@@ -970,47 +946,86 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
       required String title,
       required String subtitle,
       required RxBool value,
+      bool comingSoon = false,
     }) {
+      final mutedColor = const Color(0xFF94A3B8);
       return Obx(
         () => Container(
           margin: EdgeInsets.only(top: 8.h),
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: comingSoon ? const Color(0xFFF8FAFC) : Colors.white,
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: const Color(0xFFEEF2F6)),
           ),
           child: Row(
             children: [
-              Icon(icon, color: const Color(0xFF5A3EFE), size: 20.sp),
+              Icon(
+                icon,
+                color: comingSoon ? mutedColor : const Color(0xFF5A3EFE),
+                size: 20.sp,
+              ),
               SizedBox(width: 10.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1E293B),
-                      ),
+                    Wrap(
+                      spacing: 6.w,
+                      runSpacing: 2.h,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w700,
+                            color: comingSoon
+                                ? mutedColor
+                                : const Color(0xFF1E293B),
+                          ),
+                        ),
+                        if (comingSoon)
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 7.w,
+                              vertical: 2.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF7ED),
+                              borderRadius: BorderRadius.circular(20.r),
+                              border:
+                                  Border.all(color: const Color(0xFFFED7AA)),
+                            ),
+                            child: Text(
+                              "Coming soon",
+                              style: TextStyle(
+                                fontSize: 9.5.sp,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFFC2410C),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     Text(
                       subtitle,
                       style: TextStyle(
                         fontSize: 11.sp,
-                        color: const Color(0xFF64748B),
+                        color: comingSoon
+                            ? mutedColor
+                            : const Color(0xFF64748B),
                       ),
                     ),
                   ],
                 ),
               ),
               Switch(
-                value: value.value,
+                value: comingSoon ? false : value.value,
                 activeThumbColor: Colors.white,
                 activeTrackColor: const Color(0xFF5A3EFE),
-                onChanged: (v) => value.value = v,
+                // null disables the switch (greyed out, not tappable).
+                onChanged: comingSoon ? null : (v) => value.value = v,
               ),
             ],
           ),
@@ -1052,8 +1067,9 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
           toggleRow(
             icon: Icons.timer_outlined,
             title: "Close at end of day",
-            subtitle: "Automatically closes at 11:59 PM on the selected date",
+            subtitle: "Automatically closes at 11:59 PM today",
             value: _autoClose,
+            comingSoon: true,
           ),
         ],
       ),

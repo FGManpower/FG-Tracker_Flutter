@@ -28,6 +28,7 @@ import '../../../Model/GetMessage.dart';
 
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
+import '../../../Data/Services/active_chat_tracker.dart';
 import '../../Attendance/controller/attendance_controller.dart';
 
 import 'chat_list_controller.dart';
@@ -194,6 +195,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     );
 
     socketService.markSeen(currentUserId, groupId);
+    ActiveChatTracker.openGroup(groupId);
 
     socketService.listenSeenUpdate(
       groupId: groupId,
@@ -298,6 +300,9 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
         _messages.add(incomingMessage);
         updateMessageStream();
+
+        // The user is in this chat: the new message is read right away.
+        if (!isMyMessage) _scheduleMarkGroupSeen();
 
         if (isMyMessage || wasAtBottom) {
           scrollToBottom();
@@ -982,6 +987,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       final wasAtBottom = isUserAtBottom();
       _messages.add(msg);
       updateMessageStream();
+      if (!isMine) _scheduleMarkGroupSeen();
       if (isMine || wasAtBottom) {
         scrollToBottom();
       } else {
@@ -1785,6 +1791,37 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     } catch (_) {}
   }
 
+  // ---- Read receipts for messages arriving while the chat is open ----
+  Timer? _markSeenTimer;
+  bool _markSeenPending = false;
+
+  /// Debounced `mark_seen` so a burst of messages sends one event. If the app
+  /// is in the background, the read is sent when it comes back.
+  void _scheduleMarkGroupSeen() {
+    // The socket listener outlives this screen; a closed chat must never
+    // mark messages read (the user is on another screen).
+    if (isClosed) return;
+    if (!ActiveChatTracker.isAppInForeground) {
+      _markSeenPending = true;
+      return;
+    }
+    _markSeenTimer?.cancel();
+    _markSeenTimer =
+        Timer(const Duration(milliseconds: 400), _markGroupSeenNow);
+  }
+
+  void _markGroupSeenNow() {
+    if (isClosed) return;
+    _emitGroupSeen();
+  }
+
+  void _emitGroupSeen() {
+    _markSeenPending = false;
+    final userId = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (userId == null || userId.isEmpty) return;
+    socketService.markSeen(userId, groupId);
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
@@ -1792,10 +1829,22 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         state == AppLifecycleState.inactive) {
       _sendGroupStopTypingNow();
     }
+    if (state == AppLifecycleState.resumed && _markSeenPending) {
+      _markGroupSeenNow();
+    }
   }
 
   @override
   void onClose() {
+    // Everything shown in this chat has been read: tell the server once more
+    // (covers a debounce still pending) and clear the list badge locally.
+    _markSeenTimer?.cancel();
+    if (ActiveChatTracker.isAppInForeground) _emitGroupSeen();
+    ActiveChatTracker.closeGroup(groupId);
+    if (Get.isRegistered<ChatListController>()) {
+      Get.find<ChatListController>()
+          .clearUnreadForOpenedChat(isGroup: true, groupId: groupId);
+    }
     _sendGroupStopTypingNow();
     for (final timer in _groupTypingUserTimers.values) {
       timer.cancel();

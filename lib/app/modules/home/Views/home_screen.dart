@@ -178,7 +178,8 @@ class _UpgradeToPremiumCard extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        Get.toNamed(Routes.walkieTalkieTrialDetails);
+        // Upgrade to Premium → View Plans opens Packages & Pricing
+        Get.toNamed(Routes.packagePricing);
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),

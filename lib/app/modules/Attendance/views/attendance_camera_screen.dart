@@ -2,10 +2,14 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+import '../utils/attendance_frame_encoder.dart';
 
 /// Live attendance selfie: front camera only, auto-captured when the member
 /// blinks (open → closed → open) with exactly one centered face in frame.
@@ -84,22 +88,38 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
     }
   }
 
+  bool _disposed = false;
+  bool _detectorClosed = false;
+
   @override
   void dispose() {
+    _disposed = true;
     WidgetsBinding.instance.removeObserver(this);
     _releaseCamera(notify: false);
-    _faceDetector.close();
+    // Closing the detector while a frame is still being processed crashes
+    // the native ML Kit side; if one is in flight, close when it finishes.
+    if (!_isDetecting) _closeDetector();
     super.dispose();
+  }
+
+  void _closeDetector() {
+    if (_detectorClosed) return;
+    _detectorClosed = true;
+    _faceDetector.close();
   }
 
   Future<void> _releaseCamera({bool notify = true}) async {
     final camera = _camera;
     _camera = null;
     if (camera == null) return;
+    // dispose() also ends the image stream. Calling stopImageStream first
+    // makes the Android plugin rebuild its capture session right as it is
+    // being closed, a native crash on some devices.
     try {
-      if (camera.value.isStreamingImages) await camera.stopImageStream();
-    } catch (_) {}
-    await camera.dispose();
+      await camera.dispose();
+    } catch (e) {
+      debugPrint("Attendance camera dispose failed: $e");
+    }
     if (notify && mounted) setState(() {});
   }
 
@@ -177,6 +197,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
   }
 
   Future<void> _processFrame(CameraImage image) async {
+    if (_disposed || _detectorClosed) return;
     if (_isDetecting || _isCapturing || _capturedPath != null) return;
     final camera = _frontCamera;
     if (camera == null) return;
@@ -186,21 +207,27 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
       final input = _toInputImage(image, camera);
       if (input == null) return;
       final faces = await _faceDetector.processImage(input);
-      if (!mounted || _capturedPath != null) return;
+      if (!mounted || _disposed || _capturedPath != null) return;
 
       // Rotated frame size (sensor is landscape; 90/270 swaps the axes).
       final rotated = camera.sensorOrientation % 180 != 0;
       final frameW = (rotated ? image.height : image.width).toDouble();
       final frameH = (rotated ? image.width : image.height).toDouble();
-      _evaluate(faces, frameW, frameH);
+      _evaluate(faces, frameW, frameH, image);
     } catch (e) {
       debugPrint("Face detection error: $e");
     } finally {
       _isDetecting = false;
+      if (_disposed) _closeDetector();
     }
   }
 
-  void _evaluate(List<Face> faces, double frameW, double frameH) {
+  void _evaluate(
+    List<Face> faces,
+    double frameW,
+    double frameH,
+    CameraImage frame,
+  ) {
     if (faces.isEmpty) {
       _stage = _BlinkStage.waitingOpen;
       _faceReady = false;
@@ -257,7 +284,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
         if (closed) _stage = _BlinkStage.waitingReopen;
         break;
       case _BlinkStage.waitingReopen:
-        if (open) _capture();
+        if (open) _capture(frame);
         break;
     }
   }
@@ -323,18 +350,35 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
     return out;
   }
 
-  Future<void> _capture() async {
+  /// Captures the selfie once the blink is confirmed.
+  ///
+  /// Android: the photo is built from [frame], the exact frame in which the
+  /// eyes reopened (no `takePicture`). On the Android camera plugin,
+  /// `stopImageStream` + `takePicture` races the capture-session rebuild and
+  /// crashes natively on many devices; this path never touches the session.
+  /// It is also stronger liveness: the saved photo is the verified frame.
+  ///
+  /// iOS: AVFoundation takes pictures reliably while streaming, so the
+  /// native full-quality capture is kept.
+  Future<void> _capture(CameraImage frame) async {
     final camera = _camera;
-    if (_isCapturing || camera == null) return;
+    if (_isCapturing || camera == null || _capturedPath != null) return;
     _isCapturing = true;
     _setStatus("Hold still…", _ok);
 
     try {
-      if (camera.value.isStreamingImages) await camera.stopImageStream();
-      final photo = await camera.takePicture();
-      if (!mounted) return;
+      final String path;
+      if (Platform.isAndroid) {
+        path = await _saveFrameAsJpeg(
+          frame,
+          _frontCamera?.sensorOrientation ?? 0,
+        );
+      } else {
+        path = (await camera.takePicture()).path;
+      }
+      if (!mounted || _disposed) return;
       setState(() {
-        _capturedPath = photo.path;
+        _capturedPath = path;
         _status = "Captured ✓";
         _statusColor = _ok;
       });
@@ -342,16 +386,42 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
       await _releaseCamera();
     } catch (e) {
       debugPrint("Attendance capture failed: $e");
+      if (!mounted || _disposed) return;
       _resetBlink();
-      try {
-        if (_camera != null && !_camera!.value.isStreamingImages) {
-          await _camera!.startImageStream(_processFrame);
-        }
-      } catch (_) {}
       _setStatus("Couldn't capture. Blink again to retry", _error);
     } finally {
       _isCapturing = false;
     }
+  }
+
+  /// Converts a stream frame to an upright JPEG on a background isolate and
+  /// writes it to the temp directory.
+  Future<String> _saveFrameAsJpeg(CameraImage frame, int rotation) async {
+    final Uint8List bytes;
+    final int bytesPerRow;
+    if (frame.planes.length == 1) {
+      bytes = Uint8List.fromList(frame.planes.first.bytes);
+      bytesPerRow = frame.planes.first.bytesPerRow;
+    } else {
+      bytes = _yuv420ToNv21(frame);
+      bytesPerRow = frame.width;
+    }
+    final jpeg = await compute(
+      encodeAttendanceFrame,
+      AttendanceFramePayload(
+        bytes: bytes,
+        width: frame.width,
+        height: frame.height,
+        bytesPerRow: bytesPerRow,
+        rotation: rotation,
+      ),
+    );
+    final dir = await getTemporaryDirectory();
+    final file = File(
+      "${dir.path}/attendance_${DateTime.now().millisecondsSinceEpoch}.jpg",
+    );
+    await file.writeAsBytes(jpeg, flush: true);
+    return file.path;
   }
 
   Future<void> _retake() async {

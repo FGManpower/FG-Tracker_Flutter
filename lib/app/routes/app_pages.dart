@@ -49,6 +49,9 @@ import '../modules/mediaStream/Views/Group/group_calling_screen.dart';
 import '../modules/mediaStream/Views/Group/group_incoming_call_screen.dart';
 import '../modules/OtpCharges/Binding/otp_charges_binding.dart';
 import '../modules/OtpCharges/Views/otp_charges_view.dart';
+import '../modules/PackagePricing/Binding/package_pricing_binding.dart';
+import '../modules/PackagePricing/Views/package_list_view.dart';
+import '../modules/PackagePricing/Views/package_plan_details_view.dart';
 import '../modules/sos/SosBinding.dart';
 import '../modules/sos/sos_screen.dart';
 
@@ -328,6 +331,20 @@ class AppPages {
       name: Routes.OTP_CHARGES,
       page: () => const OtpChargesView(),
       binding: OtpChargesBinding(),
+    ),
+    GetPage(
+      name: Routes.packagePricing,
+      page: () => const PackageListView(),
+      binding: PackageListBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.packagePlanDetails,
+      page: () => const PackagePlanDetailsView(),
+      binding: PackagePlanDetailsBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
     ),
   ];
 }

@@ -6,6 +6,7 @@ import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
 import '../../../Core/values/global.dart';
 import '../../../Data/Repositories/GetMessageRepo.dart';
+import '../../../Data/Services/active_chat_tracker.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
@@ -269,6 +270,57 @@ class ChatListController extends GetxController {
     }
   }
 
+  bool _isGroupChat(PrivateChatModel c) =>
+      c.isGroup == true || c.chatType == "group" || c.groupId != null;
+
+  /// True when this chat is open on screen right now.
+  bool _isViewingChat(PrivateChatModel c) => _isGroupChat(c)
+      ? ActiveChatTracker.isViewing(isGroup: true, groupId: c.groupId ?? c.id)
+      : ActiveChatTracker.isViewing(
+          chatId: c.chatId ?? c.conversationId ?? c.id,
+          peerUserId: c.userId,
+        );
+
+  /// Called when a chat screen closes: everything in it was read, so drop its
+  /// unread badge locally (the read was also sent to the server).
+  void clearUnreadForOpenedChat({
+    bool isGroup = false,
+    dynamic groupId,
+    dynamic chatId,
+    dynamic peerUserId,
+  }) {
+    String? s(dynamic v) {
+      final str = v?.toString().trim();
+      return (str == null || str.isEmpty || str == 'null') ? null : str;
+    }
+
+    var changed = false;
+    for (final c in privateChats) {
+      final bool match;
+      if (isGroup) {
+        match = _isGroupChat(c) &&
+            s(groupId) != null &&
+            s(c.groupId ?? c.id) == s(groupId);
+      } else {
+        match = !_isGroupChat(c) &&
+            ((s(chatId) != null &&
+                    s(c.chatId ?? c.conversationId ?? c.id) == s(chatId)) ||
+                (s(peerUserId) != null && s(c.userId) == s(peerUserId)));
+      }
+      final unread = c.unreadCount ?? 0;
+      if (match && unread > 0) {
+        unreadTotalCount.value =
+            (unreadTotalCount.value - unread).clamp(0, 999999).toInt();
+        c.unreadCount = 0;
+        changed = true;
+      }
+    }
+    if (changed) {
+      privateChats.refresh();
+      _syncChattingNotificationMarker();
+    }
+  }
+
   bool _isSameChat(PrivateChatModel a, PrivateChatModel b) {
     final aIsGroup = a.isGroup == true || a.chatType == "group" || a.groupId != null;
     final bIsGroup = b.isGroup == true || b.chatType == "group" || b.groupId != null;
@@ -341,6 +393,12 @@ class ChatListController extends GetxController {
         final hasValidName = name != null && name.isNotEmpty && name != "Unknown User";
         return hasMsg && hasValidName;
       }).toList();
+
+      for (final chat in chats) {
+        if ((chat.unreadCount ?? 0) > 0 && _isViewingChat(chat)) {
+          chat.unreadCount = 0;
+        }
+      }
 
       final chatsUnreadSum = chats.fold<int>(
         0,
@@ -583,6 +641,12 @@ class ChatListController extends GetxController {
         return hasMsg && hasValidName;
       }).toList();
 
+      for (final chat in chats) {
+        if ((chat.unreadCount ?? 0) > 0 && _isViewingChat(chat)) {
+          chat.unreadCount = 0;
+        }
+      }
+
       final chatsUnreadSum = chats.fold<int>(
         0,
         (sum, chat) => sum + (chat.unreadCount ?? 0),
@@ -735,6 +799,12 @@ class ChatListController extends GetxController {
           updatedChat.userId == null &&
           updatedChat.groupId == null) {
         return;
+      }
+
+      // The user is reading this chat right now: a new message there is
+      // already read (the chat screen sends the read to the server).
+      if ((updatedChat.unreadCount ?? 0) > 0 && _isViewingChat(updatedChat)) {
+        updatedChat.unreadCount = 0;
       }
 
       final index =
