@@ -28,7 +28,7 @@ String _myId() =>
 /// True when [userId] is the logged-in user.
 bool isMyUserId(dynamic userId) => userId?.toString().trim() == _myId();
 
-/// Returns a cleaned user id, or '' when it is missing / invalid.
+
 String _cleanId(dynamic userId) {
   final String uid = userId?.toString().trim() ?? '';
   if (uid.isEmpty || uid == 'null' || uid == '0') return '';
@@ -51,12 +51,7 @@ String profileImageUrl(String? raw) {
   return '$base/${v.replaceFirst(RegExp(r'^/+'), '')}';
 }
 
-/// Common entry point to open another user's profile (UserProfileScreen).
-///
-/// UserProfileScreen loads its data by the private chatId, so this resolves
-/// the chatId for [userId] when it is not passed. If none is found it passes 0
-/// so the screen shows the given details instead of falling back to whatever
-/// chat the MessageController currently holds (which could be another user).
+
 void openUserProfile({
   required dynamic userId,
   String? name,
@@ -155,8 +150,7 @@ Future<void> openGroupChat({
       groupCode = matched.groupCode ?? '';
       isCreator = (matched.isCreator ?? false).toString();
       isActive = (matched.isActive ?? true).toString();
-      if (profileImageUrl(profileImg).isEmpty &&
-          matched.groupProfile != null) {
+      if (profileImageUrl(profileImg).isEmpty && matched.groupProfile != null) {
         profileImg = matched.groupProfile!;
       }
     }
@@ -206,8 +200,6 @@ void startUserCall({
   );
 }
 
-/// Tap on any user's photo: big photo + Message / Call / Video / Info.
-/// Pass [showMessage] false when already inside that user's chat.
 void showUserQuickProfile({
   required dynamic userId,
   String? name,
@@ -283,7 +275,6 @@ void startGroupCallWith({
   );
 }
 
-
 void showGroupQuickProfile({
   required dynamic groupId,
   String? groupName,
@@ -311,24 +302,23 @@ void showGroupQuickProfile({
               groupName: name,
               groupProfile: groupProfile,
             ),
-    onAudioCall: () => startGroupCallWith(
-      groupId: gId,
-      groupName: name,
-      groupProfile: groupProfile,
-      memberCount: memberCount,
-      isVideo: false,
-    ),
-    onVideoCall: () => startGroupCallWith(
-      groupId: gId,
-      groupName: name,
-      groupProfile: groupProfile,
-      memberCount: memberCount,
-      isVideo: true,
-    ),
+    // onAudioCall: () => startGroupCallWith(
+    //   groupId: gId,
+    //   groupName: name,
+    //   groupProfile: groupProfile,
+    //   memberCount: memberCount,
+    //   isVideo: false,
+    // ),
+    // onVideoCall: () => startGroupCallWith(
+    //   groupId: gId,
+    //   groupName: name,
+    //   groupProfile: groupProfile,
+    //   memberCount: memberCount,
+    //   isVideo: true,
+    // ),
     onInfo: onInfo,
   );
 }
-
 
 void showProfilePhotoPreview({
   required String name,
@@ -362,8 +352,8 @@ void showProfilePhotoPreview({
 
   final actions = <Widget>[
     if (onMessage != null) action(Icons.chat_bubble_outline, onMessage),
-    // if (onAudioCall != null) action(Icons.call_outlined, onAudioCall),
-    // if (onVideoCall != null) action(Icons.videocam_outlined, onVideoCall),
+    if (onAudioCall != null) action(Icons.call_outlined, onAudioCall),
+    if (onVideoCall != null) action(Icons.videocam_outlined, onVideoCall),
     if (onInfo != null) action(Icons.info_outline_rounded, onInfo),
   ];
 
@@ -396,8 +386,7 @@ void showProfilePhotoPreview({
                     onTap: hasImage
                         ? () {
                             Get.back();
-                            showFullScreenPhoto(
-                                name: name, imageUrl: imageUrl);
+                            showFullScreenPhoto(name: name, imageUrl: imageUrl);
                           }
                         : null,
                     child: SizedBox(
@@ -474,7 +463,6 @@ void showProfilePhotoPreview({
     ),
   );
 }
-
 
 void showFullScreenPhoto({required String name, required String imageUrl}) {
   Get.to(
