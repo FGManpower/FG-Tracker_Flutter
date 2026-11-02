@@ -950,8 +950,10 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
       bool comingSoon = false,
     }) {
       final mutedColor = const Color(0xFF94A3B8);
-      return Obx(
-        () => Container(
+      // A "coming soon" row never reads [value], and an Obx without any
+      // observable read throws GetX's "improper use" error, so only live
+      // rows are wrapped in Obx.
+      Widget buildRow(bool current) => Container(
           margin: EdgeInsets.only(top: 8.h),
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
           decoration: BoxDecoration(
@@ -1022,7 +1024,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                 ),
               ),
               Switch(
-                value: comingSoon ? false : value.value,
+                value: current,
                 activeThumbColor: Colors.white,
                 activeTrackColor: const Color(0xFF5A3EFE),
                 // null disables the switch (greyed out, not tappable).
@@ -1030,8 +1032,10 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
               ),
             ],
           ),
-        ),
-      );
+        );
+
+      if (comingSoon) return buildRow(false);
+      return Obx(() => buildRow(value.value));
     }
 
     return Container(
