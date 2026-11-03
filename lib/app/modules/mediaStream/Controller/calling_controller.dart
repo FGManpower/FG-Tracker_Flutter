@@ -80,6 +80,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   bool _hasExitedScreen = false;
   bool _remoteEndSent = false;
   bool _callKitConnectedSent = false;
+  bool _callKitAudioHandoverDone = false;
   bool _audioRouteRestored = false;
   bool _renegotiating = false;
   bool _pendingRenegotiation = false;
@@ -966,6 +967,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await _stopForegroundCallService();
 
       if (sessionId.isNotEmpty) {
+        CallKitService.clearAudioHandover(
+          sessionId,
+          callId: callId?.toString() ?? '',
+        );
         await CallKitService.dismiss(sessionId);
         try {
           await callEnded(sessionId, type: "CallCleanedUp");
@@ -1171,6 +1176,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
 
       if (!_callKitConnectedSent &&
+          !_callKitAudioHandoverDone &&
           (fromCallKit || args["callType"] == "Incoming")) {
         _callKitConnectedSent = true;
         unawaited(CallKitService.setConnected(_sessionId));
@@ -1548,6 +1554,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await audioRouteController.stopCall();
 
       if (sessionId.isNotEmpty) {
+        CallKitService.clearAudioHandover(
+          sessionId,
+          callId: callId?.toString() ?? '',
+        );
         await CallKitService.dismiss(sessionId);
         await callEnded(sessionId, type: "missedCallFromSocket");
       }
@@ -2138,6 +2148,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     };
 
     await audioRouteController.prepareCall(isVideo: is_video == true);
+    // unawaited(startCallForegroundService());
 
     localStream = await navigator.mediaDevices.getUserMedia({
       'audio': {
@@ -2218,6 +2229,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         "callerId": callerId,
         "sdpAnswer": answer.toMap(),
       });
+      unawaited(_handoverCallKitAudio());
     } else if (fromCallKit ||
         (args["callType"] == "Incoming" && offer == null)) {
       callStatus.value = "Connecting...";
@@ -2228,6 +2240,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         "receiverId": Global.storageServices.get(PrefConst.userId),
       };
       socket!.emit("acceptCallFromCallKit", acceptPayload);
+      unawaited(_handoverCallKitAudio());
     } else {
       pc.onIceCandidate = (c) => iceCandidates.add(c);
 
@@ -2296,6 +2309,47 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _handoverCallKitAudio() async {
+    if (_callKitAudioHandoverDone) return;
+    if (!(fromCallKit || args["callType"] == "Incoming")) return;
+
+    if (defaultTargetPlatform != TargetPlatform.android) return;
+
+    _callKitAudioHandoverDone = true;
+
+    final String sid =
+        _sessionId.isNotEmpty ? _sessionId : (callId?.toString() ?? '');
+    if (sid.isEmpty) return;
+
+    bool done = false;
+    for (int attempt = 1; attempt <= 5 && !done; attempt++) {
+      try {
+        done = await CallKitService.releaseAudioOwnership(
+          sid,
+          callId: callId?.toString() ?? '',
+        );
+        log("[Call] CallKit handover attempt=$attempt done=$done sid=$sid");
+      } catch (e) {
+        log("[Call] CallKit handover attempt=$attempt error: $e");
+      }
+      if (!done) {
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+      }
+    }
+
+    if (isClosed || _isCleaningUp) return;
+
+    try {
+      await audioRouteController.reapplyCurrentRoute();
+      log(
+        "[Call] route re-asserted after handover "
+        "route=${audioRouteController.currentRoute.value}",
+      );
+    } catch (e) {
+      log("[Call] route re-assert after handover error: $e");
+    }
+  }
+
   Future<void> endCall({String? type}) async {
     if (_isCleaningUp) return;
     _isCleaningUp = true;
@@ -2316,6 +2370,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await _stopForegroundCallService();
 
       if (sid.isNotEmpty) {
+        CallKitService.clearAudioHandover(
+          sid,
+          callId: callId?.toString() ?? '',
+        );
         await CallKitService.dismiss(sid);
         await callEnded(
           sid,
@@ -2536,19 +2594,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   void stopSound() {
     FlutterRingtonePlayer().stop();
-  }
-
-  Future<void> startAudioCall() async {
-    await WakelockPlus.enable();
-
-    if (!audioRouteController.isBluetoothConnected.value) {
-      await ProximityScreenLock.setActive(true);
-    }
-  }
-
-  Future<void> endAudioCall() async {
-    await WakelockPlus.disable();
-    await ProximityScreenLock.setActive(false);
   }
 
   void updatePipPosition({

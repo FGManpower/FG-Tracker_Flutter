@@ -21,6 +21,7 @@ void _ck(String msg) {
 
 class CallKitService with WidgetsBindingObserver {
   CallKitService._();
+
   static final instance = CallKitService._();
 
   StreamSubscription? _sub;
@@ -47,6 +48,26 @@ class CallKitService with WidgetsBindingObserver {
   static final Map<String, DateTime> _shown = {};
 
   static final Map<String, String> _uuidByKey = {};
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // NEW: audio ownership handover (Android Telecom / ConnectionService)
+  // ───────────────────────────────────────────────────────────────────────────
+  // Incoming call par flutter_callkit_incoming ek self-managed ConnectionService
+  // call banata hai. Jab tak wo call zinda hai, Android Telecom audio route ka
+  // owner hota hai (default = earpiece) aur app ki koi bhi route request
+  // (setSpeakerphoneOn / setCommunicationDevice) ignore ho jati hai.
+  // Isi liye "call receive karne par speaker kaam nahi karta, khud call karne
+  // par karta hai".
+  //
+  // In-app call screen jab media sambhal le, tab CallKit call ko end kar dete
+  // hain -> Telecom ka route client hat jata hai -> flutter_webrtc ka
+  // AudioSwitch asli owner ban jata hai. Call zinda rehti hai kyunki dismiss()
+  // `_selfEnded` me id daal deta hai, jisse aane wala `actionCallEnded` event
+  // ignore ho jata hai (onEndCall fire nahi hota).
+  static final Set<String> _audioHandover = {};
+
+  static bool isAudioHandoverActive(String sessionId) =>
+      _audioHandover.contains(sessionId);
 
   static const Set<String> _socketEndEvents = {
     'callEnded',
@@ -210,14 +231,12 @@ class CallKitService with WidgetsBindingObserver {
       final ckpExtra = _asMap(_field(ckp, 'extra'));
       if (ckpExtra.isNotEmpty) {
         result['extra'] = ckpExtra;
-        final cid =
-            ckpExtra['callId']?.toString() ??
-                ckpExtra['call_id']?.toString() ??
-                '';
+        final cid = ckpExtra['callId']?.toString() ??
+            ckpExtra['call_id']?.toString() ??
+            '';
         if (cid.isNotEmpty) result['callId'] = cid;
-        final sid =
-            ckpExtra['session_id']?.toString() ??
-                ckpExtra['sessionId']?.toString();
+        final sid = ckpExtra['session_id']?.toString() ??
+            ckpExtra['sessionId']?.toString();
         if (sid != null && sid.isNotEmpty) {
           result['sessionId'] = sid;
           result['uuid'] ??= sid;
@@ -280,9 +299,8 @@ class CallKitService with WidgetsBindingObserver {
         String callId = '',
       }) async {
     final targetUuid = _uuidByKey[sessionId] ?? sessionId;
-    final targetCallUuid = callId.isNotEmpty
-        ? (_uuidByKey[callId] ?? callId)
-        : '';
+    final targetCallUuid =
+    callId.isNotEmpty ? (_uuidByKey[callId] ?? callId) : '';
     try {
       final calls = await FlutterCallkitIncoming.activeCalls();
       if (calls is List) {
@@ -345,9 +363,8 @@ class CallKitService with WidgetsBindingObserver {
 
     await _recoverAcceptedCall();
 
-    unawaited(postInitBackgroundTasks(
-      skipPermissions: true,
-    ));  }
+    unawaited(postInitBackgroundTasks(skipPermissions: true));
+  }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -403,10 +420,9 @@ class CallKitService with WidgetsBindingObserver {
         final uuid = _field(c, 'id')?.toString();
         if (uuid == null || _accepted.contains(uuid)) continue;
         final extra = _asMap(_field(c, 'extra'));
-        final sessionId =
-            extra['session_id']?.toString() ??
-                extra['sessionId']?.toString() ??
-                uuid;
+        final sessionId = extra['session_id']?.toString() ??
+            extra['sessionId']?.toString() ??
+            uuid;
         final callId =
             extra['callId']?.toString() ?? extra['call_id']?.toString() ?? '';
         _registerUuidMapping(uuid: uuid, sessionId: sessionId, callId: callId);
@@ -424,8 +440,7 @@ class CallKitService with WidgetsBindingObserver {
   static Future<dynamic> _onCallkitEvent(MethodCall call) async {
     if (call.method != 'recentsCallback') return null;
     final Map<String, dynamic> args =
-        (call.arguments as Map?)?.cast<String, dynamic>() ??
-            <String, dynamic>{};
+        (call.arguments as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
     final String handle = args['handle']?.toString() ?? '';
     final bool isVideo = args['isVideo'] == true;
     _ck('recentsCallback from CallKit handle=$handle isVideo=$isVideo');
@@ -527,6 +542,14 @@ class CallKitService with WidgetsBindingObserver {
   }) async {
     final id = sessionId;
 
+    // NEW: in-app call already is call ka audio sambhal raha hai -> dobara
+    // Telecom connection khada karne ka matlab hoga speaker phir se toot jaye.
+    if (_audioHandover.contains(id) ||
+        (callId.isNotEmpty && _audioHandover.contains(callId))) {
+      _ck('showIncoming SKIPPED (audio handover active) sessionId=$id');
+      return;
+    }
+
     final last = _shown[id];
     if (_showing.contains(id) ||
         (last != null && DateTime.now().difference(last).inSeconds < 60)) {
@@ -613,9 +636,8 @@ class CallKitService with WidgetsBindingObserver {
     final resolvedUuid = sessionId.isNotEmpty
         ? (_uuidByKey.remove(sessionId) ?? sessionId)
         : '';
-    final resolvedCallUuid = callId.isNotEmpty
-        ? (_uuidByKey.remove(callId) ?? callId)
-        : '';
+    final resolvedCallUuid =
+    callId.isNotEmpty ? (_uuidByKey.remove(callId) ?? callId) : '';
 
     final lookupKeys = <String>{
       if (sessionId.isNotEmpty) sessionId,
@@ -640,10 +662,9 @@ class CallKitService with WidgetsBindingObserver {
           final activeId = _field(c, 'id')?.toString() ?? '';
           final isAccepted = _field(c, 'isAccepted') == true;
           final extra = _asMap(_field(c, 'extra'));
-          final sid =
-              extra['session_id']?.toString() ??
-                  extra['sessionId']?.toString() ??
-                  '';
+          final sid = extra['session_id']?.toString() ??
+              extra['sessionId']?.toString() ??
+              '';
           final cid =
               extra['callId']?.toString() ?? extra['call_id']?.toString() ?? '';
 
@@ -653,9 +674,8 @@ class CallKitService with WidgetsBindingObserver {
             if (cid.isNotEmpty) cid,
           };
 
-          final isMatch = activeIdentifiers.any(
-                (id) => lookupKeys.contains(id),
-          );
+          final isMatch =
+          activeIdentifiers.any((id) => lookupKeys.contains(id));
 
           if (isMatch) {
             matchedActiveCall = true;
@@ -689,7 +709,9 @@ class CallKitService with WidgetsBindingObserver {
     for (final target in idsToEnd) {
       if (target.isEmpty) continue;
       _selfEnded.add(target);
-      Timer(const Duration(seconds: 10), () => _selfEnded.remove(target));
+      // R80: 10s -> 60s. Slow cold start par actionCallEnded late aata hai;
+      // suppression khatam hone par onEndCall fire ho kar call cut kar deta tha.
+      Timer(const Duration(seconds: 60), () => _selfEnded.remove(target));
       _accepted.remove(target);
       _shown.remove(target);
       try {
@@ -702,7 +724,6 @@ class CallKitService with WidgetsBindingObserver {
       } catch (e) {
         _ck('dismiss error for $target: $e');
       }
-
     }
 
     if (endAllUnaccepted &&
@@ -712,7 +733,6 @@ class CallKitService with WidgetsBindingObserver {
       _shown.clear();
       try {
         await FlutterCallkitIncoming.endAllCalls();
-
       } catch (e) {
         _ck('dismiss endAllCalls fallback error: $e');
       }
@@ -768,6 +788,87 @@ class CallKitService with WidgetsBindingObserver {
     }
   }
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // NEW: Android audio ownership handover
+  // ───────────────────────────────────────────────────────────────────────────
+  /// In-app call screen ne audio sambhal liya. Telecom (self-managed
+  /// ConnectionService) ka route client hata do, warna speaker/earpiece ki
+  /// saari requests ignore hoti rahengi.
+  ///
+  /// Ye `dismiss()` ko reuse karta hai — matlab `_selfEnded` suppression +
+  /// `hideCallkitIncoming` + `endCall` sab already tested path se hota hai,
+  /// aur `actionCallEnded` aane par `onEndCall` fire NAHI hoga (call zinda
+  /// rahegi).
+  ///
+  /// iOS par ye kuch nahi karta: wahan AVAudioSession app ke control me hota
+  /// hai, CallKit route override nahi karta — aur CallKit call end karne se
+  /// audio session bekaar me disturb hota hai.
+  ///
+  /// R80: `Future<bool>` return karta hai — `true` = Telecom route client hat
+  /// gaya (ya pehle hi hat chuka tha), `false` = abhi koi active CallKit call
+  /// nahi mili (caller retry karega).
+  static Future<bool> releaseAudioOwnership(
+      String sessionId, {
+        String callId = '',
+      }) async {
+    if (!Platform.isAndroid) return false;
+    if (sessionId.isEmpty && callId.isEmpty) return false;
+
+    final id = sessionId.isNotEmpty ? sessionId : callId;
+    if (_audioHandover.contains(id)) {
+      _ck('releaseAudioOwnership SKIPPED (already handed over) id=$id');
+      return true;
+    }
+
+    // Sirf tab karo jab wakai koi CallKit/Telecom call active ho.
+    bool hasActive = false;
+    try {
+      final calls = await FlutterCallkitIncoming.activeCalls();
+      if (calls is List) {
+        for (final c in calls) {
+          final activeId = _field(c, 'id')?.toString() ?? '';
+          final extra = _asMap(_field(c, 'extra'));
+          final sid = extra['session_id']?.toString() ??
+              extra['sessionId']?.toString() ??
+              '';
+          final cid =
+              extra['callId']?.toString() ?? extra['call_id']?.toString() ?? '';
+          if (activeId == id ||
+              activeId == sessionId ||
+              sid == sessionId ||
+              (callId.isNotEmpty && cid == callId)) {
+            hasActive = true;
+            break;
+          }
+        }
+      }
+    } catch (_) {}
+
+    if (!hasActive) {
+      _ck('releaseAudioOwnership: no active CallKit call for id=$id (retry)');
+      return false;
+    }
+
+    _audioHandover.add(id);
+    if (callId.isNotEmpty) _audioHandover.add(callId);
+    // safety TTL — call ke baad set saaf ho jaye
+    Timer(const Duration(minutes: 10), () {
+      _audioHandover.remove(id);
+      if (callId.isNotEmpty) _audioHandover.remove(callId);
+    });
+
+    _ck('releaseAudioOwnership id=$id callId=$callId -> ending Telecom call');
+    await dismiss(id, callId: callId);
+    _ck('releaseAudioOwnership done id=$id (Telecom route released)');
+    return true;
+  }
+
+  /// Call khatam hone par handover flag saaf karo (controller cleanup se).
+  static void clearAudioHandover(String sessionId, {String callId = ''}) {
+    _audioHandover.remove(sessionId);
+    if (callId.isNotEmpty) _audioHandover.remove(callId);
+  }
+
   static Future<void> setConnected(String sessionId) async {
     if (sessionId.isEmpty) return;
     final targetUuid = _uuidByKey[sessionId] ?? sessionId;
@@ -783,8 +884,7 @@ class CallKitService with WidgetsBindingObserver {
     _ck('handlePush screen=$screen keys=${d.keys.toList()}');
     final cd = decodeCallData(d['callData']);
 
-    final sessionId =
-    (d['session_id'] ??
+    final sessionId = (d['session_id'] ??
         d['sessionId'] ??
         cd['session_id'] ??
         cd['sessionId'] ??
@@ -820,8 +920,8 @@ class CallKitService with WidgetsBindingObserver {
       case 'groupCallEnded':
       case 'missedCall':
       case 'missedGroupCall':
-        final endTarget = (d['session_id'] ?? d['sessionId'] ?? sessionId)
-            .toString();
+        final endTarget =
+        (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
         await dismiss(
           endTarget.isNotEmpty ? endTarget : callId,
           callId: callId,
@@ -831,8 +931,8 @@ class CallKitService with WidgetsBindingObserver {
     }
 
     if (d['signal_type'] == 'endCall') {
-      final endTarget = (d['session_id'] ?? d['sessionId'] ?? sessionId)
-          .toString();
+      final endTarget =
+      (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
       await dismiss(
         endTarget.isNotEmpty ? endTarget : callId,
         callId: callId,
@@ -848,8 +948,7 @@ class CallKitService with WidgetsBindingObserver {
   static MapEntry<String, String> _extractEndIds(dynamic data) {
     final m = _asMap(data);
     final cd = decodeCallData(m['callData']);
-    final sessionId =
-    (m['session_id'] ??
+    final sessionId = (m['session_id'] ??
         m['sessionId'] ??
         cd['session_id'] ??
         cd['sessionId'] ??
@@ -869,8 +968,7 @@ class CallKitService with WidgetsBindingObserver {
 
     final m = _asMap(data);
     final cd = decodeCallData(m['callData']);
-    final sessionId =
-    (m['session_id'] ??
+    final sessionId = (m['session_id'] ??
         m['sessionId'] ??
         cd['session_id'] ??
         cd['sessionId'] ??
@@ -882,8 +980,8 @@ class CallKitService with WidgetsBindingObserver {
     showIncoming(
       sessionId: incomingId,
       callId: callId,
-      callerName: (m['caller_name'] ?? cd['callerName'] ?? 'Unknown')
-          .toString(),
+      callerName:
+      (m['caller_name'] ?? cd['callerName'] ?? 'Unknown').toString(),
       isVideo: m['isVideo'].toString() == "true" ? true : false,
       avatar: (m['caller_profile_image'] ?? cd['callerProfileImage'] ?? '')
           .toString(),
@@ -903,8 +1001,6 @@ class CallKitService with WidgetsBindingObserver {
       callId: callId,
       endAllUnaccepted: true,
     );
-
-
   };
 
   late final void Function(dynamic) _hMissed = (data) {
@@ -921,10 +1017,8 @@ class CallKitService with WidgetsBindingObserver {
 
   late final void Function(dynamic) _hStatus = (data) {
     final m = _asMap(data);
-    final status = (m['status'] ?? m['callingStatus'] ?? '')
-        .toString()
-        .trim()
-        .toLowerCase();
+    final status =
+    (m['status'] ?? m['callingStatus'] ?? '').toString().trim().toLowerCase();
     if (!_terminalStatuses.contains(status)) return;
     final ids = _extractEndIds(data);
     final sessionId = ids.key;
@@ -1085,9 +1179,8 @@ class CallKitService with WidgetsBindingObserver {
             sessionId: sessionId,
             callId: callId,
           );
-          final selfEndedAllRecent =
-              _selfEndedAllAt != null &&
-                  DateTime.now().difference(_selfEndedAllAt!).inSeconds < 5;
+          final selfEndedAllRecent = _selfEndedAllAt != null &&
+              DateTime.now().difference(_selfEndedAllAt!).inSeconds < 5;
           if (selfEndedAllRecent ||
               (uuid != null && _selfEnded.remove(uuid)) ||
               (sessionId.isNotEmpty && _selfEnded.remove(sessionId))) {
@@ -1144,16 +1237,14 @@ class CallKitService with WidgetsBindingObserver {
           }
           final fallbackExtra = _asMap(_field(pick, 'extra'));
           extra.addAll(fallbackExtra);
-          final cid =
-              fallbackExtra['callId']?.toString() ??
-                  fallbackExtra['call_id']?.toString() ??
-                  '';
+          final cid = fallbackExtra['callId']?.toString() ??
+              fallbackExtra['call_id']?.toString() ??
+              '';
           if (cid.isNotEmpty) callId = cid;
-          final sid =
-              fallbackExtra['session_id']?.toString() ??
-                  fallbackExtra['sessionId']?.toString() ??
-                  id ??
-                  '';
+          final sid = fallbackExtra['session_id']?.toString() ??
+              fallbackExtra['sessionId']?.toString() ??
+              id ??
+              '';
           if (sid.isNotEmpty) resolvedSessionId = sid;
         }
       } catch (e) {
