@@ -30,7 +30,6 @@ class CallService {
       arguments: arg,
     );
 
-    // Call se wapas aate hi contacts silently refresh (search filter same rahega)
     if (Get.isRegistered<ContactController>()) {
       ContactController.instance.silentRefresh(force: true);
     }
