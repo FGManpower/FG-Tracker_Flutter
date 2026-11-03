@@ -21,6 +21,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/app/Data/Services/PermissionGate/permission_gate_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -243,6 +244,24 @@ Future<void> main() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   await firebaseNotificationServices().initialized();
+
+  // Compulsory permissions gate (Location Always + Notification). Flags are
+  // prefetched from Remote Config while the splash animates.
+  Get.put<PermissionGateService>(
+    PermissionGateService(
+      onNotificationGranted: () async {
+        // Token is unchanged by the permission, but refresh the cached copy
+        // (and APNs on iOS) so it is ready the moment notifications work.
+        await firebaseNotificationServices.getDeviceTokenToSendNotification();
+        if (GetPlatform.isIOS) {
+          await FirebaseMessaging.instance.getAPNSToken();
+        }
+      },
+    ),
+    permanent: true,
+  );
+  unawaited(PermissionGateService.to.loadFlags());
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );

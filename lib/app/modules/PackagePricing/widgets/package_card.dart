@@ -110,7 +110,10 @@ class PackageCard extends StatelessWidget {
             ),
             if (item.badge != null) ...[
               SizedBox(width: 6.w),
-              PackagePill(text: item.badge!, color: style.color),
+              // Flexible so a long badge truncates instead of overflowing
+              Flexible(
+                child: PackagePill(text: item.badge!, color: style.color),
+              ),
             ],
           ],
         ),

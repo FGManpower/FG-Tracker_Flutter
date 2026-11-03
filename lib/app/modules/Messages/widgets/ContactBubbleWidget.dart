@@ -109,7 +109,10 @@ class ContactBubbleWidget extends StatelessWidget {
   }
 
   Future<void> _call(ContactMessage contact) async {
-    final uri = Uri.parse("tel:${contact.phone}");
+    // Spaces/dashes from the address book make an invalid tel: URI.
+    final phone = contact.phone.replaceAll(RegExp(r'[^0-9+*#]'), "");
+    if (phone.isEmpty) return;
+    final uri = Uri(scheme: "tel", path: phone);
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);

@@ -8,6 +8,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
@@ -29,6 +30,7 @@ import '../../../Data/Services/chat_translation_service.dart';
 import '../../../Data/Services/active_chat_tracker.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'chat_list_controller.dart';
+import 'chat_screen_logic.dart';
 
 void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
   if (kDebugMode) {
@@ -229,6 +231,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     // Everything shown in this chat has been read: send it once more (covers
     // a pending debounce) and clear the list badge locally.
     _markReadTimer?.cancel();
+    _joinTimeout?.cancel();
     final peerId = _privatePeerId;
     if (peerId != null) {
       if (ActiveChatTracker.isAppInForeground) _emitPrivateRead();
@@ -260,7 +263,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         receiverId: receiverId,
       );
     }
-    socketService.clearPrivateChatListeners();
+    socketService.releasePrivateChatEvents(this);
     super.onClose();
   }
 
@@ -293,14 +296,25 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
     if (state == AppLifecycleState.resumed) {
       if (_markReadPending) _emitPrivateRead();
+      // Messages may have arrived while the app was in the background.
+      syncNewerMessages();
       final picker = ImagePicker();
       try {
         final LostDataResponse response = await picker.retrieveLostData();
-        if (!response.isEmpty && response.file != null) {
-          final file = File(response.file!.path);
-          if (await file.exists()) {
-            debugPrint("Recovered lost video: ${file.path}");
-            await addVideo(file.path);
+        if (!response.isEmpty && response.files != null) {
+          // Android may kill the activity while the picker is open; restore
+          // what was picked as the right kind (it used to always be video).
+          for (final picked in response.files!) {
+            final file = File(picked.path);
+            if (!await file.exists()) continue;
+            final isVideo = response.type == RetrieveType.video ||
+                RegExp(r'\.(mp4|mov|mkv|3gp|webm|avi)$', caseSensitive: false)
+                    .hasMatch(file.path);
+            if (isVideo) {
+              await addVideo(file.path);
+            } else if (!imagePaths.any((f) => f.path == file.path)) {
+              imagePaths.add(file);
+            }
           }
         } else if (response.exception != null) {
           debugPrint("Lost data exception: ${response.exception}");
@@ -436,9 +450,18 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> scrollToMessage(int messageId) async {
-    final index = _messages.indexWhere((e) => e.id == messageId);
+    var index = _messages.indexWhere((e) => e.id == messageId);
 
-    if (index == -1 || !itemScrollController.isAttached) return;
+    if (index == -1) {
+      // Original not loaded yet (reply to an old message): page back.
+      index = await _loadOlderUntilFound(messageId);
+      if (index == -1) {
+        if (!isClosed) Utils().fluttertoast("Message not available");
+        return;
+      }
+    }
+
+    if (!itemScrollController.isAttached) return;
 
     highlightedMessageId.value = messageId;
 
@@ -467,11 +490,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     final receiverId = memberData.userId.toString();
 
-    final bool isPrivateChat = arguments?['type'] == 'chatScreen' ||
-        arguments?['chatType'] == 'private' ||
-        arguments?['groupId'] == 0 ||
-        memberData.groupId == null ||
-        memberData.groupId == 0;
+    // This route is always a one-to-one chat (groups use GroupChatScreen).
+    // It used to be inferred from `type`/`groupId`, so opening a member from
+    // Group > Members or Search Members (type "", member's real groupId)
+    // fell into an empty branch: no history, no socket, an empty chat.
+    final bool isPrivateChat = arguments?['chatType']?.toString() != 'group';
 
     log("=================================");
     log("CHAT TYPE => ${isPrivateChat ? 'PRIVATE' : 'GROUP'}");
@@ -491,6 +514,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     });
 
     ChatStateTracker.isChatCallScreenOpen = true;
+    // This screen now owns the /privateChat listeners (see releasePrivateChatEvents).
+    socketService.claimPrivateChatEvents(this);
 
     if (isPrivateChat) {
       final passedChatId = arguments?['chatId']?.toString();
@@ -502,13 +527,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           passedChatId.isNotEmpty &&
           passedChatId != 'null';
 
-      if (!hasPassedChatId) {
-        Future.delayed(const Duration(seconds: 8), () {
-          if (!isClosed && privateChatId.value.isEmpty) {
-            isLoadingInitialMessages.value = false;
-          }
-        });
-      }
+      if (!hasPassedChatId) _startJoinTimeout();
       if (passedChatId != null &&
           passedChatId.isNotEmpty &&
           passedChatId != 'null') {
@@ -539,26 +558,32 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
           if (chatId == null || chatId.isEmpty) {
             log("[CHAT-PERF] ERROR: PRIVATE CHAT ID NOT FOUND after ${stopwatch.elapsedMilliseconds} ms");
-            isLoadingInitialMessages.value = false;
+            if (!_historyLoaded) {
+              isLoadingInitialMessages.value = false;
+              historyLoadFailed.value = true;
+            }
             return;
           }
 
+          _joinTimeout?.cancel();
           privateChatId.value = chatId;
           ActiveChatTracker.setPrivateChatId(receiverId, chatId);
 
           log("PRIVATE CHAT ID => $chatId");
 
-          if (passedChatId == null ||
-              passedChatId.isEmpty ||
-              passedChatId == 'null') {
+          // "joined" also fires after every socket reconnect: then only
+          // fetch what was missed while offline.
+          if (_historyLoaded) {
+            await syncNewerMessages();
+          } else if (!_historyRequestInFlight) {
             await getPrivateMessageHistory(chatId);
-
-            socketService.markPrivateSeen(
-              chatId: chatId,
-              userId: currentUserId,
-              otherUserId: receiverId,
-            );
           }
+
+          socketService.markPrivateSeen(
+            chatId: chatId,
+            userId: currentUserId,
+            otherUserId: receiverId,
+          );
         },
       );
 
@@ -704,7 +729,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               }
             }
 
-            if (messageData.id != null) {
+            // Receipts are only for the peer's messages: never mark my own
+            // message delivered/seen by me.
+            final fromPeer =
+                messageData.senderId?.toString() != currentUserId.toString();
+
+            if (messageData.id != null && fromPeer) {
               socketService.markPrivateDelivered(
                 messageIds: [messageData.id!],
                 userId: currentUserId,
@@ -712,7 +742,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               );
             }
 
-            if (privateChatId.value.isNotEmpty) {
+            // "Seen" only while the user is actually looking at the chat;
+            // in the background the read is sent on resume.
+            if (privateChatId.value.isNotEmpty &&
+                fromPeer &&
+                ActiveChatTracker.isAppInForeground) {
               socketService.markPrivateSeen(
                 chatId: privateChatId.value,
                 userId: currentUserId,
@@ -774,6 +808,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
       socketService.listenPrivateMessagesSeenUpdate(
         callback: (data) {
+          if (data is! Map) return;
           final dataChatId = data["chatId"]?.toString();
 
           if (privateChatId.value.isNotEmpty &&
@@ -782,18 +817,24 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             return;
           }
 
-          final List updatedIds = data["messageIds"] ?? [];
+          final List updatedIds =
+              data["messageIds"] is List ? data["messageIds"] : const [];
+          final readerId = (data["seenBy"] ??
+                  data["readerId"] ??
+                  data["userId"] ??
+                  data["user_id"])
+              ?.toString();
 
-          for (var msg in _messages) {
-            if (updatedIds.any(
-                  (id) => id.toString() == msg.id.toString(),
-            )) {
-              msg.seenCount = (msg.seenCount ?? 0) + 1;
-              msg.isDelivered = true;
-            }
-          }
-
-          updateMessageStream();
+          // Only my messages can be seen, only by the peer, and only once
+          // (the old "+1 per event" inflated the count).
+          final changed = ChatScreenRules.applyPrivateSeen(
+            _messages,
+            messageIds: updatedIds,
+            readerId: readerId,
+            currentUserId:
+                Global.storageServices.get(PrefConst.userId)?.toString(),
+          );
+          if (changed) updateMessageStream();
         },
       );
 
@@ -903,32 +944,27 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       );
 
       socketService.listenMessageEdited(
+      scope: ChatSocketScope.private,
         callback: (data) {
           if (data is! Map) {
             return;
           }
 
           try {
-            final editedMessage = MessageData.fromJson(
-              Map<String, dynamic>.from(data),
-            );
-
-            final index = _messages.indexWhere(
-                  (message) => message.id == editedMessage.id,
-            );
-
-            if (index == -1) {
-              return;
-            }
-
-            _messages[index] = editedMessage;
-
-            updateMessageStream();
-          } catch (e) {}
+            // Same shape as the group handler: `messageId` (falls back to
+            // `id`). Update in place so ticks, reply and media stay; the old
+            // full replace lost them and missed payloads keyed `messageId`.
+            final map = Map<String, dynamic>.from(data);
+            final applied = ChatScreenRules.applyEdit(_messages, map);
+            if (applied) updateMessageStream();
+          } catch (e) {
+            log("Private edit event error: $e");
+          }
         },
       );
 
       socketService.listenMessageDeleted(
+      scope: ChatSocketScope.private,
         callback: (data) {
           if (data is! Map) {
             return;
@@ -953,11 +989,19 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               return;
             }
 
+            final me =
+                Global.storageServices.get(PrefConst.userId)?.toString();
             if (deleteType == "for_me") {
+              // Only the user who deleted it loses it.
+              if (!ChatScreenRules.isDeleteForMeByMe(data, me)) return;
               _messages.removeAt(index);
             } else if (deleteType == "for_everyone") {
-              _messages[index].content = "This message was deleted";
-              _messages[index].messageType = "text";
+              ChatScreenRules.markDeletedForEveryone(_messages[index]);
+            }
+
+            if (pinnedMessage.value?.id == messageId) {
+              pinnedMessage.value = null;
+              showPinnedBanner.value = false;
             }
 
             updateMessageStream();
@@ -967,6 +1011,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     } else {}
 
     socketService.listenPinMessage(
+      scope: ChatSocketScope.private,
       callback: (data) {
         final messageId = int.tryParse(
           data["messageId"].toString(),
@@ -1006,6 +1051,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     );
 
     socketService.listenUnpinMessage(
+      scope: ChatSocketScope.private,
       callback: (data) {
         if (data["chatType"] != "private") return;
 
@@ -1014,14 +1060,24 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         final otherUserId = memberData.userId.toString();
 
-        final senderId = data["senderId"].toString();
-        final receiverId = data["receiverId"].toString();
+        // Same rule as pin: only filter when both ids are present
+        // (`"null"` used to make every unpin without senderId a no-op).
+        final senderId = data["senderId"]?.toString();
+        final receiverId = data["receiverId"]?.toString();
 
-        final isSameChat =
-            (senderId == currentUserId && receiverId == otherUserId) ||
-                (senderId == otherUserId && receiverId == currentUserId);
-
-        if (!isSameChat) return;
+        if (senderId != null && receiverId != null) {
+          final isSameChat =
+              (senderId == currentUserId && receiverId == otherUserId) ||
+                  (senderId == otherUserId && receiverId == currentUserId);
+          if (!isSameChat) return;
+        } else {
+          final eventMessageId =
+              MessageData.parseIntOrNull(data["messageId"]);
+          if (eventMessageId != null &&
+              pinnedMessage.value?.id != eventMessageId) {
+            return;
+          }
+        }
 
         pinnedMessage.value = null;
         showPinnedBanner.value = false;
@@ -1073,8 +1129,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     required TextEditingController textController,
   }) async {
     if (isSending.value) return;
+    // sendPrivateMessage silently drops the emit when the socket is down;
+    // stop here so the typed text and attachments are kept, not lost.
+    if (!_ensurePrivateSocketOnline()) return;
     _sendPrivateStopTypingNow();
     isSending.value = true;
+    var keepDraft = false;
 
     final text = textController.text.trim();
 
@@ -1178,6 +1238,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               removeVideo(index);
             }
           }
+        } else {
+          keepDraft = true;
         }
       } else {
         if (hasImages) {
@@ -1208,9 +1270,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               replyType: replyMessage.value?.messageType,
               replySender: replyMessage.value?.senderName,
             );
+            imagePaths.clear();
+          } else {
+            // Every upload failed: keep the images and the caption.
+            keepDraft = true;
           }
-
-          imagePaths.clear();
         }
 
         if (hasVideos) {
@@ -1261,9 +1325,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         );
       }
 
-      textController.clear();
-      messageText.value = "";
-      clearReply();
+      if (!keepDraft) {
+        textController.clear();
+        messageText.value = "";
+        clearReply();
+      }
       scrollToBottom();
     } catch (e) {
       log("Error sending message: $e");
@@ -1272,14 +1338,28 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  /// Private messages go only over the socket. When it is disconnected the
+  /// emit is dropped, so tell the user and keep their draft instead.
+  bool _ensurePrivateSocketOnline() {
+    if (socketService.isPrivateChatSocketConnected) return true;
+    Utils().fluttertoast("You're offline. Message not sent.");
+    return false;
+  }
+
   Future<void> uploadAudio(String path) async {
+    if (!_ensurePrivateSocketOnline()) return;
     var result = await MessageRepo.uploadChatAudio(path);
 
+    final filename = result.filename?.toString() ?? "";
+    if (result.status == true && filename.isEmpty) {
+      Utils().fluttertoast("Voice message upload failed. Please try again.");
+      return;
+    }
     if (result.status == true) {
       socketService.sendPrivateMessage(
         messageType: "audio",
         receiverId: memberData.userId.toString(),
-        content: result.filename!,
+        content: filename,
         replyId: replyMessage.value?.id,
         replyMessage: replyMessage.value?.content,
         replyType: replyMessage.value?.messageType,
@@ -1384,7 +1464,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       socketService.sendPrivateMessage(
         messageType: "document",
         receiverId: memberData.userId.toString(),
-        content: "${result.filename}||${result.originalName!}",
+        // originalName may be missing: fall back to the stored file name
+        // instead of crashing on `!`.
+        content: "${result.filename}||${result.originalName ?? path.split(RegExp(r'[\\/]')).last}",
         caption: caption,
         replyId: replyMessage.value?.id,
         replyMessage: replyMessage.value?.content,
@@ -1398,6 +1480,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   Future<void> sendLocation({
     required LocationMessage location,
   }) async {
+    if (!_ensurePrivateSocketOnline()) return;
     try {
       socketService.sendPrivateMessage(
         receiverId: memberData.userId.toString(),
@@ -1419,6 +1502,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   Future<void> sendContact({
     required ContactMessage contact,
   }) async {
+    if (!_ensurePrivateSocketOnline()) return;
     try {
       socketService.sendPrivateMessage(
         receiverId: memberData.userId.toString(),
@@ -1560,17 +1644,22 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     log("HISTORY DEBUG => chatId: $chatId");
     log("HISTORY DEBUG => controller closed: $isClosed");
 
+    _historyRequestInFlight = true;
+    historyLoadFailed.value = false;
+    if (_messages.isEmpty) isLoadingInitialMessages.value = true;
+
     try {
+      _pager.reset();
       privateCurrentPage.value = 1;
       hasMoreOlderMessages.value = true;
 
       log("========== HISTORY DEBUG 2: BEFORE API CALL ==========");
-      log("HISTORY DEBUG => page: 1, limit: 30");
+      log("HISTORY DEBUG => page: 1, limit: ${ChatScreenRules.pageSize}");
 
       final result = await MessageRepo.privateChatHistory(
         chatId: chatId,
         page: 1,
-        limit: 15,
+        limit: ChatScreenRules.pageSize,
       );
 
       log("========== HISTORY DEBUG 3: API RESPONSE RECEIVED ==========");
@@ -1622,9 +1711,21 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         log("========== HISTORY DEBUG 5: UPDATING MESSAGE LIST ==========");
 
+        // Merge, don't replace: socket messages that arrived before this
+        // response must survive, and duplicates are dropped by id.
+        final merged = ChatScreenRules.merge(
+          _messages,
+          messages.reversed.toList(),
+        );
         _messages
           ..clear()
-          ..addAll(messages.reversed);
+          ..addAll(merged.messages);
+        _pager.complete(
+          page: 1,
+          receivedCount: messages.length,
+          hasNextPage: result.pagination?.hasNextPage,
+        );
+        _historyLoaded = true;
 
         log("HISTORY DEBUG => mapped message count: ${_messages.length}");
 
@@ -1658,12 +1759,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         isCreator.value = result.isCreator ?? false;
 
-        if (result.pagination != null) {
-          hasMoreOlderMessages.value =
-              result.pagination!.hasNextPage == true;
-        } else {
-          hasMoreOlderMessages.value = false;
-        }
+        hasMoreOlderMessages.value = _pager.hasMore;
 
         log("HISTORY DEBUG => isCreator: ${isCreator.value}");
         log("HISTORY DEBUG => hasMoreOlderMessages: ${hasMoreOlderMessages.value}");
@@ -1682,13 +1778,20 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         log("========== HISTORY DEBUG ERROR: API STATUS FALSE ==========");
         log("HISTORY DEBUG => ${result.message}");
 
+        _pager.fail();
+        if (_messages.isEmpty) historyLoadFailed.value = true;
         CommonDialog.errorMessage(result.message);
       }
     } catch (e, stackTrace) {
       log("========== HISTORY DEBUG ERROR: EXCEPTION ==========");
       log("HISTORY DEBUG => $e");
       log("HISTORY DEBUG STACKTRACE => $stackTrace");
+      _pager.fail();
+      // Show "Couldn't load messages / Retry" instead of a false
+      // "No messages here yet".
+      if (_messages.isEmpty) historyLoadFailed.value = true;
     } finally {
+      _historyRequestInFlight = false;
       isLoadingInitialMessages.value = false;
 
       log("========== HISTORY DEBUG 9: FINALLY ==========");
@@ -1745,10 +1848,23 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  /// App-bar back button. The route's PopScope then calls [onRoutePopped].
   void handleBackPressed(
     BuildContext context, {
     required int groupID,
   }) {
+    Navigator.of(context).maybePop();
+  }
+
+  bool _leftChat = false;
+
+  /// Leaves the chat room once, however the screen was closed: app-bar
+  /// back, Android back, or the iOS swipe-back gesture (which the old
+  /// WillPopScope blocked).
+  void onRoutePopped() {
+    if (_leftChat) return;
+    _leftChat = true;
+
     final userId = Global.storageServices.get(PrefConst.userId).toString();
 
     final receiverId = memberData.userId.toString();
@@ -1758,7 +1874,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       receiverId: receiverId,
     );
 
-    socketService.clearPrivateChatListeners();
+    socketService.releasePrivateChatEvents(this);
 
     _messages.clear();
     messageText.value = "";
@@ -1769,8 +1885,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     pinnedMessage.value = null;
     showPinnedBanner.value = false;
     ChatStateTracker.isChatCallScreenOpen = false;
-
-    Navigator.of(context).pop();
   }
 
 
@@ -2019,11 +2133,32 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  /// Set when this screen asks the server to clear the chat, so our own
+  /// clear always applies even if the event's id doesn't match.
+  DateTime? _clearRequestedAt;
+
   void handlePrivateChatCleared(Map<String, dynamic> data) {
-    final conversationId =
-        int.tryParse(data['conversationId']?.toString() ?? '');
+    final conversationId = int.tryParse(
+      (data['conversationId'] ??
+                  data['conversation_id'] ??
+                  data['chatId'] ??
+                  data['chat_id'])
+              ?.toString() ??
+          '',
+    );
 
     if (conversationId == null) return;
+
+    // Another chat was cleared (e.g. from the list on another device):
+    // don't wipe this one. Same id match the chat list uses.
+    final requestedHere = _clearRequestedAt != null &&
+        DateTime.now().difference(_clearRequestedAt!).inSeconds < 15;
+    if (!requestedHere &&
+        privateChatId.value.isNotEmpty &&
+        privateChatId.value != conversationId.toString()) {
+      return;
+    }
+    _clearRequestedAt = null;
 
     log(
       "PRIVATE CHAT CLEARED => conversationId=$conversationId",
@@ -2045,6 +2180,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       "CLEAR PRIVATE CHAT => chatId=${privateChatId.value}",
     );
 
+    _clearRequestedAt = DateTime.now();
     socketService.clearPrivateChat(
       chatId: privateChatId.value,
     );
@@ -2106,70 +2242,191 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // History paging and sync (rules in chat_screen_logic.dart)
+  // ---------------------------------------------------------------------------
+
+  final HistoryPager _pager = HistoryPager();
+  bool _historyLoaded = false;
+  bool _historyRequestInFlight = false;
+  DateTime? _olderRetryAfter;
+  Timer? _joinTimeout;
+
+  /// True when the first load failed and nothing is shown: the list shows
+  /// "Couldn't load messages" + Retry instead of "No messages here yet".
+  final RxBool historyLoadFailed = false.obs;
+
+  /// Entry points without a chatId wait for the socket "joined" event that
+  /// carries it. If it never comes, stop the skeleton and offer Retry.
+  void _startJoinTimeout() {
+    _joinTimeout?.cancel();
+    _joinTimeout = Timer(const Duration(seconds: 10), () {
+      if (isClosed || privateChatId.value.isNotEmpty) return;
+      isLoadingInitialMessages.value = false;
+      if (_messages.isEmpty) historyLoadFailed.value = true;
+    });
+  }
+
+  /// "Retry" on the load-error state.
+  Future<void> retryLoadHistory() async {
+    historyLoadFailed.value = false;
+    if (privateChatId.value.isNotEmpty) {
+      await getPrivateMessageHistory(privateChatId.value);
+      return;
+    }
+    isLoadingInitialMessages.value = true;
+    _startJoinTimeout();
+    final me = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+    // If the socket is down it reconnects by itself and joins on connect.
+    socketService.joinPrivateChat(
+      userId: me,
+      receiverId: memberData.userId.toString(),
+    );
+  }
+
+  /// First visible item and its offset, to restore after prepending.
+  ItemPosition? _topAnchor() {
+    final visible = itemPositionsListener.itemPositions.value
+        .where((p) => p.itemTrailingEdge > 0)
+        .toList()
+      ..sort((a, b) => a.index.compareTo(b.index));
+    return visible.isEmpty ? null : visible.first;
+  }
+
+  /// Keeps the message the user was looking at in exactly the same place
+  /// after [prepended] older messages were inserted above it.
+  void _restoreAnchor(ItemPosition? anchor, int prepended) {
+    if (anchor == null || prepended <= 0) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!itemScrollController.isAttached) return;
+      itemScrollController.jumpTo(
+        index: anchor.index + prepended,
+        alignment: anchor.itemLeadingEdge,
+      );
+    });
+  }
+
+  /// Older page when the user reaches the top. One call at a time; stops
+  /// when the API has no more; dedupes by id (page offsets shift when new
+  /// messages arrive while the chat is open).
   Future<void> loadOlderPrivateMessages() async {
-    if (isLoadingOlderMessages.value) return;
-    if (!hasMoreOlderMessages.value) return;
-    if (privateChatId.value.isEmpty) return;
-    if (_messages.isEmpty) return;
+    if (privateChatId.value.isEmpty || _messages.isEmpty || !_historyLoaded) {
+      return;
+    }
+    final retryAfter = _olderRetryAfter;
+    if (retryAfter != null && DateTime.now().isBefore(retryAfter)) return;
 
-    final positions = itemPositionsListener.itemPositions.value;
-
-    if (positions.isEmpty) return;
-
-    final visible =
-        positions.where((position) => position.itemTrailingEdge > 0).toList();
-
-    if (visible.isEmpty) return;
-
-    visible.sort((a, b) => a.index.compareTo(b.index));
-
-    final oldFirstVisibleIndex = visible.first.index;
+    final page = _pager.begin();
+    if (page == null) return;
 
     isLoadingOlderMessages.value = true;
+    final anchor = _topAnchor();
 
     try {
-      final nextPage = privateCurrentPage.value + 1;
-      log("OLDER MESSAGE API CALL => page=$nextPage");
+      log("OLDER MESSAGE API CALL => page=$page");
       final result = await MessageRepo.privateChatHistory(
         chatId: privateChatId.value,
-        page: nextPage,
-        limit: 15,
+        page: page,
+        limit: ChatScreenRules.pageSize,
       );
+      if (isClosed) return;
 
-      if (result.status == true) {
-        final olderMessages = result.messageData ?? [];
+      if (result.status != true) {
+        _pager.fail();
+        _olderRetryAfter = DateTime.now().add(const Duration(seconds: 3));
+        return;
+      }
 
-        if (olderMessages.isNotEmpty) {
-          final reversedOlderMessages = olderMessages.reversed.toList();
+      final older = result.messageData ?? [];
+      final merged = ChatScreenRules.merge(_messages, older.reversed.toList());
+      _pager.complete(
+        page: page,
+        receivedCount: older.length,
+        hasNextPage: result.pagination?.hasNextPage,
+      );
+      privateCurrentPage.value = _pager.lastLoadedPage;
 
-          _messages.insertAll(
-            0,
-            reversedOlderMessages,
-          );
-
-          privateCurrentPage.value = nextPage;
-
-          updateMessageStream();
-
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!itemScrollController.isAttached) return;
-
-            itemScrollController.jumpTo(
-              index: oldFirstVisibleIndex + reversedOlderMessages.length,
-            );
-          });
-        }
-
-        if (result.pagination != null) {
-          hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
-        } else {
-          hasMoreOlderMessages.value = olderMessages.length >= 15;
-        }
+      if (merged.added > 0) {
+        _messages
+          ..clear()
+          ..addAll(merged.messages);
+        updateMessageStream();
+        _restoreAnchor(anchor, merged.prepended);
       }
     } catch (e) {
       log("Load Older Private Messages Error: $e");
+      _pager.fail();
+      _olderRetryAfter = DateTime.now().add(const Duration(seconds: 3));
     } finally {
       isLoadingOlderMessages.value = false;
+      hasMoreOlderMessages.value = _pager.hasMore;
     }
+  }
+
+  /// After a socket reconnect or app resume: fetch the newest pages until
+  /// they overlap what is loaded, so nothing sent meanwhile is missed.
+  ///
+  /// TODO(backend #6): replace with `after=<newest messageId>` once the API
+  /// supports it; page 1..N is a stopgap.
+  Future<void> syncNewerMessages() async {
+    if (!_historyLoaded || privateChatId.value.isEmpty) return;
+    if (_historyRequestInFlight) return;
+    _historyRequestInFlight = true;
+
+    try {
+      final wasAtBottom = isUserAtBottom();
+      var appended = 0;
+
+      for (var page = 1; page <= 5; page++) {
+        final result = await MessageRepo.privateChatHistory(
+          chatId: privateChatId.value,
+          page: page,
+          limit: ChatScreenRules.pageSize,
+        );
+        if (isClosed || result.status != true) return;
+
+        final batch = result.messageData ?? [];
+        final merged = ChatScreenRules.merge(_messages, batch.reversed.toList());
+        final overlapped = merged.added < batch.length;
+        if (merged.added > 0) {
+          appended += merged.added - merged.prepended;
+          _messages
+            ..clear()
+            ..addAll(merged.messages);
+        }
+        if (overlapped || batch.isEmpty || result.pagination?.hasNextPage == false) {
+          break;
+        }
+      }
+
+      if (appended > 0) {
+        updateMessageStream();
+        if (wasAtBottom) {
+          scrollToBottom();
+        } else {
+          unreadBelowCount.value += appended;
+          showScrollToBottom.value = true;
+        }
+        _scheduleMarkPrivateRead();
+      }
+    } catch (e) {
+      log("Sync newer private messages error: $e");
+    } finally {
+      _historyRequestInFlight = false;
+    }
+  }
+
+  /// Reply-jump to a message that is not loaded yet: page back until it is
+  /// found (bounded). Returns its index, or -1.
+  Future<int> _loadOlderUntilFound(int messageId) async {
+    for (var i = 0; i < ChatScreenRules.maxReplyJumpPages; i++) {
+      if (!_pager.hasMore) break;
+      final before = _messages.length;
+      await loadOlderPrivateMessages();
+      final index = _messages.indexWhere((e) => e.id == messageId);
+      if (index != -1) return index;
+      if (_messages.length == before && !_pager.hasMore) break;
+    }
+    return _messages.indexWhere((e) => e.id == messageId);
   }
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Core/util/media_url.dart';
 import 'package:fgtracker/app/Core/util/message_preview_builder.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/chat_screen_logic.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/missing_media_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
@@ -47,6 +48,33 @@ Widget _bubbleWidth({required bool isAttendance, required Widget child}) {
   }
   return IntrinsicWidth(child: child);
 }
+
+/// Placeholder for a message the app can't draw (unknown type or a row that
+/// failed to parse). It keeps the list intact instead of breaking it.
+Widget _unsupportedMessageContent(bool isSentByMe) {
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(Icons.info_outline_rounded, size: 16.sp, color: Colors.grey.shade600),
+      SizedBox(width: 6.w),
+      Flexible(
+        child: Text(
+          "This message isn't supported in this version of the app",
+          style: TextStyle(
+            fontSize: 12.sp,
+            fontStyle: FontStyle.italic,
+            color: Colors.grey.shade700,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+/// Seen tick state. `seenCount` is dynamic and may arrive as a string;
+/// comparing it with `>` directly threw and broke the bubble.
+bool _seenAtLeastOnce(MessageData message) =>
+    (int.tryParse(message.seenCount?.toString() ?? '') ?? 0) > 0;
 
 /// Server URL of a document message. Empty when the message has no file.
 String _documentFullUrl(String path) {
@@ -511,12 +539,12 @@ class ChatBubble extends StatelessWidget {
         if (isSentByMe) ...[
           SizedBox(width: 3.w),
           Icon(
-            ((message.seenCount ?? 0) > 0 || message.isDelivered)
+            (_seenAtLeastOnce(message) || message.isDelivered)
                 ? Icons.done_all
                 : Icons.done,
             size: 14.sp,
             color:
-                (message.seenCount ?? 0) > 0 ? _purple : Colors.grey.shade500,
+                _seenAtLeastOnce(message) ? _purple : Colors.grey.shade500,
           ),
         ],
       ],
@@ -1041,6 +1069,8 @@ class ChatBubble extends StatelessWidget {
         messageTime: message.timestamp?.toString(),
         onDeleted: groupController?.markAttendanceDeleted,
       );
+    } else if (ChatScreenRules.isUnsupported(message)) {
+      return _unsupportedMessageContent(isSentByMe);
     } else {
       return _buildTextContent(
         message,
@@ -1290,6 +1320,11 @@ class ChatBubble extends StatelessWidget {
     final isText = message.messageType == "text" ||
         message.messageType == "text_message" ||
         (message.messageType ?? "").isEmpty;
+    // Attendance messages have no delete option (see ChatScreenRules).
+    final options = ChatScreenRules.menuOptions(
+      messageType: message.messageType,
+      isSentByMe: isSentByMe,
+    );
 
     final actions = <MessageContextMenuAction>[
       MessageContextMenuAction(
@@ -1368,7 +1403,7 @@ class ChatBubble extends StatelessWidget {
             });
           },
         ),
-      if (isSentByMe)
+      if (options.contains(MessageMenuOption.deleteForEveryone))
         MessageContextMenuAction(
           icon: Icons.delete_outline_rounded,
           title: "Delete for Everyone",
@@ -1390,6 +1425,7 @@ class ChatBubble extends StatelessWidget {
             );
           },
         ),
+      if (options.contains(MessageMenuOption.deleteForMe))
       MessageContextMenuAction(
         icon: Icons.delete_rounded,
         title: "Delete for Me",
@@ -1911,7 +1947,7 @@ class GroupChatBubble extends StatelessWidget {
         if (isSentByMe) ...[
           SizedBox(width: 3.w),
           Icon(
-            ((message.seenCount ?? 0) > 0 ||
+            (_seenAtLeastOnce(message) ||
                     message.isDelivered ||
                     (message.seenBy is List &&
                         (message.seenBy as List).isNotEmpty))
@@ -2726,6 +2762,8 @@ class GroupChatBubble extends StatelessWidget {
         messageTime: message.timestamp?.toString(),
         onDeleted: controller.markAttendanceDeleted,
       );
+    } else if (ChatScreenRules.isUnsupported(message)) {
+      return _unsupportedMessageContent(isSentByMe);
     } else {
       return _buildTextContent(
         message,
@@ -2774,6 +2812,11 @@ class GroupChatBubble extends StatelessWidget {
     final isText = message.messageType == "text" ||
         message.messageType == "text_message" ||
         (message.messageType ?? "").isEmpty;
+    // Attendance messages have no delete option (see ChatScreenRules).
+    final options = ChatScreenRules.menuOptions(
+      messageType: message.messageType,
+      isSentByMe: isSentByMe,
+    );
 
     final actions = <MessageContextMenuAction>[
       MessageContextMenuAction(
@@ -2852,7 +2895,7 @@ class GroupChatBubble extends StatelessWidget {
             });
           },
         ),
-      if (isSentByMe)
+      if (options.contains(MessageMenuOption.deleteForEveryone))
         MessageContextMenuAction(
           icon: Icons.delete_outline_rounded,
           title: "Delete for Everyone",
@@ -2874,6 +2917,7 @@ class GroupChatBubble extends StatelessWidget {
             );
           },
         ),
+      if (options.contains(MessageMenuOption.deleteForMe))
       MessageContextMenuAction(
         icon: Icons.delete_rounded,
         title: "Delete for Me",

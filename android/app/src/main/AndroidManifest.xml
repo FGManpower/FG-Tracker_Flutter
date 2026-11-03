@@ -217,6 +217,12 @@
     </application>
 
     <queries>
+        <!-- Chat contact bubble "Call": without this, canLaunchUrl(tel:)
+             returns false on Android 11+ and the button does nothing. -->
+        <intent>
+            <action android:name="android.intent.action.DIAL"/>
+            <data android:scheme="tel"/>
+        </intent>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>

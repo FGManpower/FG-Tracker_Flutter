@@ -175,7 +175,7 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
                                   ),
                                 ),
                                 SizedBox(width: 8.w),
-                                _buildBadge(item, granted),
+                                _buildBadge(index, granted),
                               ],
                             ),
                             SizedBox(height: 5.h),
@@ -187,6 +187,20 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
                                 color: const Color(0xFF686B9D),
                               ),
                             ),
+                            if (controller.statusText(index) != null) ...[
+                              SizedBox(height: 4.h),
+                              Text(
+                                controller.statusText(index)!,
+                                style: TextStyle(
+                                  fontSize: 11.sp,
+                                  height: 1.3,
+                                  fontWeight: FontWeight.w700,
+                                  color: granted
+                                      ? const Color(0xFF1BA85F)
+                                      : const Color(0xFFD52E58),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -271,7 +285,7 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
     });
   }
 
-  Widget _buildBadge(PermissionItem item, bool granted) {
+  Widget _buildBadge(int index, bool granted) {
     final String label;
     final Color bg;
     final Color fg;
@@ -280,10 +294,14 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
       label = 'Granted';
       bg = const Color(0xFFDCF5E6);
       fg = const Color(0xFF1BA85F);
-    } else if (item.required) {
+    } else if (controller.isRequired(index)) {
       label = 'Required';
       bg = const Color(0xFFFFE5EC);
       fg = const Color(0xFFD52E58);
+    } else if (controller.isRecommended(index)) {
+      label = 'Recommended';
+      bg = const Color(0xFFFFF3DC);
+      fg = const Color(0xFFB7791F);
     } else {
       label = 'Optional';
       bg = const Color(0xFFECEAFF);
@@ -322,65 +340,109 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
       ),
       child: Obx(() {
         final idx = controller.selectedIndex.value;
-        final item = controller.items[idx];
         final granted = controller.grantedItems.contains(idx);
-        final isRequired = item.required;
-
-        final locationGranted = controller.grantedItems.contains(0);
-
-        final String primaryLabel =
-            granted ? 'Continue' : 'Allow ${item.title}';
+        final canContinue = controller.canContinue;
+        final loading = controller.loading.value;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (!granted) ...[
+              SizedBox(
+                width: double.infinity,
+                height: 52.h,
+                child: ElevatedButton(
+                  key: const Key('permission-primary-button'),
+                  onPressed:
+                      loading ? null : controller.allowCurrentPermission,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF5145F5),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                  child: loading
+                      ? SizedBox(
+                          width: 22.w,
+                          height: 22.w,
+                          child: const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : Text(
+                          controller.primaryLabel,
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                ),
+              ),
+              SizedBox(height: 8.h),
+            ],
+            // Disabled until Location + Notification are granted; optional
+            // permissions can be skipped with it.
             SizedBox(
               width: double.infinity,
-              height: 52.h,
-              child: ElevatedButton(
-                onPressed: controller.loading.value
-                    ? null
-                    : controller.allowCurrentPermission,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF5145F5),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                ),
-                child: controller.loading.value
-                    ? SizedBox(
-                        width: 22.w,
-                        height: 22.w,
-                        child: const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
+              height: 48.h,
+              child: granted
+                  ? ElevatedButton(
+                      key: const Key('permission-continue-button'),
+                      onPressed: canContinue && !loading
+                          ? controller.continueToApp
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5145F5),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.r),
                         ),
-                      )
-                    : Text(
-                        primaryLabel,
+                      ),
+                      child: Text(
+                        'Continue',
                         style: TextStyle(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w700,
-                          letterSpacing: 0.2,
                         ),
                       ),
-              ),
+                    )
+                  : OutlinedButton(
+                      key: const Key('permission-continue-button'),
+                      onPressed: canContinue && !loading
+                          ? controller.continueToApp
+                          : null,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF5145F5),
+                        side: BorderSide(
+                          color: const Color(0xFF5145F5)
+                              .withValues(alpha: canContinue ? 0.5 : 0.15),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                      ),
+                      child: Text(
+                        canContinue ? 'Skip & Continue' : 'Continue',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
             ),
-            if (!isRequired && !granted && locationGranted) ...[
-              SizedBox(height: 4.h),
-              TextButton(
-                onPressed: controller.loading.value
-                    ? null
-                    : controller.skipAllRemaining,
-                child: Text(
-                  'Skip All',
-                  style: TextStyle(
-                    color: const Color(0xFF686B9D),
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
+            if (!canContinue) ...[
+              SizedBox(height: 6.h),
+              Text(
+                'Location and Notifications are required to continue.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: const Color(0xFF686B9D),
+                  fontSize: 11.sp,
                 ),
               ),
             ],

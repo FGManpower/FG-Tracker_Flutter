@@ -40,6 +40,9 @@ import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/GroupTrackLocationScreen.dart';
 import '../modules/Walkie-talkie/Views/WalkieTalkieScreen.dart';
 
+import '../Data/Services/PermissionGate/permission_gate_middleware.dart';
+import '../modules/PermissionGate/permission_gate_binding.dart';
+import '../modules/PermissionGate/permission_gate_screen.dart';
 import '../modules/home/Bindings/permission_setup_binding.dart';
 import '../modules/home/Views/LiveStatus/components/total_groups.dart';
 import '../modules/home/Views/permission_setup_screen.dart';
@@ -51,7 +54,6 @@ import '../modules/OtpCharges/Binding/otp_charges_binding.dart';
 import '../modules/OtpCharges/Views/otp_charges_view.dart';
 import '../modules/PackagePricing/Binding/package_pricing_binding.dart';
 import '../modules/PackagePricing/Views/package_list_view.dart';
-import '../modules/PackagePricing/Views/package_plan_details_view.dart';
 import '../modules/sos/SosBinding.dart';
 import '../modules/sos/sos_screen.dart';
 
@@ -63,7 +65,10 @@ class AppPages {
 
   static const INITIAL = Routes.Splash;
 
-  static final routes = [
+  /// Every non-exempt page gets [PermissionGateMiddleware].
+  static final routes = PermissionGateMiddleware.guard(_routes);
+
+  static final List<GetPage> _routes = [
     GetPage(
       name: _Paths.Splash,
       page: () => Splashscreen(),
@@ -328,6 +333,11 @@ class AppPages {
       binding: PermissionSetupBinding(), // ← This line fixes the error
     ),
     GetPage(
+      name: Routes.permissionGate,
+      page: () => const PermissionGateScreen(),
+      binding: PermissionGateBinding(),
+    ),
+    GetPage(
       name: Routes.OTP_CHARGES,
       page: () => const OtpChargesView(),
       binding: OtpChargesBinding(),
@@ -336,13 +346,6 @@ class AppPages {
       name: Routes.packagePricing,
       page: () => const PackageListView(),
       binding: PackageListBinding(),
-      transition: Transition.rightToLeft,
-      transitionDuration: const Duration(milliseconds: 400),
-    ),
-    GetPage(
-      name: Routes.packagePlanDetails,
-      page: () => const PackagePlanDetailsView(),
-      binding: PackagePlanDetailsBinding(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 400),
     ),

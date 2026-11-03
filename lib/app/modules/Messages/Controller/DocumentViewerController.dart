@@ -33,6 +33,10 @@ class DocumentViewerController extends GetxController {
       if (localFilePath.value.isEmpty) {
         await downloadFile();
       }
+      if (localFilePath.value.isEmpty) {
+        Get.snackbar("Unable to Open", "The document couldn't be downloaded.");
+        return;
+      }
 
       final result = await OpenFile.open(
         localFilePath.value,
@@ -57,22 +61,34 @@ class DocumentViewerController extends GetxController {
 
       final directory = await getTemporaryDirectory();
 
-      final extension = documentUrl.split('.').last;
+      // Extension from the URL path (a "?token=..." query used to end up
+      // in it), falling back to the document name.
+      String extension = "";
+      final urlName = Uri.tryParse(documentUrl)?.pathSegments.lastOrNull ?? "";
+      if (urlName.contains('.')) {
+        extension = urlName.split('.').last;
+      } else if (documentName.contains('.')) {
+        extension = documentName.split('.').last;
+      }
 
-      final path = "${directory.path}/${DateTime.now().millisecondsSinceEpoch}.$extension";
+      final path = extension.isEmpty
+          ? "${directory.path}/${DateTime.now().millisecondsSinceEpoch}"
+          : "${directory.path}/${DateTime.now().millisecondsSinceEpoch}.$extension";
 
       await Dio().download(documentUrl, path,);
 
       log("=========PathData=====$path");
       log("=========PathData=====$documentUrl");
       localFilePath.value = path;
+      fileExists.value = true;
     } catch (e) {
       log("===========DownloadError===${e.toString()}");
+      // 404 etc: the file is gone; never report it as existing.
       fileExists.value = false;
-      isLoading.value = false;
     } finally {
+      // Only the loader here: it used to reset fileExists to false even
+      // after a successful download.
       isLoading.value = false;
-      fileExists.value = false;
     }
   }
 

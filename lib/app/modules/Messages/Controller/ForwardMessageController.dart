@@ -8,7 +8,7 @@ import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Model/GetMessage.dart';
 import '../../../Model/ForwardMessageModel.dart';
 import '../../../Model/MemberDataRes.dart';
-import '../../../routes/app_pages.dart';
+import '../../../Core/util/chat_navigation.dart';
 import '../../call/Controller/contact_controller.dart';
 import 'MessageController.dart';
 
@@ -350,16 +350,15 @@ class ForwardMessageController extends GetxController {
         final target = selected.first;
         Get.back();
 
+        // ChatNavigation: forwarding from inside a chat to another chat of
+        // the same type used to be ignored (duplicate route).
         if (target.isGroup) {
-          Get.toNamed(
-            Routes.groupChatScreen,
-            arguments: {
-              "groupId": target.targetId,
-              "groupName": target.displayName,
-              "groupProfile": target.displayImage,
-              "groupImage": target.displayImage,
-            },
-          );
+          ChatNavigation.openGroupChat({
+            "groupId": target.targetId,
+            "groupName": target.displayName,
+            "groupProfile": target.displayImage,
+            "groupImage": target.displayImage,
+          });
         } else {
           final userData = MemberData(
             userId: target.targetId!,
@@ -367,12 +366,11 @@ class ForwardMessageController extends GetxController {
             profileImage: target.displayImage,
             groupId: 0,
           );
-          Get.toNamed(
-            Routes.chatScreen,
-            arguments: {
-              "userData": userData,
-            },
-          );
+          ChatNavigation.openPrivateChat({
+            "userData": userData,
+            "type": "chatScreen",
+            "chatType": "private",
+          });
         }
       } else {
         Get.back();

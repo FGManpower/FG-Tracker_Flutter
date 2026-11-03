@@ -30,10 +30,12 @@ class GetMessage {
   });
 
   GetMessage.fromJson(Map<String, dynamic> json) {
-    status = json['status'];
-    message = json['message'];
-    isCreator = json['isCreator'];
-    pinnedMessageId = json['pinnedMessageId'];
+    // Tolerant types: a "1"/1 instead of true or a string id must never
+    // throw here, or the whole chat history is lost.
+    status = _parseBool(json['status']);
+    message = json['message']?.toString();
+    isCreator = _parseBool(json['isCreator']);
+    pinnedMessageId = MessageData.parseIntOrNull(json['pinnedMessageId']);
 
     final user = json['otherUser'] is Map
         ? Map<String, dynamic>.from(json['otherUser'])
@@ -68,13 +70,15 @@ class GetMessage {
     if (messages is List) {
       messageData = <MessageData>[];
 
+      // One malformed row must not drop the whole history: it becomes an
+      // "unsupported message" placeholder and the rest still renders.
       for (final item in messages) {
-        if (item is Map<String, dynamic>) {
-          messageData!.add(MessageData.fromJson(item));
-        } else if (item is Map) {
-          messageData!.add(
-            MessageData.fromJson(Map<String, dynamic>.from(item)),
-          );
+        if (item is! Map) continue;
+        final map = Map<String, dynamic>.from(item);
+        try {
+          messageData!.add(MessageData.fromJson(map));
+        } catch (_) {
+          messageData!.add(MessageData.unsupported(map));
         }
       }
     }
@@ -139,9 +143,9 @@ class BlockStatus {
   });
 
   BlockStatus.fromJson(Map<String, dynamic> json) {
-    isBlocked = json['isBlocked'];
-    blockedByMe = json['blockedByMe'];
-    otherUserId = json['otherUserId'];
+    isBlocked = GetMessage._parseBool(json['isBlocked']);
+    blockedByMe = GetMessage._parseBool(json['blockedByMe']);
+    otherUserId = MessageData.parseIntOrNull(json['otherUserId']);
   }
 
   Map<String, dynamic> toJson() {
@@ -171,12 +175,12 @@ class MessagePagination {
   });
 
   MessagePagination.fromJson(Map<String, dynamic> json) {
-    currentPage = json['currentPage'];
-    perPage = json['perPage'];
-    totalRecords = json['totalRecords'];
-    totalPages = json['totalPages'];
-    hasNextPage = json['hasNextPage'];
-    hasPreviousPage = json['hasPreviousPage'];
+    currentPage = MessageData.parseIntOrNull(json['currentPage']);
+    perPage = MessageData.parseIntOrNull(json['perPage']);
+    totalRecords = MessageData.parseIntOrNull(json['totalRecords']);
+    totalPages = MessageData.parseIntOrNull(json['totalPages']);
+    hasNextPage = GetMessage._parseBool(json['hasNextPage']);
+    hasPreviousPage = GetMessage._parseBool(json['hasPreviousPage']);
   }
 
   Map<String, dynamic> toJson() {
@@ -305,6 +309,29 @@ class MessageData {
     return int.tryParse(rawId?.toString() ?? '');
   }
 
+  /// messageType of the placeholder used for a row that could not be parsed.
+  static const String unsupportedType = 'unsupported';
+
+  static int? parseIntOrNull(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value.trim());
+    return null;
+  }
+
+  /// Placeholder for a history row that failed to parse: keeps its id,
+  /// sender and time so ordering, dedupe and date separators stay correct.
+  factory MessageData.unsupported(Map<String, dynamic> json) {
+    return MessageData(
+      id: parseIntOrNull(json['id']),
+      senderId: json['senderId'] ?? json['sender_id'],
+      senderName: json['senderName']?.toString(),
+      messageType: unsupportedType,
+      timestamp: (json['timestamp'] ?? json['createdAt'] ?? json['created_at'])
+          ?.toString(),
+    );
+  }
+
   MessageData.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic>? nestedSource;
     if (json['forwardedMessage'] is Map) {
@@ -348,7 +375,7 @@ class MessageData {
       }
     }
 
-    id = json['id'] ?? nestedSource?['id'];
+    id = parseIntOrNull(json['id'] ?? nestedSource?['id']);
     senderId = json['senderId'] ??
         json['sender_id'] ??
         json['userId'] ??

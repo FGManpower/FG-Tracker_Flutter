@@ -202,27 +202,9 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
     }
   }
 
-  bool _isDeleting = false;
-
-  Future<void> _deletePoll(AttendancePoll poll) async {
-    if (_isDeleting || _controller.isDeleted(poll.id)) return;
-    final ok = await _confirm(
-      "Delete attendance?",
-      "This removes the attendance and all responses for everyone.",
-      "Delete",
-    );
-    if (!ok) return;
-    _isDeleting = true;
-    try {
-      await _controller.deletePoll(poll.id);
-      widget.onDeleted?.call(poll.id);
-      _showSnack("Attendance Deleted", "The attendance poll was removed");
-    } catch (e) {
-      _showSnack("Unable to delete", e.toString(), isError: true);
-    } finally {
-      _isDeleting = false;
-    }
-  }
+  // Attendance can't be deleted from the chat (product rule): the card only
+  // offers "Close attendance". A poll deleted elsewhere still shows the
+  // deleted state through AttendanceController.deletedPolls.
 
   Widget _buildDeletedCard() {
     return Container(
@@ -652,15 +634,9 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
       padding: EdgeInsets.zero,
       onSelected: (value) {
         if (value == "close") _closePoll(poll);
-        if (value == "delete") _deletePoll(poll);
       },
-      itemBuilder: (_) => [
-        if (poll.isOpen)
-          const PopupMenuItem(value: "close", child: Text("Close attendance")),
-        const PopupMenuItem(
-          value: "delete",
-          child: Text("Delete attendance", style: TextStyle(color: _error)),
-        ),
+      itemBuilder: (_) => const [
+        PopupMenuItem(value: "close", child: Text("Close attendance")),
       ],
     );
   }
@@ -692,7 +668,9 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                   SizedBox(width: 4.w),
                   _buildMyVoteBadge(poll),
                 ],
-                if (isAdmin) _buildAdminMenu(poll),
+                // The menu's only action is "Close", so it exists only while
+                // the poll is open.
+                if (isAdmin && poll.isOpen) _buildAdminMenu(poll),
               ],
             ),
           ),

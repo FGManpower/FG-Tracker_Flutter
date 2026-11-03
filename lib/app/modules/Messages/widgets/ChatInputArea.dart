@@ -22,6 +22,7 @@ import 'message_Widgets.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/features/voice_input/voice_input_controller.dart';
 import 'package:fgtracker/features/voice_input/voice_input_sheet.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/chat_screen_logic.dart';
 
 class ChatInputArea extends StatefulWidget {
   final RxString messageText;
@@ -131,8 +132,23 @@ class _ChatInputAreaState extends State<ChatInputArea> {
     }
   }
 
+  /// Last real keyboard height (logical px). Read from the View because the
+  /// Scaffold removes the keyboard inset from this widget's MediaQuery.
+  double? _lastKeyboardHeight;
+
+  double _emojiHeight(BuildContext context) =>
+      ChatScreenRules.emojiPanelHeight(
+        screenHeight: MediaQuery.sizeOf(context).height,
+        lastKeyboardHeight: _lastKeyboardHeight,
+        fallback: 300.h,
+      );
+
   @override
   Widget build(BuildContext context) {
+    final view = View.of(context);
+    final keyboard = view.viewInsets.bottom / view.devicePixelRatio;
+    if (keyboard > 120) _lastKeyboardHeight = keyboard;
+
     return SafeArea(
       top: false,
       child: Obx(() {
@@ -689,7 +705,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                             false))
                       Container(
                         color: Colors.white,
-                        height: 300.h,
+                        height: _emojiHeight(context),
                         child: EmojiPicker(
                           textEditingController: widget.textController,
                           onEmojiSelected: (category, emoji) {
@@ -697,7 +713,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                 widget.textController.text;
                           },
                           config: Config(
-                            height: 300.h,
+                            height: _emojiHeight(context),
                             checkPlatformCompatibility: true,
                             emojiViewConfig: EmojiViewConfig(
                               columns: 8,

@@ -4,9 +4,8 @@ import 'package:fgtracker/app/Model/package_pricing_model.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 
-// Shared look for the Package Pricing screens — app primary colour + Inter font
+// Shared look for the Packages & Pricing screen — app primary colour + Inter font
 class PackageUi {
   PackageUi._();
   static const Color accent = AppColors.primaryDarkblue;
@@ -15,10 +14,7 @@ class PackageUi {
   static const Color textSecondary = AppColors.primarySecondaryElementText;
   static const Color border = Color(0xFFE6E4F0);
   static const Color divider = Color(0xFFF1F1F4);
-  static const Color green = Color(0xFF15803D);
-  static const Color greenBg = AppColors.greenLight;
   static const Color shadow = Color.fromRGBO(16, 16, 64, 0.06);
-  static const List<FontFeature> tabular = [FontFeature.tabularFigures()];
 
   /// Keeps the layout phone-sized on tablets / landscape
   static const double maxContentWidth = 520;
@@ -41,10 +37,10 @@ class PackageModuleStyle {
         const PackageModuleStyle(Icons.how_to_reg_rounded, Color(0xFF16A34A)),
       PackageModuleKey.walkieTalkie => const PackageModuleStyle(
           Icons.settings_voice_rounded, PackageUi.accent),
-      PackageModuleKey.safeZoneRoute => const PackageModuleStyle(
-          Icons.shield_rounded, Color(0xFFEA580C)),
-      PackageModuleKey.liveTracking => const PackageModuleStyle(
-          Icons.my_location_rounded, Color(0xFF2563EB)),
+      PackageModuleKey.safeZoneRoute =>
+        const PackageModuleStyle(Icons.shield_rounded, Color(0xFFEA580C)),
+      PackageModuleKey.liveTracking =>
+        const PackageModuleStyle(Icons.my_location_rounded, Color(0xFF2563EB)),
       _ => const PackageModuleStyle(
           Icons.workspace_premium_rounded, PackageUi.accent),
     };
@@ -60,32 +56,6 @@ class PackageModuleStyle {
     final v = int.tryParse(h, radix: 16);
     return v == null ? null : Color(v);
   }
-}
-
-/// ₹1,499 / ₹82.50 (Indian grouping)
-String formatPackageMoney(num value, [String currency = 'INR']) {
-  final code = currency.toUpperCase();
-  final symbol = code == 'INR' ? '₹' : '$code ';
-  final rounded = (value * 100).round() / 100;
-  final whole = rounded == rounded.roundToDouble();
-  return NumberFormat.currency(
-    locale: 'en_IN',
-    symbol: symbol,
-    decimalDigits: whole ? 0 : 2,
-  ).format(rounded);
-}
-
-/// "2026-12-31" → "31 Dec 2026"
-String? formatPackageDate(String? iso) {
-  if (iso == null) return null;
-  final d = DateTime.tryParse(iso);
-  if (d == null) return iso;
-  const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-  final local = d.toLocal();
-  return '${local.day} ${months[local.month - 1]} ${local.year}';
 }
 
 /// Rounded tile with the module icon (or backend icon image)
@@ -213,46 +183,6 @@ class PackageHeader extends StatelessWidget {
   }
 }
 
-class PackageSectionTitle extends StatelessWidget {
-  final String text;
-  final String? trailing;
-  const PackageSectionTitle(this.text, {super.key, this.trailing});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(left: 2.w, bottom: 8.h),
-      child: Row(
-        children: [
-          Expanded(
-            child: Semantics(
-              header: true,
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontFamily: FontFamily.interBold,
-                  fontWeight: FontWeight.w700,
-                  color: PackageUi.text,
-                ),
-              ),
-            ),
-          ),
-          if (trailing != null)
-            Text(
-              trailing!,
-              style: TextStyle(
-                fontSize: 11.5.sp,
-                fontFamily: FontFamily.interMedium,
-                color: PackageUi.textSecondary,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
 /// Small rounded label: "Popular", "Save 20%", "Active"
 class PackagePill extends StatelessWidget {
   final String text;
@@ -283,14 +213,18 @@ class PackagePill extends StatelessWidget {
             Icon(icon, size: 12.sp, color: color),
             SizedBox(width: 4.w),
           ],
-          Text(
-            text,
-            maxLines: 1,
-            style: TextStyle(
-              fontSize: 10.5.sp,
-              fontFamily: FontFamily.interSemiBold,
-              fontWeight: FontWeight.w600,
-              color: color,
+          // Long labels truncate instead of overflowing the pill
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10.5.sp,
+                fontFamily: FontFamily.interSemiBold,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
             ),
           ),
         ],

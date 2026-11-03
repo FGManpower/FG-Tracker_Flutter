@@ -13,6 +13,8 @@ import 'package:fgtracker/app/modules/status/views/status_section.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/util/message_preview_builder.dart';
+import '../Controller/chat_list_logic.dart';
+import '../widgets/chat_list_row_widgets.dart';
 import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../routes/app_pages.dart';
 import '../../home/Controller/total_group_controller.dart';
@@ -32,7 +34,10 @@ import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 class ChatListScreen extends StatelessWidget {
   ChatListScreen({super.key});
 
-  final ChatListController controller = Get.put(ChatListController());
+  // Reuses the session-wide store created by HomeController (Get.put keeps an
+  // existing instance), so leaving this screen no longer stops the sockets.
+  final ChatListController controller = Get.put(ChatListController())
+    ..onChatListOpened();
 
   @override
   Widget build(BuildContext context) {
@@ -496,7 +501,20 @@ class _AllChatsBody extends StatelessWidget {
           child: RefreshIndicator(
             color: const Color(0xFF6B4DFF),
             onRefresh: controller.refreshChats,
-            child: SingleChildScrollView(
+            // Load the next page near the bottom; only page 1 was ever
+            // loaded before, so chats beyond the first 20 never appeared.
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (n) {
+                if (n.metrics.axis == Axis.vertical &&
+                    n.metrics.extentAfter < 300 &&
+                    controller.hasNextPage.value &&
+                    !controller.isLoading.value &&
+                    !controller.isSearching.value) {
+                  controller.nextPage();
+                }
+                return false;
+              },
+              child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -510,8 +528,10 @@ class _AllChatsBody extends StatelessWidget {
                   Obx(
                     () => _sectionTitle(
                       controller.isSearching.value ? "Search Results" : "All Chats",
-                      badgeCount: controller.displayedChats.isNotEmpty
-                          ? controller.displayedChats.length
+                      // Unread chats in the main list (archived excluded),
+                      // not the number of loaded rows.
+                      badgeCount: controller.mainUnreadChatCount > 0
+                          ? controller.mainUnreadChatCount
                           : null,
                     ),
                   ),
@@ -555,10 +575,13 @@ class _AllChatsBody extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final chat = controller.displayedChats[index];
 
-                          return _chatRow(
+                          return KeyedSubtree(
+                            key: ValueKey(ChatListRules.chatKey(chat)),
+                            child: _chatRow(
                             context: context,
                             index: index,
                             chat: chat,
+                            typingLabel: controller.typingLabelFor(chat),
                             name: chat.name ?? chat.groupName ?? "Unknown User",
                             role: chat.role ?? "",
                             msg: MessagePreviewBuilder.forChat(
@@ -576,6 +599,7 @@ class _AllChatsBody extends StatelessWidget {
                                     : Colors.grey),
                             isGroup: chat.isGroup ?? false,
                             image: chat.image,
+                            ),
                           );
                         },
                       ),
@@ -584,6 +608,7 @@ class _AllChatsBody extends StatelessWidget {
                   SizedBox(height: 20.h),
                 ],
               ),
+            ),
             ),
           ),
         ),
@@ -853,6 +878,7 @@ class _AllChatsBody extends StatelessWidget {
     bool isGroup = false,
     String? image,
     int? index,
+    String? typingLabel,
   }) {
     Offset tapPos = Offset.zero;
 
@@ -980,6 +1006,7 @@ class _AllChatsBody extends StatelessWidget {
           name: name,
           role: role,
           msg: msg,
+          typingLabel: typingLabel,
           time: time,
           unreadCount: unreadCount,
           isMarkedUnread: controller.isChatMarkedUnread(chat),
@@ -1003,6 +1030,7 @@ class _AllChatsBody extends StatelessWidget {
     required String name,
     required String role,
     required String msg,
+    String? typingLabel,
     required String time,
     int unreadCount = 0,
     bool isMarkedUnread = false,
@@ -1197,7 +1225,9 @@ class _AllChatsBody extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 4.h),
-              if (isDeleted)
+              if (typingLabel != null)
+                ChatTypingText(label: typingLabel)
+              else if (isDeleted)
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1629,23 +1659,11 @@ class _AllChatsBody extends StatelessWidget {
               ),
               SizedBox(width: 12.w),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    reausabletext(
-                      "Archived",
-                      fontsize: 13.sp,
-                      fontfamily: FontFamily.interBold,
-                      color: Colors.black87,
-                    ),
-                    SizedBox(height: 2.h),
-                    reausabletext(
-                      "View archived conversations",
-                      fontsize: 10.sp,
-                      color: Colors.grey,
-                      maxline: 1,
-                    ),
-                  ],
+                child: Obx(
+                  () => ArchivedEntryLabels(
+                    archivedCount: controller.displayedArchivedChats.length,
+                    unreadCount: controller.archivedUnreadCount,
+                  ),
                 ),
               ),
               Icon(

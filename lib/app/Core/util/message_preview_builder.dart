@@ -144,14 +144,21 @@ class MessagePreviewBuilder {
 
   /// Preview for a row of the unified (Common/Private/Group) chat list and
   /// the archived list.
+  ///
+  /// Formats from the RAW last message (`content`/`message` + `senderId`/
+  /// `senderName`) whenever the payload has it, and adds the sender label
+  /// exactly once: "You: …" for my messages, "Name: …" for others in
+  /// groups. The backend's pre-formatted `preview` string is only a fallback
+  /// for payloads without raw content (it may already contain a name).
   static MessagePreview forChat(
     PrivateChatModel chat, {
     String? currentUserId,
   }) {
+    final raw = _rawLastMessageContent(chat.lastMessageData);
     return build(
       type: chat.messageType,
-      backendPreview: chat.preview,
-      content: chat.message,
+      backendPreview: raw == null ? chat.preview : null,
+      content: raw ?? chat.message,
       caption: chat.lastMessageData?['caption']?.toString(),
       data: chat.lastMessageData,
       isDeleted: chat.isDeletedForEveryone == true,
@@ -159,7 +166,18 @@ class MessagePreviewBuilder {
       senderId: chat.senderId,
       senderName: chat.senderName,
       currentUserId: currentUserId,
+      prefixOwnMessages: true,
     );
+  }
+
+  /// Raw message text from a last-message map, ignoring display fields.
+  static String? _rawLastMessageContent(Map<String, dynamic>? data) {
+    if (data == null) return null;
+    for (final key in const ['content', 'message', 'text', 'body']) {
+      final v = data[key];
+      if (v is String && v.trim().isNotEmpty) return v.trim();
+    }
+    return null;
   }
 
   /// Preview for the group cards (`/group-chat-list` model).
@@ -346,6 +364,8 @@ class MessagePreviewBuilder {
     String? senderId,
     String? senderName,
     String? currentUserId,
+    // Chat-list rows: also show "You: " on my own messages in private chats.
+    bool prefixOwnMessages = false,
   }) {
     final kind = isDeleted ? MessageKind.deleted : MessageTypes.kindOf(type);
 
@@ -371,12 +391,14 @@ class MessagePreviewBuilder {
       contentJson: contentJson ?? const {},
     );
 
-    final prefix = (isGroup && kind != MessageKind.system)
+    final prefix = ((isGroup || prefixOwnMessages) &&
+            kind != MessageKind.system)
         ? _senderPrefix(
             senderId: senderId,
             senderName: senderName,
             currentUserId: currentUserId,
             alreadyShown: body.text,
+            includeOthers: isGroup,
           )
         : '';
 
@@ -532,19 +554,23 @@ class MessagePreviewBuilder {
     required String? senderName,
     required String? currentUserId,
     required String alreadyShown,
+    bool includeOthers = true,
   }) {
     final id = senderId?.trim() ?? '';
     final me = currentUserId?.trim() ?? '';
+    final name = senderName?.trim() ?? '';
     final String label;
     if (id.isNotEmpty && me.isNotEmpty && me != 'null' && id == me) {
       label = 'You';
     } else {
-      final name = senderName?.trim() ?? '';
-      if (name.isEmpty) return '';
+      if (!includeOthers || name.isEmpty) return '';
       label = name;
     }
-    // Backend may already prefix the preview; never show it twice.
-    if (alreadyShown.startsWith('$label:') || alreadyShown.startsWith('You:')) {
+    // Legacy payloads without raw content: the backend preview may already
+    // carry "<Name>: " (even for my own message). Never show a name twice.
+    if (alreadyShown.startsWith('$label:') ||
+        alreadyShown.startsWith('You:') ||
+        (name.isNotEmpty && alreadyShown.startsWith('$name:'))) {
       return '';
     }
     return '$label: ';

@@ -48,13 +48,12 @@ class ChatScreen extends GetView<MessageController> {
   @override
   Widget build(BuildContext context) {
     final userData = controller.memberData;
-    return WillPopScope(
-      onWillPop: () async {
-        controller.handleBackPressed(
-          context,
-          groupID: int.tryParse(userData.groupId?.toString() ?? "0") ?? 0,
-        );
-        return false;
+    // canPop: true keeps the iOS swipe-back gesture (WillPopScope disabled
+    // it); the leave/cleanup runs once after any kind of pop.
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) controller.onRoutePopped();
       },
       child: Scaffold(
         backgroundColor: _scaffoldBg,
