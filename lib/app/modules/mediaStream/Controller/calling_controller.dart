@@ -18,9 +18,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-
 import '../../../../gen/assets.gen.dart';
-
 import '../../../Data/Services/IncommingCallKit/call_session.dart'
     show CallSessionState;
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
