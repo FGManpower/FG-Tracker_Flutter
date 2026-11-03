@@ -107,6 +107,8 @@ class MemberData {
   bool? isCreator;
   bool? isOnline;
   String? lastSeen;
+  int? chatId;
+
   bool? locationSharing;
   String? location;
   String? department;
@@ -116,6 +118,8 @@ class MemberData {
     this.id,
     this.groupId,
     this.userId,
+    this.chatId,
+
     this.name,
     this.mobileNo,
     this.profileImage,
@@ -183,7 +187,14 @@ class MemberData {
             user?['profileImage'] ??
             user?['image'])
         ?.toString();
-
+    chatId = _parseInt(
+      json['chatId'] ??
+          json['chat_id'] ??
+          json['privateChatId'] ??
+          json['private_chat_id'] ??
+          user?['chatId'] ??
+          user?['chat_id'],
+    );
     final rawCreator = json['isCreator'] ??
         json['is_creator'] ??
         json['isAdmin'] ??
@@ -229,6 +240,7 @@ class MemberData {
     data['locationSharing'] = locationSharing;
     data['location'] = location;
     data['department'] = department;
+    data['chatId'] = chatId;
     data['team'] = team;
     return data;
   }

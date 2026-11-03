@@ -1,6 +1,8 @@
 
 
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -173,7 +175,7 @@ class GroupInfoBottomSheet extends StatelessWidget {
               Obx(() {
                 final activeCount = _effectiveController.totalParticipants.value > 0
                     ? _effectiveController.totalParticipants.value
-                    : _effectiveController.sortedParticipants.length;
+                    : _effectiveController.participants.length;
                 return Text(
                   "$activeCount Active in Walkie",
                   style: TextStyle(
@@ -213,6 +215,24 @@ class GroupInfoBottomSheet extends StatelessWidget {
     );
   }
 
+  void _openMemberProfile(dynamic member, String memberName) {
+    dynamic chatId;
+    dynamic mobileNo;
+    try {
+      chatId = member.chatId;
+    } catch (_) {}
+    try {
+      mobileNo = member.mobileNo;
+    } catch (_) {}
+    showUserQuickProfile(
+      userId: member.userId,
+      name: memberName,
+      profileImage: member.profileImage?.toString(),
+      mobileNo: mobileNo?.toString(),
+      chatId: int.tryParse(chatId?.toString() ?? ''),
+    );
+  }
+
   Widget _buildMembersList() {
     return ListView.separated(
       shrinkWrap: true,
@@ -235,9 +255,44 @@ class GroupInfoBottomSheet extends StatelessWidget {
                     int.tryParse(p.userId) == int.tryParse(memberId)),
           );
 
-          final bool isOnline = participant != null;
+          final bool inWalkie = participant != null;
           final bool isMuted = participant?.isMuted == true;
           final bool isSpeaking = participant?.isSpeaking == true;
+          final bool isAppOnline = member.isOnline == true;
+          final String? rawLastSeen = member.lastSeen?.toString();
+
+          final String statusText;
+          final Color statusColor;
+
+          if (inWalkie) {
+            if (isSpeaking) {
+              statusText = "Speaking...";
+              statusColor = _primaryPurple;
+            } else if (isMuted) {
+              statusText = "Muted • In Walkie";
+              statusColor = _mutedRed;
+            } else {
+              statusText = "In Walkie Channel";
+              statusColor = _activeGreen;
+            }
+          } else if (isAppOnline) {
+            statusText = "Active";
+            statusColor = _activeGreen;
+          } else if (rawLastSeen != null &&
+              rawLastSeen.trim().isNotEmpty &&
+              rawLastSeen.toLowerCase() != 'offline' &&
+              rawLastSeen.toLowerCase() != 'null') {
+            final dt = DateTime.tryParse(rawLastSeen);
+            if (dt != null) {
+              statusText = "Last seen ${Tracking().getTimeAgo(dt)}";
+            } else {
+              statusText = "Last seen: $rawLastSeen";
+            }
+            statusColor = _textSecondary;
+          } else {
+            statusText = "Offline";
+            statusColor = _textSecondary;
+          }
 
           return Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
@@ -247,34 +302,39 @@ class GroupInfoBottomSheet extends StatelessWidget {
             ),
             child: Row(
               children: [
-                _buildMemberAvatar(member, memberName, isOnline, isMuted),
+                GestureDetector(
+                  onTap: () => _openMemberProfile(member, memberName),
+                  child: _buildMemberAvatar(
+                    member,
+                    memberName,
+                    inWalkie: inWalkie,
+                    isSpeaking: isSpeaking,
+                    isMuted: isMuted,
+                    isAppOnline: isAppOnline,
+                  ),
+                ),
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        memberName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: _textDark,
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
+                      GestureDetector(
+                        onTap: () => _openMemberProfile(member, memberName),
+                        child: Text(
+                          memberName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: _textDark,
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       Text(
-                        isSpeaking
-                            ? "Speaking..."
-                            : (isMuted
-                            ? "Muted"
-                            : (isOnline ? "In Walkie Channel" : "Offline")),
+                        statusText,
                         style: TextStyle(
-                          color: isSpeaking
-                              ? _primaryPurple
-                              : (isMuted
-                              ? _mutedRed
-                              : (isOnline ? _activeGreen : _textSecondary)),
+                          color: statusColor,
                           fontSize: 10.5.sp,
                           fontWeight: FontWeight.w500,
                         ),
@@ -308,10 +368,12 @@ class GroupInfoBottomSheet extends StatelessWidget {
 
   Widget _buildMemberAvatar(
       dynamic member,
-      String memberName,
-      bool isOnline,
-      bool isMuted,
-      ) {
+      String memberName, {
+        required bool inWalkie,
+        required bool isSpeaking,
+        required bool isMuted,
+        required bool isAppOnline,
+      }) {
     final String? profileImage = member.profileImage;
     final bool hasValidImage = profileImage != null &&
         profileImage.isNotEmpty &&
@@ -322,6 +384,17 @@ class GroupInfoBottomSheet extends StatelessWidget {
         ? profileImage
         : ConstRes.aImageBaseUrl + profileImage)
         : '';
+
+    final Color badgeColor;
+    if (isMuted) {
+      badgeColor = _mutedRed;
+    } else if (isSpeaking) {
+      badgeColor = _primaryPurple;
+    } else if (inWalkie || isAppOnline) {
+      badgeColor = _activeGreen;
+    } else {
+      badgeColor = Colors.grey.shade400;
+    }
 
     return Stack(
       children: [
@@ -347,9 +420,7 @@ class GroupInfoBottomSheet extends StatelessWidget {
             width: isMuted ? 13.r : 8.r,
             height: isMuted ? 13.r : 8.r,
             decoration: BoxDecoration(
-              color: isMuted
-                  ? _mutedRed
-                  : (isOnline ? _activeGreen : Colors.grey.shade400),
+              color: badgeColor,
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 1.5),
             ),

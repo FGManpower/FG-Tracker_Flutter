@@ -4,7 +4,6 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 
-
 @pragma('vm:entry-point')
 void startScreenShareTaskHandler() {
   FlutterForegroundTask.setTaskHandler(ScreenShareTaskHandler());
@@ -17,21 +16,17 @@ class ScreenShareTaskHandler extends TaskHandler {
   }
 
   @override
-  void onRepeatEvent(DateTime timestamp) {
-  }
+  void onRepeatEvent(DateTime timestamp) {}
 
   @override
   Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
-    log('[ScreenShareTaskHandler] Background Task Destroyed (isTimeout: $isTimeout)');
+    log('[ScreenShareTaskHandler] Background Task Destroyed');
   }
 
   @override
   void onNotificationButtonPressed(String id) {
     log('[ScreenShareTaskHandler] Notification Button Pressed: $id');
-
-    if (id == 'btn_stop_sharing') {
-      _stopSharingFromNotification();
-    } else if (id == 'btn_open_call') {
+    if (id == 'btn_stop_sharing' || id == 'btn_open_call') {
       FlutterForegroundTask.launchApp();
       _redirectToCallingScreen();
     }
@@ -46,16 +41,7 @@ class ScreenShareTaskHandler extends TaskHandler {
 
   void _redirectToCallingScreen() {
     if (Get.currentRoute != Routes.groupCallingScreen) {
-      log('Navigating to Group Calling Screen');
       Get.toNamed(Routes.groupCallingScreen);
-    }
-  }
-
-  void _stopSharingFromNotification() {
-    try {
-      _redirectToCallingScreen();
-    } catch (e) {
-      log('Error stopping from notification: $e');
     }
   }
 }
@@ -87,8 +73,10 @@ class ScreenShareForegroundService {
     }
   }
 
-  static Future<bool> start({required String groupName}) async {
+  /// 1. Call service during normal calls (Microphone ONLY - no permission crash)
+  static Future<bool> startCallService({required String groupName}) async {
     if (!GetPlatform.isAndroid) return true;
+    init();
 
     try {
       final notificationPermission =
@@ -97,56 +85,67 @@ class ScreenShareForegroundService {
         await FlutterForegroundTask.requestNotificationPermission();
       }
 
-      final isRunning = await FlutterForegroundTask.isRunningService;
-      if (!isRunning) {
-        final ServiceRequestResult result =
-        await FlutterForegroundTask.startService(
-          serviceId: 256,
-          notificationTitle: 'Sharing your screen',
-          notificationText: 'Sharing in $groupName • Tap to return to call',
-          notificationIcon: const NotificationIcon(
-            metaDataName: 'com.fg.fgtracker',
-          ),
-          notificationButtons: [
-            const NotificationButton(
-              id: 'btn_open_call',
-              text: 'Return to Call',
-              textColor: Color(0xFF6E5CA4),
-            ),
-            const NotificationButton(
-              id: 'btn_stop_sharing',
-              text: 'Stop Sharing',
-              textColor: Color(0xFFFF3B30),
-            ),
-          ],
-          callback: startScreenShareTaskHandler,
-        );
-        log('Foreground Service Start Result: $result');
-      }
-
-      await Future.delayed(const Duration(milliseconds: 300));
+      await FlutterForegroundTask.startService(
+        serviceId: 256,
+        notificationTitle: 'In call · $groupName',
+        notificationText: 'Microphone is active',
+        notificationIcon: const NotificationIcon(
+          metaDataName: 'com.fg.fgtracker',
+        ),
+        serviceTypes: const [
+          ForegroundServiceTypes.microphone,
+        ],
+        callback: startScreenShareTaskHandler,
+      );
       return true;
     } catch (e) {
-      log('Foreground Service Start Error: $e');
+      log('Call Service Start Error: $e');
       return false;
     }
   }
 
-  static Future<void> updateNotification({required String text}) async {
-    if (!GetPlatform.isAndroid) return;
-    if (await FlutterForegroundTask.isRunningService) {
-      await FlutterForegroundTask.updateService(
-        notificationText: text,
+  /// 2. Screen share service (Microphone + MediaProjection AFTER getDisplayMedia)
+  static Future<bool> startScreenShareService({required String groupName}) async {
+    if (!GetPlatform.isAndroid) return true;
+    init();
+
+    try {
+      await FlutterForegroundTask.startService(
+        serviceId: 256,
+        notificationTitle: 'Sharing your screen',
+        notificationText: 'Sharing in $groupName • Tap to return to call',
+        notificationIcon: const NotificationIcon(
+          metaDataName: 'com.fg.fgtracker',
+        ),
+        notificationButtons: [
+          const NotificationButton(
+            id: 'btn_open_call',
+            text: 'Return to Call',
+            textColor: Color(0xFF6E5CA4),
+          ),
+          const NotificationButton(
+            id: 'btn_stop_sharing',
+            text: 'Stop Sharing',
+            textColor: Color(0xFFFF3B30),
+          ),
+        ],
+        serviceTypes: const [
+          ForegroundServiceTypes.microphone,
+          ForegroundServiceTypes.mediaProjection,
+        ],
+        callback: startScreenShareTaskHandler,
       );
+      return true;
+    } catch (e) {
+      log('Screen Share Service Start Error: $e');
+      return false;
     }
   }
 
   static Future<void> stop() async {
     if (!GetPlatform.isAndroid) return;
-
     try {
-      final isRunning = await FlutterForegroundTask.isRunningService;
-      if (isRunning) {
+      if (await FlutterForegroundTask.isRunningService) {
         await FlutterForegroundTask.stopService();
         log('Foreground Service Stopped');
       }

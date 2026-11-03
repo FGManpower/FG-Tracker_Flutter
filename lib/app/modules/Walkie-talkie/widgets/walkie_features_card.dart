@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/crown_icon.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_trial_controller.dart';
@@ -119,11 +120,7 @@ class WalkieFeaturesCard extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.workspace_premium_rounded,
-                        color: Colors.white,
-                        size: _sp(context, 20),
-                      ),
+                      GoldenCrownBadge(size: _sp(context, 20)),
                       SizedBox(width: 8.w),
                       reausabletext(
                         "Purchase / Upgrade Plan",

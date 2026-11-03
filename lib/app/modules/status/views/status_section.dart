@@ -90,8 +90,7 @@ class _StatusSectionState extends State<StatusSection> {
                 final value = opt['value'] as String;
                 final icon = opt['icon'] as IconData;
                 return Obx(() {
-                  final selected =
-                      controller.defaultPrivacyType.value == value;
+                  final selected = controller.defaultPrivacyType.value == value;
                   return InkWell(
                     onTap: () {
                       controller.defaultPrivacyType.value = value;
@@ -154,7 +153,7 @@ class _StatusSectionState extends State<StatusSection> {
     _removePopup();
 
     final RenderBox? box =
-    _myStatusKey.currentContext?.findRenderObject() as RenderBox?;
+        _myStatusKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return;
 
     final Offset pos = box.localToGlobal(Offset.zero);
@@ -195,25 +194,31 @@ class _StatusSectionState extends State<StatusSection> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _popupTile(
-                        icon: Icons.visibility_outlined,
-                        title: 'View My Status',
-                        onTap: () {
-                          _removePopup();
-                          if (controller.myStatuses.isEmpty) {
-                            Get.to(() => const AddStatusScreen());
-                            return;
-                          }
-                          Get.to(
-                                () => StatusViewScreen(
-                              isOwnStatus: true,
-                              userName: 'My Status',
-                              statuses: controller.myStatuses.toList(),
-                              currentIndex: 0,
-                            ),
-                          );
-                        },
-                      ),
+                      if (controller.myStatuses.isNotEmpty)
+                        _popupTile(
+                          icon: Icons.visibility_outlined,
+                          title: 'View My Status',
+                          onTap: () {
+                            _removePopup();
+
+                            Get.to(
+                              () => StatusViewScreen(
+                                isOwnStatus: true,
+                                userName: 'My Status',
+                                statuses: controller.myStatuses.toList(),
+                                currentIndex: 0,
+                              ),
+                            );
+                          },
+                        ),
+
+                      if (controller.myStatuses.isNotEmpty)
+                        Divider(
+                          height: 1,
+                          color: Colors.grey.withValues(alpha: 0.15),
+                          indent: 12.w,
+                          endIndent: 12.w,
+                        ),
                       Divider(
                         height: 1,
                         color: Colors.grey.withValues(alpha: 0.15),
@@ -228,21 +233,21 @@ class _StatusSectionState extends State<StatusSection> {
                           Get.to(() => const AddStatusScreen());
                         },
                       ),
-                      Divider(
-                        height: 1,
-                        color: Colors.grey.withValues(alpha: 0.15),
-                        indent: 12.w,
-                        endIndent: 12.w,
-                      ),
-                      _popupTile(
-                        icon: Icons.lock_outline_rounded,
-                        title: 'Status Privacy',
-                        color: Colors.black87,
-                        onTap: () {
-                          _removePopup();
-                          _showPrivacySheet();
-                        },
-                      ),
+                      // Divider(
+                      //   height: 1,
+                      //   color: Colors.grey.withValues(alpha: 0.15),
+                      //   indent: 12.w,
+                      //   endIndent: 12.w,
+                      // ),
+                      // _popupTile(
+                      //   icon: Icons.lock_outline_rounded,
+                      //   title: 'Status Privacy',
+                      //   color: Colors.black87,
+                      //   onTap: () {
+                      //     _removePopup();
+                      //     _showPrivacySheet();
+                      //   },
+                      // ),
                     ],
                   ),
                 ),
@@ -319,8 +324,8 @@ class _StatusSectionState extends State<StatusSection> {
                   final myPreviewImage = lastStatus == null
                       ? null
                       : (lastStatus.type == 'video'
-                      ? lastStatus.thumbnailUrl
-                      : lastStatus.mediaUrl);
+                          ? lastStatus.thumbnailUrl
+                          : lastStatus.mediaUrl);
 
                   return _statusItem(
                     key: _myStatusKey,
@@ -347,29 +352,28 @@ class _StatusSectionState extends State<StatusSection> {
 
                 final ContactStatusGroupModel group = groups[groupIndex];
                 final bool isHighlighted =
-                controller.highlightedUserIds.contains(group.user.id);
+                    controller.highlightedUserIds.contains(group.user.id);
 
                 return _statusItem(
                   name: group.user.name,
                   subtitle: group.isAllViewed ? 'Viewed' : 'New',
                   image: group.user.profilePic,
-                  borderColor: isHighlighted
-                      ? const Color(0xFF6B4DFF)
-                      : group.ringColor,
+                  borderColor:
+                      isHighlighted ? const Color(0xFF6B4DFF) : group.ringColor,
                   dotColor: group.ringColor,
                   isMe: false,
                   onTap: () {
                     if (group.statuses.isEmpty) return;
                     final firstUnviewedIndex =
-                    group.statuses.indexWhere((s) => !s.isViewed);
+                        group.statuses.indexWhere((s) => !s.isViewed);
                     Get.to(
-                          () => StatusViewScreen(
+                      () => StatusViewScreen(
                         isOwnStatus: false,
                         userName: group.user.name,
                         userAvatar: group.user.profilePic,
                         statuses: group.statuses.toList(),
                         currentIndex:
-                        firstUnviewedIndex >= 0 ? firstUnviewedIndex : 0,
+                            firstUnviewedIndex >= 0 ? firstUnviewedIndex : 0,
                         allContactGroups: groups,
                         initialGroupIndex: groupIndex,
                       ),
@@ -420,17 +424,17 @@ class _StatusSectionState extends State<StatusSection> {
                   child: CircleAvatar(
                     radius: 26.r,
                     backgroundColor:
-                    isMe ? const Color(0xFFE9E7FF) : Colors.grey.shade300,
+                        isMe ? const Color(0xFFE9E7FF) : Colors.grey.shade300,
                     backgroundImage: (image != null && image.isNotEmpty)
                         ? NetworkImage(image)
                         : null,
                     child: (image == null || image.isEmpty)
                         ? Icon(
-                      Icons.person,
-                      color:
-                      isMe ? const Color(0xFF6B4DFF) : Colors.white,
-                      size: 26.sp,
-                    )
+                            Icons.person,
+                            color:
+                                isMe ? const Color(0xFF6B4DFF) : Colors.white,
+                            size: 26.sp,
+                          )
                         : null,
                   ),
                 ),

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:get/get.dart';
@@ -53,11 +54,27 @@ class StatusSocketService extends GetxService {
       }
     });
 
-    _socket!.on('status:deleted', (data) {
+    void handleDeleted(dynamic data) {
+      if (data == null) return;
+      Map<String, dynamic>? map;
       if (data is Map) {
-        onStatusDeletedEvent.value = Map<String, dynamic>.from(data);
+        map = Map<String, dynamic>.from(data);
+      } else if (data is String) {
+        try {
+          final decoded = jsonDecode(data);
+          if (decoded is Map) {
+            map = Map<String, dynamic>.from(decoded);
+          }
+        } catch (_) {}
       }
-    });
+      if (map != null) {
+        onStatusDeletedEvent.value = map;
+        onStatusDeletedEvent.refresh();
+      }
+    }
+
+    _socket!.on('status:deleted', handleDeleted);
+    _socket!.on('status:delete', handleDeleted);
   }
 
   void emitStatusView({

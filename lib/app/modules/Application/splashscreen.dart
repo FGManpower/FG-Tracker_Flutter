@@ -25,7 +25,7 @@ class Splashscreen extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              _PulseCircle(animation: controller.animationController),
+              _PulseCircle(animation: controller.pulseAnimation),
               FadeTransition(
                 opacity: controller.fadeAnimation,
                 child: ScaleTransition(
@@ -51,8 +51,11 @@ class _PulseCircle extends StatelessWidget {
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
-        final double size = 200.w + (animation.value * 80.w);
-        final double opacity = (1 - animation.value) * 0.2;
+        if (animation.value <= 0.0) {
+          return const SizedBox.shrink();
+        }
+        final double size = 180.w + (animation.value * 90.w);
+        final double opacity = (1 - animation.value) * 0.25;
         return Container(
           width: size,
           height: size,

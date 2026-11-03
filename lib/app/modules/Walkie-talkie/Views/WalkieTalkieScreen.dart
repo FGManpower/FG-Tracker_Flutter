@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/Curve/walkie_painter.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -15,9 +16,11 @@ import 'package:fgtracker/app/modules/Walkie-talkie/widgets/group_info_bottom_sh
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
 import 'package:fgtracker/app/Data/Services/walkie_talkie_trial_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,10 +40,44 @@ class GroupWalkieScreen extends StatefulWidget {
 }
 
 class _GroupWalkieScreenState extends State<GroupWalkieScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final controller = Get.put(GroupWalkieController());
   Map<String, dynamic>? args;
+  bool _isPlaceholderImage(String url) {
+    final lower = url.toLowerCase().trim();
+    return lower.isEmpty ||
+        lower == 'null' ||
+        lower == 'undefined' ||
+        lower.endsWith('/null') ||
+        lower.contains('default-profile') ||
+        lower.contains('default_profile') ||
+        lower.contains('default-avatar') ||
+        lower.contains('default_avatar') ||
+        lower.contains('default-group') ||
+        lower.contains('default_group') ||
+        lower.contains('default.png') ||
+        lower.contains('default-image') ||
+        lower.contains('default_image');
+  }
 
+  String get _groupProfileUrl {
+    final profile = (
+        args?['groupProfile'] ??
+            args?['groupImage'] ??
+            ''
+    ).toString().trim();
+
+    if (_isPlaceholderImage(profile)) {
+      return '';
+    }
+
+    if (profile.startsWith('http://') ||
+        profile.startsWith('https://')) {
+      return profile;
+    }
+
+    return '${ConstRes.aImageBaseUrl}$profile';
+  }
   late final AnimationController _rippleController;
   late final AnimationController _pulseController;
   late final AnimationController _lockHintController;
@@ -49,6 +86,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   bool _hasLeft = false;
   bool _isDisposed = false;
   bool _pttInProgress = false;
+  bool _isStopping = false;
+  bool _wantsToTalk = false;
   final bool _allowPop = false;
 
   double _startY = 0.0;
@@ -68,12 +107,95 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   late final Worker _rippleWorker;
   late final Worker _pulseWorker;
 
+  void _safeSetState(VoidCallback fn) {
+    if (!mounted || _isDisposed) return;
+    if (WidgetsBinding.instance.schedulerPhase ==
+            SchedulerPhase.persistentCallbacks ||
+        WidgetsBinding.instance.schedulerPhase ==
+            SchedulerPhase.midFrameMicrotasks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_isDisposed) {
+          setState(fn);
+        }
+      });
+    } else {
+      setState(fn);
+    }
+  }
+
+  Future<void> _handleGroupSwitch(Map<String, dynamic> newArgs) async {
+    if (_isDisposed || !mounted) return;
+    final newGroupId = newArgs['groupId']?.toString() ?? '';
+    if (newGroupId.isEmpty) return;
+
+    log('🔄 Seamlessly switching GroupWalkieScreen from ${controller.currentGroupId} to $newGroupId');
+
+    // 1. Leave the old group's WebRTC session safely
+    _hasLeft = true;
+    try {
+      if (_rippleController.isAnimating) _rippleController.stop();
+      if (_pulseController.isAnimating) _pulseController.stop();
+      if (_lockHintController.isAnimating) _lockHintController.stop();
+    } catch (_) {}
+
+    await GroupWalkieService.instance.leaveGroup();
+    controller.reset();
+    _hasLeft = false;
+
+    // 2. Update screen arguments and state
+    args = Map<String, dynamic>.from(newArgs);
+
+    // Resolve group details if available in GroupController
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      final match =
+          gc.groupData.firstWhereOrNull((g) => g.id?.toString() == newGroupId);
+      if (match != null) {
+        args!['groupName'] =
+            match.groupName ?? args!['groupName'] ?? 'Walkie Group';
+        args!['groupDesc'] = match.groupDesc ?? '';
+        args!['groupCode'] = match.groupCode ?? '';
+        args!['groupProfile'] =
+            args!['groupProfile'] ?? match.groupProfile ?? '';
+      }
+    }
+
+    _safeSetState(() {});
+
+    // 3. Setup controller for new group
+    controller.setCurrentGroup(newGroupId);
+    controller.setConnected(
+        GroupWalkieService.instance.socket?.connected == true);
+
+    final myId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+    final myName =
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? 'You';
+    final myImage =
+        Global.storageServices.get(PrefConst.profileImage)?.toString() ?? '';
+    if (myId.isNotEmpty) {
+      controller.addOrUpdateParticipant(
+        WalkieParticipant(
+          userId: myId,
+          name: myName,
+          image: myImage,
+          isSpeaking: false,
+          isListening: true,
+        ),
+      );
+    }
+
+    // 4. Start progressive initialization for new group
+    await _runProgressiveInitialization(newGroupId);
+  }
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     log('initState() initiated');
-    WalkieLaunchTracker.fromWalkieCall = true;
     WalkieNotificationManager.instance.setWalkieScreenActive(true);
+    controller.onSwitchGroupRequested = _handleGroupSwitch;
     try {
       WakelockPlus.enable();
     } catch (_) {}
@@ -119,6 +241,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           'groupDesc': g.groupDesc ?? '',
           'groupCode': g.groupCode ?? '',
           'isSubscribed': args?['isSubscribed'] ?? _isSubscribed,
+          'groupProfile': args?['groupProfile'] ??
+              gc.groupData.first.groupProfile ??
+              '',
         };
       } else if (groupId.isNotEmpty &&
           (args?['groupName'] == null ||
@@ -138,33 +263,42 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       final groupName = args?['groupName']?.toString() ?? 'Walkie Group';
       log('Configuring active session for group ID: $groupId ($groupName)');
       controller.setCurrentGroup(groupId);
-      controller
-          .setConnected(GroupWalkieService.instance.socket?.connected == true);
 
-      final myId =
-          Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
-      final myName =
-          Global.storageServices.get(PrefConst.userName)?.toString() ?? 'You';
-      final myImage =
-          Global.storageServices.get(PrefConst.profileImage)?.toString() ?? '';
-      if (myId.isNotEmpty) {
-        controller.addOrUpdateParticipant(
-          WalkieParticipant(
-            userId: myId,
-            name: myName,
-            image: myImage,
-            isSpeaking: false,
-            isListening: true,
-          ),
-        );
-      }
+      // Stage 1: Immediate UI rendering, then schedule asynchronous progressive initialization
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_isDisposed && mounted) {
+          controller.setConnected(
+              GroupWalkieService.instance.socket?.connected == true);
 
-      GroupWalkieService.instance.joinGroup(groupId, );
-      _loadGroupMembersFromDb(groupId);
+          final myId =
+              Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+          final myName =
+              Global.storageServices.get(PrefConst.userName)?.toString() ?? 'You';
+          final myImage =
+              Global.storageServices.get(PrefConst.profileImage)?.toString() ?? '';
+          if (myId.isNotEmpty) {
+            controller.addOrUpdateParticipant(
+              WalkieParticipant(
+                userId: myId,
+                name: myName,
+                image: myImage,
+                isSpeaking: false,
+                isListening: true,
+              ),
+            );
+          }
+
+          _runProgressiveInitialization(groupId);
+        }
+      });
     } else {
       log('Error: Invalid Group ID. Returning to previous screen.');
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.back();
+        if (mounted && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        } else {
+          Get.offAllNamed(Routes.Home_Screen);
+        }
         Get.snackbar("Error", "Please select a group first",
             snackPosition: SnackPosition.BOTTOM);
       });
@@ -207,12 +341,17 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   @override
   void dispose() {
     log('dispose() called');
+    WidgetsBinding.instance.removeObserver(this);
     _isDisposed = true;
     _rippleWorker.dispose();
     _pulseWorker.dispose();
     _trialTimer?.cancel();
     _saveTrialRemainingSeconds();
     WalkieLaunchTracker.fromWalkieCall = false;
+    WalkieNotificationManager.instance.setWalkieScreenActive(false);
+    if (controller.onSwitchGroupRequested == _handleGroupSwitch) {
+      controller.onSwitchGroupRequested = null;
+    }
     try {
       WakelockPlus.disable();
     } catch (_) {}
@@ -221,6 +360,71 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _pulseController.dispose();
     _lockHintController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    log('GroupWalkieScreen lifecycle state changed: $state');
+    if (state == AppLifecycleState.resumed) {
+      log('GroupWalkieScreen resumed from background/settings: re-checking mic permission silently');
+      GroupWalkieService.instance.checkMicPermissionSilently();
+      final currentGId = controller.currentGroupId ??
+          args?['groupId']?.toString() ??
+          GroupWalkieService.instance.currentGroupId;
+      if (currentGId != null && currentGId.isNotEmpty) {
+        log('GroupWalkieScreen resumed: ensuring active socket & group connection for $currentGId');
+        GroupWalkieService.instance.joinGroup(currentGId);
+      }
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      if (_wantsToTalk ||
+          controller.isPressed.value ||
+          controller.isSelfLocked.value ||
+          GroupWalkieService.instance.isTalking) {
+        log('Stopping PTT transmission due to app backgrounding / interruption');
+        _wantsToTalk = false;
+        controller.forceUnlockAndReset();
+        _stopTalking();
+      }
+    }
+  }
+
+  Future<void> _runProgressiveInitialization(String groupId) async {
+    log('🚀 Progressive Initialization started for group: $groupId');
+    controller.setInitStage(WalkieInitStage.checkingPrerequisites);
+
+    // Stage 2: Lightweight Prerequisite Checks (silently check mic, network)
+    final micState =
+        await GroupWalkieService.instance.checkMicPermissionSilently();
+    log('Stage 2: Mic permission status: $micState');
+
+    if (_isDisposed || !mounted) return;
+
+    // Stage 3: Load Channel Data asynchronously
+    controller.setInitStage(WalkieInitStage.loadingChannel);
+    _loadGroupMembersFromDb(groupId);
+
+    if (_isDisposed || !mounted) return;
+
+    // Stage 4: Initialize Connection & Audio
+    controller.setInitStage(WalkieInitStage.connecting);
+    final joined = await GroupWalkieService.instance.joinGroup(groupId);
+
+    if (_isDisposed || !mounted) return;
+
+    // Stage 5: Activate PTT Readiness
+    if (joined) {
+      if (micState == WalkieMicPermissionState.granted) {
+        controller.setInitStage(WalkieInitStage.ready);
+      } else {
+        controller.setInitStage(WalkieInitStage.permissionRequired);
+      }
+    } else {
+      controller.setInitStage(WalkieInitStage.failed);
+    }
+    log('🚀 Progressive Initialization completed with stage: ${controller.initStage.value}');
   }
 
   Future<void> _safeLeave() async {
@@ -241,6 +445,32 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     }
     await GroupWalkieService.instance.leaveGroup();
     controller.reset();
+  }
+
+  Future<void> _handleExitNavigation() async {
+    log('Exit confirmed. Closing channel sessions...');
+    if (Get.isDialogOpen == true) {
+      Get.back();
+    } else if (Navigator.of(context, rootNavigator: true).canPop()) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+
+    await _safeLeave();
+
+    if (!mounted) return;
+
+    final bool isColdLaunch = WalkieLaunchTracker.fromWalkieCall &&
+        (Get.previousRoute == Routes.Splash || !Navigator.of(context).canPop());
+
+    WalkieLaunchTracker.fromWalkieCall = false;
+
+    if (!isColdLaunch && Navigator.of(context).canPop()) {
+      log('GroupWalkie: Popping back to previous screen.');
+      Navigator.of(context).pop();
+    } else {
+      log('GroupWalkie: Cold launch or empty stack. Navigating to Home_Screen.');
+      Get.offAllNamed(Routes.Home_Screen);
+    }
   }
 
   Future<void> _onPTTPressed() async {
@@ -274,6 +504,18 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       return;
     }
 
+    if (controller.micPermissionState.value != WalkieMicPermissionState.granted) {
+      log('Block: Microphone permission not granted. Showing permission dialog...');
+      HapticFeedback.mediumImpact();
+      final status = await Permission.microphone.status;
+      final isPerm = status.isPermanentlyDenied ||
+          status.isRestricted ||
+          controller.micPermissionState.value ==
+              WalkieMicPermissionState.permanentlyDenied;
+      _showMicPermissionDialog(isPermanentlyDenied: isPerm);
+      return;
+    }
+
     if (_isTeamAdminWithoutSeat && !_canSpeak) {
       log('Block: User is Team Admin without an assigned voice seat.');
       HapticFeedback.heavyImpact();
@@ -301,37 +543,80 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       return;
     }
 
-    final selfId = GroupWalkieService.instance.selfUserId;
-    if (controller.activeSpeakerId.value.isNotEmpty &&
-        controller.activeSpeakerId.value != selfId) {
-      log('Block: Channel occupied by ${controller.activeSpeakerName.value}');
-      HapticFeedback.heavyImpact();
-      controller.showBusyMessage(controller.activeSpeakerName.value);
-      return;
+    final selfId = (GroupWalkieService.instance.selfUserId ??
+            Global.storageServices.get(PrefConst.userId)?.toString() ??
+            '')
+        .trim();
+    final activeId = controller.activeSpeakerId.value.trim();
+    if (activeId.isNotEmpty) {
+      final isSelf = selfId.isNotEmpty &&
+          (activeId == selfId ||
+              (int.tryParse(activeId) != null &&
+                  int.tryParse(activeId) == int.tryParse(selfId)));
+      if (!isSelf) {
+        log('Block: Channel occupied by ${controller.activeSpeakerName.value}');
+        HapticFeedback.heavyImpact();
+        controller.showBusyMessage(controller.activeSpeakerName.value);
+        return;
+      }
     }
 
     log('Triggering PTT Session...');
+    _wantsToTalk = true;
     _pttInProgress = true;
     controller.setPressed(true);
     _lockHintController.repeat(reverse: true);
     HapticFeedback.mediumImpact();
 
-    final ok = await GroupWalkieService.instance.startTalking();
-    log('PTT activation result: $ok');
-    _pttInProgress = false;
+    try {
+      final ok = await GroupWalkieService.instance
+          .startTalking()
+          .timeout(const Duration(seconds: 4), onTimeout: () {
+        log('⚠️ startTalking timed out after 4 seconds');
+        return false;
+      });
+      log('PTT activation result: $ok');
 
-    if (!ok) {
-      log('Failed to start transmission. Reverting changes...');
+      if (!_wantsToTalk && !controller.isSelfLocked.value) {
+        log('Finger released before startTalking completed — stopping audio transmission immediately');
+        await _stopTalking();
+        return;
+      }
+
+      if (!ok) {
+        log('Failed to start transmission. Reverting changes...');
+        controller.setPressed(false);
+        _lockHintController.stop();
+        _lockHintController.reset();
+      }
+    } catch (e) {
+      log('Error during PTT session activation: $e');
       controller.setPressed(false);
       _lockHintController.stop();
       _lockHintController.reset();
+    } finally {
+      _pttInProgress = false;
+      if (!_wantsToTalk &&
+          !controller.isSelfLocked.value &&
+          (controller.isPressed.value || GroupWalkieService.instance.isTalking)) {
+        await _stopTalking();
+      }
+    }
+  }
+
+  void _onPointerUpOrCancel() {
+    _wantsToTalk = false;
+    if (!controller.isSelfLocked.value) {
+      controller.setDragOffset(0.0);
+      _onPTTReleased();
     }
   }
 
   Future<void> _onPTTReleased() async {
+    _wantsToTalk = false;
     log('PTT Touch released. Checking state...');
-    if (!controller.isPressed.value) {
-      log('Release skipped: PTT is not pressed.');
+    if (!controller.isPressed.value && !_pttInProgress) {
+      log('Release skipped: PTT is not pressed and not in progress.');
       return;
     }
     if (controller.isSelfLocked.value) {
@@ -343,16 +628,25 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   }
 
   Future<void> _stopTalking() async {
-    log('Stopping audio transmission and releasing lock state...');
-    controller.setPressed(false);
-    _lockHintController.stop();
-    _lockHintController.reset();
-    controller.resetSelfLock();
-    await GroupWalkieService.instance.stopTalking();
+    if (_isStopping) return;
+    _isStopping = true;
+    try {
+      log('Stopping audio transmission and releasing lock state...');
+      _wantsToTalk = false;
+      controller.setPressed(false);
+      _lockHintController.stop();
+      _lockHintController.reset();
+      controller.resetSelfLock();
+      _pttInProgress = false;
+      await GroupWalkieService.instance.stopTalking();
+    } finally {
+      _isStopping = false;
+    }
   }
 
   Future<void> _unlockAndStop() async {
     log('Manual unlock and stop request received.');
+    _wantsToTalk = false;
     controller.resetSelfLock();
     await _stopTalking();
   }
@@ -361,11 +655,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     if (!controller.isPressed.value) return;
     if (controller.isSelfLocked.value) return;
 
-    // Convert screen coordinates to drag distance (dragging up reduces Y position)
     double newOffset = _startY - currentY;
     if (newOffset < 0) newOffset = 0;
 
-    log('PTT Drag moving upwards -> offset: ${newOffset.toStringAsFixed(1)}px / $_lockThreshold px');
     controller.setDragOffset(newOffset);
 
     if (newOffset >= _lockThreshold) {
@@ -408,12 +700,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         log('OnPopInvoked triggered. didPop=$didPop');
         if (didPop) return;
         showExitDialog(
-          onTap: () async {
-            log('Exit confirmed. Closing channel sessions...');
-            Get.back();
-            await _safeLeave();
-            Get.back();
-          },
+          onTap: () => _handleExitNavigation(),
         );
       },
       child: Scaffold(
@@ -460,55 +747,74 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     return Obx(() {
       final bool showCustomStatus = controller.showStatus.value;
       final bool isDisconnected = !controller.isConnected.value;
+      final stage = controller.initStage.value;
 
-      if (!showCustomStatus && !isDisconnected) {
-        return const SizedBox.shrink();
+      if (showCustomStatus) {
+        final String message = controller.statusMessage.value;
+        final Color color = controller.statusColor.value;
+        return _buildStatusBanner(message, color, Icons.info_outline_rounded);
       }
 
-      final String message = showCustomStatus
-          ? controller.statusMessage.value
-          : "Poor network connection — Reconnecting...";
-      final Color color = showCustomStatus
-          ? controller.statusColor.value
-          : Colors.orange.shade800;
+      if (stage == WalkieInitStage.connecting ||
+          stage == WalkieInitStage.loadingChannel) {
+        return _buildStatusBanner(
+          "Connecting to channel...",
+          const Color(0xFF6B46C1),
+          Icons.sync_rounded,
+        );
+      }
 
-      return AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        margin: EdgeInsets.only(bottom: 6.h),
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.10),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: color.withOpacity(0.35), width: 1),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isDisconnected && !showCustomStatus
-                  ? Icons.wifi_off_rounded
-                  : Icons.info_outline_rounded,
-              color: color,
-              size: 15.sp,
-            ),
-            SizedBox(width: 8.w),
-            Flexible(
-              child: Text(
-                message,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 11.5.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+      if (stage == WalkieInitStage.preparingAudio) {
+        return _buildStatusBanner(
+          "Preparing audio...",
+          const Color(0xFF6B46C1),
+          Icons.graphic_eq_rounded,
+        );
+      }
+
+      if (isDisconnected && stage != WalkieInitStage.notStarted) {
+        return _buildStatusBanner(
+          "Unable to connect to channel — Reconnecting...",
+          Colors.orange.shade800,
+          Icons.wifi_off_rounded,
+        );
+      }
+
+      return const SizedBox.shrink();
+    });
+  }
+
+  Widget _buildStatusBanner(String message, Color color, IconData icon) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: EdgeInsets.only(bottom: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: color.withOpacity(0.35), width: 1),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 15.sp),
+          SizedBox(width: 8.w),
+          Flexible(
+            child: Text(
+              message,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontSize: 11.5.sp,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ],
-        ),
-      );
-    });
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildPortraitLayout(BoxConstraints constraints) {
@@ -517,13 +823,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         _buildStatusBar(),
         SizedBox(height: 4.h.clamp(2.0, 6.0)),
         _buildGroupInfoCard(),
-        SizedBox(height: 8.h.clamp(4.0, 12.0)),
+        SizedBox(height: 6.h.clamp(3.0, 8.0)),
         Expanded(
           child: _buildPTTSection(),
         ),
-        SizedBox(height: 8.h.clamp(4.0, 12.0)),
+        SizedBox(height: 6.h.clamp(3.0, 8.0)),
         _buildMuteMeCard(),
-        SizedBox(height: 10.h.clamp(8.0, 14.0)),
+        SizedBox(height: 8.h.clamp(4.0, 10.0)),
         WalkieBottomActions(
           controller: controller,
           onAudioRouteTap: () => _showAudioRouteBottomSheet(context),
@@ -533,12 +839,12 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               arguments: {
                 "groupId": args?['groupId']?.toString() ?? "",
                 "groupName": controller.currentGroupName,
-                "groupImage": "",
-              },
+                "groupImage": _groupProfileUrl,
+                "groupProfile": _groupProfileUrl,              },
             );
           },
         ),
-        SizedBox(height: 12.h.clamp(8.0, 16.0)),
+        SizedBox(height: 8.h.clamp(4.0, 12.0)),
       ],
     );
   }
@@ -567,8 +873,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     arguments: {
                       "groupId": args?['groupId']?.toString() ?? "",
                       "groupName": controller.currentGroupName,
-                      "groupImage": "",
-                    },
+                      "groupImage": _groupProfileUrl,
+                      "groupProfile": _groupProfileUrl,                    },
                   );
                 },
               ),
@@ -615,12 +921,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             iconColor: textDark,
             onTap: () {
               showExitDialog(
-                onTap: () async {
-                  log('Exit confirmed. Closing channel sessions...');
-                  Get.back();
-                  await _safeLeave();
-                  Get.back();
-                },
+                onTap: () => _handleExitNavigation(),
               );
             },
           ),
@@ -684,12 +985,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     break;
                   case 'exit':
                     showExitDialog(
-                      onTap: () async {
-                        log('Exit confirmed. Closing channel sessions...');
-                        Get.back();
-                        await _safeLeave();
-                        Get.back();
-                      },
+                      onTap: () => _handleExitNavigation(),
                     );
                     break;
                 }
@@ -713,7 +1009,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   Future<void> _loadGroupMembersFromDb(String groupId) async {
     if (groupId.isEmpty) return;
     try {
-      if (mounted) setState(() => _isMembersLoading = true);
+      _safeSetState(() => _isMembersLoading = true);
       final res = await GroupRepo.getMemberData(groupId);
       if (res.status == true &&
           res.memberData != null &&
@@ -749,15 +1045,20 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           }
         }
         if (updated) {
-          controller.participants.refresh();
+          if (WidgetsBinding.instance.schedulerPhase ==
+              SchedulerPhase.persistentCallbacks) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              controller.participants.refresh();
+            });
+          } else {
+            controller.participants.refresh();
+          }
         }
       }
     } catch (e) {
       log('Error loading members from DB: $e');
     } finally {
-      if (mounted) {
-        setState(() => _isMembersLoading = false);
-      }
+      _safeSetState(() => _isMembersLoading = false);
     }
   }
 
@@ -775,7 +1076,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         _trialRemainingSeconds = 3600;
         await prefs.setInt('walkie_trial_remaining_seconds_$_userId', 3600);
       }
-      if (mounted) setState(() {});
+      _safeSetState(() {});
 
       // Sync with overview backend API if reachable
       try {
@@ -843,7 +1144,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           _trialRemainingSeconds = 0;
         }
 
-        if (mounted) setState(() {});
+        _safeSetState(() {});
       } catch (e) {
         log('Backend overview check skipped: $e');
       }
@@ -1126,6 +1427,155 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     });
   }
 
+  void _showMicPermissionDialog({bool isPermanentlyDenied = false}) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
+          child: Container(
+            padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 20.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 28,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Container(
+                      width: 28.r,
+                      height: 28.r,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF1F5F9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 16.sp,
+                        color: const Color(0xFF334155),
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 64.r,
+                  height: 64.r,
+                  decoration: BoxDecoration(
+                    color: primaryPurple.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.mic_rounded,
+                      size: 34.sp,
+                      color: primaryPurple,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                Text(
+                  "Microphone Permission",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontFamily: FontFamily.interBold,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  isPermanentlyDenied
+                      ? "Microphone access is disabled in device settings. To speak in this group, please allow microphone access in Settings.\n\nYou can still listen to other members."
+                      : "Microphone permission is required to talk in this Walkie-Talkie group.\n\nYou can still listen to others without enabling microphone.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12.5.sp,
+                    color: const Color(0xFF475569),
+                    fontFamily: FontFamily.interRegular,
+                    height: 1.4,
+                  ),
+                ),
+                SizedBox(height: 18.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 11.h),
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                        ),
+                        onPressed: () => Navigator.pop(ctx),
+                        child: Text(
+                          "Not Now",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 11.h),
+                          backgroundColor: primaryPurple,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                        ),
+                        onPressed: () async {
+                          Navigator.pop(ctx);
+                          final granted = await GroupWalkieService.instance
+                              .requestMicPermissionUserInitiated();
+                          if (!granted && mounted) {
+                            final status = await Permission.microphone.status;
+                            if (status.isPermanentlyDenied || status.isRestricted) {
+                              await openAppSettings();
+                            }
+                          }
+                        },
+                        child: Text(
+                          isPermanentlyDenied ? "Settings" : "Enable",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _showFreeTrialEndedDialog() {
     showDialog(
       context: context,
@@ -1381,20 +1831,35 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Container(
-                    width: 42.r.clamp(36.0, 46.0),
-                    height: 42.r.clamp(36.0, 46.0),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [lightPurple, primaryPurple],
+                  ClipOval(
+                    child: _groupProfileUrl.isNotEmpty
+                        ? Image.network(
+                      _groupProfileUrl,
+                      width: 52,
+                      height: 52,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 52,
+                          height: 52,
+                          color: primaryPurple.withOpacity(0.1),
+                          child: Icon(
+                            Icons.groups_rounded,
+                            color: primaryPurple,
+                            size: 28,
+                          ),
+                        );
+                      },
+                    )
+                        : Container(
+                      width: 52,
+                      height: 52,
+                      color: primaryPurple.withOpacity(0.1),
+                      child: Icon(
+                        Icons.groups_rounded,
+                        color: primaryPurple,
+                        size: 28,
                       ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Icon(Icons.people_alt_rounded,
-                          color: Colors.white, size: 20.sp.clamp(18.0, 23.0)),
                     ),
                   ),
                   Positioned(
@@ -1688,28 +2153,21 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         return buildEmptyMembersState();
       }
 
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: SingleChildScrollView(
+      return SizedBox(
+        height: 96.h.clamp(88.0, 108.0),
+        child: ListView.separated(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 4.h),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (int index = 0; index < sortedList.length; index++) ...[
-                  if (index > 0) SizedBox(width: 12.w),
-                  buildMemberAvatar(
-                    sortedList[index],
-                    index: index,
-                    args: args,
-                  ),
-                ],
-              ],
-            ),
-          ),
+          padding: EdgeInsets.symmetric(vertical: 4.h),
+          itemCount: sortedList.length,
+          separatorBuilder: (_, __) => SizedBox(width: 12.w),
+          itemBuilder: (context, index) {
+            return buildMemberAvatar(
+              sortedList[index],
+              index: index,
+              args: args,
+            );
+          },
         ),
       );
     });
@@ -1721,7 +2179,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         final double totalH = constraints.maxHeight;
         final double totalW = constraints.maxWidth;
 
-        final double availableStackH = (totalH - 76.0).clamp(180.0, 480.0);
+        final double availableStackH = (totalH - 96.0).clamp(140.0, 460.0);
         final double buttonSize =
             (availableStackH * (isWide ? 0.46 : 0.50)).clamp(120.0, 175.0);
         final double maxRingRadius = math.min(availableStackH, totalW);
@@ -1730,51 +2188,90 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 14.w.clamp(12.0, 18.0),
-                vertical: 6.h.clamp(5.0, 8.0),
-              ),
-              decoration: BoxDecoration(
-                color: cardWhite,
-                borderRadius: BorderRadius.circular(20.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  )
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Obx(() => Container(
-                        width: 8.r.clamp(7.0, 9.0),
-                        height: 8.r.clamp(7.0, 9.0),
-                        decoration: BoxDecoration(
-                          color: controller.isConnected.value
-                              ? activeGreen
-                              : mutedRed,
-                          shape: BoxShape.circle,
-                        ),
-                      )),
-                  SizedBox(width: 8.w.clamp(6.0, 10.0)),
-                  Obx(() => Text(
-                        controller.isConnected.value
-                            ? "You are Connected"
-                            : "Connecting...",
-                        style: TextStyle(
-                          color: textDark,
-                          fontSize: 12.sp.clamp(11.0, 13.5),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      )),
-                ],
-              ),
-            ),
-            SizedBox(height: 8.h.clamp(4.0, 12.0)),
+            Obx(() {
+              final isConn = controller.isConnected.value;
+              final quality = controller.networkQuality.value;
+              final latency = controller.networkLatencyMs.value;
+
+              final Color statusColor;
+              final IconData statusIcon;
+              final String statusText;
+
+              if (!isConn) {
+                statusColor = mutedRed;
+                statusIcon = Icons.signal_cellular_connected_no_internet_0_bar_rounded;
+                statusText = "Reconnecting...";
+              } else {
+                switch (quality) {
+                  case WalkieNetworkQuality.strong:
+                    statusColor = activeGreen;
+                    statusIcon = Icons.signal_cellular_alt_rounded;
+                    statusText = latency > 0 ? "Strong Connection (${latency}ms)" : "Strong Connection";
+                    break;
+                  case WalkieNetworkQuality.good:
+                    statusColor = const Color(0xFF10B981);
+                    statusIcon = Icons.signal_cellular_alt_rounded;
+                    statusText = latency > 0 ? "Good Connection (${latency}ms)" : "Connected";
+                    break;
+                  case WalkieNetworkQuality.fair:
+                    statusColor = Colors.orange;
+                    statusIcon = Icons.signal_cellular_alt_2_bar_rounded;
+                    statusText = latency > 0 ? "Fair Connection (${latency}ms)" : "Fair Connection";
+                    break;
+                  case WalkieNetworkQuality.weak:
+                    statusColor = mutedRed;
+                    statusIcon = Icons.signal_cellular_alt_1_bar_rounded;
+                    statusText = latency > 0 ? "Weak Signal (${latency}ms)" : "Weak Signal";
+                    break;
+                  case WalkieNetworkQuality.disconnected:
+                    statusColor = mutedRed;
+                    statusIcon = Icons.signal_cellular_null_rounded;
+                    statusText = "Disconnected";
+                    break;
+                  case WalkieNetworkQuality.unknown:
+                    statusColor = activeGreen;
+                    statusIcon = Icons.signal_cellular_alt_rounded;
+                    statusText = "You are Connected";
+                    break;
+                }
+              }
+
+              return Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 14.w.clamp(12.0, 18.0),
+                  vertical: 6.h.clamp(5.0, 8.0),
+                ),
+                decoration: BoxDecoration(
+                  color: cardWhite,
+                  borderRadius: BorderRadius.circular(20.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    )
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(statusIcon, color: statusColor, size: 14.sp.clamp(13.0, 16.0)),
+                    SizedBox(width: 7.w.clamp(5.0, 9.0)),
+                    Text(
+                      statusText,
+                      style: TextStyle(
+                        color: textDark,
+                        fontSize: 12.sp.clamp(11.0, 13.5),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            SizedBox(height: 6.h.clamp(3.0, 8.0)),
             SizedBox(
               height: availableStackH,
               width: totalW,
@@ -1783,8 +2280,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 clipBehavior: Clip.none,
                 children: [
                   Container(
-                    width: (buttonSize * 2.2).clamp(190.0, maxRingRadius),
-                    height: (buttonSize * 2.2).clamp(190.0, maxRingRadius),
+                    width: math.min(buttonSize * 2.2, maxRingRadius),
+                    height: math.min(buttonSize * 2.2, maxRingRadius),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -1794,8 +2291,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                   ),
                   Container(
-                    width: (buttonSize * 1.75).clamp(160.0, maxRingRadius),
-                    height: (buttonSize * 1.75).clamp(160.0, maxRingRadius),
+                    width: math.min(buttonSize * 1.75, maxRingRadius),
+                    height: math.min(buttonSize * 1.75, maxRingRadius),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -1805,8 +2302,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                   ),
                   Container(
-                    width: (buttonSize * 1.35).clamp(130.0, maxRingRadius),
-                    height: (buttonSize * 1.35).clamp(130.0, maxRingRadius),
+                    width: math.min(buttonSize * 1.35, maxRingRadius),
+                    height: math.min(buttonSize * 1.35, maxRingRadius),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -1816,8 +2313,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                   ),
                   Container(
-                    width: (buttonSize * 1.05).clamp(100.0, maxRingRadius),
-                    height: (buttonSize * 1.05).clamp(100.0, maxRingRadius),
+                    width: math.min(buttonSize * 1.05, maxRingRadius),
+                    height: math.min(buttonSize * 1.05, maxRingRadius),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -1932,8 +2429,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     if (controller.isMuted.value) {
                       return buildMutedListeningView(size: buttonSize);
                     }
-                    final dragOffset =
-                        controller.dragOffset.value.clamp(0.0, _lockThreshold);
+                    if (controller.isSelfLocked.value) {
+                      return GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _unlockAndStop,
+                        child: buildPTTButton(size: buttonSize),
+                      );
+                    }
                     return Listener(
                       behavior: HitTestBehavior.opaque,
                       onPointerDown: (PointerDownEvent event) {
@@ -1946,30 +2448,20 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       },
                       onPointerUp: (PointerUpEvent event) {
                         log('Raw pointer up captured.');
-                        if (!controller.isSelfLocked.value) {
-                          controller.setDragOffset(0.0);
-                          _onPTTReleased();
-                        }
+                        _onPointerUpOrCancel();
                       },
                       onPointerCancel: (PointerCancelEvent event) {
-                        log('⚠️ Warning: Raw touch input canceled by iOS gesture recognizer.');
-                        if (!controller.isSelfLocked.value) {
-                          controller.setDragOffset(0.0);
-                          _onPTTReleased();
-                        }
+                        log('⚠️ Warning: Raw touch input canceled by gesture recognizer.');
+                        _onPointerUpOrCancel();
                       },
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          if (controller.isSelfLocked.value) {
-                            _unlockAndStop();
-                          }
-                        },
-                        child: Transform.translate(
+                      child: Obx(() {
+                        final dragOffset =
+                            controller.dragOffset.value.clamp(0.0, _lockThreshold);
+                        return Transform.translate(
                           offset: Offset(0, -dragOffset),
                           child: buildPTTButton(size: buttonSize),
-                        ),
-                      ),
+                        );
+                      }),
                     );
                   }),
                   Positioned(
@@ -2020,12 +2512,78 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 ],
               ),
             ),
-            SizedBox(height: 8.h.clamp(4.0, 12.0)),
+            SizedBox(height: 6.h.clamp(3.0, 8.0)),
             Obx(() {
               final isSelfLocked = controller.isSelfLocked.value;
               final isMuted = controller.isMuted.value;
               final bool isNoSeat = _isTeamAdminWithoutSeat && !_canSpeak;
               final bool isPressed = controller.isPressed.value;
+              final micState = controller.micPermissionState.value;
+              final bool isMicNotGranted =
+                  micState != WalkieMicPermissionState.granted;
+
+              if (isMicNotGranted && !isMuted && !isNoSeat) {
+                final isPermanentlyDenied =
+                    micState == WalkieMicPermissionState.permanentlyDenied;
+                final actionText = isPermanentlyDenied ? "Settings" : "Enable";
+
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    _showMicPermissionDialog(
+                        isPermanentlyDenied: isPermanentlyDenied);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w.clamp(8.0, 14.0),
+                      vertical: 2.5.h.clamp(2.0, 4.0),
+                    ),
+                    decoration: BoxDecoration(
+                      color: primaryPurple.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.mic_off_rounded,
+                          color: primaryPurple,
+                          size: 13.sp.clamp(11.0, 15.0),
+                        ),
+                        SizedBox(width: 5.w.clamp(3.0, 7.0)),
+                        Text(
+                          "Microphone access required to talk.",
+                          style: TextStyle(
+                            color: primaryPurple,
+                            fontSize: 11.sp.clamp(10.0, 12.0),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(width: 6.w.clamp(4.0, 8.0)),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 7.w.clamp(5.0, 9.0),
+                            vertical: 1.5.h.clamp(1.0, 3.0),
+                          ),
+                          decoration: BoxDecoration(
+                            color: primaryPurple,
+                            borderRadius: BorderRadius.circular(7.r),
+                          ),
+                          child: Text(
+                            actionText,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10.5.sp.clamp(9.5, 11.5),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
 
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -2293,20 +2851,32 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           await controller.setRoute(WalkieAudioRoute.bluetooth);
                         },
                       ),
-                      if (hasHeadset) ...[
-                        buildAudioRouteDivider(),
-                        buildAudioRouteItem(
-                          title: headsetName,
-                          trailingIcon: Icons.headphones_rounded,
-                          isSelected: currentRoute == WalkieAudioRoute.headset,
-                          onTap: () async {
-                            log('User changed audio route to: WIRED HEADSET');
-                            HapticFeedback.mediumImpact();
-                            Navigator.of(sheetContext).pop();
-                            await controller.setRoute(WalkieAudioRoute.headset);
-                          },
-                        ),
-                      ],
+                      buildAudioRouteDivider(),
+                      buildAudioRouteItem(
+                        title: hasHeadset ? headsetName : "Wired Headphones",
+                        subtitle: hasHeadset ? "Connected" : "Not connected",
+                        trailingIcon: Icons.headphones_rounded,
+                        isSelected: currentRoute == WalkieAudioRoute.headset,
+                        isEnabled: hasHeadset,
+                        onTap: () async {
+                          if (!hasHeadset) {
+                            log('Warning: Attempted to switch to Wired Headset but no device is active.');
+                            Get.snackbar(
+                              "Wired Headphones",
+                              "No wired earphones or headset connected. Please plug them into your device.",
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.black87,
+                              colorText: Colors.white,
+                              duration: const Duration(seconds: 3),
+                            );
+                            return;
+                          }
+                          log('User changed audio route to: WIRED HEADSET');
+                          HapticFeedback.mediumImpact();
+                          Navigator.of(sheetContext).pop();
+                          await controller.setRoute(WalkieAudioRoute.headset);
+                        },
+                      ),
                       SizedBox(height: 10.h),
                       Container(
                         width: double.infinity,
@@ -2345,7 +2915,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   Widget buildPTTButton({required double size}) {
     return Obx(() {
       final isTalking = controller.isTalking;
-      final isBusy = controller.hasActiveSpeaker && !controller.isTalking;
+      final isBusy = controller.isRemoteSpeakerActive && !controller.isTalking;
       final isLocked = controller.isChannelLocked.value;
       final isSelfLocked = controller.isSelfLocked.value;
       final bool isNoSeat = _isTeamAdminWithoutSeat && !_canSpeak;

@@ -285,6 +285,8 @@ class LoginPage extends GetView<Login_Controller> {
             child: CountryCodePicker(
               onChanged: (country) {
                 controller.selectedDialCode.value = country.dialCode ?? '+91';
+                controller.selectedCountryIso.value = country.code ?? '';
+                controller.selectedCountryName.value = country.name ?? '';
               },
               initialSelection: 'IN',
               favorite: const ['+91', 'IN'],

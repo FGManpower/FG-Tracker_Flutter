@@ -161,6 +161,8 @@ class _BannerSliderState extends State<BannerSlider> {
                     fit: BoxFit.fill,
                     width: double.infinity,
                     height: double.infinity,
+                    memCacheWidth: 800,
+                    maxWidthDiskCache: 1200,
                     placeholder: (context, url) {
                       return Container(
                         color: Colors.grey.shade100,

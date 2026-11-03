@@ -43,8 +43,21 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              CNetworkImage(imageurl: widget.thumbnail),
-              Container(
+              if (widget.thumbnail.trim().isNotEmpty &&
+                  (widget.thumbnail.startsWith('http://') ||
+                      widget.thumbnail.startsWith('https://')))
+                CNetworkImage(imageurl: widget.thumbnail)
+              else
+                Container(
+                  color: Colors.black12,
+                  child: const Center(
+                    child: Icon(
+                      Icons.videocam_rounded,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                ),              Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,

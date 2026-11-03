@@ -405,7 +405,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
                           color: textColor,
                         ),
                         label: Text(
-                          "Change Plan",
+                          "View Plan",
                           style: TextStyle(
                             fontSize: _sp(context, 11.5),
                             fontFamily: FontFamily.interSemiBold,
@@ -495,7 +495,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
               Get.to(() => const WalkieTalkiePlanDetails(initialTabIndex: 1));
             },
             child: Text(
-              "Browse",
+              "View",
               style: TextStyle(
                 fontSize: _sp(context, 11),
                 fontFamily: FontFamily.interSemiBold,

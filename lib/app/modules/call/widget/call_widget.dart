@@ -1,4 +1,7 @@
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -67,6 +70,7 @@ Widget ctrl({
   required bool isVideo,
   required VoidCallback onTap,
   bool active = false,
+  bool videoInactive = false,
   Color? iconColor,
 }) {
   final Color baseIcon =
@@ -84,7 +88,7 @@ Widget ctrl({
           width: 46.r,
           height: 46.r,
           decoration: BoxDecoration(
-            color: bg,
+            color: videoInactive?Colors.grey:bg,
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: baseIcon, size: 22.sp),
@@ -102,6 +106,7 @@ Widget ctrl({
     ],
   );
 }
+
 
 Widget sheetDivider() {
   return Divider(
@@ -148,3 +153,145 @@ Widget sheetTile({
     ),
   );
 }
+
+String formatSectionTitle(String raw) {
+  if (raw.isEmpty) return 'Recent';
+  final lower = raw.toLowerCase().replaceAll(RegExp(r'[_-]'), ' ').trim();
+  if (lower == 'today') return 'Today';
+  if (lower == 'yesterday') return 'Yesterday';
+  if (lower == 'this week' || lower == 'thisweek' || lower == 'week') {
+    return 'This Week';
+  }
+  if (lower == 'last week' || lower == 'lastweek') return 'Last Week';
+  if (lower == 'older') return 'Older';
+
+  return lower.split(' ').map((word) {
+    if (word.isEmpty) return '';
+    return word[0].toUpperCase() + word.substring(1);
+  }).join(' ');
+}
+
+String formatPhoneForDisplay(String raw) {
+  if (raw.trim().isEmpty) return 'Unknown';
+  final clean = raw.trim();
+  final digits = clean.replaceAll(RegExp(r'[^0-9]'), '');
+  if (digits.length == 10) {
+    return "+91 ${digits.substring(0, 5)} ${digits.substring(5)}";
+  } else if (digits.length == 12 && digits.startsWith('91')) {
+    final sub = digits.substring(2);
+    return "+91 ${sub.substring(0, 5)} ${sub.substring(5)}";
+  }
+  if (!clean.startsWith('+') && digits.length >= 10) {
+    return "+$clean";
+  }
+  return clean;
+}
+
+String normalizePhone(String phone) {
+  String digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+  if (digits.startsWith('91') && digits.length > 10) {
+    digits = digits.substring(2);
+  }
+  if (digits.length > 10) {
+    digits = digits.substring(digits.length - 10);
+  }
+  return digits;
+}
+
+class CallValidation {
+  /// Warning message displayed when calling own number
+  static const String selfCallWarningMessage = "You cannot call your own number.";
+
+  /// Returns the current logged-in user's phone number if available.
+  static String? get currentUserPhone {
+    try {
+      final phone =
+          Global.storageServices.get(PrefConst.userPhone)?.toString().trim();
+      if (phone != null && phone.isNotEmpty) return phone;
+    } catch (_) {}
+    return null;
+  }
+
+  /// Returns current user's userId.
+  static String? get currentUserId {
+    try {
+      final uid =
+          Global.storageServices.get(PrefConst.userId)?.toString().trim();
+      if (uid != null && uid.isNotEmpty) return uid;
+    } catch (_) {}
+    return null;
+  }
+
+  /// Compares two phone numbers accounting for formatting differences and country codes.
+  static bool isSamePhoneNumber(String? phoneA, String? phoneB) {
+    if (phoneA == null || phoneB == null) return false;
+    final cleanA = phoneA.trim();
+    final cleanB = phoneB.trim();
+    if (cleanA.isEmpty || cleanB.isEmpty) return false;
+
+    final digitsA = cleanA.replaceAll(RegExp(r'[^0-9]'), '');
+    final digitsB = cleanB.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digitsA.isEmpty || digitsB.isEmpty) return false;
+
+    // Exact raw digits match
+    if (digitsA == digitsB) return true;
+
+    // Normalized (national 10-digit) match
+    final normA = normalizePhone(cleanA);
+    final normB = normalizePhone(cleanB);
+    if (normA.isNotEmpty && normB.isNotEmpty && normA == normB) {
+      if (normA.length >= 7) {
+        final bool aHasPlus = cleanA.startsWith('+');
+        final bool bHasPlus = cleanB.startsWith('+');
+        if (aHasPlus && bHasPlus && digitsA != digitsB) {
+          return false;
+        }
+        if (aHasPlus && !cleanA.startsWith('+91') && !bHasPlus) {
+          return false;
+        }
+        if (bHasPlus && !cleanB.startsWith('+91') && !aHasPlus) {
+          return false;
+        }
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /// Checks whether destination phone or userId belongs to current user.
+  static bool isSelfCall(
+      {String? destinationPhone, String? destinationUserId}) {
+    final myId = currentUserId;
+    if (myId != null &&
+        myId.isNotEmpty &&
+        destinationUserId != null &&
+        destinationUserId.isNotEmpty) {
+      if (myId == destinationUserId.trim()) return true;
+    }
+
+    final myPhone = currentUserPhone;
+    if (myPhone != null &&
+        myPhone.isNotEmpty &&
+        destinationPhone != null &&
+        destinationPhone.isNotEmpty) {
+      if (isSamePhoneNumber(myPhone, destinationPhone)) return true;
+    }
+
+    return false;
+  }
+
+  /// Validates before a call. If it's the user's own number, displays warning toast and returns false.
+  static bool validateCall(
+      {String? destinationPhone, String? destinationUserId}) {
+    if (isSelfCall(
+      destinationPhone: destinationPhone,
+      destinationUserId: destinationUserId,
+    )) {
+      Utils().fluttertoast(selfCallWarningMessage);
+      return false;
+    }
+    return true;
+  }
+}
+

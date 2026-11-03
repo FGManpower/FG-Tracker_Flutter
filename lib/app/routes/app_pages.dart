@@ -26,8 +26,9 @@ import '../modules/Group/Views/QRScanScreen.dart';
 import '../modules/Messages/Bindings/ForwardMessageBinding.dart';
 import '../modules/Messages/Views/Chat_Screen.dart';
 import '../modules/Messages/Views/ForwardMessageScreen.dart';
-import '../modules/Safe_Zone/views/safe_zone_view.dart';
-import '../modules/Safe_Zone/views/safety_dashboard_view.dart';
+// import '../modules/Safe_Zone/views/safe_zone_view.dart';
+// import '../modules/Safe_Zone/views/safety_dashboard_view.dart';
+import 'package:fgtracker/features/safety/coming_soon/safety_coming_soon_map_screen.dart';
 import '../modules/Track/Views/Tracking_screen.dart';
 import '../modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import '../modules/Walkie-talkie/Views/walkie_talkie_trial_details.dart';
@@ -39,11 +40,18 @@ import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/GroupTrackLocationScreen.dart';
 import '../modules/Walkie-talkie/Views/WalkieTalkieScreen.dart';
 
+import '../modules/home/Bindings/permission_setup_binding.dart';
 import '../modules/home/Views/LiveStatus/components/total_groups.dart';
+import '../modules/home/Views/permission_setup_screen.dart';
 import '../modules/mediaStream/Bindings/group_call_binding.dart';
 import '../modules/mediaStream/Bindings/group_incoming_call_binding.dart';
 import '../modules/mediaStream/Views/Group/group_calling_screen.dart';
 import '../modules/mediaStream/Views/Group/group_incoming_call_screen.dart';
+import '../modules/OtpCharges/Binding/otp_charges_binding.dart';
+import '../modules/OtpCharges/Views/otp_charges_view.dart';
+import '../modules/PackagePricing/Binding/package_pricing_binding.dart';
+import '../modules/PackagePricing/Views/package_list_view.dart';
+import '../modules/PackagePricing/Views/package_plan_details_view.dart';
 import '../modules/sos/SosBinding.dart';
 import '../modules/sos/sos_screen.dart';
 
@@ -262,23 +270,15 @@ class AppPages {
     ),
 
 
-    // GetPage(
-    //   name: Routes.groupCallingScreen,
-    //   page: () => const GroupCallingScreen(),
-    //   binding: GroupCallBinding(),
-    //   transition: Transition.rightToLeft,
-    //   transitionDuration: const Duration(milliseconds: 500),
-    // ),
-
     GetPage(
       name: Routes.groupCallingScreen,
       page: () => const GroupCallingScreen(),
-      binding: BindingsBuilder(() {
-        if (!Get.isRegistered<GroupCallingController>()) {
-          Get.put(GroupCallingController(), permanent: true);
-        }
-      }),
+      binding: GroupCallBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
     ),
+
+
     GetPage(
       name: Routes.groupIncomingCallScreen,
       page: () => const GroupIncomingCallScreen(),
@@ -289,7 +289,14 @@ class AppPages {
 
     GetPage(
       name: Routes.SafetyDashboard,
-      page: () => SafetyDashboardView(),
+      // page: () => SafetyDashboardView(),
+      page: () => const SafetyComingSoonMapScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: _Paths.safeZoneScreen,
+      page: () => const SafetyComingSoonMapScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 400),
     ),
@@ -308,5 +315,36 @@ class AppPages {
       transitionDuration: const Duration(milliseconds: 400),
     ),
 
+    GetPage(
+      name: _Paths.GroupsList,
+      page: () => const GroupsListScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+
+    GetPage(
+      name: Routes.permissionSetup,
+      page: () => const PermissionSetupScreen(),
+      binding: PermissionSetupBinding(), // ← This line fixes the error
+    ),
+    GetPage(
+      name: Routes.OTP_CHARGES,
+      page: () => const OtpChargesView(),
+      binding: OtpChargesBinding(),
+    ),
+    GetPage(
+      name: Routes.packagePricing,
+      page: () => const PackageListView(),
+      binding: PackageListBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.packagePlanDetails,
+      page: () => const PackagePlanDetailsView(),
+      binding: PackagePlanDetailsBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
   ];
 }

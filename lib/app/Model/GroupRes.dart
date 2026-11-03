@@ -70,7 +70,13 @@ class GroupsResData {
     id = json['id'];
     groupName = json['groupName'];
     groupDesc = json['groupDesc'];
-    groupProfile = json['groupProfile'];
+    groupProfile = json['groupProfile']?.toString() ??
+        json['group_profile']?.toString() ??
+        json['groupImage']?.toString() ??
+        json['group_image']?.toString() ??
+        json['profileImage']?.toString() ??
+        json['image']?.toString() ??
+        json['profile']?.toString();
     groupCode = json['groupCode'];
     isActive = json['isActive'];
     isCreator = json['isCreator'];

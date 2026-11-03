@@ -41,6 +41,10 @@ abstract class Routes {
   static const SafetyDashboard = _Paths.SafetyDashboard;
   static const TrackingScreen = _Paths.TrackingScreen;
   static const totalGroup = _Paths.totalGroup;
+  static const permissionSetup = _Paths.permissionSetup;
+  static const OTP_CHARGES = _Paths.OTP_CHARGES;
+  static const packagePricing = _Paths.packagePricing;
+  static const packagePlanDetails = _Paths.packagePlanDetails;
 
 
 
@@ -88,5 +92,9 @@ abstract class _Paths {
   static const SafetyDashboard = '/safety-dashboard';
   static const TrackingScreen = '/tracking-screen';
   static const totalGroup = '/total-group';
+  static const permissionSetup = '/permission-setup';
+  static const OTP_CHARGES = '/OtpChargesScreen';
+  static const packagePricing = '/package-pricing';
+  static const packagePlanDetails = '/package-plan-details';
 
 }

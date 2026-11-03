@@ -116,11 +116,6 @@ class StatusTopBar extends StatelessWidget {
                     onTap: controller.toggleFlash,
                     active: controller.isFlashOn.value,
                   ),
-                  SizedBox(height: 10.h),
-                  RoundActionBtn(
-                    icon: Icons.cameraswitch_rounded,
-                    onTap: controller.flipCamera,
-                  ),
                 ],
               );
             }),

@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
-import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
-import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
-import 'package:socket_io_client/socket_io_client.dart';
 
-import '../../../Core/util/AppLifeCycle.dart';
-import '../../../Model/call_model.dart';
-import '../CallStateTracker.dart';
+import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
+import 'package:fgtracker/app/Core/values/logoutuser.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:get/get.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 
 class SignallingService {
   Socket? socket;
@@ -21,7 +21,14 @@ class SignallingService {
   }) {
     log("Initializing Call Signaling Socket…");
 
-    socket = io(
+    if (socket != null) {
+      try {
+        socket!.dispose();
+      } catch (_) {}
+      socket = null;
+    }
+
+    final s = io(
       "$websocketUrl/callSignaling",
       {
         "transports": ["websocket"],
@@ -30,70 +37,100 @@ class SignallingService {
         "forceNew": true,
       },
     );
+    socket = s;
 
-    socket!.onConnect((_) {
+    CallKitService.instance.bindSocket(s);
+
+    s.onConnect((_) {
       log("Call Socket Connected (ID: $selfCallerID)");
     });
 
-    socket!.onDisconnect((_) {
+    s.on('force_logout', (data) {
+      log("force_logout received on callSignaling socket: $data");
+      LogoutUser().handleForceLogout();
+    });
+
+    s.onDisconnect((_) {
       log("Call Socket Disconnected");
     });
 
-    socket!.on("callRejected", (data) async {
-      log('==========CallRejectedbyRemoteUserass');
+    s.on("callRejected", (data) async {
+      log('CallRejectedByRemoteUser: $data');
+      if (data is Map) {
+        final sessionId = data['sessionId'] ??
+            data['callId'] ??
+            data['session_id'] ??
+            data['id'];
+        final sid = sessionId?.toString();
+        if (sid != null && sid.isNotEmpty && sid != 'null') {
+          await CallKitService.dismiss(sid);
+          if (CallSessionState.sessionId == sid) {
+            CallSessionState.reset();
+          }
+        }
+      }
     });
 
+    s.on("callEnded", (data) async {
+      log('CallEndedFromRemote: $data');
+      final sessionId = _extractSessionId(data);
+      if (sessionId.isEmpty) return;
 
-
-    socket!.on("callEnded", (data) async {
-      log('==========CallEndedFromRemoteParam========$data');
-      CallSessionState.sessionId = data['sessionId'].toString();
-
-      callEnded(data['sessionId'].toString());
+      CallSessionState.sessionId = sessionId;
+      await callEnded(sessionId, type: "socketCallEnded");
     });
 
-    socket?.onAny((event, dynamic data) {
-      print("Event: $event, Data: $data");
+    s.onAny((event, dynamic data) {
+      log("SingleCallEvent: $event, Data: $data");
     });
 
-    socket?.on('cancelMissedCallTimer', (data) {
-      print("Cancel missed call timer received");
+    s.on('cancelMissedCallTimer', (data) {
+      log("Cancel missed call timer received");
     });
-    socket!.onConnectError((err) {
+
+    s.on("newCall", (data) {
+      if (Get.isRegistered<CallingController>()) {
+        final controller = Get.find<CallingController>();
+        if (Get.currentRoute == Routes.callScreen) {
+          final callKit = CallKitService.instance;
+
+          callKit.onAcceptCall = (callId, extra, uuid) async {
+            CallSessionState.sessionId = uuid ?? '';
+            controller.endCall();
+            CallSessionState.sessionId = uuid ?? '';
+
+            Future.delayed(
+              Duration(seconds: 2),
+              () {
+                final callerId = extra['callerId']?.toString() ?? '';
+
+                log('Incoming call accepted automatic without press to notification: $extra');
+                Get.toNamed(Routes.callScreen, arguments: {
+                  'callerId': callerId,
+                  'remoteUserId': callerId,
+                  'callId': callId,
+                  'sessionId': uuid,
+                  'is_video':
+                      extra['isVideo'] == 'true' || extra['isVideo'] == true,
+                  'profileImage': extra['profileImage'],
+                  'callType': 'Incoming',
+                  'fromCallKit': true,
+                  'callerName': extra['callerName'],
+                  'offer':
+                      CallKitService.decodeOffer(extra['sdpOfferCompressed']),
+                });
+              },
+            );
+          };
+        }
+      }
+    });
+    s.onConnectError((err) {
       log("Connect Error: $err");
     });
 
-    socket!.onError((err) {
+    s.onError((err) {
       log("Socket Error: $err");
-    });
-
-    socket!.on("newCall", (data) {
-      if (Platform.isIOS) {
-        if (CallStateTracker.isIncomingCallScreenOpen) {
-          return;
-        }
-        final callMap = jsonDecode(data['callData']);
-        final call = IncomingCallModel.fromMap(callMap);
-
-        CallStateTracker.isIncomingCallScreenOpen = true;
-        final appState = AppLifecycleTracker.state;
-
-        // if (appState == AppLifecycleState.resumed) {
-        //   Get.toNamed(
-        //     Routes.IncomingCallScreen,
-        //     arguments: {"callDetail": call},
-        //   );
-        // }
-      } else {
-        if (CallStateTracker.isIncomingCallScreenOpen) {
-          return;
-        }
-        final callMap = jsonDecode(data['callData']);
-        final call = IncomingCallModel.fromMap(callMap);
-
-        CallStateTracker.isIncomingCallScreenOpen = true;
-        final appState = AppLifecycleTracker.state;
-      }
     });
   }
 
@@ -105,20 +142,26 @@ class SignallingService {
       socket = null;
     }
   }
+
+  static String _extractSessionId(dynamic data) {
+    if (data is! Map) return '';
+    final v = data['sessionId'] ??
+        data['session_id'] ??
+        data['callId'] ??
+        data['call_id'];
+    final s = v?.toString() ?? '';
+    return (s == 'null') ? '' : s;
+  }
 }
 
+Future<void> callEnded(String sessionId, {String? type}) async {
+  if (sessionId.isEmpty || sessionId == 'null') return;
 
+  await CallKitService.dismiss(sessionId);
+  log('CallEnded: $sessionId, Type: $type');
 
-
-
-callEnded(String sessionId, {String? type}) async {
-  await ConnectycubeFlutterCallKit.reportCallEnded(
-    sessionId: sessionId,
-  );
-
-  await ConnectycubeFlutterCallKit.clearCallData(
-    sessionId: sessionId,
-  );
-  log('==========CallEnded:$sessionId,===Type:$type');
-  CallSessionState.reset();
+  final current = CallSessionState.sessionId;
+  if (current == null || current.isEmpty || current == sessionId) {
+    CallSessionState.reset();
+  }
 }

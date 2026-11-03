@@ -34,7 +34,8 @@ class MemberController extends GetxController {
       var result = await GroupRepo.getMemberData(groupId);
 
       if (result.status == true) {
-        String myUserId = Global.storageServices.get(PrefConst.userId).toString();
+        String myUserId =
+            Global.storageServices.get(PrefConst.userId).toString();
 
         List<MemberData> tempList = [];
 
@@ -48,8 +49,7 @@ class MemberController extends GetxController {
         filteredMembers.assignAll(tempList);
 
         responseError.value = "";
-      }
-      else {
+      } else {
         responseError.value = result.message.toString();
       }
     } catch (e) {
@@ -65,31 +65,42 @@ class MemberController extends GetxController {
     } else {
       filteredMembers.value = memberData
           .where((m) =>
-      m.name!.toLowerCase().contains(value.toLowerCase()) ||
-          m.mobileNo!.toLowerCase().contains(value.toLowerCase()))
+              m.name!.toLowerCase().contains(value.toLowerCase()) ||
+              m.mobileNo!.toLowerCase().contains(value.toLowerCase()))
           .toList();
     }
   }
-
 
   Future<void> exitGroup(
     BuildContext context, {
     required String groupId,
     required String userId,
-        required void Function(bool) onSuccess,
+    required void Function(bool) onSuccess,
   }) async {
     try {
       Loading().showloading();
-      dynamic param = {
+
+      final param = {
         "groupId": groupId,
         "userId": userId,
       };
-      var result = await GroupRepo.exitGroups(param);
+
+      final result = await GroupRepo.exitGroups(param);
+
+      Loading().dismissloading();
+
       if (result.status == true) {
-        Loading().dismissloading();
-        leaveGroup(context, groupId: groupId,onSuccess: onSuccess);
+        GroupTrackingController.instance.exitGroup(
+          groupId: groupId,
+          onCompletion: (success) {
+            if (success) {
+              Utils().fluttertoast("Group Exit successfully");
+            }
+          },
+        );
+
+        onSuccess(true);
       } else {
-        Loading().dismissloading();
         CommonDialog.errorMessage(result.message);
       }
     } catch (e) {
@@ -124,7 +135,7 @@ class MemberController extends GetxController {
   void leaveGroup(
     BuildContext context, {
     required String groupId,
-        required void Function(bool) onSuccess,
+    required void Function(bool) onSuccess,
   }) async {
     GroupTrackingController.instance.exitGroup(
       groupId: groupId,
@@ -132,7 +143,6 @@ class MemberController extends GetxController {
         if (success) {
           Utils().fluttertoast("Group Exit successfully");
           onSuccess(true);
-
         }
       },
     );

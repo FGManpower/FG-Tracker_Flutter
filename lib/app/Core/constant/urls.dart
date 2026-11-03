@@ -7,6 +7,19 @@ class Urls {
   static const String verifyOtp = '${ConstRes.aBaseUrl}verify-otp';
   static const String logOut = '${ConstRes.aBaseUrl}logOut';
   static const String resendOtp = '${ConstRes.aBaseUrl}resendOtp';
+
+  // v2: send-otp returns nextStep / otpCharge for non-India numbers
+  static const String v2SendOtp = '${ConstRes.aBaseUrl}v2/send-otp';
+  static const String v2ResendOtp = '${ConstRes.aBaseUrl}v2/resend-otp';
+  static const String v2VerifyOtp = '${ConstRes.aBaseUrl}v2/verify-otp';
+  static const String otpChargeConfig =
+      '${ConstRes.aBaseUrl}v2/otp-charge/config';
+  static const String otpChargeCreateOrder =
+      '${ConstRes.aBaseUrl}v2/otp-charge/create-order';
+  static const String otpChargePaymentSuccess =
+      '${ConstRes.aBaseUrl}v2/otp-charge/payment-success';
+  static const String otpChargePaymentFailed =
+      '${ConstRes.aBaseUrl}v2/otp-charge/payment-failed';
   static const String updateProfile = '${ConstRes.aBaseUrl}updateProfile';
   static const String banner = '${ConstRes.aBaseUrl}banners';
   static const String getAllGroup = '${ConstRes.aBaseUrl}get-all-group';
@@ -34,6 +47,23 @@ class Urls {
   static const String callingStatus = '${ConstRes.aBaseUrl}calling-status';
   static const String walkieUpdateMemberSubscription =
       '${ConstRes.aBaseUrl}walkie/update-member-subscription';
+
+  static const String walkieChannels = '${ConstRes.aBaseUrl}walkie/channels';
+  static String walkieChannelNotifications(dynamic groupId) =>
+      '${ConstRes.aBaseUrl}walkie/channels/$groupId/notifications';
+  static const String walkieActiveChannel =
+      '${ConstRes.aBaseUrl}walkie/active-channel';
+
+  // Package Pricing (contract: docs/package_pricing_api.md)
+  static const String packages = '${ConstRes.aBaseUrl}packages';
+  static String packagePlans(String moduleKey) =>
+      '${ConstRes.aBaseUrl}packages/$moduleKey/plans';
+  static const String packageCreateOrder =
+      '${ConstRes.aBaseUrl}packages/payment/create-order';
+  static const String packageVerifyPayment =
+      '${ConstRes.aBaseUrl}packages/payment/verify';
+  static const String packagePaymentFailed =
+      '${ConstRes.aBaseUrl}packages/payment/failed';
 
   static const String createStatus = "status/create";
   static const String statusFeed = "status/feed";

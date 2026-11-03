@@ -118,6 +118,25 @@ class StatusViewController extends GetxController
     replyController.addListener(() {
       hasText.value = replyController.text.trim().isNotEmpty;
     });
+
+    if (Get.isRegistered<StatusSocketService>()) {
+      final socket = Get.find<StatusSocketService>();
+      ever<Map<String, dynamic>?>(socket.onStatusDeletedEvent, (data) {
+        if (data == null) return;
+        final int deletedStatusId = data['statusId'] is int
+            ? data['statusId']
+            : int.tryParse(data['statusId']?.toString() ?? '') ?? 0;
+        final int creatorUserId = data['userId'] is int
+            ? data['userId']
+            : int.tryParse(data['userId']?.toString() ?? '') ?? 0;
+        if (deletedStatusId > 0) {
+          handleStoryDeletionIfActive(
+            deletedStatusId,
+            creatorUserId: creatorUserId,
+          );
+        }
+      });
+    }
   }
 
   void _onPageScroll() {
@@ -167,7 +186,6 @@ class StatusViewController extends GetxController
     videoController?.removeListener(_onVideoListener);
     videoController?.pause();
 
-    Get.closeAllSnackbars();
     Get.back();
   }
 
@@ -475,6 +493,80 @@ class StatusViewController extends GetxController
     _loadCurrentStatus();
   }
 
+  final Set<int> _handledDeletionStatusIds = <int>{};
+
+  void handleStoryDeletionIfActive(int deletedStatusId, {int? creatorUserId}) {
+    if (_isClosing) return;
+    if (_handledDeletionStatusIds.contains(deletedStatusId)) return;
+    _handledDeletionStatusIds.add(deletedStatusId);
+
+    // 1. Remove from allContactGroups so future swipes/pages don't contain it
+    for (int g = 0; g < allContactGroups.length; g++) {
+      allContactGroups[g].statuses.removeWhere((s) => s.id == deletedStatusId);
+    }
+    for (int g = allContactGroups.length - 1; g >= 0; g--) {
+      if (allContactGroups[g].statuses.isEmpty) {
+        if (!isOwnStatus && g < currentGroupIndex.value) {
+          currentGroupIndex.value--;
+        }
+        allContactGroups.removeAt(g);
+      }
+    }
+
+    // 2. Check if the deleted item is in current active statuses list
+    final delIdx = statuses.indexWhere((s) => s.id == deletedStatusId);
+    if (delIdx == -1) {
+      return;
+    }
+
+    final bool isCurrentActive = (currentStatus?.id == deletedStatusId);
+
+    if (isCurrentActive) {
+      // The user is currently watching the deleted status!
+      final bool hasMoreStories = (delIdx < statuses.length - 1);
+
+      statuses.removeAt(delIdx);
+
+      if (statuses.isEmpty || !hasMoreStories) {
+        // Auto-close: If that was the last status item of that user, close the story viewer
+        closeViewer();
+        _showDeletedToast(isOwnStatus ? "Status deleted" : "This status was deleted by the owner");
+      } else {
+        // Auto-advance: Skip to the next status item of that user
+        currentIndex.value = delIdx.clamp(0, statuses.length - 1);
+        if (!isOwnStatus) {
+          _showDeletedToast("This status was deleted by the owner");
+        }
+        _loadCurrentStatus();
+      }
+    } else {
+      // A different status in this user's playlist was deleted
+      statuses.removeAt(delIdx);
+      if (delIdx < currentIndex.value) {
+        currentIndex.value = (currentIndex.value - 1).clamp(0, statuses.length - 1);
+      }
+      if (statuses.isEmpty) {
+        closeViewer();
+        _showDeletedToast(isOwnStatus ? "Status deleted" : "This status was deleted by the owner");
+      }
+    }
+  }
+
+  void _showDeletedToast([String? message]) {
+    final text = message ?? "This status is no longer available";
+    if (Get.isSnackbarOpen) {
+      Get.closeCurrentSnackbar();
+    }
+    Get.rawSnackbar(
+      message: text,
+      duration: const Duration(seconds: 2),
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.black87,
+      borderRadius: 8.r,
+      margin: EdgeInsets.all(16.w),
+    );
+  }
+
   void _recordView({required int statusId, String? reactionEmoji}) {
     if (Get.isRegistered<StatusSocketService>()) {
       final socket = Get.find<StatusSocketService>();
@@ -482,17 +574,25 @@ class StatusViewController extends GetxController
         socket.emitStatusView(
           statusId: statusId,
           reactionEmoji: reactionEmoji,
-          onResult: (success, _) {
+          onResult: (success, data) {
             if (!success) {
-              StatusRepo.viewStatus(statusId, reactionEmoji: reactionEmoji);
+              final message = (data?['message'] ?? data?['error'] ?? '').toString().toLowerCase();
+              final code = data?['statusCode'] ?? data?['status'];
+              if (code == 404 ||
+                  message.contains('not found') ||
+                  message.contains('expired')) {
+                _handleStatus404(statusId);
+                return;
+              }
+              _fallbackHttpView(statusId, reactionEmoji: reactionEmoji);
             }
           },
         );
       } else {
-        StatusRepo.viewStatus(statusId, reactionEmoji: reactionEmoji);
+        _fallbackHttpView(statusId, reactionEmoji: reactionEmoji);
       }
     } else {
-      StatusRepo.viewStatus(statusId, reactionEmoji: reactionEmoji);
+      _fallbackHttpView(statusId, reactionEmoji: reactionEmoji);
     }
 
     if (!isOwnStatus &&
@@ -514,6 +614,40 @@ class StatusViewController extends GetxController
         reactionEmoji: reactionEmoji,
       );
     }
+  }
+
+  Future<void> _fallbackHttpView(int statusId, {String? reactionEmoji}) async {
+    try {
+      final res = await StatusRepo.viewStatus(
+        statusId,
+        reactionEmoji: reactionEmoji,
+      );
+      if (res.status == false) {
+        final msg = res.message?.toLowerCase() ?? '';
+        if (msg.contains('not found') || msg.contains('expired')) {
+          _handleStatus404(statusId);
+        }
+      }
+    } on StatusNotFoundException {
+      _handleStatus404(statusId);
+    } catch (e) {
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('404') ||
+          msg.contains('not found') ||
+          msg.contains('expired')) {
+        _handleStatus404(statusId);
+      }
+    }
+  }
+
+  void _handleStatus404(int statusId) {
+    if (_isClosing) return;
+
+    if (Get.isRegistered<StatusFeedController>()) {
+      Get.find<StatusFeedController>().onStatusDeletedReceived(statusId, 0);
+    }
+
+    handleStoryDeletionIfActive(statusId);
   }
 
   Future<void> reactWithEmoji(String emoji) async {
@@ -603,19 +737,12 @@ class StatusViewController extends GetxController
     } else {
       final res = await StatusRepo.deleteStatus(item.id);
       deleted = res.status == true;
+      if (deleted) {
+        handleStoryDeletionIfActive(item.id);
+      }
     }
 
-    if (deleted) {
-      statuses.removeAt(currentIndex.value);
-      if (statuses.isEmpty) {
-        closeViewer();
-        return;
-      }
-      if (currentIndex.value >= statuses.length) {
-        currentIndex.value = statuses.length - 1;
-      }
-      _loadCurrentStatus();
-    } else {
+    if (!deleted) {
       resume();
     }
   }

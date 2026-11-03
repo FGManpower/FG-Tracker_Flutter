@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -29,37 +30,6 @@ class GroupCallControls extends StatelessWidget {
         final isVideo = controller.isVideo;
         final isVideoOn = controller.isVideoOn.value;
         final isAudioOn = controller.isAudioOn.value;
-        final route = controller.audioRoute.value;
-
-        late IconData routeIcon;
-        late String routeLabel;
-        late Color routeBg;
-        late Color routeIconColor;
-        late Color routeBorder;
-
-        switch (route) {
-          case AudioRoute.bluetooth:
-            routeIcon = Icons.bluetooth_connected_rounded;
-            routeLabel = "Bluetooth";
-            routeBg = const Color(0xFFE8F0FF);
-            routeIconColor = const Color(0xFF2F6BFF);
-            routeBorder = const Color(0xFF2F6BFF);
-            break;
-          case AudioRoute.earpiece:
-            routeIcon = Icons.phone_in_talk_rounded;
-            routeLabel = "Earpiece";
-            routeBg = Colors.white;
-            routeIconColor = const Color(0xFF6E5CA4);
-            routeBorder = const Color(0xFFE9E5FE);
-            break;
-          case AudioRoute.speaker:
-            routeIcon = Icons.volume_up_rounded;
-            routeLabel = "Speaker";
-            routeBg = Colors.white;
-            routeIconColor = const Color(0xFF6E5CA4);
-            routeBorder = const Color(0xFFE9E5FE);
-            break;
-        }
 
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,20 +76,68 @@ class GroupCallControls extends StatelessWidget {
               onTap: controller.toggleMic,
             ),
             SizedBox(width: 8.w),
-            ControlItem(
-              icon: routeIcon,
-              label: routeLabel,
-              bgColor: routeBg,
-              iconColor: routeIconColor,
-              borderColor: routeBorder,
-              onTap: controller.toggleSpeaker,
-            ),
+            Obx(() {
+              final CallAudioRoute route =
+                  controller.audioRouteController.currentRoute.value;
+
+              return groupCtrl(
+                icon: controller.audioRouteController.currentAudioRouteIcon,
+                label: controller.audioRouteController.currentAudioRouteLabel,
+                active: route != CallAudioRoute.earpiece,
+                isVideo: isVideo,
+                onTap: () async {
+                  await controller.toggleSpeaker(context);
+                  // c.showControlsTemporarily();
+                },
+              );
+            }),
             SizedBox(width: 4.w),
           ],
         );
       }),
     );
   }
+}
+
+Widget groupCtrl({
+  required IconData icon,
+  required String label,
+  required bool isVideo,
+  required VoidCallback onTap,
+  bool active = false,
+  Color? iconColor,
+}) {
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 46.r,
+          height: 46.r,
+          decoration: BoxDecoration(
+            border: Border.all(color: Color(0xFFE9E5FE)),
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: Color(0xFF6E5CA4),
+            size: 22.sp,
+          ),
+        ),
+      ),
+      SizedBox(height: 6.h),
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 10.sp,
+          fontFamily: FontFamily.interMedium,
+          color: const Color(0xFF5B4B8A),
+        ),
+      ),
+    ],
+  );
 }
 
 class ControlItem extends StatelessWidget {
@@ -133,6 +151,7 @@ class ControlItem extends StatelessWidget {
   final VoidCallback onTap;
 
   const ControlItem({
+    super.key,
     required this.icon,
     required this.label,
     required this.bgColor,
@@ -164,19 +183,19 @@ class ControlItem extends StatelessWidget {
                     : null,
                 boxShadow: bgColor == const Color(0xFFFF3B30)
                     ? [
-                  BoxShadow(
-                    color: const Color(0xFFFF3B30).withOpacity(0.35),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
+                        BoxShadow(
+                          color: const Color(0xFFFF3B30).withOpacity(0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
                     : [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
               child: Icon(icon, color: iconColor, size: iconSize.sp),
             ),

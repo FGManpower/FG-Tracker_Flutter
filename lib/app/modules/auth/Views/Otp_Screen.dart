@@ -350,6 +350,19 @@ class OTPScreen extends GetView<OtpController> {
                                       ),
                                       SizedBox(height: 20.h),
                                       Obx(() {
+                                        // Rate limit hit: no resend for 6 hours
+                                        if (controller.resendBlocked) {
+                                          return Text(
+                                            controller.resendBlockedText,
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 13.sp,
+                                              color: const Color(0xFFD32F2F),
+                                              fontFamily:
+                                                  FontFamily.interMedium,
+                                            ),
+                                          );
+                                        }
                                         return controller
                                                     .resendSeconds.value >
                                                 0
@@ -376,7 +389,8 @@ class OTPScreen extends GetView<OtpController> {
                                                   ),
                                                   children: [
                                                     TextSpan(
-                                                      text: "Resend It",
+                                                      text: controller
+                                                          .resendLabel,
                                                       style: TextStyle(
                                                         fontSize: 13.sp,
                                                         color: const Color(0xFF5D47F1),

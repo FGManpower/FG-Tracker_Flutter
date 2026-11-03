@@ -199,9 +199,8 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
 
 
 
-              Builder(
-                builder: (context) {
-                  if (isGroupChat && controller.isCreator == true) {
+              Obx(() {
+                  if (isGroupChat && controller.isCreator.value == true) {
                     return GestureDetector(
                       onTap: () {
                         showModalBottomSheet(
@@ -396,8 +395,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                       size: 26.sp,
                     ),
                   );
-                },
-              ),
+                }),
 
               SizedBox(
                 width: 15.w,

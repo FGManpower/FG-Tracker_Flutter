@@ -10,6 +10,9 @@ class MemberModel {
   final double? latitude;
   final double? longitude;
   final bool isOnline;
+  final int? chatId;
+
+
 
   MemberModel({
     this.userId,
@@ -22,5 +25,6 @@ class MemberModel {
     this.latitude,
     this.longitude,
     this.isOnline = true,
+    this.chatId,
   });
 }

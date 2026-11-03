@@ -1,11 +1,13 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
+import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -42,7 +44,7 @@ class BottomSheetUi {
             ? Get.find<GroupMessageController>().groupId
             : null);
 
-    final String effectiveGroupName = groupName ??
+    final Object effectiveGroupName = groupName ??
         argsMap?['groupName']?.toString() ??
         (Get.isRegistered<GroupMessageController>()
             ? Get.find<GroupMessageController>().groupName
@@ -353,7 +355,7 @@ class BottomSheetUi {
                                               member.locationSharing == 0 ||
                                               member.locationSharing == '0';
 
-                                      final bool isOnline = !isGhostMode &&
+                                      final bool isOnline =
                                           Tracking().isOnline(
                                             rawIsOnline: member.isOnline,
                                             lastSeen: member.lastSeen,
@@ -386,9 +388,6 @@ class BottomSheetUi {
                                           : null;
 
                                       String getLastSeenText() {
-                                        if (isGhostMode) {
-                                          return "Location Hidden";
-                                        }
                                         if (isOnline) return "Online";
                                         if (member.lastSeen == null ||
                                             member.lastSeen
@@ -564,29 +563,72 @@ class BottomSheetUi {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.center,
                                             children: [
-                                              CircleAvatar(
-                                                radius: 22.r,
-                                                backgroundColor:
-                                                    const Color(0xFFE8E4FF),
-                                                backgroundImage: profileUrl !=
-                                                        null
-                                                    ? NetworkImage(profileUrl)
-                                                    : null,
-                                                child: profileUrl == null
-                                                    ? Text(
-                                                        name.isNotEmpty
-                                                            ? name[0]
-                                                                .toUpperCase()
-                                                            : "?",
-                                                        style: TextStyle(
-                                                          color: ToggleThemeData
-                                                              .Appcolor,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          fontSize: 16.sp,
+                                              Stack(
+                                                clipBehavior: Clip.none,
+                                                children: [
+                                                  GestureDetector(
+                                                    onTap: isMe
+                                                        ? null
+                                                        : () =>
+                                                            showUserQuickProfile(
+                                                              userId:
+                                                                  memberUserId,
+                                                              name: name,
+                                                              profileImage: member
+                                                                  .profileImage
+                                                                  ?.toString(),
+                                                              mobileNo: member
+                                                                  .mobileNo
+                                                                  ?.toString(),
+                                                              chatId: int.tryParse(
+                                                                  member.chatId
+                                                                          ?.toString() ??
+                                                                      ''),
+                                                            ),
+                                                    child: CircleAvatar(
+                                                    radius: 22.r,
+                                                    backgroundColor:
+                                                        const Color(0xFFE8E4FF),
+                                                    backgroundImage: profileUrl !=
+                                                            null
+                                                        ? NetworkImage(profileUrl)
+                                                        : null,
+                                                    child: profileUrl == null
+                                                        ? Text(
+                                                            name.isNotEmpty
+                                                                ? name[0]
+                                                                    .toUpperCase()
+                                                                : "?",
+                                                            style: TextStyle(
+                                                              color: ToggleThemeData
+                                                                  .Appcolor,
+                                                              fontWeight:
+                                                                  FontWeight.w700,
+                                                              fontSize: 16.sp,
+                                                            ),
+                                                          )
+                                                        : null,
+                                                  ),
+                                                  ),
+                                                  Positioned(
+                                                    bottom: 0,
+                                                    right: 0,
+                                                    child: Container(
+                                                      width: 12.r,
+                                                      height: 12.r,
+                                                      decoration: BoxDecoration(
+                                                        color: isOnline
+                                                            ? const Color(0xFF2BB673)
+                                                            : const Color(0xFF9E9E9E),
+                                                        shape: BoxShape.circle,
+                                                        border: Border.all(
+                                                          color: Colors.white,
+                                                          width: 2.r,
                                                         ),
-                                                      )
-                                                    : null,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                               SizedBox(width: 12.w),
                                               Expanded(
@@ -644,31 +686,24 @@ class BottomSheetUi {
                                                         Icon(
                                                           Icons.circle,
                                                           size: 8.r,
-                                                          color: isGhostMode
+                                                          color: isOnline
                                                               ? const Color(
-                                                                  0xFF7E57C2)
-                                                              : (isOnline
-                                                                  ? const Color(
-                                                                      0xFF2BB673)
-                                                                  : Colors.grey
-                                                                      .shade400),
+                                                                  0xFF2BB673)
+                                                              : const Color(
+                                                                  0xFF9E9E9E),
                                                         ),
                                                         SizedBox(width: 6.w),
                                                         Expanded(
                                                           child: reausabletext(
                                                             getLastSeenText(),
                                                             fontsize: 12,
-                                                            color: isGhostMode
+                                                            color: isOnline
                                                                 ? const Color(
-                                                                    0xFF7E57C2)
-                                                                : (isOnline
-                                                                    ? const Color(
-                                                                        0xFF2BB673)
-                                                                    : Colors.grey[
-                                                                        600]),
+                                                                    0xFF2BB673)
+                                                                : Colors.grey[
+                                                                    600],
                                                             fontweight:
-                                                                isGhostMode ||
-                                                                        isOnline
+                                                                isOnline
                                                                     ? FontWeight
                                                                         .w600
                                                                     : FontWeight
@@ -739,23 +774,15 @@ class BottomSheetUi {
                                                               CallingController>(
                                                           force: true);
                                                     }
-                                                    Get.toNamed(
-                                                      Routes.callScreen,
-                                                      arguments: {
-                                                        "callerId":
-                                                            currentUserId,
-                                                        "remoteUserId":
-                                                            memberUserId,
-                                                        "callerName": name,
-                                                        "callerProfile": member
-                                                                .profileImage
-                                                                ?.toString() ??
-                                                            "",
-                                                        "offer": null,
-                                                        "is_video": false,
-                                                        "callType": "outGoing",
-                                                      },
-                                                    );
+
+
+                                                    CallService().startOutGoingCall(context,
+                                                        callerId: currentUserId,
+                                                        remoteUserId: memberUserId,
+                                                        is_video: false,
+                                                        callerName: name,
+                                                        callerProfile: member
+                                                            .profileImage);
                                                   },
                                                 ),
                                                 SizedBox(width: 6.w),
@@ -770,23 +797,15 @@ class BottomSheetUi {
                                                               CallingController>(
                                                           force: true);
                                                     }
-                                                    Get.toNamed(
-                                                      Routes.callScreen,
-                                                      arguments: {
-                                                        "callerId":
-                                                            currentUserId,
-                                                        "remoteUserId":
-                                                            memberUserId,
-                                                        "callerName": name,
-                                                        "callerProfile": member
-                                                                .profileImage
-                                                                ?.toString() ??
-                                                            "",
-                                                        "offer": null,
-                                                        "is_video": true,
-                                                        "callType": "outGoing",
-                                                      },
-                                                    );
+
+
+                                                    CallService().startOutGoingCall(context,
+                                                        callerId: currentUserId,
+                                                        remoteUserId: memberUserId,
+                                                        is_video: true,
+                                                        callerName: name,
+                                                        callerProfile: member
+                                                            .profileImage);
                                                   },
                                                 ),
                                                 if (!isGhostMode) ...[

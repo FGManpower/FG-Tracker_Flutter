@@ -353,6 +353,7 @@ class WalkieNotificationManager {
     if (isWalkieScreenActive.value &&
         WalkieLaunchTracker.fromWalkieCall &&
         GroupWalkieService.instance.currentGroupId == groupId) {
+      await GroupWalkieService.instance.joinGroup(groupId);
       return;
     }
 
@@ -364,8 +365,16 @@ class WalkieNotificationManager {
       'fromNotification': true,
     };
 
-    if (Get.currentRoute == Routes.groupWalkieScreen ||
+    if (isWalkieScreenActive.value ||
+        Get.currentRoute == Routes.groupWalkieScreen ||
         WalkieLaunchTracker.fromWalkieCall) {
+      if (Get.isRegistered<GroupWalkieController>()) {
+        final wc = Get.find<GroupWalkieController>();
+        if (wc.onSwitchGroupRequested != null) {
+          wc.onSwitchGroupRequested!(args);
+          return;
+        }
+      }
       Get.offNamed(Routes.groupWalkieScreen, arguments: args);
     } else {
       Get.toNamed(Routes.groupWalkieScreen, arguments: args);
