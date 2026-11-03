@@ -6,6 +6,8 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
 import '../../../Core/util/message_preview_builder.dart';
+import '../Controller/chat_list_logic.dart';
+import '../widgets/chat_list_row_widgets.dart';
 import '../../../Core/util/profile_navigation.dart';
 import '../Controller/chat_list_controller.dart';
 import '../Controller/MessageController.dart';
@@ -166,6 +168,7 @@ class ArchivedChatsScreen extends StatelessWidget {
         Offset tapPosition = Offset.zero;
 
         return GestureDetector(
+          key: ValueKey(ChatListRules.chatKey(chat)),
           onTapDown: (details) {
             tapPosition = details.globalPosition;
           },
@@ -264,12 +267,15 @@ class ArchivedChatsScreen extends StatelessWidget {
                         maxline: 1,
                       ),
                       SizedBox(height: 4.h),
-                      reausabletext(
-                        _getMessagePreview(chat),
-                        fontsize: 11.sp,
-                        color: Colors.grey,
-                        maxline: 1,
-                      ),
+                      if (controller.typingLabelFor(chat) != null)
+                        ChatTypingText(label: controller.typingLabelFor(chat)!)
+                      else
+                        reausabletext(
+                          _getMessagePreview(chat),
+                          fontsize: 11.sp,
+                          color: Colors.grey,
+                          maxline: 1,
+                        ),
                     ],
                   ),
                 ),

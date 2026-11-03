@@ -3,6 +3,7 @@ import 'package:fgtracker/app/modules/Messages/Controller/CameraControllerX.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart' show openAppSettings;
 
 class CameraScreen extends StatelessWidget {
   CameraScreen({super.key});
@@ -21,6 +22,8 @@ class CameraScreen extends StatelessWidget {
                   controller.cameraController != null &&
                   controller.cameraController!.value.isInitialized)
                 CameraPreview(controller.cameraController!)
+              else if (controller.cameraError.value.isNotEmpty)
+                _buildCameraError()
               else
                 const Center(
                     child: CircularProgressIndicator(color: Colors.white)),
@@ -247,5 +250,48 @@ class CameraScreen extends StatelessWidget {
     final min = (seconds ~/ 60).toString().padLeft(2, '0');
     final sec = (seconds % 60).toString().padLeft(2, '0');
     return "$min:$sec";
+  }
+
+  /// Shown when the preview can't start (permission refused, no camera):
+  /// the reason, "Try again" and, for a refused permission, "Open Settings".
+  Widget _buildCameraError() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.no_photography_outlined, color: Colors.white70, size: 48.sp),
+            SizedBox(height: 14.h),
+            Text(
+              controller.cameraError.value,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white, fontSize: 15.sp),
+            ),
+            SizedBox(height: 18.h),
+            Wrap(
+              spacing: 12.w,
+              runSpacing: 8.h,
+              alignment: WrapAlignment.center,
+              children: [
+                OutlinedButton(
+                  onPressed: controller.initializeCamera,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white54),
+                  ),
+                  child: const Text("Try again"),
+                ),
+                if (controller.cameraPermissionDenied.value)
+                  ElevatedButton(
+                    onPressed: openAppSettings,
+                    child: const Text("Open Settings"),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

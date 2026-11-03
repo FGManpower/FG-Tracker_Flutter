@@ -258,11 +258,29 @@ void main() {
         receiverId: '2001',
         content: 'Check this invoice',
         seenCount: 0,
+        isDelivered: false,
       );
 
-      final isSingleTick = (message.seenCount ?? 0) == 0;
-      expect(isSingleTick, isTrue);
+      // 1. Sent state: single tick
+      bool hasDoubleTick = (message.seenCount ?? 0) > 0 || message.isDelivered;
+      bool isPurpleTick = (message.seenCount ?? 0) > 0;
+      expect(hasDoubleTick, isFalse);
+      expect(isPurpleTick, isFalse);
 
+      // 2. Delivered state: double grey tick
+      final deliveryPayload = {
+        'chatId': 'private_chat_1',
+        'messageIds': [901],
+      };
+      if ((deliveryPayload['messageIds'] as List).contains(message.id)) {
+        message.isDelivered = true;
+      }
+      hasDoubleTick = (message.seenCount ?? 0) > 0 || message.isDelivered;
+      isPurpleTick = (message.seenCount ?? 0) > 0;
+      expect(hasDoubleTick, isTrue);
+      expect(isPurpleTick, isFalse);
+
+      // 3. Seen state: double purple tick
       final seenUpdatePayload = {
         'chatId': 'private_chat_1',
         'messageIds': [901],
@@ -270,11 +288,31 @@ void main() {
 
       if ((seenUpdatePayload['messageIds'] as List).contains(message.id)) {
         message.seenCount = (message.seenCount ?? 0) + 1;
+        message.isDelivered = true;
       }
 
-      final isDoubleTick = (message.seenCount ?? 0) > 0;
-      expect(isDoubleTick, isTrue);
+      hasDoubleTick = (message.seenCount ?? 0) > 0 || message.isDelivered;
+      isPurpleTick = (message.seenCount ?? 0) > 0;
+      expect(hasDoubleTick, isTrue);
+      expect(isPurpleTick, isTrue);
       expect(message.seenCount, 1);
+    });
+
+    test('MessageData.fromJson parses isDelivered from various backend shapes', () {
+      final msg1 = MessageData.fromJson({'id': 1, 'isDelivered': true});
+      expect(msg1.isDelivered, isTrue);
+
+      final msg2 = MessageData.fromJson({'id': 2, 'is_delivered': '1'});
+      expect(msg2.isDelivered, isTrue);
+
+      final msg3 = MessageData.fromJson({'id': 3, 'status': 'delivered'});
+      expect(msg3.isDelivered, isTrue);
+
+      final msg4 = MessageData.fromJson({'id': 4, 'status': 'seen', 'seenCount': 1});
+      expect(msg4.isDelivered, isTrue);
+
+      final msg5 = MessageData.fromJson({'id': 5, 'content': 'pending'});
+      expect(msg5.isDelivered, isFalse);
     });
   });
 

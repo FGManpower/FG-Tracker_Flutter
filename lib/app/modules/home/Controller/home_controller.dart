@@ -11,6 +11,7 @@ import 'package:fgtracker/app/Model/group_count_detail.dart';
 import 'package:fgtracker/app/Model/initialize_model.dart';
 import 'package:fgtracker/app/Model/live_location_model.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/chat_list_controller.dart';
 import 'package:fgtracker/app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
@@ -74,6 +75,13 @@ class HomeController extends GetxController {
 
     SocketDashboardService.instance.init();
     SocketDashboardService.instance.requestGroupCount();
+
+    // One chat-list store for the whole logged-in session: its sockets keep
+    // listening (new messages, typing, counts) on every screen, not only while
+    // /chat-list is open. Linked to the home route, so logout disposes it.
+    if (userId != null && userId.toString().isNotEmpty) {
+      Get.put(ChatListController());
+    }
   }
 
   Future<void> getProfileData() async {

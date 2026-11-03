@@ -9,11 +9,29 @@ import '../../../Data/Repositories/GetMessageRepo.dart';
 import '../../../Data/Services/active_chat_tracker.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
-import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'chat_list_logic.dart';
 
-class ChatListController extends GetxController {
+/// Single store for the unified chat list and the Archived list.
+///
+/// Created once per logged-in session by HomeController (lives on the home
+/// route), so its sockets and listeners stay active app-wide; logout's
+/// Get.deleteAll disposes it. ChatListScreen's Get.put reuses the instance.
+class ChatListController extends GetxController with WidgetsBindingObserver {
   RxList<PrivateChatModel> privateChats = <PrivateChatModel>[].obs;
+
+  /// chatKey -> "typing..." / "Rahul is typing..." for rows being typed in.
+  final RxMap<String, String> typingLabels = <String, String>{}.obs;
+  late final ChatTypingTracker _typing = ChatTypingTracker(
+    onChanged: _publishTyping,
+  );
+
+  /// Snapshot taken before an optimistic action, restored if it fails.
+  final Map<String, ({PrivateChatModel snapshot, bool wasArchived, String action})>
+      _pendingActions = {};
+
+  DateTime? _lastServerSync;
+  Timer? _refetchDebounce;
 
   RxBool isLoading = false.obs;
   RxBool isRefreshing = false.obs;
@@ -96,6 +114,22 @@ class ChatListController extends GetxController {
     );
   }
 
+  /// Main-list chats with something unread (badge count or manual unread).
+  int get mainUnreadChatCount => displayedChats
+      .where((c) => (c.unreadCount ?? 0) > 0 || isChatMarkedUnread(c))
+      .length;
+
+  /// Unread messages inside archived chats (shown on the Archived entry,
+  /// excluded from every main-list total).
+  int get archivedUnreadCount => displayedArchivedChats.fold<int>(
+        0,
+        (sum, chat) => sum + (chat.unreadCount ?? 0),
+      );
+
+  /// Typing label for a row, or null.
+  String? typingLabelFor(PrivateChatModel chat) =>
+      typingLabels[ChatListRules.chatKey(chat)];
+
   final socketService = SocketMessageService.instance;
 
   String get currentUserId {
@@ -107,10 +141,11 @@ class ChatListController extends GetxController {
   void onInit() {
     super.onInit();
 
+    // The "chat list viewed" marker is sent by the Chatting quick action
+    // when the screen is opened; this controller now starts with the home
+    // screen, so it must not clear the badge here.
+    WidgetsBinding.instance.addObserver(this);
     _loadManuallyUnreadKeys();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      SocketService.instance.markChatListViewed();
-    });
     _initializePrivateChatListSocket();
     getPrivateChats();
     loadArchivedChats();
@@ -201,9 +236,9 @@ class ChatListController extends GetxController {
         ((c.unreadCount ?? 0) > 0 || isChatMarkedUnread(c)));
 
     markerService.setPrivateChatUnread(hasPrivateUnread);
-    if (hasGroupUnread) {
-      markerService.setGroupChatUnread(true);
-    }
+    // Was only ever set to true, so the home "Chatting" dot stuck after all
+    // group chats were read.
+    markerService.setGroupChatUnread(hasGroupUnread);
   }
 
   void openSearch() {
@@ -259,16 +294,8 @@ class ChatListController extends GetxController {
         lower.contains('default_image');
   }
 
-  static String _getChatKey(PrivateChatModel chat) {
-    final isGroup = chat.isGroup == true || chat.chatType == "group" || chat.groupId != null;
-    if (isGroup) {
-      final gid = chat.groupId ?? chat.id ?? chat.chatId ?? chat.conversationId ?? 0;
-      return 'group_$gid';
-    } else {
-      final uid = chat.userId ?? chat.chatId ?? chat.conversationId ?? chat.id ?? 0;
-      return 'private_$uid';
-    }
-  }
+  static String _getChatKey(PrivateChatModel chat) =>
+      ChatListRules.chatKey(chat);
 
   bool _isGroupChat(PrivateChatModel c) =>
       c.isGroup == true || c.chatType == "group" || c.groupId != null;
@@ -499,6 +526,8 @@ class ChatListController extends GetxController {
         privateChats.assignAll(_sortPinnedChats(uniqueMap.values.toList()));
       }
 
+      _lastServerSync = DateTime.now();
+
       if (response.pagination != null) {
         currentPage.value = response.pagination!.currentPage ?? requestedPage;
 
@@ -618,6 +647,19 @@ class ChatListController extends GetxController {
       },
     );
 
+    // Registered once by reference; chat screens can't remove them.
+    socketService.listenChatListTyping(
+      onPrivateTyping: (data) => _onPrivateTyping(data, typing: true),
+      onPrivateStopTyping: (data) => _onPrivateTyping(data, typing: false),
+      onGroupTyping: (data) => _onGroupTyping(data, typing: true),
+      onGroupStopTyping: (data) => _onGroupTyping(data, typing: false),
+    );
+    socketService.listenChatListReconnect(_resyncWithServer);
+
+    // Group list updates, group typing and group "read" travel on /chat,
+    // which otherwise only exists after a group chat was opened.
+    socketService.ensureChatSocket(ConstRes.socketUrl, userId: userId);
+
     socketService.initPrivateChatListSocket(
       ConstRes.socketUrl,
       userId: userId,
@@ -732,44 +774,13 @@ class ChatListController extends GetxController {
     privateChats.refresh();
   }
 
-  void pinChat(PrivateChatModel chat) {
-    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id;
-    if (effectiveId == null) {
-      return;
-    }
-
-    final chatId = effectiveId.toString();
-
-    socketService.pinPrivateChat(
-      userId: currentUserId,
-      chatId: chatId,
-    );
-
-    chat.isPinned = true;
-    chat.pinnedAt = DateTime.now().toUtc().toIso8601String();
-    privateChats.assignAll(_sortPinnedChats(privateChats));
-    privateChats.refresh();
-  }
-
-  void unpinChat(PrivateChatModel chat) {
-    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id;
-    if (effectiveId == null) {
-      return;
-    }
-
-    final chatId = effectiveId.toString();
-
-    socketService.unpinPrivateChat(
-      userId: currentUserId,
-      chatId: chatId,
-    );
-
-    chat.isPinned = false;
-    chat.pinnedAt = null;
-    privateChats.assignAll(_sortPinnedChats(privateChats));
-    privateChats.refresh();
-  }
-
+  /// Realtime row update (`chat_list_updated` / `conversation_updated`) for
+  /// private and group chats, main list and Archived list alike.
+  ///
+  /// Rules: a partial payload never removes a row; an archived chat stays
+  /// archived unless the payload says `isArchived: false`; only a new message
+  /// or a pin change reorders; an unknown chat with an incomplete payload is
+  /// fetched from the API instead of dropped.
   void _handlePrivateChatUpdated(dynamic data) {
     if (data is! Map) {
       return;
@@ -794,6 +805,7 @@ class ChatListController extends GetxController {
       }
 
       final updatedChat = PrivateChatModel.fromJson(payload);
+      _clearAbsentFlags(updatedChat, payload);
 
       if (updatedChat.id == null &&
           updatedChat.userId == null &&
@@ -801,99 +813,255 @@ class ChatListController extends GetxController {
         return;
       }
 
-      // The user is reading this chat right now: a new message there is
-      // already read (the chat screen sends the read to the server).
-      if ((updatedChat.unreadCount ?? 0) > 0 && _isViewingChat(updatedChat)) {
-        updatedChat.unreadCount = 0;
-      }
+      // The server answered for this chat: an optimistic action succeeded.
+      _pendingActions.remove(_getChatKey(updatedChat));
 
-      final index =
+      final mainIndex =
           privateChats.indexWhere((chat) => _isSameChat(chat, updatedChat));
+      final archivedIndex =
+          archivedChats.indexWhere((chat) => _isSameChat(chat, updatedChat));
 
-      if (updatedChat.isArchived == true) {
-        privateChats.removeWhere((chat) => _isSameChat(chat, updatedChat));
+      // Explicit flag wins; otherwise an archived chat stays archived (a new
+      // message or a read receipt must not pull it out of Archived).
+      final bool archived = updatedChat.isArchived ?? (archivedIndex >= 0);
 
-        final archivedIndex =
-            archivedChats.indexWhere((chat) => _isSameChat(chat, updatedChat));
-
+      if (archived) {
+        if (mainIndex >= 0) {
+          privateChats.removeAt(mainIndex);
+          privateChats.refresh();
+        }
         if (archivedIndex >= 0) {
-          archivedChats[archivedIndex] = _mergePrivateChat(
-            archivedChats[archivedIndex],
-            updatedChat,
-          );
-          archivedChats[archivedIndex].isArchived = true;
+          final merged =
+              _applyRealtimeUpdate(archivedChats[archivedIndex], updatedChat);
+          merged.isArchived = true;
+          archivedChats[archivedIndex] = merged;
         } else {
+          if (!_isDisplayable(updatedChat)) {
+            loadArchivedChats();
+            return;
+          }
           updatedChat.isArchived = true;
-          archivedChats.insert(0, updatedChat);
+          _prepareNewRow(updatedChat);
+          archivedChats.add(updatedChat);
         }
-
-        privateChats.refresh();
-        archivedChats.refresh();
-
-        return;
-      } else {
-        archivedChats.removeWhere((chat) => _isSameChat(chat, updatedChat));
-        archivedChats.refresh();
-      }
-
-      final hasMsg = (updatedChat.message != null && updatedChat.message!.trim().isNotEmpty) ||
-          (updatedChat.preview != null && updatedChat.preview!.trim().isNotEmpty) ||
-          (updatedChat.messageType != null &&
-              updatedChat.messageType!.trim().isNotEmpty &&
-              updatedChat.messageType != 'text');
-
-      final name = (updatedChat.name ?? updatedChat.groupName)?.trim();
-      final hasValidName = name != null && name.isNotEmpty && name != "Unknown User";
-
-      if (index == -1) {
-        if (!hasMsg || !hasValidName) {
-          return;
-        }
-
-        final hasChatDetails = payload['lastActivity'] is Map ||
-            payload.containsKey('message') ||
-            payload.containsKey('lastMessage') ||
-            payload.containsKey('last_message') ||
-            updatedChat.unreadCount != null ||
-            updatedChat.isPinned == true;
-
-        if (!hasChatDetails) {
-          return;
-        }
-
-        if ((updatedChat.time == null || updatedChat.time!.isEmpty) &&
-            (updatedChat.timestamp == null || updatedChat.timestamp!.isEmpty)) {
-          updatedChat.time = DateTime.now().toUtc().toIso8601String();
-          updatedChat.timestamp = updatedChat.time;
-        }
-
-        privateChats.add(updatedChat);
-        privateChats.assignAll(_sortPinnedChats(privateChats));
-        privateChats.refresh();
+        archivedChats.assignAll(ChatListRules.sort(archivedChats));
         _syncChattingNotificationMarker();
-
         return;
       }
 
-      if (!hasMsg || !hasValidName) {
-        privateChats.removeAt(index);
+      if (archivedIndex >= 0) {
+        // Explicitly unarchived (isArchived: false).
+        final moved =
+            _applyRealtimeUpdate(archivedChats[archivedIndex], updatedChat);
+        moved.isArchived = false;
+        archivedChats.removeAt(archivedIndex);
+        archivedChats.refresh();
+        if (mainIndex == -1) {
+          privateChats.add(moved);
+        } else {
+          privateChats[mainIndex] =
+              _applyRealtimeUpdate(privateChats[mainIndex], updatedChat);
+        }
+        privateChats.assignAll(ChatListRules.sort(privateChats));
+        _syncChattingNotificationMarker();
+        return;
+      }
+
+      if (mainIndex == -1) {
+        if (!_isDisplayable(updatedChat)) {
+          // New chat, or not in the loaded page, and the payload lacks the
+          // row details: fetch it instead of dropping the message.
+          _scheduleServerRefetch();
+          return;
+        }
+        _prepareNewRow(updatedChat);
+        privateChats.add(updatedChat);
+        privateChats.assignAll(ChatListRules.sort(privateChats));
+        _syncChattingNotificationMarker();
+        return;
+      }
+
+      final current = privateChats[mainIndex];
+      final newMessage = ChatListRules.isNewMessage(current, updatedChat);
+      final merged = _applyRealtimeUpdate(current, updatedChat);
+      final pinChanged = (current.isPinned == true) != (merged.isPinned == true);
+      privateChats[mainIndex] = merged;
+      if (newMessage || pinChanged) {
+        privateChats.assignAll(ChatListRules.sort(privateChats));
+      } else {
+        // Read/seen/online/profile update: change fields in place only.
         privateChats.refresh();
-        return;
       }
-
-      final currentChat = privateChats[index];
-      final mergedChat = _mergePrivateChat(
-        currentChat,
-        updatedChat,
-        fromServer: false,
-      );
-
-      privateChats[index] = mergedChat;
-      privateChats.assignAll(_sortPinnedChats(privateChats));
-      privateChats.refresh();
       _syncChattingNotificationMarker();
-    } catch (e, stackTrace) {}
+    } catch (_) {}
   }
+
+  /// Merges a realtime update into [current] and applies the unread policy.
+  PrivateChatModel _applyRealtimeUpdate(
+    PrivateChatModel current,
+    PrivateChatModel updated,
+  ) {
+    final newMessage = ChatListRules.isNewMessage(current, updated);
+    final merged = _mergePrivateChat(current, updated, fromServer: false);
+    merged.unreadCount = ChatListRules.resolveUnread(
+      current: current,
+      updated: updated,
+      newMessage: newMessage,
+      isViewing: _isViewingChat(merged),
+      myUserId: currentUserId,
+    );
+    if (newMessage) _typing.clearChat(_getChatKey(merged));
+    return merged;
+  }
+
+  void _prepareNewRow(PrivateChatModel chat) {
+    if ((chat.time == null || chat.time!.isEmpty) &&
+        (chat.timestamp == null || chat.timestamp!.isEmpty)) {
+      chat.time = DateTime.now().toUtc().toIso8601String();
+      chat.timestamp = chat.time;
+    }
+    final sentByMe = chat.senderId != null && chat.senderId == currentUserId;
+    // TODO(backend #7): per-recipient unread; my own message is never unread.
+    if (_isViewingChat(chat) || sentByMe) chat.unreadCount = 0;
+    _typing.clearChat(_getChatKey(chat));
+  }
+
+  bool _isDisplayable(PrivateChatModel chat) {
+    final hasMsg = (chat.message?.trim().isNotEmpty ?? false) ||
+        (chat.preview?.trim().isNotEmpty ?? false) ||
+        (chat.messageType != null &&
+            chat.messageType!.trim().isNotEmpty &&
+            chat.messageType != 'text');
+    final name = (chat.name ?? chat.groupName)?.trim();
+    return hasMsg && name != null && name.isNotEmpty && name != "Unknown User";
+  }
+
+  /// PrivateChatModel.fromJson defaults a missing unread count to 0 and a
+  /// missing pin/block flag to false. In a partial realtime payload that
+  /// would wipe the badge or unpin the chat, so "absent" must stay null.
+  void _clearAbsentFlags(PrivateChatModel chat, Map<String, dynamic> payload) {
+    bool has(List<String> keys) => keys.any(payload.containsKey);
+    if (!has(const ['unreadCount', 'unread_count', 'unread'])) {
+      chat.unreadCount = null;
+    }
+    if (!has(const ['isPinned', 'is_pinned', 'pinned'])) chat.isPinned = null;
+    if (!has(const ['isBlocked', 'is_blocked'])) chat.isBlocked = null;
+    if (!has(const ['blockedByMe', 'blocked_by_me'])) chat.blockedByMe = null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Server sync: reconnect, app resume, unknown chats
+  // ---------------------------------------------------------------------------
+
+  void _scheduleServerRefetch({
+    Duration delay = const Duration(milliseconds: 600),
+  }) {
+    _refetchDebounce?.cancel();
+    _refetchDebounce = Timer(delay, () {
+      getPrivateChats(refresh: true);
+    });
+  }
+
+  /// The /chat-list screen was opened: refresh from the server (throttled),
+  /// since this store outlives the screen.
+  void onChatListOpened() => _resyncWithServer();
+
+  /// Socket (re)connected or app resumed: the server is the truth again.
+  void _resyncWithServer() {
+    final last = _lastServerSync;
+    if (last != null &&
+        DateTime.now().difference(last) < const Duration(seconds: 3)) {
+      return;
+    }
+    _scheduleServerRefetch(delay: const Duration(milliseconds: 300));
+    loadArchivedChats();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    final userId = currentUserId;
+    if (userId.isEmpty || userId == "null") return;
+    socketService.ensureChatSocket(ConstRes.socketUrl, userId: userId);
+    if (!socketService.isPrivateChatListSocketConnected) {
+      // Recreates the list socket; its connect handler calls _resyncWithServer.
+      _initializePrivateChatListSocket();
+    } else {
+      _resyncWithServer();
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Typing indicator
+  // ---------------------------------------------------------------------------
+
+  void _publishTyping() {
+    typingLabels.assignAll(
+      _typing.labels(isGroup: (key) => key.startsWith('group_')),
+    );
+  }
+
+  String? _str(dynamic v) {
+    final s = v?.toString().trim();
+    return (s == null || s.isEmpty || s == 'null') ? null : s;
+  }
+
+  void _onPrivateTyping(dynamic data, {required bool typing}) {
+    if (data is! Map) return;
+    final m = Map<String, dynamic>.from(data);
+    final typist = _str(m['userId'] ?? m['senderId'] ?? m['user_id']);
+    if (typist == null || typist == currentUserId) return;
+    final chatId = _str(m['chatId'] ?? m['conversationId'] ?? m['chat_id']);
+
+    var key = 'private_$typist';
+    for (final c in [...privateChats, ...archivedChats]) {
+      if (_isGroupChat(c)) continue;
+      final cChatId = _str(c.chatId ?? c.conversationId ?? c.id);
+      if (_str(c.userId) == typist || (chatId != null && cChatId == chatId)) {
+        key = _getChatKey(c);
+        break;
+      }
+    }
+
+    if (typing && m['isTyping'] != false) {
+      _typing.start(key, typist, name: _str(m['userName'] ?? m['senderName']));
+    } else {
+      _typing.stop(key, typist);
+    }
+  }
+
+  void _onGroupTyping(dynamic data, {required bool typing}) {
+    if (data is! Map) return;
+    final m = Map<String, dynamic>.from(data);
+    final typist = _str(m['userId'] ?? m['senderId'] ?? m['user_id']);
+    final groupId = _str(m['groupId'] ?? m['group_id']);
+    if (typist == null || groupId == null || typist == currentUserId) return;
+    final key = 'group_$groupId';
+    if (typing && m['isTyping'] != false) {
+      _typing.start(key, typist, name: _str(m['userName'] ?? m['senderName']));
+    } else {
+      _typing.stop(key, typist);
+    }
+  }
+
+  @visibleForTesting
+  void debugHandleChatUpdated(dynamic data) => _handlePrivateChatUpdated(data);
+
+  @visibleForTesting
+  void debugHandlePrivateTyping(dynamic data, {bool typing = true}) =>
+      _onPrivateTyping(data, typing: typing);
+
+  @visibleForTesting
+  void debugHandleGroupTyping(dynamic data, {bool typing = true}) =>
+      _onGroupTyping(data, typing: typing);
+
+  @visibleForTesting
+  void debugHandleArchivedChats(dynamic data) =>
+      _handleArchivedPrivateChats(data);
+
+  @visibleForTesting
+  void debugHandleActionError(dynamic data) =>
+      _handlePrivateChatActionError(data);
 
   PrivateChatModel _mergePrivateChat(
     PrivateChatModel current,
@@ -901,6 +1069,24 @@ class ChatListController extends GetxController {
     bool fromServer = false,
   }) {
     if (fromServer) {
+      // An API response that started before a realtime message arrived must
+      // not roll the row back to the older message (and its older count).
+      final apiTime = ChatListRules.lastMessageTime(updated);
+      if (apiTime.millisecondsSinceEpoch > 0 &&
+          ChatListRules.lastMessageTime(current).isAfter(apiTime) &&
+          (current.message?.isNotEmpty ?? false)) {
+        updated
+          ..message = current.message
+          ..preview = current.preview
+          ..messageType = current.messageType
+          ..isDeletedForEveryone = current.isDeletedForEveryone
+          ..time = current.time
+          ..timestamp = current.timestamp
+          ..unreadCount = current.unreadCount
+          ..senderId = current.senderId
+          ..senderName = current.senderName
+          ..lastMessageData = current.lastMessageData;
+      }
       final serverHasMessage =
           updated.message != null && updated.message!.isNotEmpty;
       final isOnline = updated.isOnline ?? current.isOnline;
@@ -982,12 +1168,19 @@ class ChatListController extends GetxController {
     final bool useUpdatedMessage =
         updatedHasMessage && (!currentTime.isAfter(updatedTime));
 
+    // Same last message re-sent with a read/seen change (often a newer
+    // updatedAt): take its fields but keep the time, so the row doesn't move.
+    final currentId = ChatListRules.lastMessageId(current);
+    final sameMessage =
+        currentId != null && currentId == ChatListRules.lastMessageId(updated);
+    final takeUpdatedTime = useUpdatedMessage && !sameMessage;
+
     final resolvedTime = updatedHasTime
-        ? (useUpdatedMessage ? (updated.time ?? current.time) : current.time)
+        ? (takeUpdatedTime ? (updated.time ?? current.time) : current.time)
         : current.time;
 
     final resolvedTimestamp = updatedHasTime
-        ? (useUpdatedMessage
+        ? (takeUpdatedTime
             ? (updated.timestamp ?? updated.time ?? current.timestamp)
             : current.timestamp)
         : current.timestamp;
@@ -1088,11 +1281,153 @@ class ChatListController extends GetxController {
     privateChats.refresh();
   }
 
+  // ---------------------------------------------------------------------------
+  // Chat actions: optimistic UI, rolled back when the socket is offline or the
+  // server replies with private_chat_action_error.
+  // ---------------------------------------------------------------------------
+
+  static const String _offlineMessage =
+      "You're offline. The change wasn't saved, please try again.";
+
+  void _beginAction(PrivateChatModel chat, String action) {
+    final key = _getChatKey(chat);
+    _pendingActions[key] = (
+      snapshot: _copyChat(chat),
+      wasArchived: archivedChats.any((c) => _isSameChat(c, chat)),
+      action: action,
+    );
+    // No server reply within 15s: keep the optimistic state.
+    Timer(const Duration(seconds: 15), () {
+      if (_pendingActions[key]?.action == action) _pendingActions.remove(key);
+    });
+  }
+
+  void _rollbackAction(String key, {String? message}) {
+    final pending = _pendingActions.remove(key);
+    if (pending == null) return;
+    privateChats.removeWhere((c) => _getChatKey(c) == key);
+    archivedChats.removeWhere((c) => _getChatKey(c) == key);
+    if (pending.wasArchived) {
+      archivedChats.add(pending.snapshot);
+      archivedChats.assignAll(ChatListRules.sort(archivedChats));
+    } else {
+      privateChats.add(pending.snapshot);
+      privateChats.assignAll(ChatListRules.sort(privateChats));
+    }
+    privateChats.refresh();
+    archivedChats.refresh();
+    _syncChattingNotificationMarker();
+    _showActionError(message ?? "Couldn't update the chat. Please try again.");
+  }
+
+  void _showActionError(String message) {
+    try {
+      if (Get.context == null) return;
+      Get.snackbar(
+        "Chat",
+        message,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (_) {}
+  }
+
+  PrivateChatModel _copyChat(PrivateChatModel c) => PrivateChatModel(
+        id: c.id,
+        chatId: c.chatId,
+        conversationId: c.conversationId,
+        groupId: c.groupId,
+        chatType: c.chatType,
+        userId: c.userId,
+        name: c.name,
+        groupName: c.groupName,
+        memberCount: c.memberCount,
+        role: c.role,
+        message: c.message,
+        preview: c.preview,
+        isDeletedForEveryone: c.isDeletedForEveryone,
+        time: c.time,
+        timestamp: c.timestamp,
+        messageType: c.messageType,
+        mutedUntil: c.mutedUntil,
+        unreadCount: c.unreadCount,
+        status: c.status,
+        isOnline: c.isOnline,
+        lastSeen: c.lastSeen,
+        isBlocked: c.isBlocked,
+        blockedByMe: c.blockedByMe,
+        isGroup: c.isGroup,
+        isPinned: c.isPinned,
+        pinnedAt: c.pinnedAt,
+        isMuted: c.isMuted,
+        isArchived: c.isArchived,
+        moveToTop: c.moveToTop,
+        image: c.image,
+        isForwarded: c.isForwarded,
+        forwardedLabel: c.forwardedLabel,
+        forwardedFromMessageId: c.forwardedFromMessageId,
+        senderId: c.senderId,
+        senderName: c.senderName,
+        lastMessageData: c.lastMessageData,
+      );
+
+  void pinChat(PrivateChatModel chat) {
+    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id;
+    if (effectiveId == null) {
+      return;
+    }
+
+    _beginAction(chat, 'pin');
+    // Pin limit: none is defined by the backend/config, so none is applied.
+    final sent = socketService.pinPrivateChat(
+      userId: currentUserId,
+      chatId: effectiveId.toString(),
+    );
+
+    chat.isPinned = true;
+    chat.pinnedAt = DateTime.now().toUtc().toIso8601String();
+    privateChats.assignAll(ChatListRules.sort(privateChats));
+    privateChats.refresh();
+
+    if (!sent) _rollbackAction(_getChatKey(chat), message: _offlineMessage);
+  }
+
+  void unpinChat(PrivateChatModel chat) {
+    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id;
+    if (effectiveId == null) {
+      return;
+    }
+
+    _beginAction(chat, 'unpin');
+    final sent = socketService.unpinPrivateChat(
+      userId: currentUserId,
+      chatId: effectiveId.toString(),
+    );
+
+    chat.isPinned = false;
+    chat.pinnedAt = null;
+    privateChats.assignAll(ChatListRules.sort(privateChats));
+    privateChats.refresh();
+
+    if (!sent) _rollbackAction(_getChatKey(chat), message: _offlineMessage);
+  }
+
   void archiveChat(PrivateChatModel chat) {
     final effectiveId =
         chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId ?? chat.userId;
+    _beginAction(chat, 'archive');
+
+    var sent = false;
     if (effectiveId != null) {
-      socketService.archivePrivateChat(
+      // Archiving a pinned chat unpins it, on the server too.
+      if (chat.isPinned == true) {
+        socketService.unpinPrivateChat(
+          userId: currentUserId,
+          chatId: (chat.chatId ?? chat.conversationId ?? chat.id ?? effectiveId)
+              .toString(),
+        );
+      }
+      sent = socketService.archivePrivateChat(
         userId: currentUserId,
         chatId: effectiveId.toString(),
       );
@@ -1100,6 +1435,7 @@ class ChatListController extends GetxController {
 
     chat.isArchived = true;
     chat.isPinned = false;
+    chat.pinnedAt = null;
 
     privateChats.removeWhere(
       (item) => _isSameChat(item, chat),
@@ -1109,7 +1445,7 @@ class ChatListController extends GetxController {
       (item) => _isSameChat(item, chat),
     );
     if (existingArchivedIndex == -1) {
-      archivedChats.insert(0, chat);
+      archivedChats.add(chat);
     } else {
       final merged = _mergePrivateChat(
         archivedChats[existingArchivedIndex],
@@ -1118,16 +1454,23 @@ class ChatListController extends GetxController {
       merged.isArchived = true;
       archivedChats[existingArchivedIndex] = merged;
     }
+    archivedChats.assignAll(ChatListRules.sort(archivedChats));
 
     privateChats.refresh();
     archivedChats.refresh();
+    _syncChattingNotificationMarker();
+
+    if (!sent) _rollbackAction(_getChatKey(chat), message: _offlineMessage);
   }
 
   void unarchiveChat(PrivateChatModel chat) {
     final effectiveId =
         chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId ?? chat.userId;
+    _beginAction(chat, 'unarchive');
+
+    var sent = false;
     if (effectiveId != null) {
-      socketService.unarchivePrivateChat(
+      sent = socketService.unarchivePrivateChat(
         userId: currentUserId,
         chatId: effectiveId.toString(),
       );
@@ -1145,7 +1488,7 @@ class ChatListController extends GetxController {
     );
 
     if (existingIndex == -1) {
-      privateChats.insert(0, chat);
+      privateChats.add(chat);
     } else {
       final merged = _mergePrivateChat(
         privateChats[existingIndex],
@@ -1155,22 +1498,29 @@ class ChatListController extends GetxController {
       privateChats[existingIndex] = merged;
     }
 
-    privateChats.assignAll(_sortPinnedChats(privateChats));
+    privateChats.assignAll(ChatListRules.sort(privateChats));
 
     archivedChats.refresh();
     privateChats.refresh();
+    _syncChattingNotificationMarker();
+
+    if (!sent) _rollbackAction(_getChatKey(chat), message: _offlineMessage);
   }
 
+  /// Same read path the chat screen uses when it is opened.
   Future<void> markChatAsRead(PrivateChatModel chat) async {
+    final previousUnread = chat.unreadCount ?? 0;
+    var sent = true;
     if (chat.isGroup == true) {
       final gId = chat.groupId ?? chat.id;
       if (gId != null) {
+        sent = socketService.isSocketConnected;
         socketService.markSeen(currentUserId, gId);
       }
     } else {
       final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id;
       if (effectiveId != null) {
-        socketService.markPrivateChatRead(
+        sent = socketService.markPrivateChatRead(
           userId: currentUserId,
           chatId: effectiveId.toString(),
         );
@@ -1184,13 +1534,22 @@ class ChatListController extends GetxController {
       await _saveManuallyUnreadKeys();
     }
 
-    final cUnread = chat.unreadCount ?? 0;
-    if (cUnread > 0) {
+    if (!sent && previousUnread > 0) {
+      // The server still counts these as unread; keep the badge honest.
+      _showActionError(_offlineMessage);
+      privateChats.refresh();
+      archivedChats.refresh();
+      _syncChattingNotificationMarker();
+      return;
+    }
+
+    if (previousUnread > 0) {
       unreadTotalCount.value =
-          (unreadTotalCount.value - cUnread).clamp(0, 999999).toInt();
+          (unreadTotalCount.value - previousUnread).clamp(0, 999999).toInt();
     }
     chat.unreadCount = 0;
     privateChats.refresh();
+    archivedChats.refresh();
     _syncChattingNotificationMarker();
   }
 
@@ -1200,70 +1559,60 @@ class ChatListController extends GetxController {
       return;
     }
 
+    _beginAction(chat, 'delete');
+    var sent = true;
     if (chat.isGroup != true) {
-      socketService.deletePrivateChat(
+      sent = socketService.deletePrivateChat(
         userId: currentUserId,
         chatId: effectiveId.toString(),
       );
     }
+    // TODO(backend #2): no "delete for me" exists for group chats yet; the
+    // row is removed locally and returns on the next full refresh.
 
     privateChats.removeWhere((c) => _isSameChat(c, chat));
+    archivedChats.removeWhere((c) => _isSameChat(c, chat));
     privateChats.refresh();
+    archivedChats.refresh();
+    _syncChattingNotificationMarker();
+
+    if (!sent) _rollbackAction(_getChatKey(chat), message: _offlineMessage);
   }
 
-  void _handlePrivateChatActionError(dynamic data) {}
-
-  void _moveUpdatedChatToTop(PrivateChatModel chat) {
-    // Deprecated: _sortPinnedChats handles accurate WhatsApp ordering (pinned chats first, then latest activity)
+  /// `private_chat_action_error`: roll back the matching optimistic action.
+  void _handlePrivateChatActionError(dynamic data) {
+    String? key;
+    String? message;
+    if (data is Map) {
+      final m = Map<String, dynamic>.from(data);
+      message = _str(m['message'] ?? m['error']);
+      final chatId = _str(m['chatId'] ?? m['chat_id'] ?? m['conversationId']);
+      if (chatId != null) {
+        for (final entry in _pendingActions.entries) {
+          final s = entry.value.snapshot;
+          final ids = [s.chatId, s.conversationId, s.id, s.groupId]
+              .map(_str)
+              .whereType<String>();
+          if (ids.contains(chatId)) {
+            key = entry.key;
+            break;
+          }
+        }
+      }
+    }
+    // No usable chat id: roll back only when exactly one action is pending.
+    key ??= _pendingActions.length == 1 ? _pendingActions.keys.first : null;
+    if (key != null) {
+      _rollbackAction(key, message: message);
+    } else if (message != null) {
+      _showActionError(message);
+    }
   }
 
   List<PrivateChatModel> _sortPinnedChats(
     List<PrivateChatModel> chats,
-  ) {
-    final sortedChats = List<PrivateChatModel>.from(chats);
-
-    final originalIndices = <PrivateChatModel, int>{};
-    for (int i = 0; i < chats.length; i++) {
-      originalIndices[chats[i]] = i;
-    }
-
-    DateTime getPinnedTimestamp(PrivateChatModel chat) {
-      return _parseDateTime(chat.pinnedAt);
-    }
-
-    DateTime getTimestamp(PrivateChatModel chat) {
-      return _parseDateTime(chat.timestamp ?? chat.time);
-    }
-
-    sortedChats.sort((a, b) {
-      final aPinned = a.isPinned == true;
-      final bPinned = b.isPinned == true;
-
-      // 1. Pinned conversations first
-      if (aPinned != bPinned) {
-        return aPinned ? -1 : 1;
-      }
-      if (aPinned && bPinned) {
-        final aPinnedTime = getPinnedTimestamp(a);
-        final bPinnedTime = getPinnedTimestamp(b);
-        final cmp = bPinnedTime.compareTo(aPinnedTime);
-        if (cmp != 0) return cmp;
-      }
-
-      // 2. Latest message/activity timestamp DESC (newest first)
-      final aTime = getTimestamp(a);
-      final bTime = getTimestamp(b);
-      final cmpTime = bTime.compareTo(aTime);
-      if (cmpTime != 0) return cmpTime;
-
-      // 3. Preserve original server order
-      final aIdx = originalIndices[a] ?? 0;
-      final bIdx = originalIndices[b] ?? 0;
-      return aIdx.compareTo(bIdx);
-    });
-
-    return sortedChats;
-  }
+  ) =>
+      ChatListRules.sort(chats);
 
   void loadArchivedChats({
     int page = 1,
@@ -1307,7 +1656,9 @@ class ChatListController extends GetxController {
         chat.isArchived = true;
       }
 
-      archivedChats.value = chats;
+      // Client-side order: the server array order changes with read/seen
+      // activity, which made the Archived list shuffle.
+      archivedChats.value = ChatListRules.sort(chats);
 
       // Ensure mutual exclusivity: remove any archived chats from privateChats
       for (final a in chats) {
@@ -1341,7 +1692,11 @@ class ChatListController extends GetxController {
 
   @override
   void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchDebounce?.cancel();
+    _refetchDebounce?.cancel();
+    _typing.clearAll();
+    _pendingActions.clear();
     searchController.dispose();
     socketService.disconnectPrivateChatListSocket();
 

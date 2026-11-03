@@ -79,15 +79,20 @@
     <string>FG Tracker</string>
 
 	<key>NSCameraUsageDescription</key>
-	<string>Need camera access for video calls and scan QR codes</string>
+	<string>FG Tracker uses the camera for video calls, scanning QR codes, and taking a live selfie to mark your attendance.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>FG Tracker uses your contacts to help you find, connect with, and invite people to join your tracking groups.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Your location is continuously shared with your group for accurate real-time tracking, even when the app is in the background.</string>
+	<string>FG Tracker uses your location for attendance, live tracking and safe zone alerts, including when the app is in the background, so your group always sees your current position.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Your location is used to keep group members updated even when the app is in the background during a tracking session.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Your location is used to share your real-time position with group members on the map during active tracking sessions.</string>
+	<string>FG Tracker uses your location for attendance, live tracking with your group and safe zone alerts.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>PreciseLocation</key>
+		<string>Precise location is needed for accurate attendance, live tracking and safe zone alerts.</string>
+	</dict>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Need microphone access for audio calls and stream live voice over the walkie-talkie channel or Screen Sharing</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

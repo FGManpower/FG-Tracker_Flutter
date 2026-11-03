@@ -9,6 +9,7 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
+import 'package:fgtracker/app/Data/Services/group_call_service.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -355,6 +356,10 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
 
   Future<void> _initiateGroupCall(GroupProfileData data,
       {required bool isVideo}) async {
+    if (!GroupCallService.isGroupCallEnabled) {
+      GroupCallService.showComingSoon();
+      return;
+    }
     try {
       Get.toNamed(
         Routes.groupCallingScreen,
@@ -376,16 +381,15 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   Widget _buildQuickActions(GroupProfileData data) {
     return Row(
       children: [
-        // _quickAction(
-        //     icon: Icons.call_outlined,
-        //     label: "Audio Call",
-        //     onTap: () => _initiateGroupCall(data, isVideo: false)),
-        // SizedBox(width: 10.w),
-        // _quickAction(
-        //     icon: Icons.videocam_outlined,
-        //     label: "Video Call",
-        //     onTap: () => _initiateGroupCall(data, isVideo: true)),
-        // SizedBox(width: 10.w),
+        _quickAction(
+            icon: Icons.call_outlined,
+            label: "Audio Call",
+            onTap: () => _initiateGroupCall(data, isVideo: false)),
+        SizedBox(width: 10.w),
+        _quickAction(
+            icon: Icons.videocam_outlined,
+            label: "Video Call",
+            onTap: () => _initiateGroupCall(data, isVideo: true)),
         // _quickAction(
         //   icon: Icons.person_add_alt_1_outlined,
         //   label: "Add Members",

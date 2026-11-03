@@ -1879,10 +1879,10 @@ SPEC CHECKSUMS:
   geocoding_ios: 33776c9ebb98d037b5e025bb0e7537f6dd19646e
   geolocator_apple: ab36aa0e8b7d7a2d7639b3b4e48308394e8cef5e
   Google-Maps-iOS-Utils: bed22fa703c919259b3901449434d60d994fae20
-  google_maps_flutter_ios: 17552876e72723da1d41accc22f03b5f7afbde69
-  google_mlkit_barcode_scanning: f69335a73c797a582d5effc61175d1721020d770
-  google_mlkit_commons: b4dfe2f6ae4cbf24010dc6640a28984d01343c86
-  google_mlkit_face_detection: ebca22c2c49ea696147046cd04fb0b0e2cb7bd4d
+  google_maps_flutter_ios: 5f2ee3f5cc4fc2398574367f893e3f97bbbcea39
+  google_mlkit_barcode_scanning: ec258a9f08c16d43ed3c4f76e4f1f436ffa899df
+  google_mlkit_commons: 75b2579ccf522fe01d42e689babda04c4510ba2f
+  google_mlkit_face_detection: d8263f2249be956bab368ce49fc5b5ed12962f9e
   GoogleDataTransport: a24e58982ab3ba2f64d79613e027fe7f57e88539
   GoogleMaps: 306f6ea18af2dc9ef85d98b0d1b41bc7d506df5f
   GoogleMLKit: b1eee21a41c57704fe72483b15c85cb2c0cd7444

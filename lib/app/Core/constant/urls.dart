@@ -54,16 +54,8 @@ class Urls {
   static const String walkieActiveChannel =
       '${ConstRes.aBaseUrl}walkie/active-channel';
 
-  // Package Pricing (contract: docs/package_pricing_api.md)
+  // Package Pricing (contract: docs/packages/02_backend_requirements.md)
   static const String packages = '${ConstRes.aBaseUrl}packages';
-  static String packagePlans(String moduleKey) =>
-      '${ConstRes.aBaseUrl}packages/$moduleKey/plans';
-  static const String packageCreateOrder =
-      '${ConstRes.aBaseUrl}packages/payment/create-order';
-  static const String packageVerifyPayment =
-      '${ConstRes.aBaseUrl}packages/payment/verify';
-  static const String packagePaymentFailed =
-      '${ConstRes.aBaseUrl}packages/payment/failed';
 
   static const String createStatus = "status/create";
   static const String statusFeed = "status/feed";

@@ -14,6 +14,9 @@ class ContactPickerController extends GetxController {
   final RxnString errorMessage = RxnString();
   final RxString searchQuery = ''.obs;
 
+  /// The error is a refused permission: the page offers "Open Settings".
+  final RxBool permissionDenied = false.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -35,16 +38,14 @@ class ContactPickerController extends GetxController {
       await FlutterContacts.requestPermission(readonly: true);
 
       if (!granted) {
-        Get.snackbar(
-          "Permission Denied",
-          "Contact permission is required to share contacts.",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade400,
-          colorText: Colors.white,
-        );
-        Get.back();
+        // `Get.back()` after a snackbar only closed the snackbar, leaving
+        // an empty picker. Show the reason with Try again / Open Settings.
+        permissionDenied.value = true;
+        errorMessage.value =
+            "Contact permission is needed to share a contact in chat.";
         return;
       }
+      permissionDenied.value = false;
 
       final List<Contact> allContacts = await FlutterContacts.getContacts(
         withProperties: true,

@@ -34,13 +34,34 @@ class LocationPickerController extends GetxController {
     mapController = controller;
   }
 
+  /// Why the map can't load (shown with Try again / Open Settings instead
+  /// of an endless spinner). `Get.back()` after a snackbar only closed the
+  /// snackbar, so the picker used to stay stuck.
+  final RxnString errorMessage = RxnString();
+
+  /// The error is a refused permission: the page offers "Open Settings".
+  final RxBool permissionDenied = false.obs;
+
+  /// "Try again" on the error view.
+  Future<void> retry() {
+    errorMessage.value = null;
+    permissionDenied.value = false;
+    isLoading.value = true;
+    return _initializeLocation();
+  }
+
+  bool _isGranted(PermissionStatus p) =>
+      p == PermissionStatus.granted || p == PermissionStatus.grantedLimited;
+
   Future<void> _initializeLocation() async {
     try {
       bool serviceEnabled = await _location.serviceEnabled();
       if (!serviceEnabled) {
         serviceEnabled = await _location.requestService();
         if (!serviceEnabled) {
-          Get.back();
+          errorMessage.value =
+              "Turn on location services to share your location.";
+          isLoading.value = false;
           return;
         }
       }
@@ -48,10 +69,15 @@ class LocationPickerController extends GetxController {
       PermissionStatus permission = await _location.hasPermission();
       if (permission == PermissionStatus.denied) {
         permission = await _location.requestPermission();
-        if (permission != PermissionStatus.granted) {
-          Get.back();
-          return;
-        }
+      }
+      // deniedForever used to fall through to getLocation() and throw.
+      if (!_isGranted(permission)) {
+        permissionDenied.value = true;
+        errorMessage.value = permission == PermissionStatus.deniedForever
+            ? "Location permission is turned off for this app. Enable it in Settings to share your location."
+            : "Location permission is needed to share your location.";
+        isLoading.value = false;
+        return;
       }
 
       final LocationData location = await _location.getLocation();
@@ -77,12 +103,9 @@ class LocationPickerController extends GetxController {
         }
       });
     } catch (e) {
-      Get.snackbar(
-        "Location Error",
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      Get.back();
+      debugPrint("Location picker error: $e");
+      errorMessage.value = "Couldn't get your location. Please try again.";
+      isLoading.value = false;
     }
   }
 

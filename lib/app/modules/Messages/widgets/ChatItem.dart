@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Core/util/media_url.dart';
+import 'package:fgtracker/app/Core/util/message_preview_builder.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/chat_screen_logic.dart';
+import 'package:fgtracker/app/modules/Messages/widgets/missing_media_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
@@ -44,6 +47,115 @@ Widget _bubbleWidth({required bool isAttendance, required Widget child}) {
     return SizedBox(width: double.infinity, child: child);
   }
   return IntrinsicWidth(child: child);
+}
+
+/// Placeholder for a message the app can't draw (unknown type or a row that
+/// failed to parse). It keeps the list intact instead of breaking it.
+Widget _unsupportedMessageContent(bool isSentByMe) {
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(Icons.info_outline_rounded, size: 16.sp, color: Colors.grey.shade600),
+      SizedBox(width: 6.w),
+      Flexible(
+        child: Text(
+          "This message isn't supported in this version of the app",
+          style: TextStyle(
+            fontSize: 12.sp,
+            fontStyle: FontStyle.italic,
+            color: Colors.grey.shade700,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+/// Seen tick state. `seenCount` is dynamic and may arrive as a string;
+/// comparing it with `>` directly threw and broke the bubble.
+bool _seenAtLeastOnce(MessageData message) =>
+    (int.tryParse(message.seenCount?.toString() ?? '') ?? 0) > 0;
+
+/// Server URL of a document message. Empty when the message has no file.
+String _documentFullUrl(String path) {
+  final value = path.trim();
+  if (value.isEmpty || value == 'null') return '';
+  if (value.startsWith('http://') || value.startsWith('https://')) return value;
+  return '${ConstRes.aImageBaseUrl}$value';
+}
+
+/// Playable URL of a voice/audio message. Empty when the message has no
+/// file, so the bubble shows "Media is missing" instead of a dead player.
+String _audioFullUrl(dynamic content) {
+  final value = content?.toString().trim() ?? '';
+  if (value.isEmpty || value == 'null') return '';
+  return resolveMediaUrl(value);
+}
+
+/// Quoted message shown at the top of a reply bubble (private + group).
+/// Built from the original message when it is loaded, otherwise from the
+/// reply fields, so it never renders empty for any message type.
+Widget _quotedReplyCard({
+  required MessageData message,
+  required bool isSentByMe,
+  required MessageData? original,
+  required Future<void> Function(int messageId) onTap,
+}) {
+  final replyId = int.tryParse(message.replyId?.toString() ?? '');
+  if (replyId == null) return const SizedBox.shrink();
+
+  const purple = Color(0xFF5045B9);
+  final currentUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+  final preview =
+      MessagePreviewBuilder.forQuotedReply(message, original: original).display;
+  final sender = MessagePreviewBuilder.replySenderLabel(
+    message,
+    original: original,
+    currentUserId: currentUserId,
+  );
+
+  return GestureDetector(
+    onTap: () => onTap(replyId),
+    child: Container(
+      width: double.infinity,
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.all(8.w),
+      decoration: BoxDecoration(
+        color: isSentByMe
+            ? Colors.white.withValues(alpha: .5)
+            : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(10.r),
+        border: const Border(left: BorderSide(color: purple, width: 3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (sender.isNotEmpty) ...[
+            Text(
+              sender,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 11.sp,
+                color: purple,
+              ),
+            ),
+            SizedBox(height: 2.h),
+          ],
+          Text(
+            preview,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11.sp,
+              color: Colors.grey.shade700,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class ChatBubble extends StatelessWidget {
@@ -427,10 +539,12 @@ class ChatBubble extends StatelessWidget {
         if (isSentByMe) ...[
           SizedBox(width: 3.w),
           Icon(
-            (message.seenCount ?? 0) > 0 ? Icons.done_all : Icons.done,
+            (_seenAtLeastOnce(message) || message.isDelivered)
+                ? Icons.done_all
+                : Icons.done,
             size: 14.sp,
             color:
-            (message.seenCount ?? 0) > 0 ? _purple : Colors.grey.shade500,
+                _seenAtLeastOnce(message) ? _purple : Colors.grey.shade500,
           ),
         ],
       ],
@@ -606,11 +720,8 @@ class ChatBubble extends StatelessWidget {
                       ),
                     ),
                   ),
-                  errorWidget: (context, url, error) => Container(
-                    color: Colors.grey.shade200,
-                    alignment: Alignment.center,
-                    child: const Icon(Icons.broken_image_outlined),
-                  ),
+                  errorWidget: (context, url, error) =>
+                      ChatImageErrorTile(url: url),
                 ),
                 if (index == 3 && imageList.length > 4)
                   Container(
@@ -650,7 +761,10 @@ class ChatBubble extends StatelessWidget {
       final caption = (message.caption ?? "").trim();
 
       if (mediaCount == 0) {
-        return const SizedBox.shrink();
+        return MissingMediaCard(
+          type: MissingMediaType.media,
+          isSentByMe: isSentByMe,
+        );
       }
 
       return SizedBox(
@@ -732,7 +846,7 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "audio") {
       return AudioBubble(
-        audioUrl: resolveMediaUrl(message.content ?? ''),
+        audioUrl: _audioFullUrl(message.content),
         isMe: false,
       );
     } else if (message.messageType == "video") {
@@ -803,14 +917,20 @@ class ChatBubble extends StatelessWidget {
           icon = Icons.insert_drive_file_rounded;
       }
 
-      return Column(
+      final documentFullUrl = _documentFullUrl(documentUrl);
+
+      return MediaAvailabilityGuard(
+        url: documentFullUrl,
+        type: MissingMediaType.document,
+        isSentByMe: isSentByMe,
+        fileName: documentName,
+        width: 240.w,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
             onTap: () async {
-              await DocumentService().openDocument(
-                "${ConstRes.aImageBaseUrl}$documentUrl",
-              );
+              await DocumentService().openDocument(documentFullUrl);
             },
             borderRadius: BorderRadius.circular(12.r),
             child: Container(
@@ -871,7 +991,7 @@ class ChatBubble extends StatelessWidget {
                   if (!isSentByMe) ...[
                     SizedBox(width: 6.w),
                     Obx(() {
-                      final url = "${ConstRes.aImageBaseUrl}$documentUrl";
+                      final url = documentFullUrl;
 
                       if (DocumentService.isDownloading(url)) {
                         return SizedBox(
@@ -908,6 +1028,7 @@ class ChatBubble extends StatelessWidget {
               ),
             ),
         ],
+      ),
       );
     } else if (message.messageType == "location") {
       return LocationBubbleWidget(
@@ -948,6 +1069,8 @@ class ChatBubble extends StatelessWidget {
         messageTime: message.timestamp?.toString(),
         onDeleted: groupController?.markAttendanceDeleted,
       );
+    } else if (ChatScreenRules.isUnsupported(message)) {
+      return _unsupportedMessageContent(isSentByMe);
     } else {
       return _buildTextContent(
         message,
@@ -979,80 +1102,11 @@ class ChatBubble extends StatelessWidget {
       return _buildStatusReplyPreview(message, isSentByMe);
     }
 
-    if (message.replyId == null) {
-      return const SizedBox.shrink();
-    }
-
-    String preview = message.replyMessage?.toString() ?? "";
-
-    switch (message.replyType) {
-      case "image":
-        preview = "📷 Photo";
-        break;
-
-      case "video":
-        preview = "🎥 Video";
-        break;
-
-      case "audio":
-        preview = "🎤 Voice message";
-        break;
-
-      case "document":
-        preview = "📄 Document";
-        break;
-
-      case "location":
-        preview = "📍 Location";
-        break;
-    }
-
-    return GestureDetector(
-      onTap: () {
-        if (message.replyId != null) {
-          controller.scrollToMessage(message.replyId!);
-        }
-      },
-      child: Container(
-        width: double.infinity,
-        margin: EdgeInsets.only(bottom: 8.h),
-        padding: EdgeInsets.all(8.w),
-        decoration: BoxDecoration(
-          color: isSentByMe
-              ? Colors.white.withValues(alpha: .5)
-              : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10.r),
-          border: const Border(
-            left: BorderSide(
-              color: _purple,
-              width: 3,
-            ),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              message.replySenderName?.toString() ?? "",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 11.sp,
-                color: _purple,
-              ),
-            ),
-            SizedBox(height: 2.h),
-            Text(
-              preview,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11.sp,
-                color: Colors.grey.shade700,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return _quotedReplyCard(
+      message: message,
+      isSentByMe: isSentByMe,
+      original: controller.findMessageById(message.replyId),
+      onTap: controller.scrollToMessage,
     );
   }
 
@@ -1266,6 +1320,11 @@ class ChatBubble extends StatelessWidget {
     final isText = message.messageType == "text" ||
         message.messageType == "text_message" ||
         (message.messageType ?? "").isEmpty;
+    // Attendance messages have no delete option (see ChatScreenRules).
+    final options = ChatScreenRules.menuOptions(
+      messageType: message.messageType,
+      isSentByMe: isSentByMe,
+    );
 
     final actions = <MessageContextMenuAction>[
       MessageContextMenuAction(
@@ -1344,7 +1403,7 @@ class ChatBubble extends StatelessWidget {
             });
           },
         ),
-      if (isSentByMe)
+      if (options.contains(MessageMenuOption.deleteForEveryone))
         MessageContextMenuAction(
           icon: Icons.delete_outline_rounded,
           title: "Delete for Everyone",
@@ -1366,6 +1425,7 @@ class ChatBubble extends StatelessWidget {
             );
           },
         ),
+      if (options.contains(MessageMenuOption.deleteForMe))
       MessageContextMenuAction(
         icon: Icons.delete_rounded,
         title: "Delete for Me",
@@ -1887,7 +1947,12 @@ class GroupChatBubble extends StatelessWidget {
         if (isSentByMe) ...[
           SizedBox(width: 3.w),
           Icon(
-            (message.seenCount ?? 0) > 0 ? Icons.done_all : Icons.done,
+            (_seenAtLeastOnce(message) ||
+                    message.isDelivered ||
+                    (message.seenBy is List &&
+                        (message.seenBy as List).isNotEmpty))
+                ? Icons.done_all
+                : Icons.done,
             size: 14.sp,
             color: _areAllMembersSeen(message) ? _purple : Colors.grey.shade500,
           ),
@@ -2012,70 +2077,11 @@ class GroupChatBubble extends StatelessWidget {
       return _buildStatusReplyPreview(message, isSentByMe);
     }
 
-    if (message.replyId == null) return const SizedBox.shrink();
-
-    String preview = message.replyMessage?.toString() ?? "";
-    switch (message.replyType) {
-      case "image":
-        preview = "📷 Photo";
-        break;
-      case "video":
-        preview = "🎥 Video";
-        break;
-      case "audio":
-        preview = "🎤 Voice message";
-        break;
-      case "document":
-        preview = "📄 Document";
-        break;
-      case "location":
-        preview = "📍 Location";
-        break;
-    }
-
-    return GestureDetector(
-      onTap: () {
-        if (message.replyId != null) {
-          controller.scrollToMessage(message.replyId!);
-        }
-      },
-      child: Container(
-        width: double.infinity,
-        margin: EdgeInsets.only(bottom: 8.h),
-        padding: EdgeInsets.all(8.w),
-        decoration: BoxDecoration(
-          color: isSentByMe
-              ? Colors.white.withValues(alpha: .5)
-              : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10.r),
-          border: const Border(
-            left: BorderSide(color: _purple, width: 3),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              message.replySenderName?.toString() ?? "",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 11.sp,
-                color: _purple,
-              ),
-            ),
-            SizedBox(height: 2.h),
-            Text(
-              preview,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11.sp,
-                color: Colors.grey.shade700,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return _quotedReplyCard(
+      message: message,
+      isSentByMe: isSentByMe,
+      original: controller.findMessageById(message.replyId),
+      onTap: controller.scrollToMessage,
     );
   }
 
@@ -2372,11 +2378,8 @@ class GroupChatBubble extends StatelessWidget {
                       ),
                     ),
                   ),
-                  errorWidget: (context, url, error) => Container(
-                    color: Colors.grey.shade200,
-                    alignment: Alignment.center,
-                    child: const Icon(Icons.broken_image_outlined),
-                  ),
+                  errorWidget: (context, url, error) =>
+                      ChatImageErrorTile(url: url),
                 ),
                 if (index == 3 && imageList.length > 4)
                   Container(
@@ -2413,7 +2416,10 @@ class GroupChatBubble extends StatelessWidget {
       }
 
       if (imageList.isEmpty && videos.isEmpty) {
-        return const SizedBox.shrink();
+        return MissingMediaCard(
+          type: MissingMediaType.media,
+          isSentByMe: isSentByMe,
+        );
       }
 
       final hasMixedMedia = videos.isNotEmpty;
@@ -2533,7 +2539,7 @@ class GroupChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "audio") {
       return AudioBubble(
-        audioUrl: resolveMediaUrl(message.content ?? ''),
+        audioUrl: _audioFullUrl(message.content),
         isMe: false,
       );
     } else if (messageType == "video") {
@@ -2543,10 +2549,11 @@ class GroupChatBubble extends StatelessWidget {
       final duration = parts.length > 2 && parts[2].trim().isNotEmpty
           ? parts[2].trim()
           : "--:--";
-      final videoUrl =
-      videoPath.startsWith("http://") || videoPath.startsWith("https://")
-          ? videoPath
-          : "${ConstRes.aImageBaseUrl}$videoPath";
+      final videoUrl = videoPath.isEmpty
+          ? ""
+          : videoPath.startsWith("http://") || videoPath.startsWith("https://")
+              ? videoPath
+              : "${ConstRes.aImageBaseUrl}$videoPath";
       final thumbnailUrl = thumbnailPath.startsWith("http://") ||
           thumbnailPath.startsWith("https://")
           ? thumbnailPath
@@ -2609,13 +2616,20 @@ class GroupChatBubble extends StatelessWidget {
           icon = Icons.insert_drive_file_rounded;
       }
 
-      return Column(
+      final documentFullUrl = _documentFullUrl(documentUrl);
+
+      return MediaAvailabilityGuard(
+        url: documentFullUrl,
+        type: MissingMediaType.document,
+        isSentByMe: isSentByMe,
+        fileName: documentName,
+        width: 240.w,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
             onTap: () async {
-              await DocumentService()
-                  .openDocument("${ConstRes.aImageBaseUrl}$documentUrl");
+              await DocumentService().openDocument(documentFullUrl);
             },
             borderRadius: BorderRadius.circular(12.r),
             child: Container(
@@ -2676,7 +2690,7 @@ class GroupChatBubble extends StatelessWidget {
                   if (!isSentByMe) ...[
                     SizedBox(width: 6.w),
                     Obx(() {
-                      final url = "${ConstRes.aImageBaseUrl}$documentUrl";
+                      final url = documentFullUrl;
 
                       if (DocumentService.isDownloading(url)) {
                         return SizedBox(
@@ -2713,6 +2727,7 @@ class GroupChatBubble extends StatelessWidget {
               ),
             ),
         ],
+      ),
       );
     } else if (message.messageType == "location") {
       return LocationBubbleWidget(
@@ -2747,6 +2762,8 @@ class GroupChatBubble extends StatelessWidget {
         messageTime: message.timestamp?.toString(),
         onDeleted: controller.markAttendanceDeleted,
       );
+    } else if (ChatScreenRules.isUnsupported(message)) {
+      return _unsupportedMessageContent(isSentByMe);
     } else {
       return _buildTextContent(
         message,
@@ -2795,6 +2812,11 @@ class GroupChatBubble extends StatelessWidget {
     final isText = message.messageType == "text" ||
         message.messageType == "text_message" ||
         (message.messageType ?? "").isEmpty;
+    // Attendance messages have no delete option (see ChatScreenRules).
+    final options = ChatScreenRules.menuOptions(
+      messageType: message.messageType,
+      isSentByMe: isSentByMe,
+    );
 
     final actions = <MessageContextMenuAction>[
       MessageContextMenuAction(
@@ -2873,7 +2895,7 @@ class GroupChatBubble extends StatelessWidget {
             });
           },
         ),
-      if (isSentByMe)
+      if (options.contains(MessageMenuOption.deleteForEveryone))
         MessageContextMenuAction(
           icon: Icons.delete_outline_rounded,
           title: "Delete for Everyone",
@@ -2895,6 +2917,7 @@ class GroupChatBubble extends StatelessWidget {
             );
           },
         ),
+      if (options.contains(MessageMenuOption.deleteForMe))
       MessageContextMenuAction(
         icon: Icons.delete_rounded,
         title: "Delete for Me",

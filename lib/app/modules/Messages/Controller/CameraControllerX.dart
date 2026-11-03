@@ -16,6 +16,15 @@ class CameraControllerX extends GetxController {
   RxInt recordingSeconds = 0.obs;
   RxBool isCameraInitialized = false.obs;
 
+  /// Why the preview can't start (shown instead of an endless spinner).
+  final RxString cameraError = "".obs;
+
+  /// Camera permission refused: the screen offers "Open Settings".
+  final RxBool cameraPermissionDenied = false.obs;
+
+  /// Microphone refused: the camera still works, videos have no sound.
+  bool _audioDenied = false;
+
   Timer? _timer;
 
   bool _isSwitchingCamera = false;
@@ -31,12 +40,14 @@ class CameraControllerX extends GetxController {
     if (_isInitializingCamera) return;
 
     _isInitializingCamera = true;
+    cameraError.value = "";
+    cameraPermissionDenied.value = false;
 
     try {
       cameras.value = await availableCameras();
 
       if (cameras.isEmpty) {
-        Get.snackbar("Error", "No camera found");
+        cameraError.value = "No camera found on this device.";
         return;
       }
 
@@ -49,7 +60,9 @@ class CameraControllerX extends GetxController {
       await _setupCamera();
     } catch (e) {
       debugPrint("Camera init error: $e");
-      Get.snackbar("Error", "Failed to initialize camera");
+      if (cameraError.value.isEmpty) {
+        cameraError.value = "Couldn't start the camera.";
+      }
     } finally {
       _isInitializingCamera = false;
     }
@@ -92,11 +105,15 @@ class CameraControllerX extends GetxController {
     final newController = CameraController(
       camera,
       ResolutionPreset.high,
-      enableAudio: true,
+      // A denied microphone used to make initialize() fail, so even photos
+      // were impossible. Without the mic, start without audio.
+      enableAudio: !_audioDenied,
     );
 
     try {
       await newController.initialize();
+      cameraError.value = "";
+      cameraPermissionDenied.value = false;
 
       if (isClosed) {
         await newController.dispose();
@@ -121,6 +138,22 @@ class CameraControllerX extends GetxController {
 
       cameraController = null;
       isCameraInitialized.value = false;
+
+      final code = e is CameraException ? e.code : "";
+      if (code.startsWith("AudioAccess") && !_audioDenied) {
+        // Retry once without audio so photos still work.
+        _audioDenied = true;
+        update();
+        await _setupCamera();
+        return;
+      }
+      if (code.startsWith("CameraAccess")) {
+        cameraPermissionDenied.value = true;
+        cameraError.value =
+            "Camera access is needed to take photos and videos in chat.";
+      } else {
+        cameraError.value = "Couldn't start the camera.";
+      }
 
       update();
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:fgtracker/app/Core/util/rt_log.dart';
 
 import '../../../modules/Attendance/controller/attendance_controller.dart';
 
@@ -220,12 +221,12 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
   }
 
   Future<void> _submit() async {
-    debugPrint("[ATTENDANCE_DEBUG] submit tapped (groupId=${widget.groupId})"); // TODO: remove debug log
+    rtLog("[ATTENDANCE_DEBUG] submit tapped (groupId=${widget.groupId})");
     if (_isSubmitting.value) return;
 
     final isValid = _validateForm();
-    debugPrint("[ATTENDANCE_DEBUG] validation => $isValid "
-        "q=${_questionError.value} opt=${_optionsError.value}"); // TODO: remove debug log
+    rtLog("[ATTENDANCE_DEBUG] validation => $isValid "
+        "q=${_questionError.value} opt=${_optionsError.value}");
     if (!isValid) {
       _showError(
         "Validation Error",
@@ -260,8 +261,8 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
     FocusScope.of(context).unfocus();
 
     try {
-      debugPrint("[ATTENDANCE_DEBUG] request sent: groupId=${widget.groupId} "
-          "date=$date photoOption=$photoOption deadline=$deadline"); // TODO: remove debug log
+      rtLog("[ATTENDANCE_DEBUG] request sent: groupId=${widget.groupId} "
+          "date=$date photoOption=$photoOption deadline=$deadline");
       final data = await AttendanceController.instance.createPoll(
         groupId: widget.groupId,
         title: "Attendance • ${DateFormat("dd MMM").format(date)}",
@@ -272,14 +273,14 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
         allowVoteChange: _allowVoteChange.value,
         deadlineAt: deadline,
       );
-      debugPrint("[ATTENDANCE_DEBUG] response received: $data"); // TODO: remove debug log
+      rtLog("[ATTENDANCE_DEBUG] response received: $data");
 
       widget.onCreated?.call(data);
-      debugPrint("[ATTENDANCE_DEBUG] message added to chat (messageId=${data["messageId"]})"); // TODO: remove debug log
+      rtLog("[ATTENDANCE_DEBUG] message added to chat (messageId=${data["messageId"]})");
 
       if (!mounted) return;
       Navigator.pop(context);
-      debugPrint("[ATTENDANCE_DEBUG] sheet closed"); // TODO: remove debug log
+      rtLog("[ATTENDANCE_DEBUG] sheet closed");
 
       Get.snackbar(
         "Attendance Created",
@@ -291,7 +292,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
         borderRadius: 12.r,
       );
     } catch (e, st) {
-      debugPrint("[ATTENDANCE_DEBUG] create failed: $e\n$st"); // TODO: remove debug log
+      rtLog("[ATTENDANCE_DEBUG] create failed: $e\n$st");
       _showError("Attendance Failed", e.toString());
     } finally {
       if (mounted) _isSubmitting.value = false;
@@ -949,8 +950,10 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
       bool comingSoon = false,
     }) {
       final mutedColor = const Color(0xFF94A3B8);
-      return Obx(
-        () => Container(
+      // A "coming soon" row never reads [value], and an Obx without any
+      // observable read throws GetX's "improper use" error, so only live
+      // rows are wrapped in Obx.
+      Widget buildRow(bool current) => Container(
           margin: EdgeInsets.only(top: 8.h),
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
           decoration: BoxDecoration(
@@ -1021,7 +1024,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                 ),
               ),
               Switch(
-                value: comingSoon ? false : value.value,
+                value: current,
                 activeThumbColor: Colors.white,
                 activeTrackColor: const Color(0xFF5A3EFE),
                 // null disables the switch (greyed out, not tappable).
@@ -1029,8 +1032,10 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
               ),
             ],
           ),
-        ),
-      );
+        );
+
+      if (comingSoon) return buildRow(false);
+      return Obx(() => buildRow(value.value));
     }
 
     return Container(

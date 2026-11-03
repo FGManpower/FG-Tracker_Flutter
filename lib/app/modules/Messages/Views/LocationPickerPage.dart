@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart' show openAppSettings;
 
 import '../../../config/themes_data.dart';
 import '../Controller/location_picker_controller.dart';
@@ -30,6 +31,10 @@ class LocationPickerPage extends StatelessWidget {
         ),
       ),
       body: Obx(() {
+        final error = controller.errorMessage.value;
+        if (error != null) {
+          return _buildError(controller, error);
+        }
         if (controller.isLoading.value ||
             controller.selectedLatLng.value == null) {
           return const Center(child: CircularProgressIndicator());
@@ -154,6 +159,40 @@ class LocationPickerPage extends StatelessWidget {
                 ),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildError(LocationPickerController controller, String message) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 28.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.location_off_outlined,
+                size: 52.sp, color: Colors.grey.shade500),
+            SizedBox(height: 14.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade700),
+            ),
+            SizedBox(height: 18.h),
+            ElevatedButton.icon(
+              onPressed: controller.retry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text("Try again"),
+            ),
+            if (controller.permissionDenied.value) ...[
+              SizedBox(height: 8.h),
+              TextButton(
+                onPressed: openAppSettings,
+                child: const Text("Open Settings"),
+              ),
+            ],
           ],
         ),
       ),

@@ -6,6 +6,9 @@ import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../Core/values/Utils.dart';
+import 'media_availability_service.dart';
+
 class DocumentService {
   static final RxSet<String> downloadedDocuments = <String>{}.obs;
 
@@ -99,6 +102,14 @@ class DocumentService {
         "Document Open Error => $e",
         stackTrace: stackTrace,
       );
+      final statusCode = e is DioException ? e.response?.statusCode : null;
+      if (MediaAvailabilityService.isMissingStatusCode(statusCode)) {
+        // The bubble listens to this and switches to "Media is missing".
+        MediaAvailabilityService.markMissing(documentUrl);
+        Utils().fluttertoast("Media is missing. This file is no longer available.");
+      } else {
+        Utils().fluttertoast("Couldn't open the document. Please try again.");
+      }
     } finally {
       downloadingDocuments.remove(documentUrl);
     }

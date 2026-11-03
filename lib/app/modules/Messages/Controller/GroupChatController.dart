@@ -32,6 +32,7 @@ import '../../../Data/Services/active_chat_tracker.dart';
 import '../../Attendance/controller/attendance_controller.dart';
 
 import 'chat_list_controller.dart';
+import 'chat_screen_logic.dart';
 
 class GroupMessageController extends GetxController with WidgetsBindingObserver {
   final socketService = SocketMessageService.instance;
@@ -105,14 +106,27 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   RxBool isLoadingOlderMessages = false.obs;
   RxBool hasMoreOlderMessages = true.obs;
 
-  Future<void> scrollToMessage(int messageId) async {
-    final index = _messages.indexWhere((e) => e.id == messageId);
-
-    if (index != -1) {
-      debugPrint("Message at Index: ${_messages[index].id}");
+  /// Loaded message with [id], used to build reply previews.
+  MessageData? findMessageById(dynamic id) {
+    final key = id?.toString().trim() ?? '';
+    if (key.isEmpty || key == 'null') return null;
+    for (final m in _messages) {
+      if (m.id?.toString() == key) return m;
     }
+    return null;
+  }
 
-    if (index == -1) return;
+  Future<void> scrollToMessage(int messageId) async {
+    var index = _messages.indexWhere((e) => e.id == messageId);
+
+    if (index == -1) {
+      // Original not loaded yet (reply to an old message): page back.
+      index = await _loadOlderUntilFound(messageId);
+      if (index == -1) {
+        if (!isClosed) Utils().fluttertoast("Message not available");
+        return;
+      }
+    }
 
     highlightedMessageId.value = messageId;
 
@@ -183,6 +197,9 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     final currentUserId =
         Global.storageServices.get(PrefConst.userId).toString();
 
+    // This screen now owns the /chat chat-screen listeners.
+    socketService.claimGroupChatEvents(this);
+
     socketService.init(
       ConstRes.socketUrl,
       userId: currentUserId,
@@ -202,18 +219,18 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       callback: (data) {
         debugPrint("GROUP SEEN UPDATE => $data");
         if (data is Map) {
+          if (_isOtherGroup(data["groupId"] ?? data["group_id"])) return;
           final userId = data["userId"]?.toString();
           if (userId != null && userId.isNotEmpty) {
-            for (var msg in _messages) {
-              if (msg.seenBy is List) {
-                if (!(msg.seenBy as List).contains(userId)) {
-                  (msg.seenBy as List).add(userId);
-                }
-              } else {
-                msg.seenBy = [userId];
-              }
-            }
-            updateMessageStream();
+            // My own mark_seen echo must not put me in "Seen by", and a
+            // reader is never recorded on their own messages.
+            final changed = ChatScreenRules.applyGroupSeen(
+              _messages,
+              readerId: userId,
+              currentUserId:
+                  Global.storageServices.get(PrefConst.userId)?.toString(),
+            );
+            if (changed) updateMessageStream();
           }
         }
       },
@@ -224,6 +241,16 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         debugPrint("GROUP RECEIVE EVENT => $message");
 
         if (message is! Map) return;
+
+        // Backend diagnostic: after each vote it echoes the poll on this event
+        // with messageType "attendance_test". It is not a chat message, so it
+        // must never become a bubble; treat it as a live poll update instead.
+        if (message["messageType"]?.toString() == "attendance_test") {
+          if (message["poll"] is Map) {
+            _onAttendanceEvent("attendance:updated", message);
+          }
+          return;
+        }
 
         final incomingMessage =
             MessageData.fromJson(Map<String, dynamic>.from(message));
@@ -313,32 +340,17 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       },
     );
     socketService.listenMessageEdited(
+      scope: ChatSocketScope.group,
       callback: (data) {
-        final messageId = int.tryParse(
-          data["messageId"].toString(),
-        );
-
-        if (messageId == null) return;
-
-        final index = _messages.indexWhere(
-          (message) => message.id == messageId,
-        );
-
-        if (index == -1) return;
-
-        _messages[index].content = data["content"];
-
-        _messages[index].isEdited = data["isEdited"] ?? true;
-
-        _messages[index].editedAt = data["editedAt"];
-
-        updateMessageStream();
-
-        log("GROUP MESSAGE EDITED => $messageId");
+        if (data is! Map) return;
+        final map = Map<String, dynamic>.from(data);
+        if (_isOtherGroup(map["groupId"] ?? map["group_id"])) return;
+        if (ChatScreenRules.applyEdit(_messages, map)) updateMessageStream();
       },
     );
 
     socketService.listenMessageDeleted(
+      scope: ChatSocketScope.group,
       callback: (data) {
         debugPrint("RAW DELETE EVENT: $data");
 
@@ -368,16 +380,13 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
         if (index != -1) {
           if (deleteType == "for_me") {
+            // Only the user who deleted it loses it.
+            final me =
+                Global.storageServices.get(PrefConst.userId)?.toString();
+            if (!ChatScreenRules.isDeleteForMeByMe(data, me)) return;
             _messages.removeAt(index);
           } else {
-            final msg = _messages[index];
-            msg.messageType = "text";
-            msg.content = "This message was deleted";
-            msg.caption = null;
-            msg.images = [];
-            msg.videos = [];
-            msg.replyId = null;
-            msg.isDeleted = true;
+            ChatScreenRules.markDeletedForEveryone(_messages[index]);
           }
         }
 
@@ -393,6 +402,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     );
 
     socketService.listenPinMessage(
+      scope: ChatSocketScope.group,
       callback: (data) {
         final eventGroupId = int.tryParse(
           (data["groupId"] ?? data["group_id"] ?? "").toString(),
@@ -418,6 +428,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     );
 
     socketService.listenUnpinMessage(
+      scope: ChatSocketScope.group,
       callback: (data) {
         print("📌 GROUP MESSAGE UNPINNED =====> $data");
 
@@ -437,9 +448,12 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     AttendanceController.instance.markAllStale();
     _attendanceListenerToken = socketService.listenAttendanceEvents(
       onEvent: _onAttendanceEvent,
-      onReconnect: () => AttendanceController.instance.syncPolls(
-        _visibleAttendancePollIds(),
-      ),
+      // Runs on every (re)connect of the /chat socket: re-sync polls and
+      // fetch any messages sent while we were disconnected.
+      onReconnect: () {
+        AttendanceController.instance.syncPolls(_visibleAttendancePollIds());
+        syncNewerMessages();
+      },
     );
 
     socketService.listenGroupTyping(
@@ -729,6 +743,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     if (isSending.value) return;
     _sendGroupStopTypingNow();
     isSending.value = true;
+    var keepDraft = false;
 
     try {
       final text = textController.text.trim();
@@ -882,9 +897,11 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             );
 
             clearReply();
+            imagePaths.clear();
+          } else {
+            // Every upload failed: keep the images and the caption.
+            keepDraft = true;
           }
-
-          imagePaths.clear();
         }
 
         if (videoPaths.isNotEmpty) {
@@ -936,9 +953,11 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         );
       }
 
-      textController.clear();
-      messageText.value = "";
-      clearReply();
+      if (!keepDraft) {
+        textController.clear();
+        messageText.value = "";
+        clearReply();
+      }
       scrollToBottom();
     } catch (e) {
       log("GROUP SEND ERROR => $e");
@@ -1054,7 +1073,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     try {
       var result = await MessageRepo.uploadChatAudio(path);
 
-      if (result.status == true) {
+      if (result.status == true && (result.filename ?? "").isNotEmpty) {
         socketService.sendGroupMessage(
           groupId: groupId,
           content: result.filename!,
@@ -1125,7 +1144,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       if (result.status == true) {
         socketService.sendGroupMessage(
           groupId: groupId,
-          content: "${result.filename}||${result.originalName!}",
+          content:
+              "${result.filename}||${result.originalName ?? path.split(RegExp(r'[\\/]')).last}",
           messageType: "document",
           caption: caption,
           replyId: replyMessage.value?.id,
@@ -1250,36 +1270,36 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   }
 
   Future<void> getGroupMessages() async {
-    isLoading.value = true;
-    _messages.clear();
-    updateMessageStream();
+    if (_messages.isEmpty) isLoading.value = true;
+    historyLoadFailed.value = false;
+    _historyRequestInFlight = true;
+    _pager.reset();
+    hasMoreOlderMessages.value = true;
 
     try {
       final result = await MessageRepo.groupMessageHistory(
         groupId: groupId,
         page: 1,
-        limit: 15,
+        limit: ChatScreenRules.pageSize,
       );
 
       if (result.status == true) {
-        final messages = List<MessageData>.from(
-          result.messageData ?? [],
-        );
+        final messages = result.messageData ?? [];
 
-        messages.sort((a, b) {
-          final aTime = DateTime.tryParse(a.timestamp ?? '');
-          final bTime = DateTime.tryParse(b.timestamp ?? '');
-
-          if (aTime == null || bTime == null) {
-            return 0;
-          }
-
-          return aTime.compareTo(bTime);
-        });
-
+        // Merge, don't replace: socket messages that arrived before this
+        // response survive, duplicates are dropped by id, order by time.
+        final merged = ChatScreenRules.merge(_messages, messages);
         _messages
           ..clear()
-          ..addAll(messages);
+          ..addAll(merged.messages);
+        _pager.complete(
+          page: 1,
+          receivedCount: messages.length,
+          hasNextPage: result.pagination?.hasNextPage,
+        );
+        groupCurrentPage.value = 1;
+        hasMoreOlderMessages.value = _pager.hasMore;
+        _historyLoaded = true;
 
         final pinnedId = result.pinnedMessageId;
 
@@ -1305,25 +1325,24 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         scrollToBottom(instant: true); // Instantly jumps to the latest message
       } else {
         CommonDialog.errorMessage(result.message);
-
-        _messages.clear();
-        pinnedMessage.value = null;
-        showPinnedBanner.value = false;
-
+        _pager.fail();
+        // Keep whatever is shown; only an empty chat gets the Retry state.
+        if (_messages.isEmpty) historyLoadFailed.value = true;
         updateMessageStream();
       }
     } catch (e) {
       log("GROUP HISTORY ERROR => $e");
-
-      _messages.clear();
-      pinnedMessage.value = null;
-      showPinnedBanner.value = false;
-
+      _pager.fail();
+      if (_messages.isEmpty) historyLoadFailed.value = true;
       updateMessageStream();
     } finally {
+      _historyRequestInFlight = false;
       isLoading.value = false;
     }
   }
+
+  /// "Retry" on the load-error state.
+  Future<void> retryLoadHistory() => getGroupMessages();
 
   Future getGroupMembers() async {
     print(
@@ -1829,8 +1848,10 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         state == AppLifecycleState.inactive) {
       _sendGroupStopTypingNow();
     }
-    if (state == AppLifecycleState.resumed && _markSeenPending) {
-      _markGroupSeenNow();
+    if (state == AppLifecycleState.resumed) {
+      if (_markSeenPending) _markGroupSeenNow();
+      // Messages may have arrived while the app was in the background.
+      syncNewerMessages();
     }
   }
 
@@ -1852,6 +1873,12 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     _groupTypingUserTimers.clear();
     groupTypingUsers.clear();
     socketService.stopListeningGroupTyping();
+    // The /chat socket stays alive for the chat list; without this, every
+    // reconnect would re-join this closed group and mark it seen.
+    socketService.clearActiveGroup(groupId);
+    // Drop this screen's receive/edit/delete/pin/seen listeners unless a
+    // newer group screen already replaced them.
+    socketService.releaseGroupChatEvents(this);
     socketService.stopListeningAttendanceEvents(_attendanceListenerToken);
     ChatTranslationService.instance.resetVisibility();
     ChatTranslationService.instance.stopAudio();
@@ -1887,69 +1914,167 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // History paging and sync (rules in chat_screen_logic.dart)
+  // ---------------------------------------------------------------------------
+
+  final HistoryPager _pager = HistoryPager();
+  bool _historyLoaded = false;
+  bool _historyRequestInFlight = false;
+  DateTime? _olderRetryAfter;
+
+  /// True when the first load failed and nothing is shown: the list shows
+  /// "Couldn't load messages" + Retry instead of "No messages here yet".
+  final RxBool historyLoadFailed = false.obs;
+
+  ItemPosition? _topAnchor() {
+    final visible = itemPositionsListener.itemPositions.value
+        .where((p) => p.itemTrailingEdge > 0)
+        .toList()
+      ..sort((a, b) => a.index.compareTo(b.index));
+    return visible.isEmpty ? null : visible.first;
+  }
+
+  void _restoreAnchor(ItemPosition? anchor, int prepended) {
+    if (anchor == null || prepended <= 0) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!itemScrollController.isAttached) return;
+      itemScrollController.jumpTo(
+        index: anchor.index + prepended,
+        alignment: anchor.itemLeadingEdge,
+      );
+    });
+  }
+
+  /// Older page when the user reaches the top. One call at a time; stops
+  /// when the API has no more; dedupes by id. The page counter advances
+  /// even when a page held only duplicates (it used to stay put and refetch
+  /// the same page forever once new messages had shifted the offsets).
   Future<void> loadOlderGroupMessages() async {
-    if (isLoadingOlderMessages.value) return;
-    if (!hasMoreOlderMessages.value) return;
-    if (_messages.isEmpty) return;
+    if (_messages.isEmpty || !_historyLoaded) return;
+    final retryAfter = _olderRetryAfter;
+    if (retryAfter != null && DateTime.now().isBefore(retryAfter)) return;
 
-    final positions = itemPositionsListener.itemPositions.value;
-    if (positions.isEmpty) return;
-
-    final visible =
-        positions.where((position) => position.itemTrailingEdge > 0).toList();
-    if (visible.isEmpty) return;
-
-    visible.sort((a, b) => a.index.compareTo(b.index));
-    final oldFirstVisibleIndex = visible.first.index;
+    final page = _pager.begin();
+    if (page == null) return;
 
     isLoadingOlderMessages.value = true;
+    final anchor = _topAnchor();
+
     try {
-      final nextPage = groupCurrentPage.value + 1;
-      log("OLDER GROUP MESSAGE API CALL => page=$nextPage");
+      log("OLDER GROUP MESSAGE API CALL => page=$page");
       final result = await MessageRepo.groupMessageHistory(
         groupId: groupId,
-        page: nextPage,
-        limit: 15,
+        page: page,
+        limit: ChatScreenRules.pageSize,
       );
+      if (isClosed) return;
 
-      if (result.status == true) {
-        final olderMessages = result.messageData ?? [];
-        if (olderMessages.isNotEmpty) {
-          final existingIds = _messages.map((m) => m.id).toSet();
-          final newOlder = olderMessages.where((m) => m.id != null && !existingIds.contains(m.id)).toList();
+      if (result.status != true) {
+        _pager.fail();
+        _olderRetryAfter = DateTime.now().add(const Duration(seconds: 3));
+        return;
+      }
 
-          if (newOlder.isNotEmpty) {
-            newOlder.sort((a, b) {
-              final aTime = DateTime.tryParse(a.timestamp?.toString() ?? '');
-              final bTime = DateTime.tryParse(b.timestamp?.toString() ?? '');
-              if (aTime == null || bTime == null) return 0;
-              return aTime.compareTo(bTime);
-            });
+      final older = result.messageData ?? [];
+      final merged = ChatScreenRules.merge(_messages, older);
+      _pager.complete(
+        page: page,
+        receivedCount: older.length,
+        hasNextPage: result.pagination?.hasNextPage,
+      );
+      groupCurrentPage.value = _pager.lastLoadedPage;
 
-            _messages.insertAll(0, newOlder);
-            groupCurrentPage.value = nextPage;
-            updateMessageStream();
-
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!itemScrollController.isAttached) return;
-              itemScrollController.jumpTo(
-                index: oldFirstVisibleIndex + newOlder.length,
-              );
-            });
-          }
-        }
-
-        if (result.pagination != null) {
-          hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
-        } else {
-          hasMoreOlderMessages.value = olderMessages.length >= 15;
-        }
+      if (merged.added > 0) {
+        _messages
+          ..clear()
+          ..addAll(merged.messages);
+        updateMessageStream();
+        _restoreAnchor(anchor, merged.prepended);
       }
     } catch (e) {
       log("Load Older Group Messages Error: $e");
+      _pager.fail();
+      _olderRetryAfter = DateTime.now().add(const Duration(seconds: 3));
     } finally {
       isLoadingOlderMessages.value = false;
+      hasMoreOlderMessages.value = _pager.hasMore;
     }
+  }
+
+  /// After a socket reconnect or app resume: fetch the newest pages until
+  /// they overlap what is loaded, so nothing sent meanwhile is missed.
+  ///
+  /// TODO(backend #6): replace with `after=<newest messageId>` once the API
+  /// supports it; page 1..N is a stopgap.
+  Future<void> syncNewerMessages() async {
+    if (!_historyLoaded || _historyRequestInFlight || isClosed) return;
+    _historyRequestInFlight = true;
+
+    try {
+      final wasAtBottom = isUserAtBottom();
+      final currentUserId =
+          Global.storageServices.get(PrefConst.userId)?.toString();
+      var appended = 0;
+      var appendedFromOthers = 0;
+
+      for (var page = 1; page <= 5; page++) {
+        final result = await MessageRepo.groupMessageHistory(
+          groupId: groupId,
+          page: page,
+          limit: ChatScreenRules.pageSize,
+        );
+        if (isClosed || result.status != true) return;
+
+        final batch = result.messageData ?? [];
+        final before = _messages.map((m) => m.id?.toString()).toSet();
+        final merged = ChatScreenRules.merge(_messages, batch);
+        final overlapped = merged.added < batch.length;
+        if (merged.added > 0) {
+          appended += merged.added - merged.prepended;
+          appendedFromOthers += batch
+              .where((m) =>
+                  !before.contains(m.id?.toString()) &&
+                  m.senderId?.toString() != currentUserId)
+              .length;
+          _messages
+            ..clear()
+            ..addAll(merged.messages);
+        }
+        if (overlapped || batch.isEmpty || result.pagination?.hasNextPage == false) {
+          break;
+        }
+      }
+
+      if (appended > 0) {
+        updateMessageStream();
+        if (wasAtBottom) {
+          scrollToBottom();
+        } else {
+          unreadBelowCount.value += appended;
+          showScrollToBottom.value = true;
+        }
+        if (appendedFromOthers > 0) _scheduleMarkGroupSeen();
+      }
+    } catch (e) {
+      log("Sync newer group messages error: $e");
+    } finally {
+      _historyRequestInFlight = false;
+    }
+  }
+
+  /// Reply-jump to a message that is not loaded yet: page back until it is
+  /// found (bounded). Returns its index, or -1.
+  Future<int> _loadOlderUntilFound(int messageId) async {
+    for (var i = 0; i < ChatScreenRules.maxReplyJumpPages; i++) {
+      if (!_pager.hasMore) break;
+      final before = _messages.length;
+      await loadOlderGroupMessages();
+      final index = _messages.indexWhere((e) => e.id == messageId);
+      if (index != -1) return index;
+      if (_messages.length == before && !_pager.hasMore) break;
+    }
+    return _messages.indexWhere((e) => e.id == messageId);
   }
 }
 

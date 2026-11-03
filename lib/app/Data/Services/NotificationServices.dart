@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/Core/util/chat_navigation.dart';
 import 'package:fgtracker/app/Model/call_model.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -57,6 +58,19 @@ void notificationTapBackground(
       }
     } catch (_) {}
   }
+}
+
+/// True for a Walkie-Talkie notification payload.
+///
+/// A `groupId` alone is not enough: group CHAT notifications carry one too
+/// (screen_name "groupChatScreen") and used to open the Walkie screen. A
+/// payload with no screen name at all still counts as Walkie, as before.
+bool isWalkieNotificationPayload(dynamic data) {
+  if (data is! Map) return false;
+  final screen = (data['screen_name'] ?? data['screenName'])?.toString() ?? '';
+  if (screen == 'group_walkie' || screen == 'groupWalkie') return true;
+  if (screen.isNotEmpty) return false;
+  return data['groupId'] != null || data['group_id'] != null;
 }
 
 class firebaseNotificationServices {
@@ -187,11 +201,7 @@ class firebaseNotificationServices {
     if (payload.payload != null && payload.payload!.isNotEmpty) {
       try {
         final data = jsonDecode(payload.payload!);
-        final isWalkie = (data['screen_name'] == 'group_walkie' ||
-            data['screenName'] == 'group_walkie' ||
-            data['screen_name'] == 'groupWalkie' ||
-            data['groupId'] != null ||
-            data['group_id'] != null);
+        final isWalkie = isWalkieNotificationPayload(data);
 
         if (isWalkie) {
           final plugin = FlutterLocalNotificationsPlugin();
@@ -548,18 +558,25 @@ class firebaseNotificationServices {
     return token ?? '';
   }
 
+  /// The launch notification is handled once per app run, even if the home
+  /// screen (which calls [setupInteractMessage]) is built again.
+  static bool _launchMessageHandled = false;
+
   Future<void> setupInteractMessage(BuildContext context) async {
+    if (_launchMessageHandled && pendingInitialMessage == null) return;
+
     RemoteMessage? initialMessage = pendingInitialMessage ??
         await FirebaseMessaging.instance.getInitialMessage();
     pendingInitialMessage = null;
+    _launchMessageHandled = true;
 
     if (initialMessage != null) {
       handleMessage(context, initialMessage, type: "frombackground");
     }
 
-    FirebaseMessaging.onMessageOpenedApp.listen((event) async {
-      handleMessage(context, event, type: "frombackground");
-    });
+    // onMessageOpenedApp is registered once in initialized(). Registering it
+    // here too made every background tap open the screen twice (and once
+    // more each time the home screen was rebuilt).
   }
 
   Future<bool> askPermission() async {
@@ -664,11 +681,7 @@ class firebaseNotificationServices {
       } else if (response?.payload != null && response!.payload!.isNotEmpty) {
         try {
           final data = jsonDecode(response.payload!);
-          final isWalkie = (data['screen_name'] == 'group_walkie' ||
-              data['screenName'] == 'group_walkie' ||
-              data['screen_name'] == 'groupWalkie' ||
-              data['groupId'] != null ||
-              data['group_id'] != null);
+          final isWalkie = isWalkieNotificationPayload(data);
 
           if (isWalkie) {
             final groupId =
@@ -833,31 +846,35 @@ class firebaseNotificationServices {
         if (memberData != null) {
           memberData.groupId = 0;
 
-          Get.toNamed(
-            Routes.chatScreen,
-            arguments: {
-              "userData": memberData,
-              "groupName": "",
-              "type": "chatScreen",
-            },
-          );
+          // Works even when another private chat is already open.
+          ChatNavigation.openPrivateChat({
+            "userData": memberData,
+            "groupName": "",
+            "type": "chatScreen",
+            "chatType": "private",
+          });
 
-          await notificationCtr.markAsRead(
-            int.parse(message.data["notificationId"].toString()),
-          );
+          final notificationId =
+              int.tryParse(message.data["notificationId"]?.toString() ?? "");
+          if (notificationId != null) {
+            await notificationCtr.markAsRead(notificationId);
+          }
         }
       } else if (message.data["screen_name"] == "groupChatScreen") {
-        Get.toNamed(
-          Routes.groupChatScreen,
-          arguments: {
-            "groupId": int.parse(message.data["groupId"].toString()).toString(),
+        final groupId =
+            int.tryParse(message.data["groupId"]?.toString() ?? "");
+        if (groupId != null) {
+          ChatNavigation.openGroupChat({
+            "groupId": groupId.toString(),
             "groupName": message.data["groupName"],
             "groupImage": "",
-          },
-        );
-        await notificationCtr.markAsRead(
-          int.parse(message.data["notificationId"].toString()),
-        );
+          });
+        }
+        final notificationId =
+            int.tryParse(message.data["notificationId"]?.toString() ?? "");
+        if (notificationId != null) {
+          await notificationCtr.markAsRead(notificationId);
+        }
       } else if (message.data['screen_name'] == 'incomingCall') {
         if (CallStateTracker.isIncomingCallScreenOpen) return;
 

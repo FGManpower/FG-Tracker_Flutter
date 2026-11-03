@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:permission_handler/permission_handler.dart' show openAppSettings;
 
 import '../../../config/themes_data.dart';
 import '../Controller/contact_picker_controller.dart';
@@ -407,9 +408,11 @@ class ContactPickerPage extends StatelessWidget {
               color: Colors.red.shade300,
             ),
             const SizedBox(height: 14),
-            const Text(
-              'Unable to load contacts',
-              style: TextStyle(
+            Text(
+              controller.permissionDenied.value
+                  ? 'Contacts permission needed'
+                  : 'Unable to load contacts',
+              style: const TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
               ),
@@ -440,6 +443,14 @@ class ContactPickerPage extends StatelessWidget {
                 ),
               ),
             ),
+            // Permanently denied: Try again can't show the prompt any more.
+            if (controller.permissionDenied.value) ...[
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: openAppSettings,
+                child: const Text('Open Settings'),
+              ),
+            ],
           ],
         ),
       ),

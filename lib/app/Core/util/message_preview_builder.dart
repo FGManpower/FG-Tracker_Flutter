@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/GroupChatListModel.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
 
@@ -143,14 +144,21 @@ class MessagePreviewBuilder {
 
   /// Preview for a row of the unified (Common/Private/Group) chat list and
   /// the archived list.
+  ///
+  /// Formats from the RAW last message (`content`/`message` + `senderId`/
+  /// `senderName`) whenever the payload has it, and adds the sender label
+  /// exactly once: "You: …" for my messages, "Name: …" for others in
+  /// groups. The backend's pre-formatted `preview` string is only a fallback
+  /// for payloads without raw content (it may already contain a name).
   static MessagePreview forChat(
     PrivateChatModel chat, {
     String? currentUserId,
   }) {
+    final raw = _rawLastMessageContent(chat.lastMessageData);
     return build(
       type: chat.messageType,
-      backendPreview: chat.preview,
-      content: chat.message,
+      backendPreview: raw == null ? chat.preview : null,
+      content: raw ?? chat.message,
       caption: chat.lastMessageData?['caption']?.toString(),
       data: chat.lastMessageData,
       isDeleted: chat.isDeletedForEveryone == true,
@@ -158,7 +166,18 @@ class MessagePreviewBuilder {
       senderId: chat.senderId,
       senderName: chat.senderName,
       currentUserId: currentUserId,
+      prefixOwnMessages: true,
     );
+  }
+
+  /// Raw message text from a last-message map, ignoring display fields.
+  static String? _rawLastMessageContent(Map<String, dynamic>? data) {
+    if (data == null) return null;
+    for (final key in const ['content', 'message', 'text', 'body']) {
+      final v = data[key];
+      if (v is String && v.trim().isNotEmpty) return v.trim();
+    }
+    return null;
   }
 
   /// Preview for the group cards (`/group-chat-list` model).
@@ -178,6 +197,158 @@ class MessagePreviewBuilder {
     );
   }
 
+  /// Text used when nothing readable can be found for a replied-to message.
+  static const String replyFallbackText = 'Message';
+
+  static const String _imageExt = r'jpe?g|png|webp|heic|heif|bmp';
+  static const String _videoExt = r'mp4|mov|mkv|avi|3gp|webm';
+  static const String _audioExt = r'mp3|m4a|aac|wav|ogg|opus|amr|flac';
+  static const String _docExt = r'pdf|docx?|xlsx?|pptx?|txt|csv|zip|rar|apk';
+
+  /// Preview of a full, in-memory message. Used for the reply bar above the
+  /// input and for the quoted message inside a reply bubble.
+  static MessagePreview forMessage(MessageData message) {
+    final type = message.messageType?.toString();
+    final raw = message.content?.toString();
+    final split = _splitPipeContent(type, raw);
+    final data = <String, dynamic>{
+      ...split.data,
+      if (message.images != null) 'images': message.images,
+      if (message.videos != null) 'videos': message.videos,
+      if (message.attendance != null) 'attendance': message.attendance,
+    };
+
+    final preview = build(
+      type: type,
+      content: split.content,
+      caption: message.caption?.toString(),
+      data: data,
+      isDeleted: message.isDeleted == true || _clean(raw) == deletedText,
+    );
+    return _readableReply(preview, split.content);
+  }
+
+  /// Preview of the message quoted by a reply. Prefers the original message
+  /// when it is loaded (most accurate, reflects edits/deletes); otherwise
+  /// uses the reply fields the backend stored. Never returns empty text.
+  static MessagePreview forQuotedReply(
+    MessageData reply, {
+    MessageData? original,
+  }) {
+    if (original != null) return forMessage(original);
+
+    final type = reply.replyType?.toString();
+    var raw = _clean(reply.replyMessage?.toString());
+    if (raw.isEmpty) raw = _clean(reply.replyMessageContent?.toString());
+    final split = _splitPipeContent(type, raw);
+
+    final preview = build(
+      type: type,
+      content: split.content,
+      data: split.data,
+      isDeleted: raw == deletedText,
+    );
+    return _readableReply(preview, split.content);
+  }
+
+  /// Name shown on a quoted reply: "You" for my own message, otherwise the
+  /// stored reply sender name, falling back to the original's sender.
+  static String replySenderLabel(
+    MessageData reply, {
+    MessageData? original,
+    String? currentUserId,
+  }) {
+    final me = _clean(currentUserId);
+    final originalSender = _clean(original?.senderId?.toString());
+    if (me.isNotEmpty && originalSender.isNotEmpty && originalSender == me) {
+      return 'You';
+    }
+    final name = _clean(reply.replySenderName?.toString());
+    if (name.isNotEmpty) return name;
+    return _clean(original?.senderName?.toString());
+  }
+
+  /// Video/document content is stored as "path||name-or-thumb||extra".
+  static ({String content, Map<String, dynamic> data}) _splitPipeContent(
+    String? type,
+    String? content,
+  ) {
+    final value = _clean(content);
+    if (!value.contains('||')) return (content: value, data: const {});
+    final parts = value.split('||').map((e) => e.trim()).toList();
+    final kind = MessageTypes.kindOf(type);
+    final data = <String, dynamic>{
+      if (kind == MessageKind.document &&
+          parts.length > 1 &&
+          parts[1].isNotEmpty)
+        'fileName': parts[1],
+    };
+    return (content: parts.first, data: data);
+  }
+
+  /// Guarantees a reply preview never shows empty text, a raw URL/path or a
+  /// JSON payload. Real text messages (including links) are kept as is.
+  static MessagePreview _readableReply(MessagePreview preview, String content) {
+    if (preview.kind == MessageKind.text) {
+      final inferred = _inferFromContent(content);
+      if (inferred != null) {
+        return MessagePreview(
+          kind: inferred.$1,
+          icon: inferred.$2,
+          text: inferred.$3,
+        );
+      }
+    }
+
+    final text = preview.text.trim();
+    if ((text.isEmpty && preview.icon.isEmpty) || text == fallbackText) {
+      return MessagePreview(kind: preview.kind, text: replyFallbackText);
+    }
+    return preview;
+  }
+
+  /// For replies whose type is missing/"text" but whose content is really a
+  /// media path or a JSON payload.
+  static (MessageKind, String, String)? _inferFromContent(String content) {
+    final value = content.trim();
+    if (value.isEmpty) return null;
+
+    final json = _decodeJson(value);
+    if (json != null) {
+      if (json.containsKey('latitude') || json.containsKey('lat')) {
+        return (MessageKind.location, '📍', 'Location');
+      }
+      final pollTitle = _firstString(json, const ['question', 'pollTitle']);
+      if (pollTitle != null || json.containsKey('options')) {
+        return (MessageKind.poll, '📊', pollTitle ?? 'Poll');
+      }
+      final name =
+          _firstString(json, const ['name', 'contactName', 'fullName']);
+      if (name != null || json.containsKey('phone')) {
+        return (MessageKind.contact, '👤', name ?? 'Contact');
+      }
+      return (MessageKind.unknown, '', replyFallbackText);
+    }
+
+    // Only bare paths/URLs that point at a media file; sentences are text.
+    if (value.contains(' ')) return null;
+    final lower = value.split('?').first.toLowerCase();
+    bool ext(String pattern) => RegExp('\\.($pattern)\$').hasMatch(lower);
+
+    if (ext(_imageExt)) return (MessageKind.image, '📷', 'Photo');
+    if (ext('gif')) return (MessageKind.gif, '', 'GIF');
+    if (ext(_videoExt)) return (MessageKind.video, '🎥', 'Video');
+    if (ext(_audioExt)) return (MessageKind.audio, '🎵', 'Audio');
+    if (ext(_docExt)) {
+      return (
+        MessageKind.document,
+        '📄',
+        _fileNameFromPath(value) ?? 'Document',
+      );
+    }
+    return null;
+  }
+
   /// [backendPreview] is the display string the backend already sends
   /// (`preview`/`message`). [content] is the raw message content. [data] is
   /// the raw last-message map, used for type-specific fields (poll title,
@@ -193,6 +364,8 @@ class MessagePreviewBuilder {
     String? senderId,
     String? senderName,
     String? currentUserId,
+    // Chat-list rows: also show "You: " on my own messages in private chats.
+    bool prefixOwnMessages = false,
   }) {
     final kind = isDeleted ? MessageKind.deleted : MessageTypes.kindOf(type);
 
@@ -218,12 +391,14 @@ class MessagePreviewBuilder {
       contentJson: contentJson ?? const {},
     );
 
-    final prefix = (isGroup && kind != MessageKind.system)
+    final prefix = ((isGroup || prefixOwnMessages) &&
+            kind != MessageKind.system)
         ? _senderPrefix(
             senderId: senderId,
             senderName: senderName,
             currentUserId: currentUserId,
             alreadyShown: body.text,
+            includeOthers: isGroup,
           )
         : '';
 
@@ -379,19 +554,23 @@ class MessagePreviewBuilder {
     required String? senderName,
     required String? currentUserId,
     required String alreadyShown,
+    bool includeOthers = true,
   }) {
     final id = senderId?.trim() ?? '';
     final me = currentUserId?.trim() ?? '';
+    final name = senderName?.trim() ?? '';
     final String label;
     if (id.isNotEmpty && me.isNotEmpty && me != 'null' && id == me) {
       label = 'You';
     } else {
-      final name = senderName?.trim() ?? '';
-      if (name.isEmpty) return '';
+      if (!includeOthers || name.isEmpty) return '';
       label = name;
     }
-    // Backend may already prefix the preview; never show it twice.
-    if (alreadyShown.startsWith('$label:') || alreadyShown.startsWith('You:')) {
+    // Legacy payloads without raw content: the backend preview may already
+    // carry "<Name>: " (even for my own message). Never show a name twice.
+    if (alreadyShown.startsWith('$label:') ||
+        alreadyShown.startsWith('You:') ||
+        (name.isNotEmpty && alreadyShown.startsWith('$name:'))) {
       return '';
     }
     return '$label: ';

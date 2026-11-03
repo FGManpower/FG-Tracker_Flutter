@@ -23,7 +23,8 @@ class HttpUtil {
   HttpUtil._internal() {
     if (kDebugMode) {
       api.sendRequest.interceptors.add(PrettyDioLogger(
-        requestHeader: true,
+        // false: request headers carry the Bearer token — never log it
+        requestHeader: false,
         requestBody: true,
         responseBody: true,
         responseHeader: true,

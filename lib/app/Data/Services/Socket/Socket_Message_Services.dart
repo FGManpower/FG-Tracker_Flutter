@@ -4,6 +4,8 @@ import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/util/rt_log.dart';
+import 'package:fgtracker/app/Data/Services/active_chat_tracker.dart';
 import 'package:fgtracker/app/Data/Services/Socket/status_socket_service.dart';
 import 'package:fgtracker/app/modules/status/controller/status_feed_controller.dart';
 import 'package:flutter/cupertino.dart';
@@ -17,6 +19,9 @@ void log(String message, {Object? error, StackTrace? stackTrace, String? name}) 
     debugPrint("[${name ?? 'Socket'}] $message");
   }
 }
+
+/// Which chat socket a chat-screen listener belongs to.
+enum ChatSocketScope { private, group }
 
 class SocketMessageService extends GetxService {
   static SocketMessageService get instance => Get.put(SocketMessageService());
@@ -59,6 +64,12 @@ class SocketMessageService extends GetxService {
       _privateChatListSocket?.connected == true;
 
   String? _privateChatId;
+
+  /// Private chat currently open. The socket's onConnect closure is created
+  /// once with the FIRST chat's ids; reconnects must join the chat that is
+  /// open now (or none), so they read these fields instead.
+  String? _activePrivateUserId;
+  String? _activePrivateReceiverId;
 
   String? get privateChatId => _privateChatId;
 
@@ -126,7 +137,7 @@ class SocketMessageService extends GetxService {
       if (event.startsWith("attendance") ||
           event.contains("chat_list") ||
           event == "conversation_updated") {
-        debugPrint("[RT_DEBUG] /chat <= $event"); // TODO: remove debug log
+        rtLog("[RT_DEBUG] /chat <= $event");
       }
     });
 
@@ -147,7 +158,11 @@ class SocketMessageService extends GetxService {
 
         log("EMITTING MARK SEEN");
         log("MARK SEEN PARAMS: userId=$activeUserId, groupId=$activeGroupId");
-        markSeen(activeUserId, activeGroupId);
+        // A reconnect while the app is in the background must not mark
+        // the group read; the group screen sends it again on resume.
+        if (ActiveChatTracker.isAppInForeground) {
+          markSeen(activeUserId, activeGroupId);
+        }
       } else {
         log("GROUP ID IS NULL — JOIN AND MARK SEEN SKIPPED");
       }
@@ -156,14 +171,15 @@ class SocketMessageService extends GetxService {
       if (_subscribedPollId != null) {
         _emitAttendanceSubscribe(_subscribedPollId!);
       }
-      debugPrint(
+      rtLog(
         "[RT_DEBUG] /chat connected: group=$activeGroupId poll=$_subscribedPollId",
-      ); // TODO: remove debug log
+      );
     });
 
     // The chat list may have registered before this socket existed.
     _registerChatListListeners(_socket);
     _registerFullChatListListeners(_socket);
+    _registerChatListGroupTyping(_socket);
 
     _socket?.onDisconnect((reason) {
       log("========== SOCKET DISCONNECTED ==========");
@@ -465,21 +481,117 @@ class SocketMessageService extends GetxService {
       log("listenGroupTyping skipped: _socket is null");
       return;
     }
-    s.off("group_typing");
-    s.off("group_stop_typing");
-    s.on("group_typing", (data) {
+    // Remove only this screen's previous handlers: the chat list keeps its
+    // own group typing listener on the same /chat socket.
+    _removeGroupScreenTypingHandlers(s);
+    _groupScreenTypingHandler = (data) {
       log("RECEIVED group_typing => $data");
       onTyping(data);
-    });
-    s.on("group_stop_typing", (data) {
+    };
+    _groupScreenStopTypingHandler = (data) {
       log("RECEIVED group_stop_typing => $data");
       onStopTyping(data);
-    });
+    };
+    s.on("group_typing", _groupScreenTypingHandler!);
+    s.on("group_stop_typing", _groupScreenStopTypingHandler!);
+  }
+
+  EventHandler<dynamic>? _groupScreenTypingHandler;
+  EventHandler<dynamic>? _groupScreenStopTypingHandler;
+
+  void _removeGroupScreenTypingHandlers(IO.Socket? s) {
+    if (s == null) return;
+    if (_groupScreenTypingHandler != null) {
+      s.off("group_typing", _groupScreenTypingHandler);
+    }
+    if (_groupScreenStopTypingHandler != null) {
+      s.off("group_stop_typing", _groupScreenStopTypingHandler);
+    }
   }
 
   void stopListeningGroupTyping() {
-    _socket?.off("group_typing");
-    _socket?.off("group_stop_typing");
+    _removeGroupScreenTypingHandlers(_socket);
+    _groupScreenTypingHandler = null;
+    _groupScreenStopTypingHandler = null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Chat list: typing, reconnect and the always-on /chat socket.
+  // Handlers are kept by reference so they are registered once per socket and
+  // never removed by a chat screen's own off() calls.
+  // ---------------------------------------------------------------------------
+
+  Function(dynamic)? _chatListPrivateTyping;
+  Function(dynamic)? _chatListPrivateStopTyping;
+  Function(dynamic)? _chatListGroupTyping;
+  Function(dynamic)? _chatListGroupStopTyping;
+  EventHandler<dynamic>? _listPrivateTypingHandler;
+  EventHandler<dynamic>? _listPrivateStopTypingHandler;
+  EventHandler<dynamic>? _listGroupTypingHandler;
+  EventHandler<dynamic>? _listGroupStopTypingHandler;
+  void Function()? _chatListReconnectCallback;
+
+  /// A group chat screen closed: stop re-joining (and auto-marking seen) that
+  /// group on reconnect. Another group opened in the meantime is kept.
+  void clearActiveGroup(int? groupId) {
+    if (groupId != null && _activeGroupId == groupId) _activeGroupId = null;
+  }
+
+  /// Opens the /chat namespace (group list updates, group typing, group
+  /// read) without joining any group. No-op when it already exists, so an
+  /// open group chat keeps its room.
+  void ensureChatSocket(String socketUrl, {required String userId}) {
+    if (_socket != null) return;
+    init(socketUrl, userId: userId);
+  }
+
+  void listenChatListTyping({
+    required Function(dynamic) onPrivateTyping,
+    required Function(dynamic) onPrivateStopTyping,
+    required Function(dynamic) onGroupTyping,
+    required Function(dynamic) onGroupStopTyping,
+  }) {
+    _chatListPrivateTyping = onPrivateTyping;
+    _chatListPrivateStopTyping = onPrivateStopTyping;
+    _chatListGroupTyping = onGroupTyping;
+    _chatListGroupStopTyping = onGroupStopTyping;
+    _registerChatListPrivateTyping(_privateChatListSocket);
+    _registerChatListGroupTyping(_socket);
+  }
+
+  /// Called on every (re)connect of the chat-list socket.
+  void listenChatListReconnect(void Function() callback) {
+    _chatListReconnectCallback = callback;
+  }
+
+  void _registerChatListPrivateTyping(IO.Socket? s) {
+    if (s == null || _chatListPrivateTyping == null) return;
+    if (_listPrivateTypingHandler != null) {
+      s.off("typing", _listPrivateTypingHandler);
+    }
+    if (_listPrivateStopTypingHandler != null) {
+      s.off("stop_typing", _listPrivateStopTypingHandler);
+    }
+    _listPrivateTypingHandler = (data) => _chatListPrivateTyping?.call(data);
+    _listPrivateStopTypingHandler =
+        (data) => _chatListPrivateStopTyping?.call(data);
+    s.on("typing", _listPrivateTypingHandler!);
+    s.on("stop_typing", _listPrivateStopTypingHandler!);
+  }
+
+  void _registerChatListGroupTyping(IO.Socket? s) {
+    if (s == null || _chatListGroupTyping == null) return;
+    if (_listGroupTypingHandler != null) {
+      s.off("group_typing", _listGroupTypingHandler);
+    }
+    if (_listGroupStopTypingHandler != null) {
+      s.off("group_stop_typing", _listGroupStopTypingHandler);
+    }
+    _listGroupTypingHandler = (data) => _chatListGroupTyping?.call(data);
+    _listGroupStopTypingHandler =
+        (data) => _chatListGroupStopTyping?.call(data);
+    s.on("group_typing", _listGroupTypingHandler!);
+    s.on("group_stop_typing", _listGroupStopTypingHandler!);
   }
 
   static const List<String> _attendanceEvents = [
@@ -558,9 +670,9 @@ class SocketMessageService extends GetxService {
     _socket?.emitWithAck(
       "attendance:subscribe",
       {"pollId": pollId},
-      ack: (data) => debugPrint(
+      ack: (data) => rtLog(
         "[RT_DEBUG] attendance:subscribe poll=$pollId ack => $data",
-      ), // TODO: remove debug log
+      ),
     );
   }
 
@@ -597,6 +709,9 @@ class SocketMessageService extends GetxService {
         required String receiverId,
         Function(dynamic)? onJoined,
       }) async {
+    _activePrivateUserId = userId;
+    _activePrivateReceiverId = receiverId;
+
     // Reuse existing connected socket.
     if (_privateChatSocket != null && _privateChatSocket!.connected) {
       log("PRIVATE CHAT SOCKET ALREADY CONNECTED");
@@ -645,6 +760,7 @@ class SocketMessageService extends GetxService {
         "autoConnect": true,
         "auth": {
           "userId": userId,
+          "token": Global.storageServices.getaccesstoken() ?? "",
         },
       },
     );
@@ -659,9 +775,14 @@ class SocketMessageService extends GetxService {
 
       _privateJoinDebugTimer?.cancel();
 
+      final activeUser = _activePrivateUserId;
+      final activeReceiver = _activePrivateReceiverId;
+      // No private chat open (it was left): nothing to re-join.
+      if (activeUser == null || activeReceiver == null) return;
+
       joinPrivateChat(
-        userId: userId,
-        receiverId: receiverId,
+        userId: activeUser,
+        receiverId: activeReceiver,
       );
 
       _privateJoinDebugTimer = Timer(
@@ -1041,15 +1162,18 @@ class SocketMessageService extends GetxService {
         "autoConnect": true,
         "auth": {
           "userId": userId,
+          "token": Global.storageServices.getaccesstoken() ?? "",
         },
       },
     );
 
     _privateChatListSocket?.onAny((event, data) {
       if (event.contains("chat_list") || event == "conversation_updated") {
-        debugPrint("[RT_DEBUG] /privateChat <= $event"); // TODO: remove debug log
+        rtLog("[RT_DEBUG] /privateChat <= $event");
       }
     });
+
+    _registerChatListPrivateTyping(_privateChatListSocket);
 
     _privateChatListSocket?.on(
       "archived_private_chats",
@@ -1112,6 +1236,9 @@ class SocketMessageService extends GetxService {
         page: 1,
         limit: 20,
       );
+
+      // Anything missed while disconnected is refetched from the API.
+      _chatListReconnectCallback?.call();
     });
 
     _privateChatListSocket?.onDisconnect((reason) {});
@@ -1198,6 +1325,10 @@ class SocketMessageService extends GetxService {
     required String userId,
     required String receiverId,
   }) {
+    if (_activePrivateReceiverId == receiverId) {
+      _activePrivateUserId = null;
+      _activePrivateReceiverId = null;
+    }
     if (!isPrivateChatSocketConnected) return;
 
     final payload = {
@@ -1257,6 +1388,24 @@ class SocketMessageService extends GetxService {
     _privateChatListUpdatedCallback = null;
     _privateChatRemovedCallback = null;
     _privateChatActionErrorCallback = null;
+
+    if (_socket != null) {
+      if (_listGroupTypingHandler != null) {
+        _socket!.off("group_typing", _listGroupTypingHandler);
+      }
+      if (_listGroupStopTypingHandler != null) {
+        _socket!.off("group_stop_typing", _listGroupStopTypingHandler);
+      }
+    }
+    _chatListPrivateTyping = null;
+    _chatListPrivateStopTyping = null;
+    _chatListGroupTyping = null;
+    _chatListGroupStopTyping = null;
+    _listPrivateTypingHandler = null;
+    _listPrivateStopTypingHandler = null;
+    _listGroupTypingHandler = null;
+    _listGroupStopTypingHandler = null;
+    _chatListReconnectCallback = null;
   }
 
   void editMessage({
@@ -1287,25 +1436,74 @@ class SocketMessageService extends GetxService {
     );
   }
 
+  /// Sockets a chat screen listens on. Private screens use /privateChat,
+  /// group screens use /chat. `null` keeps the old "both" behaviour.
+  ///
+  /// Registering on both made the last opened screen steal the other one's
+  /// edit/delete/pin events (e.g. private chat -> group -> back).
+  List<IO.Socket> _socketsFor(ChatSocketScope? scope) => [
+        if (scope != ChatSocketScope.private && _socket != null) _socket!,
+        if (scope != ChatSocketScope.group && _privateChatSocket != null)
+          _privateChatSocket!,
+      ];
+
+  void _listenScoped(
+    String event,
+    ChatSocketScope? scope,
+    void Function(dynamic data) handler,
+  ) {
+    for (final s in _socketsFor(scope)) {
+      s.off(event);
+      s.on(event, handler);
+    }
+  }
+
+  /// Group screen that currently owns the /chat chat-screen listeners.
+  Object? _groupChatOwner;
+
+  /// Called by a group chat screen before it registers its listeners.
+  void claimGroupChatEvents(Object owner) => _groupChatOwner = owner;
+
+  /// Removes the group chat-screen listeners, but only if [owner] still
+  /// owns them: a newer group screen may already have registered its own
+  /// (its onInit runs before the old screen's onClose).
+  void releaseGroupChatEvents(Object owner) {
+    if (!identical(_groupChatOwner, owner)) return;
+    _groupChatOwner = null;
+    for (final event in const [
+      "receive_group_message",
+      "group_forward_message",
+      "forward_message",
+      "receive_forward_message",
+      "message_forwarded",
+      "forwarded_message",
+      "messageEdited",
+      "message_deleted",
+      "message_pinned",
+      "message_unpinned",
+      "messages_seen_update",
+    ]) {
+      _socket?.off(event);
+    }
+  }
+
+  /// Private chat screen that currently owns the /privateChat listeners.
+  Object? _privateChatOwner;
+
+  void claimPrivateChatEvents(Object owner) => _privateChatOwner = owner;
+
+  /// [clearPrivateChatListeners] only if [owner] still owns the listeners.
+  void releasePrivateChatEvents(Object owner) {
+    if (!identical(_privateChatOwner, owner)) return;
+    _privateChatOwner = null;
+    clearPrivateChatListeners();
+  }
+
   void listenMessageEdited({
     required Function(dynamic data) callback,
+    ChatSocketScope? scope,
   }) {
-    _socket?.off("messageEdited");
-    _privateChatSocket?.off("messageEdited");
-
-    _socket?.on(
-      "messageEdited",
-      (data) {
-        callback(data);
-      },
-    );
-
-    _privateChatSocket?.on(
-      "messageEdited",
-      (data) {
-        callback(data);
-      },
-    );
+    _listenScoped("messageEdited", scope, (data) => callback(data));
   }
 
   void deleteMessage({
@@ -1339,17 +1537,10 @@ class SocketMessageService extends GetxService {
 
   void listenMessageDeleted({
     required Function(dynamic data) callback,
+    ChatSocketScope? scope,
   }) {
-    _socket?.off("message_deleted");
-    _privateChatSocket?.off("message_deleted");
-
-    _socket?.on("message_deleted", (data) {
-      debugPrint("MAIN SOCKET message_deleted => $data");
-      callback(data);
-    });
-
-    _privateChatSocket?.on("message_deleted", (data) {
-      debugPrint("PRIVATE SOCKET message_deleted => $data");
+    _listenScoped("message_deleted", scope, (data) {
+      debugPrint("message_deleted => $data");
       callback(data);
     });
   }
@@ -1438,52 +1629,21 @@ class SocketMessageService extends GetxService {
 
   void listenPinMessage({
     required Function(Map<String, dynamic>) callback,
+    ChatSocketScope? scope,
   }) {
-    _socket?.off("message_pinned");
-    _privateChatSocket?.off("message_pinned");
-
-    _socket?.on(
-      "message_pinned",
-      (data) {
-        callback(
-          Map<String, dynamic>.from(data),
-        );
-      },
-    );
-
-    _privateChatSocket?.on(
-      "message_pinned",
-      (data) {
-        callback(
-          Map<String, dynamic>.from(data),
-        );
-      },
-    );
+    // Non-map payloads used to throw inside the socket callback.
+    _listenScoped("message_pinned", scope, (data) {
+      if (data is Map) callback(Map<String, dynamic>.from(data));
+    });
   }
 
   void listenUnpinMessage({
     required Function(Map<String, dynamic>) callback,
+    ChatSocketScope? scope,
   }) {
-    _socket?.off("message_unpinned");
-    _privateChatSocket?.off("message_unpinned");
-
-    _socket?.on(
-      "message_unpinned",
-      (data) {
-        callback(
-          Map<String, dynamic>.from(data),
-        );
-      },
-    );
-
-    _privateChatSocket?.on(
-      "message_unpinned",
-      (data) {
-        callback(
-          Map<String, dynamic>.from(data),
-        );
-      },
-    );
+    _listenScoped("message_unpinned", scope, (data) {
+      if (data is Map) callback(Map<String, dynamic>.from(data));
+    });
   }
 
   void forwardMessage({
@@ -1560,12 +1720,13 @@ class SocketMessageService extends GetxService {
     log("FORWARD FAILED => RECEIVER ID AND GROUP ID BOTH MISSING");
   }
 
-  void pinPrivateChat({
+  /// Returns false when the list socket is offline (nothing was sent).
+  bool pinPrivateChat({
     required String userId,
     required String chatId,
   }) {
     if (!isPrivateChatListSocketConnected) {
-      return;
+      return false;
     }
 
     final payload = {
@@ -1577,14 +1738,16 @@ class SocketMessageService extends GetxService {
       "pin_private_chat",
       payload,
     );
+    return true;
   }
 
-  void unpinPrivateChat({
+  /// Returns false when the list socket is offline (nothing was sent).
+  bool unpinPrivateChat({
     required String userId,
     required String chatId,
   }) {
     if (!isPrivateChatListSocketConnected) {
-      return;
+      return false;
     }
 
     final payload = {
@@ -1596,15 +1759,17 @@ class SocketMessageService extends GetxService {
       "unpin_private_chat",
       payload,
     );
+    return true;
   }
 
-  void mutePrivateChat({
+  /// Returns false when the list socket is offline (nothing was sent).
+  bool mutePrivateChat({
     required String userId,
     required String chatId,
     String? mutedUntil,
   }) {
     if (!isPrivateChatListSocketConnected) {
-      return;
+      return false;
     }
 
     final payload = {
@@ -1617,14 +1782,16 @@ class SocketMessageService extends GetxService {
       "mute_private_chat",
       payload,
     );
+    return true;
   }
 
-  void unmutePrivateChat({
+  /// Returns false when the list socket is offline (nothing was sent).
+  bool unmutePrivateChat({
     required String userId,
     required String chatId,
   }) {
     if (!isPrivateChatListSocketConnected) {
-      return;
+      return false;
     }
 
     final payload = {
@@ -1636,14 +1803,16 @@ class SocketMessageService extends GetxService {
       "unmute_private_chat",
       payload,
     );
+    return true;
   }
 
-  void archivePrivateChat({
+  /// Returns false when the list socket is offline (nothing was sent).
+  bool archivePrivateChat({
     required String userId,
     required String chatId,
   }) {
     if (!isPrivateChatListSocketConnected) {
-      return;
+      return false;
     }
 
     final payload = {
@@ -1655,14 +1824,16 @@ class SocketMessageService extends GetxService {
       "archive_private_chat",
       payload,
     );
+    return true;
   }
 
-  void unarchivePrivateChat({
+  /// Returns false when the list socket is offline (nothing was sent).
+  bool unarchivePrivateChat({
     required String userId,
     required String chatId,
   }) {
     if (!isPrivateChatListSocketConnected) {
-      return;
+      return false;
     }
 
     final payload = {
@@ -1674,9 +1845,11 @@ class SocketMessageService extends GetxService {
       "unarchive_private_chat",
       payload,
     );
+    return true;
   }
 
-  void markPrivateChatRead({
+  /// Returns false when the list socket is offline (nothing was sent).
+  bool markPrivateChatRead({
     required String userId,
     required String chatId,
   }) {
@@ -1687,7 +1860,7 @@ class SocketMessageService extends GetxService {
 
     if (!isPrivateChatListSocketConnected) {
       log("MARK PRIVATE CHAT READ FAILED => SOCKET NOT CONNECTED");
-      return;
+      return false;
     }
 
     final payload = {
@@ -1704,14 +1877,16 @@ class SocketMessageService extends GetxService {
     );
 
     log("MARK PRIVATE CHAT READ EMIT CALLED");
+    return true;
   }
 
-  void deletePrivateChat({
+  /// Returns false when the list socket is offline (nothing was sent).
+  bool deletePrivateChat({
     required String userId,
     required String chatId,
   }) {
     if (!isPrivateChatListSocketConnected) {
-      return;
+      return false;
     }
 
     final payload = {
@@ -1723,6 +1898,7 @@ class SocketMessageService extends GetxService {
       "delete_private_chat",
       payload,
     );
+    return true;
   }
 
   Function(dynamic)? _privateChatRemovedCallback;

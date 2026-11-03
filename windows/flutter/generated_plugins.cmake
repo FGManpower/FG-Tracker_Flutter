@@ -9,6 +9,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   emoji_picker_flutter
   file_selector_windows
   firebase_core
+  firebase_remote_config
   flutter_sound
   flutter_timezone
   flutter_webrtc

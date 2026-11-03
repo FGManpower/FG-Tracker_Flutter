@@ -62,11 +62,10 @@ class PackageListView extends GetView<PackageListController> {
         physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics()),
         padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 24.h),
-        itemCount: items.length + 1,
-        separatorBuilder: (_, i) => SizedBox(height: i == 0 ? 0 : 12.h),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => SizedBox(height: 12.h),
         itemBuilder: (_, i) {
-          if (i == 0) return const PackageSampleDataBanner();
-          final item = items[i - 1];
+          final item = items[i];
           return PackageCard(
             item: item,
             onTap: () => controller.openPackage(item),

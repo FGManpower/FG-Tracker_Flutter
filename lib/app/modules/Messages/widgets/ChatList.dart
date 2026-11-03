@@ -9,6 +9,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../Controller/MessageController.dart';
 import 'ChatItem.dart';
+import 'chat_history_widgets.dart';
 
 class ChatList extends StatelessWidget {
   final MessageController controller;
@@ -26,25 +27,40 @@ class ChatList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final isLoading = controller.isLoadingInitialMessages.value;
+      final loadFailed = controller.historyLoadFailed.value;
+      final loadingOlder = controller.isLoadingOlderMessages.value;
 
       return StreamBuilder<List<MessageData>>(
         stream: controller.messageStream,
         initialData: controller.messageData,
         builder: (context, snapshot) {
           final messages = snapshot.data ?? [];
-          debugPrint(
-            "CHAT LIST => chatId: ${controller.privateChatId.value}, "
-            "messages: ${messages.length}, "
-            "loading: ${controller.isLoadingInitialMessages.value}",
-          );
           if (isLoading && messages.isEmpty) {
             return const ChatMessageSkeleton();
+          }
+
+          if (messages.isEmpty && loadFailed) {
+            return ChatHistoryErrorState(onRetry: controller.retryLoadHistory);
           }
 
           if (!isLoading && messages.isEmpty) {
             return _buildEmptyState();
           }
 
+          return Stack(
+            children: [
+              _buildList(messages),
+              ChatHistoryTopLoader(visible: loadingOlder),
+            ],
+          );
+        },
+      );
+    });
+  }
+
+  Widget _buildList(List<MessageData> messages) {
+    return Builder(
+      builder: (context) {
           return ScrollablePositionedList.builder(
             key: ValueKey("chat_list_${controller.privateChatId.value}"),
             itemScrollController: controller.itemScrollController,
@@ -197,9 +213,8 @@ class ChatList extends StatelessWidget {
               return itemWidget;
             },
           );
-        },
-      );
-    });
+      },
+    );
   }
 
   Widget _buildEmptyState() {
@@ -640,6 +655,8 @@ class GroupChatList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final isLoading = controller.isLoading.value;
+      final loadFailed = controller.historyLoadFailed.value;
+      final loadingOlder = controller.isLoadingOlderMessages.value;
 
       return StreamBuilder<List<MessageData>>(
         stream: controller.messageStream,
@@ -649,6 +666,10 @@ class GroupChatList extends StatelessWidget {
 
           if (isLoading && messages.isEmpty) {
             return const ChatMessageSkeleton();
+          }
+
+          if (messages.isEmpty && loadFailed) {
+            return ChatHistoryErrorState(onRetry: controller.retryLoadHistory);
           }
 
           if (!isLoading && messages.isEmpty) {
@@ -682,7 +703,7 @@ class GroupChatList extends StatelessWidget {
             );
           }
 
-          return ScrollablePositionedList.builder(
+          return Stack(children: [ScrollablePositionedList.builder(
             key: ValueKey("group_chat_list_${controller.groupId}"),
             itemScrollController: controller.itemScrollController,
             itemPositionsListener: controller.itemPositionsListener,
@@ -835,7 +856,7 @@ class GroupChatList extends StatelessWidget {
 
               return itemWidget;
             },
-          );
+          ), ChatHistoryTopLoader(visible: loadingOlder)]);
         },
       );
     });
