@@ -7,6 +7,7 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class BottomActionsBar extends StatelessWidget {
   const BottomActionsBar({
     super.key,
@@ -143,7 +144,7 @@ class _CreateGroupButton extends StatelessWidget {
           groupController.groupName.clear();
           groupController.groupDesc.clear();
         } catch (e) {
-          debugPrint("Clear error: $e");
+          AppLog.d("Clear error: $e");
         }
         showCreateGroupSheet();
       },

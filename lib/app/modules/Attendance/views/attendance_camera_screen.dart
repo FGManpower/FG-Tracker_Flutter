@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../utils/attendance_frame_encoder.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 /// Live attendance selfie: front camera only, auto-captured when the member
 /// blinks (open → closed → open) with exactly one centered face in frame.
 /// Pops with the captured file path when the member taps Submit.
@@ -118,7 +119,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
     try {
       await camera.dispose();
     } catch (e) {
-      debugPrint("Attendance camera dispose failed: $e");
+      AppLog.d("Attendance camera dispose failed: $e");
     }
     if (notify && mounted) setState(() {});
   }
@@ -215,7 +216,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
       final frameH = (rotated ? image.width : image.height).toDouble();
       _evaluate(faces, frameW, frameH, image);
     } catch (e) {
-      debugPrint("Face detection error: $e");
+      AppLog.d("Face detection error: $e");
     } finally {
       _isDetecting = false;
       if (_disposed) _closeDetector();
@@ -385,7 +386,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
       // The preview is shown from the file; free the camera meanwhile.
       await _releaseCamera();
     } catch (e) {
-      debugPrint("Attendance capture failed: $e");
+      AppLog.d("Attendance capture failed: $e");
       if (!mounted || _disposed) return;
       _resetBlink();
       _setStatus("Couldn't capture. Blink again to retry", _error);

@@ -5,10 +5,14 @@ class ConstRes {
   ///------------------------ Backend urls and key ------------------------///
 
   // static const String development = 'http://10.57.204.163:4000/'; // Development
-  static const String production = 'http://fgtracker.in:3000/'; //Prod
+  // Active hostinger server IP (89.116.23.2) is used directly because fgtracker.in DNS
+  // contains an obsolete round-robin A-record (2.57.91.91) which drops packets and causes timeouts.
+  static const String production = 'http://89.116.23.2:3000/'; //Prod
+  // static const String production = 'http://fgtracker.in:3000/'; //Prod (Has dead 2.57.91.91 DNS round-robin)
   static const String aBaseUrl = '${production}api/';
   static const String aImageBaseUrl = production;
-  static String socketUrl = "http://fgtracker.in:3000"; //pro
+  static String socketUrl = "http://89.116.23.2:3000"; //pro
+  // static String socketUrl = "http://fgtracker.in:3000"; //pro
   // static const String socketUrl = "http://10.57.204.163:4000"; //dev
   static String DeepLink_Url = "https://fgtracker.in";
   static String gMapApiKey = "AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q";
@@ -26,12 +30,16 @@ class ConstRes {
 
   static BaseOptions networkOptions = BaseOptions(
     baseUrl: aBaseUrl,
+    connectTimeout: const Duration(seconds: 15),
+    receiveTimeout: const Duration(seconds: 15),
   );
 
   final Dio _dio = Dio();
   ConstRes() {
     BaseOptions options = BaseOptions(
       baseUrl: aBaseUrl,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
       // Declares support for attendance polls; without it the backend sends
       // attendance messages as plain text.
       headers: {"x-attendance-supported": "1"},

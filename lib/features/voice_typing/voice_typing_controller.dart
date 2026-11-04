@@ -13,6 +13,7 @@ import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 enum VoiceSheetState {
   listening,
   review,
@@ -31,7 +32,7 @@ class VoiceTypingController extends GetxController with WidgetsBindingObserver {
   final FocusNode focusNode;
 
   void _vtLog(String message) {
-    if (kDebugMode) debugPrint('[VT] $message');
+    if (kDebugMode) AppLog.d('[VT] $message');
   }
 
   VoiceTypingController({

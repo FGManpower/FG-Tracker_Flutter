@@ -18,6 +18,27 @@ import 'chat_list_logic.dart';
 /// route), so its sockets and listeners stay active app-wide; logout's
 /// Get.deleteAll disposes it. ChatListScreen's Get.put reuses the instance.
 class ChatListController extends GetxController with WidgetsBindingObserver {
+  static ChatListController? get instance =>
+      Get.isRegistered<ChatListController>() ? Get.find<ChatListController>() : null;
+
+  /// Finds an existing private chat model by peer user ID in either active or archived lists.
+  PrivateChatModel? findPrivateChatByUserId(dynamic userId) {
+    if (userId == null) return null;
+    final uidStr = userId.toString().trim();
+    if (uidStr.isEmpty) return null;
+
+    final inPrivate = privateChats.firstWhereOrNull((c) {
+      if (c.isGroup == true || c.chatType == "group" || c.groupId != null) return false;
+      return c.userId?.toString() == uidStr;
+    });
+    if (inPrivate != null) return inPrivate;
+
+    return archivedChats.firstWhereOrNull((c) {
+      if (c.isGroup == true || c.chatType == "group" || c.groupId != null) return false;
+      return c.userId?.toString() == uidStr;
+    });
+  }
+
   RxList<PrivateChatModel> privateChats = <PrivateChatModel>[].obs;
 
   /// chatKey -> "typing..." / "Rahul is typing..." for rows being typed in.
@@ -73,7 +94,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       if (!hasMsg) return false;
 
       final name = (chat.name ?? chat.groupName)?.trim();
-      if (name == null || name.isEmpty || name == "Unknown User") {
+      final hasIdentity = (name != null && name.isNotEmpty && name != "Unknown User") ||
+          chat.userId != null ||
+          chat.groupId != null ||
+          chat.chatId != null ||
+          chat.id != null;
+      if (!hasIdentity) {
         return false;
       }
       return true;
@@ -417,7 +443,11 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
                 chat.messageType!.trim().isNotEmpty &&
                 chat.messageType != 'text');
         final name = (chat.name ?? chat.groupName)?.trim();
-        final hasValidName = name != null && name.isNotEmpty && name != "Unknown User";
+        final hasValidName = (name != null && name.isNotEmpty && name != "Unknown User") ||
+            chat.userId != null ||
+            chat.groupId != null ||
+            chat.chatId != null ||
+            chat.id != null;
         return hasMsg && hasValidName;
       }).toList();
 
@@ -679,7 +709,11 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
                 chat.messageType!.trim().isNotEmpty &&
                 chat.messageType != 'text');
         final name = (chat.name ?? chat.groupName)?.trim();
-        final hasValidName = name != null && name.isNotEmpty && name != "Unknown User";
+        final hasValidName = (name != null && name.isNotEmpty && name != "Unknown User") ||
+            chat.userId != null ||
+            chat.groupId != null ||
+            chat.chatId != null ||
+            chat.id != null;
         return hasMsg && hasValidName;
       }).toList();
 
@@ -802,6 +836,18 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         payload['lastActivity'] = Map<String, dynamic>.from(
           payload['last_message'] as Map,
         );
+      }
+
+      if (payload['userId'] == null && payload['senderId'] != null) {
+        final sid = payload['senderId']?.toString();
+        final rid = payload['receiverId']?.toString();
+        payload['userId'] = (sid == currentUserId) ? rid : sid;
+      }
+      if (payload['chatId'] == null) {
+        payload['chatId'] = payload['conversationId'] ?? payload['chat_id'];
+      }
+      if (payload['message'] == null) {
+        payload['message'] = payload['text'] ?? payload['content'];
       }
 
       final updatedChat = PrivateChatModel.fromJson(payload);
@@ -933,7 +979,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
             chat.messageType!.trim().isNotEmpty &&
             chat.messageType != 'text');
     final name = (chat.name ?? chat.groupName)?.trim();
-    return hasMsg && name != null && name.isNotEmpty && name != "Unknown User";
+    final hasIdentity = (name != null && name.isNotEmpty && name != "Unknown User") ||
+        chat.userId != null ||
+        chat.groupId != null ||
+        chat.chatId != null ||
+        chat.id != null;
+    return hasMsg && hasIdentity;
   }
 
   /// PrivateChatModel.fromJson defaults a missing unread count to 0 and a
@@ -973,8 +1024,29 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         DateTime.now().difference(last) < const Duration(seconds: 3)) {
       return;
     }
-    _scheduleServerRefetch(delay: const Duration(milliseconds: 300));
+
+    if (last != null) {
+      _syncIncremental(last);
+    } else {
+      _scheduleServerRefetch(delay: const Duration(milliseconds: 300));
+    }
     loadArchivedChats();
+  }
+
+  Future<void> _syncIncremental(DateTime since) async {
+    try {
+      final res = await MessageRepo.syncChat(
+        sinceIsoTimestamp: since.toUtc().toIso8601String(),
+      );
+      if (res.status == true && res.data != null && res.data!.isNotEmpty) {
+        for (final item in res.data!) {
+          _handlePrivateChatUpdated(item.toJson());
+        }
+        _lastServerSync = DateTime.now();
+        return;
+      }
+    } catch (_) {}
+    _scheduleServerRefetch(delay: const Duration(milliseconds: 300));
   }
 
   @override
@@ -1165,14 +1237,25 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     final currentTime = _parseDateTime(current.timestamp ?? current.time);
     final updatedTime = _parseDateTime(updated.timestamp ?? updated.time);
 
-    final bool useUpdatedMessage =
-        updatedHasMessage && (!currentTime.isAfter(updatedTime));
+    final currentId = ChatListRules.lastMessageId(current);
+    final updatedId = ChatListRules.lastMessageId(updated);
+
+    final bool isDistinctNewId =
+        currentId != null && updatedId != null && currentId != updatedId;
+
+    final bool isDifferentText = updatedHasMessage &&
+        current.message != null &&
+        updated.message != current.message;
+
+    final bool useUpdatedMessage = updatedHasMessage &&
+        (isDistinctNewId ||
+            isDifferentText ||
+            !currentTime.isAfter(updatedTime.add(const Duration(seconds: 5))));
 
     // Same last message re-sent with a read/seen change (often a newer
     // updatedAt): take its fields but keep the time, so the row doesn't move.
-    final currentId = ChatListRules.lastMessageId(current);
     final sameMessage =
-        currentId != null && currentId == ChatListRules.lastMessageId(updated);
+        currentId != null && currentId == updatedId;
     final takeUpdatedTime = useUpdatedMessage && !sameMessage;
 
     final resolvedTime = updatedHasTime

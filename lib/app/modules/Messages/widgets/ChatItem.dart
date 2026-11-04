@@ -39,6 +39,7 @@ import 'chat_translation_widgets.dart';
 import 'MessageContextMenu.dart';
 import '../../../widgets/MessageInfoSheet.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 /// Text bubbles shrink-wrap via IntrinsicWidth. The attendance card has
 /// full-width bars and buttons (infinite intrinsic width), which crashes
 /// IntrinsicWidth, so it fills the bubble's max width instead.
@@ -2030,7 +2031,7 @@ class GroupChatBubble extends StatelessWidget {
         if (!uri.hasScheme) {
           uri = Uri.parse("https://${link.url}");
         }
-        debugPrint("OPEN URL => $uri");
+        AppLog.d("OPEN URL => $uri");
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       },
     );

@@ -5,6 +5,7 @@ import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
+import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:fgtracker/app/Data/Repositories/otp_charge_repo.dart';
 import 'package:fgtracker/app/Model/otp_charge_model.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -102,7 +103,8 @@ class Login_Controller extends GetxController {
         "countryCode": selectedDialCode.value,
         "otpResend": result.otpResend,
       });
-    } catch (e) {
+    } catch (e, stack) {
+      AppLog.e("Login error: $e", error: e, stackTrace: stack);
       Loading().dismissloading();
       CommonDialog.errorMessage(e.toString());
     }

@@ -9,6 +9,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'GroupRepo.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class TrackRepo {
   static Future<UsersWithinRadiusRes> getUsersWithinRadius({
     required dynamic userId,
@@ -43,7 +44,7 @@ class TrackRepo {
 
     // 1. Primary: query /users-within-radius
     try {
-      debugPrint(
+      AppLog.d(
         "📍 [TrackRepo] GET ${Urls.usersWithinRadius} - params: $queryParams",
       );
 
@@ -52,11 +53,11 @@ class TrackRepo {
         data: queryParams,
       );
 
-      debugPrint(
+      AppLog.d(
         "📍 [TrackRepo] Response from /users-within-radius: $response",
       );
     } catch (e) {
-      debugPrint(
+      AppLog.d(
         "⚠️ /users-within-radius failed: $e, trying fallback",
       );
     }
@@ -96,7 +97,7 @@ class TrackRepo {
 
       return UsersWithinRadiusRes.fromJson({});
     } catch (parseErr) {
-      debugPrint(
+      AppLog.d(
         "❌ [TrackRepo] JSON parse error in getUsersWithinRadius: $parseErr",
       );
 
@@ -112,7 +113,7 @@ class TrackRepo {
     int groupId,
   ) async {
     try {
-      debugPrint(
+      AppLog.d(
         "📍 [TrackRepo] GET /getGrouplocationsData?groupId=$groupId",
       );
 
@@ -120,7 +121,7 @@ class TrackRepo {
         "/getGrouplocationsData?groupId=$groupId",
       );
 
-      debugPrint(
+      AppLog.d(
         "📍 [TrackRepo] Response from /getGrouplocationsData: $response",
       );
 
@@ -132,13 +133,13 @@ class TrackRepo {
         return parsed;
       }
     } catch (e) {
-      debugPrint(
+      AppLog.d(
         "❌ [TrackRepo] Error in getUserLocationData: $e",
       );
     }
 
     try {
-      debugPrint(
+      AppLog.d(
         "🔄 [TrackRepo] Falling back to /getMembers?groupId=$groupId",
       );
 
@@ -170,7 +171,7 @@ class TrackRepo {
         );
       }
     } catch (fallbackErr) {
-      debugPrint(
+      AppLog.d(
         "❌ [TrackRepo] Fallback error: $fallbackErr",
       );
     }
@@ -228,7 +229,7 @@ class TrackRepo {
       );
     } catch (e) {
       log("❌ [TrackRepo] getGroupMember Error: $e");
-      debugPrint("❌ [TrackRepo] getGroupMember Error: $e");
+      AppLog.d("❌ [TrackRepo] getGroupMember Error: $e");
 
       return GroupMemberModel(
         status: false,

@@ -65,7 +65,6 @@ class WalkieNotificationServices {
 
   /// ✅ ACCEPT
   void acceptWalkieCall(Map<String, dynamic> callData) {
-    print("AcceptCall=========>");
     final offer = jsonDecode(
       utf8.decode(base64Decode(callData['sdpOfferCompressed'])),
     );
@@ -74,7 +73,6 @@ class WalkieNotificationServices {
 
   /// ❌ REJECT
   void rejectWalkieCall(Map<String, dynamic> callData) {
-    print("RejectCall=========>");
 
   }
 }

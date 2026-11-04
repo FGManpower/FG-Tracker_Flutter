@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class PlaceSuggestion {
   final String description;
   final double latitude;
@@ -120,7 +121,7 @@ class SafeZoneController extends GetxController with GetSingleTickerProviderStat
         );
       }).toList();
     } catch (e) {
-      debugPrint("Error fetching suggestions: $e");
+      AppLog.d("Error fetching suggestions: $e");
     } finally {
       isSearching.value = false;
     }

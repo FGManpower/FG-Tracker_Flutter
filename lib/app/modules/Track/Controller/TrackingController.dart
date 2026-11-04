@@ -31,6 +31,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../Model/MemberDataRes.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class TrackController extends GetxController {
   RxString selectedRadius = '2'.obs;
   TextEditingController customRadiusController = TextEditingController();
@@ -205,7 +206,7 @@ class TrackController extends GetxController {
         _joinGroupSocket(selectedGroupId.value);
       }
     } catch (e) {
-      debugPrint("❌ SocketService init error: $e");
+      AppLog.d("❌ SocketService init error: $e");
     }
   }
 
@@ -232,7 +233,7 @@ class TrackController extends GetxController {
         return;
       }
     } catch (e) {
-      debugPrint("Could not fetch total members count from API: $e");
+      AppLog.d("Could not fetch total members count from API: $e");
     }
 
     try {
@@ -244,7 +245,7 @@ class TrackController extends GetxController {
         return;
       }
     } catch (e) {
-      debugPrint("Could not fetch total members from getAllUserData: $e");
+      AppLog.d("Could not fetch total members from getAllUserData: $e");
     }
 
     if (selectedGroupId.value.isNotEmpty) {
@@ -446,7 +447,7 @@ class TrackController extends GetxController {
 
   void _listenToLocationSocketUpdates() {
     SocketService.instance.onSendLocation((item) {
-      debugPrint("📡 Received send-location via SocketService: $item");
+      AppLog.d("📡 Received send-location via SocketService: $item");
       if (item is Map) {
         final model =
             LiveLocationSocketModel.fromJson(Map<String, dynamic>.from(item));
@@ -455,7 +456,7 @@ class TrackController extends GetxController {
     });
 
     SocketService.instance.onGroupLocationUpdate((item) {
-      debugPrint("📡 Received group-location-update: $item");
+      AppLog.d("📡 Received group-location-update: $item");
       if (item is Map) {
         final userId = item['userId'];
         final lat = double.tryParse(item['lat']?.toString() ??
@@ -736,7 +737,7 @@ class TrackController extends GetxController {
           }
         }
       } catch (e) {
-        debugPrint("Error fetching member data: $e");
+        AppLog.d("Error fetching member data: $e");
       }
 
       // 2. Fetch real-time GPS locations for the group
@@ -752,7 +753,7 @@ class TrackController extends GetxController {
           }
         }
       } catch (e) {
-        debugPrint("Error fetching group locations: $e");
+        AppLog.d("Error fetching group locations: $e");
       }
 
       // 3. Union of all member user IDs — primary sources
@@ -782,7 +783,7 @@ class TrackController extends GetxController {
       }
 
       if (allMemberUserIds.isEmpty) {
-        debugPrint("⚠️ No members found for group $groupId from any source");
+        AppLog.d("⚠️ No members found for group $groupId from any source");
         return;
       }
 
@@ -1105,7 +1106,7 @@ class TrackController extends GetxController {
         });
       }
     } catch (e) {
-      debugPrint("Error in fetchGroupLocationData: $e");
+      AppLog.d("Error in fetchGroupLocationData: $e");
     } finally {
       isLoading.value = false;
       isGroupMembersLoading.value = false;
@@ -1195,7 +1196,7 @@ class TrackController extends GetxController {
         }
       }
     } catch (e) {
-      debugPrint("❌ Native geocoding error for ($lat, $lng): $e");
+      AppLog.d("❌ Native geocoding error for ($lat, $lng): $e");
     }
 
     // 2. Fallback: Google Geocoding API if native geocoding is empty or unavailable
@@ -1246,7 +1247,7 @@ class TrackController extends GetxController {
           }
         }
       } catch (apiErr) {
-        debugPrint("❌ Google geocode fallback error: $apiErr");
+        AppLog.d("❌ Google geocode fallback error: $apiErr");
       }
     }
 
@@ -1346,7 +1347,7 @@ class TrackController extends GetxController {
             if (locs.isNotEmpty) {
               u.latitude = locs.first.latitude;
               u.longitude = locs.first.longitude;
-              debugPrint(
+              AppLog.d(
                   "📍 Geocoded '${u.location}' to coords: (${u.latitude}, ${u.longitude})");
               return;
             }
@@ -1366,7 +1367,7 @@ class TrackController extends GetxController {
               final loc = res.data['results'][0]['geometry']['location'];
               u.latitude = (loc['lat'] as num).toDouble();
               u.longitude = (loc['lng'] as num).toDouble();
-              debugPrint(
+              AppLog.d(
                   "📍 Google Geocoded '${u.location}' to coords: (${u.latitude}, ${u.longitude})");
             }
           } catch (_) {}
@@ -1596,7 +1597,7 @@ class TrackController extends GetxController {
           totalMembersCount.value = result.totalMembers!;
         }
 
-        debugPrint(
+        AppLog.d(
             "📍 Loaded ${result.data!.length} users strictly from /users-within-radius (radius: $radiusParam)");
 
         // Preserve already known battery, exact coordinates or addresses
@@ -1640,7 +1641,7 @@ class TrackController extends GetxController {
         radiusUsers.assignAll(validData);
         await _resolveAllMembersAddresses();
       } else {
-        debugPrint("⚠️ /users-within-radius returned: ${result.message}");
+        AppLog.d("⚠️ /users-within-radius returned: ${result.message}");
         if (result.message != null && result.message!.isNotEmpty) {
           responseError.value = result.message!;
         }
@@ -1653,7 +1654,7 @@ class TrackController extends GetxController {
     } on SocketException {
       responseError.value =
           "No internet connection. Please check your network.";
-      debugPrint("❌ SocketException in getUsersWithinRadius");
+      AppLog.d("❌ SocketException in getUsersWithinRadius");
       _refreshMembersAndMap();
     } on DioException catch (dioErr) {
       if (dioErr.type == DioExceptionType.connectionError ||
@@ -1666,7 +1667,7 @@ class TrackController extends GetxController {
       } else {
         responseError.value = "Unable to connect to server. Please try again.";
       }
-      debugPrint("❌ DioException in getUsersWithinRadius: $dioErr");
+      AppLog.d("❌ DioException in getUsersWithinRadius: $dioErr");
       _refreshMembersAndMap();
     } catch (e) {
       final str = e.toString().toLowerCase();
@@ -1680,7 +1681,7 @@ class TrackController extends GetxController {
         responseError.value =
             "Unable to load nearby members. Please try again.";
       }
-      debugPrint("❌ Error in getUsersWithinRadius: $e");
+      AppLog.d("❌ Error in getUsersWithinRadius: $e");
       _refreshMembersAndMap();
     } finally {
       isLoading.value = false;
@@ -2575,9 +2576,6 @@ class TrackController extends GetxController {
   }
 
   void showMemberProfileFromMemberModel(MemberModel m) {
-    print('🔥 MEMBER PROFILE METHOD CALLED');
-    print('🔥 MEMBER ID => ${m.userId}');
-    print('🔥 MEMBER CHAT ID => ${m.chatId}');
     UsersWithinRadiusData? matching;
     for (var u in radiusUsers) {
       if (u.userId?.toString() == m.userId?.toString()) {

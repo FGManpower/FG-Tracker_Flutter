@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class CameraControllerX extends GetxController {
   CameraController? cameraController;
 
@@ -59,7 +60,7 @@ class CameraControllerX extends GetxController {
 
       await _setupCamera();
     } catch (e) {
-      debugPrint("Camera init error: $e");
+      AppLog.d("Camera init error: $e");
       if (cameraError.value.isEmpty) {
         cameraError.value = "Couldn't start the camera.";
       }
@@ -96,7 +97,7 @@ class CameraControllerX extends GetxController {
       try {
         await oldController.dispose();
       } catch (e) {
-        debugPrint("Old camera dispose error: $e");
+        AppLog.d("Old camera dispose error: $e");
       }
     }
 
@@ -130,7 +131,7 @@ class CameraControllerX extends GetxController {
 
       update();
     } catch (e) {
-      debugPrint("Camera setup error: $e");
+      AppLog.d("Camera setup error: $e");
 
       try {
         await newController.dispose();
@@ -177,7 +178,7 @@ class CameraControllerX extends GetxController {
 
       await _setupCamera();
     } catch (e) {
-      debugPrint("Switch camera error: $e");
+      AppLog.d("Switch camera error: $e");
     } finally {
       _isSwitchingCamera = false;
     }
@@ -201,7 +202,7 @@ class CameraControllerX extends GetxController {
 
       isFlashOn.value = newFlashState;
     } catch (e) {
-      debugPrint("Flash error: $e");
+      AppLog.d("Flash error: $e");
     }
   }
 
@@ -218,7 +219,7 @@ class CameraControllerX extends GetxController {
       final XFile file = await controller.takePicture();
       return file;
     } catch (e) {
-      debugPrint("Take picture error: $e");
+      AppLog.d("Take picture error: $e");
       Get.snackbar("Error", "Failed to take photo");
       return null;
     }
@@ -251,7 +252,7 @@ class CameraControllerX extends GetxController {
         return null;
       }
     } catch (e) {
-      debugPrint("Recording error: $e");
+      AppLog.d("Recording error: $e");
 
       _timer?.cancel();
       _timer = null;

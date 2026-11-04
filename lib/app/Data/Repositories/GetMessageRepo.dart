@@ -17,6 +17,7 @@ import '../../Model/GroupChatListModel.dart';
 import '../../Model/group_profile_details_model.dart';
 import '../../Model/profile_details_model.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class MessageRepo {
   static Future<GetMessage> MessageHistory({
     required String recieverId,
@@ -39,6 +40,32 @@ class MessageRepo {
     );
 
     return GetMessage.fromJson(response);
+  }
+
+  /// Direct history fetch by peer user ID without needing chatId in advance.
+  /// GET /api/v1/private-chat/peer/:peerUserId/messages
+  static Future<GetMessage> privateChatHistoryByPeer({
+    required String peerUserId,
+    int page = 1,
+    int limit = 15,
+  }) async {
+    final response = await HttpUtil().get(
+      "/private-chat/peer/$peerUserId/messages?page=$page&limit=$limit",
+    );
+
+    return GetMessage.fromJson(response);
+  }
+
+  /// Incremental recovery of modified conversations since timestamp.
+  /// GET /api/v1/chat/sync?since=<isoTimestamp>
+  static Future<PrivateChatResponse> syncChat({
+    required String sinceIsoTimestamp,
+  }) async {
+    final response = await HttpUtil().get(
+      "/chat/sync?since=${Uri.encodeComponent(sinceIsoTimestamp)}",
+    );
+
+    return PrivateChatResponse.fromJson(response);
   }
 
   static Future<GetMessage> groupMessageHistory({
@@ -227,14 +254,14 @@ class MessageRepo {
       if (caption != null && caption.isNotEmpty) "caption": caption,
     };
 
-    debugPrint("FORWARD REQUEST: $data");
+    AppLog.d("FORWARD REQUEST: $data");
 
     final response = await HttpUtil().Authpost(
       "/forward/message",
       data: data,
     );
 
-    debugPrint("FORWARD RESPONSE: $response");
+    AppLog.d("FORWARD RESPONSE: $response");
 
     return ForwardMessageResponse.fromJson(response);
   }
@@ -287,7 +314,7 @@ class MessageRepo {
       "/chat/profile-details?type=group&groupId=$groupId",
     );
     // Debug: check whether the API sends the group description
-    debugPrint("[GroupProfile] response => $response");
+    AppLog.d("[GroupProfile] response => $response");
     return GroupProfileDetailsModel.fromJson(response);
   }
 

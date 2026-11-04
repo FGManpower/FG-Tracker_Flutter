@@ -6,6 +6,7 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 /// Packages & Pricing: one card per module, all from GET /api/packages.
 /// Walkie-Talkie opens its existing plan screen; the rest are "Coming soon".
 class PackageListController extends GetxController {
@@ -41,7 +42,7 @@ class PackageListController extends GetxController {
       packages.assignAll(list);
     } catch (e) {
       final message = _friendly(e);
-      if (kDebugMode) debugPrint('[PackageList] fetch failed: $e');
+      if (kDebugMode) AppLog.d('[PackageList] fetch failed: $e');
       if (packages.isEmpty) {
         errorMessage.value = message;
       } else {

@@ -89,11 +89,6 @@ class NotificationModel {
       }
 
     } catch (e) {
-
-      print(
-        "NotificationModel Parse Error => $e",
-      );
-
       data = null;
     }
   }

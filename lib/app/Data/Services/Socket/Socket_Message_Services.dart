@@ -13,10 +13,11 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:get/get.dart';
 import 'package:socket_io_common/src/util/event_emitter.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
   if (kDebugMode) {
     developer.log(message, error: error, stackTrace: stackTrace, name: name ?? 'SocketMessageService');
-    debugPrint("[${name ?? 'Socket'}] $message");
+    AppLog.d("[${name ?? 'Socket'}] $message");
   }
 }
 
@@ -401,7 +402,6 @@ class SocketMessageService extends GetxService {
       if (replySender != null) "replySender": replySender,
     };
 
-    print("GROUP SEND EVENT => $payload");
     socket.emit("send_group_message", payload);
   }
 
@@ -882,18 +882,22 @@ class SocketMessageService extends GetxService {
     String? replyMessage,
     String? replyType,
     String? replySender,
+    String? clientMessageId,
   }) {
     if (!isPrivateChatSocketConnected) {
       return;
     }
 
     final senderId = Global.storageServices.get(PrefConst.userId).toString();
+    final effectiveClientMsgId =
+        clientMessageId ?? 'c_${DateTime.now().microsecondsSinceEpoch}';
 
     final payload = <String, dynamic>{
       "senderId": senderId,
       "receiverId": receiverId,
       "messageType": messageType,
       "content": content,
+      "clientMessageId": effectiveClientMsgId,
       if (images != null && images.isNotEmpty) "images": images,
       if (videos != null && videos.isNotEmpty) "videos": videos,
       if (caption != null) "caption": caption,
@@ -1185,12 +1189,16 @@ class SocketMessageService extends GetxService {
     _privateChatListSocket?.onConnect((_) {
       _privateChatListSocket?.off("chat_list_updated");
       _privateChatListSocket?.off("conversation_updated");
+      _privateChatListSocket?.off("receive_message");
 
       if (_privateChatListUpdatedCallback != null) {
         _privateChatListSocket?.on("chat_list_updated", (data) {
           _privateChatListUpdatedCallback?.call(data);
         });
         _privateChatListSocket?.on("conversation_updated", (data) {
+          _privateChatListUpdatedCallback?.call(data);
+        });
+        _privateChatListSocket?.on("receive_message", (data) {
           _privateChatListUpdatedCallback?.call(data);
         });
       }
@@ -1265,10 +1273,14 @@ class SocketMessageService extends GetxService {
     if (s == null || _privateChatListUpdatedCallback == null) return;
     s.off("chat_list_updated");
     s.off("conversation_updated");
+    s.off("receive_message");
     s.on("chat_list_updated", (data) {
       _privateChatListUpdatedCallback?.call(data);
     });
     s.on("conversation_updated", (data) {
+      _privateChatListUpdatedCallback?.call(data);
+    });
+    s.on("receive_message", (data) {
       _privateChatListUpdatedCallback?.call(data);
     });
   }
@@ -1519,19 +1531,19 @@ class SocketMessageService extends GetxService {
       if (otherUserId != null) "otherUserId": otherUserId,
     };
 
-    debugPrint("========== SOCKET DELETE EMIT ==========");
-    debugPrint("EVENT: delete_message");
-    debugPrint("PAYLOAD: $payload");
-    debugPrint("GROUP SOCKET CONNECTED: ${_socket?.connected}");
-    debugPrint("PRIVATE SOCKET CONNECTED: ${_privateChatSocket?.connected}");
+    AppLog.d("========== SOCKET DELETE EMIT ==========");
+    AppLog.d("EVENT: delete_message");
+    AppLog.d("PAYLOAD: $payload");
+    AppLog.d("GROUP SOCKET CONNECTED: ${_socket?.connected}");
+    AppLog.d("PRIVATE SOCKET CONNECTED: ${_privateChatSocket?.connected}");
 
     if (otherUserId != null && isPrivateChatSocketConnected) {
-      debugPrint("EMITTING ON PRIVATE CHAT SOCKET");
+      AppLog.d("EMITTING ON PRIVATE CHAT SOCKET");
       _privateChatSocket!.emit("delete_message", payload);
       return;
     }
 
-    debugPrint("EMITTING ON CHAT SOCKET");
+    AppLog.d("EMITTING ON CHAT SOCKET");
     _socket?.emit("delete_message", payload);
   }
 
@@ -1540,7 +1552,7 @@ class SocketMessageService extends GetxService {
     ChatSocketScope? scope,
   }) {
     _listenScoped("message_deleted", scope, (data) {
-      debugPrint("message_deleted => $data");
+      AppLog.d("message_deleted => $data");
       callback(data);
     });
   }

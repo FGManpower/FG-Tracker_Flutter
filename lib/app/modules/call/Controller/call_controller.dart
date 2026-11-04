@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide navigator;
 import 'contact_controller.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class CallController extends GetxController {
   static CallController get instance => Get.isRegistered<CallController>()
       ? Get.find<CallController>()
@@ -405,7 +406,7 @@ class CallController extends GetxController {
         page: pagination.value.toString(),
       );
 
-      debugPrint(
+      AppLog.d(
         "⏱️ Recent Calls API Time: ${stopwatch.elapsedMilliseconds} ms",
       );
 

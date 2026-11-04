@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../gen/fonts.gen.dart';
 import 'About.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class AboutUs extends StatelessWidget {
   const AboutUs({super.key});
 
@@ -38,7 +39,7 @@ class AboutUs extends StatelessWidget {
                     Uri.parse('https://www.fgmanpower.co.in/contact/');
                 if (!await launchUrl(url,
                     mode: LaunchMode.externalApplication)) {
-                  debugPrint('Could not launch $url');
+                  AppLog.d('Could not launch $url');
                 }
               } catch (e) {
                 log(e.toString());
@@ -54,7 +55,7 @@ class AboutUs extends StatelessWidget {
                     'https://www.fgmanpower.co.in/privacy-policy/');
                 if (!await launchUrl(url,
                     mode: LaunchMode.externalApplication)) {
-                  debugPrint('Could not launch $url');
+                  AppLog.d('Could not launch $url');
                 }
               } catch (e) {
                 log(e.toString());
@@ -70,7 +71,7 @@ class AboutUs extends StatelessWidget {
                     'https://www.fgmanpower.co.in/terms-conditions/');
                 if (!await launchUrl(url,
                     mode: LaunchMode.externalApplication)) {
-                  debugPrint('Could not launch $url');
+                  AppLog.d('Could not launch $url');
                 }
               } catch (e) {
                 log(e.toString());

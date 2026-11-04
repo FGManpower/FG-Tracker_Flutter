@@ -148,8 +148,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
     callId = args["callId"] ?? args["sessionId"];
 
-    print("callIdfjldasfjl:${args["callId"]},sessionId:${args["sessionId"]}");
-
     isVideoCall.value = is_video;
 
     _listenForCallEvents();
@@ -220,7 +218,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           "endCall",
          param,
         );
-        print("=======CallEndedFromSide:${param}");
       }
 
       await _disposePeerResources();

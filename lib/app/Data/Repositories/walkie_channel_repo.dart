@@ -6,13 +6,14 @@ import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Model/walkie_channel_model.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class WalkieChannelRepo {
   static final HttpUtil _httpUtil = HttpUtil();
 
   /// Fetches dedicated walkie channels with backward-compatible fallback to getGroupData
   static Future<WalkieChannelsResponse> getWalkieChannels() async {
     try {
-      debugPrint("📡 [WalkieChannelRepo] Fetching walkie channels: ${Urls.walkieChannels}");
+      AppLog.d("📡 [WalkieChannelRepo] Fetching walkie channels: ${Urls.walkieChannels}");
       final response = await _httpUtil.get(Urls.walkieChannels);
 
       if (response != null && response is Map<String, dynamic>) {
@@ -23,7 +24,7 @@ class WalkieChannelRepo {
       }
       throw Exception("Unexpected format from walkie/channels");
     } catch (e) {
-      debugPrint("⚠️ [WalkieChannelRepo] walkie/channels failed or unavailable ($e). Falling back to get-all-group.");
+      AppLog.d("⚠️ [WalkieChannelRepo] walkie/channels failed or unavailable ($e). Falling back to get-all-group.");
       try {
         final GroupRes groupRes = await GroupRepo.getGroupData();
         final rawGroups = groupRes.data?.groupData ?? [];
@@ -67,7 +68,7 @@ class WalkieChannelRepo {
   }) async {
     try {
       final url = Urls.walkieChannelNotifications(groupId);
-      debugPrint("📡 [WalkieChannelRepo] PATCH $url -> enabled=$enabled");
+      AppLog.d("📡 [WalkieChannelRepo] PATCH $url -> enabled=$enabled");
 
       final response = await _httpUtil.Authpatch(
         url,
@@ -83,7 +84,7 @@ class WalkieChannelRepo {
       }
       return true;
     } catch (e) {
-      debugPrint("❌ [WalkieChannelRepo] updateNotificationPreference error: $e");
+      AppLog.d("❌ [WalkieChannelRepo] updateNotificationPreference error: $e");
       rethrow;
     }
   }
@@ -92,7 +93,7 @@ class WalkieChannelRepo {
   static Future<bool> selectActiveChannel({required int groupId}) async {
     try {
       final url = Urls.walkieActiveChannel;
-      debugPrint("📡 [WalkieChannelRepo] PUT $url -> groupId=$groupId");
+      AppLog.d("📡 [WalkieChannelRepo] PUT $url -> groupId=$groupId");
 
       final response = await _httpUtil.Authput(
         url,
@@ -105,7 +106,7 @@ class WalkieChannelRepo {
       }
       return true;
     } catch (e) {
-      debugPrint("❌ [WalkieChannelRepo] selectActiveChannel error: $e");
+      AppLog.d("❌ [WalkieChannelRepo] selectActiveChannel error: $e");
       rethrow;
     }
   }
@@ -114,7 +115,7 @@ class WalkieChannelRepo {
   static Future<bool> clearActiveChannel() async {
     try {
       final url = Urls.walkieActiveChannel;
-      debugPrint("📡 [WalkieChannelRepo] DELETE $url");
+      AppLog.d("📡 [WalkieChannelRepo] DELETE $url");
 
       final response = await _httpUtil.Authdelete(url);
       if (response is Map) {
@@ -123,7 +124,7 @@ class WalkieChannelRepo {
       }
       return true;
     } catch (e) {
-      debugPrint("❌ [WalkieChannelRepo] clearActiveChannel error: $e");
+      AppLog.d("❌ [WalkieChannelRepo] clearActiveChannel error: $e");
       return false;
     }
   }

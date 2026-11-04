@@ -34,6 +34,7 @@ import '../../Attendance/controller/attendance_controller.dart';
 import 'chat_list_controller.dart';
 import 'chat_screen_logic.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class GroupMessageController extends GetxController with WidgetsBindingObserver {
   final socketService = SocketMessageService.instance;
 
@@ -171,7 +172,6 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     groupName.value = arguments?["groupName"]?.toString() ?? "";
     groupDesc.value = arguments?["groupDesc"]?.toString() ?? "";
     groupImage = arguments?["groupImage"] ?? arguments?["groupProfile"] ?? "";
-    print("isCreator = ${isCreator.value}");
 
     WidgetsBinding.instance.addObserver(this);
     initializeGroupChat();
@@ -217,7 +217,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     socketService.listenSeenUpdate(
       groupId: groupId,
       callback: (data) {
-        debugPrint("GROUP SEEN UPDATE => $data");
+        AppLog.d("GROUP SEEN UPDATE => $data");
         if (data is Map) {
           if (_isOtherGroup(data["groupId"] ?? data["group_id"])) return;
           final userId = data["userId"]?.toString();
@@ -238,7 +238,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
     socketService.receiveGroupMessage(
       callback: (message) {
-        debugPrint("GROUP RECEIVE EVENT => $message");
+        AppLog.d("GROUP RECEIVE EVENT => $message");
 
         if (message is! Map) return;
 
@@ -254,7 +254,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
         final incomingMessage =
             MessageData.fromJson(Map<String, dynamic>.from(message));
-        debugPrint("RECEIVED MESSAGE ID => ${incomingMessage.id}");
+        AppLog.d("RECEIVED MESSAGE ID => ${incomingMessage.id}");
 
         final incomingId = incomingMessage.id;
 
@@ -281,13 +281,13 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             existing.thumbnail = incomingMessage.thumbnail;
             updateMessageStream();
           }
-          debugPrint("DUPLICATE MESSAGE IGNORED => $incomingId");
+          AppLog.d("DUPLICATE MESSAGE IGNORED => $incomingId");
           return;
         }
 
         final eventGroupId = message["groupId"] ?? message["group_id"];
         if (eventGroupId != null && eventGroupId.toString() != groupId.toString()) {
-          debugPrint("GROUP MESSAGE IGNORED => DIFFERENT GROUP $eventGroupId vs $groupId");
+          AppLog.d("GROUP MESSAGE IGNORED => DIFFERENT GROUP $eventGroupId vs $groupId");
           return;
         }
 
@@ -352,7 +352,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     socketService.listenMessageDeleted(
       scope: ChatSocketScope.group,
       callback: (data) {
-        debugPrint("RAW DELETE EVENT: $data");
+        AppLog.d("RAW DELETE EVENT: $data");
 
         if (data is! Map) return;
 
@@ -374,7 +374,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
         final index = _messages.indexWhere((m) => m.id == messageId);
 
-        debugPrint(
+        AppLog.d(
           "DELETE TYPE => $deleteType | INDEX => $index | MSG ID => $messageId",
         );
 
@@ -430,8 +430,6 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     socketService.listenUnpinMessage(
       scope: ChatSocketScope.group,
       callback: (data) {
-        print("📌 GROUP MESSAGE UNPINNED =====> $data");
-
         if (data["chatType"] != "group") return;
 
         final dataGroupId = int.tryParse(data["groupId"].toString());
@@ -512,7 +510,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
           groupTypingUsers[uid] = finalName;
           _updateGroupTypingText();
-          debugPrint("[TYPING] Group typing active: ${groupTypingText.value}");
+          AppLog.d("[TYPING] Group typing active: ${groupTypingText.value}");
 
           _groupTypingUserTimers[uid]?.cancel();
           _groupTypingUserTimers[uid] =
@@ -521,11 +519,11 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
               groupTypingUsers.remove(uid);
               _groupTypingUserTimers.remove(uid);
               _updateGroupTypingText();
-              debugPrint("[TYPING] Group typing timer expired for $uid: ${groupTypingText.value}");
+              AppLog.d("[TYPING] Group typing timer expired for $uid: ${groupTypingText.value}");
             }
           });
         } catch (e) {
-          debugPrint("Error in onGroupTyping: $e");
+          AppLog.d("Error in onGroupTyping: $e");
         }
       },
       onStopTyping: (data) {
@@ -561,7 +559,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             _groupTypingUserTimers.remove(uid);
             groupTypingUsers.remove(uid);
             _updateGroupTypingText();
-            debugPrint("[TYPING] Group typing stopped for $uid: ${groupTypingText.value}");
+            AppLog.d("[TYPING] Group typing stopped for $uid: ${groupTypingText.value}");
           }
         } catch (_) {}
       },
@@ -677,7 +675,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         videoDurations.refresh();
       }
     } catch (e) {
-      debugPrint("Video preview error: $e");
+      AppLog.d("Video preview error: $e");
     }
   }
 
@@ -1214,13 +1212,13 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     final userId =
     Global.storageServices.get(PrefConst.userId).toString();
 
-    debugPrint("========== DELETE MESSAGE START ==========");
-    debugPrint("DELETE messageId: $messageId");
-    debugPrint("DELETE userId: $userId");
-    debugPrint("DELETE deleteType: $deleteType");
-    debugPrint("DELETE groupId: $groupId");
+    AppLog.d("========== DELETE MESSAGE START ==========");
+    AppLog.d("DELETE messageId: $messageId");
+    AppLog.d("DELETE userId: $userId");
+    AppLog.d("DELETE deleteType: $deleteType");
+    AppLog.d("DELETE groupId: $groupId");
 
-    debugPrint(
+    AppLog.d(
       "DELETE SOCKET CONNECTED: ${socketService.isSocketConnected}",
     );
 
@@ -1230,8 +1228,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       deleteType: deleteType,
     );
 
-    debugPrint("DELETE MESSAGE EMIT CALLED");
-    debugPrint("==========================================");
+    AppLog.d("DELETE MESSAGE EMIT CALLED");
+    AppLog.d("==========================================");
   }
 
   Future<void> _resolveForwardedGroupMessageContent(MessageData target) async {
@@ -1265,7 +1263,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         }
       }
     } catch (e) {
-      debugPrint("Error resolving forwarded group message content: $e");
+      AppLog.d("Error resolving forwarded group message content: $e");
     }
   }
 
@@ -1345,19 +1343,11 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   Future<void> retryLoadHistory() => getGroupMessages();
 
   Future getGroupMembers() async {
-    print(
-      "MY USER ID => ${Global.storageServices.get(PrefConst.userId)}",
-    );
-
     try {
       isLoadingMembers.value = true;
 
       var result = await MessageRepo.getGroupMembers(
         groupId: groupId,
-      );
-
-      print(
-        "GROUP MEMBERS => ${result.locations?.length}",
       );
 
       if (result.status == true) {
@@ -1376,9 +1366,6 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             break;
           }
         }
-
-        print("Current User ID => $currentUserId");
-        print("Is Creator => ${isCreator.value}");
       }
     } catch (e) {
       log(
@@ -1492,7 +1479,6 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     required TextEditingController textController,
   }) {
     messageText.value = textController.text;
-    print("==========MessageText${messageText.value}");
     handleMentionDetection(textController: textController);
   }
 

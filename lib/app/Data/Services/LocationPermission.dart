@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class LocationPermissions {
 
   bool _isRequestingPermission = false;
@@ -13,7 +14,7 @@ class LocationPermissions {
   Future<bool> handleLocationPermission() async {
 
     if (_isRequestingPermission) {
-      debugPrint("Location permission request already in progress.");
+      AppLog.d("Location permission request already in progress.");
       return false;
     }
 
@@ -61,7 +62,7 @@ class LocationPermissions {
 
     } catch (e) {
 
-      debugPrint(
+      AppLog.d(
         "Error while requesting location permission: $e",
       );
 

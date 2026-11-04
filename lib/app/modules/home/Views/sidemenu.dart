@@ -31,6 +31,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class Sidemenu extends StatelessWidget {
   final controller = Get.put(HomeController());
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -463,7 +464,7 @@ class Sidemenu extends StatelessWidget {
           //           Uri.parse('https://www.fgmanpower.co.in/privacy-policy/');
           //       if (!await launchUrl(url,
           //           mode: LaunchMode.externalApplication)) {
-          //         debugPrint('Could not launch $url');
+          //         AppLog.d('Could not launch $url');
           //       }
           //     } catch (e) {
           //       log(e.toString());
@@ -673,7 +674,7 @@ class Sidemenu extends StatelessWidget {
         try {
           final Uri uri = Uri.parse(url);
           if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-            debugPrint('Could not launch $url');
+            AppLog.d('Could not launch $url');
           }
         } catch (e) {
           log(e.toString());

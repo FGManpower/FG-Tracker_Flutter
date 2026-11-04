@@ -14,6 +14,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'services/voice_to_text_audio_recorder.dart';
 import 'voice_languages.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 enum VoiceInputMode {
   idle,
   voiceToTextListening,
@@ -101,7 +102,7 @@ class VoiceInputController extends GetxController {
       }
       return available;
     } catch (e) {
-      debugPrint('[VoiceInput] initSpeechEngine error: $e');
+      AppLog.d('[VoiceInput] initSpeechEngine error: $e');
       _isSpeechInitialized = false;
       return false;
     }
@@ -163,7 +164,7 @@ class VoiceInputController extends GetxController {
         final am = AndroidAudioManager();
         await am.setMode(AndroidAudioHardwareMode.normal);
       } catch (e) {
-        debugPrint('[VoiceInput] Audio mode reset: $e');
+        AppLog.d('[VoiceInput] Audio mode reset: $e');
       }
     }
 
@@ -221,7 +222,7 @@ class VoiceInputController extends GetxController {
         ),
       );
     } catch (e) {
-      debugPrint('[VoiceInput] listen error: $e');
+      AppLog.d('[VoiceInput] listen error: $e');
     }
   }
 
@@ -318,7 +319,7 @@ class VoiceInputController extends GetxController {
   }
 
   void _handleSpeechError(SpeechRecognitionError error) {
-    debugPrint('[VoiceInput] STT error: ${error.errorMsg}');
+    AppLog.d('[VoiceInput] STT error: ${error.errorMsg}');
     if (error.errorMsg.contains('error_speech_timeout') || error.errorMsg.contains('error_no_match')) {
       if (recognizedWords.value.trim().isEmpty) {
         didntCatchThat.value = true;
@@ -365,7 +366,7 @@ class VoiceInputController extends GetxController {
           }
         }
       } catch (e) {
-        debugPrint('[VoiceInput] VTT audio generation error: $e');
+        AppLog.d('[VoiceInput] VTT audio generation error: $e');
       }
     }
 
@@ -444,7 +445,7 @@ class VoiceInputController extends GetxController {
         ));
         await s.setActive(true);
       } catch (e) {
-        if (kDebugMode) debugPrint('[VM] iOS record session error: $e');
+        if (kDebugMode) AppLog.d('[VM] iOS record session error: $e');
       }
     }
 
@@ -551,9 +552,9 @@ class VoiceInputController extends GetxController {
         }
       });
     } catch (e) {
-      debugPrint('[VoiceInput] player setup error: $e');
+      AppLog.d('[VoiceInput] player setup error: $e');
       if (kDebugMode && Platform.isIOS) {
-        debugPrint('[VM] review load failed: ${e is PlayerException ? 'code=${e.code} message=${e.message}' : e}');
+        AppLog.d('[VM] review load failed: ${e is PlayerException ? 'code=${e.code} message=${e.message}' : e}');
       }
     }
   }
@@ -568,7 +569,7 @@ class VoiceInputController extends GetxController {
       ));
       await s.setActive(true);
     } catch (e) {
-      if (kDebugMode) debugPrint('[VM] iOS playback session error: $e');
+      if (kDebugMode) AppLog.d('[VM] iOS playback session error: $e');
     }
   }
 
@@ -577,7 +578,7 @@ class VoiceInputController extends GetxController {
     final c = (await AudioSession.instance).configuration;
     final f = path == null ? null : File(path);
     final exists = f?.existsSync() ?? false;
-    debugPrint('[VM] $where cat=${c?.avAudioSessionCategory} '
+    AppLog.d('[VM] $where cat=${c?.avAudioSessionCategory} '
         'mode=${c?.avAudioSessionMode} opts=${c?.avAudioSessionCategoryOptions?.value}'
         '${f == null ? '' : ' path=$path exists=$exists bytes=${exists ? f.lengthSync() : 0}'}');
   }
@@ -597,7 +598,7 @@ class VoiceInputController extends GetxController {
           unawaited(_player!.play());
         } catch (e) {
           if (kDebugMode) {
-            debugPrint('[VM] review play failed: ${e is PlayerException ? 'code=${e.code} message=${e.message}' : e}');
+            AppLog.d('[VM] review play failed: ${e is PlayerException ? 'code=${e.code} message=${e.message}' : e}');
           }
           isAudioPlaying.value = false;
           audioProgress.value = 0.0;

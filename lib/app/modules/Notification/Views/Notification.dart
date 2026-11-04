@@ -14,6 +14,7 @@ import 'package:fgtracker/app/modules/mediaStream/Views/contact_profile_screen.d
 import 'package:fgtracker/app/modules/call/Views/call_recent_calls_tab.dart';
 import '../../call/Controller/call_controller.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
 
@@ -581,7 +582,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
             memberData.chatId = chatId;
 
-            debugPrint("Notification chatId => $chatId");
+            AppLog.d("Notification chatId => $chatId");
             Get.toNamed(
               Routes.chatScreen,
               arguments: {
@@ -598,7 +599,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             );
 
             if (groupId == null) {
-              debugPrint("Invalid groupId => ${item.groupId}");
+              AppLog.d("Invalid groupId => ${item.groupId}");
               return;
             }
 
@@ -612,7 +613,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             );
           }
         } catch (e) {
-          debugPrint("Notification Navigation Error => $e");
+          AppLog.d("Notification Navigation Error => $e");
         }
       },
       child: AnimatedContainer(

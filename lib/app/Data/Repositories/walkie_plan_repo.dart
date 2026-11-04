@@ -11,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:fgtracker/app/Model/CommonRes.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class WalkiePlanRepo {
   static Future<CommonResponse> updateMemberSubscription({
     required int subscriptionId,
@@ -55,13 +56,13 @@ class WalkiePlanRepo {
       body['newUserId'] = newUserId;
     }
 
-    debugPrint(
+    AppLog.d(
         "🚀 [WalkiePlanRepo.updateMemberSubscription] URL: ${Urls.walkieUpdateMemberSubscription} | Body: $body");
     var response = await HttpUtil().Authpost(
       Urls.walkieUpdateMemberSubscription,
       data: body,
     );
-    debugPrint(
+    AppLog.d(
         "✅ [WalkiePlanRepo.updateMemberSubscription] Raw Response: $response");
     return CommonResponse.fromJson(response);
   }
@@ -152,12 +153,12 @@ class WalkiePlanRepo {
       'razorpayPaymentId': razorpayPaymentId,
       'razorpaySignature': razorpaySignature,
     };
-    debugPrint("🚀 [WalkiePlanRepo.verifyPayment] URL: ${Urls.walkieVerifyPayment} | Body: $body");
+    AppLog.d("🚀 [WalkiePlanRepo.verifyPayment] URL: ${Urls.walkieVerifyPayment} | Body: $body");
     var response = await HttpUtil().Authpost(
       Urls.walkieVerifyPayment,
       data: body,
     );
-    debugPrint("✅ [WalkiePlanRepo.verifyPayment] Raw Response: $response");
+    AppLog.d("✅ [WalkiePlanRepo.verifyPayment] Raw Response: $response");
     return WalkieVerifyPaymentResponseModel.fromJson(response);
   }
 }

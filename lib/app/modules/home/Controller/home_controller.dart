@@ -21,6 +21,7 @@ import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import '../../../Model/banner_model.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class HomeController extends GetxController {
   RxBool ProfileData_loading = false.obs;
   RxString Respone_Error = ''.obs;
@@ -63,11 +64,11 @@ class HomeController extends GetxController {
     final isRegistered =
     Global.storageServices.get(PrefConst.isRegistered);
 
-    debugPrint('========== HOME INIT DEBUG ==========');
-    debugPrint('TOKEN EXISTS: ${token != null && token.isNotEmpty}');
-    debugPrint('USER ID: $userId');
-    debugPrint('IS REGISTERED: $isRegistered');
-    debugPrint('=====================================');
+    AppLog.d('========== HOME INIT DEBUG ==========');
+    AppLog.d('TOKEN EXISTS: ${token != null && token.isNotEmpty}');
+    AppLog.d('USER ID: $userId');
+    AppLog.d('IS REGISTERED: $isRegistered');
+    AppLog.d('=====================================');
 
     fetchInitializeData();
     fetchBanners();
@@ -144,10 +145,10 @@ class HomeController extends GetxController {
         }
       }
     } catch (e, stackTrace) {
-      debugPrint('========== INITIALIZE API ERROR ==========');
-      debugPrint('ERROR: $e');
-      debugPrint('STACK TRACE: $stackTrace');
-      debugPrint('==========================================');
+      AppLog.d('========== INITIALIZE API ERROR ==========');
+      AppLog.d('ERROR: $e');
+      AppLog.d('STACK TRACE: $stackTrace');
+      AppLog.d('==========================================');
 
       InitializeResponeMessage.value = e.toString();
     }finally {

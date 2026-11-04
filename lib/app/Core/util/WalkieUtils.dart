@@ -118,7 +118,6 @@
 //   }
 //
 //   Future<void> declineCall(Map<String, dynamic> data) async {
-//     print("=======WalkieRejected;=${data}");
 //
 //     CallStateTracker.isIncomingCallScreenOpen = false;
 //     FlutterCallkitIncoming.endAllCalls();
@@ -126,7 +125,6 @@
 //
 //   Future<void> _navigateToWalkieScreen(Map<String, dynamic> data) async {
 //     try {
-//       print("=======navigatoretoWalkieScreeen====>${data}");
 //       WalkieController().onIncoming(
 //         remoteUserId: data['fromUserId'],
 //         callerName: "Unknown",
@@ -141,8 +139,6 @@
 //
 //   Future<void> endWalkieCall() async {
 //     try {
-//       print("🛑 Ending Walkie Call");
-//
 //       // Reset global call state
 //       CallSessionState.reset();
 //       await FlutterCallkitIncoming.endAllCalls();

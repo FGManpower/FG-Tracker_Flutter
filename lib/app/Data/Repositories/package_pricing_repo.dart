@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Data/Repositories/package_api_error.dart';
 import 'package:fgtracker/app/Model/package_pricing_model.dart';
 import 'package:flutter/foundation.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 /// Packages & Pricing endpoint (GET /api/packages).
 /// Contract: docs/packages/02_backend_requirements.md
 ///
@@ -44,7 +45,7 @@ class PackagePricingRepo {
   }) async {
     if (kDebugMode) {
       // Method + URL + body only — never the Authorization header
-      debugPrint('📦 [PackageAPI] $method $url'
+      AppLog.d('📦 [PackageAPI] $method $url'
           '${body != null ? ' body=$body' : ''}');
     }
 
@@ -70,13 +71,13 @@ class PackagePricingRepo {
         // Same session-expired handling (force logout) as every other API
         ApiErrorHandler.handleDioError(e);
       }
-      if (kDebugMode) debugPrint('❌ [PackageAPI] $error');
+      if (kDebugMode) AppLog.d('❌ [PackageAPI] $error');
       throw error;
     }
 
     final data = response.data;
     if (kDebugMode) {
-      debugPrint('✅ [PackageAPI] ${response.statusCode} $method $url');
+      AppLog.d('✅ [PackageAPI] ${response.statusCode} $method $url');
     }
     if (data is! Map) {
       throw PackageApiException(PackageErrorKind.malformed,

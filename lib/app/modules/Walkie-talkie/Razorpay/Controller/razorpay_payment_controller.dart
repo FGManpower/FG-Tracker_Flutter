@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class RazorpayPaymentController extends GetxController {
   late final Razorpay _razorpay;
 
@@ -57,7 +58,7 @@ class RazorpayPaymentController extends GetxController {
   }
 
   Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
-    debugPrint(
+    AppLog.d(
         "✅ [RazorpayPaymentController] Payment Success: ${response.paymentId}");
     HapticFeedback.heavyImpact();
 
@@ -83,7 +84,7 @@ class RazorpayPaymentController extends GetxController {
 
     if (createdPaymentId != null && createdPaymentId! > 0) {
       try {
-        debugPrint(
+        AppLog.d(
             "🚀 [RazorpayPaymentController] Calling verify API: paymentId=$createdPaymentId, orderId=$finalOrdId, payId=$finalPayId");
         final verifyRes = await WalkiePlanRepo.verifyPayment(
           paymentId: createdPaymentId!,
@@ -91,7 +92,7 @@ class RazorpayPaymentController extends GetxController {
           razorpayPaymentId: finalPayId,
           razorpaySignature: finalSig,
         );
-        debugPrint(
+        AppLog.d(
             "✅ [RazorpayPaymentController] Verification response: ${verifyRes.toJson()}");
 
         if (verifyRes.status == false) {
@@ -105,7 +106,7 @@ class RazorpayPaymentController extends GetxController {
           }
         }
       } catch (e) {
-        debugPrint("⚠️ [RazorpayPaymentController] Verification API Error: $e");
+        AppLog.d("⚠️ [RazorpayPaymentController] Verification API Error: $e");
         // If network error occurred during verification, classify as pending check
         isSuccess = false;
         isPending = true;
@@ -178,7 +179,7 @@ class RazorpayPaymentController extends GetxController {
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    debugPrint(
+    AppLog.d(
         "❌ [RazorpayPaymentController] Payment Error: Code ${response.code} | Message: ${response.message}");
     isProcessing.value = false;
     HapticFeedback.mediumImpact();
@@ -201,7 +202,7 @@ class RazorpayPaymentController extends GetxController {
         !lowerMsg.contains("rejected");
 
     if (isExplicitlyPending) {
-      debugPrint(
+      AppLog.d(
           "⏱️ [RazorpayPaymentController] Routing to Payment Pending Screen (Code: $code | Message: $msg)");
       status.value = PaymentProcessStatus.cancelled;
       errorMessage.value =
@@ -221,7 +222,7 @@ class RazorpayPaymentController extends GetxController {
           ));
     } else {
       // Payment Failed (Bank decline, card error, invalid auth, payment failed, cancelled checkout, etc.)
-      debugPrint(
+      AppLog.d(
           "❌ [RazorpayPaymentController] Routing to Payment Failed Screen (Code: $code | Message: $msg)");
       status.value = PaymentProcessStatus.failed;
       errorMessage.value =
@@ -245,7 +246,7 @@ class RazorpayPaymentController extends GetxController {
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
-    debugPrint(
+    AppLog.d(
         "💳 [RazorpayPaymentController] External Wallet: ${response.walletName}");
     if (_customWalletCallback != null) {
       _customWalletCallback!(response);
@@ -323,12 +324,12 @@ class RazorpayPaymentController extends GetxController {
       _customFailureCallback = onError;
       _customWalletCallback = onWallet;
 
-      debugPrint(
+      AppLog.d(
           "🚀 [RazorpayPaymentController] Opening Checkout with options: $optionsMap");
 
       _razorpay.open(optionsMap);
     } catch (e) {
-      debugPrint(
+      AppLog.d(
           "❌ [RazorpayPaymentController] Error opening Razorpay checkout: $e");
       isProcessing.value = false;
       status.value = PaymentProcessStatus.failed;

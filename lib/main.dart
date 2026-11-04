@@ -179,10 +179,8 @@ void _setupCallKit() {
         'callId': callId,
         'remoteUserId': extra['callerId']?.toString(),
       });
-      print("========rejectCallsocketCalled");
     } else {
       await rejectCallViaRest(callId);
-      print("========rejectCallApiCalled");
     }
   };
 
@@ -225,6 +223,7 @@ Future<void> rejectCallViaRest(String callId) async {
   }
 }
 
+@pragma('vm:entry-point')
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

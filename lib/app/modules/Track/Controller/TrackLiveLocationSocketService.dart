@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class LiveLocationSocketModel {
   final dynamic userId;
   final dynamic groupId;
@@ -269,7 +270,7 @@ class TrackLiveLocationSocketService extends GetxService {
         _processSingleItem(data);
       }
     } catch (e, stack) {
-      debugPrint('❌ [TrackLiveSocket] Error processing location data: $e\n$stack');
+      AppLog.d('❌ [TrackLiveSocket] Error processing location data: $e\n$stack');
     }
   }
 
@@ -303,7 +304,7 @@ class TrackLiveLocationSocketService extends GetxService {
       try {
         callback(model);
       } catch (e) {
-        debugPrint('❌ [TrackLiveSocket] Listener callback error: $e');
+        AppLog.d('❌ [TrackLiveSocket] Listener callback error: $e');
       }
     }
   }

@@ -26,6 +26,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:upgrader/upgrader.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -80,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen>
         autoFetchLocation: true,
       );
     } catch (e) {
-      debugPrint('Location permission check error: $e');
+      AppLog.d('Location permission check error: $e');
     } finally {
       _isPermissionCheckRunning = false;
     }

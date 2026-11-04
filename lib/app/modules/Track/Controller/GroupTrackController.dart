@@ -23,6 +23,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:fgtracker/app/Core/util/app_log.dart';
 
 
 class GroupTrackingController extends GetxController {
@@ -136,34 +137,18 @@ class GroupTrackingController extends GetxController {
       if (result.status == true) {
         Loading().dismissloading(context: context);
 
-        print("========== GROUP MEMBERS ==========");
-        print(
-            "Current User Id : ${Global.storageServices.get(PrefConst.userId)}");
-        print("Total Members : ${result.locations?.length}");
-
         if (result.locations != null && result.locations!.isNotEmpty) {
           for (var data in result.locations!) {
-            print("--------------------------------");
-            print("UserId           : ${data.userId}");
-            print("Name             : ${data.name}");
-            print("Location Sharing : ${data.locationSharing}");
-            print("Latitude         : ${data.latitude}");
-            print("Longitude        : ${data.longitude}");
-            print("Last Seen        : ${data.lastSeen}");
-            print("--------------------------------");
-
             updateGroupMarker(data);
           }
         }
-
-        print("==================================");
       } else {
         Loading().dismissloading(context: context);
         CommonDialog.errorMessage(result.message);
       }
     } catch (e) {
       Loading().dismissloading(context: context);
-      print(e);
+      AppLog.e(e);
       final str = e.toString().toLowerCase();
       if (str.contains("socket") ||
           str.contains("internet") ||
@@ -624,12 +609,6 @@ class GroupTrackingController extends GetxController {
   }
 
   Future<void> updateGroupMarker(LocationData data) async {
-    print("========== UPDATE GROUP MARKER ==========");
-    print("User : ${data.name}");
-    print("UserId : ${data.userId}");
-    print("LocationSharing : ${data.locationSharing}");
-    print("LastSeen : ${data.lastSeen}");
-    print("========================================");
     final groupId = data.groupId.toString();
 
     final bool isOnline = Tracking().isOnline(
@@ -844,9 +823,6 @@ class GroupTrackingController extends GetxController {
 
     socketService.onGroupLocationUpdate(
           (data) {
-        print("========== SOCKET ==========");
-        print(data);
-        print("===========================");
         if (data["groupId"].toString() == groupId) {
           final location = LocationData.fromJson(data);
           if (location.lastSeen == null ||
@@ -911,7 +887,7 @@ class GroupTrackingController extends GetxController {
         }
       }
     } catch (e) {
-      debugPrint("⚠️ [GroupTrackController] sync from privateMembers failed: $e");
+      AppLog.w("sync from privateMembers failed: $e", name: "GroupTrackController");
     }
 
     // 2. Check Profile API (/getProfile)
@@ -922,7 +898,7 @@ class GroupTrackingController extends GetxController {
         return;
       }
     } catch (e) {
-      debugPrint("⚠️ [GroupTrackController] sync from getProfile failed: $e");
+      AppLog.w("sync from getProfile failed: $e", name: "GroupTrackController");
     }
 
     // 3. Fallback: Query all group members (/all-group-members?filter=all)
@@ -946,7 +922,7 @@ class GroupTrackingController extends GetxController {
         }
       }
     } catch (e) {
-      debugPrint("⚠️ [GroupTrackController] sync from allGroupMembers failed: $e");
+      AppLog.w("sync from allGroupMembers failed: $e", name: "GroupTrackController");
     }
   }
 

@@ -43,8 +43,6 @@ class NotificationRepo {
       "/clear-all-notifications",
     );
 
-    print("Response : $response");
-
     return response["status"] == true;
   }
 }

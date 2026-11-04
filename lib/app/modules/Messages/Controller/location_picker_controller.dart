@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../Model/LocationMessage.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class LocationPickerController extends GetxController {
   final Location _location = Location();
 
@@ -103,7 +104,7 @@ class LocationPickerController extends GetxController {
         }
       });
     } catch (e) {
-      debugPrint("Location picker error: $e");
+      AppLog.d("Location picker error: $e");
       errorMessage.value = "Couldn't get your location. Please try again.";
       isLoading.value = false;
     }
@@ -175,7 +176,7 @@ class LocationPickerController extends GetxController {
       locationName: selectedAddress.value,
     );
 
-    debugPrint(
+    AppLog.d(
       "SendLocation -> lat: ${location.latitude}, "
           "lng: ${location.longitude}, name: ${location.locationName}",
     );

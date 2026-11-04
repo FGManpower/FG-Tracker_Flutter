@@ -15,6 +15,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../widget/call_widget.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class _PhoneEntry {
   final String name;
   final String phone;
@@ -159,7 +160,7 @@ class ContactController extends GetxController {
         granted = await FlutterContacts.requestPermission(readonly: true);
       }
     } catch (e) {
-      debugPrint("Error checking contact permission: $e");
+      AppLog.d("Error checking contact permission: $e");
     }
 
     isContactPermissionGranted.value = granted;
@@ -190,7 +191,7 @@ class ContactController extends GetxController {
       }
       return granted;
     } catch (e) {
-      debugPrint("Error requesting contact permission: $e");
+      AppLog.d("Error requesting contact permission: $e");
       return false;
     }
   }
@@ -241,7 +242,7 @@ class ContactController extends GetxController {
         }
       }
     }
-    debugPrint("PHONEBOOK KEYS => ${_nameByKey10.length}");
+    AppLog.d("PHONEBOOK KEYS => ${_nameByKey10.length}");
   }
 
   // ───────────────────────── Merge helpers ─────────────────────────
@@ -366,7 +367,7 @@ class ContactController extends GetxController {
       _buildInvites(reg10, reg9, myKey);
       return true;
     } catch (e) {
-      debugPrint("getAllUser hybrid load error: $e");
+      AppLog.d("getAllUser hybrid load error: $e");
       return false;
     }
   }
@@ -447,7 +448,7 @@ class ContactController extends GetxController {
             members = await _fetchMembers(contactPagination.value);
           }
         } catch (e) {
-          debugPrint("Error fetching group members for call contacts: $e");
+          AppLog.d("Error fetching group members for call contacts: $e");
           groupApiFailed = true;
           break;
         }

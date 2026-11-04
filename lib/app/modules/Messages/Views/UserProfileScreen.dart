@@ -10,6 +10,7 @@ import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/profile_details_model.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Messages/Views/Group/media_links_docs_screen.dart';
+import 'package:fgtracker/app/Core/util/chat_navigation.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -386,17 +387,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         name: user.name,
         profileImage: user.profileImage,
       );
-      Get.toNamed(
-        Routes.chatScreen,
-        arguments: {
-          "userData": md,
-          "groupName": user.name ?? "Chat",
-          "isCreator": false,
-          "type": "chatScreen",
-          "chatType": "private",
-          "groupId": 0,
-        },
-      );
+      ChatNavigation.openPrivateChat({
+        "userData": md,
+        "chatId": widget.chatId,
+        "groupName": user.name ?? "Chat",
+        "isCreator": false,
+        "type": "chatScreen",
+        "chatType": "private",
+        "groupId": 0,
+        "source": "user_profile_screen",
+      });
     }
   }
 

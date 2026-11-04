@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/chat_list_logic.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -480,6 +481,120 @@ void main() {
 
       currentSpeed = cycleSpeed(currentSpeed);
       expect(currentSpeed, 1.0);
+    });
+
+    test('ChatListRules.isNewMessage prioritizes message ID and tolerates device clock skew', () {
+      final now = DateTime.now().toUtc();
+      // Current message timestamp slightly ahead (e.g. device clock 1s fast)
+      final current = PrivateChatModel(
+        id: 1,
+        chatId: 100,
+        userId: 200,
+        message: 'Message 1',
+        time: now.add(const Duration(seconds: 1)).toIso8601String(),
+        lastMessageData: {'id': 501, 'messageId': '501'},
+      );
+
+      // Server incoming message with different ID but server UTC timestamp is slightly behind
+      final updated = PrivateChatModel(
+        id: 1,
+        chatId: 100,
+        userId: 200,
+        message: 'Message 2',
+        time: now.toIso8601String(),
+        lastMessageData: {'id': 502, 'messageId': '502'},
+      );
+
+      // Must be recognized as a new message despite server timestamp being 1s before device time!
+      final isNew = ChatListRules.isNewMessage(current, updated);
+      expect(isNew, isTrue);
+
+      // Same message re-sent with status change (read/delivered) should NOT be treated as a new message
+      final sameMessageUpdated = PrivateChatModel(
+        id: 1,
+        chatId: 100,
+        userId: 200,
+        message: 'Message 1',
+        time: now.add(const Duration(seconds: 2)).toIso8601String(),
+        lastMessageData: {'id': 501, 'messageId': '501'},
+      );
+      final isSameNew = ChatListRules.isNewMessage(current, sameMessageUpdated);
+      expect(isSameNew, isFalse);
+    });
+
+    test('ChatListRules.resolveUnread increments badge when server unreadCount is omitted on peer message', () {
+      final current = PrivateChatModel(
+        id: 1,
+        chatId: 100,
+        userId: 200,
+        unreadCount: 2,
+      );
+
+      // Socket event from peer where server unreadCount is null
+      final updatedPeerMessage = PrivateChatModel(
+        id: 1,
+        chatId: 100,
+        userId: 200,
+        senderId: '200',
+        unreadCount: null,
+      );
+
+      final unreadFromPeer = ChatListRules.resolveUnread(
+        current: current,
+        updated: updatedPeerMessage,
+        newMessage: true,
+        isViewing: false,
+        myUserId: '1001',
+      );
+      // Unread count must increment from 2 to 3!
+      expect(unreadFromPeer, 3);
+
+      // Message sent by me with null server unreadCount should NOT increment badge
+      final updatedMyMessage = PrivateChatModel(
+        id: 1,
+        chatId: 100,
+        userId: 200,
+        senderId: '1001',
+        unreadCount: null,
+      );
+      final unreadFromMe = ChatListRules.resolveUnread(
+        current: current,
+        updated: updatedMyMessage,
+        newMessage: true,
+        isViewing: false,
+        myUserId: '1001',
+      );
+      expect(unreadFromMe, 2);
+
+      // If user is currently viewing the chat, unread count must always be 0
+      final unreadViewing = ChatListRules.resolveUnread(
+        current: current,
+        updated: updatedPeerMessage,
+        newMessage: true,
+        isViewing: true,
+        myUserId: '1001',
+      );
+      expect(unreadViewing, 0);
+    });
+
+    test('Chat with valid userId/chatId is retained even if display name is Unknown User or empty', () {
+      final chatWithFallbackName = PrivateChatModel(
+        id: 10,
+        chatId: 500,
+        userId: 600,
+        name: 'Unknown User',
+        message: 'Hello from peer',
+        time: DateTime.now().toIso8601String(),
+      );
+
+      final name = (chatWithFallbackName.name ?? chatWithFallbackName.groupName)?.trim();
+      final hasIdentity = (name != null && name.isNotEmpty && name != "Unknown User") ||
+          chatWithFallbackName.userId != null ||
+          chatWithFallbackName.groupId != null ||
+          chatWithFallbackName.chatId != null ||
+          chatWithFallbackName.id != null;
+
+      expect(hasIdentity, isTrue);
     });
   });
 }

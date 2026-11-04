@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer' as dev;
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_callkit_incoming/entities/entities.dart';
@@ -15,8 +16,9 @@ typedef CallActionCallback = FutureOr<void> Function(
     );
 
 void _ck(String msg) {
-  dev.log('[CK] $msg');
-  print('[CK] $msg');
+  if (kDebugMode) {
+    dev.log('[CK] $msg');
+  }
 }
 
 class CallKitService with WidgetsBindingObserver {

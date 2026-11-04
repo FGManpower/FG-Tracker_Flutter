@@ -12,6 +12,8 @@ class GetMessage {
   BlockStatus? blockStatus;
   bool? isOnline;
   String? lastSeen;
+  int? chatId;
+  int? conversationId;
   Map<String, dynamic>? otherUser;
   List<String>? images;
 
@@ -27,6 +29,8 @@ class GetMessage {
     this.lastSeen,
     this.otherUser,
     this.images,
+    this.chatId,
+    this.conversationId,
   });
 
   GetMessage.fromJson(Map<String, dynamic> json) {
@@ -36,6 +40,8 @@ class GetMessage {
     message = json['message']?.toString();
     isCreator = _parseBool(json['isCreator']);
     pinnedMessageId = MessageData.parseIntOrNull(json['pinnedMessageId']);
+    chatId = MessageData.parseIntOrNull(json['chatId'] ?? json['conversationId'] ?? json['id']);
+    conversationId = MessageData.parseIntOrNull(json['conversationId'] ?? json['chatId']);
 
     final user = json['otherUser'] is Map
         ? Map<String, dynamic>.from(json['otherUser'])
@@ -255,9 +261,11 @@ class MessageData {
   bool isDelivered = false;
   Map<String, dynamic>? attendance;
   dynamic attendancePollId;
+  String? clientMessageId;
 
   MessageData({
     this.id,
+    this.clientMessageId,
     this.senderId,
     this.receiverId,
     this.messageType,
@@ -376,6 +384,11 @@ class MessageData {
     }
 
     id = parseIntOrNull(json['id'] ?? nestedSource?['id']);
+    clientMessageId = (json['clientMessageId'] ??
+            json['client_message_id'] ??
+            nestedSource?['clientMessageId'] ??
+            nestedSource?['client_message_id'])
+        ?.toString();
     senderId = json['senderId'] ??
         json['sender_id'] ??
         json['userId'] ??

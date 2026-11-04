@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class MarkerCache {
   static final Map<String, BitmapDescriptor> descriptorCache = {};
   static final Map<String, Uint8List> byteCache = {};
@@ -71,7 +72,7 @@ Future<ui.Image?> _fetchAndDecodeImage(String url, int targetSize) async {
       return frame.image;
     }
   } catch (e) {
-    debugPrint("️ Marker image load failed for $url: $e");
+    AppLog.d("️ Marker image load failed for $url: $e");
   }
   return null;
 }
@@ -318,7 +319,7 @@ Future<BitmapDescriptor> getCustomIcon(
       return descriptor;
     }
   } catch (e) {
-    debugPrint("❌ Error creating map marker icon: $e");
+    AppLog.d("❌ Error creating map marker icon: $e");
   }
 
   // Safe fallback if anything fails

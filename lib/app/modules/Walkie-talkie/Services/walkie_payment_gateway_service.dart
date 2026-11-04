@@ -5,6 +5,7 @@ import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class CashfreeOrderResult {
   final bool isSuccess;
   final String? orderId;
@@ -96,9 +97,9 @@ class WalkiePaymentGatewayService {
     };
 
     try {
-      debugPrint(
+      AppLog.d(
           "🚀 [Cashfree] Creating Order: $orderId at $cashfreeBaseUrl/orders");
-      debugPrint("📋 [Cashfree] Payload: ${jsonEncode(requestData)}");
+      AppLog.d("📋 [Cashfree] Payload: ${jsonEncode(requestData)}");
 
       final response = await _dio.post(
         '$cashfreeBaseUrl/orders',
@@ -106,8 +107,8 @@ class WalkiePaymentGatewayService {
         data: requestData,
       );
 
-      debugPrint("✅ [Cashfree] Response Code: ${response.statusCode}");
-      debugPrint("📦 [Cashfree] Response Body: ${response.data}");
+      AppLog.d("✅ [Cashfree] Response Code: ${response.statusCode}");
+      AppLog.d("📦 [Cashfree] Response Body: ${response.data}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data;
@@ -140,7 +141,7 @@ class WalkiePaymentGatewayService {
         );
       }
     } on DioException catch (dioErr) {
-      debugPrint(
+      AppLog.d(
           "❌ [Cashfree] DioException: ${dioErr.message} | Response: ${dioErr.response?.data}");
       String msg = "Payment initiation failed.";
       if (dioErr.response?.data is Map) {
@@ -159,7 +160,7 @@ class WalkiePaymentGatewayService {
             : null,
       );
     } catch (e) {
-      debugPrint("❌ [Cashfree] Error: $e");
+      AppLog.d("❌ [Cashfree] Error: $e");
       return CashfreeOrderResult(
         isSuccess: false,
         errorMessage: "Unable to process payment: $e",
@@ -184,11 +185,11 @@ class WalkiePaymentGatewayService {
 
       if (response.statusCode == 200 && response.data is Map) {
         final status = response.data['order_status']?.toString();
-        debugPrint("🔍 [Cashfree] Order $orderId Status: $status");
+        AppLog.d("🔍 [Cashfree] Order $orderId Status: $status");
         return status;
       }
     } catch (e) {
-      debugPrint("❌ [Cashfree] Verify status error: $e");
+      AppLog.d("❌ [Cashfree] Verify status error: $e");
     }
     return null;
   }
@@ -202,12 +203,12 @@ class WalkiePaymentGatewayService {
         mode: LaunchMode.inAppBrowserView,
       );
     } catch (e) {
-      debugPrint("❌ [Cashfree] Launch URL Error: $e");
+      AppLog.d("❌ [Cashfree] Launch URL Error: $e");
       try {
         final uri = Uri.parse(url);
         return await launchUrl(uri, mode: LaunchMode.externalApplication);
       } catch (e2) {
-        debugPrint("❌ [Cashfree] Launch External URL Error: $e2");
+        AppLog.d("❌ [Cashfree] Launch External URL Error: $e2");
         return false;
       }
     }

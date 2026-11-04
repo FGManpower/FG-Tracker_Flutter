@@ -12,6 +12,7 @@ import '../../../Core/util/chat_navigation.dart';
 import '../../call/Controller/contact_controller.dart';
 import 'MessageController.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class ForwardMessageController extends GetxController {
   late MessageData message;
 
@@ -338,7 +339,7 @@ class ForwardMessageController extends GetxController {
             );
           }
         } catch (socketErr) {
-          debugPrint("Failed to emit forwardMessage socket event: $socketErr");
+          AppLog.d("Failed to emit forwardMessage socket event: $socketErr");
         }
       }
 

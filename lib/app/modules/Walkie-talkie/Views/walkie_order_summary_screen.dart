@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class WalkieOrderSummaryScreen extends StatefulWidget {
   final WalkiePaymentOrderModel? order;
 
@@ -1194,10 +1195,10 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
       final Uri url =
           Uri.parse('https://www.fgmanpower.co.in/terms-conditions/');
       if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-        debugPrint('Could not launch $url');
+        AppLog.d('Could not launch $url');
       }
     } catch (e) {
-      debugPrint(e.toString());
+      AppLog.d(e.toString());
     }
   }
 }

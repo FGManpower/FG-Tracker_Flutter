@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 /// Opened from login when /v2/send-otp returns SHOW_OTP_CHARGE_SCREEN.
 /// Pay → create-order → Razorpay → payment-success (backend sends the OTP)
 /// → OTP screen. Opened without a charge token (side menu) it is info only.
@@ -125,11 +126,11 @@ class OtpChargesController extends GetxController {
       _gatewayConfig = config;
       isPaymentEnabled.value = config.isPaymentEnabled;
       if (kDebugMode) {
-        debugPrint('[OtpCharges] gateway mode=${config.mode} live=${config.isLive}');
+        AppLog.d('[OtpCharges] gateway mode=${config.mode} live=${config.isLive}');
       }
     } catch (e) {
       // create-order still returns the active key, so payment can go ahead
-      if (kDebugMode) debugPrint('[OtpCharges] config failed: $e');
+      if (kDebugMode) AppLog.d('[OtpCharges] config failed: $e');
     }
   }
 
@@ -214,7 +215,7 @@ class OtpChargesController extends GetxController {
       };
       _razorpay.open(options);
     } catch (e) {
-      if (kDebugMode) debugPrint('[OtpCharges] open failed: $e');
+      if (kDebugMode) AppLog.d('[OtpCharges] open failed: $e');
       isLoading.value = false;
       CommonDialog.errorMessage(e.toString());
     }
@@ -234,7 +235,7 @@ class OtpChargesController extends GetxController {
           otpChargeToken: _otpChargeToken ?? '',
         );
       } catch (e) {
-        if (kDebugMode) debugPrint('[OtpCharges] verify attempt $attempt: $e');
+        if (kDebugMode) AppLog.d('[OtpCharges] verify attempt $attempt: $e');
         if (attempt < 3) await Future.delayed(Duration(seconds: attempt * 2));
       }
     }
@@ -275,7 +276,7 @@ class OtpChargesController extends GetxController {
               : 'Payment cancelled',
         );
       } catch (e) {
-        if (kDebugMode) debugPrint('[OtpCharges] payment-failed call: $e');
+        if (kDebugMode) AppLog.d('[OtpCharges] payment-failed call: $e');
       }
     }
     // Token ran out while Razorpay was open: retrying would fail too
@@ -289,7 +290,7 @@ class OtpChargesController extends GetxController {
 
   String _errorMessageFor(PaymentFailureResponse response) {
     if (kDebugMode) {
-      debugPrint(
+      AppLog.d(
           '[OtpCharges] error code=${response.code} message=${response.message}');
     }
     switch (response.code) {

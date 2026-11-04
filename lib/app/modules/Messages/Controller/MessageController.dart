@@ -32,6 +32,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'chat_list_controller.dart';
 import 'chat_screen_logic.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
   if (kDebugMode) {
     developer.log(message, error: error, stackTrace: stackTrace, name: name ?? 'MessageController');
@@ -317,10 +318,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             }
           }
         } else if (response.exception != null) {
-          debugPrint("Lost data exception: ${response.exception}");
+          AppLog.d("Lost data exception: ${response.exception}");
         }
       } catch (e) {
-        debugPrint("retrieveLostData error: $e");
+        AppLog.d("retrieveLostData error: $e");
       }
     }
   }
@@ -359,7 +360,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         videoDurations.refresh();
       }
     } catch (e) {
-      debugPrint("Video preview error: $e");
+      AppLog.d("Video preview error: $e");
     }
   }
 
@@ -518,8 +519,26 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     socketService.claimPrivateChatEvents(this);
 
     if (isPrivateChat) {
-      final passedChatId = arguments?['chatId']?.toString();
+      String? passedChatId = arguments?['chatId']?.toString();
       _privatePeerId = receiverId;
+
+      // Auto-resolve chatId from ChatListController if caller didn't supply it
+      if ((passedChatId == null ||
+              passedChatId.isEmpty ||
+              passedChatId == 'null') &&
+          Get.isRegistered<ChatListController>()) {
+        final existing =
+            Get.find<ChatListController>().findPrivateChatByUserId(receiverId);
+        final resolved =
+            existing?.chatId ?? existing?.conversationId ?? existing?.id;
+        if (resolved != null && resolved.toString().isNotEmpty) {
+          passedChatId = resolved.toString();
+          if (arguments != null) {
+            arguments!['chatId'] = passedChatId;
+          }
+        }
+      }
+
       ActiveChatTracker.openPrivate(peerUserId: receiverId, chatId: passedChatId);
 
       isLoadingInitialMessages.value = true;
@@ -527,16 +546,18 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           passedChatId.isNotEmpty &&
           passedChatId != 'null';
 
-      if (!hasPassedChatId) _startJoinTimeout();
-      if (passedChatId != null &&
-          passedChatId.isNotEmpty &&
-          passedChatId != 'null') {
-        privateChatId.value = passedChatId;
+      if (!hasPassedChatId) {
+        _startJoinTimeout();
+        getPrivateMessageHistoryByPeer(receiverId);
+      }
+      if (hasPassedChatId) {
+        final effectiveChatId = passedChatId;
+        privateChatId.value = effectiveChatId;
 
-        getPrivateMessageHistory(passedChatId).then((_) {
+        getPrivateMessageHistory(effectiveChatId).then((_) {
           if (!isClosed) {
             socketService.markPrivateSeen(
-              chatId: passedChatId,
+              chatId: effectiveChatId,
               userId: currentUserId,
               otherUserId: receiverId,
             );
@@ -879,13 +900,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                     eventChatId == privateChatId.value);
 
             if (isForThisChat) {
-              debugPrint("[TYPING] Peer typing started: $targetUserId in chat ${privateChatId.value}");
+              AppLog.d("[TYPING] Peer typing started: $targetUserId in chat ${privateChatId.value}");
               isPeerTyping.value = true;
               _peerTypingResetTimer?.cancel();
               _peerTypingResetTimer =
                   Timer(const Duration(milliseconds: 4000), () {
                 if (!isClosed) {
-                  debugPrint("[TYPING] Peer typing reset timer expired");
+                  AppLog.d("[TYPING] Peer typing reset timer expired");
                   isPeerTyping.value = false;
                 }
               });
@@ -927,12 +948,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                       eventChatId == privateChatId.value);
 
               if (isForThisChat) {
-                debugPrint("[TYPING] Peer typing stopped: $targetUserId in chat ${privateChatId.value}");
+                AppLog.d("[TYPING] Peer typing stopped: $targetUserId in chat ${privateChatId.value}");
                 _peerTypingResetTimer?.cancel();
                 isPeerTyping.value = false;
               }
             } else {
-              debugPrint("[TYPING] Peer typing stopped (data not map)");
+              AppLog.d("[TYPING] Peer typing stopped (data not map)");
               _peerTypingResetTimer?.cancel();
               isPeerTyping.value = false;
             }
@@ -1636,6 +1657,85 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+
+  /// Direct history fetch by peer user ID (no chatId needed upfront).
+  /// Resolves conversationId and loads messages immediately.
+  Future<void> getPrivateMessageHistoryByPeer(String peerUserId) async {
+    _historyRequestInFlight = true;
+    historyLoadFailed.value = false;
+    if (_messages.isEmpty) isLoadingInitialMessages.value = true;
+
+    try {
+      _pager.reset();
+      privateCurrentPage.value = 1;
+      hasMoreOlderMessages.value = true;
+
+      final result = await MessageRepo.privateChatHistoryByPeer(
+        peerUserId: peerUserId,
+        page: 1,
+        limit: ChatScreenRules.pageSize,
+      );
+
+      if (result.status == true) {
+        final resolved = result.chatId?.toString() ??
+            result.conversationId?.toString();
+        if (resolved != null && resolved.isNotEmpty) {
+          privateChatId.value = resolved;
+          ActiveChatTracker.setPrivateChatId(peerUserId, resolved);
+          if (arguments != null) arguments!['chatId'] = resolved;
+
+          final me = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+          if (!isClosed && me.isNotEmpty) {
+            socketService.markPrivateSeen(
+              chatId: resolved,
+              userId: me,
+              otherUserId: peerUserId,
+            );
+          }
+        }
+
+        memberData.isOnline = result.isOnline ?? memberData.isOnline;
+        memberData.lastSeen = result.lastSeen ?? memberData.lastSeen;
+        isPeerOnline.value = memberData.isOnline ?? false;
+
+        final messages = result.messageData ?? [];
+        final blockStatus = result.blockStatus;
+        if (blockStatus != null) {
+          isBlocked.value = blockStatus.isBlocked == true;
+          blockedByMe.value = blockStatus.blockedByMe == true;
+        }
+
+        final merged = ChatScreenRules.merge(
+          _messages,
+          messages.reversed.toList(),
+        );
+        _messages
+          ..clear()
+          ..addAll(merged.messages);
+
+        _pager.complete(
+          page: 1,
+          receivedCount: messages.length,
+          hasNextPage: result.pagination?.hasNextPage,
+        );
+        _historyLoaded = true;
+
+        if (_messages.isNotEmpty) {
+          scrollToBottom(instant: true);
+        }
+      } else {
+        _pager.fail();
+        if (_messages.isEmpty) historyLoadFailed.value = true;
+      }
+    } catch (e) {
+      log("History by peer error: $e");
+      _pager.fail();
+      if (_messages.isEmpty) historyLoadFailed.value = true;
+    } finally {
+      isLoadingInitialMessages.value = false;
+      _historyRequestInFlight = false;
+    }
+  }
 
   Future<void> getPrivateMessageHistory(String chatId) async {
     final apiStopwatch = Stopwatch()..start();

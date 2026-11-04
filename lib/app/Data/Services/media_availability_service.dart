@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 enum MediaStatus { unknown, available, missing }
 
 /// Tells chat bubbles whether a remote media file (image, video, audio,
@@ -76,7 +77,7 @@ class MediaAvailabilityService {
       if (status != MediaStatus.unknown) _status[key] = status;
       return status;
     } catch (e) {
-      if (kDebugMode) debugPrint('[MediaAvailability] $key -> $e');
+      if (kDebugMode) AppLog.d('[MediaAvailability] $key -> $e');
       return MediaStatus.unknown;
     } finally {
       client.close();

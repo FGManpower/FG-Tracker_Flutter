@@ -22,6 +22,7 @@ import '../../../../Data/Services/group_call_service.dart';
 import '../ContactPickerPage.dart';
 import '../LocationPickerPage.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class GroupChatScreen extends GetView<GroupMessageController> {
   GroupChatScreen({super.key});
 
@@ -418,7 +419,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
         },
       );
     } catch (e) {
-      debugPrint("Error initiating group call: $e");
+      AppLog.d("Error initiating group call: $e");
       Get.snackbar(
         "Error",
         "Could not start group call. Please try again.",

@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class FileServices {
   final ImagePicker _picker = ImagePicker();
 
@@ -72,11 +73,11 @@ class FileServices {
         if (await file.exists()) return file;
       }
       if (response.exception != null) {
-        debugPrint("Lost data exception: ${response.exception}");
+        AppLog.d("Lost data exception: ${response.exception}");
       }
       return null;
     } catch (e) {
-      debugPrint("retrieveLostData error: $e");
+      AppLog.d("retrieveLostData error: $e");
       return null;
     }
   }

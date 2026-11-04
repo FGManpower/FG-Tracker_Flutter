@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../theme/AppText.dart';
+import '../app_log.dart';
 import 'ApiErrorHandler.dart';
 
 class HttpUtil {
@@ -20,8 +21,12 @@ class HttpUtil {
 
   ConstRes api = ConstRes();
 
+  /// Toggle for HTTP network payload logging.
+  /// Set to false for production ready builds; flip to true when needed for local API testing.
+  static const bool enablePrettyLogger = false;
+
   HttpUtil._internal() {
-    if (kDebugMode) {
+    if (enablePrettyLogger && kDebugMode) {
       api.sendRequest.interceptors.add(PrettyDioLogger(
         // false: request headers carry the Bearer token — never log it
         requestHeader: false,
@@ -45,7 +50,8 @@ class HttpUtil {
           queryParameters: queryParameteres);
 
       return response.data;
-    } catch (e) {
+    } catch (e, stack) {
+      AppLog.e("HttpUtil post error ($path): $e", error: e, stackTrace: stack);
       if (e is DioException) {
         throw ApiErrorHandler.handleDioError(e);
       }
@@ -188,8 +194,6 @@ class HttpUtil {
   }) async {
     try {
       final timeZone = await TimeZoneHelper.getTimeZone();
-
-      print("timezone===${timeZone}");
 
       api.sendRequest.options.headers["authorization"] =
           "Bearer ${Global.storageServices.getaccesstoken()!}";

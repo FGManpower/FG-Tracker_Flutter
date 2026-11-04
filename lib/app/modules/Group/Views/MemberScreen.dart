@@ -14,6 +14,7 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Group/controller/search_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/app/Core/util/chat_navigation.dart';
 import 'package:fgtracker/app/widgets/MobileNumberView.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -428,15 +429,13 @@ class MemberscreenScreen extends GetView<MemberController> {
                                 .get(PrefConst.userId)
                                 .toString() !=
                             data.userId.toString()) {
-                          Get.toNamed(
-                            Routes.chatScreen,
-                            arguments: {
-                              "userData": data,
-                              "groupName": controller.arguments!['groupName'],
-                              "isCreator": controller.arguments!['isCreator'],
-                              "type": "",
-                            },
-                          );
+                          ChatNavigation.openPrivateChat({
+                            "userData": data,
+                            "groupName": controller.arguments!['groupName'],
+                            "isCreator": controller.arguments!['isCreator'],
+                            "type": "",
+                            "source": "group_member_screen",
+                          });
                         }
                       },
                       child: Column(
@@ -705,15 +704,13 @@ class MemberscreenScreen extends GetView<MemberController> {
                               .toString() !=
                           data?.userId.toString()) {
 
-                        Get.toNamed(
-                          Routes.chatScreen,
-                          arguments: {
-                            "userData": data,
-                            "groupName": controller.arguments!['groupName'],
-                            "isCreator": controller.arguments!['isCreator'],
-                            "type": "",
-                          },
-                        );
+                        ChatNavigation.openPrivateChat({
+                          "userData": data,
+                          "groupName": controller.arguments!['groupName'],
+                          "isCreator": controller.arguments!['isCreator'],
+                          "type": "",
+                          "source": "group_member_screen_search",
+                        });
                       }
                     },
                     child: Column(

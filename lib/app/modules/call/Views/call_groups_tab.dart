@@ -14,6 +14,7 @@ import '../../../Core/util/profile_navigation.dart';
 import '../../../Data/Services/group_call_service.dart';
 import '../../../routes/app_pages.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class CallGroupsTab extends StatelessWidget {
   CallGroupsTab({super.key});
 
@@ -107,7 +108,7 @@ Future<void> _initiateGroupCall({
       },
     );
   } catch (e) {
-    debugPrint("Error initiating group call: $e");
+    AppLog.d("Error initiating group call: $e");
     Get.snackbar(
       "Error",
       "Could not start group call. Please try again.",
@@ -174,8 +175,8 @@ class _GroupTile extends StatelessWidget {
                         ),
                       ),
                       errorWidget: (context, url, error) {
-                        debugPrint('Group DP URL: $url');
-                        debugPrint('Group DP Error: $error');
+                        AppLog.d('Group DP URL: $url');
+                        AppLog.d('Group DP Error: $error');
 
                         return Container(
                           color: const Color(0xFFF1F0FE),

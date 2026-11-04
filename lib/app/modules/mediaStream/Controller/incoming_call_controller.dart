@@ -68,7 +68,6 @@ class IncomingCallController extends GetxController {
   void rejectCall() {
     FlutterRingtonePlayer().stop();
     final myId = Global.storageServices.get(PrefConst.userId).toString();
-    // print("CallRejectedUserId=${myId == call.callerId ? call.receiverId : call.callerId}");
     socket?.emit("rejectCall", {
       "callId":call.callId,
       "remoteUserId":myId ,

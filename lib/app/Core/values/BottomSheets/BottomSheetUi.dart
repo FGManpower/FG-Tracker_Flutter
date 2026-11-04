@@ -23,6 +23,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class BottomSheetUi {
   void showMemberBottomSheet(
     BuildContext context,
@@ -126,14 +127,14 @@ class BottomSheetUi {
                 return;
               }
 
-              debugPrint(
+              AppLog.d(
                   "🔍 [BottomSheetUi] Fetching members for groupId: $effectiveGroupId");
 
               try {
                 final res = await MessageRepo.getGroupMembers(
                     groupId: effectiveGroupId);
                 if (res.locations != null && res.locations!.isNotEmpty) {
-                  debugPrint(
+                  AppLog.d(
                       "✅ [BottomSheetUi] MessageRepo returned ${res.locations!.length} members");
                   if (bottomSheetContext.mounted) {
                     setModalState(() {
@@ -145,7 +146,7 @@ class BottomSheetUi {
                   return;
                 }
               } catch (e) {
-                debugPrint(
+                AppLog.d(
                     "❌ [BottomSheetUi] Error fetching via MessageRepo: $e");
               }
 
@@ -154,7 +155,7 @@ class BottomSheetUi {
                     await GroupRepo.getMemberData(effectiveGroupId.toString());
                 if (fallbackRes.memberData != null &&
                     fallbackRes.memberData!.isNotEmpty) {
-                  debugPrint(
+                  AppLog.d(
                       "✅ [BottomSheetUi] GroupRepo returned ${fallbackRes.memberData!.length} members");
                   final mapped = fallbackRes.memberData!.map((m) {
                     return LocationData(
@@ -183,13 +184,13 @@ class BottomSheetUi {
                   return;
                 }
               } catch (e) {
-                debugPrint("❌ [BottomSheetUi] Fallback fetch error: $e");
+                AppLog.d("❌ [BottomSheetUi] Fallback fetch error: $e");
               }
 
               try {
                 final raw = await HttpUtil()
                     .get("/getMembers?groupId=$effectiveGroupId");
-                debugPrint("🔍 [BottomSheetUi] Raw response: $raw");
+                AppLog.d("🔍 [BottomSheetUi] Raw response: $raw");
                 final parsed = LocationDataRes.fromJson(raw);
                 if (parsed.locations != null && parsed.locations!.isNotEmpty) {
                   if (bottomSheetContext.mounted) {
@@ -203,7 +204,7 @@ class BottomSheetUi {
                   return;
                 }
               } catch (e) {
-                debugPrint("❌ [BottomSheetUi] Direct raw fetch error: $e");
+                AppLog.d("❌ [BottomSheetUi] Direct raw fetch error: $e");
               }
 
               if (bottomSheetContext.mounted) {

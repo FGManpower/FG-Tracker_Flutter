@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:get/get.dart';
 
+import '../../../Core/values/global.dart';
 import '../../../Data/Repositories/Notification_Repo.dart';
 import '../../../Model/notification_model.dart';
 
@@ -27,6 +28,9 @@ class NotificationController extends GetxController {
   }
 
   Future<void> refreshNotifications() async {
+    final token = Global.storageServices.getaccesstoken();
+    if (token == null || token.isEmpty) return;
+
     responseError.value = "";
 
     notifications.clear();

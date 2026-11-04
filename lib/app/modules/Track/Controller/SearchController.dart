@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Model/LocationDataRes.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class SearchMemberController extends GetxController {
   List<LocationData> allMembers = [];
   RxList<LocationData> filteredMembers = <LocationData>[].obs;
@@ -22,7 +23,7 @@ class SearchMemberController extends GetxController {
         }
       }
     } catch (e) {
-      debugPrint("Error loading arguments in SearchMemberController: $e");
+      AppLog.d("Error loading arguments in SearchMemberController: $e");
     }
     filteredMembers.assignAll(allMembers);
   }

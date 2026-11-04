@@ -9,7 +9,7 @@ import '../../../Data/Services/Tracking.dart';
 import '../../../Model/MemberDataRes.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
-import '../../../routes/app_pages.dart';
+import '../../../Core/util/chat_navigation.dart';
 import '../Controller/SearchController.dart';
 
 class SearchMembers extends GetView<SearchMemberController> {
@@ -193,15 +193,13 @@ class SearchMembers extends GetView<SearchMemberController> {
                                 isOnline: isOnline,
                               );
 
-                              Get.toNamed(
-                                Routes.chatScreen,
-                                arguments: {
-                                  "userData": memberData,
-                                  "groupName": "Members Chat",
-                                  "isCreator": false,
-                                  "type": "",
-                                },
-                              );
+                              ChatNavigation.openPrivateChat({
+                                "userData": memberData,
+                                "groupName": "Members Chat",
+                                "isCreator": false,
+                                "type": "",
+                                "source": "search_members",
+                              });
                             },
                             child: Container(
                               padding: EdgeInsets.all(8),

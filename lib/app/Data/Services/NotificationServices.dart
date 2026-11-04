@@ -30,6 +30,7 @@ import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_notification
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:walkie_custom_notification/walkie_custom_notification.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 @pragma('vm:entry-point')
 void notificationTapBackground(
     NotificationResponse notificationResponse) async {
@@ -249,7 +250,7 @@ class firebaseNotificationServices {
         }
         return;
       } catch (e) {
-        debugPrint("Notification payload parse error: $e");
+        AppLog.d("Notification payload parse error: $e");
       }
     }
   }
@@ -507,7 +508,7 @@ class firebaseNotificationServices {
     }
     if ((title == null || title.trim().isEmpty) &&
         (body == null || body.trim().isEmpty)) {
-      debugPrint("⏭️ Skipping local notification: message has no title/body");
+      AppLog.d("⏭️ Skipping local notification: message has no title/body");
       return;
     }
 
@@ -620,7 +621,7 @@ class firebaseNotificationServices {
 
       return false;
     } catch (e) {
-      debugPrint('Notification permission error: $e');
+      AppLog.d('Notification permission error: $e');
       return false;
     }
   }
@@ -779,7 +780,7 @@ class firebaseNotificationServices {
           ContextUtility.navigatorkey.currentState?.overlay?.context;
 
       if (context == null) {
-        debugPrint("Context not ready, skipping UI actions");
+        AppLog.d("Context not ready, skipping UI actions");
         return;
       }
 
@@ -811,13 +812,17 @@ class firebaseNotificationServices {
   }
 
   static Future<String> getDeviceTokenToSendNotification() async {
-    fcmToken = (await FirebaseMessaging.instance.getToken()).toString();
-    return fcmToken;
+    try {
+      fcmToken = (await FirebaseMessaging.instance.getToken())?.toString() ?? "";
+      return fcmToken;
+    } catch (e) {
+      AppLog.d("FCM token retrieval skipped/failed: $e");
+      return "";
+    }
   }
 
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
-    print("Notification-MessageData:${message.data}");
     final data = message.data;
     if (data['type'] == 'FORCE_LOGOUT' ||
         data['screen_name'] == 'force_logout') {
@@ -841,7 +846,7 @@ class firebaseNotificationServices {
           memberData =
               MemberData.fromJson(jsonDecode(message.data['memberData']));
         } catch (e) {
-          debugPrint("Invalid memberData format: $e");
+          AppLog.d("Invalid memberData format: $e");
         }
         if (memberData != null) {
           memberData.groupId = 0;
@@ -894,7 +899,6 @@ class firebaseNotificationServices {
       //
       // final data = jsonDecode(message.data['callData']);
       //
-      // print("=========againCalledgroupIncommingScreen");
       // CallStateTracker.isIncomingCallScreenOpen = true;
       // Get.toNamed(
       //   Routes.groupIncomingCallScreen,
@@ -985,7 +989,6 @@ class firebaseNotificationServices {
         }
       }
     } else {
-      print("===========groupcallingscreenworkig....");
       if (message.data['screen_name'] == "group_walkie" ||
           message.data['screenName'] == "group_walkie" ||
           message.data['screen_name'] == "groupWalkie" ||

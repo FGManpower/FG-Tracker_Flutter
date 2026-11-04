@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class VoiceInputSheet {
   static Future<void> show({
     required BuildContext context,
@@ -84,7 +85,7 @@ class VoiceInputSheet {
   }) async {
     var status = await permission.status;
     if (kDebugMode) {
-      debugPrint('[VoiceInput] $permission status: $status');
+      AppLog.d('[VoiceInput] $permission status: $status');
     }
     if (status.isGranted || status.isLimited) return true;
 
@@ -164,7 +165,7 @@ class _PermissionDialogState extends State<_PermissionDialog>
     if (state == AppLifecycleState.resumed && !widget.canRequest) {
       widget.permission.status.then((status) {
         if (kDebugMode) {
-          debugPrint('[VoiceInput] App resumed, re-checked status: $status');
+          AppLog.d('[VoiceInput] App resumed, re-checked status: $status');
         }
         if (status.isGranted || status.isLimited) {
           if (mounted) Navigator.of(context).pop(true);

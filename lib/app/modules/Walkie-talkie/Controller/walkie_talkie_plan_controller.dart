@@ -10,6 +10,7 @@ import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class WalkieTalkiePlanController extends GetxController {
   // 0 = Individual, 1 = Team Plan
   final RxInt selectedTab = 0.obs;
@@ -392,7 +393,7 @@ class WalkieTalkiePlanController extends GetxController {
         }
       }
     } catch (e) {
-      debugPrint("Error fetching individual plans: $e");
+      AppLog.d("Error fetching individual plans: $e");
       if (individualPlans.isEmpty && (selectedTab.value == 0 || groupPlans.isEmpty)) {
         errorMessage.value = _parseErrorMessage(e);
       }
@@ -429,7 +430,7 @@ class WalkieTalkiePlanController extends GetxController {
         }
       }
     } catch (e) {
-      debugPrint("Error fetching group plans: $e");
+      AppLog.d("Error fetching group plans: $e");
       if (groupPlans.isEmpty && (selectedTab.value == 1 || individualPlans.isEmpty)) {
         errorMessage.value = _parseErrorMessage(e);
       }
@@ -454,7 +455,7 @@ class WalkieTalkiePlanController extends GetxController {
         eligibleCoupons.assignAll(res.data!.coupons);
       }
     } catch (e) {
-      debugPrint("Error fetching eligible coupons: $e");
+      AppLog.d("Error fetching eligible coupons: $e");
     } finally {
       isLoadingCoupons.value = false;
     }
@@ -511,7 +512,7 @@ class WalkieTalkiePlanController extends GetxController {
         return false;
       }
     } catch (e) {
-      debugPrint("Error applying coupon: $e");
+      AppLog.d("Error applying coupon: $e");
       if (!isSilent) {
         showTopWhiteMessage(_parseErrorMessage(e));
       }

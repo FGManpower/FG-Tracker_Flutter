@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class GlobalAudioController extends GetxController {
   final AudioPlayer player = AudioPlayer();
 
@@ -42,7 +43,7 @@ class GlobalAudioController extends GetxController {
 
     // Errors while streaming (bad file, network drop) → mark that bubble failed
     player.playbackEventStream.listen((_) {}, onError: (Object e, StackTrace _) {
-      if (kDebugMode) debugPrint('[VM] playback error: $e');
+      if (kDebugMode) AppLog.d('[VM] playback error: $e');
       _markFailed(currentUrl.value);
     });
   }
@@ -64,7 +65,7 @@ class GlobalAudioController extends GetxController {
       ));
       await session.setActive(true);
     } catch (e) {
-      if (kDebugMode) debugPrint('[VM] audio session error: $e');
+      if (kDebugMode) AppLog.d('[VM] audio session error: $e');
     }
   }
 
@@ -89,7 +90,7 @@ class GlobalAudioController extends GetxController {
   }
 
   Future<void> play(String url) async {
-    if (kDebugMode) debugPrint('[VM] play url=$url current=${currentUrl.value}');
+    if (kDebugMode) AppLog.d('[VM] play url=$url current=${currentUrl.value}');
     errorUrl.value = "";
     try {
       await _configureSpeakerSession();
@@ -103,15 +104,15 @@ class GlobalAudioController extends GetxController {
             : AudioSource.file(url.replaceFirst('file://', ''));
         final dur = await player.setAudioSource(source);
         if (dur != null) durationCache[url] = dur;
-        if (kDebugMode) debugPrint('[VM] loaded duration=$dur');
+        if (kDebugMode) AppLog.d('[VM] loaded duration=$dur');
       }
       loadingUrl.value = "";
       unawaited(player.play());
     } on PlayerInterruptedException catch (e) {
       // Another voice note was tapped while this one was loading
-      if (kDebugMode) debugPrint('[VM] load interrupted: $e');
+      if (kDebugMode) AppLog.d('[VM] load interrupted: $e');
     } catch (e) {
-      if (kDebugMode) debugPrint('[VM] play failed: $e');
+      if (kDebugMode) AppLog.d('[VM] play failed: $e');
       await _markFailed(url);
     }
   }

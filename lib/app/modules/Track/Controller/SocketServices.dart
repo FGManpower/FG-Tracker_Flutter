@@ -136,9 +136,7 @@ class SocketService extends GetxService with WidgetsBindingObserver {
 
     _socket?.onDisconnect((_) => log(" Socket disconnected"));
     _socket?.onError((err) => log("Socket error: $err"));
-    _socket?.onAny((event, data) {
-      // print("===========LocationEvent:${event},Data:${data}");
-    });
+    _socket?.onAny((event, data) {});
   }
 
   void joinGroup({required String groupId, required String userId}) {
@@ -193,9 +191,6 @@ class SocketService extends GetxService with WidgetsBindingObserver {
     _socket?.emitWithAck(
       "send-location",
       payload,
-      ack: (response) {
-        print("======SenlocationResponse:${response}");
-      },
     );
   }
 

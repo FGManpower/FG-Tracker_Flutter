@@ -72,21 +72,33 @@ class ChatListRules {
         (updated.preview?.trim().isNotEmpty ?? false);
     if (!hasMessage) return false;
 
-    final updatedTime = lastMessageTime(updated);
-    final currentTime = lastMessageTime(current);
     final updatedId = lastMessageId(updated);
     final currentId = lastMessageId(current);
 
+    // If both IDs are present and distinct, this is definitely a new message.
     if (updatedId != null && currentId != null) {
-      return updatedId != currentId && !updatedTime.isBefore(currentTime);
+      if (updatedId != currentId) return true;
+      return false;
     }
-    return updatedTime.isAfter(currentTime);
+
+    final updatedTime = lastMessageTime(updated);
+    final currentTime = lastMessageTime(current);
+
+    // If message text changed, treat as new message unless timestamp is significantly older (>5s)
+    if (updated.message != null &&
+        current.message != null &&
+        updated.message != current.message) {
+      return !updatedTime.isBefore(currentTime.subtract(const Duration(seconds: 5)));
+    }
+
+    // Fallback timestamp comparison with clock skew grace
+    return updatedTime.isAfter(currentTime.subtract(const Duration(seconds: 2)));
   }
 
   /// Unread badge after merging a realtime update.
   /// - The chat open on screen is always 0 (the screen sends "read").
-  /// - A missing count keeps the current value.
-  /// - A new message *I* sent never raises my badge.
+  /// - If server count is provided, use it (guarding against own message raising badge).
+  /// - If server count is omitted in socket events, increment on new peer message.
   static int resolveUnread({
     required PrivateChatModel current,
     required PrivateChatModel updated,
@@ -97,15 +109,22 @@ class ChatListRules {
     if (isViewing) return 0;
     final server = updated.unreadCount;
     final local = current.unreadCount ?? 0;
-    if (server == null) return local;
-    final sentByMe = newMessage &&
-        myUserId.isNotEmpty &&
+
+    final sentByMe = myUserId.isNotEmpty &&
         updated.senderId != null &&
-        updated.senderId == myUserId;
-    // TODO(backend #7): server should send per-recipient unread counts; this
-    // guard only stops my own message from raising my badge.
-    if (sentByMe && server > local) return local;
-    return server < 0 ? 0 : server;
+        updated.senderId.toString() == myUserId;
+
+    if (server != null) {
+      if (sentByMe && server > local) return local;
+      return server < 0 ? 0 : server;
+    }
+
+    // Realtime socket events frequently omit unreadCount.
+    // If a new incoming message arrived from peer while not viewing, increment local counter.
+    if (newMessage && !sentByMe) {
+      return local + 1;
+    }
+    return local;
   }
 }
 

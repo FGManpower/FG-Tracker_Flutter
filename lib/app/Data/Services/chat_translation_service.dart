@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class ChatTranslationService extends GetxService {
   static ChatTranslationService get instance {
     if (!Get.isRegistered<ChatTranslationService>()) {
@@ -87,7 +88,7 @@ class ChatTranslationService extends GetxService {
             }
           }
         } catch (e) {
-          debugPrint(
+          AppLog.d(
               '⚠️ [ChatTranslationService] Transliteration API Error: $e');
         }
       }
@@ -119,7 +120,7 @@ class ChatTranslationService extends GetxService {
             }
           }
         } catch (e) {
-          debugPrint('⚠️ [ChatTranslationService] GTX API Error: $e');
+          AppLog.d('⚠️ [ChatTranslationService] GTX API Error: $e');
         }
       }
 
@@ -142,7 +143,7 @@ class ChatTranslationService extends GetxService {
             }
           }
         } catch (e) {
-          debugPrint('⚠️ [ChatTranslationService] Dict-Chrome API Error: $e');
+          AppLog.d('⚠️ [ChatTranslationService] Dict-Chrome API Error: $e');
         }
       }
 
@@ -166,7 +167,7 @@ class ChatTranslationService extends GetxService {
         return finalTranslated.trim();
       }
     } catch (e) {
-      debugPrint('❌ [ChatTranslationService] Dynamic Translation Error: $e');
+      AppLog.d('❌ [ChatTranslationService] Dynamic Translation Error: $e');
     } finally {
       isTranslating[messageId] = false;
       isTranslating.refresh();
@@ -219,7 +220,7 @@ class ChatTranslationService extends GetxService {
       isAudioLoading.value = false;
       await _audioPlayer.play();
     } catch (e) {
-      debugPrint('❌ [ChatTranslationService] Error playing TTS: $e');
+      AppLog.d('❌ [ChatTranslationService] Error playing TTS: $e');
       currentlyPlayingId.value = '';
       isAudioLoading.value = false;
     }

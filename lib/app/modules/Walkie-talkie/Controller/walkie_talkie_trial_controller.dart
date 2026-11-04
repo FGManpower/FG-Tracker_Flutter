@@ -8,6 +8,7 @@ import 'package:fgtracker/app/Model/walkie_talkie_trial_details_model.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class WalkieTalkieTrialController extends GetxController
     with WidgetsBindingObserver {
   final WalkieTalkieTrialService _service = WalkieTalkieTrialService();
@@ -329,7 +330,7 @@ class WalkieTalkieTrialController extends GetxController
       errorMessage.value = 'Invalid response received from server.';
     } catch (error, stackTrace) {
       if (isClosed || requestId != _requestVersion) return;
-      debugPrint('Walkie-Talkie overview error: $error');
+      AppLog.d('Walkie-Talkie overview error: $error');
       debugPrintStack(stackTrace: stackTrace);
       errorMessage.value =
           'Unable to load Walkie-Talkie details. Please check your connection.';

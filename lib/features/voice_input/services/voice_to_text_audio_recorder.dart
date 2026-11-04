@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 /// Helper service for voice playback generation during Voice-to-Text.
 /// Does NOT touch hardware microphone during live speech recognition,
 /// avoiding Android OS concurrent AudioRecord conflicts that mute SpeechRecognizer.
@@ -54,14 +55,14 @@ class VoiceToTextAudioRecorder {
         await file.writeAsBytes(response.bodyBytes, flush: true);
         _currentAudioPath = filePath;
         if (kDebugMode) {
-          debugPrint(
+          AppLog.d(
               '[VoiceToTextAudioRecorder] Generated audio for review: $filePath (${response.bodyBytes.length} bytes)');
         }
         return filePath;
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[VoiceToTextAudioRecorder] Audio generation failed: $e');
+        AppLog.d('[VoiceToTextAudioRecorder] Audio generation failed: $e');
       }
     }
     return null;

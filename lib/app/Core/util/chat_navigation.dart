@@ -1,6 +1,8 @@
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/chat_list_controller.dart';
+import 'package:fgtracker/app/Core/util/rt_log.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:get/get.dart';
 
@@ -19,9 +21,35 @@ class ChatNavigation {
   static const Duration _disposeWait = Duration(milliseconds: 650);
 
   static Future<void> openPrivateChat(Map<String, dynamic> arguments) async {
+    final peer = _peerId(arguments['userData']);
+
+    // Auto-resolve chatId from ChatListController if caller didn't supply it (e.g. from Group member list)
+    if ((arguments['chatId'] == null ||
+            arguments['chatId'].toString().isEmpty ||
+            arguments['chatId'].toString() == 'null') &&
+        peer != null &&
+        Get.isRegistered<ChatListController>()) {
+      final existing =
+          Get.find<ChatListController>().findPrivateChatByUserId(peer);
+      final resolved =
+          existing?.chatId ?? existing?.conversationId ?? existing?.id;
+      if (resolved != null && resolved.toString().isNotEmpty) {
+        arguments['chatId'] = resolved.toString();
+      }
+    }
+
+    ChatDiagnosticLogger.logEvent(
+      category: 'NAV',
+      action: 'openPrivateChat',
+      details: {
+        'peer': peer,
+        'chatId': arguments['chatId']?.toString(),
+        'source': arguments['source'] ?? arguments['type'] ?? 'unknown',
+      },
+    );
+
     if (Get.currentRoute == Routes.chatScreen &&
         Get.isRegistered<MessageController>()) {
-      final peer = _peerId(arguments['userData']);
       final current = Get.find<MessageController>();
       String? currentPeer;
       try {
@@ -59,8 +87,15 @@ class ChatNavigation {
   }
 
   static String? _peerId(dynamic userData) {
+    if (userData == null) return null;
     if (userData is MemberData) return userData.userId?.toString();
-    if (userData is Map) return userData['userId']?.toString();
+    if (userData is Map) {
+      return (userData['userId'] ?? userData['_id'] ?? userData['id'])?.toString();
+    }
+    try {
+      final dynamic uid = (userData as dynamic).userId ?? (userData as dynamic).id;
+      if (uid != null) return uid.toString();
+    } catch (_) {}
     return null;
   }
 }

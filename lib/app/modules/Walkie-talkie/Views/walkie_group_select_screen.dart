@@ -28,6 +28,7 @@ import '../../Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/Model/walkie_channel_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_channel_controller.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class AssignedMemberItem {
   final String id;
   final String name;
@@ -172,7 +173,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
 
       // 1. Primary: All Group Members API (filter=subscription)
       try {
-        debugPrint(
+        AppLog.d(
             "🚀 [Walkie] Fetching subscription group members (filter=subscription, page=$pageToFetch)...");
         final GroupMemberModel subRes = await TrackRepo.getGroupMember(
           page: pageToFetch.toString(),
@@ -319,7 +320,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             }
             planStatusLoaded.value = true;
 
-            debugPrint(
+            AppLog.d(
                 "🎯 [Walkie] HasTeam: ${hasTeamPlan.value} | AssignedMember: $isAssignedTeamMember | CanManage: ${canManageMembers.value} | Started: ${teamHasStarted.value} | Seats: ${teamAssignedSeats.value}/${teamPurchasedSeats.value} (Avail: ${teamAvailableSeats.value})");
           }
 
@@ -471,11 +472,11 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             availableMembers.assignAll(loadedExpired);
           }
 
-          debugPrint(
+          AppLog.d(
               "✅ [Walkie] ${loadMore ? 'Page $pageToFetch' : 'Initial'} Loaded ${loaded.length} members (Subscribed: ${loadedSubscribed.length}, Available: ${loadedExpired.length})");
         }
       } catch (e) {
-        debugPrint("❌ Error fetching filter=subscription members: $e");
+        AppLog.d("❌ Error fetching filter=subscription members: $e");
       }
 
       // 2. Secondary fallback: GroupRepo.getMemberData if available (only on initial load)
@@ -522,7 +523,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               }
             }
           } catch (e) {
-            debugPrint("Error fetching group members for $gId: $e");
+            AppLog.d("Error fetching group members for $gId: $e");
           }
           if (loaded.length >= 10) break;
         }
@@ -569,7 +570,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             availableMembers.add(item);
           }
         } catch (e) {
-          debugPrint("Fallback filter=all error: $e");
+          AppLog.d("Fallback filter=all error: $e");
         }
       }
 
@@ -587,7 +588,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         membersError.value = "";
       }
     } catch (e) {
-      debugPrint("Error in fetchMembersFromApi: $e");
+      AppLog.d("Error in fetchMembersFromApi: $e");
       final errStr = e.toString().toLowerCase();
       if (errStr.contains("socketexception") ||
           errStr.contains("network is unreachable") ||
@@ -743,7 +744,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               controller.groupName.clear();
               controller.groupDesc.clear();
             } catch (e) {
-              debugPrint("Clear error: $e");
+              AppLog.d("Clear error: $e");
             }
             showCreateGroupSheet();
           },
@@ -1029,7 +1030,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         return fallbackIcon();
                       },
                       errorBuilder: (context, error, stackTrace) {
-                        debugPrint(
+                        AppLog.d(
                             "⚠️ [WalkieGroupAvatar] Failed loading image '$groupImageUrl': $error");
                         return fallbackIcon();
                       },
@@ -2918,7 +2919,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         await fetchMembersFromApi();
       }
     } catch (e) {
-      debugPrint("❌ [Walkie] Error submitting member subscriptions: $e");
+      AppLog.d("❌ [Walkie] Error submitting member subscriptions: $e");
       final String errStr = e.toString();
       if (errStr.contains("409") || errStr.toLowerCase().contains("seat")) {
         Utils().fluttertoast("No team seats available. Refreshing member list...");

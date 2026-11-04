@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class WalkieChannelController extends GetxController {
   final RxList<WalkieChannelItem> channels = <WalkieChannelItem>[].obs;
   final RxBool isLoading = false.obs;
@@ -122,7 +123,7 @@ class WalkieChannelController extends GetxController {
         }
         _safeChannelsRefresh();
       } catch (e) {
-        debugPrint("⚠️ [WalkieChannelController] channelChangedHandler error: $e");
+        AppLog.d("⚠️ [WalkieChannelController] channelChangedHandler error: $e");
       }
     };
     socket.on('walkie_notification_channel_changed', _channelChangedHandler);
@@ -163,10 +164,10 @@ class WalkieChannelController extends GetxController {
       if (socket != null && socket.connected && channels.isNotEmpty) {
         final groupIds = channels.map((c) => c.groupId).toList();
         socket.emit('subscribe_channel_updates', {'groupIds': groupIds});
-        debugPrint("📡 [WalkieChannelController] Emitted subscribe_channel_updates: $groupIds");
+        AppLog.d("📡 [WalkieChannelController] Emitted subscribe_channel_updates: $groupIds");
       }
     } catch (e) {
-      debugPrint("⚠️ [WalkieChannelController] subscribeChannelUpdates error: $e");
+      AppLog.d("⚠️ [WalkieChannelController] subscribeChannelUpdates error: $e");
     }
   }
 
@@ -229,11 +230,11 @@ class WalkieChannelController extends GetxController {
         channels[idx].activeSpeakerId = parsedSpeakerId;
         channels[idx].activeSpeakerImage = parsedSpeakerImage;
         _safeChannelsRefresh();
-        debugPrint(
+        AppLog.d(
             "🎙️ [WalkieChannelController] Real-time active speaker updated: group $gId -> ${channels[idx].activeSpeakerName}");
       }
     } catch (e) {
-      debugPrint("⚠️ [WalkieChannelController] onSpeakerActiveFromSocket error: $e");
+      AppLog.d("⚠️ [WalkieChannelController] onSpeakerActiveFromSocket error: $e");
     }
   }
 
@@ -267,11 +268,11 @@ class WalkieChannelController extends GetxController {
         channels[idx].activeSpeakerName = null;
         channels[idx].activeSpeakerId = null;
         _safeChannelsRefresh();
-        debugPrint(
+        AppLog.d(
             "⏹️ [WalkieChannelController] Real-time speaker stopped: group $gId");
       }
     } catch (e) {
-      debugPrint("⚠️ [WalkieChannelController] onSpeakerStoppedFromSocket error: $e");
+      AppLog.d("⚠️ [WalkieChannelController] onSpeakerStoppedFromSocket error: $e");
     }
   }
 
@@ -294,7 +295,7 @@ class WalkieChannelController extends GetxController {
         onSpeakerStoppedFromSocket(data);
       }
     } catch (e) {
-      debugPrint("⚠️ [WalkieChannelController] onChannelSpeakerUpdateFromSocket error: $e");
+      AppLog.d("⚠️ [WalkieChannelController] onChannelSpeakerUpdateFromSocket error: $e");
     }
   }
 
@@ -348,7 +349,7 @@ class WalkieChannelController extends GetxController {
       subscribeChannelUpdates();
     } catch (e) {
       errorMessage.value = e.toString();
-      debugPrint("❌ [WalkieChannelController] fetchChannels error: $e");
+      AppLog.d("❌ [WalkieChannelController] fetchChannels error: $e");
     } finally {
       if (showLoading) isLoading.value = false;
     }
@@ -454,7 +455,7 @@ class WalkieChannelController extends GetxController {
 
       return true;
     } catch (e) {
-      debugPrint("❌ [WalkieChannelController] selectActiveSpeakingChannel error: $e");
+      AppLog.d("❌ [WalkieChannelController] selectActiveSpeakingChannel error: $e");
       final errStr = e.toString().toLowerCase();
       if (errStr.contains("subscription") ||
           errStr.contains("trial") ||
@@ -494,7 +495,7 @@ class WalkieChannelController extends GetxController {
       }
       _safeChannelsRefresh();
     } catch (e) {
-      debugPrint("❌ [WalkieChannelController] clearActiveChannel error: $e");
+      AppLog.d("❌ [WalkieChannelController] clearActiveChannel error: $e");
     }
   }
 }

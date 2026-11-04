@@ -20,6 +20,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 class WalkieOrderSummaryController extends GetxController {
   late final Razorpay _razorpay;
   late final Rx<WalkiePaymentOrderModel> order;
@@ -303,7 +304,7 @@ class WalkieOrderSummaryController extends GetxController {
         }
       }
     } catch (e) {
-      debugPrint("Error fetching order summary: $e");
+      AppLog.d("Error fetching order summary: $e");
       if (summaryData.value == null) {
         errorMessage.value = _parseErrorMessage(e);
       }
@@ -327,7 +328,7 @@ class WalkieOrderSummaryController extends GetxController {
         eligibleCoupons.assignAll(response.data!.coupons);
       }
     } catch (e) {
-      debugPrint("Error fetching eligible coupons: $e");
+      AppLog.d("Error fetching eligible coupons: $e");
     } finally {
       isLoadingCoupons.value = false;
     }
@@ -444,13 +445,13 @@ class WalkieOrderSummaryController extends GetxController {
   }
 
   Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
-    debugPrint("✅ [WalkieOrderSummaryController] Payment Success callback received: ${response.paymentId}");
+    AppLog.d("✅ [WalkieOrderSummaryController] Payment Success callback received: ${response.paymentId}");
     isProcessingPayment.value = false;
     HapticFeedback.heavyImpact();
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    debugPrint(
+    AppLog.d(
         "❌ [WalkieOrderSummaryController] Payment Error: Code ${response.code} | Message: ${response.message}");
     isProcessingPayment.value = false;
     HapticFeedback.mediumImpact();
@@ -651,7 +652,7 @@ class WalkieOrderSummaryController extends GetxController {
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
-    debugPrint("💳 Razorpay External Wallet: ${response.walletName}");
+    AppLog.d("💳 Razorpay External Wallet: ${response.walletName}");
     isProcessingPayment.value = false;
   }
 
@@ -670,7 +671,7 @@ class WalkieOrderSummaryController extends GetxController {
       final String couponCode =
           isCouponApplied ? (currentPromoCode ?? "") : "";
 
-      debugPrint(
+      AppLog.d(
           "🚀 [CreateOrder API] Request: planId=$planId, purchasedSeats=$seats, couponCode='$couponCode'");
 
       // 2. Hit WalkiePlanRepo.createOrder API
@@ -733,14 +734,14 @@ class WalkieOrderSummaryController extends GetxController {
         razorpayKey = initPayment.razorpay!.keyId!;
       }
 
-      debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-      debugPrint("🔍 [Payment Debug] createOrder.razorpay.keyId : '${rzp?.keyId}'");
-      debugPrint("🔍 [Payment Debug] createOrder.razorpay.orderId: '${rzp?.orderId}'");
-      debugPrint("🔍 [Payment Debug] initialize.razorpay.keyId  : '${initPayment?.razorpay?.keyId}'");
-      debugPrint("🔍 [Payment Debug] initialize.razorpay.mode   : '${initPayment?.razorpay?.mode}'");
-      debugPrint("🔍 [Payment Debug] ConstRes.activePaymentKey  : '${ConstRes.activePaymentKey}'");
-      debugPrint("👉 [Payment Debug] FINAL KEY PASSED TO SDK    : '$razorpayKey'");
-      debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      AppLog.d("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      AppLog.d("🔍 [Payment Debug] createOrder.razorpay.keyId : '${rzp?.keyId}'");
+      AppLog.d("🔍 [Payment Debug] createOrder.razorpay.orderId: '${rzp?.orderId}'");
+      AppLog.d("🔍 [Payment Debug] initialize.razorpay.keyId  : '${initPayment?.razorpay?.keyId}'");
+      AppLog.d("🔍 [Payment Debug] initialize.razorpay.mode   : '${initPayment?.razorpay?.mode}'");
+      AppLog.d("🔍 [Payment Debug] ConstRes.activePaymentKey  : '${ConstRes.activePaymentKey}'");
+      AppLog.d("👉 [Payment Debug] FINAL KEY PASSED TO SDK    : '$razorpayKey'");
+      AppLog.d("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
       final Map<String, dynamic> razorpayOptions = {
         'key': razorpayKey,
@@ -848,7 +849,7 @@ class WalkieOrderSummaryController extends GetxController {
       );
     } catch (e) {
       isProcessingPayment.value = false;
-      debugPrint("❌ [Razorpay] Exception opening checkout: $e");
+      AppLog.d("❌ [Razorpay] Exception opening checkout: $e");
       showTopWhiteMessage(_parseErrorMessage(e));
     }
   }

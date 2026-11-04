@@ -7,6 +7,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 
+import 'package:fgtracker/app/Core/util/app_log.dart';
 enum CallAudioRoute { earpiece, speaker, bluetooth, headset }
 
 class CallAudioRouteController extends GetxController
@@ -54,7 +55,7 @@ class CallAudioRouteController extends GetxController
 
   Future<void> _routeQueue = Future.value();
 
-  void _log(String message) => debugPrint('[CallAudioRoute] $message');
+  void _log(String message) => AppLog.d('[CallAudioRoute] $message');
 
   void _safeUpdate() {
     try {

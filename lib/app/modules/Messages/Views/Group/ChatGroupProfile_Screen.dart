@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/chat_navigation.dart';
 import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
@@ -797,23 +798,16 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       isOnline: online,
     );
 
-    await Get.to(
-      () => ChatScreen(),
-      arguments: {
-        "userData": memberData,
-        "type": "chatScreen",
-        "chatType": "private",
-        "chatId": chatId,
-        "groupId": 0,
-        "groupName": m.name ?? "Chat",
-        "isCreator": false,
-      },
-      binding: BindingsBuilder(() {
-        if (!Get.isRegistered<MessageController>()) {
-          Get.put(MessageController());
-        }
-      }),
-    );
+    await ChatNavigation.openPrivateChat({
+      "userData": memberData,
+      "type": "chatScreen",
+      "chatType": "private",
+      "chatId": chatId,
+      "groupId": 0,
+      "groupName": m.name ?? "Chat",
+      "isCreator": false,
+      "source": "group_profile_member_list",
+    });
   }
 
   Widget _memberTile(
