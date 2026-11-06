@@ -33,6 +33,7 @@ import 'chat_list_controller.dart';
 import 'chat_screen_logic.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/app/Core/util/rt_attachment_log.dart'; // TODO(rt-diagnostics)
 void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
   if (kDebugMode) {
     developer.log(message, error: error, stackTrace: stackTrace, name: name ?? 'MessageController');
@@ -708,6 +709,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             final existingIndex = _messages.indexWhere(
               (msg) => msg.id == messageData.id && messageData.id != null,
             );
+            rtModel('private socket', messageData,
+                extra: 'alreadyInList=${existingIndex != -1}'); // TODO(rt-diagnostics)
 
             if (existingIndex != -1) {
               final existing = _messages[existingIndex];
@@ -728,6 +731,15 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                 existing.thumbnail = messageData.thumbnail;
                 updateMessageStream();
               }
+              // receive_message arrives twice for the same id: the first
+              // event can lack the attachment (images / video / audio URL),
+              // and the content check above then skipped the second one, so
+              // the media only showed after re-opening. Fill what's missing.
+              if (existing.mergeAttachmentFrom(messageData)) {
+                updateMessageStream();
+              }
+              rtDecision('private list', messageData,
+                  'MERGED into index $existingIndex (contentUpdated=${!hasOldContent && hasNewContent}) listLength=${_messages.length}'); // TODO(rt-diagnostics)
             } else {
               final wasAtBottom = isUserAtBottom();
               final isMyMessage =
@@ -764,6 +776,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
               _messages.add(messageData);
               updateMessageStream();
+              rtDecision('private list', messageData,
+                  'ADDED listLength=${_messages.length} streamEmitted=true'); // TODO(rt-diagnostics)
 
               if (isMyMessage || wasAtBottom) {
                 scrollToBottom();
@@ -1769,6 +1783,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           hasNextPage: result.pagination?.hasNextPage,
         );
         _historyLoaded = true;
+        for (final m in _messages) {
+          rtModel('private history', m); // TODO(rt-diagnostics)
+        }
 
         if (_messages.isNotEmpty) {
           scrollToBottom(instant: true);
@@ -1876,6 +1893,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           hasNextPage: result.pagination?.hasNextPage,
         );
         _historyLoaded = true;
+        for (final m in _messages) {
+          rtModel('private history', m); // TODO(rt-diagnostics)
+        }
 
         log("HISTORY DEBUG => mapped message count: ${_messages.length}");
 

@@ -6,6 +6,7 @@ import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Messages/Views/Group/ChatGroupProfile_Screen.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatInputArea.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatList.dart';
+import 'package:fgtracker/app/modules/Messages/widgets/chat_list_row_widgets.dart';
 import 'package:fgtracker/app/widgets/PinnedMessageBanner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -211,7 +212,10 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 ),
               );
             }),
-            ChatInputArea(
+            // Backend v2.5.0: deactivated group = banner instead of input.
+            Obx(() => controller.isGroupDeactivated
+                ? const DeactivatedGroupBanner()
+                : ChatInputArea(
               messageText: controller.messageText,
               imagePath: controller.imagePaths,
               videoPaths: controller.videoPaths,
@@ -260,7 +264,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                   await controller.sendContact(contact: contact);
                 }
               },
-            ),
+            )),
           ],
         ),
       ),
@@ -269,11 +273,15 @@ class GroupChatScreen extends GetView<GroupMessageController> {
     // System back (Android back / iOS swipe) closes the emoji panel first,
     // like WhatsApp, instead of leaving the chat. The app-bar arrow still
     // leaves directly (Navigator.pop ignores PopScope).
+    // Back order: emoji panel → search → screen.
     return Obx(() => PopScope(
-          canPop: !controller.showEmoji.value,
+          canPop: !controller.showEmoji.value && !controller.isSearching.value,
           onPopInvokedWithResult: (didPop, _) {
-            if (!didPop && controller.showEmoji.value) {
+            if (didPop) return;
+            if (controller.showEmoji.value) {
               controller.showEmoji.value = false;
+            } else if (controller.isSearching.value) {
+              controller.stopSearch();
             }
           },
           child: scaffold,
@@ -376,6 +384,8 @@ class GroupChatScreen extends GetView<GroupMessageController> {
       ),
       title: TextField(
         autofocus: true,
+        // Keyboard and emoji panel never show together.
+        onTap: controller.hideEmoji,
         decoration: const InputDecoration(
           hintText: "Search messages...",
           border: InputBorder.none,

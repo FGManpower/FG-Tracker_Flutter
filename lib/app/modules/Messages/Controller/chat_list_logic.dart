@@ -97,8 +97,10 @@ class ChatListRules {
       return !updatedTime.isBefore(currentTime.subtract(const Duration(seconds: 5)));
     }
 
-    // Fallback timestamp comparison with clock skew grace
-    return updatedTime.isAfter(currentTime.subtract(const Duration(seconds: 2)));
+    // No ids and same text: only a strictly newer time is a new message.
+    // The old 2 s "grace" made a duplicate event (receive_message arrives
+    // twice, same text + time) count as new and bump the unread badge again.
+    return updatedTime.isAfter(currentTime);
   }
 
   /// Unread badge after merging a realtime update.
@@ -112,6 +114,9 @@ class ChatListRules {
     required bool isViewing,
     required String myUserId,
     bool readLocally = false,
+    // True when this message id was already counted (the same message
+    // arrives twice over the socket); the controller dedupes by id.
+    bool alreadyCounted = false,
   }) {
     if (isViewing) return 0;
     final server = updated.unreadCount;
@@ -131,9 +136,16 @@ class ChatListRules {
       return server < 0 ? 0 : server;
     }
 
-    // Realtime socket events frequently omit unreadCount.
-    // If a new incoming message arrived from peer while not viewing, increment local counter.
-    if (newMessage && !sentByMe) {
+    // Realtime socket events frequently omit unreadCount. +1 only for a new
+    // message from a KNOWN other user that has not been counted yet (the
+    // same message arriving twice must count once), never for a deleted one.
+    final fromOther = updated.senderId != null &&
+        updated.senderId.toString().isNotEmpty &&
+        !sentByMe;
+    if (newMessage &&
+        fromOther &&
+        !alreadyCounted &&
+        updated.isDeletedForEveryone != true) {
       return local + 1;
     }
     return local;

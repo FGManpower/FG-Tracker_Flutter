@@ -34,6 +34,10 @@ import 'chat_list_controller.dart';
 import 'chat_screen_logic.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/app/Core/util/rt_attachment_log.dart'; // TODO(rt-diagnostics)
+import 'group_profile_details_controller.dart';
+import '../../Group/controller/MemberController.dart';
+import 'package:flutter/foundation.dart' show kDebugMode; // TODO(gc-diagnostics)
 class GroupMessageController extends GetxController with WidgetsBindingObserver {
   final socketService = SocketMessageService.instance;
 
@@ -209,6 +213,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     groupName.value = arguments?["groupName"]?.toString() ?? "";
     groupDesc.value = arguments?["groupDesc"]?.toString() ?? "";
     groupImage = arguments?["groupImage"] ?? arguments?["groupProfile"] ?? "";
+    _deactivatedOnOpen = _readDeactivatedFromArguments();
 
     WidgetsBinding.instance.addObserver(this);
     initializeGroupChat();
@@ -218,6 +223,36 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   }
 
   int? _attendanceListenerToken;
+
+  // ---- Deactivated group (backend v2.5.0) ----
+  bool _deactivatedOnOpen = false;
+
+  /// "groupStatus": "deactivated" / "isDeactivated": true from the opener
+  /// (chat list passes it), or an explicit "isActive": false.
+  bool _readDeactivatedFromArguments() {
+    final status = arguments?["groupStatus"]?.toString().toLowerCase();
+    final flag = arguments?["isDeactivated"];
+    final active = arguments?["isActive"]?.toString().toLowerCase();
+    return status == "deactivated" ||
+        flag == true ||
+        flag?.toString() == "true" ||
+        active == "false";
+  }
+
+  /// True while the group is deactivated by its admin: the screen shows a
+  /// banner instead of the input and sending is blocked. A live
+  /// `group_status_updated` event wins over the value the screen opened
+  /// with. Reactive (read inside Obx).
+  bool get isGroupDeactivated =>
+      socketService.groupDeactivated[groupId.toString()] ??
+      _deactivatedOnOpen;
+
+  /// Send guard: nothing is sent to a deactivated group.
+  bool _blockIfDeactivated() {
+    if (!isGroupDeactivated) return false;
+    Utils().fluttertoast("This group has been deactivated by the Admin");
+    return true;
+  }
 
   bool _isOtherGroup(dynamic eventGroupId) =>
       eventGroupId != null && eventGroupId.toString() != groupId.toString();
@@ -304,6 +339,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             incomingMessage.groupId;
         if (eventGroupId != null && eventGroupId.toString() != groupId.toString()) {
           AppLog.d("GROUP MESSAGE IGNORED => DIFFERENT GROUP $eventGroupId vs $groupId");
+          rtDecision('group listener', incomingMessage,
+              'SKIPPED: different group ($eventGroupId vs $groupId)'); // TODO(rt-diagnostics)
           return;
         }
 
@@ -331,9 +368,16 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
               item.senderId?.toString() == currentUserId &&
               item.messageType == incomingMessage.messageType);
         }
+        rtModel('group socket', incomingMessage,
+            extra: 'matchedIndex=$existingIndex '
+                'matchedIsTemp=${existingIndex != -1 && _messages[existingIndex].id == null} '
+                'matchedImages=${existingIndex != -1 ? _messages[existingIndex].images : '-'} '
+                'matchedContent=${existingIndex != -1 ? _messages[existingIndex].content : '-'}'); // TODO(rt-diagnostics)
 
         if (existingIndex != -1) {
           final existing = _messages[existingIndex];
+          // Our own temp (optimistic) bubble: no server id yet.
+          final wasTemp = existing.id == null;
           if (incomingId != null) existing.id = incomingId;
           existing.isDelivered = true;
           if (incomingMessage.timestamp != null &&
@@ -356,6 +400,11 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             existing.messageType = incomingMessage.messageType;
             existing.thumbnail = incomingMessage.thumbnail;
           }
+          // The check above skips a bubble that already has content (a temp
+          // bubble always does), so the server's attachment never reached it
+          // and media/voice only worked after re-opening. Temp bubble: the
+          // server copy wins; duplicate event: fill what's still missing.
+          existing.mergeAttachmentFrom(incomingMessage, overwrite: wasTemp);
           if (incomingMessage.senderName != null && incomingMessage.senderName.toString().isNotEmpty) {
             existing.senderName = incomingMessage.senderName;
           }
@@ -364,6 +413,10 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
           }
           updateMessageStream();
           AppLog.d("DUPLICATE OR OPTIMISTIC MESSAGE MERGED => $incomingId (client: $clientMsgId)");
+          rtDecision('group list', incomingMessage,
+              'MERGED into index $existingIndex (contentUpdated=${!hasOldContent && hasNewContent}) '
+              'bubbleNowShows images=${existing.images} content=${existing.content} '
+              'listLength=${_messages.length} streamEmitted=true'); // TODO(rt-diagnostics)
           return;
         }
 
@@ -398,6 +451,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
         _messages.add(incomingMessage);
         updateMessageStream();
+        rtDecision('group list', incomingMessage,
+            'ADDED listLength=${_messages.length} streamEmitted=true'); // TODO(rt-diagnostics)
 
         // The user is in this chat: the new message is read right away.
         if (!isMyMessage) _scheduleMarkGroupSeen();
@@ -744,9 +799,47 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       },
     );
 
+    // member_removed / member_left (group room). The socket service had
+    // this listener but nothing registered it, so other members' lists only
+    // updated after re-opening the group.
+    socketService.listenMemberRemoved(callback: _onMemberRemoved);
+
     getGroupMessages();
 
     getGroupMembers();
+  }
+
+  /// A member was removed or left. Updates every member list of THIS group:
+  /// the chat (header count, @mention list, attendance) right away, and the
+  /// group info / members screen if open (quiet reload). Idempotent.
+  void _onMemberRemoved(Map<String, dynamic> data) {
+    final eventGroupId = data['groupId'] ?? data['group_id'];
+    if (eventGroupId == null || _isOtherGroup(eventGroupId)) return;
+    final removedId =
+        (data['userId'] ?? data['removedUserId'] ?? data['user_id'])?.toString();
+    if (removedId == null || removedId.isEmpty) return;
+
+    final before = groupMembers.length;
+    groupMembers.removeWhere((m) => m.userId?.toString() == removedId);
+    groupMembers.refresh();
+    if (kDebugMode) {
+      debugPrint('[GC] member_removed group=$eventGroupId user=$removedId '
+          'members $before -> ${groupMembers.length}'); // TODO(gc-diagnostics)
+    }
+
+    final me = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (removedId == me) {
+      // No "you're no longer a member" UI exists in the app (not added).
+      return;
+    }
+
+    if (Get.isRegistered<GroupProfileDetailsController>()) {
+      Get.find<GroupProfileDetailsController>()
+          .fetchProfileDetails(groupId, silent: true);
+    }
+    if (Get.isRegistered<MemberController>()) {
+      Get.find<MemberController>().reloadIfShowing(groupId);
+    }
   }
 
   void _updateGroupTypingText() {
@@ -961,6 +1054,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
     _messages.add(msg);
     updateMessageStream();
+    rtModel('group optimistic', msg,
+        extra: 'listLength=${_messages.length}'); // TODO(rt-diagnostics)
     scrollToBottom();
   }
 
@@ -968,6 +1063,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     required TextEditingController textController,
   }) async {
     if (isSending.value) return;
+    if (_blockIfDeactivated()) return;
     _sendGroupStopTypingNow();
     isSending.value = true;
     var keepDraft = false;
@@ -1338,6 +1434,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       .toList();
 
   Future<void> uploadAudio(String path) async {
+    if (_blockIfDeactivated()) return;
     try {
       var result = await MessageRepo.uploadChatAudio(path);
 
@@ -1378,6 +1475,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   }
 
   Future<void> uploadVideo(String path, String caption) async {
+    if (_blockIfDeactivated()) return;
     try {
       isUploadingVideo.value = true;
 
@@ -1439,6 +1537,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     String path,
     String caption,
   ) async {
+    if (_blockIfDeactivated()) return;
     try {
       var result = await MessageRepo.uploadChatDocument(path);
 
@@ -1482,6 +1581,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   Future<void> sendLocation({
     required LocationMessage location,
   }) async {
+    if (_blockIfDeactivated()) return;
     try {
       final clientMsgId = 'c_${DateTime.now().microsecondsSinceEpoch}';
       final locationMeta = {
@@ -1526,6 +1626,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   Future<void> sendContact({
     required ContactMessage contact,
   }) async {
+    if (_blockIfDeactivated()) return;
     try {
       final clientMsgId = 'c_${DateTime.now().microsecondsSinceEpoch}';
       final contactMeta = {
@@ -1657,6 +1758,9 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         groupCurrentPage.value = 1;
         hasMoreOlderMessages.value = _pager.hasMore;
         _historyLoaded = true;
+        for (final m in _messages) {
+          rtModel('group history', m); // TODO(rt-diagnostics)
+        }
 
         final pinnedId = result.pinnedMessageId;
 
@@ -1934,6 +2038,10 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   }
 
   void stopSearch() {
+    // Closing search restores the normal composer: no emoji panel and no
+    // search keyboard left behind.
+    showEmoji.value = false;
+    FocusManager.instance.primaryFocus?.unfocus();
     isSearching.value = false;
     searchQuery.value = "";
     searchResultIds.clear();
@@ -2212,6 +2320,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       if (_markSeenPending) _markGroupSeenNow();
       // Messages may have arrived while the app was in the background.
       syncNewerMessages();
+      // A removal missed while in the background: refetch members once.
+      getGroupMembers();
     }
   }
 

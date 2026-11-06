@@ -13,6 +13,8 @@ import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'chat_list_logic.dart';
+import 'package:flutter/foundation.dart' show kDebugMode; // TODO(cl-diagnostics)
+import 'package:fgtracker/app/Core/util/arc_log.dart'; // TODO(arc-diagnostics)
 
 /// Single store for the unified chat list and the Archived list.
 ///
@@ -153,6 +155,16 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         0,
         (sum, chat) => sum + (chat.unreadCount ?? 0),
       );
+
+  /// Group deactivated by its admin (backend v2.5.0). A live
+  /// `group_status_updated` event wins over the row's API value.
+  /// Reactive: call inside Obx so the badge updates in real time.
+  bool isGroupDeactivated(PrivateChatModel chat) {
+    if (!_isGroupChat(chat)) return false;
+    final id = (chat.groupId ?? chat.id)?.toString();
+    final live = id == null ? null : socketService.groupDeactivated[id];
+    return live ?? chat.isGroupDeactivated;
+  }
 
   /// Typing label for a row, or null.
   String? typingLabelFor(PrivateChatModel chat) =>
@@ -341,6 +353,117 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   /// computed before our read reached the server.
   final Map<String, DateTime> _readLocallyAt = {};
 
+  /// "chatKey#messageId" of messages already counted as unread, so the
+  /// duplicate receive_message (same id) never counts twice.
+  final Set<String> _countedMessageIds = {};
+
+  /// TEMPORARY [CL] diagnostics (debug builds only).
+  /// TODO(cl-diagnostics): remove after device QA.
+  void _cl(String msg) {
+    if (kDebugMode) debugPrint('[CL] $msg');
+  }
+
+  /// HttpUtil can return {status:false} instead of throwing.
+  bool _isFailedResponse(dynamic res) =>
+      res is Map && (res['status'] == false || res['success'] == false);
+
+  /// The server sends lastMessage:null when "delete for me" removed the only
+  /// message. The merge keeps old text for empty fields, so the deleted
+  /// message stayed visible (main AND Archive list); clear the preview.
+  void _applyExplicitNoMessage(
+    PrivateChatModel row,
+    Map<String, dynamic> payload,
+  ) {
+    final explicitNoMessage = (payload.containsKey('lastMessage') &&
+            payload['lastMessage'] == null) ||
+        (payload.containsKey('last_message') &&
+            payload['last_message'] == null);
+    if (!explicitNoMessage) return;
+    row
+      ..message = ''
+      ..preview = ''
+      ..messageType = 'text'
+      ..lastMessageData = null
+      ..isDeletedForEveryone = false;
+    _cl('delete ${_getChatKey(row)} lastMessage:null => preview cleared');
+  }
+
+  /// [serverMain] is a server snapshot of NON-archived chats
+  /// (includeArchived=false). A chat archived here that the server lists as
+  /// not archived was unarchived (e.g. on another device): move it out of
+  /// Archive. While our own archive request is still pending it stays
+  /// archived and is removed from the snapshot. Returns the snapshot to use.
+  List<PrivateChatModel> _reconcileArchived(List<PrivateChatModel> serverMain) {
+    if (archivedChats.isEmpty) return serverMain;
+    final result = <PrivateChatModel>[];
+    var archiveChanged = false;
+    for (final chat in serverMain) {
+      final i = archivedChats.indexWhere((a) => _isSameChat(a, chat));
+      if (i == -1) {
+        result.add(chat);
+        continue;
+      }
+      if (_pendingActions[_getChatKey(chat)]?.action == 'archive') {
+        _cl('archive keep ${_getChatKey(chat)} (archive pending)');
+        continue;
+      }
+      _cl('archive ${_getChatKey(chat)} unarchived on server => main');
+      archivedChats.removeAt(i);
+      archiveChanged = true;
+      chat.isArchived = false;
+      result.add(chat);
+    }
+    if (archiveChanged) archivedChats.refresh();
+    return result;
+  }
+
+  /// Upserts server archived chats into Archive WITHOUT dropping local rows
+  /// (an archived group missing from a private-only reply used to vanish).
+  /// In-place updates keep the Archive row from rebuilding needlessly.
+  void _mergeArchived(List<PrivateChatModel> serverArchived) {
+    var changed = false;
+    for (final chat in serverArchived) {
+      chat.isArchived = true;
+      if (_pendingActions[_getChatKey(chat)]?.action == 'unarchive') continue;
+      final i = archivedChats.indexWhere((a) => _isSameChat(a, chat));
+      if (i == -1) {
+        archivedChats.add(chat);
+      } else {
+        final merged =
+            _mergePrivateChat(archivedChats[i], chat, fromServer: true);
+        merged.isArchived = true;
+        archivedChats[i] = merged;
+      }
+      privateChats.removeWhere((p) => _isSameChat(p, chat));
+      changed = true;
+    }
+    if (!changed) return;
+    archivedChats.assignAll(ChatListRules.sort(archivedChats));
+    privateChats.refresh();
+    _syncChattingNotificationMarker();
+  }
+
+  /// Archive over REST (/chat-list?includeArchived=true, isArchived rows).
+  /// The socket request alone was skipped whenever the list socket wasn't
+  /// connected yet, so Archive often stayed empty.
+  Future<void> _loadArchivedFromApi() async {
+    try {
+      final res = await MessageRepo.getChatList(
+        page: 1,
+        limit: 50,
+        type: "all",
+        includeArchived: true,
+      );
+      final archived =
+          (res.data ?? []).where((c) => c.isArchived == true).toList();
+      _cl('archive REST rows=${res.data?.length ?? 0} archived=${archived.length} '
+          'groups=${archived.where(_isGroupChat).length}');
+      _mergeArchived(archived);
+    } catch (e) {
+      _cl('archive REST failed: $e');
+    }
+  }
+
   bool _wasReadLocally(PrivateChatModel c) {
     final at = _readLocallyAt[_getChatKey(c)];
     return at != null &&
@@ -520,10 +643,16 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         type: "all",
         includeArchived: false,
       );
+      arcLog('main LOAD', // TODO(arc-diagnostics)
+          'GET /chat-list?page=$requestedPage&includeArchived=false => '
+          'rows=${response.data?.length ?? 0} '
+          'withIsArchivedTrue=${(response.data ?? []).where((c) => c.isArchived == true).length}');
 
       // WhatsApp Rule (Recent Activity Only):
       // Strictly exclude empty chats (chats with 0 messages / no preview, or invalid name).
-      final chats = (response.data ?? []).where((chat) {
+      // _reconcileArchived: a server list never re-adds a chat archived here
+      // (unless the server says it was unarchived).
+      final chats = _reconcileArchived((response.data ?? []).where((chat) {
         if (chat.isArchived == true) return false;
         final hasMsg = (chat.message != null && chat.message!.trim().isNotEmpty) ||
             (chat.preview != null && chat.preview!.trim().isNotEmpty) ||
@@ -537,7 +666,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
             chat.chatId != null ||
             chat.id != null;
         return hasMsg && hasValidName;
-      }).toList();
+      }).toList());
 
       for (final chat in chats) {
         if ((chat.unreadCount ?? 0) > 0 && _isViewingChat(chat)) {
@@ -593,13 +722,20 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         if (existingIndex == -1) {
           mergedChats.add(apiChat);
         } else {
-          mergedChats.add(
-            _mergePrivateChat(
-              existingChats[existingIndex],
-              apiChat,
-              fromServer: true,
-            ),
+          final existing = existingChats[existingIndex];
+          final merged = _mergePrivateChat(
+            existing,
+            apiChat,
+            fromServer: true,
           );
+          // Read here moments ago and no newer message on the server: a
+          // positive server count predates our read (badge came back).
+          // TODO(backend): server must reset unread on mark-read itself.
+          if (_wasReadLocally(existing) &&
+              !ChatListRules.isNewMessage(existing, apiChat)) {
+            merged.unreadCount = 0;
+          }
+          mergedChats.add(merged);
         }
       }
 
@@ -790,7 +926,9 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     try {
       final response =
           PrivateChatResponse.fromJson(Map<String, dynamic>.from(data));
-      final chats = (response.data ?? []).where((chat) {
+      // _reconcileArchived: a server list never re-adds a chat archived here
+      // (unless the server says it was unarchived).
+      final chats = _reconcileArchived((response.data ?? []).where((chat) {
         if (chat.isArchived == true) return false;
         final hasMsg = (chat.message != null && chat.message!.trim().isNotEmpty) ||
             (chat.preview != null && chat.preview!.trim().isNotEmpty) ||
@@ -804,7 +942,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
             chat.chatId != null ||
             chat.id != null;
         return hasMsg && hasValidName;
-      }).toList();
+      }).toList());
 
       for (final chat in chats) {
         if ((chat.unreadCount ?? 0) > 0 && _isViewingChat(chat)) {
@@ -916,6 +1054,16 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
           ? Map<String, dynamic>.from(nestedData)
           : rawPayload;
 
+      // receive_message (also heard by the list socket) is a MESSAGE, not a
+      // chat row: its `id` is the message id. Keep it as the row's last
+      // message id so the duplicate event compares equal (counted once).
+      final isMessagePayload = payload['lastMessage'] == null &&
+          payload['last_message'] == null &&
+          payload['lastActivity'] == null &&
+          payload['senderId'] != null &&
+          (payload.containsKey('content') || payload.containsKey('messageType'));
+      final payloadMessageId = isMessagePayload ? payload['id'] : null;
+
       if (payload['lastActivity'] == null && payload['lastMessage'] is Map) {
         payload['lastActivity'] = Map<String, dynamic>.from(
           payload['lastMessage'] as Map,
@@ -941,6 +1089,10 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
       final updatedChat = PrivateChatModel.fromJson(payload);
       _clearAbsentFlags(updatedChat, payload);
+      if (payloadMessageId != null && updatedChat.lastMessageData == null) {
+        updatedChat.lastMessageData = {'id': payloadMessageId};
+      }
+      arcLog('realtime IN', arcPayload(payload)); // TODO(arc-diagnostics)
 
       if (updatedChat.id == null &&
           updatedChat.userId == null &&
@@ -956,9 +1108,17 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       final archivedIndex =
           archivedChats.indexWhere((chat) => _isSameChat(chat, updatedChat));
 
-      // Explicit flag wins; otherwise an archived chat stays archived (a new
-      // message or a read receipt must not pull it out of Archived).
-      final bool archived = updatedChat.isArchived ?? (archivedIndex >= 0);
+      // A chat archived on this device stays archived. Message / read events
+      // carry isArchived:false even for archived chats; letting that win
+      // moved the chat to the main list until the next archived reload
+      // moved it back (Archive row blinking, archived chats vanishing).
+      // Unarchive comes from the user's action or the server list snapshot
+      // (_reconcileArchived).
+      final bool archived =
+          archivedIndex >= 0 || updatedChat.isArchived == true;
+      arcLog('realtime DECISION', // TODO(arc-diagnostics)
+          '${arcChat(updatedChat)} inMain=${mainIndex >= 0} '
+          'inArchived=${archivedIndex >= 0} => treatedAsArchived=$archived');
 
       if (archived) {
         if (mainIndex >= 0) {
@@ -969,9 +1129,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
           final merged =
               _applyRealtimeUpdate(archivedChats[archivedIndex], updatedChat);
           merged.isArchived = true;
+          _applyExplicitNoMessage(merged, payload);
           archivedChats[archivedIndex] = merged;
         } else {
           if (!_isDisplayable(updatedChat)) {
+            arcLog('realtime ACTION', // TODO(arc-diagnostics)
+                'archived but not in archived list & payload incomplete => loadArchivedChats() REFETCH');
             loadArchivedChats();
             return;
           }
@@ -981,10 +1144,14 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         }
         archivedChats.assignAll(ChatListRules.sort(archivedChats));
         _syncChattingNotificationMarker();
+        arcLog('realtime ACTION', // TODO(arc-diagnostics)
+            'updated ARCHIVED list (removedFromMain=${mainIndex >= 0}) ${arcLists(privateChats, archivedChats)}');
         return;
       }
 
       if (archivedIndex >= 0) {
+        arcLog('realtime ACTION', // TODO(arc-diagnostics)
+            'payload isArchived=false => MOVED archived -> MAIN');
         // Explicitly unarchived (isArchived: false).
         final moved =
             _applyRealtimeUpdate(archivedChats[archivedIndex], updatedChat);
@@ -1004,11 +1171,15 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
       if (mainIndex == -1) {
         if (!_isDisplayable(updatedChat)) {
+          arcLog('realtime ACTION', // TODO(arc-diagnostics)
+              'not archived, not in main, payload incomplete => _scheduleServerRefetch()');
           // New chat, or not in the loaded page, and the payload lacks the
           // row details: fetch it instead of dropping the message.
           _scheduleServerRefetch();
           return;
         }
+        arcLog('realtime ACTION', // TODO(arc-diagnostics)
+            'not archived, not in main => ADDED to MAIN list');
         _prepareNewRow(updatedChat);
         privateChats.add(updatedChat);
         privateChats.assignAll(ChatListRules.sort(privateChats));
@@ -1019,21 +1190,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       final current = privateChats[mainIndex];
       final newMessage = ChatListRules.isNewMessage(current, updatedChat);
       final merged = _applyRealtimeUpdate(current, updatedChat);
-      // "Delete for me" of the only message: the server sends
-      // lastMessage: null. The merge keeps old text for empty fields, so the
-      // deleted message stayed visible; clear the preview explicitly.
-      final explicitNoMessage = (payload.containsKey('lastMessage') &&
-              payload['lastMessage'] == null) ||
-          (payload.containsKey('last_message') &&
-              payload['last_message'] == null);
-      if (explicitNoMessage) {
-        merged
-          ..message = ''
-          ..preview = ''
-          ..messageType = 'text'
-          ..lastMessageData = null
-          ..isDeletedForEveryone = false;
-      }
+      _applyExplicitNoMessage(merged, payload);
       final pinChanged = (current.isPinned == true) != (merged.isPinned == true);
       privateChats[mainIndex] = merged;
       if (newMessage || pinChanged) {
@@ -1056,6 +1213,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     final key = _getChatKey(merged);
     // A genuinely new message makes the chat unread again.
     if (newMessage) _readLocallyAt.remove(key);
+    // Count each message id once per chat (socket events arrive twice).
+    final msgId = ChatListRules.lastMessageId(updated);
+    final alreadyCounted =
+        msgId != null && !_countedMessageIds.add('$key#$msgId');
+    if (_countedMessageIds.length > 2000) _countedMessageIds.clear();
+    final before = current.unreadCount ?? 0;
     merged.unreadCount = ChatListRules.resolveUnread(
       current: current,
       updated: updated,
@@ -1063,7 +1226,10 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       isViewing: _isViewingChat(merged),
       myUserId: currentUserId,
       readLocally: _wasReadLocally(merged),
+      alreadyCounted: alreadyCounted,
     );
+    _cl('count $key msgId=$msgId new=$newMessage alreadyCounted=$alreadyCounted '
+        'server=${updated.unreadCount} $before -> ${merged.unreadCount}');
     if (newMessage) _typing.clearChat(_getChatKey(merged));
     return merged;
   }
@@ -1191,17 +1357,28 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     final m = Map<String, dynamic>.from(data);
     final typist = _str(m['userId'] ?? m['senderId'] ?? m['user_id']);
     if (typist == null || typist == currentUserId) return;
-    final chatId = _str(m['chatId'] ?? m['conversationId'] ?? m['chat_id']);
 
-    var key = 'private_$typist';
-    for (final c in [...privateChats, ...archivedChats]) {
-      if (_isGroupChat(c)) continue;
-      final cChatId = _str(c.chatId ?? c.conversationId ?? c.id);
-      if (_str(c.userId) == typist || (chatId != null && cChatId == chatId)) {
-        key = _getChatKey(c);
-        break;
-      }
+    // A GROUP typing event that also arrives as "typing" on the private
+    // socket was shown on the typist's PRIVATE row (matched by userId).
+    final chatType = _str(m['chatType'] ?? m['chat_type'])?.toLowerCase();
+    if (chatType == 'group' || _str(m['groupId'] ?? m['group_id']) != null) {
+      _cl('typing routed to group (payload groupId/chatType) from "typing"');
+      _onGroupTyping(data, typing: typing);
+      return;
     }
+
+    final chatId = _str(m['chatId'] ?? m['conversationId'] ?? m['chat_id']);
+    final candidates = [...privateChats, ...archivedChats]
+        .where((c) => !_isGroupChat(c))
+        .toList();
+    // chatId first (exact chat), then the typist's private chat.
+    final match = (chatId == null
+            ? null
+            : candidates.firstWhereOrNull(
+                (c) => _str(c.chatId ?? c.conversationId ?? c.id) == chatId)) ??
+        candidates.firstWhereOrNull((c) => _str(c.userId) == typist);
+    final key = match != null ? _getChatKey(match) : 'private_$typist';
+    _cl('typing private key=$key chatId=$chatId typist=$typist typing=$typing');
 
     if (typing && m['isTyping'] != false) {
       _typing.start(key, typist, name: _str(m['userName'] ?? m['senderName']));
@@ -1316,6 +1493,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         pinnedAt: updated.pinnedAt ?? current.pinnedAt,
         isMuted: updated.isMuted ?? current.isMuted,
         isArchived: updated.isArchived ?? current.isArchived,
+        groupStatus: updated.groupStatus ?? current.groupStatus,
+        isDeactivated: updated.isDeactivated ?? current.isDeactivated,
         moveToTop: updated.moveToTop ?? current.moveToTop,
         image: (updated.image != null &&
                 updated.image!.isNotEmpty &&
@@ -1414,6 +1593,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       pinnedAt: updated.pinnedAt ?? current.pinnedAt,
       isMuted: updated.isMuted ?? current.isMuted,
       isArchived: updated.isArchived ?? current.isArchived,
+      groupStatus: updated.groupStatus ?? current.groupStatus,
+      isDeactivated: updated.isDeactivated ?? current.isDeactivated,
       moveToTop: updated.moveToTop ?? current.moveToTop,
       image: (updated.image != null &&
               updated.image!.isNotEmpty &&
@@ -1579,6 +1760,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         pinnedAt: c.pinnedAt,
         isMuted: c.isMuted,
         isArchived: c.isArchived,
+        groupStatus: c.groupStatus,
+        isDeactivated: c.isDeactivated,
         moveToTop: c.moveToTop,
         image: c.image,
         isForwarded: c.isForwarded,
@@ -1698,9 +1881,17 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       groupId: gId,
       chatType: isGroup ? "group" : "private",
       isArchived: true,
-    ).then((_) {
+    ).then((res) {
+      arcLog('archive API', // TODO(arc-diagnostics)
+          'POST /archive chatId=$cId groupId=$gId chatType=${isGroup ? "group" : "private"} isArchived=true => $res');
+      // The API can answer {status:false} without throwing: roll back.
+      if (_isFailedResponse(res)) {
+        _rollbackAction(_getChatKey(chat), message: _offlineMessage);
+        return;
+      }
       _pendingActions.remove(_getChatKey(chat));
     }).catchError((e) {
+      arcLog('archive API', 'FAILED => $e (rollback)'); // TODO(arc-diagnostics)
       _rollbackAction(_getChatKey(chat), message: _offlineMessage);
     });
 
@@ -1730,6 +1921,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     privateChats.refresh();
     archivedChats.refresh();
     _syncChattingNotificationMarker();
+    arcLog('archive LOCAL', // TODO(arc-diagnostics)
+        '${arcChat(chat)} => ${arcLists(privateChats, archivedChats)}');
   }
 
   void unarchiveChat(PrivateChatModel chat) {
@@ -1753,9 +1946,16 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       groupId: gId,
       chatType: isGroup ? "group" : "private",
       isArchived: false,
-    ).then((_) {
+    ).then((res) {
+      arcLog('unarchive API', // TODO(arc-diagnostics)
+          'POST /archive chatId=$cId groupId=$gId isArchived=false => $res');
+      if (_isFailedResponse(res)) {
+        _rollbackAction(_getChatKey(chat), message: _offlineMessage);
+        return;
+      }
       _pendingActions.remove(_getChatKey(chat));
     }).catchError((e) {
+      arcLog('unarchive API', 'FAILED => $e (rollback)'); // TODO(arc-diagnostics)
       _rollbackAction(_getChatKey(chat), message: _offlineMessage);
     });
 
@@ -1955,15 +2155,21 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     int page = 1,
     int limit = 20,
   }) {
+    arcLog('archived LOAD', // TODO(arc-diagnostics)
+        'source=socket get_archived_private_chats page=$page limit=$limit '
+        'socketConnected=${socketService.isPrivateChatListSocketConnected} '
+        '(false = request silently skipped)');
     socketService.getArchivedPrivateChats(
       page: page,
       limit: limit,
     );
+    if (page == 1) _loadArchivedFromApi();
   }
 
   void _handleArchivedPrivateChats(dynamic data) {
     try {
       if (data is! Map) {
+        arcLog('archived RESPONSE', 'not a Map => archivedChats.clear()'); // TODO(arc-diagnostics)
         archivedChats.clear();
         return;
       }
@@ -1971,6 +2177,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       final rawData = data["data"];
 
       if (rawData is! List) {
+        arcLog('archived RESPONSE', 'data is not a List => archivedChats.clear()'); // TODO(arc-diagnostics)
         archivedChats.clear();
         return;
       }
@@ -1993,15 +2200,15 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         chat.isArchived = true;
       }
 
-      // Client-side order: the server array order changes with read/seen
-      // activity, which made the Archived list shuffle.
-      archivedChats.value = ChatListRules.sort(chats);
-
-      // Ensure mutual exclusivity: remove any archived chats from privateChats
-      for (final a in chats) {
-        privateChats.removeWhere((p) => _isSameChat(p, a));
-      }
-      privateChats.refresh();
+      arcLog('archived RESPONSE', // TODO(arc-diagnostics)
+          'server items=${rawData.length} parsed=${chats.length} '
+          'REPLACING list. before: ${arcLists(privateChats, archivedChats)} '
+          'after: ${arcLists(privateChats, chats)} '
+          'dropped=[${archivedChats.where((a) => !chats.any((c) => _isSameChat(a, c))).map(arcChat).join(' | ')}]');
+      // Merge, never replace: the reply may hold only PRIVATE archived chats,
+      // and replacing dropped archived groups from both lists. Sorted
+      // client-side and removed from the main list inside _mergeArchived.
+      _mergeArchived(chats);
 
       final pagination = data["pagination"];
 
@@ -2023,6 +2230,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
       archivedChats.refresh();
     } catch (e) {
+      arcLog('archived RESPONSE', 'parse error $e => archivedChats.clear()'); // TODO(arc-diagnostics)
       archivedChats.clear();
     }
   }

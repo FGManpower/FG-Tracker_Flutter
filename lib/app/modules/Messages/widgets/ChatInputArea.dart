@@ -148,6 +148,10 @@ class _ChatInputAreaState extends State<ChatInputArea> {
       focusNode.requestFocus();
     } else {
       focusNode.unfocus();
+      // Also close the keyboard of whichever OTHER field has focus (e.g. the
+      // search field in the app bar): unfocusing only the message box left
+      // the search keyboard open under the emoji panel.
+      FocusManager.instance.primaryFocus?.unfocus();
 
       Future.delayed(const Duration(milliseconds: 100), () {
         if (!mounted) return;

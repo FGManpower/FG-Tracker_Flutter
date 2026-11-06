@@ -140,6 +140,7 @@ class MessagePreviewBuilder {
   MessagePreviewBuilder._();
 
   static const String deletedText = 'This message was deleted';
+  static const String ownDeletedText = 'You deleted this message';
   static const String fallbackText = 'New message';
 
   /// Preview for a row of the unified (Common/Private/Group) chat list and
@@ -370,10 +371,14 @@ class MessagePreviewBuilder {
     final kind = isDeleted ? MessageKind.deleted : MessageTypes.kindOf(type);
 
     if (kind == MessageKind.deleted) {
-      return const MessagePreview(
+      // Sender's own deleted message in the chat list (WhatsApp wording).
+      // Only when the caller passes currentUserId (chat list rows).
+      final me = currentUserId?.trim() ?? '';
+      final mine = me.isNotEmpty && me != 'null' && senderId?.trim() == me;
+      return MessagePreview(
         kind: MessageKind.deleted,
         icon: '🚫',
-        text: deletedText,
+        text: mine ? ownDeletedText : deletedText,
       );
     }
 

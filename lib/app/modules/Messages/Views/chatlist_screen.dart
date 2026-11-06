@@ -23,6 +23,7 @@ import '../Controller/chat_list_controller.dart';
 import '../widgets/custom_dropdown_menu.dart';
 import '../widgets/custom_dropdown_menu.dart' as CustomDropdownMenu;
 import 'ArchivedChatsScreen.dart';
+import 'package:fgtracker/app/Core/util/arc_log.dart'; // TODO(arc-diagnostics)
 import 'Chat_Screen.dart';
 import '../../../Core/util/profile_navigation.dart';
 import 'new_chat_screen.dart';
@@ -520,10 +521,14 @@ class _AllChatsBody extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Obx(
-                    () => (!controller.isSearching.value &&
+                    () {
+                      arcRowBuild(controller.archivedChats.length, // TODO(arc-diagnostics)
+                          controller.archivedUnreadCount);
+                      return (!controller.isSearching.value &&
                             controller.archivedChats.isNotEmpty)
                         ? _archivedChatsRow()
-                        : const SizedBox.shrink(),
+                        : const SizedBox.shrink();
+                    },
                   ),
                   Obx(
                     () => _sectionTitle(
@@ -924,6 +929,8 @@ class _AllChatsBody extends StatelessWidget {
               "groupCode": groupCode,
               "isCreator": isCreator,
               "isActive": isActive,
+              if (controller.isGroupDeactivated(chat))
+                "groupStatus": "deactivated",
             },
           );
           return;
@@ -1016,6 +1023,7 @@ class _AllChatsBody extends StatelessWidget {
           isMuted: chat.isMuted == true,
           isDeletedForEveryone: chat.isDeletedForEveryone == true,
           isBlocked: chat.isBlocked == true,
+          isGroupDeactivated: controller.isGroupDeactivated(chat),
           isForwarded: chat.isForwarded == true,
           forwardedLabel: chat.forwardedLabel ?? "Forwarded",
           image: image,
@@ -1040,6 +1048,7 @@ class _AllChatsBody extends StatelessWidget {
     bool isMuted = false,
     bool isDeletedForEveryone = false,
     bool isBlocked = false,
+    bool isGroupDeactivated = false,
     bool isForwarded = false,
     String forwardedLabel = "Forwarded",
     String? image,
@@ -1203,6 +1212,11 @@ class _AllChatsBody extends StatelessWidget {
                       maxline: 1,
                     ),
                   ),
+                  // Backend v2.5.0: group deactivated by its admin.
+                  if (isGroupDeactivated) ...[
+                    SizedBox(width: 6.w),
+                    const DeactivatedGroupBadge(),
+                  ],
                   if (isPinned) ...[
                     SizedBox(width: 5.w),
                     Transform.rotate(

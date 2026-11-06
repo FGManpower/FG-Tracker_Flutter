@@ -262,6 +262,11 @@ class MessageData {
   Map<String, dynamic>? attendance;
   dynamic attendancePollId;
   String? clientMessageId;
+
+  /// Voice/audio file location when the payload carries it outside `content`
+  /// (audioUrl → audios[0].audioUrl → mediaUrls[0]). The bubble plays this
+  /// first and falls back to `content`. New field; nothing else changes.
+  String? audioUrl;
   Map<String, dynamic>? locationMeta;
   Map<String, dynamic>? contactMeta;
   dynamic duration;
@@ -361,6 +366,119 @@ class MessageData {
     return null;
   }
 
+  static String? _cleanStr(dynamic v) {
+    final s = v?.toString().trim() ?? '';
+    return (s.isEmpty || s == 'null') ? null : s;
+  }
+
+  /// audioUrl → audios[0].audioUrl (or audios[0] as a string) → mediaUrls[0].
+  static String? _firstAudioUrl(Map<String, dynamic> json) {
+    final direct = _cleanStr(json['audioUrl'] ?? json['audio_url']);
+    if (direct != null) return direct;
+    final audios = _decodeJsonList(json['audios']);
+    if (audios != null && audios.isNotEmpty) {
+      final first = audios.first;
+      final fromList = first is Map
+          ? _cleanStr(first['audioUrl'] ?? first['audio_url'] ?? first['url'])
+          : _cleanStr(first);
+      if (fromList != null) return fromList;
+    }
+    final type = (json['messageType'] ?? json['type'])?.toString().toLowerCase();
+    if (type == 'audio' || type == 'voice') {
+      final media = _decodeJsonList(json['mediaUrls'] ?? json['media_urls']);
+      if (media != null && media.isNotEmpty) return _cleanStr(media.first);
+    }
+    return null;
+  }
+
+  /// Socket payloads can carry an attachment outside the fields the history
+  /// API uses. Only fills what is still empty, so history parsing (which
+  /// already has these fields) is unchanged.
+  void _applyLiveAttachmentFallbacks(
+    Map<String, dynamic> json,
+    Map<String, dynamic>? nested,
+  ) {
+    dynamic pick(String key) => json[key] ?? nested?[key];
+    final type = messageType?.toString().toLowerCase().trim() ?? '';
+
+    // Images: images[] → mediaUrls[] (image types only).
+    if ((images == null || images!.isEmpty) &&
+        (type == 'image' || type == 'image_text' || type == 'media')) {
+      final fromMedia = _stringList(pick('mediaUrls') ?? pick('media_urls'));
+      if (fromMedia != null && fromMedia.isNotEmpty) images = fromMedia;
+    }
+
+    // Video: videoUrl when there is no videos[] and no "url||thumb||dur".
+    if ((videos == null || videos!.isEmpty) &&
+        type == 'video' &&
+        _cleanStr(content) == null) {
+      final url = _cleanStr(pick('videoUrl') ?? pick('fileUrl'));
+      if (url != null) {
+        videos = [
+          MessageVideo(
+            videoUrl: url,
+            thumbnail: _cleanStr(pick('thumbnail')),
+            duration: _cleanStr(pick('duration')),
+          ),
+        ];
+      }
+    }
+
+    // Document: the bubble reads content "path||name||size".
+    if ((type == 'document' || type == 'file') && _cleanStr(content) == null) {
+      final files = _decodeJsonList(pick('files'));
+      final first = (files != null && files.isNotEmpty) ? files.first : null;
+      final path = first is Map
+          ? _cleanStr(first['url'] ?? first['fileUrl'] ?? first['path'])
+          : (_cleanStr(first) ?? _cleanStr(pick('fileUrl')));
+      if (path != null) {
+        final name = first is Map
+            ? _cleanStr(first['originalName'] ?? first['name'] ?? first['fileName'])
+            : _cleanStr(pick('originalName') ?? pick('fileName'));
+        final size = first is Map ? _cleanStr(first['size']) : null;
+        content = [path, name ?? path.split('/').last, if (size != null) size]
+            .join('||');
+      }
+    }
+  }
+
+  /// A later socket event for the same message (the server sends it twice),
+  /// or the server copy of our own temp bubble, may carry the attachment the
+  /// first one lacked. Fills empty attachment fields; with [overwrite]
+  /// (replacing a temp bubble) the server's non-empty values win.
+  /// Returns true if anything changed.
+  bool mergeAttachmentFrom(MessageData other, {bool overwrite = false}) {
+    var changed = false;
+    if ((other.images?.isNotEmpty ?? false) &&
+        (overwrite || (images?.isEmpty ?? true))) {
+      images = other.images;
+      changed = true;
+    }
+    if ((other.videos?.isNotEmpty ?? false) &&
+        (overwrite || (videos?.isEmpty ?? true))) {
+      videos = other.videos;
+      changed = true;
+    }
+    if (_cleanStr(other.audioUrl) != null &&
+        (overwrite || _cleanStr(audioUrl) == null) &&
+        audioUrl != other.audioUrl) {
+      audioUrl = other.audioUrl;
+      changed = true;
+    }
+    if (_cleanStr(other.content) != null &&
+        (overwrite || _cleanStr(content) == null) &&
+        content?.toString() != other.content?.toString()) {
+      content = other.content;
+      changed = true;
+    }
+    if (_cleanStr(other.thumbnail) != null &&
+        (overwrite || _cleanStr(thumbnail) == null)) {
+      thumbnail = other.thumbnail;
+      changed = true;
+    }
+    return changed;
+  }
+
   static int? parseIntOrNull(dynamic value) {
     if (value is int) return value;
     if (value is num) return value.toInt();
@@ -441,6 +559,8 @@ class MessageData {
             nestedSource?['clientMessageId'] ??
             nestedSource?['client_message_id'])
         ?.toString();
+    audioUrl = _firstAudioUrl(json) ??
+        (nestedSource == null ? null : _firstAudioUrl(nestedSource));
     senderId = json['senderId'] ??
         json['sender_id'] ??
         json['userId'] ??
@@ -568,6 +688,8 @@ class MessageData {
     } else {
       videos = null;
     }
+
+    _applyLiveAttachmentFallbacks(json, nestedSource);
 
     final lowerType = messageType?.toLowerCase().trim() ?? '';
     if (lowerType.isEmpty ||

@@ -175,6 +175,15 @@ class PrivateChatModel {
   String? pinnedAt;
   bool? isMuted;
   bool? isArchived;
+
+  /// Backend v2.5.0: "active" / "deactivated" for group rows (null = not
+  /// sent). [isDeactivated] mirrors it as a flag.
+  String? groupStatus;
+  bool? isDeactivated;
+
+  /// True for a group deactivated by its admin.
+  bool get isGroupDeactivated =>
+      isDeactivated == true || groupStatus?.toLowerCase() == 'deactivated';
   bool? moveToTop;
   String? image;
   bool? isForwarded;
@@ -218,6 +227,8 @@ class PrivateChatModel {
     this.pinnedAt,
     this.isMuted,
     this.isArchived,
+    this.groupStatus,
+    this.isDeactivated,
     this.moveToTop,
     this.image,
     this.isForwarded,
@@ -446,6 +457,11 @@ class PrivateChatModel {
       isArchived: _parseBool(
         json['isArchived'] ?? json['is_archived'] ?? json['archived'],
       ),
+      groupStatus: _readString(json, ['groupStatus', 'group_status']) ??
+          _readString(group ?? {}, ['groupStatus', 'group_status', 'status']),
+      isDeactivated: _parseBool(json['isDeactivated'] ??
+          json['is_deactivated'] ??
+          group?['isDeactivated']),
       moveToTop: _parseBool(
         json['moveToTop'] ?? json['move_to_top'],
       ),
@@ -541,6 +557,8 @@ class PrivateChatModel {
       'pinnedAt': pinnedAt,
       'isMuted': isMuted,
       'isArchived': isArchived,
+      'groupStatus': groupStatus,
+      'isDeactivated': isDeactivated,
       'moveToTop': moveToTop,
       'image': image,
       'isForwarded': isForwarded,

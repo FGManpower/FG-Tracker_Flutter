@@ -12,6 +12,7 @@ import '../../../Data/Repositories/attendance_repo.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart'
     show SocketMessageService;
 import '../models/attendance_poll_model.dart';
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint; // TODO(gc-diagnostics)
 import '../../../Core/util/rt_log.dart';
 
 class AttendanceLocationFix {
@@ -98,6 +99,10 @@ class AttendanceController extends GetxController {
   /// connected, the fallback refresh is skipped (no idle polling).
   bool _socketProven = false;
 
+  /// Polls that received a live socket update: only these switch to the
+  /// slow fallback refresh.
+  final Set<int> _socketProvenPolls = {};
+
   /// Called by widgets showing a poll (chat card, View Attendance).
   void watch(int pollId) {
     if (pollId <= 0) return;
@@ -122,11 +127,15 @@ class AttendanceController extends GetxController {
     if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
       return;
     }
-    final staleAfter = _socketProven && _socket.isSocketConnected
-        ? _staleProven
-        : _staleUnproven;
     final now = DateTime.now();
     for (final pollId in _watchers.keys.toList()) {
+      // Per poll: one live event for poll X used to switch EVERY poll to the
+      // slow 30 s refresh, so votes on polls whose updates the socket never
+      // delivered showed up late ("count not live").
+      final staleAfter =
+          _socketProvenPolls.contains(pollId) && _socket.isSocketConnected
+              ? _staleProven
+              : _staleUnproven;
       final poll = polls[pollId];
       if (poll != null && poll.isClosed) continue;
       if (isDeleted(pollId) || _pendingMutations.contains(pollId)) continue;
@@ -216,6 +225,12 @@ class AttendanceController extends GetxController {
     if (incoming == null) return null;
     if (provesSocket) {
       _socketProven = true;
+      _socketProvenPolls.add(incoming.id);
+      if (kDebugMode) {
+        debugPrint('[GC] attendance live event poll=${incoming.id} '
+            'v${incoming.version} total=${incoming.totalVotes} '
+            'counts=${incoming.countsByOption} hasCounts=${incoming.hasCounts}'); // TODO(gc-diagnostics)
+      }
       _lastLiveAt[incoming.id] = DateTime.now();
     }
     if (isDeleted(incoming.id)) return null;

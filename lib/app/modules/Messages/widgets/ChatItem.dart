@@ -846,8 +846,13 @@ class ChatBubble extends StatelessWidget {
         ),
       );
     } else if (message.messageType == "audio") {
+      // Server audio location first (socket payloads), else content.
+      final audioSrc = _audioFullUrl(message.audioUrl ?? message.content);
       return AudioBubble(
-        audioUrl: _audioFullUrl(message.content),
+        // Temp → server message, or a later event with the URL: a new key
+        // gives a fresh bubble, so the player loads the new source.
+        key: ValueKey('audio_${message.id ?? message.clientMessageId}_$audioSrc'),
+        audioUrl: audioSrc,
         isMe: false,
       );
     } else if (message.messageType == "video") {
@@ -2549,8 +2554,13 @@ class GroupChatBubble extends StatelessWidget {
         ),
       );
     } else if (message.messageType == "audio") {
+      // Server audio location first (socket payloads), else content.
+      final audioSrc = _audioFullUrl(message.audioUrl ?? message.content);
       return AudioBubble(
-        audioUrl: _audioFullUrl(message.content),
+        // Temp → server message, or a later event with the URL: a new key
+        // gives a fresh bubble, so the player loads the new source.
+        key: ValueKey('audio_${message.id ?? message.clientMessageId}_$audioSrc'),
+        audioUrl: audioSrc,
         isMe: false,
       );
     } else if (messageType == "video") {

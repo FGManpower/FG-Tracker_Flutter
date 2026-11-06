@@ -5,6 +5,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/app/Core/util/rt_attachment_log.dart'; // TODO(rt-diagnostics)
 class GlobalAudioController extends GetxController {
   final AudioPlayer player = AudioPlayer();
 
@@ -91,6 +92,7 @@ class GlobalAudioController extends GetxController {
 
   Future<void> play(String url) async {
     if (kDebugMode) AppLog.d('[VM] play url=$url current=${currentUrl.value}');
+    rtPlay('play() current="${currentUrl.value}" new', url); // TODO(rt-diagnostics)
     errorUrl.value = "";
     try {
       await _configureSpeakerSession();
@@ -113,6 +115,7 @@ class GlobalAudioController extends GetxController {
       if (kDebugMode) AppLog.d('[VM] load interrupted: $e');
     } catch (e) {
       if (kDebugMode) AppLog.d('[VM] play failed: $e');
+      rtPlay('play() FAILED', url, error: e); // TODO(rt-diagnostics)
       await _markFailed(url);
     }
   }

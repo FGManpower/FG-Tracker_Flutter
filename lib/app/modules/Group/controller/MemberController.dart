@@ -27,6 +27,14 @@ class MemberController extends GetxController {
     getMembersData(arguments?['groupId']);
   }
 
+  /// A member of [groupId] was removed/left (socket): reload this screen's
+  /// list, but only if it is showing that same group.
+  void reloadIfShowing(dynamic groupId) {
+    final shown = arguments?['groupId']?.toString();
+    if (shown == null || shown != groupId?.toString()) return;
+    getMembersData(shown);
+  }
+
   Future<void> getMembersData(String groupId) async {
     try {
       memberDataLoading.value = true;

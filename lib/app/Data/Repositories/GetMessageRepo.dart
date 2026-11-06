@@ -18,6 +18,7 @@ import '../../Model/group_profile_details_model.dart';
 import '../../Model/profile_details_model.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/app/Core/util/rt_attachment_log.dart'; // TODO(rt-diagnostics)
 class MessageRepo {
   static Future<GetMessage> MessageHistory({
     required String recieverId,
@@ -96,6 +97,7 @@ class MessageRepo {
       type: "formdata",
     );
 
+    rtUpload("uploadChatImage", response); // TODO(rt-diagnostics)
     return ChatImageUploadResponse.fromJson(response);
   }
 
@@ -116,6 +118,7 @@ class MessageRepo {
       type: "formdata",
     );
 
+    rtUpload("uploadChatAudio", response); // TODO(rt-diagnostics)
     return ChatImageUploadResponse.fromJson(response);
   }
 
@@ -146,6 +149,7 @@ class MessageRepo {
       onSendProgress: onSendProgress,
     );
 
+    rtUpload("uploadChatVideo", response); // TODO(rt-diagnostics)
     return ChatImageUploadResponse.fromJson(response);
   }
 
@@ -168,6 +172,7 @@ class MessageRepo {
       type: "formdata",
     );
 
+    rtUpload("uploadChatDocument", response); // TODO(rt-diagnostics)
     return ChatImageUploadResponse.fromJson(response);
   }
 

@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:socket_io_common/src/util/event_emitter.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/app/Core/util/rt_attachment_log.dart'; // TODO(rt-diagnostics)
 void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
   if (kDebugMode) {
     developer.log(message, error: error, stackTrace: stackTrace, name: name ?? 'SocketMessageService');
@@ -135,6 +136,7 @@ class SocketMessageService extends GetxService {
         "query": {"attendanceSupported": "1"},
       },
     );
+    _registerGroupStatus(_socket);
 
     // Realtime debug: every attendance / chat-list event reaching /chat.
     _socket?.onAny((event, data) {
@@ -482,6 +484,7 @@ class SocketMessageService extends GetxService {
       socket.on(
         event,
         (data) {
+          rtSocketRaw('group "$event"', data); // TODO(rt-diagnostics)
           callback(data);
         },
       );
@@ -839,6 +842,7 @@ class SocketMessageService extends GetxService {
             }),
       },
     );
+    _registerGroupStatus(_privateChatSocket);
 
 
 
@@ -1021,6 +1025,7 @@ class SocketMessageService extends GetxService {
     _privateMessageHandler = (dynamic data) {
       log("========== SOCKET RECEIVE MESSAGE EVENT ==========");
       log("RAW SOCKET DATA => $data");
+      rtSocketRaw("private", data); // TODO(rt-diagnostics)
 
       if (data is! Map) {
         log("MESSAGE IGNORED => DATA IS NOT A MAP");
@@ -1063,10 +1068,13 @@ class SocketMessageService extends GetxService {
 
       if (!isSameChat) {
         log("MESSAGE IGNORED => DIFFERENT CHAT");
+        rtDecision("private listener", data,
+            "SKIPPED: different chat (sender=$dataSenderId receiver=$dataReceiverId expected=$senderId/$receiverId)"); // TODO(rt-diagnostics)
         return;
       }
 
       log("MESSAGE ACCEPTED => CALLING CONTROLLER CALLBACK");
+      rtDecision("private listener", data, "ACCEPTED"); // TODO(rt-diagnostics)
 
       callback?.call(dataMap);
 
@@ -1247,6 +1255,7 @@ class SocketMessageService extends GetxService {
             }),
       },
     );
+    _registerGroupStatus(_privateChatListSocket);
 
     _privateChatListSocket?.onAny((event, data) {
       if (event.contains("chat_list") || event == "conversation_updated") {
@@ -1840,6 +1849,32 @@ class SocketMessageService extends GetxService {
     _socket?.on("group_info_updated", handler);
     _privateChatSocket?.off("group_updated");
     _privateChatSocket?.on("group_updated", handler);
+  }
+
+  /// Backend v2.5.0: groups deactivated / reactivated by the admin.
+  /// groupId -> true when deactivated. Filled by `group_status_updated` on
+  /// every chat socket; the chat list and the open group chat read it.
+  final RxMap<String, bool> groupDeactivated = <String, bool>{}.obs;
+
+  void _onGroupStatusUpdated(dynamic data) {
+    if (data is! Map) return;
+    final id = (data['groupId'] ?? data['group_id'] ?? data['id'])?.toString();
+    if (id == null || id.isEmpty || id == 'null') return;
+    final status = data['groupStatus']?.toString().toLowerCase();
+    final deactivated = data['isDeactivated'] == true ||
+        status == 'deactivated' ||
+        (data['isDeactivated'] == null &&
+            status == null &&
+            (data['isActive'] == false || data['isActive']?.toString() == '0'));
+    groupDeactivated[id] = deactivated;
+  }
+
+  /// Registered on each socket right after it is created; socket.io keeps
+  /// the handler across reconnects. off(handler) first = never doubled.
+  void _registerGroupStatus(IO.Socket? s) {
+    if (s == null) return;
+    s.off("group_status_updated", _onGroupStatusUpdated);
+    s.on("group_status_updated", _onGroupStatusUpdated);
   }
 
   /// Listens for group chat cleared event (clear chat history strictly for calling user).
