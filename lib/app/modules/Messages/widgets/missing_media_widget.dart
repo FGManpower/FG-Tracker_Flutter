@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -162,25 +163,52 @@ class ChatImageErrorTile extends StatefulWidget {
 }
 
 class _ChatImageErrorTileState extends State<ChatImageErrorTile> {
+  /// The server says the file exists after all (the first load hit the
+  /// short window right after upload): load it again.
+  bool _reload = false;
+
   @override
   void initState() {
     super.initState();
-    MediaAvailabilityService.check(widget.url);
+    _verify();
+  }
+
+  Future<void> _verify() async {
+    final status = await MediaAvailabilityService.check(widget.url);
+    if (!mounted || status != MediaStatus.available) return;
+    await CachedNetworkImage.evictFromCache(widget.url);
+    if (mounted) setState(() => _reload = true);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_reload) {
+      return CachedNetworkImage(
+        imageUrl: widget.url,
+        fit: BoxFit.cover,
+        errorWidget: (_, __, ___) => const _BrokenImage(),
+      );
+    }
     return Obx(() {
       if (widget.url.trim().isEmpty ||
           MediaAvailabilityService.isMissing(widget.url)) {
         return const MissingMediaTile();
       }
-      return Container(
-        color: Colors.grey.shade200,
-        alignment: Alignment.center,
-        child: Icon(Icons.broken_image_outlined, color: Colors.grey.shade600),
-      );
+      return const _BrokenImage();
     });
+  }
+}
+
+class _BrokenImage extends StatelessWidget {
+  const _BrokenImage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.grey.shade200,
+      alignment: Alignment.center,
+      child: Icon(Icons.broken_image_outlined, color: Colors.grey.shade600),
+    );
   }
 }
 

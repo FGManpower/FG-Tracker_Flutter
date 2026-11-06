@@ -105,10 +105,16 @@ class ChatListRules {
     required bool newMessage,
     required bool isViewing,
     required String myUserId,
+    bool readLocally = false,
   }) {
     if (isViewing) return 0;
     final server = updated.unreadCount;
     final local = current.unreadCount ?? 0;
+
+    // Read on this device and no new message since: a positive server count
+    // here was computed before our read reached the server (the badge used
+    // to come back after the message had been seen).
+    if (readLocally && !newMessage) return local;
 
     final sentByMe = myUserId.isNotEmpty &&
         updated.senderId != null &&

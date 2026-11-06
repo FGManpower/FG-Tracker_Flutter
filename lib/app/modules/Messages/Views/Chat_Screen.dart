@@ -48,14 +48,7 @@ class ChatScreen extends GetView<MessageController> {
   @override
   Widget build(BuildContext context) {
     final userData = controller.memberData;
-    // canPop: true keeps the iOS swipe-back gesture (WillPopScope disabled
-    // it); the leave/cleanup runs once after any kind of pop.
-    return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) controller.onRoutePopped();
-      },
-      child: Scaffold(
+    final scaffold = Scaffold(
         backgroundColor: _scaffoldBg,
         resizeToAvoidBottomInset: true,
         appBar: PreferredSize(
@@ -290,8 +283,22 @@ class ChatScreen extends GetView<MessageController> {
             ],
           ),
         ),
-      ),
-    );
+      );
+
+    // canPop keeps the iOS swipe-back gesture; while the emoji panel is open,
+    // system back / swipe closes the panel first (WhatsApp behaviour).
+    // The leave/cleanup runs once after any real pop.
+    return Obx(() => PopScope(
+          canPop: !controller.showEmoji.value,
+          onPopInvokedWithResult: (didPop, _) {
+            if (didPop) {
+              controller.onRoutePopped();
+            } else if (controller.showEmoji.value) {
+              controller.showEmoji.value = false;
+            }
+          },
+          child: scaffold,
+        ));
   }
 
   Widget _buildScrollToBottomButton() {

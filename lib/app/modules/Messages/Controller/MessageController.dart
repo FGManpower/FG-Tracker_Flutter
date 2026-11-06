@@ -243,6 +243,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           peerUserId: peerId,
         );
       }
+      _syncChatListPreview();
     }
     ChatTranslationService.instance.resetVisibility();
     ChatTranslationService.instance.stopAudio();
@@ -438,6 +439,18 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   void onInputFocusLost() {
     _sendPrivateStopTypingNow();
+  }
+
+  /// Pushes this chat's real last message to the chat list row (after a
+  /// delete, a clear, and on close). Only once history is loaded, so a
+  /// failed load never blanks the row.
+  void _syncChatListPreview() {
+    if (!_historyLoaded || !Get.isRegistered<ChatListController>()) return;
+    Get.find<ChatListController>().syncLastMessageFromChat(
+      chatId: privateChatId.value,
+      peerUserId: _privatePeerId,
+      last: _messages.isEmpty ? null : _messages.last,
+    );
   }
 
   /// Loaded message with [id], used to build reply previews.
@@ -1026,6 +1039,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             }
 
             updateMessageStream();
+            // The chat list row must not keep showing the deleted message.
+            _syncChatListPreview();
           } catch (e) {}
         },
       );
@@ -2015,6 +2030,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
 
   void startSearch() {
+    // The search field takes focus (keyboard): the emoji panel must not
+    // stay open under it (e.g. Profile > Search with emoji open).
+    showEmoji.value = false;
     isSearching.value = true;
     searchQuery.value = "";
     searchResultIds.clear();
@@ -2293,6 +2311,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     updateMessageStream();
 
     log("CHAT MESSAGES CLEARED FROM UI");
+    _syncChatListPreview();
   }
 
   void clearPrivateChat() {

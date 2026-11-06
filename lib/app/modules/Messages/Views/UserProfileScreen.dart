@@ -875,18 +875,38 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           confirm: "Clear",
           onConfirm: () {
             Get.back();
-            final chatId = _chatController?.privateChatId.value;
+            // An empty id ("" before the socket joined) used to pass the
+            // null check and clear nothing; fall back to the profile's id.
+            final fromChat = _chatController?.privateChatId.value ?? "";
+            final chatId = fromChat.isNotEmpty
+                ? fromChat
+                : (widget.chatId ?? widget.userData?.chatId)?.toString();
 
-            if (chatId == null) {
+            if (chatId == null || chatId.isEmpty || chatId == "null") {
               Utils().fluttertoast("Unable to clear chat");
               return;
             }
 
-            SocketMessageService.instance.clearPrivateChat(
-              chatId: chatId.toString(),
-            );
+            if (_chatController != null &&
+                _chatController!.privateChatId.value == chatId) {
+              // Lets the open chat accept the server's clear event.
+              _chatController!.clearPrivateChat();
+            } else {
+              SocketMessageService.instance.clearPrivateChat(chatId: chatId);
+            }
 
             _chatController?.messageData.clear();
+            _chatController?.updateMessageStream();
+            // Media / Links / Docs used to keep the cleared files.
+            _apiController.clearMediaLocally();
+            final cId = int.tryParse(chatId);
+            if (cId != null) {
+              Future.delayed(const Duration(milliseconds: 1500), () {
+                if (mounted) {
+                  _apiController.fetchProfileDetails(cId, silent: true);
+                }
+              });
+            }
             Utils().fluttertoast("Chat cleared");
           },
         );

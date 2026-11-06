@@ -106,7 +106,45 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   RxBool isLoadingOlderMessages = false.obs;
   RxBool hasMoreOlderMessages = true.obs;
 
-  /// Loaded message with [id], used to build reply previews.
+  /// Pushes this group's real last message to the chat list row (after a
+  /// delete, a clear, and on close). Only once history is loaded, so a
+  /// failed load never blanks the row.
+  void _syncChatListPreview() {
+    if (!_historyLoaded || !Get.isRegistered<ChatListController>()) return;
+    Get.find<ChatListController>().syncLastMessageFromChat(
+      isGroup: true,
+      groupId: groupId,
+      last: _messages.isEmpty ? null : _messages.last,
+    );
+  }
+
+  /// Group member's display name by user id (null when unknown).
+  String? memberNameFor(dynamic userId) {
+    final id = userId?.toString();
+    if (id == null || id.isEmpty) return null;
+    final member =
+        groupMembers.firstWhereOrNull((m) => m.userId?.toString() == id);
+    final name = member?.name?.toString().trim() ?? '';
+    return name.isEmpty ? null : name;
+  }
+
+  /// Fills a missing sender name/image from the member list.
+  /// Returns true if something was filled.
+  bool fillSenderFromMembers(MessageData m) {
+    final hasName = (m.senderName?.toString().trim() ?? '').isNotEmpty &&
+        m.senderName?.toString() != 'null';
+    if (hasName) return false;
+    final id = m.senderId?.toString();
+    final member = groupMembers
+        .firstWhereOrNull((x) => x.userId?.toString() == id);
+    final name = member?.name?.toString().trim() ?? '';
+    if (name.isEmpty) return false;
+    m.senderName = name;
+    final img = m.senderImage?.toString() ?? '';
+    if (img.isEmpty || img == 'null') m.senderImage = member?.profileImage;
+    return true;
+  }
+
   MessageData? findMessageById(dynamic id) {
     final key = id?.toString().trim() ?? '';
     if (key.isEmpty || key == 'null') return null;
@@ -253,6 +291,9 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
         final incomingMessage =
             MessageData.fromJson(Map<String, dynamic>.from(message));
+        // Socket payloads often carry only senderId: the bubble then showed
+        // no name and replying to it showed "Unknown". Fill from members.
+        fillSenderFromMembers(incomingMessage);
         AppLog.d("RECEIVED MESSAGE ID => ${incomingMessage.id}");
 
         final eventGroupId = message["groupId"] ??
@@ -426,6 +467,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         }
 
         updateMessageStream();
+        // The chat list row must not keep showing the deleted message.
+        _syncChatListPreview();
 
 
       },
@@ -1669,6 +1712,13 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       if (result.status == true) {
         groupMembers.value = result.locations ?? [];
 
+        // Messages that arrived before the member list did: add names now.
+        var filled = false;
+        for (final m in _messages) {
+          if (fillSenderFromMembers(m)) filled = true;
+        }
+        if (filled) updateMessageStream();
+
         final currentUserId =
             Global.storageServices.get(PrefConst.userId).toString();
 
@@ -1874,6 +1924,9 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   }
 
   void startSearch() {
+    // The search field takes focus (keyboard): the emoji panel must not
+    // stay open under it (e.g. Profile > Search with emoji open).
+    showEmoji.value = false;
     isSearching.value = true;
     searchQuery.value = "";
     searchResultIds.clear();
@@ -2061,7 +2114,9 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     editingMessage.value = null;
   }
 
-  Future<void> clearGroupChat() async {
+  /// Returns true when the server cleared the chat (the profile then also
+  /// drops its media list).
+  Future<bool> clearGroupChat() async {
     try {
       final response = await MessageRepo.clearGroupChat(
         groupId: groupId,
@@ -2079,6 +2134,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
           response['message']?.toString() ??
               'Group chat cleared successfully',
         );
+        _syncChatListPreview();
+        return true;
       } else {
         Utils().fluttertoast(
           response['message']?.toString() ??
@@ -2090,6 +2147,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
       Utils().fluttertoast('Failed to clear group chat');
     }
+    return false;
   }
   @override
   void didChangeMetrics() {
@@ -2168,6 +2226,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       Get.find<ChatListController>()
           .clearUnreadForOpenedChat(isGroup: true, groupId: groupId);
     }
+    _syncChatListPreview();
     _sendGroupStopTypingNow();
     for (final timer in _groupTypingUserTimers.values) {
       timer.cancel();

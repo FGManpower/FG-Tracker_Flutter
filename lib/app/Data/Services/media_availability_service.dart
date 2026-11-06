@@ -27,6 +27,23 @@ class MediaAvailabilityService {
 
   static const Duration _timeout = Duration(seconds: 10);
 
+  /// Re-checks before a "not found" is believed (about 11 s in total).
+  static const List<Duration> _confirmDelays = [
+    Duration(seconds: 3),
+    Duration(seconds: 8),
+  ];
+
+  static Future<int> _probe(http.Client client, Uri uri) async {
+    var code = (await client.head(uri).timeout(_timeout)).statusCode;
+    // Some servers don't implement HEAD; ask for a single byte instead.
+    if (code == 405 || code == 501) {
+      final request = http.Request('GET', uri)..headers['Range'] = 'bytes=0-0';
+      final streamed = await client.send(request).timeout(_timeout);
+      code = streamed.statusCode;
+    }
+    return code;
+  }
+
   /// Reactive: safe to call inside `Obx`.
   static bool isMissing(String url) =>
       _status[url.trim()] == MediaStatus.missing;
@@ -56,13 +73,16 @@ class MediaAvailabilityService {
     final client = http.Client();
     try {
       final uri = Uri.parse(key);
-      var code = (await client.head(uri).timeout(_timeout)).statusCode;
+      var code = await _probe(client, uri);
 
-      // Some servers don't implement HEAD; ask for a single byte instead.
-      if (code == 405 || code == 501) {
-        final request = http.Request('GET', uri)..headers['Range'] = 'bytes=0-0';
-        final streamed = await client.send(request).timeout(_timeout);
-        code = streamed.statusCode;
+      // A file that was JUST uploaded (real-time message) can answer 404/403
+      // for a few seconds (storage/CDN propagation, CDN error caching).
+      // Confirm before calling it missing, or the bubble shows "Media is
+      // missing" for the rest of the session.
+      for (final wait in _confirmDelays) {
+        if (!_missingCodes.contains(code)) break;
+        await Future<void>.delayed(wait);
+        code = await _probe(client, uri);
       }
 
       final MediaStatus status;

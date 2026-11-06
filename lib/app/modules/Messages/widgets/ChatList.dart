@@ -8,8 +8,59 @@ import 'package:get/get.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../Controller/MessageController.dart';
+import '../Controller/chat_screen_logic.dart';
+import '../../../Core/constant/pref_res.dart';
+import '../../../Core/values/global.dart';
+import '../../../Data/Services/chat_translation_service.dart';
 import 'ChatItem.dart';
 import 'chat_history_widgets.dart';
+
+/// Text a left swipe translates: a received text message, or a received
+/// media message's caption. Empty = no translate swipe for this message.
+String _swipeTranslatableText(MessageData msg) {
+  final me = Global.storageServices.get(PrefConst.userId)?.toString();
+  if (msg.senderId?.toString() == me) return '';
+  if (msg.isDeleted == true) return '';
+  if (ChatScreenRules.isText(msg.messageType)) {
+    return (msg.content?.toString() ?? '').trim();
+  }
+  return (msg.caption?.toString() ?? '').trim();
+}
+
+/// Same id the bubble uses for its translation card.
+String _translationId(MessageData msg, String text) {
+  final id = msg.id?.toString() ?? '';
+  if (id.isNotEmpty && id != '0' && id != 'null') return id;
+  return "msg_${text.hashCode}";
+}
+
+/// Swipe right = reply (unchanged). Swipe left on a received message =
+/// translate / show original, on Android and iOS.
+Future<bool> _onMessageSwipe(
+  DismissDirection direction,
+  MessageData msg,
+  void Function(MessageData) setReply,
+) async {
+  HapticFeedback.lightImpact();
+  if (direction == DismissDirection.startToEnd) {
+    setReply(msg);
+  } else {
+    final text = _swipeTranslatableText(msg);
+    if (text.isNotEmpty) {
+      ChatTranslationService.instance
+          .toggleForSwipe(_translationId(msg, text), text);
+    }
+  }
+  return false;
+}
+
+Widget _translateSwipeBackground() => Container(
+      alignment: Alignment.centerRight,
+      padding: EdgeInsets.only(right: 20.w),
+      color: Colors.transparent,
+      child: Icon(Icons.translate_rounded,
+          color: const Color(0xFF5045B9), size: 22.sp),
+    );
 
 class ChatList extends StatelessWidget {
   final MessageController controller;
@@ -149,17 +200,20 @@ class ChatList extends StatelessWidget {
               if (_isDeleted(msg)) {
                 itemWidget = bubble;
               } else {
+                final canTranslate = _swipeTranslatableText(msg).isNotEmpty;
                 itemWidget = Dismissible(
                   key: ValueKey(msg.id ?? index),
-                  direction: DismissDirection.startToEnd,
+                  direction: canTranslate
+                      ? DismissDirection.horizontal
+                      : DismissDirection.startToEnd,
                   dismissThresholds: const {
                     DismissDirection.startToEnd: 0.25,
+                    DismissDirection.endToStart: 0.25,
                   },
-                  confirmDismiss: (_) async {
-                    HapticFeedback.lightImpact();
-                    controller.setReply(msg);
-                    return false;
-                  },
+                  confirmDismiss: (direction) =>
+                      _onMessageSwipe(direction, msg, controller.setReply),
+                  secondaryBackground:
+                      canTranslate ? _translateSwipeBackground() : null,
                   background: Container(
                     alignment: Alignment.centerLeft,
                     padding: EdgeInsets.only(left: 20.w),
@@ -795,14 +849,20 @@ class GroupChatList extends StatelessWidget {
               if (_isDeleted(msg)) {
                 itemWidget = bubble;
               } else {
+                final canTranslate = _swipeTranslatableText(msg).isNotEmpty;
                 itemWidget = Dismissible(
                   key: ValueKey(msg.id ?? index),
-                  direction: DismissDirection.startToEnd,
-                  confirmDismiss: (_) async {
-                    HapticFeedback.lightImpact();
-                    controller.setReply(msg);
-                    return false;
+                  direction: canTranslate
+                      ? DismissDirection.horizontal
+                      : DismissDirection.startToEnd,
+                  dismissThresholds: const {
+                    DismissDirection.startToEnd: 0.25,
+                    DismissDirection.endToStart: 0.25,
                   },
+                  confirmDismiss: (direction) =>
+                      _onMessageSwipe(direction, msg, controller.setReply),
+                  secondaryBackground:
+                      canTranslate ? _translateSwipeBackground() : null,
                   background: Container(
                     alignment: Alignment.centerLeft,
                     padding: EdgeInsets.only(left: 20.w),

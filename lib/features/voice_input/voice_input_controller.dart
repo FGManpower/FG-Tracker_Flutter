@@ -76,6 +76,11 @@ class VoiceInputController extends GetxController {
   bool _isSpeechInitialized = false;
   bool _isStopping = false; // guard against double-stop race condition
 
+  /// Bumped on every start and on cancel. Async work from an older session
+  /// (e.g. an iOS status callback that arrives after Cancel) checks it and
+  /// stops instead of changing the panel.
+  int _sessionToken = 0;
+
   @override
   void onInit() {
     super.onInit();
@@ -136,6 +141,7 @@ class VoiceInputController extends GetxController {
     RxString? messageText,
     VoidCallback? onSend,
   }) async {
+    _sessionToken++;
     await _stopAnyAudioPlayer();
     _textController = textController;
     _focusNode = focusNode;
@@ -331,6 +337,7 @@ class VoiceInputController extends GetxController {
   Future<void> stopListening() async {
     if (_isStopping) return; // already stopping — don't run twice
     _isStopping = true;
+    final session = _sessionToken;
     _stopTimer();
 
     try {
@@ -346,6 +353,12 @@ class VoiceInputController extends GetxController {
       try {
         await _speech.cancel();
       } catch (_) {}
+    }
+
+    // Cancelled while stopping: never bring the panel back.
+    if (session != _sessionToken) {
+      _isStopping = false;
+      return;
     }
 
     final text = recognizedWords.value.trim();
@@ -371,6 +384,10 @@ class VoiceInputController extends GetxController {
     }
 
     await Future.delayed(const Duration(milliseconds: 100));
+    if (session != _sessionToken) {
+      _isStopping = false;
+      return;
+    }
     await _finishListening();
     _isStopping = false;
   }
@@ -418,6 +435,7 @@ class VoiceInputController extends GetxController {
     required VoiceContextType type,
     void Function(String)? onVoiceSend,
   }) async {
+    _sessionToken++;
     await _stopAnyAudioPlayer();
     _textController = textController;
     _focusNode = focusNode;
@@ -633,29 +651,41 @@ class VoiceInputController extends GetxController {
   // 3. COMMON ACTIONS (Cancel, Delete, Re-record, Send)
   // ---------------------------------------------------------------------------
   Future<void> cancelSession() async {
+    final wasListening = isListening;
+    final wasRecording = isRecording;
+    // Invalidate the running session first. On iOS, `_speech.cancel()`
+    // fires the 'done'/'notListening' status, which used to start
+    // stopListening() and then switch the panel to Review AFTER the cancel,
+    // so the Cancel button seemed to do nothing (Android doesn't fire it).
+    _sessionToken++;
+    _isStopping = false;
     _stopTimer();
-    await _stopAnyAudioPlayer();
 
-    if (isListening) {
-      try {
-        await _speech.cancel();
-      } catch (_) {}
-    }
-    await _vttAudioRecorder.cancel();
-    if (isRecording) {
-      try {
-        final path = await _recorder.stop();
-        if (path != null) File(path).deleteSync();
-      } catch (_) {}
-    }
-
-    // Restore text without touching attachments or reply state
+    // Close the panel and restore the text right away; plugin cleanup below
+    // can be slow on iOS and must not keep the panel on screen.
     if (_textController != null) {
       _textController!.text = _initialTextBeforeVoice;
       if (_messageTextRx != null) {
         _messageTextRx!.value = _initialTextBeforeVoice;
       }
     }
+    mode.value = VoiceInputMode.idle;
+
+    await _stopAnyAudioPlayer();
+    if (wasListening) {
+      try {
+        await _speech.cancel().timeout(const Duration(seconds: 2));
+      } catch (_) {}
+    }
+    await _vttAudioRecorder.cancel();
+    if (wasRecording) {
+      try {
+        final path =
+            await _recorder.stop().timeout(const Duration(seconds: 2));
+        if (path != null) File(path).deleteSync();
+      } catch (_) {}
+    }
+
     _cleanupTempAudio();
     mode.value = VoiceInputMode.idle;
   }
