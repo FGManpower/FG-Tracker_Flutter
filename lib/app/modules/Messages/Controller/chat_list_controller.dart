@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
+import 'package:fgtracker/app/Model/GetMessage.dart';
+import 'package:fgtracker/app/Core/util/message_preview_builder.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
 import '../../../Core/values/global.dart';
@@ -334,6 +336,91 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
           peerUserId: c.userId,
         );
 
+  /// Chats read on this device (key -> when). A realtime row update that is
+  /// not a new message must not bring back a stale server unread count
+  /// computed before our read reached the server.
+  final Map<String, DateTime> _readLocallyAt = {};
+
+  bool _wasReadLocally(PrivateChatModel c) {
+    final at = _readLocallyAt[_getChatKey(c)];
+    return at != null &&
+        DateTime.now().difference(at) < const Duration(minutes: 2);
+  }
+
+  PrivateChatModel? _findRow({
+    required bool isGroup,
+    dynamic groupId,
+    dynamic chatId,
+    dynamic peerUserId,
+  }) {
+    String? s(dynamic v) {
+      final str = v?.toString().trim();
+      return (str == null || str.isEmpty || str == 'null') ? null : str;
+    }
+
+    return privateChats.firstWhereOrNull((c) {
+      if (isGroup) {
+        return _isGroupChat(c) &&
+            s(groupId) != null &&
+            s(c.groupId ?? c.id) == s(groupId);
+      }
+      return !_isGroupChat(c) &&
+          ((s(chatId) != null &&
+                  s(c.chatId ?? c.conversationId ?? c.id) == s(chatId)) ||
+              (s(peerUserId) != null && s(c.userId) == s(peerUserId)));
+    });
+  }
+
+  /// The open chat screen knows the real last message. Called after a
+  /// delete (for me / for everyone) and when the chat closes, so the row
+  /// never keeps showing a message that was deleted or cleared.
+  /// [last] null = the chat is now empty.
+  void syncLastMessageFromChat({
+    bool isGroup = false,
+    dynamic groupId,
+    dynamic chatId,
+    dynamic peerUserId,
+    required MessageData? last,
+  }) {
+    final row = _findRow(
+      isGroup: isGroup,
+      groupId: groupId,
+      chatId: chatId,
+      peerUserId: peerUserId,
+    );
+    if (row == null) return;
+
+    if (last == null) {
+      if ((row.message ?? '').isEmpty && (row.preview ?? '').isEmpty) return;
+      row
+        ..message = ''
+        ..preview = ''
+        ..messageType = 'text'
+        ..lastMessageData = null
+        ..isDeletedForEveryone = false;
+      privateChats.refresh();
+      return;
+    }
+
+    final deleted = last.isDeleted == true ||
+        last.content?.toString() == MessagePreviewBuilder.deletedText;
+    final preview = MessagePreviewBuilder.forMessage(last);
+    final text = deleted ? MessagePreviewBuilder.deletedText : preview.display;
+    if (row.preview == text &&
+        (row.isDeletedForEveryone == true) == deleted) {
+      return;
+    }
+    row
+      ..message = text
+      ..preview = text
+      ..messageType = deleted ? 'text' : last.messageType?.toString()
+      ..lastMessageData = null
+      ..isDeletedForEveryone = deleted
+      ..senderId = last.senderId?.toString() ?? row.senderId
+      ..senderName = last.senderName?.toString() ?? row.senderName;
+    privateChats.refresh();
+  }
+
   /// Called when a chat screen closes: everything in it was read, so drop its
   /// unread badge locally (the read was also sent to the server).
   void clearUnreadForOpenedChat({
@@ -360,6 +447,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
                     s(c.chatId ?? c.conversationId ?? c.id) == s(chatId)) ||
                 (s(peerUserId) != null && s(c.userId) == s(peerUserId)));
       }
+      if (match) _readLocallyAt[_getChatKey(c)] = DateTime.now();
       final unread = c.unreadCount ?? 0;
       if (match && unread > 0) {
         unreadTotalCount.value =
@@ -950,12 +1038,16 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   ) {
     final newMessage = ChatListRules.isNewMessage(current, updated);
     final merged = _mergePrivateChat(current, updated, fromServer: false);
+    final key = _getChatKey(merged);
+    // A genuinely new message makes the chat unread again.
+    if (newMessage) _readLocallyAt.remove(key);
     merged.unreadCount = ChatListRules.resolveUnread(
       current: current,
       updated: updated,
       newMessage: newMessage,
       isViewing: _isViewingChat(merged),
       myUserId: currentUserId,
+      readLocally: _wasReadLocally(merged),
     );
     if (newMessage) _typing.clearChat(_getChatKey(merged));
     return merged;

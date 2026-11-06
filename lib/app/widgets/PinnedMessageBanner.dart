@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Model/GetMessage.dart';
+import 'package:fgtracker/app/Core/util/message_preview_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -18,24 +19,11 @@ class PinnedMessageBanner extends StatelessWidget {
 
   static const Color _purple = Color(0xFF5045B9);
 
-  String _getPreviewText() {
-    switch (pinnedMessage.messageType ?? "text") {
-      case "image":
-        return "📷 Photo";
-      case "video":
-        return "🎥 Video";
-      case "audio":
-        return "🎤 Voice message";
-      case "document":
-        return "📄 Document";
-      case "location":
-        return "📍 Location";
-      case "contact":
-        return "👤 Contact";
-      default:
-        return pinnedMessage.content ?? "";
-    }
-  }
+  /// Same preview rules as replies and the chat list. An attendance message's
+  /// content is JSON ({"attendancePollId":..}) and used to be shown raw;
+  /// it now reads "📊 <title>" / "📊 Attendance poll".
+  String _getPreviewText() =>
+      MessagePreviewBuilder.forMessage(pinnedMessage).display;
 
   @override
   Widget build(BuildContext context) {

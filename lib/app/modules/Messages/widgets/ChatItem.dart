@@ -1548,6 +1548,14 @@ class GroupChatBubble extends StatelessWidget {
       message.isDeleted == true ||
           message.content?.toString() == "This message was deleted";
 
+  /// Name above a received group message: the message's own name, or the
+  /// member list's when a real-time message arrived without one.
+  String _senderDisplayName() {
+    final own = message.senderName?.toString().trim() ?? '';
+    if (own.isNotEmpty && own != 'null') return own;
+    return controller.memberNameFor(message.senderId) ?? '';
+  }
+
   /// Sender avatar / name tap → sender's full profile (WhatsApp style).
   void _openSenderInfo({bool asPopup = false}) {
     final String senderId = message.senderId?.toString() ?? '';
@@ -1719,7 +1727,9 @@ class GroupChatBubble extends StatelessWidget {
                                     child: GestureDetector(
                                       onTap: _openSenderInfo,
                                       child: Text(
-                                        message.senderName?.toString() ?? "",
+                                        // Real-time messages may arrive
+                                        // without a name: use the member list.
+                                        _senderDisplayName(),
                                         style: TextStyle(
                                           fontSize: 12.sp,
                                           fontWeight: FontWeight.w700,

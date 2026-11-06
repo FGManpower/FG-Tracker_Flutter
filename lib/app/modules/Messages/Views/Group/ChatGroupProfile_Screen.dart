@@ -1014,9 +1014,17 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                 title: "Clear Chat",
                 content: "Delete all messages from this device?",
                 confirm: "Clear",
-                onConfirm: () {
+                onConfirm: () async {
                   Get.back();
-                  chatController.clearGroupChat();
+                  final cleared = await chatController.clearGroupChat();
+                  if (!cleared) return;
+                  // Media / Links / Docs used to keep the cleared files.
+                  _apiController.clearMediaLocally();
+                  final gId =
+                      int.tryParse(chatController.groupId.toString()) ?? 0;
+                  if (gId != 0) {
+                    _apiController.fetchProfileDetails(gId, silent: true);
+                  }
                 },
               );
             },

@@ -42,7 +42,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final scaffold = Scaffold(
       backgroundColor: _scaffoldBg,
       resizeToAvoidBottomInset: true,
       appBar: PreferredSize(
@@ -159,9 +159,12 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                   MessagePreviewBuilder.forMessage(reply).display;
               final myId =
                   Global.storageServices.get(PrefConst.userId)?.toString();
+              final storedName = reply.senderName?.toString().trim() ?? "";
               final senderLabel = reply.senderId?.toString() == myId
                   ? "You"
-                  : (reply.senderName?.toString().trim() ?? "");
+                  : (storedName.isNotEmpty && storedName != "null"
+                      ? storedName
+                      : (controller.memberNameFor(reply.senderId) ?? ""));
 
               return GestureDetector(
                 behavior: HitTestBehavior.translucent,
@@ -262,6 +265,19 @@ class GroupChatScreen extends GetView<GroupMessageController> {
         ),
       ),
     );
+
+    // System back (Android back / iOS swipe) closes the emoji panel first,
+    // like WhatsApp, instead of leaving the chat. The app-bar arrow still
+    // leaves directly (Navigator.pop ignores PopScope).
+    return Obx(() => PopScope(
+          canPop: !controller.showEmoji.value,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop && controller.showEmoji.value) {
+              controller.showEmoji.value = false;
+            }
+          },
+          child: scaffold,
+        ));
   }
 
   Widget _buildScrollToBottomButton() {
@@ -450,6 +466,9 @@ class GroupChatScreen extends GetView<GroupMessageController> {
             Expanded(
               child: GestureDetector(
                 onTap: () {
+                  // Leave no emoji panel / keyboard behind the profile page.
+                  _dismissKeyboard(context);
+                  FocusScope.of(context).unfocus();
                   Get.to(
                     () => const GroupProfileScreen(),
                     arguments: {

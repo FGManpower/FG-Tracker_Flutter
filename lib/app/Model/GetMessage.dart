@@ -328,6 +328,39 @@ class MessageData {
   /// messageType of the placeholder used for a row that could not be parsed.
   static const String unsupportedType = 'unsupported';
 
+  /// A list, or a JSON-encoded list string; null for anything else.
+  static List<dynamic>? _decodeJsonList(dynamic value) {
+    if (value is List) return value;
+    if (value is String) {
+      final v = value.trim();
+      if (v.startsWith('[')) {
+        try {
+          final decoded = jsonDecode(v);
+          if (decoded is List) return decoded;
+        } catch (_) {}
+      }
+    }
+    return null;
+  }
+
+  /// Image paths from a list, a JSON list string, or a single non-JSON path.
+  static List<String>? _stringList(dynamic value) {
+    final list = _decodeJsonList(value);
+    if (list != null) {
+      return [
+        for (final e in list)
+          if (e != null && e.toString().trim().isNotEmpty) e.toString().trim(),
+      ];
+    }
+    if (value is String) {
+      final v = value.trim();
+      if (v.isNotEmpty && v != 'null' && !v.startsWith('[') && !v.startsWith('{')) {
+        return [v];
+      }
+    }
+    return null;
+  }
+
   static int? parseIntOrNull(dynamic value) {
     if (value is int) return value;
     if (value is num) return value.toInt();
@@ -489,8 +522,12 @@ class MessageData {
         json['original_images'] ??
         json['originalImages'] ??
         nestedSource?['images'];
-    if (rawImages is List) {
-      images = rawImages.map((e) => e.toString()).toList();
+    // Socket echoes may carry the DB column as a JSON string ("[\"a.jpg\"]").
+    // It used to be ignored, so real-time media showed as "missing" until
+    // the chat was reopened and the history API sent a real list.
+    final imageList = _stringList(rawImages);
+    if (imageList != null) {
+      images = imageList;
     } else if (json['image'] != null || nestedSource?['image'] != null) {
       final singleImg = json['image'] ?? nestedSource?['image'];
       if (singleImg is String && singleImg.isNotEmpty) {
@@ -510,15 +547,15 @@ class MessageData {
         json['original_videos'] ??
         json['originalVideos'] ??
         nestedSource?['videos'];
-    if (rawVideos is List) {
-      videos = rawVideos
-          .where((item) => item is Map)
-          .map(
-            (item) => MessageVideo.fromJson(
-          Map<String, dynamic>.from(item as Map),
-        ),
-      )
-          .toList();
+    final videoList = _decodeJsonList(rawVideos);
+    if (videoList != null) {
+      videos = [
+        for (final item in videoList)
+          if (item is Map)
+            MessageVideo.fromJson(Map<String, dynamic>.from(item))
+          else if (item is String && item.trim().isNotEmpty)
+            MessageVideo(videoUrl: item.trim()),
+      ];
     } else if (json['video'] != null || nestedSource?['video'] != null) {
       final singleVid = json['video'] ?? nestedSource?['video'];
       if (singleVid is Map) {

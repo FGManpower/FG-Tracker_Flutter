@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Package Pricing Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#EEEDF5; --page-text:#1E1B3A; --page-muted:#5E5B76; --panel:#FFFFFF; --panel-border:#E2E0EE;
+  /* App tokens (match the Flutter code) */
+  --accent:#704AFA; --bg:#F7F7F9; --text:#0F0B4C; --text2:#666666; --border:#E6E4F0; --divider:#F1F1F4;
+  --green:#15803D; --greenBg:#E8FDF2; --shadow:rgba(16,16,64,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --page:#14131C; --page-text:#ECEAF6; --page-muted:#A3A0B8; --panel:#1E1C2A; --panel-border:#2E2B3F; }
+}
+:root[data-theme="dark"]{ --page:#14131C; --page-text:#ECEAF6; --page-muted:#A3A0B8; --panel:#1E1C2A; --panel-border:#2E2B3F; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--page-text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:28px 16px 48px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.lede{color:var(--page-muted);font-size:14px;margin-top:6px;max-width:760px;line-height:1.5}
+.stage{display:flex;flex-wrap:wrap;gap:28px;justify-content:center;align-items:flex-start;margin-top:26px}
+.col{display:flex;flex-direction:column;gap:10px;align-items:center}
+.cap{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--page-muted)}
+.side{display:flex;flex-direction:column;gap:18px;width:300px;max-width:100%}
+.panel{background:var(--panel);border:1px solid var(--panel-border);border-radius:16px;padding:14px}
+.panel h2{font-size:13px;font-weight:700;margin-bottom:10px}
+.files li{list-style:none;font-size:12px;line-height:1.45;padding:6px 0;border-top:1px solid var(--panel-border);color:var(--page-muted)}
+.files li:first-child{border-top:0}
+.files code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--page-text);word-break:break-all}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-right:6px;vertical-align:1px}
+.tag.new{background:#DCFCE7;color:#166534}.tag.edit{background:#FEF3C7;color:#92400E}
+
+/* ---------- Phone ---------- */
+.phone{width:360px;max-width:calc(100vw - 32px);height:740px;border-radius:38px;background:#0B0B12;padding:10px;box-shadow:0 20px 50px rgba(20,16,60,.25)}
+.screen{position:relative;width:100%;height:100%;border-radius:29px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;color:var(--text)}
+.status{height:26px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 22px;font-size:11.5px;font-weight:600;color:var(--text)}
+.scroll{flex:1;overflow-y:auto;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.hdr{display:flex;align-items:center;gap:12px;padding:12px 20px}
+.back{width:44px;height:44px;border-radius:14px;background:#fff;border:0;box-shadow:0 1px 6px var(--shadow);display:grid;place-items:center;cursor:pointer;flex:none}
+.hdr .t{font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr .s{font-size:12px;color:var(--text2);margin-top:2px}
+svg.i{display:block;fill:currentColor}
+
+.banner{background:#FFF4DE;border:1px solid #F2C46D;color:#5C3D00;border-radius:12px;padding:8px 12px;font-size:11.5px;font-weight:500;margin-bottom:12px;line-height:1.35}
+.list{padding:8px 20px 24px;display:flex;flex-direction:column}
+.card{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 2px 10px var(--shadow);padding:14px;margin-bottom:12px;cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%;transition:transform .12s, box-shadow .12s, border-color .12s}
+.card:hover{transform:translateY(-1px)}
+.card.on{border-color:var(--accent);box-shadow:0 0 0 2px rgba(112,74,250,.18),0 2px 10px var(--shadow)}
+.row{display:flex;align-items:flex-start;gap:12px}
+.ico{display:grid;place-items:center;flex:none}
+.ttl{display:flex;align-items:center;gap:6px;min-width:0}
+.ttl b{font-size:15.5px;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tagline{font-size:12px;color:var(--text2);line-height:1.35;margin-top:3px}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.hl{background:var(--bg);color:var(--text)}
+.div{height:1px;background:var(--divider);margin:12px 0 10px}
+.price{font-size:11.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.price strong{font-size:16px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums}
+.active{background:var(--greenBg);color:var(--green)}
+
+/* details */
+.body{padding:0 20px 20px}
+.hero{border-radius:20px;padding:16px;display:flex;gap:14px;align-items:flex-start}
+.hero h3{font-size:18px;font-weight:800;letter-spacing:-.2px}
+.hero p{font-size:12.5px;color:var(--text2);line-height:1.4;margin-top:4px}
+.sec{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:700;margin:22px 2px 8px}
+.sec span{font-size:11.5px;font-weight:500;color:var(--text2)}
+.tiers{display:flex;gap:8px}
+.tier{flex:1;border:1px solid var(--border);background:#fff;border-radius:14px;padding:10px;text-align:center;cursor:pointer;font:inherit;color:var(--text);display:flex;flex-direction:column;justify-content:center;transition:background .18s,border-color .18s}
+.tier .bd{font-size:9px;font-weight:700;letter-spacing:.6px;color:var(--accent);margin-bottom:3px;text-transform:uppercase}
+.tier .nm{font-size:14px;font-weight:700}
+.tier .rg{font-size:10.5px;color:var(--text2);margin-top:2px}
+.tier.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.tier.on .bd{color:#fff}.tier.on .rg{color:rgba(255,255,255,.85)}
+.tdesc{font-size:12px;color:var(--text2);margin-top:8px}
+.dur{display:flex;align-items:center;gap:12px;width:100%;background:#fff;border:1px solid var(--border);border-radius:16px;padding:13px 14px;margin-bottom:10px;cursor:pointer;font:inherit;color:var(--text);text-align:left;transition:border-color .18s}
+.dur.on{border:2px solid var(--accent);padding:12px 13px}
+.radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex:none;transition:border .18s}
+.dur.on .radio{border:6px solid var(--accent)}
+.dur .mid{flex:1;min-width:0}
+.dur .lb{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:14.5px;font-weight:700}
+.dur .hint{font-size:11.5px;color:var(--text2);margin-top:3px;font-variant-numeric:tabular-nums}
+.dur .rt{text-align:right;flex:none}
+.dur .mrp{font-size:11.5px;color:var(--text2);text-decoration:line-through}
+.dur .pr{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+.dur .un{font-size:10.5px;color:var(--text2)}
+.box{background:#fff;border:1px solid var(--border);border-radius:16px}
+.mem{display:flex;align-items:center;gap:8px;padding:12px 14px}
+.mem .mid{flex:1}
+.mem .a{font-size:14px;font-weight:700}
+.mem .b{font-size:11px;color:var(--text2);margin-top:2px;font-variant-numeric:tabular-nums}
+.step{width:36px;height:36px;border-radius:10px;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;cursor:pointer}
+.step.off{background:var(--border)}
+.count{min-width:52px;padding:8px;border-radius:10px;background:rgba(112,74,250,.08);font-size:16px;font-weight:800;text-align:center;cursor:pointer;border:0;color:var(--text);font-family:inherit;font-variant-numeric:tabular-nums}
+.feat{padding:6px 14px}
+.feat div{display:flex;gap:10px;align-items:flex-start;padding:8px 0;font-size:13px;line-height:1.35}
+.feat .no{color:#9A9AA6}
+.sum{padding:4px 0}
+.sum .r{display:flex;justify-content:space-between;gap:8px;margin:0 14px;padding:11px 0;border-bottom:1px solid var(--divider);font-size:13px;color:#4A4A4A;font-variant-numeric:tabular-nums}
+.sum .r b{font-weight:600;color:var(--text)}
+.sum .tot{display:flex;justify-content:space-between;margin:6px 8px;padding:10px 8px;border-radius:12px;background:rgba(112,74,250,.08);font-size:14px;font-weight:800}
+.sum .tot b{font-size:16px;color:var(--accent);font-variant-numeric:tabular-nums}
+.note{font-size:11px;color:var(--text2);margin-top:8px;line-height:1.4}
+.buy{flex:none;background:#fff;box-shadow:0 -2px 12px var(--shadow);padding:12px 20px 16px;display:flex;align-items:center;gap:12px}
+.buy .l{flex:1;min-width:0}
+.buy .l small{display:block;font-size:11px;color:var(--text2)}
+.buy .l strong{display:block;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.buy .l span{display:block;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cta{height:50px;border:0;border-radius:14px;background:var(--accent);color:#fff;font:700 15px Inter,system-ui,sans-serif;padding:0 22px;display:flex;align-items:center;gap:6px;cursor:pointer}
+.walkie{margin:8px 20px;background:#fff;border:1px dashed var(--accent);border-radius:18px;padding:18px;font-size:13px;line-height:1.5;color:var(--text)}
+.walkie b{display:block;font-size:15px;margin-bottom:6px}
+
+/* skeleton */
+.sk{background:#E9E8EF;border-radius:10px;animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.5}}
+
+/* toast + dialog */
+.toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%);background:#6C78FF;color:#fff;font-size:13px;padding:9px 14px;border-radius:20px;max-width:86%;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+.dlg{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:28px}
+.dlg.show{display:flex}
+.dlg .card2{background:#fff;border-radius:18px;padding:20px;width:100%}
+.dlg h4{font-size:16px;font-weight:700;margin-bottom:14px}
+.dlg input{width:100%;border:2px solid var(--accent);border-radius:12px;padding:12px;font:500 15px Inter,system-ui,sans-serif;outline:none}
+.dlg .err{color:#B3261E;font-size:12px;margin-top:6px;min-height:15px}
+.dlg .acts{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}
+.dlg .acts button{border:0;background:none;font:600 14px Inter,system-ui,sans-serif;padding:8px 12px;cursor:pointer;color:var(--text2)}
+.dlg .acts .ok{color:var(--accent);font-weight:700}
+
+/* side menu sample */
+.drawer{padding:4px 2px}
+.ditem{display:flex;align-items:center;gap:14px;padding:8px;border-radius:15px;position:relative}
+.ditem .di{width:44px;height:44px;border-radius:14px;background:#EDE9FE;color:#5D47F1;display:grid;place-items:center;flex:none}
+.ditem b{display:block;font-size:15px;font-weight:700;color:#1E202B}
+.ditem small{display:block;font-size:12px;color:#7A7F93;margin-top:3px}
+.ditem .mid{flex:1}
+.ditem.new{background:#F5F2FF;outline:2px dashed #A898FF;outline-offset:-2px;cursor:pointer}
+.ddiv{height:1px;background:#F0ECFC;margin:0 8px}
+.dpanel{background:#fff;border-radius:16px;padding:6px;border:1px solid var(--panel-border)}
+@media (max-width:420px){ .phone{height:700px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Package Pricing — what I added to FG Tracker</h1>
+  <p class="lede">A browser replica of the two new Flutter screens, using the same sample data the app shows in debug mode. Tap a package on the left phone to open its pricing on the right phone; tiers, billing periods and the member counter all work. The real screens read everything from your backend API.</p>
+
+  <div class="stage">
+    <div class="side">
+      <div class="col" style="align-items:stretch">
+        <div class="cap">1 · Side menu entry</div>
+        <div class="dpanel drawer">
+          <div class="ditem"><div class="di"><svg class="i" width="22" height="22" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div><div class="mid"><b>Edit Profile</b><small>Update your information</small></div></div>
+          <div class="ddiv"></div>
+          <div class="ditem new" title="New item"><div class="di"><svg class="i" width="22" height="22" viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div><div class="mid"><b>Packages &amp; Pricing</b><small>Plans for every module</small></div><svg class="i" width="24" height="24" viewBox="0 0 24 24" style="color:#7E69F7"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div>
+          <div class="ddiv"></div>
+          <div class="ditem"><div class="di"><svg class="i" width="22" height="22" viewBox="0 0 24 24"><path d="M21 12.22C21 6.73 16.74 3 12 3c-4.69 0-9 3.65-9 9.28-.6.34-1 .98-1 1.72v2c0 1.1.9 2 2 2h1v-6.1c0-3.87 3.13-7 7-7s7 3.13 7 7V19h-8v2h8c1.1 0 2-.9 2-2v-1.22c.59-.31 1-.92 1-1.64v-2.3c0-.7-.41-1.31-1-1.62z"/></svg></div><div class="mid"><b>Contact Us</b><small>Know more about us</small></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Files in your project</h2>
+        <ul class="files">
+          <li><span class="tag new">NEW</span><code>modules/PackagePricing/</code><br>Both screens, 2 controllers, bindings, widgets</li>
+          <li><span class="tag new">NEW</span><code>Model/package_pricing_model.dart</code><br>Package, tier, duration, feature, order models</li>
+          <li><span class="tag new">NEW</span><code>Data/Repositories/package_pricing_repo.dart</code><br>API calls + debug sample-data switch</li>
+          <li><span class="tag new">NEW</span><code>Data/Repositories/package_pricing_mock.dart</code><br>Sample data (debug only)</li>
+          <li><span class="tag new">NEW</span><code>docs/package_pricing_api.md</code><br>API contract for the backend team</li>
+          <li><span class="tag edit">EDIT</span><code>urls.dart · app_routes.dart · app_pages.dart · sidemenu.dart</code><br>5 URLs, 2 routes, 1 menu item</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap">2 · Packages &amp; Pricing</div>
+      <div class="phone"><div class="screen" id="p1"></div></div>
+    </div>
+
+    <div class="col">
+      <div class="cap">3 · Pricing details</div>
+      <div class="phone"><div class="screen" id="p2"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- Icons (Material paths) ----
+const P = {
+  back:'M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z',
+  chev:'M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z',
+  check:'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z',
+  minusCircle:'M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z',
+  add:'M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z',
+  remove:'M19 13H5v-2h14v2z',
+  arrow:'M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z',
+  attendance:'M9 17l3-2.94c-.39-.04-.68-.06-1-.06-2.67 0-8 1.34-8 4v2h9l-3-3zm2-5c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4m4.47 8.5L12 17l1.4-1.41 2.07 2.08 5.13-5.17 1.4 1.41z',
+  walkie_talkie:'M7 24h2v-2H7v2zm5-11c1.66 0 2.99-1.34 2.99-3L15 4c0-1.66-1.34-3-3-3S9 2.34 9 4v6c0 1.66 1.34 3 3 3zm-1 11h2v-2h-2v2zm4 0h2v-2h-2v2zm4-14h-1.7c0 3-2.54 5.1-5.3 5.1S6.7 13 6.7 10H5c0 3.41 2.72 6.23 6 6.72V20h2v-3.28c3.28-.49 6-3.31 6-6.72z',
+  safe_zone_route:'M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z',
+  live_tracking:'M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z'
+};
+const ic = (k, s, c) => `<svg class="i" width="${s}" height="${s}" viewBox="0 0 24 24"${c?` style="color:${c}"`:''}><path d="${P[k]}"/></svg>`;
+const COLORS = {attendance:'#16A34A', walkie_talkie:'#704AFA', safe_zone_route:'#EA580C', live_tracking:'#2563EB'};
+const tint = (hex, a) => { const n=parseInt(hex.slice(1),16); return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`; };
+
+// ---- Sample data: identical to package_pricing_mock.dart ----
+const D = (base, id) => [
+  {planId:id,   months:1,  price:base},
+  {planId:id+1, months:3,  price:Math.round(base*3*0.9),  mrp:base*3},
+  {planId:id+2, months:12, price:Math.round(base*12*0.8), mrp:base*12, rec:true},
+];
+const PACKAGES = [
+  {key:'attendance', title:'Attendance', tagline:'Selfie + location check-ins for your whole team', start:49, badge:'Popular', hl:['Face check-in','Geo-fenced','Reports']},
+  {key:'walkie_talkie', title:'Walkie-Talkie', tagline:'Push-to-talk voice channels for groups', start:99, hl:['Group channels','Works in background']},
+  {key:'safe_zone_route', title:'Safe Zone + Safe Route', tagline:'Alerts when members leave a zone or route', start:79, hl:['Geofence alerts','Route deviation']},
+  {key:'live_tracking', title:'Live Tracking', tagline:'Real-time location of every member on one map', start:59, subscribed:true, until:'2026-12-31', hl:['Live map','Location history']},
+];
+const F = (t, inc=true) => ({t, inc});
+const PLANS = {
+  attendance:{description:'Members mark attendance with a selfie and live location. Admins see who is in, late or absent.', gst:18, incl:false,
+    features:[F('Selfie + face check-in'),F('Location captured with every check-in')],
+    terms:'Plans renew manually. Members can be added any time from the group.',
+    tiers:[
+      {name:'Basic', desc:'For small teams getting started', min:1, max:25, f:[F('Daily check-in / check-out'),F('Attendance history (30 days)'),F('Excel / PDF reports',false),F('Geo-fenced office locations',false)], d:D(49,101)},
+      {name:'Pro', badge:'Best value', rec:true, desc:'For growing teams that need reports', min:5, max:200, f:[F('Daily check-in / check-out'),F('Unlimited attendance history'),F('Excel / PDF reports'),F('Geo-fenced office locations')], d:D(89,111)},
+    ]},
+  safe_zone_route:{description:'Draw safe zones and routes on the map. Get alerted the moment someone leaves them.', gst:18, incl:false,
+    features:[F('Instant push alerts'),F('Works with Live Tracking')],
+    tiers:[
+      {name:'Individual', desc:'Protect yourself or one family member', min:1, max:1, f:[F('Up to 3 safe zones'),F('Up to 2 safe routes'),F('Route deviation alerts')], d:D(79,201)},
+      {name:'Team', badge:'Popular', rec:true, desc:'For families and field teams', min:2, max:100, f:[F('Unlimited safe zones'),F('Unlimited safe routes'),F('Route deviation alerts')], d:D(69,211)},
+    ]},
+  live_tracking:{description:'See every member move on the map in real time, with history playback.', gst:18, incl:true,
+    features:[F('Battery-friendly tracking'),F('Private / ghost mode')],
+    tiers:[
+      {name:'Individual', min:1, max:1, f:[F('Live location'),F('7-day location history'),F('Group live map',false)], d:D(59,301)},
+      {name:'Team', rec:true, min:2, max:500, f:[F('Live location'),F('90-day location history'),F('Group live map')], d:D(49,311)},
+      {name:'Enterprise', min:50, max:5000, f:[F('Live location'),F('Unlimited location history'),F('Group live map'),F('Priority support')], d:D(39,321)},
+    ]},
+};
+
+// ---- Formatting (mirrors formatPackageMoney etc.) ----
+function money(v){
+  const r = Math.round(v*100)/100, whole = Number.isInteger(r);
+  return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',minimumFractionDigits:whole?0:2,maximumFractionDigits:whole?0:2}).format(r);
+}
+const label = m => ({1:'Monthly',3:'Quarterly',6:'Half-yearly',12:'Yearly'})[m] || `${m} Months`;
+const period = m => m===12 ? '1 year' : (m%12===0 ? `${m/12} years` : (m===1 ? '1 month' : `${m} months`));
+const savings = d => { if(!(d.mrp>d.price)) return null; const p=Math.round((d.mrp-d.price)/d.mrp*100); return p>=1?p:null; };
+const range = t => t.max<=1 ? '1 member' : (t.min===t.max ? `${t.max} members` : `${t.min}–${t.max} members`);
+const fmtDate = iso => { const d=new Date(iso); return `${d.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]} ${d.getFullYear()}`; };
+const status = `<div class="status"><span>9:41</span><span>●●● 5G ▮</span></div>`;
+const banner = `<div class="banner">Sample data (debug) — connect the /packages API to show real prices.</div>`;
+const iconTile = (key, size) => `<div class="ico" style="width:${size}px;height:${size}px;border-radius:${size*0.3}px;background:${tint(COLORS[key],.12)}">${ic(key, Math.round(size*0.52), COLORS[key])}</div>`;
+
+// ---- State ----
+const S = {key:'attendance', tier:0, dur:0, members:1, loading:false};
+function pickDefaults(){
+  const plan = PLANS[S.key]; if(!plan) return;
+  const r = plan.tiers.findIndex(t=>t.rec); S.tier = r>=0 ? r : 0;
+  const t = plan.tiers[S.tier]; const rd = t.d.findIndex(d=>d.rec); S.dur = rd>=0 ? rd : 0;
+  S.members = t.min;
+}
+
+// ---- Screen 1: list ----
+function renderList(){
+  const cards = PACKAGES.map(p => {
+    const c = COLORS[p.key];
+    return `<button class="card${p.key===S.key?' on':''}" data-open="${p.key}">
+      <div class="row">
+        ${iconTile(p.key,48)}
+        <div style="flex:1;min-width:0">
+          <div class="ttl"><b>${p.title}</b>${p.badge?`<span class="pill" style="background:${tint(c,.12)};color:${c}">${p.badge}</span>`:''}</div>
+          <div class="tagline">${p.tagline}</div>
+        </div>
+        <div style="padding-top:12px">${ic('chev',22,c)}</div>
+      </div>
+      <div class="pills">${p.hl.slice(0,3).map(h=>`<span class="pill hl">${h}</span>`).join('')}</div>
+      <div class="div"></div>
+      <div class="row" style="align-items:center;gap:8px">
+        <div class="price" style="flex:1">Starts at&nbsp; <strong>${money(p.start)}</strong> / member / month</div>
+        ${p.subscribed?`<span class="pill active">${ic('check',12)}Active · till ${fmtDate(p.until)}</span>`:''}
+      </div>
+    </button>`;
+  }).join('');
+  document.getElementById('p1').innerHTML = `${status}
+    <div class="hdr"><button class="back" aria-label="Back">${ic('back',24,'#0F0B4C')}</button>
+      <div style="min-width:0"><div class="t">Packages &amp; Pricing</div><div class="s">Pick a module to see its plans</div></div></div>
+    <div class="scroll"><div class="list">${banner}${cards}</div></div>
+    <div class="toast" id="t1"></div>`;
+}
+
+// ---- Screen 2: details ----
+function renderDetails(){
+  const pkg = PACKAGES.find(p=>p.key===S.key), c = COLORS[S.key], plan = PLANS[S.key];
+  const head = `${status}<div class="hdr"><button class="back" aria-label="Back">${ic('back',24,'#0F0B4C')}</button>
+      <div style="min-width:0"><div class="t">${pkg.title}</div><div class="s">Plans &amp; pricing</div></div></div>`;
+  const el = document.getElementById('p2');
+
+  if(S.key==='walkie_talkie'){
+    el.innerHTML = `${status}<div class="scroll" style="padding-top:40px"><div class="walkie"><b>Walkie-Talkie → your existing screen</b>
+      Tapping this card opens your current <code>WalkieTalkiePlanDetails</code> screen (Individual / Team tabs, coupons, order summary, Razorpay). Nothing in that flow was changed, so it isn't redrawn here.</div></div>`;
+    return;
+  }
+  if(S.loading){
+    el.innerHTML = `${head}<div class="scroll"><div class="body">
+      <div class="sk" style="height:96px;border-radius:20px"></div>
+      <div class="sk" style="height:16px;width:110px;margin:22px 0 10px"></div>
+      ${'<div class="sk" style="height:66px;border-radius:16px;margin-bottom:10px"></div>'.repeat(3)}
+      <div class="sk" style="height:120px;border-radius:16px;margin-top:12px"></div></div></div>`;
+    return;
+  }
+
+  const tier = plan.tiers[S.tier], d = tier.d[S.dur], multi = tier.max > 1;
+  const subtotal = d.price * S.members;
+  const gstAmt = plan.incl ? 0 : subtotal * plan.gst / 100;
+  const total = subtotal + gstAmt;
+
+  const hero = `<div class="hero" style="background:${tint(c,.07)};border:1px solid ${tint(c,.18)}">${iconTile(S.key,56)}
+    <div><h3>${pkg.title}</h3><p>${plan.description}</p>
+    ${pkg.subscribed?`<span class="pill active" style="margin-top:10px">${ic('check',12)}Active till ${fmtDate(pkg.until)}</span>`:''}</div></div>`;
+
+  const tiers = plan.tiers.length>1 ? `<div class="sec">Choose a plan</div>
+    <div class="tiers">${plan.tiers.map((t,i)=>`<button class="tier${i===S.tier?' on':''}" data-tier="${i}">
+      ${t.badge?`<div class="bd">${t.badge}</div>`:''}<div class="nm">${t.name}</div><div class="rg">${range(t)}</div></button>`).join('')}</div>
+    ${tier.desc?`<div class="tdesc">${tier.desc}</div>`:''}` : '';
+
+  const durs = `<div class="sec">Billing period</div>` + tier.d.map((x,i)=>{
+    const s = savings(x), unit = multi ? '/ member' : `/ ${period(x.months)}`;
+    const hint = x.months>1 ? `${money(x.price/x.months)}${multi?' / member':''} per month` : 'Billed every month';
+    return `<button class="dur${i===S.dur?' on':''}" data-dur="${i}"><div class="radio"></div>
+      <div class="mid"><div class="lb">${label(x.months)}${s?`<span class="pill active">Save ${s}%</span>`:''}</div><div class="hint">${hint}</div></div>
+      <div class="rt">${x.mrp>x.price?`<div class="mrp">${money(x.mrp)}</div>`:''}<div class="pr">${money(x.price)}</div><div class="un">${unit}</div></div></button>`;
+  }).join('');
+
+  const members = multi ? `<div class="sec">Team size</div><div class="box mem">
+      <div class="mid"><div class="a">Members</div><div class="b">${tier.min}–${tier.max} allowed · ${money(d.price)} each</div></div>
+      <button class="step${S.members>tier.min?'':' off'}" data-step="-1" aria-label="Remove one member">${ic('remove',20)}</button>
+      <button class="count" data-edit="1">${S.members}</button>
+      <button class="step${S.members<tier.max?'':' off'}" data-step="1" aria-label="Add one member">${ic('add',20)}</button></div>` : '';
+
+  const feats = [...plan.features, ...tier.f];
+  const features = `<div class="sec">What's included<span>${tier.name}</span></div><div class="box feat">${feats.map(f=>`<div class="${f.inc?'':'no'}">
+      ${ic(f.inc?'check':'minusCircle',18,f.inc?'#15803D':'#B4B4BE')}<span style="font-weight:${f.inc?500:400}">${f.t}</span></div>`).join('')}</div>`;
+
+  const notes = [plan.incl && plan.gst>0 ? `Prices include ${plan.gst}% GST.` : null, plan.terms || null].filter(Boolean).join(' ');
+  const summary = `<div class="sec">Price summary</div><div class="box sum">
+      <div class="r"><span>${multi ? `${money(d.price)} × ${S.members} ${S.members===1?'member':'members'}` : `Plan price (${period(d.months)})`}</span><b>${money(subtotal)}</b></div>
+      ${!plan.incl && plan.gst>0 ? `<div class="r"><span>GST (${plan.gst}%)</span><b>${money(gstAmt)}</b></div>` : ''}
+      <div class="tot"><span>Total for ${period(d.months)}</span><b>${money(total)}</b></div></div>
+      ${notes?`<div class="note">${notes}</div>`:''}`;
+
+  const caption = [multi ? `${S.members} ${S.members===1?'member':'members'}` : null, period(d.months), tier.name].filter(Boolean).join(' · ');
+  const buy = `<div class="buy"><div class="l"><small>Total</small><strong>${money(total)}</strong><span>${caption}</span></div>
+      <button class="cta" data-buy="1">${pkg.subscribed?'Renew Plan':'Buy Now'}${ic('arrow',18)}</button></div>`;
+
+  const scrollTop = el.querySelector('.scroll')?.scrollTop || 0;
+  el.innerHTML = `${head}<div class="scroll"><div class="body">${banner}${hero}${tiers}${durs}${members}${features}${summary}</div></div>${buy}
+    <div class="toast" id="t2"></div>
+    <div class="dlg" id="dlg"><div class="card2"><h4>Number of members</h4>
+      <input id="dlgIn" inputmode="numeric" placeholder="${tier.min}–${tier.max}"><div class="err" id="dlgErr"></div>
+      <div class="acts"><button data-dlg="cancel">Cancel</button><button class="ok" data-dlg="apply">Apply</button></div></div></div>`;
+  el.querySelector('.scroll').scrollTop = scrollTop;
+}
+
+// ---- Interactions ----
+let tt;
+function toast(id, msg){ const t=document.getElementById(id); if(!t) return; t.textContent=msg; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2200); }
+
+document.getElementById('p1').addEventListener('click', e => {
+  const b = e.target.closest('[data-open]'); if(!b) return;
+  S.key = b.dataset.open; pickDefaults(); renderList();
+  if(S.key==='walkie_talkie'){ renderDetails(); return; }
+  S.loading = true; renderDetails();
+  setTimeout(()=>{ S.loading=false; renderDetails(); }, 500);
+});
+
+document.getElementById('p2').addEventListener('click', e => {
+  const plan = PLANS[S.key]; if(!plan || S.loading) return;
+  const tier = plan.tiers[S.tier];
+  const t = e.target.closest('[data-tier],[data-dur],[data-step],[data-edit],[data-buy],[data-dlg]'); if(!t) return;
+  if(t.dataset.tier!==undefined){
+    const i=+t.dataset.tier; if(i===S.tier) return;
+    const months = tier.d[S.dur].months; S.tier=i; const nt=plan.tiers[i];
+    const same = nt.d.findIndex(x=>x.months===months); const rd = nt.d.findIndex(x=>x.rec);
+    S.dur = same>=0 ? same : (rd>=0?rd:0);
+    S.members = Math.min(Math.max(S.members, nt.min), nt.max); renderDetails();
+  } else if(t.dataset.dur!==undefined){ S.dur=+t.dataset.dur; renderDetails(); }
+  else if(t.dataset.step){
+    const n = S.members + (+t.dataset.step);
+    if(n>tier.max) return toast('t2',`Maximum ${tier.max} members on ${tier.name}`);
+    if(n<tier.min) return toast('t2',`Minimum ${tier.min} ${tier.min===1?'member':'members'} on ${tier.name}`);
+    S.members=n; renderDetails();
+  } else if(t.dataset.edit){
+    document.getElementById('dlg').classList.add('show');
+    const inp=document.getElementById('dlgIn'); inp.value=S.members; inp.focus(); inp.select();
+  } else if(t.dataset.dlg==='cancel'){ document.getElementById('dlg').classList.remove('show'); }
+  else if(t.dataset.dlg==='apply'){ applyMembers(); }
+  else if(t.dataset.buy){ toast('t2','Sample data — payment opens once the backend packages API is live'); }
+});
+document.getElementById('p2').addEventListener('keydown', e => { if(e.target.id==='dlgIn' && e.key==='Enter') applyMembers(); });
+document.getElementById('p2').addEventListener('input', e => { if(e.target.id==='dlgIn') e.target.value=e.target.value.replace(/\D/g,'').slice(0,5); });
+function applyMembers(){
+  const tier = PLANS[S.key].tiers[S.tier], v = parseInt(document.getElementById('dlgIn').value,10);
+  if(isNaN(v) || v<tier.min || v>tier.max){ document.getElementById('dlgErr').textContent=`Enter a number from ${tier.min} to ${tier.max}`; return; }
+  S.members=v; renderDetails();
+}
+
+pickDefaults(); renderList(); renderDetails();
+</script>
+</body>
+</html>

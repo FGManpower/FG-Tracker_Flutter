@@ -23,6 +23,7 @@ import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/features/voice_input/voice_input_controller.dart';
 import 'package:fgtracker/features/voice_input/voice_input_sheet.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/chat_screen_logic.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 
 class ChatInputArea extends StatefulWidget {
   final RxString messageText;
@@ -110,6 +111,30 @@ class _ChatInputAreaState extends State<ChatInputArea> {
   void dispose() {
     focusNode.dispose();
     super.dispose();
+  }
+
+  /// Sends a recorded voice note together with what else is pending, in one
+  /// action. The voice sheet says "Your voice will be sent with the file as
+  /// audio", but the file used to be left behind (or sent on a second tap).
+  /// The file (with its caption) goes first, then the voice note.
+  void _sendVoiceWithPending(String path, {bool includeText = false}) {
+    final hasAttachment = widget.imagePath.isNotEmpty ||
+        widget.videoPaths.isNotEmpty ||
+        widget.documentPath.value.isNotEmpty;
+    final hasText = widget.textController.text.trim().isNotEmpty;
+    if (hasAttachment || (includeText && hasText)) {
+      widget.onSend();
+    }
+    if (path.isNotEmpty) widget.onVoiceSend?.call(path);
+  }
+
+  /// No attachments / camera while the mic is recording or dictating: the
+  /// camera also needs the mic (iOS audio session conflict) and the two
+  /// were then sent as unrelated messages.
+  bool _blockWhileVoiceBusy() {
+    if (!voiceInputController.isBusyListeningOrRecording) return false;
+    Utils().fluttertoast("Finish or cancel the voice recording first");
+    return true;
   }
 
   void _toggleEmoji() {
@@ -421,6 +446,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                     children: [
                                       GestureDetector(
                                         onTap: () {
+                                          if (_blockWhileVoiceBusy()) return;
                                           focusNode.unfocus();
                                           final isGroupAdmin = widget
                                                   .groupMessageController
@@ -577,7 +603,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                   focusNode: focusNode,
                                   messageText: widget.messageText,
                                   onSend: widget.onSend,
-                                  onVoiceSend: widget.onVoiceSend,
+                                  onVoiceSend: _sendVoiceWithPending,
                                   type: currentVoiceContextType,
                                 );
                               },
@@ -612,7 +638,13 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                                 final audioPath =
                                                     voiceInputController
                                                         .consumeRecordedAudio();
-                                                widget.onVoiceSend!(audioPath);
+                                                // One tap sends everything shown:
+                                                // it used to send only the voice
+                                                // note and leave the file/text.
+                                                _sendVoiceWithPending(
+                                                  audioPath,
+                                                  includeText: true,
+                                                );
                                                 return;
                                               }
                                               if (voiceInputController
@@ -670,7 +702,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                           focusNode: focusNode,
                                           messageText: widget.messageText,
                                           onSend: widget.onSend,
-                                          onVoiceSend: widget.onVoiceSend,
+                                          onVoiceSend: _sendVoiceWithPending,
                                           type: currentVoiceContextType,
                                         );
                                       },
@@ -697,7 +729,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                         textController: widget.textController,
                         focusNode: focusNode,
                         onSend: widget.onSend,
-                        onVoiceSend: widget.onVoiceSend,
+                        onVoiceSend: _sendVoiceWithPending,
                       )
                     else if (!voiceController.isRecording.value &&
                         (widget.messageController?.showEmoji.value ??

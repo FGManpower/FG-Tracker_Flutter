@@ -181,6 +181,21 @@ class ChatTranslationService extends GetxService {
     showTranslated.refresh();
   }
 
+  /// Left swipe on a received message: translate it (Hindi <-> English, the
+  /// same rule as the "Translate" link under the bubble), or hide/show the
+  /// translation if it was already fetched.
+  Future<void> toggleForSwipe(String messageId, String text) async {
+    final clean = text.trim();
+    if (clean.isEmpty) return;
+    final targetLang =
+        RegExp(r'[ऀ-ॿ]').hasMatch(clean) ? 'en' : 'hi';
+    if (translations.containsKey('${messageId}_$targetLang')) {
+      toggleTranslationVisibility(messageId, targetLang: targetLang);
+      return;
+    }
+    await translateText(messageId, clean, targetLang: targetLang);
+  }
+
   /// Toggle showing the translated box
   void toggleTranslationVisibility(String messageId,
       {String targetLang = 'hi'}) {

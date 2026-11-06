@@ -156,7 +156,14 @@ class AttendanceController extends GetxController {
 
   /// Loads the poll + current user's vote (once until marked stale).
   Future<void> ensureLoaded(int pollId, {bool force = false}) async {
-    if (pollId <= 0 || _loading.contains(pollId)) return;
+    if (pollId <= 0) return;
+    if (_loading.contains(pollId)) {
+      // A vote event arrived while a refetch was in flight. That response
+      // may predate the vote, so dropping this request left the count stale
+      // (members voting close together). Refetch once more afterwards.
+      if (force) _reloadQueued.add(pollId);
+      return;
+    }
     if (isDeleted(pollId)) return;
     if (!force && _loaded.contains(pollId)) return;
 
@@ -169,8 +176,12 @@ class AttendanceController extends GetxController {
         return;
       }
       if (res["status"] == true && data is Map) {
-        // A vote started while this was in flight: its response wins.
-        if (_pendingMutations.contains(pollId)) return;
+        // A vote started while this was in flight: its response wins, but
+        // refetch after it so other members' votes aren't lost.
+        if (_pendingMutations.contains(pollId)) {
+          _reloadQueued.add(pollId);
+          return;
+        }
         _apply(data, hasMyVoteField: data.containsKey("myVote"));
         _loaded.add(pollId);
       }
@@ -179,7 +190,16 @@ class AttendanceController extends GetxController {
       if (_isGoneError(e)) _markDeleted(pollId);
     } finally {
       _loading.remove(pollId);
+      _runQueuedReload(pollId);
     }
+  }
+
+  /// Polls that need one more refetch once the current request / vote ends.
+  final Set<int> _reloadQueued = {};
+
+  void _runQueuedReload(int pollId) {
+    if (_loading.contains(pollId) || _pendingMutations.contains(pollId)) return;
+    if (_reloadQueued.remove(pollId)) ensureLoaded(pollId, force: true);
   }
 
   /// Applies a server poll snapshot. Socket events (`fromEvent`) follow the
@@ -389,6 +409,7 @@ class AttendanceController extends GetxController {
       rethrow;
     } finally {
       _pendingMutations.remove(pollId);
+      _runQueuedReload(pollId);
     }
   }
 
@@ -416,6 +437,7 @@ class AttendanceController extends GetxController {
       rethrow;
     } finally {
       _pendingMutations.remove(pollId);
+      _runQueuedReload(pollId);
     }
   }
 

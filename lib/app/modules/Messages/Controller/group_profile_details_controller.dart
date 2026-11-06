@@ -7,6 +7,16 @@ class GroupProfileDetailsController extends GetxController {
   RxBool isLoading = true.obs;
   Rx<GroupProfileData?> profileData = Rx<GroupProfileData?>(null);
 
+  /// After "Clear chat": the Media / Links / Docs card must not keep showing
+  /// the cleared files until the screen is reopened.
+  void clearMediaLocally() {
+    final data = profileData.value;
+    if (data == null) return;
+    data.media = null;
+    data.mediaSummary = null;
+    profileData.refresh();
+  }
+
   /// [silent] = refresh without the skeleton loader (used after group update)
   Future<void> fetchProfileDetails(int groupId, {bool silent = false}) async {
     try {
