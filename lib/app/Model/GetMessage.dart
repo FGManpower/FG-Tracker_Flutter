@@ -262,10 +262,15 @@ class MessageData {
   Map<String, dynamic>? attendance;
   dynamic attendancePollId;
   String? clientMessageId;
+  Map<String, dynamic>? locationMeta;
+  Map<String, dynamic>? contactMeta;
+  dynamic duration;
+  dynamic groupId;
 
   MessageData({
     this.id,
     this.clientMessageId,
+    this.groupId,
     this.senderId,
     this.receiverId,
     this.messageType,
@@ -296,6 +301,9 @@ class MessageData {
     this.replyStatus,
     this.isDeleted = false,
     this.isDelivered = false,
+    this.locationMeta,
+    this.contactMeta,
+    this.duration,
   });
 
   bool get isStatusReply {
@@ -383,7 +391,18 @@ class MessageData {
       }
     }
 
-    id = parseIntOrNull(json['id'] ?? nestedSource?['id']);
+    id = parseIntOrNull(
+      json['id'] ??
+          json['messageId'] ??
+          json['message_id'] ??
+          nestedSource?['id'] ??
+          nestedSource?['messageId'] ??
+          nestedSource?['message_id'],
+    );
+    groupId = json['groupId'] ??
+        json['group_id'] ??
+        nestedSource?['groupId'] ??
+        nestedSource?['group_id'];
     clientMessageId = (json['clientMessageId'] ??
             json['client_message_id'] ??
             nestedSource?['clientMessageId'] ??
@@ -684,12 +703,45 @@ class MessageData {
         }
       } catch (_) {}
     }
+
+    final rawLocationMeta = json['locationMeta'] ??
+        json['location_meta'] ??
+        nestedSource?['locationMeta'] ??
+        nestedSource?['location_meta'];
+    if (rawLocationMeta is Map) {
+      locationMeta = Map<String, dynamic>.from(rawLocationMeta);
+    } else if (messageType == 'location' &&
+        content != null &&
+        content.toString().trim().startsWith('{')) {
+      try {
+        final decoded = jsonDecode(content.toString());
+        if (decoded is Map) locationMeta = Map<String, dynamic>.from(decoded);
+      } catch (_) {}
+    }
+
+    final rawContactMeta = json['contactMeta'] ??
+        json['contact_meta'] ??
+        nestedSource?['contactMeta'] ??
+        nestedSource?['contact_meta'];
+    if (rawContactMeta is Map) {
+      contactMeta = Map<String, dynamic>.from(rawContactMeta);
+    } else if (messageType == 'contact' &&
+        content != null &&
+        content.toString().trim().startsWith('{')) {
+      try {
+        final decoded = jsonDecode(content.toString());
+        if (decoded is Map) contactMeta = Map<String, dynamic>.from(decoded);
+      } catch (_) {}
+    }
+
+    duration = json['duration'] ?? nestedSource?['duration'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
 
     data['id'] = id;
+    if (groupId != null) data['groupId'] = groupId;
     data['senderId'] = senderId;
     data['receiverId'] = receiverId;
     data['messageType'] = messageType;
@@ -731,6 +783,9 @@ class MessageData {
     data['isDelivered'] = isDelivered;
     if (attendance != null) data['attendance'] = attendance;
     if (attendancePollId != null) data['pollId'] = attendancePollId;
+    if (locationMeta != null) data['locationMeta'] = locationMeta;
+    if (contactMeta != null) data['contactMeta'] = contactMeta;
+    if (duration != null) data['duration'] = duration;
 
     return data;
   }

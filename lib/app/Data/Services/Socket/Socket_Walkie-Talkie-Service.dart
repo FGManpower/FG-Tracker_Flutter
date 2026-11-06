@@ -890,6 +890,9 @@ class GroupWalkieService {
       'walkie_invite_cancelled',
       'walkie_peer_declined',
       'walkie_channel_speaker_update',
+      'walkie_alert_member',
+      'admin_alert_walkie_member',
+      'walkie_member_notification_changed',
     ]) {
       socket?.off(e);
     }
@@ -901,7 +904,7 @@ class GroupWalkieService {
       }
     });
 
-    socket?.on('walkie_invite', (data) {
+    void handleWalkieInvite(dynamic data) {
       if (data == null) return;
       if (Get.isRegistered<WalkieChannelController>()) {
         Get.find<WalkieChannelController>().onSpeakerActiveFromSocket(data);
@@ -915,38 +918,65 @@ class GroupWalkieService {
           ? int.tryParse(rawJoinedCount.toString())
           : null;
 
-      final speakerId = (data['speakerId'] ?? data['speaker_id'])?.toString();
+      final speakerId = (data['speakerId'] ?? data['speaker_id'] ?? data['adminId'])?.toString();
       if (speakerId != null && _selfUserId != null && speakerId == _selfUserId) {
+        return;
+      }
+
+      final targetUserId = (data['targetUserId'] ?? data['target_user_id'])?.toString();
+      if (targetUserId != null && targetUserId.isNotEmpty && _selfUserId != null && targetUserId != _selfUserId) {
         return;
       }
 
       final inviteGroupId = (data['groupId'] ?? data['group_id'])?.toString();
       if (inviteGroupId != null &&
           _currentGroupId != null &&
-          inviteGroupId == _currentGroupId) {
+          inviteGroupId == _currentGroupId &&
+          _isTalking) {
         return;
       }
 
       final isForeground =
           WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
 
+      final speakerName = (data['speakerName'] ?? data['adminName'] ?? 'Someone').toString();
+      final speakerImage = (data['speakerImage'] ?? data['adminImage'] ?? '').toString();
+      final gId = data['groupId']?.toString() ?? '';
+      final gName = data['groupName']?.toString() ?? 'Group';
+
       if (isForeground) {
         WalkieInviteDialog.show(
-          groupId: data['groupId']?.toString() ?? '',
-          groupName: data['groupName']?.toString() ?? 'Group',
-          speakerName: data['speakerName']?.toString() ?? 'Someone',
-          speakerImage: data['speakerImage']?.toString() ?? '',
+          groupId: gId,
+          groupName: gName,
+          speakerName: speakerName,
+          speakerImage: speakerImage,
           joinedCount: joinedCount,
         );
       } else {
         firebaseNotificationServices.showWalkieNotification(
-          groupId: data['groupId']?.toString() ?? '',
-          groupName: data['groupName']?.toString() ?? 'Group',
-          speakerName: data['speakerName']?.toString() ?? 'Someone',
-          speakerImage: data['speakerImage']?.toString() ?? '',
+          groupId: gId,
+          groupName: gName,
+          speakerName: speakerName,
+          speakerImage: speakerImage,
           joinedCount: joinedCount,
           extraData: data is Map ? Map<String, dynamic>.from(data) : null,
         );
+      }
+    }
+
+    socket?.on('walkie_invite', handleWalkieInvite);
+    socket?.on('walkie_alert_member', handleWalkieInvite);
+    socket?.on('admin_alert_walkie_member', handleWalkieInvite);
+    socket?.on('walkie_member_notification_changed', (data) {
+      if (data is Map) {
+        final mId = (data['userId'] ?? data['targetUserId'] ?? data['user_id'])?.toString();
+        final rawEnabled = data['notifications_enabled'] ?? data['enabled'] ?? data['notificationsEnabled'];
+        if (mId != null && rawEnabled != null) {
+          final isEnabled = rawEnabled == true || rawEnabled == 1 || rawEnabled == '1' || rawEnabled == 'true';
+          if (Get.isRegistered<GroupWalkieController>()) {
+            Get.find<GroupWalkieController>().setMemberNotificationStatus(mId, isEnabled);
+          }
+        }
       }
     });
 

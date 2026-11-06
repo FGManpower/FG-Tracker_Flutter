@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
@@ -256,14 +255,50 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             MessageData.fromJson(Map<String, dynamic>.from(message));
         AppLog.d("RECEIVED MESSAGE ID => ${incomingMessage.id}");
 
-        final incomingId = incomingMessage.id;
+        final eventGroupId = message["groupId"] ??
+            message["group_id"] ??
+            message["message"]?["groupId"] ??
+            message["message"]?["group_id"] ??
+            message["data"]?["groupId"] ??
+            incomingMessage.groupId;
+        if (eventGroupId != null && eventGroupId.toString() != groupId.toString()) {
+          AppLog.d("GROUP MESSAGE IGNORED => DIFFERENT GROUP $eventGroupId vs $groupId");
+          return;
+        }
 
-        final existingIndex = incomingId != null
-            ? _messages.indexWhere((item) => item.id == incomingId)
-            : -1;
+        final incomingId = incomingMessage.id;
+        final clientMsgId = incomingMessage.clientMessageId;
+
+        final currentUserId =
+            Global.storageServices.get(PrefConst.userId)?.toString();
+        final isMyMessage = incomingMessage.senderId?.toString() == currentUserId;
+        final wasAtBottom = isUserAtBottom();
+
+        int existingIndex = _messages.indexWhere((item) {
+          if (clientMsgId != null &&
+              clientMsgId.isNotEmpty &&
+              item.clientMessageId == clientMsgId) {
+            return true;
+          }
+          return incomingId != null && item.id == incomingId;
+        });
+
+        // Fallback for sender's optimistic bubble when server does not echo clientMessageId
+        if (existingIndex == -1 && isMyMessage) {
+          existingIndex = _messages.lastIndexWhere((item) =>
+              item.id == null &&
+              item.senderId?.toString() == currentUserId &&
+              item.messageType == incomingMessage.messageType);
+        }
 
         if (existingIndex != -1) {
           final existing = _messages[existingIndex];
+          if (incomingId != null) existing.id = incomingId;
+          existing.isDelivered = true;
+          if (incomingMessage.timestamp != null &&
+              incomingMessage.timestamp.toString().isNotEmpty) {
+            existing.timestamp = incomingMessage.timestamp;
+          }
           final hasOldContent = (existing.content?.toString().trim().isNotEmpty ?? false) ||
               (existing.caption?.toString().trim().isNotEmpty ?? false) ||
               (existing.images?.isNotEmpty ?? false) ||
@@ -279,22 +314,17 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             existing.videos = incomingMessage.videos;
             existing.messageType = incomingMessage.messageType;
             existing.thumbnail = incomingMessage.thumbnail;
-            updateMessageStream();
           }
-          AppLog.d("DUPLICATE MESSAGE IGNORED => $incomingId");
+          if (incomingMessage.senderName != null && incomingMessage.senderName.toString().isNotEmpty) {
+            existing.senderName = incomingMessage.senderName;
+          }
+          if (incomingMessage.senderImage != null && incomingMessage.senderImage.toString().isNotEmpty) {
+            existing.senderImage = incomingMessage.senderImage;
+          }
+          updateMessageStream();
+          AppLog.d("DUPLICATE OR OPTIMISTIC MESSAGE MERGED => $incomingId (client: $clientMsgId)");
           return;
         }
-
-        final eventGroupId = message["groupId"] ?? message["group_id"];
-        if (eventGroupId != null && eventGroupId.toString() != groupId.toString()) {
-          AppLog.d("GROUP MESSAGE IGNORED => DIFFERENT GROUP $eventGroupId vs $groupId");
-          return;
-        }
-
-        final currentUserId =
-            Global.storageServices.get(PrefConst.userId)?.toString();
-        final isMyMessage = incomingMessage.senderId?.toString() == currentUserId;
-        final wasAtBottom = isUserAtBottom();
 
         final hasContent = (incomingMessage.content?.toString().trim().isNotEmpty ?? false) ||
             (incomingMessage.caption?.toString().trim().isNotEmpty ?? false) ||
@@ -439,6 +469,112 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         pinnedMessage.value = null;
         showPinnedBanner.value = false;
 
+        updateMessageStream();
+      },
+    );
+
+    socketService.listenMessageSent(
+      scope: ChatSocketScope.group,
+      callback: (data) {
+        final clientMsgId = data['clientMessageId']?.toString();
+        final serverId = int.tryParse(
+          data['id']?.toString() ?? data['messageId']?.toString() ?? '',
+        );
+        if (serverId == null) return;
+
+        bool updated = false;
+        for (final msg in _messages) {
+          if ((clientMsgId != null &&
+                  clientMsgId.isNotEmpty &&
+                  msg.clientMessageId == clientMsgId) ||
+              (msg.id == serverId)) {
+            msg.id = serverId;
+            msg.isDelivered = true;
+            updated = true;
+            break;
+          }
+        }
+        if (!updated) {
+          final myId = Global.storageServices.get(PrefConst.userId)?.toString();
+          for (int i = _messages.length - 1; i >= 0; i--) {
+            final msg = _messages[i];
+            if (msg.id == null && msg.senderId?.toString() == myId) {
+              msg.id = serverId;
+              msg.isDelivered = true;
+              updated = true;
+              break;
+            }
+          }
+        }
+        if (updated) updateMessageStream();
+      },
+    );
+
+    socketService.listenGroupMessageSeen(
+      callback: (data) {
+        final evGid = int.tryParse((data['groupId'] ?? data['group_id'] ?? '').toString());
+        if (evGid != null && evGid != groupId) return;
+        final myUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+        final seenBy = int.tryParse((data['seenBy'] ?? data['userId'] ?? '').toString());
+        final rawIds = data['messageIds'] ?? data['message_ids'];
+        final messageIds = (rawIds is List)
+            ? rawIds.map((id) => int.tryParse(id.toString())).whereType<int>().toSet()
+            : <int>{};
+        final totalMembers = groupMembers.isNotEmpty ? groupMembers.length : 2;
+
+        bool updated = false;
+        for (final msg in _messages) {
+          final isMyMsg = msg.senderId?.toString() == myUserId;
+          if (isMyMsg && (messageIds.isEmpty || messageIds.contains(msg.id))) {
+            msg.isDelivered = true;
+            if (seenBy != null) {
+              msg.seenBy ??= [];
+              if (msg.seenBy is List && !(msg.seenBy as List).contains(seenBy)) {
+                (msg.seenBy as List).add(seenBy);
+              }
+            }
+            final seenLen = (msg.seenBy is List)
+                ? (msg.seenBy as List).length
+                : (msg.seenCount ?? 0);
+            if (seenLen >= (totalMembers - 1)) {
+              msg.seenCount = totalMembers - 1;
+            }
+            updated = true;
+          }
+        }
+        if (updated) updateMessageStream();
+      },
+    );
+
+    socketService.listenGroupUpdated(
+      callback: (data) {
+        final evGid = int.tryParse((data['groupId'] ?? data['group_id'] ?? data['id'] ?? '').toString());
+        if (evGid != null && evGid != groupId) return;
+        final newName = data['groupName']?.toString();
+        final newProfile = data['groupProfile']?.toString() ?? data['groupProfileUrl']?.toString();
+        final newDesc = data['groupDesc']?.toString() ?? data['description']?.toString();
+
+        if (newName != null && newName.isNotEmpty) {
+          groupName.value = newName;
+        }
+        if (newProfile != null && newProfile.isNotEmpty) {
+          groupImage = newProfile;
+        }
+        if (newDesc != null) {
+          groupDesc.value = newDesc;
+        }
+        update();
+      },
+    );
+
+    socketService.listenGroupChatCleared(
+      callback: (data) {
+        final evGid = int.tryParse((data['groupId'] ?? data['group_id'] ?? '').toString());
+        if (evGid != null && evGid != groupId) return;
+        final myUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+        final uId = data['userId']?.toString();
+        if (uId != null && uId != myUserId) return;
+        _messages.clear();
         updateMessageStream();
       },
     );
@@ -735,6 +871,56 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     }
   }
 
+  void _addOptimisticMessage({
+    required String clientMessageId,
+    required String messageType,
+    required String content,
+    String? caption,
+    List<String>? images,
+    List<Map<String, dynamic>>? videos,
+    Map<String, dynamic>? locationMeta,
+    Map<String, dynamic>? contactMeta,
+    dynamic duration,
+    dynamic replyId,
+    String? replyMessage,
+    String? replyType,
+    String? replySender,
+  }) {
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString();
+    final currentUserName =
+        Global.storageServices.get(PrefConst.userName)?.toString();
+    final currentUserAvatar =
+        Global.storageServices.get(PrefConst.profileImage)?.toString();
+
+    final msg = MessageData(
+      clientMessageId: clientMessageId,
+      senderId: currentUserId,
+      groupId: groupId,
+      receiverId: groupId,
+      messageType: messageType,
+      content: content,
+      caption: caption,
+      images: images,
+      videos: videos?.map((v) => MessageVideo.fromJson(v)).toList(),
+      locationMeta: locationMeta,
+      contactMeta: contactMeta,
+      duration: duration,
+      replyId: replyId,
+      replyMessage: replyMessage,
+      replyType: replyType,
+      replySenderName: replySender,
+      senderName: currentUserName ?? "You",
+      senderImage: currentUserAvatar,
+      timestamp: DateTime.now().toIso8601String(),
+      isDelivered: false,
+    );
+
+    _messages.add(msg);
+    updateMessageStream();
+    scrollToBottom();
+  }
+
   Future<void> sendMessage({
     required TextEditingController textController,
   }) async {
@@ -832,10 +1018,25 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         }
 
         if (uploadedImages.isNotEmpty || uploadedVideos.isNotEmpty) {
+          final clientMsgId = 'c_${DateTime.now().microsecondsSinceEpoch}';
+          _addOptimisticMessage(
+            clientMessageId: clientMsgId,
+            messageType: "media",
+            content: "",
+            images: uploadedImages,
+            videos: uploadedVideos,
+            caption: text,
+            replyId: replyMessage.value?.id,
+            replyMessage: replyMessage.value?.content,
+            replyType: replyMessage.value?.messageType,
+            replySender: replyMessage.value?.senderName,
+          );
+
           socketService.sendGroupMessage(
             groupId: groupId,
             content: "",
             messageType: "media",
+            clientMessageId: clientMsgId,
             images: uploadedImages,
             videos: uploadedVideos,
             caption: text,
@@ -882,10 +1083,24 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
           }
 
           if (uploadedImages.isNotEmpty) {
+            final clientMsgId = 'c_${DateTime.now().microsecondsSinceEpoch}';
+            _addOptimisticMessage(
+              clientMessageId: clientMsgId,
+              messageType: "image",
+              content: "",
+              images: uploadedImages,
+              caption: text,
+              replyId: replyMessage.value?.id,
+              replyMessage: replyMessage.value?.content,
+              replyType: replyMessage.value?.messageType,
+              replySender: replyMessage.value?.senderName,
+            );
+
             socketService.sendGroupMessage(
               groupId: groupId,
               content: "",
               messageType: "image",
+              clientMessageId: clientMsgId,
               images: uploadedImages,
               caption: text,
               replyId: replyMessage.value?.id,
@@ -940,10 +1155,22 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       }
 
       if (!hasMedia && text.isNotEmpty) {
+        final clientMsgId = 'c_${DateTime.now().microsecondsSinceEpoch}';
+        _addOptimisticMessage(
+          clientMessageId: clientMsgId,
+          messageType: "text",
+          content: text,
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
+        );
+
         socketService.sendGroupMessage(
           groupId: groupId,
           content: text,
           messageType: "text",
+          clientMessageId: clientMsgId,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
           replyType: replyMessage.value?.messageType,
@@ -1072,10 +1299,26 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       var result = await MessageRepo.uploadChatAudio(path);
 
       if (result.status == true && (result.filename ?? "").isNotEmpty) {
+        final clientMsgId = 'c_${DateTime.now().microsecondsSinceEpoch}';
+        final duration = result.duration;
+
+        _addOptimisticMessage(
+          clientMessageId: clientMsgId,
+          messageType: "audio",
+          content: result.filename!,
+          duration: duration,
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
+        );
+
         socketService.sendGroupMessage(
           groupId: groupId,
           content: result.filename!,
           messageType: "audio",
+          clientMessageId: clientMsgId,
+          duration: duration,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
           replyType: replyMessage.value?.messageType,
@@ -1112,12 +1355,29 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       );
 
       if (result.status == true) {
+        final clientMsgId = 'c_${DateTime.now().microsecondsSinceEpoch}';
+        final content =
+            "${result.videoUrl}||${result.thumbnail}||${result.duration}";
+
+        _addOptimisticMessage(
+          clientMessageId: clientMsgId,
+          messageType: "video",
+          content: content,
+          caption: caption,
+          duration: result.duration,
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
+        );
+
         socketService.sendGroupMessage(
           groupId: groupId,
           messageType: "video",
-          content:
-              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+          content: content,
+          clientMessageId: clientMsgId,
           caption: caption,
+          duration: result.duration,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
           replyType: replyMessage.value?.messageType,
@@ -1140,11 +1400,26 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       var result = await MessageRepo.uploadChatDocument(path);
 
       if (result.status == true) {
+        final clientMsgId = 'c_${DateTime.now().microsecondsSinceEpoch}';
+        final content =
+            "${result.filename}||${result.originalName ?? path.split(RegExp(r'[\\/]')).last}";
+
+        _addOptimisticMessage(
+          clientMessageId: clientMsgId,
+          messageType: "document",
+          content: content,
+          caption: caption,
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
+        );
+
         socketService.sendGroupMessage(
           groupId: groupId,
-          content:
-              "${result.filename}||${result.originalName ?? path.split(RegExp(r'[\\/]')).last}",
+          content: content,
           messageType: "document",
+          clientMessageId: clientMsgId,
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -1165,10 +1440,32 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     required LocationMessage location,
   }) async {
     try {
+      final clientMsgId = 'c_${DateTime.now().microsecondsSinceEpoch}';
+      final locationMeta = {
+        "latitude": location.latitude,
+        "longitude": location.longitude,
+        "name": location.locationName,
+        "address": location.locationName,
+        "locationName": location.locationName,
+      };
+
+      _addOptimisticMessage(
+        clientMessageId: clientMsgId,
+        messageType: "location",
+        content: location.toContent(),
+        locationMeta: locationMeta,
+        replyId: replyMessage.value?.id,
+        replyMessage: replyMessage.value?.content,
+        replyType: replyMessage.value?.messageType,
+        replySender: replyMessage.value?.senderName,
+      );
+
       socketService.sendGroupMessage(
         groupId: groupId,
         content: location.toContent(),
         messageType: "location",
+        clientMessageId: clientMsgId,
+        locationMeta: locationMeta,
         replyId: replyMessage.value?.id,
         replyMessage: replyMessage.value?.content,
         replyType: replyMessage.value?.messageType,
@@ -1187,10 +1484,29 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     required ContactMessage contact,
   }) async {
     try {
+      final clientMsgId = 'c_${DateTime.now().microsecondsSinceEpoch}';
+      final contactMeta = {
+        "name": contact.name,
+        "phone": contact.phone,
+      };
+
+      _addOptimisticMessage(
+        clientMessageId: clientMsgId,
+        messageType: "contact",
+        content: contact.toContent(),
+        contactMeta: contactMeta,
+        replyId: replyMessage.value?.id,
+        replyMessage: replyMessage.value?.content,
+        replyType: replyMessage.value?.messageType,
+        replySender: replyMessage.value?.senderName,
+      );
+
       socketService.sendGroupMessage(
         groupId: groupId,
         content: contact.toContent(),
         messageType: "contact",
+        clientMessageId: clientMsgId,
+        contactMeta: contactMeta,
         replyId: replyMessage.value?.id,
         replyMessage: replyMessage.value?.content,
         replyType: replyMessage.value?.messageType,

@@ -1029,6 +1029,31 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           } catch (e) {}
         },
       );
+
+      socketService.listenMessageSent(
+        scope: ChatSocketScope.private,
+        callback: (data) {
+          final clientMsgId = data['clientMessageId']?.toString();
+          final serverId = int.tryParse(
+            data['id']?.toString() ?? data['messageId']?.toString() ?? '',
+          );
+          if (serverId == null) return;
+
+          bool updated = false;
+          for (final msg in _messages) {
+            if ((clientMsgId != null &&
+                    clientMsgId.isNotEmpty &&
+                    msg.clientMessageId == clientMsgId) ||
+                (msg.id == serverId)) {
+              msg.id = serverId;
+              msg.isDelivered = false;
+              updated = true;
+              break;
+            }
+          }
+          if (updated) updateMessageStream();
+        },
+      );
     } else {}
 
     socketService.listenPinMessage(

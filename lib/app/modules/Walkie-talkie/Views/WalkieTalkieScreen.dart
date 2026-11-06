@@ -1020,6 +1020,17 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             if (m.userId != null) m.userId.toString(): m
         };
 
+        // Auto-discover backend admin if args?['adminId'] was not provided
+        if (args?['adminId'] == null ||
+            args!['adminId'].toString().trim().isEmpty) {
+          final creatorMember = res.memberData!.firstWhereOrNull(
+              (m) => m.isCreator == true || m.isCreator == 1 || m.isCreator == '1');
+          if (creatorMember?.userId != null) {
+            args ??= {};
+            args!['adminId'] = creatorMember!.userId.toString();
+          }
+        }
+
         // Enrich only the active real-time socket participants with their profile image/name if missing
         bool updated = false;
         for (int i = 0; i < controller.participants.length; i++) {
@@ -2013,7 +2024,14 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 final p = sortedList[index];
                 final isSpeaking = p.isSpeaking;
                 final isMuted = p.isMuted;
-                final isAdmin = args?['adminId'] == p.userId || index == 0;
+                final rawAdminId = args?['adminId']?.toString().trim();
+                final bool isAdmin = (rawAdminId != null &&
+                        rawAdminId.isNotEmpty &&
+                        (rawAdminId == p.userId.trim() ||
+                            (int.tryParse(rawAdminId) != null &&
+                                int.tryParse(rawAdminId) ==
+                                    int.tryParse(p.userId.trim())))) ||
+                    (_dbMembersMap[p.userId.trim()]?.isCreator == true);
 
                 return Container(
                   padding:
@@ -2132,6 +2150,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
     GroupInfoBottomSheet.show(
       context: context,
+      groupId: controller.currentGroupId ?? args?['groupId']?.toString(),
       groupName: controller.currentGroupName,
       groupDesc: controller.currentGroupDesc,
       groupCode: controller.currentGroupCode,
@@ -2166,6 +2185,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               sortedList[index],
               index: index,
               args: args,
+              isCreator: _dbMembersMap[sortedList[index].userId.trim()]?.isCreator == true,
             );
           },
         ),

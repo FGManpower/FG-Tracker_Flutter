@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -156,6 +157,100 @@ class GroupWalkieController extends GetxController {
       if (storageId != null) return storageId.trim();
     } catch (_) {}
     return '';
+  }
+
+  String get safeSelfUserId => _safeSelfUserId;
+
+  final RxMap<String, int> adminAlertCountdown = <String, int>{}.obs;
+  final Map<String, Timer> _alertTimers = {};
+  final RxMap<String, bool> memberNotificationStatus = <String, bool>{}.obs;
+
+  void setMemberNotificationStatus(String memberId, bool enabled) {
+    memberNotificationStatus[memberId.trim()] = enabled;
+  }
+
+  void triggerAdminAlertForMember({
+    required String groupId,
+    required String memberId,
+    required String memberName,
+    required String groupName,
+  }) {
+    final cleanId = memberId.trim();
+    if (cleanId.isEmpty) return;
+
+    // Prevent double trigger if countdown is already running
+    if ((adminAlertCountdown[cleanId] ?? 0) > 0) return;
+
+    // 1. Start 10-second countdown
+    adminAlertCountdown[cleanId] = 10;
+    _alertTimers[cleanId]?.cancel();
+    _alertTimers[cleanId] = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final remaining = adminAlertCountdown[cleanId] ?? 0;
+      if (remaining <= 1) {
+        adminAlertCountdown.remove(cleanId);
+        timer.cancel();
+        _alertTimers.remove(cleanId);
+      } else {
+        adminAlertCountdown[cleanId] = remaining - 1;
+      }
+    });
+
+    // 2. Emit Socket Alert to target user
+    final socket = GroupWalkieService.instance.socket;
+    final myId = _safeSelfUserId;
+    String myName = 'Group Admin';
+    String myImage = '';
+    try {
+      myName = Global.storageServices.get(PrefConst.userName)?.toString() ?? 'Group Admin';
+      myImage = Global.storageServices.get(PrefConst.profileImage)?.toString() ?? '';
+    } catch (_) {}
+
+    final payload = {
+      'groupId': groupId,
+      'groupName': groupName,
+      'targetUserId': cleanId,
+      'userId': cleanId,
+      'adminId': myId,
+      'adminName': myName,
+      'speakerName': myName.isNotEmpty ? myName : 'Group Admin',
+      'speakerImage': myImage,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    };
+
+    if (socket != null && socket.connected) {
+      socket.emit('admin_alert_walkie_member', payload);
+      socket.emit('walkie_alert_member', payload);
+      socket.emit('walkie_invite_member', payload);
+      socket.emit('walkie_invite', payload);
+    }
+
+    // 3. Fallback REST API call
+    try {
+      HttpUtil().Authpost(
+        '/walkie/channels/$groupId/alert-member',
+        data: {
+          'groupId': groupId,
+          'targetUserId': cleanId,
+          'adminId': myId,
+        },
+      ).catchError((_) => null);
+    } catch (_) {}
+
+    // 4. User feedback
+    if (Get.overlayContext != null) {
+      try {
+        Get.snackbar(
+          "Alert Sent",
+          "Notification sent to $memberName. Retry available in 10s.",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF1E1B2E),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+          margin: const EdgeInsets.all(12),
+          icon: const Icon(Icons.notifications_active_rounded, color: Color(0xFF22C55E)),
+        );
+      } catch (_) {}
+    }
   }
 
   bool get isVoiceActive => isTalking || hasActiveSpeaker;
@@ -752,6 +847,11 @@ class GroupWalkieController extends GetxController {
     _bannerTimer = null;
     _lockCountdownTimer = null;
     _speakerWatchdogTimer = null;
+    for (final timer in _alertTimers.values) {
+      timer.cancel();
+    }
+    _alertTimers.clear();
+    adminAlertCountdown.clear();
     networkQuality.value = WalkieNetworkQuality.unknown;
     networkLatencyMs.value = 0;
     role.value = WalkieRole.caller;

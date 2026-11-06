@@ -685,6 +685,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       onGroupStopTyping: (data) => _onGroupTyping(data, typing: false),
     );
     socketService.listenChatListReconnect(_resyncWithServer);
+    socketService.listenGroupUpdated(callback: _handleGroupUpdated);
 
     // Group list updates, group typing and group "read" travel on /chat,
     // which otherwise only exists after a group chat was opened.
@@ -1328,40 +1329,67 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     PrivateChatModel chat, {
     String? mutedUntil,
   }) {
-    if (chat.id == null) {
+    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
+    if (effectiveId == null) {
       return;
     }
 
-    final chatId = chat.id!.toString();
+    final bool isGroup = chat.isGroup == true || chat.groupId != null;
+    final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
+    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
 
-    socketService.mutePrivateChat(
-      userId: currentUserId,
-      chatId: chatId,
+    if (!isGroup) {
+      socketService.mutePrivateChat(
+        userId: currentUserId,
+        chatId: effectiveId.toString(),
+        mutedUntil: mutedUntil,
+      );
+    }
+
+    MessageRepo.muteConversation(
+      chatId: cId,
+      groupId: gId,
+      chatType: isGroup ? "group" : "private",
+      isMuted: true,
       mutedUntil: mutedUntil,
-    );
+    ).catchError((_) {});
 
     chat.isMuted = true;
     chat.mutedUntil = mutedUntil;
 
     privateChats.refresh();
+    archivedChats.refresh();
   }
 
   void unmuteChat(PrivateChatModel chat) {
-    if (chat.id == null) {
+    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
+    if (effectiveId == null) {
       return;
     }
 
-    final chatId = chat.id!.toString();
+    final bool isGroup = chat.isGroup == true || chat.groupId != null;
+    final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
+    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
 
-    socketService.unmutePrivateChat(
-      userId: currentUserId,
-      chatId: chatId,
-    );
+    if (!isGroup) {
+      socketService.unmutePrivateChat(
+        userId: currentUserId,
+        chatId: effectiveId.toString(),
+      );
+    }
+
+    MessageRepo.muteConversation(
+      chatId: cId,
+      groupId: gId,
+      chatType: isGroup ? "group" : "private",
+      isMuted: false,
+    ).catchError((_) {});
 
     chat.isMuted = false;
     chat.mutedUntil = null;
 
     privateChats.refresh();
+    archivedChats.refresh();
   }
 
   // ---------------------------------------------------------------------------
@@ -1455,44 +1483,75 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       );
 
   void pinChat(PrivateChatModel chat) {
-    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id;
+    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
     if (effectiveId == null) {
       return;
     }
 
     _beginAction(chat, 'pin');
-    // Pin limit: none is defined by the backend/config, so none is applied.
-    final sent = socketService.pinPrivateChat(
-      userId: currentUserId,
-      chatId: effectiveId.toString(),
-    );
+
+    final bool isGroup = chat.isGroup == true || chat.groupId != null;
+    final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
+    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+
+    if (!isGroup) {
+      socketService.pinPrivateChat(
+        userId: currentUserId,
+        chatId: effectiveId.toString(),
+      );
+    }
+
+    MessageRepo.pinConversation(
+      chatId: cId,
+      groupId: gId,
+      chatType: isGroup ? "group" : "private",
+      isPinned: true,
+    ).then((_) {
+      _pendingActions.remove(_getChatKey(chat));
+    }).catchError((e) {
+      _rollbackAction(_getChatKey(chat), message: _offlineMessage);
+    });
 
     chat.isPinned = true;
     chat.pinnedAt = DateTime.now().toUtc().toIso8601String();
     privateChats.assignAll(ChatListRules.sort(privateChats));
     privateChats.refresh();
-
-    if (!sent) _rollbackAction(_getChatKey(chat), message: _offlineMessage);
   }
 
   void unpinChat(PrivateChatModel chat) {
-    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id;
+    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
     if (effectiveId == null) {
       return;
     }
 
     _beginAction(chat, 'unpin');
-    final sent = socketService.unpinPrivateChat(
-      userId: currentUserId,
-      chatId: effectiveId.toString(),
-    );
+
+    final bool isGroup = chat.isGroup == true || chat.groupId != null;
+    final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
+    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+
+    if (!isGroup) {
+      socketService.unpinPrivateChat(
+        userId: currentUserId,
+        chatId: effectiveId.toString(),
+      );
+    }
+
+    MessageRepo.pinConversation(
+      chatId: cId,
+      groupId: gId,
+      chatType: isGroup ? "group" : "private",
+      isPinned: false,
+    ).then((_) {
+      _pendingActions.remove(_getChatKey(chat));
+    }).catchError((e) {
+      _rollbackAction(_getChatKey(chat), message: _offlineMessage);
+    });
 
     chat.isPinned = false;
     chat.pinnedAt = null;
     privateChats.assignAll(ChatListRules.sort(privateChats));
     privateChats.refresh();
-
-    if (!sent) _rollbackAction(_getChatKey(chat), message: _offlineMessage);
   }
 
   void archiveChat(PrivateChatModel chat) {
@@ -1500,21 +1559,43 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId ?? chat.userId;
     _beginAction(chat, 'archive');
 
-    var sent = false;
-    if (effectiveId != null) {
-      // Archiving a pinned chat unpins it, on the server too.
-      if (chat.isPinned == true) {
+    final bool isGroup = chat.isGroup == true || chat.groupId != null;
+    final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
+    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+
+    if (chat.isPinned == true) {
+      MessageRepo.pinConversation(
+        chatId: cId,
+        groupId: gId,
+        chatType: isGroup ? "group" : "private",
+        isPinned: false,
+      ).catchError((_) {});
+
+      if (!isGroup && effectiveId != null) {
         socketService.unpinPrivateChat(
           userId: currentUserId,
-          chatId: (chat.chatId ?? chat.conversationId ?? chat.id ?? effectiveId)
-              .toString(),
+          chatId: effectiveId.toString(),
         );
       }
-      sent = socketService.archivePrivateChat(
+    }
+
+    if (!isGroup && effectiveId != null) {
+      socketService.archivePrivateChat(
         userId: currentUserId,
         chatId: effectiveId.toString(),
       );
     }
+
+    MessageRepo.archiveConversation(
+      chatId: cId,
+      groupId: gId,
+      chatType: isGroup ? "group" : "private",
+      isArchived: true,
+    ).then((_) {
+      _pendingActions.remove(_getChatKey(chat));
+    }).catchError((e) {
+      _rollbackAction(_getChatKey(chat), message: _offlineMessage);
+    });
 
     chat.isArchived = true;
     chat.isPinned = false;
@@ -1542,8 +1623,6 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     privateChats.refresh();
     archivedChats.refresh();
     _syncChattingNotificationMarker();
-
-    if (!sent) _rollbackAction(_getChatKey(chat), message: _offlineMessage);
   }
 
   void unarchiveChat(PrivateChatModel chat) {
@@ -1551,13 +1630,27 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId ?? chat.userId;
     _beginAction(chat, 'unarchive');
 
-    var sent = false;
-    if (effectiveId != null) {
-      sent = socketService.unarchivePrivateChat(
+    final bool isGroup = chat.isGroup == true || chat.groupId != null;
+    final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
+    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+
+    if (!isGroup && effectiveId != null) {
+      socketService.unarchivePrivateChat(
         userId: currentUserId,
         chatId: effectiveId.toString(),
       );
     }
+
+    MessageRepo.archiveConversation(
+      chatId: cId,
+      groupId: gId,
+      chatType: isGroup ? "group" : "private",
+      isArchived: false,
+    ).then((_) {
+      _pendingActions.remove(_getChatKey(chat));
+    }).catchError((e) {
+      _rollbackAction(_getChatKey(chat), message: _offlineMessage);
+    });
 
     chat.isArchived = false;
     chat.isPinned = false;
@@ -1586,44 +1679,39 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     archivedChats.refresh();
     privateChats.refresh();
     _syncChattingNotificationMarker();
-
-    if (!sent) _rollbackAction(_getChatKey(chat), message: _offlineMessage);
   }
 
   /// Same read path the chat screen uses when it is opened.
   Future<void> markChatAsRead(PrivateChatModel chat) async {
     final previousUnread = chat.unreadCount ?? 0;
-    var sent = true;
-    if (chat.isGroup == true) {
-      final gId = chat.groupId ?? chat.id;
+    final bool isGroup = chat.isGroup == true || chat.groupId != null;
+    final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
+    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+
+    if (isGroup) {
       if (gId != null) {
-        sent = socketService.isSocketConnected;
         socketService.markSeen(currentUserId, gId);
       }
     } else {
-      final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id;
-      if (effectiveId != null) {
-        sent = socketService.markPrivateChatRead(
+      if (cId != null) {
+        socketService.markPrivateChatRead(
           userId: currentUserId,
-          chatId: effectiveId.toString(),
+          chatId: cId.toString(),
         );
       }
     }
+
+    MessageRepo.markConversationRead(
+      chatId: cId,
+      groupId: gId,
+      chatType: isGroup ? "group" : "private",
+    ).catchError((_) {});
 
     final keys = _getAllChatKeys(chat);
     if (keys.isNotEmpty) {
       manuallyUnreadChatKeys.removeAll(keys);
       manuallyUnreadChatKeys.refresh();
       await _saveManuallyUnreadKeys();
-    }
-
-    if (!sent && previousUnread > 0) {
-      // The server still counts these as unread; keep the badge honest.
-      _showActionError(_offlineMessage);
-      privateChats.refresh();
-      archivedChats.refresh();
-      _syncChattingNotificationMarker();
-      return;
     }
 
     if (previousUnread > 0) {
@@ -1637,29 +1725,88 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   }
 
   void deleteChat(PrivateChatModel chat) {
-    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id;
+    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
     if (effectiveId == null) {
       return;
     }
 
     _beginAction(chat, 'delete');
-    var sent = true;
-    if (chat.isGroup != true) {
-      sent = socketService.deletePrivateChat(
+
+    final bool isGroup = chat.isGroup == true || chat.groupId != null;
+    final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
+    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+
+    if (!isGroup) {
+      socketService.deletePrivateChat(
         userId: currentUserId,
         chatId: effectiveId.toString(),
       );
     }
-    // TODO(backend #2): no "delete for me" exists for group chats yet; the
-    // row is removed locally and returns on the next full refresh.
+
+    // Call unified REST endpoint: for group chats, backend v2.2.0 performs
+    // isolated "Clear Chat for Me" preserving DB messages for other members!
+    MessageRepo.deleteConversation(
+      chatId: cId,
+      groupId: gId,
+      chatType: isGroup ? "group" : "private",
+    ).then((_) {
+      _pendingActions.remove(_getChatKey(chat));
+    }).catchError((e) {
+      _rollbackAction(_getChatKey(chat), message: _offlineMessage);
+    });
 
     privateChats.removeWhere((c) => _isSameChat(c, chat));
     archivedChats.removeWhere((c) => _isSameChat(c, chat));
     privateChats.refresh();
     archivedChats.refresh();
     _syncChattingNotificationMarker();
+  }
 
-    if (!sent) _rollbackAction(_getChatKey(chat), message: _offlineMessage);
+  void _handleGroupUpdated(Map<String, dynamic> data) {
+    final rawGid = data['groupId'] ?? data['id'] ?? data['chatId'];
+    final gid = int.tryParse(rawGid?.toString() ?? '');
+    if (gid == null) return;
+
+    final newName = data['groupName']?.toString();
+    final newImage = data['groupProfile']?.toString() ??
+        data['groupProfileUrl']?.toString() ??
+        data['profileImage']?.toString();
+    if (newName == null && newImage == null) return;
+
+    bool updatedAny = false;
+    for (int i = 0; i < privateChats.length; i++) {
+      final c = privateChats[i];
+      if ((c.isGroup == true || c.chatType == 'group') &&
+          (c.groupId == gid || c.id == gid)) {
+        if (newName != null && newName.isNotEmpty) {
+          c.name = newName;
+          c.groupName = newName;
+        }
+        if (newImage != null && newImage.isNotEmpty) {
+          c.image = newImage;
+        }
+        updatedAny = true;
+      }
+    }
+    for (int i = 0; i < archivedChats.length; i++) {
+      final c = archivedChats[i];
+      if ((c.isGroup == true || c.chatType == 'group') &&
+          (c.groupId == gid || c.id == gid)) {
+        if (newName != null && newName.isNotEmpty) {
+          c.name = newName;
+          c.groupName = newName;
+        }
+        if (newImage != null && newImage.isNotEmpty) {
+          c.image = newImage;
+        }
+        updatedAny = true;
+      }
+    }
+
+    if (updatedAny) {
+      privateChats.refresh();
+      archivedChats.refresh();
+    }
   }
 
   /// `private_chat_action_error`: roll back the matching optimistic action.

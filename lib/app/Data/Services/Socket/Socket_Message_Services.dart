@@ -8,7 +8,6 @@ import 'package:fgtracker/app/Core/util/rt_log.dart';
 import 'package:fgtracker/app/Data/Services/active_chat_tracker.dart';
 import 'package:fgtracker/app/Data/Services/Socket/status_socket_service.dart';
 import 'package:fgtracker/app/modules/status/controller/status_feed_controller.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:get/get.dart';
 import 'package:socket_io_common/src/util/event_emitter.dart';
@@ -249,15 +248,23 @@ class SocketMessageService extends GetxService {
     String userId,
     int groupId,
   ) {
+    _activeUserId = userId;
+    _activeGroupId = groupId;
     if (!isSocketConnected) return;
 
-    _socket!.emit(
-      "join",
-      {
-        "userId": userId,
-        "groupId": groupId,
-      },
-    );
+    final uidInt = int.tryParse(userId.toString());
+    final gidInt = int.tryParse(groupId.toString()) ?? groupId;
+    final payload = {
+      "userId": uidInt ?? userId,
+      "groupId": gidInt,
+      "user_id": uidInt ?? userId,
+      "group_id": gidInt,
+      "chatId": gidInt,
+      "chat_id": gidInt,
+    };
+    _socket!.emit("join_group", payload);
+    _socket!.emit("join", payload);
+    _socket!.emit("join_group_chat", payload);
   }
 
   void leaveUserFromGroup(
@@ -266,11 +273,15 @@ class SocketMessageService extends GetxService {
   ) {
     if (!isSocketConnected) return;
 
+    final uidInt = int.tryParse(userId.toString());
+    final gidInt = int.tryParse(groupId.toString()) ?? groupId;
     _socket!.emit(
       "leave",
       {
-        "userId": userId,
-        "groupId": groupId,
+        "userId": uidInt ?? userId,
+        "groupId": gidInt,
+        "user_id": uidInt ?? userId,
+        "group_id": gidInt,
       },
     );
   }
@@ -286,10 +297,15 @@ class SocketMessageService extends GetxService {
     String? replyType,
     String? replySender,
   }) {
+    final senderId = Global.storageServices.get(PrefConst.userId).toString();
+    final senderIdInt = int.tryParse(senderId);
+    final gidInt = int.tryParse(groupId.toString()) ?? groupId;
     final msg = {
-      'senderId': Global.storageServices.get(PrefConst.userId).toString(),
-      'receiverId': receiverId,
-      'groupId': groupId,
+      'senderId': senderIdInt ?? senderId,
+      'userId': senderIdInt ?? senderId,
+      'receiverId': senderIdInt ?? senderId,
+      'groupId': gidInt,
+      'group_id': gidInt,
       'content': content,
       'messageType': messageType,
       'caption': caption,
@@ -309,13 +325,15 @@ class SocketMessageService extends GetxService {
     String userId,
     int groupId,
   ) {
-    _socket?.emit(
-      "mark_seen",
-      {
-        "userId": userId,
-        "groupId": groupId,
-      },
-    );
+    final uidInt = int.tryParse(userId.toString());
+    final gidInt = int.tryParse(groupId.toString()) ?? groupId;
+    final payload = {
+      "userId": uidInt ?? userId,
+      "groupId": gidInt,
+      "user_id": uidInt ?? userId,
+      "group_id": gidInt,
+    };
+    _socket?.emit("mark_seen", payload);
   }
 
   void RecievedMessage({
@@ -365,15 +383,27 @@ class SocketMessageService extends GetxService {
     required int groupId,
     required String userId,
   }) {
-    if (!isSocketConnected) return;
+    _activeGroupId = groupId;
+    _activeUserId = userId;
+    if (!isSocketConnected) {
+      log("SOCKET NOT CONNECTED YET — ROOM JOIN QUEUED FOR CONNECT: groupId=$groupId");
+      return;
+    }
 
-    socket.emit(
-      "join_group_chat",
-      {
-        "groupId": groupId,
-        "userId": userId,
-      },
-    );
+    final uidInt = int.tryParse(userId.toString());
+    final gidInt = int.tryParse(groupId.toString()) ?? groupId;
+    final payload = {
+      "groupId": gidInt,
+      "userId": uidInt ?? userId,
+      "group_id": gidInt,
+      "user_id": uidInt ?? userId,
+      "chatId": gidInt,
+      "chat_id": gidInt,
+    };
+    log("JOIN GROUP CHAT EMIT: $payload");
+    socket.emit("join_group", payload);
+    socket.emit("join", payload);
+    socket.emit("join_group_chat", payload);
   }
 
   void sendGroupMessage({
@@ -387,12 +417,31 @@ class SocketMessageService extends GetxService {
     String? replyMessage,
     String? replyType,
     String? replySender,
+    String? clientMessageId,
+    Map<String, dynamic>? locationMeta,
+    Map<String, dynamic>? contactMeta,
+    dynamic duration,
   }) {
+    if (!isSocketConnected) {
+      log("SOCKET NOT CONNECTED - CANNOT SEND GROUP MESSAGE");
+      return;
+    }
+
+    final senderId = Global.storageServices.get(PrefConst.userId).toString();
+    final senderIdInt = int.tryParse(senderId);
+    final gidInt = int.tryParse(groupId.toString()) ?? groupId;
+    final effectiveClientMsgId =
+        clientMessageId ?? 'c_${DateTime.now().microsecondsSinceEpoch}';
+
     final payload = <String, dynamic>{
-      "senderId": Global.storageServices.get(PrefConst.userId).toString(),
-      "groupId": groupId,
+      "senderId": senderIdInt ?? senderId,
+      "userId": senderIdInt ?? senderId,
+      "receiverId": senderIdInt ?? senderId,
+      "groupId": gidInt,
+      "group_id": gidInt,
       "messageType": messageType,
       "content": content,
+      "clientMessageId": effectiveClientMsgId,
       if (images != null && images.isNotEmpty) "images": images,
       if (videos != null && videos.isNotEmpty) "videos": videos,
       if (caption != null) "caption": caption,
@@ -400,9 +449,14 @@ class SocketMessageService extends GetxService {
       if (replyMessage != null) "replyMessage": replyMessage,
       if (replyType != null) "replyType": replyType,
       if (replySender != null) "replySender": replySender,
+      if (locationMeta != null) "locationMeta": locationMeta,
+      if (contactMeta != null) "contactMeta": contactMeta,
+      if (duration != null) "duration": duration,
     };
 
-    socket.emit("send_group_message", payload);
+    log("EMITTING SEND GROUP MESSAGE: $payload");
+    // 'send_message' is the active, verified event on /chat that works without backend ReferenceError
+    socket.emit("send_message", payload);
   }
 
   void receiveGroupMessage({
@@ -410,6 +464,7 @@ class SocketMessageService extends GetxService {
   }) {
     final events = [
       "receive_group_message",
+      "receive_message",
       "group_forward_message",
       "forward_message",
       "receive_forward_message",
@@ -433,18 +488,25 @@ class SocketMessageService extends GetxService {
     required String userId,
     required String userName,
   }) {
+    final uidInt = int.tryParse(userId.toString());
+    final gidInt = int.tryParse(groupId.toString()) ?? groupId;
     final payload = {
-      "groupId": groupId,
-      "userId": userId,
-      "senderId": userId,
+      "groupId": gidInt,
+      "userId": uidInt ?? userId,
+      "senderId": uidInt ?? userId,
       "userName": userName,
       "senderName": userName,
+      "group_id": gidInt,
+      "chatId": gidInt,
+      "user_id": uidInt ?? userId,
+      "sender_id": uidInt ?? userId,
       "isTyping": true,
     };
     log("EMIT group_typing => $payload");
     if (!isSocketConnected) return;
     try {
       socket.emit("group_typing", payload);
+      socket.emit("typing", payload);
     } catch (e) {
       log("Error emitting group_typing: $e");
     }
@@ -455,18 +517,25 @@ class SocketMessageService extends GetxService {
     required String userId,
     String? userName,
   }) {
+    final uidInt = int.tryParse(userId.toString());
+    final gidInt = int.tryParse(groupId.toString()) ?? groupId;
     final payload = {
-      "groupId": groupId,
-      "userId": userId,
-      "senderId": userId,
+      "groupId": gidInt,
+      "userId": uidInt ?? userId,
+      "senderId": uidInt ?? userId,
       if (userName != null) "userName": userName,
       if (userName != null) "senderName": userName,
+      "group_id": gidInt,
+      "chatId": gidInt,
+      "user_id": uidInt ?? userId,
+      "sender_id": uidInt ?? userId,
       "isTyping": false,
     };
     log("EMIT group_stop_typing => $payload");
     if (!isSocketConnected) return;
     try {
       socket.emit("group_stop_typing", payload);
+      socket.emit("stop_typing", payload);
     } catch (e) {
       log("Error emitting group_stop_typing: $e");
     }
@@ -1271,18 +1340,20 @@ class SocketMessageService extends GetxService {
 
   void _registerChatListListeners(IO.Socket? s) {
     if (s == null || _privateChatListUpdatedCallback == null) return;
-    s.off("chat_list_updated");
-    s.off("conversation_updated");
-    s.off("receive_message");
-    s.on("chat_list_updated", (data) {
-      _privateChatListUpdatedCallback?.call(data);
-    });
-    s.on("conversation_updated", (data) {
-      _privateChatListUpdatedCallback?.call(data);
-    });
-    s.on("receive_message", (data) {
-      _privateChatListUpdatedCallback?.call(data);
-    });
+    final events = [
+      "chat_list_updated",
+      "common_chat_list_updated",
+      "unified_chat_list_updated",
+      "private_chat_list_updated",
+      "group_chat_list_updated",
+      "conversation_updated",
+    ];
+    for (final ev in events) {
+      s.off(ev);
+      s.on(ev, (data) {
+        _privateChatListUpdatedCallback?.call(data);
+      });
+    }
   }
 
   void listenFullChatList({
@@ -1484,16 +1555,26 @@ class SocketMessageService extends GetxService {
     _groupChatOwner = null;
     for (final event in const [
       "receive_group_message",
+      "receive_message",
       "group_forward_message",
       "forward_message",
       "receive_forward_message",
       "message_forwarded",
       "forwarded_message",
       "messageEdited",
+      "message_edited",
       "message_deleted",
       "message_pinned",
       "message_unpinned",
       "messages_seen_update",
+      "group_message_seen",
+      "message_sent",
+      "group_message_sent",
+      "group_updated",
+      "group_info_updated",
+      "group_chat_cleared",
+      "member_removed",
+      "member_left",
     ]) {
       _socket?.off(event);
     }
@@ -1516,6 +1597,7 @@ class SocketMessageService extends GetxService {
     ChatSocketScope? scope,
   }) {
     _listenScoped("messageEdited", scope, (data) => callback(data));
+    _listenScoped("message_edited", scope, (data) => callback(data));
   }
 
   void deleteMessage({
@@ -1656,6 +1738,70 @@ class SocketMessageService extends GetxService {
     _listenScoped("message_unpinned", scope, (data) {
       if (data is Map) callback(Map<String, dynamic>.from(data));
     });
+  }
+
+  /// Listens for WhatsApp 3-tick server confirmation (single grey tick ✓).
+  /// Emitted when server successfully saves the message to DB.
+  void listenMessageSent({
+    required Function(Map<String, dynamic>) callback,
+    ChatSocketScope? scope,
+  }) {
+    void handler(dynamic data) {
+      if (data is Map) callback(Map<String, dynamic>.from(data));
+    }
+    _listenScoped("message_sent", scope, handler);
+    _listenScoped("group_message_sent", scope, handler);
+  }
+
+  /// Listens for group message read receipts on /chat (double blue tick ✓✓ update).
+  void listenGroupMessageSeen({
+    required Function(Map<String, dynamic>) callback,
+  }) {
+    void handler(dynamic data) {
+      if (data is Map) callback(Map<String, dynamic>.from(data));
+    }
+    _socket?.off("group_message_seen");
+    _socket?.on("group_message_seen", handler);
+    _socket?.off("messages_seen_update");
+    _socket?.on("messages_seen_update", handler);
+  }
+
+  /// Listens for real-time group info updates (groupName, groupProfile, groupDesc).
+  void listenGroupUpdated({
+    required Function(Map<String, dynamic>) callback,
+  }) {
+    void handler(dynamic data) {
+      if (data is Map) callback(Map<String, dynamic>.from(data));
+    }
+    _socket?.off("group_updated");
+    _socket?.on("group_updated", handler);
+    _socket?.off("group_info_updated");
+    _socket?.on("group_info_updated", handler);
+    _privateChatSocket?.off("group_updated");
+    _privateChatSocket?.on("group_updated", handler);
+  }
+
+  /// Listens for group chat cleared event (clear chat history strictly for calling user).
+  void listenGroupChatCleared({
+    required Function(Map<String, dynamic>) callback,
+  }) {
+    _socket?.off("group_chat_cleared");
+    _socket?.on("group_chat_cleared", (data) {
+      if (data is Map) callback(Map<String, dynamic>.from(data));
+    });
+  }
+
+  /// Listens for member removed or member left events in group.
+  void listenMemberRemoved({
+    required Function(Map<String, dynamic>) callback,
+  }) {
+    void handler(dynamic data) {
+      if (data is Map) callback(Map<String, dynamic>.from(data));
+    }
+    _socket?.off("member_removed");
+    _socket?.on("member_removed", handler);
+    _socket?.off("member_left");
+    _socket?.on("member_left", handler);
   }
 
   void forwardMessage({

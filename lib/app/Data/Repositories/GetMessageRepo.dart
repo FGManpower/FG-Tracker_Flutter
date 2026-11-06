@@ -332,4 +332,88 @@ class MessageRepo {
 
     return Map<String, dynamic>.from(response);
   }
+
+  /// Unified Pin / Unpin Conversation (Private & Group)
+  /// POST /pin or POST /chat-list/pin
+  static Future<dynamic> pinConversation({
+    int? chatId,
+    int? groupId,
+    required String chatType,
+    required bool isPinned,
+  }) async {
+    final data = <String, dynamic>{
+      if (chatId != null) "chatId": chatId,
+      if (groupId != null) "groupId": groupId,
+      "chatType": chatType,
+      "isPinned": isPinned,
+    };
+    return await HttpUtil().Authpost("/pin", data: data);
+  }
+
+  /// Unified Archive / Unarchive Conversation (Private & Group)
+  /// POST /archive or POST /chat-list/archive
+  static Future<dynamic> archiveConversation({
+    int? chatId,
+    int? groupId,
+    required String chatType,
+    required bool isArchived,
+  }) async {
+    final data = <String, dynamic>{
+      if (chatId != null) "chatId": chatId,
+      if (groupId != null) "groupId": groupId,
+      "chatType": chatType,
+      "isArchived": isArchived,
+    };
+    return await HttpUtil().Authpost("/archive", data: data);
+  }
+
+  /// Unified Mark Conversation Read (Private & Group)
+  /// POST /mark-read or POST /chat-list/mark-read
+  static Future<dynamic> markConversationRead({
+    int? chatId,
+    int? groupId,
+    required String chatType,
+  }) async {
+    final data = <String, dynamic>{
+      if (chatId != null) "chatId": chatId,
+      if (groupId != null) "groupId": groupId,
+      "chatType": chatType,
+    };
+    return await HttpUtil().Authpost("/mark-read", data: data);
+  }
+
+  /// Unified Mute / Unmute Conversation (Private & Group)
+  /// POST /mute or POST /chat-list/mute
+  static Future<dynamic> muteConversation({
+    int? chatId,
+    int? groupId,
+    required String chatType,
+    required bool isMuted,
+    String? mutedUntil,
+  }) async {
+    final data = <String, dynamic>{
+      if (chatId != null) "chatId": chatId,
+      if (groupId != null) "groupId": groupId,
+      "chatType": chatType,
+      "isMuted": isMuted,
+      if (mutedUntil != null) "mutedUntil": mutedUntil,
+    };
+    return await HttpUtil().Authpost("/mute", data: data);
+  }
+
+  /// Unified Clear / Delete Conversation (Private & Group)
+  /// POST /delete or POST /chat-list/delete
+  /// WhatsApp Clear Rule: Clears history for caller only without destroying DB messages for others.
+  static Future<dynamic> deleteConversation({
+    int? chatId,
+    int? groupId,
+    required String chatType,
+  }) async {
+    final data = <String, dynamic>{
+      if (chatId != null) "chatId": chatId,
+      if (groupId != null) "groupId": groupId,
+      "chatType": chatType,
+    };
+    return await HttpUtil().Authpost("/delete", data: data);
+  }
 }

@@ -310,11 +310,18 @@ Widget buildMutedListeningView({required double size,}) {
 Widget buildMemberAvatar(
     WalkieParticipant p, {
       required int index,
-      Map<String, dynamic>? args
+      Map<String, dynamic>? args,
+      bool? isCreator,
     }) {
   final isSpeaking = p.isSpeaking;
   final isMuted = p.isMuted;
-  final isAdmin = args?['adminId'] == p.userId || index == 0;
+  final rawAdminId = args?['adminId']?.toString().trim();
+  final bool isAdmin = (rawAdminId != null &&
+          rawAdminId.isNotEmpty &&
+          (rawAdminId == p.userId.trim() ||
+              (int.tryParse(rawAdminId) != null &&
+                  int.tryParse(rawAdminId) == int.tryParse(p.userId.trim())))) ||
+      (isCreator == true);
 
   return SizedBox(
     width: 66.w.clamp(58.0, 74.0),

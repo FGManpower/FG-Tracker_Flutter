@@ -23,7 +23,7 @@ class HttpUtil {
 
   /// Toggle for HTTP network payload logging.
   /// Set to false for production ready builds; flip to true when needed for local API testing.
-  static const bool enablePrettyLogger = false;
+  static const bool enablePrettyLogger = true;
 
   HttpUtil._internal() {
     if (enablePrettyLogger && kDebugMode) {

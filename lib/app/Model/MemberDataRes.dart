@@ -113,6 +113,7 @@ class MemberData {
   String? location;
   String? department;
   String? team;
+  bool? notificationsEnabled;
 
   MemberData({
     this.id,
@@ -130,6 +131,7 @@ class MemberData {
     this.location,
     this.department,
     this.team,
+    this.notificationsEnabled,
   });
 
   static int? _parseInt(dynamic val) {
@@ -224,6 +226,27 @@ class MemberData {
     location = (json['location'] ?? json['address'] ?? user?['location'])?.toString();
     department = (json['department'] ?? json['dept'] ?? user?['department'])?.toString();
     team = (json['team'] ?? json['groupName'] ?? json['group_name'] ?? user?['team'])?.toString();
+
+    final rawNotif = json['notifications_enabled'] ??
+        json['notificationsEnabled'] ??
+        json['notification_enabled'] ??
+        json['notificationEnabled'] ??
+        json['walkie_notifications_enabled'] ??
+        json['walkieNotificationsEnabled'] ??
+        json['walkie_notification'] ??
+        json['walkieNotification'] ??
+        json['channelNotification'] ??
+        json['channel_notification'] ??
+        json['isNotification'] ??
+        json['is_notification'] ??
+        user?['notifications_enabled'] ??
+        user?['notificationsEnabled'] ??
+        user?['notification_enabled'] ??
+        user?['walkie_notifications_enabled'] ??
+        user?['channelNotification'];
+    if (rawNotif != null) {
+      notificationsEnabled = _parseBool(rawNotif);
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -242,6 +265,8 @@ class MemberData {
     data['department'] = department;
     data['chatId'] = chatId;
     data['team'] = team;
+    data['notificationsEnabled'] = notificationsEnabled;
+    data['notifications_enabled'] = notificationsEnabled;
     return data;
   }
 }

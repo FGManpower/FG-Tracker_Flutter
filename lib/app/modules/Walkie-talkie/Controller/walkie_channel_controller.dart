@@ -107,17 +107,26 @@ class WalkieChannelController extends GetxController {
         final Map<String, dynamic> map = data is Map
             ? Map<String, dynamic>.from(data)
             : (data is String ? jsonDecode(data) : {});
+
+        final eventUserId = (map['userId'] ?? map['targetUserId'] ?? map['user_id'])?.toString();
+        final selfId = Global.storageServices.get(PrefConst.userId)?.toString();
+        if (eventUserId != null && selfId != null && eventUserId.trim() != selfId.trim()) {
+          return;
+        }
+
         final activeGroupIdStr =
-            (map['activeNotificationGroupId'] ?? map['groupId'])?.toString();
-        final bool enabled = map['enabled'] == true ||
-            map['enabled'] == 1 ||
-            map['enabled']?.toString() == 'true';
+            (map['activeNotificationGroupId'] ?? map['groupId'] ?? map['group_id'])?.toString();
+        final rawEnabled = map['notifications_enabled'] ?? map['enabled'] ?? map['notificationsEnabled'];
+        final bool enabled = rawEnabled == true ||
+            rawEnabled == 1 ||
+            rawEnabled?.toString() == '1' ||
+            rawEnabled?.toString() == 'true';
         final activeGroupId = int.tryParse(activeGroupIdStr ?? '');
 
         for (var c in channels) {
           if (activeGroupId != null && enabled) {
             c.notificationsEnabled = (c.groupId == activeGroupId);
-          } else {
+          } else if (activeGroupId != null && !enabled && c.groupId == activeGroupId) {
             c.notificationsEnabled = false;
           }
         }
@@ -127,6 +136,7 @@ class WalkieChannelController extends GetxController {
       }
     };
     socket.on('walkie_notification_channel_changed', _channelChangedHandler);
+    socket.on('walkie_member_notification_changed', _channelChangedHandler);
   }
 
   void _unbindSocketListeners() {
@@ -154,6 +164,7 @@ class WalkieChannelController extends GetxController {
     }
     if (_channelChangedHandler != null) {
       socket.off('walkie_notification_channel_changed', _channelChangedHandler);
+      socket.off('walkie_member_notification_changed', _channelChangedHandler);
       _channelChangedHandler = null;
     }
   }
