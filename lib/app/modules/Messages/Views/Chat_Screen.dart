@@ -461,6 +461,10 @@ class ChatScreen extends GetView<MessageController> {
             Expanded(
               child: GestureDetector(
                 onTap: () {
+                  // Same as group: leave no emoji panel / keyboard behind
+                  // the profile page.
+                  _dismissKeyboard(context);
+                  FocusScope.of(context).unfocus();
                   final cId = int.tryParse(controller.privateChatId.value.toString());
                   Get.to(() => UserProfileScreen(
                     userData: userData,

@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/util/rt_log.dart';
 import 'package:fgtracker/app/Data/Services/active_chat_tracker.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Services/Socket/status_socket_service.dart';
 import 'package:fgtracker/app/modules/status/controller/status_feed_controller.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -124,10 +125,13 @@ class SocketMessageService extends GetxService {
         // Opts in to attendance socket events (server checks auth or query).
         // token: lets the server identify the user for attendance rooms
         // (attendance:subscribe / sync / my_vote), same as the status socket.
-        "auth": {
-          "attendanceSupported": "1",
-          "token": Global.storageServices.getaccesstoken() ?? "",
-        },
+        // A function, not a map: socket.io calls it on EVERY (re)connect
+        // handshake, so a reconnect always sends the current stored token
+        // (backend v2.3.0 re-checks the JWT on each reconnect).
+        "auth": (Function cb) => cb({
+              "attendanceSupported": "1",
+              "token": Global.storageServices.getaccesstoken() ?? "",
+            }),
         "query": {"attendanceSupported": "1"},
       },
     );
@@ -193,6 +197,7 @@ class SocketMessageService extends GetxService {
       log("ERROR: $error");
       log("USER ID: $userId");
       log("GROUP ID: ${groupId ?? 'NULL'}");
+      _onTokenRejected(_socket, error);
     });
 
     _socket?.onError((error) {
@@ -456,7 +461,7 @@ class SocketMessageService extends GetxService {
 
     log("EMITTING SEND GROUP MESSAGE: $payload");
     // 'send_message' is the active, verified event on /chat that works without backend ReferenceError
-    socket.emit("send_message", payload);
+    socket.emitWithAck("send_message", payload, ack: _onSendAck);
   }
 
   void receiveGroupMessage({
@@ -827,10 +832,11 @@ class SocketMessageService extends GetxService {
       {
         "transports": ["websocket"],
         "autoConnect": true,
-        "auth": {
-          "userId": userId,
-          "token": Global.storageServices.getaccesstoken() ?? "",
-        },
+        // Re-read on every (re)connect: current token, never a stale one.
+        "auth": (Function cb) => cb({
+              "userId": userId,
+              "token": Global.storageServices.getaccesstoken() ?? "",
+            }),
       },
     );
 
@@ -904,6 +910,7 @@ class SocketMessageService extends GetxService {
     _privateChatSocket?.onConnectError((error) {
       log("========== PRIVATE SOCKET CONNECT ERROR ==========");
       log("CONNECT ERROR => $error");
+      _onTokenRejected(_privateChatSocket, error);
     });
 
   }
@@ -976,7 +983,7 @@ class SocketMessageService extends GetxService {
       if (replySender != null) "replySender": replySender,
     };
 
-    _privateChatSocket!.emit("send_message", payload);
+    _privateChatSocket!.emitWithAck("send_message", payload, ack: _onSendAck);
   }
 
   void receivePrivateMessage({
@@ -1233,10 +1240,11 @@ class SocketMessageService extends GetxService {
       {
         "transports": ["websocket"],
         "autoConnect": true,
-        "auth": {
-          "userId": userId,
-          "token": Global.storageServices.getaccesstoken() ?? "",
-        },
+        // Re-read on every (re)connect: current token, never a stale one.
+        "auth": (Function cb) => cb({
+              "userId": userId,
+              "token": Global.storageServices.getaccesstoken() ?? "",
+            }),
       },
     );
 
@@ -1253,6 +1261,10 @@ class SocketMessageService extends GetxService {
       (data) {
         _archivedPrivateChatsCallback?.call(data);
       },
+    );
+
+    _privateChatListSocket?.onConnectError(
+      (error) => _onTokenRejected(_privateChatListSocket, error),
     );
 
     _privateChatListSocket?.onConnect((_) {
@@ -1517,6 +1529,55 @@ class SocketMessageService extends GetxService {
       "editMessage",
       payload,
     );
+  }
+
+  /// Server ack for `send_message` (backend v2.3.0, item #9):
+  /// `{status, ok, code, message}`. A rejected send (BLOCKED, INVALID_DATA,
+  /// SEND_FAILED) used to fail silently; now the user is told. Success needs
+  /// nothing here: the message still arrives via the normal receive event
+  /// (deduped by id). Older servers never call the ack: nothing happens.
+  void _onSendAck(dynamic res) {
+    final data = res is List && res.isNotEmpty ? res.first : res;
+    if (data is! Map) return;
+    final ok = data['ok'] ?? data['status'];
+    if (ok != false) return;
+    final code = data['code']?.toString() ?? '';
+    final serverText = data['message'] is String ? data['message'] as String : '';
+    final text = serverText.trim().isNotEmpty
+        ? serverText.trim()
+        : (code == 'BLOCKED'
+            ? "You can't message this user"
+            : "Message not sent. Please try again.");
+    log("SEND REJECTED => code=$code message=$text");
+    Utils().fluttertoast(text);
+  }
+
+  /// Last time each socket was retried after a TOKEN_EXPIRED rejection.
+  final Map<IO.Socket, DateTime> _tokenRetryAt = {};
+
+  /// Backend v2.3.0 re-checks the JWT on every reconnect and rejects an
+  /// expired one with connect_error "TOKEN_EXPIRED" (401); socket.io then
+  /// stops reconnecting. Retry once (at most every 60 s): the `auth`
+  /// callback sends the token stored NOW, so a renewed token reconnects
+  /// without restarting the app.
+  ///
+  /// TODO(auth): call POST /refreshToken here once the app stores a refresh
+  /// token (needs a change in the protected login flow; awaiting approval).
+  void _onTokenRejected(IO.Socket? socket, dynamic error) {
+    if (socket == null) return;
+    final text = error is Map
+        ? '${error['message']} ${error['data']?['message']} ${error['code']}'
+        : error.toString();
+    if (!text.contains('TOKEN_EXPIRED')) return;
+
+    final last = _tokenRetryAt[socket];
+    if (last != null && DateTime.now().difference(last).inSeconds < 60) return;
+    _tokenRetryAt[socket] = DateTime.now();
+
+    log("SOCKET TOKEN_EXPIRED => retrying once with the current stored token");
+    Future.delayed(const Duration(seconds: 3), () {
+      if (!socket.connected) socket.connect();
+    });
   }
 
   /// Sockets a chat screen listens on. Private screens use /privateChat,

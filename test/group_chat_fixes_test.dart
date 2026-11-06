@@ -56,6 +56,35 @@ void main() {
     });
   });
 
+  group('backend v2.3.0 #11: chat_list_updated after a delete', () {
+    PrivateChatModel withLast(int id, String time) => PrivateChatModel(
+          id: 1,
+          message: 'm$id',
+          timestamp: time,
+          lastMessageData: {'id': id},
+        );
+
+    test('for_me: previous (older) message is not a new message', () {
+      final cur = withLast(20, '2026-11-06T10:00:00Z');
+      final prev = withLast(19, '2026-11-06T09:59:00Z');
+      expect(ChatListRules.isNewMessage(cur, prev), isFalse);
+    });
+
+    test('for_everyone: same id with deleted text is not new', () {
+      final cur = withLast(20, '2026-11-06T10:00:00Z');
+      final del = withLast(20, '2026-11-06T10:00:00Z')
+        ..message = 'This message was deleted'
+        ..isDeletedForEveryone = true;
+      expect(ChatListRules.isNewMessage(cur, del), isFalse);
+    });
+
+    test('a newer id is still a new message', () {
+      final cur = withLast(20, '2026-11-06T10:00:00Z');
+      expect(ChatListRules.isNewMessage(cur, withLast(21, '2026-11-06T10:01:00Z')),
+          isTrue);
+    });
+  });
+
   group('chat list unread after reading (issue: badge comes back)', () {
     PrivateChatModel row(int? unread) => PrivateChatModel(id: 1, unreadCount: unread);
 

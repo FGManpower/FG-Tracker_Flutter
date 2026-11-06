@@ -176,8 +176,6 @@ class ChatMessageActionRow extends StatelessWidget {
     final translationService = ChatTranslationService.instance;
     final isHindiMessage = RegExp(r'[\u0900-\u097F]').hasMatch(originalText);
     final targetLang = isHindiMessage ? 'en' : 'hi';
-    final actionTitle =
-        isHindiMessage ? 'Translate to English' : 'Translate to Hindi';
     final cacheKey = '${messageId}_$targetLang';
 
     return Padding(
@@ -205,49 +203,28 @@ class ChatMessageActionRow extends StatelessWidget {
           mainAxisAlignment:
               isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: [
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                if (hasTranslation) {
-                  translationService.toggleTranslationVisibility(messageId,
-                      targetLang: targetLang);
-                } else {
-                  translationService.translateText(messageId, originalText,
-                      targetLang: targetLang);
-                }
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (isTranslating)
-                    Padding(
-                      padding: EdgeInsets.only(right: 4.w),
-                      child: SizedBox(
-                        width: 12.w,
-                        height: 12.w,
-                        child: const CupertinoActivityIndicator(radius: 6),
-                      ),
-                    )
-                  else
-                    Icon(
-                      Icons.language_outlined,
-                      size: 14.sp,
-                      color: const Color(0xFF4818F0),
-                    ),
-                  SizedBox(width: 4.w),
-                  Text(
-                    isTranslating ? "Translating..." : actionTitle,
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      fontFamily: FontFamily.interSemiBold,
-                      color: const Color(0xFF4818F0),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+            // "Translate to Hindi/English" link removed: translation is now
+            // a left swipe on the message. Only its progress is shown here.
+            if (isTranslating) ...[
+              Padding(
+                padding: EdgeInsets.only(right: 4.w),
+                child: SizedBox(
+                  width: 12.w,
+                  height: 12.w,
+                  child: const CupertinoActivityIndicator(radius: 6),
+                ),
               ),
-            ),
-            SizedBox(width: 16.w),
+              Text(
+                "Translating...",
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontFamily: FontFamily.interSemiBold,
+                  color: const Color(0xFF4818F0),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(width: 16.w),
+            ],
             // Listen Button
             GestureDetector(
               behavior: HitTestBehavior.opaque,

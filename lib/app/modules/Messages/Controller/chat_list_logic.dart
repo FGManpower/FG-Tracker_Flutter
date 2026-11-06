@@ -75,10 +75,16 @@ class ChatListRules {
     final updatedId = lastMessageId(updated);
     final currentId = lastMessageId(current);
 
-    // If both IDs are present and distinct, this is definitely a new message.
+    // Both IDs present: new only if it isn't OLDER than what we show.
+    // Backend v2.3.0 answers "delete for me" with chat_list_updated whose
+    // lastMessage is the PREVIOUS (older) message; treating any different id
+    // as new bumped the unread badge and reordered the row for a delete.
     if (updatedId != null && currentId != null) {
-      if (updatedId != currentId) return true;
-      return false;
+      if (updatedId == currentId) return false;
+      final u = int.tryParse(updatedId);
+      final c = int.tryParse(currentId);
+      if (u != null && c != null) return u > c;
+      return !lastMessageTime(updated).isBefore(lastMessageTime(current));
     }
 
     final updatedTime = lastMessageTime(updated);

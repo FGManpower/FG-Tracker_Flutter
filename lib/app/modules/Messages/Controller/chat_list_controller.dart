@@ -1019,6 +1019,21 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       final current = privateChats[mainIndex];
       final newMessage = ChatListRules.isNewMessage(current, updatedChat);
       final merged = _applyRealtimeUpdate(current, updatedChat);
+      // "Delete for me" of the only message: the server sends
+      // lastMessage: null. The merge keeps old text for empty fields, so the
+      // deleted message stayed visible; clear the preview explicitly.
+      final explicitNoMessage = (payload.containsKey('lastMessage') &&
+              payload['lastMessage'] == null) ||
+          (payload.containsKey('last_message') &&
+              payload['last_message'] == null);
+      if (explicitNoMessage) {
+        merged
+          ..message = ''
+          ..preview = ''
+          ..messageType = 'text'
+          ..lastMessageData = null
+          ..isDeletedForEveryone = false;
+      }
       final pinChanged = (current.isPinned == true) != (merged.isPinned == true);
       privateChats[mainIndex] = merged;
       if (newMessage || pinChanged) {
