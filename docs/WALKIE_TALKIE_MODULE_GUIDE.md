@@ -450,12 +450,13 @@ If the app loses network after the bank captures the payment:
 | Backend v2 "Frontend Blueprint" sample code | backend v2 §8 | Superseded by the real implementation in §3–§8 |
 | Group Info notification bell (§13) | new requirement, 06 Nov 2026 | ✅ Done: backend (branch `trial-walki-module`) + Flutter |
 | Admin alert arrived as 3 events → possible triple dialog / ringtone | backend §13.8 | ✅ Fixed in client (3 s de-dupe, §4.4) |
+| Edge case: bell shown but push still delivered (rows exist, none ON, no row for group) | Flutter review §13.9 | ✅ Fixed in backend push filter; scenario 9 added (§13.6, §13.9) |
 
 ---
 
 ## 13. ✅ COMPLETED & VERIFIED — Group Info Notification Bell (Implemented 06 Nov 2026)
 
-**Status:** Fully implemented on backend and verified across all 8 acceptance scenarios. **This section replaces every older bell / badge requirement.**
+**Status:** Fully implemented on backend and verified across all 9 acceptance scenarios. **This section replaces every older bell / badge requirement.**
 
 ### 13.1 Requirement
 
@@ -542,6 +543,7 @@ Group **A** (admin U1), members U2, U3, U4. U4 is also in group **B**.
 | 6 | U1 taps U3's bell | U3 gets **one** push + in-app dialog; U1 sees a 10 s countdown |
 | 7 | U2 (non-admin) views the sheet | Bells grey; tap shows "Only group admin can send alert" |
 | 8 | Non-admin calls `alert-member` | `403` |
+| 9 | User X has rows, none ON (0 active groups), no row for A | User X: badge + **purple bell** in A; X does **not** receive A's pushes |
 
 ### 13.7 Backend checklist
 
@@ -551,7 +553,7 @@ Group **A** (admin U1), members U2, U3, U4. U4 is also in group **B**.
 - [x] Socket joins `walkie_group_<groupId>` on `join_walkie_session` and leaves on `leave_walkie_session` (§13.5)
 - [x] `alert-member`: admin check (403), emits `walkie_member_alerted` to target room + high-priority FCM with `groupId` & `groupName` (§13.4c)
 - [x] Alerts de-duplicated: in-memory 10 s rate limiter per `(admin, target, group)` prevents duplicate push/socket dispatches (§13.4c)
-- [x] Scenarios 1–8 verified via automated test suite `scripts/test-walkie-bell-all-8-scenarios.js` (100% PASS) (§13.6)
+- [x] Scenarios 1–9 verified via automated test suite `scripts/test-walkie-bell-all-8-scenarios.js` (100% PASS) (§13.6)
 
 ### 13.8 Backend Implementation Summary
 1. **Member List Query (`services/group.services.js`):**
@@ -561,21 +563,22 @@ Group **A** (admin U1), members U2, U3, U4. U4 is also in group **B**.
    - If user has preferences in DB but none active, and none for this group: returns `0` (Bell shown).
    - If user never set any preferences (fresh user): returns `1` (**Default 1 — No Bell, Receives Push**).
 2. **Push Delivery Filter (`repositories/walkieChannel.repository.js`):**
-   - Synchronized SQL filter: includes members with `wcp.notifications_enabled = 1` OR (`wcp.notifications_enabled IS NULL` and no other group active). Real push delivery matches member list 100%.
+   - Synchronized SQL filter: includes members with `wcp.notifications_enabled = 1` OR (`wcp.notifications_enabled IS NULL` AND user has NO preference rows anywhere in DB).
+   - If a user has preference rows in DB but none active (0 active groups across all channels), they are excluded from push delivery for groups with no row. Real push delivery matches member list 100%.
 3. **Admin Alert De-Duplication (`services/walkieChannel.service.js`):**
    - In-memory 10-second cache per `(adminId, targetUserId, groupId)`.
    - Emits `walkie_member_alerted`, `admin_alert_walkie_member`, and `walkie_invite` with payload `{ groupId, groupName, adminId, adminName, targetUserId, type: "WALKIE_ADMIN_ALERT" }`.
    - Dispatches FCM push with payload `type: "WALKIE_ADMIN_ALERT"`, `groupId`, and `groupName`.
 
-### 13.9 ⚠️ One edge case to confirm (Flutter review, 06 Nov 2026)
+### 13.9 ✅ Edge Case Resolved & Aligned (06 Nov 2026)
 
-§13.8 rule 1 and rule 2 disagree for one kind of user:
+**Alignment Decision:** The push delivery filter in `repositories/walkieChannel.repository.js` has been aligned with rule 1 (Member List).
 
-> User X has preference rows, **none of them ON** (X turned OFF their only active group), and **no row for group G**.
+> When User X has preference rows in DB, **none of them ON** (User X turned OFF their active group), and has **no row for group G**:
 
-| Where | Rule in §13.8 | Result for X in G |
+| Layer | Implementation | Result for User X in G |
 |---|---|---|
-| Member list (rule 1) | "preferences in DB but none active, none for this group → `0`" | `0` → **bell shown** |
-| Push filter (rule 2) | "`wcp IS NULL` and no other group active → included" | **X receives G's pushes** |
+| **Member list** (Rule 1) | Preferences in DB but none active, none for G → `0` | `notifications_enabled = 0` (Bell shown) |
+| **Push filter** (Rule 2) | `wcp IS NULL AND NOT EXISTS (wcp_any)` → Excluded | User X does **NOT** receive G's push |
 
-This breaks §13.3: the bell says "X is not notified", but X actually is. **Please align one side.** Either the member list returns `1` for this case, or the push filter excludes users who have rows but none active. Add a 9th scenario for it to `scripts/test-walkie-bell-all-8-scenarios.js`.
+**Status:** 100% Aligned! Both sides return `0` / Not Notified. Verified in test scenario 9 of `scripts/test-walkie-bell-all-8-scenarios.js` (PASS).
