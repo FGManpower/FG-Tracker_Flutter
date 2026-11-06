@@ -83,23 +83,49 @@ class ForwardDestination {
     this.image,
     this.profileImage,
     this.groupProfile,
+    this.isPinned = false,
+    this.lastActivityAt,
   });
 
+  /// Pinned in the chat list (recent chats sort pinned first).
+  bool isPinned;
+
+  /// Last message time (recent chats sort newest first), if sent.
+  String? lastActivityAt;
+
   factory ForwardDestination.fromJson(Map<String, dynamic> json) {
-    final String type = (json['type'] ??
+    // Recent chats may come in the /chat-list shape: the person / group is
+    // nested under `user` / `group` and the top-level `id` is the CHAT id.
+    // Read the nested values as fallbacks so a private row gets the real
+    // user id (forward target) and mobile number.
+    final Map<String, dynamic>? user =
+        json['user'] is Map ? Map<String, dynamic>.from(json['user']) : null;
+    final Map<String, dynamic>? group =
+        json['group'] is Map ? Map<String, dynamic>.from(json['group']) : null;
+
+    final String rawType = (json['type'] ??
             json['chatType'] ??
             json['targetType'] ??
             json['sourceType'] ??
             '')
         .toString()
         .toLowerCase();
+    final bool isGroupRow = rawType == 'group' ||
+        json['isGroup'] == true ||
+        (rawType.isEmpty && group != null);
+    final String type = isGroupRow ? 'group' : rawType;
 
     final int? parsedUserId = _toInt(
-      json['userId'] ?? json['user_id'],
+      json['userId'] ??
+          json['user_id'] ??
+          (isGroupRow ? null : (user?['id'] ?? user?['userId'])),
     );
 
     final int? parsedGroupId = _toInt(
-      json['groupId'] ?? json['group_id'],
+      json['groupId'] ??
+          json['group_id'] ??
+          group?['id'] ??
+          group?['groupId'],
     );
 
     final int? parsedId = _toInt(
@@ -114,10 +140,28 @@ class ForwardDestination {
       name: (json['name'] ??
               json['userName'] ??
               json['username'] ??
-              json['groupName'])
+              json['groupName'] ??
+              user?['name'] ??
+              user?['fullName'] ??
+              group?['groupName'] ??
+              group?['name'])
           ?.toString(),
-      mobileNo: json['mobileNo']?.toString(),
-      image: (json['image'] ?? json['avatar'])?.toString(),
+      mobileNo: (json['mobileNo'] ?? user?['mobileNo'])?.toString(),
+      image: (json['image'] ??
+              json['avatar'] ??
+              user?['avatar'] ??
+              user?['profileImage'] ??
+              group?['groupProfile'])
+          ?.toString(),
+      isPinned: json['isPinned'] == true,
+      lastActivityAt: (json['lastMessageAt'] ??
+              json['timestamp'] ??
+              json['updatedAt'] ??
+              (json['lastMessage'] is Map
+                  ? (json['lastMessage']['createdAt'] ??
+                      json['lastMessage']['timestamp'])
+                  : null))
+          ?.toString(),
       profileImage: (json['profileImage'] ??
               json['profile_image'] ??
               json['groupProfile'] ??

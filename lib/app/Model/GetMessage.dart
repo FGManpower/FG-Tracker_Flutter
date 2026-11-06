@@ -171,6 +171,10 @@ class MessagePagination {
   bool? hasNextPage;
   bool? hasPreviousPage;
 
+  /// Cursor paging (`before` / `after`, backend v2.8.0).
+  bool? hasMore;
+  int? oldestId;
+
   MessagePagination({
     this.currentPage,
     this.perPage,
@@ -178,6 +182,8 @@ class MessagePagination {
     this.totalPages,
     this.hasNextPage,
     this.hasPreviousPage,
+    this.hasMore,
+    this.oldestId,
   });
 
   MessagePagination.fromJson(Map<String, dynamic> json) {
@@ -187,6 +193,8 @@ class MessagePagination {
     totalPages = MessageData.parseIntOrNull(json['totalPages']);
     hasNextPage = GetMessage._parseBool(json['hasNextPage']);
     hasPreviousPage = GetMessage._parseBool(json['hasPreviousPage']);
+    hasMore = GetMessage._parseBool(json['hasMore']);
+    oldestId = MessageData.parseIntOrNull(json['oldestId']);
   }
 
   Map<String, dynamic> toJson() {

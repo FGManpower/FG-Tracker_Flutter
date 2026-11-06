@@ -111,6 +111,28 @@ void main() {
       expect(controller.adminAlertCountdown[memberId], equals(7));
     });
 
+    test('member notification status is scoped per channel', () {
+      controller.setCurrentGroup('10');
+
+      // Member 5 turns OFF notifications for group 20 -> must NOT affect group 10
+      controller.setMemberNotificationStatus('5', false, groupId: '20');
+      expect(controller.memberNotificationEnabledFor('20', '5'), isFalse);
+      expect(controller.memberNotificationEnabledFor('10', '5'), isNull);
+
+      // Member 5 turns ON group 20 -> (one-active rule) group 10 becomes OFF
+      controller.setMemberNotificationStatus('5', true, groupId: '20');
+      expect(controller.memberNotificationEnabledFor('20', '5'), isTrue);
+      expect(controller.memberNotificationEnabledFor('10', '5'), isFalse);
+
+      // Member 5 turns ON group 10 -> group 20 becomes OFF
+      controller.setMemberNotificationStatus('5', true, groupId: '10');
+      expect(controller.memberNotificationEnabledFor('10', '5'), isTrue);
+      expect(controller.memberNotificationEnabledFor('20', '5'), isFalse);
+
+      controller.reset();
+      expect(controller.memberNotificationStatus.isEmpty, isTrue);
+    });
+
     test('reset clears all countdown timers', () {
       const memberId = '777';
       controller.triggerAdminAlertForMember(
@@ -237,6 +259,48 @@ void main() {
 
       // Exactly ONE "Admin" label in the entire list, specifically for Real Admin User!
       expect(find.text('Admin'), findsOneWidget);
+
+      Get.delete<GroupWalkieController>();
+    });
+
+    testWidgets('bell hidden for members with notifications ON even if they are OFF in another channel', (tester) async {
+      final ctrl = GroupWalkieController();
+      Get.put<GroupWalkieController>(ctrl);
+
+      // Member 302 turned notifications OFF in a *different* channel (99)
+      ctrl.setMemberNotificationStatus('302', false, groupId: '99');
+
+      final members = [
+        MemberData(userId: 304, name: 'Off Member', notificationsEnabled: false),
+        MemberData(userId: 301, name: 'Admin', isCreator: true, notificationsEnabled: true),
+        MemberData(userId: 302, name: 'On Member', notificationsEnabled: true),
+      ];
+
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: const Size(360, 690),
+          builder: (context, child) => GetMaterialApp(
+            home: Scaffold(
+              body: GroupInfoBottomSheet(
+                groupId: '55',
+                groupName: 'HQ Team',
+                adminId: '301',
+                allGroupMembers: members,
+                controller: ctrl,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Only "Off Member" (304) gets the badge + bell.
+      expect(find.byIcon(Icons.notifications_off_rounded), findsOneWidget);
+      expect(
+        find.byIcon(Icons.notifications_none_rounded).evaluate().length +
+            find.byIcon(Icons.notifications_active_rounded).evaluate().length,
+        1,
+      );
 
       Get.delete<GroupWalkieController>();
     });

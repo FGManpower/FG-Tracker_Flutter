@@ -47,15 +47,34 @@ class WalkieCreateOrderData {
   });
 
   factory WalkieCreateOrderData.fromJson(Map<String, dynamic> json) {
+    // Backend v2 doc also describes a FLAT shape:
+    // { paymentId, razorpayOrderId, amount (rupees), currency, keyId, ... }
+    // Nested `payment` / `razorpay` objects take priority when present.
+    final flatPaymentId = int.tryParse(json['paymentId']?.toString() ?? '');
+    final flatOrderId = json['razorpayOrderId']?.toString();
+    final flatAmountRupees = num.tryParse(json['amount']?.toString() ?? '');
+
     return WalkieCreateOrderData(
       payment: json['payment'] is Map
           ? WalkieOrderPaymentInfo.fromJson(
               Map<String, dynamic>.from(json['payment']))
-          : null,
+          : (flatPaymentId != null
+              ? WalkieOrderPaymentInfo(id: flatPaymentId, orderId: flatOrderId)
+              : null),
       razorpay: json['razorpay'] is Map
           ? WalkieOrderRazorpayInfo.fromJson(
               Map<String, dynamic>.from(json['razorpay']))
-          : null,
+          : (flatOrderId != null
+              ? WalkieOrderRazorpayInfo(
+                  keyId: json['keyId']?.toString(),
+                  orderId: flatOrderId,
+                  // Flat `amount` is in rupees; client expects paise here.
+                  amount: flatAmountRupees != null
+                      ? (flatAmountRupees * 100).round()
+                      : null,
+                  currency: json['currency']?.toString(),
+                )
+              : null),
       plan: json['plan'] is Map
           ? WalkieOrderPlanInfo.fromJson(Map<String, dynamic>.from(json['plan']))
           : null,

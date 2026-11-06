@@ -31,7 +31,13 @@ class DeactivatedGroupBadge extends StatelessWidget {
 
 /// Replaces the input bar of a group deactivated by its admin.
 class DeactivatedGroupBanner extends StatelessWidget {
-  const DeactivatedGroupBanner({super.key});
+  const DeactivatedGroupBanner({
+    super.key,
+    this.text = "This group has been deactivated by the Admin",
+  });
+
+  /// Message shown instead of the input bar.
+  final String text;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +54,7 @@ class DeactivatedGroupBanner extends StatelessWidget {
             SizedBox(width: 8.w),
             Flexible(
               child: Text(
-                "This group has been deactivated by the Admin",
+                text,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.grey.shade700,

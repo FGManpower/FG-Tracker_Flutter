@@ -31,6 +31,7 @@ import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:walkie_custom_notification/walkie_custom_notification.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/app/Data/Services/active_chat_tracker.dart';
 @pragma('vm:entry-point')
 void notificationTapBackground(
     NotificationResponse notificationResponse) async {
@@ -448,6 +449,30 @@ class firebaseNotificationServices {
     }
   }
 
+  /// Backend v2.8.0 §14.2: no banner for a chat message I sent, or for the
+  /// chat open on screen (the message is already shown live).
+  static bool _isChatNotificationForOpenChatOrSelf(Map<String, dynamic> data) {
+    final screen = data['screen_name']?.toString();
+    if (screen != 'chatScreen' && screen != 'groupChatScreen') return false;
+    final myId = Global.storageServices.get(PrefConst.userId)?.toString();
+    String? senderId = data['senderId']?.toString();
+    if (screen == 'chatScreen' && senderId == null) {
+      try {
+        final raw = data['memberData'];
+        final m = raw is String ? jsonDecode(raw) : raw;
+        if (m is Map) senderId = (m['id'] ?? m['userId'])?.toString();
+      } catch (_) {}
+    }
+    if (myId != null && myId.isNotEmpty && senderId == myId) return true;
+    if (screen == 'groupChatScreen') {
+      return ActiveChatTracker.isViewing(
+          isGroup: true, groupId: data['groupId']);
+    }
+    return ActiveChatTracker.isViewing(
+        chatId: data['chatId'] ?? data['conversationId'],
+        peerUserId: senderId);
+  }
+
   Future<void> showNotification(RemoteMessage message) async {
     final screenName = (message.data['screen_name'] ??
             message.data['screenName'] ??
@@ -786,7 +811,9 @@ class firebaseNotificationServices {
 
       if (Platform.isAndroid) {
         inItLocalNotification(context, message);
-        showNotification(message);
+        if (!_isChatNotificationForOpenChatOrSelf(data)) {
+          showNotification(message);
+        }
         handleMessage(context, message);
       }
     });

@@ -225,6 +225,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   }
 
   bool isChatMarkedUnread(PrivateChatModel chat) {
+    // isMarkedUnread: marked unread on another device (backend v2.8.0).
+    if (chat.isMarkedUnread == true) return true;
     final keys = _getAllChatKeys(chat);
     return keys.any((k) => manuallyUnreadChatKeys.contains(k));
   }
@@ -236,10 +238,42 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     manuallyUnreadChatKeys.refresh();
     privateChats.refresh();
     await _saveManuallyUnreadKeys();
+
+    // Sync to the server so the user's other devices show it too. The local
+    // mark above stays even if this fails.
+    final bool isGroup = _isGroupChat(chat);
+    try {
+      await MessageRepo.markConversationUnread(
+        chatId: isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id),
+        groupId: isGroup ? (chat.groupId ?? chat.id) : null,
+        chatType: isGroup ? "group" : "private",
+      );
+    } catch (e) {
+      _cl('mark-unread failed: $e');
+    }
+  }
+
+  /// The chat was opened / read here: drop a server "marked unread" flag on
+  /// its row right away (the server clears it on read too).
+  void _clearServerMarkedUnread(bool Function(PrivateChatModel c) match) {
+    var changed = false;
+    for (final c in [...privateChats, ...archivedChats]) {
+      if (c.isMarkedUnread == true && match(c)) {
+        c.isMarkedUnread = false;
+        changed = true;
+      }
+    }
+    if (!changed) return;
+    privateChats.refresh();
+    archivedChats.refresh();
+    _syncChattingNotificationMarker();
   }
 
   Future<void> clearManualUnreadForGroup(dynamic groupId) async {
     if (groupId == null) return;
+    _clearServerMarkedUnread((c) =>
+        _isGroupChat(c) &&
+        (c.groupId ?? c.id)?.toString() == groupId.toString());
     final target = 'group_$groupId';
     if (manuallyUnreadChatKeys.contains(target)) {
       manuallyUnreadChatKeys.remove(target);
@@ -250,6 +284,14 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> clearManualUnreadForPrivate({dynamic userId, dynamic chatId}) async {
+    _clearServerMarkedUnread((c) {
+      if (_isGroupChat(c)) return false;
+      final u = userId?.toString();
+      final ch = chatId?.toString();
+      return (u != null && c.userId?.toString() == u) ||
+          (ch != null &&
+              (c.chatId ?? c.conversationId ?? c.id)?.toString() == ch);
+    });
     bool changed = false;
     if (userId != null) {
       if (manuallyUnreadChatKeys.remove('private_$userId')) changed = true;
@@ -443,10 +485,30 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     _syncChattingNotificationMarker();
   }
 
-  /// Archive over REST (/chat-list?includeArchived=true, isArchived rows).
+  /// Archive over REST: GET /archived (all pages, max 5 x 100). Falls back
+  /// to /chat-list?includeArchived=true (isArchived rows) if /archived fails.
   /// The socket request alone was skipped whenever the list socket wasn't
   /// connected yet, so Archive often stayed empty.
   Future<void> _loadArchivedFromApi() async {
+    try {
+      final all = <PrivateChatModel>[];
+      var page = 1;
+      while (page <= 5) {
+        final res = await MessageRepo.getArchivedChats(page: page, limit: 100);
+        if (res.status == false) {
+          throw Exception(res.message ?? 'status false');
+        }
+        all.addAll(res.data ?? const []);
+        if (res.pagination?.hasNextPage != true) break;
+        page++;
+      }
+      _cl('archive GET /archived pages=$page rows=${all.length} '
+          'groups=${all.where(_isGroupChat).length}');
+      _mergeArchived(all);
+      return;
+    } catch (e) {
+      _cl('archive GET /archived failed, falling back: $e');
+    }
     try {
       final res = await MessageRepo.getChatList(
         page: 1,
@@ -467,7 +529,9 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   bool _wasReadLocally(PrivateChatModel c) {
     final at = _readLocallyAt[_getChatKey(c)];
     return at != null &&
-        DateTime.now().difference(at) < const Duration(minutes: 2);
+        // Backend v2.6.0+ resets unread on read; this only covers a refetch
+        // that reaches the server just before our read does.
+        DateTime.now().difference(at) < const Duration(seconds: 15);
   }
 
   PrivateChatModel? _findRow({
@@ -1289,7 +1353,11 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
   /// The /chat-list screen was opened: refresh from the server (throttled),
   /// since this store outlives the screen.
-  void onChatListOpened() => _resyncWithServer();
+  void onChatListOpened() {
+    _resyncWithServer();
+    // Clears the home "Chatting" dot on all devices (backend v2.8.0 §4.8).
+    MessageRepo.markChatListViewed().catchError((_) => null);
+  }
 
   /// Socket (re)connected or app resumed: the server is the truth again.
   void _resyncWithServer() {
@@ -1495,6 +1563,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         isArchived: updated.isArchived ?? current.isArchived,
         groupStatus: updated.groupStatus ?? current.groupStatus,
         isDeactivated: updated.isDeactivated ?? current.isDeactivated,
+        isMarkedUnread: updated.isMarkedUnread ?? current.isMarkedUnread,
         moveToTop: updated.moveToTop ?? current.moveToTop,
         image: (updated.image != null &&
                 updated.image!.isNotEmpty &&
@@ -1595,6 +1664,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       isArchived: updated.isArchived ?? current.isArchived,
       groupStatus: updated.groupStatus ?? current.groupStatus,
       isDeactivated: updated.isDeactivated ?? current.isDeactivated,
+      isMarkedUnread: updated.isMarkedUnread ?? current.isMarkedUnread,
       moveToTop: updated.moveToTop ?? current.moveToTop,
       image: (updated.image != null &&
               updated.image!.isNotEmpty &&
@@ -1762,6 +1832,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         isArchived: c.isArchived,
         groupStatus: c.groupStatus,
         isDeactivated: c.isDeactivated,
+        isMarkedUnread: c.isMarkedUnread,
         moveToTop: c.moveToTop,
         image: c.image,
         isForwarded: c.isForwarded,
@@ -2026,6 +2097,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
           (unreadTotalCount.value - previousUnread).clamp(0, 999999).toInt();
     }
     chat.unreadCount = 0;
+    chat.isMarkedUnread = false;
     privateChats.refresh();
     archivedChats.refresh();
     _syncChattingNotificationMarker();

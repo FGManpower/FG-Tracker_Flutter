@@ -247,8 +247,17 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       socketService.groupDeactivated[groupId.toString()] ??
       _deactivatedOnOpen;
 
-  /// Send guard: nothing is sent to a deactivated group.
+  /// I was removed from / left this group (live event, or not in the loaded
+  /// member list): banner instead of input, sending blocked. Reactive.
+  final RxBool removedFromGroup = false.obs;
+
+  /// Send guard: nothing is sent to a deactivated group, or to a group I am
+  /// no longer a member of.
   bool _blockIfDeactivated() {
+    if (removedFromGroup.value) {
+      Utils().fluttertoast("You're no longer a member of this group");
+      return true;
+    }
     if (!isGroupDeactivated) return false;
     Utils().fluttertoast("This group has been deactivated by the Admin");
     return true;
@@ -829,7 +838,10 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
     final me = Global.storageServices.get(PrefConst.userId)?.toString();
     if (removedId == me) {
-      // No "you're no longer a member" UI exists in the app (not added).
+      // Backend v2.8.0 (user_removed_from_group / member_removed / group_left
+      // to me): show the "no longer a member" banner; history stays.
+      removedFromGroup.value = true;
+      showEmoji.value = false;
       return;
     }
 
@@ -1826,6 +1838,14 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         final currentUserId =
             Global.storageServices.get(PrefConst.userId).toString();
 
+        // Reopened after being removed (no live event then): not in a
+        // loaded, non-empty member list = no longer a member. Re-added =
+        // input comes back. An empty / failed list changes nothing.
+        if (groupMembers.isNotEmpty) {
+          removedFromGroup.value = !groupMembers
+              .any((m) => m.userId.toString() == currentUserId);
+        }
+
         // Default
         isCreator.value = false;
 
@@ -2433,12 +2453,21 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     final anchor = _topAnchor();
 
     try {
-      log("OLDER GROUP MESSAGE API CALL => page=$page");
-      final result = await MessageRepo.groupMessageHistory(
-        groupId: groupId,
-        page: page,
-        limit: ChatScreenRules.pageSize,
-      );
+      final cursor =
+          _cursorSupported ? ChatScreenRules.oldestId(_messages) : null;
+      log("OLDER GROUP MESSAGE API CALL => "
+          "${cursor != null ? 'before=$cursor' : 'page=$page'}");
+      final result = cursor != null
+          ? await MessageRepo.groupMessageHistory(
+              groupId: groupId,
+              before: cursor,
+              limit: ChatScreenRules.pageSize,
+            )
+          : await MessageRepo.groupMessageHistory(
+              groupId: groupId,
+              page: page,
+              limit: ChatScreenRules.pageSize,
+            );
       if (isClosed) return;
 
       if (result.status != true) {
@@ -2448,11 +2477,22 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       }
 
       final older = result.messageData ?? [];
+      if (cursor != null &&
+          !ChatScreenRules.cursorHonoured(older, before: cursor)) {
+        // Older server ignored `before`: use page paging from now on, and
+        // retry right away so the user doesn't have to scroll again.
+        _cursorSupported = false;
+        _pager.fail();
+        Future.microtask(loadOlderGroupMessages);
+        return;
+      }
       final merged = ChatScreenRules.merge(_messages, older);
       _pager.complete(
         page: page,
         receivedCount: older.length,
-        hasNextPage: result.pagination?.hasNextPage,
+        hasNextPage: cursor != null
+            ? (result.pagination?.hasMore ?? result.pagination?.hasNextPage)
+            : result.pagination?.hasNextPage,
       );
       groupCurrentPage.value = _pager.lastLoadedPage;
 
@@ -2473,11 +2513,13 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     }
   }
 
-  /// After a socket reconnect or app resume: fetch the newest pages until
-  /// they overlap what is loaded, so nothing sent meanwhile is missed.
-  ///
-  /// TODO(backend #6): replace with `after=<newest messageId>` once the API
-  /// supports it; page 1..N is a stopgap.
+  /// Backend v2.8.0 cursor paging (`before` / `after`). Set to false for this
+  /// group when the server ignores the cursor; page paging is used instead.
+  bool _cursorSupported = true;
+
+  /// After a socket reconnect or app resume: fetch what arrived meanwhile.
+  /// Uses `after=<newest id>`; falls back to reading the newest pages until
+  /// they overlap what is loaded.
   Future<void> syncNewerMessages() async {
     if (!_historyLoaded || _historyRequestInFlight || isClosed) return;
     _historyRequestInFlight = true;
@@ -2488,8 +2530,54 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
           Global.storageServices.get(PrefConst.userId)?.toString();
       var appended = 0;
       var appendedFromOthers = 0;
+      var cursorDone = false;
 
-      for (var page = 1; page <= 5; page++) {
+      final newest =
+          _cursorSupported ? ChatScreenRules.newestId(_messages) : null;
+      if (newest != null) {
+        try {
+          var after = newest;
+          for (var round = 0; round < 5; round++) {
+            final result = await MessageRepo.groupMessageHistory(
+              groupId: groupId,
+              after: after,
+              limit: 50,
+            );
+            if (isClosed) return;
+            if (result.status != true) break;
+            final batch = result.messageData ?? [];
+            if (!ChatScreenRules.cursorHonoured(batch, after: after)) {
+              _cursorSupported = false; // older server: use pages
+              break;
+            }
+            final before = _messages.map((m) => m.id?.toString()).toSet();
+            final merged = ChatScreenRules.merge(_messages, batch);
+            if (merged.added > 0) {
+              appended += merged.added - merged.prepended;
+              appendedFromOthers += batch
+                  .where((m) =>
+                      !before.contains(m.id?.toString()) &&
+                      m.senderId?.toString() != currentUserId)
+                  .length;
+              _messages
+                ..clear()
+                ..addAll(merged.messages);
+            }
+            final next = ChatScreenRules.newestId(batch);
+            if (batch.isEmpty ||
+                result.pagination?.hasMore != true ||
+                next == null) {
+              cursorDone = true;
+              break;
+            }
+            after = next;
+          }
+        } catch (e) {
+          log("Sync newer group messages (after=) error: $e");
+        }
+      }
+
+      for (var page = 1; !cursorDone && page <= 5; page++) {
         final result = await MessageRepo.groupMessageHistory(
           groupId: groupId,
           page: page,

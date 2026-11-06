@@ -163,10 +163,47 @@ class GroupWalkieController extends GetxController {
 
   final RxMap<String, int> adminAlertCountdown = <String, int>{}.obs;
   final Map<String, Timer> _alertTimers = {};
+  /// Real-time per-channel notification overrides received via socket.
+  /// Keyed by `"<groupId>:<userId>"` so a preference change in one channel
+  /// never leaks into another channel's member list.
   final RxMap<String, bool> memberNotificationStatus = <String, bool>{}.obs;
 
-  void setMemberNotificationStatus(String memberId, bool enabled) {
-    memberNotificationStatus[memberId.trim()] = enabled;
+  static String _notifKey(String groupId, String memberId) =>
+      '${groupId.trim()}:${memberId.trim()}';
+
+  /// Returns the socket-reported state for [memberId] in [groupId], or null
+  /// if no real-time update has been received (caller falls back to API data).
+  bool? memberNotificationEnabledFor(String groupId, String memberId) {
+    if (groupId.trim().isEmpty || memberId.trim().isEmpty) return null;
+    return memberNotificationStatus[_notifKey(groupId, memberId)];
+  }
+
+  /// Applies a `walkie_member_notification_changed` event.
+  /// Business rule: a user can have notifications ON for only ONE channel,
+  /// so turning ON for [groupId] implicitly turns OFF every other channel
+  /// we know about (including the currently opened one).
+  void setMemberNotificationStatus(
+    String memberId,
+    bool enabled, {
+    required String groupId,
+  }) {
+    final mId = memberId.trim();
+    final gId = groupId.trim();
+    if (mId.isEmpty || gId.isEmpty) return;
+
+    if (enabled) {
+      final suffix = ':$mId';
+      for (final key in memberNotificationStatus.keys.toList()) {
+        if (key.endsWith(suffix) && key != _notifKey(gId, mId)) {
+          memberNotificationStatus[key] = false;
+        }
+      }
+      final current = currentGroupId?.trim();
+      if (current != null && current.isNotEmpty && current != gId) {
+        memberNotificationStatus[_notifKey(current, mId)] = false;
+      }
+    }
+    memberNotificationStatus[_notifKey(gId, mId)] = enabled;
   }
 
   void triggerAdminAlertForMember({
@@ -852,6 +889,7 @@ class GroupWalkieController extends GetxController {
     }
     _alertTimers.clear();
     adminAlertCountdown.clear();
+    memberNotificationStatus.clear();
     networkQuality.value = WalkieNetworkQuality.unknown;
     networkLatencyMs.value = 0;
     role.value = WalkieRole.caller;

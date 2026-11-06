@@ -892,7 +892,9 @@ class GroupWalkieService {
       'walkie_channel_speaker_update',
       'walkie_alert_member',
       'admin_alert_walkie_member',
+      'walkie_member_alerted',
       'walkie_member_notification_changed',
+      'walkie_access_denied',
     ]) {
       socket?.off(e);
     }
@@ -936,6 +938,14 @@ class GroupWalkieService {
         return;
       }
 
+      // Backend emits walkie_member_alerted + admin_alert_walkie_member +
+      // walkie_invite for ONE admin alert — show it only once.
+      final dedupeKey =
+          'socket_invite_${inviteGroupId ?? ''}_${speakerId ?? data['speakerName'] ?? ''}';
+      if (firebaseNotificationServices.isDuplicateWalkieEvent(dedupeKey)) {
+        return;
+      }
+
       final isForeground =
           WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
 
@@ -967,14 +977,44 @@ class GroupWalkieService {
     socket?.on('walkie_invite', handleWalkieInvite);
     socket?.on('walkie_alert_member', handleWalkieInvite);
     socket?.on('admin_alert_walkie_member', handleWalkieInvite);
+    // Backend v2 emits the admin nudge as `walkie_member_alerted` to the
+    // target user's private room.
+    socket?.on('walkie_member_alerted', handleWalkieInvite);
+
+    // Backend v2: trial consumed / subscription expired mid-session.
+    socket?.on('walkie_access_denied', (data) async {
+      if (_isDisposed || data == null) return;
+      final gId = data is Map ? data['groupId']?.toString() : null;
+      if (gId != null && _currentGroupId != null && gId != _currentGroupId) {
+        return;
+      }
+      _log('⛔ walkie_access_denied: $data');
+      if (_isTalking) {
+        _isTalking = false;
+        await _enableMic(false);
+      }
+      if (Get.isRegistered<GroupWalkieController>()) {
+        final c = Get.find<GroupWalkieController>();
+        c.forceUnlockAndReset();
+        c.showTrialEndedMessage();
+      }
+    });
     socket?.on('walkie_member_notification_changed', (data) {
       if (data is Map) {
         final mId = (data['userId'] ?? data['targetUserId'] ?? data['user_id'])?.toString();
+        final gId = (data['groupId'] ??
+                data['group_id'] ??
+                data['activeNotificationGroupId'])
+            ?.toString();
         final rawEnabled = data['notifications_enabled'] ?? data['enabled'] ?? data['notificationsEnabled'];
-        if (mId != null && rawEnabled != null) {
+        // groupId is required: without it we cannot know which channel's
+        // member list the change belongs to, so applying it would wrongly
+        // mark the member as "notification off" in every channel.
+        if (mId != null && gId != null && gId.isNotEmpty && rawEnabled != null) {
           final isEnabled = rawEnabled == true || rawEnabled == 1 || rawEnabled == '1' || rawEnabled == 'true';
           if (Get.isRegistered<GroupWalkieController>()) {
-            Get.find<GroupWalkieController>().setMemberNotificationStatus(mId, isEnabled);
+            Get.find<GroupWalkieController>()
+                .setMemberNotificationStatus(mId, isEnabled, groupId: gId);
           }
         }
       }
@@ -1244,7 +1284,7 @@ class GroupWalkieService {
         c.showBusyMessage(data is Map
             ? data['speakerName']?.toString() ?? 'Someone'
             : 'Someone');
-      } else if (reason == 'LOCKED') {
+      } else if (reason == 'LOCKED' || reason == 'CHANNEL_LOCKED') {
         c.showLockedMessage();
       } else if (reason.contains('NO_SEAT') ||
           reason.contains('NOT_ASSIGNED') ||

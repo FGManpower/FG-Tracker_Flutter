@@ -252,4 +252,35 @@ void main() {
       expect(ChatScreenRules.emojiPanelHeight(screenHeight: 900, fallback: 300), 300);
     });
   });
+
+  group('cursor paging helpers (backend v2.8.0 before/after)', () {
+    test('oldestId / newestId skip temp bubbles without an id', () {
+      final list = [msg(12), MessageData(messageType: 'text', content: 'temp'), msg(9), msg(30)];
+      expect(ChatScreenRules.oldestId(list), 9);
+      expect(ChatScreenRules.newestId(list), 30);
+      expect(ChatScreenRules.oldestId([MessageData(content: 'temp')]), isNull);
+      expect(ChatScreenRules.newestId(const []), isNull);
+    });
+
+    test('cursorHonoured: before', () {
+      expect(ChatScreenRules.cursorHonoured([msg(8), msg(3)], before: 9), isTrue);
+      // Server ignored before= and sent the newest page.
+      expect(ChatScreenRules.cursorHonoured([msg(20), msg(3)], before: 9), isFalse);
+      expect(ChatScreenRules.cursorHonoured([msg(9)], before: 9), isFalse);
+      expect(ChatScreenRules.cursorHonoured(const [], before: 9), isTrue);
+    });
+
+    test('cursorHonoured: after', () {
+      expect(ChatScreenRules.cursorHonoured([msg(31), msg(40)], after: 30), isTrue);
+      expect(ChatScreenRules.cursorHonoured([msg(31), msg(12)], after: 30), isFalse);
+      expect(ChatScreenRules.cursorHonoured([msg(30)], after: 30), isFalse);
+    });
+
+    test('pagination reads hasMore and oldestId', () {
+      final p = MessagePagination.fromJson({'limit': 20, 'hasMore': false, 'oldestId': '183160'});
+      expect(p.hasMore, isFalse);
+      expect(p.oldestId, 183160);
+      expect(p.hasNextPage, isNull);
+    });
+  });
 }

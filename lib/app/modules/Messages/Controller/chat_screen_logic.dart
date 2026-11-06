@@ -77,6 +77,50 @@ class ChatScreenRules {
     return MergeResult(merged, added.length, prepended);
   }
 
+  static int? _realId(MessageData m) {
+    final id = int.tryParse(m.id?.toString() ?? '');
+    return (id != null && id > 0) ? id : null;
+  }
+
+  /// Smallest real message id (temp bubbles without an id are skipped).
+  /// Cursor for `before=` when loading older history.
+  static int? oldestId(List<MessageData> messages) {
+    int? out;
+    for (final m in messages) {
+      final id = _realId(m);
+      if (id != null && (out == null || id < out)) out = id;
+    }
+    return out;
+  }
+
+  /// Largest real message id. Cursor for `after=` when catching up.
+  static int? newestId(List<MessageData> messages) {
+    int? out;
+    for (final m in messages) {
+      final id = _realId(m);
+      if (id != null && (out == null || id > out)) out = id;
+    }
+    return out;
+  }
+
+  /// True when the server really applied the cursor: every returned id is
+  /// older than [before] / newer than [after]. False means an older server
+  /// ignored it (e.g. sent the newest page), so the caller falls back to
+  /// page paging.
+  static bool cursorHonoured(
+    List<MessageData> batch, {
+    int? before,
+    int? after,
+  }) {
+    for (final m in batch) {
+      final id = _realId(m);
+      if (id == null) continue;
+      if (before != null && id >= before) return false;
+      if (after != null && id <= after) return false;
+    }
+    return true;
+  }
+
   /// Message types the bubble knows how to draw.
   static const Set<String> renderableTypes = {
     'text', 'text_message', 'emoji', 'link', 'reply', //

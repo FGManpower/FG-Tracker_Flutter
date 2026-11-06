@@ -29,6 +29,9 @@ private let candidateTokenPrefKeys = [
 
     private var voipRegistry: PKPushRegistry?
     private var audioRouteChannel: FlutterMethodChannel?
+    private var activeChatChannel: FlutterMethodChannel?
+    /// Chat open on screen + my user id, sent by Dart ActiveChatTracker.
+    private var activeChat: [String: String] = [:]
     private var hasLaunchedIntoForeground = false
     private var enteredBackgroundAt: Date?
     private let socketSuspensionThresholdSeconds: TimeInterval = 25.0
@@ -76,6 +79,7 @@ private let candidateTokenPrefKeys = [
 
         let launched = super.application(application, didFinishLaunchingWithOptions: launchOptions)
         setupAudioRouteChannelIfNeeded()
+        setupActiveChatChannel()
         return launched
     }
 
@@ -222,11 +226,65 @@ private let candidateTokenPrefKeys = [
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
+        // Backend v2.8.0 §14.2: no foreground banner for my own chat message
+        // or for the chat open on screen (already shown live).
+        if shouldHideChatBanner(notification.request.content.userInfo) {
+            completionHandler([])
+            return
+        }
         super.userNotificationCenter(
             center,
             willPresent: notification,
             withCompletionHandler: completionHandler
         )
+    }
+
+    private func setupActiveChatChannel() {
+        guard activeChatChannel == nil,
+              let controller = window?.rootViewController as? FlutterViewController else { return }
+        let channel = FlutterMethodChannel(
+            name: "fgtracker/active_chat",
+            binaryMessenger: controller.binaryMessenger
+        )
+        channel.setMethodCallHandler { [weak self] call, result in
+            if call.method == "set", let args = call.arguments as? [String: Any] {
+                self?.activeChat = args.compactMapValues { $0 as? String }
+            }
+            result(nil)
+        }
+        activeChatChannel = channel
+    }
+
+    /// Same rules as Android: chat notifications only; hide my own message
+    /// and the chat that is open.
+    private func shouldHideChatBanner(_ info: [AnyHashable: Any]) -> Bool {
+        func s(_ key: String) -> String? {
+            if let v = info[key] as? String, !v.isEmpty { return v }
+            if let v = info[key] as? NSNumber { return v.stringValue }
+            return nil
+        }
+        let screen = s("screen_name")
+        guard screen == "chatScreen" || screen == "groupChatScreen" else { return false }
+
+        var sender = s("senderId")
+        if screen == "chatScreen", sender == nil,
+           let raw = s("memberData"),
+           let data = raw.data(using: .utf8),
+           let member = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] {
+            sender = (member["id"] as? NSNumber)?.stringValue ?? (member["id"] as? String)
+        }
+
+        if let me = activeChat["myUserId"], !me.isEmpty, sender == me { return true }
+
+        if screen == "groupChatScreen" {
+            guard let groupId = s("groupId") else { return false }
+            return groupId == activeChat["groupId"]
+        }
+        if let chatId = s("chatId") ?? s("conversationId"), chatId == activeChat["chatId"] {
+            return true
+        }
+        if let sender = sender, sender == activeChat["peerId"] { return true }
+        return false
     }
 
     override func userNotificationCenter(

@@ -35,9 +35,17 @@ class MessageRepo {
     required String chatId,
     int page = 1,
     int limit = 15,
+    // Backend v2.8.0 cursor paging: older than [before] / newer than [after].
+    int? before,
+    int? after,
   }) async {
+    final cursor = before != null
+        ? "before=$before"
+        : after != null
+            ? "after=$after"
+            : "page=$page";
     final response = await HttpUtil().get(
-      "/private-chat/$chatId/messages?page=$page&limit=$limit",
+      "/private-chat/$chatId/messages?$cursor&limit=$limit",
     );
 
     return GetMessage.fromJson(response);
@@ -73,8 +81,16 @@ class MessageRepo {
     required int groupId,
     int page = 1,
     int limit = 15,
+    // Backend v2.8.0 cursor paging: older than [before] / newer than [after].
+    int? before,
+    int? after,
   }) async {
-    final url = "/getGroupMessageHistory?groupId=$groupId&page=$page&limit=$limit";
+    final cursor = before != null
+        ? "before=$before"
+        : after != null
+            ? "after=$after"
+            : "page=$page";
+    final url = "/getGroupMessageHistory?groupId=$groupId&$cursor&limit=$limit";
     var response = await HttpUtil().get(url);
 
     return GetMessage.fromJson(response);
@@ -227,6 +243,15 @@ class MessageRepo {
 
     final response = await HttpUtil().get(endpoint);
 
+    return PrivateChatResponse.fromJson(response);
+  }
+
+  /// Archived chats only (private + group), backend v2.8.0 §4.3.
+  static Future<PrivateChatResponse> getArchivedChats({
+    int page = 1,
+    int limit = 100,
+  }) async {
+    final response = await HttpUtil().get("/archived?page=$page&limit=$limit");
     return PrivateChatResponse.fromJson(response);
   }
 
@@ -385,6 +410,27 @@ class MessageRepo {
       "chatType": chatType,
     };
     return await HttpUtil().Authpost("/mark-read", data: data);
+  }
+
+  /// Mark Conversation Unread, stored on the server for all the user's
+  /// devices (backend v2.8.0 §4.5). POST /mark-unread
+  static Future<dynamic> markConversationUnread({
+    int? chatId,
+    int? groupId,
+    required String chatType,
+  }) async {
+    final data = <String, dynamic>{
+      if (chatId != null) "chatId": chatId,
+      if (groupId != null) "groupId": groupId,
+      "chatType": chatType,
+    };
+    return await HttpUtil().Authpost("/mark-unread", data: data);
+  }
+
+  /// Chats screen opened: clears the home "Chatting" dot on all the user's
+  /// devices; per-chat unread counts are not changed (backend v2.8.0 §4.8).
+  static Future<dynamic> markChatListViewed() async {
+    return await HttpUtil().Authpost("/mark-viewed", data: <String, dynamic>{});
   }
 
   /// Unified Mute / Unmute Conversation (Private & Group)

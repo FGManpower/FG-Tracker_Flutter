@@ -100,6 +100,7 @@ class WalkiePlanRepo {
         'planId': planId,
         'purchasedSeats': purchasedSeats,
         'couponCode': couponCode,
+        'code': couponCode, // backend v2 doc key
       },
     );
     return WalkieApplyCouponResponseModel.fromJson(response);

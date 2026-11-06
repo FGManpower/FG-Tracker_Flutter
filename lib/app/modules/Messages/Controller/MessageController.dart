@@ -2497,12 +2497,21 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final anchor = _topAnchor();
 
     try {
-      log("OLDER MESSAGE API CALL => page=$page");
-      final result = await MessageRepo.privateChatHistory(
-        chatId: privateChatId.value,
-        page: page,
-        limit: ChatScreenRules.pageSize,
-      );
+      final cursor =
+          _cursorSupported ? ChatScreenRules.oldestId(_messages) : null;
+      log("OLDER MESSAGE API CALL => "
+          "${cursor != null ? 'before=$cursor' : 'page=$page'}");
+      final result = cursor != null
+          ? await MessageRepo.privateChatHistory(
+              chatId: privateChatId.value,
+              before: cursor,
+              limit: ChatScreenRules.pageSize,
+            )
+          : await MessageRepo.privateChatHistory(
+              chatId: privateChatId.value,
+              page: page,
+              limit: ChatScreenRules.pageSize,
+            );
       if (isClosed) return;
 
       if (result.status != true) {
@@ -2512,11 +2521,22 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       }
 
       final older = result.messageData ?? [];
+      if (cursor != null &&
+          !ChatScreenRules.cursorHonoured(older, before: cursor)) {
+        // Older server ignored `before`: use page paging from now on, and
+        // retry right away so the user doesn't have to scroll again.
+        _cursorSupported = false;
+        _pager.fail();
+        Future.microtask(loadOlderPrivateMessages);
+        return;
+      }
       final merged = ChatScreenRules.merge(_messages, older.reversed.toList());
       _pager.complete(
         page: page,
         receivedCount: older.length,
-        hasNextPage: result.pagination?.hasNextPage,
+        hasNextPage: cursor != null
+            ? (result.pagination?.hasMore ?? result.pagination?.hasNextPage)
+            : result.pagination?.hasNextPage,
       );
       privateCurrentPage.value = _pager.lastLoadedPage;
 
@@ -2537,11 +2557,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  /// After a socket reconnect or app resume: fetch the newest pages until
-  /// they overlap what is loaded, so nothing sent meanwhile is missed.
-  ///
-  /// TODO(backend #6): replace with `after=<newest messageId>` once the API
-  /// supports it; page 1..N is a stopgap.
+  /// Backend v2.8.0 cursor paging (`before` / `after`). Set to false for this
+  /// chat when the server ignores the cursor; page paging is used instead.
+  bool _cursorSupported = true;
+
+  /// After a socket reconnect or app resume: fetch what arrived meanwhile.
+  /// Uses `after=<newest id>`; falls back to reading the newest pages until
+  /// they overlap what is loaded.
   Future<void> syncNewerMessages() async {
     if (!_historyLoaded || privateChatId.value.isEmpty) return;
     if (_historyRequestInFlight) return;
@@ -2550,8 +2572,48 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     try {
       final wasAtBottom = isUserAtBottom();
       var appended = 0;
+      var cursorDone = false;
 
-      for (var page = 1; page <= 5; page++) {
+      final newest =
+          _cursorSupported ? ChatScreenRules.newestId(_messages) : null;
+      if (newest != null) {
+        try {
+          var after = newest;
+          for (var round = 0; round < 5; round++) {
+            final result = await MessageRepo.privateChatHistory(
+              chatId: privateChatId.value,
+              after: after,
+              limit: 50,
+            );
+            if (isClosed) return;
+            if (result.status != true) break;
+            final batch = result.messageData ?? [];
+            if (!ChatScreenRules.cursorHonoured(batch, after: after)) {
+              _cursorSupported = false; // older server: use pages
+              break;
+            }
+            final merged = ChatScreenRules.merge(_messages, batch);
+            if (merged.added > 0) {
+              appended += merged.added - merged.prepended;
+              _messages
+                ..clear()
+                ..addAll(merged.messages);
+            }
+            final next = ChatScreenRules.newestId(batch);
+            if (batch.isEmpty ||
+                result.pagination?.hasMore != true ||
+                next == null) {
+              cursorDone = true;
+              break;
+            }
+            after = next;
+          }
+        } catch (e) {
+          log("Sync newer private messages (after=) error: $e");
+        }
+      }
+
+      for (var page = 1; !cursorDone && page <= 5; page++) {
         final result = await MessageRepo.privateChatHistory(
           chatId: privateChatId.value,
           page: page,

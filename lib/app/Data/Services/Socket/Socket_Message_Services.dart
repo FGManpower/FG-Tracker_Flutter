@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/util/rt_log.dart';
 import 'package:fgtracker/app/Data/Services/active_chat_tracker.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/Data/Services/Socket/status_socket_service.dart';
 import 'package:fgtracker/app/modules/status/controller/status_feed_controller.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -1570,8 +1571,11 @@ class SocketMessageService extends GetxService {
   /// callback sends the token stored NOW, so a renewed token reconnects
   /// without restarting the app.
   ///
-  /// TODO(auth): call POST /refreshToken here once the app stores a refresh
-  /// token (needs a change in the protected login flow; awaiting approval).
+  /// Backend v2.8.0: no refresh endpoint (single 90-day token). First
+  /// rejection: retry once (a token renewed by a fresh login reconnects).
+  /// Rejected again within 60 s: the session is over -> the same logout the
+  /// HTTP 401 handler uses (handleForceLogout has its own guards: no session,
+  /// already on login/OTP, new-login grace period).
   void _onTokenRejected(IO.Socket? socket, dynamic error) {
     if (socket == null) return;
     final text = error is Map
@@ -1580,7 +1584,14 @@ class SocketMessageService extends GetxService {
     if (!text.contains('TOKEN_EXPIRED')) return;
 
     final last = _tokenRetryAt[socket];
-    if (last != null && DateTime.now().difference(last).inSeconds < 60) return;
+    if (last != null && DateTime.now().difference(last).inSeconds < 60) {
+      log("SOCKET TOKEN_EXPIRED again => session expired, logging out");
+      _tokenRetryAt.clear();
+      LogoutUser().handleForceLogout(
+        message: "Your session has expired. Please log in again.",
+      );
+      return;
+    }
     _tokenRetryAt[socket] = DateTime.now();
 
     log("SOCKET TOKEN_EXPIRED => retrying once with the current stored token");
@@ -1645,6 +1656,8 @@ class SocketMessageService extends GetxService {
       "group_chat_cleared",
       "member_removed",
       "member_left",
+      "user_removed_from_group",
+      "group_left",
     ]) {
       _socket?.off(event);
     }
@@ -1898,6 +1911,11 @@ class SocketMessageService extends GetxService {
     _socket?.on("member_removed", handler);
     _socket?.off("member_left");
     _socket?.on("member_left", handler);
+    // Backend v2.8.0: sent to the removed / leaving user themself.
+    _socket?.off("user_removed_from_group");
+    _socket?.on("user_removed_from_group", handler);
+    _socket?.off("group_left");
+    _socket?.on("group_left", handler);
   }
 
   void forwardMessage({

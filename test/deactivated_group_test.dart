@@ -56,4 +56,13 @@ void main() {
     expect(find.text('This group has been deactivated by the Admin'), findsOneWidget);
     expect(t.takeException(), isNull);
   });
+
+  testWidgets('removed-member banner uses its own text', (t) async {
+    await t.pumpWidget(_app(const Column(children: [
+      DeactivatedGroupBanner(text: "You're no longer a member of this group"),
+    ])));
+    expect(find.text("You're no longer a member of this group"), findsOneWidget);
+    expect(find.text('This group has been deactivated by the Admin'), findsNothing);
+    expect(t.takeException(), isNull);
+  });
 }

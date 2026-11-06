@@ -213,7 +213,10 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               );
             }),
             // Backend v2.5.0: deactivated group = banner instead of input.
-            Obx(() => controller.isGroupDeactivated
+            Obx(() => controller.removedFromGroup.value
+                ? const DeactivatedGroupBanner(
+                    text: "You're no longer a member of this group")
+                : controller.isGroupDeactivated
                 ? const DeactivatedGroupBanner()
                 : ChatInputArea(
               messageText: controller.messageText,

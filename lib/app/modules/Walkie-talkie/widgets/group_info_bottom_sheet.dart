@@ -100,9 +100,13 @@ class GroupInfoBottomSheet extends StatelessWidget {
     final cleanId = memberId.trim();
     if (cleanId.isEmpty) return false;
 
-    // 1. Controller reactive override (if set by socket or local update)
-    if (_effectiveController.memberNotificationStatus.containsKey(cleanId)) {
-      return _effectiveController.memberNotificationStatus[cleanId] == false;
+    final effGId = groupId ?? _effectiveController.currentGroupId ?? '';
+
+    // 1. Real-time socket override, scoped to THIS channel only
+    final realtime =
+        _effectiveController.memberNotificationEnabledFor(effGId, cleanId);
+    if (realtime != null) {
+      return realtime == false;
     }
 
     // 2. If it's the current viewer, check WalkieChannelController preference
@@ -110,9 +114,8 @@ class GroupInfoBottomSheet extends StatelessWidget {
     if (cleanId == selfId && Get.isRegistered<WalkieChannelController>()) {
       try {
         final chCtrl = Get.find<WalkieChannelController>();
-        final effGId = groupId ?? _effectiveController.currentGroupId;
         final ch = chCtrl.channels.firstWhereOrNull(
-          (c) => c.groupId?.toString() == effGId?.toString(),
+          (c) => c.groupId.toString() == effGId,
         );
         if (ch != null) {
           return ch.notificationsEnabled == false;

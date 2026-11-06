@@ -13,6 +13,7 @@ import '../../call/Controller/contact_controller.dart';
 import 'MessageController.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:flutter/foundation.dart' show kDebugMode; // TODO(fwd-diagnostics)
 class ForwardMessageController extends GetxController {
   late MessageData message;
 
@@ -84,6 +85,7 @@ class ForwardMessageController extends GetxController {
       responseError.value = '';
 
       final response = await MessageRepo.getForwardList();
+      _fwdLogResponse(response); // TODO(fwd-diagnostics)
 
       if (response.status == false) {
         responseError.value =
@@ -117,9 +119,25 @@ class ForwardMessageController extends GetxController {
       final List<ForwardDestination> groupList =
       response.destinations.where((item) => item.isGroup).toList();
 
-      final List<ForwardDestination> matchedRecent = response.recentChats
-          .where((item) => item.isGroup || matchWithContacts(item))
-          .toList();
+      // Recent chats = every chat the server returns (like the Chat List and
+      // WhatsApp). The address-book match used to DROP private chats with
+      // people not saved in the phone contacts (and all of them when contacts
+      // permission was off); now it only shows the saved contact name.
+      for (final item in response.recentChats) {
+        if (!item.isGroup) matchWithContacts(item);
+      }
+      final List<ForwardDestination> matchedRecent =
+          _sortLikeChatList(_dedupeByChatKey(response.recentChats));
+
+      if (kDebugMode) {
+        debugPrint('[FWD] phoneBook=${phoneBook.length} '
+            'recent: server=${response.recentChats.length} '
+            '(private=${response.recentChats.where((d) => !d.isGroup).length} '
+            'group=${response.recentChats.where((d) => d.isGroup).length}) '
+            '-> after address-book filter=${matchedRecent.length} | '
+            'destinations: server=${response.destinations.length} '
+            'groups=${groupList.length} matchedUsers=${matchedUsers.length}'); // TODO(fwd-diagnostics)
+      }
 
       destinations.assignAll([...groupList, ...matchedUsers]);
       filteredDestinations.assignAll([...groupList, ...matchedUsers]);
@@ -146,6 +164,46 @@ class ForwardMessageController extends GetxController {
       _clearDisplayLists();
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  /// One row per chat: "group_<id>" / "private_<id>", so a private chat and a
+  /// group with the same id are never merged. Rows without an id are kept.
+  List<ForwardDestination> _dedupeByChatKey(List<ForwardDestination> items) {
+    final seen = <String>{};
+    return [
+      for (final d in items)
+        if (d.targetId == null || seen.add('${d.type}_${d.targetId}')) d,
+    ];
+  }
+
+  /// Chat List order: pinned first, then newest activity. Rows without a
+  /// time keep the server's order (stable sort).
+  List<ForwardDestination> _sortLikeChatList(List<ForwardDestination> items) {
+    DateTime? at(ForwardDestination d) =>
+        DateTime.tryParse(d.lastActivityAt ?? '')?.toUtc();
+    final indexed = [for (var i = 0; i < items.length; i++) (i, items[i])];
+    indexed.sort((a, b) {
+      if (a.$2.isPinned != b.$2.isPinned) return a.$2.isPinned ? -1 : 1;
+      final ta = at(a.$2);
+      final tb = at(b.$2);
+      if (ta != null && tb != null && ta != tb) return tb.compareTo(ta);
+      return a.$1.compareTo(b.$1);
+    });
+    return [for (final e in indexed) e.$2];
+  }
+
+  /// TEMPORARY [FWD] diagnostics (debug builds only).
+  /// TODO(fwd-diagnostics): remove after the fix is confirmed.
+  void _fwdLogResponse(ForwardListResponse r) {
+    if (!kDebugMode) return;
+    String row(ForwardDestination d) =>
+        '{type=${d.type} id=${d.id} userId=${d.userId} groupId=${d.groupId} '
+        'targetId=${d.targetId} name=${d.name} mobileNo=${d.mobileNo}}';
+    debugPrint('[FWD] GET /forward/list (no page/limit) status=${r.status} '
+        'recentChats=${r.recentChats.length} destinations=${r.destinations.length}');
+    for (final d in r.recentChats.take(3)) {
+      debugPrint('[FWD] recent sample ${row(d)}');
     }
   }
 
