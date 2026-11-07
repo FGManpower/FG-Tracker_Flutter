@@ -49,6 +49,11 @@ class CallController extends GetxController {
   final RxBool isDeletingMultiple = false.obs;
   final RxBool isClearingAll = false.obs;
 
+  /// Multi-select names used by the Recent calls selection bar.
+  /// Same objects as [isSelectionMode] / [selectedCallIds] (no rename).
+  RxBool get isSelecting => isSelectionMode;
+  RxSet<String> get selectedIds => selectedCallIds;
+
   final List<_RecentEntry> _recentRaw = <_RecentEntry>[];
 
   final RxBool isDialPadOpen = false.obs;
@@ -521,6 +526,8 @@ class CallController extends GetxController {
   }
 
   Future<void> refreshRecentCalls() async {
+    // Multi-select: don't reload the list while a bulk delete is running.
+    if (isDeletingMultiple.value) return;
     _recentRaw.clear();
     recentCallList.clear();
     pagination.value = 1;
@@ -564,6 +571,18 @@ class CallController extends GetxController {
 
   void _rebuildRecentDisplay() {
     recentCallList.value = _recentRaw.map(_buildRow).toList();
+    _pruneSelection();
+  }
+
+  /// Multi-select: drop selected ids whose rows are no longer in the list
+  /// (refresh / pagination). New rows are never auto-selected.
+  void _pruneSelection() {
+    if (selectedCallIds.isEmpty || isDeletingMultiple.value) return;
+    final Set<String> present = recentCallList
+        .map((e) => (e['callId'] ?? e['id'] ?? '').trim())
+        .toSet();
+    selectedCallIds.removeWhere((id) => !present.contains(id));
+    if (selectedCallIds.isEmpty) isSelectionMode.value = false;
   }
 
   Map<String, String> _buildRow(_RecentEntry entry) {
@@ -1136,6 +1155,8 @@ class CallController extends GetxController {
     if (cleanId.isEmpty) return;
     if (selectedCallIds.contains(cleanId)) {
       selectedCallIds.remove(cleanId);
+      // Multi-select: last row unselected → leave selection mode.
+      if (selectedCallIds.isEmpty) isSelectionMode.value = false;
     } else {
       selectedCallIds.add(cleanId);
     }
@@ -1148,8 +1169,118 @@ class CallController extends GetxController {
     selectedCallIds.addAll(allIds);
   }
 
+  /// Multi-select: "Unselect all" → n becomes 0 → selection mode ends.
   void clearSelection() {
     selectedCallIds.clear();
+    isSelectionMode.value = false;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Multi-select (Recent calls): long-press → select → bulk delete.
+  // ---------------------------------------------------------------------------
+
+  /// Long-press on a row → selection mode with that row selected.
+  void startSelection(String callId) {
+    final cleanId = callId.trim();
+    if (cleanId.isEmpty || isDeletingMultiple.value) return;
+    selectedCallIds
+      ..clear()
+      ..add(cleanId);
+    isSelectionMode.value = true;
+  }
+
+  void toggle(String callId) => toggleCallSelection(callId);
+
+  /// Ids of the rows currently visible (respects search / filter), so
+  /// "Select all" never picks calls the user can't see.
+  List<String> get _visibleRecentCallIds => filteredRecentCalls
+      .map((e) => (e['callId'] ?? e['id'] ?? '').trim())
+      .where((id) => id.isNotEmpty)
+      .toList();
+
+  bool get areAllVisibleSelected {
+    final ids = _visibleRecentCallIds;
+    return ids.isNotEmpty && ids.every(selectedCallIds.contains);
+  }
+
+  void selectAll() {
+    if (isDeletingMultiple.value) return;
+    selectedCallIds.addAll(_visibleRecentCallIds);
+  }
+
+  void _showSnackbar(String message, {bool isError = false}) {
+    Get.closeCurrentSnackbar();
+    Get.rawSnackbar(
+      message: message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor:
+          isError ? const Color(0xFFDC2626) : const Color(0xFF1E1B4B),
+      margin: const EdgeInsets.all(12),
+      borderRadius: 12,
+      duration: const Duration(seconds: 2),
+    );
+  }
+
+  /// Optimistic bulk delete with the existing bulk endpoint
+  /// (DELETE /history, body {"callIds": [...]}). Rows disappear at once;
+  /// the bulk call is all-or-nothing, so on failure every row comes back
+  /// in its old place and stays selected for a retry.
+  Future<void> deleteSelected({
+    @visibleForTesting
+    Future<CommonResponse> Function({required List<String> callIds})? apiCall,
+  }) async {
+    if (selectedCallIds.isEmpty || isDeletingMultiple.value) return;
+    isDeletingMultiple.value = true;
+
+    final List<String> ids = selectedCallIds.toList();
+    final Set<String> idSet = ids.toSet();
+    final List<_RecentEntry> before = List<_RecentEntry>.of(_recentRaw);
+
+    _recentRaw.removeWhere((e) => idSet.contains((e.call.id ?? '').trim()));
+    _rebuildRecentDisplay();
+
+    bool ok = false;
+    try {
+      final CommonResponse response = apiCall != null
+          ? await apiCall(callIds: ids)
+          : await CallRepo.deleteMultipleCallHistory(callIds: ids);
+      ok = response.status == true;
+    } catch (_) {
+      ok = false;
+    }
+
+    if (!ok) {
+      // Restore the removed rows in place; keep rows that arrived meanwhile
+      // (pagination) after them.
+      final Set<_RecentEntry> current = _recentRaw.toSet();
+      final Set<_RecentEntry> beforeSet = before.toSet();
+      final List<_RecentEntry> restored = <_RecentEntry>[
+        for (final e in before)
+          if (current.contains(e) || idSet.contains((e.call.id ?? '').trim()))
+            e,
+        for (final e in _recentRaw)
+          if (!beforeSet.contains(e)) e,
+      ];
+      _recentRaw
+        ..clear()
+        ..addAll(restored);
+    }
+
+    isDeletingMultiple.value = false;
+    _rebuildRecentDisplay();
+
+    final int n = ids.length;
+    final String noun = n == 1 ? 'call' : 'calls';
+    if (ok) {
+      exitSelectionMode();
+      _showSnackbar("$n $noun deleted");
+    } else {
+      selectedCallIds
+        ..clear()
+        ..addAll(ids);
+      isSelectionMode.value = true;
+      _showSnackbar("Couldn't delete $n $noun. Try again.", isError: true);
+    }
   }
 
   Future<bool> deleteSelectedRecentCalls({

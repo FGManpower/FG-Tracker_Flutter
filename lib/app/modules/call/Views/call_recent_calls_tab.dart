@@ -12,6 +12,7 @@ import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -289,10 +290,14 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
     );
   }
 
+  // moved to selection bar (long-press now starts multi-select)
+  // ignore: unused_element
   void _showDeleteDialog(Map<String, String> call) {
     _showDeleteConfirmationBottomSheet(call);
   }
 
+  // moved to selection bar (see RecentCallsSelectionBar)
+  // ignore: unused_element
   void _showDeleteSelectedConfirmationDialog() {
     final int count = controller.selectedCallIds.length;
     if (count == 0) return;
@@ -402,6 +407,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
     );
   }
 
+  // moved to selection bar (Delete icon in the top bar)
+  // ignore: unused_element
   Widget _buildFixedBottomClearButton(bool isDialOpen) {
     final bool isSelectionMode = controller.isSelectionMode.value;
     final int selectedCount = controller.selectedCallIds.length;
@@ -621,7 +628,10 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                   onLongPress: isSelectionMode
                                       ? () =>
                                           controller.toggleCallSelection(callId)
-                                      : () => _showDeleteDialog(callItem),
+                                      : () {
+                                          HapticFeedback.lightImpact();
+                                          controller.startSelection(callId);
+                                        },
                                   onDeleteTap: () =>
                                       _showDeleteConfirmationBottomSheet(
                                           callItem),
@@ -733,7 +743,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
               ),
             ),
           ),
-          _buildFixedBottomClearButton(isDialOpen),
+          // _buildFixedBottomClearButton(isDialOpen), // moved to selection bar
         ],
       );
     });
@@ -787,34 +797,43 @@ class _RecentCallTile extends StatelessWidget {
 
     return Row(
       children: [
-        if (isSelectionMode) ...[
-          Container(
-            width: 22.w,
-            height: 22.w,
-            margin: EdgeInsets.only(right: 10.w),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isSelected ? const Color(0xFF4818F0) : Colors.transparent,
-              border: Border.all(
-                color: isSelected
-                    ? const Color(0xFF4818F0)
-                    : const Color(0xFFCBD5E1),
-                width: 1.8,
-              ),
-            ),
-            child: isSelected
-                ? Icon(
-                    Icons.check_rounded,
-                    size: 14.sp,
-                    color: Colors.white,
-                  )
-                : null,
-          ),
-        ],
         GestureDetector(
           onTap: onAvatarTap,
           behavior: HitTestBehavior.opaque,
-          child: _buildAvatar(name, avatar, isOnline, isGroup: isGroup),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              _buildAvatar(name, avatar, isOnline, isGroup: isGroup),
+              // Multi-select: check circle overlaid on the avatar.
+              if (isSelectionMode)
+                Positioned(
+                  right: -3.w,
+                  bottom: -3.w,
+                  child: Container(
+                    width: 20.w,
+                    height: 20.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color:
+                          isSelected ? const Color(0xFF704AFA) : Colors.white,
+                      border: Border.all(
+                        color: isSelected
+                            ? Colors.white
+                            : const Color(0xFFCBD5E1),
+                        width: 1.8,
+                      ),
+                    ),
+                    child: isSelected
+                        ? Icon(
+                            Icons.check_rounded,
+                            size: 13.sp,
+                            color: Colors.white,
+                          )
+                        : null,
+                  ),
+                ),
+            ],
+          ),
         ),
         SizedBox(width: 12.w),
         Expanded(
@@ -894,12 +913,20 @@ class _RecentCallTile extends StatelessWidget {
           ),
         ),
         SizedBox(width: 10.w),
-        CallActionChip(
-          icon:
-              callType == "video" ? Icons.videocam_rounded : Icons.call_rounded,
-          onTap: () {
-            onCallTap(callType);
-          },
+        // Multi-select: call-back icon hidden (space kept) while selecting.
+        Visibility(
+          visible: !isSelectionMode,
+          maintainSize: true,
+          maintainAnimation: true,
+          maintainState: true,
+          child: CallActionChip(
+            icon: callType == "video"
+                ? Icons.videocam_rounded
+                : Icons.call_rounded,
+            onTap: () {
+              onCallTap(callType);
+            },
+          ),
         ),
       ],
     );
@@ -1375,7 +1402,7 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
                     children: [
                       Material(
                         color: widget.isSelected
-                            ? const Color(0xFFF3F0FF)
+                            ? const Color(0xFFEEEDFD)
                             : Colors.white,
                         child: InkWell(
                           onTap: () {
@@ -1413,5 +1440,196 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
         );
       },
     );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Multi-select top bar (replaces the Call screen header while selecting).
+// X · "<n> selected" · Select all / Unselect all · Delete
+// ---------------------------------------------------------------------------
+
+class RecentCallsSelectionBar extends StatelessWidget {
+  const RecentCallsSelectionBar({super.key});
+
+  static const Color _ink = Color(0xFF1E1B4B);
+  static const Color _accent = Color(0xFF4818F0);
+
+  void _confirmDelete(BuildContext context, CallController controller) {
+    final int n = controller.selectedIds.length;
+    if (n == 0 || controller.isDeletingMultiple.value) return;
+    final String noun = n == 1 ? 'call' : 'calls';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          backgroundColor: Colors.white,
+          title: Text(
+            "Delete $n $noun?",
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontFamily: FontFamily.interBold,
+              color: _ink,
+            ),
+          ),
+          content: Text(
+            "These calls will be removed from your call history.",
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontFamily: FontFamily.interRegular,
+              color: const Color(0xFF4B5563),
+            ),
+          ),
+          actionsPadding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      side: const BorderSide(color: Color(0xFFE5E7EB)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontFamily: FontFamily.interMedium,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(dialogContext);
+                      controller.deleteSelected();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      elevation: 0,
+                      backgroundColor: Colors.red.shade600,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Text(
+                      "Delete",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontFamily: FontFamily.interSemiBold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _box({
+    required Widget child,
+    VoidCallback? onTap,
+    EdgeInsetsGeometry? padding,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        height: 40.w,
+        constraints: BoxConstraints(minWidth: 40.w),
+        padding: padding,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: child,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final CallController controller = CallController.instance;
+
+    return Obx(() {
+      final int n = controller.selectedIds.length;
+      final bool busy = controller.isDeletingMultiple.value;
+      final bool allSelected = controller.areAllVisibleSelected;
+
+      return Row(
+        children: [
+          _box(
+            onTap: busy ? null : controller.exitSelectionMode,
+            child: Icon(Icons.close_rounded, size: 20.sp, color: _accent),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Text(
+              "$n selected",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 17.sp,
+                fontFamily: FontFamily.interBold,
+                color: _ink,
+              ),
+            ),
+          ),
+          _box(
+            onTap: busy
+                ? null
+                : (allSelected
+                    ? controller.clearSelection
+                    : controller.selectAll),
+            padding: EdgeInsets.symmetric(horizontal: 12.w),
+            child: Text(
+              allSelected ? "Unselect all" : "Select all",
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontFamily: FontFamily.interSemiBold,
+                color: busy ? const Color(0xFF9CA3AF) : _accent,
+              ),
+            ),
+          ),
+          SizedBox(width: 8.w),
+          _box(
+            onTap: busy ? null : () => _confirmDelete(context, controller),
+            child: busy
+                ? SizedBox(
+                    width: 18.w,
+                    height: 18.w,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      color: Colors.red.shade600,
+                    ),
+                  )
+                : Icon(Icons.delete_outline_rounded,
+                    size: 21.sp, color: Colors.red.shade600),
+          ),
+        ],
+      );
+    });
   }
 }
