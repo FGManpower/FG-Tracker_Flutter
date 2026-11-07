@@ -171,17 +171,16 @@ class GroupMembershipSheet extends StatefulWidget {
     } catch (_) {}
   }
 
-  /// "Open Group": stack becomes Home → All Group List → Group Chat, so Back
-  /// from the chat returns to the list, then Home. Uses the exact route and
-  /// arguments the All Group List uses when a group is tapped. Falls back to
-  /// the list when the group is unknown or inactive.
+  /// "Open Group": opens the group chat on top of the screen the user is on
+  /// (Home, Walkie group select, ...), so Back returns there. Uses the exact
+  /// route and arguments the All Group List uses when a group is tapped.
+  /// Unknown or inactive group: opens the All Group List instead.
   static void _openGroupOrList(
       GroupsResData? group, GroupController groupController) {
-    Get.offNamedUntil(
-      Routes.GroupsList,
-      (route) => route.settings.name == Routes.Home_Screen,
-    );
-    if (group == null || group.isActive != true) return;
+    if (group == null || group.isActive != true) {
+      if (Get.currentRoute != Routes.GroupsList) Get.toNamed(Routes.GroupsList);
+      return;
+    }
     final data = group;
     Get.toNamed(Routes.groupChatScreen, arguments: {
       "groupId": data.id.toString(),
@@ -218,22 +217,31 @@ class GroupMembershipSheet extends StatefulWidget {
       groupImage: groupImage,
       memberCount: memberCount == null ? null : (memberCount - 1).clamp(0, 1 << 30),
       locationShared: _isLocationShared,
-      // The user is already on the Chat List / Group List (see
-      // navigateAfterLeave), so "Go to Groups" just closes the sheet.
-      onPrimary: null,
+      // "Go to Groups": already on the All Group List -> just close;
+      // anywhere else (Chat List, Home, Walkie) -> open it on top.
+      onPrimary: () {
+        if (Get.currentRoute != Routes.GroupsList) {
+          Get.toNamed(Routes.GroupsList);
+        }
+      },
     );
   }
 
   /// GetX names `Get.to(() => ChatListScreen())` '/ChatListScreen';
   /// the Chat List has no named route.
   static const String chatListRoute = '/ChatListScreen';
+
+  /// Same for `Get.to(() => const WalkieGroupSelectScreen())` (used after a
+  /// walkie purchase when the named route is not used).
+  static const String walkieSelectRoute = '/WalkieGroupSelectScreen';
   static bool _leaveNavRunning = false;
 
-  /// Navigation after a successful leave / exit: back to the list the user
-  /// came from. Walks down the stack and stops at the nearest Chat List or
-  /// All Group List. If neither is there, Home stays at the bottom and the
-  /// All Group List is opened on top of it. Every screen above the target
-  /// (the group's chat, info, members, dialogs) is closed. Runs once.
+  /// Navigation after a successful leave / exit: back to where the user
+  /// started. Walks down the stack and stops at the nearest Chat List, All
+  /// Group List, Walkie group select or Home (else the first screen). Every
+  /// screen above it (the group's chat, info, members, walkie screen,
+  /// dialogs) is closed. Never opens a screen the user didn't come from.
+  /// Runs once.
   static void navigateAfterLeave({required String groupId}) {
     if (_leaveNavRunning) return;
     _leaveNavRunning = true;
@@ -242,7 +250,11 @@ class GroupMembershipSheet extends StatefulWidget {
     String? landedOn;
     Get.until((route) {
       final name = route.settings.name;
-      if (name == chatListRoute || name == Routes.GroupsList) {
+      if (name == chatListRoute ||
+          name == Routes.GroupsList ||
+          name == Routes.WalkieGroupSelect ||
+          name == walkieSelectRoute ||
+          name == Routes.Home_Screen) {
         landedOn = name;
         return true;
       }
@@ -257,8 +269,8 @@ class GroupMembershipSheet extends StatefulWidget {
       return;
     }
 
-    // B: came from groups or anywhere else → All Group List.
-    if (landedOn == null) Get.toNamed(Routes.GroupsList);
+    // B: All Group List / Walkie group select / Home: refresh the group list
+    // they show (the left group disappears). No new screen is opened.
     if (Get.isRegistered<GroupController>()) {
       final gc = Get.find<GroupController>();
       gc.groupData.removeWhere((g) => g.id?.toString() == groupId);

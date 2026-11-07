@@ -1,6 +1,6 @@
 # FG Tracker Chat Module: Flutter (Frontend) Implementation Guide
 
-> **Document version:** `F-1.1.0` · **Date:** 2026-11-07 · **Branch:** `46Solution`
+> **Document version:** `F-1.1.1` · **Date:** 2026-11-07 · **Branch:** `46Solution`
 > **Pairs with:** backend `FLUTTER_CHAT_INTEGRATION_GUIDE.md` **v2.8.0**
 > **Scope:** chat module only (private chat, group chat, chat notifications, forwarding, long-press options, chat list, group membership: create / join / add / remove / exit and their success sheets).
 > **Owner:** Flutter team. **Readers:** Flutter + Node.js developers.
@@ -244,7 +244,7 @@ All group APIs are in [GroupRepo.dart](../lib/app/Data/Repositories/GroupRepo.da
 
 | Action | Entry point(s) | API | On success today |
 |---|---|---|---|
-| **Create** | Home "Create Group" button and Walkie Group Select → `showCreateGroupSheet()` ([bottom_actions_bar.dart](../lib/app/Core/constant/BottomSheet/bottom_actions_bar.dart)) | `POST /createGroup` `{groupName, groupDesc}` (+ `groupProfile` file → form-data) | Sheet closes, **All Group List** opens (Home stays at the bottom), list refreshes, **"Group created" sheet** |
+| **Create** | Home "Create Group" button and Walkie Group Select → `showCreateGroupSheet()` ([bottom_actions_bar.dart](../lib/app/Core/constant/BottomSheet/bottom_actions_bar.dart)) | `POST /createGroup` `{groupName, groupDesc}` (+ `groupProfile` file → form-data) | Sheet closes, the user **stays on the screen they created from** (Home or Walkie Group Select), list refreshes, **"Group created" sheet** |
 | **Join** | J1 code entry, J2 QR from gallery ([DialogBox.dart](../lib/app/Core/values/Dialog/DialogBox.dart)), J3 camera scanner ([QrScanController.dart](../lib/app/modules/Group/controller/QrScanController.dart)) → `JoinGroupController.joinGroup` | `POST /joinGroup` `{groupCode}`. Location permission **and** location service are required first | Join sheet closes (J1) / scanner closes (J3), list refreshes, **"Joined" sheet** |
 | **Add member** (admin) | Member screen ＋ button → user picker → `SearchUserController.joinGroup` | `POST /joingGroupMember` `{groupCode, userId}` | Toast with server message, member list reloads (no sheet; it is not the current user) |
 | **Remove member** (admin) | Member sheet, chat Group Info, chat screen → `GroupController.deleteGroupMember` | `POST /deleteGroupMember` | Unchanged; the removed user sees the "no longer a member" banner (§2.7) |
@@ -262,29 +262,46 @@ All group APIs are in [GroupRepo.dart](../lib/app/Data/Repositories/GroupRepo.da
 
 The group chat screen itself has no exit option (the menu item is commented out in `message_Widgets.dart`, open item #23), so exiting from the chat side always goes through Group Info.
 
+**Navigation rule (F-1.1.1): finish where you started.** Create, join, Open Group and exit never open a screen the user did not come from, and Back always returns to the screen they started on. There are four start screens:
+
+| Start screen | After create / join | **Open Group →** (created / joined sheet) | After exit |
+|---|---|---|---|
+| **Home** | stays on Home + sheet | Home → Group Chat (Back → Home) | back to **Home** |
+| **All Groups** (`/groups-list`) | — (no create / join here) | — | stays on / back to **All Groups** |
+| **Chatting** (Chat List) | — (no create / join here) | — | back to the **Chat List** (refreshed) |
+| **Walkie-Talkie** (Group Select) | stays on Walkie Group Select (new group appears in its list) + sheet | Walkie Group Select → Group Chat (Back → Walkie Group Select) | back to **Walkie Group Select** (the left group's walkie screen is closed) |
+
 **Navigation after a successful exit** — `GroupMembershipSheet.navigateAfterLeave(groupId)`, used by L1, L2, L3, L5 (L4 is already on the list):
-- It reads the route stack (no `source` argument): it pops from the top until the **nearest Chat List** (`/ChatListScreen`, the name GetX gives `Get.to(() => ChatListScreen())`) **or All Group List** (`/groups-list`), or Home (always the first route: Splash → `offAllNamed(Home)`).
-- **A — came from chatting** (stops on the Chat List) → stays there and calls `ChatListController.refreshChats()`.
-- **B — came from groups or anywhere else** (stops on the All Group List, or on Home → `Get.toNamed(GroupsList)` on top of Home) → removes the group from `GroupController.groupData` at once and refreshes.
-- Every screen of the left group above the list (chat, info, members, dialogs) is closed. A 1 s guard stops a second call. Then the "left" sheet shows (600 ms later); its **Go to Groups** only closes it, because the user is already on a list.
+- It reads the route stack (no `source` argument): it pops from the top until the **nearest start screen**:
+  - Chat List (`/ChatListScreen`, the name GetX gives `Get.to(() => ChatListScreen())`);
+  - All Group List (`/groups-list`);
+  - Walkie Group Select (`/walkie-group-select`, or `/WalkieGroupSelectScreen` when opened with `Get.to` after a purchase);
+  - Home (`/Home_Screen`); otherwise the first route.
+- **Chat List** → stays there and calls `ChatListController.refreshChats()`.
+- **Any other start screen** → removes the group from `GroupController.groupData` at once and refreshes it. All Groups and Walkie Group Select both read that list. **No new screen is opened** (it used to open the All Group List on top of Home).
+- Every screen of the left group above the start screen (chat, info, members, walkie screen, dialogs) is closed. A 1 s guard stops a second call. Then the "left" sheet shows (600 ms later).
 
 | Path | Lands on | Back |
 |---|---|---|
 | Home → Chat List → Group Chat → Info → Exit | Chat List (refreshed) | Home |
 | Home → All Group List → Group Chat → Info → Exit | All Group List | Home |
-| Home card / Member screen → Exit | All Group List (opened on top of Home) | Home |
-| Joined / created sheet → Open Group → Info → Exit | All Group List | Home |
+| Home → (Total Groups) Group Chat → Info → Exit | Home | — |
+| Home → Walkie Group Select → Walkie screen → Group Chat → Info → Exit | Walkie Group Select | Home |
+| Home → Created / joined sheet → Open Group → Info → Exit | Home | — |
+| Member screen from a notification → Exit | Home | — |
 | All Group List card → Exit | stays on All Group List | Home |
 
 **Navigation after create / join:**
-- **Create success** → All Group List (`Get.until` it if it is in the stack, else open it on top of Home), then the "Group created" sheet.
-- **Open Group** (joined and created sheets) → `Get.offNamedUntil(GroupsList, Home)` then `Get.toNamed(Routes.groupChatScreen, …)` with the **same arguments and `.then` refresh as the All Group List tap** (`groupId`, `groupName`, `groupImage`, `groupDesc`, `groupCode`, `isCreator`, `isActive`). Stack: Home → All Group List → Group Chat. If the group is not found / inactive, it stops on the All Group List. **Done** only closes the sheet.
+- **Create success** → the create sheet closes and the user **stays where they are** (Home or Walkie Group Select), then the "Group created" sheet.
+- **Join success** (Home only) → stays on Home, then the "Joined" sheet.
+- **Open Group** (joined and created sheets) → `Get.toNamed(Routes.groupChatScreen, …)` **on top of the current screen**, with the **same arguments and `.then` refresh as the All Group List tap** (`groupId`, `groupName`, `groupImage`, `groupDesc`, `groupCode`, `isCreator`, `isActive`). If the group is not found / inactive, it opens the All Group List on top instead (unless already there). **Done** only closes the sheet.
+- Covered by `test/group_flow_navigation_test.dart` (Chat List, All Groups, Walkie, Home, nearest-start-screen cases).
 
 **Success sheet** — [group_membership_sheet.dart](../lib/app/modules/Group/widgets/group_membership_sheet.dart), `GroupSheetType { joined, left, created }`:
 - One modal bottom sheet for all three. It shows the user's name (`PrefConst.userName`), group name, image or initials, member count, and the location row only when `PrefConst.locationSharing` is on (read-only; it is the user's setting, not per group).
 - **Joined:** "Joined successfully!", **Open Group →** opens that group's chat (see navigation above).
 - **Created:** "Group created!", shows the **group code with a copy button** and "You are the admin", **Open Group →** opens the group's chat.
-- **Left:** "You left the group", the member count without you, **Go to Groups →** closes the sheet (the user is already on the Chat List / All Group List).
+- **Left:** "You left the group", the member count without you. **Go to Groups →** on the All Group List only closes the sheet; anywhere else (Chat List, Home, Walkie Group Select) it opens the All Group List on top. **Done** only closes the sheet.
 - Because join / create return no group details, the sheet waits for the list refresh the caller already started (max 8 s) and finds the group by **code** (join) or by **name among groups you created, newest first** (create). If not found, it shows the code / typed name and **Open Group** goes to the Group List.
 - It replaces the old success toasts ("Group Exit successfully", the join / create server message). It is shown **by the caller after its own navigation** (so `Get.back()` / `Get.offAllNamed` cannot close it), only on `status == true`, and only once at a time.
 - `DialogBox.showCreateGroupBottomSheet` (older create sheet) also shows the created sheet, but nothing opens it today.
@@ -462,11 +479,11 @@ The group chat screen itself has no exit option (the menu item is commented out 
 | 17 | Forward target key: v2.8.0 example uses `receiverId`; the app sends `userId` | Backend confirm | **Open** |
 | 18 | `GET /getMembers` returns **all** members incl. the caller (no paging)? `user_removed_from_group` / `group_left` sent on `/chat`? | Backend confirm | **Open** |
 | 19 | "Left" sheet missing on exit from Group List (L4) and chat Group Info (L5), §2.11 | Flutter | **Done** (F-1.1.0). Device QA pending |
-| 20 | Navigation after create / leave / Open Group (§2.11) | Flutter | **Done** (F-1.1.0): create → All Group List; exit → nearest Chat List or All Group List (route stack); Open Group → Home → All Group List → Group Chat. Device QA pending (Android + iOS) |
+| 20 | Navigation after create / leave / Open Group (§2.11) | Flutter | **Done** (F-1.1.1, "finish where you started"): create / join stay on Home or Walkie Group Select; Open Group opens the chat on top of the current screen; exit → nearest Chat List / All Group List / Walkie Group Select / Home, nothing new opened. Device QA pending (Android + iOS) |
 | 23 | The group chat screen has no "Exit group" option (commented out in `message_Widgets.dart`); exit from the chat side is only via Group Info | Product decision | **Open** — re-enable only if product wants it (UI change) |
 | 24 | After exit, does `/chat-list` still return the left group? The app only calls `refreshChats()` (no local remove), so the row disappears only if the server drops it | Backend confirm | **Open** |
 | 21 | Join with a code you already belong to: does `/joinGroup` return `status: false`? (`true` would show the "Joined" sheet) | Backend confirm | **Open** |
-| 22 | Clean-ups found in the recheck (not scheduled): `GroupController.exitGroup` sends the pref key `"userId"` instead of the id (dead code, `confirmAndExitGroup` unused); `handleJoinGroup` is empty; camera QR join refreshes the list twice; `Routes.GroupsList` registered twice in `app_pages.dart`; `DialogBox.showCreateGroupBottomSheet` unused | Flutter | **Open** (list only, no change) |
+| 22 | Clean-ups found in the recheck (not scheduled): `GroupController.exitGroup` sends the pref key `"userId"` instead of the id (dead code, `confirmAndExitGroup` unused); `handleJoinGroup` is empty; camera QR join refreshes the list twice; `Routes.GroupsList` registered twice in `app_pages.dart`; `DialogBox.showCreateGroupBottomSheet` unused; `CreatedGroupUi` / `NewlyGroupUi` (Home cards L2 / L3) are not rendered anywhere (2026-11-07 recheck); delete group (admin) always resets to Home (`Get.offAllNamed`) instead of following the §2.11 rule | Flutter | **Open** (list only, no change) |
 
 ### 7.1 Detailed questions / requests for the backend
 
@@ -576,6 +593,7 @@ Remove them all in one cleanup commit after QA, by searching for `TODO(` plus th
 ## 9. Change log
 | Version | Date | Change |
 |---|---|---|
+| F-1.1.1 | 2026-11-07 | Group navigation (§2.11) changed to "finish where you started" for the 4 start screens (Home, All Groups, Chatting, Walkie-Talkie): create no longer jumps to the All Group List (it used to pull the user out of Walkie); Open Group opens the chat on top of the current screen instead of rebuilding Home → All Group List → Chat; exit also stops at Walkie Group Select and Home and never opens the All Group List by itself; "Go to Groups" in the left sheet now opens the All Group List when not already on it. Navigation tests added. |
 | F-1.1.0 | 2026-11-07 | Group navigation (§2.11): create → All Group List; exit → nearest Chat List or All Group List read from the route stack (`navigateAfterLeave`), group removed and list refreshed; Open Group (joined / created sheet) → Home → All Group List → Group Chat with the group list's own arguments; "left" sheet added to L4 / L5 and its button only closes it (#19, #20 done). New open items #23 (no exit in group chat) and #24 (chat list after exit). |
 | F-1.0.9 | 2026-11-07 | New §2.11 group membership (create / join / add / remove / exit, rechecked against the code). Success bottom sheet `GroupMembershipSheet` (joined / left / created) replaces the join, create and exit toasts. Open items #19–#22. |
 | F-1.0.8 | 2026-11-06 | Removed / left member: "You're no longer a member of this group" banner, sends blocked, history kept (#14). Listens to `user_removed_from_group` and `group_left`. |

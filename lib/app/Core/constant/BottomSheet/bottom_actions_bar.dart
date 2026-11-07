@@ -3,7 +3,6 @@ import 'package:fgtracker/app/Core/util/validator.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/widgets/group_membership_sheet.dart';
-import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -72,16 +71,8 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
       _controller.groupName.clear();
       _controller.groupDesc.clear();
       Get.back();
-      // Go to the All Group List; Home stays at the bottom of the stack.
-      bool groupListInStack = false;
-      Get.until((route) {
-        if (route.settings.name == Routes.GroupsList) {
-          groupListInStack = true;
-          return true;
-        }
-        return route.isFirst;
-      });
-      if (!groupListInStack) Get.toNamed(Routes.GroupsList);
+      // Stay on the screen the user created from (Home or Walkie group
+      // select); the sheet's "Open Group" opens the chat on top of it.
       GroupMembershipSheet.showCreatedFor(
         groupName: createdName,
         groupController: _controller,
