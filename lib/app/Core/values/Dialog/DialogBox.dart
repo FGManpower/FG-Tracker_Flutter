@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/util/validator.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
+import 'package:fgtracker/app/modules/Group/widgets/group_membership_sheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -107,9 +108,14 @@ class DialogBox {
                         );
 
                         if (isCreated) {
+                          final createdName = controller.groupName.text;
                           Navigator.pop(context);
                           controller.groupName.clear();
                           controller.groupDesc.clear();
+                          GroupMembershipSheet.showCreatedFor(
+                            groupName: createdName,
+                            groupController: controller,
+                          );
                         }
                       }
                     },
@@ -337,7 +343,13 @@ class DialogBox {
                             groupController: groupController,
                             groupCode: controller.groupCodeController.text);
                         if (isJoined) {
+                          final joinedCode =
+                              controller.groupCodeController.text;
                           controller.groupCodeController.clear();
+                          GroupMembershipSheet.showJoinedForCode(
+                            groupCode: joinedCode,
+                            groupController: groupController,
+                          );
                         }
                       }
                     },
@@ -419,12 +431,19 @@ class DialogBox {
                                   final groupCode = barcodes.first.rawValue;
                                   if (groupCode != null &&
                                       groupCode.isNotEmpty) {
-                                    await controller.joinGroup(
+                                    final bool joined =
+                                        await controller.joinGroup(
                                       context,
                                       groupController: groupController,
                                       groupCode: groupCode,
                                       type: "Qr",
                                     );
+                                    if (joined) {
+                                      GroupMembershipSheet.showJoinedForCode(
+                                        groupCode: groupCode,
+                                        groupController: groupController,
+                                      );
+                                    }
                                   } else {
                                     CommonDialog.errorMessage(
                                         AppText.noValidQrCodeFound);

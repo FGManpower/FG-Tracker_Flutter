@@ -59,7 +59,7 @@ class GroupController extends GetxController {
         imagePath: selectedGroupImage.value?.path,
       );      if (result.status == true) {
         Loading().dismissloading();
-        Utils().fluttertoast(result.message.toString());
+        // Success feedback: GroupMembershipSheet, shown by the caller.
 
         controller.getGroupData();
 

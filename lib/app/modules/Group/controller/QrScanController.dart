@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../controller/Group_Controller.dart';
 import '../controller/JoinGroup_Controller.dart';
+import '../widgets/group_membership_sheet.dart';
 
 class QRScanController extends GetxController {
   final MobileScannerController scannerController = MobileScannerController();
@@ -52,6 +53,10 @@ class QRScanController extends GetxController {
       if (isJoined) {
         groupController.getGroupData();
         Get.back();
+        GroupMembershipSheet.showJoinedForCode(
+          groupCode: code,
+          groupController: groupController,
+        );
       } else {
         hasScanned.value = false;
       }

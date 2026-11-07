@@ -1,5 +1,4 @@
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
-import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:flutter/cupertino.dart';
@@ -55,7 +54,7 @@ class JoinGroupController extends GetxController {
       Loading().dismissloading();
 
       if (result.status == true) {
-        Utils().fluttertoast(result.message.toString());
+        // Success feedback: GroupMembershipSheet, shown by the caller.
         if (type != "Qr") {
           Navigator.pop(context);
         }
