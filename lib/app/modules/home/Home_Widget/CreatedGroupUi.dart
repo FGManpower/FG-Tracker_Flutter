@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/modules/Group/Views/QrScreen.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
+import 'package:fgtracker/app/modules/Group/widgets/group_membership_sheet.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -308,6 +309,15 @@ class CreatedGroupUi extends StatelessWidget {
                                   onSuccess: (success) {
                                     if (success) {
                                       groupController.getGroupData();
+                                      GroupMembershipSheet.navigateAfterLeave(
+                                        groupId: data.id.toString(),
+                                      );
+                                      GroupMembershipSheet.showLeft(
+                                        groupName: data.groupName ?? 'Group',
+                                        groupImage: data.groupProfile,
+                                        memberCount: data.memberCount,
+                                        delay: const Duration(milliseconds: 600),
+                                      );
                                     }
                                   },
                                 );

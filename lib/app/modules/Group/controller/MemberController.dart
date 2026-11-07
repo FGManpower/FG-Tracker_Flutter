@@ -101,9 +101,7 @@ class MemberController extends GetxController {
         GroupTrackingController.instance.exitGroup(
           groupId: groupId,
           onCompletion: (success) {
-            if (success) {
-              Utils().fluttertoast("Group Exit successfully");
-            }
+            // Success feedback: GroupMembershipSheet, shown by the caller's onSuccess.
           },
         );
 

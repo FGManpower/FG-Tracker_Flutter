@@ -15,6 +15,7 @@ import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
+import 'package:fgtracker/app/modules/Group/widgets/group_membership_sheet.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Messages/Views/Chat_Screen.dart';
@@ -1051,7 +1052,20 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                       userId: _myId,
                       onSuccess: (success) {
                         if (success) {
-                          Get.offAllNamed(Routes.Home_Screen);
+                          final leftGroupName =
+                              data.group?.groupName ?? 'Group';
+                          final leftGroupImage = data.group?.groupProfile;
+                          final leftMemberCount =
+                              data.membersSummary?.totalMembers;
+                          GroupMembershipSheet.navigateAfterLeave(
+                            groupId: data.group!.groupId.toString(),
+                          );
+                          GroupMembershipSheet.showLeft(
+                            groupName: leftGroupName,
+                            groupImage: leftGroupImage,
+                            memberCount: leftMemberCount,
+                            delay: const Duration(milliseconds: 600),
+                          );
                         }
                       },
                     );

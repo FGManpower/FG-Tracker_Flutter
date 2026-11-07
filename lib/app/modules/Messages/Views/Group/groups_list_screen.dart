@@ -9,6 +9,7 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Group/Views/QrScreen.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
+import 'package:fgtracker/app/modules/Group/widgets/group_membership_sheet.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart';
@@ -593,6 +594,12 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                                           .removeWhere((g) => g.id == data.id);
 
                                       groupController.getGroupData();
+                                      // Already on the All Group List: no navigation.
+                                      GroupMembershipSheet.showLeft(
+                                        groupName: data.groupName ?? 'Group',
+                                        groupImage: data.groupProfile,
+                                        memberCount: data.memberCount,
+                                      );
                                     }
                                   },
                                 );
