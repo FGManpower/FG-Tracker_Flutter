@@ -16,7 +16,7 @@
    - A selected row gets a `#EEEDFD` background and a filled `#704AFA` circle with a white check on the avatar. Unselected rows show an empty circle.
    - The call icon is hidden; its space is kept so the layout doesn't move.
    - Swipe-to-delete is off.
-4. **Top bar** replaces the header: `✕` · `<n> selected` · `Select all` / `Unselect all` · Delete (trash).
+4. **Top bar** replaces the header: `✕` · `<n> selected` · `Select all` / `Unselect all`. **Delete** is the red "Delete (n)" button at the bottom of the list, same place as before; it shows only when at least 1 call is selected.
 5. **Exit selection mode** with `✕`, Android back, Unselect all, unselecting the last row (n = 0), switching tab, or opening the Call screen again.
 
 ## Actions
@@ -32,7 +32,7 @@ The old 3-dot menu had no single-item actions (Call info, Call back, Copy number
 - **Success:** snackbar "n call(s) deleted", and selection mode ends.
 - **Failure** (for example, no internet): the bulk call is all-or-nothing, so every row comes back in its old place, still selected. Snackbar: "Couldn't delete n call(s). Try again."
 - **While deleting:**
-  - The Delete icon shows a loader.
+  - The bottom Delete button shows a loader.
   - ✕, Select all and Delete are disabled.
   - Pull-to-refresh is ignored.
   - A second delete can't start.
@@ -41,8 +41,8 @@ The old 3-dot menu had no single-item actions (Call info, Call back, Copy number
 - `lib/app/modules/call/Views/call_recent_calls_tab.dart`
   - Long-press starts selection.
   - Check circle on the avatar; call icon hidden while selecting; selected colour `#EEEDFD`.
-  - New `RecentCallsSelectionBar` widget with its confirm dialog.
-  - The old long-press sheet, bottom "Delete (n)" button and old dialog are kept but unused (`// moved to selection bar`).
+  - New `RecentCallsSelectionBar` widget (top bar) and the new confirm dialog; the bottom "Delete (n)" button now opens this dialog.
+  - The old long-press sheet and old delete dialog are kept but unused (`// moved to selection bar`).
 - `lib/app/modules/call/Views/call_screen.dart`
   - Header 3-dot menu removed.
   - The selection bar replaces the header while selecting.

@@ -407,8 +407,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
     );
   }
 
-  // moved to selection bar (Delete icon in the top bar)
-  // ignore: unused_element
+  /// Multi-select: Delete button at the bottom (as before). Opens the new
+  /// confirm dialog and runs the optimistic bulk delete.
   Widget _buildFixedBottomClearButton(bool isDialOpen) {
     final bool isSelectionMode = controller.isSelectionMode.value;
     final int selectedCount = controller.selectedCallIds.length;
@@ -437,7 +437,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
           child: ElevatedButton(
             onPressed: controller.isDeletingMultiple.value
                 ? null
-                : _showDeleteSelectedConfirmationDialog,
+                : () => RecentCallsSelectionBar._confirmDelete(
+                    context, controller),
             style: ElevatedButton.styleFrom(
               padding: EdgeInsets.symmetric(vertical: 14.h),
               elevation: 0,
@@ -743,7 +744,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
               ),
             ),
           ),
-          // _buildFixedBottomClearButton(isDialOpen), // moved to selection bar
+          _buildFixedBottomClearButton(isDialOpen),
         ],
       );
     });
@@ -1445,7 +1446,8 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
 
 // ---------------------------------------------------------------------------
 // Multi-select top bar (replaces the Call screen header while selecting).
-// X · "<n> selected" · Select all / Unselect all · Delete
+// X · "<n> selected" · Select all / Unselect all
+// (Delete is the red button at the bottom of the list, as before.)
 // ---------------------------------------------------------------------------
 
 class RecentCallsSelectionBar extends StatelessWidget {
@@ -1454,7 +1456,7 @@ class RecentCallsSelectionBar extends StatelessWidget {
   static const Color _ink = Color(0xFF1E1B4B);
   static const Color _accent = Color(0xFF4818F0);
 
-  void _confirmDelete(BuildContext context, CallController controller) {
+  static void _confirmDelete(BuildContext context, CallController controller) {
     final int n = controller.selectedIds.length;
     if (n == 0 || controller.isDeletingMultiple.value) return;
     final String noun = n == 1 ? 'call' : 'calls';
@@ -1612,21 +1614,6 @@ class RecentCallsSelectionBar extends StatelessWidget {
                 color: busy ? const Color(0xFF9CA3AF) : _accent,
               ),
             ),
-          ),
-          SizedBox(width: 8.w),
-          _box(
-            onTap: busy ? null : () => _confirmDelete(context, controller),
-            child: busy
-                ? SizedBox(
-                    width: 18.w,
-                    height: 18.w,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.2,
-                      color: Colors.red.shade600,
-                    ),
-                  )
-                : Icon(Icons.delete_outline_rounded,
-                    size: 21.sp, color: Colors.red.shade600),
           ),
         ],
       );
