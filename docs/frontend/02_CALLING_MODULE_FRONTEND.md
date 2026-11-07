@@ -1,6 +1,6 @@
 # Calling Module — Flutter Frontend Architecture & Implementation Guide
 
-**Document Version:** `v1.0.0`  
+**Document Version:** `v1.1.0`  
 **Target Audience:** Flutter Frontend Developers  
 **Covers:** Single & Group Audio/Video Calls, WebRTC PeerConnection, CallKit/CallKeep, Audio Routing, Proximity Sensor, PIP Floating Bubble, Call History & Call History Details Screen  
 **Status:** In Production / Stable  
@@ -110,7 +110,7 @@
   - `Contacts`: Organization contacts with one-tap dial buttons.
   - `Groups`: Team circles with instant group call initiation.
 - **Dial Pad Modal (`call_dial_pad.dart`):** Numeric keypad with instant T9 live contact search.
-- **Multi-Selection Deletion:** Long press activates action bar; supports deleting selected records or clearing entire history via `CallRepo.deleteMultipleCallHistory()`.
+- **Multi-Selection Deletion:** Long-press a row to select calls, then delete them together. See [5.3](#53-recent-calls--multi-select-delete).
 
 ### 5.2 Call History Details Screen (`contact_profile_screen.dart`)
 - Triggered by tapping the Info icon `(i)` on any recent call tile.
@@ -122,4 +122,60 @@
   - Exact start and end timestamps.
   - Group Call Breakdown: Shows list of all invited group members, who joined, join/leave timestamps.
   - Quick action buttons: Return Call, Video Call, Open Chat, Delete Record.
+
+### 5.3 Recent Calls — Multi-select Delete
+The 3-dot menu in the Call screen header (Recent tab) is removed. Its only option was "Delete Call". Selection now starts with a long-press on a row.
+
+**Flow**
+1. **Normal mode (unchanged):**
+   - Tap a row → call history details.
+   - Tap the avatar → quick profile.
+   - Tap the call icon → call back.
+   - Swipe left → delete one call.
+2. **Long-press a row** → selection mode starts with that row selected (light haptic).
+3. **In selection mode:**
+   - Tap a row or its avatar → select / unselect it.
+   - Selected rows get a `#EEEDFD` background and a filled `#704AFA` check circle on the avatar. Unselected rows show an empty circle.
+   - The call icon is hidden; its space is kept so the layout doesn't move.
+   - Swipe is off.
+4. **Top bar** replaces the header: `✕` · `<n> selected` · `Select all` / `Unselect all`.
+   - Select all picks only the rows visible under the current search / filter.
+5. **Bottom button:** a red **Delete (n)** button, shown when at least 1 call is selected.
+6. **Exit selection mode** with `✕`, Android back, Unselect all, unselecting the last row, switching tab, or opening the Call screen again.
+
+**Delete**
+- **Confirm dialog:** "Delete n call(s)?" / "These calls will be removed from your call history." / Cancel · Delete (red).
+- **API:** `CallRepo.deleteMultipleCallHistory(callIds)` (bulk; see backend doc §3.4).
+- **Optimistic:** rows disappear at once.
+  - **Success:** snackbar "n call(s) deleted", and selection mode ends.
+  - **Failure** (for example, no internet): the bulk call is all-or-nothing, so every row comes back in its old place, still selected. Snackbar: "Couldn't delete n call(s). Try again."
+- **While deleting:**
+  - The Delete button shows a loader and can't be pressed again.
+  - ✕ and Select all are disabled.
+  - Pull-to-refresh is ignored.
+
+**Code**
+
+| File | What |
+|---|---|
+| `call_controller.dart` | `isSelecting` / `selectedIds` (same objects as `isSelectionMode` / `selectedCallIds`), `startSelection(id)`, `toggle(id)`, `selectAll()`, `clearSelection()`, `areAllVisibleSelected`, `deleteSelected()`. `_rebuildRecentDisplay()` drops selected ids that are no longer in the list, and new rows arrive unselected. `refreshRecentCalls()` is skipped during a delete. |
+| `call_recent_calls_tab.dart` | Long-press → `startSelection`, check circle on the avatar, hidden call icon, `RecentCallsSelectionBar` + confirm dialog, bottom Delete button. The old long-press sheet and old dialog are kept but unused (`// moved to selection bar`). |
+| `call_screen.dart` | Header 3-dot removed; the selection bar replaces the header while selecting; selection cleared on screen open. |
+
+**Test cases (Android + iPhone)**
+1. No 3-dot in the header; row layout unchanged.
+2. Tap a row in normal mode → same as before.
+3. Long-press → selection mode, row selected, haptic.
+4. Tap other rows → toggle; counter correct; Select all / Unselect all work.
+5. Delete 3 → confirm → rows removed, snackbar; still gone after refresh.
+6. Delete with no internet → rows restored + error snackbar.
+7. ✕ / Android back / n = 0 → exits selection.
+8. Pull-to-refresh / pagination while selecting → new rows unselected, selection kept.
+9. Calling, call details, Contacts / Groups tabs unchanged.
+
+**Known limitations**
+- There is no recent-calls count on screen, so only the list updates.
+- New calls don't arrive live; the list updates on refresh or pagination.
+- Bulk delete is all-or-nothing, so a failure restores every selected row.
+- Moving to another screen and coming back without closing the Call screen keeps the selection.
 

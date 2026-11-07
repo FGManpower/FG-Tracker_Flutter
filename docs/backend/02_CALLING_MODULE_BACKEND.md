@@ -212,6 +212,10 @@ Base URL: `/api` | Header: `Authorization: Bearer <JWT>`
   "message": "Call history deleted successfully"
 }
 ```
+- **Used by the app's Recent Calls multi-select** (long-press → select → Delete): the app sends **Delete Multiple Calls** once for all selected ids.
+- **Backend request:**
+  1. Confirm that `callIds` is supported and deletes only the caller's own history rows.
+  2. If some ids fail, return them (for example `"failedIds": [...]`) so the app can restore only those rows. Today the app treats the call as all-or-nothing.
 
 ---
 
