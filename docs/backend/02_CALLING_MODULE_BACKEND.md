@@ -1,6 +1,6 @@
 # Calling Module — Backend Technical Specification & Contract
 
-**Document Version:** `v1.0.0`  
+**Document Version:** `v1.1.0` · **Last updated:** 2026-11-07  
 **Target Audience:** Backend Developers (Node.js / Express / Sequelize / Socket.IO)  
 **Covers:** Single & Group Audio/Video Calling, WebRTC Signaling Sockets, CallKit/VoIP FCM Payloads, Call History APIs, Duration & Status Persistence  
 **Status:** In Production / Stable  
@@ -243,3 +243,10 @@ Base URL: `/api` | Header: `Authorization: Bearer <JWT>`
 - `joined_at` (DATETIME, Nullable)
 - `left_at` (DATETIME, Nullable)
 
+---
+
+## 5. Change log
+| Version | Date | Change |
+|---|---|---|
+| v1.1.0 | 2026-11-07 | §3.4: the app's Recent Calls multi-select now uses Delete Multiple Calls (`callIds`). Backend request: confirm `callIds` support and return `failedIds` for partial failures. |
+| v1.0.0 | — | First version. |

@@ -1,8 +1,8 @@
 # Calling Module — Flutter Frontend Architecture & Implementation Guide
 
-**Document Version:** `v1.1.0`  
+**Document Version:** `v1.1.0` · **Last updated:** 2026-11-07 · **Branch:** `46Solution`  
 **Target Audience:** Flutter Frontend Developers  
-**Covers:** Single & Group Audio/Video Calls, WebRTC PeerConnection, CallKit/CallKeep, Audio Routing, Proximity Sensor, PIP Floating Bubble, Call History & Call History Details Screen  
+**Covers:** Single & Group Audio/Video Calls, WebRTC PeerConnection, CallKit/CallKeep, Audio Routing, Proximity Sensor, PIP Floating Bubble, Call History & Call History Details Screen, Recent Calls Multi-select Delete  
 **Status:** In Production / Stable  
 
 ---
@@ -179,3 +179,10 @@ The 3-dot menu in the Call screen header (Recent tab) is removed. Its only optio
 - Bulk delete is all-or-nothing, so a failure restores every selected row.
 - Moving to another screen and coming back without closing the Call screen keeps the selection.
 
+---
+
+## 6. Change log
+| Version | Date | Change |
+|---|---|---|
+| v1.1.0 | 2026-11-07 | Recent Calls multi-select delete (§5.3): header 3-dot menu removed; long-press a row to select; top bar ✕ · n selected · Select all / Unselect all; red Delete (n) button at the bottom; confirm dialog; optimistic bulk delete via `CallRepo.deleteMultipleCallHistory` with restore + snackbar on failure. §5.1 corrected (no Clear All in the UI). |
+| v1.0.0 | — | First version: single and group calls, signaling, CallKit, screen sharing, audio routing, proximity lock, call history and details screens. |
