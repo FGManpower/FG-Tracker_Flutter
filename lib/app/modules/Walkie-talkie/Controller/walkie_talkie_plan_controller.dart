@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:fgtracker/app/Core/util/currency_format.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/walkie_plan_model.dart';
@@ -499,7 +500,7 @@ class WalkieTalkiePlanController extends GetxController {
               res.data?.pricing?.discountAmount;
           if (saved != null && saved > 0) {
             showTopWhiteMessage(
-                "Coupon applied! You save ₹${formatCurrency(saved)}");
+                "Coupon applied! You save ${money(saved)}");
           } else {
             showTopWhiteMessage(res.message ?? "Coupon applied successfully!");
           }
@@ -568,6 +569,14 @@ class WalkieTalkiePlanController extends GetxController {
     update();
     showTopWhiteMessage("Coupon removed");
   }
+
+  /// Currency of the plan currently selected (team or individual)
+  String get activeCurrency => CurrencyFormat.code(
+      (isTeam ? activeGroupPlan : activeIndividualPlan)?.currency);
+
+  /// "₹500" / "$10" — pass a plan's own currency for per-plan prices
+  String money(num amount, [String? currency]) =>
+      CurrencyFormat.format(amount, currency ?? activeCurrency);
 
   String formatCurrency(dynamic amount) {
     if (amount == null) return "0";

@@ -647,7 +647,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                 child: _buildIndividualPlanCard(
                   index: index,
                   title: plan.displayTitle,
-                  price: "₹${controller.formatCurrency(plan.safePrice)}",
+                  price: controller.money(plan.safePrice, plan.currency),
                   priceSuffix: " / person",
                   subtitle: _getSubtitleForPlan(plan),
                   discountBadge: _getDiscountBadgeForPlan(plan),
@@ -719,10 +719,10 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
     final interval = (plan.billingInterval ?? '').toLowerCase();
     if (interval == 'quarterly' || plan.durationMonths == 3) {
       final orig = (plan.safePrice / 0.8).round();
-      return "₹${controller.formatCurrency(orig)}";
+      return controller.money(orig, plan.currency);
     } else if (interval == 'yearly' || plan.durationMonths == 12) {
       final orig = (plan.safePrice / 0.67).round();
-      return "₹${controller.formatCurrency(orig)}";
+      return controller.money(orig, plan.currency);
     }
     return null;
   }
@@ -1293,7 +1293,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                     child: _buildTeamDurationOptionItem(
                       index: index,
                       title: plan.displayTitle,
-                      price: "₹${controller.formatCurrency(plan.safePrice)}",
+                      price: controller.money(plan.safePrice, plan.currency),
                       priceSuffix: "per member",
                       isSelected: selectedIdx == index,
                       onTap: () {
@@ -1584,7 +1584,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                "$memberCount Members × ₹${controller.formatCurrency(ratePerMember)}",
+                                "$memberCount Members × ${controller.money(ratePerMember)}",
                                 style: TextStyle(
                                   fontSize: 11.5.sp.clamp(10.0, 13.0),
                                   fontFamily: FontFamily.interMedium,
@@ -1600,7 +1600,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            "₹${controller.formatCurrency(discountedTotal)}",
+                            controller.money(discountedTotal),
                             style: TextStyle(
                               fontSize: 20.sp.clamp(17.0, 23.0),
                               fontFamily: FontFamily.interBold,
@@ -1611,7 +1611,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                           if (originalTotal != discountedTotal) ...[
                             SizedBox(height: 2.h),
                             Text(
-                              "₹${controller.formatCurrency(originalTotal)} total",
+                              "${controller.money(originalTotal)} total",
                               style: TextStyle(
                                 fontSize: 10.5.sp.clamp(9.5, 12.0),
                                 fontFamily: FontFamily.interRegular,
@@ -1657,7 +1657,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                         ),
                         SizedBox(width: 8.w),
                         Text(
-                          "-₹${controller.formatCurrency(couponDiscount)}",
+                          "-${controller.money(couponDiscount)}",
                           style: TextStyle(
                             fontSize: 12.sp,
                             fontFamily: FontFamily.interBold,
@@ -1688,7 +1688,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                           ),
                           SizedBox(width: 4.w),
                           Text(
-                            "You save ₹${controller.formatCurrency(pricing!.amountSaved)} with this coupon!",
+                            "You save ${controller.money(pricing!.amountSaved ?? 0)} with this coupon!",
                             style: TextStyle(
                               fontSize: 10.5.sp,
                               fontFamily: FontFamily.interBold,

@@ -534,7 +534,7 @@ class _WalkieTalkiePaymentPendingScreenState
               ),
               SizedBox(width: 8.w),
               Text(
-                "₹${controller.formatAmount(_displayAmount)}",
+                controller.money(_displayAmount),
                 style: TextStyle(
                   fontSize: 13.5.sp,
                   fontFamily: FontFamily.interBold,
@@ -584,7 +584,7 @@ class _WalkieTalkiePaymentPendingScreenState
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: "₹${controller.formatAmount(_displayAmount)}",
+                      text: controller.money(_displayAmount),
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontFamily: FontFamily.interBold,

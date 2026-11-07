@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:fgtracker/app/Core/util/currency_format.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Controller/razorpay_payment_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Model/razorpay_payment_model.dart';
@@ -654,7 +655,7 @@ class _WalkieTalkiePaymentFailedScreenState
               ),
               SizedBox(width: 8.w),
               Text(
-                "₹${controller.formatAmount(_displayAmount)}",
+                controller.money(_displayAmount),
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontFamily: FontFamily.interBold,
@@ -705,7 +706,7 @@ class _WalkieTalkiePaymentFailedScreenState
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: "₹${controller.formatAmount(_displayAmount)}",
+                      text: controller.money(_displayAmount),
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontFamily: FontFamily.interBold,
@@ -757,7 +758,7 @@ class _WalkieTalkiePaymentFailedScreenState
               ),
             ),
             Text(
-              "₹${value.toStringAsFixed(2)}",
+              "${CurrencyFormat.symbol(controller.currency.value)}${value.toStringAsFixed(2)}",
               style: TextStyle(
                 fontSize: 12.5.sp,
                 fontFamily: FontFamily.interSemiBold,
@@ -876,7 +877,7 @@ class _WalkieTalkiePaymentFailedScreenState
               ),
               SizedBox(width: 10.w),
               Text(
-                "₹${(charge + gst).toStringAsFixed(2)}",
+                "${CurrencyFormat.symbol(controller.currency.value)}${(charge + gst).toStringAsFixed(2)}",
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontFamily: FontFamily.interBold,

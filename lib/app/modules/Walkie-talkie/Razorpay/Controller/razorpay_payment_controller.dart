@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/util/currency_format.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Data/Services/walkie_talkie_trial_service.dart';
 import 'package:fgtracker/app/Model/walkie_verify_payment_model.dart';
@@ -33,6 +34,7 @@ class RazorpayPaymentController extends GetxController {
   final RxInt memberCount = 1.obs;
   final RxString validTill = "".obs;
   final RxDouble amountPaid = 0.0.obs;
+  final RxString currency = 'INR'.obs;
   final RxString paymentMethod = "Razorpay (UPI / Card)".obs;
   final RxString transactionTime = "".obs;
 
@@ -315,6 +317,8 @@ class RazorpayPaymentController extends GetxController {
       if (validity != null) validTill.value = validity;
       if (amount != null) amountPaid.value = amount;
       if (method != null) paymentMethod.value = method;
+      // Result screens show the amount in the order's currency
+      currency.value = CurrencyFormat.code(optionsMap['currency']?.toString());
 
       isProcessing.value = true;
       status.value = PaymentProcessStatus.processing;
@@ -363,7 +367,7 @@ class RazorpayPaymentController extends GetxController {
     HapticFeedback.lightImpact();
     final receiptText = "FG Tracker Payment Receipt\n"
         "Plan: ${planTitle.value}\n"
-        "Amount: ₹${formatAmount(amountPaid.value > 0 ? amountPaid.value : 499)}\n"
+        "Amount: ${money(amountPaid.value > 0 ? amountPaid.value : 499)}\n"
         "Payment ID: ${successPaymentId.value ?? ''}\n"
         "${successOrderId.value != null && successOrderId.value!.isNotEmpty ? 'Order ID: ${successOrderId.value}\n' : ''}"
         "Date: ${transactionTime.value}\n"
@@ -392,6 +396,9 @@ class RazorpayPaymentController extends GetxController {
       Get.back();
     }
   }
+
+  /// "₹499" / "$10.50" in the currency of the last checkout
+  String money(num amount) => CurrencyFormat.format(amount, currency.value);
 
   /// Amount formatting helper
   String formatAmount(num amount) {

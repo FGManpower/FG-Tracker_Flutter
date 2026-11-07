@@ -134,6 +134,50 @@ class OtpChargeConfig {
   }
 }
 
+/// GET v2/otp-charge/my-rate. `required`: true = charged, false = free,
+/// null = country code not stored yet (price unknown).
+class OtpMyRateResponse {
+  bool? status;
+  String? message;
+  bool? required;
+  String? country;
+  String? prefix;
+  String? currency;
+  double? amount;
+  int? amountMinor;
+  double? baseAmount;
+  double? gstPercent;
+  double? gstAmount;
+
+  static double? _toDouble(dynamic v) =>
+      v is num ? v.toDouble() : double.tryParse('${v ?? ''}');
+
+  OtpMyRateResponse.fromJson(Map<String, dynamic> json) {
+    status = json['status'];
+    message = json['message'];
+    final data = json['data'] is Map
+        ? Map<String, dynamic>.from(json['data'])
+        : <String, dynamic>{};
+    final r = data['required'];
+    required = r is bool ? r : (r == null ? null : '$r' == 'true');
+    country = data['country']?.toString();
+    prefix = data['prefix']?.toString();
+    currency = data['currency']?.toString();
+    amount = _toDouble(data['amount']);
+    amountMinor = data['amountMinor'] == null ? null : _toInt(data['amountMinor']);
+    baseAmount = _toDouble(data['baseAmount']);
+    gstPercent = _toDouble(data['gstPercent']);
+    gstAmount = _toDouble(data['gstAmount']);
+  }
+
+  /// Final price per OTP in major units, or null if not usable
+  double? get total {
+    if (amountMinor != null && amountMinor! > 0) return amountMinor! / 100;
+    if (amount != null && amount! > 0) return amount;
+    return null;
+  }
+}
+
 class OtpChargeOrderResponse {
   bool? status;
   String? message;

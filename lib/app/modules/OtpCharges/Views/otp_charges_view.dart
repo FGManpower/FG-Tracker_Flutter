@@ -45,11 +45,7 @@ class OtpChargesView extends GetView<OtpChargesController> {
                           children: [
                             _numberCard(),
                             SizedBox(height: 14.h),
-                            _priceBlock(),
-                            SizedBox(height: 14.h),
-                            _warningBox(),
-                            SizedBox(height: 14.h),
-                            _breakupCard(),
+                            ..._rateSection(),
                             SizedBox(height: 14.h),
                           ],
                         ),
@@ -82,7 +78,8 @@ class OtpChargesView extends GetView<OtpChargesController> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14.r),
                 boxShadow: const [
-                  BoxShadow(color: _shadow, offset: Offset(0, 1), blurRadius: 6),
+                  BoxShadow(
+                      color: _shadow, offset: Offset(0, 1), blurRadius: 6),
                 ],
               ),
               child: Icon(Icons.chevron_left_rounded,
@@ -108,7 +105,103 @@ class OtpChargesView extends GetView<OtpChargesController> {
     );
   }
 
+  /// Price section by state. Login is always `charged`; the side menu loads
+  /// the user's own rate from my-rate.
+  List<Widget> _rateSection() {
+    switch (controller.rateState.value) {
+      case OtpRateState.loading:
+        return [
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 32.h),
+            child: const Center(
+              child:
+                  CircularProgressIndicator(color: AppColors.primaryDarkblue),
+            ),
+          ),
+        ];
+      case OtpRateState.free:
+        return [
+          _infoCard(
+            icon: Icons.check_circle_rounded,
+            title: 'OTP is free for your number',
+            body: 'Login OTPs sent to this number are not charged.',
+          ),
+        ];
+      case OtpRateState.unknown:
+        return [
+          _infoCard(
+            icon: Icons.info_outline_rounded,
+            title: 'OTP charges depend on your country',
+            body:
+                'Login OTPs to Indian numbers are free. For other countries, the exact price is shown before you pay at login.',
+          ),
+        ];
+      case OtpRateState.charged:
+        return [
+          _priceBlock(),
+          SizedBox(height: 14.h),
+          _warningBox(),
+          SizedBox(height: 14.h),
+          _breakupCard(),
+        ];
+    }
+  }
+
+  Widget _infoCard({
+    required IconData icon,
+    required String title,
+    required String body,
+  }) {
+    return Semantics(
+      container: true,
+      child: Container(
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18.r),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 22.sp, color: AppColors.primaryDarkblue),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontFamily: FontFamily.interBold,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.darkText,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    body,
+                    style: TextStyle(
+                      fontSize: 12.5.sp,
+                      fontFamily: FontFamily.interRegular,
+                      height: 1.45,
+                      color: _rowLabel,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _numberCard() {
+    final country = controller.countryName.value;
+    final dial = controller.dialCode.value;
+    final countryLine =
+        country.isEmpty ? dial : (dial.isEmpty ? country : '$country ($dial)');
     return Container(
       padding: EdgeInsets.all(14.r),
       decoration: BoxDecoration(
@@ -124,15 +217,17 @@ class OtpChargesView extends GetView<OtpChargesController> {
             alignment: Alignment.center,
             decoration: const BoxDecoration(
                 color: AppColors.primaryDarkblue, shape: BoxShape.circle),
-            child: Text(
-              controller.countryCode.value,
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontFamily: FontFamily.interExtraBold,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-              ),
-            ),
+            child: controller.countryCode.value.isEmpty
+                ? Icon(Icons.phone_rounded, size: 18.sp, color: Colors.white)
+                : Text(
+                    controller.countryCode.value,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontFamily: FontFamily.interExtraBold,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -140,7 +235,9 @@ class OtpChargesView extends GetView<OtpChargesController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Charges apply to',
+                  controller.rateState.value == OtpRateState.charged
+                      ? 'Charges apply to'
+                      : 'Your number',
                   style: TextStyle(
                     fontSize: 11.sp,
                     fontFamily: FontFamily.interRegular,
@@ -164,18 +261,20 @@ class OtpChargesView extends GetView<OtpChargesController> {
                     ),
                   ),
                 ),
-                SizedBox(height: 2.h),
-                Text(
-                  '${controller.countryName.value} (${controller.dialCode.value})',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontFamily: FontFamily.interSemiBold,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primaryDarkblue,
+                if (countryLine.isNotEmpty) ...[
+                  SizedBox(height: 2.h),
+                  Text(
+                    countryLine,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontFamily: FontFamily.interSemiBold,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryDarkblue,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -190,8 +289,9 @@ class OtpChargesView extends GetView<OtpChargesController> {
     return Semantics(
       container: true,
       excludeSemantics: true,
-      label:
-          'Each OTP costs ${_spokenRupees(controller.totalPerOtp)}, including $gstLabel percent GST',
+      label: controller.hasGst
+          ? 'Each OTP costs ${controller.spokenMoney(controller.totalPerOtp)}, including $gstLabel percent GST'
+          : 'Each OTP costs ${controller.spokenMoney(controller.totalPerOtp)}',
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 10.h),
         child: Column(
@@ -222,16 +322,18 @@ class OtpChargesView extends GetView<OtpChargesController> {
                 ),
               ),
             ),
-            SizedBox(height: 6.h),
-            Text(
-              'Including $gstLabel% GST',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11.5.sp,
-                fontFamily: FontFamily.interRegular,
-                color: AppColors.primarySecondaryElementText,
+            if (controller.hasGst) ...[
+              SizedBox(height: 6.h),
+              Text(
+                'Including $gstLabel% GST',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11.5.sp,
+                  fontFamily: FontFamily.interRegular,
+                  color: AppColors.primarySecondaryElementText,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -298,8 +400,9 @@ class OtpChargesView extends GetView<OtpChargesController> {
         children: [
           _breakupRow(
               'OTP charge', controller.money(controller.otpCharge.value)),
-          _breakupRow(
-              'GST ($gstLabel%)', controller.money(controller.gstAmount)),
+          if (controller.hasGst)
+            _breakupRow(
+                'GST ($gstLabel%)', controller.money(controller.gstAmount)),
           Container(
             margin: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
             padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 8.w),
@@ -391,7 +494,7 @@ class OtpChargesView extends GetView<OtpChargesController> {
           button: true,
           enabled: enabled,
           excludeSemantics: true,
-          label: 'Pay ${_spokenRupees(controller.totalPerOtp)}',
+          label: 'Pay ${controller.spokenMoney(controller.totalPerOtp)}',
           child: SizedBox(
             width: double.infinity,
             height: 52.h,
@@ -448,14 +551,5 @@ class OtpChargesView extends GetView<OtpChargesController> {
     return gst == gst.roundToDouble()
         ? gst.toInt().toString()
         : gst.toStringAsFixed(1);
-  }
-
-  /// 2.36 → "2 rupees 36 paise"
-  static String _spokenRupees(double v) {
-    final paiseTotal = (v * 100).round();
-    final rupees = paiseTotal ~/ 100;
-    final paise = paiseTotal % 100;
-    final r = '$rupees ${rupees == 1 ? 'rupee' : 'rupees'}';
-    return paise == 0 ? r : '$r $paise paise';
   }
 }

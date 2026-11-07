@@ -29,6 +29,13 @@ class OtpChargeRepo {
     return OtpChargeConfig.fromJson(response.data);
   }
 
+  /// Logged in only (Bearer JWT): the OTP price for the user's own number,
+  /// worked out from users.countryCode like send-otp. Used by the side menu.
+  static Future<OtpMyRateResponse> getMyRate() async {
+    var response = await HttpUtil().get(Urls.otpChargeMyRate);
+    return OtpMyRateResponse.fromJson(response);
+  }
+
   static Future<OtpChargeOrderResponse> createOrder(
       String otpChargeToken) async {
     var response = await HttpUtil().post(Urls.otpChargeCreateOrder,

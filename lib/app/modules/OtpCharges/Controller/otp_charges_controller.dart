@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/currency_format.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -12,6 +13,9 @@ import 'package:get/get.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+/// What the screen can show about the price
+enum OtpRateState { loading, charged, free, unknown }
+
 /// Opened from login when /v2/send-otp returns SHOW_OTP_CHARGE_SCREEN.
 /// Pay → create-order → Razorpay → payment-success (backend sends the OTP)
 /// → OTP screen. Opened without a charge token (side menu) it is info only.
@@ -26,6 +30,15 @@ class OtpChargesController extends GetxController {
   RxDouble otpCharge = 2.00.obs;
   RxDouble gstPercent = 18.0.obs;
   final RxnDouble _backendTotal = RxnDouble();
+
+  // Charge currency from send-otp (foreign prefixes can be USD → PayPal)
+  RxString currency = 'INR'.obs;
+
+  /// GST row is only shown when there is GST to show
+  bool get hasGst => gstPercent.value > 0;
+
+  /// Login path is always `charged`; the side menu loads it from my-rate
+  final Rx<OtpRateState> rateState = OtpRateState.charged.obs;
 
   RxBool isLoading = false.obs;
 
@@ -62,12 +75,16 @@ class OtpChargesController extends GetxController {
         ? digits.substring(dialDigits.length)
         : digits;
     if (local.length == 10) {
-      return '${dialCode.value} ${local.substring(0, 5)} ${local.substring(5)}';
+      return '${dialCode.value} ${local.substring(0, 5)} ${local.substring(5)}'
+          .trim();
     }
-    return local.isEmpty ? dialCode.value : '${dialCode.value} $local';
+    return local.isEmpty ? dialCode.value : '${dialCode.value} $local'.trim();
   }
 
-  String money(double v) => '₹${v.toStringAsFixed(2)}';
+  String money(double v) =>
+      '${CurrencyFormat.symbol(currency.value)}${v.toStringAsFixed(2)}';
+
+  String spokenMoney(double v) => CurrencyFormat.spoken(v, currency.value);
 
   @override
   void onInit() {
@@ -81,9 +98,55 @@ class OtpChargesController extends GetxController {
     if (args is Map && args['otpCharge'] is OtpChargeInfo) {
       _loadFromLogin(args);
     } else {
-      // Side menu: saved by getProfileData / register flow, no extra API call
+      // Side menu: number saved by getProfileData / register flow; the price
+      // for that number comes from my-rate
       phoneNumber.value =
           Global.storageServices.get(PrefConst.userPhone)?.toString() ?? '';
+      _loadMyRate();
+    }
+  }
+
+  /// Side menu only: price for the logged-in user's own number
+  Future<void> _loadMyRate() async {
+    rateState.value = OtpRateState.loading;
+    // Unknown until my-rate sends the prefix (don't assume India / +91)
+    dialCode.value = '';
+    countryCode.value = '';
+    countryName.value = '';
+    try {
+      final rate = await OtpChargeRepo.getMyRate();
+      if (rate.status != true) {
+        rateState.value = OtpRateState.unknown;
+        return;
+      }
+      if (rate.prefix != null && rate.prefix!.isNotEmpty) {
+        dialCode.value = '+${rate.prefix!.replaceAll('+', '')}';
+        // No ISO code from my-rate; the badge shows the dial code instead
+        countryCode.value = dialCode.value;
+      }
+      if (rate.country != null && rate.country!.isNotEmpty) {
+        countryName.value = rate.country!;
+      }
+      if (rate.required == false) {
+        rateState.value = OtpRateState.free;
+        return;
+      }
+      final total = rate.total;
+      if (rate.required != true || total == null) {
+        rateState.value = OtpRateState.unknown;
+        return;
+      }
+      // Same rules as the login path (_loadFromLogin)
+      currency.value = CurrencyFormat.code(rate.currency);
+      _backendTotal.value = total;
+      gstPercent.value = rate.gstPercent ??
+          (CurrencyFormat.isInr(currency.value) ? gstPercent.value : 0);
+      otpCharge.value = rate.baseAmount ??
+          (total / (1 + gstPercent.value / 100) * 100).roundToDouble() / 100;
+      rateState.value = OtpRateState.charged;
+    } catch (e) {
+      if (kDebugMode) AppLog.d('[OtpCharges] my-rate failed: $e');
+      rateState.value = OtpRateState.unknown;
     }
   }
 
@@ -106,7 +169,14 @@ class OtpChargesController extends GetxController {
         ? charge.amountMinor / 100
         : charge.amount;
     _backendTotal.value = total;
-    if (charge.gstPercent != null) gstPercent.value = charge.gstPercent!;
+    currency.value = CurrencyFormat.code(charge.currency);
+    if (charge.gstPercent != null) {
+      gstPercent.value = charge.gstPercent!;
+    } else if (!CurrencyFormat.isInr(currency.value)) {
+      // Indian GST only applies to INR charges; with no split sent, the
+      // foreign-currency total is the whole charge
+      gstPercent.value = 0;
+    }
     // Use the backend split when sent, otherwise work it out from the total
     otpCharge.value = charge.baseAmount ??
         (total / (1 + gstPercent.value / 100) * 100).roundToDouble() / 100;

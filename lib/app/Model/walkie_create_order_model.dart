@@ -36,6 +36,7 @@ class WalkieCreateOrderData {
   final WalkieOrderSubscriptionInfo? subscription;
   final WalkieOrderCouponInfo? coupon;
   final WalkieOrderPricingInfo? pricing;
+  final WalkieOrderCustomerInfo? customer;
 
   const WalkieCreateOrderData({
     this.payment,
@@ -44,6 +45,7 @@ class WalkieCreateOrderData {
     this.subscription,
     this.coupon,
     this.pricing,
+    this.customer,
   });
 
   factory WalkieCreateOrderData.fromJson(Map<String, dynamic> json) {
@@ -90,6 +92,10 @@ class WalkieCreateOrderData {
           ? WalkieOrderPricingInfo.fromJson(
               Map<String, dynamic>.from(json['pricing']))
           : null,
+      customer: json['customer'] is Map
+          ? WalkieOrderCustomerInfo.fromJson(
+              Map<String, dynamic>.from(json['customer']))
+          : null,
     );
   }
 
@@ -100,6 +106,51 @@ class WalkieCreateOrderData {
         'subscription': subscription?.toJson(),
         'coupon': coupon?.toJson(),
         'pricing': pricing?.toJson(),
+        'customer': customer?.toJson(),
+      };
+}
+
+/// Razorpay prefill from create-order: `contact` is E.164 (`+14155552671`),
+/// any field may be null (e.g. older users with no stored country code).
+class WalkieOrderCustomerInfo {
+  final String? name;
+  final String? email;
+  final String? contact;
+  final String? countryCode;
+
+  const WalkieOrderCustomerInfo({
+    this.name,
+    this.email,
+    this.contact,
+    this.countryCode,
+  });
+
+  static String? _text(dynamic v) {
+    final s = v?.toString().trim();
+    return (s == null || s.isEmpty || s == 'null') ? null : s;
+  }
+
+  factory WalkieOrderCustomerInfo.fromJson(Map<String, dynamic> json) {
+    return WalkieOrderCustomerInfo(
+      name: _text(json['name']),
+      email: _text(json['email']),
+      contact: _text(json['contact']),
+      countryCode: _text(json['countryCode']),
+    );
+  }
+
+  /// Only a real E.164 number: "+" then 8–15 digits
+  String? get e164Contact {
+    final c = contact?.replaceAll(RegExp(r'[\s\-()]'), '');
+    if (c == null) return null;
+    return RegExp(r'^\+[1-9]\d{7,14}$').hasMatch(c) ? c : null;
+  }
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'email': email,
+        'contact': contact,
+        'countryCode': countryCode,
       };
 }
 

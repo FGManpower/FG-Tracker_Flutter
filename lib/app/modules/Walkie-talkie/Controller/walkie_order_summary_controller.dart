@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/currency_format.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
@@ -180,6 +181,20 @@ class WalkieOrderSummaryController extends GetxController {
         order.value.appliedCouponCode;
   }
 
+  /// Order currency: create-order → summary plan → summary → chosen plan → INR
+  String get currencyCode => CurrencyFormat.code(
+        createOrderData.value?.razorpay?.currency ??
+            summaryData.value?.plan?.currency ??
+            summaryData.value?.currency ??
+            order.value.plan?.currency,
+      );
+
+  bool get isInrOrder => currencyCode == 'INR';
+
+  /// "₹1,250" / "$12.50"
+  String money(num amount) =>
+      '${CurrencyFormat.symbol(currencyCode)}${formatCurrency(amount)}';
+
   String formatCurrency(num amount) {
     final isDecimal = amount is double && amount != amount.roundToDouble();
     if (isDecimal) {
@@ -193,6 +208,13 @@ class WalkieOrderSummaryController extends GetxController {
   String _formatInt(int intAmount) {
     final str = intAmount.toString();
     if (str.length <= 3) return str;
+    if (!isInrOrder) {
+      // 1,234,567 outside India (lakh grouping is INR only)
+      return str.replaceAllMapped(
+        RegExp(r'(\d)(?=(\d{3})+$)'),
+        (Match m) => '${m[1]},',
+      );
+    }
     final lastThree = str.substring(str.length - 3);
     final rest = str.substring(0, str.length - 3);
     final formattedRest = rest.replaceAllMapped(
@@ -367,7 +389,7 @@ class WalkieOrderSummaryController extends GetxController {
               summaryRes.data?.pricing?.discountAmount;
           if (saved != null && saved > 0) {
             showTopWhiteMessage(
-                "Coupon applied! You saved ₹${formatCurrency(saved)}");
+                "Coupon applied! You saved ${money(saved)}");
           } else {
             showTopWhiteMessage(
                 summaryRes.message ?? "Coupon applied successfully!");
@@ -397,7 +419,7 @@ class WalkieOrderSummaryController extends GetxController {
               response.data?.pricing?.discountAmount;
           if (saved != null && saved > 0) {
             showTopWhiteMessage(
-                "Coupon applied! You saved ₹${formatCurrency(saved)}");
+                "Coupon applied! You saved ${money(saved)}");
           } else {
             showTopWhiteMessage(
                 response.message ?? "Coupon applied successfully!");
@@ -693,17 +715,32 @@ class WalkieOrderSummaryController extends GetxController {
 
       final rzp = createOrderRes.data?.razorpay;
       final payment = createOrderRes.data?.payment;
+      // Backend prefill (name, unmasked email, E.164 contact); storage fills gaps
+      final customer = createOrderRes.data?.customer;
 
       final String? rawPhone =
           Global.storageServices.get(PrefConst.userPhone)?.toString();
-      final String? userEmail =
+      final String? userEmail = customer?.email ??
           Global.storageServices.get(PrefConst.userEmail)?.toString();
-      final String? userName =
+      final String? userName = customer?.name ??
           Global.storageServices.get(PrefConst.userName)?.toString();
 
-      // Sanitize phone to valid 10-digit format for Razorpay
-      String? cleanPhone;
-      if (rawPhone != null && rawPhone.isNotEmpty) {
+      // INR orders use the Indian checkout (UPI first, 10-digit phone).
+      // Other currencies (USD → PayPal) use Razorpay's default checkout.
+      final bool isInr = CurrencyFormat.isInr(rzp?.currency ?? currencyCode);
+      final String method = isInr ? selectedPaymentMethod.value : '';
+
+      // 1. customer.contact from create-order: full E.164 (+14155552671),
+      //    needed for international cards (3DS2).
+      // 2. No usable contact (older user, no stored country code): the stored
+      //    phone is local only. INR → 10 digits (Razorpay reads it as +91).
+      //    Other currencies → left empty so checkout asks with its country
+      //    picker, instead of sending a wrong number.
+      String? cleanPhone = customer?.e164Contact;
+      if (cleanPhone == null &&
+          isInr &&
+          rawPhone != null &&
+          rawPhone.isNotEmpty) {
         final digits = rawPhone.replaceAll(RegExp(r'\D'), '');
         if (digits.length >= 10) {
           cleanPhone = digits.substring(digits.length - 10);
@@ -712,10 +749,19 @@ class WalkieOrderSummaryController extends GetxController {
         }
       }
 
-      // Determine amount in paise from backend API or fallback
+      // razorpay.amount is always in minor units (paise / cents). Fallback is
+      // the backend final amount in major units × 100.
+      final num fallbackMajor =
+          createOrderData.value?.pricing?.finalAmount ?? totalPayable;
       final int amountInPaise = rzp?.amount != null && (rzp!.amount! > 0)
           ? rzp.amount!.round()
-          : (totalPayable > 0 ? (totalPayable * 100).round() : 100);
+          : (fallbackMajor * 100).round();
+      if (amountInPaise <= 0) {
+        isProcessingPayment.value = false;
+        showTopWhiteMessage(
+            "Could not start the payment. Please try again.");
+        return;
+      }
 
       // Determine active Razorpay Key (Order response -> /api/initialize -> ConstRes fallback)
       final initPayment = Get.isRegistered<HomeController>()
@@ -748,29 +794,31 @@ class WalkieOrderSummaryController extends GetxController {
         'amount': amountInPaise,
         'name': 'FG MANPOWER LLP',
         'description': 'Walkie-Talkie Subscription',
-        'currency': rzp?.currency ?? 'INR',
+        'currency': CurrencyFormat.code(rzp?.currency ?? currencyCode),
         if (rzp?.orderId != null && rzp!.orderId!.isNotEmpty)
           'order_id': rzp.orderId!,
         'theme': {
           'color': '#5B4DF5',
         },
-        'config': _buildRazorpayConfig(),
+        // Custom blocks / method prefill only for INR. For other currencies
+        // they would push UPI / netbanking (INR only) and hide PayPal.
+        if (isInr) 'config': _buildRazorpayConfig(),
         'prefill': {
           if (cleanPhone != null && cleanPhone.isNotEmpty) 'contact': cleanPhone,
           if (userEmail != null && userEmail.isNotEmpty) 'email': userEmail,
           if (userName != null && userName.isNotEmpty) 'name': userName,
-          if (selectedPaymentMethod.value == 'upi') ...{
+          if (method == 'upi') ...{
             'method': 'upi',
             if (customUpiVpa.value.trim().isNotEmpty)
               'vpa': customUpiVpa.value.trim(),
           },
-          if (selectedPaymentMethod.value == 'card') 'method': 'card',
-          if (selectedPaymentMethod.value == 'netbanking') ...{
+          if (method == 'card') 'method': 'card',
+          if (method == 'netbanking') ...{
             'method': 'netbanking',
             if (selectedBank.value.isNotEmpty)
               'bank': _getRazorpayBankCode(selectedBank.value),
           },
-          if (selectedPaymentMethod.value == 'wallet') ...{
+          if (method == 'wallet') ...{
             'method': 'wallet',
             if (selectedWallet.value.isNotEmpty)
               'wallet': _getRazorpayWalletCode(selectedWallet.value),
@@ -786,17 +834,15 @@ class WalkieOrderSummaryController extends GetxController {
           'plan_id': planId.toString(),
           'duration': durationName,
           'memberCount': seats.toString(),
-          'selectedPaymentMode': selectedPaymentMethod.value,
+          'selectedPaymentMode': isInr ? method : 'international',
           if (payment?.orderId != null) 'backendOrderId': payment!.orderId!,
-          if (selectedPaymentMethod.value == 'upi') ...{
+          if (method == 'upi') ...{
             'upiApp': selectedUpiApp.value,
             if (customUpiVpa.value.trim().isNotEmpty)
               'upiVpa': customUpiVpa.value.trim(),
           },
-          if (selectedPaymentMethod.value == 'netbanking')
-            'bank': selectedBank.value,
-          if (selectedPaymentMethod.value == 'wallet')
-            'wallet': selectedWallet.value,
+          if (method == 'netbanking') 'bank': selectedBank.value,
+          if (method == 'wallet') 'wallet': selectedWallet.value,
           if (couponCode.isNotEmpty) 'couponCode': couponCode,
         },
       };
@@ -807,7 +853,9 @@ class WalkieOrderSummaryController extends GetxController {
 
       // Prepare user friendly payment method string
       String methodDesc = "Razorpay Payment";
-      if (selectedPaymentMethod.value == 'upi') {
+      if (!isInr) {
+        methodDesc = "International Card / PayPal";
+      } else if (method == 'upi') {
         if (selectedUpiApp.value == 'gpay') {
           methodDesc = "Google Pay (UPI)";
         } else if (selectedUpiApp.value == 'phonepe') {

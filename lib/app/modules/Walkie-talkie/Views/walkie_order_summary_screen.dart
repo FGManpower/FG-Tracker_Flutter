@@ -515,7 +515,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                           SizedBox(width: 4.w),
                           Flexible(
                             child: Text(
-                              "₹${controller.formatCurrency(rate)}",
+                              controller.money(rate),
                               style: TextStyle(
                                 fontSize: 12.5.sp,
                                 fontFamily: FontFamily.interBold,
@@ -556,8 +556,8 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     SizedBox(height: 2.h),
                     Text(
                       isMultiMember
-                          ? "$seats Members × ₹${controller.formatCurrency(rate)}"
-                          : "1 Member × ₹${controller.formatCurrency(rate)}",
+                          ? "$seats Members × ${controller.money(rate)}"
+                          : "1 Member × ${controller.money(rate)}",
                       style: TextStyle(
                         fontSize: 11.5.sp,
                         fontFamily: FontFamily.interRegular,
@@ -571,7 +571,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                   children: [
                     if (isDiscounted) ...[
                       Text(
-                        "₹${controller.formatCurrency(rate * seats)}",
+                        controller.money(rate * seats),
                         style: TextStyle(
                           fontSize: 11.5.sp,
                           fontFamily: FontFamily.interMedium,
@@ -581,7 +581,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                       ),
                     ],
                     Text(
-                      "₹${controller.formatCurrency(planAmount)}",
+                      controller.money(planAmount),
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontFamily: FontFamily.interBold,
@@ -897,7 +897,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                   ),
                 ),
                 Text(
-                  "₹${controller.formatCurrency(planAmount)}",
+                  controller.money(planAmount),
                   style: TextStyle(
                     fontSize: 12.5.sp,
                     fontFamily: FontFamily.interMedium,
@@ -925,7 +925,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     ),
                   ),
                   Text(
-                    "- ₹${controller.formatCurrency(discount)}",
+                    "- ${controller.money(discount)}",
                     style: TextStyle(
                       fontSize: 12.5.sp,
                       fontFamily: FontFamily.interBold,
@@ -951,7 +951,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     ),
                   ),
                   Text(
-                    "₹${controller.formatCurrency(amountAfterDiscount)}",
+                    controller.money(amountAfterDiscount),
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontFamily: FontFamily.interMedium,
@@ -977,7 +977,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     ),
                   ),
                   Text(
-                    "+ ₹${controller.formatCurrency(gstAmount)}",
+                    "+ ${controller.money(gstAmount)}",
                     style: TextStyle(
                       fontSize: 12.5.sp,
                       fontFamily: FontFamily.interMedium,
@@ -1006,7 +1006,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                   ),
                 ),
                 Text(
-                  "₹${controller.formatCurrency(totalPayable)}",
+                  controller.money(totalPayable),
                   style: TextStyle(
                     fontSize: 20.sp,
                     fontFamily: FontFamily.interBold,
@@ -1037,7 +1037,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     SizedBox(width: 6.w),
                     Expanded(
                       child: Text(
-                        "You saved ₹${controller.formatCurrency(totalSaving)} on this order!",
+                        "You saved ${controller.money(totalSaving)} on this order!",
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interBold,
@@ -1056,7 +1056,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
   }
 
   String _getDynamicPayButtonLabel(num totalPayable) {
-    final formattedAmt = "₹${controller.formatCurrency(totalPayable)}";
+    final formattedAmt = controller.money(totalPayable);
     return "Proceed to Pay • $formattedAmt";
   }
 

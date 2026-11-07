@@ -75,8 +75,6 @@ class _WalkieTalkiePurchaseSuccessScreenState
   static const Color _greenBadgeBg = AppColors.greenLight;
   static const Color _greenBadgeText = AppColors.primaryElementStatus;
 
-  String _formatAmount(num amount) => controller.formatAmount(amount);
-
   @override
   void initState() {
     super.initState();
@@ -555,7 +553,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    amountPaid > 0 ? "₹${_formatAmount(amountPaid)}" : "₹${_formatAmount(499)}",
+                    controller.money(amountPaid > 0 ? amountPaid : 499),
                     style: TextStyle(
                       fontSize: 22.sp,
                       fontFamily: FontFamily.interBold,

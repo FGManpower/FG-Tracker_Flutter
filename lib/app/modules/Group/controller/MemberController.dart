@@ -7,7 +7,7 @@ import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
-import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/app/modules/Group/widgets/group_membership_sheet.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
@@ -163,7 +163,10 @@ class MemberController extends GetxController {
       onCompletion: (success) {
         if (success) {
           Utils().fluttertoast("Group deleted successfully");
-          Get.offAllNamed(Routes.Home_Screen);
+          // Same rule as exit (chat guide §2.11): back to the nearest start
+          // screen (Chat List / All Groups / Walkie select / Home); the
+          // deleted group is removed from the list and the list refreshed.
+          GroupMembershipSheet.navigateAfterLeave(groupId: groupId);
         }
       },
     );

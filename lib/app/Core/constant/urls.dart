@@ -20,6 +20,9 @@ class Urls {
       '${ConstRes.aBaseUrl}v2/otp-charge/payment-success';
   static const String otpChargePaymentFailed =
       '${ConstRes.aBaseUrl}v2/otp-charge/payment-failed';
+  // Logged in: OTP price for the user's own number (side-menu screen)
+  static const String otpChargeMyRate =
+      '${ConstRes.aBaseUrl}v2/otp-charge/my-rate';
   static const String updateProfile = '${ConstRes.aBaseUrl}updateProfile';
   static const String banner = '${ConstRes.aBaseUrl}banners';
   static const String getAllGroup = '${ConstRes.aBaseUrl}get-all-group';
