@@ -355,3 +355,29 @@ To ensure all OTP verification charges cover delivery costs and generate a profi
    - International users are billed in foreign currency (`USD`).
    - The server dynamically converts the INR wholesale rate to USD via `FX_USD_INR_RATE` (`85.00`).
    - Enforces a minimum floor of **`$1.00 USD`** (`OTP_CHARGE_DEFAULT_USD_PRICE=1.00`). No international user is charged less than $1.00 USD.
+
+---
+
+## 9. Country-to-Currency Mapping & Smart Regional Plan Fallback
+
+### A. Dial Code vs. Local Currency Matching
+Users are identified by their phone dialing prefix (or `req.user.countryCode`):
+
+| Country | Dial Code | ISO Currency | Example Pricing |
+| :--- | :---: | :---: | :--- |
+| **India** | `+91` | `INR` | ₹500 / month |
+| **Saudi Arabia** | `+966` | `SAR` | SAR 20.99 / month |
+| **United Arab Emirates** | `+971` | `AED` | AED 22.00 / month |
+| **Kuwait** | `+965` | `KWD` | KWD 2.00 / month |
+| **Qatar** | `+974` | `QAR` | QAR 22.00 / month |
+| **United Kingdom** | `+44` | `GBP` | £4.99 / month |
+| **Eurozone** | `+33`, `+49`, `+39`, `+34`, etc. | `EUR` | €5.49 / month |
+| **USA / Canada / Global** | `+1`, etc. | `USD` | $5.99 / month |
+
+### B. Important Distinction: `+971` (UAE) vs `+966` (Saudi Arabia)
+- `+971` belongs to the **United Arab Emirates** (Currency: `AED`).
+- `+966` belongs to the **Kingdom of Saudi Arabia** (Currency: `SAR`).
+- If an admin creates a `SAR` plan (e.g. `SAR 20.99`), logging in with a `+971` number identifies the user as UAE (`AED`).
+- Because no `AED` plan exists yet in the database, the server activates **Smart Fallback** to `USD` ($).
+- When logging in with a `+966` Saudi number, the server detects `SAR` and immediately returns the `SAR 20.99` plan!
+- To display local currency for `+971` users as well, simply create an `AED` plan in the Walkie Plan admin panel.

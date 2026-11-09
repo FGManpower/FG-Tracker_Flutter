@@ -40,6 +40,12 @@ class WalkieTalkiePurchaseSuccessController extends GetxController {
     String? transactionTimeVal,
   }) {
     if (isTeamVal != null) isTeam.value = isTeamVal;
+    if (memberCountVal != null &&
+        memberCountVal <= 1 &&
+        planTitleVal != null &&
+        planTitleVal.toLowerCase().contains("individual")) {
+      isTeam.value = false;
+    }
     if (planTitleVal != null && planTitleVal.isNotEmpty) {
       planTitle.value = planTitleVal;
     }

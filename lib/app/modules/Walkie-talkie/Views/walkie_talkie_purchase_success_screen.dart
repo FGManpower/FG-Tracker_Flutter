@@ -57,7 +57,19 @@ class _WalkieTalkiePurchaseSuccessScreenState
   late final Animation<double> _contentFade;
   late final Animation<Offset> _contentSlide;
 
-  bool get isTeam => controller.isTeam.value;
+  bool get isTeam {
+    if (widget.isTeam == false) return false;
+    if (controller.isTeam.value == false) return false;
+    if (controller.memberCount.value <= 1 &&
+        controller.planTitle.value.toLowerCase().contains("individual")) {
+      return false;
+    }
+    if (widget.memberCount <= 1 &&
+        widget.planTitle.toLowerCase().contains("individual")) {
+      return false;
+    }
+    return controller.isTeam.value;
+  }
   String get planTitle => controller.planTitle.value;
   int get memberCount => controller.memberCount.value;
   String get validTill => controller.validTill.value.isNotEmpty ? controller.validTill.value : widget.validTill;
@@ -83,6 +95,10 @@ class _WalkieTalkiePurchaseSuccessScreenState
         : Get.put(RazorpayPaymentController());
 
     controller.isTeam.value = widget.isTeam;
+    if (widget.memberCount <= 1 &&
+        widget.planTitle.toLowerCase().contains("individual")) {
+      controller.isTeam.value = false;
+    }
     controller.planTitle.value = widget.planTitle;
     controller.memberCount.value = widget.memberCount;
     if (widget.validTill.isNotEmpty) controller.validTill.value = widget.validTill;
@@ -240,7 +256,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                                 Text(
                                   isTeam
                                       ? "Your Team Plan is now active"
-                                      : "Your Plan is now active",
+                                      : "Your Individual Plan is now active",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 12.5.sp.clamp(11.0, 14.0),
@@ -325,7 +341,13 @@ class _WalkieTalkiePurchaseSuccessScreenState
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           IconButton(
-            onPressed: () => _showNotNowBottomSheet(context),
+            onPressed: () {
+              if (isTeam) {
+                _showNotNowBottomSheet(context);
+              } else {
+                controller.navigateToHome();
+              }
+            },
             icon: Icon(
               Icons.close_rounded,
               color: _textSecondary,
@@ -908,7 +930,13 @@ class _WalkieTalkiePurchaseSuccessScreenState
   // ==========================================
   Widget _buildWhatsNextCard(BuildContext context) {
     return GestureDetector(
-      onTap: () => _navigateToAssignMembers(),
+      onTap: () {
+        if (isTeam) {
+          _navigateToAssignMembers();
+        } else {
+          controller.navigateToHome();
+        }
+      },
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
@@ -948,7 +976,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                   ),
                   SizedBox(height: 3.h),
                   Text(
-                    "Assign Walkie Access",
+                    isTeam ? "Assign Walkie Access" : "Start Communicating",
                     style: TextStyle(
                       fontSize: 14.5.sp.clamp(13.5, 16.0),
                       fontFamily: FontFamily.interBold,
@@ -957,7 +985,9 @@ class _WalkieTalkiePurchaseSuccessScreenState
                   ),
                   SizedBox(height: 3.h),
                   Text(
-                    "Select team members who will use Walkie Talkie.",
+                    isTeam
+                        ? "Select team members who will use Walkie Talkie."
+                        : "Your individual plan is active. Head to home and start talking.",
                     style: TextStyle(
                       fontSize: 11.5.sp.clamp(10.5, 12.5),
                       fontFamily: FontFamily.interRegular,
@@ -1016,6 +1046,39 @@ class _WalkieTalkiePurchaseSuccessScreenState
   // TIMELINE / STEPPER (1, 2, 3)
   // ==========================================
   Widget _buildTimelineStepper() {
+    if (!isTeam) {
+      return Column(
+        children: [
+          // Step 1
+          _buildTimelineStepItem(
+            stepNumber: "1",
+            title: "Access Activated",
+            subtitle: "Your personal Walkie-Talkie access is active now.",
+            isCompletedOrActive: true,
+            showConnector: true,
+          ),
+
+          // Step 2
+          _buildTimelineStepItem(
+            stepNumber: "2",
+            title: "Select Channel",
+            subtitle: "Join any group or channel to connect with members.",
+            isCompletedOrActive: false,
+            showConnector: true,
+          ),
+
+          // Step 3
+          _buildTimelineStepItem(
+            stepNumber: "3",
+            title: "Start Communicating",
+            subtitle: "Push to talk and connect instantly with your team.",
+            isCompletedOrActive: false,
+            showConnector: false,
+          ),
+        ],
+      );
+    }
+
     return Column(
       children: [
         // Step 1
@@ -1148,7 +1211,9 @@ class _WalkieTalkiePurchaseSuccessScreenState
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
-              "You can manage or change Walkie access anytime from Team Settings.",
+              isTeam
+                  ? "You can manage or change Walkie access anytime from Team Settings."
+                  : "Your individual subscription is active and linked directly to your account.",
               style: TextStyle(
                 fontSize: 11.sp.clamp(10.0, 12.0),
                 fontFamily: FontFamily.interMedium,
@@ -1163,9 +1228,60 @@ class _WalkieTalkiePurchaseSuccessScreenState
   }
 
   // ==========================================
-  // BOTTOM BAR (Assign Members + Maybe Later)
+  // BOTTOM BAR (Assign Members + Maybe Later OR Visit Home Screen)
   // ==========================================
   Widget _buildBottomBar(BuildContext context, bool isWideScreen) {
+    if (!isTeam) {
+      // Individual Plan: Single "Visit Home Screen" Button
+      return Container(
+        padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 14.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, -3),
+            ),
+          ],
+        ),
+        child: SizedBox(
+          width: double.infinity,
+          height: 44.h.clamp(40.0, 48.0),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _primaryPurple,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              elevation: 0,
+            ),
+            onPressed: () => controller.navigateToHome(),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Visit Home Screen",
+                  style: TextStyle(
+                    fontSize: 14.5.sp.clamp(13.0, 16.0),
+                    fontFamily: FontFamily.interBold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.white,
+                  size: 17.sp.clamp(15.0, 19.0),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Team Plan: Primary "Assign Members" + Secondary "Maybe Later"
     return Container(
       padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 14.h),
       decoration: BoxDecoration(

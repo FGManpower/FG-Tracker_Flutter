@@ -251,6 +251,17 @@ final options = {
 
 ---
 
+### 5.6 Country-to-Currency Resolution & Dynamic Plan Fallback
+- GET /api/walkie/plans dynamically determines currency from the authenticated user's countryCode:
+  * +966 -> SAR (Saudi Arabia)
+  * +971 -> AED (United Arab Emirates)
+  * +91 -> INR (India)
+  * +44 -> GBP (UK), etc.
+- **Resilient Fallback:** If a user logs in from a country with no custom local currency plans created in the database yet (e.g. +971 user when only SAR, INR, and USD plans exist), the backend automatically falls back to USD so plans are always available.
+- **Frontend Display:** CurrencyFormat.symbol(plan.currency) formats the currency dynamically (SAR 20.99, AED 22.00, ₹500, $5.99). No client-side hardcoding needed.
+
+---
+
 ## 6. Change log
 | Version | Date | Change |
 |---|---|---|
