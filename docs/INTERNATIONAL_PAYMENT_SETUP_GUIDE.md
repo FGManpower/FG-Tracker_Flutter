@@ -231,10 +231,127 @@ Specific migrations executed:
 
 | Test Case | Test Input | Expected Currency | Expected Tax (GST) | Expected Checkout Options | Result |
 |---|---|:---:|:---:|---|:---:|
-| **1. Argentina Login OTP** | `+5491112345678` | **`USD`** | **0%** ($0.00) | Amount: `50` cents, Currency: `USD`. Opens PayPal + Cards. | ✅ **PASS** |
+| **1. Argentina Login OTP** | `+5491112345678` | **`USD`** | **0%** ($0.00) | Amount: `100` cents ($1.00), Currency: `USD`. Opens PayPal + Cards. | ✅ **PASS** |
 | **2. India Login OTP** | `+919876543210` | **`INR`** | **0%** (Free) | No charge screen. OTP sent immediately. | ✅ **PASS** |
 | **3. Argentina Walkie Plans** | User `countryCode: "+54"` | **`USD`** | **0%** ($0.00) | Returns USD plans: $5.99, $9.99, $19.99. | ✅ **PASS** |
 | **4. India Walkie Plans** | User `countryCode: "+91"` | **`INR`** | **18%** (₹90.00) | Returns INR plans: ₹500, ₹750, ₹1,500 + 18% GST. | ✅ **PASS** |
 | **5. Order Summary (Intl)** | Plan ID 5 ($5.99 USD) | **`USD`** | **0%** ($0.00) | `subtotal: 5.99`, `gstAmount: 0.00`, `finalAmount: 5.99`. | ✅ **PASS** |
 | **6. Create-Order Prefill** | International User | **`USD`** | — | `contact: "+5491112345678"`, `countryCode: "+54"`. | ✅ **PASS** |
 
+---
+
+## 5. Architectural Deep-Dive: Common Questions & Mechanics
+
+### Q1: How Does Currency Conversion Work? (Backend vs. Frontend vs. Gateway)
+
+```
++-----------------------------------------------------------------------------------------+
+|                                THREE-TIER CURRENCY ENGINE                               |
++-----------------------------------------------------------------------------------------+
+|  [ BACKEND: Catalog Pricing ]                                                           |
+|  - Does NOT perform runtime forex conversion.                                           |
+|  - Maintains native price tiers per region (India: INR ₹, Global: USD $).               |
+|  - Sends native currency and minor units (cents/paise) to client.                       |
+|                             ↓                                                           |
+|  [ FRONTEND (Flutter): Dynamic Rendering ]                                              |
+|  - Does NOT calculate exchange rates.                                                   |
+|  - Formats currency symbols dynamically via `CurrencyFormat.symbol(currency)`.          |
+|  - Hands the exact `amount` (minor units) and `currency` into Razorpay SDK.             |
+|                             ↓                                                           |
+|  [ GATEWAY (Razorpay): Cross-Border Billing & Settlement ]                              |
+|  - Bills the international customer in USD (or PayPal / Visa / Mastercard / Amex).      |
+|  - Converts USD to INR at live RBI-approved interbank exchange rates at settlement.    |
+|  - Deposits INR directly into your Indian Current Bank Account.                         |
+|  - Generates automated Foreign Inward Remittance Statements (FIRS / FIRC).              |
++-----------------------------------------------------------------------------------------+
+```
+
+#### How to Add More Currencies (e.g. EUR, GBP, AED):
+1. **Walkie-Talkie Plans:** Simply insert a row into `walkie_plans` with `currency = 'EUR'` or `'GBP'` and the desired price. Razorpay automatically opens checkout in that currency.
+2. **OTP Charges:** The system default is `USD` for all non-India numbers. To add country-specific overrides, set them in `otp_charge_configs` with the country prefix and currency code.
+
+---
+
+### Q2: Why Did Argentina (+54) See $0.50 on Screen, but Razorpay Showed $1.00?
+
+1. **Root Cause (Razorpay Sandbox Mock Card Simulator):**
+   - In Razorpay **Test Mode**, the mock 3D Secure card challenge simulator uses a hardcoded default pre-authorization authorization hold of **USD 1.00** across all mock international cards.
+   - The backend order was successfully created with `amount: 50` ($0.50 USD) and verified in the Razorpay API logs.
+2. **Production Behavior (Live Mode):**
+   - In **Live Mode**, the actual customer's card or PayPal account is charged the exact order amount ($0.50 USD).
+3. **Recommendation on Floor Limits:**
+   - Some international banks and credit card networks impose a minimum transaction floor limit of $0.50 to $1.00 to prevent micro-fraud.
+   - If you prefer charging $1.00 instead of $0.50 for international OTP verification, set `OTP_CHARGE_DEFAULT_USD_PRICE=1.00` in `.env`.
+
+---
+
+### Q3: How Is International Tax (GST) Legally Handled?
+
+1. **Domestic India Transactions (`+91` / `INR`):**
+   - **18% GST** applies (CGST 9% + SGST 9% for intra-state, or IGST 18% for inter-state).
+   - Invoices include standard GST breakdown.
+2. **International Cross-Border Transactions (Outside India / `USD`):**
+   - Under **Section 2(6)** and **Section 16** of the Integrated Goods and Services Tax (IGST) Act, 2017, software SaaS subscriptions supplied to recipients outside India qualify as **Zero-Rated Supplies (0% GST)**.
+   - To legally avail 0% GST without paying IGST upfront, Indian businesses file an annual **Letter of Undertaking (LUT Form GST RFD-11)** on the GST portal (`services.gst.gov.in`).
+   - The backend automatically applies `gstPercent = 0` and `gstAmount = 0.00` whenever `currency !== 'INR'` or the user is outside India.
+
+---
+
+### Q4: Why Does the International Checkout Display "VAT / Tax" or "0% Tax" Instead of "GST"?
+
+1. **Avoid Customer Confusion:**
+   - "GST" stands for Goods and Services Tax, which international users (in the US, UK, Europe, Latin America) associate with an Indian domestic tax.
+   - If an international user paying in USD sees "GST 18%" or "GST 5%", they are likely to abandon the checkout because they expect to pay local prices or zero-rated export prices.
+2. **Dynamic Screen Titles in Flutter:**
+   - **For Domestic (INR):** Screen displays `GST (18%)` (or `Taxes & GST (18%)`).
+   - **For International (USD, EUR, AED, etc.):**
+     - If local tax applies (e.g. 5% UAE VAT): Screen displays `VAT / Tax (5%)`.
+     - If standard Zero-Rated Export applies (0% Tax under LUT RFD-11): Screen displays `Tax (0% Export): $0.00` so the customer clearly sees that 0% tax was charged.
+3. **Statutory Alignment:**
+   - Both backend `pricing.taxName` and Flutter controllers (`taxTitle`) use `VAT / Tax` for foreign currency orders and `GST` for domestic INR orders.
+
+---
+
+## 6. Walkie-Talkie Multi-Currency Plan Management (Admin Panel)
+
+The admin panel supports creating, viewing, and editing subscription plans across multiple regional currencies without cross-currency collisions.
+
+### A. Database Uniqueness Architecture
+- A Walkie plan is unique per composite tuple: **`(planType, billingInterval, currency)`**.
+- Example of co-existing active plans:
+  * `individual` / `monthly` / `INR` $ightarrow$ `₹500`
+  * `individual` / `monthly` / `USD` $ightarrow$ `$5.99`
+  * `individual` / `monthly` / `EUR` $ightarrow$ `€5.49`
+  * `individual` / `monthly` / `AED` $ightarrow$ `د.إ 22.00`
+
+### B. Admin Form & Plan Editing
+- Navigating to `/admin/walkie/plans/create` or `/admin/walkie/plans/:id/edit` provides a target currency selector.
+- When editing a plan, the existing currency is strictly preserved.
+- Toggling status (`Activate / Deactivate`) safely toggles the plan without false duplicate errors.
+
+---
+
+## 7. Razorpay Test Mode Card Reference Guide
+
+When testing in sandbox, card origin determines checkout validation rules:
+
+| Card Type | Card Number | Expiry | CVV | OTP | Suitable For |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **International (Mastercard)** | `5104 0155 5555 5558` | Future (e.g. `12/28`) | `123` | `123456` | **All international orders (USD, EUR, etc.)**; skips RBI tokenization. |
+| **International (Visa)** | `4012 0010 3714` | Future (e.g. `12/28`) | `123` | `123456` | International card testing. |
+| **Domestic India (Visa)** | `4100 2800 0000 1007` | Future (e.g. `12/28`) | `123` | Any | **Domestic INR orders only.** Entering on USD orders causes *"Your payment amount is different from your order amount"*. |
+
+---
+
+## 8. OTP Service Charges Profitability & Floor Model
+
+To ensure all OTP verification charges cover delivery costs and generate a profit:
+
+1. **Wholesale Rate Adjustments:**
+   - Any base carrier rate below `1.00` is automatically adjusted to a floor of at least `1.00`.
+   - A service charge markup of **`+2.00 INR`** is added to all 369 country prefixes in the seeder.
+   - Lowest stored price in the database is `₹3.00 INR` (up from `₹0.25`).
+2. **Server-Side International Currency Floor:**
+   - International users are billed in foreign currency (`USD`).
+   - The server dynamically converts the INR wholesale rate to USD via `FX_USD_INR_RATE` (`85.00`).
+   - Enforces a minimum floor of **`$1.00 USD`** (`OTP_CHARGE_DEFAULT_USD_PRICE=1.00`). No international user is charged less than $1.00 USD.
