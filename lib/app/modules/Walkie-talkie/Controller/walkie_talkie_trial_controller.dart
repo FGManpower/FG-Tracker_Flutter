@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/util/currency_format.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -203,26 +204,17 @@ class WalkieTalkieTrialController extends GetxController
   String get priceLabel {
     if (availableIndividualPlans.isNotEmpty) {
       final p = availableIndividualPlans.first.pricePerMember;
-      final formatted = p == p.roundToDouble()
-          ? p.toStringAsFixed(0)
-          : p.toStringAsFixed(2);
       final currency = availableIndividualPlans.first.currency;
-      return currency.toUpperCase() == 'INR' ? '₹$formatted' : '$currency $formatted';
+      return CurrencyFormat.format(p, currency);
     }
 
     final amount = pricing?.price;
     if (amount == null || amount <= 0) {
       return '₹999';
     }
-    final formatted = amount == amount.roundToDouble()
-        ? amount.toStringAsFixed(0)
-        : amount.toStringAsFixed(2);
 
     final currency = pricing?.currency ?? 'INR';
-    if (currency.toUpperCase() == 'INR') {
-      return '₹$formatted';
-    }
-    return '$currency $formatted';
+    return CurrencyFormat.format(amount, currency);
   }
 
   String get priceTypeLabel {

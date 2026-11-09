@@ -7,7 +7,7 @@ class WalkiePaymentOrderModel {
   final String durationName;
   final int durationMonths;
   final int memberCount;
-  final int ratePerMember;
+  final num ratePerMember;
   final num planAmount;
   final num couponDiscount;
   final String? appliedCouponCode;
@@ -36,7 +36,7 @@ class WalkiePaymentOrderModel {
     String? durationName,
     int? durationMonths,
     int? memberCount,
-    int? ratePerMember,
+    num? ratePerMember,
     num? planAmount,
     num? couponDiscount,
     String? appliedCouponCode,

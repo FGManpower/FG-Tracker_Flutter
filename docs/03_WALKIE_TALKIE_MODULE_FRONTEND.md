@@ -254,6 +254,7 @@ final options = {
 ## 6. Change log
 | Version | Date | Change |
 |---|---|---|
+| v1.7.0 | 2026-11-09 | Production International Payment Gateway readiness verified: Flutter models (WalkiePlanItem, WalkiePaymentOrderModel, plan controller) updated to num for decimal pricing (.99 / .99 / .99); dynamic CurrencyFormat integrated across all screens; razorpay_payment_screen passes plan currency to Razorpay SDK. |
 | v1.6.0 | 2026-11-08 | Multi-currency Walkie plans shipped: `GET walkie/plans` auto-detects international users by `countryCode` and serves USD plans ($5.99 / $9.99 / $19.99); zero-rated 0% export GST applied under LUT RFD-11; verified with Argentina (`+54`) & USA (`+1`). |
 | v1.5.0 | 2026-11-07 | Backend shipped §5.5: added `customer` object (E.164 `contact`, `countryCode`, `name`, `email`) to create-order response, added `countryCode` column to `users`, and backfilled Indian 10-digit users. |
 | v1.4.0 | 2026-11-07 | Client fixes (§5.2): Order Summary shows the order currency; non-INR orders open the default checkout (PayPal visible, no UPI forcing, no wrong phone); amount fallback uses `pricing.finalAmount` and never charges a placeholder. |

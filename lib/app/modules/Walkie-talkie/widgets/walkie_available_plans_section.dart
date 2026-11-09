@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/util/currency_format.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Model/walkie_talkie_trial_details_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
@@ -178,7 +179,7 @@ class WalkieAvailablePlansSection extends StatelessWidget {
     final formattedPrice = plan.pricePerMember == plan.pricePerMember.roundToDouble()
         ? plan.pricePerMember.toStringAsFixed(0)
         : plan.pricePerMember.toStringAsFixed(2);
-    final currencySymbol = plan.currency.toUpperCase() == 'INR' ? '₹' : '${plan.currency} ';
+    final currencySymbol = CurrencyFormat.symbol(plan.currency);
     final interval = plan.billingInterval.isNotEmpty
         ? (plan.billingInterval[0].toUpperCase() + plan.billingInterval.substring(1))
         : "Monthly";

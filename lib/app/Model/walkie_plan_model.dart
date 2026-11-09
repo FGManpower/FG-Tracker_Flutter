@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/Core/util/currency_format.dart';
+
 class WalkiePlansResponseModel {
   bool? status;
   String? message;
@@ -66,7 +68,7 @@ class WalkiePlanItem {
   String? planType;
   String? billingInterval;
   int? durationMonths;
-  int? pricePerMember;
+  num? pricePerMember;
   String? currency;
   int? minMembers;
   int? maxMembers;
@@ -97,11 +99,9 @@ class WalkiePlanItem {
     durationMonths = json['durationMonths'] is int
         ? json['durationMonths']
         : int.tryParse(json['durationMonths']?.toString() ?? '');
-    pricePerMember = json['pricePerMember'] is int
-        ? json['pricePerMember']
-        : (json['pricePerMember'] is num
-            ? (json['pricePerMember'] as num).toInt()
-            : int.tryParse(json['pricePerMember']?.toString() ?? ''));
+    pricePerMember = json['pricePerMember'] is num
+        ? (json['pricePerMember'] as num)
+        : num.tryParse(json['pricePerMember']?.toString() ?? '');
     currency = json['currency']?.toString() ?? 'INR';
     minMembers = json['minMembers'] is int
         ? json['minMembers']
@@ -155,9 +155,9 @@ class WalkiePlanItem {
     return "Duration";
   }
 
-  String get formattedPrice => "₹${pricePerMember ?? 0}";
+  String get formattedPrice => CurrencyFormat.format(pricePerMember ?? 0, currency);
 
-  int get safePrice => pricePerMember ?? 0;
+  num get safePrice => pricePerMember ?? 0;
 
   int get safeMinMembers => (minMembers != null && minMembers! > 0) ? minMembers! : 1;
 

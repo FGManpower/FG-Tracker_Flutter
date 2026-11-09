@@ -1439,9 +1439,9 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   Widget _buildTeamSummaryCard() {
     return Obx(() {
       final String durationName = controller.durationName;
-      final int ratePerMember = controller.ratePerMember;
+      final num ratePerMember = controller.ratePerMember;
       final int memberCount = controller.teamMemberCount.value;
-      final int originalTotal = controller.originalTotal;
+      final num originalTotal = controller.originalTotal;
       final num discountedTotal = controller.discountedTotal;
       final num couponDiscount = controller.couponDiscountAmount;
       final String? promoCode = controller.appliedPromoCode.value;

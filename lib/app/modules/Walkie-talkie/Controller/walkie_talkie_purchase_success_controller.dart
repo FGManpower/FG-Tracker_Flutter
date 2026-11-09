@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/util/currency_format.dart';
 import 'package:fgtracker/app/Data/Services/walkie_talkie_trial_service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_trial_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
@@ -106,7 +107,7 @@ class WalkieTalkiePurchaseSuccessController extends GetxController {
     final receiptText =
         "FG Tracker Payment Receipt\n"
         "Plan: ${planTitle.value}\n"
-        "Amount: ₹${formatAmount(amountPaid.value > 0 ? amountPaid.value : 499)}\n"
+        "Amount: ${CurrencyFormat.format(amountPaid.value > 0 ? amountPaid.value : 499, 'INR')}\n"
         "Payment ID: ${paymentId.value}\n"
         "${orderId.value != null && orderId.value!.isNotEmpty ? 'Order ID: ${orderId.value}\n' : ''}"
         "Date: ${transactionTime.value}\n"

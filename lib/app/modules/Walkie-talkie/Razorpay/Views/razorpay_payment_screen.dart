@@ -62,6 +62,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
 
     final options = RazorpayPaymentOptions(
       amount: widget.totalAmount,
+      currency: widget.order.plan?.currency ?? 'INR',
       name: "FG Tracker",
       description: "${widget.order.planTitle} (${widget.order.durationName})",
       prefillContact: userPhone,
@@ -364,7 +365,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
                 ),
               ),
               Text(
-                "₹${_formatCurrency(widget.totalAmount)}",
+                controller.money(widget.totalAmount),
                 style: TextStyle(
                   fontSize: 19.sp,
                   fontFamily: FontFamily.interBold,
@@ -692,7 +693,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        "Pay ₹${_formatCurrency(widget.totalAmount)} via Razorpay",
+                        "Pay ${controller.money(widget.totalAmount)} via Razorpay",
                         style: TextStyle(
                           fontSize: 15.sp.clamp(14.0, 16.5),
                           fontFamily: FontFamily.interBold,

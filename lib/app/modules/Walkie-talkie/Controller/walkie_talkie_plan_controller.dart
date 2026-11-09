@@ -94,7 +94,7 @@ class WalkieTalkiePlanController extends GetxController {
     }
   }
 
-  int get ratePerMember {
+  num get ratePerMember {
     if (activeGroupPlan != null) {
       return activeGroupPlan!.safePrice;
     }
@@ -110,7 +110,7 @@ class WalkieTalkiePlanController extends GetxController {
     }
   }
 
-  int get originalTotal => teamMemberCount.value * ratePerMember;
+  num get originalTotal => teamMemberCount.value * ratePerMember;
 
   num get currentSubtotal {
     if (appliedCouponData.value?.pricing?.subtotal != null) {

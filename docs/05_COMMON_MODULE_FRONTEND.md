@@ -394,3 +394,20 @@ Screen sharing is initiated and controlled over the calling socket connection:
 - **Stop Screen Sharing:**
   - Client emits `stop_screen_share` `{ callId, remoteUserId }`.
   - Server broadcasts `screen_share_stopped` to both participants.
+
+
+---
+
+## 6. International Payment Architecture & Changelog
+
+### 6.1 Architecture Summary
+- **Login OTP Charges & Walkie Plans**: Both modules fully support dynamic currency (India = INR ₹, International = USD $).
+- **Payment Gateway**: Razorpay receives native currency and minor units (cents / paise). For USD, PayPal and international cards are automatically enabled.
+- **Taxation (GST)**: International transactions are zero-rated (0% GST) under Section 16 of the IGST Act with Letter of Undertaking (LUT Form GST RFD-11). Domestic Indian transactions are charged 18% GST.
+- **Razorpay Sandbox Simulator Note**: In Razorpay Test Mode, the mock card simulator uses a default pre-auth authorization hold of USD 1.00 for card testing; production live mode charges the exact order amount ($0.50 USD).
+
+### 6.2 Change Log
+| Version | Date | Description |
+|---|---|---|
+| v2.1.0 | 2026-11-09 | Production International Payment Gateway verified across both Node.js backend and Flutter frontend; Flutter models updated for decimal plan pricing ($5.99 / $9.99 / $19.99); CurrencyFormat integrated across all payment views; 0% export GST & USD Razorpay orders documented. |
+| v2.0.0 | 2026-11-08 | Added GET `v2/otp-charge/my-rate` endpoint for dynamic side-menu rate; updated OTP token lifetime to 30 mins with grace period; verified 4-digit OTP format. |
