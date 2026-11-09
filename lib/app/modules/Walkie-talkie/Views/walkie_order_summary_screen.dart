@@ -707,29 +707,48 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
               child: const Divider(height: 1, color: Color(0xFFF1F5F9)),
             ),
 
-            // Supported Payment Options Pills Row
+            // Supported Payment Options Pills Row (Domestic: UPI/Cards/NetBanking/Wallets; Intl: Cards/PayPal/3DS2)
             Row(
-              children: [
-                _buildSupportedMethodBadge(
-                  icon: Icons.bolt_rounded,
-                  label: "UPI / QR",
-                ),
-                SizedBox(width: 6.w),
-                _buildSupportedMethodBadge(
-                  icon: Icons.credit_card_rounded,
-                  label: "Cards",
-                ),
-                SizedBox(width: 6.w),
-                _buildSupportedMethodBadge(
-                  icon: Icons.account_balance_rounded,
-                  label: "NetBanking",
-                ),
-                SizedBox(width: 6.w),
-                _buildSupportedMethodBadge(
-                  icon: Icons.account_balance_wallet_rounded,
-                  label: "Wallets",
-                ),
-              ],
+              children: controller.isDomestic
+                  ? [
+                      _buildSupportedMethodBadge(
+                        icon: Icons.bolt_rounded,
+                        label: "UPI / QR",
+                      ),
+                      SizedBox(width: 6.w),
+                      _buildSupportedMethodBadge(
+                        icon: Icons.credit_card_rounded,
+                        label: "Cards",
+                      ),
+                      SizedBox(width: 6.w),
+                      _buildSupportedMethodBadge(
+                        icon: Icons.account_balance_rounded,
+                        label: "NetBanking",
+                      ),
+                      SizedBox(width: 6.w),
+                      _buildSupportedMethodBadge(
+                        icon: Icons.account_balance_wallet_rounded,
+                        label: "Wallets",
+                      ),
+                    ]
+                  : [
+                      _buildSupportedMethodBadge(
+                        icon: Icons.credit_card_rounded,
+                        label: "Cards",
+                      ),
+                      if (controller.currencyCode == 'USD') ...[
+                        SizedBox(width: 6.w),
+                        _buildSupportedMethodBadge(
+                          icon: Icons.account_balance_wallet_rounded,
+                          label: "PayPal",
+                        ),
+                      ],
+                      SizedBox(width: 6.w),
+                      _buildSupportedMethodBadge(
+                        icon: Icons.shield_rounded,
+                        label: "3DS2 Secure",
+                      ),
+                    ],
             ),
 
             SizedBox(height: 12.h),
@@ -780,7 +799,9 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
-                        "Choose from GPay, PhonePe, Cards, NetBanking or Wallets on next step.",
+                        controller.isDomestic
+                            ? "Choose from GPay, PhonePe, Cards, NetBanking or Wallets on next step."
+                            : "Pay securely with International Credit/Debit Cards (Visa, Mastercard, Amex)${controller.currencyCode == 'USD' ? ' or PayPal' : ''}.",
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interRegular,

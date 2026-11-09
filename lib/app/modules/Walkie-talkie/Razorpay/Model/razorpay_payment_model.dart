@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/util/currency_format.dart';
 
 class RazorpayPaymentOptions {
   final String key;
@@ -30,6 +31,8 @@ class RazorpayPaymentOptions {
   /// Convert to Razorpay SDK Map format
   Map<String, dynamic> toMap() {
     final int amountInPaise = (amount * 100).round();
+    final bool isInr = CurrencyFormat.isInr(currency);
+    final bool isUsd = currency.toUpperCase() == 'USD';
     final Map<String, dynamic> map = {
       'key': key,
       'amount': amountInPaise,
@@ -39,6 +42,18 @@ class RazorpayPaymentOptions {
       'theme': {
         'color': themeColor,
       },
+      // Country & Currency based method filtering:
+      // Domestic INR: all domestic instruments (UPI, Cards, NetBanking, Wallets)
+      // International (USD, EUR, GBP, etc.): strictly Cards & PayPal, hide UPI & NetBanking
+      if (!isInr)
+        'method': {
+          'netbanking': false,
+          'card': true,
+          'upi': false,
+          'wallet': isUsd, // allows PayPal for USD orders
+          'emi': false,
+          'paylater': false,
+        },
       'prefill': {
         if (prefillContact != null && prefillContact!.isNotEmpty)
           'contact': prefillContact,

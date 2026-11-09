@@ -812,6 +812,15 @@ class WalkieOrderSummaryController extends GetxController {
         // Custom blocks / method prefill only for INR. For other currencies
         // they would push UPI / netbanking (INR only) and hide PayPal.
         if (isInr) 'config': _buildRazorpayConfig(),
+        if (!isInr)
+          'method': {
+            'netbanking': false,
+            'card': true,
+            'upi': false,
+            'wallet': (rzp?.currency ?? currencyCode).toUpperCase() == 'USD',
+            'emi': false,
+            'paylater': false,
+          },
         'prefill': {
           if (cleanPhone != null && cleanPhone.isNotEmpty) 'contact': cleanPhone,
           if (userEmail != null && userEmail.isNotEmpty) 'email': userEmail,

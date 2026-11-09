@@ -278,6 +278,8 @@ class OtpChargesController extends GetxController {
       }
 
       final rawPhone = phoneNumber.value.replaceAll(RegExp(r'\D'), '');
+      final isDomesticInr = CurrencyFormat.isInr(order.currency);
+      final isUsd = order.currency.toUpperCase() == 'USD';
       final options = <String, dynamic>{
         'key': key,
         'amount': order.amount, // already in paise
@@ -292,6 +294,17 @@ class OtpChargesController extends GetxController {
           if (_email != null) 'email': _email,
         },
         'notes': {'purpose': 'otp_charge'},
+        // Country & Currency filtering:
+        // International payments hide UPI, Netbanking, domestic wallets, EMI, PayLater
+        if (!isDomesticInr)
+          'method': {
+            'netbanking': false,
+            'card': true,
+            'upi': false,
+            'wallet': isUsd,
+            'emi': false,
+            'paylater': false,
+          },
       };
       _razorpay.open(options);
     } catch (e) {

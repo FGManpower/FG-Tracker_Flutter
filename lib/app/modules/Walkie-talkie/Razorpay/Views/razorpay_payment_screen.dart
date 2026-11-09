@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/currency_format.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Controller/razorpay_payment_controller.dart';
@@ -60,9 +61,11 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
     final String? userName =
         Global.storageServices.get(PrefConst.userName)?.toString();
 
+    final String currency = widget.order.plan?.currency ?? 'INR';
+
     final options = RazorpayPaymentOptions(
       amount: widget.totalAmount,
-      currency: widget.order.plan?.currency ?? 'INR',
+      currency: currency,
       name: "FG Tracker",
       description: "${widget.order.planTitle} (${widget.order.durationName})",
       prefillContact: userPhone,
@@ -499,6 +502,10 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
   }
 
   Widget _buildSupportedMethodsCard() {
+    final String currency = widget.order.plan?.currency ?? 'INR';
+    final bool isInr = CurrencyFormat.isInr(currency);
+    final bool isUsd = currency.toUpperCase() == 'USD';
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
@@ -520,27 +527,46 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
           ),
           SizedBox(height: 12.h),
           Row(
-            children: [
-              _buildPaymentMethodPill(
-                icon: Icons.qr_code_rounded,
-                label: "UPI / QR",
-              ),
-              SizedBox(width: 8.w),
-              _buildPaymentMethodPill(
-                icon: Icons.credit_card_rounded,
-                label: "Cards",
-              ),
-              SizedBox(width: 8.w),
-              _buildPaymentMethodPill(
-                icon: Icons.account_balance_rounded,
-                label: "NetBanking",
-              ),
-              SizedBox(width: 8.w),
-              _buildPaymentMethodPill(
-                icon: Icons.account_balance_wallet_rounded,
-                label: "Wallets",
-              ),
-            ],
+            children: isInr
+                ? [
+                    _buildPaymentMethodPill(
+                      icon: Icons.qr_code_rounded,
+                      label: "UPI / QR",
+                    ),
+                    SizedBox(width: 8.w),
+                    _buildPaymentMethodPill(
+                      icon: Icons.credit_card_rounded,
+                      label: "Cards",
+                    ),
+                    SizedBox(width: 8.w),
+                    _buildPaymentMethodPill(
+                      icon: Icons.account_balance_rounded,
+                      label: "NetBanking",
+                    ),
+                    SizedBox(width: 8.w),
+                    _buildPaymentMethodPill(
+                      icon: Icons.account_balance_wallet_rounded,
+                      label: "Wallets",
+                    ),
+                  ]
+                : [
+                    _buildPaymentMethodPill(
+                      icon: Icons.credit_card_rounded,
+                      label: "Cards",
+                    ),
+                    if (isUsd) ...[
+                      SizedBox(width: 8.w),
+                      _buildPaymentMethodPill(
+                        icon: Icons.account_balance_wallet_rounded,
+                        label: "PayPal",
+                      ),
+                    ],
+                    SizedBox(width: 8.w),
+                    _buildPaymentMethodPill(
+                      icon: Icons.shield_rounded,
+                      label: "3DS2 Secure",
+                    ),
+                  ],
           ),
         ],
       ),
