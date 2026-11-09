@@ -147,6 +147,12 @@ SMS is held until payment is completed. Navigate to the OTP Charges Screen. The 
 ```
 
 > [!IMPORTANT]
+
+> [!IMPORTANT]
+> **International Tax Labeling on OTP Charge Screen:**
+> - For domestic Indian numbers (+91 / INR), the tax breakdown renders `GST (18%)`.
+> - For international foreign numbers (e.g. Argentina +54, USA +1 / USD), the breakdown renders `Tax (0% Export)` or `VAT / Tax (X%)`. It **never displays "GST"** to foreign customers.
+
 > **Currency Display on the OTP Charge Screen:**
 > The OTP Charge Screen in the Flutter app must display the currency symbol dynamically based on `otpCharge.currency` (e.g. `$` for USD, `€` for EUR, `£` for GBP, `₹` for INR) instead of hardcoding `₹`.
 > When initiating Razorpay Checkout, passing `currency: 'USD'` will natively render **PayPal** and international card checkout.

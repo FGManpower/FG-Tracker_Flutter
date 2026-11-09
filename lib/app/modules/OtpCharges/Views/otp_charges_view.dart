@@ -325,7 +325,7 @@ class OtpChargesView extends GetView<OtpChargesController> {
             if (controller.hasGst) ...[
               SizedBox(height: 6.h),
               Text(
-                'Including $gstLabel% GST',
+                controller.isDomestic ? 'Including $gstLabel% GST' : 'Including $gstLabel% Tax',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11.5.sp,
@@ -402,7 +402,7 @@ class OtpChargesView extends GetView<OtpChargesController> {
               'OTP charge', controller.money(controller.otpCharge.value)),
           if (controller.hasGst)
             _breakupRow(
-                'GST ($gstLabel%)', controller.money(controller.gstAmount)),
+                controller.taxTitle, controller.money(controller.gstAmount)),
           Container(
             margin: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
             padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 8.w),

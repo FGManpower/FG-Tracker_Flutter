@@ -962,14 +962,14 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
               ),
             ],
 
-            // Row 4: GST (if any)
+            // Row 4: GST / Tax (if any)
             if (hasGst) ...[
               SizedBox(height: 8.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "GST ($gstPercent%)",
+                    controller.taxTitle,
                     style: TextStyle(
                       fontSize: 12.5.sp,
                       fontFamily: FontFamily.interRegular,
@@ -982,6 +982,29 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                       fontSize: 12.5.sp,
                       fontFamily: FontFamily.interMedium,
                       color: _textDark,
+                    ),
+                  ),
+                ],
+              ),
+            ] else if (!controller.isDomestic) ...[
+              SizedBox(height: 8.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children:
+                  Text(
+                    "Tax (0% Export)",
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontFamily: FontFamily.interRegular,
+                      color: _textSecondary,
+                    ),
+                  ),
+                  Text(
+                    controller.money(0),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontFamily: FontFamily.interMedium,
+                      color: _greenText,
                     ),
                   ),
                 ],

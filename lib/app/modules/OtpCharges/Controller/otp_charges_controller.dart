@@ -35,7 +35,17 @@ class OtpChargesController extends GetxController {
   RxString currency = 'INR'.obs;
 
   /// GST row is only shown when there is GST to show
+  bool get isDomestic => CurrencyFormat.isInr(currency.value);
+
   bool get hasGst => gstPercent.value > 0;
+
+  String get taxTitle {
+    final gst = gstPercent.value;
+    final pct = gst == gst.roundToDouble()
+        ? gst.toInt().toString()
+        : gst.toStringAsFixed(1);
+    return isDomestic ? "GST ($pct%)" : "VAT / Tax ($pct%)";
+  }
 
   /// Login path is always `charged`; the side menu loads it from my-rate
   final Rx<OtpRateState> rateState = OtpRateState.charged.obs;

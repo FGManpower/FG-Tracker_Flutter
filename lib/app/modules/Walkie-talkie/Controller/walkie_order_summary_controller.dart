@@ -171,7 +171,16 @@ class WalkieOrderSummaryController extends GetxController {
 
   bool get hasDiscount => isCouponApplied && discountAmount > 0;
 
+  bool get isDomestic => CurrencyFormat.isInr(orderCurrency);
+
   bool get hasGst => gstAmount > 0;
+
+  String get taxTitle {
+    final pct = gstPercent == gstPercent.roundToDouble()
+        ? gstPercent.toInt().toString()
+        : gstPercent.toStringAsFixed(1);
+    return isDomestic ? "GST ($pct%)" : "VAT / Tax ($pct%)";
+  }
 
   String? get currentPromoCode {
     if (!isCouponApplied) return null;
