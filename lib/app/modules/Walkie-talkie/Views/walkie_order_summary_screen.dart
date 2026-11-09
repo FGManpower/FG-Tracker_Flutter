@@ -990,7 +990,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
               SizedBox(height: 8.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children:
+                children: [
                   Text(
                     "Tax (0% Export)",
                     style: TextStyle(

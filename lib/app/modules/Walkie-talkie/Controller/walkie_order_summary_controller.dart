@@ -171,7 +171,7 @@ class WalkieOrderSummaryController extends GetxController {
 
   bool get hasDiscount => isCouponApplied && discountAmount > 0;
 
-  bool get isDomestic => CurrencyFormat.isInr(orderCurrency);
+  bool get isDomestic => CurrencyFormat.isInr(currencyCode);
 
   bool get hasGst => gstAmount > 0;
 
