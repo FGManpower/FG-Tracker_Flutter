@@ -43,6 +43,129 @@
 
 ---
 
+## 0. Architectural Design, Root-Cause Forensics & Read-Only Query Protections (v2.5.0)
+
+### 0.1 Architectural Design & Message Flow
+```
+                      ┌─────────────────────────────────────────┐
+                      │              CLIENT APP                 │
+                      └───────┬─────────────────────────┬───────┘
+                              │ REST Requests           │ Socket.io
+                              ▼                         ▼
+             ┌─────────────────────────────┐   ┌─────────────────────────────┐
+             │ Express API Routers         │   │ Socket Namespaces:          │
+             │ - Group Messages:           │   │ - /privateChat (1-on-1)     │
+             │   /api/getGroupMessageHistory   │   │ - /chat (Group Chat)        │
+             │   /api/messages             │   └──────────────┬──────────────┘
+             │ - Private Messages:         │                  │
+             │   /api/private-chat-messages│                  │
+             │   /api/private-chat/:id/msgs│                  │
+             │ - /api/chat-list            │                  │
+             └──────────────┬──────────────┘                  │
+                            │                                 │
+                            ▼                                 ▼
+             ┌───────────────────────────────────────────────────────────────┐
+             │                  SERVICE LAYER (Business Logic)               │
+             │ - Multi-Param Resolver (groupId, chatId, conversationId)      │
+             │ - Strict Read-Only Query Guard (No GET mutation of clearId)   │
+             │ - Cursor Pagination (?before= & ?after=)                      │
+             │ - WhatsApp Clear Chat Isolation (lastClearedMessageId)        │
+             │ - Delete for Me vs Delete for Everyone                        │
+             │ - 3-Tier Anti-Self Push Notification Filter                   │
+             └──────────────────────────────┬────────────────────────────────┘
+                                            │
+                       ┌────────────────────┴────────────────────┐
+                       ▼                                         ▼
+         ┌───────────────────────────┐             ┌───────────────────────────┐
+         │     SEQUELIZE / MYSQL     │             │     FIREBASE CLOUD MSG    │
+         │ (Normalized Chat Tables)  │             │ (High-Priority Anti-Self) │
+         └───────────────────────────┘             └───────────────────────────┘
+```
+
+### 0.2 REST API Endpoints for Message History
+
+#### 1. Group Chat History
+* **Primary Route:** `GET /api/getGroupMessageHistory`
+* **Route Aliases:** `GET /api/messages`, `GET /api/group-messages`, `GET /api/group/:groupId/messages`, `GET /api/chats/:chatId/messages`
+* **Authentication:** `Bearer <JWT>`
+* **Parameters Accepted (Auto-Resolved):**
+  - Group Identifier: `groupId`, `chatId`, `conversationId`, or `id` (via query string or route param).
+  - Cursor Pagination: `before=<messageId>` (older messages) or `after=<messageId>` (newer messages).
+  - Page Pagination: `page=1`, `limit=30` (max: 100).
+
+#### 2. 1-on-1 Private Chat History
+* **Primary Routes:** `GET /api/private-chat/:chatId/messages`, `GET /api/private-chat-messages`
+* **Route Aliases:** `GET /api/private-chats/:chatId/messages`, `GET /api/private-messages`, `GET /api/private-chat/messages`
+* **Authentication:** `Bearer <JWT>`
+* **Parameters Accepted (Auto-Resolved):**
+  - Chat Identifier: `chatId`, `conversationId`, `id` (via query or route param).
+  - Direct Peer Fallback: `peerUserId`, `otherUserId`, `recipientId`, `userId`.
+  - Cursor Pagination: `before=<messageId>`, `after=<messageId>`, `limit=30`.
+
+### 0.3 The "Empty Messages on Re-open" Root Cause & Fix
+
+#### 1. The Problem
+Users experienced an issue where:
+1. User B sends a message in Group A.
+2. User A receives the notification and chats in real time (messages arrive via Socket.io `receive_group_message`).
+3. User A exits the chat screen and re-opens it.
+4. The chat screen suddenly appears **completely empty**, even though notifications arrived.
+
+#### 2. Root Causes Identified
+1. **Accidental Mutation during Read Query (`priorMsg` Clear Bug):**  
+   In `repositories/messages.repository.js`, when a user fetched messages, if `lastClearedMessageId` was 0, it queried for `priorMsg` where `createdAt <= membership.joinedAt` and automatically executed `groupMember.update({ lastClearedMessageId: priorMsg.id })`. Due to clock-skew or timezone offsets (e.g. UTC vs IST +05:30), `priorMsg` matched the **newly created message**, writing its ID as the clear boundary and filtering out all current messages (`id > clearId`).
+2. **`JoinMember` History Reset Bug:**  
+   In `repositories/group.repository.js` (`JoinMember`), whenever an existing member was re-verified, it ran `existing.lastClearedMessageId = lastClearedMessageId`. This overwrote their clear pointer to the latest message, erasing history for active members upon screen re-entry.
+3. **Parameter Mismatch:**  
+   Frontend sent `?chatId=X` while backend controller was strictly checking `req.query.groupId`.
+
+#### 3. The Resolution Implemented
+* **Zero Mutation in Read Queries:** `messagesRepository.GetGroupMessages` NEVER mutates `lastClearedMessageId`. `lastClearedMessageId` is strictly and exclusively updated when a user deliberately taps **"Clear Chat"** (`clear_chat` / `POST /api/delete`).
+* **Preserve Member State in `JoinMember`:** If a record exists in `groupMember`, its `lastClearedMessageId` and `joinedAt` are never overwritten.
+* **Unified Parameter Normalizer:** Both `message.Controller.js` and `privateChat.controller.js` accept any naming variation (`groupId`, `chatId`, `conversationId`, `id`).
+* **Route Aliasing:** `/api/messages`, `/api/group-messages`, and `/api/private-chat-messages` are mapped to ensure both older and newer client integrations resolve seamlessly.
+
+### 0.4 WhatsApp-Style Isolated "Clear Chat" Architecture
+When User A deletes or clears a conversation:
+1. **Group Chat:** The server updates `groupmembers.lastClearedMessageId = latestMessageId` strictly for `userId = :callerId`.
+   - The user is **never** removed from the group.
+   - The group conversation disappears from `GET /api/chat-list` because 0 visible messages remain for this user.
+   - If a new message arrives, the conversation reappears with unread count `1`, and history before `lastClearedMessageId` remains hidden.
+2. **Private Chat:** The server updates `private_chat_user_settings.deletedBeforeMessageId = latestMessageId` for the caller only.
+
+### 0.5 Cursor Pagination Implementation (`before` & `after`)
+The backend implements cursor pagination in `repositories/messages.repository.js`:
+```javascript
+const messageWhere = {
+  groupId,
+  id: {
+    ...(clearId > 0 ? { [Op.gt]: clearId } : {}),
+    ...(deletedIds.length > 0 ? { [Op.notIn]: deletedIds } : {})
+  }
+};
+
+if (isCursorBefore) {
+  messageWhere.id = { ...messageWhere.id, [Op.lt]: Number(options.before) };
+} else if (isCursorAfter) {
+  const minAfter = Math.max(Number(options.after), clearId);
+  messageWhere.id = { ...messageWhere.id, [Op.gt]: minAfter };
+}
+```
+
+### 0.6 Socket.IO Namespaces & Room Management
+
+#### 1. `/privateChat` Namespace
+- **Rooms:** `chat_${chatId}` and `String(userId)`.
+- **Events Handled:** `send_private_message`, `typing_private`, `mark_seen`, `delete_message`.
+- **Broadcast Events:** `receive_private_message`, `user_typing_private`, `messages_seen_update`, `presence_update`.
+
+#### 2. `/chat` Namespace
+- **Rooms:** `group_${groupId}` and `${userId}_${groupId}`.
+- **Events Handled:** `send_group_message`, `typing`, `mark_group_chat_read`, `edit_message`, `delete_message`.
+- **Broadcast Events:** `receive_group_message`, `user_typing`, `group_info_updated`, `attendance:updated`.
+
+---
+
 ## 1. Technical Clarifications & Confirmations
 
 ### 1.1 Common Chat Actions: REST API vs. Socket Confirmation
@@ -1118,6 +1241,32 @@ Widget buildChatInputBar() {
   return NormalMessageInputField();
 }
 ```
+
+---
+
+### 9.4 Admin Activation & Deactivation REST API Specification
+* **Endpoints:** `POST /deActivateGroup` (or alias `POST /activateGroup`)
+* **Headers:**
+  * `Authorization: Bearer <JWT_USER_TOKEN>` (Required — Admin permission verified)
+  * `Content-Type: application/json`
+* **Request Payload (Supported Keys):**
+  ```json
+  {
+    "groupId": "12",
+    "isActiveGroup": "false"
+  }
+  ```
+  *(Note: Backend validator enforces `groupId` as String and `isActiveGroup` as String ("true" / "false")).*
+* **Response Payload (Success):**
+  ```json
+  {
+    "status": "deactivated",
+    "message": "Group deactivated successfully",
+    "groupId": 12,
+    "isActive": false
+  }
+  ```
+  *(Note: The Flutter client's `CommonResponse` and `GroupRes` parse both string statuses such as `"deactivated"` / `"active"` / `"success"` and boolean values safely without throwing type-cast exceptions).*
 
 ---
 

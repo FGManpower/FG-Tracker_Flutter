@@ -17,6 +17,42 @@ This is the **frontend half** of the chat contract. The backend guide says what 
 
 ## 0. Architecture overview
 
+### 0.0 Module Overview & UI Flow
+```
+                  ┌───────────────────────────────────────────────┐
+                  │              CHAT LIST SCREEN                 │
+                  │   (GET /api/chat-list & socket updates)       │
+                  └───────────────┬───────────────┬───────────────┘
+                                  │               │
+                     Tap Private  │               │ Tap Group
+                     Chat Item    ▼               ▼ Chat Item
+                 ┌────────────────────┐       ┌────────────────────┐
+                 │ 1-ON-1 CHAT SCREEN │       │ GROUP CHAT SCREEN  │
+                 │  - Socket:         │       │  - Socket:         │
+                 │    /privateChat    │       │    /chat           │
+                 │  - Messages REST:  │       │  - Messages REST:  │
+                 │    /api/private-   │       │    /api/getGroup-  │
+                 │    chat/:id/msgs   │       │    MessageHistory  │
+                 └─────────┬──────────┘       └─────────┬──────────┘
+                           │                            │
+                           ▼                            ▼
+                 ┌─────────────────────────────────────────────────┐
+                 │             CHAT PROFILE DETAILS SCREEN         │
+                 │       (GET /api/chat/profile-details)           │
+                 │  - Media, Docs, Links, Group Members list       │
+                 │  - Mute, Pin, Clear Chat, Archive actions       │
+                 └─────────────────────────────────────────────────┘
+```
+
+### 0.0.1 WhatsApp-Style Management Operations
+| Action | Recommended REST Endpoint | Socket Alternative | Client UI Behavior |
+|---|---|---|---|
+| **Pin Chat** | `POST /api/pin` `{ "chatId": 18, "isPinned": true }` | `pin_chat` | Moves conversation to top with pin icon. |
+| **Mute Chat** | `POST /api/mute` `{ "chatId": 18, "isMuted": true }` | `mute_chat` | Suppresses FCM notifications for this chat. |
+| **Archive Chat** | `POST /api/archive` `{ "chatId": 18, "isArchived": true }` | `archive_chat` | Moves conversation to Archived Chats screen. |
+| **Clear Chat** | `POST /api/delete` `{ "chatId": 18, "chatType": "group" }` | `clear_group_chat` | **Explicit user action only!** Erases history before current moment for caller only. |
+| **Delete for Me** | `POST /api/delete-message` `{ "messageId": 1420, "deleteType": "for_me" }` | `delete_message` | Message removed from caller's screen only. |
+
 ### 0.1 Sockets (Socket.IO, `socket_io_client` 3.1.x)
 | Connection | Namespace | Created by | Used for |
 |---|---|---|---|
@@ -169,9 +205,62 @@ This is the **frontend half** of the chat contract. The backend guide says what 
   - history.
 
 ### 2.2 History, paging, sync
-- **`GET /getGroupMessageHistory?groupId=&page=N&limit=20`** (any order; the app sorts by time).
+- **`GET /api/getGroupMessageHistory`** (aliases: `/api/messages`, `/api/group-messages`, `/api/group/:groupId/messages`, `/api/chats/:chatId/messages`).
+- **Query Parameters Accepted (Auto-Resolved):**
+  - Group Identifier: `groupId`, `chatId`, `conversationId`, or `id`.
+  - Cursor Pagination: `before=<messageId>` (older messages) or `after=<messageId>` (newer messages).
+  - Page Pagination: `page=1`, `limit=30` (max: 100).
 - Same merge / paging / resume rules as §1.2.
 - **Reconnect** (`connect` on `/chat`) → re-sync attendance polls + fetch newer messages.
+
+### 2.2.1 Screen Lifecycle: Correct "Back" & "Exit" Implementation (v2.5.0)
+
+> [!CAUTION]
+> **CRITICAL LIFECYCLE WARNING:**  
+> When the user leaves or presses Back on a chat screen, **NEVER** emit `clear_chat`, `delete_chat`, or call `POST /api/delete`!  
+> Those actions permanently set `lastClearedMessageId` to the latest message, erasing the conversation from the user's history!
+
+#### Correct Flutter Chat Screen Controller Pattern:
+```dart
+class GroupChatController extends GetxController {
+  final int groupId;
+  final RxList<ChatMessage> messages = <ChatMessage>[].obs;
+  late IO.Socket chatSocket;
+
+  GroupChatController({required this.groupId});
+
+  @override
+  void onInit() {
+    super.onInit();
+    // 1. Initial history fetch from REST API:
+    loadMessageHistory();
+
+    // 2. Connect socket & join group room:
+    chatSocket = IO.io('https://api.fgtracker.com/chat', IO.OptionBuilder().setTransports(['websocket']).build());
+    chatSocket.emit('join_group', {'groupId': groupId, 'userId': currentUserId});
+
+    // 3. Listen to incoming real-time messages:
+    chatSocket.on('receive_group_message', (data) {
+      if (data['groupId'] == groupId) {
+        messages.insert(0, ChatMessage.fromJson(data));
+      }
+    });
+  }
+
+  Future<void> loadMessageHistory() async {
+    final history = await ChatApiService.fetchGroupMessages(groupId);
+    messages.assignAll(history);
+  }
+
+  @override
+  void onClose() {
+    // 4. On Back / Screen Exit: ONLY leave the socket room. DO NOT clear chat!
+    chatSocket.emit('leave_group_chat', {'groupId': groupId});
+    chatSocket.off('receive_group_message');
+    super.onClose();
+  }
+}
+```
 
 ### 2.3 Sending (temp bubble + ack)
 - **Socket:** `send_message` on `/chat` via `emitWithAck`, with **`clientMessageId: "c_<micros>"`**, `groupId`, and the §1.3 fields plus `duration` for audio.
@@ -218,6 +307,14 @@ This is the **frontend half** of the chat contract. The backend guide says what 
   - The input bar becomes "ℹ️ This group has been deactivated by the Admin".
   - All sends (text, voice, file, video, location, contact) are blocked.
   - The chat list shows a grey **"Deactivated"** chip.
+- **Admin Activation & Deactivation Action (`POST /deActivateGroup`):**
+  - **Caller:** `GroupController.updateGroup()` triggered from the Active/Inactive `CupertinoSwitch` in `groups_list_screen.dart`, `CreatedGroupUi.dart`, and `NewlyGroupUi.dart`.
+  - **Auth:** `GroupRepo.updateGroupStatus()` uses `HttpUtil().Authpost` with the JWT Bearer token so the server verifies Admin privileges.
+  - **Payload:** Strict string payload sending `groupId` (String) and `isActiveGroup` (String `"true"` / `"false"`), conforming to backend Joi string validation.
+  - **Optimistic UI:** Immediately toggles `isActive` in `groupData` and updates `SocketMessageService.instance.groupDeactivated[groupId]` for instant responsive feedback, automatically reverting on server failure.
+  - **Type-Safe Parsing (Fix for `type 'String' is not a subtype of type 'bool'`):**
+    - `CommonResponse.fromJson` safely converts string statuses (`"deactivated"`, `"active"`, `"success"`, `"true"`, `"false"`, etc.) and integers (`1`, `0`) to boolean `status` and `isSuccess`, eliminating Dart runtime `TypeError` popups in dialogs.
+    - `GroupRes.fromJson` & `GroupsResData.fromJson` safely parse `isActive`, `isCreator`, `status`, and `memberCount` against mixed JSON types returned by the backend.
 
 ### 2.9 Attendance poll in chat
 - **REST:** `POST /groups/:groupId/attendance` (create), `POST /attendance/:pollId/vote`, remove vote, `POST /attendance/:pollId/close`, `GET /attendance/:pollId`.
@@ -594,6 +691,8 @@ Remove them all in one cleanup commit after QA, by searching for `TODO(` plus th
 ## 9. Change log
 | Version | Date | Change |
 |---|---|---|
+| F-1.1.4 | 2026-11-08 | Added v2.5.0 Frontend Guide parity: UI Flow & Architecture diagrams, WhatsApp-Style Management Operations reference matrix, screen lifecycle controller pattern with critical exit/leave guidelines (no accidental clear_chat on back), and verified REST history endpoints with multi-param alias support. |
+| F-1.1.3 | 2026-11-08 | Fixed Group Activation/Deactivation: resolved "type 'String' is not a subtype of type 'bool'" dialog error by adding robust boolean/string/int parsing in `CommonResponse` and `GroupRes`/`GroupsResData`; updated `GroupRepo.updateGroupStatus` to use `Authpost` with JWT Bearer header; added optimistic switch toggle in `GroupController` with automatic rollback on error. |
 | F-1.1.2 | 2026-11-07 | Delete group (admin, Member screen) follows the §2.11 rule: `navigateAfterLeave` instead of `Get.offAllNamed(Home)`. Home is no longer rebuilt after a delete, so Home's live-status group counts update on their next refresh. |
 | F-1.1.1 | 2026-11-07 | Group navigation (§2.11) changed to "finish where you started" for the 4 start screens (Home, All Groups, Chatting, Walkie-Talkie): create no longer jumps to the All Group List (it used to pull the user out of Walkie); Open Group opens the chat on top of the current screen instead of rebuilding Home → All Group List → Chat; exit also stops at Walkie Group Select and Home and never opens the All Group List by itself; "Go to Groups" in the left sheet now opens the All Group List when not already on it. Navigation tests added. |
 | F-1.1.0 | 2026-11-07 | Group navigation (§2.11): create → All Group List; exit → nearest Chat List or All Group List read from the route stack (`navigateAfterLeave`), group removed and list refreshed; Open Group (joined / created sheet) → Home → All Group List → Group Chat with the group list's own arguments; "left" sheet added to L4 / L5 and its button only closes it (#19, #20 done). New open items #23 (no exit in group chat) and #24 (chat list after exit). |

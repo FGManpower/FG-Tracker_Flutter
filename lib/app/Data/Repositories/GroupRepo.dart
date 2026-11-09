@@ -82,7 +82,7 @@ class GroupRepo {
   }
 
   static Future<CommonResponse> updateGroupStatus(dynamic param) async {
-    var response = await HttpUtil().post(
+    var response = await HttpUtil().Authpost(
       "/deActivateGroup",
       data: param,
     );

@@ -46,6 +46,7 @@ class PermissionSetupController extends GetxController
   bool _waitingForSettings = false;
   bool _navigatedHome = false;
   Worker? _gateWorker;
+  Timer? _safetyTimer;
 
   late final PermissionGateService gate = PermissionGateService.to;
   late final PermissionFlow flow = PermissionFlow(gate);
@@ -150,11 +151,20 @@ class PermissionSetupController extends GetxController
   @override
   void onReady() {
     super.onReady();
+    // Safety watchdog: ensure the loading screen can never remain stuck permanently.
+    _safetyTimer?.cancel();
+    _safetyTimer = Timer(const Duration(seconds: 3), () {
+      if (checking.value && !_navigatedHome) {
+        debugPrint('[PermissionSetup] Safety watchdog fired: releasing loading state.');
+        checking.value = false;
+      }
+    });
     _checkInitialAndContinue();
   }
 
   @override
   void onClose() {
+    _safetyTimer?.cancel();
     _gateWorker?.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.onClose();
@@ -164,15 +174,21 @@ class PermissionSetupController extends GetxController
   /// already granted, skip this screen and go straight to Home.
   Future<void> _checkInitialAndContinue() async {
     try {
-      await checkAllPermissionStatus();
+      await checkAllPermissionStatus().timeout(
+        const Duration(milliseconds: 2500),
+        onTimeout: () {
+          debugPrint('[PermissionSetup] Initial check timed out; falling back to UI.');
+        },
+      );
       if (canContinue) {
         _goHome();
         return;
       }
       _selectAndExpandPermission(_firstPendingIndex() ?? locationIndex);
-    } catch (_) {
-      // Show the screen so the user can grant manually.
+    } catch (e) {
+      debugPrint('[PermissionSetup] _checkInitialAndContinue error: $e');
     } finally {
+      _safetyTimer?.cancel();
       if (!_navigatedHome) checking.value = false;
     }
   }
@@ -192,6 +208,7 @@ class PermissionSetupController extends GetxController
   void _goHome() {
     if (_navigatedHome) return;
     _navigatedHome = true;
+    _safetyTimer?.cancel();
     Get.offAllNamed(Routes.Home_Screen);
   }
 
@@ -213,25 +230,53 @@ class PermissionSetupController extends GetxController
   }
 
   Future<void> checkAllPermissionStatus() async {
-    final r = await gate.check();
+    try {
+      final r = await gate.check().timeout(
+        const Duration(seconds: 2),
+        onTimeout: () {
+          debugPrint('[PermissionSetup] gate.check timed out, using fallback.');
+          return gate.result.value ?? PermissionGateResult.error(gate.flags);
+        },
+      );
 
-    final granted = <int>{};
-    if (r.locationOk) granted.add(locationIndex);
-    if (r.notificationOk) granted.add(notificationIndex);
+      final granted = <int>{};
+      if (r.locationOk) granted.add(locationIndex);
+      if (r.notificationOk) granted.add(notificationIndex);
 
-    for (int i = 2; i < items.length; i++) {
-      final p = _permissionForIndex(i);
-      if (p == null) continue;
-      try {
-        final s = await gate.backend.status(p);
-        if (s.isGranted || s.isLimited) granted.add(i);
-      } catch (_) {}
+      grantedItems
+        ..clear()
+        ..addAll(granted);
+      grantedItems.refresh();
+
+      // If compulsory permissions already allow access, return immediately so
+      // the user doesn't wait for optional checks before navigating Home.
+      if (r.allowsAccess) {
+        return;
+      }
+
+      // Check optional permissions in parallel with individual timeouts
+      final optionalFutures = <Future<void>>[];
+      for (int i = 2; i < items.length; i++) {
+        final idx = i;
+        final p = _permissionForIndex(idx);
+        if (p == null) continue;
+        optionalFutures.add(() async {
+          try {
+            final s = await gate.backend.status(p).timeout(
+              const Duration(milliseconds: 800),
+            );
+            if (s.isGranted || s.isLimited) {
+              grantedItems.add(idx);
+            }
+          } catch (_) {}
+        }());
+      }
+
+      await Future.wait(optionalFutures);
+      grantedItems.refresh();
+    } catch (e) {
+      debugPrint('[PermissionSetup] checkAllPermissionStatus error: $e');
     }
-
-    grantedItems
-      ..clear()
-      ..addAll(granted);
-    grantedItems.refresh();
   }
 
   int? _firstPendingIndex() {

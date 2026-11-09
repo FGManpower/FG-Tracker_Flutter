@@ -5,9 +5,39 @@ class GroupRes {
 
   GroupRes({this.status, this.message, this.data});
 
-  GroupRes.fromJson(Map<String, dynamic> json) {
-    status = json['status'];
-    message = json['message'];
+  static bool? _parseBool(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    if (value is String) {
+      final s = value.toLowerCase().trim();
+      if (s == 'true' || s == 'yes' || s == '1' || s == 'active' || s == 'success' || s == 'ok') {
+        return true;
+      }
+      if (s == 'false' || s == 'no' || s == '0' || s == 'deactivated' || s == 'inactive' || s == 'error' || s == 'failed') {
+        return false;
+      }
+    }
+    return null;
+  }
+
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value.trim());
+    return null;
+  }
+
+  GroupRes.fromJson(dynamic input) {
+    if (input is! Map) {
+      status = input == true;
+      message = input?.toString();
+      return;
+    }
+    final json = Map<String, dynamic>.from(input);
+    status = _parseBool(json['status'] ?? json['success'] ?? json['ok']) ?? true;
+    message = json['message']?.toString();
     data = json['data'] != null ? GroupData.fromJson(json['data']) : null;
   }
 
@@ -28,11 +58,13 @@ class GroupData {
   GroupData({this.groupData});
 
   GroupData.fromJson(Map<String, dynamic> json) {
-    if (json['groups'] != null) {
+    if (json['groups'] != null && json['groups'] is List) {
       groupData = <GroupsResData>[];
-      json['groups'].forEach((v) {
-        groupData!.add(GroupsResData.fromJson(v));
-      });
+      for (final v in json['groups']) {
+        if (v is Map) {
+          groupData!.add(GroupsResData.fromJson(Map<String, dynamic>.from(v)));
+        }
+      }
     }
   }
 
@@ -67,9 +99,9 @@ class GroupsResData {
       this.memberCount});
 
   GroupsResData.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    groupName = json['groupName'];
-    groupDesc = json['groupDesc'];
+    id = GroupRes._parseInt(json['id']);
+    groupName = json['groupName']?.toString();
+    groupDesc = json['groupDesc']?.toString();
     groupProfile = json['groupProfile']?.toString() ??
         json['group_profile']?.toString() ??
         json['groupImage']?.toString() ??
@@ -77,10 +109,12 @@ class GroupsResData {
         json['profileImage']?.toString() ??
         json['image']?.toString() ??
         json['profile']?.toString();
-    groupCode = json['groupCode'];
-    isActive = json['isActive'];
-    isCreator = json['isCreator'];
-    memberCount = json['memberCount'];
+    groupCode = json['groupCode']?.toString();
+    isActive = GroupRes._parseBool(
+      json['isActive'] ?? json['is_active'] ?? json['status'] ?? json['groupStatus'],
+    );
+    isCreator = GroupRes._parseBool(json['isCreator'] ?? json['is_creator']);
+    memberCount = GroupRes._parseInt(json['memberCount'] ?? json['member_count']);
   }
 
   Map<String, dynamic> toJson() {

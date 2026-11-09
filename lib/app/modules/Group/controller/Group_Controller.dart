@@ -13,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../Messages/Controller/GroupChatController.dart';
 import '../../Messages/Controller/group_profile_details_controller.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Message_Services.dart';
 
 class GroupController extends GetxController {
   GlobalKey<FormState> createGroupKey = GlobalKey<FormState>();
@@ -193,23 +194,53 @@ class GroupController extends GetxController {
 
   Future<void> updateGroup(GroupController controller,
       {required String groupId, required String groupStatus}) async {
+    final bool newActiveState = groupStatus.toLowerCase() == "true" ||
+        groupStatus == "1" ||
+        groupStatus.toLowerCase() == "active";
+
+    // Optimistically update the in-memory group state so the switch reflects immediately
+    final targetIndex = groupData.indexWhere((g) => g.id?.toString() == groupId);
+    final previousState = targetIndex != -1 ? groupData[targetIndex].isActive : null;
+    if (targetIndex != -1) {
+      groupData[targetIndex].isActive = newActiveState;
+      groupData.refresh();
+    }
+
     try {
       Loading().showloading();
-      dynamic param = {
-        "groupId": groupId,
-        "isActiveGroup": groupStatus,
+      final dynamic param = {
+        "groupId": groupId.toString(),
+        "isActiveGroup": groupStatus.toString(),
       };
-      var result = await GroupRepo.updateGroupStatus(param);
-      if (result.status == true) {
-        Loading().dismissloading();
-        Utils().fluttertoast(result.message.toString());
+
+      final result = await GroupRepo.updateGroupStatus(param);
+      Loading().dismissloading();
+
+      if (result.isSuccess || result.status == true) {
+        // Sync local socket service deactivated map
+        SocketMessageService.instance.groupDeactivated[groupId] = !newActiveState;
+
+        final toastMsg = (result.message != null && result.message!.trim().isNotEmpty)
+            ? result.message!
+            : (newActiveState ? "Group activated successfully" : "Group deactivated successfully");
+        Utils().fluttertoast(toastMsg);
+
         controller.getGroupData();
       } else {
-        Loading().dismissloading();
-        CommonDialog.errorMessage(result.message);
+        // Revert optimistic update on failure
+        if (targetIndex != -1 && previousState != null) {
+          groupData[targetIndex].isActive = previousState;
+          groupData.refresh();
+        }
+        CommonDialog.errorMessage(result.message ?? "Failed to update group status");
       }
     } catch (e) {
       Loading().dismissloading();
+      // Revert optimistic update on error
+      if (targetIndex != -1 && previousState != null) {
+        groupData[targetIndex].isActive = previousState;
+        groupData.refresh();
+      }
       CommonDialog.errorMessage(e.toString());
     }
   }

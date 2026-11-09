@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../Controller/PermissionSetupController.dart';
 
@@ -13,19 +14,98 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
       backgroundColor: const Color(0xFFF5F4FF),
       body: SafeArea(
         child: Obx(() {
-          if (controller.checking.value) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF5145F5)),
-            );
-          }
+          final isChecking = controller.checking.value;
           return Column(
             children: [
               _buildAppBar(),
-              Expanded(child: _buildList()),
-              _buildBottomButtons(),
+              Expanded(
+                child: isChecking ? _buildSkeletonList() : _buildList(),
+              ),
+              _buildBottomButtons(isChecking: isChecking),
             ],
           );
         }),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonList() {
+    return Skeletonizer(
+      enabled: true,
+      child: ListView.separated(
+        padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+        itemCount: 4,
+        separatorBuilder: (_, __) => SizedBox(height: 10.h),
+        itemBuilder: (context, index) => Container(
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(
+              color: const Color(0xFFECEAFF),
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 48.w,
+                height: 48.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFECEAFF),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: const Icon(Icons.security_rounded),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Permission Required',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF11145A),
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 3.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDCF5E6),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Text(
+                            'Required',
+                            style: TextStyle(
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 5.h),
+                    Text(
+                      'This permission is required for features to work properly.',
+                      style: TextStyle(
+                        fontSize: 11.5.sp,
+                        color: const Color(0xFF686B9D),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -326,7 +406,59 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
     );
   }
 
-  Widget _buildBottomButtons() {
+  Widget _buildBottomButtons({bool isChecking = false}) {
+    if (isChecking) {
+      return Skeletonizer(
+        enabled: true,
+        child: Container(
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 16.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F4FF),
+            border: Border(
+              top: BorderSide(
+                color: const Color(0xFFE4E0FF).withValues(alpha: 0.6),
+                width: 1,
+              ),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                height: 52.h,
+                child: ElevatedButton(
+                  onPressed: null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF5145F5),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                  child: const Text('Allow Permission'),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              SizedBox(
+                width: double.infinity,
+                height: 48.h,
+                child: OutlinedButton(
+                  onPressed: null,
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                  child: const Text('Continue'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 16.h),
       decoration: BoxDecoration(

@@ -149,7 +149,7 @@ class PermissionGateService extends GetxService with WidgetsBindingObserver {
     final previous = result.value;
     PermissionGateResult next;
     try {
-      final snap = await backend.snapshot();
+      final snap = await backend.snapshot().timeout(const Duration(seconds: 3));
       next = PermissionGateResult.evaluate(snap, flags);
     } catch (e) {
       log('[PermissionGate] snapshot failed: $e');
