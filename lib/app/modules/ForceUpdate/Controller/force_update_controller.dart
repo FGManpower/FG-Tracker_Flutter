@@ -14,10 +14,14 @@ class ForceUpdateController extends GetxController {
   final RxString installedVersion = ConstRes.appVersion.obs;
 
   String get targetStoreVersion {
-    if (platformData.latestVersion.trim().isNotEmpty && platformData.latestVersion.trim() != '0.0.0') {
-      return platformData.latestVersion.trim();
+    final vLatest = platformData.latestVersion.trim();
+    final vMin = platformData.minVersion.trim();
+    if (vLatest.isNotEmpty && vMin.isNotEmpty) {
+      return AppVersionService.compareVersions(vLatest, vMin) >= 0 ? vLatest : vMin;
     }
-    return platformData.minVersion.trim();
+    if (vLatest.isNotEmpty) return vLatest;
+    if (vMin.isNotEmpty) return vMin;
+    return '2.0.3';
   }
 
   @override

@@ -62,20 +62,29 @@ class AppVersionService extends GetxService {
       return false;
     }
 
-    final installed = ConstRes.appVersion;
+    final installed = ConstRes.appVersion.trim();
 
-    // The required cutoff: minVersion if provided, otherwise latestVersion
-    final targetCutoff = platformData.minVersion.trim().isNotEmpty && platformData.minVersion.trim() != '0.0.0'
-        ? platformData.minVersion.trim()
-        : platformData.latestVersion.trim();
+    // Authoritative target version: always take the highest version between latestVersion and minVersion
+    final vLatest = platformData.latestVersion.trim();
+    final vMin = platformData.minVersion.trim();
+    final String targetCutoff;
+    if (vLatest.isNotEmpty && vMin.isNotEmpty) {
+      targetCutoff = compareVersions(vLatest, vMin) >= 0 ? vLatest : vMin;
+    } else if (vLatest.isNotEmpty) {
+      targetCutoff = vLatest;
+    } else if (vMin.isNotEmpty) {
+      targetCutoff = vMin;
+    } else {
+      targetCutoff = '2.0.3';
+    }
 
     // If installed version is strictly less than target cutoff, force update
     final needsUpdate = compareVersions(installed, targetCutoff) < 0;
 
     debugPrint(
       '[AppVersionService] Platform: ${Platform.isIOS ? "iOS" : "Android"} | '
-      'Installed: $installed | Cutoff: $targetCutoff | '
-      'Min: ${platformData.minVersion} | Latest: ${platformData.latestVersion} | '
+      'Installed: $installed | Target Cutoff: $targetCutoff | '
+      'Latest: $vLatest | Min: $vMin | '
       'ForceUpdate: ${platformData.forceUpdate} | NeedsUpdate: $needsUpdate',
     );
 
