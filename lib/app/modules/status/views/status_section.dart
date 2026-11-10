@@ -17,23 +17,11 @@ class StatusSection extends StatefulWidget {
 
 class _StatusSectionState extends State<StatusSection> {
   final GlobalKey _myStatusKey = GlobalKey();
-  OverlayEntry? _popupEntry;
 
   StatusFeedController get controller =>
       Get.isRegistered<StatusFeedController>()
           ? Get.find<StatusFeedController>()
           : Get.put(StatusFeedController(), permanent: true);
-
-  @override
-  void dispose() {
-    _removePopup();
-    super.dispose();
-  }
-
-  void _removePopup() {
-    _popupEntry?.remove();
-    _popupEntry = null;
-  }
 
   void _showPrivacySheet() {
     final options = [
@@ -150,8 +138,6 @@ class _StatusSectionState extends State<StatusSection> {
   }
 
   void _showMyStatusPopup() {
-    _removePopup();
-
     final RenderBox? box =
         _myStatusKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return;
@@ -159,96 +145,88 @@ class _StatusSectionState extends State<StatusSection> {
     final Offset pos = box.localToGlobal(Offset.zero);
     final Size size = box.size;
 
-    _popupEntry = OverlayEntry(
-      builder: (context) {
+    showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: "MyStatusMenu",
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 150),
+      pageBuilder: (dialogContext, animation, secondaryAnimation) {
         return Stack(
           children: [
             Positioned.fill(
               child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: _removePopup,
-                child: const SizedBox.expand(),
+                behavior: HitTestBehavior.opaque,
+                onTap: () => Navigator.of(dialogContext).pop(),
+                child: Container(color: Colors.transparent),
               ),
             ),
             Positioned(
               left: pos.dx.clamp(
                 8.0,
-                MediaQuery.of(context).size.width - 190.w,
+                MediaQuery.of(dialogContext).size.width - 190.w,
               ),
               top: pos.dy + size.height - 18.h,
               child: Material(
                 color: Colors.transparent,
-                child: Container(
-                  width: 175.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.10),
-                        blurRadius: 18,
-                        offset: const Offset(0, 6),
+                child: FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(
+                    scale: CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                    alignment: Alignment.topLeft,
+                    child: Container(
+                      width: 175.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.12),
+                            blurRadius: 18,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (controller.myStatuses.isNotEmpty)
-                        _popupTile(
-                          icon: Icons.visibility_outlined,
-                          title: 'View My Status',
-                          onTap: () {
-                            _removePopup();
-
-                            Get.to(
-                              () => StatusViewScreen(
-                                isOwnStatus: true,
-                                userName: 'My Status',
-                                statuses: controller.myStatuses.toList(),
-                                currentIndex: 0,
-                              ),
-                            );
-                          },
-                        ),
-
-                      if (controller.myStatuses.isNotEmpty)
-                        Divider(
-                          height: 1,
-                          color: Colors.grey.withValues(alpha: 0.15),
-                          indent: 12.w,
-                          endIndent: 12.w,
-                        ),
-                      Divider(
-                        height: 1,
-                        color: Colors.grey.withValues(alpha: 0.15),
-                        indent: 12.w,
-                        endIndent: 12.w,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (controller.myStatuses.isNotEmpty) ...[
+                            _popupTile(
+                              icon: Icons.visibility_outlined,
+                              title: 'View My Status',
+                              onTap: () {
+                                Navigator.of(dialogContext).pop();
+                                Get.to(
+                                  () => StatusViewScreen(
+                                    isOwnStatus: true,
+                                    userName: 'My Status',
+                                    statuses: controller.myStatuses.toList(),
+                                    currentIndex: 0,
+                                  ),
+                                );
+                              },
+                            ),
+                            Divider(
+                              height: 1,
+                              color: Colors.grey.withValues(alpha: 0.15),
+                              indent: 12.w,
+                              endIndent: 12.w,
+                            ),
+                          ],
+                          _popupTile(
+                            icon: Icons.add_circle_outline_rounded,
+                            title: 'Add to My Status',
+                            onTap: () {
+                              Navigator.of(dialogContext).pop();
+                              Get.to(() => const AddStatusScreen());
+                            },
+                          ),
+                        ],
                       ),
-                      _popupTile(
-                        icon: Icons.add_circle_outline_rounded,
-                        title: 'Add to My Status',
-                        onTap: () {
-                          _removePopup();
-                          Get.to(() => const AddStatusScreen());
-                        },
-                      ),
-                      // Divider(
-                      //   height: 1,
-                      //   color: Colors.grey.withValues(alpha: 0.15),
-                      //   indent: 12.w,
-                      //   endIndent: 12.w,
-                      // ),
-                      // _popupTile(
-                      //   icon: Icons.lock_outline_rounded,
-                      //   title: 'Status Privacy',
-                      //   color: Colors.black87,
-                      //   onTap: () {
-                      //     _removePopup();
-                      //     _showPrivacySheet();
-                      //   },
-                      // ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -257,8 +235,6 @@ class _StatusSectionState extends State<StatusSection> {
         );
       },
     );
-
-    Overlay.of(context).insert(_popupEntry!);
   }
 
   Widget _popupTile({
@@ -335,13 +311,7 @@ class _StatusSectionState extends State<StatusSection> {
                     borderColor: const Color(0xFF6B4DFF),
                     dotColor: null,
                     isMe: true,
-                    onTap: () {
-                      if (_popupEntry != null) {
-                        _removePopup();
-                      } else {
-                        _showMyStatusPopup();
-                      }
-                    },
+                    onTap: _showMyStatusPopup,
                   );
                 }
 

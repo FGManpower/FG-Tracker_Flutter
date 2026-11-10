@@ -377,20 +377,18 @@ class PrivateChatModel {
         'time',
         'createdAt',
         'created_at',
-        'updatedAt',
-        'updated_at',
       ],
     ) ??
         _readString(json, [
-          'timestamp',
           'lastMessageAt',
           'last_message_at',
+          'timestamp',
           'time',
           'createdAt',
           'created_at',
-          'updatedAt',
-          'updated_at',
         ]) ??
+        _readString(activity ?? {}, ['updatedAt', 'updated_at']) ??
+        _readString(json, ['updatedAt', 'updated_at']) ??
         '';
 
     return PrivateChatModel(
