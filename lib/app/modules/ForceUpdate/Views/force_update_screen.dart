@@ -163,7 +163,7 @@ class ForceUpdateScreen extends GetView<ForceUpdateController> {
                           Column(
                             children: [
                               Text(
-                                'CURRENT',
+                                'CURRENT INSTALLED',
                                 style: TextStyle(
                                   fontFamily: 'InterMedium',
                                   fontSize: 10.sp,
@@ -192,7 +192,7 @@ class ForceUpdateScreen extends GetView<ForceUpdateController> {
                           Column(
                             children: [
                               Text(
-                                'REQUIRED',
+                                'REQUIRED VERSION',
                                 style: TextStyle(
                                   fontFamily: 'InterMedium',
                                   fontSize: 10.sp,
@@ -202,7 +202,7 @@ class ForceUpdateScreen extends GetView<ForceUpdateController> {
                               ),
                               SizedBox(height: 4.h),
                               Text(
-                                'v${controller.platformData.minVersion}',
+                                'v${controller.targetStoreVersion}',
                                 style: TextStyle(
                                   fontFamily: 'InterBold',
                                   fontSize: 15.sp,
@@ -307,4 +307,3 @@ class ForceUpdateScreen extends GetView<ForceUpdateController> {
     );
   }
 }
-

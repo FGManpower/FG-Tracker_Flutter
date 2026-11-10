@@ -13,6 +13,13 @@ class ForceUpdateController extends GetxController {
   final RxBool isLaunchingStore = false.obs;
   final RxString installedVersion = ConstRes.appVersion.obs;
 
+  String get targetStoreVersion {
+    if (platformData.latestVersion.trim().isNotEmpty && platformData.latestVersion.trim() != '0.0.0') {
+      return platformData.latestVersion.trim();
+    }
+    return platformData.minVersion.trim();
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -24,13 +31,13 @@ class ForceUpdateController extends GetxController {
     } else {
       versionData = AppVersionData(
         android: PlatformVersionData(
-          minVersion: '2.0.0',
+          minVersion: '2.0.3',
           latestVersion: '2.0.3',
           forceUpdate: true,
           storeUrl: 'https://play.google.com/store/apps/details?id=com.fgtracker',
         ),
         ios: PlatformVersionData(
-          minVersion: '2.0.0',
+          minVersion: '2.0.3',
           latestVersion: '2.0.3',
           forceUpdate: true,
           storeUrl: 'https://apps.apple.com/app/fg-tracker/id6738914614',
@@ -63,4 +70,3 @@ class ForceUpdateController extends GetxController {
     }
   }
 }
-
