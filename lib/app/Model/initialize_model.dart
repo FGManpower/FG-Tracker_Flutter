@@ -298,18 +298,23 @@ class WalkieInitData {
   }
 
   bool get isSubscribed {
+    final accType = access?.accessType?.toLowerCase().trim() ?? '';
+    if (accType.contains('expired')) {
+      return false;
+    }
+
     if (access?.hasIndividualAccess == true ||
         access?.hasTeamAccess == true) {
       return true;
     }
 
-    final accType = access?.accessType?.toLowerCase().trim() ?? '';
     if (accType == 'individual' ||
         accType == 'team' ||
         accType == 'team_seat' ||
         accType == 'team_member' ||
         accType == 'subscription' ||
-        accType == 'subscribed') {
+        accType == 'subscribed' ||
+        accType == 'both') {
       return true;
     }
 
@@ -325,7 +330,8 @@ class WalkieInitData {
         final status =
             currentSubscription['status']?.toString().toLowerCase().trim();
         final isActive = currentSubscription['isActive'] == true;
-        if (isActive || status == 'active') {
+        final isExp = currentSubscription['isExpired'] == true;
+        if (!isExp && (isActive || status == 'active')) {
           return true;
         }
       } else if (currentSubscription is bool && currentSubscription == true) {
@@ -339,7 +345,8 @@ class WalkieInitData {
           if (sub is Map) {
             final status = sub['status']?.toString().toLowerCase().trim();
             final isActive = sub['isActive'] == true;
-            if (isActive || status == 'active') {
+            final isExp = sub['isExpired'] == true;
+            if (!isExp && (isActive || status == 'active')) {
               return true;
             }
           }
@@ -351,9 +358,10 @@ class WalkieInitData {
           if (val is Map) {
             final status = val['status']?.toString().toLowerCase().trim();
             final isActive = val['isActive'] == true;
-            if (isActive ||
+            final isExp = val['isExpired'] == true;
+            if (!isExp && (isActive ||
                 status == 'active' ||
-                val['hasActiveSubscription'] == true) {
+                val['hasActiveSubscription'] == true)) {
               return true;
             }
           }
@@ -361,15 +369,62 @@ class WalkieInitData {
       }
     }
 
-    if (actions?.showSubscribe == false && actions?.showRenew == true) {
+    return false;
+  }
+
+  /// True when the user had an individual or team subscription that has expired.
+  bool get isSubscriptionExpired {
+    if (isSubscribed) return false;
+
+    final accType = access?.accessType?.toLowerCase().trim() ?? '';
+    if (accType == 'expired_subscription' ||
+        accType == 'subscription_expired') {
       return true;
+    }
+
+    if (actions?.showRenew == true) {
+      return true;
+    }
+
+    if (currentSubscription is Map) {
+      final status =
+          currentSubscription['status']?.toString().toLowerCase().trim();
+      final isExp = currentSubscription['isExpired'] == true;
+      if (status == 'expired' || isExp) return true;
+    }
+
+    if (subscriptions != null) {
+      if (subscriptions is List && subscriptions!.isNotEmpty) {
+        return true;
+      } else if (subscriptions is Map) {
+        final subMap = subscriptions as Map;
+        if (subMap['hasActiveSubscription'] == false &&
+            (subMap['individual'] != null || subMap['team'] != null)) {
+          return true;
+        }
+      }
+    }
+
+    if (alerts != null) {
+      for (var alert in alerts!) {
+        final t = alert.type?.toLowerCase().trim() ?? '';
+        if (t == 'subscription_expired') return true;
+      }
     }
 
     return false;
   }
 
+  /// True when the user's 1-hour free trial has ended/consumed.
   bool get isTrialExpired {
-    if (isSubscribed) return false;
+    if (isSubscribed || isSubscriptionExpired) return false;
+
+    final accType = access?.accessType?.toLowerCase().trim() ?? '';
+    if (accType == 'expired' ||
+        accType == 'expired_trial' ||
+        accType == 'trial_expired') {
+      return true;
+    }
 
     if (trial != null && trial is Map) {
       final trialMap = trial as Map;
@@ -382,6 +437,10 @@ class WalkieInitData {
       final hasReceived = trialMap['hasReceivedTrial'] == true;
       final isActive = trialMap['isActive'] == true;
 
+      if (hasReceived && !isActive) {
+        return true;
+      }
+
       if (remaining is num &&
           remaining <= 0 &&
           (hasReceived || status != 'not_started') &&
@@ -390,8 +449,12 @@ class WalkieInitData {
       }
     }
 
-    final accType = access?.accessType?.toLowerCase().trim() ?? '';
-    if (accType == 'expired') return true;
+    if (alerts != null) {
+      for (var alert in alerts!) {
+        final t = alert.type?.toLowerCase().trim() ?? '';
+        if (t == 'trial_expired') return true;
+      }
+    }
 
     if (access?.canUseWalkie == false) {
       if (trial is Map &&
@@ -404,9 +467,40 @@ class WalkieInitData {
     return false;
   }
 
+  /// True when user is actively using an unexpired free trial.
+  bool get isTrialActive {
+    if (isSubscribed || isSubscriptionExpired || isTrialExpired) return false;
+
+    final accType = access?.accessType?.toLowerCase().trim() ?? '';
+    if (access?.hasTrialAccess == true || accType == 'trial') {
+      return true;
+    }
+
+    if (trial is Map) {
+      final trialMap = trial as Map;
+      if (trialMap['isActive'] == true && trialMap['isExpired'] != true) {
+        return true;
+      }
+      final remaining = trialMap['remainingSeconds'];
+      if (remaining is num && remaining > 0 && trialMap['hasReceivedTrial'] == true) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /// Label shown in Quick Action tile on Home Screen:
+  /// - Actively Subscribed ➔ "Subscribed"
+  /// - Subscription Expired ➔ "Renew"
+  /// - Trial Expired ➔ "Expired"
+  /// - Fresh user / Active Trial ➔ "1 hr free"
   String get statusSubtitle {
     if (isSubscribed) {
       return "Subscribed";
+    }
+    if (isSubscriptionExpired) {
+      return "Renew";
     }
     if (isTrialExpired) {
       return "Expired";

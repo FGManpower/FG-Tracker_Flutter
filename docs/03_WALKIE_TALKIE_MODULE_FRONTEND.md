@@ -1,6 +1,6 @@
 # Walkie-Talkie (PTT) Module — Flutter Frontend Architecture & Implementation Guide
 
-**Document Version:** `v1.6.0` · **Last updated:** 2026-11-08 · **Branch:** `46Solution`  
+**Document Version:** `v1.8.0` · **Last updated:** 2026-11-10 · **Branch:** `46Solution`  
 **Target Audience:** Flutter Frontend Developers  
 **Covers:** Push-to-Talk (PTT) UI, Audio Stream & WebRTC, Active Channel Switcher, Notification Toggles, Group Info Sheet with Bell Indicators, Razorpay Plan Purchase & Seat Assignment, International Payments & PayPal  
 **Status:** In Production / Stable  
@@ -262,7 +262,29 @@ final options = {
 
 ---
 
-## 6. Change log
+## 6. Home Screen Quick Action State Machine & Condition Matrix
+
+The Walkie-Talkie Quick Action tile on the Home Dashboard (`quick_actions_section.dart`) dynamically reflects the exact client-server state delivered by `/api/initialize` (`InitializeModel.data.walkie`):
+
+| User State | Condition Trigger (`WalkieInitData`) | Subtitle Display | Subtitle Color | `isPremium` | Tap Route |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Active Subscriber** | `isSubscribed == true`<br>(Active individual or team plan) | **"Subscribed"** | Vivid Green (`0xFF16A34A`) | `true` | `Routes.WalkieGroupSelect`<br>(Channel selection) |
+| **Expired Subscriber** | `isSubscriptionExpired == true`<br>(`actions.showRenew == true` or `accessType == 'expired_subscription'`) | **"Renew"** | Amber / Orange (`0xFFEA580C`) | `false` | `Routes.walkieTalkieTrialDetails`<br>(Plans screen to renew) |
+| **Active 1-Hr Free Trial**| `isTrialActive == true`<br>(`trial.isActive == true`, remaining seconds > 0, not subscribed) | **"1 hr free"** | Brand Purple (`0xFF5338EE`) | `false` | `Routes.WalkieGroupSelect`<br>(Active trial allows PTT access) |
+| **Expired Trial** | `isTrialExpired == true`<br>(`trial.isExpired == true`, or `accessType == 'expired_trial'`) | **"Expired"** | Crimson Red (`0xFFDC2626`) | `false` | `Routes.walkieTalkieTrialDetails`<br>(Catalog screen to subscribe) |
+| **Fresh / Eligible User** | `trial == null` or `trial.status == 'not_started'` (Never activated) | **"1 hr free"** | Brand Purple (`0xFF5338EE`) | `false` | `Routes.walkieTalkieTrialDetails`<br>(Intro screen to start trial) |
+
+### 6.1 Backend Contract (`/api/initialize`) Resolution
+1. **Active Trial Filter Separation**: The backend preserves expired trial records rather than wiping `data.walkie.trial` to `null`. When expired, `trial` returns `{ isExpired: true, isActive: false, status: 'expired', hasReceivedTrial: true }`.
+2. **Subscription Expiration Flagging**: When past subscriptions exist but none are active, `access.accessType` returns `"expired_subscription"`, `actions.showRenew` returns `true`, and `actions.showSubscribe` returns `false`.
+3. **Zero-Flicker Persistence**: `HomeController` persists the resolved Walkie state in local storage (`cached_walkie_subtitle`, `cached_walkie_is_subscribed`, etc.), eliminating placeholder flicker on cold app boot.
+
+---
+
+## 7. Change log
+| Version | Date | Change |
+|---|---|---|
+| v1.8.0 | 2026-11-10 | Resolved Quick Action Walkie-Talkie state machine bug: properly handles expired trial ("Expired" in Red) and expired subscription ("Renew" in Amber); eliminated "1 hr free" fallback for expired users; updated Node.js backend `/api/initialize` to serialize expired trial and subscription records; added zero-flicker client-side persistence in `HomeController`. |
 | Version | Date | Change |
 |---|---|---|
 | v1.7.0 | 2026-11-09 | Production International Payment Gateway readiness verified: Flutter models (WalkiePlanItem, WalkiePaymentOrderModel, plan controller) updated to num for decimal pricing (.99 / .99 / .99); dynamic CurrencyFormat integrated across all screens; razorpay_payment_screen passes plan currency to Razorpay SDK. |

@@ -129,29 +129,35 @@ class QuickActionsSection extends StatelessWidget {
                     ? Get.find<HomeController>()
                     : null;
                 final subtitle = homeController?.walkieSubtitle ?? "1 hr free";
-                final isExpired = homeController?.isWalkieTrialExpired ?? false;
                 final isSubscribed = homeController?.isWalkieSubscribed ?? false;
+                final isSubscriptionExpired =
+                    homeController?.isWalkieSubscriptionExpired ?? false;
+                final isTrialExpired =
+                    homeController?.isWalkieTrialExpired ?? false;
                 final hasWalkieBadge =
                     NotificationMarkerService.instance.hasWalkieMarker.value;
 
                 return _QuickActionCard(
                   title: "Walkie Talkie",
                   subtitle: subtitle,
-                  subtitleColor: isExpired
-                      ? const Color(0xFFDC2626)
-                      : (isSubscribed
-                          ? const Color(0xFF16A34A)
-                          : const Color(0xFF5338EE)),
+                  subtitleColor: isSubscribed
+                      ? const Color(0xFF16A34A)
+                      : (isSubscriptionExpired
+                          ? const Color(0xFFEA580C)
+                          : (isTrialExpired
+                              ? const Color(0xFFDC2626)
+                              : const Color(0xFF5338EE))),
                   showBadge: hasWalkieBadge,
                   badgeColor: const Color(0xFFEF4444),
                   isPremium: isSubscribed,
                   imagePath: "assets/icons/new_action_walkie_talkie.png",
                   onTap: () async {
-                    // Subscribed → channel list; otherwise → trial / plans screen.
-                    // Read live so a just-updated subscription is respected.
+                    // Subscribed or active trial access → channel list;
+                    // Otherwise (expired subscription, expired trial, or unstarted trial) → trial / plans screen.
+                    final canUse = homeController?.canUseWalkie ?? false;
                     final subscribed =
                         homeController?.isWalkieSubscribed ?? false;
-                    await Get.toNamed(subscribed
+                    await Get.toNamed((subscribed || canUse)
                         ? Routes.WalkieGroupSelect
                         : Routes.walkieTalkieTrialDetails);
                     homeController?.fetchInitializeData();

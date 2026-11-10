@@ -38,17 +38,41 @@ class HomeController extends GetxController {
   final Rx<InitializeModel?> initializeModel = Rx<InitializeModel?>(null);
   final RxBool isInitializing = false.obs;
 
+  static const String _prefWalkieSubtitle = 'cached_walkie_subtitle';
+  static const String _prefWalkieIsSubscribed = 'cached_walkie_is_subscribed';
+  static const String _prefWalkieIsSubExpired = 'cached_walkie_is_sub_expired';
+  static const String _prefWalkieIsTrialExpired = 'cached_walkie_is_trial_expired';
+  static const String _prefWalkieCanUse = 'cached_walkie_can_use';
+
   bool get canUseWalkie =>
-      initializeModel.value?.data?.walkie?.access?.canUseWalkie ?? false;
+      initializeModel.value?.data?.walkie?.access?.canUseWalkie ??
+      (Global.storageServices.getBool(_prefWalkieCanUse) ?? false);
 
   bool get isWalkieSubscribed =>
-      initializeModel.value?.data?.walkie?.isSubscribed ?? false;
+      initializeModel.value?.data?.walkie?.isSubscribed ??
+      (Global.storageServices.getBool(_prefWalkieIsSubscribed) ?? false);
+
+  bool get isWalkieSubscriptionExpired =>
+      initializeModel.value?.data?.walkie?.isSubscriptionExpired ??
+      (Global.storageServices.getBool(_prefWalkieIsSubExpired) ?? false);
 
   bool get isWalkieTrialExpired =>
-      initializeModel.value?.data?.walkie?.isTrialExpired ?? false;
+      initializeModel.value?.data?.walkie?.isTrialExpired ??
+      (Global.storageServices.getBool(_prefWalkieIsTrialExpired) ?? false);
 
-  String get walkieSubtitle =>
-      initializeModel.value?.data?.walkie?.statusSubtitle ?? "1 hr free";
+  bool get isWalkieTrialActive =>
+      initializeModel.value?.data?.walkie?.isTrialActive ?? false;
+
+  String get walkieSubtitle {
+    if (initializeModel.value?.data?.walkie != null) {
+      return initializeModel.value!.data!.walkie!.statusSubtitle;
+    }
+    final cached = Global.storageServices.getString(_prefWalkieSubtitle);
+    if (cached != null && cached.isNotEmpty) {
+      return cached;
+    }
+    return "1 hr free";
+  }
 
   StreamSubscription<Position>? _positionStreamSubscription;
 
@@ -123,6 +147,16 @@ class HomeController extends GetxController {
       if (result.status == true) {
         initializeModel.value = result;
         InitializeResponeMessage.value = "";
+
+        if (result.data?.walkie != null) {
+          final w = result.data!.walkie!;
+          Global.storageServices.setString(_prefWalkieSubtitle, w.statusSubtitle);
+          Global.storageServices.setBool(_prefWalkieIsSubscribed, w.isSubscribed);
+          Global.storageServices.setBool(_prefWalkieIsSubExpired, w.isSubscriptionExpired);
+          Global.storageServices.setBool(_prefWalkieIsTrialExpired, w.isTrialExpired);
+          Global.storageServices.setBool(_prefWalkieCanUse, w.access?.canUseWalkie ?? false);
+        }
+
         if (result.data?.notificationMarkers != null) {
           NotificationMarkerService.instance
               .updateFromModel(result.data?.notificationMarkers);
