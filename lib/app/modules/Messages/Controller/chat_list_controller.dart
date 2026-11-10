@@ -610,13 +610,13 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         'messageType': last.messageType,
         'senderId': last.senderId,
         'senderName': last.senderName,
-        'createdAt': last.createdAt,
-        'timestamp': last.createdAt ?? last.timestamp,
+        'createdAt': last.timestamp,
+        'timestamp': last.timestamp,
       }
       ..isDeletedForEveryone = deleted
       ..senderId = last.senderId?.toString() ?? row.senderId
       ..senderName = last.senderName?.toString() ?? row.senderName;
-    final msgTime = last.createdAt?.toString() ?? last.timestamp?.toString();
+    final msgTime = last.timestamp?.toString();
     if (msgTime != null && msgTime.isNotEmpty && msgTime != 'null') {
       row.time = msgTime;
       row.timestamp = msgTime;
