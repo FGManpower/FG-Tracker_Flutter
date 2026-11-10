@@ -25,6 +25,8 @@ import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
 import 'package:fgtracker/app/Data/Services/GroupCountService.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
+import 'package:fgtracker/app/Data/Services/PermissionGate/permission_gate_service.dart';
+import 'package:fgtracker/app/Data/Services/PermissionGate/permission_gate_models.dart';
 
 class OtpController extends GetxController {
   TextEditingController otpController = TextEditingController();
@@ -316,8 +318,29 @@ class OtpController extends GetxController {
             "true",
           );
 
+          // Pre-flight check: evaluate permissions before navigating to prevent ghost flicker
+          bool permissionsOk = false;
+          try {
+            if (!Get.isRegistered<PermissionGateService>()) {
+              Get.put(PermissionGateService(), permanent: true);
+            }
+            final r = await PermissionGateService.to.check().timeout(
+              const Duration(seconds: 2),
+              onTimeout: () =>
+                  PermissionGateService.to.result.value ??
+                  PermissionGateResult.error(PermissionGateService.to.flags),
+            );
+            permissionsOk = r.allowsAccess;
+          } catch (_) {
+            permissionsOk = false;
+          }
+
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            Get.offAllNamed(Routes.permissionSetup);
+            if (permissionsOk) {
+              Get.offAllNamed(Routes.Home_Screen);
+            } else {
+              Get.offAllNamed(Routes.permissionSetup);
+            }
           });
         }
       } else {

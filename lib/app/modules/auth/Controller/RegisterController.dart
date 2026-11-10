@@ -8,6 +8,8 @@ import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/app/Data/Services/PermissionGate/permission_gate_service.dart';
+import 'package:fgtracker/app/Data/Services/PermissionGate/permission_gate_models.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -303,7 +305,28 @@ class RegistrationController extends GetxController {
         Utils().fluttertoast(successMessage);
 
         if (goToPermissionSetup) {
-          Get.offAllNamed(Routes.permissionSetup);
+          // Pre-flight check: evaluate permissions before navigating to prevent ghost flicker
+          bool permissionsOk = false;
+          try {
+            if (!Get.isRegistered<PermissionGateService>()) {
+              Get.put(PermissionGateService(), permanent: true);
+            }
+            final r = await PermissionGateService.to.check().timeout(
+              const Duration(seconds: 2),
+              onTimeout: () =>
+                  PermissionGateService.to.result.value ??
+                  PermissionGateResult.error(PermissionGateService.to.flags),
+            );
+            permissionsOk = r.allowsAccess;
+          } catch (_) {
+            permissionsOk = false;
+          }
+
+          if (permissionsOk) {
+            Get.offAllNamed(Routes.Home_Screen);
+          } else {
+            Get.offAllNamed(Routes.permissionSetup);
+          }
         } else {
           Get.offAllNamed(Routes.Home_Screen);
         }

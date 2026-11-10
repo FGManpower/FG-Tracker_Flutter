@@ -1,34 +1,105 @@
-# Frontend Guide: Common Module (App Load, Home Socket, Auth & Core Systems)
+# Frontend Guide: Common Module (App Load, Screen Priority, Auth & Core Systems)
 
-> **Document Version:** `v2.1.0`  
+> **Document Version:** `v2.2.0`  
 > **Target Framework:** Flutter (Dart)  
-> **Scope:** App Bootstrap, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing
+> **Scope:** App Bootstrap & Screen Priority Hierarchy, Pre-Navigation Permission Evaluation, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing
 
 ---
 
-## 1. App Launch & Initialization Sequence
+## 1. App Launch, Screen Priority & State Machine Hierarchy
 
-The Flutter application executes a streamlined launch sequence to hydrate state before rendering the Home screen:
+The application follows a strict **Screen Priority Hierarchy** on startup and during authentication transitions. No screen is allowed to flash, mount, or transition if its entry conditions are not met.
 
 ```
-[ App Launch / Splash Screen ]
-              │
-              ├──► 1. Check SharedPreferences (StorageServices) for saved JWT token.
-              │       └── If missing: Navigate to OTP Login Screen.
-              │
-              ├──► 2. Call GET /api/initialize -> Hydrate root application state:
-              │       ├── Walkie access, trial days, active channel
-              │       ├── Calling missed call flags
-              │       ├── Chat unread flags
-              │       └── Razorpay public API key
-              │
-              ├──► 3. Connect to Socket.io /location namespace (Home Socket).
-              │       ├── Listen to 'notification_markers' -> Update bottom-nav red dots.
-              │       └── Listen to 'group_dashboard_counts' -> Populate Home tiles.
-              │
-              └──► 4. Navigate to Home Dashboard Screen.
-                      (FCM Token is sent as Device_Id on v2/verify-otp during login)
+                           [ APP LAUNCH / COLD START ]
+                                        │
+                                        ▼
+                  ┌───────────────────────────────────────────┐
+                  │ Priority 0: Native / VoIP / Push Actions  │
+                  │ (CallKit, Incoming Call, Walkie-Talkie)   │
+                  └─────────────────────┬─────────────────────┘
+                                        │ (If no pending VoIP action)
+                                        ▼
+                  ┌───────────────────────────────────────────┐
+                  │ Priority 1: Splash Screen (Routes.Splash) │
+                  │  Plays branding animation (InitiateCtrl)  │
+                  └─────────────────────┬─────────────────────┘
+                                        │
+                                        ▼
+                  ┌───────────────────────────────────────────┐
+                  │ Priority 2: Force Version Update Check    │
+                  │   (GET /initialize or /api/app-version)   │
+                  └─────────────────────┬─────────────────────┘
+                                        ├──► [Blocked: v_app < min_version & force=true]
+                                        │       └──► Routes.forceUpdate (Hard Block)
+                                        │
+                                        ▼ [Version OK]
+                  ┌───────────────────────────────────────────┐
+                  │ Priority 3: Authentication Gate (JWT/Reg) │
+                  │   Checks saved JWT token & isRegistered   │
+                  └─────────────────────┬─────────────────────┘
+                                        ├──► [Unauthenticated / Logged Out]
+                                        │       ├── If intro done  ──► Routes.Login
+                                        │       └── If first time  ──► Routes.Intro
+                                        │
+                                        ▼ [Authenticated & Registered]
+                  ┌───────────────────────────────────────────┐
+                  │ Priority 4: Compulsory Permission Gate    │
+                  │ Location (Always+GPS) & Push Notification │
+                  └─────────────────────┬─────────────────────┘
+                                        ├──► [Missing Compulsory Permissions]
+                                        │       ├── App launch ────► Routes.permissionGate
+                                        │       └── New login  ────► Routes.permissionSetup
+                                        │
+                                        ▼ [All Compulsory Permissions Granted]
+                  ┌───────────────────────────────────────────┐
+                  │ Priority 5: Home Dashboard Screen         │
+                  │   (Routes.Home_Screen / Dashboard)        │
+                  │ Connects Socket, LiveStatus, Red-Dot Sync │
+                  └───────────────────────────────────────────┘
 ```
+
+### 1.1 Screen Priority Decision Matrix
+
+| Priority | Screen Name | Route Path | Trigger Condition | Exit / Bypass Rule | When It Must NEVER Open |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **0** | **VoIP / Push Intercept** | `Routes.callScreen`<br>`Routes.groupWalkieScreen` | Incoming VoIP call via CallKit, or Walkie PTT push tap. | User ends call or dismisses walkie transmission. | During normal user-initiated app launch without active VoIP/PTT events. |
+| **1** | **Splash Screen** | `Routes.Splash` | Initial route of `GetMaterialApp` on app cold launch. | 4-second animation ends and all lower priority checks complete. | Never opens again after cold launch (cleared with `Get.offAllNamed`). |
+| **2** | **Force Update Screen** | `Routes.forceUpdate` | Remote Config / API returns `forceUpdate == true` AND `installedVersion < minVersion`. | User updates app via Play Store / App Store link. | When app version is up-to-date or `forceUpdate == false`. |
+| **3** | **Intro Walkthrough** | `Routes.Intro` | Fresh install / `introStatus != true` AND user not logged in. | User swipes through slides and taps "Get Started". | When `introStatus == true` or user is already authenticated. |
+| **4** | **Login / OTP Screen** | `Routes.Login`<br>`Routes.OTPScreen` | User is not logged in (`token == null` or `isRegistered != true`). | User enters phone, pays OTP charge (if intl), verifies OTP. | When user is already authenticated with a valid JWT token. |
+| **5A**| **Permission Setup (New Login)** | `Routes.permissionSetup` | Brand new user / fresh login AFTER OTP verification **ONLY IF** compulsory permissions are pending. | Once compulsory permissions (Location Always + Notification) are satisfied. | **MUST NEVER OPEN** if compulsory permissions are already granted on the device. |
+| **5B**| **Permission Gate (Existing User)** | `Routes.permissionGate` | Existing logged-in user on cold-start or app-resume **ONLY IF** compulsory permissions are revoked. | Auto-unlocks to Home as soon as permission is granted. | **MUST NEVER OPEN** when all compulsory permissions are already satisfied. |
+| **6** | **Home Dashboard** | `Routes.Home_Screen` | Version is valid, user is authenticated, and all compulsory permissions are active. | User logs out or permissions are revoked from OS Settings. | When unauthenticated, outdated, or lacking compulsory permissions. |
+
+---
+
+### 1.2 Root Cause Analysis: The Millisecond Screen Flicker Bug
+
+#### The Issue
+When opening the app or logging in with all required permissions already granted on the phone, users experienced the Permission Screen (`PermissionSetupScreen` or `PermissionGateScreen`) flashing on the display for 100ms–300ms before suddenly being redirected to `Home_Screen`.
+
+#### Why Was It Happening? (Antipattern: "Navigate First, Evaluate Later")
+1. **Unconditional Navigation in Auth Controller**:
+   After OTP verification, the code immediately executed:
+   ```dart
+   Get.offAllNamed(Routes.permissionSetup);
+   ```
+   without checking whether permissions were already granted on the device.
+2. **Asynchronous Evaluation on Screen Mount**:
+   The `PermissionSetupScreen` mounted immediately. Because its reactive loading state `checking.value` was initialized to `true`, the widget tree instantly painted the skeleton shimmer UI or cards.
+3. **Delayed Redirection**:
+   In `PermissionSetupController.onReady()`, `checkAllPermissionStatus()` queried native OS platform channels. Once it confirmed `canContinue == true`, it executed `_goHome()` (`Get.offAllNamed(Routes.Home_Screen)`).
+4. **User Perception**:
+   The screen was pushed, rendered, and destroyed within ~200ms. This produced an unpolished, unprofessional screen flicker / ghost screen transition.
+
+#### Architectural Fix: The "Evaluate Before Navigate" Rule
+To ensure screens that are not part of the active flow never open:
+1. **Never mount a route whose exit condition is already met.**
+2. **Pre-flight Permission Check**: Evaluate `PermissionGateService.to.check()` **before** initiating navigation.
+3. **Direct Routing**:
+   - If `permissions.allowsAccess == true` ➔ Navigate directly to `Routes.Home_Screen`.
+   - If `permissions.allowsAccess == false` ➔ Navigate to `Routes.permissionSetup` (or `Routes.permissionGate`).
 
 ---
 
@@ -145,8 +216,6 @@ SMS is held until payment is completed. Navigate to the OTP Charges Screen. The 
   "loginInfo": { "isExistingUser": true, "maskedEmail": "a***@x.com" }
 }
 ```
-
-> [!IMPORTANT]
 
 > [!IMPORTANT]
 > **International Tax Labeling on OTP Charge Screen:**
@@ -433,5 +502,6 @@ Screen sharing is initiated and controlled over the calling socket connection:
 ### 6.2 Change Log
 | Version | Date | Description |
 |---|---|---|
+| v2.2.0 | 2026-11-10 | Documented App Launch & Screen Priority State Machine; added root cause analysis & architectural resolution for millisecond permission screen flicker; established 'Evaluate-Before-Navigate' rule across Auth and Splash workflows. |
 | v2.1.0 | 2026-11-09 | Production International Payment Gateway verified across both Node.js backend and Flutter frontend; Flutter models updated for decimal plan pricing ($5.99 / $9.99 / $19.99); CurrencyFormat integrated across all payment views; 0% export GST & USD Razorpay orders documented. |
 | v2.0.0 | 2026-11-08 | Added GET `v2/otp-charge/my-rate` endpoint for dynamic side-menu rate; updated OTP token lifetime to 30 mins with grace period; verified 4-digit OTP format. |
