@@ -1,6 +1,6 @@
 # FG Tracker Chat Module: Flutter (Frontend) Implementation Guide
 
-> **Document version:** `F-1.1.2` · **Date:** 2026-11-07 · **Branch:** `46Solution`
+> **Document version:** `F-1.1.5` · **Date:** 2026-11-10 · **Branch:** `46Solution`
 > **Pairs with:** backend `FLUTTER_CHAT_INTEGRATION_GUIDE.md` **v2.8.0**
 > **Scope:** chat module only (private chat, group chat, chat notifications, forwarding, long-press options, chat list, group membership: create / join / add / remove / exit and their success sheets).
 > **Owner:** Flutter team. **Readers:** Flutter + Node.js developers.
@@ -532,7 +532,11 @@ The group chat screen itself has no exit option (the menu item is commented out 
 
 **Row update rules:**
 1. **Archive:** a chat archived here stays archived; an event never un-archives it. Updates to it apply inside the Archive list only.
-2. **New message** = a **newer** last-message id; equal or older = not new. A "delete for me" that sends the previous message never bumps the badge or moves the row.
+2. **New message & anti-shuffling:**
+   - A **new message** requires a newer last-message ID or a truly different content payload (`ChatListRules.isNewMessage`).
+   - Read receipts (`mark-read`, `mark_seen`), presence changes, and server touches that update conversation `updatedAt` without changing the last message ID or text evaluate `isNewMessage = false`.
+   - Equal or older message IDs and identical previews **never** bump the unread badge or move/shuffle the row.
+   - When merging updates (`_mergePrivateChat`), `takeUpdatedTime` is `false` if the message did not change, preserving the chat's original message creation timestamp.
 3. **Unread:**
    - The server's `unreadCount` wins when present.
    - Otherwise +1 only for a new message from **another known user**, counted **once per message id**, never for a deleted message.
@@ -547,10 +551,22 @@ The group chat screen itself has no exit option (the menu item is commented out 
    - a `typing` event carrying `groupId` / `chatType:"group"` goes to the group row;
    - auto-clears after 5 s and when that user's message arrives.
 6. **Re-sync:** on reconnect and resume, `GET /chat/sync?since=<last sync ISO>` is merged in place; full page-1 refetch if it fails.
+7. **Sorting stability & tie-breakers:**
+   - Pinned chats sort by `pinnedAt` descending, then by message creation timestamp descending (`lastMessageTime` checks `lastMessageData` timestamps before falling back to `timestamp`/`time`), with a deterministic tie-breaker `chatKey(a).compareTo(chatKey(b))`.
+   - Unpinned chats sort by `lastMessageTime` descending with the same deterministic tie-breaker.
+   - Opening and returning from a chat leaves list order 100% stable unless an actual new message was sent/received.
 
 ### 6.3 Open chat ↔ list
 - The open chat pushes its real last message to its list row after a **delete**, a **clear**, and on **close**.
+- `syncLastMessageFromChat`: retains `row.lastMessageData` (message `createdAt`, `id`, `content`, `senderId`) and syncs `row.time` and `row.timestamp` with the message's `createdAt`, preventing conversation `updatedAt` from corrupting sorting.
 - On close: unread for that chat → 0 locally; `mark_private_chat_read` / `mark_seen` are sent.
+
+### 6.4 Status & Stories Section (WhatsApp-Style Updates)
+- Rendered via `StatusSection` inside `ChatListScreen` (Updates / Status tab).
+- **"My Status" popup:**
+  - Uses standard Flutter modal route (`showGeneralDialog`) with `barrierDismissible: true` and barrier tap dismissal.
+  - Replaces non-modal `OverlayEntry` to eliminate gesture arena conflicts that previously caused the screen to become unresponsive or require multiple clicks.
+  - Dismisses cleanly on tap anywhere outside or on system back button, matching professional WhatsApp UX.
 
 ---
 
@@ -691,6 +707,7 @@ Remove them all in one cleanup commit after QA, by searching for `TODO(` plus th
 ## 9. Change log
 | Version | Date | Change |
 |---|---|---|
+| F-1.1.5 | 2026-11-10 | **Anti-Shuffling & Status Popup UX Stability Fixes:**<br>1. **Chat List Stability:** Fixed bug where opening a chat and tapping back caused the chat list to reorder/shuffle. Updated `ChatListRules.isNewMessage` to reject identical message updates caused by read receipts (`mark-read`, `mark_seen`) or backend `updatedAt` touches; updated `syncLastMessageFromChat` to retain `lastMessageData` and true message `createdAt`; updated `ChatListRules.compare` with deterministic tie-breakers (`chatKey(a).compareTo(chatKey(b))`) and prioritized message creation timestamps over conversation `updatedAt`.<br>2. **Status Section Popup:** Replaced non-modal `OverlayEntry` in `StatusSection._showMyStatusPopup` with a modal `showGeneralDialog` (`barrierDismissible: true`). Tapping anywhere outside or pressing system back immediately dismisses the popup and restores full touch responsiveness without gesture arena conflicts. |
 | F-1.1.4 | 2026-11-08 | Added v2.5.0 Frontend Guide parity: UI Flow & Architecture diagrams, WhatsApp-Style Management Operations reference matrix, screen lifecycle controller pattern with critical exit/leave guidelines (no accidental clear_chat on back), and verified REST history endpoints with multi-param alias support. |
 | F-1.1.3 | 2026-11-08 | Fixed Group Activation/Deactivation: resolved "type 'String' is not a subtype of type 'bool'" dialog error by adding robust boolean/string/int parsing in `CommonResponse` and `GroupRes`/`GroupsResData`; updated `GroupRepo.updateGroupStatus` to use `Authpost` with JWT Bearer header; added optimistic switch toggle in `GroupController` with automatic rollback on error. |
 | F-1.1.2 | 2026-11-07 | Delete group (admin, Member screen) follows the §2.11 rule: `navigateAfterLeave` instead of `Get.offAllNamed(Home)`. Home is no longer rebuilt after a delete, so Home's live-status group counts update on their next refresh. |

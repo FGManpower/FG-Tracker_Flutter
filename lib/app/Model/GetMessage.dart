@@ -280,6 +280,10 @@ class MessageData {
   dynamic duration;
   dynamic groupId;
 
+  /// Convenience alias for `timestamp` (the server timestamp when the message was created).
+  dynamic get createdAt => timestamp;
+  set createdAt(dynamic value) => timestamp = value;
+
   MessageData({
     this.id,
     this.clientMessageId,

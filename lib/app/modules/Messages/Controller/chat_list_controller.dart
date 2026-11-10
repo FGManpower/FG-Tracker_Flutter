@@ -593,18 +593,34 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         last.content?.toString() == MessagePreviewBuilder.deletedText;
     final preview = MessagePreviewBuilder.forMessage(last);
     final text = deleted ? MessagePreviewBuilder.deletedText : preview.display;
-    if (row.preview == text &&
-        (row.isDeletedForEveryone == true) == deleted) {
+    final isSamePreview = row.preview == text &&
+        (row.isDeletedForEveryone == true) == deleted;
+    final hasValidLastData = row.lastMessageData != null;
+    if (isSamePreview && hasValidLastData) {
       return;
     }
     row
       ..message = text
       ..preview = text
       ..messageType = deleted ? 'text' : last.messageType?.toString()
-      ..lastMessageData = null
+      ..lastMessageData = {
+        'id': last.id,
+        'messageId': last.id,
+        'content': last.content,
+        'messageType': last.messageType,
+        'senderId': last.senderId,
+        'senderName': last.senderName,
+        'createdAt': last.timestamp,
+        'timestamp': last.timestamp,
+      }
       ..isDeletedForEveryone = deleted
       ..senderId = last.senderId?.toString() ?? row.senderId
       ..senderName = last.senderName?.toString() ?? row.senderName;
+    final msgTime = last.timestamp?.toString();
+    if (msgTime != null && msgTime.isNotEmpty && msgTime != 'null') {
+      row.time = msgTime;
+      row.timestamp = msgTime;
+    }
     privateChats.refresh();
   }
 
@@ -1603,15 +1619,23 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         current.message != null &&
         updated.message != current.message;
 
-    final bool useUpdatedMessage = updatedHasMessage &&
-        (isDistinctNewId ||
-            isDifferentText ||
-            !currentTime.isAfter(updatedTime.add(const Duration(seconds: 5))));
+    final bool isDifferentPreview = (updated.preview?.trim().isNotEmpty ?? false) &&
+        (current.preview?.trim().isNotEmpty ?? false) &&
+        updated.preview?.trim() != current.preview?.trim();
+
+    final bool textActuallyChanged = isDifferentText || isDifferentPreview;
 
     // Same last message re-sent with a read/seen change (often a newer
     // updatedAt): take its fields but keep the time, so the row doesn't move.
-    final sameMessage =
-        currentId != null && currentId == updatedId;
+    final bool sameMessage =
+        (currentId != null && currentId == updatedId) ||
+        (!textActuallyChanged && !isDistinctNewId);
+
+    final bool useUpdatedMessage = updatedHasMessage &&
+        (isDistinctNewId ||
+            textActuallyChanged ||
+            !currentTime.isAfter(updatedTime.add(const Duration(seconds: 5))));
+
     final takeUpdatedTime = useUpdatedMessage && !sameMessage;
 
     final resolvedTime = updatedHasTime
@@ -1678,7 +1702,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       senderId: useUpdatedMessage ? updated.senderId : current.senderId,
       senderName: useUpdatedMessage ? updated.senderName : current.senderName,
       lastMessageData: useUpdatedMessage
-          ? updated.lastMessageData
+          ? (updated.lastMessageData ?? current.lastMessageData)
           : current.lastMessageData,
     );
   }

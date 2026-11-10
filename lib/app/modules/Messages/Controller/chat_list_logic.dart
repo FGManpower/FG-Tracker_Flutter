@@ -36,8 +36,19 @@ class ChatListRules {
   }
 
   /// Time of the last message, used for ordering.
-  static DateTime lastMessageTime(PrivateChatModel c) =>
-      parseTime(c.timestamp ?? c.time);
+  static DateTime lastMessageTime(PrivateChatModel c) {
+    if (c.lastMessageData != null) {
+      final msgTime = c.lastMessageData!['createdAt'] ??
+          c.lastMessageData!['created_at'] ??
+          c.lastMessageData!['timestamp'] ??
+          c.lastMessageData!['time'];
+      if (msgTime != null) {
+        final parsed = parseTime(msgTime);
+        if (parsed.millisecondsSinceEpoch > 0) return parsed;
+      }
+    }
+    return parseTime(c.timestamp ?? c.time);
+  }
 
   /// Id of the last message, when the payload carries one.
   static String? lastMessageId(PrivateChatModel c) {
@@ -56,6 +67,12 @@ class ChatListRules {
     final aPinned = a.isPinned == true;
     final bPinned = b.isPinned == true;
     if (aPinned != bPinned) return aPinned ? -1 : 1;
+    if (aPinned && bPinned) {
+      final aPinTime = parseTime(a.pinnedAt);
+      final bPinTime = parseTime(b.pinnedAt);
+      final byPin = bPinTime.compareTo(aPinTime);
+      if (byPin != 0) return byPin;
+    }
     final byTime = lastMessageTime(b).compareTo(lastMessageTime(a));
     if (byTime != 0) return byTime;
     return chatKey(a).compareTo(chatKey(b));
@@ -87,6 +104,17 @@ class ChatListRules {
       return !lastMessageTime(updated).isBefore(lastMessageTime(current));
     }
 
+    final currentText = current.message?.trim() ?? current.preview?.trim() ?? '';
+    final updatedText = updated.message?.trim() ?? updated.preview?.trim() ?? '';
+    if (currentText.isNotEmpty && currentText == updatedText) {
+      // Same message content: if updatedId is missing or equal to currentId,
+      // this is NOT a new message (e.g. read receipt, presence update, updatedAt bump).
+      // Crucial: never treat a read receipt or seen event as a new message!
+      if (updatedId == null || updatedId == currentId) {
+        return false;
+      }
+    }
+
     final updatedTime = lastMessageTime(updated);
     final currentTime = lastMessageTime(current);
 
@@ -97,10 +125,8 @@ class ChatListRules {
       return !updatedTime.isBefore(currentTime.subtract(const Duration(seconds: 5)));
     }
 
-    // No ids and same text: only a strictly newer time is a new message.
-    // The old 2 s "grace" made a duplicate event (receive_message arrives
-    // twice, same text + time) count as new and bump the unread badge again.
-    return updatedTime.isAfter(currentTime);
+    // No IDs and text did not change: same message, never reorder on read/seen updates.
+    return false;
   }
 
   /// Unread badge after merging a realtime update.
