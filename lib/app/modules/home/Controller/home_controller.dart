@@ -46,19 +46,19 @@ class HomeController extends GetxController {
 
   bool get canUseWalkie =>
       initializeModel.value?.data?.walkie?.access?.canUseWalkie ??
-      (Global.storageServices.getBool(_prefWalkieCanUse) ?? false);
+      (Global.storageServices.getBoolSync(_prefWalkieCanUse) ?? false);
 
   bool get isWalkieSubscribed =>
       initializeModel.value?.data?.walkie?.isSubscribed ??
-      (Global.storageServices.getBool(_prefWalkieIsSubscribed) ?? false);
+      (Global.storageServices.getBoolSync(_prefWalkieIsSubscribed) ?? false);
 
   bool get isWalkieSubscriptionExpired =>
       initializeModel.value?.data?.walkie?.isSubscriptionExpired ??
-      (Global.storageServices.getBool(_prefWalkieIsSubExpired) ?? false);
+      (Global.storageServices.getBoolSync(_prefWalkieIsSubExpired) ?? false);
 
   bool get isWalkieTrialExpired =>
       initializeModel.value?.data?.walkie?.isTrialExpired ??
-      (Global.storageServices.getBool(_prefWalkieIsTrialExpired) ?? false);
+      (Global.storageServices.getBoolSync(_prefWalkieIsTrialExpired) ?? false);
 
   bool get isWalkieTrialActive =>
       initializeModel.value?.data?.walkie?.isTrialActive ?? false;
@@ -67,7 +67,7 @@ class HomeController extends GetxController {
     if (initializeModel.value?.data?.walkie != null) {
       return initializeModel.value!.data!.walkie!.statusSubtitle;
     }
-    final cached = Global.storageServices.getString(_prefWalkieSubtitle);
+    final cached = Global.storageServices.get(_prefWalkieSubtitle);
     if (cached != null && cached.isNotEmpty) {
       return cached;
     }
