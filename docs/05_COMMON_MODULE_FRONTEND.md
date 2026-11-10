@@ -289,7 +289,25 @@ class OtpChargesController {
 }
 ```
 
-### 3.4 Handling Session Expiry & Force Logout
+### 3.4 Pay Button State Machine & Enablement Conditions (OTP Charges Screen)
+
+The **Pay** button on `Routes.OTP_CHARGES` is governed by a strict client-server condition chain to guarantee that only valid, enabled payment sessions can initiate checkout:
+
+| Condition Parameter | Source | Description / Rule | If Condition Fails |
+|---|---|---|---|
+| **`canPay`** | Navigation Arguments (`otpChargeToken`) | `true` if `otpChargeToken != null && otpChargeToken.isNotEmpty`. Issued when entering from Login flow. | Button is completely hidden (`SizedBox.shrink()`). Used when screen is opened from Side-Menu info rate. |
+| **`isLoading`** | Local Controller State (`RxBool`) | `true` during active REST API order creation or verification attempts. | Button shows centered CircularProgressIndicator; duplicate taps blocked. |
+| **`isPaymentEnabled`** | `GET /v2/otp-charge/config` -> `data.isPaymentEnabled` | Evaluates backend master payment switches: `process.env.PAYMENT_ENABLED` and `system_settings` table in MySQL (`PAYMENT_ENABLED`). | Displays prominent red alert banner: *"OTP payments are temporarily paused by administrator"*. Button shows *"Payment Paused"* and clicking pops up explanatory alert dialog. |
+| **`_tokenExpired`** | 25-minute client timer (`_tokenLifetime`) | Backend JWT token has 30-min validity. Controller times it out locally after 25 mins. | Shows session expired dialog and redirects user back to login screen. |
+
+#### Backend Master Switches (Troubleshooting Disabled Pay Button):
+1. **Server `.env`**: Ensure `PAYMENT_ENABLED=true` is present in the backend `.env`.
+2. **Database Table `system_settings`**: Ensure the row where `key = 'PAYMENT_ENABLED'` has `status = true` (or `1`) and `value = 'true'`.
+3. **Gateway Output**: Check `GET /api/v2/otp-charge/config` — the payload `data.isPaymentEnabled` must be `true` for checkout to be activated.
+
+---
+
+### 3.5 Handling Session Expiry & Force Logout
 The backend uses a single 90-day JWT signed with a `token_version`. If a `401 Unauthorized` response or `force_logout` socket event is encountered:
 - Execute `LogoutUser().handleForceLogout()`
 - Clears session state from `StorageServices` while preserving `PrefConst.introStatus`
@@ -298,7 +316,7 @@ The backend uses a single 90-day JWT signed with a `token_version`. If a `401 Un
 
 ---
 
-### 3.5 Logged-in User OTP Rate (Side-Menu "OTP Charges" Screen)
+### 3.6 Logged-in User OTP Rate (Side-Menu "OTP Charges" Screen)
 
 Endpoint: `GET v2/otp-charge/my-rate`  
 Headers: `Authorization: Bearer <JWT>`  

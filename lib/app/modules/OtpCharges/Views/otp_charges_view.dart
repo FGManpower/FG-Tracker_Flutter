@@ -484,62 +484,96 @@ class OtpChargesView extends GetView<OtpChargesController> {
   Widget _bottomBar() {
     // Side menu has no charge token, nothing to pay for
     if (!controller.canPay) return const SizedBox.shrink();
-    // Full-width Pay button, no white bar behind it
+    // Full-width Pay button with clear feedback if payments are paused
     return Padding(
       padding: EdgeInsets.only(top: 8.h),
       child: Obx(() {
         final loading = controller.isLoading.value;
-        final enabled = !loading && controller.isPaymentEnabled.value;
-        return Semantics(
-          button: true,
-          enabled: enabled,
-          excludeSemantics: true,
-          label: 'Pay ${controller.spokenMoney(controller.totalPerOtp)}',
-          child: SizedBox(
-            width: double.infinity,
-            height: 52.h,
-            child: ElevatedButton(
-              onPressed: enabled ? controller.onPay : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryDarkblue,
-                disabledBackgroundColor:
-                    AppColors.primaryDarkblue.withValues(alpha: 0.6),
-                elevation: 0,
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
+        final paymentEnabled = controller.isPaymentEnabled.value;
+        final enabled = !loading;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!paymentEnabled) ...[
+              Container(
+                margin: EdgeInsets.only(bottom: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: const Color(0xFFFECACA)),
                 ),
-              ),
-              child: loading
-                  ? SizedBox(
-                      width: 22.r,
-                      height: 22.r,
-                      child: const CircularProgressIndicator(
-                          strokeWidth: 2.4, color: Colors.white),
-                    )
-                  : FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Pay ${controller.money(controller.totalPerOtp)}',
-                            style: TextStyle(
-                              fontSize: 15.sp,
-                              fontFamily: FontFamily.interBold,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              fontFeatures: _tabular,
-                            ),
-                          ),
-                          SizedBox(width: 8.w),
-                          Icon(Icons.arrow_forward_rounded,
-                              size: 18.sp, color: Colors.white),
-                        ],
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline_rounded,
+                        color: const Color(0xFFDC2626), size: 16.sp),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        "OTP payments are temporarily paused by administrator. Tap below for details.",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontFamily: FontFamily.interMedium,
+                          color: const Color(0xFF991B1B),
+                        ),
                       ),
                     ),
+                  ],
+                ),
+              ),
+            ],
+            SizedBox(
+              width: double.infinity,
+              height: 52.h,
+              child: ElevatedButton(
+                onPressed: enabled ? controller.onPay : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: paymentEnabled
+                      ? AppColors.primaryDarkblue
+                      : const Color(0xFFDC2626),
+                  elevation: 0,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                ),
+                child: loading
+                    ? SizedBox(
+                        width: 22.r,
+                        height: 22.r,
+                        child: const CircularProgressIndicator(
+                            strokeWidth: 2.4, color: Colors.white),
+                      )
+                    : FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              paymentEnabled
+                                  ? 'Pay ${controller.money(controller.totalPerOtp)}'
+                                  : 'Payment Paused (${controller.money(controller.totalPerOtp)})',
+                              style: TextStyle(
+                                fontSize: 15.sp,
+                                fontFamily: FontFamily.interBold,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                fontFeatures: _tabular,
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Icon(
+                                paymentEnabled
+                                    ? Icons.arrow_forward_rounded
+                                    : Icons.info_outline_rounded,
+                                size: 18.sp,
+                                color: Colors.white),
+                          ],
+                        ),
+                      ),
+              ),
             ),
-          ),
+          ],
         );
       }),
     );
