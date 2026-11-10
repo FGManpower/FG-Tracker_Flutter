@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class InitializeModel {
   bool? status;
   String? message;
@@ -28,6 +30,7 @@ class InitializeData {
   PaymentInitData? payment;
   WalkieInitData? walkie;
   NotificationMarkers? notificationMarkers;
+  AppVersionData? appVersion;
   dynamic calling;
   dynamic chat;
   dynamic tracking;
@@ -40,6 +43,7 @@ class InitializeData {
     this.payment,
     this.walkie,
     this.notificationMarkers,
+    this.appVersion,
     this.calling,
     this.chat,
     this.tracking,
@@ -62,6 +66,10 @@ class InitializeData {
           ? NotificationMarkers.fromJson(
               Map<String, dynamic>.from(json['notificationMarkers']))
           : null,
+      appVersion: json['appVersion'] != null
+          ? AppVersionData.fromJson(
+              Map<String, dynamic>.from(json['appVersion']))
+          : null,
       calling: json['calling'],
       chat: json['chat'],
       tracking: json['tracking'],
@@ -77,6 +85,7 @@ class InitializeData {
       'payment': payment?.toJson(),
       'walkie': walkie?.toJson(),
       'notificationMarkers': notificationMarkers?.toJson(),
+      'appVersion': appVersion?.toJson(),
       'calling': calling,
       'chat': chat,
       'tracking': tracking,
@@ -494,6 +503,96 @@ class WalkieActions {
     return {
       'showSubscribe': showSubscribe,
       'showRenew': showRenew,
+    };
+  }
+}
+
+
+class AppVersionData {
+  final PlatformVersionData android;
+  final PlatformVersionData ios;
+  final String title;
+  final String message;
+
+  AppVersionData({
+    required this.android,
+    required this.ios,
+    this.title = 'Update Required',
+    this.message =
+        'A new version of FG Tracker is available. Please update to continue.',
+  });
+
+  factory AppVersionData.fromJson(Map<String, dynamic> json) {
+    return AppVersionData(
+      android: json['android'] != null
+          ? PlatformVersionData.fromJson(
+              Map<String, dynamic>.from(json['android']))
+          : PlatformVersionData.empty(),
+      ios: json['ios'] != null
+          ? PlatformVersionData.fromJson(
+              Map<String, dynamic>.from(json['ios']))
+          : PlatformVersionData.empty(),
+      title: json['title']?.toString() ?? 'Update Required',
+      message: json['message']?.toString() ??
+          'A new version of FG Tracker is available. Please update to continue.',
+    );
+  }
+
+  PlatformVersionData get currentPlatformData {
+    if (Platform.isIOS) {
+      return ios;
+    }
+    return android;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'android': android.toJson(),
+      'ios': ios.toJson(),
+      'title': title,
+      'message': message,
+    };
+  }
+}
+
+class PlatformVersionData {
+  final String minVersion;
+  final String latestVersion;
+  final bool forceUpdate;
+  final String storeUrl;
+
+  PlatformVersionData({
+    required this.minVersion,
+    required this.latestVersion,
+    required this.forceUpdate,
+    required this.storeUrl,
+  });
+
+  factory PlatformVersionData.fromJson(Map<String, dynamic> json) {
+    return PlatformVersionData(
+      minVersion: json['minVersion']?.toString() ?? '1.0.0',
+      latestVersion: json['latestVersion']?.toString() ?? '1.0.0',
+      forceUpdate: json['forceUpdate'] == true ||
+          json['forceUpdate']?.toString().toLowerCase() == 'true',
+      storeUrl: json['storeUrl']?.toString() ?? '',
+    );
+  }
+
+  factory PlatformVersionData.empty() {
+    return PlatformVersionData(
+      minVersion: '1.0.0',
+      latestVersion: '1.0.0',
+      forceUpdate: false,
+      storeUrl: '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'minVersion': minVersion,
+      'latestVersion': latestVersion,
+      'forceUpdate': forceUpdate,
+      'storeUrl': storeUrl,
     };
   }
 }

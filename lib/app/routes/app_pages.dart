@@ -43,6 +43,8 @@ import '../modules/Walkie-talkie/Views/WalkieTalkieScreen.dart';
 import '../Data/Services/PermissionGate/permission_gate_middleware.dart';
 import '../modules/PermissionGate/permission_gate_binding.dart';
 import '../modules/PermissionGate/permission_gate_screen.dart';
+import '../modules/ForceUpdate/Binding/force_update_binding.dart';
+import '../modules/ForceUpdate/Views/force_update_screen.dart';
 import '../modules/home/Bindings/permission_setup_binding.dart';
 import '../modules/home/Views/LiveStatus/components/total_groups.dart';
 import '../modules/home/Views/permission_setup_screen.dart';
@@ -336,6 +338,11 @@ class AppPages {
       name: Routes.permissionGate,
       page: () => const PermissionGateScreen(),
       binding: PermissionGateBinding(),
+    ),
+    GetPage(
+      name: Routes.forceUpdate,
+      page: () => const ForceUpdateScreen(),
+      binding: ForceUpdateBinding(),
     ),
     GetPage(
       name: Routes.OTP_CHARGES,

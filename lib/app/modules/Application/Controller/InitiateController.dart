@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGate/permission_gate_service.dart';
+import 'package:fgtracker/app/Data/Services/app_version_service.dart';
 import 'package:get/get.dart';
 import '../../../Core/constant/pref_res.dart';
 
@@ -105,6 +106,17 @@ class InitiateController extends GetxController
       return;
     }
 
+    // 1. Force update check: If installed version < minVersion and forceUpdate is true, block app
+    try {
+      final isBlocked = await AppVersionService.instance.checkAndPromptUpdate();
+      if (isBlocked) {
+        _splashTimer?.cancel();
+        return;
+      }
+    } catch (e) {
+      debugPrint('[InitiateController] Version check error: $e');
+    }
+
     await Future.delayed(const Duration(seconds: 1));
 
     if (_isCallOrWalkieActive ||
@@ -141,6 +153,7 @@ class InitiateController extends GetxController
       Get.offAllNamed(Routes.Intro);
     }
   }
+
   @override
   void onClose() {
     _splashTimer?.cancel();

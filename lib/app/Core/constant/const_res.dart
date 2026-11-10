@@ -2,6 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class ConstRes {
+  ///------------------------ App Version ------------------------///
+  static const String appVersion = '2.0.3';
+  static const int appBuildNumber = 203;
+
   ///------------------------ Backend urls and key ------------------------///
 
   // static const String development = 'http://10.57.204.163:4000/'; // Development

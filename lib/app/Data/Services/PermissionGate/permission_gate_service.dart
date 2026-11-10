@@ -74,6 +74,7 @@ class PermissionGateService extends GetxService with WidgetsBindingObserver {
     Routes.OTP_CHARGES,
     Routes.permissionSetup,
     Routes.permissionGate,
+    Routes.forceUpdate,
     Routes.callScreen,
     Routes.IncomingCallScreen,
     Routes.groupWalkieScreen,

@@ -45,10 +45,7 @@ abstract class Routes {
   static const permissionGate = _Paths.permissionGate;
   static const OTP_CHARGES = _Paths.OTP_CHARGES;
   static const packagePricing = _Paths.packagePricing;
-
-
-
-
+  static const forceUpdate = _Paths.forceUpdate;
 }
 
 abstract class _Paths {
@@ -96,5 +93,5 @@ abstract class _Paths {
   static const permissionGate = '/permissions-required';
   static const OTP_CHARGES = '/OtpChargesScreen';
   static const packagePricing = '/package-pricing';
-
+  static const forceUpdate = '/force-update';
 }
