@@ -2,8 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Model/group_member_model.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -134,7 +138,7 @@ class _OnlineMemberState extends State<OnlineMember> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Online",
+                      appL10n.common_online,
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
@@ -148,7 +152,7 @@ class _OnlineMemberState extends State<OnlineMember> {
                           controller.recentlyOnlineList.length;
 
                       return Text(
-                        "$total Members",
+                        appL10n.common_membersCount(total),
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontFamily: FontFamily.interRegular,
@@ -328,7 +332,7 @@ class _OnlineMemberState extends State<OnlineMember> {
           color: Colors.black87,
         ),
         decoration: InputDecoration(
-          hintText: "Search members...",
+          hintText: appL10n.home_searchMembersHint,
           hintStyle: TextStyle(
             fontSize: 14.sp,
             fontFamily: FontFamily.interRegular,
@@ -373,13 +377,16 @@ class _OnlineMemberState extends State<OnlineMember> {
         children: [
           Row(
             children: [
-              Text(
-                "Online Now",
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: FontFamily.interBold,
-                  color: Colors.black87,
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 150.w),
+                child: AutoFitText(
+                  appL10n.home_onlineNow,
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: FontFamily.interBold,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
               SizedBox(width: 8.w),
@@ -418,13 +425,18 @@ class _OnlineMemberState extends State<OnlineMember> {
                     ),
                     child: Row(
                       children: [
-                        Text(
-                          _showAllOnlineNow ? "Show Less" : "View All",
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: FontFamily.interSemiBold,
-                            color: const Color(0xFF6366F1),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 100.w),
+                          child: AutoFitText(
+                            _showAllOnlineNow
+                                ? appL10n.home_showLess
+                                : appL10n.common_viewAll,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: FontFamily.interSemiBold,
+                              color: const Color(0xFF6366F1),
+                            ),
                           ),
                         ),
                         SizedBox(width: 2.w),
@@ -447,7 +459,7 @@ class _OnlineMemberState extends State<OnlineMember> {
               ),
               alignment: Alignment.center,
               child: Text(
-                "No members currently online",
+                appL10n.home_noMembersOnline,
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontFamily: FontFamily.interRegular,
@@ -488,7 +500,7 @@ class _OnlineMemberState extends State<OnlineMember> {
           Row(
             children: [
               Text(
-                "Recently Online",
+                appL10n.home_recentlyOnline,
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w700,
@@ -526,7 +538,7 @@ class _OnlineMemberState extends State<OnlineMember> {
               ),
               alignment: Alignment.center,
               child: Text(
-                "No recently active members",
+                appL10n.home_noRecentlyActiveMembers,
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontFamily: FontFamily.interRegular,
@@ -676,7 +688,7 @@ class _OnlineMemberState extends State<OnlineMember> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    member.displayName,
+                    member.displayNameLabel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -700,8 +712,10 @@ class _OnlineMemberState extends State<OnlineMember> {
                   SizedBox(height: 3.h),
                   Text(
                     isOnlineNow
-                        ? "Online"
-                        : "Last seen ${member.formattedLastSeen}",
+                        ? appL10n.common_online
+                        : (formatLastSeenWith(appL10n,
+                                Tracking.parseDateTime(member.lastSeen)) ??
+                            appL10n.home_lastSeen(member.formattedLastSeen)),
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w500,
@@ -771,7 +785,7 @@ class _OnlineMemberState extends State<OnlineMember> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "People Online",
+                  appL10n.home_peopleOnline,
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w700,
@@ -781,7 +795,7 @@ class _OnlineMemberState extends State<OnlineMember> {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  "These members are active in the app right now and available to connect.",
+                  appL10n.home_peopleOnlineSubtitle,
                   style: TextStyle(
                     fontSize: 11.sp,
                     fontFamily: FontFamily.interRegular,
@@ -823,7 +837,7 @@ class _OnlineMemberSkeleton extends StatelessWidget {
               child: TextField(
                 enabled: false,
                 decoration: InputDecoration(
-                  hintText: "Search members...",
+                  hintText: appL10n.home_searchMembersHint,
                   prefixIcon: const Icon(
                     Icons.search_rounded,
                   ),
@@ -857,7 +871,7 @@ class _OnlineMemberSkeleton extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
-                        "Online Now",
+                        appL10n.home_onlineNow,
                         style: TextStyle(
                           fontSize: 15.sp,
                           fontFamily: FontFamily.interBold,
@@ -883,7 +897,7 @@ class _OnlineMemberSkeleton extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      "Recently Online",
+                      appL10n.home_recentlyOnline,
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontFamily: FontFamily.interBold,
@@ -947,7 +961,7 @@ class _OnlineMemberSkeleton extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "People Online",
+                  appL10n.home_peopleOnline,
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontFamily: FontFamily.interBold,
@@ -955,7 +969,7 @@ class _OnlineMemberSkeleton extends StatelessWidget {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  "These members are active in the app right now and available to connect.",
+                  appL10n.home_peopleOnlineSubtitle,
                   maxLines: 2,
                   style: TextStyle(
                     fontSize: 11.sp,

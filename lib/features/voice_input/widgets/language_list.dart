@@ -4,6 +4,7 @@ import 'package:fgtracker/features/voice_input/voice_languages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class LanguageList extends StatelessWidget {
   final VoiceInputController controller;
@@ -30,7 +31,7 @@ class LanguageList extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Choose Speech Language",
+                context.l10n.voice_chooseSpeechLanguage,
                 style: TextStyle(
                   color: AppColors.darkText, // #0F0B4C
                   fontSize: 15.sp,
@@ -118,7 +119,7 @@ class LanguageList extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(8.r),
                                     ),
                                     child: Text(
-                                      "App language",
+                                      context.l10n.voice_appLanguage,
                                       style: TextStyle(
                                         color: isSelected
                                             ? Colors.white

@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
@@ -43,8 +44,8 @@ class LocationPermissions {
 
         await CommonDialog.ConfirmationDialog(
           icon: Icons.location_on_outlined,
-          cancel: "Cancel",
-          confirm: "Settings",
+          cancel: appL10n.common_cancel,
+          confirm: appL10n.common_settings,
           onConfirm: () async {
             Navigator.pop(ContextUtility.context!);
             await openAppSettings();
@@ -52,9 +53,9 @@ class LocationPermissions {
           onCancel: () {
             Navigator.pop(ContextUtility.context!);
           },
-          title: "Enable 'Always' Location Permission",
+          title: appL10n.perm_alwaysLocationTitle,
           content:
-          "To track your group in real time and in background, please set Location access to 'Allow all the time' in App Settings.",
+          appL10n.perm_alwaysLocationBody,
         );
       }
 

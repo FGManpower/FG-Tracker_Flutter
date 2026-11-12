@@ -1,3 +1,5 @@
+import 'package:fgtracker/l10n/l10n.dart';
+
 /// Display helpers for amounts in the currency the backend sends
 /// (Walkie orders, OTP charges). Unknown codes show as "AED 10.50".
 class CurrencyFormat {
@@ -59,17 +61,18 @@ class CurrencyFormat {
       final paiseTotal = (amount * 100).round();
       final rupees = paiseTotal ~/ 100;
       final paise = paiseTotal % 100;
-      final r = '$rupees ${rupees == 1 ? 'rupee' : 'rupees'}';
-      return paise == 0 ? r : '$r $paise paise';
+      return paise == 0
+          ? appL10n.util_spokenRupees(rupees)
+          : appL10n.util_spokenRupeesPaise(rupees, paise);
     }
     final value = amount.toStringAsFixed(2);
     switch (c) {
       case 'USD':
-        return '$value US dollars';
+        return appL10n.util_spokenUsd(value);
       case 'EUR':
-        return '$value euros';
+        return appL10n.util_spokenEur(value);
       case 'GBP':
-        return '$value pounds';
+        return appL10n.util_spokenGbp(value);
       default:
         return '$value $c';
     }

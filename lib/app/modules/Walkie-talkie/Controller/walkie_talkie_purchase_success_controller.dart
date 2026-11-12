@@ -6,7 +6,8 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Utils/walkie_plan_l10n.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class WalkieTalkiePurchaseSuccessController extends GetxController {
   // Observables
@@ -17,7 +18,16 @@ class WalkieTalkiePurchaseSuccessController extends GetxController {
   final RxString paymentId = "".obs;
   final RxnString orderId = RxnString();
   final RxDouble amountPaid = 0.0.obs;
-  final RxString paymentMethod = "Razorpay (UPI / Card)".obs;
+  /// Stable default value; shown through [displayPaymentMethod].
+  static const String defaultPaymentMethod = "Razorpay (UPI / Card)";
+  final RxString paymentMethod = defaultPaymentMethod.obs;
+
+  /// The app's own default method label is translated; values passed in
+  /// from the payment flow are shown as they come.
+  static String displayPaymentMethod(String value, [AppLocalizations? l10n]) =>
+      value == defaultPaymentMethod
+          ? (l10n ?? appL10n).walkiePlan_successDefaultPaymentMethod
+          : value;
   final RxString transactionTime = "".obs;
 
   @override
@@ -68,7 +78,7 @@ class WalkieTalkiePurchaseSuccessController extends GetxController {
       transactionTime.value = transactionTimeVal;
     } else if (transactionTime.value.isEmpty) {
       transactionTime.value =
-          DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+          appDateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
     }
   }
 
@@ -104,24 +114,29 @@ class WalkieTalkiePurchaseSuccessController extends GetxController {
   void copyPaymentId() {
     HapticFeedback.selectionClick();
     Clipboard.setData(ClipboardData(text: paymentId.value));
-    showCopiedSnackbar("Payment ID copied to clipboard!");
+    showCopiedSnackbar(appL10n.walkiePlan_successPaymentIdCopied);
   }
 
   /// Copy / Share complete receipt text
   void shareReceipt() {
     HapticFeedback.lightImpact();
-    final receiptText =
-        "FG Tracker Payment Receipt\n"
-        "Plan: ${planTitle.value}\n"
-        "Amount: ${CurrencyFormat.format(amountPaid.value > 0 ? amountPaid.value : 499, 'INR')}\n"
-        "Payment ID: ${paymentId.value}\n"
-        "${orderId.value != null && orderId.value!.isNotEmpty ? 'Order ID: ${orderId.value}\n' : ''}"
-        "Date: ${transactionTime.value}\n"
-        "Payment Mode: ${paymentMethod.value}\n"
-        "Status: Completed";
+    final t = appL10n;
+    final receiptText = [
+      t.walkiePlan_successReceiptHeader,
+      t.walkiePlan_successReceiptPlan(walkiePlanTitleText(planTitle.value, t)),
+      t.walkiePlan_successReceiptAmount(CurrencyFormat.format(
+          amountPaid.value > 0 ? amountPaid.value : 499, 'INR')),
+      t.walkiePlan_successReceiptPaymentId(paymentId.value),
+      if (orderId.value != null && orderId.value!.isNotEmpty)
+        t.walkiePlan_successReceiptOrderId(orderId.value!),
+      t.walkiePlan_successReceiptDate(transactionTime.value),
+      t.walkiePlan_successReceiptPaymentMode(
+          displayPaymentMethod(paymentMethod.value, t)),
+      t.walkiePlan_successReceiptStatusCompleted,
+    ].join('\n');
 
     Clipboard.setData(ClipboardData(text: receiptText));
-    showCopiedSnackbar("Receipt details copied to clipboard!");
+    showCopiedSnackbar(appL10n.walkiePlan_successReceiptCopied);
   }
 
   /// Navigate to Assign Members screen

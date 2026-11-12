@@ -1,6 +1,8 @@
 import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/Group/controller/QrController.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -134,7 +136,7 @@ class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Team Code: ",
+                    appL10n.group_teamCodeLabel,
                     style: TextStyle(
                       fontSize: 14.sp,
                       color: Colors.grey.shade600,
@@ -155,7 +157,7 @@ class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
                     onTap: () {
                       Clipboard.setData(
                           ClipboardData(text: controller.groupCode.toString()));
-                      Utils().fluttertoast("Group code copied!");
+                      Utils().fluttertoast(appL10n.group_codeCopied);
                     },
                     child: Icon(Icons.copy, size: 16.sp, color: primaryPurple),
                   ),
@@ -206,7 +208,7 @@ class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
                               ),
                               SizedBox(height: 25.h),
                               Text(
-                                "Scan this QR code to join the group",
+                                appL10n.group_scanToJoin,
                                 style: TextStyle(
                                   fontSize: 13.sp,
                                   color: Colors.grey.shade600,
@@ -221,7 +223,7 @@ class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
                   : Padding(
                       padding: EdgeInsets.symmetric(vertical: 50.h),
                       child: Text(
-                        "No Group Code Available",
+                        appL10n.group_noGroupCode,
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w500,
@@ -235,14 +237,14 @@ class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
                 children: [
                   _buildActionButton(
                     icon: Icons.share_outlined,
-                    title: "Share QR",
+                    title: appL10n.group_shareQr,
                     onTap: () => controller.shareQrCode(
                         context, controller.groupCode.toString()),
                   ),
                   SizedBox(width: 10.w),
                   _buildActionButton(
                     icon: Icons.download_outlined,
-                    title: "Download",
+                    title: appL10n.group_download,
                     onTap: () => controller.downloadQrCode(context),
                   ),
                 ],
@@ -276,16 +278,16 @@ class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
             children: [
               Icon(icon, size: 16.sp, color: primaryPurple),
               SizedBox(width: 5.w),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: primaryPurple,
-                  fontFamily: FontFamily.interSemiBold,
-                  fontWeight: FontWeight.w600,
+              Flexible(
+                child: AutoFitText(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: primaryPurple,
+                    fontFamily: FontFamily.interSemiBold,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

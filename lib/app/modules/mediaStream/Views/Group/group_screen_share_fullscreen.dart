@@ -5,6 +5,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart' as rtc;
 import 'package:fgtracker/app/Model/group_call_participant.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class GroupScreenShareFullScreen extends StatefulWidget {
   final GroupCallingController controller;
@@ -92,7 +93,7 @@ class _GroupScreenShareFullScreenState
           color: Colors.black,
           alignment: Alignment.center,
           child: Text(
-            'Waiting for media stream...',
+            context.l10n.call_waitingForMedia,
             style: TextStyle(
               color: Colors.white70,
               fontSize: 14.sp,
@@ -130,7 +131,7 @@ class _GroupScreenShareFullScreenState
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    tooltip: 'Zoom in',
+                    tooltip: context.l10n.call_zoomIn,
                     onPressed: canZoomIn ? _zoomIn : null,
                     icon: const Icon(Icons.add),
                     color: Colors.white,
@@ -145,14 +146,14 @@ class _GroupScreenShareFullScreenState
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Zoom out',
+                    tooltip: context.l10n.call_zoomOut,
                     onPressed: canZoomOut ? _zoomOut : null,
                     icon: const Icon(Icons.remove),
                     color: Colors.white,
                     disabledColor: Colors.white38,
                   ),
                   IconButton(
-                    tooltip: 'Reset zoom',
+                    tooltip: context.l10n.call_resetZoom,
                     onPressed: _resetZoom,
                     icon: const Icon(Icons.refresh),
                     color: Colors.white,
@@ -176,7 +177,7 @@ class _GroupScreenShareFullScreenState
             color: Colors.black.withOpacity(0.65),
             shape: const CircleBorder(),
             child: IconButton(
-              tooltip: 'Close full screen',
+              tooltip: context.l10n.call_closeFullScreen,
               onPressed: widget.controller.closeFullScreenShare,
               icon: const Icon(
                 Icons.close,

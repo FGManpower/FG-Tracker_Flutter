@@ -7,6 +7,7 @@ import '../../../../gen/fonts.gen.dart';
 import '../../../global_widget/common_widget.dart';
 import '../Widgets/safe_common_widgets.dart';
 import '../controller/safe_route_controller.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class SafeRouteView extends StatelessWidget {
   const SafeRouteView({Key? key}) : super(key: key);
@@ -20,8 +21,8 @@ class SafeRouteView extends StatelessWidget {
     return Scaffold(
       backgroundColor: SafeColors.bg,
       appBar: SafeAppBar(
-        title: "Safe Route",
-        subtitle: "Set a safe route for your team member.",
+        title: context.l10n.safeRoute_title,
+        subtitle: context.l10n.safeRoute_appBarSubtitle,
         onInfoTap: () => _showSafeRouteHelp(context),
       ),
       body: Column(
@@ -51,7 +52,7 @@ class SafeRouteView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SafeCard(
-            title: "1. Select Member",
+            title: appL10n.safety_stepSelectMember(1),
             innerCard: true,
             child: Obx(() => SafeMemberCard(
                   name: c.selectedMember.value,
@@ -61,28 +62,28 @@ class SafeRouteView extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           SafeCard(
-            title: "2. Set Start & Destination",
+            title: appL10n.safeRoute_stepStartDest(2),
             innerCard: true,
             child: _buildStartDestRow(c),
           ),
           SizedBox(height: 16.h),
           SafeCard(
-            title: "3. Select Route",
+            title: appL10n.safeRoute_stepSelectRoute(3),
             innerCard: false,
             padding: EdgeInsets.all(10.w),
             child: _buildFullMapWithRoutes(c, isGroup: false),
           ),
           SizedBox(height: 16.h),
           _buildDeviationSliderCard(c,
-              isGroup: false, stepTitle: "4. Set Deviation Limit"),
+              isGroup: false, stepTitle: appL10n.safeRoute_stepDeviation(4)),
           SizedBox(height: 16.h),
           SafeCard(
-            title: "5. Preview Route",
+            title: appL10n.safeRoute_stepPreviewRoute(5),
             innerCard: true,
             child: _buildPreviewContent(c, isGroup: false),
           ),
           SizedBox(height: 20.h),
-          const SafeSaveButton(text: "Save & Activate Safe Route"),
+          SafeSaveButton(text: appL10n.safeRoute_saveActivate),
           const SafeFooterNote(),
         ],
       ),
@@ -97,7 +98,7 @@ class SafeRouteView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SafeCard(
-            title: "1. Select Group",
+            title: appL10n.safety_stepSelectGroup(1),
             innerCard: true,
             child: Obx(() => SafeGroupCard(
                   groupName: c.selectedGroup.value,
@@ -106,35 +107,35 @@ class SafeRouteView extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           SafeCard(
-            title: "2. Set Routes for Members",
-            subtitle: "Create and manage safe routes for all group members.",
+            title: appL10n.safeRoute_stepSetRoutesForMembers(2),
+            subtitle: appL10n.safeRoute_setRoutesSubtitle,
             innerCard: false,
             child: _buildGroupMembersRow(c),
           ),
           SizedBox(height: 16.h),
           SafeCard(
-            title: "3. Set Start & Destination",
+            title: appL10n.safeRoute_stepStartDest(3),
             innerCard: true,
             child: _buildStartDestRow(c),
           ),
           SizedBox(height: 16.h),
           SafeCard(
-            title: "4. Select Route",
+            title: appL10n.safeRoute_stepSelectRoute(4),
             innerCard: false,
             padding: EdgeInsets.all(10.w),
             child: _buildFullMapWithRoutes(c, isGroup: true),
           ),
           SizedBox(height: 16.h),
           _buildDeviationSliderCard(c,
-              isGroup: true, stepTitle: "5. Set Deviation Limit"),
+              isGroup: true, stepTitle: appL10n.safeRoute_stepDeviation(5)),
           SizedBox(height: 16.h),
           SafeCard(
-            title: "6. Preview & Apply",
+            title: appL10n.safeRoute_stepPreviewApply(6),
             innerCard: true,
             child: _buildPreviewContent(c, isGroup: true),
           ),
           SizedBox(height: 20.h),
-          const SafeSaveButton(text: "Save & Activate Safe Route for Group"),
+          SafeSaveButton(text: appL10n.safeRoute_saveActivateGroup),
           const SafeFooterNote(),
         ],
       ),
@@ -146,7 +147,7 @@ class SafeRouteView extends StatelessWidget {
       children: [
         Expanded(
           child: Obx(() => SafeLocationInput(
-                label: "Start Location",
+                label: appL10n.safeRoute_startLocation,
                 value: c.startLocation.value,
                 dotColor: Colors.green,
               )),
@@ -167,7 +168,7 @@ class SafeRouteView extends StatelessWidget {
         ),
         Expanded(
           child: Obx(() => SafeLocationInput(
-                label: "Destination",
+                label: appL10n.safeRoute_destination,
                 value: c.destinationLocation.value,
                 dotColor: Colors.red,
               )),
@@ -359,7 +360,7 @@ class SafeRouteView extends StatelessWidget {
                             ),
                             SizedBox(height: 4.h),
                             reausabletext(
-                                "${r.distanceKm} km • ${r.etaMin} min",
+                                appL10n.safeRoute_distanceEta("${r.distanceKm}", r.etaMin),
                                 fontsize: 10,
                                 color: Colors.grey.shade600),
                             if (r.recommended) ...[
@@ -371,7 +372,7 @@ class SafeRouteView extends StatelessWidget {
                                   color: primary.withOpacity(0.12),
                                   borderRadius: BorderRadius.circular(4.r),
                                 ),
-                                child: reausabletext("Recommended",
+                                child: reausabletext(appL10n.safeRoute_recommended,
                                     fontsize: 9,
                                     color: primary,
                                     fontweight: FontWeight.w600),
@@ -443,7 +444,7 @@ class SafeRouteView extends StatelessWidget {
   }) {
     return SafeCard(
       title: stepTitle,
-      subtitle: "Set how much deviation is allowed from the selected route.",
+      subtitle: appL10n.safeRoute_deviationSubtitle,
       gapAfterTitle: 16,
       innerCard: false,
       child: Column(
@@ -544,20 +545,22 @@ class SafeRouteView extends StatelessWidget {
                   Expanded(
                     child: Obx(() {
                       final v = c.formatDeviation(c.individualDeviation);
+                      final note = appL10n.safeRoute_deviationAlertNote(v);
+                      final i = note.indexOf(v);
                       return RichText(
                         text: TextSpan(
                           style:
                               TextStyle(fontSize: 11.sp, color: Colors.black87),
                           children: [
-                            const TextSpan(
-                                text:
-                                    "Alert will be triggered if the member deviates more than "),
-                            TextSpan(
-                              text: "$v ",
-                              style: TextStyle(
-                                  color: primary, fontWeight: FontWeight.bold),
-                            ),
-                            const TextSpan(text: "from the safe route."),
+                            TextSpan(text: i < 0 ? note : note.substring(0, i)),
+                            if (i >= 0)
+                              TextSpan(
+                                text: v,
+                                style: TextStyle(
+                                    color: primary, fontWeight: FontWeight.bold),
+                              ),
+                            if (i >= 0)
+                              TextSpan(text: note.substring(i + v.length)),
                           ],
                         ),
                       );
@@ -594,22 +597,23 @@ class SafeRouteView extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _previewRow(
-                      "Group",
-                      "${c.selectedGroup.value} (12 Members)",
+                      appL10n.track_groupTab,
+                      appL10n.safeRoute_groupWithCount(c.selectedGroup.value, 12),
                       dot: Colors.green,
                     ),
                     _previewRow(
-                      "Route (${m.name})",
+                      appL10n.safeRoute_routeFor(m.name),
                       "${m.start} → ${m.end} (${r.name})",
                       dot: Colors.red,
+                      highlight: true,
                     ),
                     _previewRow(
-                      "Distance",
+                      appL10n.safeRoute_distance,
                       "${r.distanceKm} km",
-                      suffix: "Est. Time : ${r.etaMin} min",
+                      suffix: appL10n.safeRoute_estTime(r.etaMin),
                     ),
                     _previewRow(
-                      "Deviation Limit",
+                      appL10n.safeRoute_deviationLimit,
                       c.formatDeviation(dev),
                     ),
                   ],
@@ -662,26 +666,27 @@ class SafeRouteView extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _previewRow(
-                    "Start",
+                    appL10n.safeRoute_start,
                     c.startLocation.value,
                     dot: Colors.green,
                   ),
                   _previewRow(
-                    "Destination",
+                    appL10n.safeRoute_destination,
                     c.destinationLocation.value,
                     dot: Colors.red,
                   ),
                   _previewRow(
-                    "Selected Route",
-                    "${r.name} (Recommended)",
+                    appL10n.safeRoute_selectedRoute,
+                    appL10n.safeRoute_recommendedRoute(r.name),
+                    highlight: true,
                   ),
                   _previewRow(
-                    "Distance",
+                    appL10n.safeRoute_distance,
                     "${r.distanceKm} km",
-                    suffix: "Est. Time: ${r.etaMin} min",
+                    suffix: appL10n.safeRoute_estTime(r.etaMin),
                   ),
                   _previewRow(
-                    "Deviation Limit",
+                    appL10n.safeRoute_deviationLimit,
                     c.formatDeviation(dev),
                   ),
                 ],
@@ -711,6 +716,7 @@ class SafeRouteView extends StatelessWidget {
       String value, {
         Color? dot,
         String? suffix,
+        bool highlight = false,
       }) {
     return Padding(
       padding: EdgeInsets.only(bottom: 4.h),
@@ -751,7 +757,7 @@ class SafeRouteView extends StatelessWidget {
                     text: value,
                     style: TextStyle(
                       fontSize: 8.5.sp,
-                      color: label.contains("Route")
+                      color: highlight
                           ? primary
                           : Colors.black87,
                       fontWeight: FontWeight.w600,
@@ -782,7 +788,7 @@ class SafeRouteView extends StatelessWidget {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: "Safe Route Help",
+      barrierLabel: context.l10n.safeRoute_helpTitle,
       barrierColor: Colors.black.withOpacity(0.45),
       transitionDuration: const Duration(milliseconds: 180),
       pageBuilder: (context, animation, secondaryAnimation) {
@@ -818,7 +824,7 @@ class SafeRouteView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Safe Route Help",
+                          context.l10n.safeRoute_helpTitle,
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
@@ -830,27 +836,24 @@ class SafeRouteView extends StatelessWidget {
 
                         _routeHelpItem(
                           icon: Icons.location_on_rounded,
-                          title: "What is Safe Route?",
-                          description:
-                          "Set a start and destination location to create a safe travel route for your team member.",
+                          title: context.l10n.safeRoute_helpWhatTitle,
+                          description: context.l10n.safeRoute_helpWhatBody,
                         ),
 
                         const SizedBox(height: 13),
 
                         _routeHelpItem(
                           icon: Icons.sync_alt_rounded,
-                          title: "How to Create Safe Route?",
-                          description:
-                          "Select the member, choose start and destination locations, pick the best route and set a deviation limit.",
+                          title: context.l10n.safeRoute_helpHowTitle,
+                          description: context.l10n.safeRoute_helpHowBody,
                         ),
 
                         const SizedBox(height: 13),
 
                         _routeHelpItem(
                           icon: Icons.shield_outlined,
-                          title: "What is Deviation Limit?",
-                          description:
-                          "Set the allowed distance a member can move away from the selected route. You’ll get an alert if they exceed this limit.",
+                          title: context.l10n.safeRoute_helpDeviationTitle,
+                          description: context.l10n.safeRoute_helpDeviationBody,
                         ),
                       ],
                     ),

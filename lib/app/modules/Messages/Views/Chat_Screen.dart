@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
@@ -172,7 +173,7 @@ class ChatScreen extends GetView<MessageController> {
                 final myId =
                     Global.storageServices.get(PrefConst.userId)?.toString();
                 final senderLabel = reply.senderId?.toString() == myId
-                    ? "You"
+                    ? context.l10n.common_you
                     : (reply.senderName?.toString().trim().isNotEmpty == true
                         ? reply.senderName.toString()
                         : (userData.name?.toString() ?? ""));
@@ -201,7 +202,9 @@ class ChatScreen extends GetView<MessageController> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                senderLabel.isNotEmpty ? senderLabel : "Unknown",
+                                senderLabel.isNotEmpty
+                                    ? senderLabel
+                                    : context.l10n.chat_unknown,
                                 style: const TextStyle(
                                   color: _purple,
                                   fontWeight: FontWeight.bold,
@@ -397,10 +400,10 @@ class ChatScreen extends GetView<MessageController> {
       ),
       title: TextField(
         autofocus: true,
-        decoration: const InputDecoration(
-          hintText: "Search messages...",
+        decoration: InputDecoration(
+          hintText: appL10n.chat_searchMessagesHint,
           border: InputBorder.none,
-          hintStyle: TextStyle(color: Colors.grey),
+          hintStyle: const TextStyle(color: Colors.grey),
         ),
         style: const TextStyle(color: Colors.black, fontSize: 16),
         onChanged: controller.onSearchChanged,
@@ -528,7 +531,7 @@ class ChatScreen extends GetView<MessageController> {
                         children: [
                           Text(
                             userData.name?.toString().isEmpty ?? true
-                                ? "Unknown"
+                                ? context.l10n.chat_unknown
                                 : userData.name.toString(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -558,8 +561,10 @@ class ChatScreen extends GetView<MessageController> {
                                 Expanded(
                                   child: Text(
                                     isTyping
-                                        ? "typing..."
-                                        : (currentOnline ? "Online" : currentLastSeen),
+                                        ? context.l10n.chat_typing
+                                        : (currentOnline
+                                            ? context.l10n.common_online
+                                            : currentLastSeen),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -641,9 +646,9 @@ class ChatScreen extends GetView<MessageController> {
 
                   if (value == 1) {
                     CommonDialog.ConfirmationDialog(
-                      title: "Clear Chat",
-                      content: "Clear all messages from this chat?",
-                      confirm: "Clear",
+                      title: context.l10n.chat_clearChat,
+                      content: context.l10n.chat_clearChatConfirm,
+                      confirm: context.l10n.chat_clear,
                       onConfirm: () {
                         Get.back();
 
@@ -670,10 +675,9 @@ class ChatScreen extends GetView<MessageController> {
                     );
                   } else if (value == 3) {
                     CommonDialog.ConfirmationDialog(
-                      title: "Remove Member",
-                      content:
-                          "Are you sure you want to remove this member from the group?",
-                      confirm: "Remove",
+                      title: context.l10n.chat_removeMember,
+                      content: context.l10n.chat_removeMemberConfirm,
+                      confirm: context.l10n.common_remove,
                       onConfirm: () {
                         groupController.deleteGroupMember(
                           context,
@@ -698,13 +702,13 @@ class ChatScreen extends GetView<MessageController> {
                       value: 0,
                       icon: Icons.search,
                       iconColor: _purple,
-                      title: "Search Messages",
+                      title: context.l10n.chat_searchMessages,
                     ),
                     _buildPopupMenuItem(
                       value: 1,
                       icon: Icons.delete_outline_rounded,
                       iconColor: Colors.redAccent,
-                      title: "Clear Chat",
+                      title: context.l10n.chat_clearChat,
                       isDestructive: true,
                     ),
                     if (isGroupChat)
@@ -712,14 +716,14 @@ class ChatScreen extends GetView<MessageController> {
                         value: 2,
                         icon: Icons.edit_rounded,
                         iconColor: _purple,
-                        title: "Update Group",
+                        title: context.l10n.chat_updateGroup,
                       ),
                     if (isGroupChat)
                       _buildPopupMenuItem(
                         value: 3,
                         icon: Icons.person_remove_rounded,
                         iconColor: Colors.redAccent,
-                        title: "Delete Member",
+                        title: context.l10n.chat_deleteMember,
                         isDestructive: true,
                       ),
                   ];
@@ -747,12 +751,16 @@ class ChatScreen extends GetView<MessageController> {
         children: [
           Icon(icon, color: iconColor, size: 20.sp),
           SizedBox(width: 14.w),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: isDestructive ? Colors.redAccent : const Color(0xFF1B1B1B),
+          // Plain Text (wraps): the popup menu measures intrinsic widths,
+          // which AutoFitText's LayoutBuilder does not support.
+          Flexible(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: isDestructive ? Colors.redAccent : const Color(0xFF1B1B1B),
+              ),
             ),
           ),
         ],
@@ -806,8 +814,8 @@ class ChatScreen extends GetView<MessageController> {
           SizedBox(height: 6.h),
           Text(
             blockedByMe
-                ? "You blocked this contact"
-                : "This contact has blocked you",
+                ? appL10n.chat_youBlockedContact
+                : appL10n.chat_contactBlockedYou,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.red,
@@ -825,24 +833,24 @@ class ChatScreen extends GetView<MessageController> {
 
                 final confirmed = await Get.dialog<bool>(
                   AlertDialog(
-                    title: const Text("Unblock Contact"),
-                    content: const Text(
-                      "Are you sure you want to unblock this contact?",
+                    title: Text(appL10n.chat_unblockContact),
+                    content: Text(
+                      appL10n.chat_unblockContactConfirm,
                     ),
                     actions: [
                       TextButton(
                         onPressed: () {
                           Get.back(result: false);
                         },
-                        child: const Text("Cancel"),
+                        child: Text(appL10n.common_cancel),
                       ),
                       TextButton(
                         onPressed: () {
                           Get.back(result: true);
                         },
-                        child: const Text(
-                          "Unblock",
-                          style: TextStyle(
+                        child: Text(
+                          appL10n.chat_unblock,
+                          style: const TextStyle(
                             color: Colors.red,
                             fontWeight: FontWeight.w600,
                           ),
@@ -863,7 +871,7 @@ class ChatScreen extends GetView<MessageController> {
                 }
               },
               child: Text(
-                "Unblock",
+                appL10n.chat_unblock,
                 style: TextStyle(
                   color: _purple,
                   fontSize: 13.sp,

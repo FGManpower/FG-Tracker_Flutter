@@ -3,6 +3,7 @@ import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:location/location.dart';
 
 import '../../../Data/Services/LocationPermission.dart';
@@ -32,7 +33,7 @@ class JoinGroupController extends GetxController {
     await LocationPermissions().handleLocationPermission();
     if (!hasPermission) {
       CommonDialog.errorMessage(
-          "Location permission is required to join a group.");
+          appL10n.group_locationPermissionToJoin);
       return false;
     }
 
@@ -42,7 +43,7 @@ class JoinGroupController extends GetxController {
       serviceEnabled = await location.requestService();
       if (!serviceEnabled) {
         CommonDialog.errorMessage(
-            "Please enable location services to join a group.");
+            appL10n.group_enableLocationToJoin);
         return false;
       }
     }

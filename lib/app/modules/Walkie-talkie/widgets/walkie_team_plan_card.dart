@@ -8,7 +8,8 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Utils/walkie_plan_l10n.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class WalkieTeamPlanCard extends StatelessWidget {
   final WalkieTeamSubscriptionDetails? plan;
@@ -39,20 +40,25 @@ class WalkieTeamPlanCard extends StatelessWidget {
     final controller = Get.find<WalkieTalkieTrialController>();
     final activePlan = plan!;
 
-    final String planName =
-        activePlan.planName.isNotEmpty ? activePlan.planName : "Team Plan";
+    // Server plan name as-is; the model's "Team Plan" default is translated
+    // by walkiePlanTitleText.
+    final String planName = walkiePlanTitleText(
+        activePlan.planName.isNotEmpty ? activePlan.planName : "Team Plan",
+        context.l10n);
     final String interval = activePlan.billingInterval.isNotEmpty
-        ? (activePlan.billingInterval[0].toUpperCase() +
-            activePlan.billingInterval.substring(1))
-        : "Monthly";
+        ? walkieDurationText(
+            activePlan.billingInterval[0].toUpperCase() +
+                activePlan.billingInterval.substring(1),
+            context.l10n)
+        : context.l10n.walkiePlan_durationMonthly;
 
-    String expiryDateFormatted = "Active";
+    String expiryDateFormatted = context.l10n.walkiePlan_cardActive;
     String daysLeftText = "";
     bool isExpiringSoon = false;
 
     if (activePlan.expiresAt != null) {
       expiryDateFormatted =
-          DateFormat('dd MMM yyyy').format(activePlan.expiresAt!.toLocal());
+          appDateFormat('dd MMM yyyy').format(activePlan.expiresAt!.toLocal());
       daysLeftText = controller.formatDaysRemaining(activePlan.expiresAt);
       final difference = activePlan.expiresAt!.difference(DateTime.now());
       if (difference.inDays <= 5) {
@@ -63,7 +69,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
     String purchasedDateFormatted = "";
     if (activePlan.purchasedAt != null) {
       purchasedDateFormatted =
-          DateFormat('dd MMM yyyy').format(activePlan.purchasedAt!.toLocal());
+          appDateFormat('dd MMM yyyy').format(activePlan.purchasedAt!.toLocal());
     }
 
     final bool isOwner = activePlan.isOwner;
@@ -204,7 +210,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6.r),
                             ),
                             child: Text(
-                              "Team Plan",
+                              context.l10n.walkiePlan_teamPlan,
                               style: TextStyle(
                                 fontSize: _sp(context, 10.5),
                                 fontFamily: FontFamily.interSemiBold,
@@ -244,8 +250,8 @@ class WalkieTeamPlanCard extends StatelessWidget {
                                 SizedBox(width: 3.w),
                                 Text(
                                   isOwner
-                                      ? "Purchased by You"
-                                      : "Assigned by ${activePlan.assignedBy}",
+                                      ? context.l10n.walkiePlan_cardPurchasedByYou
+                                      : context.l10n.walkiePlan_cardAssignedBy(activePlan.assignedBy == 'Team Administrator' ? context.l10n.walkiePlan_cardTeamAdministrator : activePlan.assignedBy),
                                   style: TextStyle(
                                     fontSize: _sp(context, 9.5),
                                     fontFamily: FontFamily.interSemiBold,
@@ -285,7 +291,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
                     Expanded(
                       child: _buildSeatMetricBox(
                         context,
-                        label: "Purchased",
+                        label: context.l10n.walkiePlan_cardPurchased,
                         value: "${activePlan.purchasedSeats}",
                         icon: Icons.inventory_2_outlined,
                         color: const Color(0xFF2563EB),
@@ -296,7 +302,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
                     Expanded(
                       child: _buildSeatMetricBox(
                         context,
-                        label: "Assigned",
+                        label: context.l10n.walkiePlan_cardAssigned,
                         value: "${activePlan.assignedSeats}",
                         icon: Icons.person_pin_circle_outlined,
                         color: const Color(0xFF059669),
@@ -307,7 +313,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
                     Expanded(
                       child: _buildSeatMetricBox(
                         context,
-                        label: "Available",
+                        label: context.l10n.walkiePlan_cardAvailable,
                         value: "${activePlan.availableSeats}",
                         icon: Icons.event_seat_outlined,
                         color: activePlan.availableSeats > 0
@@ -329,7 +335,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
                       child: _buildDetailTile(
                         context,
                         icon: Icons.calendar_today_rounded,
-                        label: "Valid Until",
+                        label: context.l10n.walkiePlan_cardValidUntil,
                         value: expiryDateFormatted,
                         badge: daysLeftText.isNotEmpty ? daysLeftText : null,
                         isWarningBadge: isExpiringSoon,
@@ -341,7 +347,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
                         child: _buildDetailTile(
                           context,
                           icon: Icons.shopping_bag_outlined,
-                          label: "Purchased On",
+                          label: context.l10n.walkiePlan_cardPurchasedOn,
                           value: purchasedDateFormatted,
                         ),
                       ),
@@ -372,7 +378,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
                             color: const Color(0xFF5B4DFF),
                           ),
                           label: Text(
-                            "Manage Members",
+                            context.l10n.walkiePlan_cardManageMembers,
                             style: TextStyle(
                               fontSize: _sp(context, 11.5),
                               fontFamily: FontFamily.interSemiBold,
@@ -405,7 +411,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
                           color: textColor,
                         ),
                         label: Text(
-                          "View Plan",
+                          context.l10n.walkiePlan_cardViewPlan,
                           style: TextStyle(
                             fontSize: _sp(context, 11.5),
                             fontFamily: FontFamily.interSemiBold,
@@ -464,7 +470,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Team Plan",
+                  context.l10n.walkiePlan_teamPlan,
                   style: TextStyle(
                     fontSize: _sp(context, 13.5),
                     fontFamily: FontFamily.interBold,
@@ -473,7 +479,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  "No active Team plan or assigned seat",
+                  context.l10n.walkiePlan_cardNoActiveTeam,
                   style: TextStyle(
                     fontSize: _sp(context, 11),
                     color: subtitleColor,
@@ -495,7 +501,7 @@ class WalkieTeamPlanCard extends StatelessWidget {
               Get.to(() => const WalkieTalkiePlanDetails(initialTabIndex: 1));
             },
             child: Text(
-              "View",
+              context.l10n.walkiePlan_cardView,
               style: TextStyle(
                 fontSize: _sp(context, 11),
                 fontFamily: FontFamily.interSemiBold,

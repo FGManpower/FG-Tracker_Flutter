@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 
 String? _resolveFullUrl(String? path) {
@@ -130,7 +131,7 @@ class StatusViewerModel {
         userObj?['name'] ??
         userObj?['Name'])
         ?.toString() ??
-        'User';
+        appL10n.chatList_userFallback;
 
     final rawPic = (json['profileImage'] ??
         json['profilePic'] ??
@@ -335,7 +336,7 @@ class StatusItemModel {
       viewers: item.viewers,
       creator: StatusCreatorUser(
         id: item.userId ?? meta?.statusId ?? 0,
-        name: meta?.ownerName ?? 'User',
+        name: meta?.ownerName ?? appL10n.chatList_userFallback,
         profilePic: null,
       ),
     );
@@ -409,25 +410,20 @@ class StatusItemModel {
   String get formattedTime {
     final now = DateTime.now();
     final diff = now.difference(createdAt);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    final hour = createdAt.hour > 12
-        ? createdAt.hour - 12
-        : (createdAt.hour == 0 ? 12 : createdAt.hour);
-    final minute = createdAt.minute.toString().padLeft(2, '0');
-    final period = createdAt.hour >= 12 ? 'PM' : 'AM';
+    if (diff.inMinutes < 1) return appL10n.common_justNow;
+    if (diff.inMinutes < 60) return appL10n.common_minutesAgo(diff.inMinutes);
     final dayPrefix =
     (now.day == createdAt.day && now.month == createdAt.month)
-        ? 'Today'
-        : 'Yesterday';
-    return '$dayPrefix, $hour:$minute $period';
+        ? appL10n.common_today
+        : appL10n.common_yesterday;
+    return appL10n.status_dayAtTime(dayPrefix, appTime(createdAt));
   }
 
   String get previewLabel {
-    if (isVideo) return 'Video';
-    if (isImage) return 'Photo';
+    if (isVideo) return appL10n.status_modeVideo;
+    if (isImage) return appL10n.status_modePhoto;
     if (content.trim().isNotEmpty) return content.trim();
-    return 'Status';
+    return appL10n.status_title;
   }
 }
 
@@ -448,7 +444,7 @@ class StatusCreatorUser {
     ) ??
         0;
     final name =
-        (json['name'] ?? json['Name'] ?? json['userName'])?.toString() ?? 'User';
+        (json['name'] ?? json['Name'] ?? json['userName'])?.toString() ?? appL10n.chatList_userFallback;
     final rawPic = (json['profilePic'] ??
         json['ProfileImage'] ??
         json['profileImage'] ??

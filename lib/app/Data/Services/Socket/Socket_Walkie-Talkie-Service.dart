@@ -9,6 +9,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_channel_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
@@ -949,10 +950,10 @@ class GroupWalkieService {
       final isForeground =
           WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
 
-      final speakerName = (data['speakerName'] ?? data['adminName'] ?? 'Someone').toString();
+      final speakerName = (data['speakerName'] ?? data['adminName'] ?? appL10n.walkie_someone).toString();
       final speakerImage = (data['speakerImage'] ?? data['adminImage'] ?? '').toString();
       final gId = data['groupId']?.toString() ?? '';
-      final gName = data['groupName']?.toString() ?? 'Group';
+      final gName = data['groupName']?.toString() ?? appL10n.walkie_groupFallback;
 
       if (isForeground) {
         WalkieInviteDialog.show(
@@ -1092,7 +1093,7 @@ class GroupWalkieService {
             activeSpeakerId != _selfUserId) {
           final speakerName = (data['speakerName'] ??
                   (activeSpeaker is Map ? activeSpeaker['name'] : null) ??
-                  'Someone')
+                  appL10n.walkie_someone)
               .toString();
           final speakerImage = (data['speakerImage'] ??
                   (activeSpeaker is Map ? activeSpeaker['image'] : null) ??
@@ -1148,7 +1149,7 @@ class GroupWalkieService {
                     data.containsKey('is_muted')),
           ),
         );
-        c.showStatusMessage("$name joined", const Color(0xFF00C853));
+        c.showStatusMessage(appL10n.walkie_userJoined(name), const Color(0xFF00C853));
       }
 
       // Close previous stale peer connection if re-joining
@@ -1172,7 +1173,7 @@ class GroupWalkieService {
       if (id == null || id.isEmpty) return;
       if (id == _selfUserId) return;
 
-      String name = 'A member';
+      String name = appL10n.walkie_aMember;
       if (data is Map && (data['name'] != null || data['userName'] != null)) {
         name = (data['name'] ?? data['userName']).toString();
       } else if (Get.isRegistered<GroupWalkieController>()) {
@@ -1187,7 +1188,7 @@ class GroupWalkieService {
       if (Get.isRegistered<GroupWalkieController>()) {
         final c = Get.find<GroupWalkieController>();
         c.removeParticipant(id);
-        c.showStatusMessage("$name left", Colors.orange.shade800);
+        c.showStatusMessage(appL10n.walkie_userLeft(name), Colors.orange.shade800);
       }
       await _closePeer(id);
     });
@@ -1203,14 +1204,14 @@ class GroupWalkieService {
         final id = data is Map ? (data['userId'] ?? data['id'])?.toString() : null;
         if (id != null && id == _selfUserId) return;
 
-        String name = 'A member';
+        String name = appL10n.walkie_aMember;
         if (data is Map && (data['name'] != null || data['userName'] != null)) {
           name = (data['name'] ?? data['userName']).toString();
         }
 
         if (Get.isRegistered<GroupWalkieController>()) {
           Get.find<GroupWalkieController>()
-              .showStatusMessage("$name cancelled", const Color(0xFFFF5252));
+              .showStatusMessage(appL10n.walkie_userCancelled(name), const Color(0xFFFF5252));
         }
       });
     }
@@ -1282,8 +1283,8 @@ class GroupWalkieService {
 
       if (reason == 'BUSY') {
         c.showBusyMessage(data is Map
-            ? data['speakerName']?.toString() ?? 'Someone'
-            : 'Someone');
+            ? data['speakerName']?.toString() ?? appL10n.walkie_someone
+            : appL10n.walkie_someone);
       } else if (reason == 'LOCKED' || reason == 'CHANNEL_LOCKED') {
         c.showLockedMessage();
       } else if (reason.contains('NO_SEAT') ||
@@ -1300,9 +1301,9 @@ class GroupWalkieService {
       } else if (reason.isNotEmpty) {
         c.showGenericErrorMessage(data is Map && data['message'] != null
             ? data['message'].toString()
-            : 'Cannot speak on this channel');
+            : appL10n.walkie_cannotSpeak);
       } else {
-        c.showGenericErrorMessage('Voice transmission not permitted');
+        c.showGenericErrorMessage(appL10n.walkie_voiceNotPermitted);
       }
     });
 
@@ -1445,7 +1446,7 @@ class GroupWalkieService {
     socket?.on('walkie_error', (data) {
       if (_isDisposed || data == null) return;
       final msg = data is Map
-          ? (data['message'] ?? data['error'] ?? 'Walkie Talkie Error')
+          ? (data['message'] ?? data['error'] ?? appL10n.walkie_genericError)
           .toString()
           : data.toString();
       _log('❌ walkie_error: $msg');

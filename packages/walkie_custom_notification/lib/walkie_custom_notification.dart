@@ -23,6 +23,14 @@ class WalkieCustomNotification {
     required String groupId,
     String? speakerImage,
     int? joinedCount,
+    // Optional texts in the app language. When null the native side uses
+    // its English defaults.
+    String? textSpeaking,
+    String? textJoined,
+    String? labelLive,
+    String? labelAccept,
+    String? labelCancel,
+    String? defaultGroupName,
   }) async {
     try {
       final res = await _channel.invokeMethod<bool>('showNotification', {
@@ -31,6 +39,12 @@ class WalkieCustomNotification {
         'groupId': groupId,
         'speakerImage': speakerImage ?? '',
         'joinedCount': joinedCount,
+        if (textSpeaking != null) 'textSpeaking': textSpeaking,
+        if (textJoined != null) 'textJoined': textJoined,
+        if (labelLive != null) 'labelLive': labelLive,
+        if (labelAccept != null) 'labelAccept': labelAccept,
+        if (labelCancel != null) 'labelCancel': labelCancel,
+        if (defaultGroupName != null) 'defaultGroupName': defaultGroupName,
       });
       return res ?? false;
     } catch (_) {

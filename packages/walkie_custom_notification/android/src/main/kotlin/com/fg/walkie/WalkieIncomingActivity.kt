@@ -24,7 +24,8 @@ class WalkieIncomingActivity : Activity() {
             groupName: String,
             groupId: String,
             speakerImage: String = "",
-            joinedCount: Int? = null
+            joinedCount: Int? = null,
+            texts: WalkieNotificationTexts = WalkieNotificationTexts()
         ): Intent {
             return Intent(context, WalkieIncomingActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or
@@ -38,6 +39,7 @@ class WalkieIncomingActivity : Activity() {
                 if (joinedCount != null) {
                     putExtra("joined_count", joinedCount)
                 }
+                texts.putInto(this)
             }
         }
     }
@@ -90,6 +92,7 @@ class WalkieIncomingActivity : Activity() {
         currentGroupName = intent.getStringExtra("group_name") ?: "Field Team"
         currentSpeakerName = intent.getStringExtra("speaker_name") ?: "Someone"
         val joinedCount = intent.getIntExtra("joined_count", -1)
+        val texts = WalkieNotificationTexts.fromIntent(intent)
 
         val groupTextView = findViewById<TextView>(R.id.notification_group_name)
         val speakerTextView = findViewById<TextView>(R.id.notification_speaker_subtext)
@@ -97,14 +100,19 @@ class WalkieIncomingActivity : Activity() {
         val btnAccept = findViewById<TextView>(R.id.btn_accept)
         val btnCancel = findViewById<TextView>(R.id.btn_cancel)
 
-        groupTextView?.text = if (currentGroupName.trim().isNotEmpty()) currentGroupName.trim() else "Field Team"
-        speakerTextView?.text = if (currentSpeakerName.trim().isNotEmpty()) {
+        groupTextView?.text = if (currentGroupName.trim().isNotEmpty()) currentGroupName.trim() else (texts.defaultGroupName ?: "Field Team")
+        speakerTextView?.text = texts.textSpeaking ?: if (currentSpeakerName.trim().isNotEmpty()) {
             "${currentSpeakerName.trim()} is speaking..."
         } else {
             "Someone is speaking..."
         }
+        texts.labelLive?.let { findViewById<TextView>(R.id.notification_live_label)?.text = it }
+        texts.labelAccept?.let { btnAccept?.text = "✓  $it" }
+        texts.labelCancel?.let { btnCancel?.text = "✕  $it" }
 
-        if (joinedCount > 0) {
+        if (texts.textJoined != null) {
+            joinedCountTextView?.text = "👥 ${texts.textJoined}"
+        } else if (joinedCount > 0) {
             joinedCountTextView?.text = "👥 $joinedCount Joined"
         } else {
             joinedCountTextView?.text = "👥 Active"

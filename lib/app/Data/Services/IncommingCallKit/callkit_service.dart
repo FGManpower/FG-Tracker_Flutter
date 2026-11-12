@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_callkit_incoming/entities/entities.dart';
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 typedef CallActionCallback = FutureOr<void> Function(
     String callId,
@@ -379,11 +380,12 @@ class CallKitService with WidgetsBindingObserver {
   Future<void> postInitBackgroundTasks({required bool skipPermissions}) async {
     if (!skipPermissions) {
       try {
+        final l = await loadAppL10nFromPrefs();
         await FlutterCallkitIncoming.requestNotificationPermission({
-          'title': 'Notification permission',
-          'rationaleMessagePermission': 'Needed to show incoming calls.',
+          'title': l.call_notificationPermissionTitle,
+          'rationaleMessagePermission': l.call_notificationPermissionRationale,
           'postNotificationMessageRequired':
-          'Enable notifications in Settings.',
+          l.call_notificationPermissionSettings,
         });
         if (Platform.isAndroid) {
           final ok = await FlutterCallkitIncoming.canUseFullScreenIntent();
@@ -463,8 +465,9 @@ class CallKitService with WidgetsBindingObserver {
   static String _iosHandle(
       Map<String, dynamic> extra,
       String fallbackName,
-      String callId,
-      ) {
+      String callId, {
+      String unknownLabel = 'Unknown',
+      }) {
     for (final String key in <String>[
       'callerPhone',
       'caller_phone',
@@ -485,7 +488,7 @@ class CallKitService with WidgetsBindingObserver {
     }
     if (fallbackName.trim().isNotEmpty) return fallbackName.trim();
     if (callId.trim().isNotEmpty) return callId.trim();
-    return 'Unknown';
+    return unknownLabel;
   }
 
   static Map<String, dynamic> _sanitizedExtra(Map<String, dynamic> extra) {
@@ -573,19 +576,22 @@ class CallKitService with WidgetsBindingObserver {
       _ck(
         'showIncoming sessionId=$id callId=$callId caller=$callerName video=$isVideo',
       );
+      // May run in the FCM background isolate: read the saved language.
+      final l = await loadAppL10nFromPrefs();
       final params = CallKitParams(
         id: id,
         nameCaller: callerName,
         appName: 'FG Tracker',
         avatar: avatar,
-        handle: _iosHandle(extra, callerName, callId),
+        handle: _iosHandle(extra, callerName, callId,
+            unknownLabel: l.call_unknown),
         type: isVideo ? 1 : 0,
         duration: 45000,
         callingNotification: const NotificationParams(),
-        missedCallNotification: const NotificationParams(
+        missedCallNotification: NotificationParams(
           showNotification: true,
           isShowCallback: false,
-          subtitle: 'Missed call',
+          subtitle: l.call_missedCallNotification,
         ),
         extra: <String, dynamic>{
           ..._sanitizedExtra(extra),
@@ -594,14 +600,16 @@ class CallKitService with WidgetsBindingObserver {
           'session_id': id,
           'sessionId': id,
         },
-        android: const AndroidParams(
+        android: AndroidParams(
           isCustomNotification: true,
           isShowLogo: false,
           ringtonePath: 'system_ringtone_default',
           backgroundColor: '#0955fa',
           actionColor: '#4CAF50',
-          incomingCallNotificationChannelName: 'Incoming Call',
-          missedCallNotificationChannelName: 'Missed Call',
+          incomingCallNotificationChannelName: l.call_incomingCallChannelName,
+          missedCallNotificationChannelName: l.call_missedCallChannelName,
+          textAccept: l.call_accept,
+          textDecline: l.call_decline,
         ),
         ios: IOSParams(
           handleType: 'generic',
@@ -767,20 +775,22 @@ class CallKitService with WidgetsBindingObserver {
     await dismiss(id, callId: callId, endAllUnaccepted: true);
     if (Platform.isAndroid) {
       try {
+        // May run in the FCM background isolate: read the saved language.
+        final l = await loadAppL10nFromPrefs();
         await FlutterCallkitIncoming.showMissCallNotification(
           CallKitParams(
             id: id.isNotEmpty ? id : callId,
             nameCaller: callerName,
             handle: callerName,
             type: isVideo ? 1 : 0,
-            missedCallNotification: const NotificationParams(
+            missedCallNotification: NotificationParams(
               showNotification: true,
               isShowCallback: false,
-              subtitle: 'Missed call',
+              subtitle: l.call_missedCallNotification,
             ),
             extra: {'callId': callId, 'session_id': id},
-            android: const AndroidParams(
-              missedCallNotificationChannelName: 'Missed Call',
+            android: AndroidParams(
+              missedCallNotificationChannelName: l.call_missedCallChannelName,
             ),
           ),
         );
@@ -906,12 +916,13 @@ class CallKitService with WidgetsBindingObserver {
           _ck('handlePush incoming with EMPTY sessionId');
           return true;
         }
+        final l = await loadAppL10nFromPrefs();
         await showIncoming(
           sessionId: incomingId,
           callId: callId,
           callerName: screen == 'incomingGroupCall'
-              ? (cd['groupName'] ?? 'Group call').toString()
-              : (cd['callerName'] ?? 'Unknown').toString(),
+              ? (cd['groupName'] ?? l.call_kindGroupCall).toString()
+              : (cd['callerName'] ?? l.call_unknown).toString(),
           isVideo: isVideo,
           avatar: (cd['callerProfileImage'] ?? '').toString(),
           extra: cd.map((k, v) => MapEntry(k, v.toString())),
@@ -983,7 +994,7 @@ class CallKitService with WidgetsBindingObserver {
       sessionId: incomingId,
       callId: callId,
       callerName:
-      (m['caller_name'] ?? cd['callerName'] ?? 'Unknown').toString(),
+      (m['caller_name'] ?? cd['callerName'] ?? appL10n.call_unknown).toString(),
       isVideo: m['isVideo'].toString() == "true" ? true : false,
       avatar: (m['caller_profile_image'] ?? cd['callerProfileImage'] ?? '')
           .toString(),

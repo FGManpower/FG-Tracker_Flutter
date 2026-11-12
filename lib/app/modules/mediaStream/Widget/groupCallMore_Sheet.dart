@@ -3,6 +3,7 @@ import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_contr
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/theme/appTheme.dart';
@@ -54,8 +55,8 @@ class GroupCallMoreSheet {
                         ),
                         title: Text(
                           isScreenSharing.value
-                              ? "Stop sharing"
-                              : "Share screen",
+                              ? appL10n.call_stopSharing
+                              : appL10n.call_shareScreen,
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontFamily: FontFamily.interMedium,
@@ -83,7 +84,7 @@ class GroupCallMoreSheet {
                   borderRadius: BorderRadius.circular(30.r),
                 ),
                 child: Text(
-                  "Cancel",
+                  appL10n.common_cancel,
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontFamily: FontFamily.interSemiBold,

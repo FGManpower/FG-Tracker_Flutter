@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:async';
 
 import 'package:camera/camera.dart';
@@ -48,7 +49,7 @@ class CameraControllerX extends GetxController {
       cameras.value = await availableCameras();
 
       if (cameras.isEmpty) {
-        cameraError.value = "No camera found on this device.";
+        cameraError.value = appL10n.chat_noCameraFound;
         return;
       }
 
@@ -62,7 +63,7 @@ class CameraControllerX extends GetxController {
     } catch (e) {
       AppLog.d("Camera init error: $e");
       if (cameraError.value.isEmpty) {
-        cameraError.value = "Couldn't start the camera.";
+        cameraError.value = appL10n.chat_cameraStartFailed;
       }
     } finally {
       _isInitializingCamera = false;
@@ -151,9 +152,9 @@ class CameraControllerX extends GetxController {
       if (code.startsWith("CameraAccess")) {
         cameraPermissionDenied.value = true;
         cameraError.value =
-            "Camera access is needed to take photos and videos in chat.";
+            appL10n.chat_cameraAccessNeeded;
       } else {
-        cameraError.value = "Couldn't start the camera.";
+        cameraError.value = appL10n.chat_cameraStartFailed;
       }
 
       update();
@@ -220,7 +221,7 @@ class CameraControllerX extends GetxController {
       return file;
     } catch (e) {
       AppLog.d("Take picture error: $e");
-      Get.snackbar("Error", "Failed to take photo");
+      Get.snackbar(appL10n.common_error, appL10n.chat_takePhotoFailed);
       return null;
     }
   }
@@ -260,7 +261,7 @@ class CameraControllerX extends GetxController {
       isRecording.value = false;
       recordingSeconds.value = 0;
 
-      Get.snackbar("Error", "Recording failed");
+      Get.snackbar(appL10n.common_error, appL10n.chat_recordingFailed);
 
       return null;
     }

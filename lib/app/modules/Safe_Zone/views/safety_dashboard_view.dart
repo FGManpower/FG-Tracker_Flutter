@@ -4,6 +4,7 @@ import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 // import '../../../routes/app_pages.dart';
 import '../../Notification/Controller/Notification_Controller.dart';
 import '../controller/safety_dashboard_controller.dart';
@@ -69,13 +70,12 @@ class SafetyDashboardView extends StatelessWidget {
           children: [
             _buildTopBanner(),
             SizedBox(height: 18.h),
-            _buildSectionTitle("Choose a Safety Feature"),
+            _buildSectionTitle(context.l10n.safety_chooseFeature),
             SizedBox(height: 13.h),
             _buildFeatureCard(
-              title: "Safe Zone",
-              tag: "Area Protection",
-              desc:
-              "Define a safe geographic area for your team. Get instant alerts if someone steps outside the safe zone.",
+              title: context.l10n.safeZone_title,
+              tag: context.l10n.safeZone_subtitle,
+              desc: context.l10n.safeZone_featureDesc,
               image: Assets.icons.safeZone.image(
                 height: 40.w,
                 width: 40.w,
@@ -85,10 +85,9 @@ class SafetyDashboardView extends StatelessWidget {
             ),
             SizedBox(height: 13.h),
             _buildFeatureCard(
-              title: "Safe Route",
-              tag: "Route Protection",
-              desc:
-              "Set predefined routes for your team members. Get alerts if someone deviates from the safe route.",
+              title: context.l10n.safeRoute_title,
+              tag: context.l10n.safeRoute_subtitle,
+              desc: context.l10n.safeRoute_featureDesc,
               image: Assets.icons.safeRoute.image(
                 height: 40.w,
                 width: 40.w,
@@ -97,11 +96,11 @@ class SafetyDashboardView extends StatelessWidget {
               onTap: () => Get.to(() => const SafeRouteView()),
             ),
             SizedBox(height: 20.h),
-            _buildSectionTitle("Quick Overview"),
+            _buildSectionTitle(context.l10n.safety_quickOverview),
             SizedBox(height: 13.h),
             _buildQuickOverviewCard(controller),
             SizedBox(height: 22.h),
-            _buildSectionTitle("Recent Alerts"),
+            _buildSectionTitle(context.l10n.safety_recentAlerts),
             SizedBox(height: 13.h),
             _buildRecentAlertsList(controller),
             SizedBox(height: 28.h),
@@ -144,7 +143,7 @@ class SafetyDashboardView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Safety",
+              appL10n.safety_title,
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 18.sp,
@@ -153,7 +152,7 @@ class SafetyDashboardView extends StatelessWidget {
               ),
             ),
             Text(
-              "Stay protected. Stay connected.",
+              appL10n.safety_tagline,
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 11.sp,
@@ -267,7 +266,7 @@ class SafetyDashboardView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Your Safety, Our Priority",
+                  appL10n.safety_bannerTitle,
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 14.sp,
@@ -277,7 +276,7 @@ class SafetyDashboardView extends StatelessWidget {
                 ),
                 SizedBox(height: 6.h),
                 Text(
-                  "Monitor and protect your team with smart safety features.",
+                  appL10n.safety_bannerBody,
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 10.sp,
@@ -451,7 +450,7 @@ class SafetyDashboardView extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "Safe Now",
+                          appL10n.safety_safeNow,
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 11.sp,
@@ -461,7 +460,7 @@ class SafetyDashboardView extends StatelessWidget {
                         ),
                         SizedBox(height: 2.h),
                         Text(
-                          "Members are within safe zone/route",
+                          appL10n.safety_safeNowDesc,
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 9.sp,
@@ -515,7 +514,7 @@ class SafetyDashboardView extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "Alerts",
+                          appL10n.safety_alerts,
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 11.sp,
@@ -525,7 +524,7 @@ class SafetyDashboardView extends StatelessWidget {
                         ),
                         SizedBox(height: 2.h),
                         Text(
-                          "Require immediate attention",
+                          appL10n.safety_alertsDesc,
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 9.sp,
@@ -704,7 +703,7 @@ class SafetyDashboardView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Need Help?",
+                  appL10n.sos_needHelp,
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 12.sp,
@@ -714,7 +713,7 @@ class SafetyDashboardView extends StatelessWidget {
                 ),
                 SizedBox(height: 3.h),
                 Text(
-                  "Contact support team for any safety related assistance.",
+                  appL10n.safety_needHelpBody,
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 9.sp,
@@ -743,7 +742,7 @@ class SafetyDashboardView extends StatelessWidget {
               ),
               icon: Icon(Icons.headset_mic_rounded, size: 14.sp),
               label: Text(
-                "Contact Support",
+                appL10n.safety_contactSupport,
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 10.sp,

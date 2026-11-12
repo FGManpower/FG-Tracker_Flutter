@@ -1,0 +1,13 @@
+/* Permission texts shown by iOS (English) */
+"NSCameraUsageDescription" = "FG Tracker uses the camera for video calls, scanning QR codes, and taking a live selfie to mark your attendance.";
+"NSContactsUsageDescription" = "FG Tracker uses your contacts to help you find, connect with, and invite people to join your tracking groups.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "FG Tracker uses your location for attendance, live tracking and safe zone alerts, including when the app is in the background, so your group always sees your current position.";
+"NSLocationAlwaysUsageDescription" = "Your location is used to keep group members updated even when the app is in the background during a tracking session.";
+"NSLocationWhenInUseUsageDescription" = "FG Tracker uses your location for attendance, live tracking with your group and safe zone alerts.";
+"PreciseLocation" = "Precise location is needed for accurate attendance, live tracking and safe zone alerts.";
+"NSMicrophoneUsageDescription" = "Need microphone access for audio calls and stream live voice over the walkie-talkie channel or Screen Sharing";
+"NSSpeechRecognitionUsageDescription" = "Need speech recognition access to type messages with your voice.";
+"NSBluetoothAlwaysUsageDescription" = "FG Tracker requires Bluetooth access to connect to wireless earphones and headsets during Walkie-Talkie and voice calls.";
+"NSBluetoothPeripheralUsageDescription" = "FG Tracker requires Bluetooth access to route audio to wireless earphones and headsets.";
+"NSPhotoLibraryAddUsageDescription" = "We need access to save QR codes to your gallery.";
+"NSPhotoLibraryUsageDescription" = "We need access to your photo library to allow you to set a profile image and upload photos and get QR code from photo library of your site location.";

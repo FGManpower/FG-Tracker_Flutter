@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
 
-import 'package:intl/intl.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import '../../../Core/constant/const_res.dart';
 
@@ -171,7 +171,7 @@ class AttendanceVoter {
   bool get hasVoted => optionId != null;
 
   String get time =>
-      votedAt != null ? DateFormat("hh:mm a").format(votedAt!) : "";
+      votedAt != null ? appDateFormat("hh:mm a").format(votedAt!) : "";
 
   String? get photoFullUrl => attendanceMediaUrl(photoUrl);
 
@@ -200,7 +200,7 @@ class AttendanceVoter {
     return AttendanceVoter(
       userId: pick(["userId", "UserId", "id", "Id"])?.toString() ?? "",
       name: _nonEmpty(pick(["name", "Name", "userName", "fullName"])) ??
-          "Member",
+          appL10n.chatList_memberFallback,
       // Same key variants the rest of the app's models accept. Not
       // "photoUrl": that is the attendance selfie, not the profile picture.
       profileImage: _nonEmpty(pick([
@@ -303,13 +303,13 @@ class AttendancePoll {
   /// "11 Sep" style label.
   String get shortDate {
     final parsed = DateTime.tryParse(eventDate ?? "");
-    return parsed != null ? DateFormat("dd MMM").format(parsed) : "";
+    return parsed != null ? appDateFormat("dd MMM").format(parsed) : "";
   }
 
   /// "11 Sep 2026" style label.
   String get longDate {
     final parsed = DateTime.tryParse(eventDate ?? "");
-    return parsed != null ? DateFormat("dd MMM yyyy").format(parsed) : "";
+    return parsed != null ? appDateFormat("dd MMM yyyy").format(parsed) : "";
   }
 
   /// Parses a poll summary. Accepts `{poll, myVote}` envelopes or a bare poll.

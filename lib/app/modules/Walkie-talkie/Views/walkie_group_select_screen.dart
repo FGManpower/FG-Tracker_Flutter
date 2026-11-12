@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/global_widget/crown_icon.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/BottomSheet/bottom_actions_bar.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
@@ -19,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -138,7 +140,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             : controller.groupData.map((group) {
                 return WalkieChannelItem(
                   groupId: group.id ?? 0,
-                  groupName: group.groupName ?? "No Name Group",
+                  groupName: group.groupName ?? appL10n.walkie_noNameGroup,
                   groupDesc: group.groupDesc ?? "",
                   groupCode: group.groupCode ?? "",
                   groupProfile: group.groupProfile,
@@ -249,7 +251,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             if (teamPlan != null) {
               planTitleName.value = teamPlan.planName?.isNotEmpty == true
                   ? teamPlan.planName!
-                  : "Team Plan";
+                  : appL10n.walkie_teamPlan;
               activeSubscriptionId.value = teamPlan.subscriptionId;
               teamHasStarted.value = teamPlan.hasStarted ??
                   (teamPlan.startsAt != null && teamPlan.startsAt!.isNotEmpty);
@@ -265,7 +267,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   ? teamPurchasedSeats.value
                   : 1;
             } else if (isAssignedTeamMember) {
-              planTitleName.value = "Team Seat Member";
+              planTitleName.value = appL10n.walkie_teamSeatMember;
               activeSubscriptionId.value = userSub?.subscriptionId ??
                   (userSub?.teamSeats?.isNotEmpty == true
                       ? userSub!.teamSeats!.first.subscriptionId
@@ -276,7 +278,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               teamAssignedSeats.value = 1;
               teamAvailableSeats.value = 0;
             } else if (isIndiv) {
-              planTitleName.value = "Individual Plan";
+              planTitleName.value = appL10n.walkie_individualPlan;
               activeSubscriptionId.value = userSub?.subscriptionId ??
                   userSub?.individual?.subscriptionId;
               maxAllowedSeats.value = 1;
@@ -285,7 +287,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               teamAssignedSeats.value = 1;
               teamAvailableSeats.value = 0;
             } else {
-              planTitleName.value = "No Active Plan";
+              planTitleName.value = appL10n.walkie_noActivePlan;
               activeSubscriptionId.value = null;
               maxAllowedSeats.value = 0;
               teamHasStarted.value = false;
@@ -355,11 +357,11 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     ? m.department!.trim()
                     : (m.displayDepartment.isNotEmpty
                         ? m.displayDepartment
-                        : "Member"));
+                        : appL10n.walkie_member));
 
             final item = AssignedMemberItem(
               id: uid,
-              name: m.displayName.isNotEmpty ? m.displayName : "Member",
+              name: m.displayName.isNotEmpty ? m.displayName : appL10n.walkie_member,
               role: role,
               imageUrl: img,
               isSubscribedByAdmin: true,
@@ -372,7 +374,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               hasExistingAccess: true,
               isSelfPurchased: false,
               isPurchasedByOtherAdmin: false,
-              planName: m.teamAssignment?.planName ?? "Team Plan",
+              planName: m.teamAssignment?.planName ?? appL10n.walkie_teamPlan,
               expiresAt: m.teamAssignment?.expiresAt,
             );
 
@@ -408,7 +410,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     ? m.department!.trim()
                     : (m.displayDepartment.isNotEmpty
                         ? m.displayDepartment
-                        : "Member"));
+                        : appL10n.walkie_member));
 
             final String? accType = m.access?.accessType?.toLowerCase() ??
                 m.existingAccess?.accessType?.toLowerCase();
@@ -432,7 +434,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
 
             final item = AssignedMemberItem(
               id: uid,
-              name: m.displayName.isNotEmpty ? m.displayName : "Member",
+              name: m.displayName.isNotEmpty ? m.displayName : appL10n.walkie_member,
               role: role,
               imageUrl: img,
               isSubscribedByAdmin: false,
@@ -508,14 +510,14 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         ? m.department!.trim()
                         : ((m.team != null && m.team!.trim().isNotEmpty)
                             ? m.team!.trim()
-                            : "Member");
+                            : appL10n.walkie_member);
 
                 loaded.add(
                   AssignedMemberItem(
                     id: uid.isNotEmpty ? uid : UniqueKey().toString(),
                     name: (m.name != null && m.name!.trim().isNotEmpty)
                         ? m.name!.trim()
-                        : "Member",
+                        : appL10n.walkie_member,
                     role: role,
                     imageUrl: img,
                   ),
@@ -558,11 +560,11 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                 ? m.role!.trim()
                 : ((m.department != null && m.department!.trim().isNotEmpty)
                     ? m.department!.trim()
-                    : "Member");
+                    : appL10n.walkie_member);
 
             final item = AssignedMemberItem(
               id: uid.isNotEmpty ? uid : UniqueKey().toString(),
-              name: m.displayName.isNotEmpty ? m.displayName : "Member",
+              name: m.displayName.isNotEmpty ? m.displayName : appL10n.walkie_member,
               role: role,
               imageUrl: img,
             );
@@ -676,7 +678,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           assetspath: Assets.images.notFount.path)
                       : Center(
                           child: reausabletext(
-                            "No groups found",
+                            context.l10n.walkie_noGroupsFound,
                             fontsize: 14.sp,
                             color: Colors.grey,
                           ),
@@ -712,13 +714,13 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 reausabletext(
-                  "Walkie Talkie",
+                  context.l10n.walkie_title,
                   fontsize: 18.sp,
                   fontfamily: FontFamily.interBold,
                   color: Colors.black87,
                 ),
                 reausabletext(
-                  "Select a group to connect",
+                  context.l10n.walkie_selectGroupToConnect,
                   fontsize: 11.sp,
                   color: Colors.grey,
                 ),
@@ -804,7 +806,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                 focusNode: _searchFocusNode,
                 onChanged: (value) => _searchQuery.value = value,
                 decoration: InputDecoration(
-                  hintText: "Search groups",
+                  hintText: context.l10n.walkie_searchGroups,
                   hintStyle: TextStyle(
                     fontSize: 13.5.sp,
                     color: Colors.grey,
@@ -865,7 +867,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             SizedBox(width: 6.w),
             Obx(
               () => reausabletext(
-                "Assigned (${assignedMembers.length})",
+                context.l10n.walkie_assignedCount(assignedMembers.length),
                 fontsize: 12.sp,
                 fontfamily: FontFamily.interSemiBold,
                 color: const Color(0xFF6B4DFF),
@@ -1164,8 +1166,8 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                             child: reausabletext(
                               currentChannel.activeSpeakerName != null &&
                                       currentChannel.activeSpeakerName!.isNotEmpty
-                                  ? "${currentChannel.activeSpeakerName} speaking..."
-                                  : "Channel speaking...",
+                                  ? context.l10n.walkie_nameSpeaking(currentChannel.activeSpeakerName!)
+                                  : context.l10n.walkie_channelSpeaking,
                               fontsize: 12.sp,
                               fontfamily: FontFamily.interMedium,
                               textoverflow: TextOverflow.ellipsis,
@@ -1184,7 +1186,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           ),
                           SizedBox(width: 4.w),
                           reausabletext(
-                            "${currentChannel.memberCount} Members",
+                            context.l10n.common_membersCount(currentChannel.memberCount),
                             fontsize: 12.sp,
                             color: const Color(0xFF8C90A0),
                           ),
@@ -1199,7 +1201,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           ),
                           SizedBox(width: 6.w),
                           reausabletext(
-                            isOnline ? "Online" : "Offline",
+                            isOnline ? context.l10n.common_online : context.l10n.common_offline,
                             fontsize: 12.sp,
                             fontfamily: FontFamily.interMedium,
                             color: isOnline
@@ -1357,14 +1359,14 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       reausabletext(
-                        "Plan Required to Talk",
+                        context.l10n.walkie_planRequiredToTalk,
                         fontsize: 13.5.sp,
                         fontfamily: FontFamily.interBold,
                         color: Colors.white,
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        "Subscribe to start voice talk & assign members",
+                        context.l10n.walkie_subscribeToStartTalk,
                         style: TextStyle(
                           fontSize: 11.sp,
                           color: Colors.white.withValues(alpha: 0.9),
@@ -1384,7 +1386,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                       borderRadius: BorderRadius.circular(20.r),
                     ),
                     child: reausabletext(
-                      "Get Plan",
+                      context.l10n.walkie_getPlan,
                       fontsize: 11.5.sp,
                       fontfamily: FontFamily.interSemiBold,
                       color: const Color(0xFF5B4DFF),
@@ -1423,18 +1425,15 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   String _formatPlanDate(String raw) {
     final DateTime? d = DateTime.tryParse(raw);
     if (d == null) return '';
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    final local = d.toLocal();
-    return '${local.day.toString().padLeft(2, '0')} ${months[local.month - 1]} ${local.year}';
+    return appDateFormat('dd MMM yyyy').format(d.toLocal());
   }
 
   Widget _buildCurrentPlanCard() {
     final String title = planTitleName.value.isNotEmpty
         ? planTitleName.value
-        : (isIndividualPlan.value ? "Individual Plan" : "Team Plan");
+        : (isIndividualPlan.value
+            ? context.l10n.walkie_individualPlan
+            : context.l10n.walkie_teamPlan);
     final String interval = planBillingInterval.value.isNotEmpty
         ? planBillingInterval.value[0].toUpperCase() +
             planBillingInterval.value.substring(1)
@@ -1442,10 +1441,11 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     final String expiry = _formatPlanDate(planExpiresAt.value);
     final String details = [
       if (interval.isNotEmpty) interval,
-      if (expiry.isNotEmpty) "Valid till $expiry",
-      if (isIndividualPlan.value) "1 member",
+      if (expiry.isNotEmpty) context.l10n.walkie_validTill(expiry),
+      if (isIndividualPlan.value) context.l10n.common_membersCount(1),
       if (hasTeamPlan.value && teamPurchasedSeats.value > 0)
-        "${teamAssignedSeats.value}/${teamPurchasedSeats.value} seats",
+        context.l10n.walkie_seatsFraction(
+            teamAssignedSeats.value, teamPurchasedSeats.value),
     ].join(" • ");
 
     return Padding(
@@ -1502,7 +1502,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Text(
-                          "Active",
+                          context.l10n.walkie_activeBadge,
                           style: TextStyle(
                             fontSize: 9.5.sp,
                             fontFamily: FontFamily.interSemiBold,
@@ -1538,7 +1538,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: reausabletext(
-                  "View Plan",
+                  context.l10n.walkie_viewPlan,
                   fontsize: 11.5.sp,
                   fontfamily: FontFamily.interSemiBold,
                   color: Colors.white,
@@ -1597,7 +1597,9 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               ),
               SizedBox(height: 16.h),
               reausabletext(
-                isNoPlan ? "Walkie Talkie Plan Required" : "Team Plan Required",
+                isNoPlan
+                    ? context.l10n.walkie_planRequiredTitle
+                    : context.l10n.walkie_teamPlanRequired,
                 fontsize: 18.sp,
                 fontfamily: FontFamily.interBold,
                 color: const Color(0xFF1E1B4B),
@@ -1608,8 +1610,8 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 8.w),
                 child: Text(
                   isNoPlan
-                      ? "You do not have an active Walkie Talkie subscription. Subscribe to a plan to assign members and start instant voice communication."
-                      : "Your Individual Plan allows 1 member seat only. To assign multiple members and connect your entire team, please upgrade to a Team Plan.",
+                      ? context.l10n.walkie_noSubscriptionMessage
+                      : context.l10n.walkie_individualLimitMessage,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13.sp,
@@ -1649,7 +1651,9 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                       ),
                       SizedBox(width: 8.w),
                       reausabletext(
-                        isNoPlan ? "Choose a Plan" : "Upgrade to Team Plan",
+                        isNoPlan
+                            ? context.l10n.walkie_chooseAPlan
+                            : context.l10n.walkie_upgradeToTeamPlan,
                         fontsize: 15.sp,
                         fontfamily: FontFamily.interSemiBold,
                         color: Colors.white,
@@ -1662,7 +1666,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               TextButton(
                 onPressed: () => Get.back(),
                 child: reausabletext(
-                  "Maybe Later",
+                  context.l10n.walkie_maybeLater,
                   fontsize: 13.sp,
                   color: const Color(0xFF9CA3AF),
                   fontfamily: FontFamily.interMedium,
@@ -1733,7 +1737,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           reausabletext(
-                            "Edit Assigned Members",
+                            context.l10n.walkie_editAssignedMembers,
                             fontsize: 18.sp,
                             fontfamily: FontFamily.interBold,
                             color: const Color(0xFF1E1B4B),
@@ -1742,12 +1746,12 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           Obx(
                             () => reausabletext(
                               hasNoPlan.value
-                                  ? "No active plan • Subscribe to assign members"
+                                  ? context.l10n.walkie_noPlanSubscribeAssign
                                   : (isIndividualPlan.value
-                                      ? "Individual Plan (Self Access Only) • Upgrade to Team to assign members"
+                                      ? context.l10n.walkie_individualSelfOnlyUpgrade
                                       : (maxAllowedSeats.value > 0
-                                          ? "You can assign up to ${maxAllowedSeats.value} members in this group"
-                                          : "Assign members to communicate in this group")),
+                                          ? context.l10n.walkie_canAssignUpTo(maxAllowedSeats.value)
+                                          : context.l10n.walkie_assignMembersToCommunicate)),
                               fontsize: 12.sp,
                               color: const Color(0xFF6B7280),
                             ),
@@ -1781,7 +1785,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                                       color: const Color(0xFFE11D48)),
                                   SizedBox(width: 4.w),
                                   reausabletext(
-                                    "Get Plan",
+                                    context.l10n.walkie_getPlan,
                                     fontsize: 11.sp,
                                     fontfamily: FontFamily.interSemiBold,
                                     color: const Color(0xFFE11D48),
@@ -1813,7 +1817,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                                   GoldenCrownBadge(size: 13.sp),
                                   SizedBox(width: 4.w),
                                   reausabletext(
-                                    "${assignedMembers.length}/1 (Individual)",
+                                    context.l10n.walkie_individualSelectedCount(assignedMembers.length),
                                     fontsize: 11.sp,
                                     fontfamily: FontFamily.interSemiBold,
                                     color: const Color(0xFF5B4DFF),
@@ -1834,7 +1838,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                               color: const Color(0xFF5B4DFF),
                             ),
                             reausabletext(
-                              "Selected",
+                              context.l10n.walkie_selected,
                               fontsize: 11.sp,
                               color: const Color(0xFF6B7280),
                             ),
@@ -1858,10 +1862,12 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   String title = planTitleName.value.isNotEmpty
                       ? planTitleName.value
                       : (hasTeam
-                          ? "Team Plan"
-                          : (isIndiv ? "Individual Plan" : "No Active Plan"));
+                          ? context.l10n.walkie_teamPlan
+                          : (isIndiv
+                              ? context.l10n.walkie_individualPlan
+                              : context.l10n.walkie_noActivePlan));
                   if (!hasTeam && isIndiv) {
-                    title = "Team Plan Required";
+                    title = context.l10n.walkie_teamPlanRequired;
                   }
 
                   final int totalSeats = maxAllowedSeats.value > 0
@@ -1874,16 +1880,16 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   String subtitle = "";
                   if (noPlan) {
                     subtitle =
-                        "Purchase a Team Plan to assign Walkie-Talkie access to members.";
+                        context.l10n.walkie_purchaseTeamPlanToAssign;
                   } else if (isIndiv) {
                     subtitle =
-                        "Individual Plan active (Self access only) • Upgrade to Team Plan to assign members.";
+                        context.l10n.walkie_individualActiveUpgrade;
                   } else if (hasTeam && !started) {
                     subtitle =
-                        "$totalSeats Total Seats • $assignedCount Assigned • $remainingSeats Available\nPlan starts when the first member is assigned.";
+                        "${context.l10n.walkie_seatsSummary(totalSeats, assignedCount, remainingSeats)}\n${context.l10n.walkie_planStartsOnFirstAssign}";
                   } else {
                     subtitle =
-                        "$totalSeats Total Seats • $assignedCount Assigned • $remainingSeats Available";
+                        context.l10n.walkie_seatsSummary(totalSeats, assignedCount, remainingSeats);
                   }
 
                   return Container(
@@ -1962,7 +1968,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                                             width: 0.6),
                                       ),
                                       child: Text(
-                                        "Active",
+                                        context.l10n.walkie_activeBadge,
                                         style: TextStyle(
                                           fontSize: 9.sp,
                                           fontFamily: FontFamily.interBold,
@@ -1983,7 +1989,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                                             width: 0.6),
                                       ),
                                       child: Text(
-                                        "Ready",
+                                        context.l10n.walkie_ready,
                                         style: TextStyle(
                                           fontSize: 9.sp,
                                           fontFamily: FontFamily.interBold,
@@ -2035,7 +2041,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           controller: sheetSearchController,
                           onChanged: (val) => sheetQuery.value = val,
                           decoration: InputDecoration(
-                            hintText: "Search members...",
+                            hintText: context.l10n.walkie_searchMembers,
                             hintStyle: TextStyle(
                               fontSize: 13.sp,
                               color: const Color(0xFF9E9E9E),
@@ -2122,10 +2128,10 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                             SizedBox(height: 12.h),
                             Text(
                               isOffline
-                                  ? "No Internet Connection"
+                                  ? context.l10n.common_noInternet
                                   : (sheetQuery.value.isNotEmpty
-                                      ? "No Members Match"
-                                      : "No Members Found"),
+                                      ? context.l10n.walkie_noMembersMatch
+                                      : context.l10n.walkie_noMembersFoundTitle),
                               style: TextStyle(
                                 color: const Color(0xFF1E1B4B),
                                 fontSize: 15.sp,
@@ -2135,10 +2141,10 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                             SizedBox(height: 4.h),
                             Text(
                               isOffline
-                                  ? "Please check your network connection and try again."
+                                  ? context.l10n.walkie_checkNetworkTryAgain
                                   : (sheetQuery.value.isNotEmpty
-                                      ? "No members match '${sheetQuery.value}'"
-                                      : "No group members available to assign."),
+                                      ? context.l10n.walkie_noMembersMatchQuery(sheetQuery.value)
+                                      : context.l10n.walkie_noMembersToAssign),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: const Color(0xFF6B7280),
@@ -2166,7 +2172,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                                     ),
                                     SizedBox(width: 6.w),
                                     Text(
-                                      "Retry",
+                                      context.l10n.common_retry,
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 12.sp,
@@ -2191,35 +2197,46 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          reausabletext(
-                            "Currently Assigned (${assignedMembers.length})",
-                            fontsize: 14.sp,
-                            fontfamily: FontFamily.interBold,
-                            color: const Color(0xFF1E1B4B),
+                          Flexible(
+                            child: AutoFitText(
+                              context.l10n.walkie_currentlyAssigned(assignedMembers.length),
+                              style: TextStyle(
+                                fontFamily: FontFamily.interBold,
+                                fontSize: 14.sp.sp,
+                                color: const Color(0xFF1E1B4B),
+                              ),
+                            ),
                           ),
                           if (assignedMembers.isNotEmpty &&
                               !isIndividualPlan.value &&
                               canAssignMembers.value)
-                            GestureDetector(
-                              onTap: () {
-                                availableMembers.addAll(assignedMembers);
-                                assignedMembers.clear();
-                              },
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.delete_outline_rounded,
-                                    size: 16.sp,
-                                    color: const Color(0xFF5B4DFF),
-                                  ),
-                                  SizedBox(width: 4.w),
-                                  reausabletext(
-                                    "Remove All",
-                                    fontsize: 12.sp,
-                                    fontfamily: FontFamily.interSemiBold,
-                                    color: const Color(0xFF5B4DFF),
-                                  ),
-                                ],
+                            Flexible(
+                              child: GestureDetector(
+                                onTap: () {
+                                  availableMembers.addAll(assignedMembers);
+                                  assignedMembers.clear();
+                                },
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.delete_outline_rounded,
+                                      size: 16.sp,
+                                      color: const Color(0xFF5B4DFF),
+                                    ),
+                                    SizedBox(width: 4.w),
+                                    Flexible(
+                                      child: AutoFitText(
+                                        context.l10n.walkie_removeAll,
+                                        style: TextStyle(
+                                          fontFamily: FontFamily.interSemiBold,
+                                          fontSize: 12.sp.sp,
+                                          color: const Color(0xFF5B4DFF),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                         ],
@@ -2229,7 +2246,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         Padding(
                           padding: EdgeInsets.symmetric(vertical: 8.h),
                           child: Text(
-                            "No members currently assigned",
+                            context.l10n.walkie_noMembersAssigned,
                             style: TextStyle(
                               fontSize: 12.sp,
                               color: Colors.grey,
@@ -2240,7 +2257,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         ...assignedList.map((m) => _buildAssignedMemberTile(m)),
                       SizedBox(height: 16.h),
                       reausabletext(
-                        "Available Members",
+                        context.l10n.walkie_availableMembers,
                         fontsize: 14.sp,
                         fontfamily: FontFamily.interBold,
                         color: const Color(0xFF1E1B4B),
@@ -2250,7 +2267,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         Padding(
                           padding: EdgeInsets.symmetric(vertical: 8.h),
                           child: Text(
-                            "No available members",
+                            context.l10n.walkie_noAvailableMembers,
                             style: TextStyle(
                               fontSize: 12.sp,
                               color: Colors.grey,
@@ -2305,7 +2322,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                               GoldenCrownBadge(size: 20.sp),
                               SizedBox(width: 8.w),
                               reausabletext(
-                                "Choose a Plan",
+                                context.l10n.walkie_chooseAPlan,
                                 fontsize: 15.sp,
                                 fontfamily: FontFamily.interSemiBold,
                                 color: Colors.white,
@@ -2350,7 +2367,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                               ),
                               SizedBox(width: 8.w),
                               reausabletext(
-                                "Upgrade to Team Plan (Assign Members)",
+                                context.l10n.walkie_upgradeTeamAssign,
                                 fontsize: 14.5.sp,
                                 fontfamily: FontFamily.interSemiBold,
                                 color: Colors.white,
@@ -2386,22 +2403,30 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                                       radius: 9.r,
                                     ),
                                     SizedBox(width: 8.w),
-                                    reausabletext(
-                                      "Updating Members...",
-                                      fontsize: 15.sp,
-                                      fontfamily: FontFamily.interSemiBold,
-                                      color: Colors.white,
+                                    Flexible(
+                                      child: AutoFitText(
+                                        context.l10n.walkie_updatingMembers,
+                                        style: TextStyle(
+                                          fontFamily: FontFamily.interSemiBold,
+                                          fontSize: 15.sp.sp,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 )
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    reausabletext(
-                                      "Update Members (${assignedMembers.length}/${maxAllowedSeats.value})",
-                                      fontsize: 15.sp,
-                                      fontfamily: FontFamily.interSemiBold,
-                                      color: Colors.white,
+                                    Flexible(
+                                      child: AutoFitText(
+                                        context.l10n.walkie_updateMembers(assignedMembers.length, maxAllowedSeats.value),
+                                        style: TextStyle(
+                                          fontFamily: FontFamily.interSemiBold,
+                                          fontSize: 15.sp.sp,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                                     ),
                                     SizedBox(width: 8.w),
                                     Icon(
@@ -2431,7 +2456,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         children: [
           reausabletext(
-            "Currently Assigned (2)",
+            context.l10n.walkie_currentlyAssigned(2),
             fontsize: 14.sp,
             fontfamily: FontFamily.interBold,
             color: const Color(0xFF1E1B4B),
@@ -2450,7 +2475,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
           ),
           SizedBox(height: 16.h),
           reausabletext(
-            "Available Members",
+            context.l10n.walkie_availableMembers,
             fontsize: 14.sp,
             fontfamily: FontFamily.interBold,
             color: const Color(0xFF1E1B4B),
@@ -2538,10 +2563,10 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   SizedBox(height: 2.h),
                   Text(
                     member.isSubscribedByAdmin
-                        ? "Assigned by You"
+                        ? context.l10n.walkie_assignedByYou
                         : (member.planName?.isNotEmpty == true
                             ? member.planName!
-                            : "Active Member"),
+                            : context.l10n.walkie_activeMember),
                     style: TextStyle(
                       fontSize: 11.sp,
                       color: const Color(0xFF6B7280),
@@ -2567,7 +2592,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         size: 13.sp, color: const Color(0xFF1D4ED8)),
                     SizedBox(width: 4.w),
                     Text(
-                      "Self Access",
+                      context.l10n.walkie_selfAccess,
                       style: TextStyle(
                         fontSize: 10.5.sp,
                         color: const Color(0xFF1D4ED8),
@@ -2593,7 +2618,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         size: 13.sp, color: const Color(0xFFB45309)),
                     SizedBox(width: 4.w),
                     Text(
-                      "Other Team",
+                      context.l10n.walkie_otherTeam,
                       style: TextStyle(
                         fontSize: 10.5.sp,
                         color: const Color(0xFFB45309),
@@ -2610,7 +2635,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     _showUpgradePrompt(context: context, isNoPlan: true);
                   } else if (!canRemove) {
                     Utils().fluttertoast(
-                        "Cannot remove seat assigned by another admin");
+                        context.l10n.walkie_cannotRemoveOtherAdminSeat);
                   } else {
                     assignedMembers.remove(member);
                     availableMembers.insert(0, member);
@@ -2665,7 +2690,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     Padding(
                       padding: EdgeInsets.only(top: 2.h),
                       child: Text(
-                        "Individual Plan • Subscribed by Self",
+                        context.l10n.walkie_individualSubscribedSelf,
                         style: TextStyle(
                           fontSize: 11.sp,
                           color: const Color(0xFF1D4ED8),
@@ -2678,7 +2703,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     Padding(
                       padding: EdgeInsets.only(top: 2.h),
                       child: Text(
-                        "Team Plan • Assigned Elsewhere",
+                        context.l10n.walkie_teamAssignedElsewhere,
                         style: TextStyle(
                           fontSize: 11.sp,
                           color: const Color(0xFFB45309),
@@ -2690,7 +2715,9 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     Padding(
                       padding: EdgeInsets.only(top: 2.h),
                       child: Text(
-                        member.hasExistingAccess ? "Active Access" : "No Active Plan",
+                        member.hasExistingAccess
+                            ? context.l10n.walkie_activeAccess
+                            : context.l10n.walkie_noActivePlan,
                         style: TextStyle(
                           fontSize: 11.sp,
                           color: const Color(0xFF6B7280),
@@ -2719,7 +2746,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         size: 12.sp, color: const Color(0xFF1D4ED8)),
                     SizedBox(width: 3.w),
                     Text(
-                      "Self Plan",
+                      context.l10n.walkie_selfPlan,
                       style: TextStyle(
                         fontSize: 10.sp,
                         color: const Color(0xFF1D4ED8),
@@ -2747,7 +2774,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         size: 12.sp, color: const Color(0xFFB45309)),
                     SizedBox(width: 3.w),
                     Text(
-                      "Other Team",
+                      context.l10n.walkie_otherTeam,
                       style: TextStyle(
                         fontSize: 10.sp,
                         color: const Color(0xFFB45309),
@@ -2789,7 +2816,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                               : const Color(0xFFE11D48)),
                       SizedBox(width: 3.w),
                       Text(
-                        isIndiv ? "Team Plan" : "Get Plan",
+                        isIndiv ? context.l10n.walkie_teamPlan : context.l10n.walkie_getPlan,
                         style: TextStyle(
                           fontSize: 10.sp,
                           color: isIndiv
@@ -2813,7 +2840,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                       Border.all(color: const Color(0xFFE5E7EB), width: 0.8),
                 ),
                 child: Text(
-                  "Unavailable",
+                  context.l10n.walkie_unavailable,
                   style: TextStyle(
                     fontSize: 10.sp,
                     color: const Color(0xFF9CA3AF),
@@ -2865,17 +2892,17 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   Future<void> _submitAssignedMembers() async {
     final int? subId = activeSubscriptionId.value;
     if (subId == null) {
-      Utils().fluttertoast("No active team subscription found");
+      Utils().fluttertoast(appL10n.walkie_noTeamSubscription);
       return;
     }
 
     if (!hasTeamPlan.value || !canManageMembers.value) {
-      Utils().fluttertoast("Team Plan required to assign members");
+      Utils().fluttertoast(appL10n.walkie_teamPlanRequiredToAssign);
       return;
     }
 
     if (assignedMembers.isEmpty) {
-      Utils().fluttertoast("Please select at least one member to assign");
+      Utils().fluttertoast(appL10n.walkie_selectAtLeastOne);
       return;
     }
 
@@ -2889,7 +2916,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         .toList();
 
     if (targetUserIds.isEmpty) {
-      Utils().fluttertoast("No valid members selected to assign");
+      Utils().fluttertoast(appL10n.walkie_noValidMembers);
       return;
     }
 
@@ -2905,7 +2932,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         final msg = res.message;
         Utils().fluttertoast((msg != null && msg.isNotEmpty)
             ? msg
-            : "Assigned members updated successfully");
+            : appL10n.walkie_membersUpdated);
         Get.back();
         await fetchMembersFromApi();
         if (Get.isRegistered<WalkieTalkieTrialController>()) {
@@ -2915,16 +2942,16 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         final msg = res.message;
         Utils().fluttertoast((msg != null && msg.isNotEmpty)
             ? msg
-            : "Failed to update assigned members");
+            : appL10n.walkie_membersUpdateFailed);
         await fetchMembersFromApi();
       }
     } catch (e) {
       AppLog.d("❌ [Walkie] Error submitting member subscriptions: $e");
       final String errStr = e.toString();
       if (errStr.contains("409") || errStr.toLowerCase().contains("seat")) {
-        Utils().fluttertoast("No team seats available. Refreshing member list...");
+        Utils().fluttertoast(appL10n.walkie_noSeatsRefreshing);
       } else {
-        Utils().fluttertoast("Error: $errStr");
+        Utils().fluttertoast(appL10n.walkie_errorWithDetails(errStr));
       }
       await fetchMembersFromApi();
     } finally {

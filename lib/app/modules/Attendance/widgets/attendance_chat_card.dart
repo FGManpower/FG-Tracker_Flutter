@@ -1,9 +1,10 @@
 import 'dart:io';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import '../controller/attendance_controller.dart';
 import '../models/attendance_poll_model.dart';
 import '../views/view_attendance_sheet.dart';
@@ -88,7 +89,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
 
   String get _timeLabel {
     final parsed = DateTime.tryParse(widget.messageTime ?? "")?.toLocal();
-    return parsed != null ? DateFormat("hh:mm a").format(parsed) : "";
+    return parsed != null ? appDateFormat("hh:mm a").format(parsed) : "";
   }
 
   /// userId → profile image, from the group's member list (fallback for
@@ -137,14 +138,14 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
 
     final option = poll.optionById(_selectedOptionId);
     if (option == null) {
-      setState(() => _statusError = "Please select your status");
+      setState(() => _statusError = appL10n.attendance_selectStatus);
     } else if (poll.requiresPhoto(option.id) && _attendancePhoto == null) {
       // Go straight to the camera; it submits after the photo is confirmed.
       _openCamera(poll);
       return;
     }
     if (_statusError != null || _photoError != null) {
-      _showSnack("Validation Error", _photoError ?? _statusError!,
+      _showSnack(appL10n.attendance_validationError, _photoError ?? _statusError!,
           isError: true);
       return;
     }
@@ -163,9 +164,9 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
         _selectedOptionId = null;
         _attendancePhoto = null;
       });
-      _showSnack("Attendance Submitted", "Marked as ${option.label}");
+      _showSnack(appL10n.attendance_submitted, appL10n.attendance_markedAs(option.label));
     } catch (e) {
-      _showSnack("Attendance Failed", e.toString(), isError: true);
+      _showSnack(appL10n.attendance_failed, e.toString(), isError: true);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -173,16 +174,16 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
 
   Future<void> _removeVote(AttendancePoll poll) async {
     final ok = await _confirm(
-      "Remove your response?",
-      "Your attendance for this poll will be cleared.",
-      "Remove",
+      appL10n.attendance_removeResponseTitle,
+      appL10n.attendance_removeResponseBody,
+      appL10n.common_remove,
     );
     if (!ok) return;
     setState(() => _isSubmitting = true);
     try {
       await _controller.removeVote(poll.id);
     } catch (e) {
-      _showSnack("Unable to remove", e.toString(), isError: true);
+      _showSnack(appL10n.attendance_removeFailedShort, e.toString(), isError: true);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -190,15 +191,15 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
 
   Future<void> _closePoll(AttendancePoll poll) async {
     final ok = await _confirm(
-      "Close attendance?",
-      "Members won't be able to respond after it is closed.",
-      "Close",
+      appL10n.attendance_closeConfirmTitle,
+      appL10n.attendance_closeConfirmBody,
+      appL10n.common_close,
     );
     if (!ok) return;
     try {
       await _controller.closePoll(poll.id);
     } catch (e) {
-      _showSnack("Unable to close", e.toString(), isError: true);
+      _showSnack(appL10n.attendance_closeFailedShort, e.toString(), isError: true);
     }
   }
 
@@ -222,7 +223,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
           SizedBox(width: 8.w),
           Flexible(
             child: Text(
-              "This attendance was deleted",
+              appL10n.attendance_deletedText,
               style: TextStyle(
                 fontSize: 12.5.sp,
                 fontStyle: FontStyle.italic,
@@ -244,7 +245,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Cancel"),
+            child: Text(appL10n.common_cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -343,7 +344,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
-              "Admin",
+              appL10n.attendance_admin,
               style: TextStyle(
                 fontSize: 10.sp,
                 fontWeight: FontWeight.w700,
@@ -382,13 +383,13 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
-              "Couldn't load attendance",
+              appL10n.attendance_loadFailed,
               style: TextStyle(fontSize: 13.sp, color: _textDark),
             ),
           ),
           TextButton(
             onPressed: () => _load(force: true),
-            child: const Text("Retry"),
+            child: Text(appL10n.common_retry),
           ),
         ],
       ),
@@ -434,7 +435,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                poll.title.isNotEmpty ? poll.title : "Attendance",
+                poll.title.isNotEmpty ? poll.title : appL10n.attendance_title,
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w800,
@@ -488,7 +489,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
   }
 
   Widget _buildCompletedBadge() => _buildStatusBadge(
-        "Completed",
+        appL10n.attendance_statusCompleted,
         const Color(0xFF16A34A),
         const Color(0xFFE8F9EF),
       );
@@ -576,14 +577,16 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
   }
 
   Widget _buildFooter(AttendancePoll poll, int memberCount) {
-    final members = memberCount > 0 ? "$memberCount Members • " : "";
+    final members = memberCount > 0
+        ? "${appL10n.common_membersCount(memberCount)} • "
+        : "";
     return Row(
       children: [
         Icon(Icons.groups_rounded, color: _textMuted, size: 16.sp),
         SizedBox(width: 6.w),
         Expanded(
           child: Text(
-            "$members${poll.totalVotes} responded",
+            "$members${appL10n.attendance_respondedCount(poll.totalVotes)}",
             style: TextStyle(fontSize: 11.5.sp, color: _textMuted),
           ),
         ),
@@ -617,7 +620,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
           ),
         ),
         child: Text(
-          "View Attendance",
+          appL10n.attendance_viewTitle,
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w700,
@@ -635,8 +638,8 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
       onSelected: (value) {
         if (value == "close") _closePoll(poll);
       },
-      itemBuilder: (_) => const [
-        PopupMenuItem(value: "close", child: Text("Close attendance")),
+      itemBuilder: (_) => [
+        PopupMenuItem(value: "close", child: Text(appL10n.attendance_closeAction)),
       ],
     );
   }
@@ -738,7 +741,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
               SizedBox(width: 6.w),
               Expanded(
                 child: Text(
-                  "Attendance marked successfully",
+                  appL10n.attendance_markedSuccess,
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
@@ -747,12 +750,15 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                 ),
               ),
               if (photo != null)
-                Text(
-                  "Photo verified",
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF16A34A),
+                Flexible(
+                  child: AutoFitText(
+                    appL10n.attendance_photoVerified,
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF16A34A),
+                    ),
                   ),
                 ),
             ],
@@ -764,22 +770,26 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
           if (canChange) ...[
             SizedBox(height: 8.h),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TextButton(
-                  onPressed: _isSubmitting
-                      ? null
-                      : () => setState(() {
-                            _isChangingVote = true;
-                            _selectedOptionId = poll.myVote?.optionId;
-                          }),
-                  child: const Text("Change response"),
+                Flexible(
+                  child: TextButton(
+                    onPressed: _isSubmitting
+                        ? null
+                        : () => setState(() {
+                              _isChangingVote = true;
+                              _selectedOptionId = poll.myVote?.optionId;
+                            }),
+                    child: AutoFitText(appL10n.attendance_changeResponse),
+                  ),
                 ),
-                const Spacer(),
-                TextButton(
-                  onPressed: _isSubmitting ? null : () => _removeVote(poll),
-                  child: const Text(
-                    "Remove",
-                    style: TextStyle(color: _error),
+                Flexible(
+                  child: TextButton(
+                    onPressed: _isSubmitting ? null : () => _removeVote(poll),
+                    child: AutoFitText(
+                      appL10n.common_remove,
+                      style: const TextStyle(color: _error),
+                    ),
                   ),
                 ),
               ],
@@ -811,7 +821,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
           _buildTitleRow(poll),
           SizedBox(height: 16.h),
           Text(
-            "Mark your attendance",
+            appL10n.attendance_markYourAttendance,
             style: TextStyle(
               fontSize: 14.5.sp,
               fontWeight: FontWeight.w800,
@@ -820,13 +830,14 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
           ),
           SizedBox(height: 2.h),
           Text(
-            poll.description ?? "Please select your status",
+            poll.description ?? appL10n.attendance_selectStatus,
             style: TextStyle(fontSize: 12.sp, color: _textMuted),
           ),
           if (poll.deadlineAt != null) ...[
             SizedBox(height: 4.h),
             Text(
-              "Closes ${DateFormat("dd MMM, hh:mm a").format(poll.deadlineAt!)}",
+              appL10n.attendance_closesAt(
+                  appDateFormat("dd MMM, hh:mm a").format(poll.deadlineAt!)),
               style: TextStyle(
                 fontSize: 11.sp,
                 color: const Color(0xFFF59E0B),
@@ -888,7 +899,9 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                       ),
                     )
                   : Text(
-                      _isChangingVote ? "Update Attendance" : "Submit Attendance",
+                      _isChangingVote
+                          ? appL10n.attendance_update
+                          : appL10n.attendance_submit,
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w700,
@@ -908,7 +921,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                           _statusError = null;
                           _photoError = null;
                         }),
-                child: const Text("Cancel"),
+                child: Text(appL10n.common_cancel),
               ),
             ),
           SizedBox(height: 6.h),
@@ -948,7 +961,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Attendance Photo",
+                    appL10n.attendance_photoTitle,
                     style: TextStyle(
                       fontSize: 13.5.sp,
                       fontWeight: FontWeight.w700,
@@ -958,8 +971,8 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                   SizedBox(height: 2.h),
                   Text(
                     _attendancePhoto != null
-                        ? "Photo captured ✓ (Tap to retake)"
-                        : "⚠ Photo required for ${option.label}",
+                        ? appL10n.attendance_photoCapturedTapRetake
+                        : appL10n.attendance_photoRequiredFor(option.label),
                     style: TextStyle(
                       fontSize: 11.5.sp,
                       color: _attendancePhoto != null

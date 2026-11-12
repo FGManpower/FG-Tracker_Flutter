@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -24,10 +25,14 @@ class ChatTranslatedCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final translationService = ChatTranslationService.instance;
     final isTargetEnglish = targetLang == 'en';
-    final headerTitle =
-        isTargetEnglish ? "Translated to English" : "Translated to Hindi";
-    final listenTitle = isTargetEnglish ? "Listen (English)" : "Listen (Hindi)";
-    final stopTitle = isTargetEnglish ? "Stop (English)" : "Stop (Hindi)";
+    final l10n = context.l10n;
+    final headerTitle = isTargetEnglish
+        ? l10n.chat_translatedToEnglish
+        : l10n.chat_translatedToHindi;
+    final listenTitle =
+        isTargetEnglish ? l10n.chat_listenEnglish : l10n.chat_listenHindi;
+    final stopTitle =
+        isTargetEnglish ? l10n.chat_stopEnglish : l10n.chat_stopHindi;
 
     return Container(
       margin: EdgeInsets.only(top: 8.h),
@@ -76,7 +81,7 @@ class ChatTranslatedCard extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.only(left: 8.w),
                   child: Text(
-                    "Show Original",
+                    context.l10n.chat_showOriginal,
                     style: TextStyle(
                       fontSize: 10.sp,
                       fontFamily: FontFamily.interMedium,
@@ -215,7 +220,7 @@ class ChatMessageActionRow extends StatelessWidget {
                 ),
               ),
               Text(
-                "Translating...",
+                context.l10n.chat_translating,
                 style: TextStyle(
                   fontSize: 11.sp,
                   fontFamily: FontFamily.interSemiBold,
@@ -257,7 +262,7 @@ class ChatMessageActionRow extends StatelessWidget {
                     ),
                   SizedBox(width: 4.w),
                   Text(
-                    isPlaying ? "Stop" : "Listen",
+                    isPlaying ? context.l10n.chat_stop : context.l10n.chat_listen,
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontFamily: FontFamily.interSemiBold,

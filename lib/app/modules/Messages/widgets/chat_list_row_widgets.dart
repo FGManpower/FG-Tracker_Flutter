@@ -1,6 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
+
+/// Stable value the models use for a forwarded last message (logic id;
+/// translated only when shown, see [chatListForwardedLabel]).
+const String kForwardedLabel = 'Forwarded';
+
+/// Fallback chat names the models store when the server sends none.
+const String kUnknownUserName = 'Unknown User';
+const String kGroupFallbackName = 'Group';
+
+/// "Forwarded" label in the app language. A custom label from the server is
+/// shown as it comes.
+String chatListForwardedLabel(String? label) {
+  final l = label?.trim() ?? '';
+  if (l.isEmpty || l.toLowerCase() == kForwardedLabel.toLowerCase()) {
+    return appL10n.chatList_forwarded;
+  }
+  return l;
+}
+
+/// Chat name for display: the model fallbacks ("Unknown User" / "Group")
+/// and an empty name show in the app language, real names as they come.
+String chatListDisplayName(String? name) {
+  final n = name?.trim() ?? '';
+  if (n.isEmpty || n == kUnknownUserName) return appL10n.chatList_unknownUser;
+  if (n == kGroupFallbackName) return appL10n.chatList_groupFallback;
+  return name!;
+}
 
 /// Grey "Deactivated" chip next to a group name (backend v2.5.0): the
 /// group was deactivated by its admin.
@@ -16,7 +44,7 @@ class DeactivatedGroupBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(4.r),
       ),
       child: Text(
-        "Deactivated",
+        context.l10n.chatList_deactivated,
         maxLines: 1,
         style: TextStyle(
           fontSize: 8.5.sp,
@@ -33,11 +61,11 @@ class DeactivatedGroupBadge extends StatelessWidget {
 class DeactivatedGroupBanner extends StatelessWidget {
   const DeactivatedGroupBanner({
     super.key,
-    this.text = "This group has been deactivated by the Admin",
+    this.text,
   });
 
-  /// Message shown instead of the input bar.
-  final String text;
+  /// Message shown instead of the input bar (default: deactivated by admin).
+  final String? text;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +82,7 @@ class DeactivatedGroupBanner extends StatelessWidget {
             SizedBox(width: 8.w),
             Flexible(
               child: Text(
-                text,
+                text ?? context.l10n.chatList_groupDeactivatedBanner,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.grey.shade700,
@@ -120,7 +148,7 @@ class ArchivedEntryLabels extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Archived ($archivedCount)',
+                context.l10n.chatList_archivedCount(archivedCount),
                 key: const ValueKey('archived_entry_title'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -133,8 +161,8 @@ class ArchivedEntryLabels extends StatelessWidget {
               SizedBox(height: 2.h),
               Text(
                 unreadCount > 0
-                    ? '$unreadCount unread message${unreadCount == 1 ? '' : 's'}'
-                    : 'View archived conversations',
+                    ? context.l10n.chatList_unreadMessages(unreadCount)
+                    : context.l10n.chatList_viewArchived,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 10.sp, color: Colors.grey),

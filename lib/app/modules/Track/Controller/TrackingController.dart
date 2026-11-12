@@ -28,6 +28,7 @@ import 'package:geocoding/geocoding.dart' hide Location;
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import '../../../Model/MemberDataRes.dart';
 
@@ -1802,8 +1803,8 @@ class TrackController extends GetxController {
     }
 
     Get.snackbar(
-      "Search",
-      "No members or groups found for '$query'",
+      appL10n.common_search,
+      appL10n.track_noSearchResults(query),
       snackPosition: SnackPosition.TOP,
       backgroundColor: const Color(0xFF1E1B4B),
       colorText: Colors.white,
@@ -2218,12 +2219,12 @@ class TrackController extends GetxController {
   void zoomToMember(dynamic member) {
     // Check if member is in Ghost Mode: if so, do not zoom to location, show top notification popup
     bool isGhost = false;
-    String memberName = "Member";
+    String memberName = appL10n.track_member;
     if (member is LocationData) {
       isGhost = member.locationSharing == false ||
           member.locationSharing == 0 ||
           member.locationSharing == '0';
-      memberName = member.name?.toString() ?? "Member";
+      memberName = member.name?.toString() ?? appL10n.track_member;
     }
 
     if (isGhost) {
@@ -2281,18 +2282,18 @@ class TrackController extends GetxController {
                           color: const Color(0xFFF3E8FF),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.lock_outline_rounded,
                               size: 11,
                               color: Color(0xFF7E57C2),
                             ),
-                            SizedBox(width: 4),
+                            const SizedBox(width: 4),
                             Text(
-                              "Private",
-                              style: TextStyle(
+                              appL10n.track_private,
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFF7E57C2),
@@ -2302,9 +2303,9 @@ class TrackController extends GetxController {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Text(
-                        "Location Hidden",
-                        style: TextStyle(
+                      Text(
+                        appL10n.track_locationHidden,
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF1E1B4B),
@@ -2314,7 +2315,7 @@ class TrackController extends GetxController {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    "$memberName has paused location sharing. Live location is not available.",
+                    appL10n.track_memberPausedSharing(memberName),
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,

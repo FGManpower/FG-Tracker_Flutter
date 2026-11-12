@@ -1,17 +1,27 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:fgtracker/app/Core/theme/AppText.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/values/logoutuser.dart';
 
 class ApiErrorHandler {
+  /// True when [message] is the network/timeout error returned by
+  /// [handleDioError] (English legacy text or the translated text). Use this
+  /// instead of comparing with the English literal.
+  static bool isNetworkErrorMessage(String? message) {
+    if (message == null) return false;
+    return message == 'An error occured please try again!' ||
+        message == englishL10n.http_networkError ||
+        message == appL10n.http_networkError;
+  }
+
   static String handleDioError(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.sendTimeout ||
         e.type == DioExceptionType.connectionError ||
         e.error is SocketException) {
-      return AppText.anErrorOccouredPlsTryAgain;
+      return sharedL10n.http_networkError;
     } else if (e.type == DioExceptionType.badResponse && e.response != null) {
       final response = e.response!;
       final statusCode = response.statusCode;
@@ -20,9 +30,9 @@ class ApiErrorHandler {
         LogoutUser().handleForceLogout(
           message: "Session expired. Please log in again.",
         );
-        return "Session expired. Please log in again.";
+        return sharedL10n.http_sessionExpired;
       } else if (statusCode == 503) {
-        return AppText.OopsSomethingWentWrong;
+        return sharedL10n.common_somethingWentWrong;
       }
 
       if (response.data != null) {
@@ -56,6 +66,6 @@ class ApiErrorHandler {
       }
     }
 
-    return AppText.OopsSomethingWentWrong;
+    return sharedL10n.common_somethingWentWrong;
   }
 }

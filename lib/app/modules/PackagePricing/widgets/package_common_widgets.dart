@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Model/package_pricing_model.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 // Shared look for the Packages & Pricing screen — app primary colour + Inter font
 class PackageUi {
@@ -103,7 +104,7 @@ class PackageBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Back',
+      label: context.l10n.common_back,
       button: true,
       excludeSemantics: true,
       child: GestureDetector(
@@ -248,7 +249,8 @@ class PackageStatusView extends StatelessWidget {
 
   bool get _isOffline {
     final m = message.toLowerCase();
-    return m.contains('internet') ||
+    return message == appL10n.repo_pkgOffline ||
+        m.contains('internet') ||
         m.contains('network') ||
         m.contains('connection');
   }
@@ -288,7 +290,7 @@ class PackageStatusView extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: onRetry,
               icon: Icon(Icons.refresh_rounded, size: 18.sp),
-              label: const Text('Try again'),
+              label: Text(context.l10n.common_tryAgain),
               style: OutlinedButton.styleFrom(
                 foregroundColor: PackageUi.accent,
                 side: const BorderSide(color: PackageUi.accent),

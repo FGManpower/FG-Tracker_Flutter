@@ -14,6 +14,8 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
+import 'package:fgtracker/features/language/language_controller.dart';
+import 'package:fgtracker/features/language/language_options.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -40,6 +42,7 @@ import 'app/modules/Track/Controller/LocationService.dart';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
+import 'package:fgtracker/l10n/l10n.dart';
 
 final socket = SignallingService.instance.socket;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -59,10 +62,14 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       final shared = await SharedPreferences.getInstance();
       final introDone = shared.getBool(PrefConst.introStatus) ?? true;
       final isDark = shared.getBool(PrefConst.isDarkMode);
+      final appLanguage = shared.getString(PrefConst.appLanguage);
       await shared.clear();
       await shared.setBool(PrefConst.introStatus, introDone);
       if (isDark != null) {
         await shared.setBool(PrefConst.isDarkMode, isDark);
+      }
+      if (appLanguage != null) {
+        await shared.setString(PrefConst.appLanguage, appLanguage);
       }
       await flutterLocalNotificationsPlugin.cancelAll();
       try {
@@ -240,6 +247,9 @@ Future<void> main() async {
 
   await Firebase.initializeApp();
   await Global.init();
+  // App language saved on this phone ("app_language"); applied by
+  // GetMaterialApp below and changed via Get.updateLocale.
+  await Get.put(LanguageController(), permanent: true).load();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   await firebaseNotificationServices().initialized();
@@ -382,15 +392,22 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 elevation: 0,
               ),
             ),
+            // The saved language always wins over the phone's language.
+            // Null until the user picks one, so behaviour is unchanged.
+            locale: LanguageController.to.appLocale,
+            fallbackLocale: const Locale('en'),
             localizationsDelegates: const [
+              AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            supportedLocales: const [
-              Locale('en', 'US'),
-              Locale('hi', 'IN'),
-              Locale('ur', 'PK'),
+            supportedLocales: [
+              ...kAppLanguages.map((o) => o.locale),
+              // Kept from before so existing behaviour does not change.
+              const Locale('en', 'US'),
+              const Locale('hi', 'IN'),
+              const Locale('ur', 'PK'),
             ],
           ),
         ),

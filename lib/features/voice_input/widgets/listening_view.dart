@@ -1,9 +1,11 @@
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/features/voice_input/voice_input_controller.dart';
 import 'package:fgtracker/features/voice_input/widgets/waveform_bars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class VoiceToTextListeningView extends StatefulWidget {
   final VoiceInputController controller;
@@ -73,7 +75,7 @@ class _VoiceToTextListeningViewState extends State<VoiceToTextListeningView>
               ),
               SizedBox(width: 8.w),
               Text(
-                "Listening…",
+                context.l10n.voice_listening,
                 style: TextStyle(
                   color: AppColors.darkText, // #0F0B4C
                   fontSize: 16.sp,
@@ -183,7 +185,7 @@ class _VoiceToTextListeningViewState extends State<VoiceToTextListeningView>
                         ),
                         SizedBox(width: 8.w),
                         Text(
-                          "Boliye… text yahaan dikhega",
+                          context.l10n.voice_speakPlaceholder,
                           style: TextStyle(
                             color: AppColors.primarySecondaryElementText,
                             fontSize: 13.sp,
@@ -204,7 +206,10 @@ class _VoiceToTextListeningViewState extends State<VoiceToTextListeningView>
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Cancel
-              GestureDetector(
+              // Flexible + AutoFitText: long translated labels shrink
+              // instead of overflowing the row.
+              Flexible(
+                child: GestureDetector(
                 onTap: () => widget.controller.cancelSession(),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -223,8 +228,9 @@ class _VoiceToTextListeningViewState extends State<VoiceToTextListeningView>
                       ),
                     ),
                     SizedBox(height: 6.h),
-                    Text(
-                      "Cancel",
+                    AutoFitText(
+                      context.l10n.common_cancel,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.primarySecondaryElementText,
                         fontSize: 12.sp,
@@ -234,9 +240,11 @@ class _VoiceToTextListeningViewState extends State<VoiceToTextListeningView>
                   ],
                 ),
               ),
+              ),
 
               // "Tap to stop" (72px #704AFA, pulsing ring)
-              GestureDetector(
+              Flexible(
+                child: GestureDetector(
                 onTap: () {
                   if (_canTapStop) {
                     widget.controller.stopListening();
@@ -278,8 +286,9 @@ class _VoiceToTextListeningViewState extends State<VoiceToTextListeningView>
                       },
                     ),
                     SizedBox(height: 6.h),
-                    Text(
-                      "Tap to stop",
+                    AutoFitText(
+                      context.l10n.voice_tapToStop,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.primaryDarkblue,
                         fontSize: 13.sp,
@@ -289,9 +298,11 @@ class _VoiceToTextListeningViewState extends State<VoiceToTextListeningView>
                   ],
                 ),
               ),
+              ),
 
               // Language Chip (e.g. HI-IN / EN-IN)
-              GestureDetector(
+              Flexible(
+                child: GestureDetector(
                 onTap: () => widget.controller.openLanguagePicker(),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -315,8 +326,9 @@ class _VoiceToTextListeningViewState extends State<VoiceToTextListeningView>
                           )),
                     ),
                     SizedBox(height: 6.h),
-                    Text(
-                      "Language",
+                    AutoFitText(
+                      context.l10n.voice_language,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.primarySecondaryElementText,
                         fontSize: 12.sp,
@@ -325,6 +337,7 @@ class _VoiceToTextListeningViewState extends State<VoiceToTextListeningView>
                     ),
                   ],
                 ),
+              ),
               ),
             ],
           ),

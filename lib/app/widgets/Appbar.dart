@@ -6,6 +6,7 @@ import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -163,10 +164,10 @@ class _WelcomeTitle extends StatelessWidget {
   final HomeController controller;
 
   String _formatName(String raw) {
-    if (raw.trim().isEmpty) return 'User';
+    if (raw.trim().isEmpty) return appL10n.widget_userFallback;
     final words = raw.trim().split(RegExp(r'\s+'));
     final firstName =
-        words.firstWhere((w) => w.isNotEmpty, orElse: () => 'User');
+        words.firstWhere((w) => w.isNotEmpty, orElse: () => appL10n.widget_userFallback);
     return firstName[0].toUpperCase() +
         (firstName.length > 1 ? firstName.substring(1) : '');
   }
@@ -207,7 +208,7 @@ class _WelcomeTitle extends StatelessWidget {
           ),
           SizedBox(height: 2.h),
           Text(
-            'Manage your groups easily',
+            context.l10n.widget_manageGroups,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -282,7 +283,7 @@ class _LocationStatus extends StatelessWidget {
               ),
               SizedBox(width: 6.w),
               Text(
-                isSharing ? 'Live' : 'Private',
+                isSharing ? context.l10n.widget_live : context.l10n.widget_private,
                 style: TextStyle(
                   fontFamily: FontFamily.interSemiBold,
                   fontSize: 11.5.sp,

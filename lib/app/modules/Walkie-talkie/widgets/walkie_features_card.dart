@@ -5,6 +5,7 @@ import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_tri
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -48,13 +49,13 @@ class WalkieFeaturesCard extends StatelessWidget {
                       _buildFeatureItem(
                         context,
                         icon: Icons.mic_rounded,
-                        title: "Push-to-talk\ncommunication",
+                        title: context.l10n.walkie_featurePtt,
                       ),
                       SizedBox(height: 10.h),
                       _buildFeatureItem(
                         context,
                         icon: Icons.groups_rounded,
-                        title: "Quick group\ncommunication",
+                        title: context.l10n.walkie_featureQuickGroup,
                       ),
                     ],
                   ),
@@ -70,13 +71,13 @@ class WalkieFeaturesCard extends StatelessWidget {
                       _buildFeatureItem(
                         context,
                         icon: Icons.touch_app_rounded,
-                        title: "Hold to talk",
+                        title: context.l10n.walkie_featureHoldToTalk,
                       ),
                       SizedBox(height: 10.h),
                       _buildFeatureItem(
                         context,
                         icon: Icons.group_work_rounded,
-                        title: "Easy group\ncoordination",
+                        title: context.l10n.walkie_featureEasyCoordination,
                       ),
                     ],
                   ),
@@ -176,7 +177,7 @@ class WalkiePrimaryActionButton extends StatelessWidget {
                 GoldenCrownBadge(size: _sp(context, 20)),
                 SizedBox(width: 8.w),
                 reausabletext(
-                  "Purchase / Upgrade Plan",
+                  context.l10n.walkie_purchaseUpgradePlan,
                   fontsize: _sp(context, 15),
                   fontfamily: FontFamily.interBold,
                   color: Colors.white,
@@ -216,8 +217,8 @@ class WalkiePrimaryActionButton extends StatelessWidget {
               SizedBox(width: 8.w),
               reausabletext(
                 canOpenWalkie
-                    ? "Open Walkie Talkie"
-                    : "Start ${controller.trialDurationHuman} Free Trial",
+                    ? context.l10n.walkie_openWalkieTalkie
+                    : context.l10n.walkie_startFreeTrial(controller.trialDurationHuman),
                 fontsize: _sp(context, 15),
                 fontfamily: FontFamily.interBold,
                 color: Colors.white,

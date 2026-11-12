@@ -4,12 +4,14 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Controller/razorpay_payment_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Model/razorpay_payment_model.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Utils/walkie_plan_l10n.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class RazorpayPaymentScreen extends StatefulWidget {
@@ -100,7 +102,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
               "pay_${DateTime.now().millisecondsSinceEpoch.toRadixString(36).toUpperCase()}",
           orderId: response.orderId,
           amountPaid: widget.totalAmount,
-          paymentMethod: "Razorpay Checkout",
+          paymentMethod: appL10n.walkiePlan_payMethodRazorpayCheckout,
         ));
   }
 
@@ -222,7 +224,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "Complete Payment",
+                context.l10n.walkiePlan_razorpayCompletePayment,
                 style: TextStyle(
                   fontSize: 17.sp.clamp(15.0, 19.0),
                   fontFamily: FontFamily.interBold,
@@ -231,7 +233,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
               ),
               SizedBox(height: 1.h),
               Text(
-                "Secure Checkout powered by Razorpay",
+                context.l10n.walkiePlan_razorpaySecureCheckout,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -331,7 +333,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.order.planTitle,
+                      walkiePlanTitleText(widget.order.planTitle, context.l10n),
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontFamily: FontFamily.interBold,
@@ -340,7 +342,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      "${widget.order.durationName} • ${isTeam ? '${widget.order.memberCount} Members' : '1 Member'}",
+                      "${walkieDurationText(widget.order.durationName, context.l10n)} • ${context.l10n.walkiePlan_orderMemberCount(isTeam ? widget.order.memberCount : 1)}",
                       style: TextStyle(
                         fontSize: 11.5.sp,
                         fontFamily: FontFamily.interRegular,
@@ -360,7 +362,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Total Payable Amount",
+                context.l10n.walkiePlan_razorpayTotalPayableAmount,
                 style: TextStyle(
                   fontSize: 13.5.sp,
                   fontFamily: FontFamily.interMedium,
@@ -409,7 +411,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
               ),
               SizedBox(height: 14.h),
               Text(
-                "Connecting to Razorpay...",
+                context.l10n.walkiePlan_razorpayConnecting,
                 style: TextStyle(
                   fontSize: 14.5.sp,
                   fontFamily: FontFamily.interBold,
@@ -418,7 +420,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
               ),
               SizedBox(height: 4.h),
               Text(
-                "Please complete the transaction in the Razorpay payment window.",
+                context.l10n.walkiePlan_razorpayCompleteInWindow,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11.5.sp,
@@ -451,7 +453,9 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
               ),
               SizedBox(height: 8.h),
               Text(
-                isCancelled ? "Payment Cancelled" : "Payment Failed",
+                isCancelled
+                    ? context.l10n.walkiePlan_razorpayPaymentCancelled
+                    : context.l10n.walkiePlan_payFailedTitle,
                 style: TextStyle(
                   fontSize: 14.5.sp,
                   fontFamily: FontFamily.interBold,
@@ -462,7 +466,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
               Text(
                 error.isNotEmpty
                     ? error
-                    : "The payment could not be processed. Please try again.",
+                    : context.l10n.walkiePlan_razorpayCouldNotProcess,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11.5.sp,
@@ -484,7 +488,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
                 onPressed: _initiateRazorpayPayment,
                 icon: Icon(Icons.refresh_rounded, size: 16.sp, color: Colors.white),
                 label: Text(
-                  "Retry Payment",
+                  context.l10n.walkiePlan_razorpayRetryPayment,
                   style: TextStyle(
                     fontSize: 12.5.sp,
                     fontFamily: FontFamily.interBold,
@@ -518,7 +522,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Supported Payment Modes",
+            context.l10n.walkiePlan_razorpaySupportedModes,
             style: TextStyle(
               fontSize: 13.5.sp,
               fontFamily: FontFamily.interBold,
@@ -531,28 +535,28 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
                 ? [
                     _buildPaymentMethodPill(
                       icon: Icons.qr_code_rounded,
-                      label: "UPI / QR",
+                      label: context.l10n.walkiePlan_orderUpiQr,
                     ),
                     SizedBox(width: 8.w),
                     _buildPaymentMethodPill(
                       icon: Icons.credit_card_rounded,
-                      label: "Cards",
+                      label: context.l10n.walkiePlan_orderCards,
                     ),
                     SizedBox(width: 8.w),
                     _buildPaymentMethodPill(
                       icon: Icons.account_balance_rounded,
-                      label: "NetBanking",
+                      label: context.l10n.walkiePlan_orderNetBanking,
                     ),
                     SizedBox(width: 8.w),
                     _buildPaymentMethodPill(
                       icon: Icons.account_balance_wallet_rounded,
-                      label: "Wallets",
+                      label: context.l10n.walkiePlan_orderWallets,
                     ),
                   ]
                 : [
                     _buildPaymentMethodPill(
                       icon: Icons.credit_card_rounded,
-                      label: "Cards",
+                      label: context.l10n.walkiePlan_orderCards,
                     ),
                     if (isUsd) ...[
                       SizedBox(width: 8.w),
@@ -564,7 +568,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
                     SizedBox(width: 8.w),
                     _buildPaymentMethodPill(
                       icon: Icons.shield_rounded,
-                      label: "3DS2 Secure",
+                      label: context.l10n.walkiePlan_order3ds2Secure,
                     ),
                   ],
           ),
@@ -632,7 +636,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "100% Safe & PCI-DSS Compliant",
+                  context.l10n.walkiePlan_razorpayPciCompliant,
                   style: TextStyle(
                     fontSize: 11.5.sp,
                     fontFamily: FontFamily.interBold,
@@ -641,7 +645,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
                 ),
                 SizedBox(height: 1.h),
                 Text(
-                  "Transactions are encrypted with end-to-end 256-bit SSL security.",
+                  context.l10n.walkiePlan_razorpaySslEncrypted,
                   style: TextStyle(
                     fontSize: 10.5.sp,
                     fontFamily: FontFamily.interRegular,
@@ -700,7 +704,7 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
                       ),
                       SizedBox(width: 10.w),
                       Text(
-                        "Processing with Razorpay...",
+                        context.l10n.walkiePlan_razorpayProcessing,
                         style: TextStyle(
                           fontSize: 14.5.sp,
                           fontFamily: FontFamily.interBold,
@@ -719,7 +723,8 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        "Pay ${controller.money(widget.totalAmount)} via Razorpay",
+                        context.l10n.walkiePlan_razorpayPayAmountVia(
+                            controller.money(widget.totalAmount)),
                         style: TextStyle(
                           fontSize: 15.sp.clamp(14.0, 16.5),
                           fontFamily: FontFamily.interBold,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class RouteOption {
   final String id;
@@ -299,13 +300,13 @@ class SafeRouteController extends GetxController
     Marker(
       markerId: const MarkerId('start'),
       position: startLatLng,
-      infoWindow: const InfoWindow(title: 'Start'),
+      infoWindow: InfoWindow(title: appL10n.safeRoute_start),
       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
     ),
     Marker(
       markerId: const MarkerId('end'),
       position: endLatLng,
-      infoWindow: const InfoWindow(title: 'End'),
+      infoWindow: InfoWindow(title: appL10n.safeRoute_end),
       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
     ),
   };

@@ -1,23 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import 'permission_gate_models.dart';
 import 'permission_gate_service.dart';
 
 /// User-facing reasons (one line each, shown before every system dialog).
 class PermissionReasons {
-  static const String location =
-      'Location is needed for attendance, live tracking and safe zone alerts.';
-  static const String locationAlways =
-      'Choose "Allow all the time" so live tracking and safe zone keep working '
-      'when the app is in the background.';
-  static const String precise =
-      'Precise location is needed for accurate attendance, live tracking and '
-      'safe zone alerts.';
-  static const String notification =
-      'Notifications are needed to receive incoming calls, chat messages, '
-      'attendance and safe-zone alerts.';
+  static String get location => appL10n.permission_reasonLocation;
+  static String get locationAlways => appL10n.permission_reasonLocationAlways;
+  static String get precise => appL10n.permission_reasonPrecise;
+  static String get notification => appL10n.permission_reasonNotification;
 }
 
 /// Drives the compulsory-permission requests step by step. One tap = one
@@ -42,34 +36,34 @@ class PermissionFlow {
   static String locationActionLabel(LocationStep step) {
     switch (step) {
       case LocationStep.done:
-        return 'Continue';
+        return appL10n.common_continue;
       case LocationStep.grantPermission:
-        return 'Allow Location';
+        return appL10n.permission_allowLocation;
       case LocationStep.grantAlways:
-        return 'Allow All The Time';
+        return appL10n.permission_allowAllTheTime;
       case LocationStep.turnOnService:
-        return 'Turn On Location';
+        return appL10n.permission_turnOnLocation;
       case LocationStep.grantPrecise:
-        return 'Turn On Precise Location';
+        return appL10n.permission_turnOnPreciseLocation;
       case LocationStep.openSettings:
-        return 'Open Settings';
+        return appL10n.permission_openSettings;
     }
   }
 
   static String locationStatusText(LocationStep step) {
     switch (step) {
       case LocationStep.done:
-        return 'Allowed all the time · Precise · GPS on';
+        return appL10n.permission_locationStatusDone;
       case LocationStep.grantPermission:
-        return 'Location permission not allowed yet.';
+        return appL10n.permission_locationStatusNotAllowed;
       case LocationStep.grantAlways:
-        return '"Allow all the time" is required.';
+        return appL10n.permission_locationStatusNeedAlways;
       case LocationStep.turnOnService:
-        return 'Device location (GPS) is turned off.';
+        return appL10n.permission_locationStatusGpsOff;
       case LocationStep.grantPrecise:
-        return 'Only approximate location is allowed. Precise is required.';
+        return appL10n.permission_locationStatusApproximate;
       case LocationStep.openSettings:
-        return 'Location is blocked. Enable it from Settings.';
+        return appL10n.permission_locationStatusBlocked;
     }
   }
 
@@ -84,7 +78,7 @@ class PermissionFlow {
           return r;
 
         case LocationStep.grantPermission:
-          if (!await _rationale(Icons.location_on_rounded, 'Allow Location',
+          if (!await _rationale(Icons.location_on_rounded, appL10n.permission_allowLocation,
               PermissionReasons.location)) {
             return r;
           }
@@ -95,14 +89,14 @@ class PermissionFlow {
                 _locationSettingsText(LocationStep.grantPermission));
           } else if (r.locationStep == LocationStep.grantPermission) {
             await _noProgress('location', Icons.location_on_rounded,
-                'Location permission is required to continue.',
+                appL10n.permission_locationRequiredToContinue,
                 _locationSettingsText(LocationStep.grantPermission));
           }
           break;
 
         case LocationStep.grantAlways:
           if (!await _rationale(Icons.my_location_rounded,
-              'Allow All The Time', PermissionReasons.locationAlways)) {
+              appL10n.permission_allowAllTheTime, PermissionReasons.locationAlways)) {
             return r;
           }
           await backend.requestLocationAlways();
@@ -118,7 +112,7 @@ class PermissionFlow {
               await _noProgress(
                   'always',
                   Icons.my_location_rounded,
-                  'Please select "Allow all the time" to continue.',
+                  appL10n.permission_selectAllowAllTheTime,
                   _locationSettingsText(LocationStep.grantAlways));
             }
           }
@@ -128,8 +122,7 @@ class PermissionFlow {
           if (backend.isIOS) {
             await _settingsDialog(
               Icons.gps_fixed_rounded,
-              'Location Services are turned off. Open Settings → Privacy & '
-              'Security → Location Services and turn it on, then come back.',
+              appL10n.permission_iosLocationServicesOff,
             );
           } else {
             final on = await backend.requestLocationService();
@@ -139,7 +132,7 @@ class PermissionFlow {
           break;
 
         case LocationStep.grantPrecise:
-          if (!await _rationale(Icons.gps_fixed_rounded, 'Precise Location',
+          if (!await _rationale(Icons.gps_fixed_rounded, appL10n.permission_preciseLocation,
               PermissionReasons.precise)) {
             return r;
           }
@@ -165,21 +158,16 @@ class PermissionFlow {
     switch (step) {
       case LocationStep.grantAlways:
         return ios
-            ? 'Open Settings → Location and choose "Always". '
-                '${PermissionReasons.locationAlways}'
-            : 'Open Settings → Permissions → Location and choose '
-                '"Allow all the time".';
+            ? '${appL10n.permission_settingsIosAlways} ${PermissionReasons.locationAlways}'
+            : appL10n.permission_settingsAndroidAlways;
       case LocationStep.grantPrecise:
         return ios
-            ? 'Open Settings → Location and turn on "Precise Location".'
-            : 'Open Settings → Permissions → Location and turn on '
-                '"Use precise location".';
+            ? appL10n.permission_settingsIosPrecise
+            : appL10n.permission_settingsAndroidPrecise;
       default:
         return ios
-            ? 'Location access is turned off for FG Tracker. Open Settings → '
-                'Location and choose "Always".'
-            : 'Location access is blocked for FG Tracker. Open Settings → '
-                'Permissions → Location and choose "Allow all the time".';
+            ? appL10n.permission_settingsIosBlocked
+            : appL10n.permission_settingsAndroidBlocked;
     }
   }
 
@@ -188,28 +176,27 @@ class PermissionFlow {
   static String notificationActionLabel(NotificationStep step) {
     switch (step) {
       case NotificationStep.done:
-        return 'Continue';
+        return appL10n.common_continue;
       case NotificationStep.grantPermission:
-        return 'Allow Notifications';
+        return appL10n.permission_allowNotifications;
       case NotificationStep.openSettings:
-        return 'Open Settings';
+        return appL10n.permission_openSettings;
     }
   }
 
   static String notificationStatusText(NotificationStep step) {
     switch (step) {
       case NotificationStep.done:
-        return 'Allowed';
+        return appL10n.permission_notificationStatusDone;
       case NotificationStep.grantPermission:
-        return 'Notification permission not allowed yet.';
+        return appL10n.permission_notificationStatusNotAllowed;
       case NotificationStep.openSettings:
-        return 'Notifications are blocked. Enable them from Settings.';
+        return appL10n.permission_notificationStatusBlocked;
     }
   }
 
-  static const String _notificationSettingsText =
-      'Notifications are turned off for FG Tracker. Open Settings → '
-      'Notifications and allow them. ${PermissionReasons.notification}';
+  static String get _notificationSettingsText =>
+      '${appL10n.permission_notificationSettingsText} ${PermissionReasons.notification}';
 
   Future<PermissionGateResult> fixNotification() {
     return gate.runExclusive(() async {
@@ -223,7 +210,7 @@ class PermissionFlow {
           return r;
         case NotificationStep.grantPermission:
           if (!await _rationale(Icons.notifications_rounded,
-              'Allow Notifications', PermissionReasons.notification)) {
+              appL10n.permission_allowNotifications, PermissionReasons.notification)) {
             return r;
           }
           await gate.backend.requestNotification();
@@ -235,7 +222,7 @@ class PermissionFlow {
             await _noProgress(
                 'notification',
                 Icons.notifications_rounded,
-                'Notification permission is required to continue.',
+                appL10n.permission_notificationRequiredToContinue,
                 _notificationSettingsText);
           }
           return r;
@@ -269,8 +256,8 @@ class PermissionFlow {
       icon: icon,
       title: title,
       message: reason,
-      primary: 'Continue',
-      secondary: 'Not Now',
+      primary: appL10n.common_continue,
+      secondary: appL10n.common_notNow,
     );
     return ok == true;
   }
@@ -278,10 +265,10 @@ class PermissionFlow {
   Future<void> _settingsDialog(IconData icon, String message) async {
     final ok = await _dialog(
       icon: icon,
-      title: 'Permission Required',
+      title: appL10n.permission_required,
       message: message,
-      primary: 'Open Settings',
-      secondary: 'Cancel',
+      primary: appL10n.permission_openSettings,
+      secondary: appL10n.common_cancel,
     );
     if (ok == true) await gate.backend.openAppSettings();
   }

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
@@ -12,6 +13,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../utils/attendance_frame_encoder.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 /// Live attendance selfie: front camera only, auto-captured when the member
 /// blinks (open → closed → open) with exactly one centered face in frame.
 /// Pops with the captured file path when the member taps Submit.
@@ -61,7 +63,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
   bool _isDetecting = false;
   bool _isCapturing = false;
   _BlinkStage _stage = _BlinkStage.waitingOpen;
-  String _status = "Starting camera…";
+  String _status = appL10n.attendance_cameraStarting;
   Color _statusColor = _textMuted;
   bool _faceReady = false;
 
@@ -141,7 +143,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
       if (_frontCamera == null) {
         setState(() {
           _isInitializing = false;
-          _initError = "No front camera found on this device.";
+          _initError = appL10n.attendance_noFrontCamera;
         });
         return;
       }
@@ -171,13 +173,13 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
       setState(() {
         _isInitializing = false;
         _permissionDenied = denied;
-        _initError = denied ? null : "Couldn't start the camera (${e.code}).";
+        _initError = denied ? null : appL10n.attendance_cameraStartFailedCode(e.code);
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isInitializing = false;
-        _initError = "Couldn't start the camera.";
+        _initError = appL10n.attendance_cameraStartFailed;
       });
     }
   }
@@ -185,7 +187,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
   void _resetBlink() {
     _stage = _BlinkStage.waitingOpen;
     _faceReady = false;
-    _setStatus("Look at the camera", _textMuted);
+    _setStatus(appL10n.attendance_lookAtCamera, _textMuted);
   }
 
   void _setStatus(String text, Color color) {
@@ -232,13 +234,13 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
     if (faces.isEmpty) {
       _stage = _BlinkStage.waitingOpen;
       _faceReady = false;
-      _setStatus("No face detected", _error);
+      _setStatus(appL10n.attendance_noFace, _error);
       return;
     }
     if (faces.length > 1) {
       _stage = _BlinkStage.waitingOpen;
       _faceReady = false;
-      _setStatus("Multiple faces detected — only you should be in frame", _error);
+      _setStatus(appL10n.attendance_multipleFaces, _error);
       return;
     }
 
@@ -251,20 +253,20 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
     if (cx < 0.25 || cx > 0.75 || cy < 0.2 || cy > 0.8) {
       _stage = _BlinkStage.waitingOpen;
       _faceReady = false;
-      _setStatus("Keep your face inside the circle", _warn);
+      _setStatus(appL10n.attendance_keepFaceInCircle, _warn);
       return;
     }
     if (widthRatio < 0.3) {
       _stage = _BlinkStage.waitingOpen;
       _faceReady = false;
-      _setStatus("Move a little closer", _warn);
+      _setStatus(appL10n.attendance_moveCloser, _warn);
       return;
     }
 
     final left = face.leftEyeOpenProbability;
     final right = face.rightEyeOpenProbability;
     if (left == null || right == null) {
-      _setStatus("Look straight at the camera", _warn);
+      _setStatus(appL10n.attendance_lookStraight, _warn);
       return;
     }
 
@@ -276,9 +278,9 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
         if (open) {
           _stage = _BlinkStage.waitingClose;
           _faceReady = true;
-          _setStatus("Face detected — now blink your eyes", _ok);
+          _setStatus(appL10n.attendance_faceDetectedBlink, _ok);
         } else {
-          _setStatus("Open your eyes and look at the camera", _warn);
+          _setStatus(appL10n.attendance_openEyes, _warn);
         }
         break;
       case _BlinkStage.waitingClose:
@@ -365,7 +367,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
     final camera = _camera;
     if (_isCapturing || camera == null || _capturedPath != null) return;
     _isCapturing = true;
-    _setStatus("Hold still…", _ok);
+    _setStatus(appL10n.attendance_holdStill, _ok);
 
     try {
       final String path;
@@ -380,7 +382,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
       if (!mounted || _disposed) return;
       setState(() {
         _capturedPath = path;
-        _status = "Captured ✓";
+        _status = appL10n.attendance_capturedCheck;
         _statusColor = _ok;
       });
       // The preview is shown from the file; free the camera meanwhile.
@@ -389,7 +391,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
       AppLog.d("Attendance capture failed: $e");
       if (!mounted || _disposed) return;
       _resetBlink();
-      _setStatus("Couldn't capture. Blink again to retry", _error);
+      _setStatus(appL10n.attendance_captureFailedBlink, _error);
     } finally {
       _isCapturing = false;
     }
@@ -450,7 +452,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
         ),
         titleSpacing: 0,
         title: Text(
-          "Attendance Photo",
+          appL10n.attendance_photoTitle,
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w700,
@@ -471,7 +473,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
     return Column(
       children: [
         Text(
-          "Take a live photo to verify your attendance",
+          appL10n.attendance_photoSubtitle,
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 13.sp, color: _textMuted),
         ),
@@ -494,8 +496,8 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
     if (_permissionDenied) {
       content = _buildBlockedMessage(
         icon: Icons.no_photography_outlined,
-        text: "Camera permission is required to mark attendance.",
-        action: "Open Settings",
+        text: appL10n.attendance_cameraPermissionRequired,
+        action: appL10n.chatList_openSettings,
         onTap: () async {
           await openAppSettings();
         },
@@ -504,7 +506,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
       content = _buildBlockedMessage(
         icon: Icons.error_outline_rounded,
         text: _initError!,
-        action: "Try Again",
+        action: appL10n.common_retry,
         onTap: _initCamera,
       );
     } else if (_isInitializing ||
@@ -588,10 +590,10 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
   }
 
   Widget _buildInstructions() {
-    const steps = [
-      "Hold your phone at eye level",
-      "Keep your face inside the circle",
-      "Blink your eyes to capture your photo",
+    final steps = [
+      appL10n.attendance_stepEyeLevel,
+      appL10n.attendance_keepFaceInCircle,
+      appL10n.attendance_stepBlink,
     ];
     return Container(
       width: double.infinity,
@@ -605,7 +607,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "How to take your photo",
+            appL10n.attendance_howToTakePhoto,
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w800,
@@ -647,8 +649,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
             ),
           SizedBox(height: 4.h),
           Text(
-            "Only the front camera is used. The photo is taken automatically "
-            "when you blink, and uploads from the gallery aren't allowed.",
+            appL10n.attendance_photoRules,
             style: TextStyle(fontSize: 11.5.sp, color: _textMuted),
           ),
         ],
@@ -672,7 +673,7 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
               Icon(Icons.check_circle_rounded, color: _ok, size: 18.sp),
               SizedBox(width: 6.w),
               Text(
-                "Photo Captured",
+                appL10n.attendance_photoCaptured,
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700,
@@ -701,8 +702,8 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
                 child: OutlinedButton.icon(
                   onPressed: _retake,
                   icon: const Icon(Icons.refresh_rounded, color: _accent),
-                  label: Text(
-                    "Retake Photo",
+                  label: AutoFitText(
+                    appL10n.attendance_retakePhoto,
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w700,
@@ -731,8 +732,8 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen>
                       borderRadius: BorderRadius.circular(14.r),
                     ),
                   ),
-                  child: Text(
-                    "Submit",
+                  child: AutoFitText(
+                    appL10n.common_submit,
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w700,

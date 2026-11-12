@@ -1,8 +1,8 @@
 # Frontend Guide: Common Module (App Load, Screen Priority, Auth & Core Systems)
 
-> **Document Version:** `v2.2.0`  
+> **Document Version:** `v2.3.1`  
 > **Target Framework:** Flutter (Dart)  
-> **Scope:** App Bootstrap & Screen Priority Hierarchy, Pre-Navigation Permission Evaluation, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing
+> **Scope:** App Bootstrap & Screen Priority Hierarchy, Pre-Navigation Permission Evaluation, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing, "Last seen" format across all modules (§7)
 
 ---
 
@@ -502,6 +502,143 @@ Screen sharing is initiated and controlled over the calling socket connection:
 ### 6.2 Change Log
 | Version | Date | Description |
 |---|---|---|
+| v2.3.1 | 2026-11-12 | §7.7 Private Mode add-on: audit P1–P5, what the string API does to every last-seen place (crash risk in Group Members, false "Offline" / "Just now"), backend request for ISO `lastSeenAt` / `privateModeStartedAt`, interim rule. D2 answered (strings, not ISO). Test cases LS-17–LS-25. **Audit only — no code changed yet.** |
+| v2.3.0 | 2026-11-12 | §7 "Last seen" in one format across the app: target format, audit of all 13 places (branch `multi-language`), findings, open decisions, build plan and manual test cases. **Audit only — no code changed yet.** |
 | v2.2.0 | 2026-11-10 | Documented App Launch & Screen Priority State Machine; added root cause analysis & architectural resolution for millisecond permission screen flicker; established 'Evaluate-Before-Navigate' rule across Auth and Splash workflows. |
 | v2.1.0 | 2026-11-09 | Production International Payment Gateway verified across both Node.js backend and Flutter frontend; Flutter models updated for decimal plan pricing ($5.99 / $9.99 / $19.99); CurrencyFormat integrated across all payment views; 0% export GST & USD Razorpay orders documented. |
 | v2.0.0 | 2026-11-08 | Added GET `v2/otp-charge/my-rate` endpoint for dynamic side-menu rate; updated OTP token lifetime to 30 mins with grace period; verified 4-digit OTP format. |
+
+---
+
+## 7. "Last seen": one format across the app
+
+> **Status (2026-11-12):** audit done on branch `multi-language`. **No code changed yet** — waiting for the decisions in §7.4. Frontend only; no backend change.
+
+### 7.1 Target format
+Reference: Walkie-Talkie → Group Info → Group Members.
+
+| When (phone's local day) | Text (English) | Pattern |
+|---|---|---|
+| Today | `Last seen: Today, 12:40 AM` | `Today, ` + `hh:mm a` |
+| Earlier this year (yesterday too) | `Last seen: 09 Nov, 11:15 PM` | `dd MMM, hh:mm a` |
+| Earlier year | `Last seen: 09 Nov 2025, 11:15 PM` | `dd MMM yyyy, hh:mm a` |
+
+Rules:
+- 12-hour clock, 2-digit hour and day, AM / PM in capitals.
+- Server UTC is converted to the phone's local time; "Today" is the phone's calendar day.
+- A time slightly in the future counts as now.
+- "Online", "In Walkie Channel", "typing…" stay as they are. No value → the screen keeps what it shows today.
+- **Languages:** "Last seen:" and "Today" come from the ARB files (all 10 languages); month names and AM / PM follow the app language via `appDateFormat` (digits stay 0–9).
+
+### 7.2 Where "last seen" is shown today (audit)
+
+| # | Screen | File : line | Today (English) |
+|---|---|---|---|
+| 1 | Private chat app bar | `Messages/Controller/MessageController.dart:1851` → `Views/Chat_Screen.dart:567` | `5 min ago` / `Yesterday` / `12 Nov 2026` (`appRelativeTime`), **no prefix**; raw text if not parseable |
+| 2 | User profile (from chat) | `Messages/Views/UserProfileScreen.dart:130` | `5 min ago` / `3 days ago` (`getTimeAgo`), **no prefix** |
+| 3 | Quick-profile popup (avatar tap, any screen) | `Core/values/Dialog/DialogBox.dart:1158` | `Last seen: 5 min ago` |
+| 4 | Chat Group Info — members | `Messages/Views/Group/ChatGroupProfile_Screen.dart:140` | `5 min ago`, **no prefix**; text → "Offline" |
+| 5 | Group Members screen (both lists) | `Group/Views/MemberScreen.dart:549`, `:821` → `Core/util/DateTime_Format.dart` `formatTime` | `hh:mm a` only — **no date, no prefix**; `DateTime.parse` throws on non-ISO text |
+| 6 | Walkie-Talkie Group Info (reference) | `Walkie-talkie/widgets/group_info_bottom_sheet.dart:399` | timestamp → `Last seen 5 min ago` (no colon on this branch); text → `Last seen <raw backend text>` |
+| 7 | Home › Online members | `home/Views/LiveStatus/components/online_member.dart:714` | `Last seen 5 min ago` |
+| 8 | Home › Total members | `home/Views/LiveStatus/components/total_member.dart:558` | `5 min ago`, **no prefix** |
+| 9 | (shared by 7 and 8) | `Model/group_member_model.dart:1699` `formattedLastSeen` | builds the "x ago" text |
+| 10 | Tracking › member card | `Track/Views/Tracking_screen.dart:3090` | `Last seen: 5 min ago` |
+| 11 | Group members bottom sheet | `Core/values/BottomSheets/BottomSheetUi.dart:392` | `Last seen: 5 min ago` |
+| 12 | Tracking › Search members | `Track/Views/Search_Members.dart:103` | `5 min ago`, **no prefix** |
+| 13 | Tracking › map cluster sheet | `Track/Controller/GroupTrackController.dart:1133` (`_showClusterMembersSheet`) | `5 min ago`; "Online" / "Offline" hard-coded English — ⚠️ **protected file (AGENTS.md)** |
+
+Checked, **not** a real last-seen value: Safe Zone / Route (hard-coded sample rows "2 min ago"), side menu (online dot only), Attendance, Calling, Profile (none), `logoutuser.dart` (protected; sets the value, never shows it).
+
+ARB today: four different keys — `groupDialog_lastSeen` / `track_lastSeen` ("Last seen: {time}") and `home_lastSeen` / `walkie_lastSeen` ("Last seen {time}", no colon).
+
+### 7.3 Findings
+1. **The reference format comes from the backend, not the app.** The colon in the reference screenshot is printed only by Walkie's fallback when `lastSeen` is **not** a date — so `/getMembers` sent ready-made English text ("Today, 12:40 AM"). Such text cannot be converted from UTC or translated. But #5 runs `DateTime.parse` on the same field and would throw on it → the payload may differ per API or changed recently. **Needs a sample `/getMembers` response.**
+2. Today nothing refreshes the private chat header's last seen from the socket (only online / offline); it is set when history loads. "Refresh as today" = same behaviour.
+3. #5 shows only a time with no date — a member last seen days ago looks like today.
+
+### 7.4 Open decisions (owner: product / Flutter lead)
+| # | Decision | Recommendation |
+|---|---|---|
+| D1 | Change #13 inside the protected `GroupTrackController.dart` (one text expression in `_showClusterMembersSheet`, not a listed protected function)? | Only with explicit OK; otherwise left out |
+| D2 | What does each API send in `lastSeen` (ISO / epoch / ready text)? | **Answered 2026-11-12:** confirmed in logs — `lastSeen` and `privateModeStartedAt` arrive as **ready-made strings** ("Today, 12:49 AM", "28 Oct, 02:01 PM"), not ISO. See §7.7 for the backend request and the interim rule |
+| D3 | Add the "Last seen: " prefix to #1, #2, #4, #5, #8, #12 (they have none today) | Yes — one format everywhere |
+| D4 | Helper path (`lib/core/utils/` does not exist) | `lib/app/Core/util/last_seen_formatter.dart` |
+| D5 | Docs | This section (one guide per module); screenshots under `build/`, not `docs/` |
+| D6 | Branch | `multi-language` (has large uncommitted l10n work) — confirm |
+
+### 7.5 Build plan (after the decisions)
+- **One helper:** `String? formatLastSeen(BuildContext context, DateTime? serverTime, {DateTime? now})` → `"Last seen: Today, 12:40 AM"` etc.; `null` when there is no time, so each screen keeps its current fallback.
+- **ARB (all 10 languages):** `common_lastSeenAt` = "Last seen: {time}", `common_todayAt` = "Today, {time}". Month / AM-PM via `appDateFormat('dd MMM, hh:mm a')` / `('dd MMM yyyy, hh:mm a')`.
+- **Each place:** replace only the expression that builds the last-seen text — same widget, style and position. Parsing stays `Tracking.parseDateTime` (ISO + epoch, UTC → local).
+- **Unit tests (fixed "now"):** today, yesterday (shows the date), older date, last year, UTC → IST, null, future time, Hindi locale.
+- `flutter analyze`: no new issues; existing tests pass.
+
+### 7.6 Manual test cases (Android + iOS)
+Set the phone to IST, app language English unless stated.
+
+| TC | Where | Steps | Expected | Android | iOS |
+|---|---|---|---|---|---|
+| LS-01 | Walkie › Group Info | Member last seen earlier today | `Last seen: Today, 12:40 AM` | | |
+| LS-02 | Walkie › Group Info | Member last seen yesterday | `Last seen: 11 Nov, 11:15 PM` (date, not "Yesterday") | | |
+| LS-03 | Walkie › Group Info | Member last seen in 2025 | `Last seen: 09 Nov 2025, 11:15 PM` | | |
+| LS-04 | Walkie › Group Info | Member in the channel / online | `In Walkie Channel` / `Active` unchanged | | |
+| LS-05 | Private chat app bar | Open a chat with an offline user | `Last seen: …` in the new format; typing / Online unchanged | | |
+| LS-06 | User profile (from chat) | Open an offline user's profile | New format | | |
+| LS-07 | Quick-profile popup | Tap an offline member's avatar | New format | | |
+| LS-08 | Chat Group Info › members | Open group info | Offline members in the new format | | |
+| LS-09 | Group Members screen | Open a group from Home | Both lists show date + time in the new format | | |
+| LS-10 | Home › Online / Total members | Open both lists | New format; online members unchanged | | |
+| LS-11 | Tracking › member card / Search / cluster sheet | Open each | New format (cluster sheet only if D1 = yes) | | |
+| LS-12 | Group members bottom sheet | Open it | New format | | |
+| LS-13 | Any | Member with no last-seen value | Same text as before (Offline / blank) | | |
+| LS-14 | Any | Change app language to हिन्दी | Translated "Last seen" / "Today", Hindi month, digits 0–9 | | |
+| LS-15 | Any | Phone clock a few minutes behind the server | Shows today's time, no negative / odd value | | |
+| LS-16 | Regression | Chat, Walkie PTT, Tracking map, Home | Unchanged apart from the text | | |
+| LS-17 | Home › Private Mode › Active sessions | Member private since today | `Private since: Today, 12:49 AM` | | |
+| LS-18 | Home › Private Mode › Active sessions | Member private since an older date / last year | `Private since: 28 Oct, 02:01 PM` / `… 28 Oct 2025, 02:01 PM` | | |
+| LS-19 | Private member → quick-profile popup | Tap a private member | Last seen in the new format | | |
+| LS-20 | Tracking › member card / members sheet | Private member (badge "Private") | Badge unchanged; last seen in the new format | | |
+| LS-21 | Any | Online member | Online / Active unchanged | | |
+| LS-22 | Any | No last seen / no private-since value | Same as before (Offline / Just now) | | |
+| LS-23 | Any | App in हिन्दी | Translated labels, Hindi month, digits 0–9 (only once the backend sends ISO) | | |
+| LS-24 | Any | Phone in a non-IST time zone (e.g. Dubai) | Local time of the phone (only once the backend sends ISO; until then the server string is shown as is) | | |
+| LS-25 | Group Members screen, Search members, Chat Group Info | **Old API (string only)** | **No crash, no "Invalid date", no wrong "Offline"** — server string shown as is | | |
+
+### 7.7 Private Mode add-on (audit 2026-11-12)
+
+**Where Private Mode shows a time**
+
+| # | Screen | File : line | Shows today (string API) |
+|---|---|---|---|
+| P1 | Home › Private Mode › Active sessions (`/all-group-members?filter=private`) | `home/Views/LiveStatus/components/ghost_member.dart:536` → `Model/group_member_model.dart:1679` `formattedStartedAt` | `Started at Today, 12:49 AM` (the string can't be parsed → shown raw inside `home_startedAt`) |
+| P2 | Private member → quick-profile popup | `ghost_member.dart:404` → `Core/values/Dialog/DialogBox.dart:1158` (§7.2 #3) | `Last seen: Today, 12:49 AM` (raw string) |
+| P3 | Tracking › member card / members sheet (private member, "Private" badge) | §7.2 #10 / #11 | `Last seen: Today, 12:49 AM` (raw string) |
+| P4 | Tracking › map cluster sheet ("Private" badge) | §7.2 #13 — ⚠️ protected file | `getTimeAgo(now)` → **"Just now"** for every string value (wrong) |
+| P5 | Home › Private count tile | `home/Views/LiveStatus/StatsGrid.dart` | count only — no time |
+
+The data comes from `LiveStatus_controller.getPrivateMembers` (**protected**, not changed); only the model getter and the view text are in scope.
+
+**What the string API does to each place today**
+
+| Place | Result with "Today, 12:49 AM" |
+|---|---|
+| Walkie Group Info (#6) | `Last seen Today, 12:49 AM` (no colon) |
+| Tracking card / members sheet / popup (#3, #10, #11) | `Last seen: Today, 12:49 AM` ✅ |
+| Private chat app bar (#1) | `Today, 12:49 AM` (no prefix). `DateTime.parse` throws a **FormatException** — it is already caught and falls back to the raw string; only a log line, no crash |
+| User profile (#2), Home lists (#7, #8) | raw string (with / without prefix) |
+| Chat Group Info (#4), Search members (#12) | ❌ **"Offline"** — the parse fails and the real value is hidden |
+| Group Members screen (#5, `MemberScreen.dart:549` and `:830`) | ❌ **`formatTime` → `DateTime.parse` throws with no catch → the row fails to build (red/grey error box)** |
+| Map cluster sheet (#13) | ❌ "Just now" |
+| Private since (P1) | `Started at Today, 12:49 AM` |
+
+**Backend request (needed before the §7.1 format, time-zone and language rules can work)**
+> Add ISO 8601 **UTC** fields next to the existing strings (keep the old string fields for older app versions):
+> - `lastSeenAt` and `privateModeStartedAt` (ISO, e.g. `"2026-11-11T19:19:00Z"`) — or, if `privateModeStartedAt` must stay the string, `privateModeStartedAtUtc`.
+> - In: `/all-group-members` (all filters), `/getMembers`, `/chat-list`, `/private-chat/:id/messages` (peer), `/chat/profile-details` members, and the socket `userStatus` / joined events.
+
+**Interim rule until the backend adds them (Step 2.2)**
+- Show the server string as it is, with **no parsing that can fail** (no crash, no "Invalid date", no false "Offline" / "Just now").
+- Labels from ARB (all 10 languages): `Last seen: {time}`, `Private since: {time}`.
+- When an ISO field is present → `formatLastSeen` (§7.5) for both.
+- Online / live states unchanged.

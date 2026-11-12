@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -44,7 +45,7 @@ class QRScanScreen extends StatelessWidget {
             left: 0,
             right: 0,
             child: Text(
-              'Align QR inside the frame',
+              appL10n.group_alignQr,
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: Colors.white.withValues(alpha: .9), fontSize: 16.sp),

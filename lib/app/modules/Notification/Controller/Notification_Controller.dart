@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import '../../../Core/values/global.dart';
 import '../../../Data/Repositories/Notification_Repo.dart';
@@ -184,8 +185,8 @@ class NotificationController extends GetxController {
         unreadCount.value = 0;
 
         Get.snackbar(
-          "Success",
-          "All notifications cleared successfully",
+          appL10n.common_success,
+          appL10n.notifications_clearedSuccess,
           snackPosition: SnackPosition.BOTTOM,
         );
       }
@@ -212,23 +213,23 @@ class NotificationController extends GetxController {
       now.difference(notificationTime);
 
       if (difference.inSeconds < 60) {
-        return "Just now";
+        return appL10n.common_justNow;
       }
 
       if (difference.inMinutes < 60) {
-        return "${difference.inMinutes} min ago";
+        return appL10n.common_minutesAgo(difference.inMinutes);
       }
 
       if (difference.inHours < 24) {
-        return "${difference.inHours} hr ago";
+        return appL10n.common_hoursAgo(difference.inHours);
       }
 
       if (difference.inDays == 1) {
-        return "Yesterday";
+        return appL10n.common_yesterday;
       }
 
       if (difference.inDays < 7) {
-        return "${difference.inDays} days ago";
+        return appL10n.common_daysAgo(difference.inDays);
       }
 
       return "${notificationTime.day}/"
@@ -243,7 +244,7 @@ class NotificationController extends GetxController {
     final String message = error.toString().trim();
 
     if (message.isEmpty) {
-      return "Something went wrong. Please try again.";
+      return appL10n.common_somethingWentWrong;
     }
 
     return message;

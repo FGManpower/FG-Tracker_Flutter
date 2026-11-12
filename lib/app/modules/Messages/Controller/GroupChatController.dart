@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -165,7 +166,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       // Original not loaded yet (reply to an old message): page back.
       index = await _loadOlderUntilFound(messageId);
       if (index == -1) {
-        if (!isClosed) Utils().fluttertoast("Message not available");
+        if (!isClosed) Utils().fluttertoast(appL10n.chat_messageNotAvailable);
         return;
       }
     }
@@ -255,11 +256,11 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   /// no longer a member of.
   bool _blockIfDeactivated() {
     if (removedFromGroup.value) {
-      Utils().fluttertoast("You're no longer a member of this group");
+      Utils().fluttertoast(appL10n.chat_noLongerMember);
       return true;
     }
     if (!isGroupDeactivated) return false;
-    Utils().fluttertoast("This group has been deactivated by the Admin");
+    Utils().fluttertoast(appL10n.chat_groupDeactivated);
     return true;
   }
 
@@ -749,7 +750,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
               resolvedName = rawName;
             }
           }
-          final finalName = resolvedName ?? "Someone";
+          final finalName = resolvedName ?? appL10n.chat_someone;
 
           groupTypingUsers[uid] = finalName;
           _updateGroupTypingText();
@@ -861,15 +862,15 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       groupTypingUser.value = "";
     } else if (count == 1) {
       final name = groupTypingUsers.values.first;
-      groupTypingText.value = "$name is typing...";
+      groupTypingText.value = appL10n.chat_typingOne(name);
       groupTypingUser.value = name;
     } else if (count == 2) {
       final names = groupTypingUsers.values.toList();
-      groupTypingText.value = "${names[0]}, ${names[1]} are typing...";
+      groupTypingText.value = appL10n.chat_typingTwo(names[0], names[1]);
       groupTypingUser.value = "${names[0]}, ${names[1]}";
     } else {
-      groupTypingText.value = "$count people are typing...";
-      groupTypingUser.value = "$count people";
+      groupTypingText.value = appL10n.chat_typingMany(count);
+      groupTypingUser.value = appL10n.chat_peopleCount(count);
     }
   }
 
@@ -1106,13 +1107,13 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
               uploadedImages.add(result.filename!);
             } else {
               CommonDialog.errorMessage(
-                "Failed to upload ${image.path}",
+                appL10n.chat_uploadFileFailed(image.path),
               );
             }
           } catch (e) {
             log("GROUP IMAGE UPLOAD ERROR => $e");
             CommonDialog.errorMessage(
-              "Failed to upload ${image.path}",
+              appL10n.chat_uploadFileFailed(image.path),
             );
           }
         }
@@ -1154,13 +1155,13 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
               successfulVideoIndexes.add(currentIndex);
             } else {
               CommonDialog.errorMessage(
-                "Failed to upload video",
+                appL10n.chat_videoUploadFailed,
               );
             }
           } catch (e) {
             log("GROUP VIDEO UPLOAD ERROR => $e");
             CommonDialog.errorMessage(
-              "Failed to upload video",
+              appL10n.chat_videoUploadFailed,
             );
           } finally {
             uploadingVideoIndexes.remove(currentIndex);
@@ -1222,13 +1223,13 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
                 uploadedImages.add(result.filename!);
               } else {
                 CommonDialog.errorMessage(
-                  "Failed to upload ${image.path}",
+                  appL10n.chat_uploadFileFailed(image.path),
                 );
               }
             } catch (e) {
               log("GROUP IMAGE UPLOAD ERROR => $e");
               CommonDialog.errorMessage(
-                "Failed to upload ${image.path}",
+                appL10n.chat_uploadFileFailed(image.path),
               );
             }
           }
@@ -2181,8 +2182,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
     if (firstVisibleIndex >= messageData.length) return;
 
-    final newDate = formatDateHeader(
-      messageData[firstVisibleIndex].timestamp ?? "",
+    final newDate = appDayLabel(
+      DateTime.parse(messageData[firstVisibleIndex].timestamp ?? "").toLocal(),
     );
 
     if (floatingDate.value != newDate) {
@@ -2260,20 +2261,20 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
         Utils().fluttertoast(
           response['message']?.toString() ??
-              'Group chat cleared successfully',
+              appL10n.chat_groupChatCleared,
         );
         _syncChatListPreview();
         return true;
       } else {
         Utils().fluttertoast(
           response['message']?.toString() ??
-              'Failed to clear group chat',
+              appL10n.chat_clearGroupChatFailed,
         );
       }
     } catch (e) {
       log('Clear group chat error: $e');
 
-      Utils().fluttertoast('Failed to clear group chat');
+      Utils().fluttertoast(appL10n.chat_clearGroupChatFailed);
     }
     return false;
   }

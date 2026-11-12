@@ -1,7 +1,7 @@
+import 'package:fgtracker/l10n/l10n.dart';
 
 
 
-import '../theme/AppText.dart';
 
 class Validator {
   static String? validateEmail(String? value) {
@@ -10,9 +10,9 @@ class Validator {
     RegExp regExp = RegExp(patttern);
     value = value?.trim();
     if (value == null || value.isEmpty) {
-      return "Email address cannot be empty";
+      return appL10n.validation_emailEmpty;
     } else if (!regExp.hasMatch(value)) {
-      return AppText.plsEntrValidEmail;
+      return appL10n.validation_emailInvalid;
     } else {
       return null;
     }
@@ -27,14 +27,14 @@ class Validator {
         r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+";
     RegExp regExp = RegExp(patttern);
     if (!regExp.hasMatch(value)) {
-      return AppText.plsEntrValidEmail;
+      return appL10n.validation_emailInvalid;
     }
     return null;
   }
 
   static String? validate({String? value, title}) {
     if (value == null || value.isEmpty || value=="") {
-      return "$title is required";
+      return appL10n.validation_required("$title");
     }
     return null;
   }

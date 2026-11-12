@@ -8,6 +8,7 @@ import '../../../../gen/fonts.gen.dart';
 import '../../../global_widget/common_widget.dart';
 import '../Widgets/safe_common_widgets.dart';
 import '../controller/safe_zone_controller.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class SafeZoneView extends StatelessWidget {
   const SafeZoneView({Key? key}) : super(key: key);
@@ -19,9 +20,8 @@ class SafeZoneView extends StatelessWidget {
     return Scaffold(
       backgroundColor: SafeColors.bg,
       appBar: SafeAppBar(
-        title: "Safe Zone",
-        subtitle:
-        "Define a safe area. Get alerts if someone\nsteps outside the safe zone.",
+        title: context.l10n.safeZone_title,
+        subtitle: context.l10n.safeZone_appBarSubtitle,
         onInfoTap: () => _showSafeZoneHelp(context),
       ),      body: Column(
         children: [
@@ -49,7 +49,7 @@ class SafeZoneView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SafeCard(
-            title: "1. Select Member",
+            title: context.l10n.safety_stepSelectMember(1),
             innerCard: true,
             child: Obx(() => SafeMemberCard(
               name: controller.selectedIndividualMember.value,
@@ -59,7 +59,7 @@ class SafeZoneView extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           SafeCard(
-            title: "2. Select Location on Map",
+            title: context.l10n.safeZone_stepSelectLocation(2),
             innerCard: false,
             padding: EdgeInsets.all(12.w),
             child: _buildMapCard(controller, isGroup: false),
@@ -71,14 +71,14 @@ class SafeZoneView extends StatelessWidget {
           GestureDetector(
             onTap: () => showSafeZoneAlertSheet(context),
             child: SafeCard(
-              title: "4. Preview Safe Zone",
+              title: context.l10n.safeZone_stepPreview(4),
               innerCard: true,
               child: _buildPreviewContent(isGroup: false),
             ),
           ),
           SizedBox(height: 24.h),
           SafeSaveButton(
-            text: "Save & Activate Safe Zone",
+            text: context.l10n.safeZone_saveActivate,
             onPressed: () {
               showSafeZoneAlertSheet(context);
             },
@@ -97,7 +97,7 @@ class SafeZoneView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SafeCard(
-            title: "1. Select Group",
+            title: context.l10n.safety_stepSelectGroup(1),
             innerCard: true,
             child: Obx(() => SafeGroupCard(
               groupName: controller.selectedGroup.value,
@@ -106,7 +106,7 @@ class SafeZoneView extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           SafeCard(
-            title: "2. Select Location on Map",
+            title: context.l10n.safeZone_stepSelectLocation(2),
             innerCard: false,
             padding: EdgeInsets.all(12.w),
             child: _buildMapCard(controller, isGroup: true),
@@ -118,14 +118,14 @@ class SafeZoneView extends StatelessWidget {
           GestureDetector(
             onTap: () => showSafeZoneAlertSheet(context),
             child: SafeCard(
-              title: "4. Preview Safe Zone",
+              title: context.l10n.safeZone_stepPreview(4),
               innerCard: true,
               child: _buildPreviewContent(isGroup: true),
             ),
           ),
           SizedBox(height: 24.h),
           SafeSaveButton(
-            text: "Save & Activate Safe Zone for Group",
+            text: context.l10n.safeZone_saveActivateGroup,
             onPressed: () {
               showSafeZoneAlertSheet(context);
             },
@@ -290,7 +290,7 @@ class SafeZoneView extends StatelessWidget {
         required bool isGroup,
       }) {
     return SafeCard(
-      title: "3. Set Safe Zone Radius",
+      title: appL10n.safeZone_stepRadius(3),
       gapAfterTitle: 16,
       innerCard: false,
       child: Column(
@@ -407,7 +407,7 @@ class SafeZoneView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      reausabletext("Selected Location",
+                      reausabletext(appL10n.track_selectedLocation,
                           fontsize: 9,
                           fontweight: FontWeight.w500,
                           color: Colors.grey.shade600),
@@ -431,7 +431,7 @@ class SafeZoneView extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    reausabletext("Radius",
+                    reausabletext(appL10n.track_radius,
                         fontsize: 11, color: Colors.grey.shade600),
                     SizedBox(height: 2.h),
                     Obx(() {
@@ -463,7 +463,7 @@ class SafeZoneView extends StatelessWidget {
                   SizedBox(width: 10.w),
                   Expanded(
                     child: reausabletext(
-                      "This safe zone will be applied to all 12 members in the selected group.",
+                      appL10n.safeZone_appliedToGroup(12),
                       fontsize: 11,
                       height: 1.3,
                     ),
@@ -493,14 +493,14 @@ class SafeZoneView extends StatelessWidget {
             children: [
               RichText(
                 text: TextSpan(
-                  text: "Status: ",
+                  text: "${appL10n.safeZone_statusLabel} ",
                   style: TextStyle(
                       fontSize: 12.sp,
                       color: Colors.black,
                       fontWeight: FontWeight.bold),
                   children: [
                     TextSpan(
-                      text: "Active (Preview)",
+                      text: appL10n.safeZone_activePreview,
                       style: TextStyle(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
@@ -512,8 +512,8 @@ class SafeZoneView extends StatelessWidget {
               SizedBox(height: 4.h),
               reausabletext(
                 isGroup
-                    ? "All 12 members will be monitored\nwithin this safe zone."
-                    : "Members will be monitored within this safe zone.",
+                    ? appL10n.safeZone_allMonitored(12)
+                    : appL10n.safeZone_membersMonitored,
                 fontsize: 9,
                 color: Colors.grey.shade600,
               ),
@@ -535,7 +535,7 @@ class SafeZoneView extends StatelessWidget {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: "Safe Zone Help",
+      barrierLabel: context.l10n.safeZone_helpTitle,
       barrierColor: Colors.black.withOpacity(0.45),
       transitionDuration: const Duration(milliseconds: 180),
       pageBuilder: (context, animation, secondaryAnimation) {
@@ -574,7 +574,7 @@ class SafeZoneView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Safe Zone Help",
+                          context.l10n.safeZone_helpTitle,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
@@ -586,27 +586,24 @@ class SafeZoneView extends StatelessWidget {
 
                         _helpItem(
                           icon: Icons.location_on_rounded,
-                          title: "What is Safe Zone?",
-                          description:
-                          "Set a specific area on the map and get alerts if the member steps outside the safe zone.",
+                          title: context.l10n.safeZone_helpWhatTitle,
+                          description: context.l10n.safeZone_helpWhatBody,
                         ),
 
                         const SizedBox(height: 13),
 
                         _helpItem(
                           icon: Icons.groups_rounded,
-                          title: "How to Create Safe Zone?",
-                          description:
-                          "Select a member, choose a location on the map and set the radius.",
+                          title: context.l10n.safeZone_helpHowTitle,
+                          description: context.l10n.safeZone_helpHowBody,
                         ),
 
                         const SizedBox(height: 13),
 
                         _helpItem(
                           icon: Icons.gps_fixed_rounded,
-                          title: "What is Safe Zone Radius?",
-                          description:
-                          "Set the area radius (500 m, 1 km, 2 km or 5 km) according to your need.",
+                          title: context.l10n.safeZone_helpRadiusTitle,
+                          description: context.l10n.safeZone_helpRadiusBody,
                         ),
                       ],
                     ),                  ),

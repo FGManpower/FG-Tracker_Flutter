@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
@@ -34,7 +35,7 @@ class DocumentViewerController extends GetxController {
         await downloadFile();
       }
       if (localFilePath.value.isEmpty) {
-        Get.snackbar("Unable to Open", "The document couldn't be downloaded.");
+        Get.snackbar(appL10n.chat_unableToOpen, appL10n.chat_documentDownloadFailed);
         return;
       }
 
@@ -44,13 +45,13 @@ class DocumentViewerController extends GetxController {
 
       if (result.type != ResultType.done) {
         Get.snackbar(
-          "Unable to Open",
+          appL10n.chat_unableToOpen,
           result.message,
         );
       }
     } catch (e) {
       Get.snackbar(
-        "Error",
+        appL10n.common_error,
         e.toString(),
       );
     }

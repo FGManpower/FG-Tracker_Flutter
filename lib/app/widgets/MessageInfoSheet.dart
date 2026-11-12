@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -69,7 +71,7 @@ class MessageInfoSheet extends StatelessWidget {
                   ),
                   SizedBox(width: 10.w),
                   Text(
-                    "Message Info",
+                    appL10n.chat_menuMessageInfo,
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w700,
@@ -97,7 +99,7 @@ class MessageInfoSheet extends StatelessWidget {
             // Seen
             _buildSectionTitle(
               icon: Icons.done_all,
-              title: "Seen",
+              title: appL10n.widget_seen,
               count: seenCount,
               // Group: everyone who could see it, i.e. members minus sender.
               total: isGroup
@@ -154,27 +156,27 @@ class MessageInfoSheet extends StatelessWidget {
     switch (message.messageType?.toString()) {
       case "image":
       case "image_text":
-        preview = "📷 Photo";
+        preview = appL10n.util_previewPhoto;
         break;
 
       case "video":
-        preview = "🎥 Video";
+        preview = appL10n.util_previewVideo;
         break;
 
       case "audio":
-        preview = "🎤 Voice message";
+        preview = appL10n.util_previewVoice;
         break;
 
       case "document":
-        preview = "📄 Document";
+        preview = appL10n.util_previewDocument;
         break;
 
       case "location":
-        preview = "📍 Location";
+        preview = appL10n.util_previewLocation;
         break;
 
       case "contact":
-        preview = "👤 Contact";
+        preview = appL10n.util_previewContact;
         break;
 
       default:
@@ -257,17 +259,21 @@ class MessageInfoSheet extends StatelessWidget {
             size: 20.sp,
           ),
           SizedBox(width: 10.w),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w700,
+          Flexible(
+            child: AutoFitText(
+              title,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           if (count > 0 || (total ?? 0) > 0) ...[
             SizedBox(width: 5.w),
             Text(
-              total != null && total > 0 ? "($count of $total)" : "($count)",
+              total != null && total > 0
+                  ? appL10n.widget_seenCountOfTotal(count, total)
+                  : appL10n.widget_seenCount(count),
               style: TextStyle(
                 fontSize: 13.sp,
                 color: Colors.grey.shade600,
@@ -282,7 +288,7 @@ class MessageInfoSheet extends StatelessWidget {
   Widget _buildMemberTile(dynamic member) {
     final name = member.name?.toString().trim().isNotEmpty == true
         ? member.name.toString()
-        : "Unknown";
+        : appL10n.chat_unknown;
 
     final image = member.profileImage?.toString() ?? "";
 
@@ -319,7 +325,7 @@ class MessageInfoSheet extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        "Seen",
+        appL10n.widget_seen,
         style: TextStyle(
           fontSize: 12.sp,
           color: Colors.grey.shade600,
@@ -345,7 +351,7 @@ class MessageInfoSheet extends StatelessWidget {
         child: Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            "Not seen yet",
+            appL10n.widget_notSeenYet,
             style: TextStyle(
               fontSize: 13.sp,
               color: Colors.grey.shade600,
@@ -358,7 +364,7 @@ class MessageInfoSheet extends StatelessWidget {
     final name =
     memberData?.name?.toString().trim().isNotEmpty == true
         ? memberData!.name.toString()
-        : "Unknown";
+        : appL10n.chat_unknown;
 
     final image =
         memberData?.profileImage?.toString() ?? "";
@@ -395,9 +401,9 @@ class MessageInfoSheet extends StatelessWidget {
           fontWeight: FontWeight.w600,
         ),
       ),
-      subtitle: const Text(
-        "Seen",
-        style: TextStyle(
+      subtitle: Text(
+        appL10n.widget_seen,
+        style: const TextStyle(
           fontSize: 12,
           color: Colors.grey,
         ),

@@ -1,3 +1,5 @@
+import 'package:fgtracker/l10n/l10n.dart';
+
 class ChatUtil {
   static String formatLastMessage(String? msg) {
     if (msg == null) return "";
@@ -11,7 +13,7 @@ class ChatUtil {
         lower.contains('"longitude"') ||
         lower == 'location' ||
         lower.contains('location message')) {
-      return "📍 Location";
+      return appL10n.util_previewLocation;
     }
 
     if (lower.endsWith('.jpg') ||
@@ -22,7 +24,7 @@ class ChatUtil {
         lower.endsWith('.heic') ||
         lower.contains('image message') ||
         lower.startsWith('image/')) {
-      return "📷 Photo";
+      return appL10n.util_previewPhoto;
     }
 
     if (lower.endsWith('.mp4') ||
@@ -31,7 +33,7 @@ class ChatUtil {
         lower.endsWith('.mkv') ||
         lower.contains('video message') ||
         lower.startsWith('video/')) {
-      return "🎥 Video";
+      return appL10n.util_previewVideo;
     }
 
     if (lower.endsWith('.mp3') ||
@@ -41,7 +43,7 @@ class ChatUtil {
         lower.contains('audio message') ||
         lower.contains('voice message') ||
         lower.startsWith('audio/')) {
-      return "🎤 Voice message";
+      return appL10n.util_previewVoice;
     }
 
     if (lower.endsWith('.pdf') ||
@@ -54,11 +56,11 @@ class ChatUtil {
         lower.endsWith('.txt') ||
         lower.endsWith('.zip') ||
         lower.endsWith('.rar')) {
-      return "📄 Document";
+      return appL10n.util_previewDocument;
     }
 
     if (lower.contains('contact message') || lower.contains('vcard')) {
-      return "👤 Contact";
+      return appL10n.util_previewContact;
     }
 
     return value;

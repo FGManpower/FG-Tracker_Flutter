@@ -5,7 +5,7 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class WalkieAssignedTeamSeatCard extends StatelessWidget {
   final WalkieTeamSeat seat;
@@ -30,15 +30,15 @@ class WalkieAssignedTeamSeatCard extends StatelessWidget {
     final controller = Get.find<WalkieTalkieTrialController>();
 
     final String planName =
-        seat.planName.isNotEmpty ? seat.planName : "Team Access";
+        seat.planName.isNotEmpty ? seat.planName : context.l10n.walkiePlan_seatTeamAccess;
 
-    String expiryDateFormatted = "Active";
+    String expiryDateFormatted = context.l10n.walkiePlan_cardActive;
     String daysLeftText = "";
     bool isExpiringSoon = false;
 
     if (seat.expiresAt != null) {
       expiryDateFormatted =
-          DateFormat('dd MMM yyyy').format(seat.expiresAt!.toLocal());
+          appDateFormat('dd MMM yyyy').format(seat.expiresAt!.toLocal());
       daysLeftText = controller.formatDaysRemaining(seat.expiresAt);
       final difference = seat.expiresAt!.difference(DateTime.now());
       if (difference.inDays <= 5) {
@@ -49,7 +49,7 @@ class WalkieAssignedTeamSeatCard extends StatelessWidget {
     String startsDateFormatted = "";
     if (seat.startsAt != null) {
       startsDateFormatted =
-          DateFormat('dd MMM yyyy').format(seat.startsAt!.toLocal());
+          appDateFormat('dd MMM yyyy').format(seat.startsAt!.toLocal());
     }
 
     return Container(
@@ -189,7 +189,7 @@ class WalkieAssignedTeamSeatCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6.r),
                             ),
                             child: Text(
-                              "Team Access",
+                              context.l10n.walkiePlan_seatTeamAccess,
                               style: TextStyle(
                                 fontSize: _sp(context, 10.5),
                                 fontFamily: FontFamily.interSemiBold,
@@ -220,7 +220,7 @@ class WalkieAssignedTeamSeatCard extends StatelessWidget {
                                 ),
                                 SizedBox(width: 3.w),
                                 Text(
-                                  "Assigned to You",
+                                  context.l10n.walkiePlan_cardAssignedToYou,
                                   style: TextStyle(
                                     fontSize: _sp(context, 9.5),
                                     fontFamily: FontFamily.interSemiBold,
@@ -250,7 +250,7 @@ class WalkieAssignedTeamSeatCard extends StatelessWidget {
                       child: _buildDetailTile(
                         context,
                         icon: Icons.calendar_today_rounded,
-                        label: "Valid Until",
+                        label: context.l10n.walkiePlan_cardValidUntil,
                         value: expiryDateFormatted,
                         badge: daysLeftText.isNotEmpty ? daysLeftText : null,
                         isWarningBadge: isExpiringSoon,
@@ -261,9 +261,9 @@ class WalkieAssignedTeamSeatCard extends StatelessWidget {
                       child: _buildDetailTile(
                         context,
                         icon: Icons.assignment_ind_outlined,
-                        label: "Seat Assignment",
-                        value: "Assigned Seat",
-                        badge: "Team Member",
+                        label: context.l10n.walkiePlan_seatAssignment,
+                        value: context.l10n.walkiePlan_seatAssignedSeat,
+                        badge: context.l10n.walkiePlan_seatTeamMember,
                       ),
                     ),
                   ],
@@ -287,7 +287,7 @@ class WalkieAssignedTeamSeatCard extends StatelessWidget {
                       SizedBox(width: 6.w),
                       Expanded(
                         child: Text(
-                          "Assigned by ${seat.assignedBy}",
+                          context.l10n.walkiePlan_cardAssignedBy(seat.assignedBy == 'Team Administrator' ? context.l10n.walkiePlan_cardTeamAdministrator : seat.assignedBy),
                           style: TextStyle(
                             fontSize: _sp(context, 10.5),
                             color: const Color(0xFF64748B),

@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/modules/Track/Controller/TrackingController.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,8 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
 
 class TrackingScreen extends StatelessWidget {
   TrackingScreen({super.key});
@@ -517,7 +520,7 @@ class TrackingScreen extends StatelessWidget {
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      "No internet connection. Map & tracking are offline.",
+                      context.l10n.track_offlineBanner,
                       style: TextStyle(
                         fontSize: 11.5.sp,
                         color: const Color(0xFF991B1B),
@@ -536,7 +539,7 @@ class TrackingScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Text(
-                        "Retry",
+                        appL10n.common_retry,
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontWeight: FontWeight.w700,
@@ -649,7 +652,7 @@ class TrackingScreen extends StatelessWidget {
               ),
               decoration: InputDecoration(
                 isDense: true,
-                hintText: "Search members or groups...",
+                hintText: context.l10n.track_searchHint,
                 hintStyle: TextStyle(
                   color: const Color(0xFF94A3B8),
                   fontSize: 12.5.sp,
@@ -742,7 +745,7 @@ class TrackingScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      "No members or groups matching\n'${controller.searchQuery.value}'",
+                      context.l10n.track_noSearchMatches(controller.searchQuery.value),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12.5.sp,
@@ -761,7 +764,7 @@ class TrackingScreen extends StatelessWidget {
                     Padding(
                       padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 4.h),
                       child: Text(
-                        "MEMBERS (${matchingMembers.length})",
+                        context.l10n.track_membersHeader(matchingMembers.length),
                         style: TextStyle(
                           fontSize: 10.5.sp,
                           fontWeight: FontWeight.w700,
@@ -779,7 +782,7 @@ class TrackingScreen extends StatelessWidget {
                     Padding(
                       padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 4.h),
                       child: Text(
-                        "GROUPS (${matchingGroups.length})",
+                        context.l10n.track_groupsHeader(matchingGroups.length),
                         style: TextStyle(
                           fontSize: 10.5.sp,
                           fontWeight: FontWeight.w700,
@@ -857,7 +860,7 @@ class TrackingScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    "${m.team.isNotEmpty ? '${m.team} • ' : ''}${m.location.isNotEmpty ? m.location : m.distance}",
+                    "${m.team.isNotEmpty ? '${m.team} • ' : ''}${m.location.isNotEmpty ? Tracking.displayLocation(m.location) : Tracking.displayDistance(m.distance)}",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -917,7 +920,7 @@ class TrackingScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    g.groupName ?? "Unnamed Group",
+                    g.groupName ?? appL10n.track_unnamedGroup,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -928,7 +931,9 @@ class TrackingScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    "${g.memberCount ?? 0} members • Code: ${g.groupCode ?? 'N/A'}",
+                    context.l10n.track_groupMembersAndCode(
+                        g.memberCount ?? 0,
+                        g.groupCode ?? context.l10n.track_notAvailable),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -991,7 +996,7 @@ class TrackingScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 18.h),
                 Text(
-                  "Map Unavailable Offline",
+                  context.l10n.track_mapUnavailableOffline,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 17.5.sp,
@@ -1002,7 +1007,7 @@ class TrackingScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  "Internet connection is required to load live map data and real-time member locations.",
+                  context.l10n.track_mapOfflineBody,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 12.5.sp,
@@ -1039,7 +1044,7 @@ class TrackingScreen extends StatelessWidget {
                         ),
                         SizedBox(width: 8.w),
                         Text(
-                          "Retry Connection",
+                          context.l10n.track_retryConnection,
                           style: TextStyle(
                             fontSize: 13.sp,
                             fontFamily: 'Inter',
@@ -1233,8 +1238,8 @@ class TrackingScreen extends StatelessWidget {
                     SizedBox(width: 8.w),
                     Text(
                       isCustom
-                          ? "Custom (${controller.currentFormattedRadius})"
-                          : "Custom",
+                          ? context.l10n.track_customWithValue(controller.currentFormattedRadius)
+                          : context.l10n.track_custom,
                       style: TextStyle(
                         fontWeight:
                             isCustom ? FontWeight.w800 : FontWeight.w500,
@@ -1384,7 +1389,7 @@ class TrackingScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Set Tracking Radius",
+                            context.l10n.track_setRadiusTitle,
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w800,
@@ -1392,7 +1397,7 @@ class TrackingScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            "Slide to select area radius",
+                            context.l10n.track_setRadiusSubtitle,
                             style: TextStyle(
                               fontSize: 11.5.sp,
                               color: const Color(0xFF64748B),
@@ -1560,7 +1565,7 @@ class TrackingScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Selected Location",
+                            context.l10n.track_selectedLocation,
                             style: TextStyle(
                               fontSize: 9.sp,
                               fontWeight: FontWeight.w500,
@@ -1571,8 +1576,8 @@ class TrackingScreen extends StatelessWidget {
                           Obx(
                             () => Text(
                               controller.currentLocationName.value.isNotEmpty
-                                  ? controller.currentLocationName.value
-                                  : "Current Location",
+                                  ? Tracking.displayLocation(controller.currentLocationName.value)
+                                  : context.l10n.track_currentLocation,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -1595,7 +1600,7 @@ class TrackingScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          "Radius",
+                          context.l10n.track_radius,
                           style: TextStyle(
                             fontSize: 11.sp,
                             color: Colors.grey.shade600,
@@ -1633,8 +1638,9 @@ class TrackingScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         alignment: Alignment.center,
-                        child: Text(
-                          "Cancel",
+                        child: AutoFitText(
+                          context.l10n.common_cancel,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w700,
@@ -1671,8 +1677,9 @@ class TrackingScreen extends StatelessWidget {
                           ],
                         ),
                         alignment: Alignment.center,
-                        child: Text(
-                          "Apply Radius",
+                        child: AutoFitText(
+                          context.l10n.track_applyRadius,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w700,
@@ -1738,8 +1745,8 @@ class TrackingScreen extends StatelessWidget {
                 children: [
                   Text(
                     isGroup
-                        ? "$count Member${count == 1 ? '' : 's'}"
-                        : "$count Members Live",
+                        ? appL10n.common_membersCount(count)
+                        : appL10n.track_membersLive(count),
                     style: TextStyle(
                       fontSize: 12.5.sp,
                       fontWeight: FontWeight.w800,
@@ -1832,7 +1839,7 @@ class TrackingScreen extends StatelessWidget {
                     ),
                     SizedBox(width: 6.w),
                     Text(
-                      "Live Tracking",
+                      appL10n.track_liveTracking,
                       style: TextStyle(
                         fontSize: 12.5.sp,
                         fontWeight: FontWeight.w700,
@@ -1869,7 +1876,7 @@ class TrackingScreen extends StatelessWidget {
                     ),
                     SizedBox(width: 6.w),
                     Text(
-                      "Group",
+                      appL10n.track_groupTab,
                       style: TextStyle(
                         fontSize: 12.5.sp,
                         fontWeight: FontWeight.w700,
@@ -1899,7 +1906,7 @@ class TrackingScreen extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    "Live Members",
+                    appL10n.track_liveMembers,
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w800,
@@ -1916,7 +1923,7 @@ class TrackingScreen extends StatelessWidget {
                     ),
                     child: Obx(
                       () => Text(
-                        "${controller.liveMembers.length} Live",
+                        appL10n.track_liveCount(controller.liveMembers.length),
                         style: TextStyle(
                           fontSize: 10.5.sp,
                           fontWeight: FontWeight.w700,
@@ -1964,7 +1971,7 @@ class TrackingScreen extends StatelessWidget {
                               ),
                         SizedBox(width: 4.w),
                         Text(
-                          loading ? "Refreshing..." : "Refresh",
+                          loading ? appL10n.track_refreshing : appL10n.track_refresh,
                           style: TextStyle(
                             fontSize: 11.sp,
                             fontWeight: FontWeight.w700,
@@ -2034,20 +2041,20 @@ class TrackingScreen extends StatelessWidget {
               final Color iconBg = const Color(0xFFEEF2FF);
 
               final String title = isOffline
-                  ? "No Internet Connection"
+                  ? appL10n.track_noInternetTitle
                   : (hasSearch
-                      ? "No Members Found"
+                      ? appL10n.track_noMembersFound
                       : (hasError
-                          ? "Unable to Load Members"
-                          : "No Active Members"));
+                          ? appL10n.track_unableToLoadMembers
+                          : appL10n.track_noActiveMembers));
 
               final String subtitle = isOffline
-                  ? "Please check your network and try again to view nearby members."
+                  ? appL10n.track_checkNetworkMembers
                   : (hasSearch
-                      ? "No members match '${controller.searchQuery.value}'"
+                      ? appL10n.track_noMembersMatch(controller.searchQuery.value)
                       : (hasError
-                          ? err
-                          : "No active members found within ${controller.currentFormattedRadius}"));
+                          ? Tracking.displayError(err)
+                          : appL10n.track_noActiveMembersWithin(controller.currentFormattedRadius)));
 
               return Padding(
                 padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
@@ -2113,7 +2120,7 @@ class TrackingScreen extends StatelessWidget {
                                   color: Colors.white, size: 16.sp),
                               SizedBox(width: 6.w),
                               Text(
-                                "Retry",
+                                appL10n.common_retry,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 12.sp,
@@ -2153,18 +2160,20 @@ class TrackingScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "Your Groups",
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF1E1B4B),
+              Flexible(
+                child: AutoFitText(
+                  appL10n.track_yourGroups,
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF1E1B4B),
+                  ),
                 ),
               ),
               Obx(() => Skeletonizer(
                     enabled: controller.isGroupLoading.value,
                     child: Text(
-                      "${controller.filteredGroups.length} Groups",
+                      appL10n.track_groupsCount(controller.filteredGroups.length),
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w700,
@@ -2212,18 +2221,18 @@ class TrackingScreen extends StatelessWidget {
               final Color iconBg = const Color(0xFFEEF2FF);
 
               final String title = isOffline
-                  ? "No Internet Connection"
+                  ? appL10n.track_noInternetTitle
                   : (hasSearch
-                      ? "No Groups Match"
-                      : (hasError ? "Unable to Load Groups" : "No Groups Found"));
+                      ? appL10n.track_noGroupsMatch
+                      : (hasError ? appL10n.track_unableToLoadGroups : appL10n.track_noGroupsFound));
 
               final String subtitle = isOffline
-                  ? "Please check your network connection and try again."
+                  ? appL10n.track_checkNetworkConnection
                   : (hasSearch
-                      ? "No groups match '${controller.searchQuery.value}'"
+                      ? appL10n.track_noGroupsMatchQuery(controller.searchQuery.value)
                       : (hasError
-                          ? err
-                          : "You haven't joined or created any groups yet."));
+                          ? Tracking.displayError(err)
+                          : appL10n.track_noGroupsYet));
 
               return Padding(
                 padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
@@ -2291,7 +2300,7 @@ class TrackingScreen extends StatelessWidget {
                                 ),
                                 SizedBox(width: 6.w),
                                 Text(
-                                  "Retry",
+                                  appL10n.common_retry,
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 12.sp,
@@ -2511,13 +2520,13 @@ class TrackingScreen extends StatelessWidget {
                                   member.location != "Location unavailable" &&
                                   member.location != "Location" &&
                                   member.location != "Locating...")
-                              ? member.location
+                              ? Tracking.displayLocation(member.location)
                               : (member.latitude != null &&
                                       member.longitude != null &&
                                       member.latitude != 0.0 &&
                                       member.longitude != 0.0
                                   ? "${member.latitude!.toStringAsFixed(4)}, ${member.longitude!.toStringAsFixed(4)}"
-                                  : "Location unavailable"),
+                                  : appL10n.track_locationUnavailable),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -2534,7 +2543,7 @@ class TrackingScreen extends StatelessWidget {
             ),
             SizedBox(width: 8.w),
             Text(
-              _formatDistance(member.distance),
+              Tracking.displayDistance(_formatDistance(member.distance)),
               style: TextStyle(
                 color: const Color(0xFF4338CA),
                 fontSize: 11.sp,
@@ -2797,7 +2806,7 @@ class TrackingScreen extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  group.groupName ?? "Unnamed Group",
+                                  group.groupName ?? appL10n.track_unnamedGroup,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -2818,7 +2827,7 @@ class TrackingScreen extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(6.r),
                                   ),
                                   child: Text(
-                                    "Admin",
+                                    appL10n.track_admin,
                                     style: TextStyle(
                                       fontSize: 9.5.sp,
                                       fontWeight: FontWeight.w700,
@@ -2834,8 +2843,8 @@ class TrackingScreen extends StatelessWidget {
                                     group.groupDesc!.isNotEmpty)
                                 ? group.groupDesc!
                                 : (group.groupCode != null
-                                    ? "Code: ${group.groupCode}"
-                                    : "No description"),
+                                    ? appL10n.track_groupCode(group.groupCode.toString())
+                                    : appL10n.track_noDescription),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -2979,7 +2988,7 @@ class TrackingScreen extends StatelessWidget {
                   ),
                   SizedBox(width: 5.w),
                   Text(
-                    "Group Members",
+                    appL10n.track_groupMembers,
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w700,
@@ -2990,7 +2999,7 @@ class TrackingScreen extends StatelessWidget {
               ),
               if (members.isNotEmpty || (group.memberCount != null && group.memberCount! > 0))
                 Text(
-                  "$displayCount member${displayCount == 1 ? '' : 's'}",
+                  appL10n.common_membersCount(displayCount),
                   style: TextStyle(
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
@@ -3019,7 +3028,7 @@ class TrackingScreen extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: 16.h),
               child: Center(
                 child: Text(
-                  "No members found in this group",
+                  appL10n.track_noMembersInGroup,
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: const Color(0xFF94A3B8),
@@ -3080,23 +3089,26 @@ class TrackingScreen extends StatelessWidget {
         : null;
 
     String getLastSeenText() {
-      if (isOnline) return "Online";
+      if (isOnline) return appL10n.common_online;
       if (member.lastSeen == null ||
           member.lastSeen.toString().trim().isEmpty ||
           member.lastSeen.toString().toLowerCase() == 'null') {
-        return "Offline";
+        return appL10n.common_offline;
       }
 
       final parsedDate = Tracking.parseDateTime(member.lastSeen);
       if (parsedDate == null) {
         final s = member.lastSeen.toString().trim();
-        return s.toLowerCase() == 'offline' ? "Offline" : "Last seen: $s";
+        return s.toLowerCase() == 'offline'
+            ? appL10n.common_offline
+            : appL10n.track_lastSeen(s);
       }
 
       try {
-        return "Last seen: ${Tracking().getTimeAgo(parsedDate)}";
+        return formatLastSeenWith(appL10n, parsedDate) ??
+            appL10n.common_offline;
       } catch (_) {
-        return "Offline";
+        return appL10n.common_offline;
       }
     }
 
@@ -3168,7 +3180,7 @@ class TrackingScreen extends StatelessWidget {
                                 ),
                                 SizedBox(width: 4.w),
                                 Text(
-                                  "Private",
+                                  appL10n.track_private,
                                   style: TextStyle(
                                     fontSize: 11.sp,
                                     fontWeight: FontWeight.w700,
@@ -3180,7 +3192,7 @@ class TrackingScreen extends StatelessWidget {
                           ),
                           SizedBox(width: 8.w),
                           Text(
-                            "Location Hidden",
+                            appL10n.track_locationHidden,
                             style: TextStyle(
                               fontSize: 13.sp,
                               fontWeight: FontWeight.w700,
@@ -3192,8 +3204,8 @@ class TrackingScreen extends StatelessWidget {
                       SizedBox(height: 3.h),
                       Text(
                         isMe
-                            ? "Your live location sharing is paused and private."
-                            : "$name has paused location sharing. Live location is not available.",
+                            ? appL10n.track_yourLocationPaused
+                            : appL10n.track_memberPausedSharing(name),
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w500,
@@ -3307,7 +3319,7 @@ class TrackingScreen extends StatelessWidget {
                       if (isMe) ...[
                         SizedBox(width: 5.w),
                         _memberBadge(
-                          "You",
+                          appL10n.common_you,
                           const Color(0xFFEEF2FF),
                           const Color(0xFF4338CA),
                         ),
@@ -3315,7 +3327,7 @@ class TrackingScreen extends StatelessWidget {
                       if (isGhostMode) ...[
                         SizedBox(width: 5.w),
                         _memberBadge(
-                          "Private",
+                          appL10n.track_private,
                           const Color(0xFFF3E8FF),
                           const Color(0xFF7E57C2),
                         ),
@@ -3323,7 +3335,7 @@ class TrackingScreen extends StatelessWidget {
                       if (isAdmin) ...[
                         SizedBox(width: 5.w),
                         _memberBadge(
-                          "Admin",
+                          appL10n.track_admin,
                           const Color(0xFFE7F8EC),
                           const Color(0xFF2BB673),
                         ),
@@ -3534,7 +3546,7 @@ class TrackingScreen extends StatelessWidget {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: "Tracking Help",
+      barrierLabel: context.l10n.track_helpTitle,
       barrierColor: Colors.black.withValues(alpha: 0.35),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (ctx, anim1, anim2) {
@@ -3567,7 +3579,7 @@ class TrackingScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                "Tracking Help",
+                                ctx.l10n.track_helpTitle,
                                 style: TextStyle(
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.w800,
@@ -3590,23 +3602,20 @@ class TrackingScreen extends StatelessWidget {
                           SizedBox(height: 12.h),
                           _helpItem(
                             icon: Icons.location_on_rounded,
-                            title: "What is Live Tracking?",
-                            subtitle:
-                                "Track team's real-time location on the map.",
+                            title: ctx.l10n.track_helpLiveTitle,
+                            subtitle: ctx.l10n.track_helpLiveBody,
                           ),
                           SizedBox(height: 11.h),
                           _helpItem(
                             icon: Icons.groups_rounded,
-                            title: "How to Add Group?",
-                            subtitle:
-                                "Create a group to track multiple members.",
+                            title: ctx.l10n.track_helpGroupTitle,
+                            subtitle: ctx.l10n.track_helpGroupBody,
                           ),
                           SizedBox(height: 11.h),
                           _helpItem(
                             icon: Icons.gps_fixed_rounded,
-                            title: "What is Tracking Radius?",
-                            subtitle:
-                                "Set the area to find nearby members on the map.",
+                            title: ctx.l10n.track_helpRadiusTitle,
+                            subtitle: ctx.l10n.track_helpRadiusBody,
                           ),
                         ],
                       ),

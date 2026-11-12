@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Services/MethodChannel.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 
 import 'package:meta/meta.dart';
@@ -51,7 +52,7 @@ class UpdateCubit extends Cubit<UpdateState> {
 
       switch (status) {
         case UpdateStatus.upToDate:
-          Utils().fluttertoast("No Update Available");
+          Utils().fluttertoast(appL10n.appUpdate_noUpdateAvailable);
           break;
         case UpdateStatus.outdated:
           _downloadUpdate();
@@ -60,11 +61,11 @@ class UpdateCubit extends Cubit<UpdateState> {
           restartApp();
           break;
         case UpdateStatus.unavailable:
-          Utils().fluttertoast("Update unavailable");
+          Utils().fluttertoast(appL10n.appUpdate_updateUnavailable);
           break;
       }
     } catch (error) {
-      Utils().fluttertoast('Error checking for update: $error');
+      Utils().fluttertoast(appL10n.appUpdate_checkError(error.toString()));
     } finally {
       emit(state.copyWith(isCheckingForUpdates: false));
     }

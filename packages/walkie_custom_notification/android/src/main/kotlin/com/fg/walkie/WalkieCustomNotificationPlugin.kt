@@ -33,6 +33,39 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Executors
 
+/**
+ * Optional texts in the app language, passed from Dart. A null value means
+ * "use the English default" so older callers keep working.
+ */
+data class WalkieNotificationTexts(
+    val textSpeaking: String? = null,
+    val textJoined: String? = null,
+    val labelLive: String? = null,
+    val labelAccept: String? = null,
+    val labelCancel: String? = null,
+    val defaultGroupName: String? = null
+) {
+    fun putInto(intent: Intent) {
+        textSpeaking?.let { intent.putExtra("text_speaking", it) }
+        textJoined?.let { intent.putExtra("text_joined", it) }
+        labelLive?.let { intent.putExtra("label_live", it) }
+        labelAccept?.let { intent.putExtra("label_accept", it) }
+        labelCancel?.let { intent.putExtra("label_cancel", it) }
+        defaultGroupName?.let { intent.putExtra("default_group_name", it) }
+    }
+
+    companion object {
+        fun fromIntent(intent: Intent): WalkieNotificationTexts = WalkieNotificationTexts(
+            textSpeaking = intent.getStringExtra("text_speaking"),
+            textJoined = intent.getStringExtra("text_joined"),
+            labelLive = intent.getStringExtra("label_live"),
+            labelAccept = intent.getStringExtra("label_accept"),
+            labelCancel = intent.getStringExtra("label_cancel"),
+            defaultGroupName = intent.getStringExtra("default_group_name")
+        )
+    }
+}
+
 class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.NewIntentListener {
     companion object {
         const val CHANNEL_ID = "fg_tracker_walkie_heads_up_channel_v6"
@@ -49,7 +82,8 @@ class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, Activit
             groupName: String,
             groupId: String,
             speakerImage: String,
-            joinedCount: Int? = null
+            joinedCount: Int? = null,
+            texts: WalkieNotificationTexts = WalkieNotificationTexts()
         ) {
             val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
 
@@ -147,23 +181,31 @@ class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, Activit
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            val displayGroupName = if (groupName.trim().isNotEmpty()) groupName.trim() else "Field Team"
-            val displaySpeakerText = if (speakerName.trim().isNotEmpty()) {
+            val displayGroupName = if (groupName.trim().isNotEmpty()) groupName.trim() else (texts.defaultGroupName ?: "Field Team")
+            val displaySpeakerText = texts.textSpeaking ?: if (speakerName.trim().isNotEmpty()) {
                 "${speakerName.trim()} is speaking..."
             } else {
                 "Someone is speaking..."
             }
-            val countText = if (joinedCount != null && joinedCount > 0) {
+            val countText = if (texts.textJoined != null) {
+                "👥 ${texts.textJoined}"
+            } else if (joinedCount != null && joinedCount > 0) {
                 "👥 $joinedCount Joined"
             } else {
                 "👥 Active"
             }
+            val liveText = texts.labelLive ?: "LIVE"
+            val acceptText = texts.labelAccept ?: "Accept"
+            val cancelText = texts.labelCancel ?: "Cancel"
 
             // Expanded RemoteViews
             val expandedViews = RemoteViews(ctx.packageName, R.layout.custom_walkie_notification_expanded).apply {
                 setTextViewText(R.id.notification_group_name, displayGroupName)
                 setTextViewText(R.id.notification_speaker_subtext, displaySpeakerText)
                 setTextViewText(R.id.notification_joined_count, countText)
+                setTextViewText(R.id.notification_live_label, liveText)
+                setTextViewText(R.id.btn_accept, "✓  $acceptText")
+                setTextViewText(R.id.btn_cancel, "✕  $cancelText")
 
                 setOnClickPendingIntent(R.id.btn_accept, acceptPendingIntent)
                 setOnClickPendingIntent(R.id.btn_cancel, rejectPendingIntent)
@@ -173,6 +215,8 @@ class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, Activit
             val collapsedViews = RemoteViews(ctx.packageName, R.layout.custom_walkie_notification_collapsed).apply {
                 setTextViewText(R.id.notification_group_name, displayGroupName)
                 setTextViewText(R.id.notification_speaker_subtext, displaySpeakerText)
+                setTextViewText(R.id.notification_live_label, liveText)
+                setTextViewText(R.id.btn_accept, "✓ $acceptText")
 
                 setOnClickPendingIntent(R.id.btn_accept, acceptPendingIntent)
                 setOnClickPendingIntent(R.id.btn_cancel, rejectPendingIntent)
@@ -183,7 +227,7 @@ class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, Activit
             }
 
             val fullScreenIntent = WalkieIncomingActivity.createIntent(
-                ctx, speakerName, groupName, groupId, speakerImage, joinedCount
+                ctx, speakerName, groupName, groupId, speakerImage, joinedCount, texts
             )
             val fullScreenPendingIntent = PendingIntent.getActivity(
                 ctx,
@@ -315,6 +359,14 @@ class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, Activit
                 val groupId = call.argument<String>("groupId") ?: ""
                 val speakerImage = call.argument<String>("speakerImage") ?: ""
                 val joinedCount = call.argument<Int?>("joinedCount")
+                val texts = WalkieNotificationTexts(
+                    textSpeaking = call.argument<String>("textSpeaking"),
+                    textJoined = call.argument<String>("textJoined"),
+                    labelLive = call.argument<String>("labelLive"),
+                    labelAccept = call.argument<String>("labelAccept"),
+                    labelCancel = call.argument<String>("labelCancel"),
+                    defaultGroupName = call.argument<String>("defaultGroupName")
+                )
 
                 val ctx = context
                 if (ctx == null) {
@@ -322,7 +374,7 @@ class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, Activit
                     return
                 }
 
-                showNotification(ctx, speakerName, groupName, groupId, speakerImage, joinedCount)
+                showNotification(ctx, speakerName, groupName, groupId, speakerImage, joinedCount, texts)
                 result.success(true)
             }
             "cancelNotification" -> {

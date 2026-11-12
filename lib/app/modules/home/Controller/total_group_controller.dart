@@ -2,6 +2,7 @@ import 'package:fgtracker/app/Model/GroupChatListModel.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import '../../../Core/constant/pref_res.dart';
 import '../../../Core/util/message_preview_builder.dart';
@@ -119,7 +120,7 @@ class TotalGroupController extends GetxController {
         }
 
         hasError.value = true;
-        errorMessage.value = response.message ?? 'Unable to fetch groups';
+        errorMessage.value = response.message ?? appL10n.home_unableToFetchGroups;
       }
     } catch (e) {
       if (currentPage == 1) {
@@ -127,7 +128,7 @@ class TotalGroupController extends GetxController {
       }
 
       hasError.value = true;
-      errorMessage.value = 'Something went wrong';
+      errorMessage.value = appL10n.common_somethingWentWrong;
     } finally {
       isLoading.value = false;
       isLoadingMore.value = false;
@@ -163,7 +164,7 @@ class TotalGroupController extends GetxController {
       return name;
     }
 
-    return 'No Name Group';
+    return appL10n.home_noNameGroup;
   }
 
   String getGroupDescription(GroupChatData group) {
@@ -235,43 +236,18 @@ class TotalGroupController extends GetxController {
       final difference = today.difference(date).inDays;
 
       if (difference == 0) {
-        return 'Today';
+        return appL10n.common_today;
       }
 
       if (difference == 1) {
-        return 'Yesterday';
+        return appL10n.common_yesterday;
       }
 
       if (difference > 1 && difference < 7) {
-        const weekdays = [
-          'Monday',
-          'Tuesday',
-          'Wednesday',
-          'Thursday',
-          'Friday',
-          'Saturday',
-          'Sunday',
-        ];
-
-        return weekdays[dateTime.weekday - 1];
+        return appDateFormat('EEEE').format(dateTime);
       }
 
-      const months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ];
-
-      return '${dateTime.day} ${months[dateTime.month - 1]}';
+      return appDateFormat('d MMM').format(dateTime);
     } catch (e) {
       return '';
     }

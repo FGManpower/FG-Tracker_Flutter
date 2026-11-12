@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/Model/walkie_plan_model.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
@@ -14,6 +15,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Utils/walkie_plan_l10n.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class WalkieTalkiePlanDetails extends StatefulWidget {
   final int initialTabIndex;
@@ -212,7 +215,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                   SizedBox(height: isSmallScreen ? 6.h : 10.h),
 
                   Text(
-                    isTeam ? "Team Plan" : "Choose a Plan",
+                    isTeam ? context.l10n.walkiePlan_teamPlan : context.l10n.walkiePlan_detailsChooseTitle,
                     style: TextStyle(
                       fontSize:
                           (isSmallScreen ? 19.sp : 22.sp).clamp(17.0, 25.0),
@@ -224,8 +227,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                   SizedBox(height: 3.h),
                   Text(
                     isTeam
-                        ? "Add team members and get everyone connected with Walkie Talkie"
-                        : "Continue using Walkie Talkie with a plan that fits your team",
+                        ? context.l10n.walkiePlan_detailsTeamSubtitle
+                        : context.l10n.walkiePlan_detailsIndividualSubtitle,
                     style: TextStyle(
                       fontSize:
                           (isSmallScreen ? 10.5.sp : 11.5.sp).clamp(9.5, 12.5),
@@ -286,7 +289,9 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
       final msg = controller.errorMessage.value;
       if (msg.isEmpty) return const SizedBox.shrink();
 
-      final bool isOffline = msg.toLowerCase().contains('internet') ||
+      final bool isOffline =
+          msg == context.l10n.walkiePlan_noInternetCheckNetwork ||
+          msg.toLowerCase().contains('internet') ||
           msg.toLowerCase().contains('network') ||
           msg.toLowerCase().contains('connection');
 
@@ -313,7 +318,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
             Expanded(
               child: Text(
                 isOffline
-                    ? "No internet connection. Please check your network."
+                    ? context.l10n.walkiePlan_noInternetCheckNetwork
                     : msg,
                 style: TextStyle(
                   fontSize: 11.5.sp.clamp(10.5, 12.5),
@@ -332,7 +337,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
-                  "Retry",
+                  context.l10n.common_retry,
                   style: TextStyle(
                     fontSize: 11.5.sp.clamp(10.5, 12.5),
                     fontFamily: FontFamily.interSemiBold,
@@ -355,40 +360,40 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
         ? [
             {
               "icon": Icons.bolt_rounded,
-              "title": "Unlimited",
-              "subtitle": "Walkie Talkie",
+              "title": context.l10n.walkiePlan_detailsPillUnlimited,
+              "subtitle": context.l10n.walkiePlan_detailsPillWalkieTalkie,
             },
             {
               "icon": Icons.groups_rounded,
-              "title": "For Teams",
-              "subtitle": "of All Sizes",
+              "title": context.l10n.walkiePlan_detailsPillForTeams,
+              "subtitle": context.l10n.walkiePlan_detailsPillAllSizes,
             },
             {
               "icon": Icons.shield_outlined,
-              "title": "Reliable &",
-              "subtitle": "Secure",
+              "title": context.l10n.walkiePlan_detailsPillReliable,
+              "subtitle": context.l10n.walkiePlan_detailsPillSecure,
             },
             {
               "icon": Icons.headset_mic_rounded,
-              "title": "Priority",
-              "subtitle": "Support",
+              "title": context.l10n.walkiePlan_detailsPillPriority,
+              "subtitle": context.l10n.walkiePlan_detailsPillSupport,
             },
           ]
         : [
             {
               "icon": Icons.bolt_rounded,
-              "title": "Instant",
-              "subtitle": "Communication",
+              "title": context.l10n.walkiePlan_detailsPillInstant,
+              "subtitle": context.l10n.walkiePlan_detailsPillCommunication,
             },
             {
               "icon": Icons.groups_rounded,
-              "title": "For Teams",
-              "subtitle": "of All Sizes",
+              "title": context.l10n.walkiePlan_detailsPillForTeams,
+              "subtitle": context.l10n.walkiePlan_detailsPillAllSizes,
             },
             {
               "icon": Icons.all_inclusive_rounded,
-              "title": "Reliable &",
-              "subtitle": "Secure",
+              "title": context.l10n.walkiePlan_detailsPillReliable,
+              "subtitle": context.l10n.walkiePlan_detailsPillSecure,
             },
           ];
 
@@ -488,8 +493,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
               isSelected: !isTeam,
               onTap: () => controller.setTab(0),
               icon: Icons.person_outline_rounded,
-              title: "Individual",
-              subtitle: "Per Person",
+              title: context.l10n.walkiePlan_detailsTabIndividual,
+              subtitle: context.l10n.walkiePlan_detailsTabPerPerson,
               isSmallScreen: isSmallScreen,
             ),
           ),
@@ -500,8 +505,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
               isSelected: isTeam,
               onTap: () => controller.setTab(1),
               icon: Icons.groups_rounded,
-              title: "Team Plan",
-              subtitle: "For Multiple Members",
+              title: context.l10n.walkiePlan_teamPlan,
+              subtitle: context.l10n.walkiePlan_detailsTabMultipleMembers,
               isSmallScreen: isSmallScreen,
             ),
           ),
@@ -602,33 +607,33 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
             children: [
               _buildIndividualPlanCard(
                 index: 0,
-                title: "Monthly Plan",
+                title: context.l10n.walkiePlan_monthlyPlan,
                 price: "₹500",
-                priceSuffix: " / person",
-                subtitle: "Perfect for short-term use",
+                priceSuffix: " ${context.l10n.walkiePlan_detailsPerPerson}",
+                subtitle: context.l10n.walkiePlan_detailsSubtitleShortTerm,
                 isMostPopular: true,
                 isSmallScreen: isSmallScreen,
               ),
               SizedBox(height: 12.h),
               _buildIndividualPlanCard(
                 index: 1,
-                title: "Quarterly Plan",
+                title: context.l10n.walkiePlan_quarterlyPlan,
                 price: "₹2,400",
-                priceSuffix: " / person",
+                priceSuffix: " ${context.l10n.walkiePlan_detailsPerPerson}",
                 originalPrice: "₹3,000",
                 // discountBadge: "Save 20%",
-                subtitle: "Great value for growing teams",
+                subtitle: context.l10n.walkiePlan_detailsSubtitleGrowingTeams,
                 isSmallScreen: isSmallScreen,
               ),
               SizedBox(height: 12.h),
               _buildIndividualPlanCard(
                 index: 2,
-                title: "Yearly Plan",
+                title: context.l10n.walkiePlan_yearlyPlan,
                 price: "₹4,020",
-                priceSuffix: " / person",
+                priceSuffix: " ${context.l10n.walkiePlan_detailsPerPerson}",
                 originalPrice: "₹6,000",
                 // discountBadge: "Save 33%",
-                subtitle: "Best for long-term use",
+                subtitle: context.l10n.walkiePlan_detailsSubtitleLongTerm,
                 isSmallScreen: isSmallScreen,
               ),
             ],
@@ -646,9 +651,9 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                 padding: EdgeInsets.only(bottom: 12.h),
                 child: _buildIndividualPlanCard(
                   index: index,
-                  title: plan.displayTitle,
+                  title: plan.displayTitleText,
                   price: controller.money(plan.safePrice, plan.currency),
-                  priceSuffix: " / person",
+                  priceSuffix: " ${context.l10n.walkiePlan_detailsPerPerson}",
                   subtitle: _getSubtitleForPlan(plan),
                   discountBadge: _getDiscountBadgeForPlan(plan),
                   originalPrice: _getOriginalPriceForPlan(plan),
@@ -702,13 +707,13 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   String _getSubtitleForPlan(WalkiePlanItem plan) {
     final interval = (plan.billingInterval ?? '').toLowerCase();
     if (interval == 'monthly' || plan.durationMonths == 1) {
-      return "Perfect for short-term use";
+      return context.l10n.walkiePlan_detailsSubtitleShortTerm;
     } else if (interval == 'quarterly' || plan.durationMonths == 3) {
-      return "Great value for growing teams";
+      return context.l10n.walkiePlan_detailsSubtitleGrowingTeams;
     } else if (interval == 'yearly' || plan.durationMonths == 12) {
-      return "Best for long-term use";
+      return context.l10n.walkiePlan_detailsSubtitleLongTerm;
     }
-    return "Instant walkie talkie voice access";
+    return context.l10n.walkiePlan_detailsSubtitleDefault;
   }
 
   String? _getDiscountBadgeForPlan(WalkiePlanItem plan) {
@@ -875,15 +880,15 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildCheckItem("Unlimited Range", _primaryPurple),
+                            _buildCheckItem(context.l10n.walkiePlan_detailsFeatUnlimitedRange, _primaryPurple),
                             SizedBox(height: 4.h),
-                            _buildCheckItem("Unlimited Walkie Talkie", Color(0xFF334155)),
+                            _buildCheckItem(context.l10n.walkiePlan_detailsFeatUnlimitedWalkie, Color(0xFF334155)),
                             SizedBox(height: 4.h),
-                            _buildCheckItem("High Quality Voice", Color(0xFF334155)),
+                            _buildCheckItem(context.l10n.walkiePlan_detailsFeatHqVoice, Color(0xFF334155)),
                             SizedBox(height: 4.h),
-                            _buildCheckItem("Group Communication", Color(0xFF334155)),
+                            _buildCheckItem(context.l10n.walkiePlan_detailsFeatGroupComm, Color(0xFF334155)),
                             SizedBox(height: 4.h),
-                            _buildCheckItem("Priority Support", Color(0xFF334155)),
+                            _buildCheckItem(context.l10n.walkiePlan_detailsFeatPrioritySupport, Color(0xFF334155)),
                           ],
                         ),
                       ),
@@ -935,7 +940,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                         ),
                       ),
                       child: Text(
-                        "Most Popular",
+                        context.l10n.walkiePlan_detailsMostPopular,
                         style: TextStyle(
                           fontSize: 9.5.sp.clamp(8.5, 11.0),
                           fontFamily: FontFamily.interBold,
@@ -1038,8 +1043,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
           children: [
             _buildCardStepHeader(
               stepNumber: "1",
-              title: "Select Number of Members",
-              subtitle: "Choose how many team members you want to add",
+              title: context.l10n.walkiePlan_detailsStep1Title,
+              subtitle: context.l10n.walkiePlan_detailsStep1Subtitle,
             ),
             SizedBox(height: 14.h),
             Row(
@@ -1058,7 +1063,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                           controller.decrementMembers();
                         } else {
                           controller.showTopWhiteMessage(
-                              "Minimum team size is $minMembers member${minMembers > 1 ? 's' : ''}");
+                              context.l10n.walkiePlan_detailsMinTeamSize(minMembers));
                         }
                       },
                     ),
@@ -1113,8 +1118,10 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                               ),
                             ),
                           ),
-                          Text(
-                            memberCount == 1 ? "Member" : "Members",
+                          AutoFitText(
+                            memberCount == 1
+                                ? context.l10n.walkiePlan_detailsMemberSingular
+                                : context.l10n.walkiePlan_detailsMemberPlural,
                             style: TextStyle(
                               fontSize: 10.sp.clamp(9.0, 11.5),
                               fontFamily: FontFamily.interSemiBold,
@@ -1137,7 +1144,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                           controller.incrementMembers();
                         } else {
                           controller.showTopWhiteMessage(
-                              "Maximum limit of $maxMembers members reached");
+                              context.l10n.walkiePlan_detailsMaxMembersReached(maxMembers));
                         }
                       },
                     ),
@@ -1168,7 +1175,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "More Members?",
+                                context.l10n.walkiePlan_detailsMoreMembersTitle,
                                 style: TextStyle(
                                   fontSize: 11.sp.clamp(10.0, 12.0),
                                   fontFamily: FontFamily.interBold,
@@ -1177,7 +1184,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                               ),
                               SizedBox(height: 2.h),
                               Text(
-                                "Add or remove members anytime.",
+                                context.l10n.walkiePlan_detailsMoreMembersBody,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -1263,8 +1270,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
         children: [
           _buildCardStepHeader(
             stepNumber: "2",
-            title: "Select Plan Duration",
-            subtitle: "Choose the plan duration that works for you",
+            title: context.l10n.walkiePlan_detailsStep2Title,
+            subtitle: context.l10n.walkiePlan_detailsStep2Subtitle,
           ),
           SizedBox(height: 14.h),
           if (plans.isEmpty)
@@ -1273,9 +1280,9 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                 Expanded(
                   child: _buildTeamDurationOptionItem(
                     index: 0,
-                    title: "Quarterly",
+                    title: context.l10n.walkiePlan_durationQuarterly,
                     price: "₹399",
-                    priceSuffix: "per member",
+                    priceSuffix: context.l10n.walkiePlan_perMember,
                     isSelected: true,
                   ),
                 ),
@@ -1292,9 +1299,9 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                     ),
                     child: _buildTeamDurationOptionItem(
                       index: index,
-                      title: plan.displayTitle,
+                      title: plan.displayTitleText,
                       price: controller.money(plan.safePrice, plan.currency),
-                      priceSuffix: "per member",
+                      priceSuffix: context.l10n.walkiePlan_perMember,
                       isSelected: selectedIdx == index,
                       onTap: () {
                         setState(() {
@@ -1476,7 +1483,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                     _buildStepNumberBadge("3"),
                     SizedBox(width: 10.w),
                     Text(
-                      "Plan Summary",
+                      context.l10n.walkiePlan_detailsPlanSummary,
                       style: TextStyle(
                         fontSize: 14.5.sp.clamp(13.5, 16.0),
                         fontFamily: FontFamily.interBold,
@@ -1508,8 +1515,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                               Flexible(
                                 child: Text(
                                   promoCode != null
-                                      ? "Code: $promoCode"
-                                      : "Have a Promo Code?",
+                                      ? context.l10n.walkiePlan_detailsCodeLabel(promoCode)
+                                      : context.l10n.walkiePlan_detailsHavePromoCode,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -1571,7 +1578,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                "Team Plan ($durationName)",
+                                context.l10n.walkiePlan_teamPlanWithDuration(
+                                    walkieDurationText(durationName, context.l10n)),
                                 style: TextStyle(
                                   fontSize: 14.sp.clamp(12.5, 15.5),
                                   fontFamily: FontFamily.interBold,
@@ -1584,7 +1592,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                "$memberCount Members × ${controller.money(ratePerMember)}",
+                                context.l10n.walkiePlan_detailsMembersTimesRate(
+                                    memberCount, controller.money(ratePerMember)),
                                 style: TextStyle(
                                   fontSize: 11.5.sp.clamp(10.0, 13.0),
                                   fontFamily: FontFamily.interMedium,
@@ -1611,7 +1620,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                           if (originalTotal != discountedTotal) ...[
                             SizedBox(height: 2.h),
                             Text(
-                              "${controller.money(originalTotal)} total",
+                              context.l10n.walkiePlan_detailsOriginalTotal(
+                                  controller.money(originalTotal)),
                               style: TextStyle(
                                 fontSize: 10.5.sp.clamp(9.5, 12.0),
                                 fontFamily: FontFamily.interRegular,
@@ -1642,7 +1652,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                               SizedBox(width: 4.w),
                               Expanded(
                                 child: Text(
-                                  "Promo ($promoCode) applied",
+                                  context.l10n.walkiePlan_detailsPromoApplied(promoCode),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -1688,7 +1698,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                           ),
                           SizedBox(width: 4.w),
                           Text(
-                            "You save ${controller.money(pricing!.amountSaved ?? 0)} with this coupon!",
+                            context.l10n.walkiePlan_detailsYouSaveWithCoupon(
+                                controller.money(pricing!.amountSaved ?? 0)),
                             style: TextStyle(
                               fontSize: 10.5.sp,
                               fontFamily: FontFamily.interBold,
@@ -1819,7 +1830,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
           ),
           SizedBox(height: 16.h),
           Text(
-            "No Plans Available",
+            context.l10n.walkiePlan_detailsNoPlansTitle,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 17.sp.clamp(15.0, 19.0),
@@ -1830,8 +1841,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
           SizedBox(height: 6.h),
           Text(
             isTeam
-                ? "No team walkie-talkie plans are currently available. Please check back later or retry."
-                : "No individual walkie-talkie plans are currently available. Please check back later or retry.",
+                ? context.l10n.walkiePlan_detailsNoTeamPlans
+                : context.l10n.walkiePlan_detailsNoIndividualPlans,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12.5.sp.clamp(11.0, 14.0),
@@ -1862,7 +1873,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
               color: _primaryPurple,
             ),
             label: Text(
-              "Retry",
+              context.l10n.common_retry,
               style: TextStyle(
                 fontSize: 13.sp,
                 fontFamily: FontFamily.interBold,
@@ -1933,9 +1944,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                       ),
                       SizedBox(width: 10.w),
                     ],
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
+                    Flexible(
+                      child: AutoFitText(
                         buttonText,
                         style: TextStyle(
                           fontSize: 15.sp.clamp(13.5, 16.5),
@@ -1972,7 +1982,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                 ),
                 SizedBox(width: 6.w),
                 Text(
-                  "Secure & Encrypted Payment",
+                  context.l10n.walkiePlan_secureEncryptedPayment,
                   style: TextStyle(
                     fontSize: 11.5.sp.clamp(10.0, 13.0),
                     fontFamily: FontFamily.interMedium,
@@ -2056,7 +2066,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                               ),
                               SizedBox(width: 8.w),
                               Text(
-                                "Coupons & Offers",
+                                context.l10n.walkiePlan_detailsCouponsOffers,
                                 style: TextStyle(
                                   fontSize: 17.sp,
                                   fontFamily: FontFamily.interBold,
@@ -2113,7 +2123,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                         letterSpacing: 0.5,
                                       ),
                                       decoration: InputDecoration(
-                                        hintText: "Enter coupon code",
+                                        hintText: context.l10n.walkiePlan_detailsEnterCouponHint,
                                         hintStyle: TextStyle(
                                           fontSize: 12.5.sp,
                                           color: const Color(0xFF94A3B8),
@@ -2185,7 +2195,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                         }
                                         if (typedCode.isEmpty) {
                                           controller.showTopWhiteMessage(
-                                              "Please enter a valid coupon code");
+                                              context.l10n.walkiePlan_detailsEnterValidCoupon);
                                           return;
                                         }
                                         final success = await controller
@@ -2220,14 +2230,18 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                             ),
                                             SizedBox(width: 4.w),
                                           ],
-                                          Text(
-                                            isThisCodeApplied
-                                                ? "Applied"
-                                                : "Apply",
-                                            style: TextStyle(
-                                              fontSize: 13.5.sp,
-                                              fontFamily: FontFamily.interBold,
-                                              color: Colors.white,
+                                          ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                                maxWidth: 100.w),
+                                            child: AutoFitText(
+                                              isThisCodeApplied
+                                                  ? context.l10n.walkiePlan_detailsApplied
+                                                  : context.l10n.walkiePlan_detailsApply,
+                                              style: TextStyle(
+                                                fontSize: 13.5.sp,
+                                                fontFamily: FontFamily.interBold,
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -2244,7 +2258,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Available Coupons",
+                            context.l10n.walkiePlan_detailsAvailableCoupons,
                             style: TextStyle(
                               fontSize: 14.sp,
                               fontFamily: FontFamily.interBold,
@@ -2465,7 +2479,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                             ),
                                             SizedBox(width: 2.w),
                                             Text(
-                                              "REMOVE",
+                                              context.l10n.walkiePlan_detailsRemoveCaps,
                                               style: TextStyle(
                                                 fontSize: 10.5.sp,
                                                 fontFamily:
@@ -2524,7 +2538,9 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                                 ),
                                               )
                                             : Text(
-                                                isEligible ? "APPLY" : "LOCKED",
+                                                isEligible
+                                                    ? context.l10n.walkiePlan_detailsApplyCaps
+                                                    : context.l10n.walkiePlan_detailsLockedCaps,
                                                 style: TextStyle(
                                                   fontSize: 11.sp,
                                                   fontFamily:
@@ -2615,8 +2631,10 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                             ),
                             child: Text(
                               index == 0
-                                  ? "10% OFF"
-                                  : (index == 1 ? "20% OFF" : "FLAT ₹150 OFF"),
+                                  ? context.l10n.walkiePlan_couponPercentOff(10)
+                                  : (index == 1
+                                      ? context.l10n.walkiePlan_couponPercentOff(20)
+                                      : context.l10n.walkiePlan_couponFlatOff("₹150")),
                               style: TextStyle(
                                 fontSize: 10.sp,
                                 fontFamily: FontFamily.interBold,
@@ -2628,7 +2646,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                       ),
                       SizedBox(height: 3.h),
                       Text(
-                        "Valid on all plans • Expires soon",
+                        context.l10n.walkiePlan_detailsSkeletonCouponNote,
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interRegular,
@@ -2649,7 +2667,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
-                    "APPLY",
+                    context.l10n.walkiePlan_detailsApplyCaps,
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontFamily: FontFamily.interBold,
@@ -2695,7 +2713,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
             ),
             SizedBox(height: 10.h),
             Text(
-              "No Coupons Available",
+              context.l10n.walkiePlan_detailsNoCouponsTitle,
               style: TextStyle(
                 fontSize: 13.5.sp,
                 fontFamily: FontFamily.interBold,
@@ -2704,7 +2722,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
             ),
             SizedBox(height: 4.h),
             Text(
-              "There are no active coupons for this plan right now.",
+              context.l10n.walkiePlan_detailsNoCouponsBody,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11.5.sp,
@@ -2750,7 +2768,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
               ),
               SizedBox(height: 16.h),
               Text(
-                "Select Payment Method",
+                context.l10n.walkiePlan_detailsSelectPaymentMethod,
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontFamily: FontFamily.interBold,
@@ -2769,20 +2787,20 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
               SizedBox(height: 16.h),
               _buildPaymentOptionTile(
                 icon: Icons.qr_code_scanner_rounded,
-                title: "UPI / QR Code",
+                title: context.l10n.walkiePlan_detailsUpiQr,
                 subtitle: "Google Pay, PhonePe, Paytm",
               ),
               SizedBox(height: 10.h),
               _buildPaymentOptionTile(
                 icon: Icons.credit_card_rounded,
-                title: "Credit / Debit Card",
+                title: context.l10n.walkiePlan_detailsCard,
                 subtitle: "Visa, MasterCard, RuPay",
               ),
               SizedBox(height: 10.h),
               _buildPaymentOptionTile(
                 icon: Icons.account_balance_rounded,
-                title: "Net Banking",
-                subtitle: "All Indian Banks supported",
+                title: context.l10n.walkiePlan_detailsNetBanking,
+                subtitle: context.l10n.walkiePlan_detailsAllBanks,
               ),
               SizedBox(height: 20.h),
               SizedBox(
@@ -2800,8 +2818,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                     Navigator.pop(ctx);
                     _openPurchaseSuccessScreen(isTeam);
                   },
-                  child: Text(
-                    "Pay & Activate Plan",
+                  child: AutoFitText(
+                    context.l10n.walkiePlan_detailsPayActivate,
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontFamily: FontFamily.interBold,
@@ -2886,21 +2904,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
     } else {
       expiryDate = DateTime(now.year + 1, now.month, now.day);
     }
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    return "${expiryDate.day} ${months[expiryDate.month - 1]} ${expiryDate.year}";
+    return appDateFormat('d MMM yyyy').format(expiryDate);
   }
 
   void _openPurchaseSuccessScreen([bool? isTeamParam]) {
@@ -2932,7 +2936,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
               ),
               SizedBox(height: 16.h),
               Text(
-                "Plan Activated Successfully!",
+                context.l10n.walkiePlan_detailsPlanActivated,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 17.sp,
@@ -2942,7 +2946,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
               ),
               SizedBox(height: 8.h),
               Text(
-                "Your Walkie Talkie plan is now active. Enjoy uninterrupted instant voice communication.",
+                context.l10n.walkiePlan_detailsPlanActiveBody,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12.5.sp,
@@ -2966,7 +2970,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                     Get.back();
                   },
                   child: Text(
-                    "Done",
+                    context.l10n.common_done,
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontFamily: FontFamily.interBold,

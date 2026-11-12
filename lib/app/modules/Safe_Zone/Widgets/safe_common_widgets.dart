@@ -3,7 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../gen/fonts.gen.dart';
+import '../../../global_widget/auto_fit_text.dart';
 import '../../../global_widget/common_widget.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class SafeColors {
   static const Color primary = Color(0xFF5A3EFE);
@@ -63,11 +65,13 @@ class SafeAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          reausabletext(
+          AutoFitText(
             title,
-            fontsize: 16,
-            fontfamily: FontFamily.interSemiBold,
-            color: Colors.black,
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontFamily: FontFamily.interSemiBold,
+              color: Colors.black,
+            ),
           ),
           reausabletext(
             subtitle,
@@ -118,14 +122,14 @@ class SafeTabBar extends StatelessWidget {
         labelColor: Colors.white,
         unselectedLabelColor: Colors.grey.shade600,
         labelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
-        tabs: const [
+        tabs: [
           Tab(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.person, size: 18),
-                SizedBox(width: 6),
-                Text("Individual"),
+                const Icon(Icons.person, size: 18),
+                const SizedBox(width: 6),
+                Text(context.l10n.safety_tabIndividual),
               ],
             ),
           ),
@@ -133,9 +137,9 @@ class SafeTabBar extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.group, size: 18),
-                SizedBox(width: 6),
-                Text("Group"),
+                const Icon(Icons.group, size: 18),
+                const SizedBox(width: 6),
+                Text(context.l10n.track_groupTab),
               ],
             ),
           ),
@@ -360,7 +364,7 @@ class SafeGroupCard extends StatelessWidget {
                       fontsize: 12,
                       fontfamily: FontFamily.interSemiBold,
                       color: Colors.black),
-                  reausabletext("Total $totalMembers Members",
+                  reausabletext(context.l10n.safeZone_totalMembers(totalMembers),
                       fontsize: 10, color: Colors.grey.shade500),
                 ],
               ),
@@ -405,17 +409,24 @@ class SafeGroupCard extends StatelessWidget {
                   ),
               ],
             ),
-            GestureDetector(
-              onTap: onViewAll,
-              child: Row(
-                children: [
-                  reausabletext("View All Members",
-                      fontsize: 11,
-                      color: SafeColors.primary,
-                      fontweight: FontWeight.w600),
-                  Icon(Icons.chevron_right,
-                      size: 16.sp, color: SafeColors.primary),
-                ],
+            Flexible(
+              child: GestureDetector(
+                onTap: onViewAll,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: AutoFitText(context.l10n.safety_viewAllMembers,
+                          style: TextStyle(
+                              fontFamily: "geographeditwebbold",
+                              fontSize: 11.sp,
+                              color: SafeColors.primary,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                    Icon(Icons.chevron_right,
+                        size: 16.sp, color: SafeColors.primary),
+                  ],
+                ),
               ),
             ),
           ],
@@ -503,7 +514,7 @@ class SafeMapCard extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                     decoration: InputDecoration(
-                      hintText: "Search Location...",
+                      hintText: context.l10n.safeZone_searchLocation,
                       hintStyle: TextStyle(
                         fontSize: 12.sp,
                         color: Colors.grey.shade600,
@@ -565,7 +576,7 @@ class SafeMapCard extends StatelessWidget {
                           Icon(Icons.my_location,
                               color: SafeColors.primary, size: 14.sp),
                           SizedBox(width: 4.w),
-                          reausabletext("Re-center",
+                          reausabletext(context.l10n.safety_recenter,
                               fontsize: 11,
                               color: SafeColors.primary,
                               fontweight: FontWeight.bold),
@@ -675,7 +686,7 @@ class SafeFooterNote extends StatelessWidget {
           Icon(Icons.lock_outline, size: 14.sp, color: Colors.grey.shade500),
           SizedBox(width: 4.w),
           reausabletext(
-            "You can edit or deactivate anytime later.",
+            context.l10n.safety_editAnytime,
             fontsize: 11,
             fontweight: FontWeight.w600,
             color: Colors.grey.shade500,
@@ -852,8 +863,8 @@ class SafeAlertBottomSheet extends StatelessWidget {
                     children: [
                       reausabletext(
                         isZone
-                            ? "Safe Zone Alert"
-                            : "Safe Route Alert",
+                            ? context.l10n.safeZone_alertTitle
+                            : context.l10n.safeRoute_alertTitle,
                         fontsize: 15,
                         fontfamily: FontFamily.interSemiBold,
                         color: Colors.black,
@@ -861,8 +872,8 @@ class SafeAlertBottomSheet extends StatelessWidget {
                       SizedBox(height: 1.h),
                       reausabletext(
                         isZone
-                            ? "Real-time alerts when team members leave the safe zone"
-                            : "Real-time alerts when team members deviate from the safe route",
+                            ? context.l10n.safeZone_alertSheetDesc
+                            : context.l10n.safeRoute_alertSheetDesc,
                         fontsize: 9,
                         color: Colors.grey.shade600,
                         fontweight: FontWeight(600),
@@ -911,8 +922,8 @@ class SafeAlertBottomSheet extends StatelessWidget {
                       children: [
                         reausabletext(
                           isZone
-                              ? "Active Safe Zone"
-                              : "Active Safe Route",
+                              ? context.l10n.safeZone_activeTitle
+                              : context.l10n.safeRoute_activeTitle,
                           fontsize: 9,
                           color: Colors.grey.shade600,
                           fontweight: FontWeight(600)
@@ -933,8 +944,8 @@ class SafeAlertBottomSheet extends StatelessWidget {
 
                         reausabletext(
                           isZone
-                              ? "Radius: 500 m  •  Center: Chembur, Mumbai"
-                              : "Total Distance: 12.5 km  •  Allowed Deviation: 500 m",
+                              ? context.l10n.safeZone_activeDetails("500 m", "Chembur, Mumbai")
+                              : context.l10n.safeRoute_activeDetails("12.5 km", "500 m"),
                           fontsize: 9,
                           color: Colors.grey.shade600,
                           fontweight: FontWeight(600),
@@ -957,7 +968,7 @@ class SafeAlertBottomSheet extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20.r),
                     ),
                     child: reausabletext(
-                      "Active",
+                      context.l10n.safety_active,
                       fontsize: 10,
                       color: const Color(0xFF1DBF73),
                       fontweight: FontWeight.w600,
@@ -984,29 +995,41 @@ class SafeAlertBottomSheet extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                reausabletext(
-                  "Recent Alerts",
-                  fontsize: 12,
-                  fontfamily: FontFamily.interSemiBold,
-                  color: Colors.black87,
+                Flexible(
+                  child: AutoFitText(
+                    context.l10n.safety_recentAlerts,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontFamily: FontFamily.interSemiBold,
+                      color: Colors.black87,
+                    ),
+                  ),
                 ),
 
-                GestureDetector(
-                  onTap: () {},
-                  child: Row(
-                    children: [
-                      reausabletext(
-                        "View All",
-                        fontsize: 11,
-                        color: SafeColors.primary,
-                        fontweight: FontWeight.w600,
-                      ),
-                      Icon(
-                        Icons.chevron_right,
-                        size: 15.sp,
-                        color: SafeColors.primary,
-                      ),
-                    ],
+                Flexible(
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: AutoFitText(
+                            context.l10n.common_viewAll,
+                            style: TextStyle(
+                              fontFamily: "geographeditwebbold",
+                              fontSize: 11.sp,
+                              color: SafeColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right,
+                          size: 15.sp,
+                          color: SafeColors.primary,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -1035,11 +1058,11 @@ class SafeAlertBottomSheet extends StatelessWidget {
                     ? [
                   _alertTile(
                     name: "Rahul Verma",
-                    status: "Exited safe zone",
-                    location:
-                    "Near Ghatkopar (Outside Chembur Zone)",
-                    time: "04:32 PM",
-                    ago: "2 min ago",
+                    status: context.l10n.safeZone_exited,
+                    location: context.l10n
+                        .safeZone_nearOutsideZone("Ghatkopar", "Chembur Zone"),
+                    time: appTime(DateTime(2000, 1, 1, 16, 32)),
+                    ago: context.l10n.common_minutesAgo(2),
                     avatar:
                     "https://i.pravatar.cc/150?img=12",
                     isZone: true,
@@ -1052,11 +1075,11 @@ class SafeAlertBottomSheet extends StatelessWidget {
 
                   _alertTile(
                     name: "Aamir Khan",
-                    status: "Exited safe zone",
-                    location:
-                    "Vikhroli (Outside Chembur Zone)",
-                    time: "04:45 PM",
-                    ago: "5 min ago",
+                    status: context.l10n.safeZone_exited,
+                    location: context.l10n
+                        .safeZone_outsideZone("Vikhroli", "Chembur Zone"),
+                    time: appTime(DateTime(2000, 1, 1, 16, 45)),
+                    ago: context.l10n.common_minutesAgo(5),
                     avatar:
                     "https://i.pravatar.cc/150?img=13",
                     isZone: true,
@@ -1065,11 +1088,11 @@ class SafeAlertBottomSheet extends StatelessWidget {
                     : [
                   _alertTile(
                     name: "Aamir Khan",
-                    status: "Deviated from safe route",
-                    location:
-                    "Vikhroli (Deviation: 780 m)",
-                    time: "04:45 PM",
-                    ago: "3 min ago",
+                    status: context.l10n.safeRoute_deviated,
+                    location: context.l10n
+                        .safeRoute_deviationAt("Vikhroli", "780 m"),
+                    time: appTime(DateTime(2000, 1, 1, 16, 45)),
+                    ago: context.l10n.common_minutesAgo(3),
                     avatar:
                     "https://i.pravatar.cc/150?img=13",
                     isZone: false,
@@ -1082,11 +1105,11 @@ class SafeAlertBottomSheet extends StatelessWidget {
 
                   _alertTile(
                     name: "Sameer Shaikh",
-                    status: "Deviated from safe route",
-                    location:
-                    "Kurla (Deviation: 650 m)",
-                    time: "04:32 PM",
-                    ago: "6 min ago",
+                    status: context.l10n.safeRoute_deviated,
+                    location: context.l10n
+                        .safeRoute_deviationAt("Kurla", "650 m"),
+                    time: appTime(DateTime(2000, 1, 1, 16, 32)),
+                    ago: context.l10n.common_minutesAgo(6),
                     avatar:
                     "https://i.pravatar.cc/150?img=15",
                     isZone: false,
@@ -1137,7 +1160,7 @@ class SafeAlertBottomSheet extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         reausabletext(
-                          "Alert Settings",
+                          context.l10n.safety_alertSettings,
                           fontsize: 12,
                           fontfamily: FontFamily.interSemiBold,
                           color: Colors.black,
@@ -1147,8 +1170,8 @@ class SafeAlertBottomSheet extends StatelessWidget {
 
                         reausabletext(
                           isZone
-                              ? "Manage safe zone, alert distance and notification preferences"
-                              : "Manage safe route alerts, deviation limits and notification preferences.",
+                              ? context.l10n.safeZone_alertSettingsDesc
+                              : context.l10n.safeRoute_alertSettingsDesc,
                           fontsize: 9,
                           color: Colors.grey.shade600,
                           fontweight: FontWeight(600),
@@ -1202,13 +1225,17 @@ class SafeAlertBottomSheet extends StatelessWidget {
 
                     SizedBox(width: 7.w),
 
-                    reausabletext(
-                      isZone
-                          ? "Edit Safe Zone"
-                          : "Edit Safe Route",
-                      fontsize: 13,
-                      fontfamily: FontFamily.interSemiBold,
-                      color: Colors.white,
+                    Flexible(
+                      child: AutoFitText(
+                        isZone
+                            ? context.l10n.safeZone_edit
+                            : context.l10n.safeRoute_edit,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontFamily: FontFamily.interSemiBold,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ],
                 ),

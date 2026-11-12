@@ -1,3 +1,5 @@
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
 import 'dart:developer';
 import 'dart:io';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
@@ -76,30 +78,30 @@ class DialogBox {
                     ),
                   ),
                   SizedBox(height: 15.h),
-                  reausabletext(AppText.createNewGroup,
+                  reausabletext(appL10n.groupDialog_createTitle,
                       fontsize: 18.sp, fontfamily: FontFamily.interSemiBold),
                   SizedBox(height: 20.h),
                   inputField(
                     context,
-                    title: AppText.groupName,
+                    title: appL10n.groupDialog_nameLabel,
                     maxLength: 50,
                     maxLines: 1,
-                    hintname: AppText.enterGroupName,
+                    hintname: appL10n.groupDialog_nameHint,
                     textctr: controller.groupName,
                     validators: (value) =>
-                        Validator.validate(value: value, title: "Group Name"),
+                        Validator.validate(value: value, title: appL10n.groupDialog_nameLabel),
                   ),
                   SizedBox(height: 25.h),
                   inputField(
                     context,
-                    title: "Group Description (Optional)",
+                    title: appL10n.groupDialog_descLabel,
                     maxLength: 200,
                     maxLines: 1,
-                    hintname: "Enter Group Description",
+                    hintname: appL10n.groupDialog_descHint,
                     textctr: controller.groupDesc,
                   ),
                   reausablebutton(
-                    title: "Done",
+                    title: appL10n.common_done,
                     ontap: () async {
                       if (controller.createGroupKey.currentState!.validate()) {
                         bool isCreated = await controller.createGroup(
@@ -176,7 +178,7 @@ class DialogBox {
                     ),
                   ),
                   SizedBox(height: 15.h),
-                  reausabletext(AppText.updateGroup,
+                  reausabletext(appL10n.groupDialog_updateTitle,
                       fontsize: 18.sp, fontfamily: FontFamily.interSemiBold),
                   Obx(() {
                     final image = controller.selectedGroupImage.value;
@@ -243,26 +245,26 @@ class DialogBox {
                   SizedBox(height: 20.h),
                   inputField(
                     context,
-                    title: AppText.groupName,
+                    title: appL10n.groupDialog_nameLabel,
                     maxLength: 50,
                     maxLines: 1,
                     textctr: controller.groupName,
                     validators: (value) =>
-                        Validator.validate(value: value, title: "Group Name"),
+                        Validator.validate(value: value, title: appL10n.groupDialog_nameLabel),
                   ),
                   SizedBox(height: 15.h),
                   inputField(
                     context,
-                    title: "Group Description (Optional)",
+                    title: appL10n.groupDialog_descLabel,
                     maxLength: 200,
                     maxLines: 1,
-                    hintname: "Enter Group Description",
+                    hintname: appL10n.groupDialog_descHint,
                     textctr: controller.groupDesc,
                   ),
                   SizedBox(height: 15.h),
 
                   reausablebutton(
-                    title: "Update",
+                    title: appL10n.groupDialog_update,
                     ontap: () async {
                       if (controller.createGroupKey.currentState!.validate()) {
                         controller.updateGroupDetail(groupId: groupId);
@@ -316,14 +318,14 @@ class DialogBox {
                   ),
                   SizedBox(height: 15.h),
                   reausabletext(
-                    AppText.enterGroupCode,
+                    appL10n.groupDialog_enterCodeTitle,
                     fontsize: 20.sp,
                     fontweight: FontWeight.bold,
                   ),
                   SizedBox(height: 20.h),
                   InputField(
-                    title: AppText.groupCode,
-                    hintText: AppText.enterGroupCode,
+                    title: appL10n.groupDialog_codeLabel,
+                    hintText: appL10n.groupDialog_enterCodeTitle,
                     controller: controller.groupCodeController,
                     maxLength: 6,
                     textCapitalization: TextCapitalization.characters,
@@ -331,12 +333,12 @@ class DialogBox {
                       UpperCaseTextFormatter(),
                     ],
                     validator: (value) => value == null || value.isEmpty
-                        ? AppText.groupCodeCannotBeEmpty
+                        ? appL10n.groupDialog_codeEmpty
                         : null,
                   ),
                   SizedBox(height: 25.h),
                   reausablebutton(
-                    title: AppText.joinGroup,
+                    title: appL10n.groupDialog_join,
                     ontap: () async {
                       if (controller.joinGroupKey.currentState!.validate()) {
                         bool isJoined = await controller.joinGroup(context,
@@ -399,7 +401,7 @@ class DialogBox {
                     ),
                     SizedBox(height: 25),
                     _buildOptionTile(
-                      title: AppText.scanFromCamera,
+                      title: appL10n.groupDialog_scanCamera,
                       icon: Icons.qr_code_scanner,
                       onTap: () {
                         Navigator.pop(context);
@@ -408,7 +410,7 @@ class DialogBox {
                     ),
                     const SizedBox(height: 10),
                     _buildOptionTile(
-                      title: AppText.uploadFromGallery,
+                      title: appL10n.groupDialog_uploadGallery,
                       icon: Icons.photo_library,
                       onTap: () {
                         Navigator.pop(context);
@@ -446,17 +448,17 @@ class DialogBox {
                                     }
                                   } else {
                                     CommonDialog.errorMessage(
-                                        AppText.noValidQrCodeFound);
+                                        appL10n.groupDialog_noValidQr);
                                   }
                                 } else {
                                   CommonDialog.errorMessage(
-                                      AppText.noQrFoundCodeFound);
+                                      appL10n.groupDialog_noQrInImage);
                                 }
 
                                 await barcodeScanner.close();
                               } catch (e) {
                                 CommonDialog.errorMessage(
-                                    "${AppText.errorDecodingQrFromGallery}$e");
+                                    appL10n.groupDialog_qrDecodeError(e.toString()));
                               }
                             }
                           },
@@ -468,7 +470,7 @@ class DialogBox {
                     ),
                     SizedBox(height: 10.h),
                     _buildOptionTile(
-                      title: AppText.enterGroupCodeManually,
+                      title: appL10n.groupDialog_enterCodeManually,
                       icon: Icons.keyboard,
                       onTap: () {
                         Navigator.pop(context);
@@ -1121,6 +1123,8 @@ class DialogBox {
       }
     }
 
+    final String shownName =
+        resolvedName ?? (isMe ? appL10n.common_you : (name ?? appL10n.groupDialog_member));
     final String displayName =
         resolvedName ?? (isMe ? 'You' : (name ?? AppText.member));
 
@@ -1143,7 +1147,7 @@ class DialogBox {
     final Color statusTextColor;
 
     if (isOnline) {
-      statusText = "Online";
+      statusText = appL10n.common_online;
       statusTextColor = const Color(0xFF10B981);
     } else {
       statusTextColor = Colors.grey.shade600;
@@ -1151,21 +1155,23 @@ class DialogBox {
       if (raw.isEmpty ||
           raw.toLowerCase() == 'null' ||
           raw.toLowerCase() == 'offline') {
-        statusText = "Offline";
+        statusText = appL10n.common_offline;
       } else if (raw.toLowerCase().startsWith('last seen')) {
         statusText = raw;
       } else {
         final parsed = Tracking.parseDateTime(raw);
         if (parsed != null) {
-          statusText = "${AppText.lastSeen}${Tracking().getTimeAgo(parsed)}";
+          statusText =
+              formatLastSeenWith(appL10n, parsed) ?? appL10n.common_offline;
         } else {
           final epoch = int.tryParse(raw);
           if (epoch != null && epoch > 1000000000) {
             final ms = raw.length == 10 ? epoch * 1000 : epoch;
             final dt = DateTime.fromMillisecondsSinceEpoch(ms).toLocal();
-            statusText = "${AppText.lastSeen}${Tracking().getTimeAgo(dt)}";
+            statusText =
+                formatLastSeenWith(appL10n, dt) ?? appL10n.common_offline;
           } else {
-            statusText = "${AppText.lastSeen}$raw";
+            statusText = appL10n.groupDialog_lastSeen(raw);
           }
         }
       }
@@ -1194,7 +1200,7 @@ class DialogBox {
             mainAxisSize: MainAxisSize.min,
             children: [
               reausabletext(
-                AppText.memberInfo,
+                appL10n.groupDialog_memberInfo,
                 fontsize: 20,
                 fontweight: FontWeight.w700,
                 align: TextAlign.center,
@@ -1236,7 +1242,7 @@ class DialogBox {
                       child: ClipOval(
                         child: _buildProfileAvatar(
                           imageUrl: fullImageUrl,
-                          displayName: displayName,
+                          displayName: shownName,
                           size: 95.r,
                         ),
                       ),
@@ -1273,7 +1279,7 @@ class DialogBox {
                   children: [
                     Flexible(
                       child: reausabletext(
-                        displayName,
+                        shownName,
                         fontsize: 18.sp,
                         fontfamily: FontFamily.interBold,
                         fontweight: FontWeight.w700,
@@ -1291,7 +1297,7 @@ class DialogBox {
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Text(
-                          "You",
+                          appL10n.common_you,
                           style: TextStyle(
                             color: ToggleThemeData.Appcolor,
                             fontWeight: FontWeight.w600,
@@ -1329,7 +1335,7 @@ class DialogBox {
                           SizedBox(width: 10.w),
                           Expanded(
                             child: Text(
-                              "Location Hidden",
+                              appL10n.groupDialog_locationHidden,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -1349,28 +1355,28 @@ class DialogBox {
 
                           // Compute distance string if available
                           final String? computedDistance = () {
-                            if (isMe) return "Your current location";
+                            if (isMe) return appL10n.groupDialog_yourLocation;
 
                             final String raw = (rawDistance ?? '').trim();
                             if (raw.isNotEmpty &&
                                 !raw.toLowerCase().contains("nearby") &&
                                 !raw.startsWith("0.0")) {
-                              return "${AppText.distance}$raw";
+                              return appL10n.groupDialog_distance(raw);
                             }
                             if (hasValidDestination && myLat != 0.0 && myLng != 0.0) {
                               final double meters = effectiveDistance * 1000.0;
                               if (effectiveDistance >= 1.0) {
-                                return "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km";
+                                return appL10n.groupDialog_distance("${effectiveDistance.toStringAsFixed(2)} Km");
                               } else if (meters >= 1.0) {
-                                return "${AppText.distance}${meters.round()} m";
+                                return appL10n.groupDialog_distance("${meters.round()} m");
                               } else {
-                                return "${AppText.distance}0 m";
+                                return appL10n.groupDialog_distance("0 m");
                               }
                             }
                             if (effectiveDistance > 0.0) {
                               return effectiveDistance >= 1.0
-                                  ? "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km"
-                                  : "${AppText.distance}${(effectiveDistance * 1000.0).round()} m";
+                                  ? appL10n.groupDialog_distance("${effectiveDistance.toStringAsFixed(2)} Km")
+                                  : appL10n.groupDialog_distance("${(effectiveDistance * 1000.0).round()} m");
                             }
                             return null;
                           }();
@@ -1433,7 +1439,7 @@ class DialogBox {
                                     SizedBox(width: 10.w),
                                     Expanded(
                                       child: Text(
-                                        "Location unavailable",
+                                        appL10n.groupDialog_locationUnavailable,
                                         style: TextStyle(
                                           fontSize: 13.sp,
                                           fontFamily: FontFamily.interSemiBold,
@@ -1458,7 +1464,7 @@ class DialogBox {
                   children: [
                     Expanded(
                       child: reausablebutton(
-                        title: "Chat",
+                        title: appL10n.groupDialog_chat,
                         fontSize: 17,
                         borderradiues: 50.r,
                         icon: Icons.chat_bubble_outline,
@@ -1491,7 +1497,7 @@ class DialogBox {
                     SizedBox(width: 12.w),
                     Expanded(
                       child: reausablebutton(
-                        title: "Call",
+                        title: appL10n.groupDialog_call,
                         fontSize: 17,
                         borderradiues: 50.r,
                         icon: Icons.call,
@@ -1532,7 +1538,7 @@ class DialogBox {
                                     ),
                                     SizedBox(height: 20.h),
                                     reausabletext(
-                                      "Select Call Type",
+                                      appL10n.groupDialog_selectCallType,
                                       fontsize: 20,
                                       fontweight: FontWeight.w700,
                                       color: Colors.black,
@@ -1590,14 +1596,14 @@ class DialogBox {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   reausabletext(
-                                                    "Audio Call",
+                                                    appL10n.groupDialog_audioCall,
                                                     fontsize: 16,
                                                     fontfamily:
                                                         FontFamily.interSemiBold,
                                                   ),
                                                   SizedBox(height: 2.h),
                                                   reausabletext(
-                                                    "Start voice conversation",
+                                                    appL10n.groupDialog_audioCallSubtitle,
                                                     fontsize: 11,
                                                     color: Colors.black54,
                                                   ),
@@ -1670,14 +1676,14 @@ class DialogBox {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   reausabletext(
-                                                    "Video Call",
+                                                    appL10n.groupDialog_videoCall,
                                                     fontsize: 16,
                                                     fontfamily:
                                                         FontFamily.interSemiBold,
                                                   ),
                                                   SizedBox(height: 2.h),
                                                   reausabletext(
-                                                    "Start video conversation",
+                                                    appL10n.groupDialog_videoCallSubtitle,
                                                     fontsize: 11,
                                                     color: Colors.black54,
                                                   ),
@@ -1708,7 +1714,7 @@ class DialogBox {
               (effectiveLocationSharing == false || isMe)
                   ? const SizedBox()
                   : reausablebutton(
-                      title: AppText.getDirections,
+                      title: appL10n.groupDialog_getDirections,
                       icon: Icons.directions,
                       fontSize: 18,
                       borderradiues: 50.r,

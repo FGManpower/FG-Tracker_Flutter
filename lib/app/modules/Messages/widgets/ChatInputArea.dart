@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -133,7 +134,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
   /// were then sent as unrelated messages.
   bool _blockWhileVoiceBusy() {
     if (!voiceInputController.isBusyListeningOrRecording) return false;
-    Utils().fluttertoast("Finish or cancel the voice recording first");
+    Utils().fluttertoast(appL10n.chat_finishVoiceRecordingFirst);
     return true;
   }
 
@@ -425,10 +426,10 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                 minLines: 1,
                                 decoration: InputDecoration(
                                   hintText: hasAttachment
-                                      ? "Add a caption..."
+                                      ? context.l10n.chat_addCaptionHint
                                       : (isReplying
-                                          ? "Reply to message..."
-                                          : "Type a message..."),
+                                          ? context.l10n.chat_replyHint
+                                          : context.l10n.chat_typeMessageHint),
                                   hintStyle: TextStyle(
                                     color: Colors.grey.shade700,
                                     fontSize: 14.sp,

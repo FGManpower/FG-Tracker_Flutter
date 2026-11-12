@@ -4,6 +4,7 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class SosUserSheet {
   Future<UserListData?> showAllUserBottomSheet(
@@ -45,7 +46,7 @@ class SosUserSheet {
               Column(
                 children: [
                   Text(
-                    "Add Family Member",
+                    appL10n.sos_addFamilyMember,
                     style: TextStyle(
                       fontSize: 20.sp,
                       fontWeight: FontWeight.w700,
@@ -53,7 +54,7 @@ class SosUserSheet {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    "${usersList.length} Available Users",
+                    appL10n.sos_availableUsers(usersList.length),
                     style: TextStyle(
                       fontSize: 13.sp,
                       color: Colors.grey.shade600,
@@ -77,7 +78,7 @@ class SosUserSheet {
                   }
                 },
                 decoration: InputDecoration(
-                  hintText: "Search users",
+                  hintText: appL10n.sos_searchUsers,
                   hintStyle: TextStyle(
                     fontSize: 14.sp,
                     color: Colors.grey.shade500,
@@ -104,7 +105,7 @@ class SosUserSheet {
                   if (usersList.isEmpty) {
                     return Center(
                       child: Text(
-                        "No Users Found",
+                        appL10n.sos_noUsersFound,
                         style: TextStyle(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
@@ -116,7 +117,7 @@ class SosUserSheet {
                   if (filteredList.isEmpty) {
                     return Center(
                       child: Text(
-                        "No Match Found",
+                        appL10n.sos_noMatchFound,
                         style: TextStyle(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,

@@ -1,0 +1,13 @@
+/* Permission texts shown by iOS (Gujarati) */
+"NSCameraUsageDescription" = "FG Tracker વીડિયો કૉલ, QR કોડ સ્કૅન કરવા અને હાજરી પૂરવા માટે લાઇવ સેલ્ફી લેવા કૅમેરાનો ઉપયોગ કરે છે.";
+"NSContactsUsageDescription" = "FG Tracker લોકોને શોધવા, તેમની સાથે જોડાવા અને તેમને તમારા ટ્રૅકિંગ ગ્રુપમાં આમંત્રિત કરવા માટે તમારા સંપર્કોનો ઉપયોગ કરે છે.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "FG Tracker હાજરી, લાઇવ ટ્રૅકિંગ અને સેફ ઝોન અલર્ટ માટે તમારા લોકેશનનો ઉપયોગ કરે છે, ઍપ બૅકગ્રાઉન્ડમાં હોય ત્યારે પણ, જેથી તમારું ગ્રુપ હંમેશાં તમારું હાલનું સ્થાન જોઈ શકે.";
+"NSLocationAlwaysUsageDescription" = "ટ્રૅકિંગ સેશન દરમિયાન ઍપ બૅકગ્રાઉન્ડમાં હોય ત્યારે પણ ગ્રુપ સભ્યોને અપડેટ રાખવા માટે તમારા લોકેશનનો ઉપયોગ થાય છે.";
+"NSLocationWhenInUseUsageDescription" = "FG Tracker હાજરી, ગ્રુપ સાથે લાઇવ ટ્રૅકિંગ અને સેફ ઝોન અલર્ટ માટે તમારા લોકેશનનો ઉપયોગ કરે છે.";
+"PreciseLocation" = "સાચી હાજરી, લાઇવ ટ્રૅકિંગ અને સેફ ઝોન અલર્ટ માટે ચોક્કસ લોકેશન જરૂરી છે.";
+"NSMicrophoneUsageDescription" = "ઑડિયો કૉલ, વૉકી-ટૉકી ચૅનલ પર લાઇવ અવાજ મોકલવા અથવા સ્ક્રીન શેરિંગ માટે માઇક્રોફોન ઍક્સેસ જરૂરી છે.";
+"NSSpeechRecognitionUsageDescription" = "તમારા અવાજથી મેસેજ ટાઇપ કરવા માટે સ્પીચ રેકગ્નિશન ઍક્સેસ જરૂરી છે.";
+"NSBluetoothAlwaysUsageDescription" = "વૉકી-ટૉકી અને વૉઇસ કૉલ દરમિયાન વાયરલેસ ઇયરફોન અને હેડસેટ સાથે જોડાવા માટે FG Tracker ને બ્લૂટૂથ ઍક્સેસ જરૂરી છે.";
+"NSBluetoothPeripheralUsageDescription" = "વાયરલેસ ઇયરફોન અને હેડસેટ પર ઑડિયો મોકલવા માટે FG Tracker ને બ્લૂટૂથ ઍક્સેસ જરૂરી છે.";
+"NSPhotoLibraryAddUsageDescription" = "QR કોડ તમારી ગૅલેરીમાં સેવ કરવા માટે અમને ઍક્સેસ જોઈએ છે.";
+"NSPhotoLibraryUsageDescription" = "પ્રોફાઇલ ફોટો મૂકવા, ફોટા અપલોડ કરવા અને તમારા સાઇટ લોકેશનનો QR કોડ ફોટો લાઇબ્રેરીમાંથી લેવા માટે અમને તમારી ફોટો લાઇબ્રેરીનો ઍક્સેસ જોઈએ છે.";

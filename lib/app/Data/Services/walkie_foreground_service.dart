@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -45,8 +46,8 @@ class WalkieForegroundService {
       FlutterForegroundTask.init(
         androidNotificationOptions: AndroidNotificationOptions(
           channelId: 'walkie_talkie_live_channel',
-          channelName: 'Walkie-Talkie Live Audio',
-          channelDescription: 'Maintains live voice communication and background mic capture',
+          channelName: appL10n.notif_channelWalkieAudioName,
+          channelDescription: appL10n.notif_channelWalkieAudioDesc,
           channelImportance: NotificationChannelImportance.LOW,
           priority: NotificationPriority.LOW,
           enableVibration: false,
@@ -99,16 +100,16 @@ class WalkieForegroundService {
         final ServiceRequestResult result =
             await FlutterForegroundTask.startService(
           serviceId: 501,
-          notificationTitle: 'Walkie-Talkie Active',
-          notificationText: 'Connected in $groupName • Live Audio Stream',
+          notificationTitle: appL10n.notif_walkieActiveTitle,
+          notificationText: appL10n.notif_connectedIn(groupName),
           notificationIcon: const NotificationIcon(
             metaDataName: 'com.fg.fgtracker',
           ),
           notificationButtons: [
-            const NotificationButton(
+            NotificationButton(
               id: 'btn_open_walkie',
-              text: 'Open Walkie',
-              textColor: Color(0xFF6E5CA4),
+              text: appL10n.notif_openWalkie,
+              textColor: const Color(0xFF6E5CA4),
             ),
           ],
           callback: startWalkieTaskHandler,
@@ -116,7 +117,7 @@ class WalkieForegroundService {
         log('Walkie Foreground Service Start Result: $result');
       } else {
         await updateNotification(
-          text: 'Connected in $groupName • Live Audio Stream',
+          text: appL10n.notif_connectedIn(groupName),
         );
       }
 

@@ -8,6 +8,7 @@ import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -80,10 +81,10 @@ class GroupController extends GetxController {
 
   Future<void> updateGroupDetail({required String groupId}) async {
     CommonDialog.ConfirmationDialog(
-      title: "Update Group",
-      content: "Are you sure you want to update the group details?",
-      cancel: "No",
-      confirm: "Yes",
+      title: appL10n.group_updateGroupTitle,
+      content: appL10n.group_updateGroupConfirm,
+      cancel: appL10n.common_no,
+      confirm: appL10n.common_yes,
       icon: Icons.edit_rounded,
       onCancel: () {
         Get.back();
@@ -222,7 +223,9 @@ class GroupController extends GetxController {
 
         final toastMsg = (result.message != null && result.message!.trim().isNotEmpty)
             ? result.message!
-            : (newActiveState ? "Group activated successfully" : "Group deactivated successfully");
+            : (newActiveState
+                ? appL10n.group_activatedSuccess
+                : appL10n.group_deactivatedSuccess);
         Utils().fluttertoast(toastMsg);
 
         controller.getGroupData();
@@ -232,7 +235,7 @@ class GroupController extends GetxController {
           groupData[targetIndex].isActive = previousState;
           groupData.refresh();
         }
-        CommonDialog.errorMessage(result.message ?? "Failed to update group status");
+        CommonDialog.errorMessage(result.message ?? appL10n.group_statusUpdateFailed);
       }
     } catch (e) {
       Loading().dismissloading();
@@ -282,11 +285,10 @@ class GroupController extends GetxController {
     required String groupName,
   }) async {
     Get.defaultDialog(
-      title: "Exit Group",
-      middleText:
-          "Are you sure you want to exit \"$groupName\"? You'll need a group code to rejoin.",
-      textCancel: "Cancel",
-      textConfirm: "Exit",
+      title: appL10n.group_exitGroup,
+      middleText: appL10n.group_exitGroupNamedConfirm(groupName),
+      textCancel: appL10n.common_cancel,
+      textConfirm: appL10n.common_exit,
       confirmTextColor: Colors.white,
       buttonColor: Colors.redAccent,
       onConfirm: () async {

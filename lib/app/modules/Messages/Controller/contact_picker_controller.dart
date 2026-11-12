@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get/get.dart';
 
@@ -41,8 +42,7 @@ class ContactPickerController extends GetxController {
         // `Get.back()` after a snackbar only closed the snackbar, leaving
         // an empty picker. Show the reason with Try again / Open Settings.
         permissionDenied.value = true;
-        errorMessage.value =
-            "Contact permission is needed to share a contact in chat.";
+        errorMessage.value = appL10n.chatList_contactPermissionNeededMsg;
         return;
       }
       permissionDenied.value = false;
@@ -65,7 +65,7 @@ class ContactPickerController extends GetxController {
       contacts.assignAll(filtered);
       filteredContacts.assignAll(filtered);
     } catch (e) {
-      errorMessage.value = "Failed to load contacts: $e";
+      errorMessage.value = appL10n.chatList_contactsLoadFailed(e.toString());
     } finally {
       loading.value = false;
     }

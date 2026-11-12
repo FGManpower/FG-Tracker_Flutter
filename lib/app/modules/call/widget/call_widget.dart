@@ -2,9 +2,11 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class CallActionChip extends StatelessWidget {
   const CallActionChip({
@@ -95,12 +97,16 @@ Widget ctrl({
         ),
       ),
       SizedBox(height: 6.h),
-      Text(
-        label,
-        style: TextStyle(
-          fontSize: 11.sp,
-          color: isVideo ? Colors.white : AppColors.darkText,
-          fontFamily: FontFamily.interMedium,
+      ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 58.w),
+        child: AutoFitText(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 11.sp,
+            color: isVideo ? Colors.white : AppColors.darkText,
+            fontFamily: FontFamily.interMedium,
+          ),
         ),
       ),
     ],
@@ -154,6 +160,86 @@ Widget sheetTile({
   );
 }
 
+/// Translated text for a section title made by [formatSectionTitle]
+/// (the English title stays the stable map key).
+String localizedSectionTitle(AppLocalizations l, String title) {
+  switch (title) {
+    case 'Recent':
+      return l.call_tabRecent;
+    case 'Today':
+      return l.common_today;
+    case 'Yesterday':
+      return l.common_yesterday;
+    case 'This Week':
+      return l.call_sectionThisWeek;
+    case 'Last Week':
+      return l.call_sectionLastWeek;
+    case 'Older':
+      return l.call_sectionOlder;
+  }
+  return title;
+}
+
+/// Translated call type label for a recent-call row, built from the stable
+/// `typeStatus` / `typeKind` / `typeGroup` fields of the row.
+String recentCallTypeLabel(AppLocalizations l, Map<String, String> call) {
+  if (!call.containsKey('typeKind')) return call['type'] ?? '';
+  final String status = call['typeStatus'] ?? '';
+  final String kind = call['typeKind'] ?? 'call';
+  final bool group = call['typeGroup'] == 'true';
+  final String callType = callKindLabel(l, kind, group: group);
+  switch (status) {
+    case 'missed':
+      return l.call_historyMissed(callType);
+    case 'rejected':
+      return l.call_historyRejected(callType);
+    case 'outgoing':
+      return l.call_historyOutgoing(callType);
+    case 'incoming':
+      return l.call_historyIncoming(callType);
+  }
+  return callType;
+}
+
+/// "Video Call" / "Group Audio Call" / "Call" … in the app language.
+/// [kind] is 'video', 'audio', 'call' or a raw API type.
+String callKindLabel(AppLocalizations l, String kind, {bool group = false}) {
+  switch (kind.toLowerCase()) {
+    case 'video':
+      return group ? l.call_kindGroupVideo : l.call_kindVideo;
+    case 'audio':
+      return group ? l.call_kindGroupAudio : l.call_kindAudio;
+    case 'call':
+    case '':
+      return group ? l.call_kindGroupCall : l.call_kindCall;
+  }
+  return group ? l.call_kindGroupOther(kind) : l.call_kindOther(kind);
+}
+
+/// Translated text for a call status value (`callStatus` of the calling
+/// controllers). Our own values ("Calling", "Connected", "Reconnecting...")
+/// and known server values are mapped; any other server value is shown as is.
+String callStatusLabel(AppLocalizations l, String status) {
+  final String base = status.trim().replaceAll(RegExp(r'[.…]+$'), '');
+  switch (base.toLowerCase()) {
+    case 'calling':
+      return l.call_statusCalling;
+    case 'connecting':
+      return l.call_statusConnecting;
+    case 'connected':
+      return l.call_statusConnected;
+    case 'video connecting':
+      return l.call_statusVideoConnecting;
+    case 'reconnecting':
+      return l.call_statusReconnecting;
+    case 'ringing':
+      return l.call_statusRinging;
+    case 'busy':
+      return l.call_statusBusy;
+  }
+  return base;
+}
+
 String formatSectionTitle(String raw) {
   if (raw.isEmpty) return 'Recent';
   final lower = raw.toLowerCase().replaceAll(RegExp(r'[_-]'), ' ').trim();
@@ -172,7 +258,7 @@ String formatSectionTitle(String raw) {
 }
 
 String formatPhoneForDisplay(String raw) {
-  if (raw.trim().isEmpty) return 'Unknown';
+  if (raw.trim().isEmpty) return appL10n.call_unknown;
   final clean = raw.trim();
   final digits = clean.replaceAll(RegExp(r'[^0-9]'), '');
   if (digits.length == 10) {
@@ -200,7 +286,7 @@ String normalizePhone(String phone) {
 
 class CallValidation {
   /// Warning message displayed when calling own number
-  static const String selfCallWarningMessage = "You cannot call your own number.";
+  static String get selfCallWarningMessage => appL10n.call_selfCallWarning;
 
   /// Returns the current logged-in user's phone number if available.
   static String? get currentUserPhone {

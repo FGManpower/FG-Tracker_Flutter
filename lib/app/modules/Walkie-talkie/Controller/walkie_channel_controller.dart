@@ -5,6 +5,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_channel_repo.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Model/walkie_channel_model.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
@@ -419,8 +420,8 @@ class WalkieChannelController extends GetxController {
       _safeChannelsRefresh();
 
       Get.snackbar(
-        "Notification Setting",
-        "Could not update notification setting for ${channel.groupName}. Please try again.",
+        appL10n.walkie_notificationSettingTitle,
+        appL10n.walkie_notificationSettingFailed(channel.groupName),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.shade700,
         colorText: Colors.white,
@@ -477,8 +478,8 @@ class WalkieChannelController extends GetxController {
       } else {
         isSubscriptionExpired.value = false;
         Get.snackbar(
-          "Channel Switch Error",
-          "Could not set ${channel.groupName} as active speaking channel.",
+          appL10n.walkie_channelSwitchErrorTitle,
+          appL10n.walkie_channelSwitchErrorMessage(channel.groupName),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.shade700,
           colorText: Colors.white,

@@ -1,6 +1,6 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
-import 'package:intl/intl.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class GroupMemberModel {
   bool? status;
@@ -24,7 +24,7 @@ class GroupMemberModel {
   GroupMemberModel.fromJson(dynamic json) {
     if (json is! Map) {
       status = false;
-      message = 'Invalid format';
+      message = appL10n.group_invalidResponseFormat;
       return;
     }
 
@@ -1602,6 +1602,18 @@ class GroupMemberData {
     return 'Member';
   }
 
+  /// [displayName] for showing on screen: the API name, or a translated
+  /// fallback. [displayName] itself keeps the English 'Member' (compared
+  /// in DialogBox).
+  String get displayNameLabel {
+    if (name != null &&
+        name!.trim().isNotEmpty &&
+        name!.trim().toLowerCase() != 'null') {
+      return name!.trim();
+    }
+    return appL10n.group_memberFallbackName;
+  }
+
   String get displayDepartment {
     if (department != null &&
         department!.trim().isNotEmpty &&
@@ -1655,10 +1667,10 @@ class GroupMemberData {
 
   String get formattedJoinedAt {
     final raw = joinedAt ?? createdAt;
-    if (raw == null || raw.trim().isEmpty) return 'Recent';
+    if (raw == null || raw.trim().isEmpty) return appL10n.group_joinedRecently;
     try {
       final dt = DateTime.parse(raw.trim());
-      return DateFormat('dd MMM yyyy').format(dt);
+      return appDateFormat('dd MMM yyyy').format(dt);
     } catch (_) {
       return raw.trim();
     }
@@ -1671,12 +1683,12 @@ class GroupMemberData {
         ? privateModeStartedAt
         : (startedAt ?? createdAt ?? lastSeen);
     if (raw == null || raw.trim().isEmpty || raw.trim().toLowerCase() == 'null') {
-      return 'Just now';
+      return appL10n.common_justNow;
     }
     final parsed = Tracking.parseDateTime(raw);
     if (parsed != null) {
       try {
-        return DateFormat('dd MMM, hh:mm a').format(parsed);
+        return appDateFormat('dd MMM, hh:mm a').format(parsed);
       } catch (_) {
         return raw.trim();
       }
@@ -1688,18 +1700,29 @@ class GroupMemberData {
     if (lastSeen == null ||
         lastSeen!.trim().isEmpty ||
         lastSeen!.trim().toLowerCase() == 'null') {
-      return 'Offline';
+      return appL10n.common_offline;
     }
     final parsed = Tracking.parseDateTime(lastSeen);
     if (parsed == null) {
       final s = lastSeen!.trim();
-      return s.toLowerCase() == 'offline' ? 'Offline' : s;
+      return s.toLowerCase() == 'offline' ? appL10n.common_offline : s;
     }
     try {
-      return Tracking().getTimeAgo(parsed);
+      return _timeAgoLabel(parsed);
     } catch (_) {
-      return 'Offline';
+      return appL10n.common_offline;
     }
+  }
+
+  /// Same thresholds as Tracking().getTimeAgo, translated.
+  static String _timeAgoLabel(DateTime lastSeen) {
+    final now = DateTime.now();
+    final dt = lastSeen.isUtc ? lastSeen.toLocal() : lastSeen;
+    final diff = now.difference(dt);
+    if (diff.isNegative || diff.inSeconds < 180) return appL10n.common_justNow;
+    if (diff.inMinutes < 60) return appL10n.common_minutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return appL10n.common_hoursAgo(diff.inHours);
+    return appL10n.common_daysAgo(diff.inDays);
   }
 
   static int? _toInt(dynamic value) {

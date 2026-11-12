@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import 'SosUserSheet.dart';
 
@@ -22,6 +23,24 @@ class SosReasonItem {
     required this.asset,
     required this.activeColor,
   });
+
+  /// Translated label for display; [key] stays the stable value.
+  String get displayLabel {
+    final l = appL10n;
+    switch (key) {
+      case 'Medical':
+        return l.sos_reasonMedical;
+      case 'Accident':
+        return l.sos_reasonAccident;
+      case 'Safety':
+        return l.sos_reasonSafety;
+      case 'Threat':
+        return l.sos_reasonThreat;
+      case 'Other':
+        return l.sos_reasonOther;
+    }
+    return label;
+  }
 }
 
 class SosController extends GetxController {
@@ -150,8 +169,8 @@ class SosController extends GetxController {
   void sendSosAlert(BuildContext context) {
     if (selectedFamilyMembers.isEmpty) {
       Get.snackbar(
-        "Required",
-        "Add at least 1 family member to send SOS alert",
+        appL10n.sos_required,
+        appL10n.sos_addFamilyMemberRequired,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -161,8 +180,8 @@ class SosController extends GetxController {
     if (selectedReason.value == 'Other' &&
         detailsController.text.trim().isEmpty) {
       Get.snackbar(
-        "Required",
-        "Add Details is mandatory when 'Other' reason is selected",
+        appL10n.sos_required,
+        appL10n.sos_detailsMandatoryForOther,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -210,7 +229,7 @@ class SosController extends GetxController {
               ),
               SizedBox(height: 16.h),
               Text(
-                "SOS Alert Sent!",
+                appL10n.sos_alertSent,
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
@@ -220,7 +239,7 @@ class SosController extends GetxController {
               ),
               SizedBox(height: 6.h),
               Text(
-                "Your alert has been sent to nearby people.",
+                appL10n.sos_alertSentToNearby,
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: Colors.black54,
@@ -229,17 +248,17 @@ class SosController extends GetxController {
               ),
               SizedBox(height: 20.h),
               _buildPopupInfoRow(
-                  Icons.group, "People within 2 km radius", "will be notified"),
+                  Icons.group, appL10n.sos_peopleWithinRadius, appL10n.sos_willBeNotified),
               SizedBox(height: 12.h),
               _buildPopupInfoRow(
                   Icons.notifications_active_outlined,
-                  "Stay calm, help is on the way",
-                  "We will notify you of any updates"),
+                  appL10n.sos_stayCalm,
+                  appL10n.sos_notifyUpdates),
               SizedBox(height: 12.h),
               _buildPopupInfoRow(
                   Icons.location_on_outlined,
-                  "Live tracking started",
-                  "Your location is being shared with ${selectedFamilyMembers.length} family member(s)"),
+                  appL10n.sos_liveTrackingStarted,
+                  appL10n.sos_locationSharedWithFamily(selectedFamilyMembers.length)),
               SizedBox(height: 24.h),
               SizedBox(
                 width: double.infinity,
@@ -256,7 +275,7 @@ class SosController extends GetxController {
                     Get.back();
                   },
                   child: Text(
-                    "OK, Got It",
+                    appL10n.sos_okGotIt,
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.bold,

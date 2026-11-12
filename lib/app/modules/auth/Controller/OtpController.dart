@@ -27,6 +27,7 @@ import 'package:fgtracker/app/Data/Services/GroupCountService.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGate/permission_gate_service.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGate/permission_gate_models.dart';
+import 'package:fgtracker/features/language/language_controller.dart';
 
 class OtpController extends GetxController {
   TextEditingController otpController = TextEditingController();
@@ -298,9 +299,11 @@ class OtpController extends GetxController {
 
         if (result.data?.isNewUser == true) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            Get.toNamed(Routes.Register, arguments: {
-              "mobNo": arguments?['mobNo'],
-            });
+            LanguageController.to.showBeforeRegistration(
+              () => Get.toNamed(Routes.Register, arguments: {
+                "mobNo": arguments?['mobNo'],
+              }),
+            );
           });
         } else {
           await Global.storageServices.setString(

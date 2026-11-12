@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import '../../../../gen/fonts.gen.dart';
 import '../Controller/calling_controller.dart';
@@ -257,8 +258,8 @@ class CallingScreen extends StatelessWidget {
   String _remoteShareText(CallingController c) {
     final String name = _peerName(c);
     return name.isEmpty
-        ? "Screen is being shared"
-        : "$name is sharing the screen";
+        ? appL10n.call_screenBeingShared
+        : appL10n.call_personSharingScreen(name);
   }
 
   Widget _cameraOffTile() {
@@ -284,7 +285,7 @@ class CallingScreen extends StatelessWidget {
           ),
           SizedBox(height: 12.h),
           Text(
-            "Camera Off",
+            appL10n.call_cameraOff,
             style: TextStyle(
               color: Colors.white70,
               fontSize: 15.sp,
@@ -332,12 +333,12 @@ class CallingScreen extends StatelessWidget {
 
       final String name = _peerName(c);
       final String title =
-          live ? "You're sharing your screen" : "Starting screen share…";
+          live ? appL10n.call_youAreSharingScreen : appL10n.call_startingScreenShare;
       final String subtitle = live
           ? (name.isEmpty
-              ? "Your screen is visible to the other person"
-              : "Your screen is visible to $name")
-          : "Tap Start Broadcast if the system prompt appears";
+              ? appL10n.call_screenVisibleToOther
+              : appL10n.call_screenVisibleToName(name))
+          : appL10n.call_tapStartBroadcastHint;
 
       return Padding(
         padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 0),
@@ -415,7 +416,7 @@ class CallingScreen extends StatelessWidget {
                         ],
                       ),
                       child: Text(
-                        "Stop sharing",
+                        appL10n.call_stopSharing,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 12.sp,
@@ -472,7 +473,7 @@ class CallingScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 16.h),
                       Text(
-                        "Waiting for Start Broadcast",
+                        appL10n.call_waitingForBroadcast,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
@@ -483,8 +484,7 @@ class CallingScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 6.h),
                       Text(
-                        "Tap \u201CStart Broadcast\u201D in the system dialog "
-                        "to share your screen. Sharing begins only after that.",
+                        appL10n.call_waitingForBroadcastMessage,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.70),
@@ -511,7 +511,7 @@ class CallingScreen extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            "Cancel",
+                            appL10n.common_cancel,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.white,
@@ -543,7 +543,7 @@ class CallingScreen extends StatelessWidget {
     return Column(
       children: [
         Text(
-          isOutgoing ? "" : "Call From",
+          isOutgoing ? "" : appL10n.call_callFrom,
           style: TextStyle(
             color: Colors.white70,
             fontSize: 14.sp,
@@ -565,7 +565,9 @@ class CallingScreen extends StatelessWidget {
         Obx(() {
           final String dur = c.formattedDuration;
           return Text(
-            dur == "00:00" ? "${c.callStatus.value}..." : dur,
+            dur == "00:00"
+                ? "${callStatusLabel(appL10n, c.callStatus.value)}..."
+                : dur,
             style: TextStyle(
               color: Colors.white70,
               fontSize: 14.sp,
@@ -681,7 +683,7 @@ class CallingScreen extends StatelessWidget {
                                   ),
                                   SizedBox(width: 4.w),
                                   Text(
-                                    'Camera off',
+                                    appL10n.call_cameraOff,
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 9.sp,
@@ -810,7 +812,9 @@ class CallingScreen extends StatelessWidget {
             : sharing
                 ? Icons.stop_screen_share_rounded
                 : Icons.screen_share_rounded,
-        label: waiting ? "Cancel" : (sharing ? "Stop" : "Share"),
+        label: waiting
+            ? appL10n.common_cancel
+            : (sharing ? appL10n.call_stop : appL10n.call_shareScreenShort),
         active: sharing || waiting,
         isVideo: isVideo,
         iconColor: blocked ? Colors.white : null,
@@ -850,11 +854,11 @@ class CallingScreen extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       builder: (dialogContext) => CupertinoAlertDialog(
-        title: const Text("Switch to video call to share your screen"),
+        title: Text(dialogContext.l10n.call_switchToVideoToShare),
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("Cancel"),
+            child: Text(dialogContext.l10n.common_cancel),
           ),
           CupertinoDialogAction(
             isDefaultAction: true,
@@ -865,7 +869,7 @@ class CallingScreen extends StatelessWidget {
               await c.startScreenShare();
               c.showControlsTemporarily();
             },
-            child: const Text("Switch"),
+            child: Text(dialogContext.l10n.call_switch),
           ),
         ],
       ),
@@ -929,7 +933,7 @@ class CallingScreen extends StatelessWidget {
         ),
         SizedBox(height: 6.h),
         Text(
-          "Decline",
+          appL10n.call_decline,
           style: TextStyle(
             fontSize: 11.sp,
             color: isVideo ? Colors.white : AppColors.darkText,
@@ -943,7 +947,7 @@ class CallingScreen extends StatelessWidget {
   Widget _micControl(CallingController c, bool isVideo) {
     return ctrl(
       icon: c.isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
-      label: "Mute",
+      label: appL10n.call_mute,
       active: !c.isAudioOn,
       isVideo: isVideo,
       onTap: () {
@@ -956,7 +960,7 @@ class CallingScreen extends StatelessWidget {
   Widget _cameraControl(CallingController c, bool isVideo) {
     return ctrl(
       icon: c.isVideoOn ? Icons.videocam_rounded : Icons.videocam_off_rounded,
-      label: c.isVideoOn ? "Camera" : "Camera Off",
+      label: c.isVideoOn ? appL10n.call_camera : appL10n.call_cameraOff,
       active: !c.isVideoOn,
       isVideo: isVideo,
       onTap: () {
@@ -973,7 +977,7 @@ class CallingScreen extends StatelessWidget {
 
       return ctrl(
         icon: busy ? Icons.hourglass_top_rounded : Icons.videocam_rounded,
-        label: busy ? "Connecting" : "Video",
+        label: busy ? appL10n.call_statusConnecting : appL10n.call_video,
         isVideo: isVideo,
         iconColor: blocked ? Colors.white : AppColors.primaryPurple,
         videoInactive: blocked || busy,

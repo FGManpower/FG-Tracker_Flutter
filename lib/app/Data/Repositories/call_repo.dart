@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
@@ -104,7 +105,7 @@ class CallRepo {
       }
       return CommonResponse(
         status: true,
-        message: "Call history deleted successfully",
+        message: appL10n.repo_callDeleted,
       );
     } catch (e) {
       log("[CallRepo] deleteSingleCallHistory ($callId) error: $e");
@@ -128,7 +129,7 @@ class CallRepo {
       }
       return CommonResponse(
         status: true,
-        message: "Selected calls deleted successfully",
+        message: appL10n.repo_selectedCallsDeleted,
       );
     } catch (e) {
       log("[CallRepo] deleteMultipleCallHistory error: $e");
@@ -150,7 +151,7 @@ class CallRepo {
       }
       return CommonResponse(
         status: true,
-        message: "All call history cleared successfully",
+        message: appL10n.repo_allCallsCleared,
       );
     } catch (e) {
       log("[CallRepo] clearAllCallHistory error: $e");

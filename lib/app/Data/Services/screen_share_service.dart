@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 @pragma('vm:entry-point')
 void startScreenShareTaskHandler() {
@@ -52,8 +53,8 @@ class ScreenShareForegroundService {
       FlutterForegroundTask.init(
         androidNotificationOptions: AndroidNotificationOptions(
           channelId: 'screen_share_channel_v2',
-          channelName: 'Screen Sharing Service',
-          channelDescription: 'Active screen sharing session notification',
+          channelName: appL10n.call_screenShareChannelName,
+          channelDescription: appL10n.call_screenShareChannelDescription,
           channelImportance: NotificationChannelImportance.LOW,
           priority: NotificationPriority.LOW,
           enableVibration: false,
@@ -87,8 +88,8 @@ class ScreenShareForegroundService {
 
       await FlutterForegroundTask.startService(
         serviceId: 256,
-        notificationTitle: 'In call · $groupName',
-        notificationText: 'Microphone is active',
+        notificationTitle: appL10n.call_inCallWithGroup(groupName),
+        notificationText: appL10n.call_micActive,
         notificationIcon: const NotificationIcon(
           metaDataName: 'com.fg.fgtracker',
         ),
@@ -112,20 +113,20 @@ class ScreenShareForegroundService {
     try {
       await FlutterForegroundTask.startService(
         serviceId: 256,
-        notificationTitle: 'Sharing your screen',
-        notificationText: 'Sharing in $groupName • Tap to return to call',
+        notificationTitle: appL10n.call_sharingYourScreen,
+        notificationText: appL10n.call_sharingInGroupTapReturn(groupName),
         notificationIcon: const NotificationIcon(
           metaDataName: 'com.fg.fgtracker',
         ),
         notificationButtons: [
-          const NotificationButton(
+          NotificationButton(
             id: 'btn_open_call',
-            text: 'Return to Call',
+            text: appL10n.call_returnToCall,
             textColor: Color(0xFF6E5CA4),
           ),
-          const NotificationButton(
+          NotificationButton(
             id: 'btn_stop_sharing',
-            text: 'Stop Sharing',
+            text: appL10n.call_stopSharing,
             textColor: Color(0xFFFF3B30),
           ),
         ],

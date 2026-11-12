@@ -1,3 +1,5 @@
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/profile_navigation.dart';
@@ -243,7 +245,7 @@ class BottomSheetUi {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         reausabletext(
-                          "Group Members",
+                          appL10n.sheet_groupMembers,
                           fontsize: 18,
                           fontweight: FontWeight.w700,
                           align: TextAlign.center,
@@ -301,7 +303,7 @@ class BottomSheetUi {
                                       ),
                                       SizedBox(height: 8.h),
                                       reausabletext(
-                                        "No members found",
+                                        appL10n.sheet_noMembers,
                                         fontsize: 14,
                                         color: Colors.grey.shade600,
                                       ),
@@ -315,7 +317,7 @@ class BottomSheetUi {
                                             fetchFreshMembers();
                                           },
                                           icon: const Icon(Icons.refresh),
-                                          label: const Text("Retry"),
+                                          label: Text(appL10n.common_retry),
                                         ),
                                       ],
                                     ],
@@ -389,7 +391,7 @@ class BottomSheetUi {
                                           : null;
 
                                       String getLastSeenText() {
-                                        if (isOnline) return "Online";
+                                        if (isOnline) return appL10n.common_online;
                                         if (member.lastSeen == null ||
                                             member.lastSeen
                                                 .toString()
@@ -399,7 +401,7 @@ class BottomSheetUi {
                                                     .toString()
                                                     .toLowerCase() ==
                                                 'null') {
-                                          return "Offline";
+                                          return appL10n.common_offline;
                                         }
 
                                         final parsedDate =
@@ -409,14 +411,16 @@ class BottomSheetUi {
                                           final s =
                                               member.lastSeen.toString().trim();
                                           return s.toLowerCase() == 'offline'
-                                              ? "Offline"
-                                              : "Last seen: $s";
+                                              ? appL10n.common_offline
+                                              : appL10n.groupDialog_lastSeen(s);
                                         }
 
                                         try {
-                                          return "Last seen: ${Tracking().getTimeAgo(parsedDate)}";
+                                          return formatLastSeenWith(
+                                                  appL10n, parsedDate) ??
+                                              appL10n.common_offline;
                                         } catch (_) {
-                                          return "Offline";
+                                          return appL10n.common_offline;
                                         }
                                       }
 
@@ -481,16 +485,16 @@ class BottomSheetUi {
 
                                           if (isMe) {
                                             CommonDialog.errorMessage(
-                                              "You can't remove yourself from the group.",
+                                              appL10n.sheet_cantRemoveSelf,
                                             );
                                             return;
                                           }
 
                                           CommonDialog.ConfirmationDialog(
-                                            title: "Remove Member",
+                                            title: appL10n.sheet_removeMemberTitle,
                                             content:
-                                                "Are you sure you want to remove $name from the group?",
-                                            confirm: "Remove",
+                                                appL10n.sheet_removeMemberConfirm(name),
+                                            confirm: appL10n.common_remove,
                                             onConfirm: () {
                                                final gc = Get.isRegistered<GroupController>()
                                                    ? Get.find<GroupController>()
@@ -528,7 +532,7 @@ class BottomSheetUi {
                                                     }
 
                                                     Utils().fluttertoast(
-                                                        "Member removed successfully");
+                                                        appL10n.sheet_memberRemoved);
                                                   }
                                                 },
                                               );
@@ -659,7 +663,7 @@ class BottomSheetUi {
                                                         if (isMe) ...[
                                                           SizedBox(width: 6.w),
                                                           _badge(
-                                                            "You",
+                                                            appL10n.common_you,
                                                             ToggleThemeData
                                                                     .Appcolor
                                                                 .withValues(
@@ -672,7 +676,7 @@ class BottomSheetUi {
                                                         if (isAdmin) ...[
                                                           SizedBox(width: 6.w),
                                                           _badge(
-                                                            "Admin",
+                                                            appL10n.sheet_admin,
                                                             const Color(
                                                                 0xFFE7F8EC),
                                                             const Color(
@@ -830,10 +834,10 @@ class BottomSheetUi {
                                                     onTap: () {
                                                       CommonDialog
                                                           .ConfirmationDialog(
-                                                        title: "Remove Member",
+                                                        title: appL10n.sheet_removeMemberTitle,
                                                         content:
-                                                            "Are you sure you want to remove $name from the group?",
-                                                        confirm: "Remove",
+                                                            appL10n.sheet_removeMemberConfirm(name),
+                                                        confirm: appL10n.common_remove,
                                                         onConfirm: () {
                                                            final gc = Get.isRegistered<GroupController>()
                                                                ? Get.find<GroupController>()
@@ -872,7 +876,7 @@ class BottomSheetUi {
                                                                 }
 
                                                                 Utils().fluttertoast(
-                                                                    "Member removed successfully");
+                                                                    appL10n.sheet_memberRemoved);
                                                               }
                                                             },
                                                           );

@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -64,7 +65,7 @@ class MentionlistItem extends StatelessWidget {
                       : null,
                 ),
                 title: Text(
-                  member.name ?? "Unknown",
+                  member.name ?? context.l10n.chat_unknown,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 15.sp,

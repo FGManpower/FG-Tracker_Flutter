@@ -1,9 +1,11 @@
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/features/voice_input/voice_input_controller.dart';
 import 'package:fgtracker/features/voice_input/widgets/waveform_bars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class RecordVoiceReviewView extends StatelessWidget {
   final VoiceInputController controller;
@@ -27,7 +29,7 @@ class RecordVoiceReviewView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Your voice message",
+                context.l10n.voice_yourVoiceMessage,
                 style: TextStyle(
                   color: AppColors.darkText, // #0F0B4C
                   fontSize: 16.sp,
@@ -50,7 +52,7 @@ class RecordVoiceReviewView extends StatelessWidget {
                     ),
                     SizedBox(width: 4.w),
                     Text(
-                      "Ready to send",
+                      context.l10n.voice_readyToSend,
                       style: TextStyle(
                         color: AppColors.primaryElementStatus,
                         fontSize: 12.sp,
@@ -122,7 +124,7 @@ class RecordVoiceReviewView extends StatelessWidget {
 
           // 3. Hint
           Text(
-            "Listen before sending your voice message.",
+            context.l10n.voice_listenBeforeSending,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppColors.primarySecondaryElementText, // #666666
@@ -154,8 +156,8 @@ class RecordVoiceReviewView extends StatelessWidget {
                       ),
                     ),
                     icon: Icon(Icons.refresh_rounded, size: 18.sp),
-                    label: Text(
-                      "Re-record",
+                    label: AutoFitText(
+                      context.l10n.voice_reRecord,
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
@@ -185,8 +187,8 @@ class RecordVoiceReviewView extends StatelessWidget {
                       color: AppColors.darkRed,
                       size: 18.sp,
                     ),
-                    label: Text(
-                      "Delete",
+                    label: AutoFitText(
+                      context.l10n.common_delete,
                       style: TextStyle(
                         color: AppColors.darkRed, // #D2042D
                         fontSize: 13.sp,
@@ -223,7 +225,7 @@ class RecordVoiceReviewView extends StatelessWidget {
               ),
               icon: Icon(Icons.send_rounded, size: 18.sp, color: Colors.white),
               label: Text(
-                "Send voice message",
+                context.l10n.voice_sendVoiceMessage,
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700,

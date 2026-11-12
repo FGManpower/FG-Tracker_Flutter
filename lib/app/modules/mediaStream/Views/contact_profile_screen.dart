@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/util/profile_navigation.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,6 +11,8 @@ import '../../../Model/CallDetail.dart';
 import '../../../Model/MemberDataRes.dart';
 import '../../../Model/recent_call.dart';
 import '../Controller/contact_profile_controller.dart';
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 
 class ContactProfileScreen extends StatefulWidget {
   final MemberData? contactData;
@@ -99,7 +102,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
         widget.groupName,
         d?.group?.name,
         d?.group?.groupName,
-      ]) ?? "Group";
+      ]) ?? context.l10n.call_groupBadge;
     }
     return _firstValid([
       widget.contactData?.name,
@@ -108,7 +111,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
       d?.contact?.name,
       d?.receiverName,
       d?.receiver?.name,
-    ]) ?? "User";
+    ]) ?? context.l10n.call_user;
   }
 
   String? _displayAvatar(CallHistoryDetailData? d) {
@@ -224,7 +227,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                     Expanded(
                       child: _buildActionCard(
                         icon: Icons.call_rounded,
-                        label: "Audio Call",
+                        label: context.l10n.call_kindAudio,
                         onTap: () =>
                             controller.startCall(context, isVideo: false),
                       ),
@@ -233,7 +236,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                     Expanded(
                       child: _buildActionCard(
                         icon: Icons.videocam_rounded,
-                        label: "Video Call",
+                        label: context.l10n.call_kindVideo,
                         onTap: () =>
                             controller.startCall(context, isVideo: true),
                       ),
@@ -242,7 +245,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                     Expanded(
                       child: _buildActionCard(
                         icon: Icons.chat_bubble_rounded,
-                        label: "Message",
+                        label: context.l10n.call_message,
                         onTap: controller.openMessage,
                       ),
                     ),
@@ -385,7 +388,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
         SizedBox(height: 2.h),
         if (isGroup)
           Text(
-            "Group",
+            context.l10n.call_groupBadge,
             style: TextStyle(
               fontSize: 14.sp,
               fontFamily: FontFamily.interSemiBold,
@@ -553,29 +556,31 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
       bg = const Color(0xFFDCFCE7);
       fg = const Color(0xFF16A34A);
       icon = Icons.check_circle_rounded;
-      label = "Completed";
+      label = context.l10n.call_statusCompleted;
     } else if (st == 'missed') {
       bg = const Color(0xFFFEE2E2);
       fg = const Color(0xFFEF4444);
       icon = Icons.call_missed_rounded;
-      label = "Missed Call";
+      label = context.l10n.call_missedCall;
     } else if (st == 'rejected' || st == 'declined' || st == 'busy') {
       bg = const Color(0xFFFFEDD5);
       fg = const Color(0xFFEA580C);
       icon = Icons.call_end_rounded;
-      label = st == 'busy' ? "Busy" : "Declined";
+      label = st == 'busy'
+          ? context.l10n.call_statusBusy
+          : context.l10n.call_statusDeclined;
     } else if (st == 'cancelled' || st == 'canceled') {
       bg = const Color(0xFFF3F4F6);
       fg = const Color(0xFF6B7280);
       icon = Icons.cancel_rounded;
-      label = "Cancelled";
+      label = context.l10n.call_statusCancelled;
     } else {
       bg = _lavender;
       fg = _purple;
       icon = Icons.phone_in_talk_rounded;
       label = status.isNotEmpty
           ? status[0].toUpperCase() + status.substring(1)
-          : "Call";
+          : context.l10n.call_kindCall;
     }
 
     return Container(
@@ -623,7 +628,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                   SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
-                      "Call Information",
+                      context.l10n.call_callInformation,
                       style: TextStyle(fontSize: 15.sp),
                     ),
                   ),
@@ -670,8 +675,11 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
     final bool isVideo =
         d.isVideo == true || (d.type ?? '').toLowerCase() == 'video';
     final bool isIncoming = (d.direction ?? '').toLowerCase() == 'incoming';
-    final String callTitle =
-        "${isIncoming ? 'Incoming' : 'Outgoing'} ${isVideo ? 'video' : 'audio'} call";
+    final String kindLabel =
+        callKindLabel(context.l10n, isVideo ? 'video' : 'audio');
+    final String callTitle = isIncoming
+        ? context.l10n.call_historyIncoming(kindLabel)
+        : context.l10n.call_historyOutgoing(kindLabel);
     final IconData callIcon = isVideo
         ? Icons.video_call_rounded
         : (isIncoming
@@ -708,7 +716,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Call Information",
+              context.l10n.call_callInformation,
               style: TextStyle(
                 fontSize: 15.sp,
                 fontFamily: FontFamily.interBold,
@@ -769,7 +777,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                         ),
                       ),
                       Text(
-                        "Duration",
+                        context.l10n.call_duration,
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interMedium,
@@ -792,7 +800,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 child: Row(
                   children: [
                     _timeColumn(
-                      "Started",
+                      context.l10n.call_started,
                       startLabel ?? "--",
                       CrossAxisAlignment.start,
                     ),
@@ -800,7 +808,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                     Expanded(child: _durationTimeline(seconds)),
                     SizedBox(width: 8.w),
                     _timeColumn(
-                      "Ended",
+                      context.l10n.call_ended,
                       endLabel ?? "--",
                       CrossAxisAlignment.end,
                     ),
@@ -880,33 +888,33 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
   /// 16 -> "16 sec", 75 -> "1 min 15 sec", 3700 -> "1 hr 1 min"
   String _durationLong(int s) {
     final h = s ~/ 3600, m = (s % 3600) ~/ 60, sec = s % 60;
-    if (h > 0) return m > 0 ? "$h hr $m min" : "$h hr";
-    if (m > 0) return sec > 0 ? "$m min $sec sec" : "$m min";
-    return "$sec sec";
+    final l = context.l10n;
+    if (h > 0) return m > 0 ? l.call_durHrMin(h, m) : l.call_durHr(h);
+    if (m > 0) return sec > 0 ? l.call_durMinSec(m, sec) : l.call_durMin(m);
+    return l.call_durSec(sec);
   }
 
   /// 16 -> "16s", 75 -> "1m 15s", 3700 -> "1h 1m"
   String _durationShort(int s) {
     final h = s ~/ 3600, m = (s % 3600) ~/ 60, sec = s % 60;
-    if (h > 0) return m > 0 ? "${h}h ${m}m" : "${h}h";
-    if (m > 0) return sec > 0 ? "${m}m ${sec}s" : "${m}m";
-    return "${sec}s";
+    final l = context.l10n;
+    if (h > 0) return m > 0 ? l.call_durShortHrMin(h, m) : l.call_durShortHr(h);
+    if (m > 0) {
+      return sec > 0 ? l.call_durShortMinSec(m, sec) : l.call_durShortMin(m);
+    }
+    return l.call_durShortSec(sec);
   }
 
   /// "Today, 30 Oct 2026" / "Yesterday, 29 Oct 2026" / "28 Oct 2026"
   String? _callDateLabel(String? raw) {
     final dt = DateTime.tryParse(raw?.trim() ?? '')?.toLocal();
     if (dt == null) return null;
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    final String date = "${dt.day} ${months[dt.month - 1]} ${dt.year}";
+    final String date = appDateFormat('d MMM yyyy').format(dt);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final diff = today.difference(DateTime(dt.year, dt.month, dt.day)).inDays;
-    if (diff == 0) return "Today, $date";
-    if (diff == 1) return "Yesterday, $date";
+    if (diff == 0) return context.l10n.call_todayAt(date);
+    if (diff == 1) return context.l10n.call_yesterdayAt(date);
     return date;
   }
 
@@ -919,11 +927,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
 
   /// 14:35:31 -> "2:35:31 PM"
   String _formatAmPm(DateTime dt) {
-    final hour = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
-    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
-    final min = dt.minute.toString().padLeft(2, '0');
-    final sec = dt.second.toString().padLeft(2, '0');
-    return "$hour:$min:$sec $ampm";
+    return appDateFormat('h:mm:ss a').format(dt);
   }
 
   /// Parses ISO date-time ("2026-10-30T09:05:31Z") or a plain time
@@ -1001,7 +1005,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 _iconCircle(Icons.analytics_rounded),
                 SizedBox(width: 12.w),
                 Text(
-                  "Call Summary",
+                  context.l10n.call_callSummary,
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontFamily: FontFamily.interBold,
@@ -1015,7 +1019,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
               children: [
                 Expanded(
                   child: _buildStatPill(
-                    "Total",
+                    context.l10n.call_total,
                     "$total",
                     _purple,
                     _lavender,
@@ -1024,7 +1028,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 SizedBox(width: 8.w),
                 Expanded(
                   child: _buildStatPill(
-                    "Joined",
+                    context.l10n.call_statusJoined,
                     "$joined",
                     const Color(0xFF16A34A),
                     const Color(0xFFDCFCE7),
@@ -1033,7 +1037,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 SizedBox(width: 8.w),
                 Expanded(
                   child: _buildStatPill(
-                    "Missed",
+                    context.l10n.call_statusMissed,
                     "$missed",
                     const Color(0xFFEF4444),
                     const Color(0xFFFEE2E2),
@@ -1043,7 +1047,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                   SizedBox(width: 8.w),
                   Expanded(
                     child: _buildStatPill(
-                      "Declined",
+                      context.l10n.call_statusDeclined,
                       "$rejected",
                       const Color(0xFFEA580C),
                       const Color(0xFFFFEDD5),
@@ -1077,8 +1081,9 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
             ),
           ),
           SizedBox(height: 2.h),
-          Text(
+          AutoFitText(
             label,
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 11.sp,
               fontFamily: FontFamily.interMedium,
@@ -1103,7 +1108,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
-                    "Participants",
+                    context.l10n.call_participants,
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontFamily: FontFamily.interBold,
@@ -1142,24 +1147,28 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
   Widget _buildParticipantTile(CallParticipant p) {
     final name = p.name?.isNotEmpty == true
         ? p.name!
-        : (p.phoneNumber?.isNotEmpty == true ? p.phoneNumber! : "Participant");
+        : (p.phoneNumber?.isNotEmpty == true
+            ? p.phoneNumber!
+            : context.l10n.call_participant);
     final avatar = p.avatar ?? p.profileImage;
     final status = (p.status ?? '').toLowerCase();
     final bool isCaller = p.isCaller == true || p.role?.toLowerCase() == 'host';
     final dur = p.formattedDuration ??
-        (p.duration != null && p.duration! > 0 ? "${p.duration}s" : null);
+        (p.duration != null && p.duration! > 0
+            ? context.l10n.call_durShortSec(p.duration!)
+            : null);
 
     Color statusColor = _grey;
     String statusText = p.status ?? '';
     if (status == 'joined' || status == 'completed' || status == 'accepted') {
       statusColor = const Color(0xFF16A34A);
-      statusText = "Joined";
+      statusText = context.l10n.call_statusJoined;
     } else if (status == 'missed') {
       statusColor = const Color(0xFFEF4444);
-      statusText = "Missed";
+      statusText = context.l10n.call_statusMissed;
     } else if (status == 'declined' || status == 'rejected') {
       statusColor = const Color(0xFFEA580C);
-      statusText = "Declined";
+      statusText = context.l10n.call_statusDeclined;
     }
 
     return Padding(
@@ -1189,14 +1198,15 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                     if (isCaller) ...[
                       SizedBox(width: 6.w),
                       Container(
+                        constraints: BoxConstraints(maxWidth: 90.w),
                         padding:
                             EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
                         decoration: BoxDecoration(
                           color: _lavender,
                           borderRadius: BorderRadius.circular(6.r),
                         ),
-                        child: Text(
-                          "Caller",
+                        child: AutoFitText(
+                          context.l10n.call_caller,
                           style: TextStyle(
                             fontSize: 10.sp,
                             fontFamily: FontFamily.interBold,
@@ -1211,7 +1221,9 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 Text(
                   p.phoneNumber?.isNotEmpty == true
                       ? p.phoneNumber!
-                      : (dur != null ? "Duration: $dur" : (p.email ?? '')),
+                      : (dur != null
+                          ? context.l10n.call_durationValue(dur)
+                          : (p.email ?? '')),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -1225,12 +1237,13 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
           ),
           if (statusText.isNotEmpty)
             Container(
+              constraints: BoxConstraints(maxWidth: 100.w),
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
               decoration: BoxDecoration(
                 color: statusColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
-              child: Text(
+              child: AutoFitText(
                 dur != null && status == 'joined' ? dur : statusText,
                 style: TextStyle(
                   fontSize: 11.sp,
@@ -1294,7 +1307,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
       rows.add(
         _buildInfoItem(
           icon: Icons.groups_rounded,
-          title: "Group Name",
+          title: context.l10n.call_infoGroupName,
           value: displayName,
         ),
       );
@@ -1303,7 +1316,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
         rows.add(
           _buildInfoItem(
             icon: Icons.tag_rounded,
-            title: "Group Code",
+            title: context.l10n.call_infoGroupCode,
             value: groupCode,
           ),
         );
@@ -1313,8 +1326,8 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
         rows.add(
           _buildInfoItem(
             icon: Icons.people_outline_rounded,
-            title: "Total Members",
-            value: "$totalMembers members",
+            title: context.l10n.call_infoTotalMembers,
+            value: context.l10n.common_membersCount(totalMembers),
           ),
         );
       }
@@ -1323,7 +1336,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
         rows.add(
           _buildInfoItem(
             icon: Icons.description_outlined,
-            title: "Description",
+            title: context.l10n.call_infoDescription,
             value: groupDesc,
           ),
         );
@@ -1333,7 +1346,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
         rows.add(
           _buildInfoItem(
             icon: Icons.call_rounded,
-            title: "Mobile",
+            title: context.l10n.call_infoMobile,
             value: phone,
           ),
         );
@@ -1343,7 +1356,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
         rows.add(
           _buildInfoItem(
             icon: Icons.email_outlined,
-            title: "Email",
+            title: context.l10n.call_infoEmail,
             value: email,
           ),
         );
@@ -1363,7 +1376,9 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                     isGroup ? Icons.group_outlined : Icons.person_outline_rounded),
                 SizedBox(width: 12.w),
                 Text(
-                  isGroup ? "Group Information" : "Contact Information",
+                  isGroup
+                      ? context.l10n.call_groupInformation
+                      : context.l10n.call_contactInformation,
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontFamily: FontFamily.interBold,
@@ -1474,7 +1489,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                   SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
-                      "Recent Calls",
+                      context.l10n.call_recentCalls,
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontFamily: FontFamily.interBold,
@@ -1524,7 +1539,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
             padding: EdgeInsets.symmetric(vertical: 12.h),
             child: Center(
               child: Text(
-                "Load more",
+                context.l10n.call_loadMore,
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontFamily: FontFamily.interSemiBold,
@@ -1546,7 +1561,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
           Icon(Icons.history_rounded, size: 32.sp, color: _grey),
           SizedBox(height: 8.h),
           Text(
-            "No recent calls",
+            context.l10n.call_noRecentCalls,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13.sp,
@@ -1567,7 +1582,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
           Icon(Icons.error_outline_rounded, size: 32.sp, color: _grey),
           SizedBox(height: 8.h),
           Text(
-            message.isNotEmpty ? message : "Failed to load call detail",
+            message.isNotEmpty ? message : context.l10n.call_loadDetailFailed,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13.sp,
@@ -1585,7 +1600,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Text(
-                "Retry",
+                context.l10n.common_retry,
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontFamily: FontFamily.interSemiBold,
@@ -1702,33 +1717,34 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
         st == 'rejected' || st == 'declined' || st == 'busy';
     final bool isCancelled = st == 'cancelled' || st == 'canceled';
 
-    final String mediaLabel = isVideo ? "Video Call" : "Audio Call";
+    final String mediaLabel =
+        callKindLabel(context.l10n, isVideo ? 'video' : 'audio');
     String title;
     IconData icon;
     Color iconColor;
     Color titleColor = _dark;
 
     if (isMissed) {
-      title = "Missed $mediaLabel";
+      title = context.l10n.call_historyMissed(mediaLabel);
       icon = isIncoming
           ? Icons.call_missed_rounded
           : Icons.call_missed_outgoing_rounded;
       iconColor = const Color(0xFFEF4444);
       titleColor = iconColor;
     } else if (isRejected) {
-      title = "Rejected $mediaLabel";
+      title = context.l10n.call_historyRejected(mediaLabel);
       icon = Icons.call_end_rounded;
       iconColor = const Color(0xFF9CA3AF);
     } else if (isCancelled) {
-      title = "Cancelled $mediaLabel";
+      title = context.l10n.call_historyCancelled(mediaLabel);
       icon = Icons.call_end_rounded;
       iconColor = const Color(0xFF9CA3AF);
     } else if (isIncoming) {
-      title = "Incoming $mediaLabel";
+      title = context.l10n.call_historyIncoming(mediaLabel);
       icon = Icons.call_received_rounded;
       iconColor = const Color(0xFF3B82F6);
     } else {
-      title = "Outgoing $mediaLabel";
+      title = context.l10n.call_historyOutgoing(mediaLabel);
       icon = Icons.call_made_rounded;
       iconColor = const Color(0xFF10B981);
     }
@@ -1827,28 +1843,14 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
     final DateTime? dt = DateTime.tryParse(calledAt ?? '')?.toLocal();
     if (dt == null) return time;
 
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
     final DateTime now = DateTime.now();
     bool sameDay(DateTime a, DateTime b) =>
         a.year == b.year && a.month == b.month && a.day == b.day;
 
     if (sameDay(dt, now)) return time;
     if (sameDay(dt, now.subtract(const Duration(days: 1)))) {
-      return "Yesterday, $time";
+      return context.l10n.call_yesterdayAt(time);
     }
-    return "${dt.day} ${months[dt.month - 1]}, $time";
+    return "${appDateFormat('d MMM').format(dt)}, $time";
   }
 }

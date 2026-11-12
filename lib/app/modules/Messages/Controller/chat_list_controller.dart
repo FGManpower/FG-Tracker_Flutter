@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
@@ -592,7 +593,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     final deleted = last.isDeleted == true ||
         last.content?.toString() == MessagePreviewBuilder.deletedText;
     final preview = MessagePreviewBuilder.forMessage(last);
-    final text = deleted ? MessagePreviewBuilder.deletedText : preview.display;
+    final text =
+        deleted ? MessagePreviewBuilder.deletedDisplayText : preview.display;
     final isSamePreview = row.preview == text &&
         (row.isDeletedForEveryone == true) == deleted;
     final hasValidLastData = row.lastMessageData != null;
@@ -1779,8 +1781,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   // server replies with private_chat_action_error.
   // ---------------------------------------------------------------------------
 
-  static const String _offlineMessage =
-      "You're offline. The change wasn't saved, please try again.";
+  static String get _offlineMessage => appL10n.chatList_offlineNotSaved;
 
   void _beginAction(PrivateChatModel chat, String action) {
     final key = _getChatKey(chat);
@@ -1810,14 +1811,14 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     privateChats.refresh();
     archivedChats.refresh();
     _syncChattingNotificationMarker();
-    _showActionError(message ?? "Couldn't update the chat. Please try again.");
+    _showActionError(message ?? appL10n.chatList_updateFailed);
   }
 
   void _showActionError(String message) {
     try {
       if (Get.context == null) return;
       Get.snackbar(
-        "Chat",
+        appL10n.chatList_title,
         message,
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 3),

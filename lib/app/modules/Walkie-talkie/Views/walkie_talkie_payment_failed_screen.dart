@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:fgtracker/app/Core/util/currency_format.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Controller/razorpay_payment_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Model/razorpay_payment_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_order_summary_screen.dart';
@@ -11,7 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Utils/walkie_plan_l10n.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class WalkieTalkiePaymentFailedScreen extends StatefulWidget {
   final bool isTeam;
@@ -96,7 +98,7 @@ class _WalkieTalkiePaymentFailedScreenState
     if (controller.transactionTime.value.isNotEmpty) {
       return controller.transactionTime.value;
     }
-    return DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+    return appDateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
   }
 
   num get _displayAmount {
@@ -122,37 +124,37 @@ class _WalkieTalkiePaymentFailedScreenState
 
   String get _displayBadge {
     if (widget.isTeam && widget.memberCount != null && widget.memberCount! > 1) {
-      return "${widget.memberCount} Members";
+      return context.l10n.walkiePlan_orderMemberCount(widget.memberCount!);
     }
     if (widget.durationName != null && widget.durationName!.isNotEmpty) {
-      return widget.durationName!;
+      return walkieDurationText(widget.durationName, context.l10n);
     }
     final title = _displayTitle.toLowerCase();
     if (title.contains("year") || title.contains("annual")) {
-      return "Annual Plan";
+      return context.l10n.walkiePlan_payAnnualPlan;
     }
     if (title.contains("quarter")) {
-      return "Quarterly Plan";
+      return context.l10n.walkiePlan_quarterlyPlan;
     }
     if (widget.isTeam) {
-      return "Team Plan";
+      return context.l10n.walkiePlan_teamPlan;
     }
-    return "Individual Plan";
+    return context.l10n.walkiePlan_individualPlan;
   }
 
   String get _displayInterval {
     if (widget.durationName != null && widget.durationName!.isNotEmpty) {
       final d = widget.durationName!.toLowerCase();
-      if (d.contains("month")) return "month";
-      if (d.contains("year") || d.contains("annual")) return "year";
-      if (d.contains("quarter")) return "quarter";
-      return widget.durationName!;
+      if (d.contains("month")) return context.l10n.walkiePlan_payIntervalMonth;
+      if (d.contains("year") || d.contains("annual")) return context.l10n.walkiePlan_payIntervalYear;
+      if (d.contains("quarter")) return context.l10n.walkiePlan_payIntervalQuarter;
+      return walkieDurationText(widget.durationName, context.l10n);
     }
     final title = _displayTitle.toLowerCase();
-    if (title.contains("year") || title.contains("annual")) return "year";
-    if (title.contains("quarter")) return "quarter";
-    if (title.contains("month")) return "month";
-    return "plan";
+    if (title.contains("year") || title.contains("annual")) return context.l10n.walkiePlan_payIntervalYear;
+    if (title.contains("quarter")) return context.l10n.walkiePlan_payIntervalQuarter;
+    if (title.contains("month")) return context.l10n.walkiePlan_payIntervalMonth;
+    return context.l10n.walkiePlan_payIntervalPlan;
   }
 
   String get _displayErrorMessage {
@@ -161,7 +163,7 @@ class _WalkieTalkiePaymentFailedScreenState
         msg.trim().isEmpty ||
         msg.toLowerCase() == 'undefined' ||
         msg.toLowerCase() == 'null') {
-      return "Your payment was not completed. No amount has been charged to your account.";
+      return context.l10n.walkiePlan_payNotCompleted;
     }
     return msg;
   }
@@ -210,7 +212,7 @@ class _WalkieTalkiePaymentFailedScreenState
               ),
               SizedBox(height: 12.h),
               Text(
-                "Contact Support",
+                context.l10n.walkiePlan_payFailedContactSupport,
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontFamily: FontFamily.interBold,
@@ -219,7 +221,7 @@ class _WalkieTalkiePaymentFailedScreenState
               ),
               SizedBox(height: 6.h),
               Text(
-                "Need help with your payment? Our team is available 24/7 to assist you.",
+                context.l10n.walkiePlan_payFailedSupportHelp,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11.5.sp,
@@ -290,7 +292,8 @@ class _WalkieTalkiePaymentFailedScreenState
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                   ),
-                  child: const Text("Done", style: TextStyle(color: Colors.white)),
+                  child: Text(context.l10n.common_done,
+                      style: const TextStyle(color: Colors.white)),
                 ),
               ),
             ],
@@ -344,7 +347,7 @@ class _WalkieTalkiePaymentFailedScreenState
 
                           // Title & Subtitle
                           Text(
-                            "Payment Failed",
+                            context.l10n.walkiePlan_payFailedTitle,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 20.sp,
@@ -357,7 +360,7 @@ class _WalkieTalkiePaymentFailedScreenState
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 8.w),
                             child: Text(
-                              "We couldn't complete your payment.\nPlease try again or use a different payment method.",
+                              context.l10n.walkiePlan_payFailedSubtitleLong,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 12.sp,
@@ -444,7 +447,7 @@ class _WalkieTalkiePaymentFailedScreenState
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            "Payment Failed",
+            context.l10n.walkiePlan_payFailedTitle,
             style: TextStyle(
               fontSize: 15.sp,
               fontFamily: FontFamily.interBold,
@@ -452,7 +455,7 @@ class _WalkieTalkiePaymentFailedScreenState
             ),
           ),
           Text(
-            "We couldn't complete your payment",
+            context.l10n.walkiePlan_payFailedSubtitleShort,
             style: TextStyle(
               fontSize: 10.5.sp,
               fontFamily: FontFamily.interRegular,
@@ -573,7 +576,7 @@ class _WalkieTalkiePaymentFailedScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Plan Details",
+            context.l10n.walkiePlan_payPlanDetails,
             style: TextStyle(
               fontSize: 14.sp,
               fontFamily: FontFamily.interBold,
@@ -608,7 +611,7 @@ class _WalkieTalkiePaymentFailedScreenState
                       children: [
                         Flexible(
                           child: Text(
-                            _displayTitle,
+                            walkiePlanTitleText(_displayTitle, context.l10n),
                             style: TextStyle(
                               fontSize: 13.5.sp,
                               fontFamily: FontFamily.interBold,
@@ -640,8 +643,8 @@ class _WalkieTalkiePaymentFailedScreenState
                     SizedBox(height: 3.h),
                     Text(
                       widget.isTeam
-                          ? "Multi-member access • Instant alerts"
-                          : "Real-time monitoring • Instant alerts",
+                          ? context.l10n.walkiePlan_payTeamFeatures
+                          : context.l10n.walkiePlan_payIndividualFeatures,
                       style: TextStyle(
                         fontSize: 10.5.sp,
                         fontFamily: FontFamily.interRegular,
@@ -679,7 +682,7 @@ class _WalkieTalkiePaymentFailedScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Total Amount",
+                      context.l10n.walkiePlan_orderTotalAmount,
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontFamily: FontFamily.interBold,
@@ -688,7 +691,7 @@ class _WalkieTalkiePaymentFailedScreenState
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      "Payment failed on $_displayTime",
+                      context.l10n.walkiePlan_payFailedOn(_displayTime),
                       style: TextStyle(
                         fontSize: 10.sp,
                         fontFamily: FontFamily.interRegular,
@@ -789,7 +792,7 @@ class _WalkieTalkiePaymentFailedScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "OTP Charge Details",
+            context.l10n.walkiePlan_payOtpChargeDetails,
             style: TextStyle(
               fontSize: 14.sp,
               fontFamily: FontFamily.interBold,
@@ -818,7 +821,7 @@ class _WalkieTalkiePaymentFailedScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "OTP charges",
+                      context.l10n.walkiePlan_payOtpCharges,
                       style: TextStyle(
                         fontSize: 13.5.sp,
                         fontFamily: FontFamily.interBold,
@@ -827,7 +830,7 @@ class _WalkieTalkiePaymentFailedScreenState
                     ),
                     SizedBox(height: 3.h),
                     Text(
-                      "Charged per login. Resending the OTP is free",
+                      context.l10n.walkiePlan_payOtpChargedPerLogin,
                       style: TextStyle(
                         fontSize: 10.5.sp,
                         fontFamily: FontFamily.interRegular,
@@ -842,8 +845,8 @@ class _WalkieTalkiePaymentFailedScreenState
             ],
           ),
           SizedBox(height: 12.h),
-          row("OTP charge", charge),
-          row("GST ($gstLabel%)", gst),
+          row(context.l10n.walkiePlan_payOtpCharge, charge),
+          row(context.l10n.walkiePlan_orderGstTitle(gstLabel), gst),
           SizedBox(height: 8.h),
           const Divider(color: _cardBorder, height: 1),
           SizedBox(height: 12.h),
@@ -854,7 +857,7 @@ class _WalkieTalkiePaymentFailedScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Total per OTP",
+                      context.l10n.walkiePlan_payTotalPerOtp,
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontFamily: FontFamily.interBold,
@@ -863,7 +866,7 @@ class _WalkieTalkiePaymentFailedScreenState
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      "Payment failed on $_displayTime",
+                      context.l10n.walkiePlan_payFailedOn(_displayTime),
                       style: TextStyle(
                         fontSize: 10.sp,
                         fontFamily: FontFamily.interRegular,
@@ -927,7 +930,7 @@ class _WalkieTalkiePaymentFailedScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Payment could not be processed",
+                  context.l10n.walkiePlan_payCouldNotBeProcessed,
                   style: TextStyle(
                     fontSize: 12.5.sp,
                     fontFamily: FontFamily.interBold,
@@ -1114,12 +1117,14 @@ class _WalkieTalkiePaymentFailedScreenState
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  "Try Again",
-                  style: TextStyle(
-                    fontSize: 14.5.sp,
-                    fontFamily: FontFamily.interBold,
-                    color: Colors.white,
+                Flexible(
+                  child: AutoFitText(
+                    context.l10n.walkiePlan_payTryAgain,
+                    style: TextStyle(
+                      fontSize: 14.5.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 SizedBox(width: 8.w),
@@ -1152,8 +1157,8 @@ class _WalkieTalkiePaymentFailedScreenState
                 borderRadius: BorderRadius.circular(12.r),
               ),
             ),
-            child: Text(
-              "View Plan Details",
+            child: AutoFitText(
+              context.l10n.walkiePlan_payViewPlanDetails,
               style: TextStyle(
                 fontSize: 14.sp,
                 fontFamily: FontFamily.interMedium,

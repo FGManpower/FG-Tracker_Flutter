@@ -1,4 +1,6 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/profile_navigation.dart';
@@ -112,7 +114,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             u.name.toString().trim().isNotEmpty &&
             u.name.toString().toLowerCase() != 'null')
         ? u.name.toString().trim()
-        : 'Member';
+        : appL10n.chatList_memberFallback;
     final phone = u.mobileNo?.toString() ?? '';
     final locStr = u.location?.toString() ?? '';
     final isOnline = u.isOnline == true ||
@@ -123,16 +125,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         );
     final lastSeenStr = u.lastSeen?.toString();
 
-    String displayLastSeen = "Offline";
+    String displayLastSeen = appL10n.common_offline;
     if (isOnline) {
-      displayLastSeen = "Online";
+      displayLastSeen = appL10n.common_online;
     } else if (lastSeenStr != null && lastSeenStr.isNotEmpty) {
       final parsed = Tracking.parseDateTime(lastSeenStr);
       if (parsed != null) {
         displayLastSeen = Tracking().getTimeAgo(parsed);
       } else {
         displayLastSeen =
-            lastSeenStr.toLowerCase() == 'offline' ? "Offline" : lastSeenStr;
+            lastSeenStr.toLowerCase() == 'offline' ? appL10n.common_offline : lastSeenStr;
       }
     }
 
@@ -225,7 +227,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           if (!isLoading && (data == null || data.user == null)) {
             return Center(
               child: Text(
-                "Profile details not found",
+                context.l10n.chatList_profileNotFound,
                 style: TextStyle(fontSize: 16.sp, color: _purple),
               ),
             );
@@ -280,9 +282,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Widget _buildProfileHeader(UserDetails user) {
     final img = user.profileImage ?? "";
-    final name = user.name ?? "Member";
+    final name = user.name ?? appL10n.chatList_memberFallback;
     final isOnline = user.isOnline ?? false;
-    final statusText = user.lastSeen ?? "Offline";
+    final statusText = (isOnline
+            ? null
+            : formatLastSeen(context,
+                Tracking.parseDateTime(user.rawLastSeen ?? user.lastSeen))) ??
+        user.lastSeen ??
+        appL10n.common_offline;
 
     final fullImageUrl = profileImageUrl(img);
 
@@ -390,7 +397,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ChatNavigation.openPrivateChat({
         "userData": md,
         "chatId": widget.chatId,
-        "groupName": user.name ?? "Chat",
+        "groupName": user.name ?? appL10n.chatList_title,
         "isCreator": false,
         "type": "chatScreen",
         "chatType": "private",
@@ -420,7 +427,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       arguments: {
         "callerId": _myId,
         "remoteUserId": (user.userId ?? "").toString(),
-        "callerName": user.name ?? "Member",
+        "callerName": user.name ?? appL10n.chatList_memberFallback,
         "callerProfile": user.profileImage,
         "offer": null,
         "is_video": isVideo,
@@ -434,19 +441,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       children: [
         _quickAction(
           icon: Icons.chat_bubble_rounded,
-          label: "Message",
+          label: appL10n.chatList_profileMessage,
           onTap: () => _openChat(user),
         ),
         SizedBox(width: 10.w),
         _quickAction(
           icon: Icons.call,
-          label: "Call",
+          label: appL10n.chatList_profileCall,
           onTap: () => _startCall(user, isVideo: false),
         ),
         SizedBox(width: 10.w),
         _quickAction(
           icon: Icons.videocam_rounded,
-          label: "Video Call",
+          label: appL10n.chatList_profileVideoCall,
           onTap: () => _startCall(user, isVideo: true),
         ),
       ],
@@ -584,7 +591,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    "Media, links and docs",
+                    appL10n.chatList_mediaLinksDocs,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -595,7 +602,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                 ),
                 Text(
-                  "View All",
+                  appL10n.common_viewAll,
                   style: TextStyle(
                     fontSize: 13.sp,
                     color: _lightPurple,
@@ -681,7 +688,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ] else ...[
             SizedBox(height: 10.h),
             Text(
-              "No media shared yet",
+              appL10n.chatList_noMediaYet,
               style: TextStyle(fontSize: 13.sp, color: Colors.grey.shade500),
             ),
           ],
@@ -725,7 +732,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Contact & Info",
+            appL10n.chatList_contactAndInfo,
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w800,
@@ -779,7 +786,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
-                    "Location Hidden",
+                    appL10n.chatList_locationHidden,
                     style: TextStyle(
                       fontSize: 13.5.sp,
                       color: Colors.grey.shade700,
@@ -865,14 +872,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       icon: Icons.delete_outline_rounded,
       iconBgColor: const Color(0xFFFFF0F0),
       iconColor: Colors.redAccent,
-      title: "Clear Chat",
+      title: appL10n.chatList_clearChat,
       titleColor: Colors.redAccent,
       arrowColor: Colors.redAccent,
       onTap: () {
         CommonDialog.ConfirmationDialog(
-          title: "Clear Chat",
-          content: "Delete all messages with this user?",
-          confirm: "Clear",
+          title: appL10n.chatList_clearChat,
+          content: appL10n.chatList_clearChatConfirm,
+          confirm: appL10n.chatList_clear,
           onConfirm: () {
             Get.back();
             // An empty id ("" before the socket joined) used to pass the
@@ -883,7 +890,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 : (widget.chatId ?? widget.userData?.chatId)?.toString();
 
             if (chatId == null || chatId.isEmpty || chatId == "null") {
-              Utils().fluttertoast("Unable to clear chat");
+              Utils().fluttertoast(appL10n.chatList_clearChatFailed);
               return;
             }
 
@@ -907,7 +914,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 }
               });
             }
-            Utils().fluttertoast("Chat cleared");
+            Utils().fluttertoast(appL10n.chatList_chatCleared);
           },
         );
       },
@@ -942,24 +949,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             blocked ? const Color(0xFFF3F1FB) : const Color(0xFFFFF0F0),
         iconColor: blocked ? _lightPurple : Colors.redAccent,
         title: blocked
-            ? "Unblock ${user.name ?? 'User'}"
-            : "Block ${user.name ?? 'User'}",
+            ? appL10n.chatList_unblockName(user.name ?? appL10n.chatList_userFallback)
+            : appL10n.chatList_blockName(user.name ?? appL10n.chatList_userFallback),
         titleColor: blocked ? _lightPurple : Colors.redAccent,
         arrowColor: blocked ? _lightPurple : Colors.redAccent,
         onTap: blocked
             ? () {
                 CommonDialog.ConfirmationDialog(
-                  title: "Unblock User",
-                  content: "Are you sure you want to unblock this user?",
-                  confirm: "Unblock",
+                  title: appL10n.chatList_unblockUser,
+                  content: appL10n.chatList_unblockUserConfirm,
+                  confirm: appL10n.chatList_unblock,
                   onConfirm: () => _handleUnblockUser(user.userId),
                 );
               }
             : () {
                 CommonDialog.ConfirmationDialog(
-                  title: "Block User",
-                  content: "Are you sure you want to block this user?",
-                  confirm: "Block",
+                  title: appL10n.chatList_blockUser,
+                  content: appL10n.chatList_blockUserConfirm,
+                  confirm: appL10n.chatList_block,
                   onConfirm: () => _handleBlockUser(user.userId),
                 );
               },
@@ -969,13 +976,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Future<void> _handleBlockUser(int? userId) async {
     if (userId == null) {
-      Utils().fluttertoast("User not found");
+      Utils().fluttertoast(appL10n.chatList_userNotFound);
       return;
     }
 
     final controller = _chatController;
     if (controller == null) {
-      Utils().fluttertoast("Unable to block user");
+      Utils().fluttertoast(appL10n.chatList_blockFailed);
       return;
     }
 
@@ -985,19 +992,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       Utils().fluttertoast(message);
       Get.back();
     } else {
-      Utils().fluttertoast("Unable to block user");
+      Utils().fluttertoast(appL10n.chatList_blockFailed);
     }
   }
 
   Future<void> _handleUnblockUser(int? userId) async {
     if (userId == null) {
-      Utils().fluttertoast("User not found");
+      Utils().fluttertoast(appL10n.chatList_userNotFound);
       return;
     }
 
     final controller = _chatController;
     if (controller == null) {
-      Utils().fluttertoast("Unable to unblock user");
+      Utils().fluttertoast(appL10n.chatList_unblockFailed);
       return;
     }
 
@@ -1007,7 +1014,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       Utils().fluttertoast(message);
       Get.back();
     } else {
-      Utils().fluttertoast("Unable to unblock user");
+      Utils().fluttertoast(appL10n.chatList_unblockFailed);
     }
   }
 

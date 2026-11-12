@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../Data/Services/PermissionGate/permission_flow.dart';
@@ -52,46 +53,35 @@ class PermissionSetupController extends GetxController
   late final PermissionFlow flow = PermissionFlow(gate);
 
   // ORDER: 0 Location, 1 Notifications, 2 Camera, 3 Microphone, 4 Contacts
-  final List<PermissionItem> items = const [
+  List<PermissionItem> get items => [
     PermissionItem(
-      title: 'Location',
-      description:
-          'Needed for attendance, live tracking and safe zone — including when '
-          'the app is in the background.',
-      why: '${PermissionReasons.location} Please choose "Allow all the time" '
-          'and keep Precise location on.',
+      title: appL10n.permission_location,
+      description: appL10n.permission_locationDescription,
+      why: '${PermissionReasons.location} ${appL10n.permission_locationWhyExtra}',
       icon: Icons.location_on_rounded,
     ),
     PermissionItem(
-      title: 'Notifications',
-      description:
-          'Needed to receive incoming calls, chat messages and attendance / '
-          'safe-zone alerts.',
-      why: '${PermissionReasons.notification} Incoming calls cannot ring '
-          'without this permission.',
+      title: appL10n.permission_notifications,
+      description: appL10n.permission_notificationsDescription,
+      why: '${PermissionReasons.notification} ${appL10n.permission_notificationsWhyExtra}',
       icon: Icons.notifications_rounded,
     ),
     PermissionItem(
-      title: 'Camera',
-      description: 'Used by the app features that capture photos or videos.',
-      why:
-          'Allows you to capture photos and videos for supported profile, chat and other app features.',
+      title: appL10n.permission_camera,
+      description: appL10n.permission_cameraDescription,
+      why: appL10n.permission_cameraWhy,
       icon: Icons.camera_alt_rounded,
     ),
     PermissionItem(
-      title: 'Microphone / Audio',
-      description:
-          'Used by voice, walkie-talkie, and calling features where applicable.',
-      why:
-          'Allows voice communication, walkie-talkie transmission and calls when you use these features.',
+      title: appL10n.permission_microphone,
+      description: appL10n.permission_microphoneDescription,
+      why: appL10n.permission_microphoneWhy,
       icon: Icons.mic_rounded,
     ),
     PermissionItem(
-      title: 'Contacts',
-      description:
-          'Used to discover or select contacts for contact-related app features.',
-      why:
-          'Helps you find and select contacts when using supported contact-related features.',
+      title: appL10n.permission_contacts,
+      description: appL10n.permission_contactsDescription,
+      why: appL10n.permission_contactsWhy,
       icon: Icons.groups_rounded,
     ),
   ];
@@ -123,7 +113,7 @@ class PermissionSetupController extends GetxController
     if (idx == notificationIndex && r != null) {
       return PermissionFlow.notificationActionLabel(r.notificationStep);
     }
-    return 'Allow ${items[idx].title}';
+    return appL10n.permission_allowNamed(items[idx].title);
   }
 
   /// Extra status line under Location / Notifications (null for others).
@@ -339,7 +329,7 @@ class PermissionSetupController extends GetxController
           isRequired(locationIndex) &&
           !grantedItems.contains(locationIndex)) {
         _selectAndExpandPermission(locationIndex);
-        PermissionFlow.showMessage('Please allow Location first.');
+        PermissionFlow.showMessage(appL10n.permission_allowLocationFirst);
         return;
       }
 
@@ -359,9 +349,9 @@ class PermissionSetupController extends GetxController
 
       await _requestOptional(idx);
     } on PlatformException catch (e) {
-      PermissionFlow.showMessage(e.message ?? 'Unable to request permission.');
+      PermissionFlow.showMessage(e.message ?? appL10n.permission_unableToRequest);
     } catch (e) {
-      PermissionFlow.showMessage('Something went wrong. Please try again.');
+      PermissionFlow.showMessage(appL10n.common_somethingWentWrong);
     } finally {
       loading.value = false;
     }
@@ -388,7 +378,7 @@ class PermissionSetupController extends GetxController
       await _showSettingsDialog();
     } else {
       PermissionFlow.showMessage(
-        '${items[idx].title} permission was not granted. Please try again.',
+        appL10n.permission_notGrantedNamed(items[idx].title),
       );
     }
   }
@@ -408,7 +398,7 @@ class PermissionSetupController extends GetxController
     final r = await gate.check();
     if (!r.allowsAccess) {
       PermissionFlow.showMessage(
-        'Location and Notification permissions are required to continue.',
+        appL10n.permission_locationAndNotificationRequired,
       );
       _selectAndExpandPermission(_firstPendingIndex() ?? locationIndex);
       return;
@@ -458,13 +448,13 @@ class PermissionSetupController extends GetxController
   String _settingsMessage(int idx) {
     switch (idx) {
       case 2:
-        return 'Camera permission is needed to capture photos and videos. Please enable it from app settings.';
+        return appL10n.permission_cameraSettingsMessage;
       case 3:
-        return 'Microphone permission is needed for voice, walkie-talkie and calls. Please enable it from app settings.';
+        return appL10n.permission_microphoneSettingsMessage;
       case 4:
-        return 'Contacts permission is needed to find and select contacts. Please enable it from app settings.';
+        return appL10n.permission_contactsSettingsMessage;
       default:
-        return 'This permission is needed. Please enable it from app settings.';
+        return appL10n.permission_genericSettingsMessage;
     }
   }
 
@@ -514,7 +504,7 @@ class PermissionSetupController extends GetxController
               ),
               SizedBox(height: 18.h),
               Text(
-                'Permission Required',
+                appL10n.permission_required,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 20.sp,
@@ -551,7 +541,7 @@ class PermissionSetupController extends GetxController
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            'Cancel',
+                            appL10n.common_cancel,
                             maxLines: 1,
                             style: TextStyle(
                                 fontSize: 14.sp, fontWeight: FontWeight.w700),
@@ -579,7 +569,7 @@ class PermissionSetupController extends GetxController
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            'Open Settings',
+                            appL10n.permission_openSettings,
                             maxLines: 1,
                             style: TextStyle(
                                 fontSize: 14.sp, fontWeight: FontWeight.w700),

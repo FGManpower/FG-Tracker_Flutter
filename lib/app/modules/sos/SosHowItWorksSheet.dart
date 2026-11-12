@@ -1,5 +1,7 @@
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class SosHowItWorksSheet {
   static void show(BuildContext context) {
@@ -29,12 +31,14 @@ class SosHowItWorksSheet {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const SizedBox.shrink(),
-                Text(
-                  "How SOS Alert Works?",
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                Flexible(
+                  child: AutoFitText(
+                    ctx.l10n.sos_howItWorksTitle,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                 ),
                 GestureDetector(
@@ -52,7 +56,7 @@ class SosHowItWorksSheet {
             ),
             SizedBox(height: 6.h),
             Text(
-              "SOS Alert helps you notify nearby people and your family in emergency situations.",
+              ctx.l10n.sos_howItWorksIntro,
               style: TextStyle(
                 fontSize: 11.sp,
                 color: Colors.black54,
@@ -63,29 +67,29 @@ class SosHowItWorksSheet {
             _buildStep(
               Icons.notifications_active,
               Colors.red,
-              "1. Send SOS Alert",
-              "Tap on the SOS button and send alert to people nearby.",
+              ctx.l10n.sos_step1Title,
+              ctx.l10n.sos_step1Body,
             ),
             SizedBox(height: 12.h),
             _buildStep(
               Icons.group,
               const Color(0xFF6B4DFF),
-              "2. Notify Nearby People",
-              "People nearby will receive your alert with your location.",
+              ctx.l10n.sos_step2Title,
+              ctx.l10n.sos_step2Body,
             ),
             SizedBox(height: 12.h),
             _buildStep(
               Icons.verified_user,
               Colors.green,
-              "3. Get Help Faster",
-              "Nearby people can view your alert and reach out to help you.",
+              ctx.l10n.sos_step3Title,
+              ctx.l10n.sos_step3Body,
             ),
             SizedBox(height: 12.h),
             _buildStep(
               Icons.phone,
               const Color(0xFF2196F3),
-              "4. Family Gets Notified",
-              "Your family members will be instantly notified about your SOS.",
+              ctx.l10n.sos_step4Title,
+              ctx.l10n.sos_step4Body,
             ),
             SizedBox(height: 16.h),
             Container(
@@ -101,7 +105,7 @@ class SosHowItWorksSheet {
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
-                      "Your privacy is important. Your location is shared only during an active SOS alert.",
+                      ctx.l10n.sos_privacyNote,
                       style: TextStyle(
                         fontSize: 10.sp,
                         color: Colors.black87,
@@ -124,7 +128,7 @@ class SosHowItWorksSheet {
                 ),
                 onPressed: () => Navigator.pop(ctx),
                 child: Text(
-                  "Got It",
+                  ctx.l10n.common_gotIt,
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,

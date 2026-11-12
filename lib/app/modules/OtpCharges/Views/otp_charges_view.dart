@@ -4,6 +4,7 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 // Colors from the design that are not (exactly) in AppColors
 const Color _warnBg = Color(0xFFFFF4DE);
@@ -66,7 +67,7 @@ class OtpChargesView extends GetView<OtpChargesController> {
     return Row(
       children: [
         Semantics(
-          label: 'Back',
+          label: appL10n.common_back,
           button: true,
           excludeSemantics: true,
           child: GestureDetector(
@@ -90,7 +91,7 @@ class OtpChargesView extends GetView<OtpChargesController> {
         SizedBox(width: 12.w),
         Expanded(
           child: Text(
-            'OTP Charges',
+            appL10n.otpCharges_title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -123,17 +124,16 @@ class OtpChargesView extends GetView<OtpChargesController> {
         return [
           _infoCard(
             icon: Icons.check_circle_rounded,
-            title: 'OTP is free for your number',
-            body: 'Login OTPs sent to this number are not charged.',
+            title: appL10n.otpCharges_freeTitle,
+            body: appL10n.otpCharges_freeBody,
           ),
         ];
       case OtpRateState.unknown:
         return [
           _infoCard(
             icon: Icons.info_outline_rounded,
-            title: 'OTP charges depend on your country',
-            body:
-                'Login OTPs to Indian numbers are free. For other countries, the exact price is shown before you pay at login.',
+            title: appL10n.otpCharges_unknownTitle,
+            body: appL10n.otpCharges_unknownBody,
           ),
         ];
       case OtpRateState.charged:
@@ -236,8 +236,8 @@ class OtpChargesView extends GetView<OtpChargesController> {
               children: [
                 Text(
                   controller.rateState.value == OtpRateState.charged
-                      ? 'Charges apply to'
-                      : 'Your number',
+                      ? appL10n.otpCharges_chargesApplyTo
+                      : appL10n.otpCharges_yourNumber,
                   style: TextStyle(
                     fontSize: 11.sp,
                     fontFamily: FontFamily.interRegular,
@@ -290,14 +290,16 @@ class OtpChargesView extends GetView<OtpChargesController> {
       container: true,
       excludeSemantics: true,
       label: controller.hasGst
-          ? 'Each OTP costs ${controller.spokenMoney(controller.totalPerOtp)}, including $gstLabel percent GST'
-          : 'Each OTP costs ${controller.spokenMoney(controller.totalPerOtp)}',
+          ? appL10n.otpCharges_eachOtpCostsSpokenGst(
+              controller.spokenMoney(controller.totalPerOtp), gstLabel)
+          : appL10n.otpCharges_eachOtpCostsSpoken(
+              controller.spokenMoney(controller.totalPerOtp)),
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 10.h),
         child: Column(
           children: [
             Text(
-              'Each OTP costs',
+              appL10n.otpCharges_eachOtpCosts,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13.sp,
@@ -325,7 +327,9 @@ class OtpChargesView extends GetView<OtpChargesController> {
             if (controller.hasGst) ...[
               SizedBox(height: 6.h),
               Text(
-                controller.isDomestic ? 'Including $gstLabel% GST' : 'Including $gstLabel% Tax',
+                controller.isDomestic
+                    ? appL10n.otpCharges_includingGst(gstLabel)
+                    : appL10n.otpCharges_includingTax(gstLabel),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11.5.sp,
@@ -366,17 +370,16 @@ class OtpChargesView extends GetView<OtpChargesController> {
                   height: 1.5,
                   color: _warnText,
                 ),
-                children: const [
+                children: [
                   TextSpan(
-                    text: 'Your first login was free.',
-                    style: TextStyle(
+                    text: appL10n.otpCharges_firstLoginFree,
+                    style: const TextStyle(
                       fontFamily: FontFamily.interBold,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   TextSpan(
-                    text:
-                        ' From now on, each login OTP to your number is charged. Resending the OTP is free (up to 3 attempts).',
+                    text: ' ${appL10n.otpCharges_chargedNotice}',
                   ),
                 ],
               ),
@@ -399,7 +402,7 @@ class OtpChargesView extends GetView<OtpChargesController> {
       child: Column(
         children: [
           _breakupRow(
-              'OTP charge', controller.money(controller.otpCharge.value)),
+              appL10n.otpCharges_otpCharge, controller.money(controller.otpCharge.value)),
           if (controller.hasGst)
             _breakupRow(
                 controller.taxTitle, controller.money(controller.gstAmount)),
@@ -414,7 +417,7 @@ class OtpChargesView extends GetView<OtpChargesController> {
               children: [
                 Expanded(
                   child: Text(
-                    'Total per OTP',
+                    appL10n.otpCharges_totalPerOtp,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -510,7 +513,7 @@ class OtpChargesView extends GetView<OtpChargesController> {
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
-                        "OTP payments are temporarily paused by administrator. Tap below for details.",
+                        appL10n.otpCharges_paymentsPaused,
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interMedium,
@@ -551,8 +554,8 @@ class OtpChargesView extends GetView<OtpChargesController> {
                           children: [
                             Text(
                               paymentEnabled
-                                  ? 'Pay ${controller.money(controller.totalPerOtp)}'
-                                  : 'Payment Paused (${controller.money(controller.totalPerOtp)})',
+                                  ? appL10n.otpCharges_pay(controller.money(controller.totalPerOtp))
+                                  : appL10n.otpCharges_paymentPausedButton(controller.money(controller.totalPerOtp)),
                               style: TextStyle(
                                 fontSize: 15.sp,
                                 fontFamily: FontFamily.interBold,

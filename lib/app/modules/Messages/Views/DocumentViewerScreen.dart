@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/DocumentViewerController.dart';
 import 'package:flutter/material.dart';
@@ -183,7 +184,7 @@ class DocumentViewerScreen extends GetView<DocumentViewerController> {
                                 SizedBox(width: 12.w),
                                 Expanded(
                                   child: Text(
-                                    "Document is available",
+                                    context.l10n.chat_documentAvailable,
                                     style: TextStyle(
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w600,
@@ -194,7 +195,7 @@ class DocumentViewerScreen extends GetView<DocumentViewerController> {
                             ),
                             SizedBox(height: 14.h),
                             Text(
-                              "Preview is not available for this file type. Open the document using your installed application.",
+                              context.l10n.chat_documentPreviewUnavailable,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.grey.shade700,
@@ -236,7 +237,7 @@ class DocumentViewerScreen extends GetView<DocumentViewerController> {
                                 color: Colors.white,
                               ),
                               label: Text(
-                                "Open Document",
+                                context.l10n.chat_openDocument,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 14.sp,

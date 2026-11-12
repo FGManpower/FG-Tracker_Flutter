@@ -48,10 +48,14 @@ class StorageServices {
   Future<bool> clearAllUserData() async {
     final introDone = _prefs.getBool(PrefConst.introStatus) ?? true;
     final isDark = _prefs.getBool(PrefConst.isDarkMode);
+    final appLanguage = _prefs.getString(PrefConst.appLanguage);
     final cleared = await _prefs.clear();
     await _prefs.setBool(PrefConst.introStatus, introDone);
     if (isDark != null) {
       await _prefs.setBool(PrefConst.isDarkMode, isDark);
+    }
+    if (appLanguage != null) {
+      await _prefs.setString(PrefConst.appLanguage, appLanguage);
     }
     await _prefs.reload();
     return cleared;

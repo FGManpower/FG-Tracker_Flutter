@@ -1,4 +1,4 @@
-import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:flutter/material.dart';
@@ -170,14 +170,15 @@ class ChatList extends StatelessWidget {
                   msg.timestamp.toString().trim().isNotEmpty) {
                 try {
                   final currentDateStr =
-                      formatDateHeader(msg.timestamp.toString());
+                      appDayLabel(DateTime.parse(msg.timestamp.toString()).toLocal());
                   if (index == 0) {
                     showDateHeader = true;
                     dateHeaderText = currentDateStr;
                   } else if (prevMsg?.timestamp != null &&
                       prevMsg!.timestamp.toString().trim().isNotEmpty) {
                     final prevDateStr =
-                        formatDateHeader(prevMsg.timestamp.toString());
+                        appDayLabel(
+                            DateTime.parse(prevMsg.timestamp.toString()).toLocal());
                     if (currentDateStr != prevDateStr) {
                       showDateHeader = true;
                       dateHeaderText = currentDateStr;
@@ -282,7 +283,7 @@ class ChatList extends StatelessWidget {
           ),
           SizedBox(height: 12.h),
           Text(
-            "No messages here yet",
+            appL10n.chat_emptyTitle,
             style: TextStyle(
               fontSize: 15.sp,
               fontWeight: FontWeight.w500,
@@ -291,7 +292,7 @@ class ChatList extends StatelessWidget {
           ),
           SizedBox(height: 4.h),
           Text(
-            "Say hi 👋 to start the conversation",
+            appL10n.chat_emptySubtitle,
             style: TextStyle(
               fontSize: 13.sp,
               color: Colors.grey.shade400,
@@ -737,7 +738,7 @@ class GroupChatList extends StatelessWidget {
                   ),
                   SizedBox(height: 12.h),
                   Text(
-                    "No messages here yet",
+                    appL10n.chat_emptyTitle,
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w500,
@@ -746,7 +747,7 @@ class GroupChatList extends StatelessWidget {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    "Say hi 👋 to start the conversation",
+                    appL10n.chat_emptySubtitle,
                     style: TextStyle(
                       fontSize: 13.sp,
                       color: Colors.grey.shade400,
@@ -815,14 +816,15 @@ class GroupChatList extends StatelessWidget {
                   msg.timestamp.toString().trim().isNotEmpty) {
                 try {
                   final currentDateStr =
-                      formatDateHeader(msg.timestamp.toString());
+                      appDayLabel(DateTime.parse(msg.timestamp.toString()).toLocal());
                   if (index == 0) {
                     showDateHeader = true;
                     dateHeaderText = currentDateStr;
                   } else if (prevMsg?.timestamp != null &&
                       prevMsg!.timestamp.toString().trim().isNotEmpty) {
                     final prevDateStr =
-                        formatDateHeader(prevMsg.timestamp.toString());
+                        appDayLabel(
+                            DateTime.parse(prevMsg.timestamp.toString()).toLocal());
                     if (currentDateStr != prevDateStr) {
                       showDateHeader = true;
                       dateHeaderText = currentDateStr;

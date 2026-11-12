@@ -5,6 +5,8 @@ import 'package:fgtracker/app/modules/mediaStream/Widget/group_participant_grid.
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import '../../../../../gen/fonts.gen.dart';
 
 class GroupCallingScreen extends GetView<GroupCallingController> {
@@ -169,7 +171,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                       () => Text(
                         controller.callStatus.value == "Connected"
                             ? controller.formattedDuration
-                            : "${controller.callStatus.value}...",
+                            : "${callStatusLabel(appL10n, controller.callStatus.value)}...",
                         style: TextStyle(
                           fontSize: 13.sp,
                           fontFamily: FontFamily.interMedium,

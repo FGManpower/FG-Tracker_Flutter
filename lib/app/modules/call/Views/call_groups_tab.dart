@@ -15,6 +15,7 @@ import '../../../Data/Services/group_call_service.dart';
 import '../../../routes/app_pages.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 class CallGroupsTab extends StatelessWidget {
   CallGroupsTab({super.key});
 
@@ -36,7 +37,9 @@ class CallGroupsTab extends StatelessWidget {
       if (groups.isEmpty) {
         return _EmptyState(
           message:
-              controller.groups.isEmpty ? "No groups yet" : "No groups found",
+              controller.groups.isEmpty
+                  ? context.l10n.call_noGroupsYet
+                  : context.l10n.call_noGroupsFound,
         );
       }
       return RefreshIndicator(
@@ -100,7 +103,7 @@ Future<void> _initiateGroupCall({
       Routes.groupCallingScreen,
       arguments: {
         "groupId": group.id.toString(),
-        "groupName": group.groupName ?? "Unknown Group",
+        "groupName": group.groupName ?? appL10n.call_unknownGroup,
         "groupProfile": group.groupProfile,
         "isVideo": isVideo,
         "memberCount": group.memberCount ?? 0,
@@ -110,8 +113,8 @@ Future<void> _initiateGroupCall({
   } catch (e) {
     AppLog.d("Error initiating group call: $e");
     Get.snackbar(
-      "Error",
-      "Could not start group call. Please try again.",
+      appL10n.common_error,
+      appL10n.call_groupCallStartFailed,
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.red,
       colorText: Colors.white,
@@ -140,7 +143,7 @@ class _GroupTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String groupName = group.groupName ?? "No Name Group";
+    final String groupName = group.groupName ?? context.l10n.call_noNameGroup;
     final int memberCount = group.memberCount ?? 0;
     final String rawProfile = (group.groupProfile ?? '').trim();
 
@@ -216,7 +219,7 @@ class _GroupTile extends StatelessWidget {
                 ),
                 SizedBox(height: 3.h),
                 Text(
-                  "$memberCount Members",
+                  context.l10n.common_membersCount(memberCount),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

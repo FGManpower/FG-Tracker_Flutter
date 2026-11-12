@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import '../../../Core/constant/pref_res.dart';
 import '../../../Core/values/Utils.dart';
 import '../../../Core/values/global.dart';
@@ -90,7 +91,7 @@ class ContactProfileController extends GetxController {
 
     final String id = callId?.trim() ?? '';
     if (id.isEmpty) {
-      errorMessage.value = "Call id not found";
+      errorMessage.value = appL10n.call_callIdNotFound;
       isLoading.value = false;
       return;
     }
@@ -106,11 +107,11 @@ class ContactProfileController extends GetxController {
       if (res.status == true && res.data != null) {
         detail.value = res.data;
       } else {
-        errorMessage.value = res.message ?? "Failed to load call detail";
+        errorMessage.value = res.message ?? appL10n.call_loadDetailFailed;
       }
     } catch (e, st) {
       log("[ContactProfile] getCallHistoryDetail error: $e\n$st");
-      if (!isClosed) errorMessage.value = "Something went wrong";
+      if (!isClosed) errorMessage.value = appL10n.common_somethingWentWrong;
     } finally {
       if (!isClosed) isLoading.value = false;
     }
@@ -124,7 +125,7 @@ class ContactProfileController extends GetxController {
   Future<void> _fetchUserCalls() async {
     final String uid = contactData?.userId?.toString().trim() ?? '';
     if (uid.isEmpty) {
-      errorMessage.value = "User not found";
+      errorMessage.value = appL10n.call_userNotFound;
       isLoading.value = false;
       return;
     }
@@ -140,7 +141,7 @@ class ContactProfileController extends GetxController {
       await _loadCallsBatch(uid, isFirst: true);
     } catch (e, st) {
       log("[ContactProfile] recent calls error: $e\n$st");
-      if (!isClosed) errorMessage.value = "Something went wrong";
+      if (!isClosed) errorMessage.value = appL10n.common_somethingWentWrong;
     } finally {
       if (!isClosed) isLoading.value = false;
     }
@@ -203,7 +204,7 @@ class ContactProfileController extends GetxController {
 
       if (res.status != true) {
         if (isFirst && i == 0) {
-          errorMessage.value = res.message ?? "Failed to load recent calls";
+          errorMessage.value = res.message ?? appL10n.call_loadRecentFailed;
           apiHasMore = false;
         }
         // Keep apiHasMore so the user can try loading more again
@@ -251,7 +252,7 @@ class ContactProfileController extends GetxController {
         GroupCallService.instance.startGroupCall(
           context,
           groupId: _targetGroupId,
-          groupName: groupName ?? "Group Call",
+          groupName: groupName ?? appL10n.call_kindGroupCall,
           groupProfile: groupAvatar,
           isVideo: isVideo,
         );
@@ -273,11 +274,11 @@ class ContactProfileController extends GetxController {
           callerId: Global.storageServices.get(PrefConst.userId).toString(),
           remoteUserId: remoteId,
           is_video: isVideo,
-          callerName: contactData?.name ?? 'User',
+          callerName: contactData?.name ?? appL10n.call_user,
           callerProfile: contactData?.profileImage,
         );
       } else {
-        Utils().fluttertoast("Unable to call this contact");
+        Utils().fluttertoast(appL10n.call_unableToCallContact);
       }
     }
   }
@@ -290,7 +291,7 @@ class ContactProfileController extends GetxController {
         Routes.groupChatScreen,
         arguments: {
           "groupId": _targetGroupId,
-          "groupName": groupName ?? "Group",
+          "groupName": groupName ?? appL10n.call_groupBadge,
           "groupProfile": groupAvatar,
         },
       );
@@ -300,7 +301,7 @@ class ContactProfileController extends GetxController {
     final MemberData? user = contactData;
 
     if (user == null || user.userId == null) {
-      Utils().fluttertoast("Unable to open chat for this contact");
+      Utils().fluttertoast(appL10n.call_unableToOpenChat);
       return;
     }
 
@@ -327,7 +328,7 @@ class ContactProfileController extends GetxController {
         "chatType": "private",
         "chatId": chatId?.toString(),
         "groupId": 0,
-        "groupName": user.name ?? "Chat",
+        "groupName": user.name ?? appL10n.call_chatFallback,
       },
       binding: BindingsBuilder(() {
         if (!Get.isRegistered<MessageController>()) {

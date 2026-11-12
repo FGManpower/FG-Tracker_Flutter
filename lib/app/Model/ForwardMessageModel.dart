@@ -1,3 +1,5 @@
+import 'package:fgtracker/l10n/l10n.dart';
+
 class ForwardListResponse {
   bool? status;
   String? message;
@@ -192,7 +194,7 @@ class ForwardDestination {
       return mobile;
     }
 
-    return "Unknown User";
+    return appL10n.chatList_unknownUser;
   }
 
   String get displayImage {

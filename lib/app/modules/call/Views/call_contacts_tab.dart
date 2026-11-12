@@ -19,6 +19,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import '../../../Core/constant/pref_res.dart';
 
@@ -122,7 +123,7 @@ class _CallContactsTabState extends State<CallContactsTab>
             ),
             SizedBox(height: 20.h),
             reausabletext(
-              "Allow contacts access",
+              context.l10n.call_contactsAccessTitle,
               fontsize: 17.sp,
               fontfamily: FontFamily.interBold,
               color: Colors.black87,
@@ -130,7 +131,7 @@ class _CallContactsTabState extends State<CallContactsTab>
             ),
             SizedBox(height: 8.h),
             reausabletext(
-              "We need access to your contacts to show who is on FG Tracker and to let you call them or send an invite.",
+              context.l10n.call_contactsAccessMessage,
               fontsize: 12.sp,
               color: Colors.grey.shade600,
               align: TextAlign.center,
@@ -147,7 +148,7 @@ class _CallContactsTabState extends State<CallContactsTab>
                 ),
                 child: Center(
                   child: reausabletext(
-                    "Allow Access",
+                    context.l10n.call_allowAccess,
                     fontsize: 14.sp,
                     fontfamily: FontFamily.interSemiBold,
                     color: Colors.white,
@@ -259,8 +260,8 @@ class _CallContactsTabState extends State<CallContactsTab>
           Center(
             child: Text(
               isSearching
-                  ? "No contacts match your search"
-                  : "No registered contacts found",
+                  ? context.l10n.call_noContactsMatch
+                  : context.l10n.call_noRegisteredContacts,
               style: TextStyle(
                 fontSize: 14.sp,
                 fontFamily: FontFamily.interMedium,
@@ -308,7 +309,7 @@ class _CallContactsTabState extends State<CallContactsTab>
                         padding:
                         EdgeInsets.only(left: 4.w, bottom: 12.h, top: 4.h),
                         child: Text(
-                          "All Contacts",
+                          context.l10n.call_allContacts,
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontFamily: FontFamily.interBold,
@@ -370,7 +371,7 @@ class _CallContactsTabState extends State<CallContactsTab>
                         padding: EdgeInsets.only(
                             left: 4.w, bottom: 12.h, top: 16.h),
                         child: Text(
-                          "Invite to FG Tracker",
+                          context.l10n.call_inviteToApp,
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontFamily: FontFamily.interBold,
@@ -397,7 +398,7 @@ class _CallContactsTabState extends State<CallContactsTab>
   Widget _buildInviteRow(UserListData user) {
     final String displayName = (user.name?.trim().isNotEmpty == true)
         ? user.name!.trim()
-        : (user.mobileNo ?? 'Unknown User');
+        : (user.mobileNo ?? context.l10n.call_unknownUser);
 
     return Container(
       margin: EdgeInsets.only(bottom: 10.h),
@@ -456,7 +457,7 @@ class _CallContactsTabState extends State<CallContactsTab>
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: reausabletext(
-                "Invite",
+                context.l10n.call_invite,
                 fontsize: 12.sp,
                 color: const Color(0xFF6B4DFF),
                 fontfamily: FontFamily.interSemiBold,
@@ -480,7 +481,7 @@ class _CallContactsTabState extends State<CallContactsTab>
         callerId: Global.storageServices.get(PrefConst.userId).toString(),
         remoteUserId: user.userId.toString(),
         is_video: isVideo,
-        callerName: user.name ?? "User",
+        callerName: user.name ?? context.l10n.call_user,
         callerProfile: user.profileImage);
   }
 }

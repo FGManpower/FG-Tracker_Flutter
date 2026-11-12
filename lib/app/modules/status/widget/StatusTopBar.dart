@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/modules/status/widget/add_status_widgets.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -55,7 +56,7 @@ class StatusTopBar extends StatelessWidget {
                   children: [
                     SizedBox(height: 4.h),
                     reausabletext(
-                      hasMedia ? 'Preview Status' : 'Add to My Status',
+                      hasMedia ? appL10n.status_previewStatus : appL10n.status_addToMyStatus,
                       fontsize: 16.sp,
                       fontfamily: FontFamily.interBold,
                       color: Colors.white,
@@ -64,9 +65,9 @@ class StatusTopBar extends StatelessWidget {
                     reausabletext(
                       hasMedia
                           ? (controller.isVideoFile.value
-                              ? 'Tap video to play / pause'
-                              : 'Pinch to zoom photo')
-                          : 'Share updates with your team',
+                              ? appL10n.status_tapVideoHint
+                              : appL10n.status_pinchZoomHint)
+                          : appL10n.status_shareUpdatesHint,
                       fontsize: 11.sp,
                       color: Colors.white70,
                     ),

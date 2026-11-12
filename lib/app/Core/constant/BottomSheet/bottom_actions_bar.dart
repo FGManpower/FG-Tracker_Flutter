@@ -1,4 +1,4 @@
-import 'package:fgtracker/app/Core/theme/AppText.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/util/validator.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -160,13 +160,13 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
                 SizedBox(height: 20.h),
                 _FieldLabel(
                   icon: Icons.groups_outlined,
-                  title: AppText.groupName,
+                  title: context.l10n.groupDialog_nameLabel,
                   required: true,
                 ),
                 SizedBox(height: 12.h),
                 _RoundedField(
                   controller: _controller.groupName,
-                  hint: AppText.enterGroupName,
+                  hint: context.l10n.groupDialog_nameHint,
                   icon: Icons.groups_outlined,
                   maxLength: 50,
                   maxLines: 1,
@@ -174,20 +174,20 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
                   textInputAction: TextInputAction.next,
                   validator: (value) => Validator.validate(
                     value: value,
-                    title: "Group Name",
+                    title: context.l10n.groupDialog_nameLabel,
                   ),
                   onFieldSubmitted: (_) => _descFocus.requestFocus(),
                 ),
                 SizedBox(height: 12.h),
                 _FieldLabel(
                   icon: Icons.description_outlined,
-                  title: "Group Description (Optional)",
+                  title: context.l10n.groupDialog_descLabel,
                   required: false,
                 ),
                 SizedBox(height: 12.h),
                 _RoundedField(
                   controller: _controller.groupDesc,
-                  hint: "Enter Group Description",
+                  hint: context.l10n.groupDialog_descHint,
                   icon: Icons.description_outlined,
                   maxLength: 200,
                   maxLines: 1,
@@ -260,7 +260,7 @@ class _SheetHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                AppText.createNewGroup,
+                context.l10n.groupDialog_createTitle,
                 style: TextStyle(
                   fontSize: 19.sp,
                   fontWeight: FontWeight.w700,
@@ -270,7 +270,7 @@ class _SheetHeader extends StatelessWidget {
               ),
               SizedBox(height: 3.h),
               Text(
-                "Fill in the details below",
+                context.l10n.groupDialog_fillDetails,
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: Colors.grey,
@@ -502,7 +502,7 @@ class _SubmitButton extends StatelessWidget {
                 ),
               )
                   : Text(
-                "Create Group",
+                context.l10n.groupDialog_createButton,
                 key: const ValueKey('label'),
                 style: TextStyle(
                   fontSize: 18.sp,

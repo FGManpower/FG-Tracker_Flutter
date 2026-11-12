@@ -17,4 +17,5 @@ class PrefConst {
   static const String locationSharing = "locationSharing";
   static const String userEmail = "userEmail";
   static const String userPhone = "userPhone";
+  static const String appLanguage = "app_language";
 }

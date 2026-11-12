@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gal/gal.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:open_file/open_file.dart';
 
 import 'package:path_provider/path_provider.dart';
@@ -47,14 +48,7 @@ class QrController extends GetxController {
       const String appLink =
           'https://play.google.com/store/apps/details?id=com.fg.fgtracker';
 
-      final String message = '''
-📌 Group Code: $groupCode
-
-Join my group instantly using the QR code or the code above.
-
-📲 Download the app to stay connected:
-$appLink
-''';
+      final String message = '${appL10n.group_qrShareMessage(groupCode, appLink)}\n';
 
       final RenderBox box = context.findRenderObject() as RenderBox;
 
@@ -99,11 +93,11 @@ $appLink
   }
 
   void _showDownloadNotification(String filePath) async {
-    const AndroidNotificationDetails androidDetails =
+    final AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
       'download_channel',
-      'Download Notifications',
-      channelDescription: 'Notifies when QR code is downloaded',
+      appL10n.group_downloadChannelName,
+      channelDescription: appL10n.group_downloadChannelDescription,
       importance: Importance.max,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
@@ -113,8 +107,8 @@ $appLink
 
     await flutterLocalNotificationsPlugin.show(
       0,
-      'QR Code Saved',
-      'Tap to open your QR code',
+      appL10n.group_qrSavedTitle,
+      appL10n.group_qrSavedBody,
       notificationDetails,
       payload: filePath,
     );

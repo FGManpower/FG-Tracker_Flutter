@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:fgtracker/app/Data/Repositories/status_repo.dart';
@@ -54,11 +55,11 @@ class AddStatusController extends GetxController {
   String get whoCanSeeLabel {
     switch (privacyType.value) {
       case 'EXCEPT_USERS':
-        return 'Except Selected';
+        return appL10n.status_exceptSelected;
       case 'ONLY_SHARE_WITH':
-        return 'Only Share With';
+        return appL10n.status_onlyShareWith;
       default:
-        return 'All Contacts';
+        return appL10n.status_allContacts;
     }
   }
 
@@ -79,13 +80,13 @@ class AddStatusController extends GetxController {
     try {
       _cameras = await availableCameras();
       if (_cameras.isEmpty) {
-        error.value = 'No camera available';
+        error.value = appL10n.status_noCamera;
         isCameraReady.value = false;
         return;
       }
       await _setupCamera(_cameras[_selectedCameraIndex]);
     } catch (_) {
-      error.value = 'Unable to access camera';
+      error.value = appL10n.status_cameraAccessFailed;
       isCameraReady.value = false;
     } finally {
       isInitializing.value = false;
@@ -324,8 +325,8 @@ class AddStatusController extends GetxController {
 
     if (mode.value == 'text' && textController.text.trim().isEmpty) {
       Get.snackbar(
-        'Status',
-        'Text content is required for text status',
+        appL10n.status_title,
+        appL10n.status_textRequired,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.black87,
         colorText: Colors.white,
@@ -335,8 +336,10 @@ class AddStatusController extends GetxController {
 
     if (mode.value != 'text' && capturedFile.value == null) {
       Get.snackbar(
-        'Status',
-        'Please capture or select a ${mode.value} first',
+        appL10n.status_title,
+        mode.value == 'video'
+            ? appL10n.status_selectVideoFirst
+            : appL10n.status_selectPhotoFirst,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.black87,
         colorText: Colors.white,
@@ -384,8 +387,8 @@ class AddStatusController extends GetxController {
         Get.back();
       } else {
         Get.snackbar(
-          'Upload Failed',
-          response.message ?? 'Unable to publish status',
+          appL10n.status_uploadFailed,
+          response.message ?? appL10n.status_publishFailed,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.redAccent,
           colorText: Colors.white,
@@ -393,7 +396,7 @@ class AddStatusController extends GetxController {
       }
     } catch (e) {
       Get.snackbar(
-        'Upload Failed',
+        appL10n.status_uploadFailed,
         e.toString(),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.redAccent,

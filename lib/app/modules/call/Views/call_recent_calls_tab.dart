@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Data/Services/group_call_service.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
@@ -16,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import '../../../Model/MemberDataRes.dart';
 import '../../mediaStream/Views/contact_profile_screen.dart';
@@ -64,7 +66,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
     GroupCallService.instance.startGroupCall(
       context,
       groupId: gId,
-      groupName: call['name'] ?? "Group Call",
+      groupName: call['name'] ?? context.l10n.call_kindGroupCall,
       groupProfile: call['avatar'],
       isVideo: isVideo,
       memberCount: int.tryParse(call['memberCount'] ?? '0') ?? 0,
@@ -79,7 +81,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
         : (call['callerId'] ?? '');
     showGroupQuickProfile(
       groupId: gId,
-      groupName: call['name'] ?? "Group",
+      groupName: call['name'] ?? context.l10n.call_groupBadge,
       groupProfile: call['avatar'],
       memberCount: int.tryParse(call['memberCount'] ?? '0'),
       onInfo: () => _openProfile(call),
@@ -99,7 +101,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
         () => ContactProfileScreen(
           isGroup: true,
           groupId: gId,
-          groupName: call['name'] ?? "Group",
+          groupName: call['name'] ?? context.l10n.call_groupBadge,
           groupAvatar: call['avatar'],
           callId: callId,
         ),
@@ -178,7 +180,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                     ),
                     SizedBox(height: 16.h),
                     Text(
-                      "Delete Call History",
+                      context.l10n.call_deleteHistoryTitle,
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontFamily: FontFamily.interBold,
@@ -189,7 +191,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16.w),
                       child: Text(
-                        "Are you sure you want to delete this call history?",
+                        context.l10n.call_deleteHistoryMessage,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 14.sp,
@@ -219,7 +221,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                               backgroundColor: Colors.white,
                             ),
                             child: Text(
-                              "No",
+                              context.l10n.common_no,
                               style: TextStyle(
                                 fontSize: 15.sp,
                                 fontFamily: FontFamily.interSemiBold,
@@ -269,7 +271,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                     ),
                                   )
                                 : Text(
-                                    "Yes, Delete",
+                                    context.l10n.call_yesDelete,
                                     style: TextStyle(
                                       fontSize: 15.sp,
                                       fontFamily: FontFamily.interSemiBold,
@@ -313,7 +315,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
             ),
             backgroundColor: Colors.white,
             title: Text(
-              "Delete Selected Calls",
+              context.l10n.call_deleteSelectedTitle,
               style: TextStyle(
                 fontSize: 18.sp,
                 fontFamily: FontFamily.interBold,
@@ -321,9 +323,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
               ),
             ),
             content: Text(
-              count == 1
-                  ? "Are you sure you want to delete this selected call history?"
-                  : "Are you sure you want to delete these $count selected call history entries?",
+              context.l10n.call_deleteSelectedMessage(count),
               style: TextStyle(
                 fontSize: 14.sp,
                 fontFamily: FontFamily.interRegular,
@@ -348,8 +348,9 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
-                      child: Text(
-                        "Cancel",
+                      child: AutoFitText(
+                        context.l10n.common_cancel,
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontFamily: FontFamily.interMedium,
@@ -388,8 +389,9 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                 color: Colors.white,
                               ),
                             )
-                          : Text(
-                              "Delete",
+                          : AutoFitText(
+                              context.l10n.common_delete,
+                              textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontFamily: FontFamily.interSemiBold,
@@ -466,15 +468,17 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                         color: Colors.white,
                       ),
                       SizedBox(width: 8.w),
-                      Text(
-                        selectedCount > 1
-                            ? "Delete ($selectedCount)"
-                            : "Delete",
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontFamily: FontFamily.interSemiBold,
-                          color: Colors.white,
-                          letterSpacing: 0.3,
+                      Flexible(
+                        child: AutoFitText(
+                          selectedCount > 1
+                              ? context.l10n.call_deleteWithCount(selectedCount)
+                              : context.l10n.common_delete,
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontFamily: FontFamily.interSemiBold,
+                            color: Colors.white,
+                            letterSpacing: 0.3,
+                          ),
                         ),
                       ),
                     ],
@@ -518,8 +522,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
               _EmptyState(
                 isDialOpen: isDialOpen,
                 message: controller.searchQuery.value.isNotEmpty
-                    ? "No recent calls match your search"
-                    : "No recent calls yet",
+                    ? context.l10n.call_noRecentMatch
+                    : context.l10n.call_noRecentYet,
               ),
             ],
           ),
@@ -561,7 +565,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                       padding:
                           EdgeInsets.only(top: 10.h, bottom: 8.h, left: 2.w),
                       child: Text(
-                        entry.key,
+                        localizedSectionTitle(context.l10n, entry.key),
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontFamily: FontFamily.interBold,
@@ -691,7 +695,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
 
                                           final callerName =
                                               callItem['name']?.toString() ??
-                                                  'User';
+                                                  context.l10n.call_user;
 
                                           final profileImage =
                                               callItem['avatar']?.toString() ??
@@ -720,7 +724,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                                   isVideo: isVideo);
                                             } else {
                                               Utils().fluttertoast(
-                                                  "Unable to call this contact");
+                                                  context.l10n.call_unableToCallContact);
                                             }
                                           }
                                         }
@@ -867,7 +871,7 @@ class _RecentCallTile extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Text(
-                        "Group",
+                        context.l10n.call_groupBadge,
                         style: TextStyle(
                           fontSize: 9.sp,
                           fontFamily: FontFamily.interSemiBold,
@@ -889,7 +893,7 @@ class _RecentCallTile extends StatelessWidget {
                   SizedBox(width: 4.w),
                   Expanded(
                     child: Text(
-                      type,
+                      recentCallTypeLabel(context.l10n, call),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1356,8 +1360,9 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
                               size: 24.sp,
                             ),
                             SizedBox(height: 3.h),
-                            Text(
-                              "Delete",
+                            AutoFitText(
+                              context.l10n.common_delete,
+                              textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 12.sp,
                                 fontFamily: FontFamily.interSemiBold,
@@ -1459,7 +1464,6 @@ class RecentCallsSelectionBar extends StatelessWidget {
   static void _confirmDelete(BuildContext context, CallController controller) {
     final int n = controller.selectedIds.length;
     if (n == 0 || controller.isDeletingMultiple.value) return;
-    final String noun = n == 1 ? 'call' : 'calls';
 
     showDialog(
       context: context,
@@ -1470,7 +1474,7 @@ class RecentCallsSelectionBar extends StatelessWidget {
           ),
           backgroundColor: Colors.white,
           title: Text(
-            "Delete $n $noun?",
+            context.l10n.call_deleteCallsTitle(n),
             style: TextStyle(
               fontSize: 18.sp,
               fontFamily: FontFamily.interBold,
@@ -1478,7 +1482,7 @@ class RecentCallsSelectionBar extends StatelessWidget {
             ),
           ),
           content: Text(
-            "These calls will be removed from your call history.",
+            context.l10n.call_deleteCallsMessage,
             style: TextStyle(
               fontSize: 14.sp,
               fontFamily: FontFamily.interRegular,
@@ -1499,8 +1503,9 @@ class RecentCallsSelectionBar extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
-                    child: Text(
-                      "Cancel",
+                    child: AutoFitText(
+                      context.l10n.common_cancel,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontFamily: FontFamily.interMedium,
@@ -1524,8 +1529,9 @@ class RecentCallsSelectionBar extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
-                    child: Text(
-                      "Delete",
+                    child: AutoFitText(
+                      context.l10n.common_delete,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontFamily: FontFamily.interSemiBold,
@@ -1606,12 +1612,16 @@ class RecentCallsSelectionBar extends StatelessWidget {
                     ? controller.clearSelection
                     : controller.selectAll),
             padding: EdgeInsets.symmetric(horizontal: 12.w),
-            child: Text(
-              allSelected ? "Unselect all" : "Select all",
-              style: TextStyle(
-                fontSize: 13.sp,
-                fontFamily: FontFamily.interSemiBold,
-                color: busy ? const Color(0xFF9CA3AF) : _accent,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 150.w),
+              child: AutoFitText(
+                allSelected ? context.l10n.call_unselectAll : context.l10n.call_selectAll,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontFamily: FontFamily.interSemiBold,
+                  color: busy ? const Color(0xFF9CA3AF) : _accent,
+                ),
               ),
             ),
           ),

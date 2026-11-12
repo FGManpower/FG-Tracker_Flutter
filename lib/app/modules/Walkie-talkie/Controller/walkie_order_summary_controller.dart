@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/currency_format.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/Model/walkie_create_order_model.dart';
 import 'package:fgtracker/app/Model/walkie_order_summary_model.dart';
@@ -18,10 +19,10 @@ import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 class WalkieOrderSummaryController extends GetxController {
   late final Razorpay _razorpay;
   late final Rx<WalkiePaymentOrderModel> order;
@@ -179,7 +180,9 @@ class WalkieOrderSummaryController extends GetxController {
     final pct = gstPercent == gstPercent.roundToDouble()
         ? gstPercent.toInt().toString()
         : gstPercent.toStringAsFixed(1);
-    return isDomestic ? "GST ($pct%)" : "VAT / Tax ($pct%)";
+    return isDomestic
+        ? appL10n.walkiePlan_orderGstTitle(pct)
+        : appL10n.walkiePlan_orderVatTitle(pct);
   }
 
   String? get currentPromoCode {
@@ -234,7 +237,7 @@ class WalkieOrderSummaryController extends GetxController {
   }
 
   String _parseErrorMessage(dynamic error) {
-    if (error == null) return "Something went wrong. Please try again.";
+    if (error == null) return appL10n.common_somethingWentWrong;
 
     if (error is DioException) {
       if (error.type == DioExceptionType.connectionError ||
@@ -242,7 +245,7 @@ class WalkieOrderSummaryController extends GetxController {
           error.type == DioExceptionType.sendTimeout ||
           error.type == DioExceptionType.receiveTimeout ||
           error.error is SocketException) {
-        return "No internet connection. Please check your network.";
+        return appL10n.walkiePlan_noInternetCheckNetwork;
       }
       if (error.response?.data != null) {
         final data = error.response!.data;
@@ -273,15 +276,15 @@ class WalkieOrderSummaryController extends GetxController {
       }
       return error.message?.isNotEmpty == true
           ? error.message!
-          : "Unable to connect to server. Please try again.";
+          : appL10n.walkiePlan_unableToConnect;
     }
 
     if (error is SocketException) {
-      return "No internet connection. Please check your network.";
+      return appL10n.walkiePlan_noInternetCheckNetwork;
     }
 
     final str = error.toString().trim();
-    if (str.isEmpty) return "Something went wrong. Please try again.";
+    if (str.isEmpty) return appL10n.common_somethingWentWrong;
 
     final lower = str.toLowerCase();
     if (lower.contains("socket") ||
@@ -290,7 +293,7 @@ class WalkieOrderSummaryController extends GetxController {
         lower.contains("network") ||
         lower.contains("failed host lookup") ||
         lower.contains("connection refused")) {
-      return "No internet connection. Please check your network.";
+      return appL10n.walkiePlan_noInternetCheckNetwork;
     }
 
     if (str.startsWith("Exception: ")) {
@@ -331,7 +334,7 @@ class WalkieOrderSummaryController extends GetxController {
         }
       } else {
         if (summaryData.value == null) {
-          errorMessage.value = response.message ?? "Unable to load order summary.";
+          errorMessage.value = response.message ?? appL10n.walkiePlan_orderUnableToLoad;
         }
       }
     } catch (e) {
@@ -368,7 +371,7 @@ class WalkieOrderSummaryController extends GetxController {
   Future<bool> applyPromoCode(String code, {bool isSilent = false}) async {
     final cleanCode = code.trim().toUpperCase();
     if (cleanCode.isEmpty) {
-      if (!isSilent) showTopWhiteMessage("Please enter a valid coupon code");
+      if (!isSilent) showTopWhiteMessage(appL10n.walkiePlan_orderEnterValidCoupon);
       return false;
     }
 
@@ -398,10 +401,10 @@ class WalkieOrderSummaryController extends GetxController {
               summaryRes.data?.pricing?.discountAmount;
           if (saved != null && saved > 0) {
             showTopWhiteMessage(
-                "Coupon applied! You saved ${money(saved)}");
+                appL10n.walkiePlan_orderCouponAppliedSaved(money(saved)));
           } else {
             showTopWhiteMessage(
-                summaryRes.message ?? "Coupon applied successfully!");
+                summaryRes.message ?? appL10n.walkiePlan_orderCouponApplied);
           }
         }
         return true;
@@ -428,17 +431,17 @@ class WalkieOrderSummaryController extends GetxController {
               response.data?.pricing?.discountAmount;
           if (saved != null && saved > 0) {
             showTopWhiteMessage(
-                "Coupon applied! You saved ${money(saved)}");
+                appL10n.walkiePlan_orderCouponAppliedSaved(money(saved)));
           } else {
             showTopWhiteMessage(
-                response.message ?? "Coupon applied successfully!");
+                response.message ?? appL10n.walkiePlan_orderCouponApplied);
           }
         }
         return true;
       } else {
         if (!isSilent) {
           showTopWhiteMessage(
-              response.message ?? "Invalid or expired coupon code");
+              response.message ?? appL10n.walkiePlan_orderInvalidCoupon);
         }
         return false;
       }
@@ -465,7 +468,7 @@ class WalkieOrderSummaryController extends GetxController {
     dynamicCouponCode.value = null;
     dynamicDiscount.value = 0.0;
     fetchOrderSummary(couponCodeOverride: "");
-    showTopWhiteMessage("Coupon removed successfully");
+    showTopWhiteMessage(appL10n.walkiePlan_orderCouponRemoved);
   }
 
   void _initRazorpay() {
@@ -488,7 +491,7 @@ class WalkieOrderSummaryController extends GetxController {
     HapticFeedback.mediumImpact();
 
     final String nowFormatted =
-        DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+        appDateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
 
     final String activePlanTitle = planName;
     final String activeDuration = (summaryData.value?.plan?.billingInterval ??
@@ -540,11 +543,11 @@ class WalkieOrderSummaryController extends GetxController {
         msg.toLowerCase() == 'undefined' ||
         msg.toLowerCase() == 'null') {
       if (code == Razorpay.PAYMENT_CANCELLED) {
-        return "Payment was cancelled by user. No amount has been charged to your account.";
+        return appL10n.walkiePlan_payCancelledByUser;
       } else if (code == Razorpay.NETWORK_ERROR) {
-        return "Network connection issue during payment. Please check your internet and try again.";
+        return appL10n.walkiePlan_payNetworkIssue;
       }
-      return "Your payment was not completed. No amount has been charged to your account.";
+      return appL10n.walkiePlan_payNotCompleted;
     }
 
     if (msg.contains('{') && msg.contains('}')) {
@@ -638,9 +641,9 @@ class WalkieOrderSummaryController extends GetxController {
                       padding: const EdgeInsets.symmetric(vertical: 13),
                     ),
                     onPressed: () => Get.back(),
-                    child: const Text(
-                      "Change Method",
-                      style: TextStyle(
+                    child: AutoFitText(
+                      appL10n.walkiePlan_orderChangeMethod,
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF475569),
@@ -663,9 +666,9 @@ class WalkieOrderSummaryController extends GetxController {
                       Get.back();
                       processPayment();
                     },
-                    child: const Text(
-                      "Retry Pay",
-                      style: TextStyle(
+                    child: AutoFitText(
+                      appL10n.walkiePlan_orderRetryPay,
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -715,7 +718,7 @@ class WalkieOrderSummaryController extends GetxController {
       if (createOrderRes.status != true || createOrderRes.data == null) {
         isProcessingPayment.value = false;
         final errorMsg = createOrderRes.message ??
-            "Failed to create payment order. Please try again.";
+            appL10n.walkiePlan_orderCreateFailed;
         showTopWhiteMessage(errorMsg);
         return;
       }
@@ -768,7 +771,7 @@ class WalkieOrderSummaryController extends GetxController {
       if (amountInPaise <= 0) {
         isProcessingPayment.value = false;
         showTopWhiteMessage(
-            "Could not start the payment. Please try again.");
+            appL10n.walkiePlan_orderCouldNotStart);
         return;
       }
 
@@ -870,9 +873,9 @@ class WalkieOrderSummaryController extends GetxController {
           : Get.put(RazorpayPaymentController());
 
       // Prepare user friendly payment method string
-      String methodDesc = "Razorpay Payment";
+      String methodDesc = appL10n.walkiePlan_payMethodRazorpay;
       if (!isInr) {
-        methodDesc = "International Card / PayPal";
+        methodDesc = appL10n.walkiePlan_payMethodInternational;
       } else if (method == 'upi') {
         if (selectedUpiApp.value == 'gpay') {
           methodDesc = "Google Pay (UPI)";
@@ -887,17 +890,19 @@ class WalkieOrderSummaryController extends GetxController {
         } else if (selectedUpiApp.value == 'amazonpay') {
           methodDesc = "Amazon Pay (UPI)";
         } else {
-          methodDesc = "UPI Payment";
+          methodDesc = appL10n.walkiePlan_payMethodUpi;
         }
       } else if (selectedPaymentMethod.value == 'card') {
-        final cardTypeLabel =
-            selectedCardType.value == 'credit' ? 'Credit Card' : 'Debit Card';
-        methodDesc =
-            "$cardTypeLabel (${selectedCardNetwork.value.toUpperCase()})";
+        final network = selectedCardNetwork.value.toUpperCase();
+        methodDesc = selectedCardType.value == 'credit'
+            ? appL10n.walkiePlan_payMethodCreditCard(network)
+            : appL10n.walkiePlan_payMethodDebitCard(network);
       } else if (selectedPaymentMethod.value == 'netbanking') {
-        methodDesc = "NetBanking (${selectedBank.value.toUpperCase()})";
+        methodDesc = appL10n.walkiePlan_payMethodNetBanking(
+            selectedBank.value.toUpperCase());
       } else if (selectedPaymentMethod.value == 'wallet') {
-        methodDesc = "Wallet (${selectedWallet.value.capitalizeFirst})";
+        methodDesc = appL10n.walkiePlan_payMethodWallet(
+            selectedWallet.value.capitalizeFirst ?? selectedWallet.value);
       }
 
       await razorpayController.openCheckoutMap(

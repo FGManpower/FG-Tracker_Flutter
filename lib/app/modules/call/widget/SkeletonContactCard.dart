@@ -8,6 +8,7 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import '../Controller/contact_controller.dart';
 
@@ -237,7 +238,7 @@ class RecentContactTile extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6.r),
                         ),
                         child: Text(
-                          "Group",
+                          context.l10n.call_groupBadge,
                           style: TextStyle(
                             fontSize: 9.sp,
                             fontFamily: FontFamily.interSemiBold,
@@ -259,7 +260,7 @@ class RecentContactTile extends StatelessWidget {
                     SizedBox(width: 4.w),
                     Expanded(
                       child: Text(
-                        type,
+                        recentCallTypeLabel(context.l10n, call),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -404,7 +405,7 @@ class ContactCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String name = user.name ?? 'Unknown';
+    final String name = user.name ?? context.l10n.call_unknown;
     final bool isOnline = user.isOnline ?? false;
 
     return GestureDetector(
@@ -557,7 +558,7 @@ Widget buildPermissionBanner({required ContactController controller}) {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "Let us access your contacts",
+                appL10n.call_contactsAccessBannerTitle,
                 style: TextStyle(
                   fontSize: 13.5.sp,
                   fontFamily: FontFamily.interBold,
@@ -566,7 +567,7 @@ Widget buildPermissionBanner({required ContactController controller}) {
               ),
               SizedBox(height: 3.h),
               Text(
-                "Find and call your team members easily.",
+                appL10n.call_contactsAccessBannerMessage,
                 style: TextStyle(
                   fontSize: 11.5.sp,
                   fontFamily: FontFamily.interRegular,
@@ -598,7 +599,7 @@ Widget buildPermissionBanner({required ContactController controller}) {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "Allow Access",
+                  appL10n.call_allowAccess,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 11.5.sp,

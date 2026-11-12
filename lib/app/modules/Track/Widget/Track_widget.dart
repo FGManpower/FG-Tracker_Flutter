@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:fgtracker/l10n/l10n.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 class MarkerCache {
@@ -32,20 +33,20 @@ String getMarkerInitials(String? name, bool isMe) {
   if (name == null ||
       name.trim().isEmpty ||
       name.trim().toLowerCase() == 'member') {
-    return isMe ? "YOU" : "M";
+    return isMe ? appL10n.common_you.toUpperCase() : "M";
   }
   final parts = name.trim().split(RegExp(r'\s+'));
   if (parts.length >= 2) {
     final first = parts[0].isNotEmpty ? parts[0][0].toUpperCase() : '';
     final second = parts[1].isNotEmpty ? parts[1][0].toUpperCase() : '';
     final initials = '$first$second';
-    return initials.isNotEmpty ? initials : (isMe ? "YOU" : "M");
+    return initials.isNotEmpty ? initials : (isMe ? appL10n.common_you.toUpperCase() : "M");
   } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
     return parts[0].length >= 2
         ? parts[0].substring(0, 2).toUpperCase()
         : parts[0][0].toUpperCase();
   }
-  return isMe ? "YOU" : "M";
+  return isMe ? appL10n.common_you.toUpperCase() : "M";
 }
 
 Future<ui.Image?> _fetchAndDecodeImage(String url, int targetSize) async {
@@ -284,9 +285,9 @@ Future<BitmapDescriptor> getCustomIcon(
       );
 
       final badgeText = TextPainter(
-        text: const TextSpan(
-          text: "YOU",
-          style: TextStyle(
+        text: TextSpan(
+          text: appL10n.common_you.toUpperCase(),
+          style: const TextStyle(
             color: Color(0xFF654CE8),
             fontSize: 9.0,
             fontWeight: FontWeight.w900,

@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -7,11 +8,13 @@ class WalkieNotificationServices {
 
   Future<void> showWalkieNotification(Map<String, dynamic> callData) async {
     const String channelId = "walkie_call_channel";
+    // Can run without GetX state: read the language from prefs.
+    final l10n = await loadAppL10nFromPrefs();
 
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    final AndroidNotificationChannel channel = AndroidNotificationChannel(
       channelId,
-      "Walkie Talkie Calls",
-      description: "Incoming Walkie Talkie Calls",
+      l10n.notif_channelWalkieCallsName,
+      description: l10n.notif_channelWalkieCallsDesc,
       importance: Importance.max,
     );
 
@@ -23,22 +26,22 @@ class WalkieNotificationServices {
     final AndroidNotificationDetails androidDetails =
     AndroidNotificationDetails(
       channelId,
-      "Walkie Talkie Calls",
-      channelDescription: "Incoming Walkie Talkie Calls",
+      l10n.notif_channelWalkieCallsName,
+      channelDescription: l10n.notif_channelWalkieCallsDesc,
       importance: Importance.max,
       priority: Priority.high,
       fullScreenIntent: true,
       sound: const RawResourceAndroidNotificationSound("recieve_notification"),
       enableVibration: true,
-      actions: const [
+      actions: [
         AndroidNotificationAction(
           "WALKIE_ACCEPT",
-          "Accept",
+          l10n.notif_accept,
           showsUserInterface: true,
         ),
         AndroidNotificationAction(
           "WALKIE_REJECT",
-          "Reject",
+          l10n.notif_reject,
           cancelNotification: true,
         ),
       ],
@@ -56,8 +59,8 @@ class WalkieNotificationServices {
 
     await flutterLocalNotificationsPlugin.show(
       1001,
-      "Incoming Walkie-Talkie",
-      "${callData['callerName']} wants to talk",
+      l10n.notif_incomingWalkieTitle,
+      l10n.notif_wantsToTalk("${callData['callerName']}"),
       notificationDetails,
       payload: jsonEncode(callData), // 🔴 REQUIRED
     );

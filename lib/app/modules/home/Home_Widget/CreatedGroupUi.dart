@@ -7,6 +7,7 @@ import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Group/widgets/group_membership_sheet.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -15,8 +16,8 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../gen/assets.gen.dart';
 import '../../../../gen/fonts.gen.dart';
-import '../../../Core/theme/AppText.dart';
 import '../../../config/themes_data.dart';
+import '../../../global_widget/auto_fit_text.dart';
 import '../../../global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 
@@ -105,7 +106,7 @@ class CreatedGroupUi extends StatelessWidget {
                         children: [
                           Expanded(
                             child: reausabletext(
-                              data?.groupName ?? AppText.unnamedTrip,
+                              data?.groupName ?? appL10n.group_unnamedTrip,
                               fontsize: 13,
                               fontfamily: FontFamily.interSemiBold,
                               color: ToggleThemeData.black,
@@ -163,7 +164,7 @@ class CreatedGroupUi extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 reausabletext(
-                                  "Team Code",
+                                  appL10n.group_teamCode,
                                   fontsize: 8,
                                   fontfamily: FontFamily.interMedium,
                                   color: Colors.black54,
@@ -197,15 +198,17 @@ class CreatedGroupUi extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                reausabletext(
-                                  "Created",
-                                  fontsize: 8,
-                                  fontfamily: FontFamily.interMedium,
-                                  color: Colors.black54,
+                                AutoFitText(
+                                  appL10n.group_created,
+                                  style: TextStyle(
+                                    fontFamily: FontFamily.interMedium,
+                                    fontSize: 8.sp,
+                                    color: Colors.black54,
+                                  ),
                                 ),
                                 SizedBox(height: 4.h),
                                 reausabletext(
-                                  isCreator ? "You" : "Other",
+                                  isCreator ? appL10n.common_you : appL10n.group_other,
                                   fontsize: 10,
                                   fontfamily: FontFamily.interSemiBold,
                                   color: ToggleThemeData.darkPurple,
@@ -231,12 +234,13 @@ class CreatedGroupUi extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                reausabletext(
-                                  "Members",
-                                  fontsize: 8,
-                                  fontfamily: FontFamily.interMedium,
-                                  color: Colors.black54,
-                                  maxline: 1,
+                                AutoFitText(
+                                  appL10n.home_statMembers,
+                                  style: TextStyle(
+                                    fontFamily: FontFamily.interMedium,
+                                    fontSize: 8.sp,
+                                    color: Colors.black54,
+                                  ),
                                 ),
                                 SizedBox(height: 4.h),
                                 reausabletext(
@@ -258,18 +262,22 @@ class CreatedGroupUi extends StatelessWidget {
                             if (data == null) return;
                             QrCodeBottomSheet.show(
                               context,
-                              groupName: data.groupName ?? "Group",
+                              groupName: data.groupName ?? appL10n.group_defaultName,
                               groupCode: data.groupCode ?? "",
                             );
                           },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              reausabletext(
-                                "Show QR Code",
-                                fontfamily: FontFamily.interMedium,
-                                fontsize: 11,
-                                color: ToggleThemeData.darkPurple,
+                              Flexible(
+                                child: AutoFitText(
+                                  appL10n.group_showQrCode,
+                                  style: TextStyle(
+                                    fontFamily: FontFamily.interMedium,
+                                    fontSize: 11.sp,
+                                    color: ToggleThemeData.darkPurple,
+                                  ),
+                                ),
                               ),
                               Container(
                                 decoration: BoxDecoration(
@@ -296,8 +304,8 @@ class CreatedGroupUi extends StatelessWidget {
                           onTap: () {
                             if (data == null) return;
                             CommonDialog.ConfirmationDialog(
-                              title: AppText.areYouSure,
-                              content: AppText.doYouWantToExitGroup,
+                              title: appL10n.group_areYouSure,
+                              content: appL10n.group_exitGroupConfirm,
                               onConfirm: () {
                                 Get.back();
                                 MemberController().exitGroup(
@@ -313,7 +321,7 @@ class CreatedGroupUi extends StatelessWidget {
                                         groupId: data.id.toString(),
                                       );
                                       GroupMembershipSheet.showLeft(
-                                        groupName: data.groupName ?? 'Group',
+                                        groupName: data.groupName ?? appL10n.group_defaultName,
                                         groupImage: data.groupProfile,
                                         memberCount: data.memberCount,
                                         delay: const Duration(milliseconds: 600),
@@ -338,11 +346,15 @@ class CreatedGroupUi extends StatelessWidget {
                               mainAxisAlignment:
                               MainAxisAlignment.spaceBetween,
                               children: [
-                                reausabletext(
-                                  "Exit Group",
-                                  fontfamily: FontFamily.interSemiBold,
-                                  fontsize: 11,
-                                  color: Colors.white,
+                                Flexible(
+                                  child: AutoFitText(
+                                    appL10n.group_exitGroup,
+                                    style: TextStyle(
+                                      fontFamily: FontFamily.interSemiBold,
+                                      fontSize: 11.sp,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
                                 Icon(
                                   Icons.exit_to_app_rounded,

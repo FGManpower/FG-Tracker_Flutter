@@ -11,6 +11,7 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 /// What the screen can show about the price
@@ -44,7 +45,9 @@ class OtpChargesController extends GetxController {
     final pct = gst == gst.roundToDouble()
         ? gst.toInt().toString()
         : gst.toStringAsFixed(1);
-    return isDomestic ? "GST ($pct%)" : "VAT / Tax ($pct%)";
+    return isDomestic
+        ? appL10n.otpCharges_gstTitle(pct)
+        : appL10n.otpCharges_vatTitle(pct);
   }
 
   /// Login path is always `charged`; the side menu loads it from my-rate
@@ -225,7 +228,7 @@ class OtpChargesController extends GetxController {
     _expiryTimer?.cancel();
     _tokenExpired = true;
     CommonDialog.errorMessage(
-      message ?? 'Session expired. Please start again.',
+      message ?? appL10n.otpCharges_sessionExpired,
       onDismiss: () {
         Get.back(); // dialog
         onBack(); // to login
@@ -250,7 +253,7 @@ class OtpChargesController extends GetxController {
       if (!isPaymentEnabled.value) {
         isLoading.value = false;
         CommonDialog.errorMessage(
-            'OTP payments are temporarily unavailable. Please try again later.');
+            appL10n.otpCharges_paymentsUnavailable);
         return;
       }
 
@@ -262,7 +265,7 @@ class OtpChargesController extends GetxController {
           return;
         }
         CommonDialog.errorMessage(
-            order.message ?? 'Could not start the payment. Please try again.');
+            order.message ?? appL10n.otpCharges_paymentStartFailed);
         return;
       }
       _orderId = order.orderId;
@@ -273,7 +276,7 @@ class OtpChargesController extends GetxController {
       if (key.isEmpty) {
         isLoading.value = false;
         CommonDialog.errorMessage(
-            'Could not start the payment. Please try again.');
+            appL10n.otpCharges_paymentStartFailed);
         return;
       }
 
@@ -336,13 +339,13 @@ class OtpChargesController extends GetxController {
 
     if (result == null) {
       Utils().fluttertoast(
-          'Payment received. Your OTP may take a moment to arrive.');
+          appL10n.otpCharges_paymentReceived);
       _goToOtpScreen();
       return;
     }
     if (result.status != true) {
       CommonDialog.errorMessage(result.message ??
-          'Payment verification failed. If money was deducted it will be refunded in 5–7 working days.');
+          appL10n.otpCharges_verificationFailed);
       return;
     }
     _goToOtpScreen();
@@ -388,16 +391,16 @@ class OtpChargesController extends GetxController {
     }
     switch (response.code) {
       case Razorpay.PAYMENT_CANCELLED:
-        return 'Payment cancelled. You cancelled the payment. No money was deducted.';
+        return appL10n.otpCharges_paymentCancelled;
       case Razorpay.NETWORK_ERROR:
-        return 'No internet connection. Check your network and try again.';
+        return appL10n.otpCharges_noInternet;
       case Razorpay.TLS_ERROR:
       case Razorpay.INCOMPATIBLE_PLUGIN:
-        return "Payment couldn't start. Please update the app and try again.";
+        return appL10n.otpCharges_updateApp;
       case Razorpay.INVALID_OPTIONS:
-        return 'Something went wrong. Please try again in a moment.';
+        return appL10n.otpCharges_tryAgainMoment;
       default:
-        return 'Payment failed. If money was deducted it will be refunded in 5–7 working days.';
+        return appL10n.otpCharges_paymentFailed;
     }
   }
 

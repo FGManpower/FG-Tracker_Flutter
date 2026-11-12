@@ -1,6 +1,7 @@
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class ChooseView extends StatelessWidget {
   final VoidCallback onSelectVoiceToText;
@@ -70,7 +71,7 @@ class ChooseView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Voice to Text",
+                          context.l10n.voice_voiceToText,
                           style: TextStyle(
                             color: AppColors.darkText, // #0F0B4C
                             fontSize: 16.sp,
@@ -79,7 +80,7 @@ class ChooseView extends StatelessWidget {
                         ),
                         SizedBox(height: 2.h),
                         Text(
-                          "Speak and type into the message box",
+                          context.l10n.voice_voiceToTextSubtitle,
                           style: TextStyle(
                             color: AppColors.primarySecondaryElementText, // #666666
                             fontSize: 12.sp,
@@ -133,7 +134,7 @@ class ChooseView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Record Voice",
+                          context.l10n.voice_recordVoice,
                           style: TextStyle(
                             color: AppColors.darkText, // #0F0B4C
                             fontSize: 16.sp,
@@ -142,7 +143,7 @@ class ChooseView extends StatelessWidget {
                         ),
                         SizedBox(height: 2.h),
                         Text(
-                          "Record and send as an audio message",
+                          context.l10n.voice_recordVoiceSubtitle,
                           style: TextStyle(
                             color: AppColors.primarySecondaryElementText, // #666666
                             fontSize: 12.sp,

@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 class CashfreeOrderResult {
   final bool isSuccess;
   final String? orderId;
@@ -137,20 +138,20 @@ class WalkiePaymentGatewayService {
         return CashfreeOrderResult(
           isSuccess: false,
           errorMessage:
-              "Failed to create payment session: ${response.statusMessage}",
+              appL10n.walkiePlan_ctrlGatewaySessionFailed('${response.statusMessage}'),
         );
       }
     } on DioException catch (dioErr) {
       AppLog.d(
           "❌ [Cashfree] DioException: ${dioErr.message} | Response: ${dioErr.response?.data}");
-      String msg = "Payment initiation failed.";
+      String msg = appL10n.walkiePlan_ctrlGatewayInitFailed;
       if (dioErr.response?.data is Map) {
         final map = dioErr.response!.data as Map;
         msg = map['message']?.toString() ??
             map['error']?.toString() ??
-            "Cashfree error (${dioErr.response?.statusCode})";
+            appL10n.walkiePlan_ctrlGatewayError('${dioErr.response?.statusCode}');
       } else if (dioErr.error is SocketException) {
-        msg = "No internet connection. Please check your network.";
+        msg = appL10n.walkiePlan_noInternetCheckNetwork;
       }
       return CashfreeOrderResult(
         isSuccess: false,
@@ -163,7 +164,7 @@ class WalkiePaymentGatewayService {
       AppLog.d("❌ [Cashfree] Error: $e");
       return CashfreeOrderResult(
         isSuccess: false,
-        errorMessage: "Unable to process payment: $e",
+        errorMessage: appL10n.walkiePlan_ctrlGatewayUnableToProcess('$e'),
       );
     }
   }

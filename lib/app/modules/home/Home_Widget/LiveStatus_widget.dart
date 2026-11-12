@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Model/member_live_status.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -43,7 +44,7 @@ Widget SkeletonMember() {
 Widget memberCard(UserMemberData member) {
   final String name = member.name?.trim().isNotEmpty == true
       ? member.name!.trim()
-      : 'Unknown Member';
+      : appL10n.home_unknownMember;
 
   final bool isOnline = member.isOnline == 1;
 
@@ -113,7 +114,7 @@ Widget memberCard(UserMemberData member) {
               ),
               SizedBox(height: 4.h),
               reausabletext(
-                isOnline ? 'Online' : 'Offline',
+                isOnline ? appL10n.common_online : appL10n.common_offline,
                 fontsize: 12.sp,
                 fontfamily: FontFamily.interRegular,
                 color: const Color(0xFF68729C),

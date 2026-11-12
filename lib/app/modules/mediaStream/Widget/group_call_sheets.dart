@@ -3,10 +3,12 @@ import 'package:fgtracker/app/modules/mediaStream/Controller/group_participants_
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/theme/appTheme.dart';
 import '../../../Core/values/utility.dart';
+import '../../../global_widget/auto_fit_text.dart';
 import '../../../global_widget/common_widget.dart';
 import '../../../Model/group_call_participant.dart';
 
@@ -75,7 +77,7 @@ class _GroupParticipantsSheetView extends StatelessWidget {
             ),
             SizedBox(height: 16.h),
             reausabletext(
-              'In this call (${inCall.length})',
+              context.l10n.call_inThisCall(inCall.length),
               fontsize: 16,
               fontfamily: FontFamily.interSemiBold,
               color: const Color(0xFF1E1147),
@@ -83,7 +85,7 @@ class _GroupParticipantsSheetView extends StatelessWidget {
             SizedBox(height: 10.h),
             if (inCall.isEmpty)
               reausabletext(
-                'No active participants',
+                context.l10n.call_noActiveParticipants,
                 fontsize: 13,
                 color: Colors.grey,
               )
@@ -104,7 +106,7 @@ class _GroupParticipantsSheetView extends StatelessWidget {
               ),
             SizedBox(height: 18.h),
             reausabletext(
-              'Not in this call (${notIn.length})',
+              context.l10n.call_notInThisCall(notIn.length),
               fontsize: 16,
               fontfamily: FontFamily.interSemiBold,
               color: const Color(0xFF1E1147),
@@ -114,7 +116,7 @@ class _GroupParticipantsSheetView extends StatelessWidget {
               child: notIn.isEmpty
                   ? Center(
                       child: reausabletext(
-                        'Everyone is already in the call',
+                        context.l10n.call_everyoneInCall,
                         fontsize: 14,
                         color: Colors.grey,
                       ),
@@ -152,7 +154,7 @@ class _GroupParticipantsSheetView extends StatelessWidget {
                                   ),
                                   SizedBox(height: 2.h),
                                   reausabletext(
-                                    'Tap notify to invite',
+                                    context.l10n.call_tapNotifyToInvite,
                                     fontsize: 12,
                                     color: Colors.grey,
                                   ),
@@ -186,7 +188,7 @@ class _GroupParticipantsSheetView extends StatelessWidget {
                                       ),
                                       SizedBox(width: 6.w),
                                       reausabletext(
-                                        'Notify',
+                                        context.l10n.call_notify,
                                         fontsize: 12,
                                         fontfamily: FontFamily.interSemiBold,
                                         color: const Color(0xFF6E5CA4),
@@ -241,19 +243,24 @@ class _InCallChip extends StatelessWidget {
               children: [
                 reausabletext(
                   participant.isLocal
-                      ? '${participant.name} (You)'
+                      ? context.l10n.call_nameYou(participant.name.toString())
                       : participant.name.toString(),
                   fontsize: 12,
                   fontfamily: FontFamily.interMedium,
                   maxline: 1,
                 ),
                 Obx(
-                  () => reausabletext(
-                    participant.isMuted.value ? 'Muted' : 'In call',
-                    fontsize: 11,
-                    color: participant.isMuted.value
-                        ? Colors.redAccent
-                        : Colors.green,
+                  () => AutoFitText(
+                    participant.isMuted.value
+                        ? context.l10n.call_muted
+                        : context.l10n.call_inCall,
+                    style: TextStyle(
+                      fontFamily: "geographeditwebbold",
+                      fontSize: 11.sp,
+                      color: participant.isMuted.value
+                          ? Colors.redAccent
+                          : Colors.green,
+                    ),
                   ),
                 ),
               ],

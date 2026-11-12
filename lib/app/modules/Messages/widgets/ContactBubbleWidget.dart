@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -90,7 +91,7 @@ class ContactBubbleWidget extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () => _call(contact!),
               icon: const Icon(Icons.call),
-              label: const Text("Call"),
+              label: Text(context.l10n.chat_call),
             ),
           ),
         ],
@@ -100,7 +101,7 @@ class ContactBubbleWidget extends StatelessWidget {
 
   Widget _errorWidget() {
     return Text(
-      "Contact unavailable",
+      appL10n.chat_contactUnavailable,
       style: TextStyle(
         color: textColor,
         fontSize: 12.sp,

@@ -1,7 +1,6 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/profile_navigation.dart';
-import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/BottomSheets/userSheet_Ui.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/LiquidPullToRefresh_Indicatore.dart';
@@ -10,6 +9,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Group/controller/search_controller.dart';
@@ -19,6 +19,8 @@ import 'package:fgtracker/app/Core/util/chat_navigation.dart';
 import 'package:fgtracker/app/widgets/MobileNumberView.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -82,7 +84,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                     decoration: InputDecoration(
                         icon: Icon(Icons.search,
                             size: 20.sp, color: Colors.grey.shade600),
-                        hintText: "Search member...",
+                        hintText: appL10n.group_searchMemberHint,
                         border: InputBorder.none,
                         hintStyle: TextStyle(
                           color: Colors.grey.shade500,
@@ -96,11 +98,14 @@ class MemberscreenScreen extends GetView<MemberController> {
                     ),
                   ),
                 )
-              : reausabletext(
-                  "Members",
-                  fontsize: 20,
-                  color: Colors.black,
-                  fontweight: FontWeight.bold,
+              : AutoFitText(
+                  appL10n.home_statMembers,
+                  style: TextStyle(
+                    fontFamily: "geographeditwebbold",
+                    fontSize: 20.sp,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
           actions: [
             IconButton(
@@ -135,11 +140,11 @@ class MemberscreenScreen extends GetView<MemberController> {
                       context: context,
                       value: 'delete',
                       icon: Icons.delete_outline,
-                      text: 'Group Delete',
+                      text: appL10n.group_deleteGroup,
                       onTap: () {
                         CommonDialog.ConfirmationDialog(
-                          title: AppText.areYouSure,
-                          content: AppText.doYouWantToDeleteGroup,
+                          title: appL10n.group_areYouSure,
+                          content: appL10n.group_deleteGroupConfirm,
                           onConfirm: () {
                             controller.deleteGroup(
                               context,
@@ -155,11 +160,11 @@ class MemberscreenScreen extends GetView<MemberController> {
                       context: context,
                       value: 'exit',
                       icon: Icons.exit_to_app,
-                      text: 'Exit Group',
+                      text: appL10n.group_exitGroup,
                       onTap: () {
                         CommonDialog.ConfirmationDialog(
-                          title: AppText.areYouSure,
-                          content: AppText.doYouWantToExitGroup,
+                          title: appL10n.group_areYouSure,
+                          content: appL10n.group_exitGroupConfirm,
                           onConfirm: () {
                             controller.exitGroup(
                               context,
@@ -173,7 +178,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                   final leftGroupName = controller
                                           .arguments?['groupName']
                                           ?.toString() ??
-                                      'Group';
+                                      appL10n.group_defaultName;
                                   final leftMemberCount =
                                       controller.memberData.isEmpty
                                           ? null
@@ -210,7 +215,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       reausablebutton(
-                          title: "Walkie-Talkie",
+                          title: context.l10n.notif_channelWalkieName,
                           icon: Icons.wifi_calling_3_outlined,
                           fontSize: 12,
                           borderradiues: 50,
@@ -242,7 +247,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                         children: [
                           Expanded(
                             child: reausablebutton(
-                                title: "Track",
+                                title: appL10n.group_track,
                                 icon: Icons.track_changes,
                                 fontSize: 12,
                                 borderradiues: 50,
@@ -259,7 +264,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                           SizedBox(width: 40.w),
                           Expanded(
                               child: reausablebutton(
-                                  title: "Group Message",
+                                  title: appL10n.group_groupMessage,
                                   icon: Icons.mark_chat_unread_rounded,
                                   fontSize: 12,
                                   borderradiues: 50,
@@ -306,7 +311,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         reausabletext(
-                          "Feel Free to start a conversation ",
+                          appL10n.group_startConversation,
                           fontsize: 12,
                           fontfamily: FontFamily.interRegular,
                           color: Colors.black45,
@@ -404,7 +409,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "Add Member",
+                                        appL10n.group_addMember,
                                         style: TextStyle(
                                           fontSize: 15.sp,
                                           fontWeight: FontWeight.w600,
@@ -412,7 +417,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                       ),
                                       SizedBox(height: 2.h),
                                       Text(
-                                        "Share QR code to invite members",
+                                        appL10n.group_shareQrToInvite,
                                         style: TextStyle(
                                           fontSize: 12.sp,
                                           color: Colors.black54,
@@ -520,7 +525,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                           children: [
                                             reausabletext(
                                               data.name ??
-                                                  AppText.unnamedMember,
+                                                  appL10n.group_unnamedMember,
                                               fontsize: 15,
                                               fontfamily:
                                                   FontFamily.interSemiBold,
@@ -528,7 +533,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                             SizedBox(height: 2.h),
                                             MobileNumberView(
                                               mobileNumber: data.mobileNo ??
-                                                  AppText.noNumber,
+                                                  appL10n.group_noNumber,
                                             ),
                                           ],
                                         ),
@@ -542,9 +547,13 @@ class MemberscreenScreen extends GetView<MemberController> {
                                           reausabletext(
                                             Utility.isNotNullEmptyOrFalse(
                                                     data.lastSeen)
-                                                ? formatTime(
-                                                    data.lastSeen!,
-                                                  )
+                                                ? (formatLastSeen(
+                                                        context,
+                                                        Tracking.parseDateTime(
+                                                            data.lastSeen)) ??
+                                                    formatTime(
+                                                      data.lastSeen!,
+                                                    ))
                                                 : "",
                                             fontsize: 10,
                                             fontfamily: FontFamily.interMedium,
@@ -792,7 +801,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           reausabletext(
-                                            data?.name ?? AppText.unnamedMember,
+                                            data?.name ?? appL10n.group_unnamedMember,
                                             fontsize: 15,
                                             fontfamily:
                                                 FontFamily.interSemiBold,
@@ -800,7 +809,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                           SizedBox(height: 2.h),
                                           MobileNumberView(
                                             mobileNumber: data?.mobileNo ??
-                                                AppText.noNumber,
+                                                appL10n.group_noNumber,
                                           ),
                                         ],
                                       ),
@@ -814,7 +823,11 @@ class MemberscreenScreen extends GetView<MemberController> {
                                         reausabletext(
                                           Utility.isNotNullEmptyOrFalse(
                                                   data?.lastSeen)
-                                              ? formatTime(data!.lastSeen!)
+                                              ? (formatLastSeen(
+                                                      context,
+                                                      Tracking.parseDateTime(
+                                                          data?.lastSeen)) ??
+                                                  formatTime(data!.lastSeen!))
                                               : "",
                                           fontsize: 10,
                                           fontfamily: FontFamily.interMedium,

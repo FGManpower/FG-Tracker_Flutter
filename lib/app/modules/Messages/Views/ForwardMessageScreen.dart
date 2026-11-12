@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -193,7 +194,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          "Forward to...",
+          appL10n.chatList_forwardTo,
           style: TextStyle(
             color: Colors.white,
             fontSize: 17.5.sp,
@@ -202,7 +203,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
         ),
         if (count > 0)
           Text(
-            "$count selected",
+            appL10n.chatList_selectedCount(count),
             style: TextStyle(
               color: Colors.white.withOpacity(0.85),
               fontSize: 12.sp,
@@ -223,7 +224,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
       ),
       cursorColor: Colors.white,
       decoration: InputDecoration(
-        hintText: "Search...",
+        hintText: appL10n.chatList_searchHintShort,
         hintStyle: TextStyle(
           color: Colors.white70,
           fontSize: 16.sp,
@@ -330,7 +331,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
             height: 300.h,
             child: Center(
               child: Text(
-                "No people or groups found",
+                appL10n.chatList_noPeopleOrGroups,
                 style: TextStyle(
                   fontSize: 15.sp,
                   color: Colors.grey.shade600,
@@ -353,28 +354,28 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
       ),
       children: [
         if (recent.isNotEmpty) ...[
-          _sectionTitle("RECENT CHATS"),
+          _sectionTitle(appL10n.chatList_sectionRecentChats),
           ...recent.map(
             (item) => _buildTile(item, controller.isSelected(item)),
           ),
         ],
         if (groups.isNotEmpty) ...[
           SizedBox(height: 10.h),
-          _sectionTitle("GROUPS"),
+          _sectionTitle(appL10n.chatList_sectionGroups),
           ...groups.map(
             (item) => _buildTile(item, controller.isSelected(item)),
           ),
         ],
         if (contacts.isNotEmpty) ...[
           SizedBox(height: 10.h),
-          _sectionTitle("MY CONTACTS"),
+          _sectionTitle(appL10n.chatList_sectionMyContacts),
           ...contacts.map(
             (item) => _buildTile(item, controller.isSelected(item)),
           ),
         ],
         if (otherContacts.isNotEmpty) ...[
           SizedBox(height: 10.h),
-          _sectionTitle("OTHER CONTACTS"),
+          _sectionTitle(appL10n.chatList_sectionOtherContacts),
           ...otherContacts.map(
             (item) => _buildTile(item, controller.isSelected(item)),
           ),
@@ -431,10 +432,10 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
                   SizedBox(height: 2.h),
                   Text(
                     item.isGroup
-                        ? "Group"
+                        ? appL10n.chatList_groupFallback
                         : (item.mobileNo?.isNotEmpty == true
                             ? item.mobileNo!
-                            : "Hey there! I am using FG Tracker"),
+                            : appL10n.chatList_defaultAbout),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -578,7 +579,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
                         backgroundColor: ToggleThemeData.darkPurple,
                         foregroundColor: Colors.white,
                       ),
-                      child: const Text("Retry"),
+                      child: Text(appL10n.common_retry),
                     ),
                   ],
                 ),

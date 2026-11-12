@@ -8,6 +8,7 @@ import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGate/permission_gate_service.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGate/permission_gate_models.dart';
 import 'package:flutter/material.dart';
@@ -195,7 +196,7 @@ class RegistrationController extends GetxController {
     if (registerKey.currentState!.validate()) {
       try {
         if (controller.gender.value == "") {
-          CommonDialog.errorMessage("Please select your gender");
+          CommonDialog.errorMessage(appL10n.registration_selectGenderError);
           return;
         }
 

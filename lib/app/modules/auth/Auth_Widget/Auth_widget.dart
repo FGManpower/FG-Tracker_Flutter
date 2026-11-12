@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -108,7 +109,7 @@ Widget buildTextField(
         },
         validator: (value) {
           if (value == null || value.trim().isEmpty) {
-            return "$hint is required";
+            return sharedL10n.validation_required(hint);
           }
 
           if (hint.toLowerCase().contains("name") && value.trim().length < 2) {
@@ -345,7 +346,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       },
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
-          return "${widget.hint} is required";
+          return sharedL10n.validation_required(widget.hint);
         }
 
         if (widget.hint.toLowerCase().contains("name") &&
@@ -361,7 +362,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
         if (widget.hint.toLowerCase().contains("phone")) {
           if (value.trim().isEmpty) {
-            return "${widget.hint} is required";
+            return sharedL10n.validation_required(widget.hint);
           }
           return null;
         }

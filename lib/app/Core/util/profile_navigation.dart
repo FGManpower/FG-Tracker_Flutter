@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -187,7 +188,7 @@ void startUserCall({
   }
   final ctx = Get.context;
   if (uid.isEmpty || ctx == null) {
-    Utils().fluttertoast("Unable to call this contact");
+    Utils().fluttertoast(appL10n.util_unableToCallContact);
     return;
   }
   CallService().startOutGoingCall(
@@ -262,7 +263,7 @@ void startGroupCallWith({
   final String gId = _cleanId(groupId);
   final ctx = Get.context;
   if (gId.isEmpty || ctx == null) {
-    Utils().fluttertoast("Unable to start group call");
+    Utils().fluttertoast(appL10n.util_unableToStartGroupCall);
     return;
   }
   GroupCallService.instance.startGroupCall(

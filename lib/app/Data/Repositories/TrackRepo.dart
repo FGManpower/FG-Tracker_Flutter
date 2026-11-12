@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
@@ -178,7 +179,7 @@ class TrackRepo {
 
     return LocationDataRes(
       status: false,
-      message: "Failed to load group locations",
+      message: appL10n.repo_loadLocationsFailed,
       locations: [],
     );
   }
@@ -225,7 +226,7 @@ class TrackRepo {
 
       return GroupMemberModel(
         status: false,
-        message: "Invalid response format",
+        message: appL10n.repo_invalidResponse,
       );
     } catch (e) {
       log("❌ [TrackRepo] getGroupMember Error: $e");

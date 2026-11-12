@@ -5,6 +5,7 @@ import 'package:fgtracker/app/modules/Messages/Controller/audio_player_controlle
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
@@ -184,7 +185,7 @@ class VoiceInputController extends GetxController {
 
     final ready = await _initSpeechEngine();
     if (!ready) {
-      hintMessage.value = "Microphone unavailable. Please check settings.";
+      hintMessage.value = appL10n.voice_micUnavailable;
       mode.value = VoiceInputMode.voiceToTextListening;
       return;
     }
@@ -235,13 +236,13 @@ class VoiceInputController extends GetxController {
   void _updateListeningHint() {
     switch (contextType.value) {
       case VoiceContextType.reply:
-        hintMessage.value = "Speak now – we are typing your reply";
+        hintMessage.value = appL10n.voice_speakNowReply;
         break;
       case VoiceContextType.caption:
-        hintMessage.value = "Speak now – we are typing your caption";
+        hintMessage.value = appL10n.voice_speakNowCaption;
         break;
       case VoiceContextType.normal:
-        hintMessage.value = "Speak now – your words appear in the message box";
+        hintMessage.value = appL10n.voice_speakNowMessage;
         break;
     }
   }
@@ -310,7 +311,7 @@ class VoiceInputController extends GetxController {
       }
       if (_highNoiseTicks >= 3 && recognizedWords.value.isEmpty) {
         isTooNoisy.value = true;
-        hintMessage.value = "Too much noise – hold the phone closer and speak clearly";
+        hintMessage.value = appL10n.voice_tooMuchNoise;
       }
     });
   }
@@ -329,7 +330,7 @@ class VoiceInputController extends GetxController {
     if (error.errorMsg.contains('error_speech_timeout') || error.errorMsg.contains('error_no_match')) {
       if (recognizedWords.value.trim().isEmpty) {
         didntCatchThat.value = true;
-        hintMessage.value = "Didn't catch that. Tap the mic and speak a little louder.";
+        hintMessage.value = appL10n.voice_didntCatch;
       }
     }
   }
@@ -397,7 +398,7 @@ class VoiceInputController extends GetxController {
     final text = recognizedWords.value.trim();
     if (text.isEmpty) {
       didntCatchThat.value = true;
-      hintMessage.value = "Didn't catch that. Tap the mic and speak a little louder.";
+      hintMessage.value = appL10n.voice_didntCatch;
     } else {
       didntCatchThat.value = false;
     }
@@ -511,13 +512,13 @@ class VoiceInputController extends GetxController {
   void _updateRecordingHint() {
     switch (contextType.value) {
       case VoiceContextType.reply:
-        hintMessage.value = "Your voice will be sent as an audio reply";
+        hintMessage.value = appL10n.voice_willSendAudioReply;
         break;
       case VoiceContextType.caption:
-        hintMessage.value = "Your voice will be sent with the file as audio";
+        hintMessage.value = appL10n.voice_willSendWithFile;
         break;
       case VoiceContextType.normal:
-        hintMessage.value = "Your voice will be sent as an audio message";
+        hintMessage.value = appL10n.voice_willSendAudioMessage;
         break;
     }
   }
@@ -620,7 +621,7 @@ class VoiceInputController extends GetxController {
           }
           isAudioPlaying.value = false;
           audioProgress.value = 0.0;
-          hintMessage.value = "Couldn't play voice message";
+          hintMessage.value = appL10n.voice_couldntPlay;
         }
       } else {
         await _player!.play();

@@ -1,8 +1,8 @@
-import 'package:intl/intl.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 String formatTime(String timestamp) {
   final dateTime = DateTime.parse(timestamp).toLocal();
-  return DateFormat('hh:mm a').format(dateTime);
+  return appDateFormat('hh:mm a').format(dateTime);
 }
 
 String formatDateHeader(String timestamp) {
@@ -13,11 +13,11 @@ String formatDateHeader(String timestamp) {
   final messageDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
 
   if (messageDate == today) {
-    return "Today";
+    return appL10n.common_today;
   } else if (messageDate == today.subtract(Duration(days: 1))) {
-    return "Yesterday";
+    return appL10n.common_yesterday;
   } else {
-    return DateFormat('dd MMM yyyy').format(dateTime);
+    return appDateFormat('dd MMM yyyy').format(dateTime);
   }
 
 

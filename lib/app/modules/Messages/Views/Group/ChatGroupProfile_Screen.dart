@@ -1,3 +1,5 @@
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
 import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/const_res.dart';
@@ -13,6 +15,7 @@ import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Data/Services/group_call_service.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Group/widgets/group_membership_sheet.dart';
@@ -136,16 +139,16 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   }
 
   String _statusText(GroupMemberInfo m) {
-    if (_isOnline(m)) return "Online";
+    if (_isOnline(m)) return appL10n.common_online;
     if (m.rawLastSeen == null || m.rawLastSeen.toString().isEmpty) {
-      return "Offline";
+      return appL10n.common_offline;
     }
     final parsed = Tracking.parseDateTime(m.rawLastSeen);
-    if (parsed == null) return "Offline";
+    if (parsed == null) return appL10n.common_offline;
     try {
-      return Tracking().getTimeAgo(parsed);
+      return formatLastSeen(context, parsed) ?? appL10n.common_offline;
     } catch (_) {
-      return "Offline";
+      return appL10n.common_offline;
     }
   }
 
@@ -195,7 +198,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
 
           if (!isLoading && (data == null || data.group == null)) {
             return Center(
-                child: Text("Group details not found",
+                child: Text(context.l10n.groupInfo_detailsNotFound,
                     style: TextStyle(fontSize: 16.sp, color: _purple)));
           }
 
@@ -250,7 +253,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     final group = data.group!;
     // final summary = data.membersSummary; // used by the hidden Members • Online line
     final img = group.groupProfile ?? "";
-    final name = group.groupName ?? "Unknown Group";
+    final name = group.groupName ?? appL10n.groupInfo_unknownGroup;
     // Profile API may not send description → fall back to the group list's groupDesc
     final String apiDesc = (group.description ?? '').trim();
     final description =
@@ -367,7 +370,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
         Routes.groupCallingScreen,
         arguments: {
           "groupId": chatController.groupId.toString(),
-          "groupName": data.group?.groupName ?? "Unknown Group",
+          "groupName": data.group?.groupName ?? appL10n.groupInfo_unknownGroup,
           "groupProfile": data.group?.groupProfile ?? "",
           "isVideo": isVideo,
           "memberCount": data.membersSummary?.totalMembers ?? 0,
@@ -375,7 +378,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
         },
       );
     } catch (e) {
-      Get.snackbar("Error", "Could not start group call. Please try again.",
+      Get.snackbar(appL10n.common_error, appL10n.groupInfo_groupCallFailed,
           backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
@@ -385,12 +388,12 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       children: [
         _quickAction(
             icon: Icons.call_outlined,
-            label: "Audio Call",
+            label: appL10n.groupInfo_audioCall,
             onTap: () => _initiateGroupCall(data, isVideo: false)),
         SizedBox(width: 10.w),
         _quickAction(
             icon: Icons.videocam_outlined,
-            label: "Video Call",
+            label: appL10n.groupInfo_videoCall,
             onTap: () => _initiateGroupCall(data, isVideo: true)),
         // _quickAction(
         //   icon: Icons.person_add_alt_1_outlined,
@@ -400,7 +403,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
         SizedBox(width: 10.w),
         _quickAction(
           icon: Icons.search_rounded,
-          label: "Search",
+          label: appL10n.common_search,
           onTap: () {
             Get.back();
             chatController.startSearch();
@@ -523,7 +526,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                 Icon(Icons.photo_library_outlined, color: _purple, size: 18.sp),
                 SizedBox(width: 8.w),
                 Expanded(
-                  child: Text("Media, Links & Docs",
+                  child: Text(appL10n.groupInfo_mediaLinksDocs,
                       style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
@@ -599,7 +602,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             ),
           ] else ...[
             SizedBox(height: 10.h),
-            Text("No media shared yet",
+            Text(appL10n.groupInfo_noMediaYet,
                 style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade500)),
           ],
         ],
@@ -659,17 +662,18 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           _settingTile(
             icon: Icons.reply_rounded,
             iconColor: _purple,
-            title: "Invite via Link",
+            title: appL10n.groupInfo_inviteViaLink,
             onTap: () async {
               final code = data.group?.groupCode ?? "";
+              final groupName = "${data.group?.groupName}";
               final text = code.isNotEmpty
-                  ? "Join my group \"${data.group?.groupName}\" on FG Tracker. Code: $code"
-                  : "Join my group \"${data.group?.groupName}\" on FG Tracker";
+                  ? appL10n.groupInfo_inviteTextWithCode(groupName, code)
+                  : appL10n.groupInfo_inviteText(groupName);
               try {
                 await Share.share(text);
               } catch (_) {
                 await Clipboard.setData(ClipboardData(text: text));
-                Utils().fluttertoast("Invite text copied");
+                Utils().fluttertoast(appL10n.groupInfo_inviteCopied);
               }
             },
           ),
@@ -678,8 +682,8 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             _settingTile(
               icon: Icons.settings_outlined,
               iconColor: _purple,
-              title: "Group Settings",
-              subtitle: "Edit group info, privacy, and more",
+              title: appL10n.groupInfo_groupSettings,
+              subtitle: appL10n.groupInfo_groupSettingsSubtitle,
               onTap: () {
                 groupController.groupName.text = data.group?.groupName ?? "";
                 DialogBox().showUpdateGroupBottomSheet(
@@ -715,7 +719,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
           child: Row(
             children: [
-              Text("Members",
+              Text(appL10n.groupInfo_members,
                   style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w700,
@@ -750,12 +754,16 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        showAllMembers.value ? "Show less" : "View all members",
-                        style: TextStyle(
-                            color: _purple,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13.sp),
+                      Flexible(
+                        child: AutoFitText(
+                          showAllMembers.value
+                              ? appL10n.groupInfo_showLess
+                              : appL10n.groupInfo_viewAllMembers,
+                          style: TextStyle(
+                              color: _purple,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13.sp),
+                        ),
                       ),
                       Icon(
                           showAllMembers.value
@@ -793,7 +801,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     final memberData = MemberData(
       userId: m.userId,
       groupId: 0,
-      name: m.name ?? "Member",
+      name: m.name ?? appL10n.groupInfo_member,
       profileImage: m.profileImage,
       lastSeen: m.lastSeen,
       isOnline: online,
@@ -816,7 +824,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     final isMe = m.isMe ?? false;
     final isAdmin = m.isAdmin ?? false;
     final online = _isOnline(m);
-    final name = m.name ?? "Unknown";
+    final name = m.name ?? appL10n.chat_unknown;
     final img = (m.profileImage?.isNotEmpty ?? false)
         ? _formatUrl(m.profileImage)
         : null;
@@ -881,7 +889,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   Row(
                     children: [
                       Flexible(
-                        child: Text(isMe ? "$name (You)" : name,
+                        child: Text(isMe ? appL10n.groupInfo_nameYou(name) : name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -891,7 +899,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                       ),
                       if (isMe && isAdmin) ...[
                         SizedBox(width: 6.w),
-                        _badge("Admin", const Color(0xFFE7F8EC),
+                        _badge(appL10n.groupInfo_admin, const Color(0xFFE7F8EC),
                             const Color(0xFF2BB673)),
                       ],
                     ],
@@ -909,7 +917,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             ),
           ),
           if (!isMe && isAdmin)
-            _badge("Group Admin", const Color(0xFFE7F8EC),
+            _badge(appL10n.groupInfo_groupAdmin, const Color(0xFFE7F8EC),
                 const Color(0xFF2BB673)),
           SizedBox(width: 4.w),
           if (!isMe)
@@ -938,10 +946,9 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   (data.permissions?.canAddMember ?? false) &&
                   !isMe) {
                 CommonDialog.ConfirmationDialog(
-                  title: "Remove Member",
-                  content:
-                      "Are you sure you want to remove $name from the group?",
-                  confirm: "Remove",
+                  title: appL10n.chat_removeMember,
+                  content: appL10n.groupInfo_removeMemberConfirm(name),
+                  confirm: appL10n.common_remove,
                   onConfirm: () {
                     Get.back();
                     groupController.deleteGroupMember(
@@ -961,14 +968,18 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             },
             itemBuilder: (_) => [
               if (!isMe)
-                const PopupMenuItem(value: "chat", child: Text("Message")),
+                PopupMenuItem(
+                    value: "chat", child: Text(appL10n.groupInfo_messageAction)),
               if (!isMe)
-                const PopupMenuItem(value: "call", child: Text("Audio Call")),
+                PopupMenuItem(
+                    value: "call", child: Text(appL10n.groupInfo_audioCall)),
               if (!isMe)
-                const PopupMenuItem(value: "video", child: Text("Video Call")),
+                PopupMenuItem(
+                    value: "video", child: Text(appL10n.groupInfo_videoCall)),
               if (!isMe && (data.permissions?.canAddMember ?? false))
-                const PopupMenuItem(
-                    value: "remove", child: Text("Remove from group")),
+                PopupMenuItem(
+                    value: "remove",
+                    child: Text(appL10n.groupInfo_removeFromGroup)),
             ],
           ),
         ],
@@ -1008,13 +1019,13 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           _settingTile(
             icon: Icons.delete_outline_rounded,
             iconColor: Colors.redAccent,
-            title: "Clear Chat",
+            title: appL10n.chat_clearChat,
             titleColor: Colors.redAccent,
             onTap: () {
               CommonDialog.ConfirmationDialog(
-                title: "Clear Chat",
-                content: "Delete all messages from this device?",
-                confirm: "Clear",
+                title: appL10n.chat_clearChat,
+                content: appL10n.groupInfo_clearChatConfirm,
+                confirm: appL10n.chat_clear,
                 onConfirm: () async {
                   Get.back();
                   final cleared = await chatController.clearGroupChat();
@@ -1035,14 +1046,14 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             _settingTile(
               icon: Icons.logout_rounded,
               iconColor: Colors.redAccent,
-              title: "Exit Group",
+              title: appL10n.groupInfo_exitGroup,
               titleColor: Colors.redAccent,
               onTap: () {
                 CommonDialog.ConfirmationDialog(
-                  title: "Exit Group",
-                  content:
-                      "Are you sure you want to exit \"${data.group?.groupName}\"?",
-                  confirm: "Exit",
+                  title: appL10n.groupInfo_exitGroup,
+                  content: appL10n
+                      .groupInfo_exitGroupConfirm("${data.group?.groupName}"),
+                  confirm: appL10n.common_exit,
                   onConfirm: () {
                     Get.back();
 
@@ -1053,7 +1064,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                       onSuccess: (success) {
                         if (success) {
                           final leftGroupName =
-                              data.group?.groupName ?? 'Group';
+                              data.group?.groupName ?? appL10n.groupInfo_group;
                           final leftGroupImage = data.group?.groupProfile;
                           final leftMemberCount =
                               data.membersSummary?.totalMembers;

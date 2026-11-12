@@ -8,9 +8,11 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:walkie_custom_notification/walkie_custom_notification.dart';
 
 class WalkieNotificationManager {
   WalkieNotificationManager._();
@@ -150,7 +152,7 @@ class WalkieNotificationManager {
     }
 
     _activeSpeakerId = speakerId;
-    _activeSpeakerName = speakerName.isEmpty ? 'Someone' : speakerName;
+    _activeSpeakerName = speakerName.isEmpty ? appL10n.walkie_someone : speakerName;
     _activeGroupId = groupId.isEmpty ? _activeGroupId : groupId;
     _activeGroupName = groupName.isEmpty ? _activeGroupName : groupName;
     isSomeoneTalking.value = true;
@@ -182,7 +184,7 @@ class WalkieNotificationManager {
     }
 
     if (isNotificationVisible.value) {
-      final name = speakerName ?? _activeSpeakerName ?? 'Someone';
+      final name = speakerName ?? _activeSpeakerName ?? appL10n.walkie_someone;
       await _showStoppedNotification(name);
       await Future.delayed(const Duration(seconds: 2));
       if (!isSomeoneTalking.value) {
@@ -204,13 +206,14 @@ class WalkieNotificationManager {
   }
 
   Future<void> _showOrUpdateTalkingNotification() async {
-    final title = '$_activeSpeakerName is talking';
+    final l10n = appL10n;
+    final title = l10n.walkie_notifTalking(_activeSpeakerName ?? l10n.walkie_someone);
     final body = (_activeGroupName != null && _activeGroupName!.isNotEmpty)
         ? _activeGroupName!
-        : 'Walkie-Talkie';
+        : l10n.walkie_title;
     final timerText = _formatDuration(_talkSeconds);
 
-    const androidDetails = AndroidNotificationDetails(
+    final androidDetails = AndroidNotificationDetails(
       channelId,
       channelName,
       channelDescription: channelDesc,
@@ -225,12 +228,12 @@ class WalkieNotificationManager {
       actions: <AndroidNotificationAction>[
         AndroidNotificationAction(
           'open_walkie',
-          'Open Walkie',
+          l10n.walkie_notifOpenWalkie,
           showsUserInterface: true,
         ),
         AndroidNotificationAction(
           'leave_walkie',
-          'Leave',
+          l10n.walkie_notifLeave,
           cancelNotification: true,
           showsUserInterface: false,
         ),
@@ -249,7 +252,7 @@ class WalkieNotificationManager {
         notificationId,
         title,
         '$body  •  $timerText',
-        const NotificationDetails(android: androidDetails, iOS: iosDetails),
+        NotificationDetails(android: androidDetails, iOS: iosDetails),
         payload: _buildPayload(action: 'open'),
       );
       isNotificationVisible.value = true;
@@ -275,8 +278,8 @@ class WalkieNotificationManager {
     try {
       await _plugin.show(
         notificationId,
-        '$speakerName stopped talking',
-        _activeGroupName ?? 'Walkie Group',
+        appL10n.walkie_notifStoppedTalking(speakerName),
+        _activeGroupName ?? appL10n.walkie_defaultGroupName,
         const NotificationDetails(android: androidDetails),
         payload: _buildPayload(action: 'open'),
       );
@@ -361,7 +364,7 @@ class WalkieNotificationManager {
 
     final args = <String, dynamic>{
       'groupId': groupId,
-      'groupName': groupName.isEmpty ? 'Walkie Group' : groupName,
+      'groupName': groupName.isEmpty ? appL10n.walkie_defaultGroupName : groupName,
       'fromNotification': true,
     };
 
@@ -404,6 +407,38 @@ class WalkieNotificationManager {
       }
     }
   }
+}
+
+/// Shows the native Android walkie notification (walkie_custom_notification)
+/// with its texts in the app language. Safe in a background isolate: the
+/// language is read from SharedPreferences. Speaker and group names are
+/// server data and shown as they come.
+Future<bool> showLocalizedWalkieCustomNotification({
+  required String speakerName,
+  required String groupName,
+  required String groupId,
+  String? speakerImage,
+  int? joinedCount,
+}) async {
+  final l10n = await loadAppL10nFromPrefs();
+  final speaker = speakerName.trim();
+  return WalkieCustomNotification.show(
+    speakerName: speakerName,
+    groupName: groupName,
+    groupId: groupId,
+    speakerImage: speakerImage,
+    joinedCount: joinedCount,
+    textSpeaking: speaker.isNotEmpty
+        ? l10n.walkie_isSpeaking(speaker)
+        : l10n.walkie_someoneSpeaking,
+    textJoined: (joinedCount != null && joinedCount > 0)
+        ? l10n.walkie_joinedCount(joinedCount)
+        : l10n.walkie_activeBadge,
+    labelLive: l10n.walkie_live,
+    labelAccept: l10n.walkie_accept,
+    labelCancel: l10n.common_cancel,
+    defaultGroupName: l10n.walkie_fieldTeam,
+  );
 }
 
 @pragma('vm:entry-point')

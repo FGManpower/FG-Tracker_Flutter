@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
@@ -130,12 +131,12 @@ class VideoControllerX extends GetxController {
         [
           XFile(filePath),
         ],
-        text: "Shared from FG Tracker",
+        text: appL10n.chat_sharedFromApp,
       );
     } catch (e) {
       Get.snackbar(
-        "Error",
-        "Unable to share video",
+        appL10n.common_error,
+        appL10n.chat_shareVideoFailed,
       );
     }
   }
@@ -153,13 +154,13 @@ class VideoControllerX extends GetxController {
       );
 
       Get.snackbar(
-        "Success",
-        "Video downloaded successfully",
+        appL10n.common_success,
+        appL10n.chat_videoDownloaded,
       );
     } catch (e) {
       Get.snackbar(
-        "Error",
-        "Download failed",
+        appL10n.common_error,
+        appL10n.chat_downloadFailed,
       );
     }
   }

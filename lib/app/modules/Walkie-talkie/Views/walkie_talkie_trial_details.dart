@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_trial_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
@@ -16,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class WalkieTalkieTrialDetailsScreen extends StatefulWidget {
   const WalkieTalkieTrialDetailsScreen({
@@ -135,7 +137,7 @@ class _WalkieTalkieTrialDetailsScreenState
                           ),
                           SizedBox(width: 6.w),
                           Text(
-                            "Active Subscriptions",
+                            context.l10n.walkiePlan_trialActiveSubscriptions,
                             style: TextStyle(
                               fontSize: _sp(14),
                               fontFamily: FontFamily.interBold,
@@ -283,7 +285,7 @@ class _WalkieTalkieTrialDetailsScreenState
       final bool hasTeam = controller.hasActiveTeamSubscription &&
           controller.activeTeamSubscriptions.isNotEmpty;
       return [
-        _buildSectionTitle("Active Subscription"),
+        _buildSectionTitle(context.l10n.walkiePlan_trialActiveSubscription),
         if (hasIndividual) ...[
           WalkieIndividualPlanCard(
             plan: controller.activeIndividualSubscription,
@@ -301,8 +303,8 @@ class _WalkieTalkieTrialDetailsScreenState
           _buildStatusNotice(
             icon: Icons.verified_rounded,
             color: const Color(0xFF16A34A),
-            title: "Subscription Active",
-            message: "You have Walkie Talkie access through your team plan.",
+            title: context.l10n.walkiePlan_trialSubscriptionActive,
+            message: context.l10n.walkiePlan_trialTeamAccessMsg,
           ),
       ];
     }
@@ -316,9 +318,9 @@ class _WalkieTalkieTrialDetailsScreenState
         _buildStatusNotice(
           icon: Icons.event_busy_rounded,
           color: const Color(0xFFDC2626),
-          title: "Subscription Expired",
+          title: context.l10n.walkiePlan_trialSubscriptionExpired,
           message:
-              "Your Walkie Talkie subscription has ended. Renew a plan to keep talking with your team.",
+              context.l10n.walkiePlan_trialSubscriptionEndedMsg,
         ),
         SizedBox(height: 12.h),
       ],
@@ -337,8 +339,8 @@ class _WalkieTalkieTrialDetailsScreenState
         _buildStatusNotice(
           icon: Icons.workspace_premium_outlined,
           color: primaryColor,
-          title: "No Active Plan",
-          message: "Choose a plan below to start using Walkie Talkie.",
+          title: context.l10n.walkiePlan_trialNoActivePlan,
+          message: context.l10n.walkiePlan_trialChoosePlanBelow,
         ),
     ];
   }
@@ -459,7 +461,7 @@ class _WalkieTalkieTrialDetailsScreenState
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               reausabletext(
-                "Walkie Talkie",
+                context.l10n.walkiePlan_trialWalkieTalkieTitle,
                 fontsize: _sp(17),
                 fontfamily: FontFamily.interBold,
                 color: textColor,
@@ -467,8 +469,8 @@ class _WalkieTalkieTrialDetailsScreenState
               SizedBox(height: 1.h),
               reausabletext(
                 planDetailsOnly
-                    ? "Your plan & subscription status"
-                    : "Instantly communicate with your group",
+                    ? context.l10n.walkiePlan_trialHeaderPlanStatus
+                    : context.l10n.walkiePlan_trialHeaderInstant,
                 fontsize: _sp(11.5),
                 color: subtitleColor,
               ),
@@ -503,7 +505,8 @@ class _WalkieTalkieTrialDetailsScreenState
     final msg = controller.errorMessage.value;
     if (msg.isEmpty) return const SizedBox.shrink();
 
-    final bool isOffline = msg.toLowerCase().contains('internet') ||
+    final bool isOffline = controller.errorIsNetwork ||
+        msg.toLowerCase().contains('internet') ||
         msg.toLowerCase().contains('network') ||
         msg.toLowerCase().contains('connection');
 
@@ -530,7 +533,7 @@ class _WalkieTalkieTrialDetailsScreenState
           Expanded(
             child: Text(
               isOffline
-                  ? "No internet connection. Please check your network."
+                  ? context.l10n.walkiePlan_noInternetCheckNetwork
                   : msg,
               style: TextStyle(
                 fontSize: _sp(11.5),
@@ -549,7 +552,7 @@ class _WalkieTalkieTrialDetailsScreenState
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
-                "Retry",
+                context.l10n.common_retry,
                 style: TextStyle(
                   fontSize: _sp(11.5),
                   fontFamily: FontFamily.interSemiBold,
@@ -569,7 +572,8 @@ class _WalkieTalkieTrialDetailsScreenState
 
   Widget _buildErrorState() {
     final msg = controller.errorMessage.value;
-    final bool isOffline = msg.toLowerCase().contains('internet') ||
+    final bool isOffline = controller.errorIsNetwork ||
+        msg.toLowerCase().contains('internet') ||
         msg.toLowerCase().contains('network') ||
         msg.toLowerCase().contains('connection');
 
@@ -599,7 +603,7 @@ class _WalkieTalkieTrialDetailsScreenState
             ),
             SizedBox(height: 18.h),
             reausabletext(
-              isOffline ? "No Internet Connection" : "Unable to Load Walkie Talkie",
+              isOffline ? context.l10n.walkiePlan_trialNoInternetTitle : context.l10n.walkiePlan_trialUnableToLoadTitle,
               fontsize: _sp(17),
               fontfamily: FontFamily.interBold,
               color: textColor,
@@ -611,7 +615,7 @@ class _WalkieTalkieTrialDetailsScreenState
               child: Text(
                 msg.isNotEmpty
                     ? msg
-                    : "Please check your internet connection and try again.",
+                    : context.l10n.walkiePlan_trialCheckConnectionRetry,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: _sp(12.5),
@@ -643,8 +647,8 @@ class _WalkieTalkieTrialDetailsScreenState
                         Icons.refresh_rounded,
                         size: _sp(17),
                       ),
-                label: Text(
-                  controller.isLoading.value ? "Retrying..." : "Try Again",
+                label: AutoFitText(
+                  controller.isLoading.value ? context.l10n.walkiePlan_trialRetrying : context.l10n.walkiePlan_trialTryAgain,
                   style: TextStyle(
                     fontSize: _sp(13.5),
                     fontFamily: FontFamily.interSemiBold,
@@ -721,14 +725,15 @@ class _WalkieTalkieTrialDetailsScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             reausabletext(
-                              "Start Your Free Trial",
+                              context.l10n.walkiePlan_trialStartYourFreeTrial,
                               fontsize: _sp(20),
                               fontfamily: FontFamily.interBold,
                               color: textColor,
                             ),
                             SizedBox(height: 4.h),
                             Text(
-                              "Enjoy all Walkie Talkie features free for ${controller.trialDurationHuman}.\nNo payment required.",
+                              context.l10n.walkiePlan_trialEnjoyAllFeatures(
+                                  controller.trialDurationHuman),
                               style: TextStyle(
                                 fontSize: _sp(12),
                                 color: subtitleColor,
@@ -805,7 +810,7 @@ class _WalkieTalkieTrialDetailsScreenState
                                       ),
                                       SizedBox(height: 2.h),
                                       Text(
-                                        "Full access to all features",
+                                        context.l10n.walkiePlan_trialFullAccess,
                                         style: TextStyle(
                                           fontSize: _sp(10),
                                           color: subtitleColor,
@@ -849,14 +854,14 @@ class _WalkieTalkieTrialDetailsScreenState
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       reausabletext(
-                                        "7 Days Trial Period",
+                                        context.l10n.walkiePlan_trial7DaysPeriod,
                                         fontsize: _sp(13),
                                         fontfamily: FontFamily.interBold,
                                         color: textColor,
                                       ),
                                       SizedBox(height: 2.h),
                                       Text(
-                                        "Use trial anytime in 7 days",
+                                        context.l10n.walkiePlan_trialUseAnytime7Days,
                                         style: TextStyle(
                                           fontSize: _sp(10),
                                           color: subtitleColor,
@@ -876,7 +881,7 @@ class _WalkieTalkieTrialDetailsScreenState
                   ),
                   SizedBox(height: 16.h),
                   reausabletext(
-                    "What you can do during the trial",
+                    context.l10n.walkiePlan_trialWhatYouCanDo,
                     fontsize: _sp(15),
                     fontfamily: FontFamily.interBold,
                     color: textColor,
@@ -887,16 +892,16 @@ class _WalkieTalkieTrialDetailsScreenState
                       Expanded(
                         child: _buildTrialMiniFeature(
                           icon: Icons.groups_rounded,
-                          title: "Group Communication",
-                          desc: "Connect with your team",
+                          title: context.l10n.walkiePlan_trialFeatGroupComm,
+                          desc: context.l10n.walkiePlan_trialFeatGroupCommDesc,
                         ),
                       ),
                       SizedBox(width: 10.w),
                       Expanded(
                         child: _buildTrialMiniFeature(
                           icon: Icons.all_inclusive_rounded,
-                          title: "Unlimited Usage",
-                          desc: "Use without any limits",
+                          title: context.l10n.walkiePlan_trialFeatUnlimited,
+                          desc: context.l10n.walkiePlan_trialFeatUnlimitedDesc,
                         ),
                       ),
                     ],
@@ -907,16 +912,16 @@ class _WalkieTalkieTrialDetailsScreenState
                       Expanded(
                         child: _buildTrialMiniFeature(
                           icon: Icons.mic_rounded,
-                          title: "Push-to-talk",
-                          desc: "Instant voice communication",
+                          title: context.l10n.walkiePlan_trialFeatPtt,
+                          desc: context.l10n.walkiePlan_trialFeatPttDesc,
                         ),
                       ),
                       SizedBox(width: 10.w),
                       Expanded(
                         child: _buildTrialMiniFeature(
                           icon: Icons.sensors_rounded,
-                          title: "Clear Audio",
-                          desc: "High quality voice",
+                          title: context.l10n.walkiePlan_trialFeatClearAudio,
+                          desc: context.l10n.walkiePlan_trialFeatClearAudioDesc,
                         ),
                       ),
                     ],
@@ -942,7 +947,7 @@ class _WalkieTalkieTrialDetailsScreenState
                         SizedBox(width: 10.w),
                         Expanded(
                           child: Text(
-                            "No payment needed now. After your trial, you can choose to continue with a paid plan (${controller.priceLabel}/person) if you like.",
+                            context.l10n.walkiePlan_trialNoPaymentNow(controller.priceLabel),
                             style: TextStyle(
                               fontSize: _sp(11),
                               color: const Color(0xFF5B5299),
@@ -980,7 +985,7 @@ class _WalkieTalkieTrialDetailsScreenState
                           ),
                           SizedBox(width: 8.w),
                           reausabletext(
-                            "Start ${controller.trialDurationHuman} Free Trial",
+                            context.l10n.walkiePlan_trialStartFreeTrial(controller.trialDurationHuman),
                             fontsize: _sp(15.5),
                             fontfamily: FontFamily.interBold,
                             color: Colors.white,
@@ -992,7 +997,7 @@ class _WalkieTalkieTrialDetailsScreenState
                   SizedBox(height: 10.h),
                   Center(
                     child: reausabletext(
-                      "Use anytime within 7 days  •  No credit card required",
+                      context.l10n.walkiePlan_trialNoCardRequired,
                       fontsize: _sp(11),
                       color: subtitleColor,
                       align: TextAlign.center,

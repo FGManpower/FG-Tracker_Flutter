@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Model/GroupChatListModel.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -57,7 +58,7 @@ class totalGroup extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Groups",
+                appL10n.home_statGroups,
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w800,
@@ -67,7 +68,7 @@ class totalGroup extends StatelessWidget {
               ),
               SizedBox(height: 2.h),
               Text(
-                "${controller.groupList.length} Groups",
+                appL10n.home_groupsCount(controller.groupList.length),
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: Colors.grey.shade600,
@@ -105,7 +106,7 @@ class totalGroup extends StatelessWidget {
                 () => TextField(
                   controller: controller.searchController,
                   decoration: InputDecoration(
-                    hintText: "Search groups...",
+                    hintText: appL10n.home_searchGroupsHint,
                     hintStyle: TextStyle(
                       fontSize: 13.5.sp,
                       color: Colors.grey.shade400,
@@ -162,7 +163,7 @@ class totalGroup extends StatelessWidget {
                         Text(
                           controller.errorMessage.value.isNotEmpty
                               ? controller.errorMessage.value
-                              : "Something went wrong",
+                              : appL10n.common_somethingWentWrong,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13.sp,
@@ -173,7 +174,7 @@ class totalGroup extends StatelessWidget {
                         SizedBox(height: 12.h),
                         ElevatedButton(
                           onPressed: controller.refreshGroups,
-                          child: const Text("Retry"),
+                          child: Text(appL10n.common_retry),
                         ),
                       ],
                     ),
@@ -204,8 +205,8 @@ class totalGroup extends StatelessWidget {
                                 SizedBox(height: 10.h),
                                 Text(
                                   controller.searchText.value.isNotEmpty
-                                      ? "No groups found"
-                                      : "No groups available",
+                                      ? appL10n.home_noGroupsFound
+                                      : appL10n.home_noGroupsAvailable,
                                   style: TextStyle(
                                     fontSize: 13.sp,
                                     color: Colors.grey.shade600,

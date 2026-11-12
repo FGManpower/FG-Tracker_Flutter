@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
@@ -33,7 +34,7 @@ class WalkieChannelRepo {
           final gId = g.id ?? 0;
           return WalkieChannelItem(
             groupId: gId,
-            groupName: g.groupName ?? 'Unnamed Group',
+            groupName: g.groupName ?? appL10n.repo_unnamedGroup,
             groupDesc: g.groupDesc,
             groupProfile: g.groupProfile,
             groupImage: g.groupProfile,

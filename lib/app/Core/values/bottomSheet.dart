@@ -1,10 +1,9 @@
-import 'package:fgtracker/app/Core/theme/AppText.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'dart:io';
 
@@ -95,14 +94,14 @@ class ModalImage {
         // ],
         uiSettings: [
           AndroidUiSettings(
-            toolbarTitle: AppText.cropImage,
+            toolbarTitle: appL10n.imagePicker_cropTitle,
             toolbarColor: AppColors.darkBlue,
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.square,
             lockAspectRatio: false,
           ),
           IOSUiSettings(
-            title: AppText.cropImage,
+            title: appL10n.imagePicker_cropTitle,
             minimumAspectRatio: 1.0,
           ),
         ],
@@ -151,14 +150,14 @@ class ModalImage {
                   ),
                 ),
                 reausabletext(
-                  "Choose an Option",
+                  context.l10n.imagePicker_title,
                   fontsize: 16,
                   fontweight: FontWeight.bold,
                 ),
                 SizedBox(height: 16.h),
                 _buildOption(
                   icon: Icons.photo_library_rounded,
-                  text: AppText.gallery.tr,
+                  text: context.l10n.imagePicker_gallery,
                   color: Colors.blueAccent,
                   onTap: () async {
                     await callGallery(context, type: groupType);
@@ -166,7 +165,7 @@ class ModalImage {
                 ),
                 _buildOption(
                   icon: Icons.camera_alt_rounded,
-                  text: AppText.camera.tr,
+                  text: context.l10n.imagePicker_camera,
                   color: Colors.orangeAccent,
                   onTap: () async {
                     await callCamera(context, type: groupType);
@@ -174,7 +173,7 @@ class ModalImage {
                 ),
                 _buildOption(
                   icon: Icons.cancel_rounded,
-                  text: AppText.cancel.tr,
+                  text: context.l10n.imagePicker_cancel,
                   color: Colors.redAccent,
                   onTap: () {
                     Navigator.pop(context);
@@ -216,13 +215,14 @@ class ModalImage {
               child: Icon(icon, color: color, size: 22.sp),
             ),
             SizedBox(width: 14.w),
-            reausabletext(
-              text,
-              fontsize: 14.sp,
-              fontweight: FontWeight.w600,
-              color: Colors.black87,
+            Expanded(
+              child: reausabletext(
+                text,
+                fontsize: 14.sp,
+                fontweight: FontWeight.w600,
+                color: Colors.black87,
+              ),
             ),
-            const Spacer(),
             Icon(Icons.arrow_forward_ios, size: 16.sp, color: Colors.grey),
           ],
         ),

@@ -4,6 +4,7 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 AppBar buildTrackAppBar(
   BuildContext context, {
@@ -72,7 +73,7 @@ AppBar buildTrackAppBar(
             context: context,
             value: "members",
             icon: Icons.groups,
-            text: "Members",
+            text: context.l10n.track_menuMembers,
             onTap: onPressMembers,
           ),
           dividerMenuItem(),
@@ -80,7 +81,7 @@ AppBar buildTrackAppBar(
             context: context,
             value: "refresh_Maps",
             icon: Icons.refresh,
-            text: "Refresh Map",
+            text: context.l10n.track_menuRefreshMap,
             onTap: onPressRefresh,
           ),
           dividerMenuItem(),
@@ -88,7 +89,7 @@ AppBar buildTrackAppBar(
             context: context,
             value: "theme",
             icon: Icons.layers,
-            text: "Theme",
+            text: context.l10n.track_menuTheme,
             onTap: onPressTheme,
           ),
         ],
@@ -130,12 +131,16 @@ PopupMenuItem<String> popupItem({
           ),
         ),
         SizedBox(width: 12.w),
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: 15.sp,
-            color: AppColors.primaryText,
-            fontWeight: FontWeight.w500,
+        // Flexible (not AutoFitText): the popup menu measures intrinsic
+        // widths, which LayoutBuilder cannot report. A long label wraps.
+        Flexible(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 15.sp,
+              color: AppColors.primaryText,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],

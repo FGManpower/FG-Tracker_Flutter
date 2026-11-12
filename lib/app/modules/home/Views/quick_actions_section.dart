@@ -3,6 +3,7 @@ import 'package:fgtracker/app/modules/Track/Views/Tracking_screen.dart';
 import 'package:fgtracker/app/modules/call/Views/call_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -14,6 +15,7 @@ import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:fgtracker/app/global_widget/crown_icon.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
@@ -64,7 +66,7 @@ class QuickActionsSection extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Quick Actions",
+                    context.l10n.home_quickActionsTitle,
                     style: TextStyle(
                       fontFamily: FontFamily.interBold,
                       fontSize: 14.5.sp,
@@ -75,7 +77,7 @@ class QuickActionsSection extends StatelessWidget {
                   ),
                   SizedBox(height: 1.h),
                   Text(
-                    "Everything you need, one tap away.",
+                    context.l10n.home_quickActionsSubtitle,
                     style: TextStyle(
                       fontFamily: FontFamily.interRegular,
                       fontSize: 10.sp,
@@ -97,13 +99,13 @@ class QuickActionsSection extends StatelessWidget {
             childAspectRatio: 0.98,
             children: [
               _QuickActionCard(
-                title: "All contact ",
+                title: context.l10n.home_actionAllContacts,
                 imagePath: "assets/icons/new_action_group_chat.png",
                 onTap: () =>
                     Get.to(() => const NewChatScreen(fromQuickAction: true)),
               ),
               Obx(() => _QuickActionCard(
-                title: "Audio/Video Call",
+                title: context.l10n.home_actionAudioVideoCall,
                 imagePath: "assets/icons/new_action_call.png",
                 showBadge:
                     NotificationMarkerService.instance.hasCallingMarker.value,
@@ -114,7 +116,7 @@ class QuickActionsSection extends StatelessWidget {
                 },
               )),
               Obx(() => _QuickActionCard(
-                title: "Chatting",
+                title: context.l10n.home_actionChatting,
                 imagePath: "assets/icons/new_action_chat.png",
                 showBadge:
                     NotificationMarkerService.instance.hasChattingMarker.value,
@@ -128,7 +130,8 @@ class QuickActionsSection extends StatelessWidget {
                 final homeController = Get.isRegistered<HomeController>()
                     ? Get.find<HomeController>()
                     : null;
-                final subtitle = homeController?.walkieSubtitle ?? "1 hr free";
+                final subtitle = _walkieSubtitleLabel(
+                    context, homeController?.walkieSubtitle ?? "1 hr free");
                 final isSubscribed = homeController?.isWalkieSubscribed ?? false;
                 final isSubscriptionExpired =
                     homeController?.isWalkieSubscriptionExpired ?? false;
@@ -138,7 +141,7 @@ class QuickActionsSection extends StatelessWidget {
                     NotificationMarkerService.instance.hasWalkieMarker.value;
 
                 return _QuickActionCard(
-                  title: "Walkie Talkie",
+                  title: context.l10n.home_actionWalkieTalkie,
                   subtitle: subtitle,
                   subtitleColor: isSubscribed
                       ? const Color(0xFF16A34A)
@@ -165,12 +168,12 @@ class QuickActionsSection extends StatelessWidget {
                 );
               }),
               _QuickActionCard(
-                title: "Tracking",
+                title: context.l10n.home_actionTracking,
                 imagePath: "assets/icons/new_action_tracking.png",
                 onTap: () => Get.to(() => TrackingScreen()),
               ),
               _QuickActionCard(
-                title: "Safe Zone",
+                title: context.l10n.home_actionSafeZone,
                 imagePath: "assets/icons/new_action_safe_zone.png",
                 // onTap: () => Get.to(() => SafetyDashboardView()),
                 onTap: () => Get.to(() => const SafetyComingSoonMapScreen()),
@@ -180,6 +183,24 @@ class QuickActionsSection extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// The walkie status subtitle is a stable English id (also cached in prefs,
+/// see WalkieData.statusSubtitle). Translate only for display.
+String _walkieSubtitleLabel(BuildContext context, String raw) {
+  final l10n = context.l10n;
+  switch (raw) {
+    case "Subscribed":
+      return l10n.home_walkieSubscribed;
+    case "Renew":
+      return l10n.home_walkieRenew;
+    case "Expired":
+      return l10n.home_walkieExpired;
+    case "1 hr free":
+      return l10n.home_walkieOneHourFree;
+    default:
+      return raw;
   }
 }
 
@@ -332,10 +353,8 @@ class _QuickActionCard extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 1.5.h),
-              Text(
+              AutoFitText(
                 title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: FontFamily.interSemiBold,
@@ -347,10 +366,8 @@ class _QuickActionCard extends StatelessWidget {
               ),
               if (subtitle != null) ...[
                 SizedBox(height: 1.h),
-                Text(
+                AutoFitText(
                   subtitle!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: FontFamily.interSemiBold,
