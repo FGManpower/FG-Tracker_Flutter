@@ -123,7 +123,7 @@ Widget _buildSecurityEncryptionBanner({bool isGroup = false}) {
           SizedBox(width: 8.w),
           Flexible(
             child: Text(
-              "Messages and calls are end-to-end encrypted. No one outside of this chat, not even FG-Tracker, can read or listen to them.",
+              "Messages and calls are encrypted with AES-256 and TLS. Your communications are private and protected.",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11.sp,
