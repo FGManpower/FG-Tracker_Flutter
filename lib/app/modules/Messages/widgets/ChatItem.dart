@@ -39,6 +39,7 @@ import 'chat_translation_widgets.dart';
 import 'MessageContextMenu.dart';
 import '../../../widgets/MessageInfoSheet.dart';
 import '../../../Data/Services/call_service.dart';
+import '../../../Data/Services/group_call_service.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 /// Text bubbles shrink-wrap via IntrinsicWidth. The attendance card has
@@ -357,15 +358,18 @@ class ChatBubble extends StatelessWidget {
             final isVideo = message.content?.toString().toLowerCase().contains('video') == true ||
                 message.callLogMeta?['isVideo'] == true ||
                 message.callLogMeta?['callType'] == 'video';
-            final targetUserId = isSentByMe ? message.receiverId?.toString() : message.senderId?.toString();
-            final targetName = controller.memberData.name.toString();
+            final myId = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+            final remoteId = isSentByMe ? (message.receiverId?.toString() ?? '') : (message.senderId?.toString() ?? '');
+            final finalRemoteId = remoteId.isNotEmpty && remoteId != '0' ? remoteId : (controller.memberData.userId?.toString() ?? '');
+            final targetName = controller.memberData.name?.toString() ?? 'User';
             final targetPic = controller.memberData.profileImage;
             CallService().startOutGoingCall(
               context,
-              callerId: targetUserId,
+              callerId: myId,
+              remoteUserId: finalRemoteId,
+              is_video: isVideo,
               callerName: targetName,
               callerProfile: targetPic,
-              isVideo: isVideo,
             );
           } catch (_) {}
         },
@@ -1800,11 +1804,10 @@ class GroupChatBubble extends StatelessWidget {
             final isVideo = message.content?.toString().toLowerCase().contains('video') == true ||
                 message.callLogMeta?['isVideo'] == true ||
                 message.callLogMeta?['callType'] == 'video';
-            CallService().startOutGoingCall(
+            GroupCallService.instance.startGroupCall(
               context,
-              callerId: groupId?.toString(),
-              callerName: groupName ?? "Group",
-              callerProfile: null,
+              groupId: groupId?.toString() ?? '',
+              groupName: groupName ?? 'Group',
               isVideo: isVideo,
             );
           } catch (_) {}
