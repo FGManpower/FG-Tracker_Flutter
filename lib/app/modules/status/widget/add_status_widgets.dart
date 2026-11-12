@@ -1,4 +1,6 @@
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -167,7 +169,7 @@ class CaptionInputBar extends StatelessWidget {
               decoration: InputDecoration(
                 border: InputBorder.none,
                 isDense: true,
-                hintText: 'Add a caption...',
+                hintText: appL10n.status_captionHint,
                 hintStyle: TextStyle(
                   color: Colors.white60,
                   fontSize: 13.sp,
@@ -192,27 +194,33 @@ class PreviewActionRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _PillControlButton(
-          icon: Icons.refresh_rounded,
-          label: 'Retake',
-          onTap: controller.retake,
+        Flexible(
+          child: _PillControlButton(
+            icon: Icons.refresh_rounded,
+            label: appL10n.status_retake,
+            onTap: controller.retake,
+          ),
         ),
         SizedBox(width: 12.w),
-        _PillControlButton(
-          icon: Icons.photo_library_outlined,
-          label: 'Change Media',
-          onTap: controller.openGallery,
+        Flexible(
+          child: _PillControlButton(
+            icon: Icons.photo_library_outlined,
+            label: appL10n.status_changeMedia,
+            onTap: controller.openGallery,
+          ),
         ),
         if (controller.isVideoFile.value) ...[
           SizedBox(width: 12.w),
-          Obx(() {
-            final playing = controller.isVideoPlaying.value;
-            return _PillControlButton(
-              icon: playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-              label: playing ? 'Pause' : 'Play',
-              onTap: controller.toggleVideoPlayPause,
-            );
-          }),
+          Flexible(
+            child: Obx(() {
+              final playing = controller.isVideoPlaying.value;
+              return _PillControlButton(
+                icon: playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                label: playing ? appL10n.status_pause : appL10n.status_play,
+                onTap: controller.toggleVideoPlayPause,
+              );
+            }),
+          ),
         ],
       ],
     );
@@ -248,11 +256,16 @@ class _PillControlButton extends StatelessWidget {
           children: [
             Icon(icon, color: Colors.white, size: 16.sp),
             SizedBox(width: 6.w),
-            reausabletext(
-              label,
-              fontsize: 12.sp,
-              color: Colors.white,
-              fontfamily: FontFamily.interMedium,
+            // reausabletext applied .sp to the size again; kept the same.
+            Flexible(
+              child: AutoFitText(
+                label,
+                style: TextStyle(
+                  fontSize: 12.sp.sp,
+                  color: Colors.white,
+                  fontFamily: FontFamily.interMedium,
+                ),
+              ),
             ),
           ],
         ),
@@ -278,7 +291,7 @@ class CaptureRow extends StatelessWidget {
         children: [
           SideActionBtn(
             icon: Icons.photo_library_rounded,
-            label: 'Gallery',
+            label: appL10n.status_gallery,
             onTap: controller.openGallery,
           ),
           GestureDetector(
@@ -316,7 +329,7 @@ class CaptureRow extends StatelessWidget {
           ),
           SideActionBtn(
             icon: Icons.cameraswitch_rounded,
-            label: 'Flip',
+            label: appL10n.status_flip,
             onTap: controller.flipCamera,
           ),
         ],
@@ -381,11 +394,11 @@ class ModeTabs extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _ModeChip(controller: controller, label: 'Photo', value: 'photo'),
+          _ModeChip(controller: controller, label: appL10n.status_modePhoto, value: 'photo'),
           SizedBox(width: 6.w),
-          _ModeChip(controller: controller, label: 'Video', value: 'video'),
+          _ModeChip(controller: controller, label: appL10n.status_modeVideo, value: 'video'),
           SizedBox(width: 6.w),
-          _ModeChip(controller: controller, label: 'Text', value: 'text'),
+          _ModeChip(controller: controller, label: appL10n.status_modeText, value: 'text'),
         ],
       ),
     );
@@ -462,7 +475,7 @@ class PostRow extends StatelessWidget {
                 ),
                 SizedBox(height: 16.h),
                 reausabletext(
-                  'Who can see?',
+                  appL10n.status_whoCanSee,
                   fontsize: 16.sp,
                   fontfamily: FontFamily.interBold,
                   color: Colors.black87,
@@ -477,13 +490,13 @@ class PostRow extends StatelessWidget {
                 // ),
                 _WhoOption(
                   controller: controller,
-                  title: 'Except Selected',
+                  title: appL10n.status_exceptSelected,
                   privacyValue: 'EXCEPT_USERS',
                   icon: Icons.person_remove_alt_1_rounded,
                 ),
                 _WhoOption(
                   controller: controller,
-                  title: 'Only Share With',
+                  title: appL10n.status_onlyShareWith,
                   privacyValue: 'ONLY_SHARE_WITH',
                   icon: Icons.lock_outline_rounded,
                 ),
@@ -533,7 +546,7 @@ class PostRow extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         reausabletext(
-                          'Privacy',
+                          appL10n.status_privacy,
                           fontsize: 10.sp,
                           color: Colors.black54,
                           maxline: 1,
@@ -604,12 +617,13 @@ class PostRow extends StatelessWidget {
                       ),
                       SizedBox(width: 8.w),
                       Flexible(
-                        child: reausabletext(
-                          'Post Status',
-                          fontsize: 12.sp,
-                          fontfamily: FontFamily.interBold,
-                          color: Colors.white,
-                          maxline: 1,
+                        child: AutoFitText(
+                          appL10n.status_postStatus,
+                          style: TextStyle(
+                            fontSize: 12.sp.sp,
+                            fontFamily: FontFamily.interBold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],

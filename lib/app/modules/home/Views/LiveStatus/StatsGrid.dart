@@ -1,9 +1,11 @@
 import 'package:fgtracker/app/Data/Services/GroupCountService.dart';
 import 'package:fgtracker/app/Model/group_count_detail.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/home/Views/LiveStatus/components/online_member.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -25,9 +27,9 @@ class StatsGrid extends StatelessWidget {
             child: _StatCard(
               imagePath: "assets/icons/stat_groups.png",
               iconColor: const Color(0xFF6B4DFF),
-              title: "Groups",
+              title: context.l10n.home_statGroups,
               value: detail.totalGroups.toString(),
-              subtitle: "Total",
+              subtitle: context.l10n.home_statTotal,
               onTap: () {
                 Get.toNamed(Routes.GroupsList);
               },
@@ -38,9 +40,9 @@ class StatsGrid extends StatelessWidget {
             child: _StatCard(
               imagePath: "assets/icons/stat_live_beacon.png",
               iconColor: const Color(0xFF10B981),
-              title: "Online",
+              title: context.l10n.common_online,
               value: detail.activeMembers.toString(),
-              subtitle: "Now",
+              subtitle: context.l10n.home_statNow,
               onTap: () {
                 Get.to(() => OnlineMember());
               },
@@ -51,9 +53,9 @@ class StatsGrid extends StatelessWidget {
             child: _StatCard(
               imagePath: "assets/icons/stat_online.png",
               iconColor: const Color(0xFF3B82F6),
-              title: "Members",
+              title: context.l10n.home_statMembers,
               value: detail.totalMembers.toString(),
-              subtitle: "Total",
+              subtitle: context.l10n.home_statTotal,
               onTap: () {
                 Get.to(() => const TotalMember());
               },
@@ -64,9 +66,9 @@ class StatsGrid extends StatelessWidget {
             child: _StatCard(
               imagePath: "assets/icons/stat_private_mode.png",
               iconColor: const Color(0xFF6366F1),
-              title: "Private Mode",
+              title: context.l10n.home_privateMode,
               value: detail.locationDisabledMembers.toString(),
-              subtitle: "Members",
+              subtitle: context.l10n.home_statMembers,
               onTap: () {
                 Get.to(() => GhostMember());
               },
@@ -180,10 +182,8 @@ class _StatCard extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 5.h),
-              Text(
+              AutoFitText(
                 title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: FontFamily.interSemiBold,
@@ -208,10 +208,8 @@ class _StatCard extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 1.5.h),
-              Text(
+              AutoFitText(
                 subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: FontFamily.interRegular,

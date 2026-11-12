@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart' hide Location;
 import 'package:get/get.dart';
@@ -15,7 +16,12 @@ class LocationPickerController extends GetxController {
 
   final Rxn<LocationData> currentLocation = Rxn<LocationData>();
   final Rxn<LatLng> selectedLatLng = Rxn<LatLng>();
-  final RxString selectedAddress = "Fetching location...".obs;
+  /// Stable placeholder values of [selectedAddress]. They can be sent as the
+  /// location name, so they stay English; the page shows them translated.
+  static const String fetchingLocationValue = "Fetching location...";
+  static const String unknownLocationValue = "Unknown Location";
+
+  final RxString selectedAddress = fetchingLocationValue.obs;
   final RxBool isLoading = true.obs;
   final RxSet<Marker> markers = <Marker>{}.obs;
 
@@ -61,7 +67,7 @@ class LocationPickerController extends GetxController {
         serviceEnabled = await _location.requestService();
         if (!serviceEnabled) {
           errorMessage.value =
-              "Turn on location services to share your location.";
+              appL10n.chat_locationServicesOff;
           isLoading.value = false;
           return;
         }
@@ -75,8 +81,8 @@ class LocationPickerController extends GetxController {
       if (!_isGranted(permission)) {
         permissionDenied.value = true;
         errorMessage.value = permission == PermissionStatus.deniedForever
-            ? "Location permission is turned off for this app. Enable it in Settings to share your location."
-            : "Location permission is needed to share your location.";
+            ? appL10n.chat_locationPermissionOff
+            : appL10n.chat_locationPermissionNeeded;
         isLoading.value = false;
         return;
       }
@@ -105,7 +111,7 @@ class LocationPickerController extends GetxController {
       });
     } catch (e) {
       AppLog.d("Location picker error: $e");
-      errorMessage.value = "Couldn't get your location. Please try again.";
+      errorMessage.value = appL10n.chat_locationFetchFailed;
       isLoading.value = false;
     }
   }
@@ -152,7 +158,7 @@ class LocationPickerController extends GetxController {
       )
           .join(", ");
     } catch (_) {
-      selectedAddress.value = "Unknown Location";
+      selectedAddress.value = unknownLocationValue;
     }
   }
 

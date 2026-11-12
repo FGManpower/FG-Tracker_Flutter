@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
@@ -79,7 +80,7 @@ class MediaLinksDocsController extends GetxController {
   void openVideo(MessageData m) {
     final url = MediaHelper.fileUrl(m);
     if (url.isEmpty) {
-      Utils().fluttertoast("Video not found");
+      Utils().fluttertoast(appL10n.media_videoNotFound);
       return;
     }
 
@@ -95,7 +96,7 @@ class MediaLinksDocsController extends GetxController {
     final url = MediaHelper.fileUrl(m);
     final name = MediaHelper.fileName(m);
     if (url.isEmpty) {
-      Utils().fluttertoast("Document not found");
+      Utils().fluttertoast(appL10n.media_documentNotFound);
       return;
     }
 
@@ -159,7 +160,7 @@ class MediaHelper {
   static String fileName(MessageData m) {
     final p = (m.content ?? "").split("||").first;
     final n = p.split('/').last;
-    return n.isEmpty ? "Document" : n;
+    return n.isEmpty ? appL10n.chat_previewDocument : n;
   }
 
   static String extractUrl(String text) {
@@ -197,21 +198,21 @@ class MediaHelper {
 
   static Future<void> launchExternal(String url) async {
     if (url.isEmpty) {
-      Utils().fluttertoast("Invalid link");
+      Utils().fluttertoast(appL10n.media_invalidLink);
       return;
     }
     var u = url.trim();
     if (u.startsWith("www.")) u = "https://$u";
     final uri = Uri.tryParse(u);
     if (uri == null) {
-      Utils().fluttertoast("Cannot open");
+      Utils().fluttertoast(appL10n.media_cannotOpen);
       return;
     }
     try {
       final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      if (!ok) Utils().fluttertoast("Cannot open");
+      if (!ok) Utils().fluttertoast(appL10n.media_cannotOpen);
     } catch (_) {
-      Utils().fluttertoast("Cannot open");
+      Utils().fluttertoast(appL10n.media_cannotOpen);
     }
   }
 }

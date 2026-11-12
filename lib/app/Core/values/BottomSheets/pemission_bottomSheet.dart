@@ -1,7 +1,7 @@
 import 'dart:io';
 
 
-import 'package:fgtracker/app/Core/theme/AppText.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/modules/home/Controller/permission_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -36,15 +36,15 @@ class PermissionBottomSheet extends StatelessWidget {
         ][step.clamp(0, 1)];
 
         final title = [
-          AppText.locationPermission.tr,
-          AppText.EnableGPS.tr,
+          context.l10n.perm_locationTitle,
+          context.l10n.perm_enableGpsTitle,
         ][step.clamp(0, 1)];
 
         return WillPopScope(
           onWillPop: () async {
             CommonDialog.ConfirmationDialog(
-              title: AppText.areYouSure.tr,
-              content: AppText.doYouWantToExit.tr,
+              title: context.l10n.perm_exitTitle,
+              content: context.l10n.perm_exitBody,
               onConfirm: () => exit(0),
             );
 
@@ -112,8 +112,8 @@ class PermissionBottomSheet extends StatelessWidget {
                     ),
                     child: Text(
                       step < 2
-                          ? AppText.next.tr
-                          : AppText.continueBtn.tr,
+                          ? context.l10n.common_next
+                          : context.l10n.common_continue,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontFamily:
@@ -142,19 +142,19 @@ class PermissionBottomSheet extends StatelessWidget {
     if (step == 0) {
       return [
         Text(
-          AppText.fgPartnerAppNeedYourPermission.tr,
+          appL10n.perm_trackingPermissionBody,
           textAlign: TextAlign.center,
           style: style,
         ),
         SizedBox(height: 6.h),
         Text(
-          AppText.plsChooseAllowAllTheTime.tr,
+          appL10n.perm_chooseAllowAllTime,
           textAlign: TextAlign.center,
           style: style,
         ),
         SizedBox(height: 6.h),
         Text(
-          AppText.thisAppCollectsLocationData.tr,
+          appL10n.perm_collectsLocationBody,
           textAlign: TextAlign.center,
           style: style,
         ),
@@ -162,13 +162,13 @@ class PermissionBottomSheet extends StatelessWidget {
     } else {
       return [
         Text(
-          AppText.gpsRequiredToTrackGroup.tr,
+          appL10n.perm_gpsRequiredBody,
           textAlign: TextAlign.center,
           style: style,
         ),
         SizedBox(height: 6.h),
         Text(
-          AppText.pleaseEnableYourDeviceGps.tr,
+          appL10n.perm_enableDeviceGpsBody,
           textAlign: TextAlign.center,
           style: style,
         ),

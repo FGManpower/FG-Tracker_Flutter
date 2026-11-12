@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'SosController.dart';
 import 'SosHowItWorksSheet.dart';
 
@@ -37,7 +39,7 @@ class SosScreen extends GetView<SosController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "SOS Alert",
+              context.l10n.sos_title,
               style: TextStyle(
                 fontSize: 17.sp,
                 fontWeight: FontWeight.bold,
@@ -45,7 +47,7 @@ class SosScreen extends GetView<SosController> {
               ),
             ),
             Text(
-              "Send alert to nearby people",
+              context.l10n.sos_subtitle,
               style: TextStyle(
                 fontSize: 11.sp,
                 color: Colors.black54,
@@ -60,6 +62,9 @@ class SosScreen extends GetView<SosController> {
               child: GestureDetector(
                 onTap: () => SosHowItWorksSheet.show(context),
                 child: Container(
+                  // Cap the pill so a long translation shrinks instead of
+                  // squeezing the app-bar title.
+                  constraints: BoxConstraints(maxWidth: 150.w),
                   padding:
                   EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
@@ -69,16 +74,19 @@ class SosScreen extends GetView<SosController> {
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.info_outline,
                           size: 14.sp, color: Colors.black87),
                       SizedBox(width: 4.w),
-                      Text(
-                        "How it works",
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
+                      Flexible(
+                        child: AutoFitText(
+                          context.l10n.sos_howItWorks,
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
                     ],
@@ -128,7 +136,7 @@ class SosScreen extends GetView<SosController> {
               ),
               SizedBox(height: 8.h),
               Text(
-                "Need Help?",
+                context.l10n.sos_needHelp,
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
@@ -138,7 +146,7 @@ class SosScreen extends GetView<SosController> {
               ),
               SizedBox(height: 4.h),
               Text(
-                "Send an SOS alert to nearby people.\nThey will be notified and can assist you.",
+                context.l10n.sos_needHelpBody,
                 style: TextStyle(
                   fontSize: 11.sp,
                   color: Colors.black54,
@@ -170,7 +178,7 @@ class SosScreen extends GetView<SosController> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Add Photo (Optional)",
+                                context.l10n.sos_addPhotoOptional,
                                 style: TextStyle(
                                   fontSize: 12.sp,
                                   fontWeight: FontWeight.w600,
@@ -178,7 +186,7 @@ class SosScreen extends GetView<SosController> {
                               ),
                               SizedBox(height: 2.h),
                               Text(
-                                "Attach a photo to help others understand better.",
+                                context.l10n.sos_addPhotoHint,
                                 style: TextStyle(
                                   fontSize: 9.sp,
                                   color: Colors.black54,
@@ -241,7 +249,7 @@ class SosScreen extends GetView<SosController> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Notify Your Family (1 to 5 required)",
+                                context.l10n.sos_notifyFamilyTitle,
                                 style: TextStyle(
                                   fontSize: 12.sp,
                                   fontWeight: FontWeight.w600,
@@ -250,8 +258,8 @@ class SosScreen extends GetView<SosController> {
                               SizedBox(height: 2.h),
                               Obx(() => Text(
                                 controller.selectedFamilyMembers.isEmpty
-                                    ? "Add at least 1 family member to send SOS alert"
-                                    : "${controller.selectedFamilyMembers.length} member(s) selected",
+                                    ? context.l10n.sos_addFamilyMemberRequired
+                                    : context.l10n.sos_membersSelected(controller.selectedFamilyMembers.length),
                                 style: TextStyle(
                                   fontSize: 9.sp,
                                   color: controller
@@ -361,7 +369,7 @@ class SosScreen extends GetView<SosController> {
                                 size: 15.sp, color: const Color(0xFF6B4DFF)),
                             SizedBox(width: 6.w),
                             Text(
-                              "Add Family Member",
+                              context.l10n.sos_addFamilyMember,
                               style: TextStyle(
                                 fontSize: 11.sp,
                                 fontWeight: FontWeight.w600,
@@ -383,7 +391,7 @@ class SosScreen extends GetView<SosController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Select Reason",
+                      context.l10n.sos_selectReason,
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
@@ -393,7 +401,8 @@ class SosScreen extends GetView<SosController> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: controller.reasonList
-                          .map((reason) => _buildReasonItem(reason))
+                          .map((reason) =>
+                              Flexible(child: _buildReasonItem(reason)))
                           .toList(),
                     ),
                   ],
@@ -408,8 +417,8 @@ class SosScreen extends GetView<SosController> {
                   children: [
                     Obx(() => Text(
                       controller.selectedReason.value == 'Other'
-                          ? "Add Details (Mandatory)"
-                          : "Add Details (Optional)",
+                          ? context.l10n.sos_addDetailsMandatory
+                          : context.l10n.sos_addDetailsOptional,
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
@@ -422,7 +431,7 @@ class SosScreen extends GetView<SosController> {
                       maxLength: 200,
                       style: TextStyle(fontSize: 12.sp),
                       decoration: InputDecoration(
-                        hintText: "Type any additional details...",
+                        hintText: context.l10n.sos_detailsHint,
                         hintStyle: TextStyle(
                             fontSize: 11.sp, color: Colors.grey.shade400),
                         contentPadding: EdgeInsets.symmetric(
@@ -495,7 +504,7 @@ class SosScreen extends GetView<SosController> {
                       Column(
                         children: [
                           Text(
-                            "Send SOS Alert",
+                            context.l10n.sos_sendSosAlert,
                             style: TextStyle(
                               fontSize: 14.sp,
                               fontWeight: FontWeight.bold,
@@ -503,7 +512,7 @@ class SosScreen extends GetView<SosController> {
                             ),
                           ),
                           Text(
-                            "Alert will be sent to nearby people",
+                            context.l10n.sos_alertWillBeSent,
                             style: TextStyle(
                               fontSize: 9.sp,
                               color: Colors.white70,
@@ -525,7 +534,7 @@ class SosScreen extends GetView<SosController> {
                       size: 11.sp, color: Colors.black54),
                   SizedBox(width: 5.w),
                   Text(
-                    "Your alert will be sent to nearby people and your family.",
+                    context.l10n.sos_alertWillBeSentFamily,
                     style: TextStyle(
                       fontSize: 9.sp,
                       color: Colors.black54,
@@ -597,8 +606,9 @@ class SosScreen extends GetView<SosController> {
               ),
             ),
             SizedBox(height: 6.h),
-            Text(
-              reason.label,
+            AutoFitText(
+              reason.displayLabel,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 10.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,

@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -100,7 +101,7 @@ class NoVoiceSeatDialog extends StatelessWidget {
             ),
             SizedBox(height: 12.h),
             Text(
-              "No Voice Seat Assigned",
+              context.l10n.walkie_noSeatTitle,
               style: TextStyle(
                 fontSize: 19.sp,
                 fontFamily: FontFamily.interBold,
@@ -110,7 +111,7 @@ class NoVoiceSeatDialog extends StatelessWidget {
             ),
             SizedBox(height: 8.h),
             Text(
-              "You have an active Team Plan, but all active voice seats are currently assigned to other team members.\n\nYou can listen to group conversations in real-time, but to speak, you must assign a seat to yourself or upgrade your plan.",
+              context.l10n.walkie_noSeatMessage,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12.sp,
@@ -133,7 +134,7 @@ class NoVoiceSeatDialog extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Team Plan Status",
+                        context.l10n.walkie_teamPlanStatus,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: const Color(0xFF64748B),
@@ -148,7 +149,7 @@ class NoVoiceSeatDialog extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Text(
-                          "Active",
+                          context.l10n.walkie_activeBadge,
                           style: TextStyle(
                             fontSize: 11.sp,
                             color: const Color(0xFF059669),
@@ -163,7 +164,7 @@ class NoVoiceSeatDialog extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Assigned Seats",
+                        context.l10n.walkie_assignedSeats,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: const Color(0xFF64748B),
@@ -171,7 +172,7 @@ class NoVoiceSeatDialog extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        "$teamAssignedSeats / $teamPurchasedSeats Seats Used",
+                        context.l10n.walkie_seatsUsed('$teamAssignedSeats', '$teamPurchasedSeats'),
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: const Color(0xFF0F172A),
@@ -185,7 +186,7 @@ class NoVoiceSeatDialog extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Your Voice Access",
+                        context.l10n.walkie_yourVoiceAccess,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: const Color(0xFF64748B),
@@ -193,7 +194,7 @@ class NoVoiceSeatDialog extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        "Listen Only",
+                        context.l10n.walkie_listenOnly,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: const Color(0xFFD97706),
@@ -244,7 +245,7 @@ class NoVoiceSeatDialog extends StatelessWidget {
                             color: Colors.white, size: 17.sp),
                         SizedBox(width: 8.w),
                         Text(
-                          "Upgrade & Add Seats",
+                          context.l10n.walkie_upgradeAddSeats,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 13.5.sp,
@@ -265,7 +266,7 @@ class NoVoiceSeatDialog extends StatelessWidget {
                 onContinue?.call();
               },
               child: Text(
-                "Continue in Listen-Only Mode",
+                context.l10n.walkie_continueListenOnly,
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: const Color(0xFF64748B),

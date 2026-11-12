@@ -106,10 +106,14 @@ class LogoutUser {
       await prefs.reload();
       final introDone = prefs.getBool(PrefConst.introStatus) ?? true;
       final isDark = prefs.getBool(PrefConst.isDarkMode);
+      final appLanguage = prefs.getString(PrefConst.appLanguage);
       await prefs.clear();
       await prefs.setBool(PrefConst.introStatus, introDone);
       if (isDark != null) {
         await prefs.setBool(PrefConst.isDarkMode, isDark);
+      }
+      if (appLanguage != null) {
+        await prefs.setString(PrefConst.appLanguage, appLanguage);
       }
       await prefs.reload();
       await Global.storageServices.reload();

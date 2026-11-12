@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Controller/razorpay_payment_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -10,7 +11,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Utils/walkie_plan_l10n.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class WalkieTalkiePurchaseSuccessScreen extends StatefulWidget {
   final bool isTeam;
@@ -76,7 +78,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
   String get paymentId => controller.successPaymentId.value?.isNotEmpty == true ? controller.successPaymentId.value! : (widget.paymentId ?? "pay_SUCCESS");
   num get amountPaid => controller.amountPaid.value > 0 ? controller.amountPaid.value : (widget.amountPaid ?? 0);
   String get paymentMethod => controller.paymentMethod.value;
-  String get formattedDateTime => controller.transactionTime.value.isNotEmpty ? controller.transactionTime.value : (widget.transactionTime ?? DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now()));
+  String get formattedDateTime => controller.transactionTime.value.isNotEmpty ? controller.transactionTime.value : (widget.transactionTime ?? appDateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now()));
 
   static const Color _primaryPurple = AppColors.primaryDarkblue;
   static const Color _bgSoft = AppColors.primarySecondaryBackground;
@@ -243,7 +245,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                               children: [
                                 // Title & Subtitle
                                 Text(
-                                  "Purchase Successful!",
+                                  context.l10n.walkiePlan_successTitle,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 21.sp.clamp(18.0, 24.0),
@@ -255,8 +257,8 @@ class _WalkieTalkiePurchaseSuccessScreenState
                                 SizedBox(height: 4.h),
                                 Text(
                                   isTeam
-                                      ? "Your Team Plan is now active"
-                                      : "Your Individual Plan is now active",
+                                      ? context.l10n.walkiePlan_successTeamActive
+                                      : context.l10n.walkiePlan_successIndividualActive,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 12.5.sp.clamp(11.0, 14.0),
@@ -354,7 +356,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
               size: 24.sp.clamp(20.0, 26.0),
             ),
             splashRadius: 20.r,
-            tooltip: "Close",
+            tooltip: context.l10n.common_close,
           ),
         ],
       ),
@@ -513,7 +515,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    "Payment Receipt",
+                    context.l10n.walkiePlan_successPaymentReceipt,
                     style: TextStyle(
                       fontSize: 13.5.sp,
                       fontFamily: FontFamily.interBold,
@@ -539,7 +541,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                     ),
                     SizedBox(width: 4.w),
                     Text(
-                      "Razorpay Verified",
+                      context.l10n.walkiePlan_successRazorpayVerified,
                       style: TextStyle(
                         fontSize: 9.5.sp,
                         fontFamily: FontFamily.interBold,
@@ -566,7 +568,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Amount Paid",
+                    context.l10n.walkiePlan_successAmountPaid,
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontFamily: FontFamily.interRegular,
@@ -600,13 +602,16 @@ class _WalkieTalkiePurchaseSuccessScreenState
                       color: const Color(0xFF16A34A),
                     ),
                     SizedBox(width: 4.w),
-                    Text(
-                      "PAID",
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontFamily: FontFamily.interBold,
-                        color: const Color(0xFF16A34A),
-                        letterSpacing: 0.5,
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 100.w),
+                      child: AutoFitText(
+                        context.l10n.walkiePlan_successPaid,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontFamily: FontFamily.interBold,
+                          color: const Color(0xFF16A34A),
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                   ],
@@ -629,7 +634,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
               children: [
                 // Row 1: Transaction / Payment ID
                 _buildReceiptDetailRow(
-                  label: "Payment ID",
+                  label: context.l10n.walkiePlan_successPaymentId,
                   valueWidget: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -671,7 +676,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
 
                 // Row 2: Payment Method
                 _buildReceiptDetailRow(
-                  label: "Payment Mode",
+                  label: context.l10n.walkiePlan_successPaymentMode,
                   valueWidget: Text(
                     paymentMethod,
                     style: TextStyle(
@@ -689,7 +694,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
 
                 // Row 3: Date & Time
                 _buildReceiptDetailRow(
-                  label: "Date & Time",
+                  label: context.l10n.walkiePlan_successDateTime,
                   valueWidget: Text(
                     formattedDateTime,
                     style: TextStyle(
@@ -707,7 +712,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
 
                 // Row 4: Status
                 _buildReceiptDetailRow(
-                  label: "Status",
+                  label: context.l10n.walkiePlan_successStatus,
                   valueWidget: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -721,7 +726,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                       ),
                       SizedBox(width: 5.w),
                       Text(
-                        "Successful",
+                        context.l10n.walkiePlan_successSuccessful,
                         style: TextStyle(
                           fontSize: 11.5.sp,
                           fontFamily: FontFamily.interBold,
@@ -757,7 +762,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                   ),
                   SizedBox(width: 6.w),
                   Text(
-                    "Share Receipt",
+                    context.l10n.walkiePlan_successShareReceipt,
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontFamily: FontFamily.interBold,
@@ -875,7 +880,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  planTitle,
+                  walkiePlanTitleText(planTitle, context.l10n),
                   style: TextStyle(
                     fontSize: 15.sp.clamp(13.5, 16.5),
                     fontFamily: FontFamily.interBold,
@@ -884,7 +889,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                 ),
                 SizedBox(height: 3.h),
                 Text(
-                  isTeam ? "$memberCount Members" : "1 Member",
+                  context.l10n.common_membersCount(isTeam ? memberCount : 1),
                   style: TextStyle(
                     fontSize: 12.5.sp.clamp(11.0, 13.5),
                     fontFamily: FontFamily.interMedium,
@@ -893,7 +898,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  "Valid till $validTill",
+                  context.l10n.walkiePlan_successValidTill(validTill),
                   style: TextStyle(
                     fontSize: 11.5.sp.clamp(10.5, 12.5),
                     fontFamily: FontFamily.interRegular,
@@ -912,7 +917,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Text(
-              "Active",
+              context.l10n.walkiePlan_cardActive,
               style: TextStyle(
                 fontSize: 11.sp.clamp(10.0, 12.5),
                 fontFamily: FontFamily.interBold,
@@ -967,7 +972,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "What's Next?",
+                    context.l10n.walkiePlan_successWhatsNext,
                     style: TextStyle(
                       fontSize: 11.5.sp.clamp(10.5, 12.5),
                       fontFamily: FontFamily.interBold,
@@ -976,7 +981,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                   ),
                   SizedBox(height: 3.h),
                   Text(
-                    isTeam ? "Assign Walkie Access" : "Start Communicating",
+                    isTeam ? context.l10n.walkiePlan_successAssignWalkieAccess : context.l10n.walkiePlan_successStartCommunicating,
                     style: TextStyle(
                       fontSize: 14.5.sp.clamp(13.5, 16.0),
                       fontFamily: FontFamily.interBold,
@@ -986,8 +991,8 @@ class _WalkieTalkiePurchaseSuccessScreenState
                   SizedBox(height: 3.h),
                   Text(
                     isTeam
-                        ? "Select team members who will use Walkie Talkie."
-                        : "Your individual plan is active. Head to home and start talking.",
+                        ? context.l10n.walkiePlan_successSelectMembersDesc
+                        : context.l10n.walkiePlan_successIndividualActiveDesc,
                     style: TextStyle(
                       fontSize: 11.5.sp.clamp(10.5, 12.5),
                       fontFamily: FontFamily.interRegular,
@@ -1052,8 +1057,8 @@ class _WalkieTalkiePurchaseSuccessScreenState
           // Step 1
           _buildTimelineStepItem(
             stepNumber: "1",
-            title: "Access Activated",
-            subtitle: "Your personal Walkie-Talkie access is active now.",
+            title: context.l10n.walkiePlan_successAccessActivated,
+            subtitle: context.l10n.walkiePlan_successAccessActivatedDesc,
             isCompletedOrActive: true,
             showConnector: true,
           ),
@@ -1061,8 +1066,8 @@ class _WalkieTalkiePurchaseSuccessScreenState
           // Step 2
           _buildTimelineStepItem(
             stepNumber: "2",
-            title: "Select Channel",
-            subtitle: "Join any group or channel to connect with members.",
+            title: context.l10n.walkiePlan_successSelectChannel,
+            subtitle: context.l10n.walkiePlan_successSelectChannelDesc,
             isCompletedOrActive: false,
             showConnector: true,
           ),
@@ -1070,8 +1075,8 @@ class _WalkieTalkiePurchaseSuccessScreenState
           // Step 3
           _buildTimelineStepItem(
             stepNumber: "3",
-            title: "Start Communicating",
-            subtitle: "Push to talk and connect instantly with your team.",
+            title: context.l10n.walkiePlan_successStartCommunicating,
+            subtitle: context.l10n.walkiePlan_successPushToTalkDesc,
             isCompletedOrActive: false,
             showConnector: false,
           ),
@@ -1084,8 +1089,8 @@ class _WalkieTalkiePurchaseSuccessScreenState
         // Step 1
         _buildTimelineStepItem(
           stepNumber: "1",
-          title: "Assign Walkie Access",
-          subtitle: "Choose which members can use Walkie Talkie.",
+          title: context.l10n.walkiePlan_successAssignWalkieAccess,
+          subtitle: context.l10n.walkiePlan_successChooseMembersDesc,
           isCompletedOrActive: true,
           showConnector: true,
         ),
@@ -1093,8 +1098,8 @@ class _WalkieTalkiePurchaseSuccessScreenState
         // Step 2
         _buildTimelineStepItem(
           stepNumber: "2",
-          title: "Set Up Team",
-          subtitle: "Invite members, manage roles and permissions.",
+          title: context.l10n.walkiePlan_successSetUpTeam,
+          subtitle: context.l10n.walkiePlan_successSetUpTeamDesc,
           isCompletedOrActive: false,
           showConnector: true,
         ),
@@ -1102,8 +1107,8 @@ class _WalkieTalkiePurchaseSuccessScreenState
         // Step 3
         _buildTimelineStepItem(
           stepNumber: "3",
-          title: "Start Communicating",
-          subtitle: "Your team is ready to go!",
+          title: context.l10n.walkiePlan_successStartCommunicating,
+          subtitle: context.l10n.walkiePlan_successTeamReady,
           isCompletedOrActive: false,
           showConnector: false,
         ),
@@ -1212,8 +1217,8 @@ class _WalkieTalkiePurchaseSuccessScreenState
           Expanded(
             child: Text(
               isTeam
-                  ? "You can manage or change Walkie access anytime from Team Settings."
-                  : "Your individual subscription is active and linked directly to your account.",
+                  ? context.l10n.walkiePlan_successManageAccessNote
+                  : context.l10n.walkiePlan_successIndividualLinkedNote,
               style: TextStyle(
                 fontSize: 11.sp.clamp(10.0, 12.0),
                 fontFamily: FontFamily.interMedium,
@@ -1261,7 +1266,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "Visit Home Screen",
+                  context.l10n.walkiePlan_successVisitHome,
                   style: TextStyle(
                     fontSize: 14.5.sp.clamp(13.0, 16.0),
                     fontFamily: FontFamily.interBold,
@@ -1314,7 +1319,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Assign Members",
+                    context.l10n.walkiePlan_successAssignMembers,
                     style: TextStyle(
                       fontSize: 14.5.sp.clamp(13.0, 16.0),
                       fontFamily: FontFamily.interBold,
@@ -1340,7 +1345,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 12.w),
               child: Text(
-                "Maybe Later",
+                context.l10n.walkiePlan_successMaybeLater,
                 style: TextStyle(
                   fontSize: 13.5.sp.clamp(12.0, 14.5),
                   fontFamily: FontFamily.interBold,
@@ -1410,7 +1415,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
 
                   // Title
                   Text(
-                    "Not Now?",
+                    context.l10n.walkiePlan_successNotNow,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 20.sp.clamp(18.0, 23.0),
@@ -1425,7 +1430,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
                     child: Text(
-                      "You can assign Walkie access later from Team Settings anytime.",
+                      context.l10n.walkiePlan_successAssignLaterNote,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12.5.sp.clamp(11.5, 14.0),
@@ -1461,7 +1466,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                         SizedBox(width: 10.w),
                         Expanded(
                           child: Text(
-                            "Your plan is active. Team members will not have Walkie access until you assign them.",
+                            context.l10n.walkiePlan_successNoAccessUntilAssigned,
                             style: TextStyle(
                               fontSize: 11.5.sp.clamp(10.5, 12.5),
                               fontFamily: FontFamily.interRegular,
@@ -1493,7 +1498,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                             ),
                             onPressed: () => Navigator.pop(ctx),
                             child: Text(
-                              "Back",
+                              context.l10n.common_back,
                               style: TextStyle(
                                 fontSize: 14.sp.clamp(13.0, 15.5),
                                 fontFamily: FontFamily.interBold,
@@ -1529,7 +1534,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                                   child: FittedBox(
                                     fit: BoxFit.scaleDown,
                                     child: Text(
-                                      "Continue to Home",
+                                      context.l10n.walkiePlan_successContinueHome,
                                       style: TextStyle(
                                         fontSize: 13.5.sp.clamp(12.0, 15.0),
                                         fontFamily: FontFamily.interBold,

@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
@@ -1556,8 +1557,8 @@ class SocketMessageService extends GetxService {
     final text = serverText.trim().isNotEmpty
         ? serverText.trim()
         : (code == 'BLOCKED'
-            ? "You can't message this user"
-            : "Message not sent. Please try again.");
+            ? appL10n.chat_cantMessageUser
+            : appL10n.chat_messageNotSent);
     log("SEND REJECTED => code=$code message=$text");
     Utils().fluttertoast(text);
   }

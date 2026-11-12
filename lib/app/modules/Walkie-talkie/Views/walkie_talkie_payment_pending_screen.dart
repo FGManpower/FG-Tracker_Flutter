@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Controller/razorpay_payment_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Model/razorpay_payment_model.dart';
@@ -10,7 +11,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Utils/walkie_plan_l10n.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class WalkieTalkiePaymentPendingScreen extends StatefulWidget {
   final bool isTeam;
@@ -90,7 +92,7 @@ class _WalkieTalkiePaymentPendingScreenState
     if (controller.transactionTime.value.isNotEmpty) {
       return controller.transactionTime.value;
     }
-    return DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+    return appDateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
   }
 
   num get _displayAmount {
@@ -143,9 +145,9 @@ class _WalkieTalkiePaymentPendingScreenState
       }
 
       await Future.delayed(const Duration(milliseconds: 1200));
-      controller.showTopSnackbar("Payment status is still processing. Please wait.");
+      controller.showTopSnackbar(appL10n.walkiePlan_payPendingStillProcessing);
     } catch (e) {
-      controller.showTopSnackbar("Payment still in progress. We'll update once confirmed.");
+      controller.showTopSnackbar(appL10n.walkiePlan_payPendingStillInProgress);
     } finally {
       _isRefreshing.value = false;
     }
@@ -190,7 +192,7 @@ class _WalkieTalkiePaymentPendingScreenState
 
                           // Title & Subtitle
                           Text(
-                            "Payment Pending",
+                            context.l10n.walkiePlan_payPendingTitle,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 20.sp,
@@ -203,7 +205,7 @@ class _WalkieTalkiePaymentPendingScreenState
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 8.w),
                             child: Text(
-                              "Your payment is being processed by the payment provider.\nThis may take a few minutes.",
+                              context.l10n.walkiePlan_payPendingSubtitleLong,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 12.sp,
@@ -282,16 +284,16 @@ class _WalkieTalkiePaymentPendingScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            "Payment Pending",
+          AutoFitText(
+            context.l10n.walkiePlan_payPendingTitle,
             style: TextStyle(
               fontSize: 15.sp,
               fontFamily: FontFamily.interBold,
               color: _textDark,
             ),
           ),
-          Text(
-            "Your payment is being processed",
+          AutoFitText(
+            context.l10n.walkiePlan_payPendingSubtitleShort,
             style: TextStyle(
               fontSize: 10.5.sp,
               fontFamily: FontFamily.interRegular,
@@ -454,7 +456,7 @@ class _WalkieTalkiePaymentPendingScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Plan Details",
+            context.l10n.walkiePlan_payPlanDetails,
             style: TextStyle(
               fontSize: 14.sp,
               fontFamily: FontFamily.interBold,
@@ -489,7 +491,7 @@ class _WalkieTalkiePaymentPendingScreenState
                       children: [
                         Flexible(
                           child: Text(
-                            _displayTitle,
+                            walkiePlanTitleText(_displayTitle, context.l10n),
                             style: TextStyle(
                               fontSize: 13.sp,
                               fontFamily: FontFamily.interBold,
@@ -508,7 +510,7 @@ class _WalkieTalkiePaymentPendingScreenState
                             borderRadius: BorderRadius.circular(5.r),
                           ),
                           child: Text(
-                            "Monthly Plan",
+                            context.l10n.walkiePlan_monthlyPlan,
                             style: TextStyle(
                               fontSize: 9.sp,
                               fontFamily: FontFamily.interMedium,
@@ -520,7 +522,7 @@ class _WalkieTalkiePaymentPendingScreenState
                     ),
                     SizedBox(height: 3.h),
                     Text(
-                      "Real-time monitoring • Instant alerts",
+                      context.l10n.walkiePlan_payIndividualFeatures,
                       style: TextStyle(
                         fontSize: 10.5.sp,
                         fontFamily: FontFamily.interRegular,
@@ -558,7 +560,7 @@ class _WalkieTalkiePaymentPendingScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Total Amount",
+                      context.l10n.walkiePlan_orderTotalAmount,
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontFamily: FontFamily.interBold,
@@ -567,7 +569,7 @@ class _WalkieTalkiePaymentPendingScreenState
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      "Payment initiated on $_displayTime",
+                      context.l10n.walkiePlan_payInitiatedOn(_displayTime),
                       style: TextStyle(
                         fontSize: 10.sp,
                         fontFamily: FontFamily.interRegular,
@@ -592,7 +594,7 @@ class _WalkieTalkiePaymentPendingScreenState
                       ),
                     ),
                     TextSpan(
-                      text: " / month",
+                      text: " / ${context.l10n.walkiePlan_payIntervalMonth}",
                       style: TextStyle(
                         fontSize: 10.5.sp,
                         fontFamily: FontFamily.interRegular,
@@ -632,7 +634,7 @@ class _WalkieTalkiePaymentPendingScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Payment Status",
+            context.l10n.walkiePlan_payStatusTitle,
             style: TextStyle(
               fontSize: 14.sp,
               fontFamily: FontFamily.interBold,
@@ -645,9 +647,9 @@ class _WalkieTalkiePaymentPendingScreenState
           _buildStepItem(
             icon: Icons.check_circle_rounded,
             iconColor: _pendingAmber,
-            title: "Payment Initiated",
+            title: context.l10n.walkiePlan_payStepInitiated,
             subtitle: _displayTime,
-            statusBadgeText: "Completed",
+            statusBadgeText: context.l10n.walkiePlan_payBadgeCompleted,
             statusBadgeBg: const Color(0xFFDCFCE7),
             statusBadgeTextColor: const Color(0xFF15803D),
             showBottomLine: true,
@@ -658,9 +660,9 @@ class _WalkieTalkiePaymentPendingScreenState
           _buildStepItem(
             icon: Icons.radio_button_checked_rounded,
             iconColor: _pendingAmber,
-            title: "Processing Payment",
-            subtitle: "Your payment is being confirmed",
-            statusBadgeText: "In Progress",
+            title: context.l10n.walkiePlan_payStepProcessing,
+            subtitle: context.l10n.walkiePlan_payStepProcessingSub,
+            statusBadgeText: context.l10n.walkiePlan_payBadgeInProgress,
             statusBadgeBg: const Color(0xFFFEF3C7),
             statusBadgeTextColor: const Color(0xFFB45309),
             showBottomLine: true,
@@ -672,9 +674,9 @@ class _WalkieTalkiePaymentPendingScreenState
           _buildStepItem(
             icon: Icons.circle_outlined,
             iconColor: const Color(0xFFCBD5E1),
-            title: "Activate Plan",
-            subtitle: "Your plan will be activated automatically",
-            statusBadgeText: "Pending",
+            title: context.l10n.walkiePlan_payStepActivate,
+            subtitle: context.l10n.walkiePlan_payStepActivateSub,
+            statusBadgeText: context.l10n.walkiePlan_payBadgePending,
             statusBadgeBg: const Color(0xFFF1F5F9),
             statusBadgeTextColor: const Color(0xFF64748B),
             showBottomLine: false,
@@ -702,7 +704,7 @@ class _WalkieTalkiePaymentPendingScreenState
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
-                    "Please do not close the app. We will notify you once the payment is confirmed and your plan is activated.",
+                    context.l10n.walkiePlan_payPendingDoNotClose,
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontFamily: FontFamily.interRegular,
@@ -778,15 +780,13 @@ class _WalkieTalkiePaymentPendingScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      AutoFitText(
                         title,
                         style: TextStyle(
                           fontSize: 12.5.sp,
                           fontFamily: FontFamily.interBold,
                           color: _textDark,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                       SizedBox(height: 2.h),
                       Text(
@@ -810,12 +810,15 @@ class _WalkieTalkiePaymentPendingScreenState
                     color: statusBadgeBg,
                     borderRadius: BorderRadius.circular(6.r),
                   ),
-                  child: Text(
-                    statusBadgeText,
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      fontFamily: FontFamily.interMedium,
-                      color: statusBadgeTextColor,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: 80.w),
+                    child: AutoFitText(
+                      statusBadgeText,
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontFamily: FontFamily.interMedium,
+                        color: statusBadgeTextColor,
+                      ),
                     ),
                   ),
                 ),
@@ -862,7 +865,7 @@ class _WalkieTalkiePaymentPendingScreenState
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Refresh Status",
+                          context.l10n.walkiePlan_payRefreshStatus,
                           style: TextStyle(
                             fontSize: 14.5.sp,
                             fontFamily: FontFamily.interBold,
@@ -901,7 +904,7 @@ class _WalkieTalkiePaymentPendingScreenState
               ),
             ),
             child: Text(
-              "View Plan Details",
+              context.l10n.walkiePlan_payViewPlanDetails,
               style: TextStyle(
                 fontSize: 14.sp,
                 fontFamily: FontFamily.interMedium,

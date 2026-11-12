@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -8,61 +9,58 @@ class About extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(backgroundColor: Colors.white,
-      appBar: reusableAppbar("About FG Tracker",
+      appBar: reusableAppbar(l10n.about_appBarTitle,
           ontap: () => Navigator.pop(context)),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         child: ListView(
           physics: const BouncingScrollPhysics(),
           children: [
-            reausabletext("Welcome to FG Tracker",
+            reausabletext(l10n.about_welcomeTitle,
                 fontsize: 20.sp,
                 fontweight: FontWeight.bold,
                 color: Colors.blueGrey),
             SizedBox(height: 10.h),
             reausabletext(
-                "FG Tracker is your go-to companion for staying connected and secure while traveling in a group. Whether you're out on a family road trip, a picnic with friends, or just commuting with colleagues — FG Tracker makes sure no one gets left behind.",
+                l10n.about_intro,
                 fontsize: 14.sp,
                 height: 1.5.h),
             SizedBox(height: 20.h),
-            _sectionTitle("🌟 Why Choose FG Tracker?"),
-            _bulletPoint("Real-time location sharing with all group members."),
-            _bulletPoint("No need to call or text—track live on the map."),
-            _bulletPoint(
-                "Easy to use and lightweight app with privacy control."),
-            _bulletPoint("Built for families, friends, and small teams."),
+            _sectionTitle(l10n.about_whyChooseTitle),
+            _bulletPoint(l10n.about_whyRealTime),
+            _bulletPoint(l10n.about_whyNoCalls),
+            _bulletPoint(l10n.about_whyEasy),
+            _bulletPoint(l10n.about_whyBuiltFor),
             SizedBox(height: 20.h),
-            _sectionTitle("⚙️ How It Works"),
+            _sectionTitle(l10n.about_howItWorksTitle),
             reausabletext(
-              "FG Tracker simplifies group travel coordination. Here's how:",
+              l10n.about_howItWorksIntro,
               fontsize: 14.sp),
 
             SizedBox(height: 8.h),
-            _numberedPoint(1, "Create a Group"),
-            _numberedPoint(
-                2, "Share the group code or QR code with your companions"),
-            _numberedPoint(3, "Each member joins using the shared code or QR"),
-            _numberedPoint(4,
-                "Track everyone’s live location on a shared map in real-time"),
-            _numberedPoint(5,
-                "Use the sharing feature to invite more people effortlessly"),
+            _numberedPoint(1, l10n.about_howStep1),
+            _numberedPoint(2, l10n.about_howStep2),
+            _numberedPoint(3, l10n.about_howStep3),
+            _numberedPoint(4, l10n.about_howStep4),
+            _numberedPoint(5, l10n.about_howStep5),
             SizedBox(height: 20.h),
-            _sectionTitle("🔐 Privacy & Security"),
+            _sectionTitle(l10n.about_privacyTitle),
             reausabletext(
-              "Your safety and privacy matter. FG Tracker does not share your location with anyone outside your group. All data is encrypted and only shared with the people you authorize.",
+              l10n.about_privacyBody,
               fontsize: 14.sp),
 
             SizedBox(height: 20.h),
-            _sectionTitle("📩 Support & Developer Info"),
-            _infoRow("Support Email", "fgmanpower786@gmail.com"),
-            _infoRow("Developer Email", "developer.46solution@gmail.com"),
-            _infoRow("Company", "FG Manpower LLP"),
-            _infoRow("Address",
+            _sectionTitle(l10n.about_supportTitle),
+            _infoRow(l10n.about_supportEmail, "fgmanpower786@gmail.com"),
+            _infoRow(l10n.about_developerEmail, "developer.46solution@gmail.com"),
+            _infoRow(l10n.about_company, "FG Manpower LLP"),
+            _infoRow(l10n.about_address,
                 "A3 Sri Sai Leela H Soc, Saki Vihar Rd, Sakinaka, Kurla West, Mumbai, Maharashtra 400072, India"),
-            _infoRow("Website", "https://fgmanpower.in/"),
+            _infoRow(l10n.about_website, "https://fgmanpower.in/"),
             SizedBox(height: 20.h),
-            _sectionTitle("📱 Download App"),
+            _sectionTitle(l10n.about_downloadTitle),
             SizedBox(height: 10.h),
             Wrap(
               spacing: 20.w,

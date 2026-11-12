@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -25,21 +26,21 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   late final NotificationController controller;
 
-  final List<Map<String, dynamic>> filters = [
+  List<Map<String, dynamic>> get filters => [
     {
-      "title": "All",
+      "title": appL10n.notifications_filterAll,
       "value": "all",
     },
     {
-      "title": "Unread",
+      "title": appL10n.notifications_filterUnread,
       "value": "unread",
     },
     {
-      "title": "Chats",
+      "title": appL10n.notifications_filterChats,
       "value": "chat",
     },
     {
-      "title": "Calls",
+      "title": appL10n.notifications_filterCalls,
       "value": "call",
     },
   ];
@@ -86,7 +87,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               ),
               SizedBox(width: 4.w),
               Text(
-                "Notifications",
+                context.l10n.notifications_title,
                 style: TextStyle(
                   color: textDark,
                   fontSize: 22.sp,
@@ -195,7 +196,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    "Clear all notifications",
+                    context.l10n.notifications_clearAll,
                     style: TextStyle(
                       color: primaryPurple,
                       fontSize: 14.sp,
@@ -537,7 +538,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         ),
                         SizedBox(width: 4.w),
                         Text(
-                          "Recent Calls",
+                          appL10n.notifications_recentCalls,
                           style: TextStyle(
                             color: textDark,
                             fontSize: 22.sp,
@@ -692,7 +693,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 children: [
                   SizedBox(height: 2.h),
                   Text(
-                    item?.title ?? "Loading notification details",
+                    item?.title ?? appL10n.notifications_loadingDetails,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -703,7 +704,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   ),
                   SizedBox(height: 6.h),
                   Text(
-                    item?.body ?? "Loading notification details",
+                    item?.body ?? appL10n.notifications_loadingDetails,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -774,7 +775,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
           SizedBox(height: 16.h),
           Text(
-            "No Notifications Yet",
+            appL10n.notifications_emptyTitle,
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w700,
@@ -783,7 +784,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
           SizedBox(height: 8.h),
           Text(
-            "You have no new alerts at the moment.",
+            appL10n.notifications_emptySubtitle,
             style: TextStyle(
               fontSize: 13.sp,
               color: Colors.grey,

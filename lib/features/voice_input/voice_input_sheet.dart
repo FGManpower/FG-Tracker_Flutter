@@ -7,12 +7,14 @@ import 'package:fgtracker/features/voice_input/widgets/listening_view.dart';
 import 'package:fgtracker/features/voice_input/widgets/recording_view.dart';
 import 'package:fgtracker/features/voice_input/widgets/text_review_view.dart';
 import 'package:fgtracker/features/voice_input/widgets/voice_review_view.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 class VoiceInputSheet {
@@ -49,8 +51,7 @@ class VoiceInputSheet {
               !await _ensurePermission(
                 context,
                 Permission.speech,
-                message:
-                    "Speech recognition permission is needed to convert voice to text.",
+                message: context.l10n.voice_speechPermissionNeeded,
               )) {
             return;
           }
@@ -81,7 +82,7 @@ class VoiceInputSheet {
   static Future<bool> _ensurePermission(
     BuildContext context,
     Permission permission, {
-    String message = "Microphone permission is needed to use voice.",
+    String? message,
   }) async {
     var status = await permission.status;
     if (kDebugMode) {
@@ -95,7 +96,7 @@ class VoiceInputSheet {
       context,
       permission: permission,
       canRequest: canRequest,
-      message: message,
+      message: message ?? context.l10n.voice_micPermissionNeeded,
     );
     if (result != true) return false;
     // Granted from Settings (dialog closed itself on resume)
@@ -214,7 +215,7 @@ class _PermissionDialogState extends State<_PermissionDialog>
             ),
             SizedBox(height: 18.h),
             Text(
-              "Permission Required",
+              context.l10n.voice_permissionRequired,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 18.sp,
@@ -246,8 +247,9 @@ class _PermissionDialogState extends State<_PermissionDialog>
                         borderRadius: BorderRadius.circular(14.r),
                       ),
                     ),
-                    child: Text(
-                      "Cancel",
+                    child: AutoFitText(
+                      context.l10n.common_cancel,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -274,8 +276,11 @@ class _PermissionDialogState extends State<_PermissionDialog>
                         borderRadius: BorderRadius.circular(14.r),
                       ),
                     ),
-                    child: Text(
-                      widget.canRequest ? "Allow" : "Open settings",
+                    child: AutoFitText(
+                      widget.canRequest
+                          ? context.l10n.common_allow
+                          : context.l10n.voice_openSettings,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,

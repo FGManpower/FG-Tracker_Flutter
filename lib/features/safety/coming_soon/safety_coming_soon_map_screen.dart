@@ -6,6 +6,7 @@ import 'package:fgtracker/features/safety/coming_soon/widgets/coming_soon_card.d
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 /// Safety - Coming Soon (Map) Screen
 ///
@@ -201,7 +202,7 @@ class _SafetyComingSoonMapScreenState extends State<SafetyComingSoonMapScreen>
   Widget _buildBackButton(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Back',
+      label: context.l10n.common_back,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -251,7 +252,7 @@ class _SafetyComingSoonMapScreenState extends State<SafetyComingSoonMapScreen>
       ),
       alignment: Alignment.center,
       child: Text(
-        'Safety',
+        appL10n.safety_title,
         style: TextStyle(
           fontSize: 15.5.sp,
           fontWeight: FontWeight.w600,

@@ -1,5 +1,7 @@
 import 'package:fgtracker/app/Model/status_model.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/status/controller/status_feed_controller.dart';
 import 'package:fgtracker/app/modules/status/views/StatusViewScreen.dart';
 import 'package:fgtracker/app/modules/status/views/add_status_screen.dart';
@@ -26,17 +28,17 @@ class _StatusSectionState extends State<StatusSection> {
   void _showPrivacySheet() {
     final options = [
       {
-        'label': 'All Contacts',
+        'label': appL10n.status_allContacts,
         'value': 'ALL_CONTACTS',
         'icon': Icons.public_rounded,
       },
       {
-        'label': 'Except Contacts',
+        'label': appL10n.status_exceptContacts,
         'value': 'EXCEPT_USERS',
         'icon': Icons.person_remove_alt_1_rounded,
       },
       {
-        'label': 'Only Share With',
+        'label': appL10n.status_onlyShareWith,
         'value': 'ONLY_SHARE_WITH',
         'icon': Icons.lock_outline_rounded,
       },
@@ -67,7 +69,7 @@ class _StatusSectionState extends State<StatusSection> {
               ),
               SizedBox(height: 16.h),
               reausabletext(
-                'Status Privacy',
+                appL10n.status_privacyTitle,
                 fontsize: 16.sp,
                 fontfamily: FontFamily.interBold,
                 color: Colors.black87,
@@ -196,13 +198,13 @@ class _StatusSectionState extends State<StatusSection> {
                           if (controller.myStatuses.isNotEmpty) ...[
                             _popupTile(
                               icon: Icons.visibility_outlined,
-                              title: 'View My Status',
+                              title: appL10n.status_viewMyStatus,
                               onTap: () {
                                 Navigator.of(dialogContext).pop();
                                 Get.to(
                                   () => StatusViewScreen(
                                     isOwnStatus: true,
-                                    userName: 'My Status',
+                                    userName: appL10n.status_myStatus,
                                     statuses: controller.myStatuses.toList(),
                                     currentIndex: 0,
                                   ),
@@ -218,7 +220,7 @@ class _StatusSectionState extends State<StatusSection> {
                           ],
                           _popupTile(
                             icon: Icons.add_circle_outline_rounded,
-                            title: 'Add to My Status',
+                            title: appL10n.status_addToMyStatus,
                             onTap: () {
                               Navigator.of(dialogContext).pop();
                               Get.to(() => const AddStatusScreen());
@@ -276,7 +278,7 @@ class _StatusSectionState extends State<StatusSection> {
         Padding(
           padding: EdgeInsets.only(left: 16.w, top: 4.h, bottom: 10.h),
           child: reausabletext(
-            'Status',
+            context.l10n.status_title,
             fontsize: 13.sp,
             fontfamily: FontFamily.interBold,
             color: Colors.black87,
@@ -305,8 +307,8 @@ class _StatusSectionState extends State<StatusSection> {
 
                   return _statusItem(
                     key: _myStatusKey,
-                    name: 'My Status',
-                    subtitle: hasMyStatus ? '${myStatuses.length} active' : '',
+                    name: context.l10n.status_myStatus,
+                    subtitle: hasMyStatus ? context.l10n.status_activeCount(myStatuses.length) : '',
                     image: myPreviewImage,
                     borderColor: const Color(0xFF6B4DFF),
                     dotColor: null,
@@ -326,7 +328,7 @@ class _StatusSectionState extends State<StatusSection> {
 
                 return _statusItem(
                   name: group.user.name,
-                  subtitle: group.isAllViewed ? 'Viewed' : 'New',
+                  subtitle: group.isAllViewed ? context.l10n.status_viewed : context.l10n.status_new,
                   image: group.user.profilePic,
                   borderColor:
                       isHighlighted ? const Color(0xFF6B4DFF) : group.ringColor,
@@ -444,22 +446,28 @@ class _StatusSectionState extends State<StatusSection> {
               ],
             ),
             SizedBox(height: 6.h),
+            // reausabletext applied .sp to the size again; kept the same.
             Center(
-              child: reausabletext(
+              child: AutoFitText(
                 name,
-                fontsize: 10.sp,
-                fontfamily: FontFamily.interBold,
-                color: Colors.black87,
-                maxline: 1,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10.sp.sp,
+                  fontFamily: FontFamily.interBold,
+                  color: Colors.black87,
+                ),
               ),
             ),
             if (subtitle.isNotEmpty)
               Center(
-                child: reausabletext(
+                child: AutoFitText(
                   subtitle,
-                  fontsize: 8.sp,
-                  color: borderColor,
-                  maxline: 1,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 8.sp.sp,
+                    fontFamily: "geographeditwebbold",
+                    color: borderColor,
+                  ),
                 ),
               ),
           ],

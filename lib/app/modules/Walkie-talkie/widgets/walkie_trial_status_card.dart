@@ -1,12 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_trial_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 enum _ExpiredReason { timeUsedUp, dateEnded, unknown }
 
@@ -23,11 +25,6 @@ class WalkieTrialStatusCard extends StatelessWidget {
   static const Color _green = Color(0xFF2F8A5B);
   static const Color _red = Color(0xFFD64545);
 
-  static const List<String> _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-
   double _sp(BuildContext context, double size) {
     final width = MediaQuery.of(context).size.width;
     if (width > 600) return size;
@@ -37,24 +34,24 @@ class WalkieTrialStatusCard extends StatelessWidget {
   /// 45 sec | 4 min 18 sec | 4 min | 1 hr 5 min
   static String formatDuration(int sec) {
     final s = math.max(0, sec);
-    if (s < 60) return '$s sec';
+    final t = appL10n;
+    if (s < 60) return t.walkiePlan_trialSec(s);
     if (s < 3600) {
       final m = s ~/ 60, r = s % 60;
-      return r == 0 ? '$m min' : '$m min $r sec';
+      return r == 0 ? t.walkiePlan_trialMin(m) : t.walkiePlan_trialMinSec(m, r);
     }
     final h = s ~/ 3600, m = (s % 3600) ~/ 60;
-    return m == 0 ? '$h hr' : '$h hr $m min';
+    return m == 0 ? t.walkiePlan_trialHr(h) : t.walkiePlan_trialHrMin(h, m);
   }
 
   /// < 7200 → "60 min", else "2 hr"
-  static String formatTotal(int sec) =>
-      sec < 7200 ? '${sec ~/ 60} min' : '${sec ~/ 3600} hr';
+  static String formatTotal(int sec) => sec < 7200
+      ? appL10n.walkiePlan_trialMin(sec ~/ 60)
+      : appL10n.walkiePlan_trialHr(sec ~/ 3600);
 
   /// "28 Oct 2026"
-  static String formatDate(DateTime d) {
-    final l = d.toLocal();
-    return '${l.day} ${_months[l.month - 1]} ${l.year}';
-  }
+  static String formatDate(DateTime d) =>
+      appDateFormat('d MMM yyyy').format(d.toLocal());
 
   @override
   Widget build(BuildContext context) {
@@ -80,20 +77,24 @@ class WalkieTrialStatusCard extends StatelessWidget {
               ? _ExpiredReason.dateEnded
               : _ExpiredReason.unknown;
 
-      final String label = isActive ? 'FREE TRIAL' : 'TRIAL EXPIRED';
+      final l10n = context.l10n;
+      final String label = isActive
+          ? l10n.walkiePlan_trialFreeTrialLabel
+          : l10n.walkiePlan_trialExpiredLabel;
       final String title =
-          isActive ? 'Your Trial Is Active' : 'Your Trial Has Ended';
+          isActive ? l10n.walkiePlan_trialIsActive : l10n.walkiePlan_trialHasEnded;
       final String subtitle = isActive
           ? (endDate != null
-              ? 'Talk free with your group till ${formatDate(endDate)}.'
-              : 'Talk free with your group.')
-          : 'Choose a subscription to continue using Walkie Talkie.';
+              ? l10n.walkiePlan_trialTalkFreeTill(formatDate(endDate))
+              : l10n.walkiePlan_trialTalkFree)
+          : l10n.walkiePlan_trialChooseSubscription;
       final String bottomLeft = isActive
-          ? '${formatDuration(remaining)} left'
+          ? l10n.walkiePlan_trialTimeLeft(formatDuration(remaining))
           : switch (reason) {
-              _ExpiredReason.timeUsedUp => 'Trial time used up',
-              _ExpiredReason.dateEnded => 'Ended on ${formatDate(endDate!)}',
-              _ExpiredReason.unknown => 'Trial expired',
+              _ExpiredReason.timeUsedUp => l10n.walkiePlan_trialTimeUsedUp,
+              _ExpiredReason.dateEnded =>
+                l10n.walkiePlan_trialEndedOn(formatDate(endDate!)),
+              _ExpiredReason.unknown => l10n.walkiePlan_trialExpired,
             };
 
       return Container(
@@ -177,7 +178,7 @@ class WalkieTrialStatusCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Trial Usage',
+                      Text(l10n.walkiePlan_trialUsage,
                           style: TextStyle(
                             fontSize: _sp(context, 13),
                             fontFamily: FontFamily.interMedium,
@@ -264,13 +265,19 @@ class WalkieTrialStatusCard extends StatelessWidget {
                             )),
                       ),
                       SizedBox(width: 8.w),
-                      Text(isActive ? 'Active' : 'Expired',
-                          style: TextStyle(
-                            fontSize: _sp(context, 12),
-                            fontFamily: FontFamily.interSemiBold,
-                            fontWeight: FontWeight.w600,
-                            color: isActive ? _green : _red,
-                          )),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 110.w),
+                        child: AutoFitText(
+                            isActive
+                                ? l10n.walkiePlan_cardActive
+                                : l10n.walkiePlan_trialStatusExpired,
+                            style: TextStyle(
+                              fontSize: _sp(context, 12),
+                              fontFamily: FontFamily.interSemiBold,
+                              fontWeight: FontWeight.w600,
+                              color: isActive ? _green : _red,
+                            )),
+                      ),
                     ],
                   ),
                 ],

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/GroupChatListModel.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import 'chatutil.dart';
 
@@ -143,6 +144,10 @@ class MessagePreviewBuilder {
   static const String ownDeletedText = 'You deleted this message';
   static const String fallbackText = 'New message';
 
+  /// Display text (app language) for a message deleted for everyone. The
+  /// [deletedText] constant stays the stable value stored in message content.
+  static String get deletedDisplayText => appL10n.chat_messageDeleted;
+
   /// Preview for a row of the unified (Common/Private/Group) chat list and
   /// the archived list.
   ///
@@ -262,7 +267,7 @@ class MessagePreviewBuilder {
     final me = _clean(currentUserId);
     final originalSender = _clean(original?.senderId?.toString());
     if (me.isNotEmpty && originalSender.isNotEmpty && originalSender == me) {
-      return 'You';
+      return appL10n.common_you;
     }
     final name = _clean(reply.replySenderName?.toString());
     if (name.isNotEmpty) return name;
@@ -302,8 +307,9 @@ class MessagePreviewBuilder {
     }
 
     final text = preview.text.trim();
-    if ((text.isEmpty && preview.icon.isEmpty) || text == fallbackText) {
-      return MessagePreview(kind: preview.kind, text: replyFallbackText);
+    if ((text.isEmpty && preview.icon.isEmpty) ||
+        text == appL10n.chat_previewNewMessage) {
+      return MessagePreview(kind: preview.kind, text: appL10n.chat_previewMessage);
     }
     return preview;
   }
@@ -317,18 +323,18 @@ class MessagePreviewBuilder {
     final json = _decodeJson(value);
     if (json != null) {
       if (json.containsKey('latitude') || json.containsKey('lat')) {
-        return (MessageKind.location, '📍', 'Location');
+        return (MessageKind.location, '📍', appL10n.chat_previewLocation);
       }
       final pollTitle = _firstString(json, const ['question', 'pollTitle']);
       if (pollTitle != null || json.containsKey('options')) {
-        return (MessageKind.poll, '📊', pollTitle ?? 'Poll');
+        return (MessageKind.poll, '📊', pollTitle ?? appL10n.chat_previewPoll);
       }
       final name =
           _firstString(json, const ['name', 'contactName', 'fullName']);
       if (name != null || json.containsKey('phone')) {
-        return (MessageKind.contact, '👤', name ?? 'Contact');
+        return (MessageKind.contact, '👤', name ?? appL10n.chat_previewContact);
       }
-      return (MessageKind.unknown, '', replyFallbackText);
+      return (MessageKind.unknown, '', appL10n.chat_previewMessage);
     }
 
     // Only bare paths/URLs that point at a media file; sentences are text.
@@ -336,15 +342,15 @@ class MessagePreviewBuilder {
     final lower = value.split('?').first.toLowerCase();
     bool ext(String pattern) => RegExp('\\.($pattern)\$').hasMatch(lower);
 
-    if (ext(_imageExt)) return (MessageKind.image, '📷', 'Photo');
+    if (ext(_imageExt)) return (MessageKind.image, '📷', appL10n.chat_previewPhoto);
     if (ext('gif')) return (MessageKind.gif, '', 'GIF');
-    if (ext(_videoExt)) return (MessageKind.video, '🎥', 'Video');
-    if (ext(_audioExt)) return (MessageKind.audio, '🎵', 'Audio');
+    if (ext(_videoExt)) return (MessageKind.video, '🎥', appL10n.chat_previewVideo);
+    if (ext(_audioExt)) return (MessageKind.audio, '🎵', appL10n.chat_previewAudio);
     if (ext(_docExt)) {
       return (
         MessageKind.document,
         '📄',
-        _fileNameFromPath(value) ?? 'Document',
+        _fileNameFromPath(value) ?? appL10n.chat_previewDocument,
       );
     }
     return null;
@@ -378,7 +384,9 @@ class MessagePreviewBuilder {
       return MessagePreview(
         kind: MessageKind.deleted,
         icon: '🚫',
-        text: mine ? ownDeletedText : deletedText,
+        text: mine
+            ? appL10n.chat_previewOwnDeleted
+            : appL10n.chat_messageDeleted,
       );
     }
 
@@ -447,7 +455,9 @@ class MessagePreviewBuilder {
         if (title.isNotEmpty) return _Body('📊', title);
         return _Body(
           '📊',
-          kind == MessageKind.attendance ? 'Attendance poll' : 'Poll',
+          kind == MessageKind.attendance
+              ? appL10n.chat_previewAttendancePoll
+              : appL10n.chat_previewPoll,
         );
 
       case MessageKind.audio:
@@ -456,7 +466,9 @@ class MessagePreviewBuilder {
         );
         return _Body(
           '🎤',
-          duration.isNotEmpty ? 'Voice message ($duration)' : 'Voice message',
+          duration.isNotEmpty
+              ? appL10n.chat_previewVoiceMessageDuration(duration)
+              : appL10n.chat_previewVoiceMessage,
         );
 
       case MessageKind.document:
@@ -471,18 +483,18 @@ class MessagePreviewBuilder {
             _firstString(contentJson, const ['fileName', 'file_name', 'name']) ??
             _fileNameFromPath(content) ??
             (_isReadable(preview) ? preview : null);
-        return _Body('📄', fileName ?? 'Document');
+        return _Body('📄', fileName ?? appL10n.chat_previewDocument);
 
       case MessageKind.location:
-        return const _Body('📍', 'Location');
+        return _Body('📍', appL10n.chat_previewLocation);
 
       case MessageKind.contact:
         final name = _firstString(data, const ['contactName', 'contact_name']) ??
             _firstString(contentJson, const ['name', 'contactName', 'fullName']);
-        return _Body('👤', name ?? 'Contact');
+        return _Body('👤', name ?? appL10n.chat_previewContact);
 
       case MessageKind.sticker:
-        return const _Body('', 'Sticker');
+        return _Body('', appL10n.chat_previewSticker);
 
       case MessageKind.gif:
         return const _Body('', 'GIF');
@@ -500,10 +512,10 @@ class MessagePreviewBuilder {
         if (_isReadable(content)) {
           return _Body('', ChatUtil.formatLastMessage(content));
         }
-        return const _Body('', fallbackText);
+        return _Body('', appL10n.chat_previewNewMessage);
 
       case MessageKind.deleted:
-        return const _Body('🚫', deletedText);
+        return _Body('🚫', appL10n.chat_messageDeleted);
     }
   }
 
@@ -513,7 +525,7 @@ class MessagePreviewBuilder {
     Map<String, dynamic> data,
   ) {
     if (kind == MessageKind.video) {
-      return _Body('🎥', caption.isNotEmpty ? caption : 'Video');
+      return _Body('🎥', caption.isNotEmpty ? caption : appL10n.chat_previewVideo);
     }
 
     final imageCount = _countOf(data, const ['images', 'mediaUrls', 'media']) ??
@@ -523,12 +535,16 @@ class MessagePreviewBuilder {
     if (kind == MessageKind.bulkMedia &&
         (imageCount ?? 0) == 0 &&
         (videoCount ?? 0) > 0) {
-      return _Body('🎥', videoCount! > 1 ? '$videoCount Videos' : 'Video');
+      return _Body(
+          '🎥',
+          videoCount! > 1
+              ? appL10n.chat_previewVideosCount(videoCount)
+              : appL10n.chat_previewVideo);
     }
     if ((imageCount ?? 0) > 1) {
-      return _Body('📷', '$imageCount Photos');
+      return _Body('📷', appL10n.chat_previewPhotosCount(imageCount!));
     }
-    return _Body('📷', caption.isNotEmpty ? caption : 'Photo');
+    return _Body('📷', caption.isNotEmpty ? caption : appL10n.chat_previewPhoto);
   }
 
   static String _pollTitle(
@@ -566,7 +582,7 @@ class MessagePreviewBuilder {
     final name = senderName?.trim() ?? '';
     final String label;
     if (id.isNotEmpty && me.isNotEmpty && me != 'null' && id == me) {
-      label = 'You';
+      label = appL10n.common_you;
     } else {
       if (!includeOthers || name.isEmpty) return '';
       label = name;
@@ -575,6 +591,7 @@ class MessagePreviewBuilder {
     // carry "<Name>: " (even for my own message). Never show a name twice.
     if (alreadyShown.startsWith('$label:') ||
         alreadyShown.startsWith('You:') ||
+        alreadyShown.startsWith('${appL10n.common_you}:') ||
         (name.isNotEmpty && alreadyShown.startsWith('$name:'))) {
       return '';
     }

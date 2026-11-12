@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 /// Packages & Pricing — pick a module to open its plans.
 class PackageListView extends GetView<PackageListController> {
@@ -25,8 +26,8 @@ class PackageListView extends GetView<PackageListController> {
                 Padding(
                   padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 8.h),
                   child: PackageHeader(
-                    title: 'Packages & Pricing',
-                    subtitle: 'Pick a module to see its plans',
+                    title: context.l10n.package_title,
+                    subtitle: context.l10n.package_subtitle,
                     onBack: () => Get.back(),
                   ),
                 ),
@@ -49,7 +50,7 @@ class PackageListView extends GetView<PackageListController> {
       return PackageStatusView(
         message: error.isNotEmpty
             ? error
-            : 'No packages are available right now.',
+            : appL10n.package_noPackages,
         isEmpty: error.isEmpty,
         onRetry: () => controller.fetchPackages(),
       );

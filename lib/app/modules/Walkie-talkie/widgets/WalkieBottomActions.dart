@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -140,7 +141,7 @@ class WalkieBottomActions extends StatelessWidget {
                     ),
                     SizedBox(width: 8.w.clamp(6.0, 10.0)),
                     Text(
-                      "Chat",
+                      context.l10n.walkie_chat,
                       style: TextStyle(
                         color: _textDark,
                         fontSize: 13.sp.clamp(11.5, 14.0),

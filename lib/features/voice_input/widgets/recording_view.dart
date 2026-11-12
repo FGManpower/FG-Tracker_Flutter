@@ -1,9 +1,11 @@
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/features/voice_input/voice_input_controller.dart';
 import 'package:fgtracker/features/voice_input/widgets/waveform_bars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class RecordVoiceRecordingView extends StatefulWidget {
   final VoiceInputController controller;
@@ -63,7 +65,7 @@ class _RecordVoiceRecordingViewState extends State<RecordVoiceRecordingView>
               ),
               SizedBox(width: 8.w),
               Text(
-                "Recording your voice…",
+                context.l10n.voice_recordingYourVoice,
                 style: TextStyle(
                   color: AppColors.darkText, // #0F0B4C
                   fontSize: 16.sp,
@@ -113,7 +115,10 @@ class _RecordVoiceRecordingViewState extends State<RecordVoiceRecordingView>
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Cancel
-              GestureDetector(
+              // Flexible + AutoFitText: long translated labels shrink
+              // instead of overflowing the row.
+              Flexible(
+                child: GestureDetector(
                 onTap: () => widget.controller.cancelSession(),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -132,8 +137,9 @@ class _RecordVoiceRecordingViewState extends State<RecordVoiceRecordingView>
                       ),
                     ),
                     SizedBox(height: 6.h),
-                    Text(
-                      "Cancel",
+                    AutoFitText(
+                      context.l10n.common_cancel,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.primarySecondaryElementText,
                         fontSize: 12.sp,
@@ -143,9 +149,11 @@ class _RecordVoiceRecordingViewState extends State<RecordVoiceRecordingView>
                   ],
                 ),
               ),
+              ),
 
               // "Tap to stop" (72px #3D3DD8)
-              GestureDetector(
+              Flexible(
+                child: GestureDetector(
                 onTap: () {
                   if (_canTapStop) {
                     widget.controller.stopRecordVoice();
@@ -187,8 +195,9 @@ class _RecordVoiceRecordingViewState extends State<RecordVoiceRecordingView>
                       },
                     ),
                     SizedBox(height: 6.h),
-                    Text(
-                      "Tap to stop",
+                    AutoFitText(
+                      context.l10n.voice_tapToStop,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.primaryElement, // #3D3DD8
                         fontSize: 13.sp,
@@ -198,9 +207,11 @@ class _RecordVoiceRecordingViewState extends State<RecordVoiceRecordingView>
                   ],
                 ),
               ),
+              ),
 
               // Chip "AUDIO" (#EEF2FF / #3D3DD8)
-              Column(
+              Flexible(
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
@@ -212,8 +223,9 @@ class _RecordVoiceRecordingViewState extends State<RecordVoiceRecordingView>
                       color: AppColors.primaryElementLight, // #EEF2FF
                       borderRadius: BorderRadius.circular(14.r),
                     ),
-                    child: Text(
-                      "AUDIO",
+                    child: AutoFitText(
+                      context.l10n.voice_audioChip,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.primaryElement, // #3D3DD8
                         fontSize: 13.sp,
@@ -222,8 +234,9 @@ class _RecordVoiceRecordingViewState extends State<RecordVoiceRecordingView>
                     ),
                   ),
                   SizedBox(height: 6.h),
-                  Text(
-                    "Type",
+                  AutoFitText(
+                    context.l10n.voice_type,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: AppColors.primarySecondaryElementText,
                       fontSize: 12.sp,
@@ -231,6 +244,7 @@ class _RecordVoiceRecordingViewState extends State<RecordVoiceRecordingView>
                     ),
                   ),
                 ],
+              ),
               ),
             ],
           ),

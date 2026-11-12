@@ -1,6 +1,7 @@
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import '../../../Core/constant/pref_res.dart';
 import '../../../Core/util/decomPress.dart';
 import '../../../Core/values/global.dart';
@@ -78,7 +79,7 @@ class IncomingCallController extends GetxController {
 
   void acceptCall() {
     if (offer == null) {
-      Get.snackbar("Please wait", "Connecting…");
+      Get.snackbar(appL10n.call_pleaseWait, appL10n.call_connectingProgress);
       return;
     }
     FlutterRingtonePlayer().stop();

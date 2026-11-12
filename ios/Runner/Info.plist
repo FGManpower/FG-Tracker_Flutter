@@ -15,6 +15,19 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>hi</string>
+		<string>mr</string>
+		<string>gu</string>
+		<string>kn</string>
+		<string>bn</string>
+		<string>ml</string>
+		<string>ta</string>
+		<string>te</string>
+		<string>pa</string>
+	</array>
 	<key>CFBundleDisplayName</key>
 	<string>FG Tracker</string>
 	<key>CFBundleExecutable</key>

@@ -1,7 +1,9 @@
 import 'package:fgtracker/app/Data/Repositories/status_repo.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Data/Services/Socket/status_socket_service.dart';
 import 'package:fgtracker/app/Model/status_model.dart';
 import 'package:fgtracker/app/modules/status/controller/status_feed_controller.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -530,12 +532,12 @@ class StatusViewController extends GetxController
       if (statuses.isEmpty || !hasMoreStories) {
         // Auto-close: If that was the last status item of that user, close the story viewer
         closeViewer();
-        _showDeletedToast(isOwnStatus ? "Status deleted" : "This status was deleted by the owner");
+        _showDeletedToast(isOwnStatus ? appL10n.status_deleted : appL10n.status_deletedByOwner);
       } else {
         // Auto-advance: Skip to the next status item of that user
         currentIndex.value = delIdx.clamp(0, statuses.length - 1);
         if (!isOwnStatus) {
-          _showDeletedToast("This status was deleted by the owner");
+          _showDeletedToast(appL10n.status_deletedByOwner);
         }
         _loadCurrentStatus();
       }
@@ -547,13 +549,13 @@ class StatusViewController extends GetxController
       }
       if (statuses.isEmpty) {
         closeViewer();
-        _showDeletedToast(isOwnStatus ? "Status deleted" : "This status was deleted by the owner");
+        _showDeletedToast(isOwnStatus ? appL10n.status_deleted : appL10n.status_deletedByOwner);
       }
     }
   }
 
   void _showDeletedToast([String? message]) {
-    final text = message ?? "This status is no longer available";
+    final text = message ?? appL10n.status_noLongerAvailable;
     if (Get.isSnackbarOpen) {
       Get.closeCurrentSnackbar();
     }
@@ -804,12 +806,14 @@ class StatusViewController extends GetxController
                             size: 18.sp,
                           ),
                           SizedBox(width: 8.w),
-                          Text(
-                            'Delete',
-                            style: TextStyle(
-                              color: Colors.redAccent,
-                              fontSize: 13.sp,
-                              fontFamily: FontFamily.interMedium,
+                          Flexible(
+                            child: AutoFitText(
+                              appL10n.common_delete,
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 13.sp,
+                                fontFamily: FontFamily.interMedium,
+                              ),
                             ),
                           ),
                         ],

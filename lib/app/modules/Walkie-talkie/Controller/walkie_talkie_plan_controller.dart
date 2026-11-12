@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 class WalkieTalkiePlanController extends GetxController {
   // 0 = Individual, 1 = Team Plan
   final RxInt selectedTab = 0.obs;
@@ -78,6 +79,8 @@ class WalkieTalkiePlanController extends GetxController {
   WalkiePlanItem? get activePlan =>
       isTeam ? activeGroupPlan : activeIndividualPlan;
 
+  // English stable value (order model, Razorpay notes); shown through
+  // walkieDurationText()
   String get durationName {
     if (activeGroupPlan != null) {
       return activeGroupPlan!.durationLabel;
@@ -165,27 +168,27 @@ class WalkieTalkiePlanController extends GetxController {
 
   String get buttonText {
     if (isLoading) {
-      return "Loading plans...";
+      return appL10n.walkiePlan_ctrlLoadingPlans;
     }
     if (!hasPlans) {
-      return "No Plans Available";
+      return appL10n.walkiePlan_detailsNoPlansTitle;
     }
     if (isTeam) {
-      return "Continue to Payment";
+      return appL10n.walkiePlan_ctrlContinueToPayment;
     }
     final plan = activeIndividualPlan;
     if (plan != null) {
-      return "Continue with ${plan.displayTitle}";
+      return appL10n.walkiePlan_ctrlContinueWith(plan.displayTitleText);
     }
     switch (selectedIndividualPlan.value) {
       case 0:
-        return "Continue with Monthly Plan";
+        return appL10n.walkiePlan_ctrlContinueWith(appL10n.walkiePlan_monthlyPlan);
       case 1:
-        return "Continue with Quarterly Plan";
+        return appL10n.walkiePlan_ctrlContinueWith(appL10n.walkiePlan_quarterlyPlan);
       case 2:
-        return "Continue with Yearly Plan";
+        return appL10n.walkiePlan_ctrlContinueWith(appL10n.walkiePlan_yearlyPlan);
       default:
-        return "Continue with Monthly Plan";
+        return appL10n.walkiePlan_ctrlContinueWith(appL10n.walkiePlan_monthlyPlan);
     }
   }
 
@@ -272,7 +275,7 @@ class WalkieTalkiePlanController extends GetxController {
       teamMemberCount.value++;
       _reapplyCouponIfActive();
     } else {
-      showTopWhiteMessage("Maximum limit of $max members reached");
+      showTopWhiteMessage(appL10n.walkiePlan_detailsMaxMembersReached(max));
     }
   }
 
@@ -282,7 +285,7 @@ class WalkieTalkiePlanController extends GetxController {
       teamMemberCount.value--;
       _reapplyCouponIfActive();
     } else {
-      showTopWhiteMessage("Minimum team size is $min member");
+      showTopWhiteMessage(appL10n.walkiePlan_detailsMinTeamSize(min));
     }
   }
 
@@ -302,7 +305,7 @@ class WalkieTalkiePlanController extends GetxController {
   }
 
   String _parseErrorMessage(dynamic error) {
-    if (error == null) return "Something went wrong. Please try again.";
+    if (error == null) return appL10n.common_somethingWentWrong;
 
     if (error is DioException) {
       if (error.type == DioExceptionType.connectionError ||
@@ -310,7 +313,7 @@ class WalkieTalkiePlanController extends GetxController {
           error.type == DioExceptionType.sendTimeout ||
           error.type == DioExceptionType.receiveTimeout ||
           error.error is SocketException) {
-        return "No internet connection. Please check your network.";
+        return appL10n.walkiePlan_noInternetCheckNetwork;
       }
       if (error.response?.data != null) {
         final data = error.response!.data;
@@ -341,15 +344,15 @@ class WalkieTalkiePlanController extends GetxController {
       }
       return error.message?.isNotEmpty == true
           ? error.message!
-          : "Unable to connect to server. Please try again.";
+          : appL10n.walkiePlan_unableToConnect;
     }
 
     if (error is SocketException) {
-      return "No internet connection. Please check your network.";
+      return appL10n.walkiePlan_noInternetCheckNetwork;
     }
 
     final str = error.toString().trim();
-    if (str.isEmpty) return "Something went wrong. Please try again.";
+    if (str.isEmpty) return appL10n.common_somethingWentWrong;
 
     final lower = str.toLowerCase();
     if (lower.contains("socket") ||
@@ -358,7 +361,7 @@ class WalkieTalkiePlanController extends GetxController {
         lower.contains("network") ||
         lower.contains("failed host lookup") ||
         lower.contains("connection refused")) {
-      return "No internet connection. Please check your network.";
+      return appL10n.walkiePlan_noInternetCheckNetwork;
     }
 
     if (str.startsWith("Exception: ")) {
@@ -390,7 +393,7 @@ class WalkieTalkiePlanController extends GetxController {
         }
       } else {
         if (individualPlans.isEmpty) {
-          errorMessage.value = res.message ?? "Unable to load plans. Please try again.";
+          errorMessage.value = res.message ?? appL10n.walkiePlan_ctrlUnableToLoadPlans;
         }
       }
     } catch (e) {
@@ -427,7 +430,7 @@ class WalkieTalkiePlanController extends GetxController {
         }
       } else {
         if (groupPlans.isEmpty && selectedTab.value == 1) {
-          errorMessage.value = res.message ?? "Unable to load plans. Please try again.";
+          errorMessage.value = res.message ?? appL10n.walkiePlan_ctrlUnableToLoadPlans;
         }
       }
     } catch (e) {
@@ -465,7 +468,7 @@ class WalkieTalkiePlanController extends GetxController {
   Future<bool> applyCouponApi(String code, {bool isSilent = false}) async {
     final cleanCode = code.trim().toUpperCase();
     if (cleanCode.isEmpty) {
-      if (!isSilent) showTopWhiteMessage("Please enter a valid coupon code");
+      if (!isSilent) showTopWhiteMessage(appL10n.walkiePlan_detailsEnterValidCoupon);
       return false;
     }
 
@@ -500,15 +503,15 @@ class WalkieTalkiePlanController extends GetxController {
               res.data?.pricing?.discountAmount;
           if (saved != null && saved > 0) {
             showTopWhiteMessage(
-                "Coupon applied! You save ${money(saved)}");
+                appL10n.walkiePlan_ctrlCouponAppliedSave(money(saved)));
           } else {
-            showTopWhiteMessage(res.message ?? "Coupon applied successfully!");
+            showTopWhiteMessage(res.message ?? appL10n.walkiePlan_ctrlCouponApplied);
           }
         }
         return true;
       } else {
         if (!isSilent) {
-          showTopWhiteMessage(res.message ?? "Failed to apply coupon");
+          showTopWhiteMessage(res.message ?? appL10n.walkiePlan_ctrlCouponFailed);
         }
         return false;
       }
@@ -544,7 +547,7 @@ class WalkieTalkiePlanController extends GetxController {
   Future<bool> applyPromoCode(String code) async {
     final String cleanCode = code.trim().toUpperCase();
     if (cleanCode.isEmpty) {
-      showTopWhiteMessage("Please enter a valid coupon code");
+      showTopWhiteMessage(appL10n.walkiePlan_detailsEnterValidCoupon);
       return false;
     }
     final match = eligibleCoupons.firstWhereOrNull(
@@ -567,7 +570,7 @@ class WalkieTalkiePlanController extends GetxController {
     selectedCoupon.refresh();
     teamMemberCount.refresh();
     update();
-    showTopWhiteMessage("Coupon removed");
+    showTopWhiteMessage(appL10n.walkiePlan_ctrlCouponRemoved);
   }
 
   /// Currency of the plan currently selected (team or individual)
@@ -616,21 +619,8 @@ class WalkieTalkiePlanController extends GetxController {
 
     final now = DateTime.now();
     final expiryDate = DateTime(now.year, now.month + months, now.day);
-    const monthNames = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    return "${expiryDate.day} ${monthNames[expiryDate.month - 1]} ${expiryDate.year}";
+    // Display only (order summary / success screens), not sent to the API
+    return appDateFormat('d MMM yyyy').format(expiryDate);
   }
 
   void openPaymentScreen() {

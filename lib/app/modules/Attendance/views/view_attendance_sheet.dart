@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -12,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import '../controller/attendance_controller.dart';
 import '../models/attendance_poll_model.dart';
 
@@ -243,7 +245,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
         _hasNext = page.hasNext;
       });
     } catch (e) {
-      _showError("Unable to load more", e.toString());
+      _showError(appL10n.attendance_loadMoreFailed, e.toString());
     } finally {
       if (mounted) setState(() => _isLoadingMore = false);
     }
@@ -278,17 +280,17 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Close attendance?"),
-        content: const Text(
-            "Members won't be able to respond after it is closed."),
+        title: Text(appL10n.attendance_closeConfirmTitle),
+        content: Text(
+            appL10n.attendance_closeConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Cancel"),
+            child: Text(appL10n.common_cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Close"),
+            child: Text(appL10n.common_close),
           ),
         ],
       ),
@@ -297,7 +299,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
     try {
       await _controller.closePoll(widget.pollId);
     } catch (e) {
-      _showError("Unable to close", e.toString());
+      _showError(appL10n.attendance_closeFailedShort, e.toString());
     }
   }
 
@@ -308,7 +310,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: _textDark,
-        title: const Text("View Attendance"),
+        title: Text(appL10n.attendance_viewTitle),
       ),
       body: Center(
         child: Padding(
@@ -319,7 +321,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
               Icon(Icons.block_rounded, size: 40.sp, color: _textMuted),
               SizedBox(height: 12.h),
               Text(
-                "This attendance was deleted",
+                appL10n.attendance_deletedText,
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w700,
@@ -329,7 +331,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
               SizedBox(height: 16.h),
               OutlinedButton(
                 onPressed: () => Navigator.of(context).maybePop(),
-                child: const Text("Go back"),
+                child: Text(appL10n.common_back),
               ),
             ],
           ),
@@ -349,10 +351,10 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
     String fileName = "";
     try {
       final csv = (await _controller.exportCsv(widget.pollId)).trim();
-      if (csv.isEmpty) throw "The report is empty";
+      if (csv.isEmpty) throw appL10n.attendance_reportEmpty;
       // An error page/JSON instead of CSV means the server failed.
       if (csv.startsWith("{") || csv.startsWith("<")) {
-        throw "The server returned an invalid report. Please try again.";
+        throw appL10n.attendance_reportInvalid;
       }
 
       final date = poll?.eventDate ?? DateFormat("yyyy-MM-dd").format(DateTime.now());
@@ -370,7 +372,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
         flush: true,
       );
     } catch (e) {
-      _showError("Report Failed", e.toString());
+      _showError(appL10n.attendance_reportFailed, e.toString());
       return;
     } finally {
       if (mounted) setState(() => _isExporting = false);
@@ -400,7 +402,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
               Padding(
                 padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 4.h),
                 child: Text(
-                  "Report ready • $fileName",
+                  appL10n.attendance_reportReady(fileName),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -412,22 +414,22 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
               ),
               ListTile(
                 leading: const Icon(Icons.download_rounded, color: _accent),
-                title: const Text("Save to device"),
+                title: Text(appL10n.attendance_saveToDevice),
                 subtitle: Text(Platform.isIOS
-                    ? "Save in the Files app"
-                    : "Choose a folder, e.g. Downloads"),
+                    ? appL10n.attendance_saveInFiles
+                    : appL10n.attendance_chooseFolder),
                 onTap: () => Navigator.pop(ctx, "save"),
               ),
               ListTile(
                 leading: const Icon(Icons.open_in_new_rounded, color: _accent),
-                title: const Text("Open"),
-                subtitle: const Text("View in Excel, Sheets or another app"),
+                title: Text(appL10n.common_open),
+                subtitle: Text(appL10n.attendance_openSubtitle),
                 onTap: () => Navigator.pop(ctx, "open"),
               ),
               ListTile(
                 leading: const Icon(Icons.share_rounded, color: _accent),
-                title: const Text("Share"),
-                subtitle: const Text("Send via WhatsApp, email…"),
+                title: Text(appL10n.common_share),
+                subtitle: Text(appL10n.attendance_shareSubtitle),
                 onTap: () => Navigator.pop(ctx, "share"),
               ),
             ],
@@ -441,7 +443,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
       switch (action) {
         case "save":
           final savedPath = await FilePicker.saveFile(
-            dialogTitle: "Save attendance report",
+            dialogTitle: appL10n.attendance_saveReportDialog,
             fileName: fileName,
             type: FileType.custom,
             allowedExtensions: const ["csv"],
@@ -449,7 +451,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
           );
           if (savedPath != null && mounted) {
             Get.snackbar(
-              "Report Saved",
+              appL10n.attendance_reportSaved,
               fileName,
               snackPosition: SnackPosition.TOP,
               backgroundColor: const Color(0xFF16A34A),
@@ -462,7 +464,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
           final result = await OpenFile.open(file.path, type: "text/csv");
           if (result.type != ResultType.done) {
             throw result.type == ResultType.noAppToOpen
-                ? "No app found to open CSV files. Use Save or Share instead."
+                ? appL10n.attendance_noCsvApp
                 : result.message;
           }
           break;
@@ -472,7 +474,9 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
             ShareParams(
               files: [XFile(file.path, mimeType: "text/csv", name: fileName)],
               subject:
-                  "Attendance Report${poll != null ? " • ${poll.title}" : ""}",
+                  poll != null
+                  ? appL10n.attendance_reportSubjectWithTitle(poll.title)
+                  : appL10n.attendance_reportSubject,
               // Required on iPad, where the share sheet is a popover.
               sharePositionOrigin:
                   Rect.fromLTWH(0, size.height / 2, size.width, 1),
@@ -481,7 +485,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
           break;
       }
     } catch (e) {
-      _showError("Report Failed", e.toString());
+      _showError(appL10n.attendance_reportFailed, e.toString());
     }
   }
 
@@ -511,17 +515,18 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
                       SizedBox(height: 18.h),
                       Row(
                         children: [
-                          Text(
-                            widget.memberCount > 0
-                                ? "Members (${widget.memberCount})"
-                                : "Members",
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w800,
-                              color: _textDark,
+                          Expanded(
+                            child: AutoFitText(
+                              widget.memberCount > 0
+                                  ? appL10n.attendance_membersWithCount(widget.memberCount)
+                                  : appL10n.attendance_members,
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w800,
+                                color: _textDark,
+                              ),
                             ),
                           ),
-                          const Spacer(),
                           _buildSearchBar(),
                         ],
                       ),
@@ -569,7 +574,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.groupName.isNotEmpty ? widget.groupName : "Attendance",
+                  widget.groupName.isNotEmpty ? widget.groupName : appL10n.attendance_title,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 15.5.sp,
@@ -580,8 +585,8 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
                 SizedBox(height: 2.h),
                 Text(
                   [
-                    if (widget.memberCount > 0) "${widget.memberCount} Members",
-                    "${poll?.totalVotes ?? 0} responded",
+                    if (widget.memberCount > 0) appL10n.common_membersCount(widget.memberCount),
+                    appL10n.attendance_respondedCount(poll?.totalVotes ?? 0),
                   ].join(" • "),
                   style: TextStyle(
                     fontSize: 11.5.sp,
@@ -601,8 +606,8 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
             onSelected: (value) {
               if (value == "close") _closePoll();
             },
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: "close", child: Text("Close attendance")),
+            itemBuilder: (_) => [
+              PopupMenuItem(value: "close", child: Text(appL10n.attendance_closeAction)),
             ],
           ),
       ],
@@ -645,7 +650,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      poll.title.isNotEmpty ? poll.title : "Attendance",
+                      poll.title.isNotEmpty ? poll.title : appL10n.attendance_title,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w800,
@@ -671,7 +676,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
-                  poll.isOpen ? "Open" : "Completed",
+                  poll.isOpen ? appL10n.attendance_statusOpen : appL10n.attendance_statusCompleted,
                   style: TextStyle(
                     fontSize: 11.5.sp,
                     fontWeight: FontWeight.w700,
@@ -757,12 +762,14 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          chip("Responded (${poll.totalVotes})", const _VoterFilter()),
+          chip(appL10n.attendance_filterResponded(poll.totalVotes), const _VoterFilter()),
           for (final o in poll.options)
             chip("${o.label} (${poll.countFor(o.id)})",
                 _VoterFilter(optionId: o.id)),
           chip(
-            "Not responded${_notVotedCount > 0 ? " ($_notVotedCount)" : ""}",
+            _notVotedCount > 0
+                ? appL10n.attendance_filterNotRespondedCount(_notVotedCount)
+                : appL10n.attendance_notResponded,
             const _VoterFilter(notVoted: true),
           ),
         ],
@@ -793,7 +800,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
-                hintText: "Search member",
+                hintText: appL10n.attendance_searchMember,
                 hintStyle: TextStyle(
                   fontSize: 11.5.sp,
                   color: const Color(0xFF94A3B8),
@@ -825,10 +832,10 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
           child: Text(
             _error ??
                 (_searchController.text.isNotEmpty
-                    ? "No members match your search"
+                    ? appL10n.attendance_noMembersMatch
                     : (_filter.notVoted
-                        ? "Everyone has responded"
-                        : "No responses yet")),
+                        ? appL10n.attendance_everyoneResponded
+                        : appL10n.attendance_noResponses)),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13.5.sp,
@@ -853,7 +860,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
                 )
               : TextButton(
                   onPressed: _loadMore,
-                  child: const Text("Load more"),
+                  child: Text(appL10n.attendance_loadMore),
                 ),
         ),
     ];
@@ -864,18 +871,18 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
     if (voter.votedAt != null) {
       final diff = DateTime.now().difference(voter.votedAt!);
       if (diff.inMinutes < 1) {
-        parts.add("Just now");
+        parts.add(appL10n.common_justNow);
       } else if (diff.inMinutes < 60) {
-        parts.add("${diff.inMinutes} min ago");
+        parts.add(appL10n.common_minutesAgo(diff.inMinutes));
       } else if (diff.inHours < 24) {
-        parts.add("${diff.inHours} hr ago");
+        parts.add(appL10n.common_hoursAgo(diff.inHours));
       }
     }
     final accuracy = voter.location?.accuracy;
     if (accuracy != null) {
       parts.add(accuracy < 1000
-          ? "Within ${accuracy.round()} m"
-          : "Within ${(accuracy / 1000).toStringAsFixed(1)} km");
+          ? appL10n.attendance_withinMeters(accuracy.round())
+          : appL10n.attendance_withinKm((accuracy / 1000).toStringAsFixed(1)));
     }
     return parts.join(" • ");
   }
@@ -883,7 +890,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
   Widget _buildVoterCard(AttendanceVoter voter, AttendancePoll? poll) {
     final option = poll?.optionById(voter.optionId);
     final color = option?.displayColor ?? const Color(0xFF94A3B8);
-    final label = voter.optionLabel ?? option?.label ?? "Not responded";
+    final label = voter.optionLabel ?? option?.label ?? appL10n.attendance_notResponded;
     final location = voter.location;
 
     return Container(
@@ -955,7 +962,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
             _buildInfoRow(
               icon: Icons.location_on_rounded,
               title: location == null
-                  ? "No location available"
+                  ? appL10n.attendance_noLocation
                   : (location.name ??
                       "${location.lat?.toStringAsFixed(5)}, ${location.lng?.toStringAsFixed(5)}"),
               subtitle: location != null ? _locationSubtitle(voter) : null,
@@ -967,7 +974,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
               SizedBox(height: 8.h),
               _buildInfoRow(
                 icon: Icons.camera_alt_rounded,
-                title: "Photo Proof",
+                title: appL10n.attendance_photoProof,
                 onView: () => _previewPhoto(voter),
               ),
             ],
@@ -1027,7 +1034,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
-                  "View",
+                  appL10n.attendance_view,
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w700,
@@ -1048,7 +1055,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
-      _showError("Unable to open map", e.toString());
+      _showError(appL10n.attendance_openMapFailed, e.toString());
     }
   }
 
@@ -1101,7 +1108,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      "${voter.name}'s Photo Proof",
+                      appL10n.attendance_photoProofOf(voter.name),
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 14.sp,
@@ -1141,7 +1148,7 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
               if (voter.time.isNotEmpty) ...[
                 SizedBox(height: 10.h),
                 Text(
-                  "Captured at ${voter.time} • Verified",
+                  appL10n.attendance_capturedAtVerified(voter.time),
                   style: TextStyle(
                     fontSize: 11.5.sp,
                     color: const Color(0xFF16A34A),
@@ -1187,12 +1194,14 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
                     Icon(Icons.file_download_outlined,
                         color: _accent, size: 20.sp),
                     SizedBox(width: 8.w),
-                    Text(
-                      "Download Report",
-                      style: TextStyle(
-                        fontSize: 14.5.sp,
-                        fontWeight: FontWeight.w700,
-                        color: _accent,
+                    Flexible(
+                      child: AutoFitText(
+                        appL10n.attendance_downloadReport,
+                        style: TextStyle(
+                          fontSize: 14.5.sp,
+                          fontWeight: FontWeight.w700,
+                          color: _accent,
+                        ),
                       ),
                     ),
                   ],

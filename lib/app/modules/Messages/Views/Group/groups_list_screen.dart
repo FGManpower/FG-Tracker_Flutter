@@ -1,11 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/theme/AppText.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/Group/Views/QrScreen.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
@@ -81,14 +82,18 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  reausabletext(
-                    "All Groups",
-                    fontsize: 18.sp,
-                    fontfamily: FontFamily.interSemiBold,
-                    color: Colors.black87,
+                  Flexible(
+                    child: AutoFitText(
+                      context.l10n.groupInfo_allGroups,
+                      style: TextStyle(
+                        fontSize: 18.sp.sp,
+                        fontFamily: FontFamily.interSemiBold,
+                        color: Colors.black87,
+                      ),
+                    ),
                   ),
                   Obx(() => reausabletext(
-                    "${_filteredGroups().length} Total",
+                    context.l10n.groupInfo_totalCount(_filteredGroups().length),
                     fontsize: 12.sp,
                     fontfamily: FontFamily.interMedium,
                     color: const Color(0xff5045B9),
@@ -115,8 +120,8 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                       padding: EdgeInsets.all(20.w),
                       child: reausabletext(
                         _searchQuery.value.isNotEmpty
-                            ? "No group found for '${_searchQuery.value}'"
-                            : AppText.youHaventJoindOrCreatedGroup,
+                            ? context.l10n.groupInfo_noGroupFound(_searchQuery.value)
+                            : context.l10n.groupInfo_noGroupsYet,
                         align: TextAlign.center,
                         color: Colors.grey[600],
                         fontsize: 14,
@@ -185,23 +190,29 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
             ),
           ),
           SizedBox(width: 14.w),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              reausabletext(
-                "All Groups",
-                fontsize: 20.sp,
-                fontfamily: FontFamily.interSemiBold,
-                color: Colors.black87,
-              ),
-              reausabletext(
-                "Stay connected with your teams",
-                fontsize: 12.sp,
-                fontfamily: FontFamily.interMedium,
-                color: Colors.grey.shade600,
-              ),
-            ],
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AutoFitText(
+                  context.l10n.groupInfo_allGroups,
+                  style: TextStyle(
+                    fontSize: 20.sp.sp,
+                    fontFamily: FontFamily.interSemiBold,
+                    color: Colors.black87,
+                  ),
+                ),
+                AutoFitText(
+                  context.l10n.groupInfo_allGroupsSubtitle,
+                  style: TextStyle(
+                    fontSize: 12.sp.sp,
+                    fontFamily: FontFamily.interMedium,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -294,7 +305,7 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                   color: Colors.black87,
                 ),
                 decoration: InputDecoration(
-                  hintText: "Search groups...",
+                  hintText: context.l10n.groupInfo_searchGroupsHint,
                   hintStyle: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 13.sp,
@@ -463,7 +474,7 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                         children: [
                           Expanded(
                             child: reausabletext(
-                              data?.groupName ?? "Unnamed Group",
+                              data?.groupName ?? appL10n.groupInfo_unnamedGroup,
                               fontsize: 14.sp,
                               fontfamily: FontFamily.interSemiBold,
                               color: Colors.black87,
@@ -482,7 +493,9 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                               borderRadius: BorderRadius.circular(20.r),
                             ),
                             child: reausabletext(
-                              isActive ? "Active" : "Inactive",
+                              isActive
+                                  ? appL10n.groupInfo_active
+                                  : appL10n.groupInfo_inactive,
                               fontsize: 10.sp,
                               color: isActive
                                   ? const Color(0xFF2BB673)
@@ -518,25 +531,27 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                             child: Row(
                               children: [
                                 _infoColumn(
-                                  title: "Team Code",
+                                  title: appL10n.groupInfo_teamCode,
                                   value: data?.groupCode ?? "--",
                                   showCopy: true,
                                   flex: 3,
                                   onCopy: () {
                                     Clipboard.setData(ClipboardData(
                                         text: data?.groupCode ?? ""));
-                                    Utils().fluttertoast("Group code copied!");
+                                    Utils().fluttertoast(appL10n.groupInfo_groupCodeCopied);
                                   },
                                 ),
                                 _vDivider(),
                                 _infoColumn(
-                                  title: "Created By",
-                                  value: isCreator ? "You" : "Admin",
+                                  title: appL10n.groupInfo_createdBy,
+                                  value: isCreator
+                                      ? appL10n.common_you
+                                      : appL10n.groupInfo_admin,
                                   flex: 2,
                                 ),
                                 _vDivider(),
                                 _infoColumn(
-                                  title: "Members",
+                                  title: appL10n.groupInfo_members,
                                   value: data?.memberCount?.toString() ?? "0",
                                   flex: 2,
                                 ),
@@ -550,7 +565,7 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                                 if (data == null) return;
                                 QrCodeBottomSheet.show(
                                   context,
-                                  groupName: data.groupName ?? "Group",
+                                  groupName: data.groupName ?? appL10n.groupInfo_group,
                                   groupCode: data.groupCode ?? "",
                                 );
                               },
@@ -578,8 +593,8 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                           onTap: () {
                             if (data == null) return;
                             CommonDialog.ConfirmationDialog(
-                              title: AppText.areYouSure,
-                              content: AppText.doYouWantToExitGroup,
+                              title: appL10n.groupInfo_areYouSure,
+                              content: appL10n.groupInfo_exitGroupQuestion,
                               onConfirm: () {
                                 Get.back();
                                 MemberController().exitGroup(
@@ -596,7 +611,7 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                                       groupController.getGroupData();
                                       // Already on the All Group List: no navigation.
                                       GroupMembershipSheet.showLeft(
-                                        groupName: data.groupName ?? 'Group',
+                                        groupName: data.groupName ?? appL10n.groupInfo_group,
                                         groupImage: data.groupProfile,
                                         memberCount: data.memberCount,
                                       );
@@ -619,11 +634,15 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                reausabletext(
-                                  "Exit Group",
-                                  fontfamily: FontFamily.interSemiBold,
-                                  fontsize: 11,
-                                  color: Colors.white,
+                                Flexible(
+                                  child: AutoFitText(
+                                    appL10n.groupInfo_exitGroup,
+                                    style: TextStyle(
+                                      fontFamily: FontFamily.interSemiBold,
+                                      fontSize: 11.sp,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
                                 const Icon(
                                   Icons.exit_to_app_rounded,

@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -34,11 +35,11 @@ Widget headerUi(HomeController controller) {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 reausabletext(
-                  "Hello ${formatName(controller.userData.value.name)}",
+                  appL10n.home_helloName(formatName(controller.userData.value.name)),
                   fontfamily: FontFamily.interSemiBold,
                   fontsize: 19,
                 ),
-                reausabletext("It’s good to see you again 👋",
+                reausabletext(appL10n.home_goodToSeeYou,
                     fontfamily: FontFamily.interRegular, fontsize: 12),
               ],
             ),

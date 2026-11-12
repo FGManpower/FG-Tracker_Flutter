@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import '../../../../../gen/fonts.gen.dart';
+import '../../../../global_widget/auto_fit_text.dart';
 import '../../../../global_widget/common_widget.dart';
 import '../../Controller/group_incoming_call_controller.dart';
 
@@ -31,7 +33,8 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
               ),
               SizedBox(height: 8.h),
               reausabletext(
-                "${controller.callerName} and ${controller.totalMemberCount - 1} others",
+                context.l10n.call_callerAndOthers(
+                    controller.callerName, controller.totalMemberCount - 1),
                 fontsize: 16,
                 fontfamily: FontFamily.interRegular,
                 color: const Color(0xFFB1A9D1),
@@ -72,7 +75,9 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
           ),
           SizedBox(width: 8.w),
           reausabletext(
-            "Incoming group ${controller.isVideo ? "video" : "audio"} call",
+            controller.isVideo
+                ? appL10n.call_incomingGroupVideo
+                : appL10n.call_incomingGroupAudio,
             fontsize: 14,
             fontfamily: FontFamily.interMedium,
             color: Colors.white,
@@ -141,14 +146,14 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 reausabletext(
-                  "${controller.activeMemberCount} members in this call",
+                  appL10n.call_membersInCall(controller.activeMemberCount),
                   fontsize: 16,
                   fontfamily: FontFamily.interMedium,
                   color: Colors.white,
                 ),
                 SizedBox(height: 4.h),
                 reausabletext(
-                  "You will join as soon as you answer",
+                  appL10n.call_joinOnAnswer,
                   fontsize: 13,
                   fontfamily: FontFamily.interRegular,
                   color: const Color(0xFFB1A9D1),
@@ -168,7 +173,7 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
       children: [
         _actionButton(
           icon: Icons.close,
-          label: "Decline",
+          label: appL10n.call_decline,
           color: const Color(0xFF2A2146),
           iconColor: Colors.white,
           onTap: controller.declineCall,
@@ -179,7 +184,9 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
         ),
         Obx(() => _actionButton(
               icon: controller.isMuted.value ? Icons.mic_off : Icons.mic,
-              label: controller.isMuted.value ? "Muted" : "Mute",
+              label: controller.isMuted.value
+                  ? appL10n.call_muted
+                  : appL10n.call_mute,
               color: const Color(0xFF2A2146),
               iconColor: Colors.white,
               onTap: controller.toggleMute,
@@ -212,11 +219,17 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
           ),
         ),
         SizedBox(height: 10.h),
-        reausabletext(
-          label,
-          fontsize: 14,
-          fontfamily: FontFamily.interMedium,
-          color: Colors.white,
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 90.w),
+          child: AutoFitText(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: FontFamily.interMedium,
+              fontSize: 14.sp,
+              color: Colors.white,
+            ),
+          ),
         ),
       ],
     );
@@ -398,7 +411,7 @@ class _SlideUpJoinButtonState extends State<_SlideUpJoinButton>
         ),
         SizedBox(height: 10.h),
         reausabletext(
-          "Join",
+          context.l10n.call_join,
           fontsize: 14,
           fontfamily: FontFamily.interMedium,
           color: Colors.white,

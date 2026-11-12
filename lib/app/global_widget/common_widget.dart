@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/ViewImage.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/app/Core/util/http/ApiErrorHandler.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -246,8 +248,9 @@ Widget reausablebuttons(
             colors: colors,
           )),
       child: Center(
-        child: Text(
+        child: AutoFitText(
           "$title",
+          textAlign: TextAlign.center,
           style: TextStyle(
               fontSize: buttonfontsize.sp,
               fontFamily: FontFamily.interSemiBold,
@@ -297,11 +300,14 @@ Widget reausablebutton(
               child: reausableIcon(
                   icon: icon, size: iconSize, color: iconColor),
             ),
-            reausabletext(
-              "$title",
-              fontsize: fontSize.toDouble(),
-              fontfamily: FontFamily.interSemiBold,
-              color: textcolor,
+            Flexible(
+              child: AutoFitText(
+                "$title",
+                style: TextStyle(
+                    fontFamily: FontFamily.interSemiBold,
+                    fontSize: fontSize.toDouble().sp,
+                    color: textcolor),
+              ),
             ),
             if (trailingIcon != null)
               Padding(
@@ -440,18 +446,19 @@ Widget LostinternetConnection(
   return Align(
     alignment: Alignment.center,
     child: Center(
-        child: messgae == "An error occured please try again!"
+        child: ApiErrorHandler.isNetworkErrorMessage(messgae) ||
+                messgae == "An error occured please try again!"
             ? Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(Assets.images.lostInternets.path),
-            reausabletext("Lost Connection",
+            reausabletext(sharedL10n.widget_lostConnection,
                 fontsize: 24, fontfamily: FontFamily.interBold),
             SizedBox(
               height: 10.h,
             ),
-            reausabletext(AppText.woopsNoInternet,
+            reausabletext(sharedL10n.widget_noInternetBody,
                 fontsize: 15,
                 color: Colors.grey,
                 fontfamily: FontFamily.interMedium,
@@ -464,7 +471,7 @@ Widget LostinternetConnection(
                 ? const SizedBox()
                 : reausablebutton(
                 width: 180,
-                title: "Try Again",
+                title: sharedL10n.chat_tryAgain,
                 textcolor: Colors.white,
                 ontap: retry)
           ],
@@ -474,12 +481,12 @@ Widget LostinternetConnection(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(Assets.images.serverError.path),
-            reausabletext(AppText.smthngWentWrong,
+            reausabletext(sharedL10n.widget_somethingWentWrongTitle,
                 fontsize: 24, fontfamily: FontFamily.interBold),
             SizedBox(
               height: 10.h,
             ),
-            reausabletext(AppText.refreshThePage,
+            reausabletext(sharedL10n.widget_refreshPage,
                 fontsize: 15,
                 color: Colors.grey,
                 fontfamily: FontFamily.interMedium,
@@ -492,7 +499,7 @@ Widget LostinternetConnection(
                 ? const SizedBox()
                 : reausablebutton(
                 width: 180,
-                title: AppText.tryAgain,
+                title: sharedL10n.chat_tryAgain,
                 textcolor: Colors.white,
                 ontap: retry)
           ],

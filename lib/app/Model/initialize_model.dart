@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:fgtracker/l10n/l10n.dart';
+
 class InitializeModel {
   bool? status;
   String? message;
@@ -611,10 +613,10 @@ class AppVersionData {
   AppVersionData({
     required this.android,
     required this.ios,
-    this.title = 'Update Required',
-    this.message =
-        'A new version of FG Tracker is available. Please update to continue.',
-  });
+    String? title,
+    String? message,
+  })  : title = title ?? appL10n.forceUpdate_defaultTitle,
+        message = message ?? appL10n.forceUpdate_defaultMessage;
 
   factory AppVersionData.fromJson(Map<String, dynamic> json) {
     return AppVersionData(
@@ -626,9 +628,8 @@ class AppVersionData {
           ? PlatformVersionData.fromJson(
               Map<String, dynamic>.from(json['ios']))
           : PlatformVersionData.empty(),
-      title: json['title']?.toString() ?? 'Update Required',
-      message: json['message']?.toString() ??
-          'A new version of FG Tracker is available. Please update to continue.',
+      title: json['title']?.toString(),
+      message: json['message']?.toString(),
     );
   }
 

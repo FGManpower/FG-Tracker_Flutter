@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import '../Repositories/walkie_talkie_trial_details_repository.dart';
 import '../../Model/walkie_talkie_trial_details_model.dart';
 
@@ -19,21 +20,21 @@ class WalkieTalkieTrialService {
 
       if (!response.isSuccessful) {
         throw WalkieTrialException(
-          response.message ?? 'Unable to fetch Walkie-Talkie details.',
+          response.message ?? appL10n.walkiePlan_trialErrFetchDetails,
         );
       }
 
       final data = response.data;
 
       if (data == null) {
-        throw const WalkieTrialException(
-          'Walkie-Talkie overview data is missing.',
+        throw WalkieTrialException(
+          appL10n.walkiePlan_trialErrOverviewMissing,
         );
       }
 
       if (data.access == null) {
-        throw const WalkieTrialException(
-          'Walkie-Talkie access information is missing.',
+        throw WalkieTrialException(
+          appL10n.walkiePlan_trialErrAccessMissing,
         );
       }
 
@@ -41,8 +42,8 @@ class WalkieTalkieTrialService {
     } on WalkieTrialException {
       rethrow;
     } on FormatException {
-      throw const WalkieTrialException(
-        'Invalid response received from the server.',
+      throw WalkieTrialException(
+        appL10n.walkiePlan_trialErrInvalidResponse,
       );
     } catch (_) {
       rethrow;

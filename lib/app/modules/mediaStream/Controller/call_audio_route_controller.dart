@@ -8,6 +8,7 @@ import 'package:get/get.dart' hide navigator;
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 enum CallAudioRoute { earpiece, speaker, bluetooth, headset }
 
 class CallAudioRouteController extends GetxController
@@ -44,7 +45,8 @@ class CallAudioRouteController extends GetxController
   bool _hasSpeaker = true;
   bool _hasEarpiece = true;
   String _bluetoothName = 'Bluetooth';
-  String _wiredName = 'Headphones';
+  /// Empty = no device name from the OS; shown as the translated "Headphones".
+  String _wiredName = '';
 
   StreamSubscription<Set<AudioDevice>>? _devicesSub;
   StreamSubscription<AudioInterruptionEvent>? _interruptionSub;
@@ -83,17 +85,18 @@ class CallAudioRouteController extends GetxController
       case CallAudioRoute.bluetooth:
         return _bluetoothName;
       case CallAudioRoute.headset:
-        return _wiredName;
+        return wiredDeviceName;
       case CallAudioRoute.speaker:
-        return 'Speaker';
+        return appL10n.call_speaker;
       case CallAudioRoute.earpiece:
-        return 'Earpiece';
+        return appL10n.call_earpiece;
     }
   }
 
   String get bluetoothDeviceName => _bluetoothName;
 
-  String get wiredDeviceName => _wiredName;
+  String get wiredDeviceName =>
+      _wiredName.isEmpty ? appL10n.call_headphones : _wiredName;
 
   bool get isSpeakerOn => currentRoute.value == CallAudioRoute.speaker;
 

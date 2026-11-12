@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -69,7 +71,7 @@ class PermissionGateScreen extends GetView<PermissionGateController> {
         ),
         SizedBox(height: 16.h),
         Text(
-          'Permissions Required',
+          appL10n.permission_gateTitle,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 21.sp,
@@ -79,8 +81,7 @@ class PermissionGateScreen extends GetView<PermissionGateController> {
         ),
         SizedBox(height: 8.h),
         Text(
-          'FG Tracker needs these permissions to receive calls and alerts and '
-          'to run attendance, live tracking and safe zone.',
+          appL10n.permission_gateSubtitle,
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 13.sp, height: 1.45, color: _grey),
         ),
@@ -93,7 +94,7 @@ class PermissionGateScreen extends GetView<PermissionGateController> {
     return _card(
       key: const Key('gate-location-card'),
       icon: Icons.location_on_rounded,
-      title: 'Location',
+      title: appL10n.permission_location,
       reason: PermissionReasons.location,
       required: controller.locationRequired,
       ok: step == LocationStep.done,
@@ -108,7 +109,7 @@ class PermissionGateScreen extends GetView<PermissionGateController> {
     return _card(
       key: const Key('gate-notification-card'),
       icon: Icons.notifications_rounded,
-      title: 'Push Notifications',
+      title: appL10n.permission_pushNotifications,
       reason: PermissionReasons.notification,
       required: controller.notificationRequired,
       ok: step == NotificationStep.done,
@@ -202,8 +203,9 @@ class PermissionGateScreen extends GetView<PermissionGateController> {
                     borderRadius: BorderRadius.circular(14.r),
                   ),
                 ),
-                child: Text(
+                child: AutoFitText(
                   actionLabel,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w700,
@@ -222,25 +224,26 @@ class PermissionGateScreen extends GetView<PermissionGateController> {
     final Color bg;
     final Color fg;
     if (ok) {
-      label = 'Granted';
+      label = appL10n.permission_badgeGranted;
       bg = const Color(0xFFDCF5E6);
       fg = _green;
     } else if (required) {
-      label = 'Required';
+      label = appL10n.permission_badgeRequired;
       bg = const Color(0xFFFFE5EC);
       fg = const Color(0xFFD52E58);
     } else {
-      label = 'Recommended';
+      label = appL10n.permission_badgeRecommended;
       bg = const Color(0xFFFFF3DC);
       fg = const Color(0xFFB7791F);
     }
     return Container(
+      constraints: BoxConstraints(maxWidth: 110.w),
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(20.r),
       ),
-      child: Text(
+      child: AutoFitText(
         label,
         style: TextStyle(
           fontSize: 10.sp,
@@ -264,7 +267,7 @@ class PermissionGateScreen extends GetView<PermissionGateController> {
               color: const Color(0xFFD52E58), size: 32.sp),
           SizedBox(height: 10.h),
           Text(
-            'We could not check your permissions. Please try again.',
+            appL10n.permission_gateCheckFailed,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13.sp, height: 1.4, color: _grey),
           ),
@@ -282,7 +285,8 @@ class PermissionGateScreen extends GetView<PermissionGateController> {
                   borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
-              child: const Text('Retry'),
+              child: AutoFitText(appL10n.common_retry,
+                  textAlign: TextAlign.center),
             ),
           ),
         ],
@@ -305,7 +309,7 @@ class PermissionGateScreen extends GetView<PermissionGateController> {
               child: OutlinedButton.icon(
                 onPressed: controller.busy.value ? null : controller.openSettings,
                 icon: const Icon(Icons.settings_rounded),
-                label: const Text('Open Settings'),
+                label: Text(appL10n.permission_openSettings),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: _brand,
                   side: BorderSide(color: _brand.withValues(alpha: 0.4)),
@@ -326,7 +330,7 @@ class PermissionGateScreen extends GetView<PermissionGateController> {
                   backgroundColor: _brand,
                   foregroundColor: Colors.white,
                 ),
-                child: const Text('Continue'),
+                child: Text(appL10n.common_continue),
               ),
             ),
           ],
@@ -334,7 +338,7 @@ class PermissionGateScreen extends GetView<PermissionGateController> {
             onPressed: controller.busy.value ? null : controller.logout,
             icon: Icon(Icons.logout_rounded, size: 18.sp, color: _grey),
             label: Text(
-              'Logout',
+              appL10n.permission_logout,
               style: TextStyle(
                 color: _grey,
                 fontSize: 13.sp,

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -20,9 +21,10 @@ class InviteHelper {
         "https://play.google.com/store/apps/details?id=com.fg.fgtracker&hl=en";
     const String appStoreLink = "https://apps.apple.com/app/id6470000000";
 
-    return "Hey ${user.name ?? ''}! Join me on FG Tracker.\n\n"
-        "Download for Android: $playStoreLink\n\n"
-        "Download for iOS: $appStoreLink";
+    // Same text as before ("Hey {name}! Join me on FG Tracker. …"), now in
+    // the app language. Links and the name are inserted as-is.
+    return appL10n.chatList_inviteMessage(
+        user.name ?? '', playStoreLink, appStoreLink);
   }
 
   static String _normalizedNumber(String? raw) {
@@ -57,7 +59,7 @@ class InviteHelper {
         return;
       }
     }
-    Get.snackbar("Error", "WhatsApp could not be opened");
+    Get.snackbar(appL10n.common_error, appL10n.chatList_whatsappOpenFailed);
   }
 
   static Future<void> _inviteViaTelegram(UserListData user) async {
@@ -72,7 +74,7 @@ class InviteHelper {
         return;
       }
     }
-    Get.snackbar("Error", "Telegram could not be opened");
+    Get.snackbar(appL10n.common_error, appL10n.chatList_telegramOpenFailed);
   }
 
   static Future<void> _inviteViaSms(UserListData user) async {
@@ -84,14 +86,14 @@ class InviteHelper {
         await _tryLaunch(Uri.parse('sms:+$number?body=$encoded'))) {
       return;
     }
-    Get.snackbar("Error", "Messaging app could not be opened");
+    Get.snackbar(appL10n.common_error, appL10n.chatList_smsOpenFailed);
   }
 
   static Future<void> _inviteViaShareSheet(UserListData user) async {
     try {
       await Share.share(_buildInviteMessage(user));
     } catch (e) {
-      Get.snackbar("Error", "Could not open share menu: $e");
+      Get.snackbar(appL10n.common_error, appL10n.chatList_shareMenuFailed(e.toString()));
     }
   }
 
@@ -121,14 +123,14 @@ class InviteHelper {
               ),
               SizedBox(height: 14.h),
               reausabletext(
-                "Invite ${user.name ?? ''}",
+                appL10n.chatList_inviteName(user.name ?? ''),
                 fontsize: 16.sp,
                 fontfamily: FontFamily.interBold,
                 color: Colors.black87,
               ),
               SizedBox(height: 4.h),
               reausabletext(
-                "Choose how you want to send the invite",
+                appL10n.chatList_inviteChooseHow,
                 fontsize: 11.sp,
                 color: Colors.grey.shade600,
               ),
@@ -154,7 +156,7 @@ class InviteHelper {
               _inviteOption(
                 icon: Icons.sms_rounded,
                 color: const Color(0xFF6C5DD3),
-                title: "Message",
+                title: appL10n.chatList_inviteViaMessage,
                 onTap: () {
                   Get.back();
                   _inviteViaSms(user);
@@ -163,7 +165,7 @@ class InviteHelper {
               _inviteOption(
                 icon: Icons.share_rounded,
                 color: const Color(0xFF5A2BE0),
-                title: "More apps",
+                title: appL10n.chatList_inviteMoreApps,
                 onTap: () {
                   Get.back();
                   _inviteViaShareSheet(user);

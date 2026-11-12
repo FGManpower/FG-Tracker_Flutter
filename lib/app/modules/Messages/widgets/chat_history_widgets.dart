@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -57,7 +58,7 @@ class ChatHistoryErrorState extends StatelessWidget {
             Icon(Icons.cloud_off_rounded, size: 44.sp, color: Colors.grey.shade500),
             SizedBox(height: 12.h),
             Text(
-              "Couldn't load messages",
+              context.l10n.chat_loadFailedTitle,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15.sp,
@@ -67,7 +68,7 @@ class ChatHistoryErrorState extends StatelessWidget {
             ),
             SizedBox(height: 4.h),
             Text(
-              "Check your connection and try again.",
+              context.l10n.chat_loadFailedSubtitle,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13.sp, color: Colors.grey.shade500),
             ),
@@ -76,7 +77,7 @@ class ChatHistoryErrorState extends StatelessWidget {
               key: const ValueKey('chat_history_retry'),
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text("Retry"),
+              label: Text(context.l10n.common_retry),
             ),
           ],
         ),

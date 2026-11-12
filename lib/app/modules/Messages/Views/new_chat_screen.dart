@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/newChat_controller.dart';
@@ -271,7 +272,7 @@ class _NewChatScreenState extends State<NewChatScreen>
                         if (!widget.fromQuickAction)
                           SliverToBoxAdapter(
                             child: _buildSectionTitle(
-                                "Start a New Chat (Contacts)"),
+                                context.l10n.chatList_newChatSectionContacts),
                           ),
                         _buildContactsSliver(direct, isInvite: false),
                         SliverToBoxAdapter(child: SizedBox(height: 16.h)),
@@ -279,7 +280,7 @@ class _NewChatScreenState extends State<NewChatScreen>
                       if (invite.isNotEmpty) ...[
                         SliverToBoxAdapter(
                           child: _buildSectionTitle(
-                              "Invite to Chat (Unregistered Contacts)"),
+                              context.l10n.chatList_newChatSectionInvite),
                         ),
                         _buildContactsSliver(invite, isInvite: true),
                       ],
@@ -310,8 +311,8 @@ class _NewChatScreenState extends State<NewChatScreen>
               SizedBox(height: 12.h),
               reausabletext(
                 controller.searchQuery.value.isEmpty
-                    ? "No active tracker contacts found"
-                    : "No results for '${controller.searchQuery.value}'",
+                    ? context.l10n.chatList_noTrackerContacts
+                    : context.l10n.chatList_noResultsForQuery(controller.searchQuery.value),
                 fontsize: 13.sp,
                 color: Colors.grey,
               ),
@@ -344,7 +345,7 @@ class _NewChatScreenState extends State<NewChatScreen>
             ),
             SizedBox(height: 20.h),
             reausabletext(
-              "Allow contacts access",
+              context.l10n.chatList_allowContactsTitle,
               fontsize: 17.sp,
               fontfamily: FontFamily.interBold,
               color: Colors.black87,
@@ -352,7 +353,7 @@ class _NewChatScreenState extends State<NewChatScreen>
             ),
             SizedBox(height: 8.h),
             reausabletext(
-              "We need access to your contacts to show who is on FG Tracker and to let you start a chat or send an invite.",
+              context.l10n.chatList_allowContactsBody,
               fontsize: 12.sp,
               color: Colors.grey.shade600,
               align: TextAlign.center,
@@ -371,7 +372,7 @@ class _NewChatScreenState extends State<NewChatScreen>
                 ),
                 child: Center(
                   child: reausabletext(
-                    "Allow Access",
+                    context.l10n.chatList_allowAccess,
                     fontsize: 14.sp,
                     fontfamily: FontFamily.interSemiBold,
                     color: Colors.white,
@@ -404,16 +405,16 @@ class _NewChatScreenState extends State<NewChatScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           reausabletext(
-            "How to allow",
+            context.l10n.chatList_howToAllow,
             fontsize: 12.sp,
             fontfamily: FontFamily.interBold,
             color: Colors.black87,
           ),
           SizedBox(height: 10.h),
-          _stepRow(1, "Tap \"Allow Access\" to open Settings"),
-          _stepRow(2, "Tap \"Permissions\""),
-          _stepRow(3, "Select \"Contacts\""),
-          _stepRow(4, "Choose \"Allow\", then come back to the app",
+          _stepRow(1, context.l10n.chatList_howToAllowStep1),
+          _stepRow(2, context.l10n.chatList_howToAllowStep2),
+          _stepRow(3, context.l10n.chatList_howToAllowStep3),
+          _stepRow(4, context.l10n.chatList_howToAllowStep4,
               isLast: true),
         ],
       ),
@@ -496,7 +497,7 @@ class _NewChatScreenState extends State<NewChatScreen>
     final String imageUrl = hasAvatar ? (ConstRes.aImageBaseUrl + avatar) : '';
     final String displayName = (user.name?.trim().isNotEmpty == true)
         ? user.name!.trim()
-        : (user.mobileNo ?? 'Unknown User');
+        : (user.mobileNo ?? context.l10n.chatList_unknownUser);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
@@ -561,7 +562,7 @@ class _NewChatScreenState extends State<NewChatScreen>
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: reausabletext(
-                  "Invite",
+                  context.l10n.chatList_invite,
                   fontsize: 12.sp,
                   color: const Color(0xFF6B4DFF),
                   fontfamily: FontFamily.interSemiBold,
@@ -616,7 +617,7 @@ class _NewChatScreenState extends State<NewChatScreen>
     final String imageUrl = hasAvatar ? (ConstRes.aImageBaseUrl + avatar) : '';
     final String displayName = (user.name?.trim().isNotEmpty == true)
         ? user.name!.trim()
-        : (user.mobileNo ?? 'Unknown User');
+        : (user.mobileNo ?? context.l10n.chatList_unknownUser);
     // Responsive square photo: 72% of screen width, max 320
     final double screenW = MediaQuery.of(context).size.width;
     final double size = (screenW * 0.72).clamp(220.0, 320.0);
@@ -765,7 +766,7 @@ class _NewChatScreenState extends State<NewChatScreen>
       return;
     }
     if (remoteId.isEmpty) {
-      Utils().fluttertoast("Unable to call this contact");
+      Utils().fluttertoast(appL10n.chatList_unableToCallContact);
       return;
     }
     CallService().startOutGoingCall(
@@ -773,7 +774,7 @@ class _NewChatScreenState extends State<NewChatScreen>
       callerId: Global.storageServices.get(PrefConst.userId).toString(),
       remoteUserId: remoteId,
       is_video: isVideo,
-      callerName: user.name ?? 'User',
+      callerName: user.name ?? appL10n.chatList_userFallback,
       callerProfile: user.profileImage,
     );
   }
@@ -803,9 +804,8 @@ class _NewChatScreenState extends State<NewChatScreen>
         "https://play.google.com/store/apps/details?id=com.fg.fgtracker&hl=en";
     const String appStoreLink = "https://apps.apple.com/app/id6470000000";
 
-    return "Hey ${user.name ?? ''}! Join me on FG Tracker.\n\n"
-        "Download for Android: $playStoreLink\n\n"
-        "Download for iOS: $appStoreLink";
+    return appL10n.chatList_inviteMessage(
+        user.name ?? '', playStoreLink, appStoreLink);
   }
 
   String _normalizedNumber(String? raw) {
@@ -840,7 +840,7 @@ class _NewChatScreenState extends State<NewChatScreen>
         return;
       }
     }
-    Get.snackbar("Error", "WhatsApp could not be opened");
+    Get.snackbar(appL10n.common_error, appL10n.chatList_whatsappOpenFailed);
   }
 
   Future<void> _inviteViaTelegram(UserListData user) async {
@@ -855,7 +855,7 @@ class _NewChatScreenState extends State<NewChatScreen>
         return;
       }
     }
-    Get.snackbar("Error", "Telegram could not be opened");
+    Get.snackbar(appL10n.common_error, appL10n.chatList_telegramOpenFailed);
   }
 
   Future<void> _inviteViaSms(UserListData user) async {
@@ -867,14 +867,14 @@ class _NewChatScreenState extends State<NewChatScreen>
         await _tryLaunch(Uri.parse('sms:+$number?body=$encoded'))) {
       return;
     }
-    Get.snackbar("Error", "Messaging app could not be opened");
+    Get.snackbar(appL10n.common_error, appL10n.chatList_smsOpenFailed);
   }
 
   Future<void> _inviteViaShareSheet(UserListData user) async {
     try {
       await Share.share(_buildInviteMessage(user));
     } catch (e) {
-      Get.snackbar("Error", "Could not open share menu: $e");
+      Get.snackbar(appL10n.common_error, appL10n.chatList_shareMenuFailed(e.toString()));
     }
   }
 
@@ -904,14 +904,14 @@ class _NewChatScreenState extends State<NewChatScreen>
               ),
               SizedBox(height: 14.h),
               reausabletext(
-                "Invite ${user.name ?? ''}",
+                context.l10n.chatList_inviteName(user.name ?? ''),
                 fontsize: 16.sp,
                 fontfamily: FontFamily.interBold,
                 color: Colors.black87,
               ),
               SizedBox(height: 4.h),
               reausabletext(
-                "Choose how you want to send the invite",
+                context.l10n.chatList_inviteChooseHow,
                 fontsize: 11.sp,
                 color: Colors.grey.shade600,
               ),
@@ -937,7 +937,7 @@ class _NewChatScreenState extends State<NewChatScreen>
               _inviteOption(
                 icon: Icons.sms_rounded,
                 color: const Color(0xFF6C5DD3),
-                title: "Message",
+                title: context.l10n.chatList_inviteViaMessage,
                 onTap: () {
                   Get.back();
                   _inviteViaSms(user);
@@ -946,7 +946,7 @@ class _NewChatScreenState extends State<NewChatScreen>
               _inviteOption(
                 icon: Icons.share_rounded,
                 color: const Color(0xFF5A2BE0),
-                title: "More apps",
+                title: context.l10n.chatList_inviteMoreApps,
                 onTap: () {
                   Get.back();
                   _inviteViaShareSheet(user);
@@ -1068,13 +1068,13 @@ class _NewChatScreenState extends State<NewChatScreen>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 reausabletext(
-                  widget.fromQuickAction ? "All Contacts" : "New Chat",
+                  widget.fromQuickAction ? context.l10n.chatList_allContacts : context.l10n.chatList_newChat,
                   fontsize: 18.sp,
                   fontfamily: FontFamily.interBold,
                   color: Colors.black87,
                 ),
                 reausabletext(
-                  "Start a conversation",
+                  context.l10n.chatList_startConversation,
                   fontsize: 11.sp,
                   fontweight: FontWeight(450),
                   color: Colors.grey.shade600,
@@ -1152,7 +1152,7 @@ class _NewChatScreenState extends State<NewChatScreen>
                   color: Colors.black87,
                 ),
                 decoration: InputDecoration(
-                  hintText: "Search by name or number...",
+                  hintText: context.l10n.chatList_searchByNameOrNumber,
                   hintStyle: TextStyle(
                     fontSize: 11.sp,
                     color: Colors.grey.shade600,

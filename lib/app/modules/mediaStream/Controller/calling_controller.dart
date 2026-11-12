@@ -18,6 +18,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import '../../../../gen/assets.gen.dart';
 import '../../../Data/Services/IncommingCallKit/call_session.dart'
     show CallSessionState;
@@ -1230,11 +1231,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (isUpgradingToVideo.value) return;
     if (isRemoteUpgrading.value) {
       log("[CAM] upgrade blocked: remote is already upgrading");
-      Utils().fluttertoast("The other person is starting video");
+      Utils().fluttertoast(appL10n.call_otherStartingVideo);
       return;
     }
     if (peer == null || localStream == null) {
-      Utils().fluttertoast("Call not ready");
+      Utils().fluttertoast(appL10n.call_notReady);
       return;
     }
     _emitUpgradeIntent();
@@ -1603,8 +1604,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       log("CALL ERROR => $data");
       await _cleanupCall(notifyRemote: false, navigateBack: true);
       Get.snackbar(
-        "Call Failed",
-        data?["message"]?.toString() ?? "Unable to make call",
+        appL10n.call_failedTitle,
+        data?["message"]?.toString() ?? appL10n.call_unableToMakeCall,
       );
     });
 
@@ -1612,9 +1613,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       log("CALL BLOCKED => $data");
       await _cleanupCall(notifyRemote: false, navigateBack: true);
       Get.snackbar(
-        "Call unavailable",
+        appL10n.call_unavailableTitle,
         data?["message"]?.toString() ??
-            "Communication is not available with this user",
+            appL10n.call_communicationUnavailable,
       );
     });
 
@@ -2622,11 +2623,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   Future<void> startScreenShare() async {
     if (_screenShareStarting || isScreenSharing.value) return;
     if (peer == null || isClosed) {
-      Utils().fluttertoast("Call not ready");
+      Utils().fluttertoast(appL10n.call_notReady);
       return;
     }
     if (isRemoteScreenSharing.value) {
-      Utils().fluttertoast("The other person is already sharing the screen");
+      Utils().fluttertoast(appL10n.call_otherAlreadySharing);
       return;
     }
 
@@ -2770,7 +2771,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       isScreenShareWaiting.value = false;
       await _teardownScreenStream();
       isScreenSharing.value = false;
-      Utils().fluttertoast("Unable to share screen");
+      Utils().fluttertoast(appL10n.call_unableToShareScreen);
     } finally {
       _screenShareStarting = false;
       update();
@@ -2911,7 +2912,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
             "stopping the share",
           );
           await stopScreenShare();
-          Utils().fluttertoast("Screen sharing stopped");
+          Utils().fluttertoast(appL10n.call_screenShareStopped);
           return;
         }
         continue;
@@ -3005,20 +3006,20 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       log("[SHARE] android capture permission granted=$granted");
     } catch (e) {
       log("[SHARE] android capture permission error: $e");
-      Utils().fluttertoast("Could not start screen sharing");
+      Utils().fluttertoast(appL10n.call_screenShareStartFailed);
       return false;
     }
 
     if (!granted) {
       log("[SHARE] android capture permission denied by user");
-      Utils().fluttertoast("Screen sharing permission denied");
+      Utils().fluttertoast(appL10n.call_screenSharePermissionDenied);
       return false;
     }
 
     final bool serviceUp = await _startScreenShareForeground();
     if (!serviceUp) {
       log("[SHARE] android projection service failed - share aborted");
-      Utils().fluttertoast("Could not start screen sharing");
+      Utils().fluttertoast(appL10n.call_screenShareStartFailed);
       _stopScreenShareForeground();
     }
     return serviceUp;
@@ -3032,8 +3033,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         FlutterForegroundTask.init(
           androidNotificationOptions: AndroidNotificationOptions(
             channelId: 'fgtracker_call_service',
-            channelName: 'Ongoing call',
-            channelDescription: 'Keeps the call and screen sharing alive',
+            channelName: appL10n.call_ongoingChannelName,
+            channelDescription: appL10n.call_ongoingChannelDescription,
           ),
           iosNotificationOptions: const IOSNotificationOptions(
             showNotification: false,
@@ -3058,8 +3059,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
             ForegroundServiceTypes.microphone,
             ForegroundServiceTypes.mediaProjection,
           ],
-          notificationTitle: 'Screen sharing',
-          notificationText: 'You are sharing your screen',
+          notificationTitle: appL10n.call_screenSharingTitle,
+          notificationText: appL10n.call_youAreSharingScreen,
         );
 
         log("[SHARE] foreground service attempt=$attempt result=$result");

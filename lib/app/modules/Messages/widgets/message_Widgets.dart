@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
@@ -233,7 +234,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   ),
                                   SizedBox(height: 20.h),
                                   Text(
-                                    "Group Actions",
+                                    context.l10n.chat_groupActionsTitle,
                                     style: TextStyle(
                                       fontSize: 22.sp,
                                       fontWeight: FontWeight.w800,
@@ -241,7 +242,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                     ),
                                   ),
                                   Text(
-                                    "Manage your group settings",
+                                    context.l10n.chat_groupActionsSubtitle,
                                     style: TextStyle(
                                       fontSize: 13.sp,
                                       color: Colors.grey.shade600,
@@ -251,8 +252,8 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   actionTile(
                                     icon: Icons.search,
                                     iconColor: Colors.blueAccent,
-                                    title: "Search Messages",
-                                    subtitle: "Find messages by keyword",
+                                    title: context.l10n.chat_searchMessages,
+                                    subtitle: context.l10n.chat_searchMessagesSubtitle,
                                     onTap: () {
                                       Navigator.pop(context);
                                       onSearchTap?.call();
@@ -262,9 +263,9 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   actionTile(
                                     icon: Icons.edit_rounded,
                                     iconColor: ToggleThemeData.darkPurple,
-                                    title: "Update Group ",
+                                    title: context.l10n.chat_updateGroup,
                                     subtitle:
-                                    "Change the current group detail",
+                                    context.l10n.chat_updateGroupSubtitle,
                                     onTap: () {
                                       Navigator.pop(context);
                                       onUpdateGroupName?.call();
@@ -274,9 +275,9 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   actionTile(
                                     icon: Icons.person_remove_rounded,
                                     iconColor: Colors.red,
-                                    title: "Delete Member",
+                                    title: context.l10n.chat_deleteMember,
                                     subtitle:
-                                    "Remove a member from this group",
+                                    context.l10n.chat_deleteMemberSubtitle,
                                     onTap: () {
                                       Navigator.pop(context);
                                       onDeleteMember?.call();
@@ -286,7 +287,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   SizedBox(
                                     width: double.infinity,
                                     child: reausablebutton(
-                                      title: "Cancel",
+                                      title: context.l10n.common_cancel,
                                       ontap: () => Navigator.pop(context),
                                       height: 52,
                                       borderradiues: 50,
@@ -343,7 +344,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                 ),
                                 SizedBox(height: 20.h),
                                 Text(
-                                  "Chat Actions",
+                                  context.l10n.chat_chatActionsTitle,
                                   style: TextStyle(
                                     fontSize: 22.sp,
                                     fontWeight: FontWeight.w800,
@@ -351,7 +352,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   ),
                                 ),
                                 Text(
-                                  "Manage your chat",
+                                  context.l10n.chat_chatActionsSubtitle,
                                   style: TextStyle(
                                     fontSize: 13.sp,
                                     color: Colors.grey.shade600,
@@ -361,8 +362,8 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                 actionTile(
                                   icon: Icons.search,
                                   iconColor: Colors.blueAccent,
-                                  title: "Search Messages",
-                                  subtitle: "Find messages by keyword",
+                                  title: context.l10n.chat_searchMessages,
+                                  subtitle: context.l10n.chat_searchMessagesSubtitle,
                                   onTap: () {
                                     Navigator.pop(context);
                                     onSearchTap?.call();
@@ -372,7 +373,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                 SizedBox(
                                   width: double.infinity,
                                   child: reausablebutton(
-                                    title: "Cancel",
+                                    title: context.l10n.common_cancel,
                                     ontap: () => Navigator.pop(context),
                                     height: 52,
                                     borderradiues: 50,
@@ -466,7 +467,7 @@ class ImageViewerWidget extends StatelessWidget {
               width: width.w,
               height: height.h,
               color: Colors.grey[300],
-              child: const Center(child: Text("Image failed")),
+              child: Center(child: Text(context.l10n.chat_imageFailed)),
             );
           },
         ),

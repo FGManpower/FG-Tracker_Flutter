@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart' show normalizePhone;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -89,7 +90,7 @@ class ForwardMessageController extends GetxController {
 
       if (response.status == false) {
         responseError.value =
-            response.message ?? "Unable to load forward list.";
+            response.message ?? appL10n.chatList_forwardListLoadFailed;
 
         destinations.clear();
         filteredDestinations.clear();
@@ -158,7 +159,7 @@ class ForwardMessageController extends GetxController {
 
       _applyForwardSearch(searchController.text);
     } catch (e) {
-      responseError.value = "Unable to load forward list.";
+      responseError.value = appL10n.chatList_forwardListLoadFailed;
       destinations.clear();
       filteredDestinations.clear();
       _clearDisplayLists();
@@ -320,8 +321,8 @@ class ForwardMessageController extends GetxController {
 
     if (!hasSelection) {
       Get.snackbar(
-        "Select Destination",
-        "Please select at least one person or group.",
+        appL10n.chatList_selectDestination,
+        appL10n.chatList_selectDestinationMsg,
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -329,8 +330,8 @@ class ForwardMessageController extends GetxController {
 
     if (message.id == null) {
       Get.snackbar(
-        "Error",
-        "Message ID is missing.",
+        appL10n.common_error,
+        appL10n.chatList_messageIdMissing,
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -365,8 +366,8 @@ class ForwardMessageController extends GetxController {
 
       if (response.status == false) {
         Get.snackbar(
-          "Error",
-          response.message ?? "Unable to forward message.",
+          appL10n.common_error,
+          response.message ?? appL10n.chatList_forwardFailed,
           snackPosition: SnackPosition.BOTTOM,
         );
         return;
@@ -401,7 +402,7 @@ class ForwardMessageController extends GetxController {
         }
       }
 
-      Utils().fluttertoast("Message forwarded");
+      Utils().fluttertoast(appL10n.chatList_messageForwarded);
 
       final bool isSingle = selected.length == 1;
 
@@ -436,8 +437,8 @@ class ForwardMessageController extends GetxController {
       }
     } catch (e) {
       Get.snackbar(
-        "Error",
-        "Unable to forward message.",
+        appL10n.common_error,
+        appL10n.chatList_forwardFailed,
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {

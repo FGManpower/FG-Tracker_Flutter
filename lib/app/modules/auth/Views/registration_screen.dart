@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -88,40 +89,41 @@ class RegistrationScreen extends GetView<RegistrationController> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildRegLabel("User Name"),
+                            _buildRegLabel(context.l10n.registration_userNameLabel),
                             SizedBox(height: 8.h),
                             _buildRegTextField(
                               controller: controller.nameController,
                               icon: Icons.person,
-                              hint: "Enter User Name",
+                              hint: context.l10n.registration_userNameHint,
                               validator: (value) => Validator.validate(
-                                  value: value, title: "User Name"),
+                                  value: value,
+                                  title: context.l10n.registration_userNameLabel),
                             ),
                             SizedBox(height: 18.h),
 
-                            _buildRegLabel("Contact Number"),
+                            _buildRegLabel(context.l10n.registration_contactNumberLabel),
                             SizedBox(height: 8.h),
                             _buildRegTextField(
                               controller: controller.phoneController,
                               icon: Icons.call,
-                              hint: "Enter Contact Number",
+                              hint: context.l10n.registration_contactNumberHint,
                               enabled: false,
                             ),
                             SizedBox(height: 18.h),
 
-                            _buildRegLabel("Email Address"),
+                            _buildRegLabel(context.l10n.registration_emailLabel),
                             SizedBox(height: 8.h),
                             _buildRegTextField(
                               controller: controller.emailController,
                               icon: Icons.email,
-                              hint: "Enter Email Address",
+                              hint: context.l10n.registration_emailHint,
                               keyboardType: TextInputType.emailAddress,
                               validator: (value) =>
                                   Validator.validateEmail(value),
                             ),
                             SizedBox(height: 28.h),
 
-                            _buildRegLabel("Select Gender"),
+                            _buildRegLabel(context.l10n.registration_genderLabel),
                             SizedBox(height: 8.h),
                             Container(
                               decoration: BoxDecoration(
@@ -136,7 +138,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   _buildRegGenderOption(
-                                    title: AppText.male,
+                                    title: context.l10n.registration_genderMale,
                                     value: "male",
                                     icon: Icons.person,
                                   ),
@@ -146,7 +148,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                                     thickness: 1,
                                   ),
                                   _buildRegGenderOption(
-                                    title: AppText.female,
+                                    title: context.l10n.registration_genderFemale,
                                     value: "female",
                                     icon: Icons.person,
                                   ),
@@ -156,7 +158,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                                     thickness: 1,
                                   ),
                                   _buildRegGenderOption(
-                                    title: AppText.other,
+                                    title: context.l10n.registration_genderOther,
                                     value: "others",
                                     icon: Icons.group,
                                   ),
@@ -211,7 +213,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                                     alignment: Alignment.center,
                                     children: [
                                       Text(
-                                        "Done",
+                                        context.l10n.registration_doneButton,
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 14.sp,
@@ -545,8 +547,9 @@ class RegistrationScreen extends GetView<RegistrationController> {
                       ),
                       Expanded(
                         child: Center(
-                          child: Text(
-                            "Edit Profile",
+                          child: AutoFitText(
+                            context.l10n.editProfile_title,
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 19.sp,
@@ -626,7 +629,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                             ),
                             SizedBox(height: 12.h),
                             Text(
-                              "Tap on the photo to change",
+                              context.l10n.editProfile_tapPhotoHint,
                               style: TextStyle(
                                 color: const Color(0xFF7A7F93),
                                 fontSize: 13.sp,
@@ -638,7 +641,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                "Personal Information",
+                                context.l10n.editProfile_personalInfo,
                                 style: TextStyle(
                                   color: const Color(0xFF5D47F1),
                                   fontSize: 16.sp,
@@ -649,15 +652,16 @@ class RegistrationScreen extends GetView<RegistrationController> {
                             ),
                             SizedBox(height: 16.h),
                             _buildEditProfileField(
-                              label: "Full Name",
+                              label: context.l10n.editProfile_fullNameLabel,
                               controller: controller.nameController,
                               icon: Icons.person_outline_rounded,
                               keyboardType: TextInputType.name,
                               validator: (value) => Validator.validate(
-                                  value: value, title: "Full Name"),
+                                  value: value,
+                                  title: context.l10n.editProfile_fullNameLabel),
                             ),
                             _buildEditProfileField(
-                              label: "Phone Number",
+                              label: context.l10n.editProfile_phoneLabel,
                               controller: controller.phoneController,
                               icon: Icons.phone_outlined,
                               enabled: false,
@@ -665,7 +669,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                             ),
                             // Email is compulsory, shown even if not set yet
                             _buildEditProfileField(
-                              label: "Email Address",
+                              label: context.l10n.registration_emailLabel,
                               controller: controller.emailController,
                               icon: Icons.mail_outline_rounded,
                               keyboardType: TextInputType.emailAddress,
@@ -715,8 +719,9 @@ class RegistrationScreen extends GetView<RegistrationController> {
                                             Colors.white),
                                       ),
                                     )
-                                        : Text(
-                                      "Save Changes",
+                                        : AutoFitText(
+                                      context.l10n.editProfile_saveButton,
+                                      textAlign: TextAlign.center,
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 16.sp,

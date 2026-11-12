@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:location/location.dart';
 
 class SearchUserController extends GetxController {
@@ -35,7 +36,7 @@ class SearchUserController extends GetxController {
       if (contactNumbers.isEmpty) {
         allUserProfileData.clear();
         filteredUsers.clear();
-        responseError.value = "No contacts found";
+        responseError.value = appL10n.group_noContactsFound;
         return;
       }
 
@@ -69,7 +70,7 @@ class SearchUserController extends GetxController {
 
         filteredUsers.value = matchedUsers;
       } else {
-        responseError.value = result.message ?? "Something went wrong";
+        responseError.value = result.message ?? appL10n.common_somethingWentWrong;
       }
     } catch (e) {
       responseError.value = e.toString();
@@ -115,7 +116,7 @@ class SearchUserController extends GetxController {
         await LocationPermissions().handleLocationPermission();
     if (!hasPermission) {
       CommonDialog.errorMessage(
-          "Location permission is required to join a group.");
+          appL10n.group_locationPermissionToJoin);
       return false;
     }
 
@@ -125,7 +126,7 @@ class SearchUserController extends GetxController {
       serviceEnabled = await location.requestService();
       if (!serviceEnabled) {
         CommonDialog.errorMessage(
-            "Please enable location services to join a group.");
+            appL10n.group_enableLocationToJoin);
         return false;
       }
     }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -129,14 +130,14 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
   }
 
   String get _formattedDate {
-    return DateFormat("dd MMM yyyy, EEE").format(_selectedDate.value);
+    return appDateFormat("dd MMM yyyy, EEE").format(_selectedDate.value);
   }
 
   void _addOption() {
     if (_options.length >= _maxOptions) {
       Get.snackbar(
-        "Limit Reached",
-        "You can add up to $_maxOptions options only",
+        appL10n.attendance_limitReached,
+        appL10n.attendance_maxOptions(_maxOptions),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: const Color(0xFFF1F5F9),
         colorText: const Color(0xFF0F172A),
@@ -170,10 +171,10 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
     // 1. Question validation
     final question = _questionController.text.trim();
     if (question.isEmpty) {
-      _questionError.value = "Attendance question is required";
+      _questionError.value = appL10n.attendance_questionRequired;
       isValid = false;
     } else if (question.length < 3) {
-      _questionError.value = "Question must be at least 3 characters long";
+      _questionError.value = appL10n.attendance_questionTooShort(3);
       isValid = false;
     } else {
       _questionError.value = null;
@@ -181,10 +182,10 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
 
     // 2. Options validation
     if (_options.length < 2) {
-      _optionsError.value = "At least 2 options are required";
+      _optionsError.value = appL10n.attendance_minOptions(2);
       isValid = false;
     } else if (_options.any((o) => o.controller.text.trim().isEmpty)) {
-      _optionsError.value = "All options must have a label";
+      _optionsError.value = appL10n.attendance_optionLabelRequired;
       isValid = false;
     } else {
       final uniqueSet = <String>{};
@@ -198,7 +199,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
         uniqueSet.add(text);
       }
       if (hasDuplicate) {
-        _optionsError.value = "Options must be unique";
+        _optionsError.value = appL10n.attendance_optionsUnique;
         isValid = false;
       } else {
         _optionsError.value = null;
@@ -229,16 +230,16 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
         "q=${_questionError.value} opt=${_optionsError.value}");
     if (!isValid) {
       _showError(
-        "Validation Error",
+        appL10n.attendance_validationError,
         _questionError.value ??
             _optionsError.value ??
-            "Please fix the highlighted errors before submitting",
+            appL10n.attendance_fixErrors,
       );
       return;
     }
 
     if (widget.groupId <= 0) {
-      _showError("Attendance Failed", "Invalid group. Please reopen the chat.");
+      _showError(appL10n.attendance_failed, appL10n.attendance_invalidGroup);
       return;
     }
 
@@ -252,8 +253,8 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
         ? DateTime(date.year, date.month, date.day, 23, 59)
         : null;
     if (deadline != null && deadline.isBefore(DateTime.now())) {
-      _showError("Attendance Failed",
-          "The selected date has already ended. Pick another date or turn off auto-close.");
+      _showError(appL10n.attendance_failed,
+          appL10n.attendance_dateEnded);
       return;
     }
 
@@ -283,8 +284,8 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
       rtLog("[ATTENDANCE_DEBUG] sheet closed");
 
       Get.snackbar(
-        "Attendance Created",
-        "Attendance sent to the group",
+        appL10n.attendance_created,
+        appL10n.attendance_sentToGroup,
         snackPosition: SnackPosition.TOP,
         backgroundColor: const Color(0xFF5A3EFE),
         colorText: Colors.white,
@@ -293,7 +294,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
       );
     } catch (e, st) {
       rtLog("[ATTENDANCE_DEBUG] create failed: $e\n$st");
-      _showError("Attendance Failed", e.toString());
+      _showError(appL10n.attendance_failed, e.toString());
     } finally {
       if (mounted) _isSubmitting.value = false;
     }
@@ -360,7 +361,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Create Attendance",
+                        appL10n.attendance_createTitle,
                         style: TextStyle(
                           fontSize: 17.sp,
                           fontWeight: FontWeight.w700,
@@ -369,7 +370,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        "Send an attendance poll to this group",
+                        appL10n.attendance_createSubtitle,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: const Color(0xFF64748B),
@@ -478,7 +479,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                         ),
                         SizedBox(width: 8.w),
                         Text(
-                          "Create Attendance",
+                          appL10n.attendance_createTitle,
                           style: TextStyle(
                             fontSize: 14.5.sp,
                             fontWeight: FontWeight.w700,
@@ -539,7 +540,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Attendance Question",
+                          appL10n.attendance_questionLabel,
                           style: TextStyle(
                             fontSize: 10.5.sp,
                             color: hasError
@@ -571,7 +572,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                                   isDense: true,
                                   border: InputBorder.none,
                                   contentPadding: EdgeInsets.zero,
-                                  hintText: "Will you be available today?",
+                                  hintText: appL10n.attendance_questionHint,
                                   hintStyle: TextStyle(
                                     fontSize: 13.5.sp,
                                     color: const Color(0xFF94A3B8),
@@ -614,12 +615,14 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                   size: 13.sp,
                 ),
                 SizedBox(width: 4.w),
-                Text(
-                  _questionError.value!,
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: const Color(0xFFEF4444),
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    _questionError.value!,
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: const Color(0xFFEF4444),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -651,7 +654,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
         Expanded(
           // Fixed to today: no date picker.
           child: Semantics(
-            label: "Attendance date, today",
+            label: appL10n.attendance_dateTodaySemantics,
             readOnly: true,
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -664,7 +667,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Date (today)",
+                    appL10n.attendance_dateToday,
                     style: TextStyle(
                       fontSize: 10.5.sp,
                       color: const Color(0xFF94A3B8),
@@ -732,7 +735,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Ask your community",
+                      appL10n.attendance_askCommunity,
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w700,
@@ -741,7 +744,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      "Select an option to require a live photo for it",
+                      appL10n.attendance_selectPhotoOption,
                       style: TextStyle(
                         fontSize: 11.sp,
                         color: const Color(0xFF64748B),
@@ -822,8 +825,8 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                               children: [
                                 Text(
                                   isSelected
-                                      ? "Option ${index + 1} • 📷 Photo required"
-                                      : "Option ${index + 1}",
+                                      ? appL10n.attendance_optionPhotoRequired(index + 1)
+                                      : appL10n.attendance_optionNumber(index + 1),
                                   style: TextStyle(
                                     fontSize: 10.sp,
                                     color: const Color(0xFF94A3B8),
@@ -841,7 +844,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                                     isDense: true,
                                     border: InputBorder.none,
                                     contentPadding: EdgeInsets.zero,
-                                    hintText: "Enter option label",
+                                    hintText: appL10n.attendance_optionHint,
                                     hintStyle: TextStyle(
                                       fontSize: 13.sp,
                                       color: Colors.grey.shade400,
@@ -888,12 +891,14 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                     size: 13.sp,
                   ),
                   SizedBox(width: 4.w),
-                  Text(
-                    _optionsError.value!,
-                    style: TextStyle(
-                      fontSize: 11.5.sp,
-                      color: const Color(0xFFEF4444),
-                      fontWeight: FontWeight.w500,
+                  Expanded(
+                    child: Text(
+                      _optionsError.value!,
+                      style: TextStyle(
+                        fontSize: 11.5.sp,
+                        color: const Color(0xFFEF4444),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
@@ -925,7 +930,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                   ),
                   SizedBox(width: 6.w),
                   Text(
-                    "Add Another Option",
+                    appL10n.attendance_addOption,
                     style: TextStyle(
                       fontSize: 12.5.sp,
                       fontWeight: FontWeight.w700,
@@ -1001,7 +1006,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
                                   Border.all(color: const Color(0xFFFED7AA)),
                             ),
                             child: Text(
-                              "Coming soon",
+                              appL10n.common_comingSoon,
                               style: TextStyle(
                                 fontSize: 9.5.sp,
                                 fontWeight: FontWeight.w700,
@@ -1048,7 +1053,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Settings",
+            appL10n.common_settings,
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w700,
@@ -1057,7 +1062,7 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
           ),
           SizedBox(height: 2.h),
           Text(
-            "Sent to all members of this group",
+            appL10n.attendance_sentToAllMembers,
             style: TextStyle(
               fontSize: 11.sp,
               color: const Color(0xFF64748B),
@@ -1065,14 +1070,15 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
           ),
           toggleRow(
             icon: Icons.swap_horiz_rounded,
-            title: "Allow changing response",
-            subtitle: "Members can change or remove their response",
+            title: appL10n.attendance_allowChange,
+            subtitle: appL10n.attendance_allowChangeSubtitle,
             value: _allowVoteChange,
           ),
           toggleRow(
             icon: Icons.timer_outlined,
-            title: "Close at end of day",
-            subtitle: "Automatically closes at 11:59 PM today",
+            title: appL10n.attendance_closeEndOfDay,
+            subtitle: appL10n.attendance_closeEndOfDaySubtitle(
+                appTime(DateTime(2000, 1, 1, 23, 59))),
             value: _autoClose,
             comingSoon: true,
           ),

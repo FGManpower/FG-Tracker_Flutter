@@ -1,9 +1,11 @@
 import 'package:fgtracker/app/Core/constant/BottomSheet/bottom_actions_bar.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/JoinGroup_Controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -98,8 +100,8 @@ class _JoinGroupButton extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    "Join Group",
+                  AutoFitText(
+                    context.l10n.home_joinGroup,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 13.sp,
@@ -108,7 +110,7 @@ class _JoinGroupButton extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Join existing group",
+                    context.l10n.home_joinGroupSubtitle,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 9.5.sp,
@@ -188,8 +190,8 @@ class _CreateGroupButton extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    "Create Group",
+                  AutoFitText(
+                    context.l10n.home_createGroup,
                     style: TextStyle(
                       color: const Color(0xFF6B4DFF),
                       fontSize: 13.sp,
@@ -198,7 +200,7 @@ class _CreateGroupButton extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Create new group",
+                    context.l10n.home_createGroupSubtitle,
                     style: TextStyle(
                       color: const Color(0xFF7E84A3),
                       fontSize: 9.5.sp,

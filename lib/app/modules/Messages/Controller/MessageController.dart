@@ -1,3 +1,6 @@
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
@@ -23,7 +26,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
-import '../../../Data/Services/Tracking.dart';
+
 import '../../../routes/app_pages.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
@@ -471,7 +474,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       // Original not loaded yet (reply to an old message): page back.
       index = await _loadOlderUntilFound(messageId);
       if (index == -1) {
-        if (!isClosed) Utils().fluttertoast("Message not available");
+        if (!isClosed) Utils().fluttertoast(appL10n.chat_messageNotAvailable);
         return;
       }
     }
@@ -1246,7 +1249,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             uploadedImages.add(result.filename!);
           } else {
             CommonDialog.errorMessage(
-              "Failed to upload ${image.path}",
+              appL10n.chat_uploadFileFailed(image.path),
             );
           }
         }
@@ -1265,7 +1268,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
             if (thumbnailPath == null) {
               CommonDialog.errorMessage(
-                "Failed to generate video thumbnail",
+                appL10n.chat_videoThumbnailFailed,
               );
               continue;
             }
@@ -1291,7 +1294,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               successfulVideoIndexes.add(currentIndex);
             } else {
               CommonDialog.errorMessage(
-                "Failed to upload video",
+                appL10n.chat_videoUploadFailed,
               );
             }
           } catch (e) {
@@ -1338,7 +1341,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               uploadedImages.add(result.filename!);
             } else {
               CommonDialog.errorMessage(
-                "Failed to upload ${image.path}",
+                appL10n.chat_uploadFileFailed(image.path),
               );
             }
           }
@@ -1427,7 +1430,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   /// emit is dropped, so tell the user and keep their draft instead.
   bool _ensurePrivateSocketOnline() {
     if (socketService.isPrivateChatSocketConnected) return true;
-    Utils().fluttertoast("You're offline. Message not sent.");
+    Utils().fluttertoast(appL10n.chat_offlineNotSent);
     return false;
   }
 
@@ -1437,7 +1440,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     final filename = result.filename?.toString() ?? "";
     if (result.status == true && filename.isEmpty) {
-      Utils().fluttertoast("Voice message upload failed. Please try again.");
+      Utils().fluttertoast(appL10n.chat_voiceUploadFailed);
       return;
     }
     if (result.status == true) {
@@ -1846,17 +1849,18 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         final lastSeen = memberData.lastSeen?.trim() ?? "";
 
         if (isPeerOnline.value) {
-          peerLastSeen.value = "Online";
+          peerLastSeen.value = appL10n.common_online;
         } else if (lastSeen.isNotEmpty) {
           try {
-            peerLastSeen.value =
-                Tracking().getTimeAgo(DateTime.parse(lastSeen));
+            peerLastSeen.value = formatLastSeenWith(
+                    appL10n, Tracking.parseDateTime(lastSeen)) ??
+                lastSeen;
           } catch (e) {
             log("HISTORY DEBUG => lastSeen parsing error: $e");
             peerLastSeen.value = lastSeen;
           }
         } else {
-          peerLastSeen.value = "Offline";
+          peerLastSeen.value = appL10n.common_offline;
         }
 
         final messages = result.messageData ?? [];
@@ -2208,8 +2212,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     if (firstVisibleIndex >= messageData.length) return;
 
-    final newDate =
-        formatDateHeader(messageData[firstVisibleIndex].timestamp ?? "");
+    final newDate = appDayLabel(
+        DateTime.parse(messageData[firstVisibleIndex].timestamp ?? "")
+            .toLocal());
 
     if (floatingDate.value != newDate) {
       floatingDate.value = newDate;
@@ -2374,12 +2379,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         isBlocked.value = true;
         blockedByMe.value = true;
 
-        return response["message"]?.toString() ?? "User blocked successfully";
+        return response["message"]?.toString() ?? appL10n.chat_userBlocked;
       }
 
       return response is Map
           ? response["message"]?.toString()
-          : "Unable to block user";
+          : appL10n.chat_blockFailed;
     } catch (e) {
       log("Block user error: $e");
       return null;
@@ -2402,12 +2407,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         isBlocked.value = false;
         blockedByMe.value = false;
 
-        return response["message"]?.toString() ?? "User unblocked successfully";
+        return response["message"]?.toString() ?? appL10n.chat_userUnblocked;
       }
 
       return response is Map
           ? response["message"]?.toString()
-          : "Unable to unblock user";
+          : appL10n.chat_unblockFailed;
     } catch (e) {
       log("Unblock user error: $e");
       return null;

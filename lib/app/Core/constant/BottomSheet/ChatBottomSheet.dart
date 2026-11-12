@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../config/themes_data.dart';
@@ -56,15 +57,15 @@ class ChatBottomSheet {
                     ),
                   ),
                   reausabletext(
-                    "Call Options",
+                    context.l10n.sheet_callOptions,
                     fontsize: 18,
                     fontfamily: FontFamily.interBold,
                   ),
                   SizedBox(height: 12.h),
                   _callTile(
                     context,
-                    title: "Normal Audio Call",
-                    subtitle: "Standard clear voice quality",
+                    title: context.l10n.sheet_normalAudioCall,
+                    subtitle: context.l10n.sheet_normalAudioCallSubtitle,
                     icon: Icons.call_outlined,
                     color: ToggleThemeData.darkPurple,
                     onTap: () {
@@ -75,8 +76,8 @@ class ChatBottomSheet {
                   SizedBox(height: 8.h),
                   _callTile(
                     context,
-                    title: "Walkie-Talkie Call",
-                    subtitle: "Push-to-talk communication",
+                    title: context.l10n.sheet_walkieCall,
+                    subtitle: context.l10n.sheet_walkieCallSubtitle,
                     icon: Icons.record_voice_over_outlined,
                     color: Colors.orange,
                     onTap: () {
@@ -134,7 +135,7 @@ class ChatBottomSheet {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Attach / Upload",
+                          context.l10n.sheet_attachUpload,
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w500,
@@ -143,7 +144,7 @@ class ChatBottomSheet {
                         ),
                         SizedBox(height: 4.h),
                         Text(
-                          "Share files and media with your team",
+                          context.l10n.sheet_attachSubtitle,
                           style: TextStyle(
                             fontSize: 13.sp,
                             color: Colors.grey.shade600,
@@ -184,35 +185,35 @@ class ChatBottomSheet {
                     icon: Icons.image_rounded,
                     iconColor: const Color(0xFF7B61FF),
                     bgColor: const Color(0xFFF0EBFF),
-                    title: "Gallery",
+                    title: context.l10n.imagePicker_gallery,
                     onTap: onGallery,
                   ),
                   _attachmentItem(
                     icon: Icons.camera_alt_rounded,
                     iconColor: const Color(0xFF22C55E),
                     bgColor: const Color(0xFFE8F9EF),
-                    title: "Camera",
+                    title: context.l10n.imagePicker_camera,
                     onTap: onCamera,
                   ),
                   _attachmentItem(
                     icon: Icons.description_rounded,
                     iconColor: const Color(0xFF3B82F6),
                     bgColor: const Color(0xFFE8F1FF),
-                    title: "Document",
+                    title: context.l10n.sheet_document,
                     onTap: onDocument,
                   ),
                   _attachmentItem(
                     icon: Icons.location_on_rounded,
                     iconColor: const Color(0xFF3B82F6),
                     bgColor: const Color(0xFFE8F1FF),
-                    title: "Location",
+                    title: context.l10n.sheet_location,
                     onTap: onLocation,
                   ),
                   _attachmentItem(
                     icon: Icons.person_rounded,
                     iconColor: const Color(0xFF7B61FF),
                     bgColor: const Color(0xFFF0EBFF),
-                    title: "Contact",
+                    title: context.l10n.sheet_contact,
                     onTap: onContact,
                   ),
                   if (showAttendance)
@@ -220,7 +221,7 @@ class ChatBottomSheet {
                       icon: Icons.event_available_rounded,
                       iconColor: const Color(0xFF7B61FF),
                       bgColor: const Color(0xFFF0EBFF),
-                      title: "Attendance",
+                      title: context.l10n.sheet_attendance,
                       onTap: () {
                         Navigator.pop(sheetContext);
                         onAttendance?.call();

@@ -1,12 +1,13 @@
 import 'package:fgtracker/app/global_widget/crown_icon.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_trial_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class WalkiePurchaseBottomBar extends StatelessWidget {
   const WalkiePurchaseBottomBar({super.key});
@@ -29,9 +30,9 @@ class WalkiePurchaseBottomBar extends StatelessWidget {
       final bool isTrialActive = controller.isTrialActive;
       final bool hasAccess = controller.canUseWalkieTalkie;
 
-      String topLabel = "After your free trial";
+      String topLabel = context.l10n.walkiePlan_bottomBarAfterTrial;
       if (!isTrialActive && !hasAccess) {
-        topLabel = "Choose a Plan";
+        topLabel = context.l10n.walkiePlan_bottomBarChoosePlan;
       }
 
       return GestureDetector(
@@ -67,26 +68,31 @@ class WalkiePurchaseBottomBar extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    reausabletext(
+                    AutoFitText(
                       topLabel,
-                      fontsize: _sp(context, 10.5),
-                      color: subtitleColor,
-                      maxline: 1,
+                      style: TextStyle(
+                        fontFamily: "geographeditwebbold",
+                        fontSize: _sp(context, 10.5).sp,
+                        color: subtitleColor,
+                      ),
                     ),
                     SizedBox(height: 2.h),
-                    reausabletext(
-                      "${controller.priceLabel} / ${controller.priceTypeLabel}",
-                      fontsize: _sp(context, 14.5),
-                      fontfamily: FontFamily.interBold,
-                      color: textColor,
-                      maxline: 1,
+                    AutoFitText(
+                      context.l10n.walkiePlan_bottomBarPricePer(controller.priceLabel, controller.priceTypeLabel),
+                      style: TextStyle(
+                        fontFamily: FontFamily.interBold,
+                        fontSize: _sp(context, 14.5).sp,
+                        color: textColor,
+                      ),
                     ),
                     SizedBox(height: 1.h),
-                    reausabletext(
-                      "Continue with Walkie Talkie",
-                      fontsize: _sp(context, 10),
-                      color: subtitleColor,
-                      maxline: 1,
+                    AutoFitText(
+                      context.l10n.walkiePlan_bottomBarContinue,
+                      style: TextStyle(
+                        fontFamily: "geographeditwebbold",
+                        fontSize: _sp(context, 10).sp,
+                        color: subtitleColor,
+                      ),
                     ),
                   ],
                 ),
@@ -105,12 +111,16 @@ class WalkiePurchaseBottomBar extends StatelessWidget {
                     width: 1.2,
                   ),
                 ),
-                child: reausabletext(
-                  "Purchase for ${controller.priceLabel}",
-                  fontsize: _sp(context, 11.5),
-                  fontfamily: FontFamily.interSemiBold,
-                  color: primaryColor,
-                  maxline: 1,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 140.w),
+                  child: AutoFitText(
+                    context.l10n.walkiePlan_bottomBarPurchaseFor(controller.priceLabel),
+                    style: TextStyle(
+                      fontFamily: FontFamily.interSemiBold,
+                      fontSize: _sp(context, 11.5).sp,
+                      color: primaryColor,
+                    ),
+                  ),
                 ),
               ),
             ],

@@ -5,6 +5,7 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class CallDialPad extends StatelessWidget {
   const CallDialPad({super.key});
@@ -87,7 +88,7 @@ class CallDialPad extends StatelessWidget {
           isDense: true,
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(vertical: 7.h),
-          hintText: "Enter number",
+          hintText: appL10n.call_enterNumber,
           hintStyle: TextStyle(
             fontSize: 13.sp,
             fontFamily: FontFamily.interBold,

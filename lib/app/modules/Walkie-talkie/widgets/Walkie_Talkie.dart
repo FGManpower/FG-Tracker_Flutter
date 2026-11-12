@@ -5,8 +5,10 @@ import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/Curve/walkie_painter.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -116,7 +118,7 @@ Widget buildEmptyMembersState() {
         SizedBox(width: 10.w),
         Expanded(
           child: Text(
-            "Connected to channel • Waiting for others to join",
+            appL10n.walkie_connectedWaiting,
             style: TextStyle(
               color: textSecondary,
               fontSize: 11.5.sp,
@@ -147,7 +149,7 @@ void showExitDialog({required void Function() onTap}) {
       shape:
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       title: Text(
-        "Exit Walkie?",
+        appL10n.walkie_exitWalkieTitle,
         style: TextStyle(
           color: textDark,
           fontSize: 18.sp,
@@ -155,7 +157,7 @@ void showExitDialog({required void Function() onTap}) {
         ),
       ),
       content: Text(
-        "You will disconnect from this walkie channel. You will still remain a member of the group.",
+        appL10n.walkie_exitWalkieMessage,
         style: TextStyle(color: textSecondary, fontSize: 14.sp),
       ),
       actions: [
@@ -164,7 +166,7 @@ void showExitDialog({required void Function() onTap}) {
             log('User cancelled exit prompt.');
             Get.back();
           },
-          child: Text("Cancel", style: TextStyle(color: textSecondary)),
+          child: Text(appL10n.common_cancel, style: TextStyle(color: textSecondary)),
         ),
         ElevatedButton(
           onPressed: onTap,
@@ -175,8 +177,8 @@ void showExitDialog({required void Function() onTap}) {
               borderRadius: BorderRadius.circular(10.r),
             ),
           ),
-          child: const Text("Exit Walkie",
-              style: TextStyle(color: Colors.white)),
+          child: Text(appL10n.walkie_exitWalkie,
+              style: const TextStyle(color: Colors.white)),
         ),
       ],
     ),
@@ -293,7 +295,7 @@ Widget buildMutedListeningView({required double size,}) {
                 color: Colors.white, size: (s * 0.26).clamp(32.0, 44.0)),
             SizedBox(height: 3.h),
             Text(
-              "Listening",
+              appL10n.walkie_listening,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: (s * 0.075).clamp(11.0, 13.0),
@@ -418,9 +420,8 @@ Widget buildMemberAvatar(
         ),
         SizedBox(height: 1.h),
         if (isSpeaking)
-          Text(
-            "Speaking...",
-            maxLines: 1,
+          AutoFitText(
+            appL10n.walkie_speaking,
             style: TextStyle(
               color: primaryPurple,
               fontSize: 9.5.sp.clamp(8.5, 11.0),
@@ -428,9 +429,8 @@ Widget buildMemberAvatar(
             ),
           )
         else if (isMuted)
-          Text(
-            "Muted",
-            maxLines: 1,
+          AutoFitText(
+            appL10n.walkie_muted,
             style: TextStyle(
               color: mutedRed,
               fontSize: 9.5.sp.clamp(8.5, 11.0),
@@ -438,9 +438,8 @@ Widget buildMemberAvatar(
             ),
           )
         else if (isAdmin)
-            Text(
-              "Admin",
-              maxLines: 1,
+            AutoFitText(
+              appL10n.walkie_admin,
               style: TextStyle(
                 color: primaryPurple,
                 fontSize: 9.5.sp.clamp(8.5, 11.0),
@@ -489,12 +488,14 @@ PopupMenuItem<String> menuItem(String value, IconData icon, String label,
       children: [
         Icon(icon, color: color ?? textDark, size: 18.sp),
         SizedBox(width: 10.w),
-        Text(
-          label,
-          style: TextStyle(
-            color: color ?? textDark,
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
+        Flexible(
+          child: AutoFitText(
+            label,
+            style: TextStyle(
+              color: color ?? textDark,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],

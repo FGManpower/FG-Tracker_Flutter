@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class SafetyAlert {
   final String type;
@@ -22,17 +23,17 @@ class SafetyDashboardController extends GetxController {
 
   final recentAlerts = <SafetyAlert>[
     SafetyAlert(
-      type: "Safe Zone Alert",
-      desc: "Rahul has left the Safe Zone",
-      location: "Ghatkopar (Outside Chembur Zone)",
-      time: "4:32 PM",
+      type: appL10n.safeZone_alertTitle,
+      desc: appL10n.safeZone_memberLeft("Rahul"),
+      location: appL10n.safeZone_outsideZone("Ghatkopar", "Chembur Zone"),
+      time: appTime(DateTime(2000, 1, 1, 16, 32)),
       isZone: true,
     ),
     SafetyAlert(
-      type: "Safe Route Alert",
-      desc: "Aamir has deviated from Safe Route",
-      location: "Vikhroli (Deviation: 850 m)",
-      time: "4:45 PM",
+      type: appL10n.safeRoute_alertTitle,
+      desc: appL10n.safeRoute_memberDeviated("Aamir"),
+      location: appL10n.safeRoute_deviationAt("Vikhroli", "850 m"),
+      time: appTime(DateTime(2000, 1, 1, 16, 45)),
       isZone: false,
     ),
   ].obs;

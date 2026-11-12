@@ -12,10 +12,11 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Utils/walkie_plan_l10n.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 class RazorpayPaymentController extends GetxController {
   late final Razorpay _razorpay;
 
@@ -35,7 +36,8 @@ class RazorpayPaymentController extends GetxController {
   final RxString validTill = "".obs;
   final RxDouble amountPaid = 0.0.obs;
   final RxString currency = 'INR'.obs;
-  final RxString paymentMethod = "Razorpay (UPI / Card)".obs;
+  final RxString paymentMethod =
+      appL10n.walkiePlan_payMethodRazorpayUpiCard.obs;
   final RxString transactionTime = "".obs;
 
   // Set only for OTP-charge payments (null for Walkie plans)
@@ -76,7 +78,7 @@ class RazorpayPaymentController extends GetxController {
     successSignature.value = finalSig;
 
     final String nowFormatted =
-        DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+        appDateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
     transactionTime.value = nowFormatted;
 
     // 1. Verify Payment with Backend API
@@ -99,7 +101,8 @@ class RazorpayPaymentController extends GetxController {
 
         if (verifyRes.status == false) {
           isSuccess = false;
-          verifyMsg = verifyRes.message ?? "Payment verification failed.";
+          verifyMsg =
+              verifyRes.message ?? appL10n.walkiePlan_razorpayVerifyFailed;
           final lower = verifyMsg.toLowerCase();
           if (lower.contains("pending") ||
               lower.contains("process") ||
@@ -112,7 +115,7 @@ class RazorpayPaymentController extends GetxController {
         // If network error occurred during verification, classify as pending check
         isSuccess = false;
         isPending = true;
-        verifyMsg = "Payment was initiated. We are confirming with the bank.";
+        verifyMsg = appL10n.walkiePlan_razorpayConfirmingWithBank;
       }
     }
 
@@ -137,7 +140,9 @@ class RazorpayPaymentController extends GetxController {
     if (!isSuccess) {
       status.value = PaymentProcessStatus.failed;
       errorMessage.value =
-          verifyMsg.isNotEmpty ? verifyMsg : "Payment verification failed.";
+          verifyMsg.isNotEmpty
+              ? verifyMsg
+              : appL10n.walkiePlan_razorpayVerifyFailed;
       Get.off(() => WalkieTalkiePaymentFailedScreen(
             isTeam: isTeam.value,
             planTitle: planTitle.value,
@@ -168,7 +173,9 @@ class RazorpayPaymentController extends GetxController {
             planTitle: planTitle.value,
             memberCount: memberCount.value,
             validTill:
-                validTill.value.isNotEmpty ? validTill.value : "1 Month Active",
+                validTill.value.isNotEmpty
+                    ? validTill.value
+                    : appL10n.walkiePlan_razorpayOneMonthActive,
             paymentId: finalPayId.isNotEmpty
                 ? finalPayId
                 : "pay_${DateTime.now().millisecondsSinceEpoch.toRadixString(36).toUpperCase()}",
@@ -187,7 +194,7 @@ class RazorpayPaymentController extends GetxController {
     HapticFeedback.mediumImpact();
 
     final String nowFormatted =
-        DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+        appDateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
     transactionTime.value = nowFormatted;
 
     final String msg = response.message ?? '';
@@ -208,7 +215,7 @@ class RazorpayPaymentController extends GetxController {
           "⏱️ [RazorpayPaymentController] Routing to Payment Pending Screen (Code: $code | Message: $msg)");
       status.value = PaymentProcessStatus.cancelled;
       errorMessage.value =
-          msg.isNotEmpty ? msg : "Payment is pending confirmation.";
+          msg.isNotEmpty ? msg : appL10n.walkiePlan_razorpayPendingConfirmation;
 
       if (_customFailureCallback != null) {
         _customFailureCallback!(response);
@@ -228,7 +235,7 @@ class RazorpayPaymentController extends GetxController {
           "❌ [RazorpayPaymentController] Routing to Payment Failed Screen (Code: $code | Message: $msg)");
       status.value = PaymentProcessStatus.failed;
       errorMessage.value =
-          msg.isNotEmpty ? msg : "Payment failed. Please try again.";
+          msg.isNotEmpty ? msg : appL10n.walkiePlan_razorpayFailedTryAgain;
 
       if (_customFailureCallback != null) {
         _customFailureCallback!(response);
@@ -337,7 +344,7 @@ class RazorpayPaymentController extends GetxController {
           "❌ [RazorpayPaymentController] Error opening Razorpay checkout: $e");
       isProcessing.value = false;
       status.value = PaymentProcessStatus.failed;
-      errorMessage.value = "Unable to launch payment gateway: $e";
+      errorMessage.value = appL10n.walkiePlan_razorpayUnableToLaunch(e.toString());
     }
   }
 
@@ -358,24 +365,26 @@ class RazorpayPaymentController extends GetxController {
     final id = successPaymentId.value ?? '';
     if (id.isNotEmpty) {
       Clipboard.setData(ClipboardData(text: id));
-      showTopSnackbar("Payment ID copied to clipboard!");
+      showTopSnackbar(appL10n.walkiePlan_razorpayPaymentIdCopied);
     }
   }
 
   /// Copy / Share complete receipt text
   void shareReceipt() {
     HapticFeedback.lightImpact();
-    final receiptText = "FG Tracker Payment Receipt\n"
-        "Plan: ${planTitle.value}\n"
-        "Amount: ${money(amountPaid.value > 0 ? amountPaid.value : 499)}\n"
-        "Payment ID: ${successPaymentId.value ?? ''}\n"
-        "${successOrderId.value != null && successOrderId.value!.isNotEmpty ? 'Order ID: ${successOrderId.value}\n' : ''}"
-        "Date: ${transactionTime.value}\n"
-        "Payment Mode: ${paymentMethod.value}\n"
-        "Status: Completed";
+    final t = appL10n;
+    final orderId = successOrderId.value;
+    final receiptText = "${t.walkiePlan_razorpayReceiptTitle}\n"
+        "${t.walkiePlan_razorpayReceiptPlan(walkiePlanTitleText(planTitle.value, t))}\n"
+        "${t.walkiePlan_razorpayReceiptAmount(money(amountPaid.value > 0 ? amountPaid.value : 499))}\n"
+        "${t.walkiePlan_razorpayReceiptPaymentId(successPaymentId.value ?? '')}\n"
+        "${orderId != null && orderId.isNotEmpty ? '${t.walkiePlan_razorpayReceiptOrderId(orderId)}\n' : ''}"
+        "${t.walkiePlan_razorpayReceiptDate(transactionTime.value)}\n"
+        "${t.walkiePlan_razorpayReceiptMode(paymentMethod.value)}\n"
+        "${t.walkiePlan_razorpayReceiptStatusCompleted}";
 
     Clipboard.setData(ClipboardData(text: receiptText));
-    showTopSnackbar("Receipt details copied to clipboard!");
+    showTopSnackbar(appL10n.walkiePlan_razorpayReceiptCopied);
   }
 
   /// Navigate to Assign Members screen

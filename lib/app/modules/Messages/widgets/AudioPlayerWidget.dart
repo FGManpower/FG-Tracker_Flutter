@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -210,7 +211,7 @@ class _AudioBubbleState extends State<AudioBubble> {
 
                   if (controller.errorUrl.value == widget.audioUrl) {
                     return Text(
-                      "Couldn't play voice message",
+                      context.l10n.chat_voicePlayFailed,
                       style: TextStyle(
                         fontSize: 11.sp,
                         color: secondaryTextColor,

@@ -12,6 +12,7 @@ import 'package:get/get.dart';
 import 'package:location/location.dart';
 
 import 'package:geocoding/geocoding.dart' hide Location;
+import 'package:fgtracker/l10n/l10n.dart';
 import '../../../Core/values/Context_Utility.dart';
 import 'GroupTrackController.dart';
 
@@ -36,8 +37,8 @@ class LocationService extends GetxService {
 
         CommonDialog.ConfirmationDialog(
           icon: Icons.gps_off,
-          cancel: "Cancel",
-          confirm: "Enable",
+          cancel: appL10n.common_cancel,
+          confirm: appL10n.track_enable,
           onConfirm: () async {
             Navigator.pop(ContextUtility.context!);
             bool requested = await _location.requestService();
@@ -52,8 +53,8 @@ class LocationService extends GetxService {
             Navigator.pop(ContextUtility.context!);
             completer.completeError("User cancelled GPS enable dialog");
           },
-          title: "Enable GPS",
-          content: "To track your group in real time, please turn on your GPS.",
+          title: appL10n.track_enableGpsTitle,
+          content: appL10n.track_enableGpsBody,
         );
 
         try {

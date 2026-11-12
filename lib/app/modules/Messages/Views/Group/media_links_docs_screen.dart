@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,7 +32,7 @@ class MediaLinksDocsScreen extends StatelessWidget {
           centerTitle: false,
           iconTheme: const IconThemeData(color: _purple),
           title: Text(
-            "Media, links, and docs",
+            context.l10n.media_title,
             style: TextStyle(
               color: Colors.black87,
               fontSize: 18.sp,
@@ -52,9 +53,18 @@ class MediaLinksDocsScreen extends StatelessWidget {
                 labelStyle:
                 TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
                 tabs: [
-                  Tab(text: m > 0 ? "Media ($m)" : "Media"),
-                  Tab(text: l > 0 ? "Links ($l)" : "Links"),
-                  Tab(text: d > 0 ? "Docs ($d)" : "Docs"),
+                  Tab(
+                      text: m > 0
+                          ? context.l10n.media_tabMediaCount(m)
+                          : context.l10n.media_tabMedia),
+                  Tab(
+                      text: l > 0
+                          ? context.l10n.media_tabLinksCount(l)
+                          : context.l10n.media_tabLinks),
+                  Tab(
+                      text: d > 0
+                          ? context.l10n.media_tabDocsCount(d)
+                          : context.l10n.media_tabDocs),
                 ],
               );
             }),
@@ -84,8 +94,9 @@ class _MediaTab extends StatelessWidget {
     return Obx(() {
       final list = controller.mediaList;
       if (list.isEmpty) {
-        return const _Empty(
-            icon: Icons.photo_library_outlined, text: "No media found");
+        return _Empty(
+            icon: Icons.photo_library_outlined,
+            text: context.l10n.media_noMedia);
       }
       return GridView.builder(
         padding: EdgeInsets.all(4.w),
@@ -164,7 +175,7 @@ class _LinksTab extends StatelessWidget {
     return Obx(() {
       final list = controller.linkList;
       if (list.isEmpty) {
-        return const _Empty(icon: Icons.link_rounded, text: "No links found");
+        return _Empty(icon: Icons.link_rounded, text: context.l10n.media_noLinks);
       }
       return ListView.separated(
         padding: EdgeInsets.symmetric(vertical: 8.h),
@@ -219,9 +230,9 @@ class _DocsTab extends StatelessWidget {
     return Obx(() {
       final list = controller.docList;
       if (list.isEmpty) {
-        return const _Empty(
+        return _Empty(
             icon: Icons.insert_drive_file_outlined,
-            text: "No documents found");
+            text: context.l10n.media_noDocuments);
       }
       return ListView.builder(
         padding: EdgeInsets.all(12.w),
@@ -246,7 +257,8 @@ class _DocsTab extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.sp),
               ),
-              subtitle: Text("Document", style: TextStyle(fontSize: 12.sp)),
+              subtitle: Text(context.l10n.chat_previewDocument,
+                  style: TextStyle(fontSize: 12.sp)),
               trailing: Icon(Icons.chevron_right_rounded,
                   color: Colors.grey.shade400),
             ),

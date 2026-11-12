@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -54,7 +55,7 @@ class LocationBubbleWidget extends StatelessWidget {
             ),
             SizedBox(width: 5.w),
             Text(
-              "Shared Location",
+              context.l10n.chat_sharedLocation,
               style: TextStyle(
                 fontSize: 13.sp,
                 fontFamily: FontFamily.interMedium,
@@ -165,7 +166,7 @@ class LocationBubbleWidget extends StatelessWidget {
                                 ),
                                 SizedBox(width: 6.w),
                                 Text(
-                                  "Open in Google Maps",
+                                  context.l10n.chat_openInGoogleMaps,
                                   style: TextStyle(
                                     color: isSentByMe
                                         ? const Color(0xff6C4EF6)
@@ -193,7 +194,7 @@ class LocationBubbleWidget extends StatelessWidget {
 
   Widget _errorWidget() {
     return Text(
-      "Location unavailable",
+      appL10n.chat_locationUnavailable,
       style: TextStyle(
         color: textColor,
         fontSize: 12.sp,
@@ -213,8 +214,8 @@ class LocationBubbleWidget extends StatelessWidget {
       );
     } else {
       Get.snackbar(
-        "Error",
-        "Unable to open Google Maps",
+        appL10n.common_error,
+        appL10n.chat_unableToOpenGoogleMaps,
       );
     }
   }

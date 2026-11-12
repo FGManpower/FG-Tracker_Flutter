@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:math' hide log;
@@ -104,21 +105,23 @@ class firebaseNotificationServices {
     return false;
   }
 
-  static DarwinInitializationSettings createDarwinSettings() {
+  static DarwinInitializationSettings createDarwinSettings(
+      [AppLocalizations? l10n]) {
+    final l = l10n ?? appL10n;
     final darwinNotificationCategories = <DarwinNotificationCategory>[
       DarwinNotificationCategory(
         'WALKIE_INVITE',
         actions: <DarwinNotificationAction>[
           DarwinNotificationAction.plain(
             walkieAcceptActionId,
-            'Accept',
+            l.notif_accept,
             options: <DarwinNotificationActionOption>{
               DarwinNotificationActionOption.foreground,
             },
           ),
           DarwinNotificationAction.plain(
             walkieCancelActionId,
-            'Cancel',
+            l.common_cancel,
             options: <DarwinNotificationActionOption>{
               DarwinNotificationActionOption.destructive,
             },
@@ -133,14 +136,14 @@ class firebaseNotificationServices {
         actions: <DarwinNotificationAction>[
           DarwinNotificationAction.plain(
             walkieAcceptActionId,
-            'Accept',
+            l.notif_accept,
             options: <DarwinNotificationActionOption>{
               DarwinNotificationActionOption.foreground,
             },
           ),
           DarwinNotificationAction.plain(
             walkieCancelActionId,
-            'Cancel',
+            l.common_cancel,
             options: <DarwinNotificationActionOption>{
               DarwinNotificationActionOption.destructive,
             },
@@ -217,9 +220,9 @@ class firebaseNotificationServices {
                       ?.toString() ??
                   'Walkie-Talkie';
           final speakerName =
-              (data['speakerName'] ?? data['speaker_name'] ?? 'Someone')
+              (data['speakerName'] ?? data['speaker_name'] ?? appL10n.walkie_someone)
                       ?.toString() ??
-                  'Someone';
+                  appL10n.walkie_someone;
           final speakerImage =
               (data['speakerImage'] ?? data['speaker_image'] ?? '')
                       ?.toString() ??
@@ -363,7 +366,7 @@ class firebaseNotificationServices {
     if (Platform.isAndroid) {
       log("🔔 [showWalkieNotification] Android: Calling native WalkieCustomNotification.show");
       try {
-        final success = await WalkieCustomNotification.show(
+        final success = await showLocalizedWalkieCustomNotification(
           groupId: groupId,
           groupName: groupName,
           speakerName: speakerName,
@@ -381,18 +384,20 @@ class firebaseNotificationServices {
     if (Platform.isIOS) {
       log("🔔 [showWalkieNotification] iOS: Displaying native notification with Accept/Cancel actions");
       try {
+        // May run in the FCM background isolate: read the language from prefs.
+        final l10n = await loadAppL10nFromPrefs();
         final title = (groupName.trim().isNotEmpty)
             ? groupName.trim()
-            : "Walkie-Talkie Active";
+            : l10n.notif_walkieActiveTitle;
         final joinedText = (joinedCount != null && joinedCount > 0)
-            ? " • $joinedCount Joined"
+            ? " • ${l10n.walkie_joinedCount(joinedCount)}"
             : "";
         final body = (speakerName.trim().isNotEmpty)
-            ? "$speakerName is speaking...$joinedText"
-            : "Active walkie-talkie conversation$joinedText";
+            ? "${l10n.walkie_isSpeaking(speakerName)}$joinedText"
+            : "${l10n.notif_walkieActiveConversation}$joinedText";
 
         final localNotifications = FlutterLocalNotificationsPlugin();
-        final iosinitializeSetting = createDarwinSettings();
+        final iosinitializeSetting = createDarwinSettings(l10n);
         final initializationSetting = InitializationSettings(
           iOS: iosinitializeSetting,
         );
@@ -513,7 +518,7 @@ class firebaseNotificationServices {
         speakerName: (message.data['speakerName'] ??
                 message.data['speaker_name'] ??
                 message.data['name'] ??
-                'Someone')
+                appL10n.walkie_someone)
             .toString(),
         speakerImage: (message.data['speakerImage'] ??
                 message.data['speaker_image'] ??
@@ -539,7 +544,7 @@ class firebaseNotificationServices {
 
     AndroidNotificationChannel channel = AndroidNotificationChannel(
       Random.secure().nextInt(10000).toString(),
-      "High Importance Notification",
+      appL10n.notif_channelHighImportanceName,
       importance: Importance.max,
       sound:
           const RawResourceAndroidNotificationSound('recieve_notification.mp3'),
@@ -548,7 +553,7 @@ class firebaseNotificationServices {
     AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
             channel.id.toString(), channel.name.toString(),
-            channelDescription: "you Channel Description",
+            channelDescription: appL10n.notif_channelHighImportanceDesc,
             importance: Importance.high,
             priority: Priority.high,
             ticker: "ticker",
@@ -650,6 +655,78 @@ class firebaseNotificationServices {
       return false;
     }
   }
+  static AndroidNotificationChannel _walkieLiveChannel(AppLocalizations l) =>
+      AndroidNotificationChannel(
+        'walkie_talkie_live_channel_v3',
+        l.notif_channelWalkieLiveName,
+        description: l.notif_channelWalkieLiveDesc,
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+        sound: const RawResourceAndroidNotificationSound('recieve_notification'),
+      );
+
+  static AndroidNotificationChannel _highImportanceChannel(
+          AppLocalizations l) =>
+      AndroidNotificationChannel(
+        'high_importance_channel',
+        l.notif_channelHighImportanceName,
+        description: l.notif_channelHighImportanceDesc,
+        importance: Importance.max,
+        sound: const RawResourceAndroidNotificationSound('recieve_notification'),
+      );
+
+  /// Re-creates the app's existing Android notification channels with the
+  /// same ids and the names/descriptions in the current app language, so the
+  /// names in system settings follow the language. Android keeps the user's
+  /// channel settings (importance, sound) and only updates name/description.
+  /// Only channels that already exist are touched. Call after a language
+  /// change. No-op on iOS.
+  static Future<void> refreshChannelNames() async {
+    if (!Platform.isAndroid) return;
+    try {
+      final l = appL10n;
+      final androidPlugin = FlutterLocalNotificationsPlugin()
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      if (androidPlugin == null) return;
+      final existing = await androidPlugin.getNotificationChannels() ??
+          const <AndroidNotificationChannel>[];
+      final existingIds = existing.map((c) => c.id).toSet();
+      final channels = <AndroidNotificationChannel>[
+        _walkieLiveChannel(l),
+        _highImportanceChannel(l),
+        AndroidNotificationChannel(
+          'walkie_call_channel',
+          l.notif_channelWalkieCallsName,
+          description: l.notif_channelWalkieCallsDesc,
+          importance: Importance.max,
+        ),
+        AndroidNotificationChannel(
+          'walkie_talkie_live_channel',
+          l.notif_channelWalkieAudioName,
+          description: l.notif_channelWalkieAudioDesc,
+          importance: Importance.low,
+          playSound: false,
+          enableVibration: false,
+        ),
+        AndroidNotificationChannel(
+          'group_walkie_channel',
+          l.notif_channelWalkieName,
+          description: l.notif_channelWalkieDesc,
+          importance: Importance.high,
+        ),
+      ];
+      for (final c in channels) {
+        if (existingIds.contains(c.id)) {
+          await androidPlugin.createNotificationChannel(c);
+        }
+      }
+    } catch (e) {
+      AppLog.d('refreshChannelNames failed: $e');
+    }
+  }
+
   Future<void> initialized() async {
     getDeviceTokenToSendNotification();
 
@@ -667,24 +744,11 @@ class firebaseNotificationServices {
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
 
-    const AndroidNotificationChannel walkieChannel = AndroidNotificationChannel(
-      'walkie_talkie_live_channel_v3',
-      'Walkie-Talkie Live Channels',
-      description: 'Notifications for active Walkie-Talkie channels',
-      importance: Importance.max,
-      playSound: true,
-      enableVibration: true,
-      sound: RawResourceAndroidNotificationSound('recieve_notification'),
-    );
+    final AndroidNotificationChannel walkieChannel =
+        _walkieLiveChannel(appL10n);
 
-    const AndroidNotificationChannel highImportanceChannel =
-        AndroidNotificationChannel(
-      'high_importance_channel',
-      'High Importance Notifications',
-      description: 'Default channel for high importance notifications',
-      importance: Importance.max,
-      sound: RawResourceAndroidNotificationSound('recieve_notification'),
-    );
+    final AndroidNotificationChannel highImportanceChannel =
+        _highImportanceChannel(appL10n);
 
     final androidPlugin =
         flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
@@ -717,9 +781,9 @@ class firebaseNotificationServices {
                         ?.toString() ??
                     'Walkie-Talkie';
             final speakerName =
-                (data['speakerName'] ?? data['speaker_name'] ?? 'Someone')
+                (data['speakerName'] ?? data['speaker_name'] ?? appL10n.walkie_someone)
                         ?.toString() ??
-                    'Someone';
+                    appL10n.walkie_someone;
             final speakerImage =
                 (data['speakerImage'] ?? data['speaker_image'] ?? '')
                         ?.toString() ??
@@ -757,7 +821,7 @@ class firebaseNotificationServices {
         final action = data['action']?.toString();
         final groupId = data['groupId']?.toString() ?? '';
         final groupName = data['groupName']?.toString() ?? 'Walkie-Talkie';
-        final speakerName = data['speakerName']?.toString() ?? 'Someone';
+        final speakerName = data['speakerName']?.toString() ?? appL10n.walkie_someone;
 
         if (action == 'accept' && groupId.isNotEmpty) {
           navigateToWalkieScreen(
@@ -774,7 +838,7 @@ class firebaseNotificationServices {
           final action = data['action']?.toString();
           final groupId = data['groupId']?.toString() ?? '';
           final groupName = data['groupName']?.toString() ?? 'Walkie-Talkie';
-          final speakerName = data['speakerName']?.toString() ?? 'Someone';
+          final speakerName = data['speakerName']?.toString() ?? appL10n.walkie_someone;
 
           if (action == 'accept' && groupId.isNotEmpty) {
             WalkieLaunchTracker.fromWalkieCall = true;
@@ -967,7 +1031,7 @@ class firebaseNotificationServices {
                     message.data['callerName'] ??
                     message.data['name'])
                 ?.toString() ??
-            'Someone';
+            appL10n.walkie_someone;
         final speakerImage = (message.data['speakerImage'] ??
                     message.data['speaker_image'] ??
                     message.data['speakerProfile'] ??
@@ -1036,7 +1100,7 @@ class firebaseNotificationServices {
                     message.data['callerName'] ??
                     message.data['name'])
                 ?.toString() ??
-            'Someone';
+            appL10n.walkie_someone;
         final speakerImage = (message.data['speakerImage'] ??
                     message.data['speaker_image'] ??
                     message.data['speakerProfile'] ??

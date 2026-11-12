@@ -11,6 +11,7 @@ import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../widget/call_widget.dart';
@@ -498,7 +499,7 @@ class ContactController extends GetxController {
           _allUsersFuture != null) {
         final bool ok = await _allUsersFuture!;
         if (!ok && allUserProfileData.isEmpty && groupApiFailed) {
-          responseError.value = "Something went wrong";
+          responseError.value = appL10n.common_somethingWentWrong;
         }
       } else if (!loadMore && groupApiFailed && _allUsersFuture != null) {
         await _allUsersFuture;

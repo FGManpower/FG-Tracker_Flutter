@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/Core/values/Curve/walkie_painter.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -29,6 +30,7 @@ import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import '../../../Core/constant/pref_res.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../Core/constant/notification_holder.dart';
 
@@ -152,7 +154,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           gc.groupData.firstWhereOrNull((g) => g.id?.toString() == newGroupId);
       if (match != null) {
         args!['groupName'] =
-            match.groupName ?? args!['groupName'] ?? 'Walkie Group';
+            match.groupName ?? args!['groupName'] ?? appL10n.walkie_defaultGroupName;
         args!['groupDesc'] = match.groupDesc ?? '';
         args!['groupCode'] = match.groupCode ?? '';
         args!['groupProfile'] =
@@ -170,7 +172,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     final myId =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
     final myName =
-        Global.storageServices.get(PrefConst.userName)?.toString() ?? 'You';
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? appL10n.common_you;
     final myImage =
         Global.storageServices.get(PrefConst.profileImage)?.toString() ?? '';
     if (myId.isNotEmpty) {
@@ -237,7 +239,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         groupId = g.id?.toString() ?? '';
         args = {
           'groupId': groupId,
-          'groupName': g.groupName ?? 'Walkie Group',
+          'groupName': g.groupName ?? appL10n.walkie_defaultGroupName,
           'groupDesc': g.groupDesc ?? '',
           'groupCode': g.groupCode ?? '',
           'isSubscribed': args?['isSubscribed'] ?? _isSubscribed,
@@ -252,7 +254,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             gc.groupData.firstWhereOrNull((g) => g.id?.toString() == groupId);
         if (match != null) {
           args ??= {};
-          args!['groupName'] = match.groupName ?? 'Walkie Group';
+          args!['groupName'] = match.groupName ?? appL10n.walkie_defaultGroupName;
           args!['groupDesc'] = match.groupDesc ?? '';
           args!['groupCode'] = match.groupCode ?? '';
         }
@@ -260,7 +262,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     }
 
     if (groupId.isNotEmpty) {
-      final groupName = args?['groupName']?.toString() ?? 'Walkie Group';
+      final groupName = args?['groupName']?.toString() ?? appL10n.walkie_defaultGroupName;
       log('Configuring active session for group ID: $groupId ($groupName)');
       controller.setCurrentGroup(groupId);
 
@@ -273,7 +275,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           final myId =
               Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
           final myName =
-              Global.storageServices.get(PrefConst.userName)?.toString() ?? 'You';
+              Global.storageServices.get(PrefConst.userName)?.toString() ?? appL10n.common_you;
           final myImage =
               Global.storageServices.get(PrefConst.profileImage)?.toString() ?? '';
           if (myId.isNotEmpty) {
@@ -299,7 +301,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         } else {
           Get.offAllNamed(Routes.Home_Screen);
         }
-        Get.snackbar("Error", "Please select a group first",
+        Get.snackbar(appL10n.common_error, appL10n.walkie_selectGroupFirst,
             snackPosition: SnackPosition.BOTTOM);
       });
     }
@@ -758,7 +760,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       if (stage == WalkieInitStage.connecting ||
           stage == WalkieInitStage.loadingChannel) {
         return _buildStatusBanner(
-          "Connecting to channel...",
+          context.l10n.walkie_connectingChannel,
           const Color(0xFF6B46C1),
           Icons.sync_rounded,
         );
@@ -766,7 +768,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
       if (stage == WalkieInitStage.preparingAudio) {
         return _buildStatusBanner(
-          "Preparing audio...",
+          context.l10n.walkie_preparingAudio,
           const Color(0xFF6B46C1),
           Icons.graphic_eq_rounded,
         );
@@ -774,7 +776,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
       if (isDisconnected && stage != WalkieInitStage.notStarted) {
         return _buildStatusBanner(
-          "Unable to connect to channel — Reconnecting...",
+          context.l10n.walkie_unableToConnectReconnecting,
           Colors.orange.shade800,
           Icons.wifi_off_rounded,
         );
@@ -931,7 +933,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Walkie Talkie",
+                  context.l10n.walkie_title,
                   style: TextStyle(
                     color: textDark,
                     fontSize: 17.sp.clamp(16.0, 19.0),
@@ -940,7 +942,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  isWide ? controller.currentGroupName : "Group Communication",
+                  isWide ? controller.currentGroupName : context.l10n.walkie_groupCommunication,
                   style: TextStyle(
                     color: textSecondary,
                     fontSize: 11.5.sp.clamp(10.5, 12.5),
@@ -992,8 +994,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               },
               itemBuilder: (context) => [
                 menuItem('audio-output', Icons.speaker_phone_rounded,
-                    'Audio Output'),
-                menuItem('exit', Icons.logout_rounded, 'Exit Walkie',
+                    context.l10n.walkie_audioOutput),
+                menuItem('exit', Icons.logout_rounded, context.l10n.walkie_exitWalkie,
                     color: mutedRed),
               ],
             ),
@@ -1275,13 +1277,16 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               size: 16.sp,
             ),
             SizedBox(width: 5.w),
-            Text(
-              "Subscribed",
-              style: TextStyle(
-                color: const Color(0xFF16A34A),
-                fontSize: 11.5.sp,
-                fontWeight: FontWeight.w700,
-                fontFamily: FontFamily.interBold,
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 96.w),
+              child: AutoFitText(
+                context.l10n.walkie_subscribed,
+                style: TextStyle(
+                  color: const Color(0xFF16A34A),
+                  fontSize: 11.5.sp,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: FontFamily.interBold,
+                ),
               ),
             ),
           ],
@@ -1322,13 +1327,16 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 size: 15.sp,
               ),
               SizedBox(width: 5.w),
-              Text(
-                "Listen Only",
-                style: TextStyle(
-                  color: const Color(0xFF2563EB),
-                  fontSize: 11.5.sp,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: FontFamily.interBold,
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 96.w),
+                child: AutoFitText(
+                  context.l10n.walkie_listenOnly,
+                  style: TextStyle(
+                    color: const Color(0xFF2563EB),
+                    fontSize: 11.5.sp,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: FontFamily.interBold,
+                  ),
                 ),
               ),
               SizedBox(width: 3.w),
@@ -1415,18 +1423,21 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       fontFamily: FontFamily.interBold,
                     ),
                   ),
-                  Text(
-                    isEnded
-                        ? "Free trial ended"
-                        : (isConsuming
-                            ? "Consuming trial..."
-                            : "1 hr trial active"),
-                    style: TextStyle(
-                      color: isConsuming
-                          ? const Color(0xFFDC2626)
-                          : Colors.grey.shade600,
-                      fontSize: 8.5.sp,
-                      fontWeight: FontWeight.w600,
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: 96.w),
+                    child: AutoFitText(
+                      isEnded
+                          ? context.l10n.walkie_freeTrialEnded
+                          : (isConsuming
+                              ? context.l10n.walkie_consumingTrial
+                              : context.l10n.walkie_trialActive1hr),
+                      style: TextStyle(
+                        color: isConsuming
+                            ? const Color(0xFFDC2626)
+                            : Colors.grey.shade600,
+                        fontSize: 8.5.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -1500,7 +1511,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 ),
                 SizedBox(height: 14.h),
                 Text(
-                  "Microphone Permission",
+                  context.l10n.walkie_micPermissionTitle,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 18.sp,
@@ -1512,8 +1523,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 SizedBox(height: 8.h),
                 Text(
                   isPermanentlyDenied
-                      ? "Microphone access is disabled in device settings. To speak in this group, please allow microphone access in Settings.\n\nYou can still listen to other members."
-                      : "Microphone permission is required to talk in this Walkie-Talkie group.\n\nYou can still listen to others without enabling microphone.",
+                      ? context.l10n.walkie_micDisabledMessage
+                      : context.l10n.walkie_micRequiredMessage,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 12.5.sp,
@@ -1535,8 +1546,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           ),
                         ),
                         onPressed: () => Navigator.pop(ctx),
-                        child: Text(
-                          "Not Now",
+                        child: AutoFitText(
+                          context.l10n.common_notNow,
                           style: TextStyle(
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w600,
@@ -1567,8 +1578,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             }
                           }
                         },
-                        child: Text(
-                          isPermanentlyDenied ? "Settings" : "Enable",
+                        child: AutoFitText(
+                          isPermanentlyDenied ? context.l10n.common_settings : context.l10n.walkie_enable,
                           style: TextStyle(
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w700,
@@ -1634,7 +1645,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 buildCrownGraphic(),
                 SizedBox(height: 8.h),
                 Text(
-                  "Free Trial Ended",
+                  context.l10n.walkie_freeTrialEndedTitle,
                   style: TextStyle(
                     fontSize: 20.sp,
                     fontFamily: FontFamily.interBold,
@@ -1644,7 +1655,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 ),
                 SizedBox(height: 6.h),
                 Text(
-                  "Your 1 hour free trial for Walkie Talkie has ended.\nUpgrade now to continue using group communication\nwith your team.",
+                  context.l10n.walkie_freeTrialEndedMessage,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 11.5.sp,
@@ -1668,8 +1679,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       Expanded(
                         child: _buildDialogFeatureCol(
                           icon: Icons.groups_rounded,
-                          title: "Unlimited",
-                          subtitle: "Team Communication",
+                          title: context.l10n.walkie_featureUnlimited,
+                          subtitle: context.l10n.walkie_featureTeamCommunication,
                         ),
                       ),
                       Container(
@@ -1680,8 +1691,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       Expanded(
                         child: _buildDialogFeatureCol(
                           icon: Icons.verified_user_rounded,
-                          title: "Safe & Reliable",
-                          subtitle: "Real-time Connectivity",
+                          title: context.l10n.walkie_featureSafeReliable,
+                          subtitle: context.l10n.walkie_featureRealtime,
                         ),
                       ),
                       Container(
@@ -1692,8 +1703,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       Expanded(
                         child: _buildDialogFeatureCol(
                           icon: Icons.devices_rounded,
-                          title: "Use on All Devices",
-                          subtitle: "Stay Connected Always",
+                          title: context.l10n.walkie_featureAllDevices,
+                          subtitle: context.l10n.walkie_featureStayConnected,
                         ),
                       ),
                     ],
@@ -1735,12 +1746,14 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                               painter: MiniCrownPainter(color: Colors.white),
                             ),
                             SizedBox(width: 8.w),
-                            Text(
-                              "Upgrade Now",
-                              style: TextStyle(
-                                fontSize: 14.5.sp,
-                                fontFamily: FontFamily.interBold,
-                                color: Colors.white,
+                            Flexible(
+                              child: AutoFitText(
+                                context.l10n.walkie_upgradeNow,
+                                style: TextStyle(
+                                  fontSize: 14.5.sp,
+                                  fontFamily: FontFamily.interBold,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                             const Spacer(),
@@ -1761,7 +1774,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 4.h),
                     child: Text(
-                      "Maybe Later",
+                      context.l10n.walkie_maybeLater,
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: const Color(0xFF475569),
@@ -1920,9 +1933,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                               ),
                             ),
                             TextSpan(
-                              text: displayCount == 1
-                                  ? "Member Online"
-                                  : "Members Online",
+                              text: context.l10n.walkie_membersOnlineLabel(displayCount),
                               style: TextStyle(
                                 color: textSecondary,
                                 fontSize: 11.5.sp.clamp(10.5, 12.5),
@@ -1955,7 +1966,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           color: primaryPurple, size: 13.sp.clamp(12.0, 15.0)),
                       SizedBox(width: 4.w),
                       Text(
-                        "Info",
+                        context.l10n.walkie_info,
                         style: TextStyle(
                           color: primaryPurple,
                           fontSize: 11.sp.clamp(10.0, 12.5),
@@ -1996,7 +2007,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           Row(
             children: [
               Text(
-                "Members In Channel",
+                context.l10n.walkie_membersInChannel,
                 style: TextStyle(
                   color: textDark,
                   fontSize: 13.sp.clamp(12.0, 14.5),
@@ -2005,7 +2016,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               ),
               const Spacer(),
               Text(
-                "${sortedList.length} total",
+                context.l10n.walkie_totalCount(sortedList.length),
                 style: TextStyle(
                   color: textSecondary,
                   fontSize: 11.sp.clamp(10.0, 12.5),
@@ -2096,10 +2107,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             ),
                             Text(
                               isSpeaking
-                                  ? "Speaking..."
+                                  ? context.l10n.walkie_speaking
                                   : (isMuted
-                                      ? (isAdmin ? "Admin • Muted" : "Muted")
-                                      : (isAdmin ? "Admin" : "Online")),
+                                      ? (isAdmin ? context.l10n.walkie_adminMuted : context.l10n.walkie_muted)
+                                      : (isAdmin ? context.l10n.walkie_admin : context.l10n.common_online)),
                               style: TextStyle(
                                 color: isSpeaking
                                     ? primaryPurple
@@ -2127,7 +2138,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                               Icon(Icons.graphic_eq_rounded,
                                   color: Colors.white, size: 11.sp),
                               SizedBox(width: 3.w),
-                              Text("LIVE",
+                              Text(context.l10n.walkie_live,
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 9.sp,
@@ -2222,38 +2233,38 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               if (!isConn) {
                 statusColor = mutedRed;
                 statusIcon = Icons.signal_cellular_connected_no_internet_0_bar_rounded;
-                statusText = "Reconnecting...";
+                statusText = context.l10n.walkie_reconnecting;
               } else {
                 switch (quality) {
                   case WalkieNetworkQuality.strong:
                     statusColor = activeGreen;
                     statusIcon = Icons.signal_cellular_alt_rounded;
-                    statusText = latency > 0 ? "Strong Connection (${latency}ms)" : "Strong Connection";
+                    statusText = latency > 0 ? context.l10n.walkie_strongConnectionMs(latency) : context.l10n.walkie_strongConnection;
                     break;
                   case WalkieNetworkQuality.good:
                     statusColor = const Color(0xFF10B981);
                     statusIcon = Icons.signal_cellular_alt_rounded;
-                    statusText = latency > 0 ? "Good Connection (${latency}ms)" : "Connected";
+                    statusText = latency > 0 ? context.l10n.walkie_goodConnectionMs(latency) : context.l10n.walkie_connected;
                     break;
                   case WalkieNetworkQuality.fair:
                     statusColor = Colors.orange;
                     statusIcon = Icons.signal_cellular_alt_2_bar_rounded;
-                    statusText = latency > 0 ? "Fair Connection (${latency}ms)" : "Fair Connection";
+                    statusText = latency > 0 ? context.l10n.walkie_fairConnectionMs(latency) : context.l10n.walkie_fairConnection;
                     break;
                   case WalkieNetworkQuality.weak:
                     statusColor = mutedRed;
                     statusIcon = Icons.signal_cellular_alt_1_bar_rounded;
-                    statusText = latency > 0 ? "Weak Signal (${latency}ms)" : "Weak Signal";
+                    statusText = latency > 0 ? context.l10n.walkie_weakSignalMs(latency) : context.l10n.walkie_weakSignal;
                     break;
                   case WalkieNetworkQuality.disconnected:
                     statusColor = mutedRed;
                     statusIcon = Icons.signal_cellular_null_rounded;
-                    statusText = "Disconnected";
+                    statusText = context.l10n.walkie_disconnected;
                     break;
                   case WalkieNetworkQuality.unknown:
                     statusColor = activeGreen;
                     statusIcon = Icons.signal_cellular_alt_rounded;
-                    statusText = "You are Connected";
+                    statusText = context.l10n.walkie_youAreConnected;
                     break;
                 }
               }
@@ -2279,12 +2290,14 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   children: [
                     Icon(statusIcon, color: statusColor, size: 14.sp.clamp(13.0, 16.0)),
                     SizedBox(width: 7.w.clamp(5.0, 9.0)),
-                    Text(
-                      statusText,
-                      style: TextStyle(
-                        color: textDark,
-                        fontSize: 12.sp.clamp(11.0, 13.5),
-                        fontWeight: FontWeight.w600,
+                    Flexible(
+                      child: AutoFitText(
+                        statusText,
+                        style: TextStyle(
+                          color: textDark,
+                          fontSize: 12.sp.clamp(11.0, 13.5),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -2435,8 +2448,11 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           ),
                         ],
                       ),
-                      child: Text(
-                        "Slide up to lock",
+                      constraints: BoxConstraints(
+                        maxWidth: math.max(0.0, (totalW / 2) - 32.0),
+                      ),
+                      child: AutoFitText(
+                        context.l10n.walkie_slideUpToLock,
                         style: TextStyle(
                           color: primaryPurple,
                           fontSize: 10.5.sp.clamp(9.5, 12.0),
@@ -2516,7 +2532,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                                   size: 13.sp.clamp(11.0, 15.0)),
                               SizedBox(width: 6.w.clamp(4.0, 8.0)),
                               Text(
-                                "Auto-unlock in ${controller.lockRemainingSeconds.value}s",
+                                context.l10n.walkie_autoUnlockIn(controller.lockRemainingSeconds.value),
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 11.5.sp.clamp(10.5, 13.0),
@@ -2545,7 +2561,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               if (isMicNotGranted && !isMuted && !isNoSeat) {
                 final isPermanentlyDenied =
                     micState == WalkieMicPermissionState.permanentlyDenied;
-                final actionText = isPermanentlyDenied ? "Settings" : "Enable";
+                final actionText = isPermanentlyDenied ? context.l10n.common_settings : context.l10n.walkie_enable;
 
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
@@ -2572,12 +2588,14 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           size: 13.sp.clamp(11.0, 15.0),
                         ),
                         SizedBox(width: 5.w.clamp(3.0, 7.0)),
-                        Text(
-                          "Microphone access required to talk.",
-                          style: TextStyle(
-                            color: primaryPurple,
-                            fontSize: 11.sp.clamp(10.0, 12.0),
-                            fontWeight: FontWeight.w600,
+                        Flexible(
+                          child: AutoFitText(
+                            context.l10n.walkie_micAccessRequired,
+                            style: TextStyle(
+                              color: primaryPurple,
+                              fontSize: 11.sp.clamp(10.0, 12.0),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         SizedBox(width: 6.w.clamp(4.0, 8.0)),
@@ -2626,24 +2644,26 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     size: 15.sp.clamp(13.0, 17.0),
                   ),
                   SizedBox(width: 6.w.clamp(4.0, 8.0)),
-                  Text(
-                    isMuted
-                        ? "Listening Only"
-                        : isNoSeat
-                            ? "Listen Only — Tap to View Plan"
-                            : isSelfLocked
-                                ? "Locked — Tap mic to stop"
-                                : isPressed
-                                    ? "Release to Stop"
-                                    : "Hold to Talk, Slide Up to Lock",
-                    style: TextStyle(
-                      color: isMuted
-                          ? mutedRed
+                  Flexible(
+                    child: AutoFitText(
+                      isMuted
+                          ? context.l10n.walkie_listeningOnly
                           : isNoSeat
-                              ? const Color(0xFF2563EB)
-                              : primaryPurple,
-                      fontSize: 12.sp.clamp(11.0, 13.5),
-                      fontWeight: FontWeight.w600,
+                              ? context.l10n.walkie_listenOnlyTapPlan
+                              : isSelfLocked
+                                  ? context.l10n.walkie_lockedTapMic
+                                  : isPressed
+                                      ? context.l10n.walkie_releaseToStop
+                                      : context.l10n.walkie_holdToTalkSlideLock,
+                      style: TextStyle(
+                        color: isMuted
+                            ? mutedRed
+                            : isNoSeat
+                                ? const Color(0xFF2563EB)
+                                : primaryPurple,
+                        fontSize: 12.sp.clamp(11.0, 13.5),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -2694,7 +2714,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Mute Me",
+                  context.l10n.walkie_muteMe,
                   style: TextStyle(
                     color: textDark,
                     fontSize: 14.sp.clamp(13.0, 15.5),
@@ -2703,7 +2723,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  "Others won't hear you",
+                  context.l10n.walkie_othersWontHear,
                   style: TextStyle(
                     color: textSecondary,
                     fontSize: 11.5.sp.clamp(10.5, 12.5),
@@ -2731,7 +2751,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     log('Opening Audio Output selection sheet...');
     HapticFeedback.lightImpact();
     final isIOS = Platform.isIOS;
-    final phoneLabel = isIOS ? "iPhone" : "Phone";
+    final phoneLabel = isIOS ? "iPhone" : context.l10n.walkie_audioPhone;
     final phoneIcon =
         isIOS ? Icons.phone_iphone_rounded : Icons.phone_android_rounded;
 
@@ -2764,9 +2784,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 child: Obx(() {
                   final currentRoute = controller.audioRoute.value;
                   final hasBT = controller.hasBluetooth.value;
-                  final btName = controller.bluetoothName.value;
+                  final btName = controller.bluetoothDisplayName;
                   final hasHeadset = controller.hasHeadset.value;
-                  final headsetName = controller.headsetName.value;
+                  final headsetName = controller.headsetDisplayName;
 
                   return Column(
                     mainAxisSize: MainAxisSize.min,
@@ -2790,7 +2810,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                         child: Row(
                           children: [
                             Text(
-                              "Audio Output",
+                              context.l10n.walkie_audioOutput,
                               style: TextStyle(
                                 color: textDark,
                                 fontSize: 16.sp.clamp(15.0, 18.0),
@@ -2835,7 +2855,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       ),
                       buildAudioRouteDivider(),
                       buildAudioRouteItem(
-                        title: "Speaker",
+                        title: context.l10n.walkie_audioSpeaker,
                         trailingIcon: Icons.volume_up_rounded,
                         isSelected: currentRoute == WalkieAudioRoute.speaker,
                         onTap: () async {
@@ -2847,8 +2867,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       ),
                       buildAudioRouteDivider(),
                       buildAudioRouteItem(
-                        title: hasBT ? btName : "Bluetooth",
-                        subtitle: hasBT ? "Connected" : "Not connected",
+                        title: hasBT ? btName : context.l10n.walkie_audioBluetooth,
+                        subtitle: hasBT ? context.l10n.walkie_connected : context.l10n.walkie_notConnected,
                         trailingIcon: Icons.bluetooth_audio_rounded,
                         isSelected: currentRoute == WalkieAudioRoute.bluetooth,
                         isEnabled: hasBT,
@@ -2856,8 +2876,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           if (!hasBT) {
                             log('Warning: Attempted to switch to Bluetooth but no device is active.');
                             Get.snackbar(
-                              "Bluetooth",
-                              "No Bluetooth audio device connected. Please pair your Bluetooth headset in settings.",
+                              context.l10n.walkie_audioBluetooth,
+                              context.l10n.walkie_noBluetoothDevice,
                               snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: Colors.black87,
                               colorText: Colors.white,
@@ -2873,8 +2893,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       ),
                       buildAudioRouteDivider(),
                       buildAudioRouteItem(
-                        title: hasHeadset ? headsetName : "Wired Headphones",
-                        subtitle: hasHeadset ? "Connected" : "Not connected",
+                        title: hasHeadset ? headsetName : context.l10n.walkie_audioWiredHeadphones,
+                        subtitle: hasHeadset ? context.l10n.walkie_connected : context.l10n.walkie_notConnected,
                         trailingIcon: Icons.headphones_rounded,
                         isSelected: currentRoute == WalkieAudioRoute.headset,
                         isEnabled: hasHeadset,
@@ -2882,8 +2902,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           if (!hasHeadset) {
                             log('Warning: Attempted to switch to Wired Headset but no device is active.');
                             Get.snackbar(
-                              "Wired Headphones",
-                              "No wired earphones or headset connected. Please plug them into your device.",
+                              context.l10n.walkie_audioWiredHeadphones,
+                              context.l10n.walkie_noWiredDevice,
                               snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: Colors.black87,
                               colorText: Colors.white,
@@ -2911,7 +2931,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             ),
                           ),
                           child: Text(
-                            "Cancel",
+                            context.l10n.common_cancel,
                             style: TextStyle(
                               color: textDark,
                               fontSize: 14.5.sp.clamp(13.0, 16.0),
@@ -2998,14 +3018,16 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     size: (size * 0.28).clamp(36.0, 52.0),
                   ),
                   SizedBox(height: (size * 0.02).clamp(2.0, 5.0)),
-                  Text(
+                  AutoFitText(
                     isSelfLocked
-                        ? "Tap to Unlock"
+                        ? context.l10n.walkie_tapToUnlock
                         : isTalking
-                            ? "Talking..."
+                            ? context.l10n.walkie_talking
                             : isNoSeat
-                                ? "Listen Only"
-                                : "Hold to Talk",
+                                ? context.l10n.walkie_listenOnly
+                                : context.l10n.walkie_holdToTalk,
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: (size * 0.075).clamp(11.0, 14.0),

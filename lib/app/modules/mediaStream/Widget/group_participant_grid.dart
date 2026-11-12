@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
@@ -248,8 +249,8 @@ class GroupParticipantGrid extends StatelessWidget {
                 child: _badge(
                   icon: Icons.present_to_all_rounded,
                   text: participant.isLocal
-                      ? "You're sharing"
-                      : "${participant.name} is sharing",
+                      ? appL10n.call_youAreSharing
+                      : appL10n.call_personIsSharing(participant.name.toString()),
                 ),
               ),
 
@@ -275,7 +276,7 @@ class GroupParticipantGrid extends StatelessWidget {
                 bottom: 12.h,
                 child: _pillBtn(
                   icon: Icons.fullscreen_exit_rounded,
-                  label: "Zoom Out",
+                  label: appL10n.call_zoomOut,
                   onTap: () => onTogglePin?.call(participant.userId),
                 ),
               ),
@@ -294,7 +295,7 @@ class GroupParticipantGrid extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: reausabletext(
-                    participant.isLocal ? "You" : participant.name.toString(),
+                    participant.isLocal ? appL10n.common_you : participant.name.toString(),
                     fontsize: isThumbnail ? 10 : 12,
                     fontfamily: FontFamily.interSemiBold,
                     color: Colors.white,
@@ -475,7 +476,7 @@ class GroupParticipantGrid extends StatelessWidget {
                   Icon(Icons.videocam_off, color: Colors.white, size: 12.sp),
                   SizedBox(width: 4.w),
                   reausabletext(
-                    "Camera off",
+                    appL10n.call_cameraOff,
                     fontsize: 11,
                     fontfamily: FontFamily.interMedium,
                     color: Colors.white,

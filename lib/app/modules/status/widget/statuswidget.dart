@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Model/status_model.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
@@ -605,7 +606,7 @@ class StatusOwnFooter extends StatelessWidget {
                           color: Colors.white70, size: 20.sp),
                       SizedBox(width: 8.w),
                       reausabletext(
-                        'Viewed by $displayCount',
+                        appL10n.status_viewedBy(displayCount),
                         fontsize: 15.sp,
                         fontfamily: FontFamily.interBold,
                         color: Colors.white,
@@ -687,7 +688,7 @@ class StatusOwnFooter extends StatelessWidget {
               color: Colors.white24, size: 48.sp),
           SizedBox(height: 12.h),
           reausabletext(
-            'No views yet',
+            appL10n.status_noViewsYet,
             fontsize: 13.sp,
             fontfamily: FontFamily.interMedium,
             color: Colors.white38,
@@ -716,16 +717,11 @@ class StatusOwnFooter extends StatelessWidget {
           final now = DateTime.now();
           final diff = now.difference(viewer.viewedAt!.toLocal());
           if (diff.inMinutes < 1) {
-            timeText = 'Just now';
+            timeText = appL10n.common_justNow;
           } else if (diff.inMinutes < 60) {
-            timeText = '${diff.inMinutes}m ago';
+            timeText = appL10n.common_minutesAgo(diff.inMinutes);
           } else {
-            final dt = viewer.viewedAt!.toLocal();
-            final hour =
-                dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
-            final minute = dt.minute.toString().padLeft(2, '0');
-            final period = dt.hour >= 12 ? 'PM' : 'AM';
-            timeText = '$hour:$minute $period';
+            timeText = appTime(viewer.viewedAt!.toLocal());
           }
         }
 
@@ -862,7 +858,7 @@ class StatusOwnFooter extends StatelessWidget {
                             ? current.viewsCount
                             : visibleLen);
                     return reausabletext(
-                      '$count Views',
+                      appL10n.status_viewsCount(count),
                       fontsize: 12.sp,
                       color: Colors.white,
                       fontfamily: FontFamily.interMedium,
@@ -947,7 +943,7 @@ class StatusOtherFooter extends StatelessWidget {
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       isDense: true,
-                      hintText: 'Reply to status...',
+                      hintText: appL10n.status_replyHint,
                       hintStyle: TextStyle(
                         color: Colors.white60,
                         fontSize: 13.sp,

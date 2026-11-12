@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
 
@@ -199,7 +200,7 @@ class ChatTypingTracker {
     if (chatKey.isEmpty || userId.isEmpty) return;
     final users = _typists.putIfAbsent(chatKey, () => <String, String>{});
     final isNew = !users.containsKey(userId);
-    users[userId] = (name?.trim().isNotEmpty ?? false) ? name!.trim() : 'Someone';
+    users[userId] = (name?.trim().isNotEmpty ?? false) ? name!.trim() : _someone;
     final timerKey = '$chatKey|$userId';
     _timers[timerKey]?.cancel();
     _timers[timerKey] = Timer(expiry, () => stop(chatKey, userId));
@@ -234,15 +235,21 @@ class ChatTypingTracker {
     if (had) onChanged();
   }
 
+  /// Stored for a typist without a name; shown in the app language.
+  static const String _someone = 'Someone';
+
   /// "typing…" (private) or "Rahul is typing…" / "Rahul, Priya are typing…".
   String? label(String chatKey, {required bool isGroup}) {
     final users = _typists[chatKey];
     if (users == null || users.isEmpty) return null;
-    if (!isGroup) return 'typing...';
-    final names = users.values.toList();
-    if (names.length == 1) return '${names.first} is typing...';
-    if (names.length == 2) return '${names[0]}, ${names[1]} are typing...';
-    return '${names[0]}, ${names[1]} +${names.length - 2} are typing...';
+    final l = appL10n;
+    if (!isGroup) return l.chatList_typing;
+    final names = [
+      for (final n in users.values) n == _someone ? l.chatList_someone : n,
+    ];
+    if (names.length == 1) return l.chatList_oneTyping(names.first);
+    if (names.length == 2) return l.chatList_twoTyping(names[0], names[1]);
+    return l.chatList_manyTyping(names[0], names[1], names.length - 2);
   }
 
   /// All current labels, keyed by chat key.

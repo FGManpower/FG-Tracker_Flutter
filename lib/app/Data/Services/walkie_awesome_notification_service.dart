@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:async';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
@@ -38,8 +39,8 @@ class WalkieAwesomeNotificationService {
       [
         NotificationChannel(
           channelKey: channelKey,
-          channelName: 'Walkie Talkie',
-          channelDescription: 'Group Walkie Call and Speaking Updates',
+          channelName: appL10n.notif_channelWalkieName,
+          channelDescription: appL10n.notif_channelWalkieDesc,
           defaultColor: const Color(0xFF5A35FF),
           ledColor: Colors.white,
           importance: NotificationImportance.High,
@@ -166,7 +167,7 @@ class WalkieAwesomeNotificationService {
 
     _activeGroupId = groupId;
     _activeGroupName = groupName.isNotEmpty ? groupName : 'FG Manpower Group';
-    _currentSpeakerName = speakerName.isNotEmpty ? speakerName : 'Someone';
+    _currentSpeakerName = speakerName.isNotEmpty ? speakerName : appL10n.walkie_someone;
     _currentSpeakerImage = speakerImage;
     _isSpeaking = isSpeaking;
 
@@ -208,12 +209,12 @@ class WalkieAwesomeNotificationService {
     }
 
     final timerStr = _formatTimer(_elapsedSeconds);
-    final speaker = _currentSpeakerName ?? 'Someone';
+    final speaker = _currentSpeakerName ?? appL10n.walkie_someone;
     final group = _activeGroupName ?? 'FG Manpower Group';
 
     final titleText = _isSpeaking
-        ? "$speaker is talking"
-        : "$speaker stopped talking";
+        ? appL10n.notif_isTalking(speaker)
+        : appL10n.notif_stoppedTalking(speaker);
 
     final bodyText = "$group\n🎙 $timerStr";
 
@@ -247,13 +248,13 @@ class WalkieAwesomeNotificationService {
       actionButtons: [
         NotificationActionButton(
           key: 'WALKIE_OPEN',
-          label: 'Go to Walkie Screen',
+          label: appL10n.notif_goToWalkie,
           actionType: ActionType.Default,
           color: const Color(0xFF5A35FF),
         ),
         NotificationActionButton(
           key: 'WALKIE_LEAVE',
-          label: 'Leave',
+          label: appL10n.notif_leave,
           actionType: ActionType.DismissAction,
           isDangerousOption: true,
           color: const Color(0xFFEF4444),

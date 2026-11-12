@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter/foundation.dart';
 
-import '../../theme/AppText.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import '../app_log.dart';
 import 'ApiErrorHandler.dart';
 
@@ -55,7 +55,7 @@ class HttpUtil {
       if (e is DioException) {
         throw ApiErrorHandler.handleDioError(e);
       }
-      throw AppText.anUnexpectedError;
+      throw sharedL10n.http_unexpectedError;
     }
   }
 
@@ -78,7 +78,7 @@ class HttpUtil {
       if (e is DioException) {
         throw ApiErrorHandler.handleDioError(e);
       }
-      throw AppText.anUnexpectedError;
+      throw sharedL10n.http_unexpectedError;
     }
   }
 
@@ -107,7 +107,7 @@ class HttpUtil {
         throw ApiErrorHandler.handleDioError(e);
       }
 
-      throw AppText.anUnexpectedError;
+      throw sharedL10n.http_unexpectedError;
     }
   }
 
@@ -136,7 +136,7 @@ class HttpUtil {
         throw ApiErrorHandler.handleDioError(e);
       }
 
-      throw AppText.anUnexpectedError;
+      throw sharedL10n.http_unexpectedError;
     }
   }
 
@@ -165,7 +165,7 @@ class HttpUtil {
         throw ApiErrorHandler.handleDioError(e);
       }
 
-      throw AppText.anUnexpectedError;
+      throw sharedL10n.http_unexpectedError;
     }
   }
 
@@ -184,7 +184,7 @@ class HttpUtil {
       if (e is DioException) {
         throw ApiErrorHandler.handleDioError(e);
       }
-      throw AppText.anUnexpectedError;
+      throw sharedL10n.http_unexpectedError;
     }
   }
 
@@ -215,7 +215,7 @@ class HttpUtil {
         throw ApiErrorHandler.handleDioError(e);
       }
 
-      throw AppText.anUnexpectedError;
+      throw sharedL10n.http_unexpectedError;
     }
   }
 
@@ -239,7 +239,7 @@ class HttpUtil {
       if (e is DioException) {
         throw ApiErrorHandler.handleDioError(e);
       }
-      throw AppText.anUnexpectedError;
+      throw sharedL10n.http_unexpectedError;
     }
   }
 }

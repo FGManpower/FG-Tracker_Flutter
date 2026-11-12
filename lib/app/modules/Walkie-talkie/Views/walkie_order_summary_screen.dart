@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_order_summary_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,8 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Utils/walkie_plan_l10n.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 class WalkieOrderSummaryScreen extends StatefulWidget {
   final WalkiePaymentOrderModel? order;
 
@@ -149,7 +152,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "Order Summary",
+                context.l10n.walkiePlan_orderTitle,
                 style: TextStyle(
                   fontSize: 17.sp.clamp(15.0, 19.0),
                   fontFamily: FontFamily.interBold,
@@ -158,7 +161,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
               ),
               SizedBox(height: 1.h),
               Text(
-                "Review your plan details & proceed to pay",
+                context.l10n.walkiePlan_orderSubtitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -189,29 +192,32 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                 color: _primaryPurple,
               ),
               SizedBox(width: 5.w),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "100% Secure",
-                    style: TextStyle(
-                      fontSize: 9.5.sp,
-                      fontFamily: FontFamily.interBold,
-                      color: _primaryPurple,
-                      height: 1.1,
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 90.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AutoFitText(
+                      context.l10n.walkiePlan_order100Secure,
+                      style: TextStyle(
+                        fontSize: 9.5.sp,
+                        fontFamily: FontFamily.interBold,
+                        color: _primaryPurple,
+                        height: 1.1,
+                      ),
                     ),
-                  ),
-                  Text(
-                    "Encrypted Payment",
-                    style: TextStyle(
-                      fontSize: 8.sp,
-                      fontFamily: FontFamily.interRegular,
-                      color: _textSecondary,
-                      height: 1.1,
+                    AutoFitText(
+                      context.l10n.walkiePlan_orderEncryptedPayment,
+                      style: TextStyle(
+                        fontSize: 8.sp,
+                        fontFamily: FontFamily.interRegular,
+                        color: _textSecondary,
+                        height: 1.1,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -244,7 +250,9 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
       final msg = controller.errorMessage.value;
       if (msg.isEmpty) return const SizedBox.shrink();
 
-      final bool isOffline = msg.toLowerCase().contains('internet') ||
+      final bool isOffline =
+          msg == context.l10n.walkiePlan_noInternetCheckNetwork ||
+          msg.toLowerCase().contains('internet') ||
           msg.toLowerCase().contains('network') ||
           msg.toLowerCase().contains('connection');
 
@@ -271,7 +279,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
             Expanded(
               child: Text(
                 isOffline
-                    ? "No internet connection. Please check your network."
+                    ? context.l10n.walkiePlan_noInternetCheckNetwork
                     : msg,
                 style: TextStyle(
                   fontSize: 11.5.sp.clamp(10.5, 12.5),
@@ -293,7 +301,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
-                  "Retry",
+                  context.l10n.common_retry,
                   style: TextStyle(
                     fontSize: 11.5.sp.clamp(10.5, 12.5),
                     fontFamily: FontFamily.interSemiBold,
@@ -362,7 +370,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        planTitle,
+                        walkiePlanTitleText(planTitle, context.l10n),
                         style: TextStyle(
                           fontSize: 15.5.sp,
                           fontFamily: FontFamily.interBold,
@@ -372,8 +380,8 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                       SizedBox(height: 2.h),
                       Text(
                         isMultiMember
-                            ? "For Multiple Members"
-                            : "For Single Member",
+                            ? context.l10n.walkiePlan_orderForMultipleMembers
+                            : context.l10n.walkiePlan_orderForSingleMember,
                         style: TextStyle(
                           fontSize: 11.5.sp,
                           fontFamily: FontFamily.interRegular,
@@ -400,7 +408,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Members",
+                        context.l10n.walkiePlan_orderMembersLabel,
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interRegular,
@@ -421,7 +429,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                           SizedBox(width: 4.w),
                           Flexible(
                             child: Text(
-                              isMultiMember ? "$seats Members" : "1 Member",
+                              context.l10n.walkiePlan_orderMemberCount(isMultiMember ? seats : 1),
                               style: TextStyle(
                                 fontSize: 12.5.sp,
                                 fontFamily: FontFamily.interBold,
@@ -449,7 +457,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Duration",
+                        context.l10n.walkiePlan_durationFallback,
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interRegular,
@@ -468,7 +476,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                           SizedBox(width: 4.w),
                           Flexible(
                             child: Text(
-                              duration,
+                              walkieDurationText(duration, context.l10n),
                               style: TextStyle(
                                 fontSize: 12.5.sp,
                                 fontFamily: FontFamily.interBold,
@@ -496,7 +504,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Price per member",
+                        context.l10n.walkiePlan_orderPricePerMember,
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interRegular,
@@ -546,7 +554,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Total Amount",
+                      context.l10n.walkiePlan_orderTotalAmount,
                       style: TextStyle(
                         fontSize: 13.5.sp,
                         fontFamily: FontFamily.interBold,
@@ -555,9 +563,8 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      isMultiMember
-                          ? "$seats Members × ${controller.money(rate)}"
-                          : "1 Member × ${controller.money(rate)}",
+                      context.l10n.walkiePlan_orderMembersTimesRate(
+                          isMultiMember ? seats : 1, controller.money(rate)),
                       style: TextStyle(
                         fontSize: 11.5.sp,
                         fontFamily: FontFamily.interRegular,
@@ -651,7 +658,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Payment Method",
+                        context.l10n.walkiePlan_orderPaymentMethod,
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontFamily: FontFamily.interBold,
@@ -660,7 +667,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                       ),
                       SizedBox(height: 1.h),
                       Text(
-                        "Online Payment via Razorpay",
+                        context.l10n.walkiePlan_orderOnlineViaRazorpay,
                         style: TextStyle(
                           fontSize: 10.5.sp,
                           fontFamily: FontFamily.interRegular,
@@ -689,7 +696,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                       ),
                       SizedBox(width: 3.w),
                       Text(
-                        "SECURE",
+                        context.l10n.walkiePlan_orderSecureBadge,
                         style: TextStyle(
                           fontSize: 9.sp,
                           fontFamily: FontFamily.interBold,
@@ -713,28 +720,28 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                   ? [
                       _buildSupportedMethodBadge(
                         icon: Icons.bolt_rounded,
-                        label: "UPI / QR",
+                        label: context.l10n.walkiePlan_orderUpiQr,
                       ),
                       SizedBox(width: 6.w),
                       _buildSupportedMethodBadge(
                         icon: Icons.credit_card_rounded,
-                        label: "Cards",
+                        label: context.l10n.walkiePlan_orderCards,
                       ),
                       SizedBox(width: 6.w),
                       _buildSupportedMethodBadge(
                         icon: Icons.account_balance_rounded,
-                        label: "NetBanking",
+                        label: context.l10n.walkiePlan_orderNetBanking,
                       ),
                       SizedBox(width: 6.w),
                       _buildSupportedMethodBadge(
                         icon: Icons.account_balance_wallet_rounded,
-                        label: "Wallets",
+                        label: context.l10n.walkiePlan_orderWallets,
                       ),
                     ]
                   : [
                       _buildSupportedMethodBadge(
                         icon: Icons.credit_card_rounded,
-                        label: "Cards",
+                        label: context.l10n.walkiePlan_orderCards,
                       ),
                       if (controller.currencyCode == 'USD') ...[
                         SizedBox(width: 6.w),
@@ -746,7 +753,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                       SizedBox(width: 6.w),
                       _buildSupportedMethodBadge(
                         icon: Icons.shield_rounded,
-                        label: "3DS2 Secure",
+                        label: context.l10n.walkiePlan_order3ds2Secure,
                       ),
                     ],
             ),
@@ -782,7 +789,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
-                        "Opening Razorpay Payment Checkout...",
+                        context.l10n.walkiePlan_orderOpeningCheckout,
                         style: TextStyle(
                           fontSize: 11.5.sp,
                           fontFamily: FontFamily.interMedium,
@@ -800,8 +807,10 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     Expanded(
                       child: Text(
                         controller.isDomestic
-                            ? "Choose from GPay, PhonePe, Cards, NetBanking or Wallets on next step."
-                            : "Pay securely with International Credit/Debit Cards (Visa, Mastercard, Amex)${controller.currencyCode == 'USD' ? ' or PayPal' : ''}.",
+                            ? context.l10n.walkiePlan_orderDomesticHint
+                            : (controller.currencyCode == 'USD'
+                                ? context.l10n.walkiePlan_orderIntlHintPaypal
+                                : context.l10n.walkiePlan_orderIntlHint),
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interRegular,
@@ -896,7 +905,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Payment Details",
+              context.l10n.walkiePlan_orderPaymentDetails,
               style: TextStyle(
                 fontSize: 14.5.sp,
                 fontFamily: FontFamily.interBold,
@@ -910,7 +919,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Subtotal",
+                  context.l10n.walkiePlan_orderSubtotal,
                   style: TextStyle(
                     fontSize: 12.5.sp,
                     fontFamily: FontFamily.interRegular,
@@ -937,8 +946,9 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                   Text(
                     controller.currentPromoCode != null &&
                             controller.currentPromoCode!.isNotEmpty
-                        ? "Discount (${controller.currentPromoCode})"
-                        : "Discount",
+                        ? context.l10n.walkiePlan_orderDiscountWithCode(
+                            controller.currentPromoCode!)
+                        : context.l10n.walkiePlan_orderDiscount,
                     style: TextStyle(
                       fontSize: 12.5.sp,
                       fontFamily: FontFamily.interRegular,
@@ -964,7 +974,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Amount After Discount",
+                    context.l10n.walkiePlan_orderAmountAfterDiscount,
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontFamily: FontFamily.interRegular,
@@ -1013,7 +1023,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Tax (0% Export)",
+                    context.l10n.walkiePlan_orderTaxExport,
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontFamily: FontFamily.interRegular,
@@ -1041,12 +1051,14 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  "Total Payable",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontFamily: FontFamily.interBold,
-                    color: _textDark,
+                Flexible(
+                  child: AutoFitText(
+                    context.l10n.walkiePlan_orderTotalPayable,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: _textDark,
+                    ),
                   ),
                 ),
                 Text(
@@ -1081,7 +1093,8 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     SizedBox(width: 6.w),
                     Expanded(
                       child: Text(
-                        "You saved ${controller.money(totalSaving)} on this order!",
+                        context.l10n.walkiePlan_orderYouSaved(
+                            controller.money(totalSaving)),
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interBold,
@@ -1101,7 +1114,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
 
   String _getDynamicPayButtonLabel(num totalPayable) {
     final formattedAmt = controller.money(totalPayable);
-    return "Proceed to Pay • $formattedAmt";
+    return context.l10n.walkiePlan_orderProceedToPay(formattedAmt);
   }
 
   // ==========================================
@@ -1157,7 +1170,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                           ),
                           SizedBox(width: 10.w),
                           Text(
-                            "Processing Payment...",
+                            context.l10n.walkiePlan_orderProcessingPayment,
                             style: TextStyle(
                               fontSize: 14.5.sp,
                               fontFamily: FontFamily.interBold,
@@ -1206,7 +1219,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "By proceeding, you agree to our ",
+                  context.l10n.walkiePlan_orderAgreePrefix,
                   style: TextStyle(
                     fontSize: 10.5.sp,
                     fontFamily: FontFamily.interRegular,
@@ -1216,7 +1229,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                 GestureDetector(
                   onTap: _openTerms,
                   child: Text(
-                    "Terms & Conditions",
+                    context.l10n.walkiePlan_orderTermsConditions,
                     style: TextStyle(
                       fontSize: 10.5.sp,
                       fontFamily: FontFamily.interMedium,

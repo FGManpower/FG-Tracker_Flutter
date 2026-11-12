@@ -5,6 +5,7 @@ import 'package:fgtracker/app/Model/package_pricing_model.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 /// Packages & Pricing: one card per module, all from GET /api/packages.
@@ -55,13 +56,13 @@ class PackageListController extends GetxController {
 
   static String _friendly(Object e) => e is PackageApiException
       ? e.userMessage
-      : 'Something went wrong. Please try again.';
+      : appL10n.common_somethingWentWrong;
 
   /// Only Walkie-Talkie has an inner screen (its existing plan → order
   /// summary → payment flow). Every other module is "Coming soon".
   Future<void> openPackage(PackageItem item) async {
     if (!item.isAvailable || item.moduleKey != PackageModuleKey.walkieTalkie) {
-      Utils().fluttertoast('${item.title} plans are coming soon');
+      Utils().fluttertoast(appL10n.package_plansComingSoon(item.title));
       return;
     }
     await Get.toNamed(Routes.walkieTalkiePlanScreen);

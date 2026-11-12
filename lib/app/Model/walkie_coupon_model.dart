@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:get/get.dart';
 
 class WalkieCouponResponseModel {
@@ -188,44 +189,31 @@ class WalkieCouponItem {
 
   String get discountDescription {
     if (isFixed) {
-      return "Flat ₹${discountValue?.toInt() ?? 0} OFF";
+      return appL10n.walkiePlan_couponFlatOff("₹${discountValue?.toInt() ?? 0}");
     } else if (isPercentage) {
-      return "${discountValue?.toInt() ?? 0}% OFF";
+      return appL10n.walkiePlan_couponPercentOff(discountValue?.toInt() ?? 0);
     }
-    return "${discountValue ?? 0} Discount";
+    return appL10n.walkiePlan_couponDiscount("${discountValue ?? 0}");
   }
 
   String get formattedExpiry {
     if (expiresAt == null) return '';
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    return "Valid till ${expiresAt!.day} ${months[expiresAt!.month - 1]} ${expiresAt!.year}";
+    return appL10n.walkiePlan_couponValidTill(
+        appDateFormat('d MMM yyyy').format(expiresAt!));
   }
 
   String get formattedIneligibleReason {
-    if (ineligibleReasons.isEmpty) return 'Not eligible for current plan';
+    if (ineligibleReasons.isEmpty) return appL10n.walkiePlan_couponNotEligible;
     final raw = ineligibleReasons.first;
     switch (raw) {
       case 'COUPON_NOT_STARTED':
-        return 'Coupon offer is not active yet';
+        return appL10n.walkiePlan_couponNotStarted;
       case 'COUPON_EXPIRED':
-        return 'Coupon has expired';
+        return appL10n.walkiePlan_couponExpired;
       case 'MIN_ORDER_NOT_MET':
-        return 'Minimum order amount not met';
+        return appL10n.walkiePlan_couponMinOrderNotMet;
       case 'PLAN_NOT_APPLICABLE':
-        return 'Not applicable on this plan';
+        return appL10n.walkiePlan_couponPlanNotApplicable;
       default:
         return raw.replaceAll('_', ' ').toLowerCase().capitalizeFirst ?? raw;
     }

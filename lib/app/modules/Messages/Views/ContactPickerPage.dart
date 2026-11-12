@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:permission_handler/permission_handler.dart' show openAppSettings;
@@ -27,9 +28,9 @@ class ContactPickerPage extends StatelessWidget {
         ),
         elevation: 0,
         centerTitle: true,
-        title: const Text(
-          'Share Contact',
-          style: TextStyle(
+        title: Text(
+          appL10n.chatList_shareContactTitle,
+          style: const TextStyle(
             fontSize: 19,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.2,
@@ -53,7 +54,7 @@ class ContactPickerPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Text(
-                  '${controller.filteredContacts.length} contacts',
+                  appL10n.chatList_contactsCount(controller.filteredContacts.length),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 10,
@@ -98,7 +99,7 @@ class ContactPickerPage extends StatelessWidget {
                   onChanged: controller.search,
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
-                    hintText: 'Search name or number',
+                    hintText: appL10n.chatList_searchNameOrNumber,
                     hintStyle: TextStyle(
                       color: Colors.grey.shade700,
                       fontSize: 14,
@@ -114,7 +115,7 @@ class ContactPickerPage extends StatelessWidget {
                       }
 
                       return IconButton(
-                        tooltip: 'Clear search',
+                        tooltip: appL10n.chatList_clearSearch,
                         onPressed: controller.clearSearch,
                         icon: const Icon(Icons.close_rounded),
                       );
@@ -210,7 +211,7 @@ class ContactPickerPage extends StatelessWidget {
                                 children: [
                                   Text(
                                     contact.displayName.trim().isEmpty
-                                        ? 'Unnamed contact'
+                                        ? appL10n.chatList_unnamedContact
                                         : contact.displayName,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -283,15 +284,15 @@ class ContactPickerPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Your contacts',
-                  style: TextStyle(
+                Text(
+                  appL10n.chatList_yourContacts,
+                  style: const TextStyle(
                     fontSize: 21,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text('Choose a contact to share in your chat.'),
+                Text(appL10n.chatList_chooseContactToShare),
                 const SizedBox(height: 18),
                 Container(
                   height: 50,
@@ -369,7 +370,7 @@ class ContactPickerPage extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             Text(
-              isSearching ? 'No contacts found' : 'No contacts available',
+              isSearching ? appL10n.chatList_noContactsFound : appL10n.chatList_noContactsAvailable,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 17,
@@ -380,8 +381,8 @@ class ContactPickerPage extends StatelessWidget {
             const SizedBox(height: 7),
             Text(
               isSearching
-                  ? 'Try another name or phone number.'
-                  : 'Your contacts will appear here when available.',
+                  ? appL10n.chatList_tryAnotherNameOrNumber
+                  : appL10n.chatList_contactsWillAppear,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
@@ -410,8 +411,8 @@ class ContactPickerPage extends StatelessWidget {
             const SizedBox(height: 14),
             Text(
               controller.permissionDenied.value
-                  ? 'Contacts permission needed'
-                  : 'Unable to load contacts',
+                  ? appL10n.chatList_contactsPermissionNeeded
+                  : appL10n.chatList_unableToLoadContacts,
               style: const TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
@@ -419,7 +420,7 @@ class ContactPickerPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              controller.errorMessage.value ?? 'Please try again.',
+              controller.errorMessage.value ?? appL10n.chatList_pleaseTryAgain,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.grey.shade600,
@@ -430,7 +431,7 @@ class ContactPickerPage extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: controller.loadContacts,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try again'),
+              label: Text(appL10n.common_tryAgain),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _primary,
                 foregroundColor: Colors.white,
@@ -448,7 +449,7 @@ class ContactPickerPage extends StatelessWidget {
               const SizedBox(height: 10),
               TextButton(
                 onPressed: openAppSettings,
-                child: const Text('Open Settings'),
+                child: Text(appL10n.chatList_openSettings),
               ),
             ],
           ],

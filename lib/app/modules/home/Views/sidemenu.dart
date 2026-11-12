@@ -22,8 +22,10 @@ import 'package:fgtracker/app/modules/auth/Controller/logout_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/features/language/language_settings.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide FormData, MultipartFile;
@@ -333,12 +335,12 @@ class Sidemenu extends StatelessWidget {
           );
         }
         Utils().fluttertoast(
-          commonResponse.message ?? "Profile image updated successfully",
+          commonResponse.message ?? appL10n.menu_profileImageUpdated,
         );
       } else {
         localPickedImage.value = '';
         CommonDialog.errorMessage(
-          commonResponse.message ?? "Failed to update profile image",
+          commonResponse.message ?? appL10n.menu_profileImageUpdateFailed,
         );
       }
     } catch (e) {
@@ -418,8 +420,8 @@ class Sidemenu extends StatelessWidget {
         children: [
           _buildDrawerItem(
             icon: Icons.person_rounded,
-            title: AppText.editProfile.tr,
-            subtitle: "Update your information",
+            title: context.l10n.menu_editProfile,
+            subtitle: context.l10n.menu_editProfileSubtitle,
             onTap: () {
               Navigator.pop(context);
               Get.toNamed(Routes.Register, arguments: {
@@ -432,6 +434,10 @@ class Sidemenu extends StatelessWidget {
               });
             },
           ),
+          _buildDivider(),
+          // Settings → Language (current language in its own script; opens
+          // the language sheet, applies instantly).
+          const LanguageSettingsRow(),
           // _buildDivider(),
           // _buildDrawerItem(
           //   icon: Icons.receipt_long_rounded,
@@ -445,8 +451,8 @@ class Sidemenu extends StatelessWidget {
           _buildDivider(),
           _buildDrawerItem(
             icon: Icons.support_agent_rounded,
-            title: "Contact Us",
-            subtitle: "Know more about us",
+            title: context.l10n.about_contactUs,
+            subtitle: context.l10n.menu_contactUsSubtitle,
             onTap: () {
               Navigator.pop(context);
               Get.toNamed(Routes.AboutUs);
@@ -483,14 +489,14 @@ class Sidemenu extends StatelessWidget {
           _buildDivider(),
           _buildDrawerItem(
             icon: Icons.logout_rounded,
-            title: AppText.logOut.tr,
-            subtitle: "Sign out from the app",
+            title: context.l10n.menu_logOut,
+            subtitle: context.l10n.menu_logOutSubtitle,
             onTap: () {
               CommonDialog.ConfirmationDialog(
-                title: AppText.logOut.tr,
-                content: AppText.doYouReallyWantLogout.tr,
-                confirm: AppText.confirm.tr,
-                cancel: AppText.cancel.tr,
+                title: context.l10n.menu_logOut,
+                content: context.l10n.menu_logOutConfirmMessage,
+                confirm: context.l10n.common_confirm,
+                cancel: context.l10n.common_cancel,
                 icon: Icons.logout,
                 onConfirm: () {
                   Navigator.pop(ContextUtility.context!);
@@ -574,7 +580,7 @@ class Sidemenu extends StatelessWidget {
           _buildBottomAppCard(),
           SizedBox(height: 8.h),
           Text(
-            "Follow us on",
+            appL10n.menu_followUsOn,
             style: TextStyle(
               fontSize: 11.5.sp,
               fontFamily: FontFamily.interMedium,

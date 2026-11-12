@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 /// Static Map CustomPainter rendering city background, river, parks,
 /// building blocks, roads, and road/place labels in the 390x844 design space.
@@ -172,21 +173,22 @@ class MapPainter extends CustomPainter {
 
     // 6. Labels (Inter 9px w600 #9AA0B4)
     // "Station Road" (14,196)
-    _drawLabel(canvas, "Station Road", pt(14, 182), scale: scaleUniform);
+    final l10n = appL10n;
+    _drawLabel(canvas, l10n.safety_mapStationRoad, pt(14, 182), scale: scaleUniform);
 
     // "Main Road" (262,414)
-    _drawLabel(canvas, "Main Road", pt(262, 402), scale: scaleUniform);
+    _drawLabel(canvas, l10n.safety_mapMainRoad, pt(262, 402), scale: scaleUniform);
 
     // "City Park" (268,168)
-    _drawLabel(canvas, "City Park", pt(268, 168), scale: scaleUniform);
+    _drawLabel(canvas, l10n.safety_mapCityPark, pt(268, 168), scale: scaleUniform);
 
     // "River" (160,676)
-    _drawLabel(canvas, "River", pt(160, 676), scale: scaleUniform);
+    _drawLabel(canvas, l10n.safety_mapRiver, pt(160, 676), scale: scaleUniform);
 
     // "Market Lane" (104,760) rotated −90°
     _drawLabel(
       canvas,
-      "Market Lane",
+      l10n.safety_mapMarketLane,
       pt(112, 760),
       rotation: -math.pi / 2,
       scale: scaleUniform,

@@ -2,9 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Model/group_member_model.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -140,7 +144,7 @@ class _TotalMemberState extends State<TotalMember> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Members",
+                      appL10n.home_statMembers,
                       style: TextStyle(
                         fontSize: 19.sp,
                         fontWeight: FontWeight.w700,
@@ -151,7 +155,7 @@ class _TotalMemberState extends State<TotalMember> {
                     SizedBox(height: 2.h),
                     Obx(
                       () => Text(
-                        "${controller.totalMembersCount.value} Total Members",
+                        appL10n.home_totalMembersCount(controller.totalMembersCount.value),
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontFamily: FontFamily.interRegular,
@@ -292,7 +296,7 @@ class _TotalMemberState extends State<TotalMember> {
           color: Colors.black87,
         ),
         decoration: InputDecoration(
-          hintText: "Search members...",
+          hintText: appL10n.home_searchMembersHint,
           hintStyle: TextStyle(
             fontSize: 14.sp,
             fontFamily: FontFamily.interRegular,
@@ -339,7 +343,7 @@ class _TotalMemberState extends State<TotalMember> {
               iconBgColor: const Color(0xFFEDE9FE),
               count: controller.totalMembersCount.value,
               countColor: const Color(0xFF6B4DFF),
-              title: "Total Members",
+              title: appL10n.home_totalMembers,
             ),
           ),
           SizedBox(width: 8.w),
@@ -350,7 +354,7 @@ class _TotalMemberState extends State<TotalMember> {
               iconBgColor: const Color(0xFFD1FAE5),
               count: controller.activeMembersCount.value,
               countColor: const Color(0xFF10B981),
-              title: "Active",
+              title: appL10n.home_active,
               isDot: true,
             ),
           ),
@@ -362,7 +366,7 @@ class _TotalMemberState extends State<TotalMember> {
               iconBgColor: const Color(0xFFFEF3C7),
               count: controller.inactiveMembersCount.value,
               countColor: const Color(0xFFF59E0B),
-              title: "Inactive",
+              title: appL10n.home_inactive,
             ),
           ),
           SizedBox(width: 8.w),
@@ -373,7 +377,7 @@ class _TotalMemberState extends State<TotalMember> {
               iconBgColor: const Color(0xFFDBEAFE),
               count: controller.newMembersCount.value,
               countColor: const Color(0xFF3B82F6),
-              title: "New This Month",
+              title: appL10n.home_newThisMonth,
             ),
           ),
         ],
@@ -455,13 +459,15 @@ class _TotalMemberState extends State<TotalMember> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          "All Members",
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w700,
-            fontFamily: FontFamily.interBold,
-            color: Colors.black87,
+        Flexible(
+          child: AutoFitText(
+            appL10n.home_allMembers,
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w700,
+              fontFamily: FontFamily.interBold,
+              color: Colors.black87,
+            ),
           ),
         ),
         Obx(() {
@@ -477,13 +483,16 @@ class _TotalMemberState extends State<TotalMember> {
               ),
               child: Row(
                 children: [
-                  Text(
-                    "Sort: Name (${isAsc ? 'A-Z' : 'Z-A'})",
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: FontFamily.interSemiBold,
-                      color: const Color(0xFF6B4DFF),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: 130.w),
+                    child: AutoFitText(
+                      isAsc ? appL10n.home_sortNameAsc : appL10n.home_sortNameDesc,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: FontFamily.interSemiBold,
+                        color: const Color(0xFF6B4DFF),
+                      ),
                     ),
                   ),
                   SizedBox(width: 2.w),
@@ -522,8 +531,8 @@ class _TotalMemberState extends State<TotalMember> {
             SizedBox(height: 12.h),
             Text(
               controller.searchQuery.value.isNotEmpty
-                  ? "No members match '${controller.searchQuery.value}'"
-                  : "No members found",
+                  ? appL10n.home_noMembersMatch(controller.searchQuery.value)
+                  : appL10n.home_noMembersFound,
               style: TextStyle(
                 fontSize: 14.sp,
                 fontFamily: FontFamily.interMedium,
@@ -548,7 +557,10 @@ class _TotalMemberState extends State<TotalMember> {
   Widget _buildMemberCard(GroupMemberData member) {
     final bool isOnline = member.effectiveIsOnline;
 
-    final String statusText = isOnline ? "Active" : member.formattedLastSeen;
+    final String statusText = isOnline
+        ? appL10n.home_active
+        : (formatLastSeenWith(appL10n, Tracking.parseDateTime(member.lastSeen)) ??
+            member.formattedLastSeen);
 
     final Color statusColor =
         isOnline ? const Color(0xFF10B981) : const Color(0xFF9E9E9E);
@@ -666,7 +678,7 @@ class _TotalMemberState extends State<TotalMember> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    member.displayName,
+                    member.displayNameLabel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(

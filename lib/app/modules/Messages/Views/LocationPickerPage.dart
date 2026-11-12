@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -22,9 +23,9 @@ class LocationPickerPage extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          "Share Location",
-          style: TextStyle(
+        title: Text(
+          context.l10n.chat_shareLocation,
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
@@ -94,7 +95,7 @@ class LocationPickerPage extends StatelessWidget {
                 Expanded(
                   child: Obx(
                     () => Text(
-                      controller.selectedAddress.value,
+                      _addressLabel(controller.selectedAddress.value),
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -120,9 +121,9 @@ class LocationPickerPage extends StatelessWidget {
                       ),
                       onPressed: controller.sendLocation,
                       icon: const Icon(Icons.send, color: Colors.white),
-                      label: const Text(
-                        "Send Location",
-                        style: TextStyle(
+                      label: Text(
+                        appL10n.chat_sendLocation,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
@@ -148,7 +149,7 @@ class LocationPickerPage extends StatelessWidget {
                         color: ToggleThemeData.Appcolor,
                       ),
                       label: Text(
-                        "Share Location",
+                        appL10n.chat_shareLocation,
                         style: TextStyle(
                           color: ToggleThemeData.Appcolor,
                           fontWeight: FontWeight.w600,
@@ -163,6 +164,19 @@ class LocationPickerPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// The controller keeps English placeholder values (they can be sent as
+  /// the location name); show them in the app language.
+  String _addressLabel(String value) {
+    switch (value) {
+      case LocationPickerController.fetchingLocationValue:
+        return appL10n.chat_fetchingLocation;
+      case LocationPickerController.unknownLocationValue:
+        return appL10n.chat_unknownLocation;
+      default:
+        return value;
+    }
   }
 
   Widget _buildError(LocationPickerController controller, String message) {
@@ -184,13 +198,13 @@ class LocationPickerPage extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: controller.retry,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text("Try again"),
+              label: Text(appL10n.chat_tryAgain),
             ),
             if (controller.permissionDenied.value) ...[
               SizedBox(height: 8.h),
               TextButton(
                 onPressed: openAppSettings,
-                child: const Text("Open Settings"),
+                child: Text(appL10n.chat_openSettings),
               ),
             ],
           ],

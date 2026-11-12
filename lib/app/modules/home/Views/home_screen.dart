@@ -20,6 +20,7 @@ import 'package:fgtracker/app/modules/home/Views/sidemenu.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/widgets/Appbar.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -226,7 +227,7 @@ class _UpgradeToPremiumCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Upgrade to Premium",
+                    context.l10n.home_upgradeToPremium,
                     style: TextStyle(
                       fontFamily: FontFamily.interBold,
                       fontSize: 13.5.sp,
@@ -236,7 +237,7 @@ class _UpgradeToPremiumCard extends StatelessWidget {
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    "Unlock advanced features for your team",
+                    context.l10n.home_upgradeSubtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -259,7 +260,7 @@ class _UpgradeToPremiumCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "View Plans",
+                    context.l10n.home_viewPlans,
                     style: TextStyle(
                       fontFamily: FontFamily.interSemiBold,
                       fontSize: 11.sp,

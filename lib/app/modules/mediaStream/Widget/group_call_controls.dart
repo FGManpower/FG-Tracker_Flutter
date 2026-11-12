@@ -1,7 +1,9 @@
 import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../Controller/group_calling_controller.dart';
 
@@ -37,7 +39,7 @@ class GroupCallControls extends StatelessWidget {
             SizedBox(width: 4.w),
             ControlItem(
               icon: Icons.more_horiz_rounded,
-              label: "More",
+              label: context.l10n.call_more,
               bgColor: Colors.white,
               iconColor: const Color(0xFF6E5CA4),
               borderColor: const Color(0xFFE9E5FE),
@@ -49,7 +51,9 @@ class GroupCallControls extends StatelessWidget {
                 icon: isVideoOn
                     ? Icons.videocam_rounded
                     : Icons.videocam_off_rounded,
-                label: isVideoOn ? "Camera on" : "Camera off",
+                label: isVideoOn
+                    ? context.l10n.call_cameraOn
+                    : context.l10n.call_cameraOff,
                 bgColor: Colors.white,
                 iconColor: const Color(0xFF6E5CA4),
                 borderColor: const Color(0xFFE9E5FE),
@@ -59,7 +63,7 @@ class GroupCallControls extends StatelessWidget {
             ],
             ControlItem(
               icon: Icons.call_end_rounded,
-              label: "End call",
+              label: context.l10n.call_endCall,
               bgColor: const Color(0xFFFF3B30),
               iconColor: Colors.white,
               size: 54,
@@ -69,7 +73,7 @@ class GroupCallControls extends StatelessWidget {
             SizedBox(width: 8.w),
             ControlItem(
               icon: isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
-              label: isAudioOn ? "Mute" : "Unmute",
+              label: isAudioOn ? context.l10n.call_mute : context.l10n.call_unmute,
               bgColor: Colors.white,
               iconColor: const Color(0xFF6E5CA4),
               borderColor: const Color(0xFFE9E5FE),
@@ -128,12 +132,16 @@ Widget groupCtrl({
         ),
       ),
       SizedBox(height: 6.h),
-      Text(
-        label,
-        style: TextStyle(
-          fontSize: 10.sp,
-          fontFamily: FontFamily.interMedium,
-          color: const Color(0xFF5B4B8A),
+      ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 54.w),
+        child: AutoFitText(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 10.sp,
+            fontFamily: FontFamily.interMedium,
+            color: const Color(0xFF5B4B8A),
+          ),
         ),
       ),
     ],
@@ -200,14 +208,16 @@ class ControlItem extends StatelessWidget {
               child: Icon(icon, color: iconColor, size: iconSize.sp),
             ),
             SizedBox(height: 5.h),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 10.sp,
-                fontFamily: FontFamily.interMedium,
-                color: const Color(0xFF5B4B8A),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 54.w),
+              child: AutoFitText(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  fontFamily: FontFamily.interMedium,
+                  color: const Color(0xFF5B4B8A),
+                ),
               ),
             ),
           ],

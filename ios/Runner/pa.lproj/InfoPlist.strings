@@ -1,0 +1,13 @@
+/* Permission texts shown by iOS (Punjabi) */
+"NSCameraUsageDescription" = "FG Tracker ਵੀਡੀਓ ਕਾਲਾਂ, QR ਕੋਡ ਸਕੈਨ ਕਰਨ ਅਤੇ ਹਾਜ਼ਰੀ ਲਗਾਉਣ ਲਈ ਲਾਈਵ ਸੈਲਫ਼ੀ ਲੈਣ ਵਾਸਤੇ ਕੈਮਰਾ ਵਰਤਦੀ ਹੈ।";
+"NSContactsUsageDescription" = "FG Tracker ਲੋਕਾਂ ਨੂੰ ਲੱਭਣ, ਉਨ੍ਹਾਂ ਨਾਲ ਜੁੜਨ ਅਤੇ ਉਨ੍ਹਾਂ ਨੂੰ ਤੁਹਾਡੇ ਟ੍ਰੈਕਿੰਗ ਗਰੁੱਪਾਂ ਵਿੱਚ ਸੱਦਾ ਦੇਣ ਲਈ ਤੁਹਾਡੇ ਸੰਪਰਕ ਵਰਤਦੀ ਹੈ।";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "FG Tracker ਹਾਜ਼ਰੀ, ਲਾਈਵ ਟ੍ਰੈਕਿੰਗ ਅਤੇ ਸੇਫ਼ ਜ਼ੋਨ ਅਲਰਟਾਂ ਲਈ ਤੁਹਾਡੀ ਲੋਕੇਸ਼ਨ ਵਰਤਦੀ ਹੈ, ਐਪ ਬੈਕਗ੍ਰਾਊਂਡ ਵਿੱਚ ਹੋਣ 'ਤੇ ਵੀ, ਤਾਂ ਜੋ ਤੁਹਾਡਾ ਗਰੁੱਪ ਹਮੇਸ਼ਾ ਤੁਹਾਡੀ ਮੌਜੂਦਾ ਥਾਂ ਦੇਖ ਸਕੇ।";
+"NSLocationAlwaysUsageDescription" = "ਟ੍ਰੈਕਿੰਗ ਸੈਸ਼ਨ ਦੌਰਾਨ ਐਪ ਬੈਕਗ੍ਰਾਊਂਡ ਵਿੱਚ ਹੋਣ 'ਤੇ ਵੀ ਗਰੁੱਪ ਮੈਂਬਰਾਂ ਨੂੰ ਅੱਪਡੇਟ ਰੱਖਣ ਲਈ ਤੁਹਾਡੀ ਲੋਕੇਸ਼ਨ ਵਰਤੀ ਜਾਂਦੀ ਹੈ।";
+"NSLocationWhenInUseUsageDescription" = "FG Tracker ਹਾਜ਼ਰੀ, ਗਰੁੱਪ ਨਾਲ ਲਾਈਵ ਟ੍ਰੈਕਿੰਗ ਅਤੇ ਸੇਫ਼ ਜ਼ੋਨ ਅਲਰਟਾਂ ਲਈ ਤੁਹਾਡੀ ਲੋਕੇਸ਼ਨ ਵਰਤਦੀ ਹੈ।";
+"PreciseLocation" = "ਸਹੀ ਹਾਜ਼ਰੀ, ਲਾਈਵ ਟ੍ਰੈਕਿੰਗ ਅਤੇ ਸੇਫ਼ ਜ਼ੋਨ ਅਲਰਟਾਂ ਲਈ ਸਟੀਕ ਲੋਕੇਸ਼ਨ ਲੋੜੀਂਦੀ ਹੈ।";
+"NSMicrophoneUsageDescription" = "ਆਡੀਓ ਕਾਲਾਂ, ਵਾਕੀ-ਟਾਕੀ ਚੈਨਲ 'ਤੇ ਲਾਈਵ ਆਵਾਜ਼ ਭੇਜਣ ਜਾਂ ਸਕ੍ਰੀਨ ਸ਼ੇਅਰਿੰਗ ਲਈ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਐਕਸੈਸ ਚਾਹੀਦੀ ਹੈ।";
+"NSSpeechRecognitionUsageDescription" = "ਆਪਣੀ ਆਵਾਜ਼ ਨਾਲ ਮੈਸੇਜ ਟਾਈਪ ਕਰਨ ਲਈ ਸਪੀਚ ਰੀਕੋਗਨੀਸ਼ਨ ਐਕਸੈਸ ਚਾਹੀਦੀ ਹੈ।";
+"NSBluetoothAlwaysUsageDescription" = "ਵਾਕੀ-ਟਾਕੀ ਅਤੇ ਵੌਇਸ ਕਾਲਾਂ ਦੌਰਾਨ ਵਾਇਰਲੈੱਸ ਈਅਰਫ਼ੋਨ ਅਤੇ ਹੈੱਡਸੈੱਟ ਨਾਲ ਜੁੜਨ ਲਈ FG Tracker ਨੂੰ ਬਲੂਟੁੱਥ ਐਕਸੈਸ ਚਾਹੀਦੀ ਹੈ।";
+"NSBluetoothPeripheralUsageDescription" = "ਵਾਇਰਲੈੱਸ ਈਅਰਫ਼ੋਨ ਅਤੇ ਹੈੱਡਸੈੱਟ 'ਤੇ ਆਡੀਓ ਭੇਜਣ ਲਈ FG Tracker ਨੂੰ ਬਲੂਟੁੱਥ ਐਕਸੈਸ ਚਾਹੀਦੀ ਹੈ।";
+"NSPhotoLibraryAddUsageDescription" = "QR ਕੋਡ ਤੁਹਾਡੀ ਗੈਲਰੀ ਵਿੱਚ ਸੇਵ ਕਰਨ ਲਈ ਸਾਨੂੰ ਐਕਸੈਸ ਚਾਹੀਦੀ ਹੈ।";
+"NSPhotoLibraryUsageDescription" = "ਪ੍ਰੋਫ਼ਾਈਲ ਤਸਵੀਰ ਲਗਾਉਣ, ਫ਼ੋਟੋਆਂ ਅੱਪਲੋਡ ਕਰਨ ਅਤੇ ਤੁਹਾਡੀ ਸਾਈਟ ਲੋਕੇਸ਼ਨ ਦਾ QR ਕੋਡ ਫ਼ੋਟੋ ਲਾਇਬ੍ਰੇਰੀ ਤੋਂ ਲੈਣ ਲਈ ਸਾਨੂੰ ਤੁਹਾਡੀ ਫ਼ੋਟੋ ਲਾਇਬ੍ਰੇਰੀ ਦੀ ਐਕਸੈਸ ਚਾਹੀਦੀ ਹੈ।";

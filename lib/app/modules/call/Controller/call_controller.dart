@@ -15,6 +15,7 @@ import 'package:get/get.dart' hide navigator;
 import 'contact_controller.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 class CallController extends GetxController {
   static CallController get instance => Get.isRegistered<CallController>()
       ? Get.find<CallController>()
@@ -239,7 +240,7 @@ class CallController extends GetxController {
   Future<void> makeCall({bool isVideo = false}) async {
     final String input = dialNumber.value.trim();
     if (input.isEmpty) {
-      Utils().fluttertoast("Please enter a phone number");
+      Utils().fluttertoast(appL10n.call_enterPhoneNumber);
       return;
     }
 
@@ -253,7 +254,7 @@ class CallController extends GetxController {
     Global.storageServices.get(PrefConst.userId)?.toString();
 
     if (currentUserId == null || currentUserId.isEmpty) {
-      Utils().fluttertoast("Please login to make a call");
+      Utils().fluttertoast(appL10n.call_loginToCall);
       return;
     }
 
@@ -285,14 +286,14 @@ class CallController extends GetxController {
 
     // STRICT RULE: Agar contacts me nahi mila to call bilkul nahi jayegi
     if (targetUser == null || targetUser.userId == null) {
-      Utils().fluttertoast("Not exist in your contacts");
+      Utils().fluttertoast(appL10n.call_notInContacts);
       return;
     }
 
     final String remoteUserId = targetUser.userId.toString();
     final String targetName = (targetUser.name?.trim().isNotEmpty == true)
         ? targetUser.name!.trim()
-        : "User";
+        : appL10n.call_user;
 
     if (!CallValidation.validateCall(
       destinationPhone: targetUser.mobileNo,
@@ -455,7 +456,7 @@ class CallController extends GetxController {
         }
       } else {
         recentCallResponseError.value =
-            result.message ?? "Something went wrong";
+            result.message ?? appL10n.common_somethingWentWrong;
       }
     } catch (e) {
       recentCallResponseError.value = e.toString();
@@ -657,8 +658,8 @@ class CallController extends GetxController {
         name = groupNameFound;
       } else if (name.isEmpty || name.toLowerCase() == 'unknown') {
         name = resolvedGroupId.isNotEmpty
-            ? 'Group $resolvedGroupId'
-            : 'Group Call';
+            ? appL10n.call_groupWithId(resolvedGroupId)
+            : appL10n.call_kindGroupCall;
       }
 
       final String groupImg =
@@ -715,17 +716,20 @@ class CallController extends GetxController {
         if (mobileNo.isNotEmpty) {
           name = formatPhoneForDisplay(mobileNo);
         } else if (callerId.isNotEmpty) {
-          name = 'User $callerId';
+          name = appL10n.call_userWithId(callerId);
         } else {
-          name = 'Unknown';
+          name = appL10n.call_unknown;
         }
       }
     }
 
     return {
-      'name': name.isEmpty ? 'Unknown' : name,
+      'name': name.isEmpty ? appL10n.call_unknown : name,
       'phone': mobileNo.isNotEmpty ? mobileNo : callerId,
+      // Stable English label: used for filter / icon logic only.
       'type': _composeTypeLabel(call, isGroup: isGroupCall),
+      // Stable parts for the translated label (recentCallTypeLabel).
+      ..._composeTypeParts(call, isGroup: isGroupCall),
       'time': _composeTimeLabel(entry),
       'avatar': avatar,
       'callType': (call.type ?? '').trim(),
@@ -782,6 +786,47 @@ class CallController extends GetxController {
     return '$groupTag$kind Call';
   }
 
+  /// Stable (English, lower-case) parts of the call type, used by
+  /// [recentCallTypeLabel] to show the translated label.
+  Map<String, String> _composeTypeParts(CallingDetail call,
+      {bool isGroup = false}) {
+    final String type = (call.type ?? '').trim().toLowerCase();
+    final String direction = (call.direction ?? '').trim().toLowerCase();
+    final String status = (call.status ?? '').trim().toLowerCase();
+
+    String kind;
+    if (type.contains('video')) {
+      kind = 'video';
+    } else if (type.contains('audio')) {
+      kind = 'audio';
+    } else {
+      kind = type.isEmpty ? 'call' : _capitalize(type);
+    }
+    final bool showGroupTag = isGroup && !kind.toLowerCase().contains('group');
+
+    String typeStatus = '';
+    if (status.contains('missed')) {
+      typeStatus = 'missed';
+    } else if (status.contains('cancel') ||
+        status.contains('reject') ||
+        status.contains('declin')) {
+      typeStatus = 'rejected';
+    } else if (direction == 'outgoing' ||
+        direction == 'out' ||
+        direction == 'outbound') {
+      typeStatus = 'outgoing';
+    } else if (direction == 'incoming' ||
+        direction == 'in' ||
+        direction == 'inbound') {
+      typeStatus = 'incoming';
+    }
+    return {
+      'typeStatus': typeStatus,
+      'typeKind': kind,
+      'typeGroup': (showGroupTag && typeStatus != 'rejected') ? 'true' : 'false',
+    };
+  }
+
   String _composeTimeLabel(_RecentEntry entry) {
     final CallingDetail call = entry.call;
 
@@ -820,10 +865,7 @@ class CallController extends GetxController {
     if (cleanTime.isEmpty && (call.calledAt ?? '').isNotEmpty) {
       final DateTime? dt = DateTime.tryParse(call.calledAt!);
       if (dt != null) {
-        final int hour = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
-        final String minute = dt.minute.toString().padLeft(2, '0');
-        final String period = dt.hour >= 12 ? 'PM' : 'AM';
-        cleanTime = '$hour:$minute $period';
+        cleanTime = appTime(dt);
       }
     }
 
@@ -851,7 +893,7 @@ class CallController extends GetxController {
           .trim();
       return timeWithoutYesterday.isNotEmpty
           ? timeWithoutYesterday
-          : 'Yesterday';
+          : appL10n.common_yesterday;
     }
 
     if (apiDay.isNotEmpty &&
@@ -885,21 +927,7 @@ class CallController extends GetxController {
   String _formatDate(String raw) {
     final DateTime? dt = DateTime.tryParse(raw);
     if (dt != null) {
-      const List<String> months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ];
-      return '${dt.day} ${months[dt.month - 1]}';
+      return appDateFormat('d MMM').format(dt);
     }
     return raw;
   }
@@ -1091,7 +1119,7 @@ class CallController extends GetxController {
     final String callId = (call['callId'] ?? call['id'] ?? '').trim();
 
     if (callId.isEmpty) {
-      Utils().fluttertoast("Call ID not found");
+      Utils().fluttertoast(appL10n.call_callIdNotFound);
       return false;
     }
 
@@ -1124,16 +1152,16 @@ class CallController extends GetxController {
 
         Utils().fluttertoast(response.message?.isNotEmpty == true
             ? response.message!
-            : "Call entry deleted");
+            : appL10n.call_entryDeleted);
         return true;
       } else {
         Utils().fluttertoast(response.message?.isNotEmpty == true
             ? response.message!
-            : "Failed to delete call entry");
+            : appL10n.call_entryDeleteFailed);
         return false;
       }
     } catch (e) {
-      Utils().fluttertoast("Failed to delete call entry: $e");
+      Utils().fluttertoast(appL10n.call_entryDeleteFailedError(e.toString()));
       return false;
     } finally {
       _deletingCallIds.remove(callId);
@@ -1270,16 +1298,15 @@ class CallController extends GetxController {
     _rebuildRecentDisplay();
 
     final int n = ids.length;
-    final String noun = n == 1 ? 'call' : 'calls';
     if (ok) {
       exitSelectionMode();
-      _showSnackbar("$n $noun deleted");
+      _showSnackbar(appL10n.call_callsDeleted(n));
     } else {
       selectedCallIds
         ..clear()
         ..addAll(ids);
       isSelectionMode.value = true;
-      _showSnackbar("Couldn't delete $n $noun. Try again.", isError: true);
+      _showSnackbar(appL10n.call_callsDeleteFailed(n), isError: true);
     }
   }
 
@@ -1312,16 +1339,16 @@ class CallController extends GetxController {
 
         Utils().fluttertoast(response.message?.isNotEmpty == true
             ? response.message!
-            : "Selected calls deleted");
+            : appL10n.call_selectedDeleted);
         return true;
       } else {
         Utils().fluttertoast(response.message?.isNotEmpty == true
             ? response.message!
-            : "Failed to delete selected calls");
+            : appL10n.call_selectedDeleteFailed);
         return false;
       }
     } catch (e) {
-      Utils().fluttertoast("Failed to delete selected calls: $e");
+      Utils().fluttertoast(appL10n.call_selectedDeleteFailedError(e.toString()));
       return false;
     } finally {
       isDeletingMultiple.value = false;
@@ -1349,16 +1376,16 @@ class CallController extends GetxController {
 
         Utils().fluttertoast(response.message?.isNotEmpty == true
             ? response.message!
-            : "All call history cleared");
+            : appL10n.call_historyCleared);
         return true;
       } else {
         Utils().fluttertoast(response.message?.isNotEmpty == true
             ? response.message!
-            : "Failed to clear call history");
+            : appL10n.call_historyClearFailed);
         return false;
       }
     } catch (e) {
-      Utils().fluttertoast("Failed to clear call history: $e");
+      Utils().fluttertoast(appL10n.call_historyClearFailedError(e.toString()));
       return false;
     } finally {
       isClearingAll.value = false;

@@ -3,6 +3,7 @@ import 'package:fgtracker/app/global_widget/blend_mask.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -38,7 +39,7 @@ class WalkieHeroSection extends StatelessWidget {
           child: Column(
             children: [
               reausabletext(
-                "Stay Connected, Talk Instantly",
+                context.l10n.walkie_heroTitle,
                 fontsize: _sp(context, 17.5),
                 fontfamily: FontFamily.interBold,
                 color: textColor,
@@ -46,7 +47,7 @@ class WalkieHeroSection extends StatelessWidget {
               ),
               SizedBox(height: 3.h),
               Text(
-                "Use push-to-talk voice communication with your group\nwithout making a phone call.",
+                context.l10n.walkie_heroSubtitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: _sp(context, 11.5),

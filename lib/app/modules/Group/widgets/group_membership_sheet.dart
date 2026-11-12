@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/chat_list_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -369,8 +370,10 @@ class _GroupMembershipSheetState extends State<GroupMembershipSheet>
               const SizedBox(height: 20),
               Text(
                 _created
-                    ? "Group created!"
-                    : (_joined ? "Joined successfully!" : "You left the group"),
+                    ? appL10n.group_sheetCreatedTitle
+                    : (_joined
+                        ? appL10n.group_sheetJoinedTitle
+                        : appL10n.group_sheetLeftTitle),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 22,
@@ -399,7 +402,7 @@ class _GroupMembershipSheetState extends State<GroupMembershipSheet>
                     ),
                   ),
                   child: Text(
-                    _left ? "Go to Groups →" : "Open Group →",
+                    _left ? appL10n.group_goToGroups : appL10n.group_openGroup,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -414,9 +417,9 @@ class _GroupMembershipSheetState extends State<GroupMembershipSheet>
                 height: 48,
                 child: TextButton(
                   onPressed: _close,
-                  child: const Text(
-                    "Done",
-                    style: TextStyle(
+                  child: Text(
+                    appL10n.common_done,
+                    style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: GroupMembershipSheet._purple,
@@ -483,33 +486,22 @@ class _GroupMembershipSheetState extends State<GroupMembershipSheet>
       color: GroupMembershipSheet._navy,
     );
     final name = widget.userName.trim();
+    final l10n = appL10n;
     final List<InlineSpan> spans;
     if (_created) {
       spans = name.isEmpty
-          ? const [
-              TextSpan(
-                  text: "Your group is ready. Share the code so members can join.")
-            ]
-          : [
-              TextSpan(text: name, style: bold),
-              const TextSpan(
-                  text: ", your group is ready. Share the code so members can join."),
-            ];
+          ? [TextSpan(text: l10n.group_sheetCreatedSubtitle)]
+          : _boldNameSpans(
+              l10n.group_sheetCreatedSubtitleNamed(name), name, bold);
     } else if (_joined) {
       spans = name.isEmpty
-          ? const [TextSpan(text: "Welcome, you're now a member of this group.")]
-          : [
-              const TextSpan(text: "Welcome "),
-              TextSpan(text: name, style: bold),
-              const TextSpan(text: ", you're now a member of this group."),
-            ];
+          ? [TextSpan(text: l10n.group_sheetJoinedSubtitle)]
+          : _boldNameSpans(
+              l10n.group_sheetJoinedSubtitleNamed(name), name, bold);
     } else {
       spans = name.isEmpty
-          ? const [TextSpan(text: "You're no longer a member of this group.")]
-          : [
-              TextSpan(text: name, style: bold),
-              const TextSpan(text: ", you're no longer a member of this group."),
-            ];
+          ? [TextSpan(text: l10n.group_sheetLeftSubtitle)]
+          : _boldNameSpans(l10n.group_sheetLeftSubtitleNamed(name), name, bold);
     }
     return Text.rich(
       TextSpan(style: base, children: spans),
@@ -517,14 +509,26 @@ class _GroupMembershipSheetState extends State<GroupMembershipSheet>
     );
   }
 
+  /// Splits [text] around [name] so the name stays bold in any language.
+  List<InlineSpan> _boldNameSpans(String text, String name, TextStyle bold) {
+    final i = text.indexOf(name);
+    if (i < 0) return [TextSpan(text: text)];
+    return [
+      if (i > 0) TextSpan(text: text.substring(0, i)),
+      TextSpan(text: name, style: bold),
+      if (i + name.length < text.length)
+        TextSpan(text: text.substring(i + name.length)),
+    ];
+  }
+
   Widget _buildGroupCard() {
     final count = widget.memberCount;
     final when = _created
-        ? "Created just now"
-        : (_joined ? "Joined just now" : "Left just now");
+        ? appL10n.group_createdJustNow
+        : (_joined ? appL10n.group_joinedJustNow : appL10n.group_leftJustNow);
     final meta = count == null
         ? when
-        : "$count ${count == 1 ? 'member' : 'members'} · $when";
+        : appL10n.group_membersMeta(count, when);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -608,23 +612,23 @@ class _GroupMembershipSheetState extends State<GroupMembershipSheet>
         MapEntry(
           Icons.vpn_key_outlined,
           code != null
-              ? "Group code: $code — share it so others can join"
-              : "Share the group code so others can join",
+              ? appL10n.group_codeShareInfo(code)
+              : appL10n.group_shareCodeInfo,
         ),
-        const MapEntry(Icons.admin_panel_settings_outlined,
-            "You are the admin of this group"),
+        MapEntry(Icons.admin_panel_settings_outlined,
+            appL10n.group_youAreAdmin),
       ] else if (_joined)
-        const MapEntry(Icons.chat_bubble_outline_rounded,
-            "Chat with members in the group")
+        MapEntry(Icons.chat_bubble_outline_rounded,
+            appL10n.group_chatWithMembers)
       else
-        const MapEntry(Icons.notifications_off_outlined,
-            "You won't get new messages from this group"),
+        MapEntry(Icons.notifications_off_outlined,
+            appL10n.group_noNewMessages),
       if (widget.locationShared)
         MapEntry(
           _left ? Icons.location_off_outlined : Icons.location_on_outlined,
           _left
-              ? "Your location is no longer shared with this group"
-              : "Your location is shared with this group",
+              ? appL10n.group_locationNoLongerShared
+              : appL10n.group_locationShared,
         ),
     ];
     return [
@@ -651,14 +655,14 @@ class _GroupMembershipSheetState extends State<GroupMembershipSheet>
               ),
               if (_created && code != null && r.key == Icons.vpn_key_outlined)
                 IconButton(
-                  tooltip: "Copy code",
+                  tooltip: appL10n.group_copyCode,
                   visualDensity: VisualDensity.compact,
                   icon: const Icon(Icons.copy_rounded,
                       size: 18, color: GroupMembershipSheet._purple),
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: code));
                     Get.rawSnackbar(
-                      message: "Group code copied",
+                      message: appL10n.group_codeCopied,
                       duration: const Duration(seconds: 2),
                     );
                   },

@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Core/util/message_preview_builder.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -65,7 +66,7 @@ class PinnedMessageBanner extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Pinned Message",
+                    context.l10n.widget_pinnedMessage,
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       color: _purple,
@@ -154,7 +155,7 @@ class PinnedMessageBanner extends StatelessWidget {
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    "Unpin Message",
+                    context.l10n.chat_menuUnpin,
                     style: TextStyle(
                       fontSize: 12.5.sp,
                       fontWeight: FontWeight.w600,

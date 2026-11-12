@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Model/group_call_participant.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class GroupParticipantsSheetController extends GetxController {
   GroupParticipantsSheetController(this.callController);
@@ -92,7 +93,7 @@ class GroupParticipantsSheetController extends GetxController {
           live ??
               GroupCallParticipant(
                 userId: uid,
-                name: member.name ?? 'User',
+                name: member.name ?? appL10n.call_user,
                 profileImage: member.profileImage,
                 isLocal: uid == myUserId,
                 videoOn: false,
@@ -103,7 +104,7 @@ class GroupParticipantsSheetController extends GetxController {
         newNotInCall.add(
           GroupCallParticipant(
             userId: uid,
-            name: member.name ?? 'User',
+            name: member.name ?? appL10n.call_user,
             profileImage: member.profileImage,
             isLocal: false,
             videoOn: false,

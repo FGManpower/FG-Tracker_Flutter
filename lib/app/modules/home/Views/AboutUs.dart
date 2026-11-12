@@ -1,6 +1,8 @@
 import 'dart:developer';
 
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -14,13 +16,14 @@ class AboutUs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(backgroundColor: Colors.white,
-      appBar: reusableAppbar("About", ontap: () => Navigator.pop(context)),
+      appBar: reusableAppbar(l10n.about_title, ontap: () => Navigator.pop(context)),
       body: ListView(
         scrollDirection: Axis.vertical,
         children: [
           RowWidget(
-              title: "About Us",
+              title: l10n.about_aboutUs,
               ontap: () async {
                 Navigator.push(
                     context,
@@ -32,7 +35,7 @@ class AboutUs extends StatelessWidget {
 
 
           RowWidget(
-            title: "Contact Us",
+            title: l10n.about_contactUs,
             ontap: () async {
               try {
                 final Uri url =
@@ -48,7 +51,7 @@ class AboutUs extends StatelessWidget {
           ),
 
           RowWidget(
-            title: "Privacy Policy",
+            title: l10n.about_privacyPolicy,
             ontap: () async {
               try {
                 final Uri url = Uri.parse(
@@ -64,7 +67,7 @@ class AboutUs extends StatelessWidget {
           ),
 
           RowWidget(
-            title: "Terms & Conditions",
+            title: l10n.about_termsConditions,
             ontap: () async {
               try {
                 final Uri url = Uri.parse(
@@ -92,8 +95,11 @@ class AboutUs extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            reausabletext(title,
-                fontfamily: FontFamily.interMedium, fontsize: 12),
+            Flexible(
+              child: AutoFitText(title,
+                  style: TextStyle(
+                      fontFamily: FontFamily.interMedium, fontSize: 12.sp)),
+            ),
             reausableIcon(
               icon: Icons.arrow_forward_ios_rounded,
               size: 13,

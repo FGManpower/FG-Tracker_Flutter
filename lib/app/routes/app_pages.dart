@@ -1,4 +1,6 @@
 import 'package:fgtracker/app/modules/Application/splashscreen.dart';
+import 'package:fgtracker/features/language/language_controller.dart';
+import 'package:fgtracker/features/language/language_screen.dart';
 import 'package:fgtracker/app/modules/Group/Bindings/Member_binding.dart';
 import 'package:fgtracker/app/modules/Group/Bindings/QRScan_Binding.dart';
 import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
@@ -343,6 +345,15 @@ class AppPages {
       name: Routes.forceUpdate,
       page: () => const ForceUpdateScreen(),
       binding: ForceUpdateBinding(),
+    ),
+    // Shown right before Registration for a new user
+    // (LanguageController.showBeforeRegistration). Back and swipe-back are disabled.
+    GetPage(
+      name: Routes.languageSelect,
+      page: () => const LanguageScreen(),
+      popGesture: false,
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.OTP_CHARGES,

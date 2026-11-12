@@ -6,6 +6,8 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Utils/walkie_plan_l10n.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class WalkieAvailablePlansSection extends StatelessWidget {
   final List<WalkieSubscriptionPlan> individualPlans;
@@ -75,7 +77,7 @@ class WalkieAvailablePlansSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Available Plans",
+                      context.l10n.walkiePlan_availableTitle,
                       style: TextStyle(
                         fontSize: _sp(context, 15),
                         fontFamily: FontFamily.interBold,
@@ -84,7 +86,7 @@ class WalkieAvailablePlansSection extends StatelessWidget {
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      "Select a plan to start or upgrade your subscription",
+                      context.l10n.walkiePlan_availableSubtitle,
                       style: TextStyle(
                         fontSize: _sp(context, 10.5),
                         color: subtitleColor,
@@ -100,7 +102,7 @@ class WalkieAvailablePlansSection extends StatelessWidget {
 
           // 1. INDIVIDUAL PLANS
           if (individualPlans.isNotEmpty) ...[
-            _buildCategoryHeader(context, "Individual Plans", Icons.person_rounded),
+            _buildCategoryHeader(context, context.l10n.walkiePlan_availableIndividualPlans, Icons.person_rounded),
             SizedBox(height: 8.h),
             for (final plan in individualPlans) ...[
               _buildPlanItem(
@@ -122,7 +124,7 @@ class WalkieAvailablePlansSection extends StatelessWidget {
 
           // 2. TEAM PLANS
           if (teamPlans.isNotEmpty) ...[
-            _buildCategoryHeader(context, "Team Plans", Icons.groups_rounded),
+            _buildCategoryHeader(context, context.l10n.walkiePlan_availableTeamPlans, Icons.groups_rounded),
             SizedBox(height: 8.h),
             for (final plan in teamPlans) ...[
               _buildPlanItem(
@@ -181,8 +183,11 @@ class WalkieAvailablePlansSection extends StatelessWidget {
         : plan.pricePerMember.toStringAsFixed(2);
     final currencySymbol = CurrencyFormat.symbol(plan.currency);
     final interval = plan.billingInterval.isNotEmpty
-        ? (plan.billingInterval[0].toUpperCase() + plan.billingInterval.substring(1))
-        : "Monthly";
+        ? walkieDurationText(
+            plan.billingInterval[0].toUpperCase() +
+                plan.billingInterval.substring(1),
+            context.l10n)
+        : context.l10n.walkiePlan_durationMonthly;
 
     return InkWell(
       onTap: onTap,
@@ -234,8 +239,8 @@ class WalkieAvailablePlansSection extends StatelessWidget {
                   SizedBox(height: 3.h),
                   Text(
                     isTeam
-                        ? "${plan.minMembers}-${plan.maxMembers} Seats  •  Group Collaboration"
-                        : "Single Member (Personal Access)",
+                        ? context.l10n.walkiePlan_availableTeamSeats(plan.minMembers, plan.maxMembers)
+                        : context.l10n.walkiePlan_availableSingleMember,
                     style: TextStyle(
                       fontSize: _sp(context, 10.5),
                       color: subtitleColor,
@@ -259,7 +264,7 @@ class WalkieAvailablePlansSection extends StatelessWidget {
                 ),
                 SizedBox(height: 1.h),
                 Text(
-                  isTeam ? "/ seat" : "/ month",
+                  isTeam ? context.l10n.walkiePlan_availablePerSeat : context.l10n.walkiePlan_availablePerMonth,
                   style: TextStyle(
                     fontSize: _sp(context, 9.5),
                     color: subtitleColor,

@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:developer';
 import 'dart:io';
 
@@ -106,9 +107,9 @@ class DocumentService {
       if (MediaAvailabilityService.isMissingStatusCode(statusCode)) {
         // The bubble listens to this and switches to "Media is missing".
         MediaAvailabilityService.markMissing(documentUrl);
-        Utils().fluttertoast("Media is missing. This file is no longer available.");
+        Utils().fluttertoast(appL10n.chat_mediaMissingToast);
       } else {
-        Utils().fluttertoast("Couldn't open the document. Please try again.");
+        Utils().fluttertoast(appL10n.chat_documentOpenFailed);
       }
     } finally {
       downloadingDocuments.remove(documentUrl);

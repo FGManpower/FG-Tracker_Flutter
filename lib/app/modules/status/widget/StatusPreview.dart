@@ -1,4 +1,5 @@
 import 'package:camera/camera.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +37,7 @@ class StatusPreview extends StatelessWidget {
                   cursorColor: Colors.white,
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: 'Type a status...',
+                    hintText: appL10n.status_typeHint,
                     hintStyle: TextStyle(
                       color: Colors.white.withValues(alpha: 0.55),
                       fontSize: 28.sp,
@@ -168,7 +169,7 @@ class StatusPreview extends StatelessWidget {
               TextButton(
                 onPressed: controller.initCamera,
                 child: reausabletext(
-                  'Retry',
+                  appL10n.common_retry,
                   fontsize: 13.sp,
                   color: const Color(0xFF6B4DFF),
                 ),

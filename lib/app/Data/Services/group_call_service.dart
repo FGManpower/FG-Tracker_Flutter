@@ -2,6 +2,7 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class GroupCallService {
   static final GroupCallService instance = GroupCallService._internal();
@@ -15,7 +16,7 @@ class GroupCallService {
 
   /// Shared "Coming soon" feedback for all group call buttons.
   static void showComingSoon() {
-    Utils().fluttertoast("Group calling is coming soon");
+    Utils().fluttertoast(appL10n.call_groupCallComingSoon);
   }
 
   void startGroupCall(

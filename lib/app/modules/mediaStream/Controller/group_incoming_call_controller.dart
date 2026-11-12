@@ -1,6 +1,7 @@
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import '../../../routes/app_pages.dart';
 
 class GroupIncomingCallController extends GetxController {
@@ -25,7 +26,7 @@ class GroupIncomingCallController extends GetxController {
     groupId = args["groupId"]?.toString() ?? "";
     groupName = args["groupName"]?.toString() ?? "Unknown Group";
     callerName =
-        (args["callerName"] ?? args["name"] ?? "Unknown User").toString();
+        (args["callerName"] ?? args["name"] ?? appL10n.call_unknownUser).toString();
     groupProfile = args["groupProfile"]?.toString();
     callerProfileImage =
         (args["callerProfileImage"] ?? args["profileImage"] ?? groupProfile)

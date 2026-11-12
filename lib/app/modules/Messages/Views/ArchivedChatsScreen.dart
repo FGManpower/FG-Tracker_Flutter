@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -53,14 +54,14 @@ class ArchivedChatsScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 reausabletext(
-                  "Archived Chats",
+                  appL10n.chatList_archivedChatsTitle,
                   fontsize: 18.sp,
                   fontfamily: FontFamily.interBold,
                   color: Colors.black87,
                 ),
                 SizedBox(height: 2.h),
                 reausabletext(
-                  "Your hidden conversations",
+                  appL10n.chatList_archivedChatsSubtitle,
                   fontsize: 11.sp,
                   fontweight: const FontWeight(500),
                   color: const Color(0xFF6B4DFF),
@@ -132,7 +133,7 @@ class ArchivedChatsScreen extends StatelessWidget {
       child: Row(
         children: [
           reausabletext(
-            "Archived",
+            appL10n.chatList_archived,
             fontsize: 13.sp,
             fontfamily: FontFamily.interBold,
             color: Colors.black87,
@@ -260,7 +261,7 @@ class ArchivedChatsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       reausabletext(
-                        chat.name ?? "Unknown User",
+                        chatListDisplayName(chat.name),
                         fontsize: 14.sp,
                         fontfamily: FontFamily.interBold,
                         color: Colors.black87,
@@ -342,7 +343,7 @@ class ArchivedChatsScreen extends StatelessWidget {
 
   String _getMessagePreview(PrivateChatModel chat) {
     final message = chat.message?.trim() ?? '';
-    if (message.isEmpty) return "No messages yet";
+    if (message.isEmpty) return appL10n.chatList_noMessagesYet;
 
     final userId = Get.isRegistered<ChatListController>()
         ? Get.find<ChatListController>().currentUserId
@@ -361,14 +362,7 @@ class ArchivedChatsScreen extends StatelessWidget {
               dateTime.day == now.day;
 
       if (isToday) {
-        final hour = dateTime.hour % 12 == 0
-            ? 12
-            : dateTime.hour % 12;
-
-        final minute = dateTime.minute.toString().padLeft(2, '0');
-        final period = dateTime.hour >= 12 ? 'PM' : 'AM';
-
-        return "$hour:$minute $period";
+        return appTime(dateTime);
       }
 
       final yesterday = now.subtract(const Duration(days: 1));
@@ -379,7 +373,7 @@ class ArchivedChatsScreen extends StatelessWidget {
               dateTime.day == yesterday.day;
 
       if (isYesterday) {
-        return "Yesterday";
+        return appL10n.common_yesterday;
       }
 
       return "${dateTime.day.toString().padLeft(2, '0')}/"
@@ -424,7 +418,7 @@ class ArchivedChatsScreen extends StatelessWidget {
       items: [
         DropdownMenuItemData(
           icon: Icons.unarchive_outlined,
-          title: "Unarchive Chat",
+          title: appL10n.chatList_unarchiveChat,
           onTap: () {
             controller.unarchiveChat(chat);
           },
@@ -488,7 +482,7 @@ class ArchivedChatsScreen extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           reausabletext(
-            "No Archived Chats",
+            appL10n.chatList_noArchivedChats,
             fontsize: 15.sp,
             fontfamily: FontFamily.interBold,
             color: Colors.black87,
@@ -496,7 +490,7 @@ class ArchivedChatsScreen extends StatelessWidget {
           SizedBox(height: 6.h),
           Center(
             child: reausabletext(
-              "Archived conversations will appear here.",
+              appL10n.chatList_noArchivedChatsSubtitle,
               fontsize: 11.sp,
               color: Colors.grey,
             ),

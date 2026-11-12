@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_in_app_pip/flutter_in_app_pip.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import '../../Controller/group_calling_controller.dart';
 import 'package:fgtracker/app/Model/group_call_participant.dart';
@@ -326,7 +327,7 @@ class _PipParticipantTile extends StatelessWidget {
           right: 4,
           bottom: 4,
           child: Text(
-            participant.isLocal ? 'You' : (participant.name ?? ''),
+            participant.isLocal ? context.l10n.common_you : (participant.name ?? ''),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(

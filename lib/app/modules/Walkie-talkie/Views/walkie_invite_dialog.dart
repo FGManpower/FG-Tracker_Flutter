@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -231,29 +233,29 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
 
   String _getJoinedMemberCountText() {
     if (widget.joinedCount != null && widget.joinedCount! > 0) {
-      return "${widget.joinedCount} Joined";
+      return appL10n.walkie_joinedCount(widget.joinedCount!);
     }
     if (Get.isRegistered<GroupWalkieController>()) {
       final wc = Get.find<GroupWalkieController>();
       if (wc.currentGroupId == widget.groupId && wc.participants.isNotEmpty) {
-        return "${wc.participants.length} Joined";
+        return appL10n.walkie_joinedCount(wc.participants.length);
       }
     }
-    return "1 Joined";
+    return appL10n.walkie_joinedCount(1);
   }
 
   @override
   Widget build(BuildContext context) {
     final displayGroupName = widget.groupName.trim().isNotEmpty
         ? widget.groupName
-        : "Field Team";
+        : context.l10n.walkie_fieldTeam;
 
     final displaySpeakerText = (widget.subtitle != null &&
             widget.subtitle!.trim().isNotEmpty)
         ? widget.subtitle!
         : (widget.speakerName.trim().isNotEmpty
-            ? "${widget.speakerName.trim()} is speaking..."
-            : "Someone is speaking...");
+            ? context.l10n.walkie_isSpeaking(widget.speakerName.trim())
+            : context.l10n.walkie_someoneSpeaking);
 
     final memberCountText = _getJoinedMemberCountText();
 
@@ -341,7 +343,7 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
                             ),
                             SizedBox(width: 4.w),
                             Text(
-                              "LIVE",
+                              context.l10n.walkie_live,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 9.5.sp,
@@ -408,9 +410,9 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      _buildCancelButton(),
+                      Flexible(child: _buildCancelButton()),
                       SizedBox(width: 10.w),
-                      _buildAcceptButton(),
+                      Flexible(child: _buildAcceptButton()),
                     ],
                   ),
                 ],
@@ -505,12 +507,14 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
                 color: const Color(0xFF141738),
               ),
               SizedBox(width: 5.w),
-              Text(
-                "Cancel",
-                style: TextStyle(
-                  color: const Color(0xFF141738),
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w700,
+              Flexible(
+                child: AutoFitText(
+                  appL10n.common_cancel,
+                  style: TextStyle(
+                    color: const Color(0xFF141738),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
@@ -552,12 +556,14 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
                 color: Colors.white,
               ),
               SizedBox(width: 5.w),
-              Text(
-                "Accept",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w700,
+              Flexible(
+                child: AutoFitText(
+                  appL10n.walkie_accept,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],

@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
@@ -162,7 +163,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                   Global.storageServices.get(PrefConst.userId)?.toString();
               final storedName = reply.senderName?.toString().trim() ?? "";
               final senderLabel = reply.senderId?.toString() == myId
-                  ? "You"
+                  ? context.l10n.common_you
                   : (storedName.isNotEmpty && storedName != "null"
                       ? storedName
                       : (controller.memberNameFor(reply.senderId) ?? ""));
@@ -191,7 +192,9 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              senderLabel.isNotEmpty ? senderLabel : "Unknown",
+                              senderLabel.isNotEmpty
+                                  ? senderLabel
+                                  : context.l10n.chat_unknown,
                               style: const TextStyle(
                                 color: _purple,
                                 fontWeight: FontWeight.bold,
@@ -214,8 +217,8 @@ class GroupChatScreen extends GetView<GroupMessageController> {
             }),
             // Backend v2.5.0: deactivated group = banner instead of input.
             Obx(() => controller.removedFromGroup.value
-                ? const DeactivatedGroupBanner(
-                    text: "You're no longer a member of this group")
+                ? DeactivatedGroupBanner(
+                    text: context.l10n.chat_noLongerMember)
                 : controller.isGroupDeactivated
                 ? const DeactivatedGroupBanner()
                 : ChatInputArea(
@@ -389,10 +392,10 @@ class GroupChatScreen extends GetView<GroupMessageController> {
         autofocus: true,
         // Keyboard and emoji panel never show together.
         onTap: controller.hideEmoji,
-        decoration: const InputDecoration(
-          hintText: "Search messages...",
+        decoration: InputDecoration(
+          hintText: appL10n.chat_searchMessagesHint,
           border: InputBorder.none,
-          hintStyle: TextStyle(color: Colors.grey),
+          hintStyle: const TextStyle(color: Colors.grey),
         ),
         style: const TextStyle(color: Colors.black, fontSize: 16),
         onChanged: controller.onSearchChanged,
@@ -439,7 +442,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
         arguments: {
           "groupId": controller.groupId.toString(),
           "groupName": controller.groupName.isEmpty
-              ? "Unknown Group"
+              ? appL10n.groupInfo_unknownGroup
               : controller.groupName,
           "groupProfile": controller.groupImage,
           "isVideo": isVideo,
@@ -450,8 +453,8 @@ class GroupChatScreen extends GetView<GroupMessageController> {
     } catch (e) {
       AppLog.d("Error initiating group call: $e");
       Get.snackbar(
-        "Error",
-        "Could not start group call. Please try again.",
+        appL10n.common_error,
+        appL10n.groupInfo_groupCallFailed,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -533,7 +536,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                           Obx(
                             () => Text(
                               controller.groupName.value.isEmpty
-                                  ? "Unknown"
+                                  ? context.l10n.chat_unknown
                                   : controller.groupName.value,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -568,7 +571,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                               TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: "$total Members",
+                                    text: context.l10n.common_membersCount(total),
                                     style: TextStyle(
                                       color: Colors.grey.shade600,
                                       fontSize: 11.sp,
@@ -645,14 +648,14 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                       value: 0,
                       icon: Icons.search,
                       iconColor: const Color(0xFF5045B9),
-                      title: "Search Messages",
+                      title: context.l10n.chat_searchMessages,
                     ),
                     if (controller.isCreator.value) ...[
                       _buildPopupMenuItem(
                         value: 1,
                         icon: Icons.edit_rounded,
                         iconColor: const Color(0xFF5045B9),
-                        title: "Update Group",
+                        title: context.l10n.chat_updateGroup,
                       ),
                     ]
                   ];
@@ -684,12 +687,16 @@ class GroupChatScreen extends GetView<GroupMessageController> {
             size: 20.sp,
           ),
           SizedBox(width: 14.w),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: isDestructive ? Colors.redAccent : const Color(0xFF1B1B1B),
+          // Plain Text (wraps): the popup menu measures intrinsic widths,
+          // which AutoFitText's LayoutBuilder does not support.
+          Flexible(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: isDestructive ? Colors.redAccent : const Color(0xFF1B1B1B),
+              ),
             ),
           ),
         ],

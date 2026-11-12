@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:math' show Random, max;
 
 import 'dart:async';
@@ -378,7 +379,7 @@ class AttendanceController extends GetxController {
     );
 
     if (res["status"] != true || res["data"] is! Map) {
-      throw res["message"]?.toString() ?? "Unable to create attendance";
+      throw res["message"]?.toString() ?? appL10n.attendance_createFailed;
     }
     final data = Map<String, dynamic>.from(res["data"]);
     final message = data["message"];
@@ -416,7 +417,7 @@ class AttendanceController extends GetxController {
 
       final data = res["data"];
       if (res["status"] != true || data is! Map) {
-        throw res["message"]?.toString() ?? "Unable to record vote";
+        throw res["message"]?.toString() ?? appL10n.attendance_voteFailed;
       }
       _applyMutationResult(pollId, Map<String, dynamic>.from(data), before);
     } catch (e) {
@@ -438,7 +439,7 @@ class AttendanceController extends GetxController {
       final res = await AttendanceRepo.removeVote(pollId);
       final data = res["data"];
       if (res["status"] != true) {
-        throw res["message"]?.toString() ?? "Unable to remove vote";
+        throw res["message"]?.toString() ?? appL10n.attendance_removeVoteFailed;
       }
       if (data is Map) {
         _applyMutationResult(
@@ -459,7 +460,7 @@ class AttendanceController extends GetxController {
   Future<void> closePoll(int pollId) async {
     final res = await AttendanceRepo.closePoll(pollId);
     if (res["status"] != true) {
-      throw res["message"]?.toString() ?? "Unable to close attendance";
+      throw res["message"]?.toString() ?? appL10n.attendance_closeFailed;
     }
     final data = res["data"];
     if (data is Map && data["poll"] != null) {
@@ -474,7 +475,7 @@ class AttendanceController extends GetxController {
     try {
       final res = await AttendanceRepo.deletePoll(pollId);
       if (res["status"] != true) {
-        final message = res["message"]?.toString() ?? "Unable to delete attendance";
+        final message = res["message"]?.toString() ?? appL10n.attendance_deleteFailed;
         // Deleted already (e.g. another device): treat as success.
         if (_isGoneError(message)) {
           _markDeleted(pollId);
@@ -510,7 +511,7 @@ class AttendanceController extends GetxController {
     );
     log("ATTENDANCE VOTERS RAW (poll=$pollId option=$optionId notVoted=$notVoted) => $res");
     if (res["status"] == false) {
-      throw res["message"]?.toString() ?? "Unable to load voters";
+      throw res["message"]?.toString() ?? appL10n.attendance_loadVotersFailed;
     }
     final rawData = res["data"];
     // `data` is documented as {counts, voters, pagination}; also accept the

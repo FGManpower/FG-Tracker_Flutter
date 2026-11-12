@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
@@ -242,7 +243,7 @@ class NewChatController extends GetxController {
 
         unawaited(chatMapFuture.then(_patchChatIds));
       } else if (!hasCache) {
-        responseError.value = result.message ?? "Something went wrong";
+        responseError.value = result.message ?? appL10n.common_somethingWentWrong;
       }
     } catch (e) {
       if (!hasCache) responseError.value = e.toString();

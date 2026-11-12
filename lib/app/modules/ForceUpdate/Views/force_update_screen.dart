@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -117,7 +118,7 @@ class ForceUpdateScreen extends GetView<ForceUpdateController> {
                     Text(
                       controller.versionData.title.isNotEmpty
                           ? controller.versionData.title
-                          : 'Update Required',
+                          : context.l10n.forceUpdate_defaultTitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'InterBold',
@@ -134,7 +135,7 @@ class ForceUpdateScreen extends GetView<ForceUpdateController> {
                     Text(
                       controller.versionData.message.isNotEmpty
                           ? controller.versionData.message
-                          : 'A new version of FG Tracker is available with critical improvements. Please update to continue using the application.',
+                          : context.l10n.forceUpdate_fallbackMessage,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'InterRegular',
@@ -163,7 +164,7 @@ class ForceUpdateScreen extends GetView<ForceUpdateController> {
                           Column(
                             children: [
                               Text(
-                                'CURRENT INSTALLED',
+                                context.l10n.forceUpdate_currentInstalled,
                                 style: TextStyle(
                                   fontFamily: 'InterMedium',
                                   fontSize: 10.sp,
@@ -192,7 +193,7 @@ class ForceUpdateScreen extends GetView<ForceUpdateController> {
                           Column(
                             children: [
                               Text(
-                                'REQUIRED VERSION',
+                                context.l10n.forceUpdate_requiredVersion,
                                 style: TextStyle(
                                   fontFamily: 'InterMedium',
                                   fontSize: 10.sp,
@@ -257,7 +258,7 @@ class ForceUpdateScreen extends GetView<ForceUpdateController> {
                                         ),
                                         SizedBox(width: 10.w),
                                         Text(
-                                          'Update on $storeName',
+                                          context.l10n.forceUpdate_updateOnStore(storeName),
                                           style: TextStyle(
                                             fontFamily: 'InterBold',
                                             fontSize: 16.sp,
@@ -286,7 +287,7 @@ class ForceUpdateScreen extends GetView<ForceUpdateController> {
                         ),
                         SizedBox(width: 6.w),
                         Text(
-                          'Update is required to proceed with FG Tracker',
+                          context.l10n.forceUpdate_footer,
                           style: TextStyle(
                             fontFamily: 'InterRegular',
                             fontSize: 11.sp,

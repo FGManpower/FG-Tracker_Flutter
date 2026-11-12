@@ -2,8 +2,10 @@
 
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/util/profile_navigation.dart';
-import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -192,7 +194,7 @@ class GroupInfoBottomSheet extends StatelessWidget {
           if (groupDesc != null && groupDesc!.trim().isNotEmpty) ...[
             SizedBox(height: 12.h),
             Text(
-              "Description",
+              context.l10n.walkie_description,
               style: TextStyle(
                 color: _textDark,
                 fontSize: 13.sp,
@@ -212,7 +214,7 @@ class GroupInfoBottomSheet extends StatelessWidget {
           if (groupCode != null && groupCode!.trim().isNotEmpty) ...[
             SizedBox(height: 10.h),
             Text(
-              "Group Code: $groupCode",
+              context.l10n.walkie_groupCode('$groupCode'),
               style: TextStyle(
                 color: _primaryPurple,
                 fontSize: 13.sp,
@@ -233,7 +235,7 @@ class GroupInfoBottomSheet extends StatelessWidget {
             SizedBox(height: 24.h),
             Center(
               child: Text(
-                "No members found",
+                context.l10n.walkie_noMembersFound,
                 style: TextStyle(color: _textSecondary, fontSize: 13.sp),
               ),
             ),
@@ -279,7 +281,7 @@ class GroupInfoBottomSheet extends StatelessWidget {
                     ? _effectiveController.totalParticipants.value
                     : _effectiveController.participants.length;
                 return Text(
-                  "$activeCount Active in Walkie",
+                  appL10n.walkie_activeInWalkie(activeCount),
                   style: TextStyle(
                     color: _textSecondary,
                     fontSize: 12.sp,
@@ -297,7 +299,7 @@ class GroupInfoBottomSheet extends StatelessWidget {
     return Row(
       children: [
         Text(
-          "Group Members",
+          appL10n.walkie_groupMembers,
           style: TextStyle(
             color: _textDark,
             fontSize: 14.sp,
@@ -306,7 +308,7 @@ class GroupInfoBottomSheet extends StatelessWidget {
         ),
         const Spacer(),
         Text(
-          "${allGroupMembers.length} total",
+          appL10n.walkie_totalCount(allGroupMembers.length),
           style: TextStyle(
             color: _textSecondary,
             fontSize: 12.sp,
@@ -349,7 +351,7 @@ class GroupInfoBottomSheet extends StatelessWidget {
         final memberId = member.userId?.toString() ?? '';
         final memberName = (member.name != null && member.name!.trim().isNotEmpty)
             ? member.name!.trim()
-            : "Member";
+            : context.l10n.walkie_member;
         final bool isThisMemberAdmin = (adminId != null &&
                 adminId!.trim().isNotEmpty &&
                 (adminId!.trim() == memberId.trim() ||
@@ -380,31 +382,32 @@ class GroupInfoBottomSheet extends StatelessWidget {
 
           if (inWalkie) {
             if (isSpeaking) {
-              statusText = "Speaking...";
+              statusText = context.l10n.walkie_speaking;
               statusColor = _primaryPurple;
             } else if (isMuted) {
-              statusText = "Muted • In Walkie";
+              statusText = context.l10n.walkie_mutedInWalkie;
               statusColor = _mutedRed;
             } else {
-              statusText = "In Walkie Channel";
+              statusText = context.l10n.walkie_inWalkieChannel;
               statusColor = _activeGreen;
             }
           } else if (isAppOnline) {
-            statusText = "Active";
+            statusText = context.l10n.walkie_activeBadge;
             statusColor = _activeGreen;
           } else if (rawLastSeen != null &&
               rawLastSeen.trim().isNotEmpty &&
               rawLastSeen.toLowerCase() != 'offline' &&
               rawLastSeen.toLowerCase() != 'null') {
-            final dt = DateTime.tryParse(rawLastSeen);
+            final dt = Tracking.parseDateTime(rawLastSeen);
             if (dt != null) {
-              statusText = "Last seen ${Tracking().getTimeAgo(dt)}";
+              statusText = formatLastSeen(context, dt) ??
+                  context.l10n.walkie_lastSeen(rawLastSeen);
             } else {
-              statusText = "Last seen: $rawLastSeen";
+              statusText = context.l10n.walkie_lastSeen(rawLastSeen);
             }
             statusColor = _textSecondary;
           } else {
-            statusText = "Offline";
+            statusText = context.l10n.common_offline;
             statusColor = _textSecondary;
           }
 
@@ -469,7 +472,7 @@ class GroupInfoBottomSheet extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Text(
-                          "Admin",
+                          context.l10n.walkie_admin,
                           style: TextStyle(
                             color: _primaryPurple,
                             fontSize: 10.sp,
@@ -528,7 +531,7 @@ class GroupInfoBottomSheet extends StatelessWidget {
               ),
               SizedBox(width: 4.w),
               Text(
-                "${countdown}s",
+                appL10n.walkie_secondsShort(countdown),
                 style: TextStyle(
                   color: _primaryPurple,
                   fontSize: 10.5.sp,
@@ -574,12 +577,12 @@ class GroupInfoBottomSheet extends StatelessWidget {
       } else {
         // Requirement 3: Other members show button but cannot click
         return Tooltip(
-          message: "Only Group Admin can send alert",
+          message: appL10n.walkie_onlyAdminCanAlert,
           child: GestureDetector(
             onTap: () {
               Get.snackbar(
-                "Admin Only Action",
-                "Only group admin can send notification alerts to members.",
+                appL10n.walkie_adminOnlyAction,
+                appL10n.walkie_adminOnlyActionMessage,
                 snackPosition: SnackPosition.BOTTOM,
                 backgroundColor: const Color(0xFF1E1B2E),
                 colorText: Colors.white,

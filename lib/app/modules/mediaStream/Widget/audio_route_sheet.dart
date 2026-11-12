@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide navigator;
+import 'package:fgtracker/l10n/l10n.dart';
 
 import '../../../../gen/fonts.gen.dart';
 
@@ -37,9 +38,9 @@ class _AudioRouteSheet extends StatelessWidget {
   String _titleOf(CallAudioRoute route) {
     switch (route) {
       case CallAudioRoute.earpiece:
-        return 'Phone';
+        return appL10n.call_phone;
       case CallAudioRoute.speaker:
-        return 'Speaker';
+        return appL10n.call_speaker;
       case CallAudioRoute.bluetooth:
         return controller.bluetoothDeviceName;
       case CallAudioRoute.headset:
@@ -50,13 +51,13 @@ class _AudioRouteSheet extends StatelessWidget {
   String? _subtitleOf(CallAudioRoute route) {
     switch (route) {
       case CallAudioRoute.earpiece:
-        return 'Earpiece';
+        return appL10n.call_earpiece;
       case CallAudioRoute.speaker:
         return null;
       case CallAudioRoute.bluetooth:
         return 'Bluetooth';
       case CallAudioRoute.headset:
-        return 'Wired';
+        return appL10n.call_wired;
     }
   }
 
@@ -128,7 +129,7 @@ class _AudioRouteSheet extends StatelessWidget {
                     child: Row(
                       children: [
                         Text(
-                          'Audio Output',
+                          appL10n.call_audioOutput,
                           style: TextStyle(
                             color: AppColors.darkText,
                             fontSize: 16.sp.clamp(15.0, 18.0),
@@ -188,7 +189,7 @@ class _AudioRouteSheet extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'Cancel',
+                        appL10n.common_cancel,
                         style: TextStyle(
                           color: AppColors.darkText,
                           fontSize: 14.5.sp.clamp(13.0, 16.0),

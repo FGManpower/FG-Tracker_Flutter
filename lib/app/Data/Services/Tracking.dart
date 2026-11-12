@@ -1,6 +1,56 @@
 
 
+import 'package:fgtracker/l10n/l10n.dart';
+
 class Tracking {
+  /// Display text for the fixed English location values the tracking code
+  /// uses as logic ids ("Location unavailable", "Locating...", ...). Any
+  /// other value (address from geocoding / API) is returned as-is.
+  static String displayLocation(String value) {
+    final l = appL10n;
+    switch (value.trim()) {
+      case 'Location unavailable':
+        return l.track_locationUnavailable;
+      case 'Locating...':
+        return l.track_locating;
+      case 'Current Location':
+        return l.track_currentLocation;
+      case 'Nearby you':
+        return l.track_nearbyYou;
+    }
+    return value;
+  }
+
+  /// Display text for a distance value such as "1.2 km away" (the English
+  /// value is kept for parsing). Number and unit stay; "away" is translated.
+  static String displayDistance(String value) {
+    final t = value.trim();
+    if (t.endsWith(' away')) {
+      return appL10n.track_distanceAway(t.substring(0, t.length - 5).trim());
+    }
+    return displayLocation(t);
+  }
+
+  /// Display text for the fixed English errors set by TrackingController
+  /// (kept in English: the screen checks them for "internet"/"network").
+  /// Server messages are returned as-is.
+  static String displayError(String value) {
+    final l = appL10n;
+    switch (value) {
+      case 'Failed to load groups':
+        return l.track_errorFailedLoadGroups;
+      case 'Unable to connect to server. Please try again.':
+        return l.track_errorServer;
+      case 'Unable to load groups. Please try again.':
+        return l.track_errorLoadGroups;
+      case 'Unable to load nearby members. Please try again.':
+        return l.track_errorLoadMembers;
+      case 'No internet connection. Please check your network.':
+        return l.track_errorNoInternet;
+    }
+    return value;
+  }
+
   /// Safely parse a date-time string, automatically handling UTC timestamps without trailing 'Z'.
   static DateTime? parseDateTime(dynamic raw) {
     if (raw == null) return null;
@@ -65,12 +115,13 @@ class Tracking {
     final dt = lastSeen.isUtc ? lastSeen.toLocal() : lastSeen;
     final diff = now.difference(dt);
 
-    if (diff.isNegative || diff.inSeconds < 180) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
+    final l = appL10n;
+    if (diff.isNegative || diff.inSeconds < 180) return l.common_justNow;
+    if (diff.inMinutes < 60) return l.common_minutesAgo(diff.inMinutes);
     if (diff.inHours < 24) {
-      return '${diff.inHours} hour${diff.inHours > 1 ? 's' : ''} ago';
+      return l.common_hoursAgo(diff.inHours);
     }
-    return '${diff.inDays} day${diff.inDays > 1 ? 's' : ''} ago';
+    return l.common_daysAgo(diff.inDays);
   }
 }
 

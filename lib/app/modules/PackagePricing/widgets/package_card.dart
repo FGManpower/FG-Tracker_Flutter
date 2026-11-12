@@ -3,6 +3,7 @@ import 'package:fgtracker/app/modules/PackagePricing/widgets/package_common_widg
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 /// One module on the Packages & Pricing screen
 class PackageCard extends StatelessWidget {
@@ -18,7 +19,9 @@ class PackageCard extends StatelessWidget {
     final semanticsLabel = [
       item.title,
       if (item.tagline != null) item.tagline!,
-      item.isAvailable ? 'View plans' : 'Coming soon',
+      item.isAvailable
+          ? context.l10n.package_viewPlans
+          : context.l10n.common_comingSoon,
     ].join('. ');
 
     return Semantics(
@@ -138,7 +141,9 @@ class PackageCard extends StatelessWidget {
   /// "View plans" / "Coming soon" — no price or active status on the card
   Widget _footerLabel() {
     return Text(
-      item.isAvailable ? 'View plans' : 'Coming soon',
+      item.isAvailable
+          ? appL10n.package_viewPlans
+          : appL10n.common_comingSoon,
       style: TextStyle(
         fontSize: 13.sp,
         fontFamily: FontFamily.interSemiBold,

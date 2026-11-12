@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -145,7 +147,7 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'App Permissions',
+                  appL10n.permission_appPermissionsTitle,
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w800,
@@ -155,7 +157,7 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  'Review the permissions required.',
+                  appL10n.permission_appPermissionsSubtitle,
                   style: TextStyle(
                     fontSize: 11.5.sp,
                     height: 1.3,
@@ -327,7 +329,7 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Why we need this?',
+                                  appL10n.permission_whyWeNeedThis,
                                   style: TextStyle(
                                     fontSize: 12.5.sp,
                                     fontWeight: FontWeight.w800,
@@ -371,30 +373,31 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
     final Color fg;
 
     if (granted) {
-      label = 'Granted';
+      label = appL10n.permission_badgeGranted;
       bg = const Color(0xFFDCF5E6);
       fg = const Color(0xFF1BA85F);
     } else if (controller.isRequired(index)) {
-      label = 'Required';
+      label = appL10n.permission_badgeRequired;
       bg = const Color(0xFFFFE5EC);
       fg = const Color(0xFFD52E58);
     } else if (controller.isRecommended(index)) {
-      label = 'Recommended';
+      label = appL10n.permission_badgeRecommended;
       bg = const Color(0xFFFFF3DC);
       fg = const Color(0xFFB7791F);
     } else {
-      label = 'Optional';
+      label = appL10n.permission_badgeOptional;
       bg = const Color(0xFFECEAFF);
       fg = const Color(0xFF7778A5);
     }
 
     return Container(
+      constraints: BoxConstraints(maxWidth: 110.w),
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(20.r),
       ),
-      child: Text(
+      child: AutoFitText(
         label,
         style: TextStyle(
           fontSize: 10.sp,
@@ -536,7 +539,7 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
                         ),
                       ),
                       child: Text(
-                        'Continue',
+                        appL10n.common_continue,
                         style: TextStyle(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w700,
@@ -559,7 +562,9 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
                         ),
                       ),
                       child: Text(
-                        canContinue ? 'Skip & Continue' : 'Continue',
+                        canContinue
+                            ? appL10n.permission_skipAndContinue
+                            : appL10n.common_continue,
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
@@ -570,7 +575,7 @@ class PermissionSetupScreen extends GetView<PermissionSetupController> {
             if (!canContinue) ...[
               SizedBox(height: 6.h),
               Text(
-                'Location and Notifications are required to continue.',
+                appL10n.permission_locationAndNotificationsRequiredHint,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: const Color(0xFF686B9D),

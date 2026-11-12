@@ -2,10 +2,12 @@ import 'dart:ui';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import '../Controller/incoming_call_controller.dart';
 
 class IncomingCallScreen extends GetView<IncomingCallController> {
@@ -107,8 +109,8 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                             SizedBox(width: 8.w),
                             Text(
                               isVideo
-                                  ? "Incoming video call"
-                                  : "Incoming audio call",
+                                  ? context.l10n.call_incomingVideo
+                                  : context.l10n.call_incomingAudio,
                               style: TextStyle(
                                 color: isVideo ? Colors.white70 : primaryPurple,
                                 fontSize: 13.sp,
@@ -181,7 +183,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                                   color: Colors.white, size: 16.sp),
                               SizedBox(width: 8.w),
                               Text(
-                                "Turn on your video",
+                                context.l10n.call_turnOnVideo,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 12.sp,
@@ -202,7 +204,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                       ),
                       SizedBox(height: 6.h),
                       Text(
-                        "Swipe up to answer",
+                        context.l10n.call_swipeUpToAnswer,
                         style: TextStyle(
                           color: isVideo
                               ? Colors.white54
@@ -223,7 +225,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                           children: [
                             _sideBtn(
                               icon: Icons.close_rounded,
-                              label: "Decline",
+                              label: context.l10n.call_decline,
                               bg: sideBtnBg,
                               textColor: textColor,
                               onTap: controller.rejectCall,
@@ -234,7 +236,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                             ),
                             _sideBtn(
                               icon: Icons.mic_off_rounded,
-                              label: "Mute",
+                              label: context.l10n.call_mute,
                               bg: sideBtnBg,
                               textColor: textColor,
                               onTap: () {
@@ -306,12 +308,16 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
           ),
         ),
         SizedBox(height: 10.h),
-        Text(
-          label,
-          style: TextStyle(
-            color: textColor,
-            fontSize: 13.sp,
-            fontFamily: FontFamily.interMedium,
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 80.w),
+          child: AutoFitText(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 13.sp,
+              fontFamily: FontFamily.interMedium,
+            ),
           ),
         ),
       ],
@@ -526,13 +532,17 @@ class _SlideUpAnswerButtonState extends State<_SlideUpAnswerButton>
           }),
         ),
         SizedBox(height: 8.h),
-        Text(
-          "Answer",
-          style: TextStyle(
-            color: widget.isVideo ? Colors.white : const Color(0xFF0F0B4C),
-            fontSize: 14.sp,
-            fontFamily: FontFamily.interMedium,
-            fontWeight: FontWeight.w600,
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 100.w),
+          child: AutoFitText(
+            context.l10n.call_answer,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: widget.isVideo ? Colors.white : const Color(0xFF0F0B4C),
+              fontSize: 14.sp,
+              fontFamily: FontFamily.interMedium,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],

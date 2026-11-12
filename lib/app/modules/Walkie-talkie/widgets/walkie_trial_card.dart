@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_trial_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class WalkieTrialCard extends StatelessWidget {
   const WalkieTrialCard({super.key});
@@ -33,28 +35,36 @@ class WalkieTrialCard extends StatelessWidget {
       final bool trialConsumed = controller.isTrialConsumed;
       final bool trialEligible = controller.isTrialEligible;
 
-      String title = "FREE TRIAL";
+      final l10n = context.l10n;
+      // Was `title == "FREE TRIAL"`; kept as a flag so the badge logic
+      // does not depend on the translated text.
+      bool isFreeTrialTitle = true;
+      String title = l10n.walkiePlan_trialFreeTrialLabel;
       String? subtitle;
       String description =
-          "Use your ${controller.trialDurationFormatted} trial anytime within 7 days.";
+          l10n.walkiePlan_trialUseWithin7Days(controller.trialDurationFormatted);
 
       if (trialActive) {
-        title = "TRIAL ACTIVE";
-        subtitle = "Free Trial Running";
-        description = "Enjoy Walkie Talkie during your active trial period.";
+        isFreeTrialTitle = false;
+        title = l10n.walkiePlan_trialActiveLabel;
+        subtitle = l10n.walkiePlan_trialFreeTrialRunning;
+        description = l10n.walkiePlan_trialEnjoyDuringActive;
       } else if (trialConsumed) {
-        title = "FREE TRIAL";
-        subtitle = "Trial Used";
-        description = "Your free trial has been completely consumed.";
+        isFreeTrialTitle = true;
+        title = l10n.walkiePlan_trialFreeTrialLabel;
+        subtitle = l10n.walkiePlan_trialUsed;
+        description = l10n.walkiePlan_trialFullyConsumed;
       } else if (trialExpired) {
-        title = "TRIAL EXPIRED";
-        subtitle = "Your Trial Has Ended";
-        description = "Choose a subscription to continue using Walkie Talkie.";
+        isFreeTrialTitle = false;
+        title = l10n.walkiePlan_trialExpiredLabel;
+        subtitle = l10n.walkiePlan_trialHasEnded;
+        description = l10n.walkiePlan_trialChooseSubscription;
       } else if (trialEligible || trial.status.toLowerCase() == 'not_started') {
-        title = "FREE TRIAL";
+        isFreeTrialTitle = true;
+        title = l10n.walkiePlan_trialFreeTrialLabel;
         subtitle = null;
-        description =
-            "Use your ${controller.trialDurationFormatted} trial anytime within 7 days.";
+        description = l10n
+            .walkiePlan_trialUseWithin7Days(controller.trialDurationFormatted);
       }
 
       return Container(
@@ -96,13 +106,17 @@ class WalkieTrialCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          reausabletext(
-                            title,
-                            fontsize: _sp(context, 12.5),
-                            fontfamily: FontFamily.interBold,
-                            color: textColor,
+                          Flexible(
+                            child: AutoFitText(
+                              title,
+                              style: TextStyle(
+                                fontFamily: FontFamily.interBold,
+                                fontSize: _sp(context, 12.5).sp,
+                                color: textColor,
+                              ),
+                            ),
                           ),
-                          if (title == "FREE TRIAL" && !trialConsumed) ...[
+                          if (isFreeTrialTitle && !trialConsumed) ...[
                             SizedBox(width: 8.w),
                             Container(
                               padding: EdgeInsets.symmetric(
@@ -184,7 +198,7 @@ class WalkieTrialCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       reausabletext(
-                        "Trial Usage",
+                        l10n.walkiePlan_trialUsage,
                         fontsize: _sp(context, 11.5),
                         fontfamily: FontFamily.interMedium,
                         color: textColor,
@@ -215,7 +229,8 @@ class WalkieTrialCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
+                      Flexible(
+                      child: Row(
                         children: [
                           Container(
                             padding: EdgeInsets.all(3.w),
@@ -232,34 +247,45 @@ class WalkieTrialCard extends StatelessWidget {
                             ),
                           ),
                           SizedBox(width: 6.w),
-                          reausabletext(
-                            trialActive
-                                ? "Trial Time Remaining"
-                                : trialConsumed
-                                    ? "Trial Completed"
-                                    : trialExpired
-                                        ? "Trial Expired"
-                                        : trial.expiresAt != null
-                                            ? "Trial Validity Period"
-                                            : "Free Trial Available",
-                            fontsize: _sp(context, 11),
-                            fontfamily: FontFamily.interMedium,
-                            color: textColor,
+                          Flexible(
+                            child: AutoFitText(
+                              trialActive
+                                  ? l10n.walkiePlan_trialTimeRemaining
+                                  : trialConsumed
+                                      ? l10n.walkiePlan_trialCompleted
+                                      : trialExpired
+                                          ? l10n.walkiePlan_trialExpired
+                                          : trial.expiresAt != null
+                                              ? l10n.walkiePlan_trialValidityPeriod
+                                              : l10n.walkiePlan_trialFreeAvailable,
+                              style: TextStyle(
+                                fontFamily: FontFamily.interMedium,
+                                fontSize: _sp(context, 11).sp,
+                                color: textColor,
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      reausabletext(
-                        trialActive
-                            ? controller.remainingLabel
-                            : trialConsumed
-                                ? "Completed"
-                                : trialExpired
-                                    ? "Expired"
-                                    : trial.expiresAt != null
-                                        ? controller.formatDaysRemaining(trial.expiresAt)
-                                        : "Available to start",
-                        fontsize: _sp(context, 11),
-                        color: trialExpired ? Colors.red : subtitleColor,
+                      ),
+                      Flexible(
+                        child: AutoFitText(
+                          trialActive
+                              ? controller.remainingLabel
+                              : trialConsumed
+                                  ? l10n.walkiePlan_trialStatusCompleted
+                                  : trialExpired
+                                      ? l10n.walkiePlan_trialStatusExpired
+                                      : trial.expiresAt != null
+                                          ? controller.formatDaysRemaining(trial.expiresAt)
+                                          : l10n.walkiePlan_trialAvailableToStart,
+                          textAlign: TextAlign.end,
+                          style: TextStyle(
+                            fontFamily: "geographeditwebbold",
+                            fontSize: _sp(context, 11).sp,
+                            color: trialExpired ? Colors.red : subtitleColor,
+                          ),
+                        ),
                       ),
                     ],
                   ),

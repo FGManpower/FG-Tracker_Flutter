@@ -5,6 +5,7 @@ import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -277,8 +278,8 @@ class GroupWalkieController extends GetxController {
     if (Get.overlayContext != null) {
       try {
         Get.snackbar(
-          "Alert Sent",
-          "Notification sent to $memberName. Retry available in 10s.",
+          appL10n.walkie_alertSentTitle,
+          appL10n.walkie_alertSentMessage(memberName),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: const Color(0xFF1E1B2E),
           colorText: Colors.white,
@@ -469,19 +470,29 @@ class GroupWalkieController extends GetxController {
     }
   }
 
+  /// Device name for display. "Bluetooth" / "Headset" are internal default
+  /// ids (compared in GroupWalkieService), shown translated.
+  String get bluetoothDisplayName {
+    final n = bluetoothName.value;
+    return (n.isNotEmpty && n != "Bluetooth") ? n : appL10n.walkie_audioBluetooth;
+  }
+
+  String get headsetDisplayName {
+    final n = headsetName.value;
+    return (n.isNotEmpty && n != "Headset") ? n : appL10n.walkie_audioHeadset;
+  }
+
   String get audioRouteLabel {
     switch (audioRoute.value) {
       case WalkieAudioRoute.bluetooth:
-        return bluetoothName.value.isNotEmpty
-            ? bluetoothName.value
-            : "Bluetooth";
+        return bluetoothDisplayName;
       case WalkieAudioRoute.headset:
-        return headsetName.value.isNotEmpty ? headsetName.value : "Headset";
+        return headsetDisplayName;
       case WalkieAudioRoute.earpiece:
-        return Platform.isIOS ? "iPhone" : "Phone";
+        return Platform.isIOS ? "iPhone" : appL10n.walkie_audioPhone;
       case WalkieAudioRoute.speaker:
       default:
-        return "Speaker";
+        return appL10n.walkie_audioSpeaker;
     }
   }
 
@@ -751,47 +762,49 @@ class GroupWalkieController extends GetxController {
 
   void showBusyMessage(String speakerName) {
     _displayBanner(
-      speakerName.isEmpty ? "Channel is busy" : "$speakerName is talking...",
+      speakerName.isEmpty
+          ? appL10n.walkie_channelBusy
+          : appL10n.walkie_isTalking(speakerName),
       Colors.orange,
     );
   }
 
   void showMutedMessage() {
-    _displayBanner("You are muted — Listening only", Colors.redAccent);
+    _displayBanner(appL10n.walkie_mutedListeningOnly, Colors.redAccent);
   }
 
   void showLockedMessage() {
-    _displayBanner("Channel locked", Colors.redAccent);
+    _displayBanner(appL10n.walkie_channelLocked, Colors.redAccent);
   }
 
   void showPermissionDeniedMessage() {
-    _displayBanner("Microphone permission required", Colors.redAccent);
+    _displayBanner(appL10n.walkie_micPermissionRequired, Colors.redAccent);
   }
 
   void showLockExpiredMessage() {
-    _displayBanner("Lock timeout — Mic released", Colors.orange);
+    _displayBanner(appL10n.walkie_lockTimeout, Colors.orange);
   }
 
   void showTrialEndedMessage() {
     _displayBanner(
-        "Free trial ended — Please subscribe to continue", Colors.redAccent);
+        appL10n.walkie_trialEndedSubscribe, Colors.redAccent);
   }
 
   void showNoVoiceSeatMessage() {
-    _displayBanner("No voice seat assigned — You are in Listen-Only mode",
+    _displayBanner(appL10n.walkie_noVoiceSeatListenOnly,
         Colors.orange.shade800);
   }
 
   void showNoInternetMessage() {
-    _displayBanner("No internet connection", Colors.redAccent);
+    _displayBanner(appL10n.common_noInternet, Colors.redAccent);
   }
 
   void showPoorConnectionMessage() {
-    _displayBanner("Poor network connection — Audio may lag", Colors.orange);
+    _displayBanner(appL10n.walkie_poorConnection, Colors.orange);
   }
 
   void showReconnectingMessage() {
-    _displayBanner("Reconnecting to walkie server...", Colors.orange);
+    _displayBanner(appL10n.walkie_reconnectingServer, Colors.orange);
   }
 
   void showGenericErrorMessage(String msg) {
@@ -801,7 +814,7 @@ class GroupWalkieController extends GetxController {
   void onChannelLocked({required bool isLocked}) {
     isChannelLocked.value = isLocked;
     _displayBanner(
-      isLocked ? "Channel locked" : "Channel unlocked",
+      isLocked ? appL10n.walkie_channelLocked : appL10n.walkie_channelUnlocked,
       isLocked ? Colors.redAccent : Colors.green,
     );
   }
@@ -840,7 +853,7 @@ class GroupWalkieController extends GetxController {
         return gc.groupData.first.groupName!.trim();
       }
     }
-    return 'Walkie Group';
+    return appL10n.walkie_defaultGroupName;
   }
 
   String get currentGroupDesc {

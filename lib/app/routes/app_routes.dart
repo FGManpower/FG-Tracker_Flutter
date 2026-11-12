@@ -46,6 +46,7 @@ abstract class Routes {
   static const OTP_CHARGES = _Paths.OTP_CHARGES;
   static const packagePricing = _Paths.packagePricing;
   static const forceUpdate = _Paths.forceUpdate;
+  static const languageSelect = _Paths.languageSelect;
 }
 
 abstract class _Paths {
@@ -94,4 +95,5 @@ abstract class _Paths {
   static const OTP_CHARGES = '/OtpChargesScreen';
   static const packagePricing = '/package-pricing';
   static const forceUpdate = '/force-update';
+  static const languageSelect = LanguageController.routeName;
 }

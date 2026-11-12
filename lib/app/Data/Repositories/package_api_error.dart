@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -32,20 +33,20 @@ class PackageApiException implements Exception {
   /// Friendly text for the error state / dialogs
   String get userMessage => switch (kind) {
         PackageErrorKind.offline =>
-          'No internet connection. Check your network and try again.',
+          appL10n.repo_pkgOffline,
         PackageErrorKind.timeout =>
-          'The server is taking too long to respond. Please try again.',
+          appL10n.repo_pkgTimeout,
         PackageErrorKind.unauthorized =>
-          'Your session has expired. Please log in again.',
+          appL10n.repo_pkgSessionExpired,
         PackageErrorKind.notFound =>
-          'Plans are not available right now. Please try again later.',
+          appL10n.repo_pkgNotFound,
         PackageErrorKind.conflict =>
-          'This plan is already active or a payment is in progress.',
+          appL10n.repo_pkgConflict,
         PackageErrorKind.server ||
         PackageErrorKind.rejected ||
         PackageErrorKind.malformed ||
         PackageErrorKind.unknown =>
-          'Something went wrong. Please try again.',
+          appL10n.common_somethingWentWrong,
       };
 
   bool get isOffline => kind == PackageErrorKind.offline;

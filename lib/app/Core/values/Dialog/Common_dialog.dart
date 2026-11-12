@@ -1,8 +1,9 @@
 import 'dart:io';
-import 'package:fgtracker/app/Core/theme/AppText.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,7 +14,7 @@ import 'package:get/get.dart';
 class CommonDialog {
   static errorMessage(
     String? title, {
-    String successBtnName = "DISMISS",
+    String? successBtnName,
     bool status = false,
     void Function()? onDismiss,
   }) {
@@ -72,7 +73,7 @@ class CommonDialog {
                     ),
                     SizedBox(height: 10.h),
                     reausabletext(
-                        status == true ? AppText.success.tr : AppText.error.tr,
+                        status == true ? sharedL10n.common_success : sharedL10n.common_error,
                         fontsize: 24,
                         fontfamily: FontFamily.interMedium,
                         align: TextAlign.center),
@@ -82,7 +83,7 @@ class CommonDialog {
                         maxWidth: 240.w,
                       ),
                       child: reausabletext(
-                        title ?? AppText.anErrorOccured.tr,
+                        title ?? sharedL10n.dialog_anErrorOccurred,
                         align: TextAlign.center,
                         fontfamily: FontFamily.interRegular,
                         fontsize: 16,
@@ -108,8 +109,8 @@ class CommonDialog {
                           ),
                           child: reausabletext(
                               status == true
-                                  ? successBtnName.tr
-                                  : AppText.dismiss.tr,
+                                  ? (successBtnName ?? sharedL10n.common_dismiss)
+                                  : sharedL10n.common_dismiss,
                               color: status == true
                                   ? Colors.blue
                                   : Colors.red.shade900,
@@ -134,8 +135,8 @@ class CommonDialog {
     void Function()? onConfirm,
     void Function()? onCancel,
     Color? titleColor,
-    String cancel = "No",
-    String confirm = "Yes",
+    String? cancel,
+    String? confirm,
     IconData icon = Icons.question_mark,
   }) {
     showCupertinoDialog(
@@ -204,7 +205,7 @@ class CommonDialog {
                       content == null
                           ? const SizedBox()
                           : reausabletext(
-                              content ?? AppText.doYouWantToLogout.tr,
+                              content ?? sharedL10n.dialog_logoutConfirm,
                               color: context.isDarkMode
                                   ? ToggleThemeData.white
                                   : Colors.black,
@@ -238,7 +239,7 @@ class CommonDialog {
                                     borderRadius: BorderRadius.circular(25.r),
                                   ),
                                   child: reausabletext(
-                                    cancel.tr,
+                                    cancel ?? sharedL10n.common_no,
                                     fontfamily: FontFamily.interMedium,
                                     color: context.isDarkMode
                                         ? Colors.grey.shade700
@@ -266,7 +267,7 @@ class CommonDialog {
                                     borderRadius: BorderRadius.circular(25.r),
                                   ),
                                   child: reausabletext(
-                                    confirm.tr,
+                                    confirm ?? sharedL10n.common_yes,
                                     fontfamily: FontFamily.interMedium,
                                     color: Colors.white,
                                     fontweight: FontWeight.bold,
@@ -299,11 +300,11 @@ class CommonDialog {
       barrierDismissible: false,
       builder: (BuildContext context) {
         String titleText = Platform.isIOS
-            ? AppText.allowLocationAccess.tr
-            : AppText.locationPermissionReqrd.tr;
+            ? sharedL10n.dialog_allowLocationAccess
+            : sharedL10n.dialog_locationPermissionRequired;
         String contentText = Platform.isIOS
-            ? AppText.thisAppRequiresYourLocation.tr
-            : AppText.wthtLocationAccessWeWont.tr;
+            ? sharedL10n.dialog_locationSettingsIos
+            : sharedL10n.dialog_locationSettingsAndroid;
 
         return WillPopScope(
           onWillPop: () async => false,
@@ -325,7 +326,7 @@ class CommonDialog {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: reausabletext(
-                        titleText.tr,
+                        titleText,
                         fontfamily: FontFamily.interRegular,
                         color: context.isDarkMode
                             ? ToggleThemeData.white
@@ -340,7 +341,7 @@ class CommonDialog {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
                       child: reausabletext(
-                        contentText.tr,
+                        contentText,
                         fontfamily: FontFamily.interRegular,
                         color: context.isDarkMode
                             ? ToggleThemeData.white
@@ -369,11 +370,15 @@ class CommonDialog {
                                     : Colors.grey[300],
                                 borderRadius: BorderRadius.circular(25),
                               ),
-                              child: reausabletext(
-                                AppText.cancelbtn.tr,
-                                color: Colors.redAccent,
-                                fontweight: FontWeight.bold,
-                                fontsize: 14,
+                              child: AutoFitText(
+                                sharedL10n.common_cancel,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: "geographeditwebbold",
+                                  fontSize: 14.sp,
+                                  color: Colors.redAccent,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -387,13 +392,17 @@ class CommonDialog {
                                 color: AppColors.darkBlue,
                                 borderRadius: BorderRadius.circular(25),
                               ),
-                              child: reausabletext(
-                                AppText.settings.tr,
-                                color: context.isDarkMode
-                                    ? ToggleThemeData.white
-                                    : Colors.white,
-                                fontweight: FontWeight.bold,
-                                fontsize: 14,
+                              child: AutoFitText(
+                                sharedL10n.common_settings,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: "geographeditwebbold",
+                                  fontSize: 14.sp,
+                                  color: context.isDarkMode
+                                      ? ToggleThemeData.white
+                                      : Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -440,7 +449,7 @@ class CommonDialog {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           reausabletext(
-                            AppText.important.tr,
+                            sharedL10n.dialog_important,
                             fontsize: 20,
                             fontfamily: FontFamily.interSemiBold,
                           ),
@@ -448,7 +457,7 @@ class CommonDialog {
                             height: 20.h,
                           ),
                           reausabletext(
-                            AppText.toIimproveServiceEfficiency.tr,
+                            sharedL10n.dialog_locationPurposeBody,
                             fontsize: 15,
                             fontfamily: FontFamily.interSemiBold,
                             align: TextAlign.center,
@@ -457,7 +466,7 @@ class CommonDialog {
                           SizedBox(
                             height: 25.h,
                           ),
-                          reausabletext(AppText.inTheNextPopup.tr,
+                          reausabletext(sharedL10n.dialog_selectAllowAllTheTime,
                               fontsize: 15,
                               fontfamily: FontFamily.interSemiBold,
                               height: 1.5,
@@ -483,7 +492,7 @@ class CommonDialog {
                                       borderRadius: BorderRadius.circular(8.0),
                                     ),
                                   ),
-                                  child: reausabletext(AppText.no.tr,
+                                  child: reausabletext(sharedL10n.common_no,
                                       fontsize: 15,
                                       backcolor: Colors.grey.shade200,
                                       fontfamily: FontFamily.interRegular,
@@ -505,7 +514,7 @@ class CommonDialog {
                                       borderRadius: BorderRadius.circular(8.0),
                                     ),
                                   ),
-                                  child: reausabletext(AppText.yes.tr,
+                                  child: reausabletext(sharedL10n.common_yes,
                                       fontsize: 15,
                                       color: Colors.white,
                                       backcolor: Colors.blue,
@@ -531,8 +540,8 @@ class CommonDialog {
     if (ctx == null) {
       if (Get.isSnackbarOpen != true) {
         Get.snackbar(
-          "Session Expired",
-          message ?? "You have been logged in from another device.",
+          sharedL10n.dialog_sessionExpiredTitle,
+          message ?? sharedL10n.dialog_loggedInElsewhere,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.shade900,
           colorText: Colors.white,
@@ -594,7 +603,7 @@ class CommonDialog {
                     ),
                     SizedBox(height: 16.h),
                     reausabletext(
-                      "Session Expired",
+                      sharedL10n.dialog_sessionExpiredTitle,
                       fontsize: 20,
                       fontfamily: FontFamily.interSemiBold,
                       align: TextAlign.center,
@@ -607,7 +616,7 @@ class CommonDialog {
                       constraints: BoxConstraints(maxWidth: 260.w),
                       child: reausabletext(
                         message ??
-                            "You have been logged in from another device. Please log in again.",
+                            sharedL10n.dialog_loggedInElsewhereLogInAgain,
                         align: TextAlign.center,
                         fontfamily: FontFamily.interRegular,
                         fontsize: 14,
@@ -632,7 +641,7 @@ class CommonDialog {
                             borderRadius: BorderRadius.circular(25.r),
                           ),
                           child: reausabletext(
-                            "OK",
+                            sharedL10n.common_ok,
                             color: Colors.white,
                             fontweight: FontWeight.bold,
                             fontsize: 14,

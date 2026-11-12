@@ -1,0 +1,4868 @@
+{
+  "@@locale": "en",
+  "about_aboutUs": "About Us",
+  "about_address": "Address",
+  "about_appBarTitle": "About FG Tracker",
+  "about_company": "Company",
+  "about_contactUs": "Contact Us",
+  "about_developerEmail": "Developer Email",
+  "about_downloadTitle": "📱 Download App",
+  "about_howItWorksIntro": "FG Tracker simplifies group travel coordination. Here's how:",
+  "about_howItWorksTitle": "⚙️ How It Works",
+  "about_howStep1": "Create a Group",
+  "about_howStep2": "Share the group code or QR code with your companions",
+  "about_howStep3": "Each member joins using the shared code or QR",
+  "about_howStep4": "Track everyone’s live location on a shared map in real-time",
+  "about_howStep5": "Use the sharing feature to invite more people effortlessly",
+  "about_intro": "FG Tracker is your go-to companion for staying connected and secure while traveling in a group. Whether you're out on a family road trip, a picnic with friends, or just commuting with colleagues — FG Tracker makes sure no one gets left behind.",
+  "about_privacyBody": "Your safety and privacy matter. FG Tracker does not share your location with anyone outside your group. All data is encrypted and only shared with the people you authorize.",
+  "about_privacyPolicy": "Privacy Policy",
+  "about_privacyTitle": "🔐 Privacy & Security",
+  "about_supportEmail": "Support Email",
+  "about_supportTitle": "📩 Support & Developer Info",
+  "about_termsConditions": "Terms & Conditions",
+  "about_title": "About",
+  "about_website": "Website",
+  "about_welcomeTitle": "Welcome to FG Tracker",
+  "about_whyBuiltFor": "Built for families, friends, and small teams.",
+  "about_whyChooseTitle": "🌟 Why Choose FG Tracker?",
+  "about_whyEasy": "Easy to use and lightweight app with privacy control.",
+  "about_whyNoCalls": "No need to call or text—track live on the map.",
+  "about_whyRealTime": "Real-time location sharing with all group members.",
+  "appUpdate_checkError": "Error checking for update: {error}",
+  "@appUpdate_checkError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdate_exitConfirmTitle": "Do you want to Exit?",
+  "appUpdate_noUpdateAvailable": "No Update Available",
+  "appUpdate_restartApp": "Restart App",
+  "appUpdate_updateApp": "Update App",
+  "appUpdate_updateAvailable": "Update Available",
+  "appUpdate_updateAvailableMessage": "A new update is available. Please update the app",
+  "appUpdate_updateUnavailable": "Update unavailable",
+  "appUpdate_updatingProgress": "Updating... {progress}%",
+  "@appUpdate_updatingProgress": {
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      }
+    }
+  },
+  "attendance_addOption": "Add Another Option",
+  "attendance_admin": "Admin",
+  "attendance_allowChange": "Allow changing response",
+  "attendance_allowChangeSubtitle": "Members can change or remove their response",
+  "attendance_askCommunity": "Ask your community",
+  "attendance_cameraPermissionRequired": "Camera permission is required to mark attendance.",
+  "attendance_cameraStartFailed": "Couldn't start the camera.",
+  "attendance_cameraStartFailedCode": "Couldn't start the camera ({code}).",
+  "@attendance_cameraStartFailedCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "attendance_cameraStarting": "Starting camera…",
+  "attendance_captureFailedBlink": "Couldn't capture. Blink again to retry",
+  "attendance_capturedAtVerified": "Captured at {time} • Verified",
+  "@attendance_capturedAtVerified": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "attendance_capturedCheck": "Captured ✓",
+  "attendance_changeResponse": "Change response",
+  "attendance_chooseFolder": "Choose a folder, e.g. Downloads",
+  "attendance_closeAction": "Close attendance",
+  "attendance_closeConfirmBody": "Members won't be able to respond after it is closed.",
+  "attendance_closeConfirmTitle": "Close attendance?",
+  "attendance_closeEndOfDay": "Close at end of day",
+  "attendance_closeEndOfDaySubtitle": "Automatically closes at {time} today",
+  "@attendance_closeEndOfDaySubtitle": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "attendance_closeFailed": "Unable to close attendance",
+  "attendance_closeFailedShort": "Unable to close",
+  "attendance_closesAt": "Closes {dateTime}",
+  "@attendance_closesAt": {
+    "placeholders": {
+      "dateTime": {
+        "type": "String"
+      }
+    }
+  },
+  "attendance_createFailed": "Unable to create attendance",
+  "attendance_createSubtitle": "Send an attendance poll to this group",
+  "attendance_createTitle": "Create Attendance",
+  "attendance_created": "Attendance Created",
+  "attendance_dateEnded": "The selected date has already ended. Pick another date or turn off auto-close.",
+  "attendance_dateToday": "Date (today)",
+  "attendance_dateTodaySemantics": "Attendance date, today",
+  "attendance_deleteFailed": "Unable to delete attendance",
+  "attendance_deletedText": "This attendance was deleted",
+  "attendance_downloadReport": "Download Report",
+  "attendance_everyoneResponded": "Everyone has responded",
+  "attendance_faceDetectedBlink": "Face detected — now blink your eyes",
+  "attendance_failed": "Attendance Failed",
+  "attendance_filterNotRespondedCount": "Not responded ({count})",
+  "@attendance_filterNotRespondedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attendance_filterResponded": "Responded ({count})",
+  "@attendance_filterResponded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attendance_fixErrors": "Please fix the highlighted errors before submitting",
+  "attendance_holdStill": "Hold still…",
+  "attendance_howToTakePhoto": "How to take your photo",
+  "attendance_invalidGroup": "Invalid group. Please reopen the chat.",
+  "attendance_keepFaceInCircle": "Keep your face inside the circle",
+  "attendance_limitReached": "Limit Reached",
+  "attendance_loadFailed": "Couldn't load attendance",
+  "attendance_loadMore": "Load more",
+  "attendance_loadMoreFailed": "Unable to load more",
+  "attendance_loadVotersFailed": "Unable to load voters",
+  "attendance_lookAtCamera": "Look at the camera",
+  "attendance_lookStraight": "Look straight at the camera",
+  "attendance_markYourAttendance": "Mark your attendance",
+  "attendance_markedAs": "Marked as {option}",
+  "@attendance_markedAs": {
+    "placeholders": {
+      "option": {
+        "type": "String"
+      }
+    }
+  },
+  "attendance_markedSuccess": "Attendance marked successfully",
+  "attendance_maxOptions": "You can add up to {count} options only",
+  "@attendance_maxOptions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attendance_members": "Members",
+  "attendance_membersWithCount": "Members ({count})",
+  "@attendance_membersWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attendance_minOptions": "At least {count} options are required",
+  "@attendance_minOptions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attendance_moveCloser": "Move a little closer",
+  "attendance_multipleFaces": "Multiple faces detected — only you should be in frame",
+  "attendance_noCsvApp": "No app found to open CSV files. Use Save or Share instead.",
+  "attendance_noFace": "No face detected",
+  "attendance_noFrontCamera": "No front camera found on this device.",
+  "attendance_noLocation": "No location available",
+  "attendance_noMembersMatch": "No members match your search",
+  "attendance_noResponses": "No responses yet",
+  "attendance_notResponded": "Not responded",
+  "attendance_openEyes": "Open your eyes and look at the camera",
+  "attendance_openMapFailed": "Unable to open map",
+  "attendance_openSubtitle": "View in Excel, Sheets or another app",
+  "attendance_optionHint": "Enter option label",
+  "attendance_optionLabelRequired": "All options must have a label",
+  "attendance_optionNumber": "Option {number}",
+  "@attendance_optionNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "attendance_optionPhotoRequired": "Option {number} • 📷 Photo required",
+  "@attendance_optionPhotoRequired": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "attendance_optionsUnique": "Options must be unique",
+  "attendance_photoCaptured": "Photo Captured",
+  "attendance_photoCapturedTapRetake": "Photo captured ✓ (Tap to retake)",
+  "attendance_photoProof": "Photo Proof",
+  "attendance_photoProofOf": "{name}'s Photo Proof",
+  "@attendance_photoProofOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "attendance_photoRequiredFor": "⚠ Photo required for {option}",
+  "@attendance_photoRequiredFor": {
+    "placeholders": {
+      "option": {
+        "type": "String"
+      }
+    }
+  },
+  "attendance_photoRules": "Only the front camera is used. The photo is taken automatically when you blink, and uploads from the gallery aren't allowed.",
+  "attendance_photoSubtitle": "Take a live photo to verify your attendance",
+  "attendance_photoTitle": "Attendance Photo",
+  "attendance_photoVerified": "Photo verified",
+  "attendance_questionHint": "Will you be available today?",
+  "attendance_questionLabel": "Attendance Question",
+  "attendance_questionRequired": "Attendance question is required",
+  "attendance_questionTooShort": "Question must be at least {count} characters long",
+  "@attendance_questionTooShort": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attendance_removeFailedShort": "Unable to remove",
+  "attendance_removeResponseBody": "Your attendance for this poll will be cleared.",
+  "attendance_removeResponseTitle": "Remove your response?",
+  "attendance_removeVoteFailed": "Unable to remove vote",
+  "attendance_reportEmpty": "The report is empty",
+  "attendance_reportFailed": "Report Failed",
+  "attendance_reportInvalid": "The server returned an invalid report. Please try again.",
+  "attendance_reportReady": "Report ready • {fileName}",
+  "@attendance_reportReady": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "attendance_reportSaved": "Report Saved",
+  "attendance_reportSubject": "Attendance Report",
+  "attendance_reportSubjectWithTitle": "Attendance Report • {title}",
+  "@attendance_reportSubjectWithTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "attendance_respondedCount": "{count} responded",
+  "@attendance_respondedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attendance_retakePhoto": "Retake Photo",
+  "attendance_saveInFiles": "Save in the Files app",
+  "attendance_saveReportDialog": "Save attendance report",
+  "attendance_saveToDevice": "Save to device",
+  "attendance_searchMember": "Search member",
+  "attendance_selectPhotoOption": "Select an option to require a live photo for it",
+  "attendance_selectStatus": "Please select your status",
+  "attendance_sentToAllMembers": "Sent to all members of this group",
+  "attendance_sentToGroup": "Attendance sent to the group",
+  "attendance_shareSubtitle": "Send via WhatsApp, email…",
+  "attendance_statusCompleted": "Completed",
+  "attendance_statusOpen": "Open",
+  "@attendance_statusOpen": {
+    "description": "Attendance poll state: still accepting responses"
+  },
+  "attendance_stepBlink": "Blink your eyes to capture your photo",
+  "attendance_stepEyeLevel": "Hold your phone at eye level",
+  "attendance_submit": "Submit Attendance",
+  "attendance_submitted": "Attendance Submitted",
+  "attendance_title": "Attendance",
+  "attendance_update": "Update Attendance",
+  "attendance_validationError": "Validation Error",
+  "attendance_view": "View",
+  "@attendance_view": {
+    "description": "Button: view location / photo"
+  },
+  "attendance_viewTitle": "View Attendance",
+  "attendance_voteFailed": "Unable to record vote",
+  "attendance_withinKm": "Within {km} km",
+  "@attendance_withinKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "attendance_withinMeters": "Within {count} m",
+  "@attendance_withinMeters": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "call_accept": "Accept",
+  "@call_accept": {
+    "description": "Button: accept an incoming call"
+  },
+  "call_allContacts": "All Contacts",
+  "call_allowAccess": "Allow Access",
+  "call_answer": "Answer",
+  "@call_answer": {
+    "description": "Button: answer an incoming call"
+  },
+  "call_audioOutput": "Audio Output",
+  "call_callFrom": "Call From",
+  "@call_callFrom": {
+    "description": "Shown above the caller's name on an incoming call"
+  },
+  "call_callIdNotFound": "Call ID not found",
+  "call_callInformation": "Call Information",
+  "call_callSummary": "Call Summary",
+  "call_caller": "Caller",
+  "@call_caller": {
+    "description": "Badge: the person who started the call"
+  },
+  "call_callerAndOthers": "{count, plural, =0{{name}} =1{{name} and 1 other} other{{name} and {count} others}}",
+  "@call_callerAndOthers": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "call_callsDeleteFailed": "{count, plural, =1{Couldn't delete 1 call. Try again.} other{Couldn't delete {count} calls. Try again.}}",
+  "@call_callsDeleteFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "call_callsDeleted": "{count, plural, =1{1 call deleted} other{{count} calls deleted}}",
+  "@call_callsDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "call_camera": "Camera",
+  "call_cameraMicRequired": "Camera or Mic permissions are required",
+  "call_cameraOff": "Camera off",
+  "call_cameraOn": "Camera on",
+  "call_cameraUnavailable": "Sorry, camera access is currently unavailable. Please try again later.",
+  "call_cannotReachCallServer": "Unable to connect to call server. Please check your network.",
+  "call_chatFallback": "Chat",
+  "@call_chatFallback": {
+    "description": "Fallback title of a chat with no name"
+  },
+  "call_closeFullScreen": "Close full screen",
+  "call_communicationUnavailable": "Communication is not available with this user",
+  "call_connectingProgress": "Connecting…",
+  "call_connectionTimeout": "Connection timed out",
+  "call_contactInformation": "Contact Information",
+  "call_contactsAccessBannerMessage": "Find and call your team members easily.",
+  "call_contactsAccessBannerTitle": "Let us access your contacts",
+  "call_contactsAccessMessage": "We need access to your contacts to show who is on FG Tracker and to let you call them or send an invite.",
+  "call_contactsAccessTitle": "Allow contacts access",
+  "call_decline": "Decline",
+  "@call_decline": {
+    "description": "Button: decline a call"
+  },
+  "call_deleteCallsMessage": "These calls will be removed from your call history.",
+  "call_deleteCallsTitle": "{count, plural, =1{Delete 1 call?} other{Delete {count} calls?}}",
+  "@call_deleteCallsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "call_deleteHistoryMessage": "Are you sure you want to delete this call history?",
+  "call_deleteHistoryTitle": "Delete Call History",
+  "call_deleteSelectedMessage": "{count, plural, =1{Are you sure you want to delete this selected call history?} other{Are you sure you want to delete these {count} selected call history entries?}}",
+  "@call_deleteSelectedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "call_deleteSelectedTitle": "Delete Selected Calls",
+  "call_deleteWithCount": "Delete ({count})",
+  "@call_deleteWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "call_durHr": "{hours} hr",
+  "@call_durHr": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "call_durHrMin": "{hours} hr {minutes} min",
+  "@call_durHrMin": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "call_durMin": "{minutes} min",
+  "@call_durMin": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "call_durMinSec": "{minutes} min {seconds} sec",
+  "@call_durMinSec": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "call_durSec": "{seconds} sec",
+  "@call_durSec": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "call_durShortHr": "{hours}h",
+  "@call_durShortHr": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "call_durShortHrMin": "{hours}h {minutes}m",
+  "@call_durShortHrMin": {
+    "description": "Very short duration, e.g. 1h 5m",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "call_durShortMin": "{minutes}m",
+  "@call_durShortMin": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "call_durShortMinSec": "{minutes}m {seconds}s",
+  "@call_durShortMinSec": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "call_durShortSec": "{seconds}s",
+  "@call_durShortSec": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "call_duration": "Duration",
+  "call_durationValue": "Duration: {duration}",
+  "@call_durationValue": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "call_earpiece": "Earpiece",
+  "@call_earpiece": {
+    "description": "Audio output"
+  },
+  "call_endCall": "End call",
+  "call_ended": "Ended",
+  "@call_ended": {
+    "description": "Time the call ended"
+  },
+  "call_enterNumber": "Enter number",
+  "call_enterPhoneNumber": "Please enter a phone number",
+  "call_entryDeleteFailed": "Failed to delete call entry",
+  "call_entryDeleteFailedError": "Failed to delete call entry: {error}",
+  "@call_entryDeleteFailedError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "call_entryDeleted": "Call entry deleted",
+  "call_everyoneInCall": "Everyone is already in the call",
+  "call_failedTitle": "Call Failed",
+  "call_groupBadge": "Group",
+  "@call_groupBadge": {
+    "description": "Small badge / fallback name for a group"
+  },
+  "call_groupCallComingSoon": "Group calling is coming soon",
+  "call_groupCallInitFailed": "Unable to initialize group call",
+  "call_groupCallStartFailed": "Could not start group call. Please try again.",
+  "call_groupInformation": "Group Information",
+  "call_groupWithId": "Group {id}",
+  "@call_groupWithId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "call_headphones": "Headphones",
+  "@call_headphones": {
+    "description": "Audio output: wired headphones (no device name)"
+  },
+  "call_historyCancelled": "Cancelled {callType}",
+  "@call_historyCancelled": {
+    "description": "callType is e.g. \"Video Call\"",
+    "placeholders": {
+      "callType": {
+        "type": "String"
+      }
+    }
+  },
+  "call_historyClearFailed": "Failed to clear call history",
+  "call_historyClearFailedError": "Failed to clear call history: {error}",
+  "@call_historyClearFailedError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "call_historyCleared": "All call history cleared",
+  "call_historyIncoming": "Incoming {callType}",
+  "@call_historyIncoming": {
+    "description": "callType is e.g. \"Video Call\"",
+    "placeholders": {
+      "callType": {
+        "type": "String"
+      }
+    }
+  },
+  "call_historyMissed": "Missed {callType}",
+  "@call_historyMissed": {
+    "description": "callType is e.g. \"Video Call\"",
+    "placeholders": {
+      "callType": {
+        "type": "String"
+      }
+    }
+  },
+  "call_historyOutgoing": "Outgoing {callType}",
+  "@call_historyOutgoing": {
+    "description": "callType is e.g. \"Video Call\"",
+    "placeholders": {
+      "callType": {
+        "type": "String"
+      }
+    }
+  },
+  "call_historyRejected": "Rejected {callType}",
+  "@call_historyRejected": {
+    "description": "callType is e.g. \"Video Call\"",
+    "placeholders": {
+      "callType": {
+        "type": "String"
+      }
+    }
+  },
+  "call_inCall": "In call",
+  "call_inCallWithGroup": "In call · {groupName}",
+  "@call_inCallWithGroup": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "call_inThisCall": "In this call ({count})",
+  "@call_inThisCall": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "call_incomingAudio": "Incoming audio call",
+  "call_incomingCallChannelName": "Incoming Call",
+  "@call_incomingCallChannelName": {
+    "description": "Android notification channel name"
+  },
+  "call_incomingGroupAudio": "Incoming group audio call",
+  "call_incomingGroupVideo": "Incoming group video call",
+  "call_incomingVideo": "Incoming video call",
+  "call_infoDescription": "Description",
+  "call_infoEmail": "Email",
+  "call_infoGroupCode": "Group Code",
+  "call_infoGroupName": "Group Name",
+  "call_infoMobile": "Mobile",
+  "call_infoTotalMembers": "Total Members",
+  "call_invite": "Invite",
+  "@call_invite": {
+    "description": "Button: invite a contact to the app"
+  },
+  "call_inviteToApp": "Invite to FG Tracker",
+  "call_join": "Join",
+  "@call_join": {
+    "description": "Button: join a group call"
+  },
+  "call_joinOnAnswer": "You will join as soon as you answer",
+  "call_kindAudio": "Audio Call",
+  "call_kindCall": "Call",
+  "@call_kindCall": {
+    "description": "A call (noun) in call history"
+  },
+  "call_kindGroupAudio": "Group Audio Call",
+  "call_kindGroupCall": "Group Call",
+  "call_kindGroupOther": "Group {kind} Call",
+  "@call_kindGroupOther": {
+    "description": "kind is a call type name from the server",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "call_kindGroupVideo": "Group Video Call",
+  "call_kindOther": "{kind} Call",
+  "@call_kindOther": {
+    "description": "kind is a call type name from the server",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "call_kindVideo": "Video Call",
+  "call_loadDetailFailed": "Failed to load call detail",
+  "call_loadMore": "Load more",
+  "call_loadRecentFailed": "Failed to load recent calls",
+  "call_loginToCall": "Please login to make a call",
+  "call_membersInCall": "{count, plural, =1{1 member in this call} other{{count} members in this call}}",
+  "@call_membersInCall": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "call_message": "Message",
+  "@call_message": {
+    "description": "Button: open chat with the contact"
+  },
+  "call_micActive": "Microphone is active",
+  "call_missedCall": "Missed Call",
+  "call_missedCallChannelName": "Missed Call",
+  "@call_missedCallChannelName": {
+    "description": "Android notification channel name"
+  },
+  "call_missedCallNotification": "Missed call",
+  "@call_missedCallNotification": {
+    "description": "Subtitle of the missed call system notification"
+  },
+  "call_more": "More",
+  "@call_more": {
+    "description": "Button: more options"
+  },
+  "call_mute": "Mute",
+  "@call_mute": {
+    "description": "Button: mute the microphone"
+  },
+  "call_muted": "Muted",
+  "@call_muted": {
+    "description": "State: microphone is muted"
+  },
+  "call_nameYou": "{name} (You)",
+  "@call_nameYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "call_noActiveParticipants": "No active participants",
+  "call_noContactsMatch": "No contacts match your search",
+  "call_noGroupsFound": "No groups found",
+  "call_noGroupsYet": "No groups yet",
+  "call_noNameGroup": "Unnamed group",
+  "call_noRecentCalls": "No recent calls",
+  "call_noRecentMatch": "No recent calls match your search",
+  "call_noRecentYet": "No recent calls yet",
+  "call_noRegisteredContacts": "No registered contacts found",
+  "call_notInContacts": "This number is not in your contacts",
+  "call_notInThisCall": "Not in this call ({count})",
+  "@call_notInThisCall": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "call_notReady": "Call not ready",
+  "call_notificationPermissionRationale": "Needed to show incoming calls.",
+  "call_notificationPermissionSettings": "Enable notifications in Settings.",
+  "call_notificationPermissionTitle": "Notification permission",
+  "call_notify": "Notify",
+  "@call_notify": {
+    "description": "Button: notify a member to join the call"
+  },
+  "call_notifyFailed": "Notify failed",
+  "call_notifySent": "Notified successfully",
+  "call_ongoingChannelDescription": "Keeps the call and screen sharing alive",
+  "call_ongoingChannelName": "Ongoing call",
+  "@call_ongoingChannelName": {
+    "description": "Android notification channel name"
+  },
+  "call_otherAlreadySharing": "The other person is already sharing the screen",
+  "call_otherStartingVideo": "The other person is starting video",
+  "call_participant": "Participant",
+  "call_participants": "Participants",
+  "call_personIsSharing": "{name} is sharing",
+  "@call_personIsSharing": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "call_personSharingScreen": "{name} is sharing the screen",
+  "@call_personSharingScreen": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "call_phone": "Phone",
+  "@call_phone": {
+    "description": "Audio output: the phone's earpiece"
+  },
+  "call_pleaseWait": "Please wait",
+  "call_recentCalls": "Recent Calls",
+  "call_resetZoom": "Reset zoom",
+  "call_returnToCall": "Return to Call",
+  "call_screenBeingShared": "Screen is being shared",
+  "call_screenShareChannelDescription": "Active screen sharing session notification",
+  "call_screenShareChannelName": "Screen Sharing Service",
+  "@call_screenShareChannelName": {
+    "description": "Android notification channel name"
+  },
+  "call_screenSharePermissionDenied": "Screen sharing permission denied",
+  "call_screenShareStartFailed": "Could not start screen sharing",
+  "call_screenShareStopped": "Screen sharing stopped",
+  "call_screenSharingTitle": "Screen sharing",
+  "call_screenVisibleToName": "Your screen is visible to {name}",
+  "@call_screenVisibleToName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "call_screenVisibleToOther": "Your screen is visible to the other person",
+  "call_searchHint": "Search contacts or groups",
+  "call_sectionLastWeek": "Last Week",
+  "call_sectionOlder": "Older",
+  "@call_sectionOlder": {
+    "description": "Section of older calls"
+  },
+  "call_sectionThisWeek": "This Week",
+  "call_selectAll": "Select all",
+  "call_selectedCount": "{count} Selected",
+  "@call_selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "call_selectedDeleteFailed": "Failed to delete selected calls",
+  "call_selectedDeleteFailedError": "Failed to delete selected calls: {error}",
+  "@call_selectedDeleteFailedError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "call_selectedDeleted": "Selected calls deleted",
+  "call_selfCallWarning": "You cannot call your own number.",
+  "call_sessionConnectFailed": "Failed to connect to the call session",
+  "call_shareScreen": "Share screen",
+  "call_shareScreenShort": "Share",
+  "@call_shareScreenShort": {
+    "description": "Short button: share the screen"
+  },
+  "call_sharingInGroupTapReturn": "Sharing in {groupName} • Tap to return to call",
+  "@call_sharingInGroupTapReturn": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "call_sharingYourScreen": "Sharing your screen",
+  "call_someone": "Someone",
+  "@call_someone": {
+    "description": "Fallback name of an unknown caller in a group call"
+  },
+  "call_speaker": "Speaker",
+  "@call_speaker": {
+    "description": "Audio output: loudspeaker"
+  },
+  "call_started": "Started",
+  "@call_started": {
+    "description": "Time the call started"
+  },
+  "call_startingScreenShare": "Starting screen share…",
+  "call_statusBusy": "Busy",
+  "@call_statusBusy": {
+    "description": "Call status: the other person is busy"
+  },
+  "call_statusCalling": "Calling",
+  "@call_statusCalling": {
+    "description": "Call status; the UI adds \"...\" after it"
+  },
+  "call_statusCancelled": "Cancelled",
+  "@call_statusCancelled": {
+    "description": "Call status"
+  },
+  "call_statusCompleted": "Completed",
+  "@call_statusCompleted": {
+    "description": "Call status"
+  },
+  "call_statusConnected": "Connected",
+  "@call_statusConnected": {
+    "description": "Call status"
+  },
+  "call_statusConnecting": "Connecting",
+  "@call_statusConnecting": {
+    "description": "Call status"
+  },
+  "call_statusDeclined": "Declined",
+  "@call_statusDeclined": {
+    "description": "Call status"
+  },
+  "call_statusJoined": "Joined",
+  "@call_statusJoined": {
+    "description": "Group call participant status"
+  },
+  "call_statusMissed": "Missed",
+  "@call_statusMissed": {
+    "description": "Call status"
+  },
+  "call_statusReconnecting": "Reconnecting",
+  "@call_statusReconnecting": {
+    "description": "Call status"
+  },
+  "call_statusRinging": "Ringing",
+  "@call_statusRinging": {
+    "description": "Call status"
+  },
+  "call_statusVideoConnecting": "Video connecting",
+  "@call_statusVideoConnecting": {
+    "description": "Call status"
+  },
+  "call_stop": "Stop",
+  "@call_stop": {
+    "description": "Button: stop screen sharing"
+  },
+  "call_stopSharing": "Stop sharing",
+  "call_subtitle": "Audio / Video Call",
+  "call_swipeUpToAnswer": "Swipe up to answer",
+  "call_switch": "Switch",
+  "@call_switch": {
+    "description": "Button: switch to video call"
+  },
+  "call_switchCameraFailed": "Unable to switch camera",
+  "call_switchToVideoToShare": "Switch to video call to share your screen",
+  "call_tabContacts": "Contacts",
+  "call_tabGroups": "Groups",
+  "call_tabRecent": "Recent",
+  "@call_tabRecent": {
+    "description": "Tab / section of recent calls"
+  },
+  "call_tapNotifyToInvite": "Tap notify to invite",
+  "call_tapStartBroadcastHint": "Tap Start Broadcast if the system prompt appears",
+  "@call_tapStartBroadcastHint": {
+    "description": "\"Start Broadcast\" is the iOS system button text, keep it in English"
+  },
+  "call_title": "Call",
+  "@call_title": {
+    "description": "Title of the Call screen (noun)"
+  },
+  "call_todayAt": "Today, {value}",
+  "@call_todayAt": {
+    "description": "value is a date or a time",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "call_total": "Total",
+  "call_turnOnVideo": "Turn on your video",
+  "call_unableToCallContact": "Unable to call this contact",
+  "call_unableToMakeCall": "Unable to make call",
+  "call_unableToOpenChat": "Unable to open chat for this contact",
+  "call_unableToShareScreen": "Unable to share screen",
+  "call_unavailableTitle": "Call unavailable",
+  "call_unexpectedResponse": "Unexpected response from server",
+  "call_unknown": "Unknown",
+  "@call_unknown": {
+    "description": "Fallback name of an unknown caller"
+  },
+  "call_unknownGroup": "Unknown Group",
+  "call_unknownUser": "Unknown User",
+  "call_unmute": "Unmute",
+  "@call_unmute": {
+    "description": "Button: unmute the microphone"
+  },
+  "call_unselectAll": "Unselect all",
+  "call_user": "User",
+  "@call_user": {
+    "description": "Fallback name when a contact has no name"
+  },
+  "call_userNotFound": "User not found",
+  "call_userWithId": "User {id}",
+  "@call_userWithId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "call_video": "Video",
+  "@call_video": {
+    "description": "Button: switch to video"
+  },
+  "call_waitingForBroadcast": "Waiting for Start Broadcast",
+  "@call_waitingForBroadcast": {
+    "description": "\"Start Broadcast\" is the iOS system button text, keep it in English"
+  },
+  "call_waitingForBroadcastMessage": "Tap “Start Broadcast” in the system dialog to share your screen. Sharing begins only after that.",
+  "@call_waitingForBroadcastMessage": {
+    "description": "\"Start Broadcast\" is the iOS system button text, keep it in English"
+  },
+  "call_waitingForMedia": "Waiting for media stream...",
+  "call_wired": "Wired",
+  "@call_wired": {
+    "description": "Audio output: wired headset"
+  },
+  "call_yesDelete": "Yes, Delete",
+  "call_yesterdayAt": "Yesterday, {value}",
+  "@call_yesterdayAt": {
+    "description": "value is a date or a time",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "call_youAreSharing": "You're sharing",
+  "call_youAreSharingScreen": "You are sharing your screen",
+  "call_zoomIn": "Zoom in",
+  "call_zoomOut": "Zoom out",
+  "chatList_allChats": "All Chats",
+  "chatList_allContacts": "All Contacts",
+  "chatList_allowAccess": "Allow Access",
+  "chatList_allowContactsBody": "We need access to your contacts to show who is on FG Tracker and to let you start a chat or send an invite.",
+  "chatList_allowContactsTitle": "Allow contacts access",
+  "chatList_archiveChat": "Archive Chat",
+  "chatList_archived": "Archived",
+  "chatList_archivedChatsSubtitle": "Your hidden conversations",
+  "chatList_archivedChatsTitle": "Archived Chats",
+  "chatList_archivedCount": "Archived ({count})",
+  "@chatList_archivedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatList_block": "Block",
+  "chatList_blockFailed": "Unable to block user",
+  "chatList_blockName": "Block {name}",
+  "@chatList_blockName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatList_blockUser": "Block User",
+  "chatList_blockUserConfirm": "Are you sure you want to block this user?",
+  "chatList_blocked": "Blocked",
+  "chatList_chatCleared": "Chat cleared",
+  "chatList_chooseContactToShare": "Choose a contact to share in your chat.",
+  "chatList_clear": "Clear",
+  "@chatList_clear": {
+    "description": "Confirm button: clear a chat"
+  },
+  "chatList_clearChat": "Clear Chat",
+  "chatList_clearChatConfirm": "Delete all messages with this user?",
+  "chatList_clearChatFailed": "Unable to clear chat",
+  "chatList_clearSearch": "Clear search",
+  "chatList_contactAndInfo": "Contact & Info",
+  "chatList_contactPermissionNeededMsg": "Contact permission is needed to share a contact in chat.",
+  "chatList_contactsCount": "{count, plural, =1{1 contact} other{{count} contacts}}",
+  "@chatList_contactsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatList_contactsLoadFailed": "Failed to load contacts: {error}",
+  "@chatList_contactsLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "chatList_contactsPermissionNeeded": "Contacts permission needed",
+  "chatList_contactsWillAppear": "Your contacts will appear here when available.",
+  "chatList_daysShort": "{count, plural, =1{1 day} other{{count} days}}",
+  "@chatList_daysShort": {
+    "description": "Short elapsed days on a chat row",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatList_deactivated": "Deactivated",
+  "@chatList_deactivated": {
+    "description": "Chip next to a group deactivated by its admin"
+  },
+  "chatList_defaultAbout": "Hey there! I am using FG Tracker",
+  "chatList_deleteChat": "Delete Chat",
+  "chatList_deleteChatConfirm": "Delete this conversation from your chat list?",
+  "chatList_forwardFailed": "Unable to forward message.",
+  "chatList_forwardListLoadFailed": "Unable to load forward list.",
+  "chatList_forwardTo": "Forward to...",
+  "chatList_forwarded": "Forwarded",
+  "chatList_groupChatFallback": "Group Chat",
+  "chatList_groupDeactivatedBanner": "This group has been deactivated by the Admin",
+  "chatList_groupFallback": "Group",
+  "@chatList_groupFallback": {
+    "description": "Fallback name of a group chat without a name"
+  },
+  "chatList_howToAllow": "How to allow",
+  "chatList_howToAllowStep1": "Tap \"Allow Access\" to open Settings",
+  "chatList_howToAllowStep2": "Tap \"Permissions\"",
+  "chatList_howToAllowStep3": "Select \"Contacts\"",
+  "chatList_howToAllowStep4": "Choose \"Allow\", then come back to the app",
+  "chatList_invite": "Invite",
+  "@chatList_invite": {
+    "description": "Button: invite a contact to the app"
+  },
+  "chatList_inviteChooseHow": "Choose how you want to send the invite",
+  "chatList_inviteMessage": "Hey {name}! Join me on FG Tracker.\n\nDownload for Android: {playStoreLink}\n\nDownload for iOS: {appStoreLink}",
+  "@chatList_inviteMessage": {
+    "description": "Invite text the user sends to a contact",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "playStoreLink": {
+        "type": "String"
+      },
+      "appStoreLink": {
+        "type": "String"
+      }
+    }
+  },
+  "chatList_inviteMoreApps": "More apps",
+  "chatList_inviteName": "Invite {name}",
+  "@chatList_inviteName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatList_inviteViaMessage": "Message",
+  "@chatList_inviteViaMessage": {
+    "description": "Invite option: send by SMS app"
+  },
+  "chatList_locationHidden": "Location Hidden",
+  "chatList_manyTyping": "{name1}, {name2} +{count} are typing...",
+  "@chatList_manyTyping": {
+    "placeholders": {
+      "name1": {
+        "type": "String"
+      },
+      "name2": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatList_markAsRead": "Mark as Read",
+  "chatList_markAsUnread": "Mark as Unread",
+  "chatList_mediaLinksDocs": "Media, links and docs",
+  "chatList_memberFallback": "Member",
+  "@chatList_memberFallback": {
+    "description": "Fallback name of a person without a name"
+  },
+  "chatList_messageDeleted": "This message was deleted",
+  "chatList_messageForwarded": "Message forwarded",
+  "chatList_messageIdMissing": "Message ID is missing.",
+  "chatList_minutesShort": "{count} min",
+  "@chatList_minutesShort": {
+    "description": "Short elapsed time on a chat row, e.g. 5 min",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatList_mute1Hour": "1 hour",
+  "chatList_mute8Hours": "8 hours",
+  "chatList_muteAlways": "Until I turn it back on",
+  "chatList_muteSubtitle": "Choose how long you want to pause notifications.",
+  "chatList_muteTitle": "Mute notifications",
+  "chatList_muteUntilTomorrow": "Until tomorrow",
+  "chatList_newChat": "New Chat",
+  "chatList_newChatSectionContacts": "Start a New Chat (Contacts)",
+  "chatList_newChatSectionInvite": "Invite to Chat (Unregistered Contacts)",
+  "chatList_noArchivedChats": "No Archived Chats",
+  "chatList_noArchivedChatsSubtitle": "Archived conversations will appear here.",
+  "chatList_noChatsFound": "No chats found",
+  "chatList_noChatsSubtitle": "Your private chats will appear here.",
+  "chatList_noContactsAvailable": "No contacts available",
+  "chatList_noContactsFound": "No contacts found",
+  "chatList_noGroupsAvailable": "No groups available",
+  "chatList_noGroupsFound": "No groups found",
+  "chatList_noMediaYet": "No media shared yet",
+  "chatList_noMessagesYet": "No messages yet",
+  "chatList_noPeopleOrGroups": "No people or groups found",
+  "chatList_noResultsFor": "No results found for \"{query}\"",
+  "@chatList_noResultsFor": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "chatList_noResultsForQuery": "No results for '{query}'",
+  "@chatList_noResultsForQuery": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "chatList_noTrackerContacts": "No active tracker contacts found",
+  "chatList_offlineNotSaved": "You're offline. The change wasn't saved, please try again.",
+  "chatList_oneTyping": "{name} is typing...",
+  "@chatList_oneTyping": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatList_openSettings": "Open Settings",
+  "chatList_pinChat": "Pin Chat",
+  "chatList_pinnedChats": "Pinned Chats",
+  "chatList_pleaseTryAgain": "Please try again.",
+  "chatList_profileCall": "Call",
+  "@chatList_profileCall": {
+    "description": "Profile quick action: voice call"
+  },
+  "chatList_profileMessage": "Message",
+  "@chatList_profileMessage": {
+    "description": "Profile quick action: open chat"
+  },
+  "chatList_profileNotFound": "Profile details not found",
+  "chatList_profileVideoCall": "Video Call",
+  "chatList_quickCommSubtitle": "Connect with your team instantly",
+  "chatList_quickCommTitle": "Quick Communication",
+  "chatList_quickGroups": "Groups",
+  "chatList_quickGroupsSub": "Team Chats",
+  "chatList_quickSafeZone": "Safe Zone",
+  "chatList_quickSafeZoneSub": "Safety & Alerts",
+  "chatList_quickTracking": "Tracking",
+  "chatList_quickTrackingSub": "Live Location",
+  "chatList_quickWalkie": "Walkie",
+  "chatList_quickWalkieSub": "Push to Talk",
+  "chatList_searchByNameOrNumber": "Search by name or number...",
+  "chatList_searchGroupsHint": "Search groups...",
+  "chatList_searchHint": "Search chats or messages...",
+  "chatList_searchHintShort": "Search...",
+  "chatList_searchNameOrNumber": "Search name or number",
+  "chatList_searchResults": "Search Results",
+  "chatList_sectionGroups": "GROUPS",
+  "chatList_sectionMyContacts": "MY CONTACTS",
+  "chatList_sectionOtherContacts": "OTHER CONTACTS",
+  "chatList_sectionRecentChats": "RECENT CHATS",
+  "chatList_selectDestination": "Select Destination",
+  "chatList_selectDestinationMsg": "Please select at least one person or group.",
+  "chatList_selectedCount": "{count} selected",
+  "@chatList_selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatList_shareContactTitle": "Share Contact",
+  "chatList_shareMenuFailed": "Could not open share menu: {error}",
+  "@chatList_shareMenuFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "chatList_smsOpenFailed": "Messaging app could not be opened",
+  "chatList_someone": "Someone",
+  "chatList_startConversation": "Start a conversation",
+  "chatList_subtitle": "Stay connected with your team",
+  "chatList_telegramOpenFailed": "Telegram could not be opened",
+  "chatList_title": "Chat",
+  "@chatList_title": {
+    "description": "Chat list screen title"
+  },
+  "chatList_tryAnotherNameOrNumber": "Try another name or phone number.",
+  "chatList_tryDifferentSearch": "Try searching with a different name or message.",
+  "chatList_twoTyping": "{name1}, {name2} are typing...",
+  "@chatList_twoTyping": {
+    "placeholders": {
+      "name1": {
+        "type": "String"
+      },
+      "name2": {
+        "type": "String"
+      }
+    }
+  },
+  "chatList_typing": "typing...",
+  "chatList_unableToCallContact": "Unable to call this contact",
+  "chatList_unableToLoadContacts": "Unable to load contacts",
+  "chatList_unarchiveChat": "Unarchive Chat",
+  "chatList_unblock": "Unblock",
+  "chatList_unblockFailed": "Unable to unblock user",
+  "chatList_unblockName": "Unblock {name}",
+  "@chatList_unblockName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatList_unblockUser": "Unblock User",
+  "chatList_unblockUserConfirm": "Are you sure you want to unblock this user?",
+  "chatList_unknown": "Unknown",
+  "chatList_unknownUser": "Unknown User",
+  "chatList_unnamedContact": "Unnamed contact",
+  "chatList_unpinChat": "Unpin Chat",
+  "chatList_unreadMessages": "{count, plural, =1{1 unread message} other{{count} unread messages}}",
+  "@chatList_unreadMessages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatList_updateFailed": "Couldn't update the chat. Please try again.",
+  "chatList_userFallback": "User",
+  "@chatList_userFallback": {
+    "description": "Fallback name when a person has no name"
+  },
+  "chatList_userNotFound": "User not found",
+  "chatList_viewArchived": "View archived conversations",
+  "chatList_whatsappOpenFailed": "WhatsApp could not be opened",
+  "chatList_yourContacts": "Your contacts",
+  "chat_addCaptionHint": "Add a caption...",
+  "chat_audioUnavailable": "This audio is no longer available",
+  "chat_blockFailed": "Unable to block user",
+  "chat_call": "Call",
+  "@chat_call": {
+    "description": "Button: phone call a shared contact"
+  },
+  "chat_cameraAccessNeeded": "Camera access is needed to take photos and videos in chat.",
+  "chat_cameraModePhoto": "PHOTO",
+  "@chat_cameraModePhoto": {
+    "description": "Camera mode tab label"
+  },
+  "chat_cameraModePortrait": "PORTRAIT",
+  "@chat_cameraModePortrait": {
+    "description": "Camera mode tab label"
+  },
+  "chat_cameraModeVideo": "VIDEO",
+  "@chat_cameraModeVideo": {
+    "description": "Camera mode tab label"
+  },
+  "chat_cameraStartFailed": "Couldn't start the camera.",
+  "chat_cantMessageUser": "You can't message this user",
+  "chat_chatActionsSubtitle": "Manage your chat",
+  "chat_chatActionsTitle": "Chat Actions",
+  "chat_clear": "Clear",
+  "@chat_clear": {
+    "description": "Button: clear (delete) chat messages"
+  },
+  "chat_clearChat": "Clear Chat",
+  "chat_clearChatConfirm": "Clear all messages from this chat?",
+  "chat_clearGroupChatFailed": "Failed to clear group chat",
+  "chat_contactBlockedYou": "This contact has blocked you",
+  "chat_contactUnavailable": "Contact unavailable",
+  "chat_deleteForEveryone": "Delete for Everyone",
+  "chat_deleteForEveryoneConfirm": "Are you sure you want to delete this message for everyone?",
+  "chat_deleteForMe": "Delete for Me",
+  "chat_deleteForMeConfirm": "Are you sure you want to delete this message for you?",
+  "chat_deleteMember": "Delete Member",
+  "chat_deleteMemberSubtitle": "Remove a member from this group",
+  "chat_documentAvailable": "Document is available",
+  "chat_documentDownloadFailed": "The document couldn't be downloaded.",
+  "chat_documentOpenFailed": "Couldn't open the document. Please try again.",
+  "chat_documentPreviewUnavailable": "Preview is not available for this file type. Open the document using your installed application.",
+  "chat_documentUnavailable": "This document is no longer available",
+  "chat_downloadFailed": "Download failed",
+  "chat_edited": "edited",
+  "@chat_edited": {
+    "description": "Small label next to the time of an edited message"
+  },
+  "chat_emptySubtitle": "Say hi 👋 to start the conversation",
+  "chat_emptyTitle": "No messages here yet",
+  "chat_fetchingLocation": "Fetching location...",
+  "chat_finishVoiceRecordingFirst": "Finish or cancel the voice recording first",
+  "chat_forwarded": "Forwarded",
+  "chat_galleryCounter": "{current} of {total}",
+  "@chat_galleryCounter": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "chat_groupActionsSubtitle": "Manage your group settings",
+  "chat_groupActionsTitle": "Group Actions",
+  "chat_groupChatCleared": "Group chat cleared successfully",
+  "chat_groupDeactivated": "This group has been deactivated by the Admin",
+  "chat_imageFailed": "Image failed",
+  "chat_listen": "Listen",
+  "chat_listenEnglish": "Listen (English)",
+  "chat_listenHindi": "Listen (Hindi)",
+  "chat_loadFailedSubtitle": "Check your connection and try again.",
+  "chat_loadFailedTitle": "Couldn't load messages",
+  "chat_locationFetchFailed": "Couldn't get your location. Please try again.",
+  "chat_locationPermissionNeeded": "Location permission is needed to share your location.",
+  "chat_locationPermissionOff": "Location permission is turned off for this app. Enable it in Settings to share your location.",
+  "chat_locationServicesOff": "Turn on location services to share your location.",
+  "chat_locationUnavailable": "Location unavailable",
+  "chat_mediaMissing": "Media is missing",
+  "chat_mediaMissingToast": "Media is missing. This file is no longer available.",
+  "chat_mediaUnavailable": "This media is no longer available",
+  "chat_menuForward": "Forward",
+  "chat_menuMessageInfo": "Message Info",
+  "chat_menuPin": "Pin Message",
+  "chat_menuReply": "Reply",
+  "chat_menuUnpin": "Unpin Message",
+  "chat_messageCopied": "Message copied",
+  "chat_messageDeleted": "This message was deleted",
+  "chat_messageNotAvailable": "Message not available",
+  "chat_messageNotSent": "Message not sent. Please try again.",
+  "chat_noCameraFound": "No camera found on this device.",
+  "chat_noLongerMember": "You're no longer a member of this group",
+  "chat_noMediaAvailable": "No media available",
+  "chat_offlineNotSent": "You're offline. Message not sent.",
+  "chat_openDocument": "Open Document",
+  "chat_openInGoogleMaps": "Open in Google Maps",
+  "chat_openSettings": "Open Settings",
+  "chat_peopleCount": "{count, plural, =1{1 person} other{{count} people}}",
+  "@chat_peopleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chat_photoUnavailable": "This photo is no longer available",
+  "chat_previewAttendancePoll": "Attendance poll",
+  "chat_previewAudio": "Audio",
+  "chat_previewContact": "Contact",
+  "chat_previewDocument": "Document",
+  "chat_previewLocation": "Location",
+  "chat_previewMessage": "Message",
+  "@chat_previewMessage": {
+    "description": "Noun: a chat message (fallback preview text)"
+  },
+  "chat_previewNewMessage": "New message",
+  "chat_previewOwnDeleted": "You deleted this message",
+  "chat_previewPhoto": "Photo",
+  "chat_previewPhotosCount": "{count, plural, =1{1 Photo} other{{count} Photos}}",
+  "@chat_previewPhotosCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chat_previewPoll": "Poll",
+  "chat_previewSticker": "Sticker",
+  "chat_previewVideo": "Video",
+  "chat_previewVideosCount": "{count, plural, =1{1 Video} other{{count} Videos}}",
+  "@chat_previewVideosCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chat_previewVoiceMessage": "Voice message",
+  "chat_previewVoiceMessageDuration": "Voice message ({duration})",
+  "@chat_previewVoiceMessageDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "chat_recordingFailed": "Recording failed",
+  "chat_removeMember": "Remove Member",
+  "chat_removeMemberConfirm": "Are you sure you want to remove this member from the group?",
+  "chat_replyHint": "Reply to message...",
+  "chat_searchMessages": "Search Messages",
+  "chat_searchMessagesHint": "Search messages...",
+  "chat_searchMessagesSubtitle": "Find messages by keyword",
+  "chat_sendLocation": "Send Location",
+  "chat_shareLocation": "Share Location",
+  "chat_shareVideoFailed": "Unable to share video",
+  "chat_sharedFromApp": "Shared from FG Tracker",
+  "chat_sharedLocation": "Shared Location",
+  "chat_showOriginal": "Show Original",
+  "chat_someone": "Someone",
+  "chat_statusLabel": "Status",
+  "@chat_statusLabel": {
+    "description": "A status/story update"
+  },
+  "chat_statusUnavailable": "This status update is no longer available",
+  "chat_stop": "Stop",
+  "chat_stopEnglish": "Stop (English)",
+  "chat_stopHindi": "Stop (Hindi)",
+  "chat_takePhotoFailed": "Failed to take photo",
+  "chat_translatedToEnglish": "Translated to English",
+  "chat_translatedToHindi": "Translated to Hindi",
+  "chat_translating": "Translating...",
+  "chat_tryAgain": "Try again",
+  "chat_typeMessageHint": "Type a message...",
+  "chat_typing": "typing...",
+  "chat_typingMany": "{count, plural, =1{1 person is typing...} other{{count} people are typing...}}",
+  "@chat_typingMany": {
+    "description": "Keep the trailing \"...\"",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chat_typingOne": "{name} is typing...",
+  "@chat_typingOne": {
+    "description": "Keep the trailing \"...\"",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chat_typingTwo": "{name1}, {name2} are typing...",
+  "@chat_typingTwo": {
+    "description": "Keep the trailing \"...\"",
+    "placeholders": {
+      "name1": {
+        "type": "String"
+      },
+      "name2": {
+        "type": "String"
+      }
+    }
+  },
+  "chat_unableToOpen": "Unable to Open",
+  "chat_unableToOpenGoogleMaps": "Unable to open Google Maps",
+  "chat_unblock": "Unblock",
+  "chat_unblockContact": "Unblock Contact",
+  "chat_unblockContactConfirm": "Are you sure you want to unblock this contact?",
+  "chat_unblockFailed": "Unable to unblock user",
+  "chat_unknown": "Unknown",
+  "@chat_unknown": {
+    "description": "Fallback when a name is missing"
+  },
+  "chat_unknownLocation": "Unknown Location",
+  "chat_unsupportedMessage": "This message isn't supported in this version of the app",
+  "chat_updateGroup": "Update Group",
+  "chat_updateGroupSubtitle": "Change the current group detail",
+  "chat_uploadFileFailed": "Failed to upload {path}",
+  "@chat_uploadFileFailed": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "chat_userBlocked": "User blocked successfully",
+  "chat_userUnblocked": "User unblocked successfully",
+  "chat_videoDownloaded": "Video downloaded successfully",
+  "chat_videoThumbnailFailed": "Failed to generate video thumbnail",
+  "chat_videoUnavailable": "This video is no longer available",
+  "chat_videoUploadFailed": "Failed to upload video",
+  "chat_voicePlayFailed": "Couldn't play voice message",
+  "chat_voiceUploadFailed": "Voice message upload failed. Please try again.",
+  "chat_youBlockedContact": "You blocked this contact",
+  "common_add": "Add",
+  "common_allow": "Allow",
+  "common_back": "Back",
+  "common_cancel": "Cancel",
+  "common_close": "Close",
+  "common_comingSoon": "Coming soon",
+  "common_confirm": "Confirm",
+  "common_continue": "Continue",
+  "common_copied": "Copied",
+  "common_copy": "Copy",
+  "common_daysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@common_daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "common_delete": "Delete",
+  "common_dismiss": "DISMISS",
+  "@common_dismiss": {
+    "description": "Default button of the error dialog. Login / OTP always show English."
+  },
+  "common_done": "Done",
+  "common_edit": "Edit",
+  "common_error": "Error",
+  "common_exit": "Exit",
+  "common_gotIt": "Got it",
+  "common_hoursAgo": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@common_hoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "common_justNow": "Just now",
+  "common_lastSeen": "Last seen: {time}",
+  "@common_lastSeen": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "common_loading": "Loading…",
+  "common_membersCount": "{count, plural, =1{1 member} other{{count} members}}",
+  "@common_membersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "common_minutesAgo": "{count, plural, =1{1 min ago} other{{count} min ago}}",
+  "@common_minutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "common_next": "Next",
+  "common_no": "No",
+  "common_noData": "No data found",
+  "common_noInternet": "No internet connection",
+  "common_notNow": "Not now",
+  "common_offline": "Offline",
+  "common_ok": "OK",
+  "common_online": "Online",
+  "common_open": "Open",
+  "common_permissionDenied": "Permission denied",
+  "common_remove": "Remove",
+  "common_retry": "Retry",
+  "common_save": "Save",
+  "common_search": "Search",
+  "common_send": "Send",
+  "common_settings": "Settings",
+  "common_share": "Share",
+  "common_somethingWentWrong": "Something went wrong. Please try again.",
+  "common_submit": "Submit",
+  "common_success": "Success",
+  "common_today": "Today",
+  "common_todayAt": "Today, {time}",
+  "@common_todayAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "common_tryAgain": "Try again",
+  "common_viewAll": "View all",
+  "common_yes": "Yes",
+  "common_yesterday": "Yesterday",
+  "common_you": "You",
+  "dialog_allowLocationAccess": "Allow Location Access",
+  "dialog_anErrorOccurred": "An error occurred!",
+  "dialog_important": "Important!",
+  "dialog_locationPermissionRequired": "Location Permission Required",
+  "dialog_locationPurposeBody": "To improve service efficiency, our application requests permission to access your location for the purpose of saving it. This enables our laborers to navigate accurately to your designated work location.",
+  "dialog_locationSettingsAndroid": "Without location access, we won't be able to detect your current location. Please tap on 'Settings', then 'Permissions', and allow location access.",
+  "dialog_locationSettingsIos": "This app requires access to your location to provide location-based services. Please go to 'Settings' and enable location permissions.",
+  "dialog_loggedInElsewhere": "You have been logged in from another device.",
+  "dialog_loggedInElsewhereLogInAgain": "You have been logged in from another device. Please log in again.",
+  "dialog_logoutConfirm": "Do you want to log out?",
+  "dialog_selectAllowAllTheTime": "In the next popup, please select\n'Allow all the time'.",
+  "dialog_sessionExpiredTitle": "Session Expired",
+  "editProfile_fullNameLabel": "Full Name",
+  "editProfile_personalInfo": "Personal Information",
+  "editProfile_phoneLabel": "Phone Number",
+  "editProfile_saveButton": "Save Changes",
+  "editProfile_tapPhotoHint": "Tap on the photo to change",
+  "editProfile_title": "Edit Profile",
+  "forceUpdate_currentInstalled": "CURRENT INSTALLED",
+  "forceUpdate_defaultMessage": "A new version of FG Tracker is available. Please update to continue.",
+  "forceUpdate_defaultTitle": "Update Required",
+  "forceUpdate_fallbackMessage": "A new version of FG Tracker is available with critical improvements. Please update to continue using the application.",
+  "forceUpdate_footer": "Update is required to proceed with FG Tracker",
+  "forceUpdate_requiredVersion": "REQUIRED VERSION",
+  "forceUpdate_updateOnStore": "Update on {storeName}",
+  "@forceUpdate_updateOnStore": {
+    "placeholders": {
+      "storeName": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDialog_audioCall": "Audio Call",
+  "groupDialog_audioCallSubtitle": "Start voice conversation",
+  "groupDialog_call": "Call",
+  "@groupDialog_call": {
+    "description": "Button: call this member"
+  },
+  "groupDialog_chat": "Chat",
+  "@groupDialog_chat": {
+    "description": "Button: open a chat with this member"
+  },
+  "groupDialog_codeEmpty": "Group code cannot be empty",
+  "groupDialog_codeLabel": "Group Code",
+  "groupDialog_createButton": "Create Group",
+  "groupDialog_createTitle": "Create New Group",
+  "groupDialog_descHint": "Enter Group Description",
+  "groupDialog_descLabel": "Group Description (Optional)",
+  "groupDialog_distance": "Distance: {distance}",
+  "@groupDialog_distance": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDialog_enterCodeManually": "Enter Group Code Manually",
+  "groupDialog_enterCodeTitle": "Enter Group Code",
+  "groupDialog_fillDetails": "Fill in the details below",
+  "groupDialog_getDirections": "Get Directions",
+  "groupDialog_join": "Join Group",
+  "groupDialog_lastSeen": "Last seen: {time}",
+  "@groupDialog_lastSeen": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDialog_locationHidden": "Location Hidden",
+  "groupDialog_locationUnavailable": "Location unavailable",
+  "groupDialog_member": "Member",
+  "@groupDialog_member": {
+    "description": "Fallback name when a member has no name"
+  },
+  "groupDialog_memberInfo": "Member’s Info",
+  "groupDialog_nameHint": "Enter group name",
+  "groupDialog_nameLabel": "Group Name",
+  "groupDialog_noQrInImage": "No QR code found in the selected image.",
+  "groupDialog_noValidQr": "No valid QR code found.",
+  "groupDialog_qrDecodeError": "Error decoding QR from gallery: {error}",
+  "@groupDialog_qrDecodeError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDialog_scanCamera": "Scan from Camera",
+  "groupDialog_selectCallType": "Select Call Type",
+  "groupDialog_update": "Update",
+  "@groupDialog_update": {
+    "description": "Button: save changes to a group"
+  },
+  "groupDialog_updateTitle": "Update Group",
+  "groupDialog_uploadGallery": "Upload from Gallery",
+  "groupDialog_videoCall": "Video Call",
+  "groupDialog_videoCallSubtitle": "Start video conversation",
+  "groupDialog_yourLocation": "Your current location",
+  "groupInfo_active": "Active",
+  "@groupInfo_active": {
+    "description": "Group status badge"
+  },
+  "groupInfo_admin": "Admin",
+  "groupInfo_allGroups": "All Groups",
+  "groupInfo_allGroupsSubtitle": "Stay connected with your teams",
+  "groupInfo_areYouSure": "Are you sure?",
+  "groupInfo_audioCall": "Audio Call",
+  "groupInfo_clearChatConfirm": "Delete all messages from this device?",
+  "groupInfo_createdBy": "Created By",
+  "groupInfo_detailsNotFound": "Group details not found",
+  "groupInfo_exitGroup": "Exit Group",
+  "groupInfo_exitGroupConfirm": "Are you sure you want to exit \"{groupName}\"?",
+  "@groupInfo_exitGroupConfirm": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "groupInfo_exitGroupQuestion": "Do you want to Exit this Group?",
+  "groupInfo_group": "Group",
+  "@groupInfo_group": {
+    "description": "Fallback group name"
+  },
+  "groupInfo_groupAdmin": "Group Admin",
+  "groupInfo_groupCallFailed": "Could not start group call. Please try again.",
+  "groupInfo_groupCodeCopied": "Group code copied!",
+  "groupInfo_groupSettings": "Group Settings",
+  "groupInfo_groupSettingsSubtitle": "Edit group info, privacy, and more",
+  "groupInfo_inactive": "Inactive",
+  "@groupInfo_inactive": {
+    "description": "Group status badge"
+  },
+  "groupInfo_inviteCopied": "Invite text copied",
+  "groupInfo_inviteText": "Join my group \"{groupName}\" on FG Tracker",
+  "@groupInfo_inviteText": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "groupInfo_inviteTextWithCode": "Join my group \"{groupName}\" on FG Tracker. Code: {code}",
+  "@groupInfo_inviteTextWithCode": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "groupInfo_inviteViaLink": "Invite via Link",
+  "groupInfo_mediaLinksDocs": "Media, Links & Docs",
+  "groupInfo_member": "Member",
+  "groupInfo_members": "Members",
+  "groupInfo_messageAction": "Message",
+  "@groupInfo_messageAction": {
+    "description": "Verb: send a message to this member (menu item)"
+  },
+  "groupInfo_nameYou": "{name} (You)",
+  "@groupInfo_nameYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupInfo_noGroupFound": "No group found for '{query}'",
+  "@groupInfo_noGroupFound": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "groupInfo_noGroupsYet": "You haven't joined or created any groups yet.\nStart exploring now!",
+  "groupInfo_noMediaYet": "No media shared yet",
+  "groupInfo_removeFromGroup": "Remove from group",
+  "groupInfo_removeMemberConfirm": "Are you sure you want to remove {name} from the group?",
+  "@groupInfo_removeMemberConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupInfo_searchGroupsHint": "Search groups...",
+  "groupInfo_showLess": "Show less",
+  "groupInfo_teamCode": "Team Code",
+  "groupInfo_totalCount": "{count} Total",
+  "@groupInfo_totalCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupInfo_unknownGroup": "Unknown Group",
+  "groupInfo_unnamedGroup": "Unnamed Group",
+  "groupInfo_videoCall": "Video Call",
+  "groupInfo_viewAllMembers": "View all members",
+  "group_activatedSuccess": "Group activated successfully",
+  "group_addMember": "Add Member",
+  "group_alignQr": "Align QR inside the frame",
+  "group_areYouSure": "Are you sure?",
+  "group_chatWithMembers": "Chat with members in the group",
+  "group_codeCopied": "Group code copied!",
+  "group_codeShareInfo": "Group code: {code} — share it so others can join",
+  "@group_codeShareInfo": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "group_copyCode": "Copy code",
+  "group_created": "Created",
+  "@group_created": {
+    "description": "Label: who created the group (value: You / Other)"
+  },
+  "group_createdJustNow": "Created just now",
+  "group_deactivatedSuccess": "Group deactivated successfully",
+  "group_defaultName": "Group",
+  "@group_defaultName": {
+    "description": "Fallback group name when the group has no name"
+  },
+  "group_deleteGroup": "Group Delete",
+  "group_deleteGroupConfirm": "Do you want to Delete this Group?",
+  "group_deletedSuccess": "Group deleted successfully",
+  "group_download": "Download",
+  "group_downloadChannelDescription": "Notifies when QR code is downloaded",
+  "group_downloadChannelName": "Download Notifications",
+  "group_enableLocationToJoin": "Please enable location services to join a group.",
+  "group_exitGroup": "Exit Group",
+  "group_exitGroupConfirm": "Do you want to Exit this Group?",
+  "group_exitGroupNamedConfirm": "Are you sure you want to exit \"{groupName}\"? You'll need a group code to rejoin.",
+  "@group_exitGroupNamedConfirm": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "group_exitedSuccess": "Group Exit successfully",
+  "group_goToGroups": "Go to Groups →",
+  "group_groupMessage": "Group Message",
+  "group_invalidResponseFormat": "Invalid format",
+  "group_joinedJustNow": "Joined just now",
+  "group_joinedRecently": "Recent",
+  "@group_joinedRecently": {
+    "description": "Shown as the join date when it is unknown"
+  },
+  "group_leftJustNow": "Left just now",
+  "group_locationNoLongerShared": "Your location is no longer shared with this group",
+  "group_locationPermissionToJoin": "Location permission is required to join a group.",
+  "group_locationShared": "Your location is shared with this group",
+  "group_memberFallbackName": "Member",
+  "group_membersMeta": "{count, plural, =1{1 member · {when}} other{{count} members · {when}}}",
+  "@group_membersMeta": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "group_noContactsFound": "No contacts found",
+  "group_noGroupCode": "No Group Code Available",
+  "group_noNewMessages": "You won't get new messages from this group",
+  "group_noNumber": "No number",
+  "group_openGroup": "Open Group →",
+  "group_other": "Other",
+  "group_qrSavedBody": "Tap to open your QR code",
+  "group_qrSavedTitle": "QR Code Saved",
+  "group_qrShareMessage": "📌 Group Code: {groupCode}\n\nJoin my group instantly using the QR code or the code above.\n\n📲 Download the app to stay connected:\n{appLink}",
+  "@group_qrShareMessage": {
+    "placeholders": {
+      "groupCode": {
+        "type": "String"
+      },
+      "appLink": {
+        "type": "String"
+      }
+    }
+  },
+  "group_scanToJoin": "Scan this QR code to join the group",
+  "group_searchMemberHint": "Search member...",
+  "group_shareCodeInfo": "Share the group code so others can join",
+  "group_shareQr": "Share QR",
+  "group_shareQrToInvite": "Share QR code to invite members",
+  "group_sheetCreatedSubtitle": "Your group is ready. Share the code so members can join.",
+  "group_sheetCreatedSubtitleNamed": "{name}, your group is ready. Share the code so members can join.",
+  "@group_sheetCreatedSubtitleNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "group_sheetCreatedTitle": "Group created!",
+  "group_sheetJoinedSubtitle": "Welcome, you're now a member of this group.",
+  "group_sheetJoinedSubtitleNamed": "Welcome {name}, you're now a member of this group.",
+  "@group_sheetJoinedSubtitleNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "group_sheetJoinedTitle": "Joined successfully!",
+  "group_sheetLeftSubtitle": "You're no longer a member of this group.",
+  "group_sheetLeftSubtitleNamed": "{name}, you're no longer a member of this group.",
+  "@group_sheetLeftSubtitleNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "group_sheetLeftTitle": "You left the group",
+  "group_showQrCode": "Show QR Code",
+  "group_startConversation": "Feel Free to start a conversation ",
+  "group_statusUpdateFailed": "Failed to update group status",
+  "group_teamCode": "Team Code",
+  "group_teamCodeLabel": "Team Code: ",
+  "group_track": "Track",
+  "group_unnamedMember": "Unnamed Member",
+  "group_unnamedTrip": "Unnamed Trip",
+  "group_updateGroupConfirm": "Are you sure you want to update the group details?",
+  "group_updateGroupTitle": "Update Group",
+  "group_youAreAdmin": "You are the admin of this group",
+  "home_actionAllContacts": "All contacts",
+  "home_actionAudioVideoCall": "Audio/Video Call",
+  "home_actionChatting": "Chatting",
+  "home_actionSafeZone": "Safe Zone",
+  "home_actionTracking": "Tracking",
+  "home_actionWalkieTalkie": "Walkie Talkie",
+  "home_active": "Active",
+  "home_activeSessions": "Active Sessions",
+  "home_activeSessionsCount": "{count, plural, =1{1 Active Session} other{{count} Active Sessions}}",
+  "@home_activeSessionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "home_allMembers": "All Members",
+  "home_createGroup": "Create Group",
+  "home_createGroupSubtitle": "Create new group",
+  "home_goodToSeeYou": "It’s good to see you again 👋",
+  "home_groupsCount": "{count, plural, =1{1 Group} other{{count} Groups}}",
+  "@home_groupsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "home_helloName": "Hello {name}",
+  "@home_helloName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "home_inactive": "Inactive",
+  "home_joinGroup": "Join Group",
+  "home_joinGroupSubtitle": "Join existing group",
+  "home_lastSeen": "Last seen {time}",
+  "@home_lastSeen": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "home_newThisMonth": "New This Month",
+  "home_noActivePrivateSessions": "No active private sessions",
+  "home_noGroupsAvailable": "No groups available",
+  "home_noGroupsFound": "No groups found",
+  "home_noMembersFound": "No members found",
+  "home_noMembersMatch": "No members match '{query}'",
+  "@home_noMembersMatch": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "home_noMembersOnline": "No members currently online",
+  "home_noNameGroup": "No Name Group",
+  "home_noRecentlyActiveMembers": "No recently active members",
+  "home_onlineNow": "Online Now",
+  "home_peopleOnline": "People Online",
+  "home_peopleOnlineSubtitle": "These members are active in the app right now and available to connect.",
+  "home_privateMode": "Private Mode",
+  "home_privateModeIsOn": "Private Mode is ON",
+  "home_privateModeOffHint": "When Private Mode is OFF, others can see your location.",
+  "home_privateModeOnHint": "When Private Mode is ON, others can't see your location.",
+  "home_quickActionsSubtitle": "Everything you need, one tap away.",
+  "home_quickActionsTitle": "Quick Actions",
+  "home_recentlyOnline": "Recently Online",
+  "home_searchGroupsHint": "Search groups...",
+  "home_searchMembersHint": "Search members...",
+  "home_showLess": "Show Less",
+  "home_sortNameAsc": "Sort: Name (A-Z)",
+  "home_sortNameDesc": "Sort: Name (Z-A)",
+  "home_startedAt": "Started at {time}",
+  "@home_startedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "home_statGroups": "Groups",
+  "home_statMembers": "Members",
+  "home_statNow": "Now",
+  "home_statTotal": "Total",
+  "home_totalMembers": "Total Members",
+  "home_totalMembersCount": "{count, plural, =1{1 Total Member} other{{count} Total Members}}",
+  "@home_totalMembersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "home_unableToFetchGroups": "Unable to fetch groups",
+  "home_unknownMember": "Unknown Member",
+  "home_upgradeSubtitle": "Unlock advanced features for your team",
+  "home_upgradeToPremium": "Upgrade to Premium",
+  "home_viewPlans": "View Plans",
+  "home_walkieExpired": "Expired",
+  "home_walkieOneHourFree": "1 hr free",
+  "home_walkieRenew": "Renew",
+  "home_walkieSubscribed": "Subscribed",
+  "home_youAreInvisible": "You're Invisible",
+  "home_youAreVisible": "You're Visible",
+  "http_networkError": "An error occurred. Please try again!",
+  "@http_networkError": {
+    "description": "Shown when a request fails because of a network problem or timeout"
+  },
+  "http_sessionExpired": "Session expired. Please log in again.",
+  "http_unexpectedError": "An unexpected error occurred. Please try again.",
+  "imagePicker_camera": "Camera",
+  "imagePicker_cancel": "Cancel",
+  "imagePicker_cropTitle": "Crop Image",
+  "imagePicker_gallery": "Gallery",
+  "imagePicker_title": "Choose an Option",
+  "intro_realTimeTrackingSubtitle": "View live locations of friends, \n family, or team members on \n the map instantly.",
+  "intro_realTimeTrackingTitle": "Real-Time Tracking",
+  "intro_secureSubtitle": "Share your live location with \n selected contacts safely and \n privately.",
+  "intro_secureTitle": "Secure & Easy",
+  "intro_skip": "Skip",
+  "intro_walkieSubtitle": "No signal. No problem. Stay \n connected anywhere.",
+  "intro_walkieTitle": "Walkie-Talkie \n feature",
+  "media_cannotOpen": "Cannot open",
+  "media_documentNotFound": "Document not found",
+  "media_invalidLink": "Invalid link",
+  "media_noDocuments": "No documents found",
+  "media_noLinks": "No links found",
+  "media_noMedia": "No media found",
+  "media_tabDocs": "Docs",
+  "media_tabDocsCount": "Docs ({count})",
+  "@media_tabDocsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "media_tabLinks": "Links",
+  "media_tabLinksCount": "Links ({count})",
+  "@media_tabLinksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "media_tabMedia": "Media",
+  "media_tabMediaCount": "Media ({count})",
+  "@media_tabMediaCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "media_title": "Media, links, and docs",
+  "media_videoNotFound": "Video not found",
+  "menu_contactUsSubtitle": "Know more about us",
+  "menu_editProfile": "Edit Profile",
+  "menu_editProfileSubtitle": "Update your information",
+  "menu_followUsOn": "Follow us on",
+  "menu_logOut": "Log Out",
+  "menu_logOutConfirmMessage": "Do you really want to logout?",
+  "menu_logOutSubtitle": "Sign out from the app",
+  "menu_profileImageUpdateFailed": "Failed to update profile image",
+  "menu_profileImageUpdated": "Profile image updated successfully",
+  "notif_accept": "Accept",
+  "@notif_accept": {
+    "description": "Notification action button"
+  },
+  "notif_channelHighImportanceDesc": "Default channel for high importance notifications",
+  "notif_channelHighImportanceName": "High Importance Notifications",
+  "@notif_channelHighImportanceName": {
+    "description": "Android notification channel name (shown in system settings)"
+  },
+  "notif_channelWalkieAudioDesc": "Maintains live voice communication and background mic capture",
+  "notif_channelWalkieAudioName": "Walkie-Talkie Live Audio",
+  "notif_channelWalkieCallsDesc": "Incoming Walkie-Talkie calls",
+  "notif_channelWalkieCallsName": "Walkie-Talkie Calls",
+  "notif_channelWalkieDesc": "Group walkie calls and speaking updates",
+  "notif_channelWalkieLiveDesc": "Notifications for active Walkie-Talkie channels",
+  "notif_channelWalkieLiveName": "Walkie-Talkie Live Channels",
+  "notif_channelWalkieName": "Walkie-Talkie",
+  "@notif_channelWalkieName": {
+    "description": "Notification channel name"
+  },
+  "notif_connectedIn": "Connected in {group} • Live Audio Stream",
+  "@notif_connectedIn": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "notif_goToWalkie": "Go to Walkie Screen",
+  "notif_incomingWalkieTitle": "Incoming Walkie-Talkie",
+  "notif_isTalking": "{name} is talking",
+  "@notif_isTalking": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notif_leave": "Leave",
+  "@notif_leave": {
+    "description": "Notification button: leave the walkie group"
+  },
+  "notif_openWalkie": "Open Walkie",
+  "notif_reject": "Reject",
+  "@notif_reject": {
+    "description": "Notification action button"
+  },
+  "notif_stoppedTalking": "{name} stopped talking",
+  "@notif_stoppedTalking": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notif_walkieActiveConversation": "Active walkie-talkie conversation",
+  "notif_walkieActiveTitle": "Walkie-Talkie Active",
+  "notif_wantsToTalk": "{name} wants to talk",
+  "@notif_wantsToTalk": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notifications_clearAll": "Clear all notifications",
+  "notifications_clearedSuccess": "All notifications cleared successfully",
+  "notifications_emptySubtitle": "You have no new alerts at the moment.",
+  "notifications_emptyTitle": "No Notifications Yet",
+  "notifications_filterAll": "All",
+  "notifications_filterCalls": "Calls",
+  "notifications_filterChats": "Chats",
+  "notifications_filterUnread": "Unread",
+  "notifications_loadingDetails": "Loading notification details",
+  "notifications_recentCalls": "Recent Calls",
+  "notifications_title": "Notifications",
+  "otpCharges_chargedNotice": "From now on, each login OTP to your number is charged. Resending the OTP is free (up to 3 attempts).",
+  "otpCharges_chargesApplyTo": "Charges apply to",
+  "otpCharges_eachOtpCosts": "Each OTP costs",
+  "otpCharges_eachOtpCostsSpoken": "Each OTP costs {amount}",
+  "@otpCharges_eachOtpCostsSpoken": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "otpCharges_eachOtpCostsSpokenGst": "Each OTP costs {amount}, including {percent} percent GST",
+  "@otpCharges_eachOtpCostsSpokenGst": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "otpCharges_firstLoginFree": "Your first login was free.",
+  "otpCharges_freeBody": "Login OTPs sent to this number are not charged.",
+  "otpCharges_freeTitle": "OTP is free for your number",
+  "otpCharges_gstTitle": "GST ({percent}%)",
+  "@otpCharges_gstTitle": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "otpCharges_includingGst": "Including {percent}% GST",
+  "@otpCharges_includingGst": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "otpCharges_includingTax": "Including {percent}% Tax",
+  "@otpCharges_includingTax": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "otpCharges_noInternet": "No internet connection. Check your network and try again.",
+  "otpCharges_otpCharge": "OTP charge",
+  "otpCharges_pay": "Pay {amount}",
+  "@otpCharges_pay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "otpCharges_paymentCancelled": "Payment cancelled. You cancelled the payment. No money was deducted.",
+  "otpCharges_paymentFailed": "Payment failed. If money was deducted it will be refunded in 5–7 working days.",
+  "otpCharges_paymentPausedButton": "Payment Paused ({amount})",
+  "@otpCharges_paymentPausedButton": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "otpCharges_paymentReceived": "Payment received. Your OTP may take a moment to arrive.",
+  "otpCharges_paymentStartFailed": "Could not start the payment. Please try again.",
+  "otpCharges_paymentsPaused": "OTP payments are temporarily paused by administrator. Tap below for details.",
+  "otpCharges_paymentsUnavailable": "OTP payments are temporarily unavailable. Please try again later.",
+  "otpCharges_sessionExpired": "Session expired. Please start again.",
+  "otpCharges_title": "OTP Charges",
+  "otpCharges_totalPerOtp": "Total per OTP",
+  "otpCharges_tryAgainMoment": "Something went wrong. Please try again in a moment.",
+  "otpCharges_unknownBody": "Login OTPs to Indian numbers are free. For other countries, the exact price is shown before you pay at login.",
+  "otpCharges_unknownTitle": "OTP charges depend on your country",
+  "otpCharges_updateApp": "Payment couldn't start. Please update the app and try again.",
+  "otpCharges_vatTitle": "VAT / Tax ({percent}%)",
+  "@otpCharges_vatTitle": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "otpCharges_verificationFailed": "Payment verification failed. If money was deducted it will be refunded in 5–7 working days.",
+  "otpCharges_yourNumber": "Your number",
+  "package_noPackages": "No packages are available right now.",
+  "package_plansComingSoon": "{title} plans are coming soon",
+  "@package_plansComingSoon": {
+    "description": "title = package/module name from the server",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "package_subtitle": "Pick a module to see its plans",
+  "package_title": "Packages & Pricing",
+  "package_viewPlans": "View plans",
+  "perm_alwaysLocationBody": "To track your group in real time and in background, please set Location access to 'Allow all the time' in App Settings.",
+  "perm_alwaysLocationTitle": "Enable 'Always' Location Permission",
+  "perm_chooseAllowAllTime": "Please choose 'Allow all the time' in the upcoming popup.",
+  "perm_collectsLocationBody": "This app collects location data to ensure smooth job progress and provide efficient tracking, even when the app is closed or not in use.",
+  "perm_enableDeviceGpsBody": "Please enable your device's GPS (Google Location).",
+  "perm_enableGpsTitle": "Enable GPS",
+  "perm_exitBody": "Do you want to exit the app?",
+  "perm_exitTitle": "Are you sure?",
+  "perm_gpsRequiredBody": "GPS is required to track your group in real time.",
+  "perm_locationTitle": "Location Permission",
+  "perm_trackingPermissionBody": "FG Partner app needs your permission to track location while you are logged in.",
+  "permission_allowAllTheTime": "Allow All The Time",
+  "permission_allowLocation": "Allow Location",
+  "permission_allowLocationFirst": "Please allow Location first.",
+  "permission_allowNamed": "Allow {permission}",
+  "@permission_allowNamed": {
+    "placeholders": {
+      "permission": {
+        "type": "String"
+      }
+    }
+  },
+  "permission_allowNotifications": "Allow Notifications",
+  "permission_appPermissionsSubtitle": "Review the permissions required.",
+  "permission_appPermissionsTitle": "App Permissions",
+  "permission_badgeGranted": "Granted",
+  "permission_badgeOptional": "Optional",
+  "permission_badgeRecommended": "Recommended",
+  "permission_badgeRequired": "Required",
+  "permission_camera": "Camera",
+  "permission_cameraDescription": "Used by the app features that capture photos or videos.",
+  "permission_cameraSettingsMessage": "Camera permission is needed to capture photos and videos. Please enable it from app settings.",
+  "permission_cameraWhy": "Allows you to capture photos and videos for supported profile, chat and other app features.",
+  "permission_contacts": "Contacts",
+  "permission_contactsDescription": "Used to discover or select contacts for contact-related app features.",
+  "permission_contactsSettingsMessage": "Contacts permission is needed to find and select contacts. Please enable it from app settings.",
+  "permission_contactsWhy": "Helps you find and select contacts when using supported contact-related features.",
+  "permission_gateCheckFailed": "We could not check your permissions. Please try again.",
+  "permission_gateSubtitle": "FG Tracker needs these permissions to receive calls and alerts and to run attendance, live tracking and safe zone.",
+  "permission_gateTitle": "Permissions Required",
+  "permission_genericSettingsMessage": "This permission is needed. Please enable it from app settings.",
+  "permission_iosLocationServicesOff": "Location Services are turned off. Open Settings → Privacy & Security → Location Services and turn it on, then come back.",
+  "permission_location": "Location",
+  "permission_locationAndNotificationRequired": "Location and Notification permissions are required to continue.",
+  "permission_locationAndNotificationsRequiredHint": "Location and Notifications are required to continue.",
+  "permission_locationDescription": "Needed for attendance, live tracking and safe zone — including when the app is in the background.",
+  "permission_locationRequiredToContinue": "Location permission is required to continue.",
+  "permission_locationStatusApproximate": "Only approximate location is allowed. Precise is required.",
+  "permission_locationStatusBlocked": "Location is blocked. Enable it from Settings.",
+  "permission_locationStatusDone": "Allowed all the time · Precise · GPS on",
+  "permission_locationStatusGpsOff": "Device location (GPS) is turned off.",
+  "permission_locationStatusNeedAlways": "\"Allow all the time\" is required.",
+  "permission_locationStatusNotAllowed": "Location permission not allowed yet.",
+  "permission_locationWhyExtra": "Please choose \"Allow all the time\" and keep Precise location on.",
+  "permission_logout": "Logout",
+  "permission_microphone": "Microphone / Audio",
+  "permission_microphoneDescription": "Used by voice, walkie-talkie, and calling features where applicable.",
+  "permission_microphoneSettingsMessage": "Microphone permission is needed for voice, walkie-talkie and calls. Please enable it from app settings.",
+  "permission_microphoneWhy": "Allows voice communication, walkie-talkie transmission and calls when you use these features.",
+  "permission_notGrantedNamed": "{permission} permission was not granted. Please try again.",
+  "@permission_notGrantedNamed": {
+    "placeholders": {
+      "permission": {
+        "type": "String"
+      }
+    }
+  },
+  "permission_notificationRequiredToContinue": "Notification permission is required to continue.",
+  "permission_notificationSettingsText": "Notifications are turned off for FG Tracker. Open Settings → Notifications and allow them.",
+  "permission_notificationStatusBlocked": "Notifications are blocked. Enable them from Settings.",
+  "permission_notificationStatusDone": "Allowed",
+  "permission_notificationStatusNotAllowed": "Notification permission not allowed yet.",
+  "permission_notifications": "Notifications",
+  "permission_notificationsDescription": "Needed to receive incoming calls, chat messages and attendance / safe-zone alerts.",
+  "permission_notificationsWhyExtra": "Incoming calls cannot ring without this permission.",
+  "permission_openSettings": "Open Settings",
+  "permission_preciseLocation": "Precise Location",
+  "permission_pushNotifications": "Push Notifications",
+  "permission_reasonLocation": "Location is needed for attendance, live tracking and safe zone alerts.",
+  "permission_reasonLocationAlways": "Choose \"Allow all the time\" so live tracking and safe zone keep working when the app is in the background.",
+  "@permission_reasonLocationAlways": {
+    "description": "Quoted option is the Android system option 'Allow all the time'; translate it as the phone shows it in that language"
+  },
+  "permission_reasonNotification": "Notifications are needed to receive incoming calls, chat messages, attendance and safe-zone alerts.",
+  "permission_reasonPrecise": "Precise location is needed for accurate attendance, live tracking and safe zone alerts.",
+  "permission_required": "Permission Required",
+  "permission_selectAllowAllTheTime": "Please select \"Allow all the time\" to continue.",
+  "permission_settingsAndroidAlways": "Open Settings → Permissions → Location and choose \"Allow all the time\".",
+  "permission_settingsAndroidBlocked": "Location access is blocked for FG Tracker. Open Settings → Permissions → Location and choose \"Allow all the time\".",
+  "permission_settingsAndroidPrecise": "Open Settings → Permissions → Location and turn on \"Use precise location\".",
+  "permission_settingsIosAlways": "Open Settings → Location and choose \"Always\".",
+  "permission_settingsIosBlocked": "Location access is turned off for FG Tracker. Open Settings → Location and choose \"Always\".",
+  "permission_settingsIosPrecise": "Open Settings → Location and turn on \"Precise Location\".",
+  "permission_skipAndContinue": "Skip & Continue",
+  "permission_turnOnLocation": "Turn On Location",
+  "permission_turnOnPreciseLocation": "Turn On Precise Location",
+  "permission_unableToRequest": "Unable to request permission.",
+  "permission_whyWeNeedThis": "Why we need this?",
+  "registration_contactNumberHint": "Enter Contact Number",
+  "@registration_contactNumberHint": {
+    "description": "Hint in the (read-only) mobile number field."
+  },
+  "registration_contactNumberLabel": "Contact Number",
+  "registration_doneButton": "Done",
+  "@registration_doneButton": {
+    "description": "Submit button on the Registration screen."
+  },
+  "registration_emailHint": "Enter Email Address",
+  "registration_emailLabel": "Email Address",
+  "registration_genderFemale": "Female",
+  "registration_genderLabel": "Select Gender",
+  "registration_genderMale": "Male",
+  "registration_genderOther": "Other",
+  "registration_selectGenderError": "Please select your gender",
+  "registration_userNameHint": "Enter User Name",
+  "registration_userNameLabel": "User Name",
+  "repo_allCallsCleared": "All call history cleared successfully",
+  "repo_callDeleted": "Call history deleted successfully",
+  "repo_invalidResponse": "Invalid response format",
+  "repo_loadLocationsFailed": "Failed to load group locations",
+  "repo_pkgConflict": "This plan is already active or a payment is in progress.",
+  "repo_pkgNotFound": "Plans are not available right now. Please try again later.",
+  "repo_pkgOffline": "No internet connection. Check your network and try again.",
+  "repo_pkgSessionExpired": "Your session has expired. Please log in again.",
+  "repo_pkgTimeout": "The server is taking too long to respond. Please try again.",
+  "repo_selectedCallsDeleted": "Selected calls deleted successfully",
+  "repo_unnamedGroup": "Unnamed Group",
+  "safeRoute_activeDetails": "Total Distance: {distance}  •  Allowed Deviation: {deviation}",
+  "@safeRoute_activeDetails": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      },
+      "deviation": {
+        "type": "String"
+      }
+    }
+  },
+  "safeRoute_activeTitle": "Active Safe Route",
+  "safeRoute_alertSettingsDesc": "Manage safe route alerts, deviation limits and notification preferences.",
+  "safeRoute_alertSheetDesc": "Real-time alerts when team members deviate from the safe route",
+  "safeRoute_alertTitle": "Safe Route Alert",
+  "safeRoute_appBarSubtitle": "Set a safe route for your team member.",
+  "safeRoute_destination": "Destination",
+  "safeRoute_deviated": "Deviated from safe route",
+  "safeRoute_deviationAlertNote": "Alert will be triggered if the member deviates more than {distance} from the safe route.",
+  "@safeRoute_deviationAlertNote": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "safeRoute_deviationAt": "{place} (Deviation: {distance})",
+  "@safeRoute_deviationAt": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "safeRoute_deviationLimit": "Deviation Limit",
+  "safeRoute_deviationSubtitle": "Set how much deviation is allowed from the selected route.",
+  "safeRoute_distance": "Distance",
+  "safeRoute_distanceEta": "{distance} km • {minutes} min",
+  "@safeRoute_distanceEta": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "safeRoute_edit": "Edit Safe Route",
+  "safeRoute_end": "End",
+  "safeRoute_estTime": "Est. Time: {minutes} min",
+  "@safeRoute_estTime": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "safeRoute_featureDesc": "Set predefined routes for your team members. Get alerts if someone deviates from the safe route.",
+  "safeRoute_groupWithCount": "{group} ({count, plural, =1{1 Member} other{{count} Members}})",
+  "@safeRoute_groupWithCount": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "safeRoute_helpDeviationBody": "Set the allowed distance a member can move away from the selected route. You’ll get an alert if they exceed this limit.",
+  "safeRoute_helpDeviationTitle": "What is Deviation Limit?",
+  "safeRoute_helpHowBody": "Select the member, choose start and destination locations, pick the best route and set a deviation limit.",
+  "safeRoute_helpHowTitle": "How to Create Safe Route?",
+  "safeRoute_helpTitle": "Safe Route Help",
+  "safeRoute_helpWhatBody": "Set a start and destination location to create a safe travel route for your team member.",
+  "safeRoute_helpWhatTitle": "What is Safe Route?",
+  "safeRoute_memberDeviated": "{name} has deviated from Safe Route",
+  "@safeRoute_memberDeviated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "safeRoute_recommended": "Recommended",
+  "safeRoute_recommendedRoute": "{name} (Recommended)",
+  "@safeRoute_recommendedRoute": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "safeRoute_routeFor": "Route ({name})",
+  "@safeRoute_routeFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "safeRoute_saveActivate": "Save & Activate Safe Route",
+  "safeRoute_saveActivateGroup": "Save & Activate Safe Route for Group",
+  "safeRoute_selectedRoute": "Selected Route",
+  "safeRoute_setRoutesSubtitle": "Create and manage safe routes for all group members.",
+  "safeRoute_start": "Start",
+  "safeRoute_startLocation": "Start Location",
+  "safeRoute_stepDeviation": "{step}. Set Deviation Limit",
+  "@safeRoute_stepDeviation": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "safeRoute_stepPreviewApply": "{step}. Preview & Apply",
+  "@safeRoute_stepPreviewApply": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "safeRoute_stepPreviewRoute": "{step}. Preview Route",
+  "@safeRoute_stepPreviewRoute": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "safeRoute_stepSelectRoute": "{step}. Select Route",
+  "@safeRoute_stepSelectRoute": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "safeRoute_stepSetRoutesForMembers": "{step}. Set Routes for Members",
+  "@safeRoute_stepSetRoutesForMembers": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "safeRoute_stepStartDest": "{step}. Set Start & Destination",
+  "@safeRoute_stepStartDest": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "safeRoute_subtitle": "Route protection",
+  "safeRoute_title": "Safe Route",
+  "safeZone_activeDetails": "Radius: {radius}  •  Center: {center}",
+  "@safeZone_activeDetails": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      },
+      "center": {
+        "type": "String"
+      }
+    }
+  },
+  "safeZone_activePreview": "Active (Preview)",
+  "safeZone_activeTitle": "Active Safe Zone",
+  "safeZone_alertSettingsDesc": "Manage safe zone, alert distance and notification preferences",
+  "safeZone_alertSheetDesc": "Real-time alerts when team members leave the safe zone",
+  "safeZone_alertTitle": "Safe Zone Alert",
+  "safeZone_allMonitored": "{count, plural, =1{1 member will be monitored\nwithin this safe zone.} other{All {count} members will be monitored\nwithin this safe zone.}}",
+  "@safeZone_allMonitored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "safeZone_appBarSubtitle": "Define a safe area. Get alerts if someone\nsteps outside the safe zone.",
+  "safeZone_appliedToGroup": "{count, plural, =1{This safe zone will be applied to the 1 member in the selected group.} other{This safe zone will be applied to all {count} members in the selected group.}}",
+  "@safeZone_appliedToGroup": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "safeZone_edit": "Edit Safe Zone",
+  "safeZone_exited": "Exited safe zone",
+  "safeZone_featureDesc": "Define a safe geographic area for your team. Get instant alerts if someone steps outside the safe zone.",
+  "safeZone_helpHowBody": "Select a member, choose a location on the map and set the radius.",
+  "safeZone_helpHowTitle": "How to Create Safe Zone?",
+  "safeZone_helpRadiusBody": "Set the area radius (500 m, 1 km, 2 km or 5 km) according to your need.",
+  "safeZone_helpRadiusTitle": "What is Safe Zone Radius?",
+  "safeZone_helpTitle": "Safe Zone Help",
+  "safeZone_helpWhatBody": "Set a specific area on the map and get alerts if the member steps outside the safe zone.",
+  "safeZone_helpWhatTitle": "What is Safe Zone?",
+  "safeZone_memberLeft": "{name} has left the Safe Zone",
+  "@safeZone_memberLeft": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "safeZone_membersMonitored": "Members will be monitored within this safe zone.",
+  "safeZone_nearOutsideZone": "Near {place} (Outside {zone})",
+  "@safeZone_nearOutsideZone": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "safeZone_outsideZone": "{place} (Outside {zone})",
+  "@safeZone_outsideZone": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "safeZone_saveActivate": "Save & Activate Safe Zone",
+  "safeZone_saveActivateGroup": "Save & Activate Safe Zone for Group",
+  "safeZone_searchLocation": "Search Location...",
+  "safeZone_statusLabel": "Status:",
+  "safeZone_stepPreview": "{step}. Preview Safe Zone",
+  "@safeZone_stepPreview": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "safeZone_stepRadius": "{step}. Set Safe Zone Radius",
+  "@safeZone_stepRadius": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "safeZone_stepSelectLocation": "{step}. Select Location on Map",
+  "@safeZone_stepSelectLocation": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "safeZone_subtitle": "Area protection",
+  "safeZone_title": "Safe Zone",
+  "safeZone_totalMembers": "{count, plural, =1{Total 1 Member} other{Total {count} Members}}",
+  "@safeZone_totalMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "safety_active": "Active",
+  "@safety_active": {
+    "description": "Status chip (adjective)"
+  },
+  "safety_alertSettings": "Alert Settings",
+  "safety_alerts": "Alerts",
+  "safety_alertsDesc": "Require immediate attention",
+  "safety_bannerBody": "Monitor and protect your team with smart safety features.",
+  "safety_bannerTitle": "Your Safety, Our Priority",
+  "safety_chooseFeature": "Choose a Safety Feature",
+  "safety_comingSoonBody": "Smart safety features to protect your team are on the way.",
+  "safety_contactSupport": "Contact Support",
+  "safety_editAnytime": "You can edit or deactivate anytime later.",
+  "safety_mapCityPark": "City Park",
+  "safety_mapMainRoad": "Main Road",
+  "safety_mapMarketLane": "Market Lane",
+  "safety_mapRiver": "River",
+  "safety_mapStationRoad": "Station Road",
+  "safety_needHelpBody": "Contact support team for any safety related assistance.",
+  "safety_quickOverview": "Quick Overview",
+  "safety_recentAlerts": "Recent Alerts",
+  "safety_recenter": "Re-center",
+  "safety_safeNow": "Safe Now",
+  "safety_safeNowDesc": "Members are within safe zone/route",
+  "safety_stepSelectGroup": "{step}. Select Group",
+  "@safety_stepSelectGroup": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "safety_stepSelectMember": "{step}. Select Member",
+  "@safety_stepSelectMember": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "safety_tabIndividual": "Individual",
+  "safety_tagline": "Stay protected. Stay connected.",
+  "safety_title": "Safety",
+  "safety_viewAllMembers": "View All Members",
+  "sheet_addGroupMember": "Add Group Member",
+  "sheet_admin": "Admin",
+  "@sheet_admin": {
+    "description": "Badge next to a group admin's name"
+  },
+  "sheet_attachSubtitle": "Share files and media with your team",
+  "sheet_attachUpload": "Attach / Upload",
+  "sheet_attendance": "Attendance",
+  "sheet_callOptions": "Call Options",
+  "sheet_cantRemoveSelf": "You can't remove yourself from the group.",
+  "sheet_contact": "Contact",
+  "sheet_contactsNotOnApp": "Your contacts are not using FG Tracker yet.",
+  "sheet_document": "Document",
+  "sheet_groupMembers": "Group Members",
+  "sheet_location": "Location",
+  "sheet_memberRemoved": "Member removed successfully",
+  "sheet_noMembers": "No members found",
+  "sheet_noRegisteredContacts": "No Registered Contacts",
+  "sheet_noUserFound": "No User Found",
+  "sheet_normalAudioCall": "Normal Audio Call",
+  "sheet_normalAudioCallSubtitle": "Standard clear voice quality",
+  "sheet_registeredContacts": "{count, plural, =1{1 Registered Contact} other{{count} Registered Contacts}}",
+  "@sheet_registeredContacts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sheet_removeMemberConfirm": "Are you sure you want to remove {name} from the group?",
+  "@sheet_removeMemberConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sheet_removeMemberTitle": "Remove Member",
+  "sheet_searchContacts": "Search contacts",
+  "sheet_walkieCall": "Walkie-Talkie Call",
+  "sheet_walkieCallSubtitle": "Push-to-talk communication",
+  "sos_addDetailsMandatory": "Add Details (Mandatory)",
+  "sos_addDetailsOptional": "Add Details (Optional)",
+  "sos_addFamilyMember": "Add Family Member",
+  "sos_addFamilyMemberRequired": "Add at least 1 family member to send SOS alert",
+  "sos_addPhotoHint": "Attach a photo to help others understand better.",
+  "sos_addPhotoOptional": "Add Photo (Optional)",
+  "sos_alertSent": "SOS Alert Sent!",
+  "sos_alertSentToNearby": "Your alert has been sent to nearby people.",
+  "sos_alertWillBeSent": "Alert will be sent to nearby people",
+  "sos_alertWillBeSentFamily": "Your alert will be sent to nearby people and your family.",
+  "sos_availableUsers": "{count, plural, =1{1 Available User} other{{count} Available Users}}",
+  "@sos_availableUsers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sos_detailsHint": "Type any additional details...",
+  "sos_detailsMandatoryForOther": "Add Details is mandatory when 'Other' reason is selected",
+  "sos_howItWorks": "How it works",
+  "sos_howItWorksIntro": "SOS Alert helps you notify nearby people and your family in emergency situations.",
+  "sos_howItWorksTitle": "How SOS Alert Works?",
+  "sos_liveTrackingStarted": "Live tracking started",
+  "sos_locationSharedWithFamily": "{count, plural, =1{Your location is being shared with 1 family member} other{Your location is being shared with {count} family members}}",
+  "@sos_locationSharedWithFamily": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sos_membersSelected": "{count, plural, =1{1 member selected} other{{count} members selected}}",
+  "@sos_membersSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sos_needHelp": "Need Help?",
+  "sos_needHelpBody": "Send an SOS alert to nearby people.\nThey will be notified and can assist you.",
+  "sos_noMatchFound": "No Match Found",
+  "sos_noUsersFound": "No Users Found",
+  "sos_notifyFamilyTitle": "Notify Your Family (1 to 5 required)",
+  "sos_notifyUpdates": "We will notify you of any updates",
+  "sos_okGotIt": "OK, Got It",
+  "sos_peopleWithinRadius": "People within 2 km radius",
+  "sos_privacyNote": "Your privacy is important. Your location is shared only during an active SOS alert.",
+  "sos_reasonAccident": "Accident",
+  "sos_reasonMedical": "Medical",
+  "sos_reasonOther": "Other",
+  "sos_reasonSafety": "Safety",
+  "sos_reasonThreat": "Threat",
+  "sos_required": "Required",
+  "sos_searchUsers": "Search users",
+  "sos_selectReason": "Select Reason",
+  "sos_sendSosAlert": "Send SOS Alert",
+  "sos_stayCalm": "Stay calm, help is on the way",
+  "sos_step1Body": "Tap on the SOS button and send alert to people nearby.",
+  "sos_step1Title": "1. Send SOS Alert",
+  "sos_step2Body": "People nearby will receive your alert with your location.",
+  "sos_step2Title": "2. Notify Nearby People",
+  "sos_step3Body": "Nearby people can view your alert and reach out to help you.",
+  "sos_step3Title": "3. Get Help Faster",
+  "sos_step4Body": "Your family members will be instantly notified about your SOS.",
+  "sos_step4Title": "4. Family Gets Notified",
+  "sos_subtitle": "Send alert to nearby people",
+  "sos_title": "SOS Alert",
+  "sos_willBeNotified": "will be notified",
+  "status_activeCount": "{count} active",
+  "@status_activeCount": {
+    "description": "Number of my active statuses",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "status_addToMyStatus": "Add to My Status",
+  "status_allContacts": "All Contacts",
+  "status_cameraAccessFailed": "Unable to access camera",
+  "status_captionHint": "Add a caption...",
+  "status_changeMedia": "Change Media",
+  "status_dayAtTime": "{day}, {time}",
+  "@status_dayAtTime": {
+    "description": "e.g. Today, 3:45 PM",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "status_deleted": "Status deleted",
+  "status_deletedByOwner": "This status was deleted by the owner",
+  "status_exceptContacts": "Except Contacts",
+  "status_exceptSelected": "Except Selected",
+  "status_flip": "Flip",
+  "@status_flip": {
+    "description": "Switch front/back camera"
+  },
+  "status_gallery": "Gallery",
+  "status_modePhoto": "Photo",
+  "status_modeText": "Text",
+  "@status_modeText": {
+    "description": "Text status mode"
+  },
+  "status_modeVideo": "Video",
+  "status_myStatus": "My Status",
+  "status_new": "New",
+  "@status_new": {
+    "description": "Status not seen yet"
+  },
+  "status_noCamera": "No camera available",
+  "status_noLongerAvailable": "This status is no longer available",
+  "status_noViewsYet": "No views yet",
+  "status_onlyShareWith": "Only Share With",
+  "status_pause": "Pause",
+  "status_pinchZoomHint": "Pinch to zoom photo",
+  "status_play": "Play",
+  "status_postStatus": "Post Status",
+  "status_previewStatus": "Preview Status",
+  "status_privacy": "Privacy",
+  "status_privacyTitle": "Status Privacy",
+  "status_publishFailed": "Unable to publish status",
+  "status_replyHint": "Reply to status...",
+  "status_retake": "Retake",
+  "status_selectPhotoFirst": "Please capture or select a photo first",
+  "status_selectVideoFirst": "Please capture or select a video first",
+  "status_shareUpdatesHint": "Share updates with your team",
+  "status_tapVideoHint": "Tap video to play / pause",
+  "status_textRequired": "Text content is required for text status",
+  "status_title": "Status",
+  "@status_title": {
+    "description": "Status / stories feature"
+  },
+  "status_typeHint": "Type a status...",
+  "status_uploadFailed": "Upload Failed",
+  "status_viewMyStatus": "View My Status",
+  "status_viewed": "Viewed",
+  "@status_viewed": {
+    "description": "Status already seen"
+  },
+  "status_viewedBy": "Viewed by {count}",
+  "@status_viewedBy": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "status_viewsCount": "{count, plural, =1{1 View} other{{count} Views}}",
+  "@status_viewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "status_whoCanSee": "Who can see?",
+  "track_admin": "Admin",
+  "track_applyRadius": "Apply Radius",
+  "track_checkNetworkConnection": "Please check your network connection and try again.",
+  "track_checkNetworkMembers": "Please check your network and try again to view nearby members.",
+  "track_currentLocation": "Current Location",
+  "track_custom": "Custom",
+  "@track_custom": {
+    "description": "Custom radius option"
+  },
+  "track_customWithValue": "Custom ({radius})",
+  "@track_customWithValue": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "track_distanceAway": "{distance} away",
+  "@track_distanceAway": {
+    "description": "distance like '1.2 km' or '350 m'",
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "track_enable": "Enable",
+  "@track_enable": {
+    "description": "Button: turn GPS on"
+  },
+  "track_enableGpsBody": "To track your group in real time, please turn on your GPS.",
+  "track_enableGpsTitle": "Enable GPS",
+  "track_errorFailedLoadGroups": "Failed to load groups",
+  "track_errorLoadGroups": "Unable to load groups. Please try again.",
+  "track_errorLoadMembers": "Unable to load nearby members. Please try again.",
+  "track_errorNoInternet": "No internet connection. Please check your network.",
+  "track_errorServer": "Unable to connect to server. Please try again.",
+  "track_groupCode": "Code: {code}",
+  "@track_groupCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "track_groupMembers": "Group Members",
+  "track_groupMembersAndCode": "{count, plural, =1{1 member • Code: {code}} other{{count} members • Code: {code}}}",
+  "@track_groupMembersAndCode": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "track_groupTab": "Group",
+  "@track_groupTab": {
+    "description": "Tab label"
+  },
+  "track_groupsCount": "{count, plural, =1{1 Group} other{{count} Groups}}",
+  "@track_groupsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "track_groupsHeader": "GROUPS ({count})",
+  "@track_groupsHeader": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "track_helpGroupBody": "Create a group to track multiple members.",
+  "track_helpGroupTitle": "How to Add Group?",
+  "track_helpLiveBody": "Track team's real-time location on the map.",
+  "track_helpLiveTitle": "What is Live Tracking?",
+  "track_helpRadiusBody": "Set the area to find nearby members on the map.",
+  "track_helpRadiusTitle": "What is Tracking Radius?",
+  "track_helpTitle": "Tracking Help",
+  "track_lastSeen": "Last seen: {time}",
+  "@track_lastSeen": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "track_liveCount": "{count} Live",
+  "@track_liveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "track_liveMembers": "Live Members",
+  "track_liveTracking": "Live Tracking",
+  "track_locating": "Locating...",
+  "track_locationHidden": "Location Hidden",
+  "track_locationUnavailable": "Location unavailable",
+  "track_mapOfflineBody": "Internet connection is required to load live map data and real-time member locations.",
+  "track_mapUnavailableOffline": "Map Unavailable Offline",
+  "track_member": "Member",
+  "@track_member": {
+    "description": "Fallback when a member has no name"
+  },
+  "track_memberPausedSharing": "{name} has paused location sharing. Live location is not available.",
+  "@track_memberPausedSharing": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "track_membersHeader": "MEMBERS ({count})",
+  "@track_membersHeader": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "track_membersLive": "{count, plural, =1{1 Member Live} other{{count} Members Live}}",
+  "@track_membersLive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "track_menuMembers": "Members",
+  "track_menuRefreshMap": "Refresh Map",
+  "track_menuTheme": "Theme",
+  "track_nearbyYou": "Nearby you",
+  "track_noActiveMembers": "No Active Members",
+  "track_noActiveMembersWithin": "No active members found within {radius}",
+  "@track_noActiveMembersWithin": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "track_noDescription": "No description",
+  "track_noGroupsFound": "No Groups Found",
+  "track_noGroupsMatch": "No Groups Match",
+  "track_noGroupsMatchQuery": "No groups match '{query}'",
+  "@track_noGroupsMatchQuery": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "track_noGroupsYet": "You haven't joined or created any groups yet.",
+  "track_noInternetTitle": "No Internet Connection",
+  "track_noMembersFound": "No Members Found",
+  "track_noMembersFoundPlain": "No members found",
+  "track_noMembersInGroup": "No members found in this group",
+  "track_noMembersMatch": "No members match '{query}'",
+  "@track_noMembersMatch": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "track_noSearchMatches": "No members or groups matching\n'{query}'",
+  "@track_noSearchMatches": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "track_noSearchResults": "No members or groups found for '{query}'",
+  "@track_noSearchResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "track_notAvailable": "N/A",
+  "@track_notAvailable": {
+    "description": "Shown when a group has no code"
+  },
+  "track_offlineBanner": "No internet connection. Map & tracking are offline.",
+  "track_private": "Private",
+  "track_radius": "Radius",
+  "track_refresh": "Refresh",
+  "track_refreshing": "Refreshing...",
+  "track_retryConnection": "Retry Connection",
+  "track_searchHint": "Search members or groups...",
+  "track_searchMembersHint": "Search Members...",
+  "track_selectedLocation": "Selected Location",
+  "track_setRadiusSubtitle": "Slide to select area radius",
+  "track_setRadiusTitle": "Set Tracking Radius",
+  "track_unableToLoadGroups": "Unable to Load Groups",
+  "track_unableToLoadMembers": "Unable to Load Members",
+  "track_unnamedGroup": "Unnamed Group",
+  "track_unnamedMember": "Unnamed Member",
+  "track_yourGroups": "Your Groups",
+  "track_yourLocationPaused": "Your live location sharing is paused and private.",
+  "util_previewContact": "👤 Contact",
+  "util_previewDocument": "📄 Document",
+  "util_previewLocation": "📍 Location",
+  "util_previewPhoto": "📷 Photo",
+  "util_previewVideo": "🎥 Video",
+  "util_previewVoice": "🎤 Voice message",
+  "util_spokenEur": "{amount} euros",
+  "@util_spokenEur": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "util_spokenGbp": "{amount} pounds",
+  "@util_spokenGbp": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "util_spokenRupees": "{rupees, plural, =1{1 rupee} other{{rupees} rupees}}",
+  "@util_spokenRupees": {
+    "description": "Screen-reader text for an amount in rupees",
+    "placeholders": {
+      "rupees": {
+        "type": "int"
+      }
+    }
+  },
+  "util_spokenRupeesPaise": "{rupees} rupees {paise} paise",
+  "@util_spokenRupeesPaise": {
+    "description": "Screen-reader text for an amount in rupees and paise",
+    "placeholders": {
+      "rupees": {
+        "type": "int"
+      },
+      "paise": {
+        "type": "int"
+      }
+    }
+  },
+  "util_spokenUsd": "{amount} US dollars",
+  "@util_spokenUsd": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "util_unableToCallContact": "Unable to call this contact",
+  "util_unableToStartGroupCall": "Unable to start group call",
+  "validation_emailEmpty": "Email address cannot be empty",
+  "validation_emailInvalid": "Please enter a valid email address.",
+  "validation_required": "{field} is required",
+  "@validation_required": {
+    "description": "Form error under a required field. {field} is the already-translated field label.",
+    "placeholders": {
+      "field": {
+        "type": "String",
+        "example": "User Name"
+      }
+    }
+  },
+  "voice_appLanguage": "App language",
+  "voice_audioChip": "AUDIO",
+  "voice_captionReady": "Caption ready",
+  "voice_chooseSpeechLanguage": "Choose Speech Language",
+  "voice_couldntPlay": "Couldn't play voice message",
+  "voice_didntCatch": "Didn't catch that. Tap the mic and speak a little louder.",
+  "voice_language": "Language",
+  "voice_listenBack": "Listen back",
+  "voice_listenBeforeSending": "Listen before sending your voice message.",
+  "voice_listening": "Listening…",
+  "voice_micPermissionNeeded": "Microphone permission is needed to use voice.",
+  "voice_micUnavailable": "Microphone unavailable. Please check settings.",
+  "voice_noTextCaptured": "No text captured — try re-recording.",
+  "voice_openSettings": "Open settings",
+  "voice_permissionRequired": "Permission Required",
+  "voice_reRecord": "Re-record",
+  "voice_readyToSend": "Ready to send",
+  "voice_recordVoice": "Record Voice",
+  "voice_recordVoiceSubtitle": "Record and send as an audio message",
+  "voice_recordingYourVoice": "Recording your voice…",
+  "voice_replyReady": "Reply ready",
+  "voice_reviewTextHint": "Listen to your voice above, or edit the text in the message box before sending.",
+  "voice_sendMessage": "Send message",
+  "voice_sendVoiceMessage": "Send voice message",
+  "voice_speakNowCaption": "Speak now – we are typing your caption",
+  "voice_speakNowMessage": "Speak now – your words appear in the message box",
+  "voice_speakNowReply": "Speak now – we are typing your reply",
+  "voice_speakPlaceholder": "Speak… your text will appear here",
+  "voice_speechPermissionNeeded": "Speech recognition permission is needed to convert voice to text.",
+  "voice_tapToStop": "Tap to stop",
+  "voice_textReady": "Text ready",
+  "voice_tooMuchNoise": "Too much noise – hold the phone closer and speak clearly",
+  "voice_type": "Type",
+  "@voice_type": {
+    "description": "Label under the AUDIO chip: the kind of message (noun)"
+  },
+  "voice_voiceToText": "Voice to Text",
+  "voice_voiceToTextSubtitle": "Speak and type into the message box",
+  "voice_willSendAudioMessage": "Your voice will be sent as an audio message",
+  "voice_willSendAudioReply": "Your voice will be sent as an audio reply",
+  "voice_willSendWithFile": "Your voice will be sent with the file as audio",
+  "voice_yourMessage": "Your message",
+  "voice_yourVoiceMessage": "Your voice message",
+  "walkiePlan_availableIndividualPlans": "Individual Plans",
+  "walkiePlan_availablePerMonth": "/ month",
+  "walkiePlan_availablePerSeat": "/ seat",
+  "walkiePlan_availableSingleMember": "Single Member (Personal Access)",
+  "walkiePlan_availableSubtitle": "Select a plan to start or upgrade your subscription",
+  "walkiePlan_availableTeamPlans": "Team Plans",
+  "walkiePlan_availableTeamSeats": "{min}-{max} Seats  •  Group Collaboration",
+  "@walkiePlan_availableTeamSeats": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_availableTitle": "Available Plans",
+  "walkiePlan_bottomBarAfterTrial": "After your free trial",
+  "walkiePlan_bottomBarChoosePlan": "Choose a Plan",
+  "walkiePlan_bottomBarContinue": "Continue with Walkie Talkie",
+  "walkiePlan_bottomBarPricePer": "{price} / {period}",
+  "@walkiePlan_bottomBarPricePer": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_bottomBarPurchaseFor": "Purchase for {price}",
+  "@walkiePlan_bottomBarPurchaseFor": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_cardActive": "Active",
+  "@walkiePlan_cardActive": {
+    "description": "Status badge of a subscription / trial"
+  },
+  "walkiePlan_cardActiveSince": "Active since {date}",
+  "@walkiePlan_cardActiveSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_cardAssigned": "Assigned",
+  "@walkiePlan_cardAssigned": {
+    "description": "Seat count label: seats assigned"
+  },
+  "walkiePlan_cardAssignedBy": "Assigned by {name}",
+  "@walkiePlan_cardAssignedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_cardAssignedToYou": "Assigned to You",
+  "walkiePlan_cardAvailable": "Available",
+  "@walkiePlan_cardAvailable": {
+    "description": "Seat count label: seats still free"
+  },
+  "walkiePlan_cardManageMembers": "Manage Members",
+  "walkiePlan_cardNoActiveIndividual": "No active Individual subscription",
+  "walkiePlan_cardNoActiveTeam": "No active Team plan or assigned seat",
+  "walkiePlan_cardOneSeatSelf": "1 Seat (Self)",
+  "walkiePlan_cardPersonal": "Personal",
+  "walkiePlan_cardPurchased": "Purchased",
+  "@walkiePlan_cardPurchased": {
+    "description": "Seat count label: seats purchased"
+  },
+  "walkiePlan_cardPurchasedByYou": "Purchased by You",
+  "walkiePlan_cardPurchasedOn": "Purchased On",
+  "walkiePlan_cardSeatsMembers": "Seats / Members",
+  "walkiePlan_cardSubscribedByYou": "Subscribed by You",
+  "walkiePlan_cardTeamAdministrator": "Team Administrator",
+  "walkiePlan_cardValidUntil": "Valid Until",
+  "walkiePlan_cardView": "View",
+  "walkiePlan_cardViewPlan": "View Plan",
+  "walkiePlan_couponDiscount": "{value} Discount",
+  "@walkiePlan_couponDiscount": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_couponExpired": "Coupon has expired",
+  "walkiePlan_couponFlatOff": "Flat {amount} OFF",
+  "@walkiePlan_couponFlatOff": {
+    "description": "Coupon badge, amount like ₹150",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_couponMinOrderNotMet": "Minimum order amount not met",
+  "walkiePlan_couponNotEligible": "Not eligible for current plan",
+  "walkiePlan_couponNotStarted": "Coupon offer is not active yet",
+  "walkiePlan_couponPercentOff": "{percent}% OFF",
+  "@walkiePlan_couponPercentOff": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_couponPlanNotApplicable": "Not applicable on this plan",
+  "walkiePlan_couponValidTill": "Valid till {date}",
+  "@walkiePlan_couponValidTill": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_ctrlContinueToPayment": "Continue to Payment",
+  "walkiePlan_ctrlContinueWith": "Continue with {plan}",
+  "@walkiePlan_ctrlContinueWith": {
+    "description": "Button; plan is the plan name (may come from the server)",
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_ctrlCouponApplied": "Coupon applied successfully!",
+  "walkiePlan_ctrlCouponAppliedSave": "Coupon applied! You save {amount}",
+  "@walkiePlan_ctrlCouponAppliedSave": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_ctrlCouponFailed": "Failed to apply coupon",
+  "walkiePlan_ctrlCouponRemoved": "Coupon removed",
+  "walkiePlan_ctrlGatewayError": "Cashfree error ({code})",
+  "@walkiePlan_ctrlGatewayError": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_ctrlGatewayInitFailed": "Payment initiation failed.",
+  "walkiePlan_ctrlGatewaySessionFailed": "Failed to create payment session: {error}",
+  "@walkiePlan_ctrlGatewaySessionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_ctrlGatewayUnableToProcess": "Unable to process payment: {error}",
+  "@walkiePlan_ctrlGatewayUnableToProcess": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_ctrlLoadingPlans": "Loading plans...",
+  "walkiePlan_ctrlUnableToLoadPlans": "Unable to load plans. Please try again.",
+  "walkiePlan_detailsAllBanks": "All Indian Banks supported",
+  "walkiePlan_detailsApplied": "Applied",
+  "@walkiePlan_detailsApplied": {
+    "description": "Button state: coupon has been applied"
+  },
+  "walkiePlan_detailsApply": "Apply",
+  "@walkiePlan_detailsApply": {
+    "description": "Button: apply the coupon code"
+  },
+  "walkiePlan_detailsApplyCaps": "APPLY",
+  "@walkiePlan_detailsApplyCaps": {
+    "description": "Small upper-case button on a coupon row"
+  },
+  "walkiePlan_detailsAvailableCoupons": "Available Coupons",
+  "walkiePlan_detailsCard": "Credit / Debit Card",
+  "walkiePlan_detailsChooseTitle": "Choose a Plan",
+  "walkiePlan_detailsCodeLabel": "Code: {code}",
+  "@walkiePlan_detailsCodeLabel": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_detailsCouponsOffers": "Coupons & Offers",
+  "walkiePlan_detailsEnterCouponHint": "Enter coupon code",
+  "walkiePlan_detailsEnterValidCoupon": "Please enter a valid coupon code",
+  "walkiePlan_detailsFeatGroupComm": "Group Communication",
+  "walkiePlan_detailsFeatHqVoice": "High Quality Voice",
+  "walkiePlan_detailsFeatPrioritySupport": "Priority Support",
+  "walkiePlan_detailsFeatUnlimitedRange": "Unlimited Range",
+  "walkiePlan_detailsFeatUnlimitedWalkie": "Unlimited Walkie Talkie",
+  "walkiePlan_detailsHavePromoCode": "Have a Promo Code?",
+  "walkiePlan_detailsIndividualSubtitle": "Continue using Walkie Talkie with a plan that fits your team",
+  "walkiePlan_detailsLockedCaps": "LOCKED",
+  "@walkiePlan_detailsLockedCaps": {
+    "description": "Small upper-case badge: coupon is not eligible"
+  },
+  "walkiePlan_detailsMaxMembersReached": "{count, plural, =1{Maximum limit of 1 member reached} other{Maximum limit of {count} members reached}}",
+  "@walkiePlan_detailsMaxMembersReached": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_detailsMemberPlural": "Members",
+  "@walkiePlan_detailsMemberPlural": {
+    "description": "Word under the member count in the stepper when the count is not 1"
+  },
+  "walkiePlan_detailsMemberSingular": "Member",
+  "@walkiePlan_detailsMemberSingular": {
+    "description": "Word under the member count in the stepper when the count is 1"
+  },
+  "walkiePlan_detailsMembersTimesRate": "{count, plural, =1{1 Member × {rate}} other{{count} Members × {rate}}}",
+  "@walkiePlan_detailsMembersTimesRate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_detailsMinTeamSize": "{count, plural, =1{Minimum team size is 1 member} other{Minimum team size is {count} members}}",
+  "@walkiePlan_detailsMinTeamSize": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_detailsMoreMembersBody": "Add or remove members anytime.",
+  "walkiePlan_detailsMoreMembersTitle": "More Members?",
+  "walkiePlan_detailsMostPopular": "Most Popular",
+  "walkiePlan_detailsNetBanking": "Net Banking",
+  "walkiePlan_detailsNoCouponsBody": "There are no active coupons for this plan right now.",
+  "walkiePlan_detailsNoCouponsTitle": "No Coupons Available",
+  "walkiePlan_detailsNoIndividualPlans": "No individual walkie-talkie plans are currently available. Please check back later or retry.",
+  "walkiePlan_detailsNoPlansTitle": "No Plans Available",
+  "walkiePlan_detailsNoTeamPlans": "No team walkie-talkie plans are currently available. Please check back later or retry.",
+  "walkiePlan_detailsOriginalTotal": "{amount} total",
+  "@walkiePlan_detailsOriginalTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_detailsPayActivate": "Pay & Activate Plan",
+  "walkiePlan_detailsPerPerson": "/ person",
+  "@walkiePlan_detailsPerPerson": {
+    "description": "Suffix after a price, e.g. ₹500 / person"
+  },
+  "walkiePlan_detailsPillAllSizes": "of All Sizes",
+  "@walkiePlan_detailsPillAllSizes": {
+    "description": "Second line of the feature chip 'For Teams / of All Sizes'"
+  },
+  "walkiePlan_detailsPillCommunication": "Communication",
+  "walkiePlan_detailsPillForTeams": "For Teams",
+  "@walkiePlan_detailsPillForTeams": {
+    "description": "First line of a feature chip 'For Teams / of All Sizes'; translations may reorder the two lines"
+  },
+  "walkiePlan_detailsPillInstant": "Instant",
+  "@walkiePlan_detailsPillInstant": {
+    "description": "First line of the feature chip 'Instant / Communication'"
+  },
+  "walkiePlan_detailsPillPriority": "Priority",
+  "@walkiePlan_detailsPillPriority": {
+    "description": "First line of the feature chip 'Priority / Support'"
+  },
+  "walkiePlan_detailsPillReliable": "Reliable &",
+  "@walkiePlan_detailsPillReliable": {
+    "description": "First line of the feature chip 'Reliable & / Secure'"
+  },
+  "walkiePlan_detailsPillSecure": "Secure",
+  "walkiePlan_detailsPillSupport": "Support",
+  "walkiePlan_detailsPillUnlimited": "Unlimited",
+  "@walkiePlan_detailsPillUnlimited": {
+    "description": "First line of a feature chip; second line is 'Walkie Talkie'"
+  },
+  "walkiePlan_detailsPillWalkieTalkie": "Walkie Talkie",
+  "walkiePlan_detailsPlanActivated": "Plan Activated Successfully!",
+  "walkiePlan_detailsPlanActiveBody": "Your Walkie Talkie plan is now active. Enjoy uninterrupted instant voice communication.",
+  "walkiePlan_detailsPlanSummary": "Plan Summary",
+  "walkiePlan_detailsPromoApplied": "Promo ({code}) applied",
+  "@walkiePlan_detailsPromoApplied": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_detailsRemoveCaps": "REMOVE",
+  "@walkiePlan_detailsRemoveCaps": {
+    "description": "Small upper-case button: remove the applied coupon"
+  },
+  "walkiePlan_detailsSelectPaymentMethod": "Select Payment Method",
+  "walkiePlan_detailsSkeletonCouponNote": "Valid on all plans • Expires soon",
+  "@walkiePlan_detailsSkeletonCouponNote": {
+    "description": "Placeholder text shown while coupons load (shimmer)"
+  },
+  "walkiePlan_detailsStep1Subtitle": "Choose how many team members you want to add",
+  "walkiePlan_detailsStep1Title": "Select Number of Members",
+  "walkiePlan_detailsStep2Subtitle": "Choose the plan duration that works for you",
+  "walkiePlan_detailsStep2Title": "Select Plan Duration",
+  "walkiePlan_detailsSubtitleDefault": "Instant walkie talkie voice access",
+  "walkiePlan_detailsSubtitleGrowingTeams": "Great value for growing teams",
+  "walkiePlan_detailsSubtitleLongTerm": "Best for long-term use",
+  "walkiePlan_detailsSubtitleShortTerm": "Perfect for short-term use",
+  "walkiePlan_detailsTabIndividual": "Individual",
+  "walkiePlan_detailsTabMultipleMembers": "For Multiple Members",
+  "walkiePlan_detailsTabPerPerson": "Per Person",
+  "walkiePlan_detailsTeamSubtitle": "Add team members and get everyone connected with Walkie Talkie",
+  "walkiePlan_detailsUpiQr": "UPI / QR Code",
+  "walkiePlan_detailsYouSaveWithCoupon": "You save {amount} with this coupon!",
+  "@walkiePlan_detailsYouSaveWithCoupon": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_durationFallback": "Duration",
+  "walkiePlan_durationMonthly": "Monthly",
+  "@walkiePlan_durationMonthly": {
+    "description": "Plan duration label"
+  },
+  "walkiePlan_durationMonths": "{count, plural, =1{1 Month} other{{count} Months}}",
+  "@walkiePlan_durationMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_durationQuarterly": "Quarterly",
+  "@walkiePlan_durationQuarterly": {
+    "description": "Plan duration label (3 months)"
+  },
+  "walkiePlan_durationYearly": "Yearly",
+  "@walkiePlan_durationYearly": {
+    "description": "Plan duration label (12 months)"
+  },
+  "walkiePlan_individualPlan": "Individual Plan",
+  "walkiePlan_intervalPlan": "{interval} Plan",
+  "@walkiePlan_intervalPlan": {
+    "description": "Plan name built from the billing interval sent by the server",
+    "placeholders": {
+      "interval": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_monthlyPlan": "Monthly Plan",
+  "walkiePlan_noInternetCheckNetwork": "No internet connection. Please check your network.",
+  "walkiePlan_order100Secure": "100% Secure",
+  "walkiePlan_order3ds2Secure": "3DS2 Secure",
+  "walkiePlan_orderAgreePrefix": "By proceeding, you agree to our ",
+  "@walkiePlan_orderAgreePrefix": {
+    "description": "Followed by the 'Terms & Conditions' link; keep the trailing space"
+  },
+  "walkiePlan_orderAmountAfterDiscount": "Amount After Discount",
+  "walkiePlan_orderCards": "Cards",
+  "walkiePlan_orderChangeMethod": "Change Method",
+  "walkiePlan_orderCouldNotStart": "Could not start the payment. Please try again.",
+  "walkiePlan_orderCouponApplied": "Coupon applied successfully!",
+  "walkiePlan_orderCouponAppliedSaved": "Coupon applied! You saved {amount}",
+  "@walkiePlan_orderCouponAppliedSaved": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_orderCouponRemoved": "Coupon removed successfully",
+  "walkiePlan_orderCreateFailed": "Failed to create payment order. Please try again.",
+  "walkiePlan_orderDiscount": "Discount",
+  "walkiePlan_orderDiscountWithCode": "Discount ({code})",
+  "@walkiePlan_orderDiscountWithCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_orderDomesticHint": "Choose from GPay, PhonePe, Cards, NetBanking or Wallets on next step.",
+  "walkiePlan_orderEncryptedPayment": "Encrypted Payment",
+  "walkiePlan_orderEnterValidCoupon": "Please enter a valid coupon code",
+  "walkiePlan_orderForMultipleMembers": "For Multiple Members",
+  "walkiePlan_orderForSingleMember": "For Single Member",
+  "walkiePlan_orderGstTitle": "GST ({percent}%)",
+  "@walkiePlan_orderGstTitle": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_orderIntlHint": "Pay securely with International Credit/Debit Cards (Visa, Mastercard, Amex).",
+  "walkiePlan_orderIntlHintPaypal": "Pay securely with International Credit/Debit Cards (Visa, Mastercard, Amex) or PayPal.",
+  "walkiePlan_orderInvalidCoupon": "Invalid or expired coupon code",
+  "walkiePlan_orderMemberCount": "{count, plural, =1{1 Member} other{{count} Members}}",
+  "@walkiePlan_orderMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_orderMembersLabel": "Members",
+  "walkiePlan_orderMembersTimesRate": "{count, plural, =1{1 Member × {rate}} other{{count} Members × {rate}}}",
+  "@walkiePlan_orderMembersTimesRate": {
+    "description": "Members multiplied by price per member, e.g. 5 Members × ₹500",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_orderNetBanking": "NetBanking",
+  "walkiePlan_orderOnlineViaRazorpay": "Online Payment via Razorpay",
+  "walkiePlan_orderOpeningCheckout": "Opening Razorpay Payment Checkout...",
+  "walkiePlan_orderPaymentDetails": "Payment Details",
+  "walkiePlan_orderPaymentMethod": "Payment Method",
+  "walkiePlan_orderPricePerMember": "Price per member",
+  "walkiePlan_orderProceedToPay": "Proceed to Pay • {amount}",
+  "@walkiePlan_orderProceedToPay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_orderProcessingPayment": "Processing Payment...",
+  "walkiePlan_orderRetryPay": "Retry Pay",
+  "walkiePlan_orderSecureBadge": "SECURE",
+  "walkiePlan_orderSubtitle": "Review your plan details & proceed to pay",
+  "walkiePlan_orderSubtotal": "Subtotal",
+  "walkiePlan_orderTaxExport": "Tax (0% Export)",
+  "walkiePlan_orderTermsConditions": "Terms & Conditions",
+  "walkiePlan_orderTitle": "Order Summary",
+  "walkiePlan_orderTotalAmount": "Total Amount",
+  "walkiePlan_orderTotalPayable": "Total Payable",
+  "walkiePlan_orderUnableToLoad": "Unable to load order summary.",
+  "walkiePlan_orderUpiQr": "UPI / QR",
+  "walkiePlan_orderVatTitle": "VAT / Tax ({percent}%)",
+  "@walkiePlan_orderVatTitle": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_orderWallets": "Wallets",
+  "walkiePlan_orderYouSaved": "You saved {amount} on this order!",
+  "@walkiePlan_orderYouSaved": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_payAnnualPlan": "Annual Plan",
+  "walkiePlan_payBadgeCompleted": "Completed",
+  "walkiePlan_payBadgeInProgress": "In Progress",
+  "walkiePlan_payBadgePending": "Pending",
+  "walkiePlan_payCancelledByUser": "Payment was cancelled by user. No amount has been charged to your account.",
+  "walkiePlan_payCouldNotBeProcessed": "Payment could not be processed",
+  "walkiePlan_payFailedContactSupport": "Contact Support",
+  "walkiePlan_payFailedOn": "Payment failed on {time}",
+  "@walkiePlan_payFailedOn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_payFailedSubtitleLong": "We couldn't complete your payment.\nPlease try again or use a different payment method.",
+  "walkiePlan_payFailedSubtitleShort": "We couldn't complete your payment",
+  "walkiePlan_payFailedSupportHelp": "Need help with your payment? Our team is available 24/7 to assist you.",
+  "walkiePlan_payFailedTitle": "Payment Failed",
+  "walkiePlan_payIndividualFeatures": "Real-time monitoring • Instant alerts",
+  "walkiePlan_payInitiatedOn": "Payment initiated on {time}",
+  "@walkiePlan_payInitiatedOn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_payIntervalMonth": "month",
+  "@walkiePlan_payIntervalMonth": {
+    "description": "Shown after a price: ₹500 / month"
+  },
+  "walkiePlan_payIntervalPlan": "plan",
+  "@walkiePlan_payIntervalPlan": {
+    "description": "Shown after a price: ₹500 / plan"
+  },
+  "walkiePlan_payIntervalQuarter": "quarter",
+  "@walkiePlan_payIntervalQuarter": {
+    "description": "Shown after a price: ₹1200 / quarter"
+  },
+  "walkiePlan_payIntervalYear": "year",
+  "@walkiePlan_payIntervalYear": {
+    "description": "Shown after a price: ₹4000 / year"
+  },
+  "walkiePlan_payMethodCreditCard": "Credit Card ({network})",
+  "@walkiePlan_payMethodCreditCard": {
+    "placeholders": {
+      "network": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_payMethodDebitCard": "Debit Card ({network})",
+  "@walkiePlan_payMethodDebitCard": {
+    "placeholders": {
+      "network": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_payMethodInternational": "International Card / PayPal",
+  "walkiePlan_payMethodNetBanking": "NetBanking ({bank})",
+  "@walkiePlan_payMethodNetBanking": {
+    "placeholders": {
+      "bank": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_payMethodRazorpay": "Razorpay Payment",
+  "walkiePlan_payMethodRazorpayCheckout": "Razorpay Checkout",
+  "walkiePlan_payMethodRazorpayUpiCard": "Razorpay (UPI / Card)",
+  "walkiePlan_payMethodUpi": "UPI Payment",
+  "walkiePlan_payMethodWallet": "Wallet ({wallet})",
+  "@walkiePlan_payMethodWallet": {
+    "placeholders": {
+      "wallet": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_payNetworkIssue": "Network connection issue during payment. Please check your internet and try again.",
+  "walkiePlan_payNotCompleted": "Your payment was not completed. No amount has been charged to your account.",
+  "walkiePlan_payOtpCharge": "OTP charge",
+  "walkiePlan_payOtpChargeDetails": "OTP Charge Details",
+  "walkiePlan_payOtpChargedPerLogin": "Charged per login. Resending the OTP is free",
+  "walkiePlan_payOtpCharges": "OTP charges",
+  "walkiePlan_payPendingDoNotClose": "Please do not close the app. We will notify you once the payment is confirmed and your plan is activated.",
+  "walkiePlan_payPendingStillInProgress": "Payment still in progress. We'll update once confirmed.",
+  "walkiePlan_payPendingStillProcessing": "Payment status is still processing. Please wait.",
+  "walkiePlan_payPendingSubtitleLong": "Your payment is being processed by the payment provider.\nThis may take a few minutes.",
+  "walkiePlan_payPendingSubtitleShort": "Your payment is being processed",
+  "walkiePlan_payPendingTitle": "Payment Pending",
+  "walkiePlan_payPlanDetails": "Plan Details",
+  "walkiePlan_payRefreshStatus": "Refresh Status",
+  "walkiePlan_payStatusTitle": "Payment Status",
+  "walkiePlan_payStepActivate": "Activate Plan",
+  "walkiePlan_payStepActivateSub": "Your plan will be activated automatically",
+  "walkiePlan_payStepInitiated": "Payment Initiated",
+  "walkiePlan_payStepProcessing": "Processing Payment",
+  "walkiePlan_payStepProcessingSub": "Your payment is being confirmed",
+  "walkiePlan_payTeamFeatures": "Multi-member access • Instant alerts",
+  "walkiePlan_payTotalPerOtp": "Total per OTP",
+  "walkiePlan_payTryAgain": "Try Again",
+  "walkiePlan_payViewPlanDetails": "View Plan Details",
+  "walkiePlan_perMember": "per member",
+  "walkiePlan_planFallback": "Plan",
+  "@walkiePlan_planFallback": {
+    "description": "Fallback name of a subscription plan"
+  },
+  "walkiePlan_quarterlyPlan": "Quarterly Plan",
+  "walkiePlan_razorpayCompleteInWindow": "Please complete the transaction in the Razorpay payment window.",
+  "walkiePlan_razorpayCompletePayment": "Complete Payment",
+  "walkiePlan_razorpayConfirmingWithBank": "Payment was initiated. We are confirming with the bank.",
+  "walkiePlan_razorpayConnecting": "Connecting to Razorpay...",
+  "walkiePlan_razorpayCouldNotProcess": "The payment could not be processed. Please try again.",
+  "walkiePlan_razorpayFailedTryAgain": "Payment failed. Please try again.",
+  "walkiePlan_razorpayOneMonthActive": "1 Month Active",
+  "walkiePlan_razorpayPayAmountVia": "Pay {amount} via Razorpay",
+  "@walkiePlan_razorpayPayAmountVia": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_razorpayPaymentCancelled": "Payment Cancelled",
+  "walkiePlan_razorpayPaymentIdCopied": "Payment ID copied to clipboard!",
+  "walkiePlan_razorpayPciCompliant": "100% Safe & PCI-DSS Compliant",
+  "walkiePlan_razorpayPendingConfirmation": "Payment is pending confirmation.",
+  "walkiePlan_razorpayProcessing": "Processing with Razorpay...",
+  "walkiePlan_razorpayReceiptAmount": "Amount: {amount}",
+  "@walkiePlan_razorpayReceiptAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_razorpayReceiptCopied": "Receipt details copied to clipboard!",
+  "walkiePlan_razorpayReceiptDate": "Date: {date}",
+  "@walkiePlan_razorpayReceiptDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_razorpayReceiptMode": "Payment Mode: {mode}",
+  "@walkiePlan_razorpayReceiptMode": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_razorpayReceiptOrderId": "Order ID: {id}",
+  "@walkiePlan_razorpayReceiptOrderId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_razorpayReceiptPaymentId": "Payment ID: {id}",
+  "@walkiePlan_razorpayReceiptPaymentId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_razorpayReceiptPlan": "Plan: {plan}",
+  "@walkiePlan_razorpayReceiptPlan": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_razorpayReceiptStatusCompleted": "Status: Completed",
+  "walkiePlan_razorpayReceiptTitle": "FG Tracker Payment Receipt",
+  "walkiePlan_razorpayRetryPayment": "Retry Payment",
+  "walkiePlan_razorpaySecureCheckout": "Secure Checkout powered by Razorpay",
+  "walkiePlan_razorpaySslEncrypted": "Transactions are encrypted with end-to-end 256-bit SSL security.",
+  "walkiePlan_razorpaySupportedModes": "Supported Payment Modes",
+  "walkiePlan_razorpayTotalPayableAmount": "Total Payable Amount",
+  "walkiePlan_razorpayUnableToLaunch": "Unable to launch payment gateway: {error}",
+  "@walkiePlan_razorpayUnableToLaunch": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_razorpayVerifyFailed": "Payment verification failed.",
+  "walkiePlan_seatAssignedSeat": "Assigned Seat",
+  "walkiePlan_seatAssignment": "Seat Assignment",
+  "walkiePlan_seatTeamAccess": "Team Access",
+  "walkiePlan_seatTeamMember": "Team Member",
+  "walkiePlan_secureEncryptedPayment": "Secure & Encrypted Payment",
+  "walkiePlan_successAccessActivated": "Access Activated",
+  "walkiePlan_successAccessActivatedDesc": "Your personal Walkie-Talkie access is active now.",
+  "walkiePlan_successAmountPaid": "Amount Paid",
+  "walkiePlan_successAssignLaterNote": "You can assign Walkie access later from Team Settings anytime.",
+  "walkiePlan_successAssignMembers": "Assign Members",
+  "walkiePlan_successAssignWalkieAccess": "Assign Walkie Access",
+  "walkiePlan_successChooseMembersDesc": "Choose which members can use Walkie Talkie.",
+  "walkiePlan_successContinueHome": "Continue to Home",
+  "walkiePlan_successDateTime": "Date & Time",
+  "walkiePlan_successDefaultPaymentMethod": "Razorpay (UPI / Card)",
+  "walkiePlan_successIndividualActive": "Your Individual Plan is now active",
+  "walkiePlan_successIndividualActiveDesc": "Your individual plan is active. Head to home and start talking.",
+  "walkiePlan_successIndividualLinkedNote": "Your individual subscription is active and linked directly to your account.",
+  "walkiePlan_successManageAccessNote": "You can manage or change Walkie access anytime from Team Settings.",
+  "walkiePlan_successMaybeLater": "Maybe Later",
+  "walkiePlan_successNoAccessUntilAssigned": "Your plan is active. Team members will not have Walkie access until you assign them.",
+  "walkiePlan_successNotNow": "Not Now?",
+  "walkiePlan_successPaid": "PAID",
+  "@walkiePlan_successPaid": {
+    "description": "Badge on the receipt"
+  },
+  "walkiePlan_successPaymentId": "Payment ID",
+  "walkiePlan_successPaymentIdCopied": "Payment ID copied to clipboard!",
+  "walkiePlan_successPaymentMode": "Payment Mode",
+  "walkiePlan_successPaymentReceipt": "Payment Receipt",
+  "walkiePlan_successPushToTalkDesc": "Push to talk and connect instantly with your team.",
+  "walkiePlan_successRazorpayVerified": "Razorpay Verified",
+  "walkiePlan_successReceiptAmount": "Amount: {amount}",
+  "@walkiePlan_successReceiptAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_successReceiptCopied": "Receipt details copied to clipboard!",
+  "walkiePlan_successReceiptDate": "Date: {date}",
+  "@walkiePlan_successReceiptDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_successReceiptHeader": "FG Tracker Payment Receipt",
+  "walkiePlan_successReceiptOrderId": "Order ID: {id}",
+  "@walkiePlan_successReceiptOrderId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_successReceiptPaymentId": "Payment ID: {id}",
+  "@walkiePlan_successReceiptPaymentId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_successReceiptPaymentMode": "Payment Mode: {mode}",
+  "@walkiePlan_successReceiptPaymentMode": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_successReceiptPlan": "Plan: {plan}",
+  "@walkiePlan_successReceiptPlan": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_successReceiptStatusCompleted": "Status: Completed",
+  "walkiePlan_successSelectChannel": "Select Channel",
+  "walkiePlan_successSelectChannelDesc": "Join any group or channel to connect with members.",
+  "walkiePlan_successSelectMembersDesc": "Select team members who will use Walkie Talkie.",
+  "walkiePlan_successSetUpTeam": "Set Up Team",
+  "walkiePlan_successSetUpTeamDesc": "Invite members, manage roles and permissions.",
+  "walkiePlan_successShareReceipt": "Share Receipt",
+  "walkiePlan_successStartCommunicating": "Start Communicating",
+  "walkiePlan_successStatus": "Status",
+  "walkiePlan_successSuccessful": "Successful",
+  "walkiePlan_successTeamActive": "Your Team Plan is now active",
+  "walkiePlan_successTeamReady": "Your team is ready to go!",
+  "walkiePlan_successTitle": "Purchase Successful!",
+  "walkiePlan_successValidTill": "Valid till {date}",
+  "@walkiePlan_successValidTill": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_successVisitHome": "Visit Home Screen",
+  "walkiePlan_successWhatsNext": "What's Next?",
+  "walkiePlan_teamPlan": "Team Plan",
+  "walkiePlan_teamPlanWithDuration": "Team Plan ({duration})",
+  "@walkiePlan_teamPlanWithDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_trial7DaysPeriod": "7 Days Trial Period",
+  "walkiePlan_trialActiveLabel": "TRIAL ACTIVE",
+  "walkiePlan_trialActiveSubscription": "Active Subscription",
+  "walkiePlan_trialActiveSubscriptions": "Active Subscriptions",
+  "walkiePlan_trialAvailableToStart": "Available to start",
+  "walkiePlan_trialCheckConnectionRetry": "Please check your internet connection and try again.",
+  "walkiePlan_trialChoosePlanBelow": "Choose a plan below to start using Walkie Talkie.",
+  "walkiePlan_trialChooseSubscription": "Choose a subscription to continue using Walkie Talkie.",
+  "walkiePlan_trialCompleted": "Trial Completed",
+  "walkiePlan_trialDaysLeft": "{count, plural, =1{1 day left} other{{count} days left}}",
+  "@walkiePlan_trialDaysLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_trialDurationFree": "{duration} Free",
+  "@walkiePlan_trialDurationFree": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_trialEndedOn": "Ended on {date}",
+  "@walkiePlan_trialEndedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_trialEnjoyAllFeatures": "Enjoy all Walkie Talkie features free for {duration}.\nNo payment required.",
+  "@walkiePlan_trialEnjoyAllFeatures": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_trialEnjoyDuringActive": "Enjoy Walkie Talkie during your active trial period.",
+  "walkiePlan_trialErrAccessMissing": "Walkie-Talkie access information is missing.",
+  "walkiePlan_trialErrFetchDetails": "Unable to fetch Walkie-Talkie details.",
+  "walkiePlan_trialErrInvalidResponse": "Invalid response received from the server.",
+  "walkiePlan_trialErrNoInternetRetry": "No internet connection. Please check your network and try again.",
+  "walkiePlan_trialErrOverviewMissing": "Walkie-Talkie overview data is missing.",
+  "walkiePlan_trialErrTimeout": "The request timed out. Please try again.",
+  "walkiePlan_trialErrUnableToLoad": "Unable to load Walkie-Talkie details. Please check your connection.",
+  "walkiePlan_trialExpired": "Trial Expired",
+  "walkiePlan_trialExpiredLabel": "TRIAL EXPIRED",
+  "walkiePlan_trialExpiringSoon": "Expiring soon",
+  "walkiePlan_trialFeatClearAudio": "Clear Audio",
+  "walkiePlan_trialFeatClearAudioDesc": "High quality voice",
+  "walkiePlan_trialFeatGroupComm": "Group Communication",
+  "walkiePlan_trialFeatGroupCommDesc": "Connect with your team",
+  "walkiePlan_trialFeatPtt": "Push-to-talk",
+  "walkiePlan_trialFeatPttDesc": "Instant voice communication",
+  "walkiePlan_trialFeatUnlimited": "Unlimited Usage",
+  "walkiePlan_trialFeatUnlimitedDesc": "Use without any limits",
+  "walkiePlan_trialFreeAvailable": "Free Trial Available",
+  "walkiePlan_trialFreeTrialLabel": "FREE TRIAL",
+  "@walkiePlan_trialFreeTrialLabel": {
+    "description": "Badge/label in capitals in English"
+  },
+  "walkiePlan_trialFreeTrialRunning": "Free Trial Running",
+  "walkiePlan_trialFullAccess": "Full access to all features",
+  "walkiePlan_trialFullyConsumed": "Your free trial has been completely consumed.",
+  "walkiePlan_trialHasEnded": "Your Trial Has Ended",
+  "walkiePlan_trialHeaderInstant": "Instantly communicate with your group",
+  "walkiePlan_trialHeaderPlanStatus": "Your plan & subscription status",
+  "walkiePlan_trialHours": "{count, plural, =1{1 Hour} other{{count} Hours}}",
+  "@walkiePlan_trialHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_trialHoursLeft": "{count, plural, =1{1 hour left} other{{count} hours left}}",
+  "@walkiePlan_trialHoursLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_trialHr": "{count} hr",
+  "@walkiePlan_trialHr": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_trialHrMin": "{hours} hr {minutes} min",
+  "@walkiePlan_trialHrMin": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_trialIsActive": "Your Trial Is Active",
+  "walkiePlan_trialMin": "{count} min",
+  "@walkiePlan_trialMin": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_trialMinSec": "{minutes} min {seconds} sec",
+  "@walkiePlan_trialMinSec": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_trialMinsLeft": "{count, plural, =1{1 min left} other{{count} mins left}}",
+  "@walkiePlan_trialMinsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_trialMinutes": "{count, plural, =1{1 Minute} other{{count} Minutes}}",
+  "@walkiePlan_trialMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_trialNoActivePlan": "No Active Plan",
+  "walkiePlan_trialNoCardRequired": "Use anytime within 7 days  •  No credit card required",
+  "walkiePlan_trialNoInternetTitle": "No Internet Connection",
+  "walkiePlan_trialNoPaymentNow": "No payment needed now. After your trial, you can choose to continue with a paid plan ({price}/person) if you like.",
+  "@walkiePlan_trialNoPaymentNow": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_trialPeriodMonth": "month",
+  "@walkiePlan_trialPeriodMonth": {
+    "description": "Billing period after a price, e.g. ₹999 / month"
+  },
+  "walkiePlan_trialRetrying": "Retrying...",
+  "walkiePlan_trialSec": "{count} sec",
+  "@walkiePlan_trialSec": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkiePlan_trialStartFreeTrial": "Start {duration} Free Trial",
+  "@walkiePlan_trialStartFreeTrial": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_trialStartYourFreeTrial": "Start Your Free Trial",
+  "walkiePlan_trialStatusCompleted": "Completed",
+  "walkiePlan_trialStatusExpired": "Expired",
+  "@walkiePlan_trialStatusExpired": {
+    "description": "Status chip"
+  },
+  "walkiePlan_trialSubscriptionActive": "Subscription Active",
+  "walkiePlan_trialSubscriptionEndedMsg": "Your Walkie Talkie subscription has ended. Renew a plan to keep talking with your team.",
+  "walkiePlan_trialSubscriptionExpired": "Subscription Expired",
+  "walkiePlan_trialTalkFree": "Talk free with your group.",
+  "walkiePlan_trialTalkFreeTill": "Talk free with your group till {date}.",
+  "@walkiePlan_trialTalkFreeTill": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_trialTeamAccessMsg": "You have Walkie Talkie access through your team plan.",
+  "walkiePlan_trialTimeLeft": "{time} left",
+  "@walkiePlan_trialTimeLeft": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_trialTimeRemaining": "Trial Time Remaining",
+  "walkiePlan_trialTimeUsedUp": "Trial time used up",
+  "walkiePlan_trialTryAgain": "Try Again",
+  "walkiePlan_trialUnableToLoadTitle": "Unable to Load Walkie Talkie",
+  "walkiePlan_trialUsage": "Trial Usage",
+  "walkiePlan_trialUseAnytime7Days": "Use trial anytime in 7 days",
+  "walkiePlan_trialUseWithin7Days": "Use your {duration} trial anytime within 7 days.",
+  "@walkiePlan_trialUseWithin7Days": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "walkiePlan_trialUsed": "Trial Used",
+  "walkiePlan_trialValidityPeriod": "Trial Validity Period",
+  "walkiePlan_trialWalkieTalkieTitle": "Walkie Talkie",
+  "walkiePlan_trialWhatYouCanDo": "What you can do during the trial",
+  "walkiePlan_unableToConnect": "Unable to connect to server. Please try again.",
+  "walkiePlan_yearlyPlan": "Yearly Plan",
+  "walkie_aMember": "A member",
+  "walkie_accept": "Accept",
+  "walkie_activeAccess": "Active Access",
+  "walkie_activeBadge": "Active",
+  "@walkie_activeBadge": {
+    "description": "Status badge: active / online"
+  },
+  "walkie_activeInWalkie": "{count, plural, =1{1 Active in Walkie} other{{count} Active in Walkie}}",
+  "@walkie_activeInWalkie": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_activeMember": "Active Member",
+  "walkie_admin": "Admin",
+  "walkie_adminMuted": "Admin • Muted",
+  "walkie_adminOnlyAction": "Admin Only Action",
+  "walkie_adminOnlyActionMessage": "Only group admin can send notification alerts to members.",
+  "walkie_alertSentMessage": "Notification sent to {name}. Retry available in 10s.",
+  "@walkie_alertSentMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_alertSentTitle": "Alert Sent",
+  "walkie_assignMembersToCommunicate": "Assign members to communicate in this group",
+  "walkie_assignedByYou": "Assigned by You",
+  "walkie_assignedCount": "Assigned ({count})",
+  "@walkie_assignedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_assignedSeats": "Assigned Seats",
+  "walkie_audioBluetooth": "Bluetooth",
+  "walkie_audioHeadset": "Headset",
+  "walkie_audioOutput": "Audio Output",
+  "walkie_audioPhone": "Phone",
+  "@walkie_audioPhone": {
+    "description": "Audio output: the phone earpiece"
+  },
+  "walkie_audioSpeaker": "Speaker",
+  "@walkie_audioSpeaker": {
+    "description": "Audio output: loudspeaker"
+  },
+  "walkie_audioWiredHeadphones": "Wired Headphones",
+  "walkie_autoUnlockIn": "Auto-unlock in {seconds}s",
+  "@walkie_autoUnlockIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_availableMembers": "Available Members",
+  "walkie_canAssignUpTo": "{count, plural, =1{You can assign up to 1 member in this group} other{You can assign up to {count} members in this group}}",
+  "@walkie_canAssignUpTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_cannotRemoveOtherAdminSeat": "Cannot remove seat assigned by another admin",
+  "walkie_cannotSpeak": "Cannot speak on this channel",
+  "walkie_channelBusy": "Channel is busy",
+  "walkie_channelLocked": "Channel locked",
+  "walkie_channelSpeaking": "Channel speaking...",
+  "walkie_channelSwitchErrorMessage": "Could not set {group} as active speaking channel.",
+  "@walkie_channelSwitchErrorMessage": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_channelSwitchErrorTitle": "Channel Switch Error",
+  "walkie_channelUnlocked": "Channel unlocked",
+  "walkie_chat": "Chat",
+  "walkie_checkNetworkTryAgain": "Please check your network connection and try again.",
+  "walkie_chooseAPlan": "Choose a Plan",
+  "walkie_connected": "Connected",
+  "walkie_connectedWaiting": "Connected to channel • Waiting for others to join",
+  "walkie_connectingChannel": "Connecting to channel...",
+  "walkie_consumingTrial": "Consuming trial...",
+  "walkie_continueListenOnly": "Continue in Listen-Only Mode",
+  "walkie_currentlyAssigned": "Currently Assigned ({count})",
+  "@walkie_currentlyAssigned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_defaultGroupName": "Walkie Group",
+  "walkie_description": "Description",
+  "walkie_disconnected": "Disconnected",
+  "walkie_editAssignedMembers": "Edit Assigned Members",
+  "walkie_enable": "Enable",
+  "@walkie_enable": {
+    "description": "Button: turn on (microphone permission)"
+  },
+  "walkie_errorWithDetails": "Error: {details}",
+  "@walkie_errorWithDetails": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_exitWalkie": "Exit Walkie",
+  "walkie_exitWalkieMessage": "You will disconnect from this walkie channel. You will still remain a member of the group.",
+  "walkie_exitWalkieTitle": "Exit Walkie?",
+  "walkie_fairConnection": "Fair Connection",
+  "walkie_fairConnectionMs": "Fair Connection ({ms}ms)",
+  "@walkie_fairConnectionMs": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_featureAllDevices": "Use on All Devices",
+  "walkie_featureEasyCoordination": "Easy group\ncoordination",
+  "walkie_featureHoldToTalk": "Hold to talk",
+  "walkie_featurePtt": "Push-to-talk\ncommunication",
+  "walkie_featureQuickGroup": "Quick group\ncommunication",
+  "walkie_featureRealtime": "Real-time Connectivity",
+  "walkie_featureSafeReliable": "Safe & Reliable",
+  "walkie_featureStayConnected": "Stay Connected Always",
+  "walkie_featureTeamCommunication": "Team Communication",
+  "walkie_featureUnlimited": "Unlimited",
+  "walkie_fieldTeam": "Field Team",
+  "walkie_freeTrialEnded": "Free trial ended",
+  "walkie_freeTrialEndedMessage": "Your 1 hour free trial for Walkie Talkie has ended.\nUpgrade now to continue using group communication\nwith your team.",
+  "walkie_freeTrialEndedTitle": "Free Trial Ended",
+  "walkie_genericError": "Walkie Talkie Error",
+  "walkie_getPlan": "Get Plan",
+  "walkie_goodConnectionMs": "Good Connection ({ms}ms)",
+  "@walkie_goodConnectionMs": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_groupCode": "Group Code: {code}",
+  "@walkie_groupCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_groupCommunication": "Group Communication",
+  "walkie_groupFallback": "Group",
+  "walkie_groupMembers": "Group Members",
+  "walkie_heroSubtitle": "Use push-to-talk voice communication with your group\nwithout making a phone call.",
+  "walkie_heroTitle": "Stay Connected, Talk Instantly",
+  "walkie_holdToTalk": "Hold to Talk",
+  "walkie_holdToTalkSlideLock": "Hold to Talk, Slide Up to Lock",
+  "walkie_inWalkieChannel": "In Walkie Channel",
+  "walkie_individualActiveUpgrade": "Individual Plan active (Self access only) • Upgrade to Team Plan to assign members.",
+  "walkie_individualLimitMessage": "Your Individual Plan allows 1 member seat only. To assign multiple members and connect your entire team, please upgrade to a Team Plan.",
+  "walkie_individualPlan": "Individual Plan",
+  "walkie_individualSelectedCount": "{count}/1 (Individual)",
+  "@walkie_individualSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_individualSelfOnlyUpgrade": "Individual Plan (Self Access Only) • Upgrade to Team to assign members",
+  "walkie_individualSubscribedSelf": "Individual Plan • Subscribed by Self",
+  "walkie_info": "Info",
+  "@walkie_info": {
+    "description": "Button that opens group info"
+  },
+  "walkie_isSpeaking": "{name} is speaking...",
+  "@walkie_isSpeaking": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_isTalking": "{name} is talking...",
+  "@walkie_isTalking": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_joinedCount": "{count, plural, =1{1 Joined} other{{count} Joined}}",
+  "@walkie_joinedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_lastSeen": "Last seen {time}",
+  "@walkie_lastSeen": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_listenOnly": "Listen Only",
+  "walkie_listenOnlyTapPlan": "Listen Only — Tap to View Plan",
+  "walkie_listening": "Listening",
+  "walkie_listeningOnly": "Listening Only",
+  "walkie_live": "LIVE",
+  "@walkie_live": {
+    "description": "Badge on a live walkie call; keep very short"
+  },
+  "walkie_lockTimeout": "Lock timeout — Mic released",
+  "walkie_lockedTapMic": "Locked — Tap mic to stop",
+  "walkie_maybeLater": "Maybe Later",
+  "walkie_member": "Member",
+  "walkie_membersInChannel": "Members In Channel",
+  "walkie_membersOnlineLabel": "{count, plural, =1{Member Online} other{Members Online}}",
+  "@walkie_membersOnlineLabel": {
+    "description": "Shown after a separately styled number, e.g. \"3 Members Online\"",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_membersUpdateFailed": "Failed to update assigned members",
+  "walkie_membersUpdated": "Assigned members updated successfully",
+  "walkie_micAccessRequired": "Microphone access required to talk.",
+  "walkie_micDisabledMessage": "Microphone access is disabled in device settings. To speak in this group, please allow microphone access in Settings.\n\nYou can still listen to other members.",
+  "walkie_micPermissionRequired": "Microphone permission required",
+  "walkie_micPermissionTitle": "Microphone Permission",
+  "walkie_micRequiredMessage": "Microphone permission is required to talk in this Walkie-Talkie group.\n\nYou can still listen to others without enabling microphone.",
+  "walkie_muteMe": "Mute Me",
+  "walkie_muted": "Muted",
+  "walkie_mutedInWalkie": "Muted • In Walkie",
+  "walkie_mutedListeningOnly": "You are muted — Listening only",
+  "walkie_nameSpeaking": "{name} speaking...",
+  "@walkie_nameSpeaking": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_noActivePlan": "No Active Plan",
+  "walkie_noAvailableMembers": "No available members",
+  "walkie_noBluetoothDevice": "No Bluetooth audio device connected. Please pair your Bluetooth headset in settings.",
+  "walkie_noGroupsFound": "No groups found",
+  "walkie_noMembersAssigned": "No members currently assigned",
+  "walkie_noMembersFound": "No members found",
+  "walkie_noMembersFoundTitle": "No Members Found",
+  "walkie_noMembersMatch": "No Members Match",
+  "walkie_noMembersMatchQuery": "No members match '{query}'",
+  "@walkie_noMembersMatchQuery": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_noMembersToAssign": "No group members available to assign.",
+  "walkie_noNameGroup": "No Name Group",
+  "walkie_noPlanSubscribeAssign": "No active plan • Subscribe to assign members",
+  "walkie_noSeatMessage": "You have an active Team Plan, but all active voice seats are currently assigned to other team members.\n\nYou can listen to group conversations in real-time, but to speak, you must assign a seat to yourself or upgrade your plan.",
+  "walkie_noSeatTitle": "No Voice Seat Assigned",
+  "walkie_noSeatsRefreshing": "No team seats available. Refreshing member list...",
+  "walkie_noSubscriptionMessage": "You do not have an active Walkie Talkie subscription. Subscribe to a plan to assign members and start instant voice communication.",
+  "walkie_noTeamSubscription": "No active team subscription found",
+  "walkie_noValidMembers": "No valid members selected to assign",
+  "walkie_noVoiceSeatListenOnly": "No voice seat assigned — You are in Listen-Only mode",
+  "walkie_noWiredDevice": "No wired earphones or headset connected. Please plug them into your device.",
+  "walkie_notConnected": "Not connected",
+  "walkie_notifLeave": "Leave",
+  "@walkie_notifLeave": {
+    "description": "Notification action: leave the walkie channel"
+  },
+  "walkie_notifOpenWalkie": "Open Walkie",
+  "walkie_notifStoppedTalking": "{name} stopped talking",
+  "@walkie_notifStoppedTalking": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_notifTalking": "{name} is talking",
+  "@walkie_notifTalking": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_notificationSettingFailed": "Could not update notification setting for {group}. Please try again.",
+  "@walkie_notificationSettingFailed": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_notificationSettingTitle": "Notification Setting",
+  "walkie_onlyAdminCanAlert": "Only Group Admin can send alert",
+  "walkie_openWalkieTalkie": "Open Walkie Talkie",
+  "walkie_otherTeam": "Other Team",
+  "walkie_othersWontHear": "Others won't hear you",
+  "walkie_planRequiredTitle": "Walkie Talkie Plan Required",
+  "walkie_planRequiredToTalk": "Plan Required to Talk",
+  "walkie_planStartsOnFirstAssign": "Plan starts when the first member is assigned.",
+  "walkie_poorConnection": "Poor network connection — Audio may lag",
+  "walkie_preparingAudio": "Preparing audio...",
+  "walkie_purchaseTeamPlanToAssign": "Purchase a Team Plan to assign Walkie-Talkie access to members.",
+  "walkie_purchaseUpgradePlan": "Purchase / Upgrade Plan",
+  "walkie_ready": "Ready",
+  "walkie_reconnecting": "Reconnecting...",
+  "walkie_reconnectingServer": "Reconnecting to walkie server...",
+  "walkie_releaseToStop": "Release to Stop",
+  "walkie_removeAll": "Remove All",
+  "walkie_searchGroups": "Search groups",
+  "walkie_searchMembers": "Search members...",
+  "walkie_seatsFraction": "{assigned}/{total} seats",
+  "@walkie_seatsFraction": {
+    "placeholders": {
+      "assigned": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_seatsSummary": "{total} Total Seats • {assigned} Assigned • {available} Available",
+  "@walkie_seatsSummary": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "assigned": {
+        "type": "int"
+      },
+      "available": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_seatsUsed": "{assigned} / {total} Seats Used",
+  "@walkie_seatsUsed": {
+    "placeholders": {
+      "assigned": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_secondsShort": "{seconds}s",
+  "@walkie_secondsShort": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_selectAtLeastOne": "Please select at least one member to assign",
+  "walkie_selectGroupFirst": "Please select a group first",
+  "walkie_selectGroupToConnect": "Select a group to connect",
+  "walkie_selected": "Selected",
+  "walkie_selfAccess": "Self Access",
+  "walkie_selfPlan": "Self Plan",
+  "walkie_slideUpToLock": "Slide up to lock",
+  "walkie_someone": "Someone",
+  "walkie_someoneSpeaking": "Someone is speaking...",
+  "walkie_speaking": "Speaking...",
+  "walkie_startFreeTrial": "Start {duration} Free Trial",
+  "@walkie_startFreeTrial": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_strongConnection": "Strong Connection",
+  "walkie_strongConnectionMs": "Strong Connection ({ms}ms)",
+  "@walkie_strongConnectionMs": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_subscribeToStartTalk": "Subscribe to start voice talk & assign members",
+  "walkie_subscribed": "Subscribed",
+  "walkie_talking": "Talking...",
+  "walkie_tapToUnlock": "Tap to Unlock",
+  "walkie_teamAssignedElsewhere": "Team Plan • Assigned Elsewhere",
+  "walkie_teamPlan": "Team Plan",
+  "walkie_teamPlanRequired": "Team Plan Required",
+  "walkie_teamPlanRequiredToAssign": "Team Plan required to assign members",
+  "walkie_teamPlanStatus": "Team Plan Status",
+  "walkie_teamSeatMember": "Team Seat Member",
+  "walkie_title": "Walkie Talkie",
+  "walkie_totalCount": "{count, plural, =1{1 total} other{{count} total}}",
+  "@walkie_totalCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_trialActive1hr": "1 hr trial active",
+  "walkie_trialEndedSubscribe": "Free trial ended — Please subscribe to continue",
+  "walkie_unableToConnectReconnecting": "Unable to connect to channel — Reconnecting...",
+  "walkie_unavailable": "Unavailable",
+  "walkie_updateMembers": "Update Members ({assigned}/{total})",
+  "@walkie_updateMembers": {
+    "placeholders": {
+      "assigned": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_updatingMembers": "Updating Members...",
+  "walkie_upgradeAddSeats": "Upgrade & Add Seats",
+  "walkie_upgradeNow": "Upgrade Now",
+  "walkie_upgradeTeamAssign": "Upgrade to Team Plan (Assign Members)",
+  "walkie_upgradeToTeamPlan": "Upgrade to Team Plan",
+  "walkie_userCancelled": "{name} cancelled",
+  "@walkie_userCancelled": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_userJoined": "{name} joined",
+  "@walkie_userJoined": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_userLeft": "{name} left",
+  "@walkie_userLeft": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_validTill": "Valid till {date}",
+  "@walkie_validTill": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "walkie_viewPlan": "View Plan",
+  "walkie_voiceNotPermitted": "Voice transmission not permitted",
+  "walkie_weakSignal": "Weak Signal",
+  "walkie_weakSignalMs": "Weak Signal ({ms}ms)",
+  "@walkie_weakSignalMs": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "walkie_youAreConnected": "You are Connected",
+  "walkie_yourVoiceAccess": "Your Voice Access",
+  "widget_inviteDownloadLinks": "Download for Android: {playStoreLink}\n\nDownload for iOS: {appStoreLink}",
+  "@widget_inviteDownloadLinks": {
+    "placeholders": {
+      "playStoreLink": {
+        "type": "String"
+      },
+      "appStoreLink": {
+        "type": "String"
+      }
+    }
+  },
+  "widget_live": "Live",
+  "@widget_live": {
+    "description": "Location sharing status chip"
+  },
+  "widget_lostConnection": "Lost Connection",
+  "widget_manageGroups": "Manage your groups easily",
+  "widget_noInternetBody": "Whoops... no internet connection found. check you connection",
+  "widget_notSeenYet": "Not seen yet",
+  "widget_pinnedMessage": "Pinned Message",
+  "widget_private": "Private",
+  "@widget_private": {
+    "description": "Location sharing status chip (private mode)"
+  },
+  "widget_refreshPage": "Refresh the page",
+  "widget_seen": "Seen",
+  "widget_seenCount": "({count})",
+  "@widget_seenCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "widget_seenCountOfTotal": "({count} of {total})",
+  "@widget_seenCountOfTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "widget_somethingWentWrongTitle": "Something went wrong",
+  "widget_userFallback": "User"
+}

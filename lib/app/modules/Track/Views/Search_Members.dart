@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
-import '../../../Core/theme/AppText.dart';
+
 import '../../../Core/values/colors.dart';
 import '../../../Data/Services/Tracking.dart';
 import '../../../Model/MemberDataRes.dart';
@@ -11,6 +11,8 @@ import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
 import '../../../Core/util/chat_navigation.dart';
 import '../Controller/SearchController.dart';
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
 
 class SearchMembers extends GetView<SearchMemberController> {
   const SearchMembers({super.key});
@@ -52,7 +54,7 @@ class SearchMembers extends GetView<SearchMemberController> {
                 onChanged: controller.filterMembers,
                 decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: "Search Members...",
+                    hintText: context.l10n.track_searchMembersHint,
                     hintStyle: TextStyle(
                         color: ToggleThemeData.darkPurple,
                         fontSize: 13,
@@ -80,7 +82,7 @@ class SearchMembers extends GetView<SearchMemberController> {
           color: AppColors.white,
           child: controller.filteredMembers.isEmpty
               ? Center(
-                  child: Text("No members found",
+                  child: Text(context.l10n.track_noMembersFoundPlain,
                       style: TextStyle(fontSize: 18.sp)))
               : _memberList(),
         ),
@@ -99,13 +101,14 @@ class SearchMembers extends GetView<SearchMemberController> {
           lastSeen: data.lastSeen,
           thresholdMinutes: 5,
         );
-        String timeAgoText = isOnline ? "Online" : "Offline";
+        String timeAgoText =
+            isOnline ? context.l10n.common_online : context.l10n.common_offline;
 
         if (!isOnline && data.lastSeen != null && data.lastSeen!.isNotEmpty) {
           try {
             final dt = Tracking.parseDateTime(data.lastSeen!);
             if (dt != null) {
-              timeAgoText = Tracking().getTimeAgo(dt);
+              timeAgoText = formatLastSeen(context, dt) ?? timeAgoText;
             }
           } catch (_) {}
         }
@@ -160,7 +163,7 @@ class SearchMembers extends GetView<SearchMemberController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             reausabletext(
-                              data.name ?? AppText.unnamedMember,
+                              data.name ?? context.l10n.track_unnamedMember,
                               fontsize: 15,
                               fontfamily: FontFamily.interSemiBold,
                             ),

@@ -9,8 +9,10 @@ import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/status/views/status_section.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/util/message_preview_builder.dart';
 import '../Controller/chat_list_logic.dart';
@@ -105,13 +107,13 @@ class ChatListScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 reausabletext(
-                  "Chat",
+                  appL10n.chatList_title,
                   fontsize: 18.sp,
                   fontfamily: FontFamily.interBold,
                   color: Colors.black87,
                 ),
                 reausabletext(
-                  "Stay connected with your team",
+                  appL10n.chatList_subtitle,
                   fontsize: 11.sp,
                   fontweight: const FontWeight(500),
                   color: const Color(0xFF6B4DFF),
@@ -156,7 +158,7 @@ class ChatListScreen extends StatelessWidget {
                 fontFamily: FontFamily.interMedium,
               ),
               decoration: InputDecoration(
-                hintText: "Search chats or messages...",
+                hintText: appL10n.chatList_searchHint,
                 hintStyle: TextStyle(
                   fontSize: 13.5.sp,
                   color: Colors.grey.shade400,
@@ -323,14 +325,14 @@ class _QuickCommunicationBarState extends State<QuickCommunicationBar> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         reausabletext(
-                          "Quick Communication",
+                          context.l10n.chatList_quickCommTitle,
                           fontsize: 13.sp,
                           fontfamily: FontFamily.interBold,
                           color: const Color(0xFF1B1B50),
                         ),
                         SizedBox(height: 2.h),
                         reausabletext(
-                          "Connect with your team instantly",
+                          context.l10n.chatList_quickCommSubtitle,
                           fontsize: 10.sp,
                           color: const Color(0xFF6B4DFF),
                           fontweight: FontWeight.w500,
@@ -360,32 +362,32 @@ class _QuickCommunicationBarState extends State<QuickCommunicationBar> {
                         children: [
                           _quickCommCard(
                             icon: Icons.speaker_phone_rounded,
-                            title: "Walkie",
-                            subtitle: "Push to Talk",
+                            title: context.l10n.chatList_quickWalkie,
+                            subtitle: context.l10n.chatList_quickWalkieSub,
                             onTap: () {
                               Get.toNamed(Routes.WalkieGroupSelect);
                             },
                           ),
                           _quickCommCard(
                             icon: Icons.location_on,
-                            title: "Tracking",
-                            subtitle: "Live Location",
+                            title: context.l10n.chatList_quickTracking,
+                            subtitle: context.l10n.chatList_quickTrackingSub,
                             onTap: () {
                               Get.toNamed(Routes.TrackingScreen);
                             },
                           ),
                           _quickCommCard(
                             icon: Icons.people_alt_rounded,
-                            title: "Groups",
-                            subtitle: "Team Chats",
+                            title: context.l10n.chatList_quickGroups,
+                            subtitle: context.l10n.chatList_quickGroupsSub,
                             onTap: () {
                               Get.toNamed(Routes.GroupsList);
                             },
                           ),
                           _quickCommCard(
                             icon: Icons.verified_user_rounded,
-                            title: "Safe Zone",
-                            subtitle: "Safety & Alerts",
+                            title: context.l10n.chatList_quickSafeZone,
+                            subtitle: context.l10n.chatList_quickSafeZoneSub,
                             onTap: () {
                               Get.toNamed(Routes.SafetyDashboard);
                             },
@@ -454,23 +456,28 @@ class _QuickCommunicationBarState extends State<QuickCommunicationBar> {
                 ),
               ),
               SizedBox(height: 8.h),
+              // reausabletext applied .sp to the size again; kept the same.
               Center(
-                child: reausabletext(
+                child: AutoFitText(
                   title,
-                  fontsize: 10.sp,
-                  fontfamily: FontFamily.interBold,
-                  color: const Color(0xFF1B1B50),
-                  maxline: 1,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 10.sp.sp,
+                    fontFamily: FontFamily.interBold,
+                    color: const Color(0xFF1B1B50),
+                  ),
                 ),
               ),
               SizedBox(height: 2.h),
               Center(
-                child: reausabletext(
+                child: AutoFitText(
                   subtitle,
-                  fontsize: 8.sp,
-                  fontfamily: FontFamily.interMedium,
-                  color: const Color(0xFF6B4DFF).withOpacity(0.58),
-                  maxline: 1,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 8.sp.sp,
+                    fontFamily: FontFamily.interMedium,
+                    color: const Color(0xFF6B4DFF).withOpacity(0.58),
+                  ),
                 ),
               ),
             ],
@@ -532,7 +539,7 @@ class _AllChatsBody extends StatelessWidget {
                   ),
                   Obx(
                     () => _sectionTitle(
-                      controller.isSearching.value ? "Search Results" : "All Chats",
+                      controller.isSearching.value ? appL10n.chatList_searchResults : appL10n.chatList_allChats,
                       // Unread chats in the main list (archived excluded),
                       // not the number of loaded rows.
                       badgeCount: controller.mainUnreadChatCount > 0
@@ -587,7 +594,7 @@ class _AllChatsBody extends StatelessWidget {
                             index: index,
                             chat: chat,
                             typingLabel: controller.typingLabelFor(chat),
-                            name: chat.name ?? chat.groupName ?? "Unknown User",
+                            name: chatListDisplayName(chat.name ?? chat.groupName),
                             role: chat.role ?? "",
                             msg: MessagePreviewBuilder.forChat(
                               chat,
@@ -722,14 +729,14 @@ class _AllChatsBody extends StatelessWidget {
             ),
             SizedBox(height: 10.h),
             reausabletext(
-              "No chats found",
+              appL10n.chatList_noChatsFound,
               fontsize: 14.sp,
               fontfamily: FontFamily.interBold,
               color: Colors.black87,
             ),
             SizedBox(height: 5.h),
             reausabletext(
-              "Your private chats will appear here.",
+              appL10n.chatList_noChatsSubtitle,
               fontsize: 11.sp,
               color: Colors.grey,
             ),
@@ -757,7 +764,7 @@ class _AllChatsBody extends StatelessWidget {
             ),
             SizedBox(height: 10.h),
             reausabletext(
-              "No chats found",
+              appL10n.chatList_noChatsFound,
               fontsize: 14.sp,
               fontfamily: FontFamily.interBold,
               color: Colors.black87,
@@ -766,8 +773,8 @@ class _AllChatsBody extends StatelessWidget {
             Obx(
               () => reausabletext(
                 controller.searchQuery.value.isNotEmpty
-                    ? 'No results found for "${controller.searchQuery.value}"'
-                    : "Try searching with a different name or message.",
+                    ? appL10n.chatList_noResultsFor(controller.searchQuery.value)
+                    : appL10n.chatList_tryDifferentSearch,
                 fontsize: 11.sp,
                 color: Colors.grey,
               ),
@@ -790,11 +797,16 @@ class _AllChatsBody extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         children: [
-          reausabletext(
-            isPinned ? "Pinned Chats" : title,
-            fontsize: 13.sp,
-            fontfamily: FontFamily.interBold,
-            color: Colors.black87,
+          Flexible(
+            flex: 4,
+            child: AutoFitText(
+              isPinned ? appL10n.chatList_pinnedChats : title,
+              style: TextStyle(
+                fontSize: 13.sp.sp,
+                fontFamily: FontFamily.interBold,
+                color: Colors.black87,
+              ),
+            ),
           ),
           if (isPinned) ...[
             SizedBox(width: 5.w),
@@ -827,7 +839,7 @@ class _AllChatsBody extends StatelessWidget {
           const Spacer(),
           if (showViewAll)
             reausabletext(
-              "View All >",
+              "${appL10n.common_viewAll} >",
               fontsize: 12.sp,
               color: const Color(0xFF6B4DFF),
             ),
@@ -923,7 +935,7 @@ class _AllChatsBody extends StatelessWidget {
             Routes.groupChatScreen,
             arguments: {
               "groupId": effectiveGroupId,
-              "groupName": chat.name ?? chat.groupName ?? "Group Chat",
+              "groupName": chat.name ?? chat.groupName ?? appL10n.chatList_groupChatFallback,
               "groupProfile": profileImg,
               "groupImage": profileImg,
               "groupCode": groupCode,
@@ -1025,7 +1037,7 @@ class _AllChatsBody extends StatelessWidget {
           isBlocked: chat.isBlocked == true,
           isGroupDeactivated: controller.isGroupDeactivated(chat),
           isForwarded: chat.isForwarded == true,
-          forwardedLabel: chat.forwardedLabel ?? "Forwarded",
+          forwardedLabel: chat.forwardedLabel ?? kForwardedLabel,
           image: image,
           colorIndex: (chat.groupId ?? chat.id ?? index ?? name.hashCode).abs(),
           onAvatarTap: openAvatarPopup,
@@ -1050,7 +1062,7 @@ class _AllChatsBody extends StatelessWidget {
     bool isBlocked = false,
     bool isGroupDeactivated = false,
     bool isForwarded = false,
-    String forwardedLabel = "Forwarded",
+    String forwardedLabel = kForwardedLabel,
     String? image,
     int? colorIndex,
     VoidCallback? onAvatarTap,
@@ -1205,7 +1217,7 @@ class _AllChatsBody extends StatelessWidget {
                 children: [
                   Flexible(
                     child: reausabletext(
-                      name.isEmpty ? "Unknown" : name,
+                      name.isEmpty ? appL10n.chatList_unknown : name,
                       fontsize: 12.sp,
                       fontfamily: FontFamily.interBold,
                       color: Colors.black87,
@@ -1253,7 +1265,13 @@ class _AllChatsBody extends StatelessWidget {
                     SizedBox(width: 4.w),
                     Flexible(
                       child: Text(
-                        "This message was deleted",
+                        // msg is the preview already in the app language
+                        // (own rows: "You deleted this message").
+                        (msg.isEmpty ||
+                                msg == "This message was deleted" ||
+                                msg == "Message deleted")
+                            ? appL10n.chatList_messageDeleted
+                            : msg,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -1281,7 +1299,7 @@ class _AllChatsBody extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
-                          "Blocked",
+                          appL10n.chatList_blocked,
                           style: TextStyle(
                             fontSize: 8.5.sp,
                             color: Colors.red.shade700,
@@ -1301,13 +1319,15 @@ class _AllChatsBody extends StatelessWidget {
                         ),
                       ),
                       SizedBox(width: 3.w),
-                      Text(
-                        "${forwardedLabel.isNotEmpty ? forwardedLabel : 'Forwarded'}: ",
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey.shade600,
-                          fontFamily: FontFamily.interMedium,
+                      Flexible(
+                        child: AutoFitText(
+                          "${chatListForwardedLabel(forwardedLabel)}: ",
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey.shade600,
+                            fontFamily: FontFamily.interMedium,
+                          ),
                         ),
                       ),
                     ],
@@ -1394,7 +1414,7 @@ class _AllChatsBody extends StatelessWidget {
       items: [
         DropdownMenuItemData(
           icon: isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-          title: isPinned ? "Unpin Chat" : "Pin Chat",
+          title: isPinned ? appL10n.chatList_unpinChat : appL10n.chatList_pinChat,
           onTap: () {
             if (isPinned) {
               controller.unpinChat(chat);
@@ -1407,7 +1427,7 @@ class _AllChatsBody extends StatelessWidget {
           icon: isUnread
               ? Icons.mark_email_read_outlined
               : Icons.mark_email_unread_outlined,
-          title: isUnread ? "Mark as Read" : "Mark as Unread",
+          title: isUnread ? appL10n.chatList_markAsRead : appL10n.chatList_markAsUnread,
           onTap: () {
             if (isUnread) {
               controller.markChatAsRead(chat);
@@ -1418,21 +1438,21 @@ class _AllChatsBody extends StatelessWidget {
         ),
         DropdownMenuItemData(
           icon: Icons.visibility_off_outlined,
-          title: "Archive Chat",
+          title: appL10n.chatList_archiveChat,
           onTap: () {
             controller.archiveChat(chat);
           },
         ),
         DropdownMenuItemData(
           icon: Icons.delete_outline,
-          title: "Delete Chat",
+          title: appL10n.chatList_deleteChat,
           isDestructive: true,
           onTap: () {
             CommonDialog.ConfirmationDialog(
-              title: "Delete Chat",
-              content: "Delete this conversation from your chat list?",
-              cancel: "No",
-              confirm: "Delete",
+              title: appL10n.chatList_deleteChat,
+              content: appL10n.chatList_deleteChatConfirm,
+              cancel: appL10n.common_no,
+              confirm: appL10n.common_delete,
               icon: Icons.delete_outline_rounded,
               onConfirm: () {
                 Get.back();
@@ -1453,16 +1473,13 @@ class _AllChatsBody extends StatelessWidget {
     final now = DateTime.now();
     final difference = now.difference(local);
 
-    if (difference.inMinutes < 1) return "Just now";
-    if (difference.inHours < 1) return "${difference.inMinutes} min";
+    if (difference.inMinutes < 1) return appL10n.common_justNow;
+    if (difference.inHours < 1) return appL10n.chatList_minutesShort(difference.inMinutes);
     if (difference.inDays == 0) {
-      final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
-      final minute = local.minute.toString().padLeft(2, '0');
-      final period = local.hour >= 12 ? "PM" : "AM";
-      return "$hour:$minute $period";
+      return appTime(local);
     }
-    if (difference.inDays == 1) return "Yesterday";
-    if (difference.inDays < 7) return "${difference.inDays} days";
+    if (difference.inDays == 1) return appL10n.common_yesterday;
+    if (difference.inDays < 7) return appL10n.chatList_daysShort(difference.inDays);
     return "${local.day}/${local.month}/${local.year}";
   }
 
@@ -1487,7 +1504,7 @@ class _AllChatsBody extends StatelessWidget {
               contentPadding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 2.h),
               actionsPadding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 6.h),
               title: reausabletext(
-                "Mute notifications",
+                context.l10n.chatList_muteTitle,
                 fontsize: 20.sp,
                 fontfamily: FontFamily.interSemiBold,
                 color: Colors.black87,
@@ -1499,7 +1516,7 @@ class _AllChatsBody extends StatelessWidget {
                 children: [
                   SizedBox(height: 3.h),
                   reausabletext(
-                    "Choose how long you want to pause notifications.",
+                    context.l10n.chatList_muteSubtitle,
                     fontsize: 13.sp,
                     fontfamily: FontFamily.interRegular,
                     color: Colors.black,
@@ -1507,28 +1524,28 @@ class _AllChatsBody extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   _muteDialogOption(
-                    title: "1 hour",
+                    title: context.l10n.chatList_mute1Hour,
                     value: "1_hour",
                     groupValue: selectedOption,
                     onChanged: (value) =>
                         setState(() => selectedOption = value),
                   ),
                   _muteDialogOption(
-                    title: "8 hours",
+                    title: context.l10n.chatList_mute8Hours,
                     value: "8_hours",
                     groupValue: selectedOption,
                     onChanged: (value) =>
                         setState(() => selectedOption = value),
                   ),
                   _muteDialogOption(
-                    title: "Until tomorrow",
+                    title: context.l10n.chatList_muteUntilTomorrow,
                     value: "until_tomorrow",
                     groupValue: selectedOption,
                     onChanged: (value) =>
                         setState(() => selectedOption = value),
                   ),
                   _muteDialogOption(
-                    title: "Until I turn it back on",
+                    title: context.l10n.chatList_muteAlways,
                     value: "always",
                     groupValue: selectedOption,
                     onChanged: (value) =>
@@ -1540,7 +1557,7 @@ class _AllChatsBody extends StatelessWidget {
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
                   child: reausabletext(
-                    "Cancel",
+                    context.l10n.common_cancel,
                     fontsize: 14.sp,
                     fontfamily: FontFamily.interSemiBold,
                     color: const Color(0xFF8080EE),
@@ -1570,7 +1587,7 @@ class _AllChatsBody extends StatelessWidget {
                     controller.muteChat(chat, mutedUntil: mutedUntil);
                   },
                   child: reausabletext(
-                    "OK",
+                    context.l10n.common_ok,
                     fontsize: 14.sp,
                     fontfamily: FontFamily.interSemiBold,
                     color: const Color(0xFF8080EE),
@@ -1730,7 +1747,7 @@ class _GroupsTabBody extends StatelessWidget {
               () => TextField(
                 controller: controller.searchController,
                 decoration: InputDecoration(
-                  hintText: "Search groups...",
+                  hintText: context.l10n.chatList_searchGroupsHint,
                   hintStyle: TextStyle(
                     fontSize: 13.5.sp,
                     color: Colors.grey.shade400,
@@ -1786,7 +1803,7 @@ class _GroupsTabBody extends StatelessWidget {
                       Text(
                         controller.errorMessage.value.isNotEmpty
                             ? controller.errorMessage.value
-                            : "Something went wrong",
+                            : context.l10n.common_somethingWentWrong,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 13.sp,
@@ -1797,7 +1814,7 @@ class _GroupsTabBody extends StatelessWidget {
                       SizedBox(height: 12.h),
                       ElevatedButton(
                         onPressed: controller.refreshGroups,
-                        child: const Text("Retry"),
+                        child: Text(context.l10n.common_retry),
                       ),
                     ],
                   ),
@@ -1828,8 +1845,8 @@ class _GroupsTabBody extends StatelessWidget {
                               SizedBox(height: 10.h),
                               Text(
                                 controller.searchText.value.isNotEmpty
-                                    ? "No groups found"
-                                    : "No groups available",
+                                    ? context.l10n.chatList_noGroupsFound
+                                    : context.l10n.chatList_noGroupsAvailable,
                                 style: TextStyle(
                                   fontSize: 13.sp,
                                   color: Colors.grey.shade600,
@@ -2066,7 +2083,7 @@ class _GroupsTabBody extends StatelessWidget {
                     ),
                     SizedBox(height: 3.h),
                     Text(
-                      "$memberCount Members",
+                      appL10n.common_membersCount(memberCount),
                       style: TextStyle(
                         fontSize: 11.5.sp,
                         fontWeight: FontWeight.w600,

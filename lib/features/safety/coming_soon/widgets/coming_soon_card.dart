@@ -2,6 +2,7 @@ import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 /// Bottom card presenting the "Coming Soon" information with:
 /// - Pulsing chip
@@ -50,13 +51,13 @@ class ComingSoonCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // 1. "COMING SOON" Chip with pulsing dot
-          _buildComingSoonChip(),
+          _buildComingSoonChip(context),
 
           SizedBox(height: 7.h),
 
           // 2. Heading
           Text(
-            'Coming Soon',
+            context.l10n.common_comingSoon,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 22.sp,
@@ -73,7 +74,7 @@ class ComingSoonCard extends StatelessWidget {
           ConstrainedBox(
             constraints: BoxConstraints(maxWidth: 270.w),
             child: Text(
-              'Smart safety features to protect your team are on the way.',
+              context.l10n.safety_comingSoonBody,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12.sp,
@@ -92,16 +93,16 @@ class ComingSoonCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _FeatureTile(
-                  title: 'Safe Zone',
-                  subtitle: 'Area protection',
+                  title: context.l10n.safeZone_title,
+                  subtitle: context.l10n.safeZone_subtitle,
                   icon: const _ShieldIcon(),
                 ),
               ),
               SizedBox(width: 8.w),
               Expanded(
                 child: _FeatureTile(
-                  title: 'Safe Route',
-                  subtitle: 'Route protection',
+                  title: context.l10n.safeRoute_title,
+                  subtitle: context.l10n.safeRoute_subtitle,
                   icon: const _RouteIcon(),
                 ),
               ),
@@ -112,7 +113,7 @@ class ComingSoonCard extends StatelessWidget {
     );
   }
 
-  Widget _buildComingSoonChip() {
+  Widget _buildComingSoonChip(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.5.h),
       decoration: BoxDecoration(
@@ -125,7 +126,7 @@ class ComingSoonCard extends StatelessWidget {
           _buildPulsingDot(),
           SizedBox(width: 6.w),
           Text(
-            'COMING SOON',
+            context.l10n.common_comingSoon.toUpperCase(),
             style: TextStyle(
               fontSize: 10.sp,
               fontWeight: FontWeight.w700,

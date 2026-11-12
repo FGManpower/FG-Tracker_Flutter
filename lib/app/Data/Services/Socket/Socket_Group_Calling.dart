@@ -13,6 +13,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class Socket_GroupCallService {
   Socket_GroupCallService._();
@@ -116,7 +117,7 @@ class Socket_GroupCallService {
   String getParticipantName(String userId) {
     final name = participantMeta[userId]?['name']?.toString();
     if (name != null && name.isNotEmpty) return name;
-    return 'User $userId';
+    return appL10n.call_userWithId(userId);
   }
 
   String? getParticipantProfileImage(String userId) {
@@ -646,7 +647,7 @@ class Socket_GroupCallService {
 
     bool connected = await _ensureConnected(timeoutSeconds: 8);
     if (!connected) {
-      onResponse(false, null, "Socket connection timeout");
+      onResponse(false, null, appL10n.call_connectionTimeout);
       return;
     }
 
@@ -677,7 +678,7 @@ class Socket_GroupCallService {
         } else if (response is Map) {
           onResponse(false, null, response['message']?.toString());
         } else {
-          onResponse(false, null, "Malformed response");
+          onResponse(false, null, appL10n.call_unexpectedResponse);
         }
       },
     );
@@ -696,7 +697,7 @@ class Socket_GroupCallService {
     if (!connected) {
       _log('Socket connection timed out during joinGroupCall');
       Utils().fluttertoast(
-          "Unable to connect to call server. Please check your network.");
+          appL10n.call_cannotReachCallServer);
       onComplete(false);
       return;
     }

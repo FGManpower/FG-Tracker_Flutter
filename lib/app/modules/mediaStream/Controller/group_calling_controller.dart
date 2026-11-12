@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:get/get.dart' hide navigator;
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -117,7 +118,7 @@ class GroupCallingController extends GetxController {
             callId = generatedCallId;
           } else {
             _stopSound();
-            Utils().fluttertoast(errorMessage ?? "Unable to initialize group call");
+            Utils().fluttertoast(errorMessage ?? appL10n.call_groupCallInitFailed);
             Get.back();
           }
         },
@@ -128,7 +129,7 @@ class GroupCallingController extends GetxController {
         svc.joinGroupCall(callId!, groupId, (success) {
           if (!success) {
             _stopSound();
-            Utils().fluttertoast("Failed to connect to the call session");
+            Utils().fluttertoast(appL10n.call_sessionConnectFailed);
             Get.back();
           } else {
             _syncParticipants();
@@ -140,7 +141,7 @@ class GroupCallingController extends GetxController {
     _setupLocalMedia().then((_) async {
       await Socket_GroupCallService.instance.onLocalStreamReady();
     }).catchError((e) {
-      Utils().fluttertoast("Camera or Mic permissions are required");
+      Utils().fluttertoast(appL10n.call_cameraMicRequired);
       Get.back();
     });
 
@@ -163,7 +164,8 @@ class GroupCallingController extends GetxController {
     svc.onScreenShareStarted = (userId) {
       screenSharingUsers.add(userId);
       pinnedUserId.value = userId;
-      Utils().fluttertoast("${svc.getParticipantName(userId)} is sharing screen");
+      Utils().fluttertoast(
+          appL10n.call_personSharingScreen(svc.getParticipantName(userId)));
     };
     svc.onScreenShareStopped = (userId) {
       screenSharingUsers.remove(userId);
@@ -271,7 +273,7 @@ class GroupCallingController extends GetxController {
     if (callerId != null && callerId.isNotEmpty) {
       _groupMemberIds.add(callerId);
       Socket_GroupCallService.instance.participantMeta[callerId] = {
-        "name": callerName ?? "Someone",
+        "name": callerName ?? appL10n.call_someone,
         "profileImage": callerImage ?? "",
         "isMuted": false,
       };
@@ -287,7 +289,9 @@ class GroupCallingController extends GetxController {
 
         if (uid == null || uid.isEmpty) continue;
         _groupMemberIds.add(uid);
-        final uName = (m["name"] ?? m["userName"] ?? "User $uid").toString();
+        final uName =
+            (m["name"] ?? m["userName"] ?? appL10n.call_userWithId(uid.toString()))
+                .toString();
         final uImg = (m["profileImage"] ?? m["image"] ?? "").toString();
 
         Socket_GroupCallService.instance.participantMeta[uid] = {
@@ -321,7 +325,7 @@ class GroupCallingController extends GetxController {
         isFrontCamera.value = !isFrontCamera.value;
       }
     } catch (e) {
-      Utils().fluttertoast("Unable to switch camera");
+      Utils().fluttertoast(appL10n.call_switchCameraFailed);
     }
   }
 
@@ -348,7 +352,7 @@ class GroupCallingController extends GetxController {
     }
 
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-    final myName = Global.storageServices.get(PrefConst.userName) ?? "You";
+    final myName = Global.storageServices.get(PrefConst.userName) ?? appL10n.common_you;
     final myImage = Global.storageServices.get(PrefConst.profileImage)?.toString();
 
     activeParticipants.add(GroupCallParticipant(
@@ -495,7 +499,7 @@ class GroupCallingController extends GetxController {
   void notifyParticipant(GroupCallParticipant participant) {
     final svc = Socket_GroupCallService.instance;
     if (callId == null || callId!.isEmpty) {
-      Utils().fluttertoast("Call not ready yet");
+      Utils().fluttertoast(appL10n.call_notReady);
       return;
     }
     try {
@@ -508,9 +512,9 @@ class GroupCallingController extends GetxController {
         },
         ack: (res) {
           if (res is Map && res["success"] == false) {
-            Utils().fluttertoast(res["message"]?.toString() ?? "Notify failed");
+            Utils().fluttertoast(res["message"]?.toString() ?? appL10n.call_notifyFailed);
           } else {
-            Utils().fluttertoast( "Notify Successfully");
+            Utils().fluttertoast(appL10n.call_notifySent);
             _refreshNotInCallList();
           }
         },
@@ -715,7 +719,7 @@ class GroupCallingController extends GetxController {
     if (!isVideoOn.value) {
       final activeVideoCount = activeParticipants.where((p) => p.isVideoOn.value).length;
       if (activeVideoCount >= maxAllowedVideos) {
-        Utils().fluttertoast("Sorry, camera access is currently unavailable. Please try again later.");
+        Utils().fluttertoast(appL10n.call_cameraUnavailable);
         return;
       }
     }
@@ -819,7 +823,7 @@ class GroupCallingController extends GetxController {
       final uid = (m.userId ?? m.id)?.toString();
       if (uid == null || uid.isEmpty) continue;
 
-      final name = (m.name ?? 'User $uid').toString();
+      final name = (m.name ?? appL10n.call_userWithId(uid)).toString();
       final image = m.profileImage?.toString();
 
       final meta = Socket_GroupCallService.instance.participantMeta[uid] ?? {};
@@ -831,7 +835,9 @@ class GroupCallingController extends GetxController {
 
       final idx = allGroupMembers.indexWhere((e) => e.userId == uid);
       if (idx >= 0) {
-        if (allGroupMembers[idx].name!.isEmpty || allGroupMembers[idx].name!.startsWith('User ')) {
+        if (allGroupMembers[idx].name!.isEmpty ||
+            allGroupMembers[idx].name!.startsWith('User ') ||
+            allGroupMembers[idx].name == appL10n.call_userWithId(uid)) {
           allGroupMembers[idx].name = name;
         }
         if ((allGroupMembers[idx].profileImage == null || allGroupMembers[idx].profileImage!.isEmpty) && image != null) {

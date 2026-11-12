@@ -1,0 +1,7712 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Hindi (`hi`).
+class AppLocalizationsHi extends AppLocalizations {
+  AppLocalizationsHi([String locale = 'hi']) : super(locale);
+
+  @override
+  String get about_aboutUs => 'हमारे बारे में';
+
+  @override
+  String get about_address => 'पता';
+
+  @override
+  String get about_appBarTitle => 'FG Tracker के बारे में';
+
+  @override
+  String get about_company => 'कंपनी';
+
+  @override
+  String get about_contactUs => 'संपर्क करें';
+
+  @override
+  String get about_developerEmail => 'डेवलपर ईमेल';
+
+  @override
+  String get about_downloadTitle => '📱 ऐप डाउनलोड करें';
+
+  @override
+  String get about_howItWorksIntro =>
+      'FG Tracker ग्रुप यात्रा का तालमेल आसान बनाता है। ऐसे:';
+
+  @override
+  String get about_howItWorksTitle => '⚙️ यह कैसे काम करता है';
+
+  @override
+  String get about_howStep1 => 'एक ग्रुप बनाएं';
+
+  @override
+  String get about_howStep2 =>
+      'ग्रुप कोड या QR कोड अपने साथियों के साथ शेयर करें';
+
+  @override
+  String get about_howStep3 => 'हर सदस्य शेयर किए गए कोड या QR से जुड़ता है';
+
+  @override
+  String get about_howStep4 =>
+      'शेयर्ड मैप पर सभी की लाइव लोकेशन रियल-टाइम में ट्रैक करें';
+
+  @override
+  String get about_howStep5 =>
+      'शेयरिंग फ़ीचर से और लोगों को आसानी से आमंत्रित करें';
+
+  @override
+  String get about_intro =>
+      'ग्रुप में सफ़र करते समय जुड़े और सुरक्षित रहने के लिए FG Tracker आपका भरोसेमंद साथी है। चाहे परिवार के साथ रोड ट्रिप हो, दोस्तों के साथ पिकनिक हो या सहकर्मियों के साथ आना-जाना — FG Tracker पक्का करता है कि कोई पीछे न छूटे।';
+
+  @override
+  String get about_privacyBody =>
+      'आपकी सुरक्षा और प्राइवेसी मायने रखती है। FG Tracker आपकी लोकेशन आपके ग्रुप के बाहर किसी के साथ शेयर नहीं करता। सारा डेटा एन्क्रिप्टेड है और सिर्फ़ उन्हीं लोगों के साथ शेयर होता है जिन्हें आप अनुमति देते हैं।';
+
+  @override
+  String get about_privacyPolicy => 'प्राइवेसी पॉलिसी';
+
+  @override
+  String get about_privacyTitle => '🔐 प्राइवेसी और सुरक्षा';
+
+  @override
+  String get about_supportEmail => 'सहायता ईमेल';
+
+  @override
+  String get about_supportTitle => '📩 सहायता और डेवलपर जानकारी';
+
+  @override
+  String get about_termsConditions => 'नियम और शर्तें';
+
+  @override
+  String get about_title => 'जानकारी';
+
+  @override
+  String get about_website => 'वेबसाइट';
+
+  @override
+  String get about_welcomeTitle => 'FG Tracker में आपका स्वागत है';
+
+  @override
+  String get about_whyBuiltFor => 'परिवार, दोस्तों और छोटी टीमों के लिए बना।';
+
+  @override
+  String get about_whyChooseTitle => '🌟 FG Tracker क्यों चुनें?';
+
+  @override
+  String get about_whyEasy => 'प्राइवेसी कंट्रोल के साथ आसान और हल्का ऐप।';
+
+  @override
+  String get about_whyNoCalls =>
+      'कॉल या मैसेज की ज़रूरत नहीं — मैप पर लाइव ट्रैक करें।';
+
+  @override
+  String get about_whyRealTime =>
+      'ग्रुप के सभी सदस्यों के साथ रियल-टाइम लोकेशन शेयरिंग।';
+
+  @override
+  String appUpdate_checkError(String error) {
+    return 'अपडेट जांचने में त्रुटि: $error';
+  }
+
+  @override
+  String get appUpdate_exitConfirmTitle => 'क्या आप बाहर निकलना चाहते हैं?';
+
+  @override
+  String get appUpdate_noUpdateAvailable => 'कोई अपडेट उपलब्ध नहीं';
+
+  @override
+  String get appUpdate_restartApp => 'ऐप रीस्टार्ट करें';
+
+  @override
+  String get appUpdate_updateApp => 'ऐप अपडेट करें';
+
+  @override
+  String get appUpdate_updateAvailable => 'अपडेट उपलब्ध है';
+
+  @override
+  String get appUpdate_updateAvailableMessage =>
+      'नया अपडेट उपलब्ध है। कृपया ऐप अपडेट करें';
+
+  @override
+  String get appUpdate_updateUnavailable => 'अपडेट उपलब्ध नहीं है';
+
+  @override
+  String appUpdate_updatingProgress(int progress) {
+    return 'अपडेट हो रहा है... $progress%';
+  }
+
+  @override
+  String get attendance_addOption => 'एक और विकल्प जोड़ें';
+
+  @override
+  String get attendance_admin => 'एडमिन';
+
+  @override
+  String get attendance_allowChange => 'जवाब बदलने दें';
+
+  @override
+  String get attendance_allowChangeSubtitle =>
+      'सदस्य अपना जवाब बदल या हटा सकते हैं';
+
+  @override
+  String get attendance_askCommunity => 'अपने ग्रुप से पूछें';
+
+  @override
+  String get attendance_cameraPermissionRequired =>
+      'हाज़िरी लगाने के लिए कैमरे की अनुमति ज़रूरी है।';
+
+  @override
+  String get attendance_cameraStartFailed => 'कैमरा शुरू नहीं हो सका।';
+
+  @override
+  String attendance_cameraStartFailedCode(String code) {
+    return 'कैमरा शुरू नहीं हो सका ($code)।';
+  }
+
+  @override
+  String get attendance_cameraStarting => 'कैमरा शुरू हो रहा है…';
+
+  @override
+  String get attendance_captureFailedBlink =>
+      'फ़ोटो नहीं ली जा सकी। फिर से पलक झपकाएँ';
+
+  @override
+  String attendance_capturedAtVerified(String time) {
+    return '$time पर ली गई • सत्यापित';
+  }
+
+  @override
+  String get attendance_capturedCheck => 'फ़ोटो ली गई ✓';
+
+  @override
+  String get attendance_changeResponse => 'जवाब बदलें';
+
+  @override
+  String get attendance_chooseFolder => 'कोई फ़ोल्डर चुनें, जैसे Downloads';
+
+  @override
+  String get attendance_closeAction => 'हाज़िरी बंद करें';
+
+  @override
+  String get attendance_closeConfirmBody =>
+      'बंद होने के बाद सदस्य जवाब नहीं दे पाएँगे।';
+
+  @override
+  String get attendance_closeConfirmTitle => 'हाज़िरी बंद करें?';
+
+  @override
+  String get attendance_closeEndOfDay => 'दिन खत्म होने पर बंद करें';
+
+  @override
+  String attendance_closeEndOfDaySubtitle(String time) {
+    return 'आज $time बजे अपने आप बंद हो जाएगा';
+  }
+
+  @override
+  String get attendance_closeFailed => 'हाज़िरी बंद नहीं हो सकी';
+
+  @override
+  String get attendance_closeFailedShort => 'बंद नहीं हो सका';
+
+  @override
+  String attendance_closesAt(String dateTime) {
+    return '$dateTime को बंद होगा';
+  }
+
+  @override
+  String get attendance_createFailed => 'हाज़िरी नहीं बन सकी';
+
+  @override
+  String get attendance_createSubtitle => 'इस ग्रुप में हाज़िरी पोल भेजें';
+
+  @override
+  String get attendance_createTitle => 'हाज़िरी बनाएँ';
+
+  @override
+  String get attendance_created => 'हाज़िरी बनाई गई';
+
+  @override
+  String get attendance_dateEnded =>
+      'चुनी गई तारीख बीत चुकी है। कोई दूसरी तारीख चुनें या ऑटो-क्लोज़ बंद करें।';
+
+  @override
+  String get attendance_dateToday => 'तारीख (आज)';
+
+  @override
+  String get attendance_dateTodaySemantics => 'हाज़िरी की तारीख, आज';
+
+  @override
+  String get attendance_deleteFailed => 'हाज़िरी डिलीट नहीं हो सकी';
+
+  @override
+  String get attendance_deletedText => 'यह हाज़िरी डिलीट कर दी गई';
+
+  @override
+  String get attendance_downloadReport => 'रिपोर्ट डाउनलोड करें';
+
+  @override
+  String get attendance_everyoneResponded => 'सभी ने जवाब दे दिया है';
+
+  @override
+  String get attendance_faceDetectedBlink => 'चेहरा मिल गया — अब पलकें झपकाएँ';
+
+  @override
+  String get attendance_failed => 'हाज़िरी नहीं हो सकी';
+
+  @override
+  String attendance_filterNotRespondedCount(int count) {
+    return 'जवाब नहीं दिया ($count)';
+  }
+
+  @override
+  String attendance_filterResponded(int count) {
+    return 'जवाब दिया ($count)';
+  }
+
+  @override
+  String get attendance_fixErrors =>
+      'सबमिट करने से पहले दिखाई गई गलतियाँ ठीक करें';
+
+  @override
+  String get attendance_holdStill => 'हिलें नहीं…';
+
+  @override
+  String get attendance_howToTakePhoto => 'फ़ोटो कैसे लें';
+
+  @override
+  String get attendance_invalidGroup =>
+      'ग्रुप सही नहीं है। कृपया चैट फिर से खोलें।';
+
+  @override
+  String get attendance_keepFaceInCircle => 'अपना चेहरा गोले के अंदर रखें';
+
+  @override
+  String get attendance_limitReached => 'सीमा पूरी हो गई';
+
+  @override
+  String get attendance_loadFailed => 'हाज़िरी लोड नहीं हो सकी';
+
+  @override
+  String get attendance_loadMore => 'और लोड करें';
+
+  @override
+  String get attendance_loadMoreFailed => 'और लोड नहीं हो सका';
+
+  @override
+  String get attendance_loadVotersFailed =>
+      'जवाब देने वालों की लिस्ट लोड नहीं हो सकी';
+
+  @override
+  String get attendance_lookAtCamera => 'कैमरे की ओर देखें';
+
+  @override
+  String get attendance_lookStraight => 'कैमरे में सीधे देखें';
+
+  @override
+  String get attendance_markYourAttendance => 'अपनी हाज़िरी लगाएँ';
+
+  @override
+  String attendance_markedAs(String option) {
+    return '$option के रूप में दर्ज';
+  }
+
+  @override
+  String get attendance_markedSuccess => 'हाज़िरी सफलतापूर्वक लग गई';
+
+  @override
+  String attendance_maxOptions(int count) {
+    return 'आप सिर्फ़ $count विकल्प तक जोड़ सकते हैं';
+  }
+
+  @override
+  String get attendance_members => 'सदस्य';
+
+  @override
+  String attendance_membersWithCount(int count) {
+    return 'सदस्य ($count)';
+  }
+
+  @override
+  String attendance_minOptions(int count) {
+    return 'कम से कम $count विकल्प ज़रूरी हैं';
+  }
+
+  @override
+  String get attendance_moveCloser => 'थोड़ा पास आएँ';
+
+  @override
+  String get attendance_multipleFaces =>
+      'कई चेहरे दिखे — फ़्रेम में सिर्फ़ आप होने चाहिए';
+
+  @override
+  String get attendance_noCsvApp =>
+      'CSV फ़ाइल खोलने के लिए कोई ऐप नहीं मिला। इसकी जगह सेव या शेयर करें।';
+
+  @override
+  String get attendance_noFace => 'कोई चेहरा नहीं मिला';
+
+  @override
+  String get attendance_noFrontCamera => 'इस डिवाइस में फ्रंट कैमरा नहीं मिला।';
+
+  @override
+  String get attendance_noLocation => 'कोई लोकेशन उपलब्ध नहीं';
+
+  @override
+  String get attendance_noMembersMatch => 'खोज से कोई सदस्य मेल नहीं खाता';
+
+  @override
+  String get attendance_noResponses => 'अभी तक कोई जवाब नहीं';
+
+  @override
+  String get attendance_notResponded => 'जवाब नहीं दिया';
+
+  @override
+  String get attendance_openEyes => 'आँखें खोलें और कैमरे की ओर देखें';
+
+  @override
+  String get attendance_openMapFailed => 'मैप नहीं खुल सका';
+
+  @override
+  String get attendance_openSubtitle =>
+      'Excel, Sheets या किसी दूसरे ऐप में देखें';
+
+  @override
+  String get attendance_optionHint => 'विकल्प का नाम लिखें';
+
+  @override
+  String get attendance_optionLabelRequired => 'हर विकल्प का नाम होना चाहिए';
+
+  @override
+  String attendance_optionNumber(int number) {
+    return 'विकल्प $number';
+  }
+
+  @override
+  String attendance_optionPhotoRequired(int number) {
+    return 'विकल्प $number • 📷 फ़ोटो ज़रूरी';
+  }
+
+  @override
+  String get attendance_optionsUnique => 'विकल्प अलग-अलग होने चाहिए';
+
+  @override
+  String get attendance_photoCaptured => 'फ़ोटो ले ली गई';
+
+  @override
+  String get attendance_photoCapturedTapRetake =>
+      'फ़ोटो ली गई ✓ (फिर से लेने के लिए टैप करें)';
+
+  @override
+  String get attendance_photoProof => 'फ़ोटो प्रमाण';
+
+  @override
+  String attendance_photoProofOf(String name) {
+    return '$name का फ़ोटो प्रमाण';
+  }
+
+  @override
+  String attendance_photoRequiredFor(String option) {
+    return '⚠ $option के लिए फ़ोटो ज़रूरी है';
+  }
+
+  @override
+  String get attendance_photoRules =>
+      'सिर्फ़ फ्रंट कैमरा इस्तेमाल होता है। पलक झपकाते ही फ़ोटो अपने आप ली जाती है, और गैलरी से अपलोड की अनुमति नहीं है।';
+
+  @override
+  String get attendance_photoSubtitle =>
+      'अपनी हाज़िरी की पुष्टि के लिए लाइव फ़ोटो लें';
+
+  @override
+  String get attendance_photoTitle => 'हाज़िरी फ़ोटो';
+
+  @override
+  String get attendance_photoVerified => 'फ़ोटो सत्यापित';
+
+  @override
+  String get attendance_questionHint => 'क्या आप आज उपलब्ध रहेंगे?';
+
+  @override
+  String get attendance_questionLabel => 'हाज़िरी का सवाल';
+
+  @override
+  String get attendance_questionRequired => 'हाज़िरी का सवाल ज़रूरी है';
+
+  @override
+  String attendance_questionTooShort(int count) {
+    return 'सवाल कम से कम $count अक्षरों का होना चाहिए';
+  }
+
+  @override
+  String get attendance_removeFailedShort => 'हटाया नहीं जा सका';
+
+  @override
+  String get attendance_removeResponseBody =>
+      'इस पोल के लिए आपकी हाज़िरी हटा दी जाएगी।';
+
+  @override
+  String get attendance_removeResponseTitle => 'अपना जवाब हटाएँ?';
+
+  @override
+  String get attendance_removeVoteFailed => 'जवाब हटाया नहीं जा सका';
+
+  @override
+  String get attendance_reportEmpty => 'रिपोर्ट खाली है';
+
+  @override
+  String get attendance_reportFailed => 'रिपोर्ट नहीं बन सकी';
+
+  @override
+  String get attendance_reportInvalid =>
+      'सर्वर से गलत रिपोर्ट मिली। कृपया फिर से कोशिश करें।';
+
+  @override
+  String attendance_reportReady(String fileName) {
+    return 'रिपोर्ट तैयार • $fileName';
+  }
+
+  @override
+  String get attendance_reportSaved => 'रिपोर्ट सेव हो गई';
+
+  @override
+  String get attendance_reportSubject => 'हाज़िरी रिपोर्ट';
+
+  @override
+  String attendance_reportSubjectWithTitle(String title) {
+    return 'हाज़िरी रिपोर्ट • $title';
+  }
+
+  @override
+  String attendance_respondedCount(int count) {
+    return '$count ने जवाब दिया';
+  }
+
+  @override
+  String get attendance_retakePhoto => 'फ़ोटो फिर से लें';
+
+  @override
+  String get attendance_saveInFiles => 'Files ऐप में सेव करें';
+
+  @override
+  String get attendance_saveReportDialog => 'हाज़िरी रिपोर्ट सेव करें';
+
+  @override
+  String get attendance_saveToDevice => 'डिवाइस में सेव करें';
+
+  @override
+  String get attendance_searchMember => 'सदस्य खोजें';
+
+  @override
+  String get attendance_selectPhotoOption =>
+      'जिस विकल्प के लिए लाइव फ़ोटो ज़रूरी हो, उसे चुनें';
+
+  @override
+  String get attendance_selectStatus => 'कृपया अपना स्टेटस चुनें';
+
+  @override
+  String get attendance_sentToAllMembers =>
+      'इस ग्रुप के सभी सदस्यों को भेजा जाएगा';
+
+  @override
+  String get attendance_sentToGroup => 'हाज़िरी ग्रुप में भेज दी गई';
+
+  @override
+  String get attendance_shareSubtitle => 'WhatsApp, ईमेल से भेजें…';
+
+  @override
+  String get attendance_statusCompleted => 'पूरा हुआ';
+
+  @override
+  String get attendance_statusOpen => 'खुला';
+
+  @override
+  String get attendance_stepBlink => 'फ़ोटो लेने के लिए पलकें झपकाएँ';
+
+  @override
+  String get attendance_stepEyeLevel => 'फ़ोन को आँखों की सीध में रखें';
+
+  @override
+  String get attendance_submit => 'हाज़िरी सबमिट करें';
+
+  @override
+  String get attendance_submitted => 'हाज़िरी दर्ज हो गई';
+
+  @override
+  String get attendance_title => 'हाज़िरी';
+
+  @override
+  String get attendance_update => 'हाज़िरी अपडेट करें';
+
+  @override
+  String get attendance_validationError => 'जानकारी में गलती';
+
+  @override
+  String get attendance_view => 'देखें';
+
+  @override
+  String get attendance_viewTitle => 'हाज़िरी देखें';
+
+  @override
+  String get attendance_voteFailed => 'जवाब दर्ज नहीं हो सका';
+
+  @override
+  String attendance_withinKm(String km) {
+    return '$km कि.मी. के अंदर';
+  }
+
+  @override
+  String attendance_withinMeters(int count) {
+    return '$count मी. के अंदर';
+  }
+
+  @override
+  String get call_accept => 'स्वीकार';
+
+  @override
+  String get call_allContacts => 'सभी संपर्क';
+
+  @override
+  String get call_allowAccess => 'अनुमति दें';
+
+  @override
+  String get call_answer => 'जवाब दें';
+
+  @override
+  String get call_audioOutput => 'ऑडियो आउटपुट';
+
+  @override
+  String get call_callFrom => 'कॉल आ रही है';
+
+  @override
+  String get call_callIdNotFound => 'कॉल ID नहीं मिली';
+
+  @override
+  String get call_callInformation => 'कॉल की जानकारी';
+
+  @override
+  String get call_callSummary => 'कॉल सारांश';
+
+  @override
+  String get call_caller => 'कॉलर';
+
+  @override
+  String call_callerAndOthers(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$name और $count अन्य',
+      one: '$name और 1 अन्य',
+      zero: '$name',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String call_callsDeleteFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count कॉल हटाई नहीं जा सकीं। फिर से कोशिश करें।',
+      one: '1 कॉल हटाई नहीं जा सकी। फिर से कोशिश करें।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String call_callsDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count कॉल हटाई गईं',
+      one: '1 कॉल हटाई गई',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get call_camera => 'कैमरा';
+
+  @override
+  String get call_cameraMicRequired => 'कैमरा या माइक की अनुमति ज़रूरी है';
+
+  @override
+  String get call_cameraOff => 'कैमरा बंद';
+
+  @override
+  String get call_cameraOn => 'कैमरा चालू';
+
+  @override
+  String get call_cameraUnavailable =>
+      'माफ़ करें, अभी कैमरा उपलब्ध नहीं है। कृपया बाद में फिर कोशिश करें।';
+
+  @override
+  String get call_cannotReachCallServer =>
+      'कॉल सर्वर से कनेक्ट नहीं हो सका। कृपया अपना नेटवर्क जांचें।';
+
+  @override
+  String get call_chatFallback => 'चैट';
+
+  @override
+  String get call_closeFullScreen => 'फ़ुल स्क्रीन बंद करें';
+
+  @override
+  String get call_communicationUnavailable =>
+      'इस यूज़र से संपर्क उपलब्ध नहीं है';
+
+  @override
+  String get call_connectingProgress => 'कनेक्ट हो रहा है…';
+
+  @override
+  String get call_connectionTimeout => 'कनेक्शन का समय खत्म हो गया';
+
+  @override
+  String get call_contactInformation => 'संपर्क की जानकारी';
+
+  @override
+  String get call_contactsAccessBannerMessage =>
+      'अपनी टीम के लोगों को आसानी से ढूंढें और कॉल करें।';
+
+  @override
+  String get call_contactsAccessBannerTitle => 'हमें अपने संपर्क देखने दें';
+
+  @override
+  String get call_contactsAccessMessage =>
+      'FG Tracker पर कौन है यह दिखाने और आपको उन्हें कॉल करने या इनवाइट भेजने देने के लिए हमें आपके संपर्कों की अनुमति चाहिए।';
+
+  @override
+  String get call_contactsAccessTitle => 'संपर्कों की अनुमति दें';
+
+  @override
+  String get call_decline => 'अस्वीकार';
+
+  @override
+  String get call_deleteCallsMessage =>
+      'ये कॉल आपकी कॉल हिस्ट्री से हटा दी जाएंगी।';
+
+  @override
+  String call_deleteCallsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count कॉल हटाएं?',
+      one: '1 कॉल हटाएं?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get call_deleteHistoryMessage =>
+      'क्या आप वाकई यह कॉल हिस्ट्री हटाना चाहते हैं?';
+
+  @override
+  String get call_deleteHistoryTitle => 'कॉल हिस्ट्री हटाएं';
+
+  @override
+  String call_deleteSelectedMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'क्या आप वाकई चुनी गई ये $count कॉल हिस्ट्री एंट्री हटाना चाहते हैं?',
+      one: 'क्या आप वाकई चुनी गई यह कॉल हिस्ट्री हटाना चाहते हैं?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get call_deleteSelectedTitle => 'चुनी गई कॉल हटाएं';
+
+  @override
+  String call_deleteWithCount(int count) {
+    return 'हटाएं ($count)';
+  }
+
+  @override
+  String call_durHr(int hours) {
+    return '$hours घं';
+  }
+
+  @override
+  String call_durHrMin(int hours, int minutes) {
+    return '$hours घं $minutes मि';
+  }
+
+  @override
+  String call_durMin(int minutes) {
+    return '$minutes मि';
+  }
+
+  @override
+  String call_durMinSec(int minutes, int seconds) {
+    return '$minutes मि $seconds से';
+  }
+
+  @override
+  String call_durSec(int seconds) {
+    return '$seconds से';
+  }
+
+  @override
+  String call_durShortHr(int hours) {
+    return '$hoursघं';
+  }
+
+  @override
+  String call_durShortHrMin(int hours, int minutes) {
+    return '$hoursघं $minutesमि';
+  }
+
+  @override
+  String call_durShortMin(int minutes) {
+    return '$minutesमि';
+  }
+
+  @override
+  String call_durShortMinSec(int minutes, int seconds) {
+    return '$minutesमि $secondsसे';
+  }
+
+  @override
+  String call_durShortSec(int seconds) {
+    return '$secondsसे';
+  }
+
+  @override
+  String get call_duration => 'अवधि';
+
+  @override
+  String call_durationValue(String duration) {
+    return 'अवधि: $duration';
+  }
+
+  @override
+  String get call_earpiece => 'ईयरपीस';
+
+  @override
+  String get call_endCall => 'कॉल खत्म करें';
+
+  @override
+  String get call_ended => 'खत्म हुई';
+
+  @override
+  String get call_enterNumber => 'नंबर डालें';
+
+  @override
+  String get call_enterPhoneNumber => 'कृपया फ़ोन नंबर डालें';
+
+  @override
+  String get call_entryDeleteFailed => 'कॉल एंट्री हटाई नहीं जा सकी';
+
+  @override
+  String call_entryDeleteFailedError(String error) {
+    return 'कॉल एंट्री हटाई नहीं जा सकी: $error';
+  }
+
+  @override
+  String get call_entryDeleted => 'कॉल एंट्री हटा दी गई';
+
+  @override
+  String get call_everyoneInCall => 'सभी पहले से कॉल में हैं';
+
+  @override
+  String get call_failedTitle => 'कॉल विफल';
+
+  @override
+  String get call_groupBadge => 'ग्रुप';
+
+  @override
+  String get call_groupCallComingSoon => 'ग्रुप कॉलिंग जल्द आ रही है';
+
+  @override
+  String get call_groupCallInitFailed => 'ग्रुप कॉल शुरू नहीं हो सकी';
+
+  @override
+  String get call_groupCallStartFailed =>
+      'ग्रुप कॉल शुरू नहीं हो सकी। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get call_groupInformation => 'ग्रुप की जानकारी';
+
+  @override
+  String call_groupWithId(String id) {
+    return 'ग्रुप $id';
+  }
+
+  @override
+  String get call_headphones => 'हेडफ़ोन';
+
+  @override
+  String call_historyCancelled(String callType) {
+    return 'रद्द $callType';
+  }
+
+  @override
+  String get call_historyClearFailed => 'कॉल हिस्ट्री साफ़ नहीं हो सकी';
+
+  @override
+  String call_historyClearFailedError(String error) {
+    return 'कॉल हिस्ट्री साफ़ नहीं हो सकी: $error';
+  }
+
+  @override
+  String get call_historyCleared => 'पूरी कॉल हिस्ट्री साफ़ कर दी गई';
+
+  @override
+  String call_historyIncoming(String callType) {
+    return 'इनकमिंग $callType';
+  }
+
+  @override
+  String call_historyMissed(String callType) {
+    return 'मिस्ड $callType';
+  }
+
+  @override
+  String call_historyOutgoing(String callType) {
+    return 'आउटगोइंग $callType';
+  }
+
+  @override
+  String call_historyRejected(String callType) {
+    return 'अस्वीकृत $callType';
+  }
+
+  @override
+  String get call_inCall => 'कॉल में';
+
+  @override
+  String call_inCallWithGroup(String groupName) {
+    return 'कॉल में · $groupName';
+  }
+
+  @override
+  String call_inThisCall(int count) {
+    return 'इस कॉल में ($count)';
+  }
+
+  @override
+  String get call_incomingAudio => 'इनकमिंग ऑडियो कॉल';
+
+  @override
+  String get call_incomingCallChannelName => 'इनकमिंग कॉल';
+
+  @override
+  String get call_incomingGroupAudio => 'इनकमिंग ग्रुप ऑडियो कॉल';
+
+  @override
+  String get call_incomingGroupVideo => 'इनकमिंग ग्रुप वीडियो कॉल';
+
+  @override
+  String get call_incomingVideo => 'इनकमिंग वीडियो कॉल';
+
+  @override
+  String get call_infoDescription => 'विवरण';
+
+  @override
+  String get call_infoEmail => 'ईमेल';
+
+  @override
+  String get call_infoGroupCode => 'ग्रुप कोड';
+
+  @override
+  String get call_infoGroupName => 'ग्रुप का नाम';
+
+  @override
+  String get call_infoMobile => 'मोबाइल';
+
+  @override
+  String get call_infoTotalMembers => 'कुल सदस्य';
+
+  @override
+  String get call_invite => 'इनवाइट';
+
+  @override
+  String get call_inviteToApp => 'FG Tracker पर इनवाइट करें';
+
+  @override
+  String get call_join => 'जुड़ें';
+
+  @override
+  String get call_joinOnAnswer => 'जवाब देते ही आप जुड़ जाएंगे';
+
+  @override
+  String get call_kindAudio => 'ऑडियो कॉल';
+
+  @override
+  String get call_kindCall => 'कॉल';
+
+  @override
+  String get call_kindGroupAudio => 'ग्रुप ऑडियो कॉल';
+
+  @override
+  String get call_kindGroupCall => 'ग्रुप कॉल';
+
+  @override
+  String call_kindGroupOther(String kind) {
+    return 'ग्रुप $kind कॉल';
+  }
+
+  @override
+  String get call_kindGroupVideo => 'ग्रुप वीडियो कॉल';
+
+  @override
+  String call_kindOther(String kind) {
+    return '$kind कॉल';
+  }
+
+  @override
+  String get call_kindVideo => 'वीडियो कॉल';
+
+  @override
+  String get call_loadDetailFailed => 'कॉल की जानकारी लोड नहीं हो सकी';
+
+  @override
+  String get call_loadMore => 'और देखें';
+
+  @override
+  String get call_loadRecentFailed => 'हाल की कॉल लोड नहीं हो सकीं';
+
+  @override
+  String get call_loginToCall => 'कॉल करने के लिए कृपया लॉग इन करें';
+
+  @override
+  String call_membersInCall(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'इस कॉल में $count सदस्य',
+      one: 'इस कॉल में 1 सदस्य',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get call_message => 'मैसेज';
+
+  @override
+  String get call_micActive => 'माइक्रोफ़ोन चालू है';
+
+  @override
+  String get call_missedCall => 'मिस्ड कॉल';
+
+  @override
+  String get call_missedCallChannelName => 'मिस्ड कॉल';
+
+  @override
+  String get call_missedCallNotification => 'मिस्ड कॉल';
+
+  @override
+  String get call_more => 'और';
+
+  @override
+  String get call_mute => 'म्यूट';
+
+  @override
+  String get call_muted => 'म्यूट है';
+
+  @override
+  String call_nameYou(String name) {
+    return '$name (आप)';
+  }
+
+  @override
+  String get call_noActiveParticipants => 'कोई सक्रिय प्रतिभागी नहीं';
+
+  @override
+  String get call_noContactsMatch => 'आपकी खोज से कोई संपर्क मेल नहीं खाता';
+
+  @override
+  String get call_noGroupsFound => 'कोई ग्रुप नहीं मिला';
+
+  @override
+  String get call_noGroupsYet => 'अभी कोई ग्रुप नहीं';
+
+  @override
+  String get call_noNameGroup => 'बिना नाम का ग्रुप';
+
+  @override
+  String get call_noRecentCalls => 'कोई हालिया कॉल नहीं';
+
+  @override
+  String get call_noRecentMatch => 'आपकी खोज से कोई हालिया कॉल मेल नहीं खाती';
+
+  @override
+  String get call_noRecentYet => 'अभी कोई हालिया कॉल नहीं';
+
+  @override
+  String get call_noRegisteredContacts => 'कोई रजिस्टर्ड संपर्क नहीं मिला';
+
+  @override
+  String get call_notInContacts => 'यह नंबर आपके संपर्कों में नहीं है';
+
+  @override
+  String call_notInThisCall(int count) {
+    return 'इस कॉल में नहीं ($count)';
+  }
+
+  @override
+  String get call_notReady => 'कॉल अभी तैयार नहीं है';
+
+  @override
+  String get call_notificationPermissionRationale =>
+      'आने वाली कॉल दिखाने के लिए ज़रूरी है।';
+
+  @override
+  String get call_notificationPermissionSettings =>
+      'सेटिंग्स में सूचनाएं चालू करें।';
+
+  @override
+  String get call_notificationPermissionTitle => 'सूचना की अनुमति';
+
+  @override
+  String get call_notify => 'नोटिफ़ाई';
+
+  @override
+  String get call_notifyFailed => 'सूचना नहीं भेजी जा सकी';
+
+  @override
+  String get call_notifySent => 'सूचना भेज दी गई';
+
+  @override
+  String get call_ongoingChannelDescription =>
+      'कॉल और स्क्रीन शेयरिंग को चालू रखता है';
+
+  @override
+  String get call_ongoingChannelName => 'चालू कॉल';
+
+  @override
+  String get call_otherAlreadySharing =>
+      'सामने वाला व्यक्ति पहले से स्क्रीन शेयर कर रहा है';
+
+  @override
+  String get call_otherStartingVideo =>
+      'सामने वाला व्यक्ति वीडियो शुरू कर रहा है';
+
+  @override
+  String get call_participant => 'प्रतिभागी';
+
+  @override
+  String get call_participants => 'प्रतिभागी';
+
+  @override
+  String call_personIsSharing(String name) {
+    return '$name शेयर कर रहे हैं';
+  }
+
+  @override
+  String call_personSharingScreen(String name) {
+    return '$name स्क्रीन शेयर कर रहे हैं';
+  }
+
+  @override
+  String get call_phone => 'फ़ोन';
+
+  @override
+  String get call_pleaseWait => 'कृपया प्रतीक्षा करें';
+
+  @override
+  String get call_recentCalls => 'हाल की कॉल';
+
+  @override
+  String get call_resetZoom => 'ज़ूम रीसेट करें';
+
+  @override
+  String get call_returnToCall => 'कॉल पर लौटें';
+
+  @override
+  String get call_screenBeingShared => 'स्क्रीन शेयर की जा रही है';
+
+  @override
+  String get call_screenShareChannelDescription =>
+      'चालू स्क्रीन शेयरिंग की सूचना';
+
+  @override
+  String get call_screenShareChannelName => 'स्क्रीन शेयरिंग सेवा';
+
+  @override
+  String get call_screenSharePermissionDenied =>
+      'स्क्रीन शेयरिंग की अनुमति नहीं मिली';
+
+  @override
+  String get call_screenShareStartFailed => 'स्क्रीन शेयरिंग शुरू नहीं हो सकी';
+
+  @override
+  String get call_screenShareStopped => 'स्क्रीन शेयरिंग बंद हो गई';
+
+  @override
+  String get call_screenSharingTitle => 'स्क्रीन शेयरिंग';
+
+  @override
+  String call_screenVisibleToName(String name) {
+    return 'आपकी स्क्रीन $name को दिख रही है';
+  }
+
+  @override
+  String get call_screenVisibleToOther =>
+      'आपकी स्क्रीन सामने वाले को दिख रही है';
+
+  @override
+  String get call_searchHint => 'संपर्क या ग्रुप खोजें';
+
+  @override
+  String get call_sectionLastWeek => 'पिछले हफ़्ते';
+
+  @override
+  String get call_sectionOlder => 'पुराने';
+
+  @override
+  String get call_sectionThisWeek => 'इस हफ़्ते';
+
+  @override
+  String get call_selectAll => 'सभी चुनें';
+
+  @override
+  String call_selectedCount(int count) {
+    return '$count चुने गए';
+  }
+
+  @override
+  String get call_selectedDeleteFailed => 'चुनी गई कॉल हटाई नहीं जा सकीं';
+
+  @override
+  String call_selectedDeleteFailedError(String error) {
+    return 'चुनी गई कॉल हटाई नहीं जा सकीं: $error';
+  }
+
+  @override
+  String get call_selectedDeleted => 'चुनी गई कॉल हटा दी गईं';
+
+  @override
+  String get call_selfCallWarning => 'आप अपने ही नंबर पर कॉल नहीं कर सकते।';
+
+  @override
+  String get call_sessionConnectFailed => 'कॉल से कनेक्ट नहीं हो सका';
+
+  @override
+  String get call_shareScreen => 'स्क्रीन शेयर करें';
+
+  @override
+  String get call_shareScreenShort => 'शेयर';
+
+  @override
+  String call_sharingInGroupTapReturn(String groupName) {
+    return '$groupName में शेयर हो रहा है • कॉल पर लौटने के लिए टैप करें';
+  }
+
+  @override
+  String get call_sharingYourScreen => 'आपकी स्क्रीन शेयर हो रही है';
+
+  @override
+  String get call_someone => 'कोई';
+
+  @override
+  String get call_speaker => 'स्पीकर';
+
+  @override
+  String get call_started => 'शुरू हुई';
+
+  @override
+  String get call_startingScreenShare => 'स्क्रीन शेयर शुरू हो रही है…';
+
+  @override
+  String get call_statusBusy => 'व्यस्त';
+
+  @override
+  String get call_statusCalling => 'कॉल हो रही है';
+
+  @override
+  String get call_statusCancelled => 'रद्द की गई';
+
+  @override
+  String get call_statusCompleted => 'पूरी हुई';
+
+  @override
+  String get call_statusConnected => 'कनेक्ट हो गया';
+
+  @override
+  String get call_statusConnecting => 'कनेक्ट हो रहा है';
+
+  @override
+  String get call_statusDeclined => 'अस्वीकार की गई';
+
+  @override
+  String get call_statusJoined => 'जुड़े';
+
+  @override
+  String get call_statusMissed => 'मिस्ड';
+
+  @override
+  String get call_statusReconnecting => 'फिर से कनेक्ट हो रहा है';
+
+  @override
+  String get call_statusRinging => 'घंटी बज रही है';
+
+  @override
+  String get call_statusVideoConnecting => 'वीडियो कनेक्ट हो रहा है';
+
+  @override
+  String get call_stop => 'रोकें';
+
+  @override
+  String get call_stopSharing => 'शेयर करना बंद करें';
+
+  @override
+  String get call_subtitle => 'ऑडियो / वीडियो कॉल';
+
+  @override
+  String get call_swipeUpToAnswer => 'जवाब देने के लिए ऊपर स्वाइप करें';
+
+  @override
+  String get call_switch => 'बदलें';
+
+  @override
+  String get call_switchCameraFailed => 'कैमरा नहीं बदल सका';
+
+  @override
+  String get call_switchToVideoToShare =>
+      'अपनी स्क्रीन शेयर करने के लिए वीडियो कॉल पर जाएं';
+
+  @override
+  String get call_tabContacts => 'संपर्क';
+
+  @override
+  String get call_tabGroups => 'ग्रुप';
+
+  @override
+  String get call_tabRecent => 'हाल के';
+
+  @override
+  String get call_tapNotifyToInvite => 'बुलाने के लिए नोटिफ़ाई पर टैप करें';
+
+  @override
+  String get call_tapStartBroadcastHint =>
+      'सिस्टम प्रॉम्प्ट दिखे तो Start Broadcast पर टैप करें';
+
+  @override
+  String get call_title => 'कॉल';
+
+  @override
+  String call_todayAt(String value) {
+    return 'आज, $value';
+  }
+
+  @override
+  String get call_total => 'कुल';
+
+  @override
+  String get call_turnOnVideo => 'अपना वीडियो चालू करें';
+
+  @override
+  String get call_unableToCallContact => 'इस संपर्क को कॉल नहीं किया जा सकता';
+
+  @override
+  String get call_unableToMakeCall => 'कॉल नहीं हो सकी';
+
+  @override
+  String get call_unableToOpenChat => 'इस संपर्क की चैट नहीं खुल सकी';
+
+  @override
+  String get call_unableToShareScreen => 'स्क्रीन शेयर नहीं हो सकी';
+
+  @override
+  String get call_unavailableTitle => 'कॉल उपलब्ध नहीं';
+
+  @override
+  String get call_unexpectedResponse => 'सर्वर से अनपेक्षित जवाब मिला';
+
+  @override
+  String get call_unknown => 'अज्ञात';
+
+  @override
+  String get call_unknownGroup => 'अज्ञात ग्रुप';
+
+  @override
+  String get call_unknownUser => 'अज्ञात यूज़र';
+
+  @override
+  String get call_unmute => 'अनम्यूट';
+
+  @override
+  String get call_unselectAll => 'सभी का चयन हटाएं';
+
+  @override
+  String get call_user => 'यूज़र';
+
+  @override
+  String get call_userNotFound => 'यूज़र नहीं मिला';
+
+  @override
+  String call_userWithId(String id) {
+    return 'यूज़र $id';
+  }
+
+  @override
+  String get call_video => 'वीडियो';
+
+  @override
+  String get call_waitingForBroadcast => 'Start Broadcast का इंतज़ार';
+
+  @override
+  String get call_waitingForBroadcastMessage =>
+      'अपनी स्क्रीन शेयर करने के लिए सिस्टम डायलॉग में “Start Broadcast” पर टैप करें। शेयरिंग उसके बाद ही शुरू होगी।';
+
+  @override
+  String get call_waitingForMedia => 'मीडिया स्ट्रीम का इंतज़ार...';
+
+  @override
+  String get call_wired => 'वायर्ड';
+
+  @override
+  String get call_yesDelete => 'हाँ, हटाएं';
+
+  @override
+  String call_yesterdayAt(String value) {
+    return 'कल, $value';
+  }
+
+  @override
+  String get call_youAreSharing => 'आप शेयर कर रहे हैं';
+
+  @override
+  String get call_youAreSharingScreen => 'आप अपनी स्क्रीन शेयर कर रहे हैं';
+
+  @override
+  String get call_zoomIn => 'ज़ूम इन';
+
+  @override
+  String get call_zoomOut => 'ज़ूम आउट';
+
+  @override
+  String get chatList_allChats => 'सभी चैट';
+
+  @override
+  String get chatList_allContacts => 'सभी संपर्क';
+
+  @override
+  String get chatList_allowAccess => 'अनुमति दें';
+
+  @override
+  String get chatList_allowContactsBody =>
+      'FG Tracker पर कौन है यह दिखाने और आपको चैट शुरू करने या आमंत्रण भेजने देने के लिए हमें आपके संपर्कों की अनुमति चाहिए।';
+
+  @override
+  String get chatList_allowContactsTitle => 'संपर्कों की अनुमति दें';
+
+  @override
+  String get chatList_archiveChat => 'चैट आर्काइव करें';
+
+  @override
+  String get chatList_archived => 'आर्काइव';
+
+  @override
+  String get chatList_archivedChatsSubtitle => 'आपकी छिपी हुई बातचीत';
+
+  @override
+  String get chatList_archivedChatsTitle => 'आर्काइव चैट';
+
+  @override
+  String chatList_archivedCount(int count) {
+    return 'आर्काइव ($count)';
+  }
+
+  @override
+  String get chatList_block => 'ब्लॉक करें';
+
+  @override
+  String get chatList_blockFailed => 'यूज़र को ब्लॉक नहीं कर सके';
+
+  @override
+  String chatList_blockName(String name) {
+    return '$name को ब्लॉक करें';
+  }
+
+  @override
+  String get chatList_blockUser => 'यूज़र को ब्लॉक करें';
+
+  @override
+  String get chatList_blockUserConfirm =>
+      'क्या आप वाकई इस यूज़र को ब्लॉक करना चाहते हैं?';
+
+  @override
+  String get chatList_blocked => 'ब्लॉक किया';
+
+  @override
+  String get chatList_chatCleared => 'चैट साफ़ हो गई';
+
+  @override
+  String get chatList_chooseContactToShare =>
+      'चैट में शेयर करने के लिए एक संपर्क चुनें।';
+
+  @override
+  String get chatList_clear => 'साफ़ करें';
+
+  @override
+  String get chatList_clearChat => 'चैट साफ़ करें';
+
+  @override
+  String get chatList_clearChatConfirm =>
+      'इस यूज़र के साथ सभी मैसेज डिलीट करें?';
+
+  @override
+  String get chatList_clearChatFailed => 'चैट साफ़ नहीं हो सकी';
+
+  @override
+  String get chatList_clearSearch => 'खोज साफ़ करें';
+
+  @override
+  String get chatList_contactAndInfo => 'संपर्क और जानकारी';
+
+  @override
+  String get chatList_contactPermissionNeededMsg =>
+      'चैट में संपर्क शेयर करने के लिए संपर्क की अनुमति ज़रूरी है।';
+
+  @override
+  String chatList_contactsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count संपर्क',
+      one: '1 संपर्क',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatList_contactsLoadFailed(String error) {
+    return 'संपर्क लोड नहीं हो सके: $error';
+  }
+
+  @override
+  String get chatList_contactsPermissionNeeded => 'संपर्क की अनुमति ज़रूरी है';
+
+  @override
+  String get chatList_contactsWillAppear =>
+      'उपलब्ध होने पर आपके संपर्क यहाँ दिखेंगे।';
+
+  @override
+  String chatList_daysShort(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count दिन',
+      one: '1 दिन',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatList_deactivated => 'निष्क्रिय';
+
+  @override
+  String get chatList_defaultAbout =>
+      'नमस्ते! मैं FG Tracker इस्तेमाल कर रहा/रही हूँ';
+
+  @override
+  String get chatList_deleteChat => 'चैट डिलीट करें';
+
+  @override
+  String get chatList_deleteChatConfirm =>
+      'इस बातचीत को अपनी चैट लिस्ट से डिलीट करें?';
+
+  @override
+  String get chatList_forwardFailed => 'मैसेज फ़ॉरवर्ड नहीं हो सका।';
+
+  @override
+  String get chatList_forwardListLoadFailed =>
+      'फ़ॉरवर्ड लिस्ट लोड नहीं हो सकी।';
+
+  @override
+  String get chatList_forwardTo => 'इसे फ़ॉरवर्ड करें...';
+
+  @override
+  String get chatList_forwarded => 'फ़ॉरवर्ड किया गया';
+
+  @override
+  String get chatList_groupChatFallback => 'ग्रुप चैट';
+
+  @override
+  String get chatList_groupDeactivatedBanner =>
+      'इस ग्रुप को एडमिन ने निष्क्रिय कर दिया है';
+
+  @override
+  String get chatList_groupFallback => 'ग्रुप';
+
+  @override
+  String get chatList_howToAllow => 'अनुमति कैसे दें';
+
+  @override
+  String get chatList_howToAllowStep1 =>
+      'सेटिंग्स खोलने के लिए \"अनुमति दें\" पर टैप करें';
+
+  @override
+  String get chatList_howToAllowStep2 =>
+      '\"अनुमतियाँ\" (Permissions) पर टैप करें';
+
+  @override
+  String get chatList_howToAllowStep3 => '\"संपर्क\" (Contacts) चुनें';
+
+  @override
+  String get chatList_howToAllowStep4 =>
+      '\"अनुमति दें\" (Allow) चुनें, फिर ऐप पर वापस आएँ';
+
+  @override
+  String get chatList_invite => 'आमंत्रित करें';
+
+  @override
+  String get chatList_inviteChooseHow => 'चुनें कि आमंत्रण कैसे भेजना है';
+
+  @override
+  String chatList_inviteMessage(
+      String name, String playStoreLink, String appStoreLink) {
+    return 'नमस्ते $name! FG Tracker पर मेरे साथ जुड़ें।\n\nAndroid के लिए डाउनलोड करें: $playStoreLink\n\niOS के लिए डाउनलोड करें: $appStoreLink';
+  }
+
+  @override
+  String get chatList_inviteMoreApps => 'और ऐप';
+
+  @override
+  String chatList_inviteName(String name) {
+    return '$name को आमंत्रित करें';
+  }
+
+  @override
+  String get chatList_inviteViaMessage => 'मैसेज';
+
+  @override
+  String get chatList_locationHidden => 'लोकेशन छिपी है';
+
+  @override
+  String chatList_manyTyping(String name1, String name2, int count) {
+    return '$name1, $name2 +$count टाइप कर रहे हैं...';
+  }
+
+  @override
+  String get chatList_markAsRead => 'पढ़ा हुआ मार्क करें';
+
+  @override
+  String get chatList_markAsUnread => 'बिना पढ़ा मार्क करें';
+
+  @override
+  String get chatList_mediaLinksDocs => 'मीडिया, लिंक और डॉक्स';
+
+  @override
+  String get chatList_memberFallback => 'सदस्य';
+
+  @override
+  String get chatList_messageDeleted => 'यह मैसेज डिलीट कर दिया गया';
+
+  @override
+  String get chatList_messageForwarded => 'मैसेज फ़ॉरवर्ड हो गया';
+
+  @override
+  String get chatList_messageIdMissing => 'मैसेज ID नहीं मिली।';
+
+  @override
+  String chatList_minutesShort(int count) {
+    return '$count मिनट';
+  }
+
+  @override
+  String get chatList_mute1Hour => '1 घंटा';
+
+  @override
+  String get chatList_mute8Hours => '8 घंटे';
+
+  @override
+  String get chatList_muteAlways => 'जब तक मैं वापस चालू न करूँ';
+
+  @override
+  String get chatList_muteSubtitle =>
+      'चुनें कि नोटिफ़िकेशन कितनी देर के लिए रोकने हैं।';
+
+  @override
+  String get chatList_muteTitle => 'नोटिफ़िकेशन म्यूट करें';
+
+  @override
+  String get chatList_muteUntilTomorrow => 'कल तक';
+
+  @override
+  String get chatList_newChat => 'नई चैट';
+
+  @override
+  String get chatList_newChatSectionContacts => 'नई चैट शुरू करें (संपर्क)';
+
+  @override
+  String get chatList_newChatSectionInvite =>
+      'चैट के लिए आमंत्रित करें (अपंजीकृत संपर्क)';
+
+  @override
+  String get chatList_noArchivedChats => 'कोई आर्काइव चैट नहीं';
+
+  @override
+  String get chatList_noArchivedChatsSubtitle =>
+      'आर्काइव की गई बातचीत यहाँ दिखेंगी।';
+
+  @override
+  String get chatList_noChatsFound => 'कोई चैट नहीं मिली';
+
+  @override
+  String get chatList_noChatsSubtitle => 'आपकी प्राइवेट चैट यहाँ दिखेंगी।';
+
+  @override
+  String get chatList_noContactsAvailable => 'कोई संपर्क उपलब्ध नहीं';
+
+  @override
+  String get chatList_noContactsFound => 'कोई संपर्क नहीं मिला';
+
+  @override
+  String get chatList_noGroupsAvailable => 'कोई ग्रुप उपलब्ध नहीं';
+
+  @override
+  String get chatList_noGroupsFound => 'कोई ग्रुप नहीं मिला';
+
+  @override
+  String get chatList_noMediaYet => 'अभी तक कोई मीडिया शेयर नहीं हुआ';
+
+  @override
+  String get chatList_noMessagesYet => 'अभी कोई मैसेज नहीं';
+
+  @override
+  String get chatList_noPeopleOrGroups => 'कोई व्यक्ति या ग्रुप नहीं मिला';
+
+  @override
+  String chatList_noResultsFor(String query) {
+    return '\"$query\" के लिए कोई परिणाम नहीं मिला';
+  }
+
+  @override
+  String chatList_noResultsForQuery(String query) {
+    return '\'$query\' के लिए कोई परिणाम नहीं';
+  }
+
+  @override
+  String get chatList_noTrackerContacts => 'कोई सक्रिय ट्रैकर संपर्क नहीं मिला';
+
+  @override
+  String get chatList_offlineNotSaved =>
+      'आप ऑफ़लाइन हैं। बदलाव सेव नहीं हुआ, कृपया फिर से कोशिश करें।';
+
+  @override
+  String chatList_oneTyping(String name) {
+    return '$name टाइप कर रहे हैं...';
+  }
+
+  @override
+  String get chatList_openSettings => 'सेटिंग्स खोलें';
+
+  @override
+  String get chatList_pinChat => 'चैट पिन करें';
+
+  @override
+  String get chatList_pinnedChats => 'पिन की गई चैट';
+
+  @override
+  String get chatList_pleaseTryAgain => 'कृपया फिर से कोशिश करें।';
+
+  @override
+  String get chatList_profileCall => 'कॉल';
+
+  @override
+  String get chatList_profileMessage => 'मैसेज';
+
+  @override
+  String get chatList_profileNotFound => 'प्रोफ़ाइल की जानकारी नहीं मिली';
+
+  @override
+  String get chatList_profileVideoCall => 'वीडियो कॉल';
+
+  @override
+  String get chatList_quickCommSubtitle => 'अपनी टीम से तुरंत जुड़ें';
+
+  @override
+  String get chatList_quickCommTitle => 'त्वरित संपर्क';
+
+  @override
+  String get chatList_quickGroups => 'ग्रुप';
+
+  @override
+  String get chatList_quickGroupsSub => 'टीम चैट';
+
+  @override
+  String get chatList_quickSafeZone => 'सेफ ज़ोन';
+
+  @override
+  String get chatList_quickSafeZoneSub => 'सुरक्षा और अलर्ट';
+
+  @override
+  String get chatList_quickTracking => 'ट्रैकिंग';
+
+  @override
+  String get chatList_quickTrackingSub => 'लाइव लोकेशन';
+
+  @override
+  String get chatList_quickWalkie => 'वॉकी';
+
+  @override
+  String get chatList_quickWalkieSub => 'दबाकर बोलें';
+
+  @override
+  String get chatList_searchByNameOrNumber => 'नाम या नंबर से खोजें...';
+
+  @override
+  String get chatList_searchGroupsHint => 'ग्रुप खोजें...';
+
+  @override
+  String get chatList_searchHint => 'चैट या मैसेज खोजें...';
+
+  @override
+  String get chatList_searchHintShort => 'खोजें...';
+
+  @override
+  String get chatList_searchNameOrNumber => 'नाम या नंबर खोजें';
+
+  @override
+  String get chatList_searchResults => 'खोज परिणाम';
+
+  @override
+  String get chatList_sectionGroups => 'ग्रुप';
+
+  @override
+  String get chatList_sectionMyContacts => 'मेरे संपर्क';
+
+  @override
+  String get chatList_sectionOtherContacts => 'अन्य संपर्क';
+
+  @override
+  String get chatList_sectionRecentChats => 'हाल की चैट';
+
+  @override
+  String get chatList_selectDestination => 'किसे भेजना है चुनें';
+
+  @override
+  String get chatList_selectDestinationMsg =>
+      'कृपया कम से कम एक व्यक्ति या ग्रुप चुनें।';
+
+  @override
+  String chatList_selectedCount(int count) {
+    return '$count चुने गए';
+  }
+
+  @override
+  String get chatList_shareContactTitle => 'संपर्क शेयर करें';
+
+  @override
+  String chatList_shareMenuFailed(String error) {
+    return 'शेयर मेनू नहीं खुल सका: $error';
+  }
+
+  @override
+  String get chatList_smsOpenFailed => 'मैसेजिंग ऐप नहीं खुल सका';
+
+  @override
+  String get chatList_someone => 'कोई';
+
+  @override
+  String get chatList_startConversation => 'बातचीत शुरू करें';
+
+  @override
+  String get chatList_subtitle => 'अपनी टीम से जुड़े रहें';
+
+  @override
+  String get chatList_telegramOpenFailed => 'Telegram नहीं खुल सका';
+
+  @override
+  String get chatList_title => 'चैट';
+
+  @override
+  String get chatList_tryAnotherNameOrNumber =>
+      'कोई दूसरा नाम या फ़ोन नंबर आज़माएँ।';
+
+  @override
+  String get chatList_tryDifferentSearch => 'किसी दूसरे नाम या मैसेज से खोजें।';
+
+  @override
+  String chatList_twoTyping(String name1, String name2) {
+    return '$name1, $name2 टाइप कर रहे हैं...';
+  }
+
+  @override
+  String get chatList_typing => 'टाइप कर रहे हैं...';
+
+  @override
+  String get chatList_unableToCallContact => 'इस संपर्क को कॉल नहीं कर सकते';
+
+  @override
+  String get chatList_unableToLoadContacts => 'संपर्क लोड नहीं हो सके';
+
+  @override
+  String get chatList_unarchiveChat => 'चैट अनआर्काइव करें';
+
+  @override
+  String get chatList_unblock => 'अनब्लॉक करें';
+
+  @override
+  String get chatList_unblockFailed => 'यूज़र को अनब्लॉक नहीं कर सके';
+
+  @override
+  String chatList_unblockName(String name) {
+    return '$name को अनब्लॉक करें';
+  }
+
+  @override
+  String get chatList_unblockUser => 'यूज़र को अनब्लॉक करें';
+
+  @override
+  String get chatList_unblockUserConfirm =>
+      'क्या आप वाकई इस यूज़र को अनब्लॉक करना चाहते हैं?';
+
+  @override
+  String get chatList_unknown => 'अज्ञात';
+
+  @override
+  String get chatList_unknownUser => 'अज्ञात यूज़र';
+
+  @override
+  String get chatList_unnamedContact => 'बिना नाम का संपर्क';
+
+  @override
+  String get chatList_unpinChat => 'चैट अनपिन करें';
+
+  @override
+  String chatList_unreadMessages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count अनपढ़े मैसेज',
+      one: '1 अनपढ़ा मैसेज',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatList_updateFailed =>
+      'चैट अपडेट नहीं हो सकी। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get chatList_userFallback => 'यूज़र';
+
+  @override
+  String get chatList_userNotFound => 'यूज़र नहीं मिला';
+
+  @override
+  String get chatList_viewArchived => 'आर्काइव की गई बातचीत देखें';
+
+  @override
+  String get chatList_whatsappOpenFailed => 'WhatsApp नहीं खुल सका';
+
+  @override
+  String get chatList_yourContacts => 'आपके संपर्क';
+
+  @override
+  String get chat_addCaptionHint => 'कैप्शन जोड़ें...';
+
+  @override
+  String get chat_audioUnavailable => 'यह ऑडियो अब उपलब्ध नहीं है';
+
+  @override
+  String get chat_blockFailed => 'यूज़र को ब्लॉक नहीं कर सके';
+
+  @override
+  String get chat_call => 'कॉल करें';
+
+  @override
+  String get chat_cameraAccessNeeded =>
+      'चैट में फ़ोटो और वीडियो लेने के लिए कैमरा एक्सेस ज़रूरी है।';
+
+  @override
+  String get chat_cameraModePhoto => 'फ़ोटो';
+
+  @override
+  String get chat_cameraModePortrait => 'पोर्ट्रेट';
+
+  @override
+  String get chat_cameraModeVideo => 'वीडियो';
+
+  @override
+  String get chat_cameraStartFailed => 'कैमरा शुरू नहीं हो सका।';
+
+  @override
+  String get chat_cantMessageUser => 'आप इस यूज़र को मैसेज नहीं कर सकते';
+
+  @override
+  String get chat_chatActionsSubtitle => 'अपनी चैट मैनेज करें';
+
+  @override
+  String get chat_chatActionsTitle => 'चैट एक्शन';
+
+  @override
+  String get chat_clear => 'साफ़ करें';
+
+  @override
+  String get chat_clearChat => 'चैट साफ़ करें';
+
+  @override
+  String get chat_clearChatConfirm => 'इस चैट के सभी मैसेज साफ़ करें?';
+
+  @override
+  String get chat_clearGroupChatFailed => 'ग्रुप चैट साफ़ नहीं हो सकी';
+
+  @override
+  String get chat_contactBlockedYou => 'इस कॉन्टैक्ट ने आपको ब्लॉक किया है';
+
+  @override
+  String get chat_contactUnavailable => 'कॉन्टैक्ट उपलब्ध नहीं';
+
+  @override
+  String get chat_deleteForEveryone => 'सभी के लिए डिलीट करें';
+
+  @override
+  String get chat_deleteForEveryoneConfirm =>
+      'क्या आप यह मैसेज सभी के लिए डिलीट करना चाहते हैं?';
+
+  @override
+  String get chat_deleteForMe => 'मेरे लिए डिलीट करें';
+
+  @override
+  String get chat_deleteForMeConfirm =>
+      'क्या आप यह मैसेज अपने लिए डिलीट करना चाहते हैं?';
+
+  @override
+  String get chat_deleteMember => 'सदस्य हटाएं';
+
+  @override
+  String get chat_deleteMemberSubtitle => 'इस ग्रुप से किसी सदस्य को हटाएं';
+
+  @override
+  String get chat_documentAvailable => 'डॉक्यूमेंट उपलब्ध है';
+
+  @override
+  String get chat_documentDownloadFailed => 'डॉक्यूमेंट डाउनलोड नहीं हो सका।';
+
+  @override
+  String get chat_documentOpenFailed =>
+      'डॉक्यूमेंट नहीं खुल सका। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get chat_documentPreviewUnavailable =>
+      'इस फ़ाइल टाइप के लिए प्रीव्यू उपलब्ध नहीं है। अपने फ़ोन के ऐप से डॉक्यूमेंट खोलें।';
+
+  @override
+  String get chat_documentUnavailable => 'यह डॉक्यूमेंट अब उपलब्ध नहीं है';
+
+  @override
+  String get chat_downloadFailed => 'डाउनलोड नहीं हो सका';
+
+  @override
+  String get chat_edited => 'एडिट किया गया';
+
+  @override
+  String get chat_emptySubtitle => 'बातचीत शुरू करने के लिए hi 👋 कहें';
+
+  @override
+  String get chat_emptyTitle => 'यहाँ अभी कोई मैसेज नहीं है';
+
+  @override
+  String get chat_fetchingLocation => 'लोकेशन ढूँढी जा रही है...';
+
+  @override
+  String get chat_finishVoiceRecordingFirst =>
+      'पहले वॉइस रिकॉर्डिंग पूरी या रद्द करें';
+
+  @override
+  String get chat_forwarded => 'फ़ॉरवर्ड किया गया';
+
+  @override
+  String chat_galleryCounter(int current, int total) {
+    return '$total में से $current';
+  }
+
+  @override
+  String get chat_groupActionsSubtitle => 'अपनी ग्रुप सेटिंग्स मैनेज करें';
+
+  @override
+  String get chat_groupActionsTitle => 'ग्रुप एक्शन';
+
+  @override
+  String get chat_groupChatCleared => 'ग्रुप चैट साफ़ हो गई';
+
+  @override
+  String get chat_groupDeactivated => 'एडमिन ने इस ग्रुप को बंद कर दिया है';
+
+  @override
+  String get chat_imageFailed => 'इमेज लोड नहीं हुई';
+
+  @override
+  String get chat_listen => 'सुनें';
+
+  @override
+  String get chat_listenEnglish => 'सुनें (अंग्रेज़ी)';
+
+  @override
+  String get chat_listenHindi => 'सुनें (हिंदी)';
+
+  @override
+  String get chat_loadFailedSubtitle =>
+      'अपना कनेक्शन जाँचें और फिर से कोशिश करें।';
+
+  @override
+  String get chat_loadFailedTitle => 'मैसेज लोड नहीं हो सके';
+
+  @override
+  String get chat_locationFetchFailed =>
+      'आपकी लोकेशन नहीं मिल सकी। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get chat_locationPermissionNeeded =>
+      'लोकेशन शेयर करने के लिए लोकेशन परमिशन ज़रूरी है।';
+
+  @override
+  String get chat_locationPermissionOff =>
+      'इस ऐप के लिए लोकेशन परमिशन बंद है। लोकेशन शेयर करने के लिए इसे सेटिंग्स में चालू करें।';
+
+  @override
+  String get chat_locationServicesOff =>
+      'अपनी लोकेशन शेयर करने के लिए लोकेशन सर्विस चालू करें।';
+
+  @override
+  String get chat_locationUnavailable => 'लोकेशन उपलब्ध नहीं';
+
+  @override
+  String get chat_mediaMissing => 'मीडिया मौजूद नहीं है';
+
+  @override
+  String get chat_mediaMissingToast =>
+      'मीडिया मौजूद नहीं है। यह फ़ाइल अब उपलब्ध नहीं है।';
+
+  @override
+  String get chat_mediaUnavailable => 'यह मीडिया अब उपलब्ध नहीं है';
+
+  @override
+  String get chat_menuForward => 'फ़ॉरवर्ड करें';
+
+  @override
+  String get chat_menuMessageInfo => 'मैसेज जानकारी';
+
+  @override
+  String get chat_menuPin => 'मैसेज पिन करें';
+
+  @override
+  String get chat_menuReply => 'जवाब दें';
+
+  @override
+  String get chat_menuUnpin => 'मैसेज अनपिन करें';
+
+  @override
+  String get chat_messageCopied => 'मैसेज कॉपी हो गया';
+
+  @override
+  String get chat_messageDeleted => 'यह मैसेज डिलीट कर दिया गया';
+
+  @override
+  String get chat_messageNotAvailable => 'मैसेज उपलब्ध नहीं है';
+
+  @override
+  String get chat_messageNotSent =>
+      'मैसेज नहीं भेजा गया। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get chat_noCameraFound => 'इस डिवाइस पर कोई कैमरा नहीं मिला।';
+
+  @override
+  String get chat_noLongerMember => 'आप अब इस ग्रुप के सदस्य नहीं हैं';
+
+  @override
+  String get chat_noMediaAvailable => 'कोई मीडिया उपलब्ध नहीं';
+
+  @override
+  String get chat_offlineNotSent => 'आप ऑफ़लाइन हैं। मैसेज नहीं भेजा गया।';
+
+  @override
+  String get chat_openDocument => 'डॉक्यूमेंट खोलें';
+
+  @override
+  String get chat_openInGoogleMaps => 'Google Maps में खोलें';
+
+  @override
+  String get chat_openSettings => 'सेटिंग्स खोलें';
+
+  @override
+  String chat_peopleCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count लोग',
+      one: '1 व्यक्ति',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chat_photoUnavailable => 'यह फ़ोटो अब उपलब्ध नहीं है';
+
+  @override
+  String get chat_previewAttendancePoll => 'अटेंडेंस पोल';
+
+  @override
+  String get chat_previewAudio => 'ऑडियो';
+
+  @override
+  String get chat_previewContact => 'कॉन्टैक्ट';
+
+  @override
+  String get chat_previewDocument => 'डॉक्यूमेंट';
+
+  @override
+  String get chat_previewLocation => 'लोकेशन';
+
+  @override
+  String get chat_previewMessage => 'मैसेज';
+
+  @override
+  String get chat_previewNewMessage => 'नया मैसेज';
+
+  @override
+  String get chat_previewOwnDeleted => 'आपने यह मैसेज डिलीट किया';
+
+  @override
+  String get chat_previewPhoto => 'फ़ोटो';
+
+  @override
+  String chat_previewPhotosCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count फ़ोटो',
+      one: '1 फ़ोटो',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chat_previewPoll => 'पोल';
+
+  @override
+  String get chat_previewSticker => 'स्टिकर';
+
+  @override
+  String get chat_previewVideo => 'वीडियो';
+
+  @override
+  String chat_previewVideosCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count वीडियो',
+      one: '1 वीडियो',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chat_previewVoiceMessage => 'वॉइस मैसेज';
+
+  @override
+  String chat_previewVoiceMessageDuration(String duration) {
+    return 'वॉइस मैसेज ($duration)';
+  }
+
+  @override
+  String get chat_recordingFailed => 'रिकॉर्डिंग नहीं हो सकी';
+
+  @override
+  String get chat_removeMember => 'सदस्य हटाएं';
+
+  @override
+  String get chat_removeMemberConfirm =>
+      'क्या आप इस सदस्य को ग्रुप से हटाना चाहते हैं?';
+
+  @override
+  String get chat_replyHint => 'मैसेज का जवाब दें...';
+
+  @override
+  String get chat_searchMessages => 'मैसेज खोजें';
+
+  @override
+  String get chat_searchMessagesHint => 'मैसेज खोजें...';
+
+  @override
+  String get chat_searchMessagesSubtitle => 'कीवर्ड से मैसेज ढूँढें';
+
+  @override
+  String get chat_sendLocation => 'लोकेशन भेजें';
+
+  @override
+  String get chat_shareLocation => 'लोकेशन शेयर करें';
+
+  @override
+  String get chat_shareVideoFailed => 'वीडियो शेयर नहीं हो सका';
+
+  @override
+  String get chat_sharedFromApp => 'FG Tracker से शेयर किया गया';
+
+  @override
+  String get chat_sharedLocation => 'शेयर की गई लोकेशन';
+
+  @override
+  String get chat_showOriginal => 'मूल दिखाएं';
+
+  @override
+  String get chat_someone => 'कोई';
+
+  @override
+  String get chat_statusLabel => 'स्टेटस';
+
+  @override
+  String get chat_statusUnavailable => 'यह स्टेटस अब उपलब्ध नहीं है';
+
+  @override
+  String get chat_stop => 'रोकें';
+
+  @override
+  String get chat_stopEnglish => 'रोकें (अंग्रेज़ी)';
+
+  @override
+  String get chat_stopHindi => 'रोकें (हिंदी)';
+
+  @override
+  String get chat_takePhotoFailed => 'फ़ोटो नहीं ली जा सकी';
+
+  @override
+  String get chat_translatedToEnglish => 'अंग्रेज़ी में अनुवादित';
+
+  @override
+  String get chat_translatedToHindi => 'हिंदी में अनुवादित';
+
+  @override
+  String get chat_translating => 'अनुवाद हो रहा है...';
+
+  @override
+  String get chat_tryAgain => 'फिर से कोशिश करें';
+
+  @override
+  String get chat_typeMessageHint => 'मैसेज लिखें...';
+
+  @override
+  String get chat_typing => 'टाइप कर रहे हैं...';
+
+  @override
+  String chat_typingMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count लोग टाइप कर रहे हैं...',
+      one: '1 व्यक्ति टाइप कर रहा है...',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chat_typingOne(String name) {
+    return '$name टाइप कर रहे हैं...';
+  }
+
+  @override
+  String chat_typingTwo(String name1, String name2) {
+    return '$name1, $name2 टाइप कर रहे हैं...';
+  }
+
+  @override
+  String get chat_unableToOpen => 'खुल नहीं सका';
+
+  @override
+  String get chat_unableToOpenGoogleMaps => 'Google Maps नहीं खुल सका';
+
+  @override
+  String get chat_unblock => 'अनब्लॉक करें';
+
+  @override
+  String get chat_unblockContact => 'कॉन्टैक्ट अनब्लॉक करें';
+
+  @override
+  String get chat_unblockContactConfirm =>
+      'क्या आप इस कॉन्टैक्ट को अनब्लॉक करना चाहते हैं?';
+
+  @override
+  String get chat_unblockFailed => 'यूज़र को अनब्लॉक नहीं कर सके';
+
+  @override
+  String get chat_unknown => 'अज्ञात';
+
+  @override
+  String get chat_unknownLocation => 'अज्ञात लोकेशन';
+
+  @override
+  String get chat_unsupportedMessage =>
+      'यह मैसेज ऐप के इस वर्ज़न में सपोर्ट नहीं है';
+
+  @override
+  String get chat_updateGroup => 'ग्रुप अपडेट करें';
+
+  @override
+  String get chat_updateGroupSubtitle => 'ग्रुप की जानकारी बदलें';
+
+  @override
+  String chat_uploadFileFailed(String path) {
+    return '$path अपलोड नहीं हो सका';
+  }
+
+  @override
+  String get chat_userBlocked => 'यूज़र ब्लॉक हो गया';
+
+  @override
+  String get chat_userUnblocked => 'यूज़र अनब्लॉक हो गया';
+
+  @override
+  String get chat_videoDownloaded => 'वीडियो डाउनलोड हो गया';
+
+  @override
+  String get chat_videoThumbnailFailed => 'वीडियो थंबनेल नहीं बन सका';
+
+  @override
+  String get chat_videoUnavailable => 'यह वीडियो अब उपलब्ध नहीं है';
+
+  @override
+  String get chat_videoUploadFailed => 'वीडियो अपलोड नहीं हो सका';
+
+  @override
+  String get chat_voicePlayFailed => 'वॉइस मैसेज नहीं चल सका';
+
+  @override
+  String get chat_voiceUploadFailed =>
+      'वॉइस मैसेज अपलोड नहीं हुआ। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get chat_youBlockedContact => 'आपने इस कॉन्टैक्ट को ब्लॉक किया है';
+
+  @override
+  String get common_add => 'जोड़ें';
+
+  @override
+  String get common_allow => 'अनुमति दें';
+
+  @override
+  String get common_back => 'वापस';
+
+  @override
+  String get common_cancel => 'रद्द करें';
+
+  @override
+  String get common_close => 'बंद करें';
+
+  @override
+  String get common_comingSoon => 'जल्द आ रहा है';
+
+  @override
+  String get common_confirm => 'पुष्टि करें';
+
+  @override
+  String get common_continue => 'जारी रखें';
+
+  @override
+  String get common_copied => 'कॉपी हो गया';
+
+  @override
+  String get common_copy => 'कॉपी करें';
+
+  @override
+  String common_daysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count दिन पहले',
+      one: '1 दिन पहले',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get common_delete => 'हटाएं';
+
+  @override
+  String get common_dismiss => 'ठीक है';
+
+  @override
+  String get common_done => 'हो गया';
+
+  @override
+  String get common_edit => 'संपादित करें';
+
+  @override
+  String get common_error => 'त्रुटि';
+
+  @override
+  String get common_exit => 'बाहर निकलें';
+
+  @override
+  String get common_gotIt => 'समझ गया';
+
+  @override
+  String common_hoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count घंटे पहले',
+      one: '1 घंटा पहले',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get common_justNow => 'अभी-अभी';
+
+  @override
+  String common_lastSeen(String time) {
+    return 'आखिरी बार देखा गया: $time';
+  }
+
+  @override
+  String get common_loading => 'लोड हो रहा है…';
+
+  @override
+  String common_membersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सदस्य',
+      one: '1 सदस्य',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String common_minutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count मिनट पहले',
+      one: '1 मिनट पहले',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get common_next => 'आगे';
+
+  @override
+  String get common_no => 'नहीं';
+
+  @override
+  String get common_noData => 'कोई डेटा नहीं मिला';
+
+  @override
+  String get common_noInternet => 'इंटरनेट कनेक्शन नहीं है';
+
+  @override
+  String get common_notNow => 'अभी नहीं';
+
+  @override
+  String get common_offline => 'ऑफ़लाइन';
+
+  @override
+  String get common_ok => 'ठीक है';
+
+  @override
+  String get common_online => 'ऑनलाइन';
+
+  @override
+  String get common_open => 'खोलें';
+
+  @override
+  String get common_permissionDenied => 'अनुमति नहीं मिली';
+
+  @override
+  String get common_remove => 'हटाएं';
+
+  @override
+  String get common_retry => 'फिर से कोशिश करें';
+
+  @override
+  String get common_save => 'सहेजें';
+
+  @override
+  String get common_search => 'खोजें';
+
+  @override
+  String get common_send => 'भेजें';
+
+  @override
+  String get common_settings => 'सेटिंग्स';
+
+  @override
+  String get common_share => 'शेयर करें';
+
+  @override
+  String get common_somethingWentWrong =>
+      'कुछ गलत हो गया। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get common_submit => 'सबमिट करें';
+
+  @override
+  String get common_success => 'सफल';
+
+  @override
+  String get common_today => 'आज';
+
+  @override
+  String common_todayAt(String time) {
+    return 'आज, $time';
+  }
+
+  @override
+  String get common_tryAgain => 'फिर से कोशिश करें';
+
+  @override
+  String get common_viewAll => 'सभी देखें';
+
+  @override
+  String get common_yes => 'हाँ';
+
+  @override
+  String get common_yesterday => 'कल';
+
+  @override
+  String get common_you => 'आप';
+
+  @override
+  String get dialog_allowLocationAccess => 'लोकेशन एक्सेस की अनुमति दें';
+
+  @override
+  String get dialog_anErrorOccurred => 'एक त्रुटि हुई!';
+
+  @override
+  String get dialog_important => 'ज़रूरी!';
+
+  @override
+  String get dialog_locationPermissionRequired => 'लोकेशन अनुमति ज़रूरी है';
+
+  @override
+  String get dialog_locationPurposeBody =>
+      'सेवा को बेहतर बनाने के लिए हमारा ऐप आपकी लोकेशन सेव करने हेतु उसे एक्सेस करने की अनुमति माँगता है। इससे हमारे कर्मचारी आपकी तय कार्य-स्थल तक सही तरह पहुँच पाते हैं।';
+
+  @override
+  String get dialog_locationSettingsAndroid =>
+      'लोकेशन एक्सेस के बिना हम आपकी मौजूदा लोकेशन का पता नहीं लगा पाएँगे। कृपया \'सेटिंग्स\' पर टैप करें, फिर \'अनुमतियाँ\' में जाकर लोकेशन एक्सेस की अनुमति दें।';
+
+  @override
+  String get dialog_locationSettingsIos =>
+      'लोकेशन-आधारित सेवाएँ देने के लिए इस ऐप को आपकी लोकेशन की ज़रूरत है। कृपया \'सेटिंग्स\' में जाकर लोकेशन अनुमति चालू करें।';
+
+  @override
+  String get dialog_loggedInElsewhere =>
+      'आपने किसी दूसरे डिवाइस से लॉग इन किया है।';
+
+  @override
+  String get dialog_loggedInElsewhereLogInAgain =>
+      'आपने किसी दूसरे डिवाइस से लॉग इन किया है। कृपया दोबारा लॉग इन करें।';
+
+  @override
+  String get dialog_logoutConfirm => 'क्या आप लॉग आउट करना चाहते हैं?';
+
+  @override
+  String get dialog_selectAllowAllTheTime =>
+      'अगले पॉपअप में कृपया\n\'हर समय अनुमति दें\' चुनें।';
+
+  @override
+  String get dialog_sessionExpiredTitle => 'सेशन खत्म हो गया';
+
+  @override
+  String get editProfile_fullNameLabel => 'पूरा नाम';
+
+  @override
+  String get editProfile_personalInfo => 'व्यक्तिगत जानकारी';
+
+  @override
+  String get editProfile_phoneLabel => 'फ़ोन नंबर';
+
+  @override
+  String get editProfile_saveButton => 'बदलाव सहेजें';
+
+  @override
+  String get editProfile_tapPhotoHint => 'बदलने के लिए फ़ोटो पर टैप करें';
+
+  @override
+  String get editProfile_title => 'प्रोफ़ाइल संपादित करें';
+
+  @override
+  String get forceUpdate_currentInstalled => 'अभी इंस्टॉल';
+
+  @override
+  String get forceUpdate_defaultMessage =>
+      'FG Tracker का नया वर्ज़न उपलब्ध है। जारी रखने के लिए कृपया अपडेट करें।';
+
+  @override
+  String get forceUpdate_defaultTitle => 'अपडेट ज़रूरी है';
+
+  @override
+  String get forceUpdate_fallbackMessage =>
+      'FG Tracker का नया वर्ज़न ज़रूरी सुधारों के साथ उपलब्ध है। ऐप इस्तेमाल करते रहने के लिए कृपया अपडेट करें।';
+
+  @override
+  String get forceUpdate_footer =>
+      'FG Tracker जारी रखने के लिए अपडेट ज़रूरी है';
+
+  @override
+  String get forceUpdate_requiredVersion => 'ज़रूरी वर्ज़न';
+
+  @override
+  String forceUpdate_updateOnStore(String storeName) {
+    return '$storeName पर अपडेट करें';
+  }
+
+  @override
+  String get groupDialog_audioCall => 'ऑडियो कॉल';
+
+  @override
+  String get groupDialog_audioCallSubtitle => 'आवाज़ से बातचीत शुरू करें';
+
+  @override
+  String get groupDialog_call => 'कॉल';
+
+  @override
+  String get groupDialog_chat => 'चैट';
+
+  @override
+  String get groupDialog_codeEmpty => 'ग्रुप कोड खाली नहीं हो सकता';
+
+  @override
+  String get groupDialog_codeLabel => 'ग्रुप कोड';
+
+  @override
+  String get groupDialog_createButton => 'ग्रुप बनाएँ';
+
+  @override
+  String get groupDialog_createTitle => 'नया ग्रुप बनाएँ';
+
+  @override
+  String get groupDialog_descHint => 'ग्रुप विवरण डालें';
+
+  @override
+  String get groupDialog_descLabel => 'ग्रुप विवरण (वैकल्पिक)';
+
+  @override
+  String groupDialog_distance(String distance) {
+    return 'दूरी: $distance';
+  }
+
+  @override
+  String get groupDialog_enterCodeManually => 'ग्रुप कोड खुद डालें';
+
+  @override
+  String get groupDialog_enterCodeTitle => 'ग्रुप कोड डालें';
+
+  @override
+  String get groupDialog_fillDetails => 'नीचे विवरण भरें';
+
+  @override
+  String get groupDialog_getDirections => 'रास्ता देखें';
+
+  @override
+  String get groupDialog_join => 'ग्रुप से जुड़ें';
+
+  @override
+  String groupDialog_lastSeen(String time) {
+    return 'आखिरी बार देखा गया: $time';
+  }
+
+  @override
+  String get groupDialog_locationHidden => 'लोकेशन छिपी है';
+
+  @override
+  String get groupDialog_locationUnavailable => 'लोकेशन उपलब्ध नहीं';
+
+  @override
+  String get groupDialog_member => 'सदस्य';
+
+  @override
+  String get groupDialog_memberInfo => 'सदस्य की जानकारी';
+
+  @override
+  String get groupDialog_nameHint => 'ग्रुप का नाम डालें';
+
+  @override
+  String get groupDialog_nameLabel => 'ग्रुप का नाम';
+
+  @override
+  String get groupDialog_noQrInImage =>
+      'चुनी गई इमेज में कोई QR कोड नहीं मिला।';
+
+  @override
+  String get groupDialog_noValidQr => 'कोई मान्य QR कोड नहीं मिला।';
+
+  @override
+  String groupDialog_qrDecodeError(String error) {
+    return 'गैलरी से QR पढ़ने में त्रुटि: $error';
+  }
+
+  @override
+  String get groupDialog_scanCamera => 'कैमरा से स्कैन करें';
+
+  @override
+  String get groupDialog_selectCallType => 'कॉल का प्रकार चुनें';
+
+  @override
+  String get groupDialog_update => 'अपडेट करें';
+
+  @override
+  String get groupDialog_updateTitle => 'ग्रुप अपडेट करें';
+
+  @override
+  String get groupDialog_uploadGallery => 'गैलरी से अपलोड करें';
+
+  @override
+  String get groupDialog_videoCall => 'वीडियो कॉल';
+
+  @override
+  String get groupDialog_videoCallSubtitle => 'वीडियो बातचीत शुरू करें';
+
+  @override
+  String get groupDialog_yourLocation => 'आपकी मौजूदा लोकेशन';
+
+  @override
+  String get groupInfo_active => 'सक्रिय';
+
+  @override
+  String get groupInfo_admin => 'एडमिन';
+
+  @override
+  String get groupInfo_allGroups => 'सभी ग्रुप';
+
+  @override
+  String get groupInfo_allGroupsSubtitle => 'अपनी टीमों से जुड़े रहें';
+
+  @override
+  String get groupInfo_areYouSure => 'क्या आप पक्का हैं?';
+
+  @override
+  String get groupInfo_audioCall => 'ऑडियो कॉल';
+
+  @override
+  String get groupInfo_clearChatConfirm => 'इस डिवाइस से सभी मैसेज डिलीट करें?';
+
+  @override
+  String get groupInfo_createdBy => 'बनाने वाले';
+
+  @override
+  String get groupInfo_detailsNotFound => 'ग्रुप की जानकारी नहीं मिली';
+
+  @override
+  String get groupInfo_exitGroup => 'ग्रुप छोड़ें';
+
+  @override
+  String groupInfo_exitGroupConfirm(String groupName) {
+    return 'क्या आप \"$groupName\" छोड़ना चाहते हैं?';
+  }
+
+  @override
+  String get groupInfo_exitGroupQuestion =>
+      'क्या आप यह ग्रुप छोड़ना चाहते हैं?';
+
+  @override
+  String get groupInfo_group => 'ग्रुप';
+
+  @override
+  String get groupInfo_groupAdmin => 'ग्रुप एडमिन';
+
+  @override
+  String get groupInfo_groupCallFailed =>
+      'ग्रुप कॉल शुरू नहीं हो सकी। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get groupInfo_groupCodeCopied => 'ग्रुप कोड कॉपी हो गया!';
+
+  @override
+  String get groupInfo_groupSettings => 'ग्रुप सेटिंग्स';
+
+  @override
+  String get groupInfo_groupSettingsSubtitle =>
+      'ग्रुप जानकारी, प्राइवेसी और बहुत कुछ एडिट करें';
+
+  @override
+  String get groupInfo_inactive => 'निष्क्रिय';
+
+  @override
+  String get groupInfo_inviteCopied => 'आमंत्रण टेक्स्ट कॉपी हो गया';
+
+  @override
+  String groupInfo_inviteText(String groupName) {
+    return 'FG Tracker पर मेरे ग्रुप \"$groupName\" से जुड़ें';
+  }
+
+  @override
+  String groupInfo_inviteTextWithCode(String groupName, String code) {
+    return 'FG Tracker पर मेरे ग्रुप \"$groupName\" से जुड़ें। कोड: $code';
+  }
+
+  @override
+  String get groupInfo_inviteViaLink => 'लिंक से आमंत्रित करें';
+
+  @override
+  String get groupInfo_mediaLinksDocs => 'मीडिया, लिंक और डॉक्स';
+
+  @override
+  String get groupInfo_member => 'सदस्य';
+
+  @override
+  String get groupInfo_members => 'सदस्य';
+
+  @override
+  String get groupInfo_messageAction => 'मैसेज करें';
+
+  @override
+  String groupInfo_nameYou(String name) {
+    return '$name (आप)';
+  }
+
+  @override
+  String groupInfo_noGroupFound(String query) {
+    return '\'$query\' के लिए कोई ग्रुप नहीं मिला';
+  }
+
+  @override
+  String get groupInfo_noGroupsYet =>
+      'आपने अभी तक कोई ग्रुप जॉइन या नहीं बनाया है।\nअभी शुरू करें!';
+
+  @override
+  String get groupInfo_noMediaYet => 'अभी तक कोई मीडिया शेयर नहीं हुआ';
+
+  @override
+  String get groupInfo_removeFromGroup => 'ग्रुप से हटाएं';
+
+  @override
+  String groupInfo_removeMemberConfirm(String name) {
+    return 'क्या आप $name को ग्रुप से हटाना चाहते हैं?';
+  }
+
+  @override
+  String get groupInfo_searchGroupsHint => 'ग्रुप खोजें...';
+
+  @override
+  String get groupInfo_showLess => 'कम दिखाएं';
+
+  @override
+  String get groupInfo_teamCode => 'टीम कोड';
+
+  @override
+  String groupInfo_totalCount(int count) {
+    return 'कुल $count';
+  }
+
+  @override
+  String get groupInfo_unknownGroup => 'अज्ञात ग्रुप';
+
+  @override
+  String get groupInfo_unnamedGroup => 'बिना नाम का ग्रुप';
+
+  @override
+  String get groupInfo_videoCall => 'वीडियो कॉल';
+
+  @override
+  String get groupInfo_viewAllMembers => 'सभी सदस्य देखें';
+
+  @override
+  String get group_activatedSuccess => 'ग्रुप सक्रिय हो गया';
+
+  @override
+  String get group_addMember => 'सदस्य जोड़ें';
+
+  @override
+  String get group_alignQr => 'QR को फ़्रेम के अंदर रखें';
+
+  @override
+  String get group_areYouSure => 'क्या आप निश्चित हैं?';
+
+  @override
+  String get group_chatWithMembers => 'ग्रुप के सदस्यों से चैट करें';
+
+  @override
+  String get group_codeCopied => 'ग्रुप कोड कॉपी हो गया!';
+
+  @override
+  String group_codeShareInfo(String code) {
+    return 'ग्रुप कोड: $code — इसे शेयर करें ताकि दूसरे जुड़ सकें';
+  }
+
+  @override
+  String get group_copyCode => 'कोड कॉपी करें';
+
+  @override
+  String get group_created => 'बनाया';
+
+  @override
+  String get group_createdJustNow => 'अभी बनाया गया';
+
+  @override
+  String get group_deactivatedSuccess => 'ग्रुप निष्क्रिय हो गया';
+
+  @override
+  String get group_defaultName => 'ग्रुप';
+
+  @override
+  String get group_deleteGroup => 'ग्रुप डिलीट करें';
+
+  @override
+  String get group_deleteGroupConfirm =>
+      'क्या आप यह ग्रुप डिलीट करना चाहते हैं?';
+
+  @override
+  String get group_deletedSuccess => 'ग्रुप डिलीट हो गया';
+
+  @override
+  String get group_download => 'डाउनलोड';
+
+  @override
+  String get group_downloadChannelDescription =>
+      'QR कोड डाउनलोड होने पर सूचना देता है';
+
+  @override
+  String get group_downloadChannelName => 'डाउनलोड नोटिफ़िकेशन';
+
+  @override
+  String get group_enableLocationToJoin =>
+      'ग्रुप जॉइन करने के लिए कृपया लोकेशन सर्विस चालू करें।';
+
+  @override
+  String get group_exitGroup => 'ग्रुप छोड़ें';
+
+  @override
+  String get group_exitGroupConfirm => 'क्या आप यह ग्रुप छोड़ना चाहते हैं?';
+
+  @override
+  String group_exitGroupNamedConfirm(String groupName) {
+    return 'क्या आप सच में \"$groupName\" छोड़ना चाहते हैं? दोबारा जुड़ने के लिए ग्रुप कोड चाहिए होगा।';
+  }
+
+  @override
+  String get group_exitedSuccess => 'ग्रुप छोड़ दिया';
+
+  @override
+  String get group_goToGroups => 'ग्रुप पर जाएं →';
+
+  @override
+  String get group_groupMessage => 'ग्रुप मैसेज';
+
+  @override
+  String get group_invalidResponseFormat => 'अमान्य फ़ॉर्मेट';
+
+  @override
+  String get group_joinedJustNow => 'अभी जुड़े';
+
+  @override
+  String get group_joinedRecently => 'हाल ही में';
+
+  @override
+  String get group_leftJustNow => 'अभी छोड़ा';
+
+  @override
+  String get group_locationNoLongerShared =>
+      'आपकी लोकेशन अब इस ग्रुप के साथ शेयर नहीं होती';
+
+  @override
+  String get group_locationPermissionToJoin =>
+      'ग्रुप जॉइन करने के लिए लोकेशन की अनुमति ज़रूरी है।';
+
+  @override
+  String get group_locationShared => 'आपकी लोकेशन इस ग्रुप के साथ शेयर होती है';
+
+  @override
+  String get group_memberFallbackName => 'सदस्य';
+
+  @override
+  String group_membersMeta(int count, String when) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सदस्य · $when',
+      one: '1 सदस्य · $when',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get group_noContactsFound => 'कोई कॉन्टैक्ट नहीं मिला';
+
+  @override
+  String get group_noGroupCode => 'कोई ग्रुप कोड उपलब्ध नहीं';
+
+  @override
+  String get group_noNewMessages => 'आपको इस ग्रुप से नए मैसेज नहीं मिलेंगे';
+
+  @override
+  String get group_noNumber => 'कोई नंबर नहीं';
+
+  @override
+  String get group_openGroup => 'ग्रुप खोलें →';
+
+  @override
+  String get group_other => 'अन्य';
+
+  @override
+  String get group_qrSavedBody => 'अपना QR कोड खोलने के लिए टैप करें';
+
+  @override
+  String get group_qrSavedTitle => 'QR कोड सेव हो गया';
+
+  @override
+  String group_qrShareMessage(String groupCode, String appLink) {
+    return '📌 ग्रुप कोड: $groupCode\n\nQR कोड या ऊपर दिए कोड से मेरे ग्रुप से तुरंत जुड़ें।\n\n📲 जुड़े रहने के लिए ऐप डाउनलोड करें:\n$appLink';
+  }
+
+  @override
+  String get group_scanToJoin => 'ग्रुप जॉइन करने के लिए यह QR कोड स्कैन करें';
+
+  @override
+  String get group_searchMemberHint => 'सदस्य खोजें...';
+
+  @override
+  String get group_shareCodeInfo => 'ग्रुप कोड शेयर करें ताकि दूसरे जुड़ सकें';
+
+  @override
+  String get group_shareQr => 'QR शेयर करें';
+
+  @override
+  String get group_shareQrToInvite =>
+      'सदस्यों को आमंत्रित करने के लिए QR कोड शेयर करें';
+
+  @override
+  String get group_sheetCreatedSubtitle =>
+      'आपका ग्रुप तैयार है। कोड शेयर करें ताकि सदस्य जुड़ सकें।';
+
+  @override
+  String group_sheetCreatedSubtitleNamed(String name) {
+    return '$name, आपका ग्रुप तैयार है। कोड शेयर करें ताकि सदस्य जुड़ सकें।';
+  }
+
+  @override
+  String get group_sheetCreatedTitle => 'ग्रुप बन गया!';
+
+  @override
+  String get group_sheetJoinedSubtitle =>
+      'स्वागत है, अब आप इस ग्रुप के सदस्य हैं।';
+
+  @override
+  String group_sheetJoinedSubtitleNamed(String name) {
+    return 'स्वागत है $name, अब आप इस ग्रुप के सदस्य हैं।';
+  }
+
+  @override
+  String get group_sheetJoinedTitle => 'सफलतापूर्वक जुड़ गए!';
+
+  @override
+  String get group_sheetLeftSubtitle => 'अब आप इस ग्रुप के सदस्य नहीं हैं।';
+
+  @override
+  String group_sheetLeftSubtitleNamed(String name) {
+    return '$name, अब आप इस ग्रुप के सदस्य नहीं हैं।';
+  }
+
+  @override
+  String get group_sheetLeftTitle => 'आपने ग्रुप छोड़ दिया';
+
+  @override
+  String get group_showQrCode => 'QR कोड दिखाएं';
+
+  @override
+  String get group_startConversation => 'बेझिझक बातचीत शुरू करें ';
+
+  @override
+  String get group_statusUpdateFailed => 'ग्रुप स्टेटस अपडेट नहीं हो सका';
+
+  @override
+  String get group_teamCode => 'टीम कोड';
+
+  @override
+  String get group_teamCodeLabel => 'टीम कोड: ';
+
+  @override
+  String get group_track => 'ट्रैक करें';
+
+  @override
+  String get group_unnamedMember => 'बिना नाम का सदस्य';
+
+  @override
+  String get group_unnamedTrip => 'बिना नाम की यात्रा';
+
+  @override
+  String get group_updateGroupConfirm =>
+      'क्या आप सच में ग्रुप की जानकारी अपडेट करना चाहते हैं?';
+
+  @override
+  String get group_updateGroupTitle => 'ग्रुप अपडेट करें';
+
+  @override
+  String get group_youAreAdmin => 'आप इस ग्रुप के एडमिन हैं';
+
+  @override
+  String get home_actionAllContacts => 'सभी कॉन्टैक्ट';
+
+  @override
+  String get home_actionAudioVideoCall => 'ऑडियो/वीडियो कॉल';
+
+  @override
+  String get home_actionChatting => 'चैटिंग';
+
+  @override
+  String get home_actionSafeZone => 'सेफ़ ज़ोन';
+
+  @override
+  String get home_actionTracking => 'ट्रैकिंग';
+
+  @override
+  String get home_actionWalkieTalkie => 'वॉकी-टॉकी';
+
+  @override
+  String get home_active => 'सक्रिय';
+
+  @override
+  String get home_activeSessions => 'सक्रिय सेशन';
+
+  @override
+  String home_activeSessionsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सक्रिय सेशन',
+      one: '1 सक्रिय सेशन',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get home_allMembers => 'सभी सदस्य';
+
+  @override
+  String get home_createGroup => 'ग्रुप बनाएं';
+
+  @override
+  String get home_createGroupSubtitle => 'नया ग्रुप बनाएं';
+
+  @override
+  String get home_goodToSeeYou => 'आपको फिर से देखकर अच्छा लगा 👋';
+
+  @override
+  String home_groupsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ग्रुप',
+      one: '1 ग्रुप',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String home_helloName(String name) {
+    return 'नमस्ते $name';
+  }
+
+  @override
+  String get home_inactive => 'निष्क्रिय';
+
+  @override
+  String get home_joinGroup => 'ग्रुप जॉइन करें';
+
+  @override
+  String get home_joinGroupSubtitle => 'मौजूदा ग्रुप से जुड़ें';
+
+  @override
+  String home_lastSeen(String time) {
+    return 'आखिरी बार $time देखा गया';
+  }
+
+  @override
+  String get home_newThisMonth => 'इस महीने नए';
+
+  @override
+  String get home_noActivePrivateSessions => 'कोई सक्रिय प्राइवेट सेशन नहीं';
+
+  @override
+  String get home_noGroupsAvailable => 'कोई ग्रुप उपलब्ध नहीं';
+
+  @override
+  String get home_noGroupsFound => 'कोई ग्रुप नहीं मिला';
+
+  @override
+  String get home_noMembersFound => 'कोई सदस्य नहीं मिला';
+
+  @override
+  String home_noMembersMatch(String query) {
+    return '\'$query\' से कोई सदस्य नहीं मिला';
+  }
+
+  @override
+  String get home_noMembersOnline => 'अभी कोई सदस्य ऑनलाइन नहीं है';
+
+  @override
+  String get home_noNameGroup => 'बिना नाम का ग्रुप';
+
+  @override
+  String get home_noRecentlyActiveMembers =>
+      'हाल में कोई सदस्य सक्रिय नहीं रहा';
+
+  @override
+  String get home_onlineNow => 'अभी ऑनलाइन';
+
+  @override
+  String get home_peopleOnline => 'ऑनलाइन लोग';
+
+  @override
+  String get home_peopleOnlineSubtitle =>
+      'ये सदस्य अभी ऐप पर सक्रिय हैं और जुड़ने के लिए उपलब्ध हैं।';
+
+  @override
+  String get home_privateMode => 'प्राइवेट मोड';
+
+  @override
+  String get home_privateModeIsOn => 'प्राइवेट मोड चालू है';
+
+  @override
+  String get home_privateModeOffHint =>
+      'प्राइवेट मोड बंद होने पर दूसरे आपकी लोकेशन देख सकते हैं।';
+
+  @override
+  String get home_privateModeOnHint =>
+      'प्राइवेट मोड चालू होने पर दूसरे आपकी लोकेशन नहीं देख सकते।';
+
+  @override
+  String get home_quickActionsSubtitle =>
+      'आपकी ज़रूरत की हर चीज़, बस एक टैप पर।';
+
+  @override
+  String get home_quickActionsTitle => 'क्विक एक्शन';
+
+  @override
+  String get home_recentlyOnline => 'हाल ही में ऑनलाइन';
+
+  @override
+  String get home_searchGroupsHint => 'ग्रुप खोजें...';
+
+  @override
+  String get home_searchMembersHint => 'सदस्य खोजें...';
+
+  @override
+  String get home_showLess => 'कम दिखाएं';
+
+  @override
+  String get home_sortNameAsc => 'क्रम: नाम (A-Z)';
+
+  @override
+  String get home_sortNameDesc => 'क्रम: नाम (Z-A)';
+
+  @override
+  String home_startedAt(String time) {
+    return '$time पर शुरू हुआ';
+  }
+
+  @override
+  String get home_statGroups => 'ग्रुप';
+
+  @override
+  String get home_statMembers => 'सदस्य';
+
+  @override
+  String get home_statNow => 'अभी';
+
+  @override
+  String get home_statTotal => 'कुल';
+
+  @override
+  String get home_totalMembers => 'कुल सदस्य';
+
+  @override
+  String home_totalMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'कुल $count सदस्य',
+      one: 'कुल 1 सदस्य',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get home_unableToFetchGroups => 'ग्रुप लोड नहीं हो सके';
+
+  @override
+  String get home_unknownMember => 'अज्ञात सदस्य';
+
+  @override
+  String get home_upgradeSubtitle => 'अपनी टीम के लिए एडवांस फ़ीचर अनलॉक करें';
+
+  @override
+  String get home_upgradeToPremium => 'प्रीमियम में अपग्रेड करें';
+
+  @override
+  String get home_viewPlans => 'प्लान देखें';
+
+  @override
+  String get home_walkieExpired => 'समाप्त';
+
+  @override
+  String get home_walkieOneHourFree => '1 घंटा मुफ़्त';
+
+  @override
+  String get home_walkieRenew => 'रिन्यू करें';
+
+  @override
+  String get home_walkieSubscribed => 'सब्सक्राइब्ड';
+
+  @override
+  String get home_youAreInvisible => 'आप छिपे हुए हैं';
+
+  @override
+  String get home_youAreVisible => 'आप दिख रहे हैं';
+
+  @override
+  String get http_networkError => 'कोई त्रुटि हुई। कृपया दोबारा कोशिश करें!';
+
+  @override
+  String get http_sessionExpired =>
+      'सेशन खत्म हो गया। कृपया दोबारा लॉग इन करें।';
+
+  @override
+  String get http_unexpectedError =>
+      'एक अनपेक्षित त्रुटि हुई। कृपया दोबारा कोशिश करें।';
+
+  @override
+  String get imagePicker_camera => 'कैमरा';
+
+  @override
+  String get imagePicker_cancel => 'रद्द करें';
+
+  @override
+  String get imagePicker_cropTitle => 'इमेज क्रॉप करें';
+
+  @override
+  String get imagePicker_gallery => 'गैलरी';
+
+  @override
+  String get imagePicker_title => 'एक विकल्प चुनें';
+
+  @override
+  String get intro_realTimeTrackingSubtitle =>
+      'दोस्तों, परिवार या टीम के सदस्यों की लाइव लोकेशन मैप पर तुरंत देखें।';
+
+  @override
+  String get intro_realTimeTrackingTitle => 'रियल-टाइम ट्रैकिंग';
+
+  @override
+  String get intro_secureSubtitle =>
+      'चुने हुए कॉन्टैक्ट के साथ अपनी लाइव लोकेशन सुरक्षित और निजी रूप से शेयर करें।';
+
+  @override
+  String get intro_secureTitle => 'सुरक्षित और आसान';
+
+  @override
+  String get intro_skip => 'छोड़ें';
+
+  @override
+  String get intro_walkieSubtitle =>
+      'सिग्नल नहीं? कोई बात नहीं। कहीं भी जुड़े रहें।';
+
+  @override
+  String get intro_walkieTitle => 'वॉकी-टॉकी फ़ीचर';
+
+  @override
+  String get media_cannotOpen => 'खोल नहीं सकते';
+
+  @override
+  String get media_documentNotFound => 'डॉक्यूमेंट नहीं मिला';
+
+  @override
+  String get media_invalidLink => 'अमान्य लिंक';
+
+  @override
+  String get media_noDocuments => 'कोई डॉक्यूमेंट नहीं मिला';
+
+  @override
+  String get media_noLinks => 'कोई लिंक नहीं मिला';
+
+  @override
+  String get media_noMedia => 'कोई मीडिया नहीं मिला';
+
+  @override
+  String get media_tabDocs => 'डॉक्स';
+
+  @override
+  String media_tabDocsCount(int count) {
+    return 'डॉक्स ($count)';
+  }
+
+  @override
+  String get media_tabLinks => 'लिंक';
+
+  @override
+  String media_tabLinksCount(int count) {
+    return 'लिंक ($count)';
+  }
+
+  @override
+  String get media_tabMedia => 'मीडिया';
+
+  @override
+  String media_tabMediaCount(int count) {
+    return 'मीडिया ($count)';
+  }
+
+  @override
+  String get media_title => 'मीडिया, लिंक और डॉक्स';
+
+  @override
+  String get media_videoNotFound => 'वीडियो नहीं मिला';
+
+  @override
+  String get menu_contactUsSubtitle => 'हमारे बारे में और जानें';
+
+  @override
+  String get menu_editProfile => 'प्रोफ़ाइल एडिट करें';
+
+  @override
+  String get menu_editProfileSubtitle => 'अपनी जानकारी अपडेट करें';
+
+  @override
+  String get menu_followUsOn => 'हमें फ़ॉलो करें';
+
+  @override
+  String get menu_logOut => 'लॉग आउट';
+
+  @override
+  String get menu_logOutConfirmMessage =>
+      'क्या आप सच में लॉग आउट करना चाहते हैं?';
+
+  @override
+  String get menu_logOutSubtitle => 'ऐप से साइन आउट करें';
+
+  @override
+  String get menu_profileImageUpdateFailed =>
+      'प्रोफ़ाइल फ़ोटो अपडेट नहीं हो सकी';
+
+  @override
+  String get menu_profileImageUpdated => 'प्रोफ़ाइल फ़ोटो अपडेट हो गई';
+
+  @override
+  String get notif_accept => 'स्वीकारें';
+
+  @override
+  String get notif_channelHighImportanceDesc =>
+      'ज़रूरी सूचनाओं के लिए डिफ़ॉल्ट चैनल';
+
+  @override
+  String get notif_channelHighImportanceName => 'ज़रूरी सूचनाएँ';
+
+  @override
+  String get notif_channelWalkieAudioDesc =>
+      'लाइव आवाज़ संचार और बैकग्राउंड में माइक चालू रखता है';
+
+  @override
+  String get notif_channelWalkieAudioName => 'वॉकी-टॉकी लाइव ऑडियो';
+
+  @override
+  String get notif_channelWalkieCallsDesc => 'आने वाली वॉकी-टॉकी कॉल';
+
+  @override
+  String get notif_channelWalkieCallsName => 'वॉकी-टॉकी कॉल';
+
+  @override
+  String get notif_channelWalkieDesc => 'ग्रुप वॉकी कॉल और बोलने की अपडेट';
+
+  @override
+  String get notif_channelWalkieLiveDesc => 'चालू वॉकी-टॉकी चैनलों की सूचनाएँ';
+
+  @override
+  String get notif_channelWalkieLiveName => 'वॉकी-टॉकी लाइव चैनल';
+
+  @override
+  String get notif_channelWalkieName => 'वॉकी-टॉकी';
+
+  @override
+  String notif_connectedIn(String group) {
+    return '$group में जुड़े हैं • लाइव ऑडियो';
+  }
+
+  @override
+  String get notif_goToWalkie => 'वॉकी स्क्रीन पर जाएँ';
+
+  @override
+  String get notif_incomingWalkieTitle => 'वॉकी-टॉकी कॉल आ रही है';
+
+  @override
+  String notif_isTalking(String name) {
+    return '$name बोल रहे हैं';
+  }
+
+  @override
+  String get notif_leave => 'छोड़ें';
+
+  @override
+  String get notif_openWalkie => 'वॉकी खोलें';
+
+  @override
+  String get notif_reject => 'अस्वीकारें';
+
+  @override
+  String notif_stoppedTalking(String name) {
+    return '$name ने बोलना बंद किया';
+  }
+
+  @override
+  String get notif_walkieActiveConversation => 'वॉकी-टॉकी पर बातचीत चल रही है';
+
+  @override
+  String get notif_walkieActiveTitle => 'वॉकी-टॉकी चालू है';
+
+  @override
+  String notif_wantsToTalk(String name) {
+    return '$name बात करना चाहते हैं';
+  }
+
+  @override
+  String get notifications_clearAll => 'सभी नोटिफ़िकेशन हटाएं';
+
+  @override
+  String get notifications_clearedSuccess => 'सभी नोटिफ़िकेशन हटा दिए गए';
+
+  @override
+  String get notifications_emptySubtitle =>
+      'अभी आपके लिए कोई नया अलर्ट नहीं है।';
+
+  @override
+  String get notifications_emptyTitle => 'अभी कोई नोटिफ़िकेशन नहीं';
+
+  @override
+  String get notifications_filterAll => 'सभी';
+
+  @override
+  String get notifications_filterCalls => 'कॉल';
+
+  @override
+  String get notifications_filterChats => 'चैट';
+
+  @override
+  String get notifications_filterUnread => 'अपठित';
+
+  @override
+  String get notifications_loadingDetails =>
+      'नोटिफ़िकेशन की जानकारी लोड हो रही है';
+
+  @override
+  String get notifications_recentCalls => 'हाल की कॉल';
+
+  @override
+  String get notifications_title => 'नोटिफ़िकेशन';
+
+  @override
+  String get otpCharges_chargedNotice =>
+      'अब से, आपके नंबर पर हर लॉगिन OTP का शुल्क लगेगा। OTP दोबारा भेजना मुफ़्त है (3 बार तक)।';
+
+  @override
+  String get otpCharges_chargesApplyTo => 'शुल्क इस पर लागू है';
+
+  @override
+  String get otpCharges_eachOtpCosts => 'हर OTP की कीमत';
+
+  @override
+  String otpCharges_eachOtpCostsSpoken(String amount) {
+    return 'हर OTP की कीमत $amount';
+  }
+
+  @override
+  String otpCharges_eachOtpCostsSpokenGst(String amount, String percent) {
+    return 'हर OTP की कीमत $amount, $percent प्रतिशत GST सहित';
+  }
+
+  @override
+  String get otpCharges_firstLoginFree => 'आपका पहला लॉगिन मुफ़्त था।';
+
+  @override
+  String get otpCharges_freeBody =>
+      'इस नंबर पर भेजे गए लॉगिन OTP का कोई शुल्क नहीं है।';
+
+  @override
+  String get otpCharges_freeTitle => 'आपके नंबर के लिए OTP मुफ़्त है';
+
+  @override
+  String otpCharges_gstTitle(String percent) {
+    return 'GST ($percent%)';
+  }
+
+  @override
+  String otpCharges_includingGst(String percent) {
+    return '$percent% GST सहित';
+  }
+
+  @override
+  String otpCharges_includingTax(String percent) {
+    return '$percent% टैक्स सहित';
+  }
+
+  @override
+  String get otpCharges_noInternet =>
+      'इंटरनेट कनेक्शन नहीं है। अपना नेटवर्क जांचें और फिर से कोशिश करें।';
+
+  @override
+  String get otpCharges_otpCharge => 'OTP शुल्क';
+
+  @override
+  String otpCharges_pay(String amount) {
+    return '$amount भुगतान करें';
+  }
+
+  @override
+  String get otpCharges_paymentCancelled =>
+      'भुगतान रद्द। आपने भुगतान रद्द किया। कोई पैसा नहीं कटा।';
+
+  @override
+  String get otpCharges_paymentFailed =>
+      'भुगतान विफल रहा। अगर पैसे कटे हैं तो 5–7 कार्य दिवसों में वापस आ जाएंगे।';
+
+  @override
+  String otpCharges_paymentPausedButton(String amount) {
+    return 'भुगतान रुका है ($amount)';
+  }
+
+  @override
+  String get otpCharges_paymentReceived =>
+      'भुगतान मिल गया। आपका OTP आने में थोड़ा समय लग सकता है।';
+
+  @override
+  String get otpCharges_paymentStartFailed =>
+      'भुगतान शुरू नहीं हो सका। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get otpCharges_paymentsPaused =>
+      'एडमिन ने OTP भुगतान अस्थायी रूप से रोक दिए हैं। जानकारी के लिए नीचे टैप करें।';
+
+  @override
+  String get otpCharges_paymentsUnavailable =>
+      'OTP भुगतान अभी उपलब्ध नहीं है। कृपया बाद में फिर कोशिश करें।';
+
+  @override
+  String get otpCharges_sessionExpired =>
+      'सेशन खत्म हो गया। कृपया फिर से शुरू करें।';
+
+  @override
+  String get otpCharges_title => 'OTP शुल्क';
+
+  @override
+  String get otpCharges_totalPerOtp => 'प्रति OTP कुल';
+
+  @override
+  String get otpCharges_tryAgainMoment =>
+      'कुछ गलत हो गया। कृपया थोड़ी देर में फिर से कोशिश करें।';
+
+  @override
+  String get otpCharges_unknownBody =>
+      'भारतीय नंबरों पर लॉगिन OTP मुफ़्त हैं। दूसरे देशों के लिए, लॉगिन के समय भुगतान से पहले सही कीमत दिखाई जाती है।';
+
+  @override
+  String get otpCharges_unknownTitle => 'OTP शुल्क आपके देश पर निर्भर करता है';
+
+  @override
+  String get otpCharges_updateApp =>
+      'भुगतान शुरू नहीं हो सका। कृपया ऐप अपडेट करके फिर से कोशिश करें।';
+
+  @override
+  String otpCharges_vatTitle(String percent) {
+    return 'VAT / टैक्स ($percent%)';
+  }
+
+  @override
+  String get otpCharges_verificationFailed =>
+      'भुगतान की पुष्टि नहीं हो सकी। अगर पैसे कटे हैं तो 5–7 कार्य दिवसों में वापस आ जाएंगे।';
+
+  @override
+  String get otpCharges_yourNumber => 'आपका नंबर';
+
+  @override
+  String get package_noPackages => 'अभी कोई पैकेज उपलब्ध नहीं है।';
+
+  @override
+  String package_plansComingSoon(String title) {
+    return '$title प्लान जल्द आ रहे हैं';
+  }
+
+  @override
+  String get package_subtitle => 'प्लान देखने के लिए मॉड्यूल चुनें';
+
+  @override
+  String get package_title => 'पैकेज और कीमतें';
+
+  @override
+  String get package_viewPlans => 'प्लान देखें';
+
+  @override
+  String get perm_alwaysLocationBody =>
+      'अपने ग्रुप को रियल टाइम और बैकग्राउंड में ट्रैक करने के लिए, कृपया ऐप सेटिंग्स में लोकेशन एक्सेस को \'हर समय अनुमति दें\' पर सेट करें।';
+
+  @override
+  String get perm_alwaysLocationTitle => '\'हमेशा\' लोकेशन अनुमति चालू करें';
+
+  @override
+  String get perm_chooseAllowAllTime =>
+      'कृपया अगले पॉपअप में \'हर समय अनुमति दें\' चुनें।';
+
+  @override
+  String get perm_collectsLocationBody =>
+      'काम सुचारू रूप से चलाने और बेहतर ट्रैकिंग के लिए यह ऐप लोकेशन डेटा इकट्ठा करता है, तब भी जब ऐप बंद हो या इस्तेमाल में न हो।';
+
+  @override
+  String get perm_enableDeviceGpsBody =>
+      'कृपया अपने डिवाइस का GPS (Google Location) चालू करें।';
+
+  @override
+  String get perm_enableGpsTitle => 'GPS चालू करें';
+
+  @override
+  String get perm_exitBody => 'क्या आप ऐप से बाहर निकलना चाहते हैं?';
+
+  @override
+  String get perm_exitTitle => 'क्या आप निश्चित हैं?';
+
+  @override
+  String get perm_gpsRequiredBody =>
+      'अपने ग्रुप को रियल टाइम में ट्रैक करने के लिए GPS ज़रूरी है।';
+
+  @override
+  String get perm_locationTitle => 'लोकेशन अनुमति';
+
+  @override
+  String get perm_trackingPermissionBody =>
+      'लॉग इन रहने के दौरान लोकेशन ट्रैक करने के लिए FG Partner ऐप को आपकी अनुमति चाहिए।';
+
+  @override
+  String get permission_allowAllTheTime => 'हर समय अनुमति दें';
+
+  @override
+  String get permission_allowLocation => 'लोकेशन की अनुमति दें';
+
+  @override
+  String get permission_allowLocationFirst =>
+      'कृपया पहले लोकेशन की अनुमति दें।';
+
+  @override
+  String permission_allowNamed(String permission) {
+    return '$permission की अनुमति दें';
+  }
+
+  @override
+  String get permission_allowNotifications => 'नोटिफ़िकेशन की अनुमति दें';
+
+  @override
+  String get permission_appPermissionsSubtitle => 'ज़रूरी अनुमतियां देखें।';
+
+  @override
+  String get permission_appPermissionsTitle => 'ऐप अनुमतियां';
+
+  @override
+  String get permission_badgeGranted => 'अनुमति दी';
+
+  @override
+  String get permission_badgeOptional => 'वैकल्पिक';
+
+  @override
+  String get permission_badgeRecommended => 'सुझाया गया';
+
+  @override
+  String get permission_badgeRequired => 'ज़रूरी';
+
+  @override
+  String get permission_camera => 'कैमरा';
+
+  @override
+  String get permission_cameraDescription =>
+      'फ़ोटो या वीडियो लेने वाले ऐप फ़ीचर इसका इस्तेमाल करते हैं।';
+
+  @override
+  String get permission_cameraSettingsMessage =>
+      'फ़ोटो और वीडियो लेने के लिए कैमरा की अनुमति ज़रूरी है। कृपया ऐप सेटिंग्स से चालू करें।';
+
+  @override
+  String get permission_cameraWhy =>
+      'प्रोफ़ाइल, चैट और अन्य ऐप फ़ीचर के लिए फ़ोटो और वीडियो लेने देता है।';
+
+  @override
+  String get permission_contacts => 'कॉन्टैक्ट';
+
+  @override
+  String get permission_contactsDescription =>
+      'कॉन्टैक्ट से जुड़े ऐप फ़ीचर के लिए कॉन्टैक्ट ढूंढने या चुनने में इस्तेमाल होता है।';
+
+  @override
+  String get permission_contactsSettingsMessage =>
+      'कॉन्टैक्ट ढूंढने और चुनने के लिए कॉन्टैक्ट की अनुमति ज़रूरी है। कृपया ऐप सेटिंग्स से चालू करें।';
+
+  @override
+  String get permission_contactsWhy =>
+      'कॉन्टैक्ट से जुड़े फ़ीचर इस्तेमाल करते समय कॉन्टैक्ट ढूंढने और चुनने में मदद करता है।';
+
+  @override
+  String get permission_gateCheckFailed =>
+      'हम आपकी अनुमतियां जांच नहीं सके। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get permission_gateSubtitle =>
+      'कॉल और अलर्ट पाने तथा हाज़िरी, लाइव ट्रैकिंग और सेफ़ ज़ोन चलाने के लिए FG Tracker को ये अनुमतियां चाहिए।';
+
+  @override
+  String get permission_gateTitle => 'अनुमतियां ज़रूरी हैं';
+
+  @override
+  String get permission_genericSettingsMessage =>
+      'यह अनुमति ज़रूरी है। कृपया ऐप सेटिंग्स से चालू करें।';
+
+  @override
+  String get permission_iosLocationServicesOff =>
+      'लोकेशन सर्विसेज़ बंद हैं। सेटिंग्स → प्राइवेसी और सुरक्षा → लोकेशन सर्विसेज़ खोलकर इसे चालू करें, फिर वापस आएं।';
+
+  @override
+  String get permission_location => 'लोकेशन';
+
+  @override
+  String get permission_locationAndNotificationRequired =>
+      'आगे बढ़ने के लिए लोकेशन और नोटिफ़िकेशन की अनुमति ज़रूरी है।';
+
+  @override
+  String get permission_locationAndNotificationsRequiredHint =>
+      'आगे बढ़ने के लिए लोकेशन और नोटिफ़िकेशन ज़रूरी हैं।';
+
+  @override
+  String get permission_locationDescription =>
+      'हाज़िरी, लाइव ट्रैकिंग और सेफ़ ज़ोन के लिए ज़रूरी — ऐप बैकग्राउंड में होने पर भी।';
+
+  @override
+  String get permission_locationRequiredToContinue =>
+      'आगे बढ़ने के लिए लोकेशन की अनुमति ज़रूरी है।';
+
+  @override
+  String get permission_locationStatusApproximate =>
+      'सिर्फ़ अनुमानित लोकेशन की अनुमति है। प्रिसाइज़ लोकेशन ज़रूरी है।';
+
+  @override
+  String get permission_locationStatusBlocked =>
+      'लोकेशन ब्लॉक है। सेटिंग्स से चालू करें।';
+
+  @override
+  String get permission_locationStatusDone =>
+      'हर समय अनुमति · प्रिसाइज़ · GPS चालू';
+
+  @override
+  String get permission_locationStatusGpsOff =>
+      'डिवाइस की लोकेशन (GPS) बंद है।';
+
+  @override
+  String get permission_locationStatusNeedAlways =>
+      '\"हर समय अनुमति दें\" ज़रूरी है।';
+
+  @override
+  String get permission_locationStatusNotAllowed =>
+      'लोकेशन की अनुमति अभी नहीं दी गई है।';
+
+  @override
+  String get permission_locationWhyExtra =>
+      'कृपया \"हर समय अनुमति दें\" चुनें और प्रिसाइज़ लोकेशन चालू रखें।';
+
+  @override
+  String get permission_logout => 'लॉग आउट';
+
+  @override
+  String get permission_microphone => 'माइक्रोफ़ोन / ऑडियो';
+
+  @override
+  String get permission_microphoneDescription =>
+      'वॉइस, वॉकी-टॉकी और कॉलिंग फ़ीचर में ज़रूरत पड़ने पर इस्तेमाल होता है।';
+
+  @override
+  String get permission_microphoneSettingsMessage =>
+      'वॉइस, वॉकी-टॉकी और कॉल के लिए माइक्रोफ़ोन की अनुमति ज़रूरी है। कृपया ऐप सेटिंग्स से चालू करें।';
+
+  @override
+  String get permission_microphoneWhy =>
+      'इन फ़ीचर का इस्तेमाल करते समय वॉइस बातचीत, वॉकी-टॉकी और कॉल की सुविधा देता है।';
+
+  @override
+  String permission_notGrantedNamed(String permission) {
+    return '$permission की अनुमति नहीं मिली। कृपया फिर से कोशिश करें।';
+  }
+
+  @override
+  String get permission_notificationRequiredToContinue =>
+      'आगे बढ़ने के लिए नोटिफ़िकेशन की अनुमति ज़रूरी है।';
+
+  @override
+  String get permission_notificationSettingsText =>
+      'FG Tracker के नोटिफ़िकेशन बंद हैं। सेटिंग्स → नोटिफ़िकेशन खोलकर इन्हें अनुमति दें।';
+
+  @override
+  String get permission_notificationStatusBlocked =>
+      'नोटिफ़िकेशन ब्लॉक हैं। सेटिंग्स से चालू करें।';
+
+  @override
+  String get permission_notificationStatusDone => 'अनुमति है';
+
+  @override
+  String get permission_notificationStatusNotAllowed =>
+      'नोटिफ़िकेशन की अनुमति अभी नहीं दी गई है।';
+
+  @override
+  String get permission_notifications => 'नोटिफ़िकेशन';
+
+  @override
+  String get permission_notificationsDescription =>
+      'इनकमिंग कॉल, चैट मैसेज और हाज़िरी / सेफ़ ज़ोन अलर्ट पाने के लिए ज़रूरी।';
+
+  @override
+  String get permission_notificationsWhyExtra =>
+      'इस अनुमति के बिना इनकमिंग कॉल की घंटी नहीं बजेगी।';
+
+  @override
+  String get permission_openSettings => 'सेटिंग्स खोलें';
+
+  @override
+  String get permission_preciseLocation => 'प्रिसाइज़ लोकेशन';
+
+  @override
+  String get permission_pushNotifications => 'पुश नोटिफ़िकेशन';
+
+  @override
+  String get permission_reasonLocation =>
+      'हाज़िरी, लाइव ट्रैकिंग और सेफ़ ज़ोन अलर्ट के लिए लोकेशन ज़रूरी है।';
+
+  @override
+  String get permission_reasonLocationAlways =>
+      '\"हर समय अनुमति दें\" चुनें ताकि ऐप बैकग्राउंड में होने पर भी लाइव ट्रैकिंग और सेफ़ ज़ोन काम करते रहें।';
+
+  @override
+  String get permission_reasonNotification =>
+      'इनकमिंग कॉल, चैट मैसेज, हाज़िरी और सेफ़ ज़ोन अलर्ट पाने के लिए नोटिफ़िकेशन ज़रूरी हैं।';
+
+  @override
+  String get permission_reasonPrecise =>
+      'सटीक हाज़िरी, लाइव ट्रैकिंग और सेफ़ ज़ोन अलर्ट के लिए प्रिसाइज़ लोकेशन ज़रूरी है।';
+
+  @override
+  String get permission_required => 'अनुमति ज़रूरी है';
+
+  @override
+  String get permission_selectAllowAllTheTime =>
+      'आगे बढ़ने के लिए कृपया \"हर समय अनुमति दें\" चुनें।';
+
+  @override
+  String get permission_settingsAndroidAlways =>
+      'सेटिंग्स → अनुमतियां → लोकेशन खोलें और \"हर समय अनुमति दें\" चुनें।';
+
+  @override
+  String get permission_settingsAndroidBlocked =>
+      'FG Tracker के लिए लोकेशन एक्सेस ब्लॉक है। सेटिंग्स → अनुमतियां → लोकेशन खोलें और \"हर समय अनुमति दें\" चुनें।';
+
+  @override
+  String get permission_settingsAndroidPrecise =>
+      'सेटिंग्स → अनुमतियां → लोकेशन खोलें और \"सटीक लोकेशन इस्तेमाल करें\" चालू करें।';
+
+  @override
+  String get permission_settingsIosAlways =>
+      'सेटिंग्स → लोकेशन खोलें और \"हमेशा\" चुनें।';
+
+  @override
+  String get permission_settingsIosBlocked =>
+      'FG Tracker के लिए लोकेशन एक्सेस बंद है। सेटिंग्स → लोकेशन खोलें और \"हमेशा\" चुनें।';
+
+  @override
+  String get permission_settingsIosPrecise =>
+      'सेटिंग्स → लोकेशन खोलें और \"सटीक लोकेशन\" चालू करें।';
+
+  @override
+  String get permission_skipAndContinue => 'छोड़ें और आगे बढ़ें';
+
+  @override
+  String get permission_turnOnLocation => 'लोकेशन चालू करें';
+
+  @override
+  String get permission_turnOnPreciseLocation => 'प्रिसाइज़ लोकेशन चालू करें';
+
+  @override
+  String get permission_unableToRequest => 'अनुमति का अनुरोध नहीं किया जा सका।';
+
+  @override
+  String get permission_whyWeNeedThis => 'हमें इसकी ज़रूरत क्यों है?';
+
+  @override
+  String get registration_contactNumberHint => 'संपर्क नंबर दर्ज करें';
+
+  @override
+  String get registration_contactNumberLabel => 'संपर्क नंबर';
+
+  @override
+  String get registration_doneButton => 'हो गया';
+
+  @override
+  String get registration_emailHint => 'ईमेल पता दर्ज करें';
+
+  @override
+  String get registration_emailLabel => 'ईमेल पता';
+
+  @override
+  String get registration_genderFemale => 'महिला';
+
+  @override
+  String get registration_genderLabel => 'लिंग चुनें';
+
+  @override
+  String get registration_genderMale => 'पुरुष';
+
+  @override
+  String get registration_genderOther => 'अन्य';
+
+  @override
+  String get registration_selectGenderError => 'कृपया अपना लिंग चुनें';
+
+  @override
+  String get registration_userNameHint => 'उपयोगकर्ता नाम दर्ज करें';
+
+  @override
+  String get registration_userNameLabel => 'उपयोगकर्ता नाम';
+
+  @override
+  String get repo_allCallsCleared => 'पूरी कॉल हिस्ट्री साफ़ हो गई';
+
+  @override
+  String get repo_callDeleted => 'कॉल हिस्ट्री डिलीट हो गई';
+
+  @override
+  String get repo_invalidResponse => 'जवाब का फ़ॉर्मेट गलत है';
+
+  @override
+  String get repo_loadLocationsFailed => 'ग्रुप लोकेशन लोड नहीं हो सकीं';
+
+  @override
+  String get repo_pkgConflict =>
+      'यह प्लान पहले से चालू है या पेमेंट प्रोसेस में है।';
+
+  @override
+  String get repo_pkgNotFound =>
+      'प्लान अभी उपलब्ध नहीं हैं। कृपया बाद में कोशिश करें।';
+
+  @override
+  String get repo_pkgOffline =>
+      'इंटरनेट कनेक्शन नहीं है। अपना नेटवर्क जाँचें और दोबारा कोशिश करें।';
+
+  @override
+  String get repo_pkgSessionExpired =>
+      'आपका सेशन खत्म हो गया है। कृपया दोबारा लॉग इन करें।';
+
+  @override
+  String get repo_pkgTimeout =>
+      'सर्वर जवाब देने में बहुत समय ले रहा है। कृपया दोबारा कोशिश करें।';
+
+  @override
+  String get repo_selectedCallsDeleted => 'चुनी गई कॉल डिलीट हो गईं';
+
+  @override
+  String get repo_unnamedGroup => 'बिना नाम का ग्रुप';
+
+  @override
+  String safeRoute_activeDetails(String distance, String deviation) {
+    return 'कुल दूरी: $distance  •  अनुमत विचलन: $deviation';
+  }
+
+  @override
+  String get safeRoute_activeTitle => 'सक्रिय सेफ रूट';
+
+  @override
+  String get safeRoute_alertSettingsDesc =>
+      'सेफ रूट अलर्ट, विचलन सीमा और नोटिफ़िकेशन पसंद मैनेज करें।';
+
+  @override
+  String get safeRoute_alertSheetDesc =>
+      'टीम सदस्यों के सेफ रूट से भटकने पर रियल-टाइम अलर्ट';
+
+  @override
+  String get safeRoute_alertTitle => 'सेफ रूट अलर्ट';
+
+  @override
+  String get safeRoute_appBarSubtitle =>
+      'अपने टीम सदस्य के लिए सेफ रूट सेट करें।';
+
+  @override
+  String get safeRoute_destination => 'मंज़िल';
+
+  @override
+  String get safeRoute_deviated => 'सेफ रूट से भटक गए';
+
+  @override
+  String safeRoute_deviationAlertNote(String distance) {
+    return 'अगर सदस्य सेफ रूट से $distance से ज़्यादा भटकता है तो अलर्ट आएगा।';
+  }
+
+  @override
+  String safeRoute_deviationAt(String place, String distance) {
+    return '$place (विचलन: $distance)';
+  }
+
+  @override
+  String get safeRoute_deviationLimit => 'विचलन सीमा';
+
+  @override
+  String get safeRoute_deviationSubtitle =>
+      'चुने गए रूट से कितना भटकाव ठीक है, यह सेट करें।';
+
+  @override
+  String get safeRoute_distance => 'दूरी';
+
+  @override
+  String safeRoute_distanceEta(String distance, int minutes) {
+    return '$distance km • $minutes मिनट';
+  }
+
+  @override
+  String get safeRoute_edit => 'सेफ रूट बदलें';
+
+  @override
+  String get safeRoute_end => 'अंत';
+
+  @override
+  String safeRoute_estTime(int minutes) {
+    return 'अनुमानित समय: $minutes मिनट';
+  }
+
+  @override
+  String get safeRoute_featureDesc =>
+      'टीम सदस्यों के लिए पहले से रूट तय करें। कोई सेफ रूट से भटके तो अलर्ट पाएं।';
+
+  @override
+  String safeRoute_groupWithCount(String group, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सदस्य',
+      one: '1 सदस्य',
+    );
+    return '$group ($_temp0)';
+  }
+
+  @override
+  String get safeRoute_helpDeviationBody =>
+      'सदस्य चुने गए रूट से कितनी दूर जा सकता है, यह सेट करें। सीमा पार होने पर आपको अलर्ट मिलेगा।';
+
+  @override
+  String get safeRoute_helpDeviationTitle => 'विचलन सीमा क्या है?';
+
+  @override
+  String get safeRoute_helpHowBody =>
+      'सदस्य चुनें, शुरुआती और मंज़िल लोकेशन चुनें, सबसे अच्छा रूट चुनें और विचलन सीमा सेट करें।';
+
+  @override
+  String get safeRoute_helpHowTitle => 'सेफ रूट कैसे बनाएं?';
+
+  @override
+  String get safeRoute_helpTitle => 'सेफ रूट सहायता';
+
+  @override
+  String get safeRoute_helpWhatBody =>
+      'अपने टीम सदस्य के लिए सुरक्षित यात्रा रूट बनाने के लिए शुरुआती और मंज़िल लोकेशन सेट करें।';
+
+  @override
+  String get safeRoute_helpWhatTitle => 'सेफ रूट क्या है?';
+
+  @override
+  String safeRoute_memberDeviated(String name) {
+    return '$name सेफ रूट से भटक गए';
+  }
+
+  @override
+  String get safeRoute_recommended => 'सुझाया गया';
+
+  @override
+  String safeRoute_recommendedRoute(String name) {
+    return '$name (सुझाया गया)';
+  }
+
+  @override
+  String safeRoute_routeFor(String name) {
+    return 'रूट ($name)';
+  }
+
+  @override
+  String get safeRoute_saveActivate => 'सेव करें और सेफ रूट चालू करें';
+
+  @override
+  String get safeRoute_saveActivateGroup =>
+      'सेव करें और ग्रुप के लिए सेफ रूट चालू करें';
+
+  @override
+  String get safeRoute_selectedRoute => 'चुना गया रूट';
+
+  @override
+  String get safeRoute_setRoutesSubtitle =>
+      'ग्रुप के सभी सदस्यों के लिए सेफ रूट बनाएं और मैनेज करें।';
+
+  @override
+  String get safeRoute_start => 'शुरुआत';
+
+  @override
+  String get safeRoute_startLocation => 'शुरुआती लोकेशन';
+
+  @override
+  String safeRoute_stepDeviation(int step) {
+    return '$step. विचलन सीमा सेट करें';
+  }
+
+  @override
+  String safeRoute_stepPreviewApply(int step) {
+    return '$step. प्रीव्यू और लागू करें';
+  }
+
+  @override
+  String safeRoute_stepPreviewRoute(int step) {
+    return '$step. रूट का प्रीव्यू';
+  }
+
+  @override
+  String safeRoute_stepSelectRoute(int step) {
+    return '$step. रूट चुनें';
+  }
+
+  @override
+  String safeRoute_stepSetRoutesForMembers(int step) {
+    return '$step. सदस्यों के लिए रूट सेट करें';
+  }
+
+  @override
+  String safeRoute_stepStartDest(int step) {
+    return '$step. शुरुआत और मंज़िल सेट करें';
+  }
+
+  @override
+  String get safeRoute_subtitle => 'रूट सुरक्षा';
+
+  @override
+  String get safeRoute_title => 'सेफ रूट';
+
+  @override
+  String safeZone_activeDetails(String radius, String center) {
+    return 'दायरा: $radius  •  केंद्र: $center';
+  }
+
+  @override
+  String get safeZone_activePreview => 'सक्रिय (प्रीव्यू)';
+
+  @override
+  String get safeZone_activeTitle => 'सक्रिय सेफ ज़ोन';
+
+  @override
+  String get safeZone_alertSettingsDesc =>
+      'सेफ ज़ोन, अलर्ट दूरी और नोटिफ़िकेशन पसंद मैनेज करें';
+
+  @override
+  String get safeZone_alertSheetDesc =>
+      'टीम सदस्यों के सेफ ज़ोन छोड़ने पर रियल-टाइम अलर्ट';
+
+  @override
+  String get safeZone_alertTitle => 'सेफ ज़ोन अलर्ट';
+
+  @override
+  String safeZone_allMonitored(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'इस सेफ ज़ोन में सभी $count सदस्यों पर\nनज़र रखी जाएगी।',
+      one: 'इस सेफ ज़ोन में 1 सदस्य पर\nनज़र रखी जाएगी।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get safeZone_appBarSubtitle =>
+      'एक सुरक्षित क्षेत्र तय करें। कोई सेफ ज़ोन से\nबाहर जाए तो अलर्ट पाएं।';
+
+  @override
+  String safeZone_appliedToGroup(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'यह सेफ ज़ोन चुने गए ग्रुप के सभी $count सदस्यों पर लागू होगा।',
+      one: 'यह सेफ ज़ोन चुने गए ग्रुप के 1 सदस्य पर लागू होगा।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get safeZone_edit => 'सेफ ज़ोन बदलें';
+
+  @override
+  String get safeZone_exited => 'सेफ ज़ोन से बाहर गए';
+
+  @override
+  String get safeZone_featureDesc =>
+      'अपनी टीम के लिए एक सुरक्षित क्षेत्र तय करें। कोई सेफ ज़ोन से बाहर जाए तो तुरंत अलर्ट पाएं।';
+
+  @override
+  String get safeZone_helpHowBody =>
+      'सदस्य चुनें, मैप पर लोकेशन चुनें और दायरा सेट करें।';
+
+  @override
+  String get safeZone_helpHowTitle => 'सेफ ज़ोन कैसे बनाएं?';
+
+  @override
+  String get safeZone_helpRadiusBody =>
+      'अपनी ज़रूरत के अनुसार क्षेत्र का दायरा (500 m, 1 km, 2 km या 5 km) सेट करें।';
+
+  @override
+  String get safeZone_helpRadiusTitle => 'सेफ ज़ोन का दायरा क्या है?';
+
+  @override
+  String get safeZone_helpTitle => 'सेफ ज़ोन सहायता';
+
+  @override
+  String get safeZone_helpWhatBody =>
+      'मैप पर एक क्षेत्र तय करें और सदस्य के सेफ ज़ोन से बाहर जाने पर अलर्ट पाएं।';
+
+  @override
+  String get safeZone_helpWhatTitle => 'सेफ ज़ोन क्या है?';
+
+  @override
+  String safeZone_memberLeft(String name) {
+    return '$name सेफ ज़ोन से बाहर चले गए';
+  }
+
+  @override
+  String get safeZone_membersMonitored =>
+      'इस सेफ ज़ोन में सदस्यों पर नज़र रखी जाएगी।';
+
+  @override
+  String safeZone_nearOutsideZone(String place, String zone) {
+    return '$place के पास ($zone के बाहर)';
+  }
+
+  @override
+  String safeZone_outsideZone(String place, String zone) {
+    return '$place ($zone के बाहर)';
+  }
+
+  @override
+  String get safeZone_saveActivate => 'सेव करें और सेफ ज़ोन चालू करें';
+
+  @override
+  String get safeZone_saveActivateGroup =>
+      'सेव करें और ग्रुप के लिए सेफ ज़ोन चालू करें';
+
+  @override
+  String get safeZone_searchLocation => 'लोकेशन खोजें...';
+
+  @override
+  String get safeZone_statusLabel => 'स्थिति:';
+
+  @override
+  String safeZone_stepPreview(int step) {
+    return '$step. सेफ ज़ोन का प्रीव्यू';
+  }
+
+  @override
+  String safeZone_stepRadius(int step) {
+    return '$step. सेफ ज़ोन का दायरा सेट करें';
+  }
+
+  @override
+  String safeZone_stepSelectLocation(int step) {
+    return '$step. मैप पर लोकेशन चुनें';
+  }
+
+  @override
+  String get safeZone_subtitle => 'क्षेत्र सुरक्षा';
+
+  @override
+  String get safeZone_title => 'सेफ ज़ोन';
+
+  @override
+  String safeZone_totalMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'कुल $count सदस्य',
+      one: 'कुल 1 सदस्य',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get safety_active => 'सक्रिय';
+
+  @override
+  String get safety_alertSettings => 'अलर्ट सेटिंग्स';
+
+  @override
+  String get safety_alerts => 'अलर्ट';
+
+  @override
+  String get safety_alertsDesc => 'तुरंत ध्यान देने की ज़रूरत';
+
+  @override
+  String get safety_bannerBody =>
+      'स्मार्ट सेफ्टी फीचर्स से अपनी टीम पर नज़र रखें और उसे सुरक्षित रखें।';
+
+  @override
+  String get safety_bannerTitle => 'आपकी सुरक्षा, हमारी प्राथमिकता';
+
+  @override
+  String get safety_chooseFeature => 'सुरक्षा फीचर चुनें';
+
+  @override
+  String get safety_comingSoonBody =>
+      'आपकी टीम की सुरक्षा के लिए स्मार्ट सेफ्टी फीचर्स जल्द आ रहे हैं।';
+
+  @override
+  String get safety_contactSupport => 'सपोर्ट से संपर्क करें';
+
+  @override
+  String get safety_editAnytime => 'आप बाद में कभी भी बदल या बंद कर सकते हैं।';
+
+  @override
+  String get safety_mapCityPark => 'सिटी पार्क';
+
+  @override
+  String get safety_mapMainRoad => 'मेन रोड';
+
+  @override
+  String get safety_mapMarketLane => 'मार्केट लेन';
+
+  @override
+  String get safety_mapRiver => 'नदी';
+
+  @override
+  String get safety_mapStationRoad => 'स्टेशन रोड';
+
+  @override
+  String get safety_needHelpBody =>
+      'सुरक्षा से जुड़ी किसी भी मदद के लिए सपोर्ट टीम से संपर्क करें।';
+
+  @override
+  String get safety_quickOverview => 'त्वरित झलक';
+
+  @override
+  String get safety_recentAlerts => 'हाल के अलर्ट';
+
+  @override
+  String get safety_recenter => 'बीच में लाएं';
+
+  @override
+  String get safety_safeNow => 'अभी सुरक्षित';
+
+  @override
+  String get safety_safeNowDesc => 'सदस्य सेफ ज़ोन/रूट के अंदर हैं';
+
+  @override
+  String safety_stepSelectGroup(int step) {
+    return '$step. ग्रुप चुनें';
+  }
+
+  @override
+  String safety_stepSelectMember(int step) {
+    return '$step. सदस्य चुनें';
+  }
+
+  @override
+  String get safety_tabIndividual => 'व्यक्तिगत';
+
+  @override
+  String get safety_tagline => 'सुरक्षित रहें। जुड़े रहें।';
+
+  @override
+  String get safety_title => 'सुरक्षा';
+
+  @override
+  String get safety_viewAllMembers => 'सभी सदस्य देखें';
+
+  @override
+  String get sheet_addGroupMember => 'ग्रुप सदस्य जोड़ें';
+
+  @override
+  String get sheet_admin => 'एडमिन';
+
+  @override
+  String get sheet_attachSubtitle =>
+      'अपनी टीम के साथ फ़ाइलें और मीडिया शेयर करें';
+
+  @override
+  String get sheet_attachUpload => 'अटैच / अपलोड';
+
+  @override
+  String get sheet_attendance => 'हाज़िरी';
+
+  @override
+  String get sheet_callOptions => 'कॉल विकल्प';
+
+  @override
+  String get sheet_cantRemoveSelf => 'आप खुद को ग्रुप से नहीं हटा सकते।';
+
+  @override
+  String get sheet_contact => 'संपर्क';
+
+  @override
+  String get sheet_contactsNotOnApp =>
+      'आपके संपर्क अभी FG Tracker का इस्तेमाल नहीं कर रहे हैं।';
+
+  @override
+  String get sheet_document => 'डॉक्यूमेंट';
+
+  @override
+  String get sheet_groupMembers => 'ग्रुप सदस्य';
+
+  @override
+  String get sheet_location => 'लोकेशन';
+
+  @override
+  String get sheet_memberRemoved => 'सदस्य हटा दिया गया';
+
+  @override
+  String get sheet_noMembers => 'कोई सदस्य नहीं मिला';
+
+  @override
+  String get sheet_noRegisteredContacts => 'कोई रजिस्टर्ड संपर्क नहीं';
+
+  @override
+  String get sheet_noUserFound => 'कोई उपयोगकर्ता नहीं मिला';
+
+  @override
+  String get sheet_normalAudioCall => 'सामान्य ऑडियो कॉल';
+
+  @override
+  String get sheet_normalAudioCallSubtitle => 'साफ़ और सामान्य आवाज़ गुणवत्ता';
+
+  @override
+  String sheet_registeredContacts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count रजिस्टर्ड संपर्क',
+      one: '1 रजिस्टर्ड संपर्क',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sheet_removeMemberConfirm(String name) {
+    return 'क्या आप वाकई $name को ग्रुप से हटाना चाहते हैं?';
+  }
+
+  @override
+  String get sheet_removeMemberTitle => 'सदस्य हटाएँ';
+
+  @override
+  String get sheet_searchContacts => 'संपर्क खोजें';
+
+  @override
+  String get sheet_walkieCall => 'वॉकी-टॉकी कॉल';
+
+  @override
+  String get sheet_walkieCallSubtitle => 'दबाकर बात करें (PTT)';
+
+  @override
+  String get sos_addDetailsMandatory => 'विवरण जोड़ें (ज़रूरी)';
+
+  @override
+  String get sos_addDetailsOptional => 'विवरण जोड़ें (वैकल्पिक)';
+
+  @override
+  String get sos_addFamilyMember => 'परिवार सदस्य जोड़ें';
+
+  @override
+  String get sos_addFamilyMemberRequired =>
+      'SOS अलर्ट भेजने के लिए कम से कम 1 परिवार सदस्य जोड़ें';
+
+  @override
+  String get sos_addPhotoHint => 'दूसरों को बेहतर समझाने के लिए फोटो जोड़ें।';
+
+  @override
+  String get sos_addPhotoOptional => 'फोटो जोड़ें (वैकल्पिक)';
+
+  @override
+  String get sos_alertSent => 'SOS अलर्ट भेजा गया!';
+
+  @override
+  String get sos_alertSentToNearby =>
+      'आपका अलर्ट आसपास के लोगों को भेज दिया गया है।';
+
+  @override
+  String get sos_alertWillBeSent => 'अलर्ट आसपास के लोगों को भेजा जाएगा';
+
+  @override
+  String get sos_alertWillBeSentFamily =>
+      'आपका अलर्ट आसपास के लोगों और आपके परिवार को भेजा जाएगा।';
+
+  @override
+  String sos_availableUsers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count उपलब्ध यूज़र',
+      one: '1 उपलब्ध यूज़र',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sos_detailsHint => 'कोई अतिरिक्त जानकारी लिखें...';
+
+  @override
+  String get sos_detailsMandatoryForOther =>
+      '\'अन्य\' कारण चुनने पर विवरण जोड़ना ज़रूरी है';
+
+  @override
+  String get sos_howItWorks => 'यह कैसे काम करता है';
+
+  @override
+  String get sos_howItWorksIntro =>
+      'SOS अलर्ट से आप आपात स्थिति में आसपास के लोगों और अपने परिवार को सूचित कर सकते हैं।';
+
+  @override
+  String get sos_howItWorksTitle => 'SOS अलर्ट कैसे काम करता है?';
+
+  @override
+  String get sos_liveTrackingStarted => 'लाइव ट्रैकिंग शुरू हो गई';
+
+  @override
+  String sos_locationSharedWithFamily(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'आपकी लोकेशन $count परिवार सदस्यों के साथ शेयर की जा रही है',
+      one: 'आपकी लोकेशन 1 परिवार सदस्य के साथ शेयर की जा रही है',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sos_membersSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सदस्य चुने गए',
+      one: '1 सदस्य चुना गया',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sos_needHelp => 'मदद चाहिए?';
+
+  @override
+  String get sos_needHelpBody =>
+      'आसपास के लोगों को SOS अलर्ट भेजें।\nउन्हें सूचना मिलेगी और वे आपकी मदद कर सकते हैं।';
+
+  @override
+  String get sos_noMatchFound => 'कोई मिलान नहीं मिला';
+
+  @override
+  String get sos_noUsersFound => 'कोई यूज़र नहीं मिला';
+
+  @override
+  String get sos_notifyFamilyTitle =>
+      'अपने परिवार को सूचित करें (1 से 5 ज़रूरी)';
+
+  @override
+  String get sos_notifyUpdates => 'कोई भी अपडेट होने पर हम आपको सूचित करेंगे';
+
+  @override
+  String get sos_okGotIt => 'ठीक है, समझ गया';
+
+  @override
+  String get sos_peopleWithinRadius => '2 km दायरे के लोग';
+
+  @override
+  String get sos_privacyNote =>
+      'आपकी प्राइवेसी ज़रूरी है। आपकी लोकेशन केवल सक्रिय SOS अलर्ट के दौरान शेयर होती है।';
+
+  @override
+  String get sos_reasonAccident => 'दुर्घटना';
+
+  @override
+  String get sos_reasonMedical => 'मेडिकल';
+
+  @override
+  String get sos_reasonOther => 'अन्य';
+
+  @override
+  String get sos_reasonSafety => 'सुरक्षा';
+
+  @override
+  String get sos_reasonThreat => 'खतरा';
+
+  @override
+  String get sos_required => 'आवश्यक';
+
+  @override
+  String get sos_searchUsers => 'यूज़र खोजें';
+
+  @override
+  String get sos_selectReason => 'कारण चुनें';
+
+  @override
+  String get sos_sendSosAlert => 'SOS अलर्ट भेजें';
+
+  @override
+  String get sos_stayCalm => 'शांत रहें, मदद आ रही है';
+
+  @override
+  String get sos_step1Body =>
+      'SOS बटन पर टैप करें और आसपास के लोगों को अलर्ट भेजें।';
+
+  @override
+  String get sos_step1Title => '1. SOS अलर्ट भेजें';
+
+  @override
+  String get sos_step2Body =>
+      'आसपास के लोगों को आपकी लोकेशन के साथ अलर्ट मिलेगा।';
+
+  @override
+  String get sos_step2Title => '2. आसपास के लोगों को सूचित करें';
+
+  @override
+  String get sos_step3Body =>
+      'आसपास के लोग आपका अलर्ट देखकर आपकी मदद के लिए पहुंच सकते हैं।';
+
+  @override
+  String get sos_step3Title => '3. जल्दी मदद पाएं';
+
+  @override
+  String get sos_step4Body =>
+      'आपके SOS के बारे में परिवार के सदस्यों को तुरंत सूचना मिलेगी।';
+
+  @override
+  String get sos_step4Title => '4. परिवार को सूचना मिलती है';
+
+  @override
+  String get sos_subtitle => 'आसपास के लोगों को अलर्ट भेजें';
+
+  @override
+  String get sos_title => 'SOS अलर्ट';
+
+  @override
+  String get sos_willBeNotified => 'को सूचना दी जाएगी';
+
+  @override
+  String status_activeCount(int count) {
+    return '$count सक्रिय';
+  }
+
+  @override
+  String get status_addToMyStatus => 'मेरे स्टेटस में जोड़ें';
+
+  @override
+  String get status_allContacts => 'सभी संपर्क';
+
+  @override
+  String get status_cameraAccessFailed => 'कैमरा एक्सेस नहीं हो सका';
+
+  @override
+  String get status_captionHint => 'कैप्शन जोड़ें...';
+
+  @override
+  String get status_changeMedia => 'मीडिया बदलें';
+
+  @override
+  String status_dayAtTime(String day, String time) {
+    return '$day, $time';
+  }
+
+  @override
+  String get status_deleted => 'स्टेटस डिलीट हो गया';
+
+  @override
+  String get status_deletedByOwner => 'यह स्टेटस इसके मालिक ने डिलीट कर दिया';
+
+  @override
+  String get status_exceptContacts => 'इन संपर्कों को छोड़कर';
+
+  @override
+  String get status_exceptSelected => 'चुने हुए को छोड़कर';
+
+  @override
+  String get status_flip => 'कैमरा बदलें';
+
+  @override
+  String get status_gallery => 'गैलरी';
+
+  @override
+  String get status_modePhoto => 'फ़ोटो';
+
+  @override
+  String get status_modeText => 'टेक्स्ट';
+
+  @override
+  String get status_modeVideo => 'वीडियो';
+
+  @override
+  String get status_myStatus => 'मेरा स्टेटस';
+
+  @override
+  String get status_new => 'नया';
+
+  @override
+  String get status_noCamera => 'कोई कैमरा उपलब्ध नहीं';
+
+  @override
+  String get status_noLongerAvailable => 'यह स्टेटस अब उपलब्ध नहीं है';
+
+  @override
+  String get status_noViewsYet => 'अभी तक किसी ने नहीं देखा';
+
+  @override
+  String get status_onlyShareWith => 'सिर्फ़ इनके साथ शेयर करें';
+
+  @override
+  String get status_pause => 'रोकें';
+
+  @override
+  String get status_pinchZoomHint => 'फ़ोटो ज़ूम करने के लिए पिंच करें';
+
+  @override
+  String get status_play => 'चलाएँ';
+
+  @override
+  String get status_postStatus => 'स्टेटस पोस्ट करें';
+
+  @override
+  String get status_previewStatus => 'स्टेटस प्रीव्यू';
+
+  @override
+  String get status_privacy => 'प्राइवेसी';
+
+  @override
+  String get status_privacyTitle => 'स्टेटस प्राइवेसी';
+
+  @override
+  String get status_publishFailed => 'स्टेटस पोस्ट नहीं हो सका';
+
+  @override
+  String get status_replyHint => 'स्टेटस का जवाब दें...';
+
+  @override
+  String get status_retake => 'फिर से लें';
+
+  @override
+  String get status_selectPhotoFirst => 'कृपया पहले फ़ोटो लें या चुनें';
+
+  @override
+  String get status_selectVideoFirst =>
+      'कृपया पहले वीडियो रिकॉर्ड करें या चुनें';
+
+  @override
+  String get status_shareUpdatesHint => 'अपनी टीम के साथ अपडेट शेयर करें';
+
+  @override
+  String get status_tapVideoHint => 'चलाने / रोकने के लिए वीडियो पर टैप करें';
+
+  @override
+  String get status_textRequired =>
+      'टेक्स्ट स्टेटस के लिए टेक्स्ट लिखना ज़रूरी है';
+
+  @override
+  String get status_title => 'स्टेटस';
+
+  @override
+  String get status_typeHint => 'स्टेटस लिखें...';
+
+  @override
+  String get status_uploadFailed => 'अपलोड नहीं हुआ';
+
+  @override
+  String get status_viewMyStatus => 'मेरा स्टेटस देखें';
+
+  @override
+  String get status_viewed => 'देखा गया';
+
+  @override
+  String status_viewedBy(int count) {
+    return '$count ने देखा';
+  }
+
+  @override
+  String status_viewsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count व्यू',
+      one: '1 व्यू',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get status_whoCanSee => 'कौन देख सकता है?';
+
+  @override
+  String get track_admin => 'एडमिन';
+
+  @override
+  String get track_applyRadius => 'दायरा लागू करें';
+
+  @override
+  String get track_checkNetworkConnection =>
+      'कृपया अपना नेटवर्क कनेक्शन जांचें और फिर से कोशिश करें।';
+
+  @override
+  String get track_checkNetworkMembers =>
+      'आसपास के सदस्य देखने के लिए अपना नेटवर्क जांचें और फिर से कोशिश करें।';
+
+  @override
+  String get track_currentLocation => 'मौजूदा लोकेशन';
+
+  @override
+  String get track_custom => 'कस्टम';
+
+  @override
+  String track_customWithValue(String radius) {
+    return 'कस्टम ($radius)';
+  }
+
+  @override
+  String track_distanceAway(String distance) {
+    return '$distance दूर';
+  }
+
+  @override
+  String get track_enable => 'चालू करें';
+
+  @override
+  String get track_enableGpsBody =>
+      'अपने ग्रुप को रियल टाइम में ट्रैक करने के लिए कृपया GPS चालू करें।';
+
+  @override
+  String get track_enableGpsTitle => 'GPS चालू करें';
+
+  @override
+  String get track_errorFailedLoadGroups => 'ग्रुप लोड नहीं हो सके';
+
+  @override
+  String get track_errorLoadGroups =>
+      'ग्रुप लोड नहीं हो सके। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get track_errorLoadMembers =>
+      'आसपास के सदस्य लोड नहीं हो सके। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get track_errorNoInternet =>
+      'इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क जांचें।';
+
+  @override
+  String get track_errorServer =>
+      'सर्वर से कनेक्ट नहीं हो सका। कृपया फिर से कोशिश करें।';
+
+  @override
+  String track_groupCode(String code) {
+    return 'कोड: $code';
+  }
+
+  @override
+  String get track_groupMembers => 'ग्रुप सदस्य';
+
+  @override
+  String track_groupMembersAndCode(int count, String code) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सदस्य • कोड: $code',
+      one: '1 सदस्य • कोड: $code',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get track_groupTab => 'ग्रुप';
+
+  @override
+  String track_groupsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ग्रुप',
+      one: '1 ग्रुप',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String track_groupsHeader(int count) {
+    return 'ग्रुप ($count)';
+  }
+
+  @override
+  String get track_helpGroupBody =>
+      'कई सदस्यों को ट्रैक करने के लिए ग्रुप बनाएं।';
+
+  @override
+  String get track_helpGroupTitle => 'ग्रुप कैसे जोड़ें?';
+
+  @override
+  String get track_helpLiveBody => 'मैप पर टीम की रियल-टाइम लोकेशन ट्रैक करें।';
+
+  @override
+  String get track_helpLiveTitle => 'लाइव ट्रैकिंग क्या है?';
+
+  @override
+  String get track_helpRadiusBody =>
+      'मैप पर आसपास के सदस्य ढूंढने के लिए क्षेत्र सेट करें।';
+
+  @override
+  String get track_helpRadiusTitle => 'ट्रैकिंग दायरा क्या है?';
+
+  @override
+  String get track_helpTitle => 'ट्रैकिंग सहायता';
+
+  @override
+  String track_lastSeen(String time) {
+    return 'आखिरी बार देखा गया: $time';
+  }
+
+  @override
+  String track_liveCount(int count) {
+    return '$count लाइव';
+  }
+
+  @override
+  String get track_liveMembers => 'लाइव सदस्य';
+
+  @override
+  String get track_liveTracking => 'लाइव ट्रैकिंग';
+
+  @override
+  String get track_locating => 'लोकेशन खोजी जा रही है...';
+
+  @override
+  String get track_locationHidden => 'लोकेशन छिपी है';
+
+  @override
+  String get track_locationUnavailable => 'लोकेशन उपलब्ध नहीं';
+
+  @override
+  String get track_mapOfflineBody =>
+      'लाइव मैप और सदस्यों की रियल-टाइम लोकेशन लोड करने के लिए इंटरनेट कनेक्शन ज़रूरी है।';
+
+  @override
+  String get track_mapUnavailableOffline => 'ऑफ़लाइन में मैप उपलब्ध नहीं';
+
+  @override
+  String get track_member => 'सदस्य';
+
+  @override
+  String track_memberPausedSharing(String name) {
+    return '$name ने लोकेशन शेयरिंग रोक दी है। लाइव लोकेशन उपलब्ध नहीं है।';
+  }
+
+  @override
+  String track_membersHeader(int count) {
+    return 'सदस्य ($count)';
+  }
+
+  @override
+  String track_membersLive(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सदस्य लाइव',
+      one: '1 सदस्य लाइव',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get track_menuMembers => 'सदस्य';
+
+  @override
+  String get track_menuRefreshMap => 'मैप रीफ़्रेश करें';
+
+  @override
+  String get track_menuTheme => 'थीम';
+
+  @override
+  String get track_nearbyYou => 'आपके आसपास';
+
+  @override
+  String get track_noActiveMembers => 'कोई सक्रिय सदस्य नहीं';
+
+  @override
+  String track_noActiveMembersWithin(String radius) {
+    return '$radius के दायरे में कोई सक्रिय सदस्य नहीं मिला';
+  }
+
+  @override
+  String get track_noDescription => 'कोई विवरण नहीं';
+
+  @override
+  String get track_noGroupsFound => 'कोई ग्रुप नहीं मिला';
+
+  @override
+  String get track_noGroupsMatch => 'कोई ग्रुप मेल नहीं खाता';
+
+  @override
+  String track_noGroupsMatchQuery(String query) {
+    return '\'$query\' से कोई ग्रुप मेल नहीं खाता';
+  }
+
+  @override
+  String get track_noGroupsYet =>
+      'आपने अभी तक कोई ग्रुप जॉइन नहीं किया है और न ही बनाया है।';
+
+  @override
+  String get track_noInternetTitle => 'इंटरनेट कनेक्शन नहीं है';
+
+  @override
+  String get track_noMembersFound => 'कोई सदस्य नहीं मिला';
+
+  @override
+  String get track_noMembersFoundPlain => 'कोई सदस्य नहीं मिला';
+
+  @override
+  String get track_noMembersInGroup => 'इस ग्रुप में कोई सदस्य नहीं मिला';
+
+  @override
+  String track_noMembersMatch(String query) {
+    return '\'$query\' से कोई सदस्य मेल नहीं खाता';
+  }
+
+  @override
+  String track_noSearchMatches(String query) {
+    return 'इससे मेल खाते कोई सदस्य या ग्रुप नहीं\n\'$query\'';
+  }
+
+  @override
+  String track_noSearchResults(String query) {
+    return '\'$query\' के लिए कोई सदस्य या ग्रुप नहीं मिला';
+  }
+
+  @override
+  String get track_notAvailable => 'उपलब्ध नहीं';
+
+  @override
+  String get track_offlineBanner =>
+      'इंटरनेट कनेक्शन नहीं है। मैप और ट्रैकिंग ऑफ़लाइन हैं।';
+
+  @override
+  String get track_private => 'प्राइवेट';
+
+  @override
+  String get track_radius => 'दायरा';
+
+  @override
+  String get track_refresh => 'रीफ़्रेश';
+
+  @override
+  String get track_refreshing => 'रीफ़्रेश हो रहा है...';
+
+  @override
+  String get track_retryConnection => 'फिर से कनेक्ट करें';
+
+  @override
+  String get track_searchHint => 'सदस्य या ग्रुप खोजें...';
+
+  @override
+  String get track_searchMembersHint => 'सदस्य खोजें...';
+
+  @override
+  String get track_selectedLocation => 'चुनी गई लोकेशन';
+
+  @override
+  String get track_setRadiusSubtitle =>
+      'क्षेत्र का दायरा चुनने के लिए स्लाइड करें';
+
+  @override
+  String get track_setRadiusTitle => 'ट्रैकिंग दायरा सेट करें';
+
+  @override
+  String get track_unableToLoadGroups => 'ग्रुप लोड नहीं हो सके';
+
+  @override
+  String get track_unableToLoadMembers => 'सदस्य लोड नहीं हो सके';
+
+  @override
+  String get track_unnamedGroup => 'बिना नाम का ग्रुप';
+
+  @override
+  String get track_unnamedMember => 'बिना नाम का सदस्य';
+
+  @override
+  String get track_yourGroups => 'आपके ग्रुप';
+
+  @override
+  String get track_yourLocationPaused =>
+      'आपकी लाइव लोकेशन शेयरिंग रुकी हुई है और प्राइवेट है।';
+
+  @override
+  String get util_previewContact => '👤 संपर्क';
+
+  @override
+  String get util_previewDocument => '📄 डॉक्यूमेंट';
+
+  @override
+  String get util_previewLocation => '📍 लोकेशन';
+
+  @override
+  String get util_previewPhoto => '📷 फ़ोटो';
+
+  @override
+  String get util_previewVideo => '🎥 वीडियो';
+
+  @override
+  String get util_previewVoice => '🎤 वॉइस मैसेज';
+
+  @override
+  String util_spokenEur(String amount) {
+    return '$amount यूरो';
+  }
+
+  @override
+  String util_spokenGbp(String amount) {
+    return '$amount पाउंड';
+  }
+
+  @override
+  String util_spokenRupees(int rupees) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rupees,
+      locale: localeName,
+      other: '$rupees रुपये',
+      one: '1 रुपया',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String util_spokenRupeesPaise(int rupees, int paise) {
+    return '$rupees रुपये $paise पैसे';
+  }
+
+  @override
+  String util_spokenUsd(String amount) {
+    return '$amount अमेरिकी डॉलर';
+  }
+
+  @override
+  String get util_unableToCallContact => 'इस संपर्क को कॉल नहीं किया जा सका';
+
+  @override
+  String get util_unableToStartGroupCall => 'ग्रुप कॉल शुरू नहीं हो सकी';
+
+  @override
+  String get validation_emailEmpty => 'ईमेल पता खाली नहीं हो सकता';
+
+  @override
+  String get validation_emailInvalid => 'कृपया एक मान्य ईमेल पता दर्ज करें।';
+
+  @override
+  String validation_required(String field) {
+    return '$field आवश्यक है';
+  }
+
+  @override
+  String get voice_appLanguage => 'ऐप भाषा';
+
+  @override
+  String get voice_audioChip => 'ऑडियो';
+
+  @override
+  String get voice_captionReady => 'कैप्शन तैयार';
+
+  @override
+  String get voice_chooseSpeechLanguage => 'बोलने की भाषा चुनें';
+
+  @override
+  String get voice_couldntPlay => 'वॉइस मैसेज नहीं चल सका';
+
+  @override
+  String get voice_didntCatch =>
+      'समझ नहीं आया। माइक पर टैप करें और थोड़ा ज़ोर से बोलें।';
+
+  @override
+  String get voice_language => 'भाषा';
+
+  @override
+  String get voice_listenBack => 'वापस सुनें';
+
+  @override
+  String get voice_listenBeforeSending => 'वॉइस मैसेज भेजने से पहले सुन लें।';
+
+  @override
+  String get voice_listening => 'सुन रहे हैं…';
+
+  @override
+  String get voice_micPermissionNeeded =>
+      'आवाज़ इस्तेमाल करने के लिए माइक्रोफ़ोन की अनुमति ज़रूरी है।';
+
+  @override
+  String get voice_micUnavailable =>
+      'माइक्रोफ़ोन उपलब्ध नहीं है। कृपया सेटिंग्स जांचें।';
+
+  @override
+  String get voice_noTextCaptured =>
+      'कोई टेक्स्ट नहीं मिला — दोबारा रिकॉर्ड करें।';
+
+  @override
+  String get voice_openSettings => 'सेटिंग्स खोलें';
+
+  @override
+  String get voice_permissionRequired => 'अनुमति ज़रूरी है';
+
+  @override
+  String get voice_reRecord => 'दोबारा रिकॉर्ड करें';
+
+  @override
+  String get voice_readyToSend => 'भेजने के लिए तैयार';
+
+  @override
+  String get voice_recordVoice => 'आवाज़ रिकॉर्ड करें';
+
+  @override
+  String get voice_recordVoiceSubtitle =>
+      'रिकॉर्ड करें और ऑडियो मैसेज के रूप में भेजें';
+
+  @override
+  String get voice_recordingYourVoice => 'आपकी आवाज़ रिकॉर्ड हो रही है…';
+
+  @override
+  String get voice_replyReady => 'जवाब तैयार';
+
+  @override
+  String get voice_reviewTextHint =>
+      'भेजने से पहले ऊपर अपनी आवाज़ सुनें या मैसेज बॉक्स में टेक्स्ट बदलें।';
+
+  @override
+  String get voice_sendMessage => 'मैसेज भेजें';
+
+  @override
+  String get voice_sendVoiceMessage => 'वॉइस मैसेज भेजें';
+
+  @override
+  String get voice_speakNowCaption =>
+      'अब बोलें – हम आपका कैप्शन टाइप कर रहे हैं';
+
+  @override
+  String get voice_speakNowMessage =>
+      'अब बोलें – आपके शब्द मैसेज बॉक्स में दिखेंगे';
+
+  @override
+  String get voice_speakNowReply => 'अब बोलें – हम आपका जवाब टाइप कर रहे हैं';
+
+  @override
+  String get voice_speakPlaceholder => 'बोलिए… टेक्स्ट यहाँ दिखेगा';
+
+  @override
+  String get voice_speechPermissionNeeded =>
+      'आवाज़ को टेक्स्ट में बदलने के लिए स्पीच रिकग्निशन की अनुमति ज़रूरी है।';
+
+  @override
+  String get voice_tapToStop => 'रोकने के लिए टैप करें';
+
+  @override
+  String get voice_textReady => 'टेक्स्ट तैयार';
+
+  @override
+  String get voice_tooMuchNoise => 'बहुत शोर है – फ़ोन पास रखें और साफ़ बोलें';
+
+  @override
+  String get voice_type => 'टाइप';
+
+  @override
+  String get voice_voiceToText => 'वॉइस से टेक्स्ट';
+
+  @override
+  String get voice_voiceToTextSubtitle => 'बोलें और मैसेज बॉक्स में टाइप करें';
+
+  @override
+  String get voice_willSendAudioMessage =>
+      'आपकी आवाज़ ऑडियो मैसेज के रूप में भेजी जाएगी';
+
+  @override
+  String get voice_willSendAudioReply =>
+      'आपकी आवाज़ ऑडियो जवाब के रूप में भेजी जाएगी';
+
+  @override
+  String get voice_willSendWithFile =>
+      'आपकी आवाज़ फ़ाइल के साथ ऑडियो के रूप में भेजी जाएगी';
+
+  @override
+  String get voice_yourMessage => 'आपका मैसेज';
+
+  @override
+  String get voice_yourVoiceMessage => 'आपका वॉइस मैसेज';
+
+  @override
+  String get walkiePlan_availableIndividualPlans => 'व्यक्तिगत प्लान';
+
+  @override
+  String get walkiePlan_availablePerMonth => '/ महीना';
+
+  @override
+  String get walkiePlan_availablePerSeat => '/ सीट';
+
+  @override
+  String get walkiePlan_availableSingleMember => 'एक सदस्य (निजी एक्सेस)';
+
+  @override
+  String get walkiePlan_availableSubtitle =>
+      'सब्सक्रिप्शन शुरू या अपग्रेड करने के लिए प्लान चुनें';
+
+  @override
+  String get walkiePlan_availableTeamPlans => 'टीम प्लान';
+
+  @override
+  String walkiePlan_availableTeamSeats(int min, int max) {
+    return '$min-$max सीटें  •  ग्रुप सहयोग';
+  }
+
+  @override
+  String get walkiePlan_availableTitle => 'उपलब्ध प्लान';
+
+  @override
+  String get walkiePlan_bottomBarAfterTrial => 'फ्री ट्रायल के बाद';
+
+  @override
+  String get walkiePlan_bottomBarChoosePlan => 'प्लान चुनें';
+
+  @override
+  String get walkiePlan_bottomBarContinue => 'वॉकी-टॉकी के साथ जारी रखें';
+
+  @override
+  String walkiePlan_bottomBarPricePer(String price, String period) {
+    return '$price / $period';
+  }
+
+  @override
+  String walkiePlan_bottomBarPurchaseFor(String price) {
+    return '$price में खरीदें';
+  }
+
+  @override
+  String get walkiePlan_cardActive => 'चालू';
+
+  @override
+  String walkiePlan_cardActiveSince(String date) {
+    return '$date से चालू';
+  }
+
+  @override
+  String get walkiePlan_cardAssigned => 'असाइन की गईं';
+
+  @override
+  String walkiePlan_cardAssignedBy(String name) {
+    return '$name द्वारा असाइन किया गया';
+  }
+
+  @override
+  String get walkiePlan_cardAssignedToYou => 'आपको असाइन किया गया';
+
+  @override
+  String get walkiePlan_cardAvailable => 'उपलब्ध';
+
+  @override
+  String get walkiePlan_cardManageMembers => 'सदस्य मैनेज करें';
+
+  @override
+  String get walkiePlan_cardNoActiveIndividual =>
+      'कोई चालू व्यक्तिगत सब्सक्रिप्शन नहीं';
+
+  @override
+  String get walkiePlan_cardNoActiveTeam =>
+      'कोई चालू टीम प्लान या असाइन की गई सीट नहीं';
+
+  @override
+  String get walkiePlan_cardOneSeatSelf => '1 सीट (स्वयं)';
+
+  @override
+  String get walkiePlan_cardPersonal => 'निजी';
+
+  @override
+  String get walkiePlan_cardPurchased => 'खरीदी गईं';
+
+  @override
+  String get walkiePlan_cardPurchasedByYou => 'आपने खरीदा';
+
+  @override
+  String get walkiePlan_cardPurchasedOn => 'खरीद की तारीख';
+
+  @override
+  String get walkiePlan_cardSeatsMembers => 'सीटें / सदस्य';
+
+  @override
+  String get walkiePlan_cardSubscribedByYou => 'आपने सब्सक्राइब किया';
+
+  @override
+  String get walkiePlan_cardTeamAdministrator => 'टीम एडमिनिस्ट्रेटर';
+
+  @override
+  String get walkiePlan_cardValidUntil => 'मान्य तक';
+
+  @override
+  String get walkiePlan_cardView => 'देखें';
+
+  @override
+  String get walkiePlan_cardViewPlan => 'प्लान देखें';
+
+  @override
+  String walkiePlan_couponDiscount(String value) {
+    return '$value छूट';
+  }
+
+  @override
+  String get walkiePlan_couponExpired => 'कूपन की अवधि समाप्त हो गई है';
+
+  @override
+  String walkiePlan_couponFlatOff(String amount) {
+    return 'फ्लैट $amount की छूट';
+  }
+
+  @override
+  String get walkiePlan_couponMinOrderNotMet =>
+      'न्यूनतम ऑर्डर राशि पूरी नहीं हुई';
+
+  @override
+  String get walkiePlan_couponNotEligible => 'मौजूदा प्लान के लिए मान्य नहीं';
+
+  @override
+  String get walkiePlan_couponNotStarted => 'कूपन ऑफ़र अभी शुरू नहीं हुआ है';
+
+  @override
+  String walkiePlan_couponPercentOff(int percent) {
+    return '$percent% की छूट';
+  }
+
+  @override
+  String get walkiePlan_couponPlanNotApplicable => 'इस प्लान पर लागू नहीं';
+
+  @override
+  String walkiePlan_couponValidTill(String date) {
+    return '$date तक मान्य';
+  }
+
+  @override
+  String get walkiePlan_ctrlContinueToPayment => 'पेमेंट के लिए आगे बढ़ें';
+
+  @override
+  String walkiePlan_ctrlContinueWith(String plan) {
+    return '$plan के साथ आगे बढ़ें';
+  }
+
+  @override
+  String get walkiePlan_ctrlCouponApplied => 'कूपन सफलतापूर्वक लागू हो गया!';
+
+  @override
+  String walkiePlan_ctrlCouponAppliedSave(String amount) {
+    return 'कूपन लागू हो गया! आप $amount बचाते हैं';
+  }
+
+  @override
+  String get walkiePlan_ctrlCouponFailed => 'कूपन लागू नहीं हो सका';
+
+  @override
+  String get walkiePlan_ctrlCouponRemoved => 'कूपन हटा दिया गया';
+
+  @override
+  String walkiePlan_ctrlGatewayError(String code) {
+    return 'Cashfree त्रुटि ($code)';
+  }
+
+  @override
+  String get walkiePlan_ctrlGatewayInitFailed => 'पेमेंट शुरू नहीं हो सका।';
+
+  @override
+  String walkiePlan_ctrlGatewaySessionFailed(String error) {
+    return 'पेमेंट सेशन नहीं बन सका: $error';
+  }
+
+  @override
+  String walkiePlan_ctrlGatewayUnableToProcess(String error) {
+    return 'पेमेंट प्रोसेस नहीं हो सका: $error';
+  }
+
+  @override
+  String get walkiePlan_ctrlLoadingPlans => 'प्लान लोड हो रहे हैं...';
+
+  @override
+  String get walkiePlan_ctrlUnableToLoadPlans =>
+      'प्लान लोड नहीं हो सके। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get walkiePlan_detailsAllBanks => 'सभी भारतीय बैंक समर्थित';
+
+  @override
+  String get walkiePlan_detailsApplied => 'लागू है';
+
+  @override
+  String get walkiePlan_detailsApply => 'लागू करें';
+
+  @override
+  String get walkiePlan_detailsApplyCaps => 'लागू करें';
+
+  @override
+  String get walkiePlan_detailsAvailableCoupons => 'उपलब्ध कूपन';
+
+  @override
+  String get walkiePlan_detailsCard => 'क्रेडिट / डेबिट कार्ड';
+
+  @override
+  String get walkiePlan_detailsChooseTitle => 'प्लान चुनें';
+
+  @override
+  String walkiePlan_detailsCodeLabel(String code) {
+    return 'कोड: $code';
+  }
+
+  @override
+  String get walkiePlan_detailsCouponsOffers => 'कूपन और ऑफ़र';
+
+  @override
+  String get walkiePlan_detailsEnterCouponHint => 'कूपन कोड डालें';
+
+  @override
+  String get walkiePlan_detailsEnterValidCoupon => 'कृपया सही कूपन कोड डालें';
+
+  @override
+  String get walkiePlan_detailsFeatGroupComm => 'ग्रुप में बातचीत';
+
+  @override
+  String get walkiePlan_detailsFeatHqVoice => 'हाई क्वालिटी आवाज़';
+
+  @override
+  String get walkiePlan_detailsFeatPrioritySupport => 'प्राथमिकता सपोर्ट';
+
+  @override
+  String get walkiePlan_detailsFeatUnlimitedRange => 'अनलिमिटेड रेंज';
+
+  @override
+  String get walkiePlan_detailsFeatUnlimitedWalkie => 'अनलिमिटेड वॉकी-टॉकी';
+
+  @override
+  String get walkiePlan_detailsHavePromoCode => 'प्रोमो कोड है?';
+
+  @override
+  String get walkiePlan_detailsIndividualSubtitle =>
+      'अपनी टीम के लिए सही प्लान के साथ वॉकी-टॉकी का उपयोग जारी रखें';
+
+  @override
+  String get walkiePlan_detailsLockedCaps => 'लॉक';
+
+  @override
+  String walkiePlan_detailsMaxMembersReached(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'अधिकतम $count सदस्यों की सीमा पूरी हो गई',
+      one: 'अधिकतम 1 सदस्य की सीमा पूरी हो गई',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkiePlan_detailsMemberPlural => 'सदस्य';
+
+  @override
+  String get walkiePlan_detailsMemberSingular => 'सदस्य';
+
+  @override
+  String walkiePlan_detailsMembersTimesRate(int count, String rate) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सदस्य × $rate',
+      one: '1 सदस्य × $rate',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String walkiePlan_detailsMinTeamSize(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'टीम में कम से कम $count सदस्य होने चाहिए',
+      one: 'टीम में कम से कम 1 सदस्य होना चाहिए',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkiePlan_detailsMoreMembersBody =>
+      'कभी भी सदस्य जोड़ें या हटाएं।';
+
+  @override
+  String get walkiePlan_detailsMoreMembersTitle => 'और सदस्य?';
+
+  @override
+  String get walkiePlan_detailsMostPopular => 'सबसे लोकप्रिय';
+
+  @override
+  String get walkiePlan_detailsNetBanking => 'नेट बैंकिंग';
+
+  @override
+  String get walkiePlan_detailsNoCouponsBody =>
+      'इस प्लान के लिए अभी कोई सक्रिय कूपन नहीं है।';
+
+  @override
+  String get walkiePlan_detailsNoCouponsTitle => 'कोई कूपन उपलब्ध नहीं';
+
+  @override
+  String get walkiePlan_detailsNoIndividualPlans =>
+      'अभी कोई व्यक्तिगत वॉकी-टॉकी प्लान उपलब्ध नहीं है। कृपया बाद में देखें या फिर से कोशिश करें।';
+
+  @override
+  String get walkiePlan_detailsNoPlansTitle => 'कोई प्लान उपलब्ध नहीं';
+
+  @override
+  String get walkiePlan_detailsNoTeamPlans =>
+      'अभी कोई टीम वॉकी-टॉकी प्लान उपलब्ध नहीं है। कृपया बाद में देखें या फिर से कोशिश करें।';
+
+  @override
+  String walkiePlan_detailsOriginalTotal(String amount) {
+    return 'कुल $amount';
+  }
+
+  @override
+  String get walkiePlan_detailsPayActivate => 'पेमेंट करें और प्लान चालू करें';
+
+  @override
+  String get walkiePlan_detailsPerPerson => '/ व्यक्ति';
+
+  @override
+  String get walkiePlan_detailsPillAllSizes => 'टीमों के लिए';
+
+  @override
+  String get walkiePlan_detailsPillCommunication => 'बातचीत';
+
+  @override
+  String get walkiePlan_detailsPillForTeams => 'हर आकार की';
+
+  @override
+  String get walkiePlan_detailsPillInstant => 'तुरंत';
+
+  @override
+  String get walkiePlan_detailsPillPriority => 'प्राथमिकता';
+
+  @override
+  String get walkiePlan_detailsPillReliable => 'भरोसेमंद और';
+
+  @override
+  String get walkiePlan_detailsPillSecure => 'सुरक्षित';
+
+  @override
+  String get walkiePlan_detailsPillSupport => 'सपोर्ट';
+
+  @override
+  String get walkiePlan_detailsPillUnlimited => 'अनलिमिटेड';
+
+  @override
+  String get walkiePlan_detailsPillWalkieTalkie => 'वॉकी-टॉकी';
+
+  @override
+  String get walkiePlan_detailsPlanActivated =>
+      'प्लान सफलतापूर्वक चालू हो गया!';
+
+  @override
+  String get walkiePlan_detailsPlanActiveBody =>
+      'आपका वॉकी-टॉकी प्लान अब चालू है। बिना रुकावट तुरंत वॉइस बातचीत का आनंद लें।';
+
+  @override
+  String get walkiePlan_detailsPlanSummary => 'प्लान सारांश';
+
+  @override
+  String walkiePlan_detailsPromoApplied(String code) {
+    return 'प्रोमो ($code) लागू हुआ';
+  }
+
+  @override
+  String get walkiePlan_detailsRemoveCaps => 'हटाएं';
+
+  @override
+  String get walkiePlan_detailsSelectPaymentMethod => 'पेमेंट का तरीका चुनें';
+
+  @override
+  String get walkiePlan_detailsSkeletonCouponNote =>
+      'सभी प्लान पर मान्य • जल्द समाप्त';
+
+  @override
+  String get walkiePlan_detailsStep1Subtitle =>
+      'चुनें कि आप टीम में कितने सदस्य जोड़ना चाहते हैं';
+
+  @override
+  String get walkiePlan_detailsStep1Title => 'सदस्यों की संख्या चुनें';
+
+  @override
+  String get walkiePlan_detailsStep2Subtitle => 'अपने लिए सही प्लान अवधि चुनें';
+
+  @override
+  String get walkiePlan_detailsStep2Title => 'प्लान की अवधि चुनें';
+
+  @override
+  String get walkiePlan_detailsSubtitleDefault => 'तुरंत वॉकी-टॉकी वॉइस एक्सेस';
+
+  @override
+  String get walkiePlan_detailsSubtitleGrowingTeams =>
+      'बढ़ती टीमों के लिए किफ़ायती';
+
+  @override
+  String get walkiePlan_detailsSubtitleLongTerm =>
+      'लंबे समय के उपयोग के लिए सबसे अच्छा';
+
+  @override
+  String get walkiePlan_detailsSubtitleShortTerm =>
+      'कम समय के उपयोग के लिए बेहतरीन';
+
+  @override
+  String get walkiePlan_detailsTabIndividual => 'व्यक्तिगत';
+
+  @override
+  String get walkiePlan_detailsTabMultipleMembers => 'कई सदस्यों के लिए';
+
+  @override
+  String get walkiePlan_detailsTabPerPerson => 'प्रति व्यक्ति';
+
+  @override
+  String get walkiePlan_detailsTeamSubtitle =>
+      'टीम के सदस्य जोड़ें और वॉकी-टॉकी से सबको जोड़ें';
+
+  @override
+  String get walkiePlan_detailsUpiQr => 'UPI / QR कोड';
+
+  @override
+  String walkiePlan_detailsYouSaveWithCoupon(String amount) {
+    return 'इस कूपन से आप $amount बचाते हैं!';
+  }
+
+  @override
+  String get walkiePlan_durationFallback => 'अवधि';
+
+  @override
+  String get walkiePlan_durationMonthly => 'मासिक';
+
+  @override
+  String walkiePlan_durationMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count महीने',
+      one: '1 महीना',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkiePlan_durationQuarterly => 'त्रैमासिक';
+
+  @override
+  String get walkiePlan_durationYearly => 'वार्षिक';
+
+  @override
+  String get walkiePlan_individualPlan => 'व्यक्तिगत प्लान';
+
+  @override
+  String walkiePlan_intervalPlan(String interval) {
+    return '$interval प्लान';
+  }
+
+  @override
+  String get walkiePlan_monthlyPlan => 'मासिक प्लान';
+
+  @override
+  String get walkiePlan_noInternetCheckNetwork =>
+      'इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क जांचें।';
+
+  @override
+  String get walkiePlan_order100Secure => '100% सुरक्षित';
+
+  @override
+  String get walkiePlan_order3ds2Secure => '3DS2 सुरक्षित';
+
+  @override
+  String get walkiePlan_orderAgreePrefix => 'आगे बढ़कर, आप सहमत हैं: ';
+
+  @override
+  String get walkiePlan_orderAmountAfterDiscount => 'छूट के बाद राशि';
+
+  @override
+  String get walkiePlan_orderCards => 'कार्ड';
+
+  @override
+  String get walkiePlan_orderChangeMethod => 'तरीका बदलें';
+
+  @override
+  String get walkiePlan_orderCouldNotStart =>
+      'पेमेंट शुरू नहीं हो सका। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get walkiePlan_orderCouponApplied => 'कूपन सफलतापूर्वक लागू हुआ!';
+
+  @override
+  String walkiePlan_orderCouponAppliedSaved(String amount) {
+    return 'कूपन लागू हुआ! आपने $amount बचाए';
+  }
+
+  @override
+  String get walkiePlan_orderCouponRemoved => 'कूपन हटा दिया गया';
+
+  @override
+  String get walkiePlan_orderCreateFailed =>
+      'पेमेंट ऑर्डर नहीं बन सका। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get walkiePlan_orderDiscount => 'छूट';
+
+  @override
+  String walkiePlan_orderDiscountWithCode(String code) {
+    return 'छूट ($code)';
+  }
+
+  @override
+  String get walkiePlan_orderDomesticHint =>
+      'अगले चरण में GPay, PhonePe, कार्ड, नेटबैंकिंग या वॉलेट में से चुनें।';
+
+  @override
+  String get walkiePlan_orderEncryptedPayment => 'एन्क्रिप्टेड पेमेंट';
+
+  @override
+  String get walkiePlan_orderEnterValidCoupon => 'कृपया सही कूपन कोड डालें';
+
+  @override
+  String get walkiePlan_orderForMultipleMembers => 'कई सदस्यों के लिए';
+
+  @override
+  String get walkiePlan_orderForSingleMember => 'एक सदस्य के लिए';
+
+  @override
+  String walkiePlan_orderGstTitle(String percent) {
+    return 'GST ($percent%)';
+  }
+
+  @override
+  String get walkiePlan_orderIntlHint =>
+      'अंतरराष्ट्रीय क्रेडिट/डेबिट कार्ड (Visa, Mastercard, Amex) से सुरक्षित पेमेंट करें।';
+
+  @override
+  String get walkiePlan_orderIntlHintPaypal =>
+      'अंतरराष्ट्रीय क्रेडिट/डेबिट कार्ड (Visa, Mastercard, Amex) या PayPal से सुरक्षित पेमेंट करें।';
+
+  @override
+  String get walkiePlan_orderInvalidCoupon => 'अमान्य या समाप्त कूपन कोड';
+
+  @override
+  String walkiePlan_orderMemberCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सदस्य',
+      one: '1 सदस्य',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkiePlan_orderMembersLabel => 'सदस्य';
+
+  @override
+  String walkiePlan_orderMembersTimesRate(int count, String rate) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सदस्य × $rate',
+      one: '1 सदस्य × $rate',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkiePlan_orderNetBanking => 'नेटबैंकिंग';
+
+  @override
+  String get walkiePlan_orderOnlineViaRazorpay => 'Razorpay से ऑनलाइन पेमेंट';
+
+  @override
+  String get walkiePlan_orderOpeningCheckout =>
+      'Razorpay पेमेंट चेकआउट खुल रहा है...';
+
+  @override
+  String get walkiePlan_orderPaymentDetails => 'पेमेंट विवरण';
+
+  @override
+  String get walkiePlan_orderPaymentMethod => 'पेमेंट का तरीका';
+
+  @override
+  String get walkiePlan_orderPricePerMember => 'प्रति सदस्य कीमत';
+
+  @override
+  String walkiePlan_orderProceedToPay(String amount) {
+    return 'पेमेंट करें • $amount';
+  }
+
+  @override
+  String get walkiePlan_orderProcessingPayment => 'पेमेंट प्रोसेस हो रहा है...';
+
+  @override
+  String get walkiePlan_orderRetryPay => 'फिर से पेमेंट करें';
+
+  @override
+  String get walkiePlan_orderSecureBadge => 'सुरक्षित';
+
+  @override
+  String get walkiePlan_orderSubtitle =>
+      'अपने प्लान की जानकारी देखें और पेमेंट करें';
+
+  @override
+  String get walkiePlan_orderSubtotal => 'उप-योग';
+
+  @override
+  String get walkiePlan_orderTaxExport => 'टैक्स (0% निर्यात)';
+
+  @override
+  String get walkiePlan_orderTermsConditions => 'नियम और शर्तें';
+
+  @override
+  String get walkiePlan_orderTitle => 'ऑर्डर सारांश';
+
+  @override
+  String get walkiePlan_orderTotalAmount => 'कुल राशि';
+
+  @override
+  String get walkiePlan_orderTotalPayable => 'कुल देय';
+
+  @override
+  String get walkiePlan_orderUnableToLoad => 'ऑर्डर सारांश लोड नहीं हो सका।';
+
+  @override
+  String get walkiePlan_orderUpiQr => 'UPI / QR';
+
+  @override
+  String walkiePlan_orderVatTitle(String percent) {
+    return 'VAT / टैक्स ($percent%)';
+  }
+
+  @override
+  String get walkiePlan_orderWallets => 'वॉलेट';
+
+  @override
+  String walkiePlan_orderYouSaved(String amount) {
+    return 'इस ऑर्डर पर आपने $amount बचाए!';
+  }
+
+  @override
+  String get walkiePlan_payAnnualPlan => 'वार्षिक प्लान';
+
+  @override
+  String get walkiePlan_payBadgeCompleted => 'पूरा हुआ';
+
+  @override
+  String get walkiePlan_payBadgeInProgress => 'जारी है';
+
+  @override
+  String get walkiePlan_payBadgePending => 'बाकी';
+
+  @override
+  String get walkiePlan_payCancelledByUser =>
+      'पेमेंट आपने रद्द कर दिया। आपके खाते से कोई राशि नहीं कटी है।';
+
+  @override
+  String get walkiePlan_payCouldNotBeProcessed => 'पेमेंट प्रोसेस नहीं हो सका';
+
+  @override
+  String get walkiePlan_payFailedContactSupport => 'सपोर्ट से संपर्क करें';
+
+  @override
+  String walkiePlan_payFailedOn(String time) {
+    return '$time को पेमेंट विफल हुआ';
+  }
+
+  @override
+  String get walkiePlan_payFailedSubtitleLong =>
+      'हम आपका पेमेंट पूरा नहीं कर सके।\nकृपया फिर से कोशिश करें या कोई दूसरा पेमेंट तरीका चुनें।';
+
+  @override
+  String get walkiePlan_payFailedSubtitleShort =>
+      'हम आपका पेमेंट पूरा नहीं कर सके';
+
+  @override
+  String get walkiePlan_payFailedSupportHelp =>
+      'पेमेंट में मदद चाहिए? हमारी टीम 24/7 आपकी मदद के लिए उपलब्ध है।';
+
+  @override
+  String get walkiePlan_payFailedTitle => 'पेमेंट विफल';
+
+  @override
+  String get walkiePlan_payIndividualFeatures =>
+      'रियल-टाइम निगरानी • तुरंत अलर्ट';
+
+  @override
+  String walkiePlan_payInitiatedOn(String time) {
+    return '$time को पेमेंट शुरू हुआ';
+  }
+
+  @override
+  String get walkiePlan_payIntervalMonth => 'महीना';
+
+  @override
+  String get walkiePlan_payIntervalPlan => 'प्लान';
+
+  @override
+  String get walkiePlan_payIntervalQuarter => 'तिमाही';
+
+  @override
+  String get walkiePlan_payIntervalYear => 'साल';
+
+  @override
+  String walkiePlan_payMethodCreditCard(String network) {
+    return 'क्रेडिट कार्ड ($network)';
+  }
+
+  @override
+  String walkiePlan_payMethodDebitCard(String network) {
+    return 'डेबिट कार्ड ($network)';
+  }
+
+  @override
+  String get walkiePlan_payMethodInternational =>
+      'अंतरराष्ट्रीय कार्ड / PayPal';
+
+  @override
+  String walkiePlan_payMethodNetBanking(String bank) {
+    return 'नेटबैंकिंग ($bank)';
+  }
+
+  @override
+  String get walkiePlan_payMethodRazorpay => 'Razorpay पेमेंट';
+
+  @override
+  String get walkiePlan_payMethodRazorpayCheckout => 'Razorpay चेकआउट';
+
+  @override
+  String get walkiePlan_payMethodRazorpayUpiCard => 'Razorpay (UPI / कार्ड)';
+
+  @override
+  String get walkiePlan_payMethodUpi => 'UPI पेमेंट';
+
+  @override
+  String walkiePlan_payMethodWallet(String wallet) {
+    return 'वॉलेट ($wallet)';
+  }
+
+  @override
+  String get walkiePlan_payNetworkIssue =>
+      'पेमेंट के दौरान नेटवर्क में समस्या आई। कृपया अपना इंटरनेट जांचें और फिर से कोशिश करें।';
+
+  @override
+  String get walkiePlan_payNotCompleted =>
+      'आपका पेमेंट पूरा नहीं हुआ। आपके खाते से कोई राशि नहीं कटी है।';
+
+  @override
+  String get walkiePlan_payOtpCharge => 'OTP शुल्क';
+
+  @override
+  String get walkiePlan_payOtpChargeDetails => 'OTP शुल्क विवरण';
+
+  @override
+  String get walkiePlan_payOtpChargedPerLogin =>
+      'हर लॉगिन पर शुल्क। OTP दोबारा भेजना मुफ्त है';
+
+  @override
+  String get walkiePlan_payOtpCharges => 'OTP शुल्क';
+
+  @override
+  String get walkiePlan_payPendingDoNotClose =>
+      'कृपया ऐप बंद न करें। पेमेंट की पुष्टि होने और प्लान सक्रिय होने पर हम आपको सूचित करेंगे।';
+
+  @override
+  String get walkiePlan_payPendingStillInProgress =>
+      'पेमेंट अभी जारी है। पुष्टि होते ही हम अपडेट करेंगे।';
+
+  @override
+  String get walkiePlan_payPendingStillProcessing =>
+      'पेमेंट अभी प्रोसेस हो रहा है। कृपया इंतज़ार करें।';
+
+  @override
+  String get walkiePlan_payPendingSubtitleLong =>
+      'आपका पेमेंट पेमेंट प्रोवाइडर द्वारा प्रोसेस हो रहा है।\nइसमें कुछ मिनट लग सकते हैं।';
+
+  @override
+  String get walkiePlan_payPendingSubtitleShort =>
+      'आपका पेमेंट प्रोसेस हो रहा है';
+
+  @override
+  String get walkiePlan_payPendingTitle => 'पेमेंट बाकी';
+
+  @override
+  String get walkiePlan_payPlanDetails => 'प्लान विवरण';
+
+  @override
+  String get walkiePlan_payRefreshStatus => 'स्थिति रीफ्रेश करें';
+
+  @override
+  String get walkiePlan_payStatusTitle => 'पेमेंट स्थिति';
+
+  @override
+  String get walkiePlan_payStepActivate => 'प्लान सक्रिय करें';
+
+  @override
+  String get walkiePlan_payStepActivateSub =>
+      'आपका प्लान अपने-आप सक्रिय हो जाएगा';
+
+  @override
+  String get walkiePlan_payStepInitiated => 'पेमेंट शुरू हुआ';
+
+  @override
+  String get walkiePlan_payStepProcessing => 'पेमेंट प्रोसेस हो रहा है';
+
+  @override
+  String get walkiePlan_payStepProcessingSub =>
+      'आपके पेमेंट की पुष्टि हो रही है';
+
+  @override
+  String get walkiePlan_payTeamFeatures => 'कई सदस्यों की पहुंच • तुरंत अलर्ट';
+
+  @override
+  String get walkiePlan_payTotalPerOtp => 'प्रति OTP कुल';
+
+  @override
+  String get walkiePlan_payTryAgain => 'फिर से कोशिश करें';
+
+  @override
+  String get walkiePlan_payViewPlanDetails => 'प्लान विवरण देखें';
+
+  @override
+  String get walkiePlan_perMember => 'प्रति सदस्य';
+
+  @override
+  String get walkiePlan_planFallback => 'प्लान';
+
+  @override
+  String get walkiePlan_quarterlyPlan => 'त्रैमासिक प्लान';
+
+  @override
+  String get walkiePlan_razorpayCompleteInWindow =>
+      'कृपया Razorpay पेमेंट विंडो में ट्रांज़ैक्शन पूरा करें।';
+
+  @override
+  String get walkiePlan_razorpayCompletePayment => 'पेमेंट पूरा करें';
+
+  @override
+  String get walkiePlan_razorpayConfirmingWithBank =>
+      'पेमेंट शुरू हो गया है। हम बैंक से पुष्टि कर रहे हैं।';
+
+  @override
+  String get walkiePlan_razorpayConnecting => 'Razorpay से कनेक्ट हो रहा है...';
+
+  @override
+  String get walkiePlan_razorpayCouldNotProcess =>
+      'पेमेंट प्रोसेस नहीं हो सका। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get walkiePlan_razorpayFailedTryAgain =>
+      'पेमेंट विफल रहा। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get walkiePlan_razorpayOneMonthActive => '1 महीना सक्रिय';
+
+  @override
+  String walkiePlan_razorpayPayAmountVia(String amount) {
+    return 'Razorpay से $amount पे करें';
+  }
+
+  @override
+  String get walkiePlan_razorpayPaymentCancelled => 'पेमेंट रद्द हुआ';
+
+  @override
+  String get walkiePlan_razorpayPaymentIdCopied => 'पेमेंट ID कॉपी हो गई!';
+
+  @override
+  String get walkiePlan_razorpayPciCompliant =>
+      '100% सुरक्षित और PCI-DSS अनुपालित';
+
+  @override
+  String get walkiePlan_razorpayPendingConfirmation =>
+      'पेमेंट की पुष्टि बाकी है।';
+
+  @override
+  String get walkiePlan_razorpayProcessing =>
+      'Razorpay से प्रोसेस हो रहा है...';
+
+  @override
+  String walkiePlan_razorpayReceiptAmount(String amount) {
+    return 'राशि: $amount';
+  }
+
+  @override
+  String get walkiePlan_razorpayReceiptCopied => 'रसीद की जानकारी कॉपी हो गई!';
+
+  @override
+  String walkiePlan_razorpayReceiptDate(String date) {
+    return 'तारीख: $date';
+  }
+
+  @override
+  String walkiePlan_razorpayReceiptMode(String mode) {
+    return 'पेमेंट का तरीका: $mode';
+  }
+
+  @override
+  String walkiePlan_razorpayReceiptOrderId(String id) {
+    return 'ऑर्डर ID: $id';
+  }
+
+  @override
+  String walkiePlan_razorpayReceiptPaymentId(String id) {
+    return 'पेमेंट ID: $id';
+  }
+
+  @override
+  String walkiePlan_razorpayReceiptPlan(String plan) {
+    return 'प्लान: $plan';
+  }
+
+  @override
+  String get walkiePlan_razorpayReceiptStatusCompleted => 'स्थिति: पूरा हुआ';
+
+  @override
+  String get walkiePlan_razorpayReceiptTitle => 'FG Tracker पेमेंट रसीद';
+
+  @override
+  String get walkiePlan_razorpayRetryPayment => 'फिर से पेमेंट करें';
+
+  @override
+  String get walkiePlan_razorpaySecureCheckout =>
+      'Razorpay द्वारा सुरक्षित चेकआउट';
+
+  @override
+  String get walkiePlan_razorpaySslEncrypted =>
+      'ट्रांज़ैक्शन 256-बिट SSL सुरक्षा के साथ एंड-टू-एंड एन्क्रिप्टेड हैं।';
+
+  @override
+  String get walkiePlan_razorpaySupportedModes => 'समर्थित पेमेंट तरीके';
+
+  @override
+  String get walkiePlan_razorpayTotalPayableAmount => 'कुल देय राशि';
+
+  @override
+  String walkiePlan_razorpayUnableToLaunch(String error) {
+    return 'पेमेंट गेटवे नहीं खुल सका: $error';
+  }
+
+  @override
+  String get walkiePlan_razorpayVerifyFailed => 'पेमेंट सत्यापन विफल रहा।';
+
+  @override
+  String get walkiePlan_seatAssignedSeat => 'असाइन की गई सीट';
+
+  @override
+  String get walkiePlan_seatAssignment => 'सीट असाइनमेंट';
+
+  @override
+  String get walkiePlan_seatTeamAccess => 'टीम एक्सेस';
+
+  @override
+  String get walkiePlan_seatTeamMember => 'टीम सदस्य';
+
+  @override
+  String get walkiePlan_secureEncryptedPayment =>
+      'सुरक्षित और एन्क्रिप्टेड पेमेंट';
+
+  @override
+  String get walkiePlan_successAccessActivated => 'एक्सेस चालू हो गया';
+
+  @override
+  String get walkiePlan_successAccessActivatedDesc =>
+      'आपका निजी वॉकी-टॉकी एक्सेस अब चालू है।';
+
+  @override
+  String get walkiePlan_successAmountPaid => 'भुगतान की गई राशि';
+
+  @override
+  String get walkiePlan_successAssignLaterNote =>
+      'आप बाद में कभी भी टीम सेटिंग्स से वॉकी एक्सेस दे सकते हैं।';
+
+  @override
+  String get walkiePlan_successAssignMembers => 'सदस्य असाइन करें';
+
+  @override
+  String get walkiePlan_successAssignWalkieAccess => 'वॉकी एक्सेस दें';
+
+  @override
+  String get walkiePlan_successChooseMembersDesc =>
+      'चुनें कि कौन से सदस्य वॉकी-टॉकी इस्तेमाल कर सकते हैं।';
+
+  @override
+  String get walkiePlan_successContinueHome => 'होम पर जारी रखें';
+
+  @override
+  String get walkiePlan_successDateTime => 'तारीख और समय';
+
+  @override
+  String get walkiePlan_successDefaultPaymentMethod => 'Razorpay (UPI / कार्ड)';
+
+  @override
+  String get walkiePlan_successIndividualActive =>
+      'आपका व्यक्तिगत प्लान अब चालू है';
+
+  @override
+  String get walkiePlan_successIndividualActiveDesc =>
+      'आपका व्यक्तिगत प्लान चालू है। होम पर जाएं और बात करना शुरू करें।';
+
+  @override
+  String get walkiePlan_successIndividualLinkedNote =>
+      'आपका व्यक्तिगत सब्सक्रिप्शन चालू है और सीधे आपके अकाउंट से जुड़ा है।';
+
+  @override
+  String get walkiePlan_successManageAccessNote =>
+      'आप टीम सेटिंग्स से कभी भी वॉकी एक्सेस मैनेज या बदल सकते हैं।';
+
+  @override
+  String get walkiePlan_successMaybeLater => 'बाद में';
+
+  @override
+  String get walkiePlan_successNoAccessUntilAssigned =>
+      'आपका प्लान चालू है। जब तक आप असाइन नहीं करते, टीम सदस्यों को वॉकी एक्सेस नहीं मिलेगा।';
+
+  @override
+  String get walkiePlan_successNotNow => 'अभी नहीं?';
+
+  @override
+  String get walkiePlan_successPaid => 'भुगतान हुआ';
+
+  @override
+  String get walkiePlan_successPaymentId => 'पेमेंट ID';
+
+  @override
+  String get walkiePlan_successPaymentIdCopied => 'पेमेंट ID कॉपी हो गई!';
+
+  @override
+  String get walkiePlan_successPaymentMode => 'पेमेंट का तरीका';
+
+  @override
+  String get walkiePlan_successPaymentReceipt => 'पेमेंट रसीद';
+
+  @override
+  String get walkiePlan_successPushToTalkDesc =>
+      'पुश करके बोलें और अपनी टीम से तुरंत जुड़ें।';
+
+  @override
+  String get walkiePlan_successRazorpayVerified => 'Razorpay द्वारा सत्यापित';
+
+  @override
+  String walkiePlan_successReceiptAmount(String amount) {
+    return 'राशि: $amount';
+  }
+
+  @override
+  String get walkiePlan_successReceiptCopied => 'रसीद की जानकारी कॉपी हो गई!';
+
+  @override
+  String walkiePlan_successReceiptDate(String date) {
+    return 'तारीख: $date';
+  }
+
+  @override
+  String get walkiePlan_successReceiptHeader => 'FG Tracker पेमेंट रसीद';
+
+  @override
+  String walkiePlan_successReceiptOrderId(String id) {
+    return 'ऑर्डर ID: $id';
+  }
+
+  @override
+  String walkiePlan_successReceiptPaymentId(String id) {
+    return 'पेमेंट ID: $id';
+  }
+
+  @override
+  String walkiePlan_successReceiptPaymentMode(String mode) {
+    return 'पेमेंट का तरीका: $mode';
+  }
+
+  @override
+  String walkiePlan_successReceiptPlan(String plan) {
+    return 'प्लान: $plan';
+  }
+
+  @override
+  String get walkiePlan_successReceiptStatusCompleted => 'स्थिति: पूरा हुआ';
+
+  @override
+  String get walkiePlan_successSelectChannel => 'चैनल चुनें';
+
+  @override
+  String get walkiePlan_successSelectChannelDesc =>
+      'सदस्यों से जुड़ने के लिए किसी भी ग्रुप या चैनल में शामिल हों।';
+
+  @override
+  String get walkiePlan_successSelectMembersDesc =>
+      'वॉकी-टॉकी इस्तेमाल करने वाले टीम सदस्य चुनें।';
+
+  @override
+  String get walkiePlan_successSetUpTeam => 'टीम सेट अप करें';
+
+  @override
+  String get walkiePlan_successSetUpTeamDesc =>
+      'सदस्यों को आमंत्रित करें, भूमिकाएं और अनुमतियां मैनेज करें।';
+
+  @override
+  String get walkiePlan_successShareReceipt => 'रसीद शेयर करें';
+
+  @override
+  String get walkiePlan_successStartCommunicating => 'बात करना शुरू करें';
+
+  @override
+  String get walkiePlan_successStatus => 'स्थिति';
+
+  @override
+  String get walkiePlan_successSuccessful => 'सफल';
+
+  @override
+  String get walkiePlan_successTeamActive => 'आपका टीम प्लान अब चालू है';
+
+  @override
+  String get walkiePlan_successTeamReady => 'आपकी टीम तैयार है!';
+
+  @override
+  String get walkiePlan_successTitle => 'खरीदारी सफल रही!';
+
+  @override
+  String walkiePlan_successValidTill(String date) {
+    return '$date तक मान्य';
+  }
+
+  @override
+  String get walkiePlan_successVisitHome => 'होम स्क्रीन पर जाएं';
+
+  @override
+  String get walkiePlan_successWhatsNext => 'आगे क्या?';
+
+  @override
+  String get walkiePlan_teamPlan => 'टीम प्लान';
+
+  @override
+  String walkiePlan_teamPlanWithDuration(String duration) {
+    return 'टीम प्लान ($duration)';
+  }
+
+  @override
+  String get walkiePlan_trial7DaysPeriod => '7 दिन की ट्रायल अवधि';
+
+  @override
+  String get walkiePlan_trialActiveLabel => 'ट्रायल चालू';
+
+  @override
+  String get walkiePlan_trialActiveSubscription => 'चालू सब्सक्रिप्शन';
+
+  @override
+  String get walkiePlan_trialActiveSubscriptions => 'चालू सब्सक्रिप्शन';
+
+  @override
+  String get walkiePlan_trialAvailableToStart => 'शुरू करने के लिए उपलब्ध';
+
+  @override
+  String get walkiePlan_trialCheckConnectionRetry =>
+      'कृपया अपना इंटरनेट कनेक्शन जांचें और फिर से कोशिश करें।';
+
+  @override
+  String get walkiePlan_trialChoosePlanBelow =>
+      'वॉकी-टॉकी इस्तेमाल शुरू करने के लिए नीचे एक प्लान चुनें।';
+
+  @override
+  String get walkiePlan_trialChooseSubscription =>
+      'वॉकी-टॉकी इस्तेमाल करते रहने के लिए सब्सक्रिप्शन चुनें।';
+
+  @override
+  String get walkiePlan_trialCompleted => 'ट्रायल पूरा हुआ';
+
+  @override
+  String walkiePlan_trialDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count दिन बाकी',
+      one: '1 दिन बाकी',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String walkiePlan_trialDurationFree(String duration) {
+    return '$duration मुफ़्त';
+  }
+
+  @override
+  String walkiePlan_trialEndedOn(String date) {
+    return '$date को समाप्त';
+  }
+
+  @override
+  String walkiePlan_trialEnjoyAllFeatures(String duration) {
+    return '$duration तक वॉकी-टॉकी के सभी फीचर मुफ़्त में इस्तेमाल करें।\nकोई पेमेंट नहीं चाहिए।';
+  }
+
+  @override
+  String get walkiePlan_trialEnjoyDuringActive =>
+      'अपने चालू ट्रायल के दौरान वॉकी-टॉकी का आनंद लें।';
+
+  @override
+  String get walkiePlan_trialErrAccessMissing =>
+      'वॉकी-टॉकी एक्सेस की जानकारी उपलब्ध नहीं है।';
+
+  @override
+  String get walkiePlan_trialErrFetchDetails =>
+      'वॉकी-टॉकी की जानकारी नहीं मिल सकी।';
+
+  @override
+  String get walkiePlan_trialErrInvalidResponse => 'सर्वर से अमान्य जवाब मिला।';
+
+  @override
+  String get walkiePlan_trialErrNoInternetRetry =>
+      'इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क जांचें और फिर से कोशिश करें।';
+
+  @override
+  String get walkiePlan_trialErrOverviewMissing =>
+      'वॉकी-टॉकी की सारांश जानकारी उपलब्ध नहीं है।';
+
+  @override
+  String get walkiePlan_trialErrTimeout =>
+      'अनुरोध का समय समाप्त हो गया। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get walkiePlan_trialErrUnableToLoad =>
+      'वॉकी-टॉकी की जानकारी लोड नहीं हो सकी। कृपया अपना कनेक्शन जांचें।';
+
+  @override
+  String get walkiePlan_trialExpired => 'ट्रायल समाप्त';
+
+  @override
+  String get walkiePlan_trialExpiredLabel => 'ट्रायल समाप्त';
+
+  @override
+  String get walkiePlan_trialExpiringSoon => 'जल्द समाप्त हो रहा है';
+
+  @override
+  String get walkiePlan_trialFeatClearAudio => 'साफ़ ऑडियो';
+
+  @override
+  String get walkiePlan_trialFeatClearAudioDesc => 'उच्च गुणवत्ता वाली आवाज़';
+
+  @override
+  String get walkiePlan_trialFeatGroupComm => 'ग्रुप बातचीत';
+
+  @override
+  String get walkiePlan_trialFeatGroupCommDesc => 'अपनी टीम से जुड़ें';
+
+  @override
+  String get walkiePlan_trialFeatPtt => 'पुश-टू-टॉक';
+
+  @override
+  String get walkiePlan_trialFeatPttDesc => 'तुरंत वॉइस बातचीत';
+
+  @override
+  String get walkiePlan_trialFeatUnlimited => 'असीमित उपयोग';
+
+  @override
+  String get walkiePlan_trialFeatUnlimitedDesc =>
+      'बिना किसी सीमा के इस्तेमाल करें';
+
+  @override
+  String get walkiePlan_trialFreeAvailable => 'फ्री ट्रायल उपलब्ध';
+
+  @override
+  String get walkiePlan_trialFreeTrialLabel => 'फ्री ट्रायल';
+
+  @override
+  String get walkiePlan_trialFreeTrialRunning => 'फ्री ट्रायल चल रहा है';
+
+  @override
+  String get walkiePlan_trialFullAccess => 'सभी फीचर का पूरा एक्सेस';
+
+  @override
+  String get walkiePlan_trialFullyConsumed =>
+      'आपका फ्री ट्रायल पूरी तरह इस्तेमाल हो चुका है।';
+
+  @override
+  String get walkiePlan_trialHasEnded => 'आपका ट्रायल खत्म हो गया है';
+
+  @override
+  String get walkiePlan_trialHeaderInstant => 'अपने ग्रुप से तुरंत बात करें';
+
+  @override
+  String get walkiePlan_trialHeaderPlanStatus =>
+      'आपका प्लान और सब्सक्रिप्शन स्टेटस';
+
+  @override
+  String walkiePlan_trialHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count घंटे',
+      one: '1 घंटा',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String walkiePlan_trialHoursLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count घंटे बाकी',
+      one: '1 घंटा बाकी',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String walkiePlan_trialHr(int count) {
+    return '$count घंटा';
+  }
+
+  @override
+  String walkiePlan_trialHrMin(int hours, int minutes) {
+    return '$hours घंटा $minutes मिनट';
+  }
+
+  @override
+  String get walkiePlan_trialIsActive => 'आपका ट्रायल चालू है';
+
+  @override
+  String walkiePlan_trialMin(int count) {
+    return '$count मिनट';
+  }
+
+  @override
+  String walkiePlan_trialMinSec(int minutes, int seconds) {
+    return '$minutes मिनट $seconds सेकंड';
+  }
+
+  @override
+  String walkiePlan_trialMinsLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count मिनट बाकी',
+      one: '1 मिनट बाकी',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String walkiePlan_trialMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count मिनट',
+      one: '1 मिनट',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkiePlan_trialNoActivePlan => 'कोई चालू प्लान नहीं';
+
+  @override
+  String get walkiePlan_trialNoCardRequired =>
+      '7 दिनों में कभी भी इस्तेमाल करें  •  क्रेडिट कार्ड की ज़रूरत नहीं';
+
+  @override
+  String get walkiePlan_trialNoInternetTitle => 'इंटरनेट कनेक्शन नहीं है';
+
+  @override
+  String walkiePlan_trialNoPaymentNow(String price) {
+    return 'अभी कोई पेमेंट नहीं चाहिए। ट्रायल के बाद, चाहें तो पेड प्लान ($price/व्यक्ति) के साथ जारी रख सकते हैं।';
+  }
+
+  @override
+  String get walkiePlan_trialPeriodMonth => 'महीना';
+
+  @override
+  String get walkiePlan_trialRetrying => 'फिर से कोशिश हो रही है...';
+
+  @override
+  String walkiePlan_trialSec(int count) {
+    return '$count सेकंड';
+  }
+
+  @override
+  String walkiePlan_trialStartFreeTrial(String duration) {
+    return '$duration का फ्री ट्रायल शुरू करें';
+  }
+
+  @override
+  String get walkiePlan_trialStartYourFreeTrial => 'अपना फ्री ट्रायल शुरू करें';
+
+  @override
+  String get walkiePlan_trialStatusCompleted => 'पूरा हुआ';
+
+  @override
+  String get walkiePlan_trialStatusExpired => 'समाप्त';
+
+  @override
+  String get walkiePlan_trialSubscriptionActive => 'सब्सक्रिप्शन चालू है';
+
+  @override
+  String get walkiePlan_trialSubscriptionEndedMsg =>
+      'आपका वॉकी-टॉकी सब्सक्रिप्शन खत्म हो गया है। अपनी टीम से बात करते रहने के लिए प्लान रिन्यू करें।';
+
+  @override
+  String get walkiePlan_trialSubscriptionExpired => 'सब्सक्रिप्शन समाप्त';
+
+  @override
+  String get walkiePlan_trialTalkFree => 'अपने ग्रुप से मुफ़्त बात करें।';
+
+  @override
+  String walkiePlan_trialTalkFreeTill(String date) {
+    return '$date तक अपने ग्रुप से मुफ़्त बात करें।';
+  }
+
+  @override
+  String get walkiePlan_trialTeamAccessMsg =>
+      'आपको अपने टीम प्लान से वॉकी-टॉकी एक्सेस मिला है।';
+
+  @override
+  String walkiePlan_trialTimeLeft(String time) {
+    return '$time बाकी';
+  }
+
+  @override
+  String get walkiePlan_trialTimeRemaining => 'ट्रायल का बचा समय';
+
+  @override
+  String get walkiePlan_trialTimeUsedUp => 'ट्रायल का समय खत्म हो गया';
+
+  @override
+  String get walkiePlan_trialTryAgain => 'फिर से कोशिश करें';
+
+  @override
+  String get walkiePlan_trialUnableToLoadTitle => 'वॉकी-टॉकी लोड नहीं हो सका';
+
+  @override
+  String get walkiePlan_trialUsage => 'ट्रायल उपयोग';
+
+  @override
+  String get walkiePlan_trialUseAnytime7Days =>
+      '7 दिनों में कभी भी ट्रायल इस्तेमाल करें';
+
+  @override
+  String walkiePlan_trialUseWithin7Days(String duration) {
+    return 'अपना $duration का ट्रायल 7 दिनों के भीतर कभी भी इस्तेमाल करें।';
+  }
+
+  @override
+  String get walkiePlan_trialUsed => 'ट्रायल इस्तेमाल हो गया';
+
+  @override
+  String get walkiePlan_trialValidityPeriod => 'ट्रायल की वैधता अवधि';
+
+  @override
+  String get walkiePlan_trialWalkieTalkieTitle => 'वॉकी-टॉकी';
+
+  @override
+  String get walkiePlan_trialWhatYouCanDo =>
+      'ट्रायल के दौरान आप क्या कर सकते हैं';
+
+  @override
+  String get walkiePlan_unableToConnect =>
+      'सर्वर से कनेक्ट नहीं हो सका। कृपया फिर से कोशिश करें।';
+
+  @override
+  String get walkiePlan_yearlyPlan => 'वार्षिक प्लान';
+
+  @override
+  String get walkie_aMember => 'एक सदस्य';
+
+  @override
+  String get walkie_accept => 'स्वीकारें';
+
+  @override
+  String get walkie_activeAccess => 'सक्रिय एक्सेस';
+
+  @override
+  String get walkie_activeBadge => 'सक्रिय';
+
+  @override
+  String walkie_activeInWalkie(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'वॉकी में $count सक्रिय',
+      one: 'वॉकी में 1 सक्रिय',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkie_activeMember => 'सक्रिय सदस्य';
+
+  @override
+  String get walkie_admin => 'एडमिन';
+
+  @override
+  String get walkie_adminMuted => 'एडमिन • म्यूट';
+
+  @override
+  String get walkie_adminOnlyAction => 'केवल एडमिन के लिए';
+
+  @override
+  String get walkie_adminOnlyActionMessage =>
+      'केवल ग्रुप एडमिन सदस्यों को नोटिफिकेशन अलर्ट भेज सकते हैं।';
+
+  @override
+  String walkie_alertSentMessage(String name) {
+    return '$name को नोटिफिकेशन भेजा गया। 10 सेकंड में फिर से भेज सकते हैं।';
+  }
+
+  @override
+  String get walkie_alertSentTitle => 'अलर्ट भेजा गया';
+
+  @override
+  String get walkie_assignMembersToCommunicate =>
+      'इस ग्रुप में बात करने के लिए सदस्य असाइन करें';
+
+  @override
+  String get walkie_assignedByYou => 'आपके द्वारा असाइन';
+
+  @override
+  String walkie_assignedCount(int count) {
+    return 'असाइन ($count)';
+  }
+
+  @override
+  String get walkie_assignedSeats => 'असाइन की गई सीटें';
+
+  @override
+  String get walkie_audioBluetooth => 'ब्लूटूथ';
+
+  @override
+  String get walkie_audioHeadset => 'हेडसेट';
+
+  @override
+  String get walkie_audioOutput => 'ऑडियो आउटपुट';
+
+  @override
+  String get walkie_audioPhone => 'फ़ोन';
+
+  @override
+  String get walkie_audioSpeaker => 'स्पीकर';
+
+  @override
+  String get walkie_audioWiredHeadphones => 'वायर्ड हेडफ़ोन';
+
+  @override
+  String walkie_autoUnlockIn(int seconds) {
+    return '$seconds से. में ऑटो-अनलॉक';
+  }
+
+  @override
+  String get walkie_availableMembers => 'उपलब्ध सदस्य';
+
+  @override
+  String walkie_canAssignUpTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'आप इस ग्रुप में $count सदस्यों तक असाइन कर सकते हैं',
+      one: 'आप इस ग्रुप में 1 सदस्य तक असाइन कर सकते हैं',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkie_cannotRemoveOtherAdminSeat =>
+      'दूसरे एडमिन द्वारा असाइन की गई सीट हटाई नहीं जा सकती';
+
+  @override
+  String get walkie_cannotSpeak => 'इस चैनल पर नहीं बोल सकते';
+
+  @override
+  String get walkie_channelBusy => 'चैनल व्यस्त है';
+
+  @override
+  String get walkie_channelLocked => 'चैनल लॉक है';
+
+  @override
+  String get walkie_channelSpeaking => 'चैनल पर बात चल रही है...';
+
+  @override
+  String walkie_channelSwitchErrorMessage(String group) {
+    return '$group को सक्रिय बोलने वाला चैनल नहीं बनाया जा सका।';
+  }
+
+  @override
+  String get walkie_channelSwitchErrorTitle => 'चैनल बदलने में त्रुटि';
+
+  @override
+  String get walkie_channelUnlocked => 'चैनल अनलॉक हुआ';
+
+  @override
+  String get walkie_chat => 'चैट';
+
+  @override
+  String get walkie_checkNetworkTryAgain =>
+      'कृपया अपना नेटवर्क कनेक्शन जांचें और फिर से कोशिश करें।';
+
+  @override
+  String get walkie_chooseAPlan => 'प्लान चुनें';
+
+  @override
+  String get walkie_connected => 'कनेक्टेड';
+
+  @override
+  String get walkie_connectedWaiting =>
+      'चैनल से जुड़े • दूसरों के जुड़ने का इंतज़ार';
+
+  @override
+  String get walkie_connectingChannel => 'चैनल से जुड़ रहे हैं...';
+
+  @override
+  String get walkie_consumingTrial => 'ट्रायल चल रहा है...';
+
+  @override
+  String get walkie_continueListenOnly => 'केवल-सुनें मोड में जारी रखें';
+
+  @override
+  String walkie_currentlyAssigned(int count) {
+    return 'अभी असाइन ($count)';
+  }
+
+  @override
+  String get walkie_defaultGroupName => 'वॉकी ग्रुप';
+
+  @override
+  String get walkie_description => 'विवरण';
+
+  @override
+  String get walkie_disconnected => 'डिस्कनेक्ट हो गया';
+
+  @override
+  String get walkie_editAssignedMembers => 'असाइन किए गए सदस्य बदलें';
+
+  @override
+  String get walkie_enable => 'चालू करें';
+
+  @override
+  String walkie_errorWithDetails(String details) {
+    return 'त्रुटि: $details';
+  }
+
+  @override
+  String get walkie_exitWalkie => 'वॉकी से बाहर निकलें';
+
+  @override
+  String get walkie_exitWalkieMessage =>
+      'आप इस वॉकी चैनल से डिस्कनेक्ट हो जाएंगे। आप ग्रुप के सदस्य बने रहेंगे।';
+
+  @override
+  String get walkie_exitWalkieTitle => 'वॉकी से बाहर निकलें?';
+
+  @override
+  String get walkie_fairConnection => 'ठीक-ठाक कनेक्शन';
+
+  @override
+  String walkie_fairConnectionMs(int ms) {
+    return 'ठीक-ठाक कनेक्शन (${ms}ms)';
+  }
+
+  @override
+  String get walkie_featureAllDevices => 'सभी डिवाइस पर उपयोग करें';
+
+  @override
+  String get walkie_featureEasyCoordination => 'आसान ग्रुप\nतालमेल';
+
+  @override
+  String get walkie_featureHoldToTalk => 'बोलने के लिए दबाकर रखें';
+
+  @override
+  String get walkie_featurePtt => 'पुश-टू-टॉक\nकम्युनिकेशन';
+
+  @override
+  String get walkie_featureQuickGroup => 'तेज़ ग्रुप\nकम्युनिकेशन';
+
+  @override
+  String get walkie_featureRealtime => 'रियल-टाइम कनेक्टिविटी';
+
+  @override
+  String get walkie_featureSafeReliable => 'सुरक्षित और भरोसेमंद';
+
+  @override
+  String get walkie_featureStayConnected => 'हमेशा जुड़े रहें';
+
+  @override
+  String get walkie_featureTeamCommunication => 'टीम कम्युनिकेशन';
+
+  @override
+  String get walkie_featureUnlimited => 'अनलिमिटेड';
+
+  @override
+  String get walkie_fieldTeam => 'फील्ड टीम';
+
+  @override
+  String get walkie_freeTrialEnded => 'फ्री ट्रायल खत्म';
+
+  @override
+  String get walkie_freeTrialEndedMessage =>
+      'वॉकी-टॉकी का आपका 1 घंटे का फ्री ट्रायल खत्म हो गया है।\nअपनी टीम के साथ ग्रुप कम्युनिकेशन जारी रखने के लिए\nअभी अपग्रेड करें।';
+
+  @override
+  String get walkie_freeTrialEndedTitle => 'फ्री ट्रायल खत्म हो गया';
+
+  @override
+  String get walkie_genericError => 'वॉकी-टॉकी त्रुटि';
+
+  @override
+  String get walkie_getPlan => 'प्लान लें';
+
+  @override
+  String walkie_goodConnectionMs(int ms) {
+    return 'अच्छा कनेक्शन (${ms}ms)';
+  }
+
+  @override
+  String walkie_groupCode(String code) {
+    return 'ग्रुप कोड: $code';
+  }
+
+  @override
+  String get walkie_groupCommunication => 'ग्रुप कम्युनिकेशन';
+
+  @override
+  String get walkie_groupFallback => 'ग्रुप';
+
+  @override
+  String get walkie_groupMembers => 'ग्रुप सदस्य';
+
+  @override
+  String get walkie_heroSubtitle =>
+      'फ़ोन कॉल किए बिना अपने ग्रुप के साथ\nपुश-टू-टॉक वॉइस कम्युनिकेशन का उपयोग करें।';
+
+  @override
+  String get walkie_heroTitle => 'जुड़े रहें, तुरंत बात करें';
+
+  @override
+  String get walkie_holdToTalk => 'बोलने के लिए दबाएं';
+
+  @override
+  String get walkie_holdToTalkSlideLock =>
+      'बोलने के लिए दबाएं, लॉक के लिए ऊपर स्लाइड करें';
+
+  @override
+  String get walkie_inWalkieChannel => 'वॉकी चैनल में';
+
+  @override
+  String get walkie_individualActiveUpgrade =>
+      'व्यक्तिगत प्लान सक्रिय (केवल खुद के लिए) • सदस्य असाइन करने के लिए टीम प्लान में अपग्रेड करें।';
+
+  @override
+  String get walkie_individualLimitMessage =>
+      'आपके व्यक्तिगत प्लान में केवल 1 सदस्य सीट है। कई सदस्य असाइन करने और पूरी टीम को जोड़ने के लिए टीम प्लान में अपग्रेड करें।';
+
+  @override
+  String get walkie_individualPlan => 'व्यक्तिगत प्लान';
+
+  @override
+  String walkie_individualSelectedCount(int count) {
+    return '$count/1 (व्यक्तिगत)';
+  }
+
+  @override
+  String get walkie_individualSelfOnlyUpgrade =>
+      'व्यक्तिगत प्लान (केवल खुद के लिए) • सदस्य असाइन करने के लिए टीम में अपग्रेड करें';
+
+  @override
+  String get walkie_individualSubscribedSelf =>
+      'व्यक्तिगत प्लान • खुद सब्सक्राइब किया';
+
+  @override
+  String get walkie_info => 'जानकारी';
+
+  @override
+  String walkie_isSpeaking(String name) {
+    return '$name बोल रहे हैं...';
+  }
+
+  @override
+  String walkie_isTalking(String name) {
+    return '$name बोल रहे हैं...';
+  }
+
+  @override
+  String walkie_joinedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count जुड़े',
+      one: '1 जुड़ा',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String walkie_lastSeen(String time) {
+    return 'अंतिम बार देखा गया $time';
+  }
+
+  @override
+  String get walkie_listenOnly => 'केवल सुनें';
+
+  @override
+  String get walkie_listenOnlyTapPlan =>
+      'केवल सुनें — प्लान देखने के लिए टैप करें';
+
+  @override
+  String get walkie_listening => 'सुन रहे हैं';
+
+  @override
+  String get walkie_listeningOnly => 'केवल सुन रहे हैं';
+
+  @override
+  String get walkie_live => 'लाइव';
+
+  @override
+  String get walkie_lockTimeout => 'लॉक समय समाप्त — माइक छोड़ा गया';
+
+  @override
+  String get walkie_lockedTapMic => 'लॉक है — रोकने के लिए माइक टैप करें';
+
+  @override
+  String get walkie_maybeLater => 'बाद में';
+
+  @override
+  String get walkie_member => 'सदस्य';
+
+  @override
+  String get walkie_membersInChannel => 'चैनल में सदस्य';
+
+  @override
+  String walkie_membersOnlineLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'सदस्य ऑनलाइन',
+      one: 'सदस्य ऑनलाइन',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkie_membersUpdateFailed =>
+      'असाइन किए गए सदस्य अपडेट नहीं हो सके';
+
+  @override
+  String get walkie_membersUpdated =>
+      'असाइन किए गए सदस्य सफलतापूर्वक अपडेट हुए';
+
+  @override
+  String get walkie_micAccessRequired =>
+      'बोलने के लिए माइक्रोफ़ोन एक्सेस ज़रूरी है।';
+
+  @override
+  String get walkie_micDisabledMessage =>
+      'डिवाइस सेटिंग्स में माइक्रोफ़ोन एक्सेस बंद है। इस ग्रुप में बोलने के लिए सेटिंग्स में माइक्रोफ़ोन एक्सेस की अनुमति दें।\n\nआप अब भी दूसरे सदस्यों को सुन सकते हैं।';
+
+  @override
+  String get walkie_micPermissionRequired => 'माइक्रोफ़ोन अनुमति ज़रूरी है';
+
+  @override
+  String get walkie_micPermissionTitle => 'माइक्रोफ़ोन अनुमति';
+
+  @override
+  String get walkie_micRequiredMessage =>
+      'इस वॉकी-टॉकी ग्रुप में बोलने के लिए माइक्रोफ़ोन अनुमति ज़रूरी है।\n\nमाइक्रोफ़ोन चालू किए बिना भी आप दूसरों को सुन सकते हैं।';
+
+  @override
+  String get walkie_muteMe => 'मुझे म्यूट करें';
+
+  @override
+  String get walkie_muted => 'म्यूट';
+
+  @override
+  String get walkie_mutedInWalkie => 'म्यूट • वॉकी में';
+
+  @override
+  String get walkie_mutedListeningOnly => 'आप म्यूट हैं — केवल सुन सकते हैं';
+
+  @override
+  String walkie_nameSpeaking(String name) {
+    return '$name बोल रहे हैं...';
+  }
+
+  @override
+  String get walkie_noActivePlan => 'कोई सक्रिय प्लान नहीं';
+
+  @override
+  String get walkie_noAvailableMembers => 'कोई उपलब्ध सदस्य नहीं';
+
+  @override
+  String get walkie_noBluetoothDevice =>
+      'कोई ब्लूटूथ ऑडियो डिवाइस कनेक्ट नहीं है। कृपया सेटिंग्स में अपना ब्लूटूथ हेडसेट पेयर करें।';
+
+  @override
+  String get walkie_noGroupsFound => 'कोई ग्रुप नहीं मिला';
+
+  @override
+  String get walkie_noMembersAssigned => 'अभी कोई सदस्य असाइन नहीं है';
+
+  @override
+  String get walkie_noMembersFound => 'कोई सदस्य नहीं मिला';
+
+  @override
+  String get walkie_noMembersFoundTitle => 'कोई सदस्य नहीं मिला';
+
+  @override
+  String get walkie_noMembersMatch => 'कोई सदस्य मेल नहीं खाता';
+
+  @override
+  String walkie_noMembersMatchQuery(String query) {
+    return '\'$query\' से कोई सदस्य मेल नहीं खाता';
+  }
+
+  @override
+  String get walkie_noMembersToAssign =>
+      'असाइन करने के लिए कोई ग्रुप सदस्य उपलब्ध नहीं है।';
+
+  @override
+  String get walkie_noNameGroup => 'बिना नाम का ग्रुप';
+
+  @override
+  String get walkie_noPlanSubscribeAssign =>
+      'कोई सक्रिय प्लान नहीं • सदस्य असाइन करने के लिए सब्सक्राइब करें';
+
+  @override
+  String get walkie_noSeatMessage =>
+      'आपके पास सक्रिय टीम प्लान है, लेकिन सभी वॉइस सीटें अभी दूसरे टीम सदस्यों को असाइन हैं।\n\nआप ग्रुप की बातचीत लाइव सुन सकते हैं, लेकिन बोलने के लिए खुद को सीट असाइन करें या अपना प्लान अपग्रेड करें।';
+
+  @override
+  String get walkie_noSeatTitle => 'कोई वॉइस सीट असाइन नहीं';
+
+  @override
+  String get walkie_noSeatsRefreshing =>
+      'कोई टीम सीट उपलब्ध नहीं। सदस्य सूची रिफ्रेश हो रही है...';
+
+  @override
+  String get walkie_noSubscriptionMessage =>
+      'आपके पास कोई सक्रिय वॉकी-टॉकी सब्सक्रिप्शन नहीं है। सदस्य असाइन करने और तुरंत वॉइस कम्युनिकेशन शुरू करने के लिए कोई प्लान लें।';
+
+  @override
+  String get walkie_noTeamSubscription =>
+      'कोई सक्रिय टीम सब्सक्रिप्शन नहीं मिला';
+
+  @override
+  String get walkie_noValidMembers =>
+      'असाइन करने के लिए कोई मान्य सदस्य नहीं चुना गया';
+
+  @override
+  String get walkie_noVoiceSeatListenOnly =>
+      'कोई वॉइस सीट असाइन नहीं — आप केवल-सुनें मोड में हैं';
+
+  @override
+  String get walkie_noWiredDevice =>
+      'कोई वायर्ड ईयरफ़ोन या हेडसेट कनेक्ट नहीं है। कृपया उन्हें अपने डिवाइस में लगाएं।';
+
+  @override
+  String get walkie_notConnected => 'कनेक्टेड नहीं';
+
+  @override
+  String get walkie_notifLeave => 'छोड़ें';
+
+  @override
+  String get walkie_notifOpenWalkie => 'वॉकी खोलें';
+
+  @override
+  String walkie_notifStoppedTalking(String name) {
+    return '$name ने बोलना बंद किया';
+  }
+
+  @override
+  String walkie_notifTalking(String name) {
+    return '$name बोल रहे हैं';
+  }
+
+  @override
+  String walkie_notificationSettingFailed(String group) {
+    return '$group के लिए नोटिफिकेशन सेटिंग अपडेट नहीं हो सकी। कृपया फिर से कोशिश करें।';
+  }
+
+  @override
+  String get walkie_notificationSettingTitle => 'नोटिफिकेशन सेटिंग';
+
+  @override
+  String get walkie_onlyAdminCanAlert => 'केवल ग्रुप एडमिन अलर्ट भेज सकते हैं';
+
+  @override
+  String get walkie_openWalkieTalkie => 'वॉकी-टॉकी खोलें';
+
+  @override
+  String get walkie_otherTeam => 'दूसरी टीम';
+
+  @override
+  String get walkie_othersWontHear => 'दूसरे आपको नहीं सुन पाएंगे';
+
+  @override
+  String get walkie_planRequiredTitle => 'वॉकी-टॉकी प्लान ज़रूरी है';
+
+  @override
+  String get walkie_planRequiredToTalk => 'बात करने के लिए प्लान ज़रूरी';
+
+  @override
+  String get walkie_planStartsOnFirstAssign =>
+      'पहला सदस्य असाइन होते ही प्लान शुरू होगा।';
+
+  @override
+  String get walkie_poorConnection =>
+      'कमज़ोर नेटवर्क — ऑडियो में देरी हो सकती है';
+
+  @override
+  String get walkie_preparingAudio => 'ऑडियो तैयार हो रहा है...';
+
+  @override
+  String get walkie_purchaseTeamPlanToAssign =>
+      'सदस्यों को वॉकी-टॉकी एक्सेस देने के लिए टीम प्लान खरीदें।';
+
+  @override
+  String get walkie_purchaseUpgradePlan => 'प्लान खरीदें / अपग्रेड करें';
+
+  @override
+  String get walkie_ready => 'तैयार';
+
+  @override
+  String get walkie_reconnecting => 'दोबारा जुड़ रहे हैं...';
+
+  @override
+  String get walkie_reconnectingServer =>
+      'वॉकी सर्वर से दोबारा जुड़ रहे हैं...';
+
+  @override
+  String get walkie_releaseToStop => 'रोकने के लिए छोड़ें';
+
+  @override
+  String get walkie_removeAll => 'सभी हटाएं';
+
+  @override
+  String get walkie_searchGroups => 'ग्रुप खोजें';
+
+  @override
+  String get walkie_searchMembers => 'सदस्य खोजें...';
+
+  @override
+  String walkie_seatsFraction(int assigned, int total) {
+    return '$assigned/$total सीटें';
+  }
+
+  @override
+  String walkie_seatsSummary(int total, int assigned, int available) {
+    return 'कुल $total सीटें • $assigned असाइन • $available उपलब्ध';
+  }
+
+  @override
+  String walkie_seatsUsed(String assigned, String total) {
+    return '$assigned / $total सीटें उपयोग में';
+  }
+
+  @override
+  String walkie_secondsShort(int seconds) {
+    return '$seconds से.';
+  }
+
+  @override
+  String get walkie_selectAtLeastOne =>
+      'कृपया असाइन करने के लिए कम से कम एक सदस्य चुनें';
+
+  @override
+  String get walkie_selectGroupFirst => 'कृपया पहले एक ग्रुप चुनें';
+
+  @override
+  String get walkie_selectGroupToConnect => 'जुड़ने के लिए ग्रुप चुनें';
+
+  @override
+  String get walkie_selected => 'चुने गए';
+
+  @override
+  String get walkie_selfAccess => 'स्वयं एक्सेस';
+
+  @override
+  String get walkie_selfPlan => 'स्वयं प्लान';
+
+  @override
+  String get walkie_slideUpToLock => 'लॉक करने के लिए ऊपर स्लाइड करें';
+
+  @override
+  String get walkie_someone => 'कोई';
+
+  @override
+  String get walkie_someoneSpeaking => 'कोई बोल रहा है...';
+
+  @override
+  String get walkie_speaking => 'बोल रहे हैं...';
+
+  @override
+  String walkie_startFreeTrial(String duration) {
+    return '$duration का फ्री ट्रायल शुरू करें';
+  }
+
+  @override
+  String get walkie_strongConnection => 'मज़बूत कनेक्शन';
+
+  @override
+  String walkie_strongConnectionMs(int ms) {
+    return 'मज़बूत कनेक्शन (${ms}ms)';
+  }
+
+  @override
+  String get walkie_subscribeToStartTalk =>
+      'वॉइस बातचीत शुरू करने और सदस्य असाइन करने के लिए सब्सक्राइब करें';
+
+  @override
+  String get walkie_subscribed => 'सब्सक्राइब्ड';
+
+  @override
+  String get walkie_talking => 'बोल रहे हैं...';
+
+  @override
+  String get walkie_tapToUnlock => 'अनलॉक के लिए टैप करें';
+
+  @override
+  String get walkie_teamAssignedElsewhere => 'टीम प्लान • कहीं और असाइन';
+
+  @override
+  String get walkie_teamPlan => 'टीम प्लान';
+
+  @override
+  String get walkie_teamPlanRequired => 'टीम प्लान ज़रूरी है';
+
+  @override
+  String get walkie_teamPlanRequiredToAssign =>
+      'सदस्य असाइन करने के लिए टीम प्लान ज़रूरी है';
+
+  @override
+  String get walkie_teamPlanStatus => 'टीम प्लान स्थिति';
+
+  @override
+  String get walkie_teamSeatMember => 'टीम सीट सदस्य';
+
+  @override
+  String get walkie_title => 'वॉकी-टॉकी';
+
+  @override
+  String walkie_totalCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'कुल $count',
+      one: 'कुल 1',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkie_trialActive1hr => '1 घंटे का ट्रायल सक्रिय';
+
+  @override
+  String get walkie_trialEndedSubscribe =>
+      'फ्री ट्रायल खत्म — जारी रखने के लिए सब्सक्राइब करें';
+
+  @override
+  String get walkie_unableToConnectReconnecting =>
+      'चैनल से नहीं जुड़ पाए — दोबारा जुड़ रहे हैं...';
+
+  @override
+  String get walkie_unavailable => 'उपलब्ध नहीं';
+
+  @override
+  String walkie_updateMembers(int assigned, int total) {
+    return 'सदस्य अपडेट करें ($assigned/$total)';
+  }
+
+  @override
+  String get walkie_updatingMembers => 'सदस्य अपडेट हो रहे हैं...';
+
+  @override
+  String get walkie_upgradeAddSeats => 'अपग्रेड करें और सीटें जोड़ें';
+
+  @override
+  String get walkie_upgradeNow => 'अभी अपग्रेड करें';
+
+  @override
+  String get walkie_upgradeTeamAssign =>
+      'टीम प्लान में अपग्रेड करें (सदस्य असाइन करें)';
+
+  @override
+  String get walkie_upgradeToTeamPlan => 'टीम प्लान में अपग्रेड करें';
+
+  @override
+  String walkie_userCancelled(String name) {
+    return '$name ने रद्द किया';
+  }
+
+  @override
+  String walkie_userJoined(String name) {
+    return '$name जुड़े';
+  }
+
+  @override
+  String walkie_userLeft(String name) {
+    return '$name चले गए';
+  }
+
+  @override
+  String walkie_validTill(String date) {
+    return '$date तक मान्य';
+  }
+
+  @override
+  String get walkie_viewPlan => 'प्लान देखें';
+
+  @override
+  String get walkie_voiceNotPermitted => 'आवाज़ भेजने की अनुमति नहीं है';
+
+  @override
+  String get walkie_weakSignal => 'कमज़ोर सिग्नल';
+
+  @override
+  String walkie_weakSignalMs(int ms) {
+    return 'कमज़ोर सिग्नल (${ms}ms)';
+  }
+
+  @override
+  String get walkie_youAreConnected => 'आप कनेक्टेड हैं';
+
+  @override
+  String get walkie_yourVoiceAccess => 'आपकी वॉइस एक्सेस';
+
+  @override
+  String widget_inviteDownloadLinks(String playStoreLink, String appStoreLink) {
+    return 'Android के लिए डाउनलोड करें: $playStoreLink\n\niOS के लिए डाउनलोड करें: $appStoreLink';
+  }
+
+  @override
+  String get widget_live => 'लाइव';
+
+  @override
+  String get widget_lostConnection => 'कनेक्शन टूट गया';
+
+  @override
+  String get widget_manageGroups => 'अपने ग्रुप आसानी से मैनेज करें';
+
+  @override
+  String get widget_noInternetBody =>
+      'ओह... इंटरनेट कनेक्शन नहीं मिला। अपना कनेक्शन जांचें';
+
+  @override
+  String get widget_notSeenYet => 'अभी देखा नहीं गया';
+
+  @override
+  String get widget_pinnedMessage => 'पिन किया गया मैसेज';
+
+  @override
+  String get widget_private => 'प्राइवेट';
+
+  @override
+  String get widget_refreshPage => 'पेज रीफ़्रेश करें';
+
+  @override
+  String get widget_seen => 'देखा गया';
+
+  @override
+  String widget_seenCount(int count) {
+    return '($count)';
+  }
+
+  @override
+  String widget_seenCountOfTotal(int count, int total) {
+    return '($total में से $count)';
+  }
+
+  @override
+  String get widget_somethingWentWrongTitle => 'कुछ गलत हो गया';
+
+  @override
+  String get widget_userFallback => 'यूज़र';
+}

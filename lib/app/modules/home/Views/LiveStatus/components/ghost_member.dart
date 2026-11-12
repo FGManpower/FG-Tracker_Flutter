@@ -6,6 +6,7 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -114,7 +115,7 @@ class _GhostMemberState extends State<GhostMember> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Private Mode",
+                      appL10n.home_privateMode,
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
@@ -125,7 +126,7 @@ class _GhostMemberState extends State<GhostMember> {
                     SizedBox(height: 2.h),
                     Obx(
                           () => Text(
-                        "${controller.privateMemberList.length} Active Sessions",
+                        appL10n.home_activeSessionsCount(controller.privateMemberList.length),
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontFamily: FontFamily.interRegular,
@@ -263,7 +264,9 @@ class _GhostMemberState extends State<GhostMember> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isPrivate ? "You're Invisible" : "You're Visible",
+                    isPrivate
+                        ? appL10n.home_youAreInvisible
+                        : appL10n.home_youAreVisible,
                     style: TextStyle(
                       fontSize: 15.5.sp,
                       fontWeight: FontWeight.w700,
@@ -274,8 +277,8 @@ class _GhostMemberState extends State<GhostMember> {
                   SizedBox(height: 3.h),
                   Text(
                     isPrivate
-                    ? "When Private Mode is ON, others can't see your location."
-                    : "When Private Mode is OFF, others can see your location.",
+                    ? appL10n.home_privateModeOnHint
+                    : appL10n.home_privateModeOffHint,
                     style: TextStyle(
                       fontSize: 11.5.sp,
                       fontFamily: FontFamily.interRegular,
@@ -306,7 +309,7 @@ class _GhostMemberState extends State<GhostMember> {
     return Row(
       children: [
         Text(
-          "Active Sessions",
+          appL10n.home_activeSessions,
           style: TextStyle(
             fontSize: 15.sp,
             fontWeight: FontWeight.w700,
@@ -361,7 +364,7 @@ class _GhostMemberState extends State<GhostMember> {
             ),
             SizedBox(height: 12.h),
             Text(
-              "No active private sessions",
+              appL10n.home_noActivePrivateSessions,
               style: TextStyle(
                 fontSize: 14.sp,
                 fontFamily: FontFamily.interMedium,
@@ -502,7 +505,7 @@ class _GhostMemberState extends State<GhostMember> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    member.displayName,
+                    member.displayNameLabel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -514,7 +517,7 @@ class _GhostMemberState extends State<GhostMember> {
                   ),
                   SizedBox(height: 3.h),
                   Text(
-                    "Private Mode is ON",
+                    appL10n.home_privateModeIsOn,
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontFamily: FontFamily.interRegular,
@@ -533,7 +536,7 @@ class _GhostMemberState extends State<GhostMember> {
                       Text(
                         member.formattedStartedAt.toLowerCase().startsWith('started at')
                             ? member.formattedStartedAt
-                            : "Started at ${member.formattedStartedAt}",
+                            : appL10n.home_startedAt(member.formattedStartedAt),
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontFamily: FontFamily.interRegular,

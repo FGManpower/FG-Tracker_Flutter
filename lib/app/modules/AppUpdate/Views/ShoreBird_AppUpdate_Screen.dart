@@ -6,6 +6,7 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/AppUpdate/Controller/UpdateCubit/update_cubit.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -25,9 +26,9 @@ class _MyHomePageState extends State<ShorebirdAppUpdateScreen> {
 
   Future<bool> _onWillPop() async {
     await CommonDialog.ConfirmationDialog(
-      title: "Do you want to Exit?",
-      cancel: "NO",
-      confirm: "YES",
+      title: appL10n.appUpdate_exitConfirmTitle,
+      cancel: appL10n.common_no,
+      confirm: appL10n.common_yes,
       onConfirm: () => exit(0),
     );
     return false;
@@ -55,13 +56,15 @@ class _MyHomePageState extends State<ShorebirdAppUpdateScreen> {
                     ),
                   ),
                   reausabletext(
-                    "Updating... ${state.progress.toInt()}%",
+                    context.l10n.appUpdate_updatingProgress(state.progress.toInt()),
                     fontsize: 13,
                     fontfamily: FontFamily.interSemiBold,
                   ),
                 ],
                 reausablebutton(
-                  title: state.isRestartApp ? "Restart App" : "Update App",
+                  title: state.isRestartApp
+                      ? context.l10n.appUpdate_restartApp
+                      : context.l10n.appUpdate_updateApp,
                   ontap: state.isUpdating
                       ? null
                       : state.isRestartApp
@@ -81,7 +84,7 @@ class _MyHomePageState extends State<ShorebirdAppUpdateScreen> {
                 SizedBox(height: 100.h),
                 Center(
                   child: reausabletext(
-                    "Update Available",
+                    context.l10n.appUpdate_updateAvailable,
                     color: ToggleThemeData.Appcolor,
                     fontsize: 19,
                     fontfamily: FontFamily.interBold,
@@ -89,7 +92,7 @@ class _MyHomePageState extends State<ShorebirdAppUpdateScreen> {
                 ),
                 Center(
                   child: reausabletext(
-                    "A new update is available. Please update the app",
+                    context.l10n.appUpdate_updateAvailableMessage,
                     fontsize: 13,
                     fontfamily: FontFamily.interSemiBold,
                   ),

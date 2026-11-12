@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/util/media_url.dart';
 import 'package:fgtracker/app/Core/util/message_preview_builder.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/chat_screen_logic.dart';
@@ -60,7 +60,7 @@ Widget _unsupportedMessageContent(bool isSentByMe) {
       SizedBox(width: 6.w),
       Flexible(
         child: Text(
-          "This message isn't supported in this version of the app",
+          appL10n.chat_unsupportedMessage,
           style: TextStyle(
             fontSize: 12.sp,
             fontStyle: FontStyle.italic,
@@ -339,7 +339,7 @@ class ChatBubble extends StatelessWidget {
                                         ),
                                         SizedBox(width: 4.w),
                                         Text(
-                                          "Forwarded",
+                                          context.l10n.chat_forwarded,
                                           style: TextStyle(
                                             fontSize: 10.sp,
                                             fontStyle: FontStyle.italic,
@@ -413,7 +413,7 @@ class ChatBubble extends StatelessWidget {
         SizedBox(width: 6.w),
         Flexible(
           child: Text(
-            "This message was deleted",
+            appL10n.chat_messageDeleted,
             style: TextStyle(
               fontSize: 13.sp,
               fontStyle: FontStyle.italic,
@@ -520,7 +520,7 @@ class ChatBubble extends StatelessWidget {
       children: [
         if (message.isEdited == true && !_isDeletedMessage) ...[
           Text(
-            "edited",
+            appL10n.chat_edited,
             style: TextStyle(
               fontSize: 9.sp,
               color: Colors.grey.shade600,
@@ -530,7 +530,7 @@ class ChatBubble extends StatelessWidget {
           SizedBox(width: 4.w),
         ],
         Text(
-          formatTime(message.timestamp ?? ""),
+          appTime(DateTime.parse(message.timestamp ?? "").toLocal()),
           style: TextStyle(
             fontSize: 10.sp,
             color: Colors.grey.shade600,
@@ -1123,7 +1123,7 @@ class ChatBubble extends StatelessWidget {
     final ownerName = status?.creator?.name ??
         meta?.ownerName ??
         message.replySenderName?.toString() ??
-        "Status";
+        appL10n.chat_statusLabel;
 
     final statusType =
     (status?.type ?? meta?.type ?? message.statusType?.toString() ?? 'text')
@@ -1140,17 +1140,17 @@ class ChatBubble extends StatelessWidget {
     final rawText = status?.content ??
         message.replyMessageContent?.toString() ??
         message.replyMessage?.toString() ??
-        "Status";
+        appL10n.chat_statusLabel;
 
     final cleanText = rawText.replaceAll(RegExp(r'^\[Status:\s*|\]$'), '');
 
-    String typeLabel = "Status";
+    String typeLabel = appL10n.chat_statusLabel;
     if (isImage) {
-      typeLabel = "Photo";
+      typeLabel = appL10n.chat_previewPhoto;
     } else if (isVideo) {
-      typeLabel = "Video";
+      typeLabel = appL10n.chat_previewVideo;
     } else {
-      typeLabel = cleanText.isNotEmpty ? cleanText : "Status";
+      typeLabel = cleanText.isNotEmpty ? cleanText : appL10n.chat_statusLabel;
     }
 
     return GestureDetector(
@@ -1301,7 +1301,7 @@ class ChatBubble extends StatelessWidget {
     final status = message.replyStatus;
 
     if (status == null || status.isExpired) {
-      Utils().fluttertoast("This status update is no longer available");
+      Utils().fluttertoast(appL10n.chat_statusUnavailable);
       return;
     }
 
@@ -1309,7 +1309,7 @@ class ChatBubble extends StatelessWidget {
       isOwnStatus: false,
       userName: status.creator?.name ??
           message.replySenderName?.toString() ??
-          'Status',
+          appL10n.chat_statusLabel,
       userAvatar: status.creator?.profilePic,
       statuses: [status],
       currentIndex: 0,
@@ -1335,7 +1335,7 @@ class ChatBubble extends StatelessWidget {
     final actions = <MessageContextMenuAction>[
       MessageContextMenuAction(
         icon: Icons.reply_rounded,
-        title: "Reply",
+        title: appL10n.chat_menuReply,
         iconColor: _purple,
         onTap: () {
           controller.setReply(message);
@@ -1344,18 +1344,18 @@ class ChatBubble extends StatelessWidget {
       if (isText)
         MessageContextMenuAction(
           icon: Icons.copy_rounded,
-          title: "Copy",
+          title: appL10n.common_copy,
           iconColor: _purple,
           onTap: () async {
             await Clipboard.setData(
               ClipboardData(text: message.content ?? ""),
             );
-            Utils().fluttertoast("Message copied");
+            Utils().fluttertoast(appL10n.chat_messageCopied);
           },
         ),
       MessageContextMenuAction(
         icon: Icons.forward_rounded,
-        title: "Forward",
+        title: appL10n.chat_menuForward,
         iconColor: _purple,
         onTap: () {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1372,7 +1372,7 @@ class ChatBubble extends StatelessWidget {
       if (isSentByMe && isText)
         MessageContextMenuAction(
           icon: Icons.edit_rounded,
-          title: "Edit",
+          title: appL10n.common_edit,
           iconColor: _purple,
           onTap: () {
             controller.startEditingMessage(message);
@@ -1380,7 +1380,7 @@ class ChatBubble extends StatelessWidget {
         ),
       MessageContextMenuAction(
         icon: Icons.push_pin_rounded,
-        title: isPinned ? "Unpin Message" : "Pin Message",
+        title: isPinned ? appL10n.chat_menuUnpin : appL10n.chat_menuPin,
         iconColor: isPinned ? Colors.redAccent : _purple,
         onTap: () {
           if (isPinned) {
@@ -1393,7 +1393,7 @@ class ChatBubble extends StatelessWidget {
       if (isSentByMe)
         MessageContextMenuAction(
           icon: Icons.info_outline_rounded,
-          title: "Message Info",
+          title: appL10n.chat_menuMessageInfo,
           iconColor: _purple,
           onTap: () {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1412,14 +1412,14 @@ class ChatBubble extends StatelessWidget {
       if (options.contains(MessageMenuOption.deleteForEveryone))
         MessageContextMenuAction(
           icon: Icons.delete_outline_rounded,
-          title: "Delete for Everyone",
+          title: appL10n.chat_deleteForEveryone,
           isDestructive: true,
           onTap: () {
             CommonDialog.ConfirmationDialog(
-              title: "Delete for Everyone",
-              content: "Are you sure you want to delete this message for everyone?",
-              cancel: "No",
-              confirm: "Yes",
+              title: appL10n.chat_deleteForEveryone,
+              content: appL10n.chat_deleteForEveryoneConfirm,
+              cancel: appL10n.common_no,
+              confirm: appL10n.common_yes,
               icon: Icons.delete_outline_rounded,
               onConfirm: () {
                 Get.back();
@@ -1434,14 +1434,14 @@ class ChatBubble extends StatelessWidget {
       if (options.contains(MessageMenuOption.deleteForMe))
       MessageContextMenuAction(
         icon: Icons.delete_rounded,
-        title: "Delete for Me",
+        title: appL10n.chat_deleteForMe,
         isDestructive: true,
         onTap: () {
           CommonDialog.ConfirmationDialog(
-            title: "Delete for Me",
-            content: "Are you sure you want to delete this message for you?",
-            cancel: "No",
-            confirm: "Yes",
+            title: appL10n.chat_deleteForMe,
+            content: appL10n.chat_deleteForMeConfirm,
+            cancel: appL10n.common_no,
+            confirm: appL10n.common_yes,
             icon: Icons.delete_rounded,
             onConfirm: () {
               Get.back();
@@ -1762,7 +1762,7 @@ class GroupChatBubble extends StatelessWidget {
                                         ),
                                         SizedBox(width: 4.w),
                                         Text(
-                                          "Forwarded",
+                                          context.l10n.chat_forwarded,
                                           style: TextStyle(
                                             fontSize: 10.sp,
                                             fontStyle: FontStyle.italic,
@@ -1836,7 +1836,7 @@ class GroupChatBubble extends StatelessWidget {
         SizedBox(width: 6.w),
         Flexible(
           child: Text(
-            "This message was deleted",
+            appL10n.chat_messageDeleted,
             style: TextStyle(
               fontSize: 13.sp,
               fontStyle: FontStyle.italic,
@@ -1943,7 +1943,7 @@ class GroupChatBubble extends StatelessWidget {
       children: [
         if (message.isEdited == true && !_isDeletedMessage) ...[
           Text(
-            "edited",
+            appL10n.chat_edited,
             style: TextStyle(
               fontSize: 9.sp,
               color: Colors.grey.shade600,
@@ -1953,7 +1953,7 @@ class GroupChatBubble extends StatelessWidget {
           SizedBox(width: 4.w),
         ],
         Text(
-          formatTime(message.timestamp ?? ""),
+          appTime(DateTime.parse(message.timestamp ?? "").toLocal()),
           style: TextStyle(
             fontSize: 10.sp,
             color: Colors.grey.shade600,
@@ -2108,7 +2108,7 @@ class GroupChatBubble extends StatelessWidget {
     final ownerName = status?.creator?.name ??
         meta?.ownerName ??
         message.replySenderName?.toString() ??
-        "Status";
+        appL10n.chat_statusLabel;
 
     final statusType =
     (status?.type ?? meta?.type ?? message.statusType?.toString() ?? 'text')
@@ -2125,17 +2125,17 @@ class GroupChatBubble extends StatelessWidget {
     final rawText = status?.content ??
         message.replyMessageContent?.toString() ??
         message.replyMessage?.toString() ??
-        "Status";
+        appL10n.chat_statusLabel;
 
     final cleanText = rawText.replaceAll(RegExp(r'^\[Status:\s*|\]$'), '');
 
-    String typeLabel = "Status";
+    String typeLabel = appL10n.chat_statusLabel;
     if (isImage) {
-      typeLabel = "Photo";
+      typeLabel = appL10n.chat_previewPhoto;
     } else if (isVideo) {
-      typeLabel = "Video";
+      typeLabel = appL10n.chat_previewVideo;
     } else {
-      typeLabel = cleanText.isNotEmpty ? cleanText : "Status";
+      typeLabel = cleanText.isNotEmpty ? cleanText : appL10n.chat_statusLabel;
     }
 
     return GestureDetector(
@@ -2286,7 +2286,7 @@ class GroupChatBubble extends StatelessWidget {
     final status = message.replyStatus;
 
     if (status == null || status.isExpired) {
-      Utils().fluttertoast("This status update is no longer available");
+      Utils().fluttertoast(appL10n.chat_statusUnavailable);
       return;
     }
 
@@ -2294,7 +2294,7 @@ class GroupChatBubble extends StatelessWidget {
       isOwnStatus: false,
       userName: status.creator?.name ??
           message.replySenderName?.toString() ??
-          'Status',
+          appL10n.chat_statusLabel,
       userAvatar: status.creator?.profilePic,
       statuses: [status],
       currentIndex: 0,
@@ -2842,7 +2842,7 @@ class GroupChatBubble extends StatelessWidget {
     final actions = <MessageContextMenuAction>[
       MessageContextMenuAction(
         icon: Icons.reply_rounded,
-        title: "Reply",
+        title: appL10n.chat_menuReply,
         iconColor: _purple,
         onTap: () {
           controller.setReply(message);
@@ -2851,18 +2851,18 @@ class GroupChatBubble extends StatelessWidget {
       if (isText)
         MessageContextMenuAction(
           icon: Icons.copy_rounded,
-          title: "Copy",
+          title: appL10n.common_copy,
           iconColor: _purple,
           onTap: () async {
             await Clipboard.setData(
               ClipboardData(text: message.content ?? ""),
             );
-            Utils().fluttertoast("Message copied");
+            Utils().fluttertoast(appL10n.chat_messageCopied);
           },
         ),
       MessageContextMenuAction(
         icon: Icons.forward_rounded,
-        title: "Forward",
+        title: appL10n.chat_menuForward,
         iconColor: _purple,
         onTap: () {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2879,7 +2879,7 @@ class GroupChatBubble extends StatelessWidget {
       if (isSentByMe && isText)
         MessageContextMenuAction(
           icon: Icons.edit_rounded,
-          title: "Edit",
+          title: appL10n.common_edit,
           iconColor: _purple,
           onTap: () {
             controller.startEditingMessage(message);
@@ -2887,7 +2887,7 @@ class GroupChatBubble extends StatelessWidget {
         ),
       MessageContextMenuAction(
         icon: Icons.push_pin_rounded,
-        title: isPinned ? "Unpin Message" : "Pin Message",
+        title: isPinned ? appL10n.chat_menuUnpin : appL10n.chat_menuPin,
         iconColor: isPinned ? Colors.redAccent : _purple,
         onTap: () {
           if (isPinned) {
@@ -2900,7 +2900,7 @@ class GroupChatBubble extends StatelessWidget {
       if (isSentByMe)
         MessageContextMenuAction(
           icon: Icons.info_outline_rounded,
-          title: "Message Info",
+          title: appL10n.chat_menuMessageInfo,
           iconColor: _purple,
           onTap: () {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2919,14 +2919,14 @@ class GroupChatBubble extends StatelessWidget {
       if (options.contains(MessageMenuOption.deleteForEveryone))
         MessageContextMenuAction(
           icon: Icons.delete_outline_rounded,
-          title: "Delete for Everyone",
+          title: appL10n.chat_deleteForEveryone,
           isDestructive: true,
           onTap: () {
             CommonDialog.ConfirmationDialog(
-              title: "Delete for Everyone",
-              content: "Are you sure you want to delete this message for everyone?",
-              cancel: "No",
-              confirm: "Yes",
+              title: appL10n.chat_deleteForEveryone,
+              content: appL10n.chat_deleteForEveryoneConfirm,
+              cancel: appL10n.common_no,
+              confirm: appL10n.common_yes,
               icon: Icons.delete_outline_rounded,
               onConfirm: () {
                 Get.back();
@@ -2941,14 +2941,14 @@ class GroupChatBubble extends StatelessWidget {
       if (options.contains(MessageMenuOption.deleteForMe))
       MessageContextMenuAction(
         icon: Icons.delete_rounded,
-        title: "Delete for Me",
+        title: appL10n.chat_deleteForMe,
         isDestructive: true,
         onTap: () {
           CommonDialog.ConfirmationDialog(
-            title: "Delete for Me",
-            content: "Are you sure you want to delete this message for you?",
-            cancel: "No",
-            confirm: "Yes",
+            title: appL10n.chat_deleteForMe,
+            content: appL10n.chat_deleteForMeConfirm,
+            cancel: appL10n.common_no,
+            confirm: appL10n.common_yes,
             icon: Icons.delete_rounded,
             onConfirm: () {
               Get.back();
@@ -3087,12 +3087,12 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
   @override
   Widget build(BuildContext context) {
     if (_media.isEmpty) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: Colors.black,
         body: Center(
           child: Text(
-            "No media available",
-            style: TextStyle(color: Colors.white70),
+            context.l10n.chat_noMediaAvailable,
+            style: const TextStyle(color: Colors.white70),
           ),
         ),
       );
@@ -3270,7 +3270,8 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
                     ),
                     SizedBox(width: 8.w),
                     Text(
-                      "${_currentIndex + 1} of ${_media.length}",
+                      context.l10n.chat_galleryCounter(
+                          _currentIndex + 1, _media.length),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 17.sp,

@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/util/currency_format.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class WalkiePlansResponseModel {
   bool? status;
@@ -140,6 +141,30 @@ class WalkiePlanItem {
       return "${billingInterval![0].toUpperCase()}${billingInterval!.substring(1).toLowerCase()} Plan";
     }
     return "Plan";
+  }
+
+  /// [displayTitle] for the UI: the server name as it comes, otherwise the
+  /// app's own fallback in the app language. [displayTitle] itself stays
+  /// English because it is used as a stable value (order / payment notes).
+  String get displayTitleText {
+    if (name != null && name!.trim().isNotEmpty) {
+      return name!.trim();
+    }
+    final interval = (billingInterval ?? '').trim();
+    if (interval.isNotEmpty) {
+      switch (interval.toLowerCase()) {
+        case 'monthly':
+          return appL10n.walkiePlan_monthlyPlan;
+        case 'quarterly':
+          return appL10n.walkiePlan_quarterlyPlan;
+        case 'yearly':
+        case 'annual':
+          return appL10n.walkiePlan_yearlyPlan;
+      }
+      return appL10n.walkiePlan_intervalPlan(
+          "${interval[0].toUpperCase()}${interval.substring(1).toLowerCase()}");
+    }
+    return appL10n.walkiePlan_planFallback;
   }
 
   String get durationLabel {

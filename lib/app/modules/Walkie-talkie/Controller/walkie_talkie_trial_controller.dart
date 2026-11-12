@@ -8,6 +8,8 @@ import 'package:fgtracker/app/Data/Services/walkie_talkie_trial_service.dart';
 import 'package:fgtracker/app/Model/walkie_talkie_trial_details_model.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Utils/walkie_plan_l10n.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 class WalkieTalkieTrialController extends GetxController
@@ -17,6 +19,10 @@ class WalkieTalkieTrialController extends GetxController
   final RxBool isLoading = false.obs;
   final RxBool isRefreshing = false.obs;
   final RxString errorMessage = ''.obs;
+
+  /// True when [errorMessage] is one of the app's own network errors (the
+  /// views pick the offline icon/title from this, not from the text).
+  bool errorIsNetwork = false;
 
   final Rxn<WalkieOverviewData> overview = Rxn<WalkieOverviewData>();
   final RxInt remainingSeconds = 0.obs;
@@ -186,16 +192,17 @@ class WalkieTalkieTrialController extends GetxController
   String get trialDurationHuman {
     if (totalSeconds % 3600 == 0) {
       final hours = totalSeconds ~/ 3600;
-      return hours == 1 ? '1 Hour' : '$hours Hours';
+      return appL10n.walkiePlan_trialHours(hours);
     }
     if (totalSeconds % 60 == 0) {
       final minutes = totalSeconds ~/ 60;
-      return '$minutes Minutes';
+      return appL10n.walkiePlan_trialMinutes(minutes);
     }
     return formatDuration(totalSeconds);
   }
 
-  String get trialDurationFreeLabel => '$trialDurationHuman Free';
+  String get trialDurationFreeLabel =>
+      appL10n.walkiePlan_trialDurationFree(trialDurationHuman);
 
   // =====================================================
   // PRICING FORMATTERS
@@ -220,10 +227,10 @@ class WalkieTalkieTrialController extends GetxController
   String get priceTypeLabel {
     if (availableIndividualPlans.isNotEmpty) {
       return availableIndividualPlans.first.billingInterval.toLowerCase() == 'monthly'
-          ? 'month'
-          : availableIndividualPlans.first.billingInterval;
+          ? appL10n.walkiePlan_trialPeriodMonth
+          : walkieDurationText(availableIndividualPlans.first.billingInterval);
     }
-    return 'month';
+    return appL10n.walkiePlan_trialPeriodMonth;
   }
 
   // =====================================================
@@ -247,15 +254,15 @@ class WalkieTalkieTrialController extends GetxController
     final difference = expiresAt.difference(now);
     final days = difference.inDays;
     if (days > 0) {
-      return '$days days left';
+      return appL10n.walkiePlan_trialDaysLeft(days);
     }
     if (difference.inHours > 0) {
-      return '${difference.inHours} hours left';
+      return appL10n.walkiePlan_trialHoursLeft(difference.inHours);
     }
     if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} mins left';
+      return appL10n.walkiePlan_trialMinsLeft(difference.inMinutes);
     }
-    return 'Expiring soon';
+    return appL10n.walkiePlan_trialExpiringSoon;
   }
 
   // =====================================================
@@ -297,6 +304,7 @@ class WalkieTalkieTrialController extends GetxController
     }
 
     errorMessage.value = '';
+    errorIsNetwork = false;
 
     try {
       final result = await _service.getOverview();
@@ -312,20 +320,21 @@ class WalkieTalkieTrialController extends GetxController
       errorMessage.value = error.message;
     } on SocketException catch (_) {
       if (isClosed || requestId != _requestVersion) return;
-      errorMessage.value =
-          'No internet connection. Please check your network and try again.';
+      errorIsNetwork = true;
+      errorMessage.value = appL10n.walkiePlan_trialErrNoInternetRetry;
     } on TimeoutException catch (_) {
       if (isClosed || requestId != _requestVersion) return;
-      errorMessage.value = 'The request timed out. Please try again.';
+      errorMessage.value = appL10n.walkiePlan_trialErrTimeout;
     } on FormatException catch (_) {
       if (isClosed || requestId != _requestVersion) return;
-      errorMessage.value = 'Invalid response received from server.';
+      errorMessage.value = appL10n.walkiePlan_trialErrInvalidResponse;
     } catch (error, stackTrace) {
       if (isClosed || requestId != _requestVersion) return;
       AppLog.d('Walkie-Talkie overview error: $error');
       debugPrintStack(stackTrace: stackTrace);
-      errorMessage.value =
-          'Unable to load Walkie-Talkie details. Please check your connection.';
+      // Old English text contained "connection" → shown as offline.
+      errorIsNetwork = true;
+      errorMessage.value = appL10n.walkiePlan_trialErrUnableToLoad;
     } finally {
       if (!isClosed && requestId == _requestVersion) {
         isLoading.value = false;

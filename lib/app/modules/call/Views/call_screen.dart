@@ -7,6 +7,7 @@ import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 import '../widget/call_dial_pad.dart';
 import 'call_recent_calls_tab.dart';
@@ -167,7 +168,7 @@ class _CallScreenState extends State<CallScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "Call",
+                context.l10n.call_title,
                 style: TextStyle(
                   fontSize: 19.sp,
                   fontFamily: FontFamily.interBold,
@@ -178,8 +179,8 @@ class _CallScreenState extends State<CallScreen>
               SizedBox(height: 2.h),
               Text(
                 controller.isSelectionMode.value && controller.selectedTab.value == 0
-                    ? "${controller.selectedCallIds.length} Selected"
-                    : "Audio / Video Call",
+                    ? context.l10n.call_selectedCount(controller.selectedCallIds.length)
+                    : context.l10n.call_subtitle,
                 style: TextStyle(
                   fontSize: 11.5.sp,
                   fontFamily: FontFamily.interRegular,
@@ -231,7 +232,7 @@ class _CallScreenState extends State<CallScreen>
                   color: const Color(0xFF1E1B4B),
                 ),
                 decoration: InputDecoration(
-                  hintText: "Search contacts or groups",
+                  hintText: context.l10n.call_searchHint,
                   hintStyle: TextStyle(
                     fontSize: 13.sp,
                     color: const Color(0xFF94A3B8),
@@ -303,16 +304,16 @@ class _CallScreenState extends State<CallScreen>
           tabs: [
             Obx(() => _buildTab(
               icon: Icons.access_time_rounded,
-              title: "Recent",
+              title: context.l10n.call_tabRecent,
               showBadge: NotificationMarkerService.instance.hasCallingMarker.value,
             )),
             _buildTab(
               icon: Icons.person_outline_rounded,
-              title: "Contacts",
+              title: context.l10n.call_tabContacts,
             ),
             _buildTab(
               icon: Icons.groups_outlined,
-              title: "Groups",
+              title: context.l10n.call_tabGroups,
             ),
           ],
         ),

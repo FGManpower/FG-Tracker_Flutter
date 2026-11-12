@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -23,18 +24,18 @@ extension on MissingMediaType {
     }
   }
 
-  String get noun {
+  String unavailableText(AppLocalizations l10n) {
     switch (this) {
       case MissingMediaType.image:
-        return 'photo';
+        return l10n.chat_photoUnavailable;
       case MissingMediaType.video:
-        return 'video';
+        return l10n.chat_videoUnavailable;
       case MissingMediaType.audio:
-        return 'audio';
+        return l10n.chat_audioUnavailable;
       case MissingMediaType.document:
-        return 'document';
+        return l10n.chat_documentUnavailable;
       case MissingMediaType.media:
-        return 'media';
+        return l10n.chat_mediaUnavailable;
     }
   }
 }
@@ -60,7 +61,7 @@ class MissingMediaCard extends StatelessWidget {
     final name = fileName?.trim() ?? '';
     final subtitle = name.isNotEmpty
         ? name
-        : 'This ${type.noun} is no longer available';
+        : type.unavailableText(context.l10n);
 
     return Container(
       width: width ?? 220.w,
@@ -90,7 +91,7 @@ class MissingMediaCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Media is missing',
+                  context.l10n.chat_mediaMissing,
                   style: TextStyle(
                     color: Colors.black87,
                     fontSize: 12.sp,
@@ -135,7 +136,7 @@ class MissingMediaTile extends StatelessWidget {
           Icon(type.icon, color: Colors.grey.shade600, size: 26.sp),
           SizedBox(height: 4.h),
           Text(
-            'Media is missing',
+            context.l10n.chat_mediaMissing,
             textAlign: TextAlign.center,
             maxLines: 2,
             style: TextStyle(

@@ -1,9 +1,11 @@
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/features/voice_input/voice_input_controller.dart';
 import 'package:fgtracker/features/voice_input/widgets/waveform_bars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class VoiceToTextReviewView extends StatelessWidget {
   final VoiceInputController controller;
@@ -18,11 +20,11 @@ class VoiceToTextReviewView extends StatelessWidget {
   String get _statusChipLabel {
     switch (controller.contextType.value) {
       case VoiceContextType.reply:
-        return "Reply ready";
+        return appL10n.voice_replyReady;
       case VoiceContextType.caption:
-        return "Caption ready";
+        return appL10n.voice_captionReady;
       case VoiceContextType.normal:
-        return "Text ready";
+        return appL10n.voice_textReady;
     }
   }
 
@@ -39,7 +41,7 @@ class VoiceToTextReviewView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Voice to Text",
+                context.l10n.voice_voiceToText,
                 style: TextStyle(
                   color: AppColors.darkText,
                   fontSize: 16.sp,
@@ -87,7 +89,7 @@ class VoiceToTextReviewView extends StatelessWidget {
               children: [
                 _SectionLabel(
                   icon: Icons.graphic_eq_rounded,
-                  label: "Listen back",
+                  label: context.l10n.voice_listenBack,
                   color: AppColors.primaryDarkblue,
                 ),
                 SizedBox(height: 6.h),
@@ -154,7 +156,7 @@ class VoiceToTextReviewView extends StatelessWidget {
           // ── SECTION 2: Transcribed Text ──────────────────────────────────────
           _SectionLabel(
             icon: Icons.chat_bubble_outline_rounded,
-            label: "Your message",
+            label: context.l10n.voice_yourMessage,
             color: AppColors.primaryDarkblue,
           ),
           SizedBox(height: 6.h),
@@ -178,7 +180,7 @@ class VoiceToTextReviewView extends StatelessWidget {
                 ),
               ),
               child: Text(
-                text.isNotEmpty ? text : "No text captured — try re-recording.",
+                text.isNotEmpty ? text : context.l10n.voice_noTextCaptured,
                 style: TextStyle(
                   color: text.isNotEmpty
                       ? AppColors.darkText
@@ -195,7 +197,7 @@ class VoiceToTextReviewView extends StatelessWidget {
 
           // Hint
           Text(
-            "Listen to your voice above, or edit the text in the message box before sending.",
+            context.l10n.voice_reviewTextHint,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppColors.primarySecondaryElementText,
@@ -226,8 +228,8 @@ class VoiceToTextReviewView extends StatelessWidget {
                       ),
                     ),
                     icon: Icon(Icons.refresh_rounded, size: 17.sp),
-                    label: Text(
-                      "Re-record",
+                    label: AutoFitText(
+                      context.l10n.voice_reRecord,
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
@@ -254,8 +256,8 @@ class VoiceToTextReviewView extends StatelessWidget {
                       color: AppColors.darkRed,
                       size: 17.sp,
                     ),
-                    label: Text(
-                      "Delete",
+                    label: AutoFitText(
+                      context.l10n.common_delete,
                       style: TextStyle(
                         color: AppColors.darkRed,
                         fontSize: 13.sp,
@@ -294,7 +296,7 @@ class VoiceToTextReviewView extends StatelessWidget {
               ),
               icon: Icon(Icons.send_rounded, size: 18.sp, color: Colors.white),
               label: Text(
-                "Send message",
+                context.l10n.voice_sendMessage,
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700,

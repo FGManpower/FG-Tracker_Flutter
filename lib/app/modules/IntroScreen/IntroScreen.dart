@@ -4,6 +4,7 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/IntroScreen/Controller/IntroController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -51,7 +52,7 @@ class IntroScreen extends StatelessWidget {
                   child: Align(
                     alignment: Alignment.topLeft,
                     child: reausabletext(
-                      "Skip",
+                      context.l10n.intro_skip,
                       onTap: () {
                         Global.storageServices
                             .setBool(PrefConst.introStatus, true);

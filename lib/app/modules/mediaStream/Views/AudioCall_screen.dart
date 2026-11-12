@@ -6,6 +6,8 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/theme/appTheme.dart';
@@ -62,7 +64,7 @@ class _AudiocallScreenState extends State<AudiocallScreen>
             children: [
               SizedBox(height: 10.h),
               Text(
-                isOutgoing ? "" : "Call From",
+                isOutgoing ? "" : context.l10n.call_callFrom,
                 style: TextStyle(
                   color: primaryPurple.withOpacity(0.85),
                   fontSize: 14.sp,
@@ -83,7 +85,7 @@ class _AudiocallScreenState extends State<AudiocallScreen>
               SizedBox(height: 8.h),
               Text(
                 controller.formattedDuration == "00:00"
-                    ? "${controller.callStatus.value}..."
+                    ? "${callStatusLabel(context.l10n, controller.callStatus.value)}..."
                     : controller.formattedDuration,
                 style: TextStyle(
                   color: AppColors.primaryPurple.withOpacity(0.9),

@@ -1,3 +1,4 @@
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Group/controller/search_controller.dart';
@@ -48,7 +49,7 @@ class UserSheetUi {
                     () => Column(
                   children: [
                     Text(
-                      "Add Group Member",
+                      appL10n.sheet_addGroupMember,
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w700,
@@ -56,7 +57,7 @@ class UserSheetUi {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      "${controller.allUserProfileData.length} Registered Contacts",
+                      appL10n.sheet_registeredContacts(controller.allUserProfileData.length),
                       style: TextStyle(
                         fontSize: 13.sp,
                         color: Colors.grey.shade600,
@@ -70,7 +71,7 @@ class UserSheetUi {
                 controller: controller.searchValues,
                 onChanged: controller.filterUsers,
                 decoration: InputDecoration(
-                  hintText: "Search contacts",
+                  hintText: appL10n.sheet_searchContacts,
                   hintStyle: TextStyle(
                     fontSize: 14.sp,
                     color: Colors.grey.shade500,
@@ -130,7 +131,7 @@ class UserSheetUi {
                           ),
                           SizedBox(height: 10.h),
                           Text(
-                            "No Registered Contacts",
+                            appL10n.sheet_noRegisteredContacts,
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
@@ -138,7 +139,7 @@ class UserSheetUi {
                           ),
                           SizedBox(height: 5.h),
                           Text(
-                            "Your contacts are not using FG Tracker yet.",
+                            appL10n.sheet_contactsNotOnApp,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 13.sp,
@@ -162,7 +163,7 @@ class UserSheetUi {
                           ),
                           SizedBox(height: 10.h),
                           Text(
-                            "No User Found",
+                            appL10n.sheet_noUserFound,
                             style: TextStyle(
                               fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
