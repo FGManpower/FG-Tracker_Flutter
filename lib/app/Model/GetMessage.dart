@@ -16,6 +16,8 @@ class GetMessage {
   int? conversationId;
   Map<String, dynamic>? otherUser;
   List<String>? images;
+  int? unreadCount;
+  int? firstUnreadMessageId;
 
   GetMessage({
     this.status,
@@ -31,6 +33,8 @@ class GetMessage {
     this.images,
     this.chatId,
     this.conversationId,
+    this.unreadCount,
+    this.firstUnreadMessageId,
   });
 
   GetMessage.fromJson(Map<String, dynamic> json) {
@@ -42,6 +46,8 @@ class GetMessage {
     pinnedMessageId = MessageData.parseIntOrNull(json['pinnedMessageId']);
     chatId = MessageData.parseIntOrNull(json['chatId'] ?? json['conversationId'] ?? json['id']);
     conversationId = MessageData.parseIntOrNull(json['conversationId'] ?? json['chatId']);
+    unreadCount = MessageData.parseIntOrNull(json['unreadCount'] ?? json['unread_count']);
+    firstUnreadMessageId = MessageData.parseIntOrNull(json['firstUnreadMessageId'] ?? json['first_unread_message_id']);
 
     final user = json['otherUser'] is Map
         ? Map<String, dynamic>.from(json['otherUser'])
@@ -277,12 +283,19 @@ class MessageData {
   String? audioUrl;
   Map<String, dynamic>? locationMeta;
   Map<String, dynamic>? contactMeta;
+  Map<String, dynamic>? callLogMeta;
+  Map<String, dynamic>? systemMeta;
   dynamic duration;
   dynamic groupId;
 
   /// Convenience alias for `timestamp` (the server timestamp when the message was created).
   dynamic get createdAt => timestamp;
   set createdAt(dynamic value) => timestamp = value;
+
+  bool get isSystemMessage =>
+      messageType?.toString().toLowerCase().trim() == 'system';
+  bool get isCallLogMessage =>
+      messageType?.toString().toLowerCase().trim() == 'call_log';
 
   MessageData({
     this.id,
@@ -320,6 +333,8 @@ class MessageData {
     this.isDelivered = false,
     this.locationMeta,
     this.contactMeta,
+    this.callLogMeta,
+    this.systemMeta,
     this.duration,
   });
 
@@ -902,6 +917,32 @@ class MessageData {
       try {
         final decoded = jsonDecode(content.toString());
         if (decoded is Map) contactMeta = Map<String, dynamic>.from(decoded);
+      } catch (_) {}
+    }
+
+    final rawCallLogMeta = json['callLogMeta'] ??
+        json['call_log_meta'] ??
+        nestedSource?['callLogMeta'] ??
+        nestedSource?['call_log_meta'];
+    if (rawCallLogMeta is Map) {
+      callLogMeta = Map<String, dynamic>.from(rawCallLogMeta);
+    } else if (rawCallLogMeta is String) {
+      try {
+        final decoded = jsonDecode(rawCallLogMeta);
+        if (decoded is Map) callLogMeta = Map<String, dynamic>.from(decoded);
+      } catch (_) {}
+    }
+
+    final rawSystemMeta = json['systemMeta'] ??
+        json['system_meta'] ??
+        nestedSource?['systemMeta'] ??
+        nestedSource?['system_meta'];
+    if (rawSystemMeta is Map) {
+      systemMeta = Map<String, dynamic>.from(rawSystemMeta);
+    } else if (rawSystemMeta is String) {
+      try {
+        final decoded = jsonDecode(rawSystemMeta);
+        if (decoded is Map) systemMeta = Map<String, dynamic>.from(decoded);
       } catch (_) {}
     }
 

@@ -38,6 +38,7 @@ import '../../../Data/Services/chat_translation_service.dart';
 import 'chat_translation_widgets.dart';
 import 'MessageContextMenu.dart';
 import '../../../widgets/MessageInfoSheet.dart';
+import '../../../Data/Services/call_service.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 /// Text bubbles shrink-wrap via IntrinsicWidth. The attendance card has
@@ -159,6 +160,158 @@ Widget _quotedReplyCard({
   );
 }
 
+Widget _buildSystemMessageTile(String content) {
+  return Center(
+    child: Container(
+      margin: EdgeInsets.symmetric(vertical: 6.h, horizontal: 24.w),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F0F4),
+        borderRadius: BorderRadius.circular(10.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Text(
+        content,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 11.5.sp,
+          color: Colors.grey.shade700,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildCallLogTile({
+  required BuildContext context,
+  required MessageData message,
+  required bool isSentByMe,
+  required VoidCallback onCallBack,
+}) {
+  final content = message.content?.toString() ?? 'Voice call';
+  final isMissed = content.toLowerCase().contains('missed');
+  final isVideo = content.toLowerCase().contains('video') ||
+      message.callLogMeta?['isVideo'] == true ||
+      message.callLogMeta?['callType'] == 'video';
+
+  final iconData = isVideo
+      ? (isMissed ? Icons.missed_video_call_rounded : Icons.videocam_rounded)
+      : (isMissed ? Icons.phone_missed_rounded : Icons.phone_callback_rounded);
+
+  final iconColor = isMissed ? const Color(0xFFE53935) : const Color(0xFF43A047);
+
+  String timeStr = '';
+  if (message.timestamp != null) {
+    try {
+      final dt = DateTime.parse(message.timestamp.toString()).toLocal();
+      timeStr = "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+    } catch (_) {}
+  }
+
+  return Container(
+    margin: EdgeInsets.symmetric(vertical: 4.h),
+    child: Row(
+      mainAxisAlignment: isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+      children: [
+        Container(
+          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            color: isSentByMe ? const Color(0xFFDCD6F5) : Colors.white,
+            borderRadius: BorderRadius.circular(14.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36.r,
+                height: 36.r,
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(iconData, color: iconColor, size: 20.sp),
+              ),
+              SizedBox(width: 10.w),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      content,
+                      style: TextStyle(
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600,
+                        color: isMissed ? const Color(0xFFE53935) : Colors.black87,
+                      ),
+                    ),
+                    if (timeStr.isNotEmpty) ...[
+                      SizedBox(height: 2.h),
+                      Text(
+                        timeStr,
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              SizedBox(width: 8.w),
+              InkWell(
+                onTap: onCallBack,
+                borderRadius: BorderRadius.circular(8.r),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5045B9).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isVideo ? Icons.videocam_rounded : Icons.call_rounded,
+                        size: 13.sp,
+                        color: const Color(0xFF5045B9),
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        "Call back",
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF5045B9),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 class ChatBubble extends StatelessWidget {
   final MessageData message;
   final BuildContext context;
@@ -189,6 +342,35 @@ class ChatBubble extends StatelessWidget {
     Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
+
+    if (message.isSystemMessage) {
+      return _buildSystemMessageTile(message.content?.toString() ?? '');
+    }
+
+    if (message.isCallLogMessage) {
+      return _buildCallLogTile(
+        context: context,
+        message: message,
+        isSentByMe: isSentByMe,
+        onCallBack: () {
+          try {
+            final isVideo = message.content?.toString().toLowerCase().contains('video') == true ||
+                message.callLogMeta?['isVideo'] == true ||
+                message.callLogMeta?['callType'] == 'video';
+            final targetUserId = isSentByMe ? message.receiverId?.toString() : message.senderId?.toString();
+            final targetName = controller.memberData.name.toString();
+            final targetPic = controller.memberData.profileImage;
+            CallService().startOutGoingCall(
+              context,
+              callerId: targetUserId,
+              callerName: targetName,
+              callerProfile: targetPic,
+              isVideo: isVideo,
+            );
+          } catch (_) {}
+        },
+      );
+    }
 
     final bgColor = isSentByMe ? _myBubbleBg : _otherBubbleBg;
     final textColor = Colors.black87;
@@ -1603,6 +1785,32 @@ class GroupChatBubble extends StatelessWidget {
     Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
+
+    if (message.isSystemMessage) {
+      return _buildSystemMessageTile(message.content?.toString() ?? '');
+    }
+
+    if (message.isCallLogMessage) {
+      return _buildCallLogTile(
+        context: context,
+        message: message,
+        isSentByMe: isSentByMe,
+        onCallBack: () {
+          try {
+            final isVideo = message.content?.toString().toLowerCase().contains('video') == true ||
+                message.callLogMeta?['isVideo'] == true ||
+                message.callLogMeta?['callType'] == 'video';
+            CallService().startOutGoingCall(
+              context,
+              callerId: groupId?.toString(),
+              callerName: groupName ?? "Group",
+              callerProfile: null,
+              isVideo: isVideo,
+            );
+          } catch (_) {}
+        },
+      );
+    }
 
     final bgColor = isSentByMe ? _myBubbleBg : _otherBubbleBg;
 

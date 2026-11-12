@@ -62,6 +62,83 @@ Widget _translateSwipeBackground() => Container(
           color: const Color(0xFF5045B9), size: 22.sp),
     );
 
+Widget _buildUnreadDivider(int? unreadCount) {
+  final label = (unreadCount != null && unreadCount > 0)
+      ? "$unreadCount UNREAD MESSAGES"
+      : "UNREAD MESSAGES";
+  return Container(
+    margin: EdgeInsets.symmetric(vertical: 8.h),
+    child: Row(
+      children: [
+        Expanded(child: Divider(color: const Color(0xFF5045B9).withValues(alpha: 0.35), thickness: 0.8)),
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 10.w),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFFECEAFD),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: const Color(0xFF5045B9).withValues(alpha: 0.3), width: 0.5),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 10.5.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF5045B9),
+              letterSpacing: 0.4,
+            ),
+          ),
+        ),
+        Expanded(child: Divider(color: const Color(0xFF5045B9).withValues(alpha: 0.35), thickness: 0.8)),
+      ],
+    ),
+  );
+}
+
+Widget _buildSecurityEncryptionBanner({bool isGroup = false}) {
+  return Center(
+    child: Container(
+      margin: EdgeInsets.symmetric(vertical: 10.h, horizontal: 20.w),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF9E7),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(
+          color: const Color(0xFFF9E79F).withValues(alpha: 0.8),
+          width: 0.8,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(Icons.lock_rounded, size: 14.sp, color: const Color(0xFF7D6608)),
+          SizedBox(width: 8.w),
+          Flexible(
+            child: Text(
+              "Messages and calls are end-to-end encrypted. No one outside of this chat, not even FG-Tracker, can read or listen to them.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF7D6608),
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class ChatList extends StatelessWidget {
   final MessageController controller;
 
@@ -228,8 +305,21 @@ class ChatList extends StatelessWidget {
                 );
               }
 
+              final isFirstUnread = msg.id != null &&
+                  msg.id == controller.firstUnreadMessageId.value;
+              if (isFirstUnread) {
+                itemWidget = Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildUnreadDivider(controller.unreadCount.value),
+                    itemWidget,
+                  ],
+                );
+              }
+
               if (showDateHeader && dateHeaderText != null) {
-                return Column(
+                itemWidget = Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Center(
@@ -265,6 +355,16 @@ class ChatList extends StatelessWidget {
                 );
               }
 
+              if (index == 0) {
+                itemWidget = Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildSecurityEncryptionBanner(),
+                    itemWidget,
+                  ],
+                );
+              }
+
               return itemWidget;
             },
           );
@@ -277,6 +377,8 @@ class ChatList extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          _buildSecurityEncryptionBanner(),
+          SizedBox(height: 16.h),
           Text(
             "💬",
             style: TextStyle(fontSize: 48.sp),
@@ -732,6 +834,8 @@ class GroupChatList extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  _buildSecurityEncryptionBanner(isGroup: true),
+                  SizedBox(height: 16.h),
                   Text(
                     "💬",
                     style: TextStyle(fontSize: 48.sp),
@@ -879,8 +983,21 @@ class GroupChatList extends StatelessWidget {
                 );
               }
 
+              final isFirstUnread = msg.id != null &&
+                  msg.id == controller.firstUnreadMessageId.value;
+              if (isFirstUnread) {
+                itemWidget = Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildUnreadDivider(controller.unreadCount.value),
+                    itemWidget,
+                  ],
+                );
+              }
+
               if (showDateHeader && dateHeaderText != null) {
-                return Column(
+                itemWidget = Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Center(
@@ -911,6 +1028,16 @@ class GroupChatList extends StatelessWidget {
                         ),
                       ),
                     ),
+                    itemWidget,
+                  ],
+                );
+              }
+
+              if (index == 0) {
+                itemWidget = Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildSecurityEncryptionBanner(isGroup: true),
                     itemWidget,
                   ],
                 );

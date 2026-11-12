@@ -51,6 +51,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   late final TextEditingController textEditingController = TextEditingController();
   final RxBool showScrollToBottom = false.obs;
   final RxInt unreadBelowCount = 0.obs;
+  final RxnInt firstUnreadMessageId = RxnInt();
+  final RxInt unreadCount = 0.obs;
   bool _wasKeyboardOpen = false;
   bool _wasAtBottom = true;
 
@@ -1794,9 +1796,27 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
           showPinnedBanner.value = false;
         }
 
+        firstUnreadMessageId.value = result.firstUnreadMessageId;
+        unreadCount.value = result.unreadCount ?? 0;
+
         updateMessageStream();
 
-        scrollToBottom(instant: true); // Instantly jumps to the latest message
+        final unreadIdx = firstUnreadMessageId.value != null
+            ? _messages.indexWhere((m) => m.id == firstUnreadMessageId.value)
+            : -1;
+        if (unreadIdx != -1) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (itemScrollController.isAttached) {
+              itemScrollController.scrollTo(
+                index: unreadIdx,
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOut,
+              );
+            }
+          });
+        } else {
+          scrollToBottom(instant: true); // Instantly jumps to the latest message
+        }
       } else {
         CommonDialog.errorMessage(result.message);
         _pager.fail();

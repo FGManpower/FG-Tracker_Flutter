@@ -115,6 +115,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   RxBool isLoadingOlderMessages = false.obs;
   RxBool hasMoreOlderMessages = true.obs;
   RxBool isLoadingInitialMessages = false.obs;
+  final RxnInt firstUnreadMessageId = RxnInt();
+  final RxInt unreadCount = 0.obs;
 
   Timer? _floatingDateTimer;
 
@@ -1713,9 +1715,28 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           showPinnedBanner.value = false;
         }
 
+        firstUnreadMessageId.value = result.firstUnreadMessageId;
+        unreadCount.value = result.unreadCount ?? 0;
+
         updateMessageStream();
         isCreator.value = result.isCreator ?? false;
-        scrollToBottom(instant: true);
+
+        final unreadIdx = firstUnreadMessageId.value != null
+            ? _messages.indexWhere((m) => m.id == firstUnreadMessageId.value)
+            : -1;
+        if (unreadIdx != -1) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (itemScrollController.isAttached) {
+              itemScrollController.scrollTo(
+                index: unreadIdx,
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOut,
+              );
+            }
+          });
+        } else {
+          scrollToBottom(instant: true);
+        }
       } else {
         CommonDialog.errorMessage(result.message);
       }
@@ -1932,6 +1953,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         log("HISTORY DEBUG => stream message count: ${_messages.length}");
 
         isCreator.value = result.isCreator ?? false;
+        firstUnreadMessageId.value = result.firstUnreadMessageId;
+        unreadCount.value = result.unreadCount ?? 0;
 
         hasMoreOlderMessages.value = _pager.hasMore;
 
@@ -1939,8 +1962,23 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         log("HISTORY DEBUG => hasMoreOlderMessages: ${hasMoreOlderMessages.value}");
 
         if (_messages.isNotEmpty) {
-          log("========== HISTORY DEBUG 7: SCROLL TO BOTTOM ==========");
-          scrollToBottom(instant: true);
+          final unreadIdx = firstUnreadMessageId.value != null
+              ? _messages.indexWhere((m) => m.id == firstUnreadMessageId.value)
+              : -1;
+          if (unreadIdx != -1) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (itemScrollController.isAttached) {
+                itemScrollController.scrollTo(
+                  index: unreadIdx,
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOut,
+                );
+              }
+            });
+          } else {
+            log("========== HISTORY DEBUG 7: SCROLL TO BOTTOM ==========");
+            scrollToBottom(instant: true);
+          }
         } else {
           log("HISTORY DEBUG => message list is EMPTY");
         }
