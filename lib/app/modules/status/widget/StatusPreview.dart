@@ -5,6 +5,7 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 import '../controller/AddStatusController.dart';
 
@@ -166,13 +167,27 @@ class StatusPreview extends StatelessWidget {
                 color: Colors.white70,
               ),
               SizedBox(height: 16.h),
-              TextButton(
-                onPressed: controller.initCamera,
-                child: reausabletext(
-                  appL10n.common_retry,
-                  fontsize: 13.sp,
-                  color: const Color(0xFF6B4DFF),
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton(
+                    onPressed: controller.initCamera,
+                    child: reausabletext(
+                      appL10n.common_retry,
+                      fontsize: 13.sp,
+                      color: const Color(0xFF6B4DFF),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  TextButton(
+                    onPressed: () => openAppSettings(),
+                    child: reausabletext(
+                      "Settings",
+                      fontsize: 13.sp,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

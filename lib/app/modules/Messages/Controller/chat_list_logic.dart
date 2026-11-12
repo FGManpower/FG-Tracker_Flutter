@@ -33,6 +33,13 @@ class ChatListRules {
         isUtc: true,
       );
     }
+    // Normalize SQL date strings ("YYYY-MM-DD HH:mm:ss") or ISO timestamps to UTC consistently
+    if (!str.endsWith('Z') && str.contains('-') && (str.contains(' ') || str.contains('T'))) {
+      final isoStr = str.replaceFirst(' ', 'T');
+      final withZ = isoStr.endsWith('Z') ? isoStr : '${isoStr}Z';
+      final dt = DateTime.tryParse(withZ);
+      if (dt != null) return dt.toUtc();
+    }
     return DateTime.tryParse(str)?.toUtc() ?? epoch;
   }
 

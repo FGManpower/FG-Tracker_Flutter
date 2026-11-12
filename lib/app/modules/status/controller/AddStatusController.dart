@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:fgtracker/app/Data/Repositories/status_repo.dart';
 import 'package:fgtracker/app/modules/status/controller/status_feed_controller.dart';
 
@@ -78,6 +80,20 @@ class AddStatusController extends GetxController {
     isInitializing.value = true;
     error.value = null;
     try {
+      // 1. Explicitly request camera runtime permission
+      final camStatus = await Permission.camera.request();
+      if (!camStatus.isGranted) {
+        error.value = appL10n.status_cameraAccessFailed;
+        isCameraReady.value = false;
+        return;
+      }
+
+      // 2. Request microphone permission for video mode (non-blocking)
+      final micStatus = await Permission.microphone.status;
+      if (!micStatus.isGranted) {
+        await Permission.microphone.request();
+      }
+
       _cameras = await availableCameras();
       if (_cameras.isEmpty) {
         error.value = appL10n.status_noCamera;
@@ -85,7 +101,8 @@ class AddStatusController extends GetxController {
         return;
       }
       await _setupCamera(_cameras[_selectedCameraIndex]);
-    } catch (_) {
+    } catch (e) {
+      AppLog.d("AddStatusController camera init error: $e");
       error.value = appL10n.status_cameraAccessFailed;
       isCameraReady.value = false;
     } finally {
@@ -95,16 +112,39 @@ class AddStatusController extends GetxController {
 
   Future<void> _setupCamera(CameraDescription description) async {
     await cameraController?.dispose();
-    final controller = CameraController(
-      description,
-      ResolutionPreset.high,
-      enableAudio: true,
-    );
-    cameraController = controller;
-    await controller.initialize();
-    await controller.setFlashMode(
-      isFlashOn.value ? FlashMode.torch : FlashMode.off,
-    );
+    final micGranted = await Permission.microphone.isGranted;
+
+    CameraController? controller;
+    try {
+      controller = CameraController(
+        description,
+        ResolutionPreset.high,
+        enableAudio: micGranted,
+      );
+      cameraController = controller;
+      await controller.initialize();
+    } catch (e) {
+      AppLog.d("Camera init with audio error, retrying without audio: $e");
+      if (controller != null) {
+        try {
+          await controller.dispose();
+        } catch (_) {}
+      }
+      // Fallback: start without audio so camera preview still works
+      controller = CameraController(
+        description,
+        ResolutionPreset.high,
+        enableAudio: false,
+      );
+      cameraController = controller;
+      await controller.initialize();
+    }
+
+    try {
+      await controller.setFlashMode(
+        isFlashOn.value ? FlashMode.torch : FlashMode.off,
+      );
+    } catch (_) {}
     isCameraReady.value = true;
   }
 

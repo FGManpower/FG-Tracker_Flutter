@@ -579,14 +579,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     if (row == null) return;
 
     if (last == null) {
-      if ((row.message ?? '').isEmpty && (row.preview ?? '').isEmpty) return;
-      row
-        ..message = ''
-        ..preview = ''
-        ..messageType = 'text'
-        ..lastMessageData = null
-        ..isDeletedForEveryone = false;
-      privateChats.refresh();
+      // Do not clear the existing row on normal screen exit if it already has valid content!
       return;
     }
 
@@ -1398,9 +1391,11 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       final res = await MessageRepo.syncChat(
         sinceIsoTimestamp: since.toUtc().toIso8601String(),
       );
-      if (res.status == true && res.data != null && res.data!.isNotEmpty) {
-        for (final item in res.data!) {
-          _handlePrivateChatUpdated(item.toJson());
+      if (res.status == true) {
+        if (res.data != null && res.data!.isNotEmpty) {
+          for (final item in res.data!) {
+            _handlePrivateChatUpdated(item.toJson());
+          }
         }
         _lastServerSync = DateTime.now();
         return;

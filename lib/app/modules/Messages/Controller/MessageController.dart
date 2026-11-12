@@ -447,15 +447,19 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     _sendPrivateStopTypingNow();
   }
 
+  MessageData? _latestMessage;
+
   /// Pushes this chat's real last message to the chat list row (after a
   /// delete, a clear, and on close). Only once history is loaded, so a
   /// failed load never blanks the row.
   void _syncChatListPreview() {
     if (!_historyLoaded || !Get.isRegistered<ChatListController>()) return;
+    final lastMsg = _messages.isNotEmpty ? _messages.last : _latestMessage;
+    if (lastMsg == null) return;
     Get.find<ChatListController>().syncLastMessageFromChat(
       chatId: privateChatId.value,
       peerUserId: _privatePeerId,
-      last: _messages.isEmpty ? null : _messages.last,
+      last: lastMsg,
     );
   }
 
@@ -2087,6 +2091,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     );
 
     socketService.releasePrivateChatEvents(this);
+
+    _syncChatListPreview();
 
     _messages.clear();
     messageText.value = "";

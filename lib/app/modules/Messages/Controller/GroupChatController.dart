@@ -113,15 +113,19 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   RxBool isLoadingOlderMessages = false.obs;
   RxBool hasMoreOlderMessages = true.obs;
 
+  MessageData? _latestMessage;
+
   /// Pushes this group's real last message to the chat list row (after a
   /// delete, a clear, and on close). Only once history is loaded, so a
   /// failed load never blanks the row.
   void _syncChatListPreview() {
     if (!_historyLoaded || !Get.isRegistered<ChatListController>()) return;
+    final lastMsg = _messages.isNotEmpty ? _messages.last : _latestMessage;
+    if (lastMsg == null) return;
     Get.find<ChatListController>().syncLastMessageFromChat(
       isGroup: true,
       groupId: groupId,
-      last: _messages.isEmpty ? null : _messages.last,
+      last: lastMsg,
     );
   }
 
@@ -1966,6 +1970,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
   void handleBackPressed(BuildContext context) {
     // socketService.disconnectSocket();
+    _syncChatListPreview();
 
     _messages.clear();
 
