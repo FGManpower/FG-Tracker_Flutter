@@ -568,21 +568,20 @@ class TrackController extends GetxController {
             }
           } else if (existingIdx >= 0) {
             final prev = radiusUsers[existingIdx];
-              prev.latitude = lat;
-              prev.longitude = lng;
-              prev.isOnline = true;
-              prev.lastSeen = nowIso;
-              if (item['name'] != null && item['name'].toString().isNotEmpty) {
-                prev.name = item['name'].toString();
-              }
-              if (addr != null && addr.isNotEmpty) {
-                prev.location = addr;
-              }
-              if (item['battery'] != null) {
-                prev.battery = item['battery'];
-              }
-              _resolveAddressForUser(prev);
+            prev.latitude = lat;
+            prev.longitude = lng;
+            prev.isOnline = true;
+            prev.lastSeen = nowIso;
+            if (item['name'] != null && item['name'].toString().isNotEmpty) {
+              prev.name = item['name'].toString();
             }
+            if (addr != null && addr.isNotEmpty) {
+              prev.location = addr;
+            }
+            if (item['battery'] != null) {
+              prev.battery = item['battery'];
+            }
+            _resolveAddressForUser(prev);
           } else if (isLocSharing) {
             _knownUserCoordinates[userId.toString()] = LatLng(lat, lng);
             final String? itemName = item['name']?.toString();
