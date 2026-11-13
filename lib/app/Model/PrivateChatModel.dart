@@ -184,6 +184,9 @@ class PrivateChatModel {
   /// Backend v2.8.0: "Mark as unread" stored on the server (all devices).
   bool? isMarkedUnread;
 
+  /// Whether current user is an active member/participant in this group/chat.
+  bool? isMember;
+
   /// True for a group deactivated by its admin.
   bool get isGroupDeactivated =>
       isDeactivated == true || groupStatus?.toLowerCase() == 'deactivated';
@@ -233,6 +236,7 @@ class PrivateChatModel {
     this.groupStatus,
     this.isDeactivated,
     this.isMarkedUnread,
+    this.isMember,
     this.moveToTop,
     this.image,
     this.isForwarded,
@@ -467,6 +471,12 @@ class PrivateChatModel {
       isMarkedUnread: _parseBool(
         json['isMarkedUnread'] ?? json['is_marked_unread'],
       ),
+      isMember: _parseBool(
+        json['isMember'] ??
+            json['is_member'] ??
+            group?['isMember'] ??
+            group?['is_member'],
+      ),
       moveToTop: _parseBool(
         json['moveToTop'] ?? json['move_to_top'],
       ),
@@ -564,6 +574,8 @@ class PrivateChatModel {
       'isArchived': isArchived,
       'groupStatus': groupStatus,
       'isDeactivated': isDeactivated,
+      'isMarkedUnread': isMarkedUnread,
+      'isMember': isMember,
       'moveToTop': moveToTop,
       'image': image,
       'isForwarded': isForwarded,

@@ -1598,6 +1598,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         groupStatus: updated.groupStatus ?? current.groupStatus,
         isDeactivated: updated.isDeactivated ?? current.isDeactivated,
         isMarkedUnread: updated.isMarkedUnread ?? current.isMarkedUnread,
+        isMember: updated.isMember ?? current.isMember,
         moveToTop: updated.moveToTop ?? current.moveToTop,
         image: (updated.image != null &&
                 updated.image!.isNotEmpty &&
@@ -1707,6 +1708,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       groupStatus: updated.groupStatus ?? current.groupStatus,
       isDeactivated: updated.isDeactivated ?? current.isDeactivated,
       isMarkedUnread: updated.isMarkedUnread ?? current.isMarkedUnread,
+      isMember: updated.isMember ?? current.isMember,
       moveToTop: updated.moveToTop ?? current.moveToTop,
       image: (updated.image != null &&
               updated.image!.isNotEmpty &&
