@@ -306,6 +306,7 @@ class ChatList extends StatelessWidget {
               }
 
               final isFirstUnread = msg.id != null &&
+                  (controller.unreadCount.value > 0) &&
                   msg.id == controller.firstUnreadMessageId.value;
               if (isFirstUnread) {
                 itemWidget = Column(
@@ -984,6 +985,7 @@ class GroupChatList extends StatelessWidget {
               }
 
               final isFirstUnread = msg.id != null &&
+                  (controller.unreadCount.value > 0) &&
                   msg.id == controller.firstUnreadMessageId.value;
               if (isFirstUnread) {
                 itemWidget = Column(

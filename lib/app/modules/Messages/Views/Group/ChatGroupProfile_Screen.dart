@@ -921,67 +921,120 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                 const Color(0xFF2BB673)),
           SizedBox(width: 4.w),
           if (!isMe)
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert_rounded,
-                color: Colors.grey.shade500, size: 20.sp),
-            color: Colors.white,
-            onSelected: (value) {
-              if (value == "chat")
-                _openPrivateChat(m, online);
-              else if (value == "call")
-                CallService().startOutGoingCall(context,
-                    callerId: _myId,
-                    remoteUserId: m.userId.toString(),
-                    is_video: false,
-                    callerName: name,
-                    callerProfile: m.profileImage);
-              else if (value == "video")
-                CallService().startOutGoingCall(context,
-                    callerId: _myId,
-                    remoteUserId: m.userId.toString(),
-                    is_video: true,
-                    callerName: name,
-                    callerProfile: m.profileImage);
-              else if (value == "remove" &&
-                  (data.permissions?.canAddMember ?? false) &&
-                  !isMe) {
-                CommonDialog.ConfirmationDialog(
-                  title: appL10n.chat_removeMember,
-                  content: appL10n.groupInfo_removeMemberConfirm(name),
-                  confirm: appL10n.common_remove,
-                  onConfirm: () {
-                    Get.back();
-                    groupController.deleteGroupMember(
-                      context,
-                      groupId: data.group!.groupId.toString(),
-                      groupMemberId: m.userId.toString(),
-                      onSuccess: (success) {
-                        if (success) {
-                          _apiController
-                              .fetchProfileDetails(data.group!.groupId!);
-                        }
-                      },
-                    );
-                  },
-                );
-              }
-            },
-            itemBuilder: (_) => [
-              if (!isMe)
-                PopupMenuItem(
-                    value: "chat", child: Text(appL10n.groupInfo_messageAction)),
-              if (!isMe)
-                PopupMenuItem(
-                    value: "call", child: Text(appL10n.groupInfo_audioCall)),
-              if (!isMe)
-                PopupMenuItem(
-                    value: "video", child: Text(appL10n.groupInfo_videoCall)),
-              if (!isMe && (data.permissions?.canAddMember ?? false))
-                PopupMenuItem(
-                    value: "remove",
-                    child: Text(appL10n.groupInfo_removeFromGroup)),
-            ],
-          ),
+          Builder(builder: (context) {
+            final bool myIsAdmin = data.myStatus?.isAdmin == true || data.myStatus?.isCreator == true;
+            final bool myIsCreator = data.myStatus?.isCreator == true;
+            final bool canPromote = !isMe && !isAdmin && myIsAdmin;
+            final bool canDemote = !isMe && isAdmin && myIsCreator;
+            final bool canRemove = !isMe && (myIsAdmin || (data.permissions?.canAddMember ?? false)) && (!isAdmin || myIsCreator);
+
+            return PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert_rounded,
+                  color: Colors.grey.shade500, size: 20.sp),
+              color: Colors.white,
+              onSelected: (value) {
+                if (value == "chat") {
+                  _openPrivateChat(m, online);
+                } else if (value == "call") {
+                  CallService().startOutGoingCall(context,
+                      callerId: _myId,
+                      remoteUserId: m.userId.toString(),
+                      is_video: false,
+                      callerName: name,
+                      callerProfile: m.profileImage);
+                } else if (value == "video") {
+                  CallService().startOutGoingCall(context,
+                      callerId: _myId,
+                      remoteUserId: m.userId.toString(),
+                      is_video: true,
+                      callerName: name,
+                      callerProfile: m.profileImage);
+                } else if (value == "make_admin") {
+                  CommonDialog.ConfirmationDialog(
+                    title: "Make Group Admin",
+                    content: "Make $name a group admin?",
+                    confirm: "Make Admin",
+                    onConfirm: () {
+                      Get.back();
+                      groupController.promoteAdmin(
+                        context,
+                        groupId: data.group!.groupId.toString(),
+                        userId: m.userId.toString(),
+                        onSuccess: (success) {
+                          if (success) {
+                            _apiController.fetchProfileDetails(data.group!.groupId!);
+                            chatController.getGroupMembers();
+                          }
+                        },
+                      );
+                    },
+                  );
+                } else if (value == "dismiss_admin") {
+                  CommonDialog.ConfirmationDialog(
+                    title: "Dismiss as Admin",
+                    content: "Dismiss $name as group admin?",
+                    confirm: "Dismiss",
+                    onConfirm: () {
+                      Get.back();
+                      groupController.demoteAdmin(
+                        context,
+                        groupId: data.group!.groupId.toString(),
+                        userId: m.userId.toString(),
+                        onSuccess: (success) {
+                          if (success) {
+                            _apiController.fetchProfileDetails(data.group!.groupId!);
+                            chatController.getGroupMembers();
+                          }
+                        },
+                      );
+                    },
+                  );
+                } else if (value == "remove" && canRemove) {
+                  CommonDialog.ConfirmationDialog(
+                    title: appL10n.chat_removeMember,
+                    content: appL10n.groupInfo_removeMemberConfirm(name),
+                    confirm: appL10n.common_remove,
+                    onConfirm: () {
+                      Get.back();
+                      groupController.deleteGroupMember(
+                        context,
+                        groupId: data.group!.groupId.toString(),
+                        groupMemberId: m.userId.toString(),
+                        onSuccess: (success) {
+                          if (success) {
+                            _apiController
+                                .fetchProfileDetails(data.group!.groupId!);
+                            chatController.getGroupMembers();
+                          }
+                        },
+                      );
+                    },
+                  );
+                }
+              },
+              itemBuilder: (_) => [
+                if (!isMe)
+                  PopupMenuItem(
+                      value: "chat", child: Text(appL10n.groupInfo_messageAction)),
+                if (!isMe)
+                  PopupMenuItem(
+                      value: "call", child: Text(appL10n.groupInfo_audioCall)),
+                if (!isMe)
+                  PopupMenuItem(
+                      value: "video", child: Text(appL10n.groupInfo_videoCall)),
+                if (canPromote)
+                  const PopupMenuItem(
+                      value: "make_admin", child: Text("Make group admin")),
+                if (canDemote)
+                  const PopupMenuItem(
+                      value: "dismiss_admin", child: Text("Dismiss as admin")),
+                if (canRemove)
+                  PopupMenuItem(
+                      value: "remove",
+                      child: Text(appL10n.groupInfo_removeFromGroup)),
+              ],
+            );
+          }),
         ],
       ),
     );

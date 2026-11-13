@@ -279,6 +279,70 @@ class GroupController extends GetxController {
     }
   }
 
+  Future<void> promoteAdmin(
+    BuildContext context, {
+    required String groupId,
+    required String userId,
+    required void Function(bool) onSuccess,
+  }) async {
+    try {
+      Loading().showloading();
+
+      final dynamic param = {
+        "groupId": groupId,
+        "userId": userId,
+      };
+
+      final result = await GroupRepo.promoteAdmin(param);
+
+      Loading().dismissloading();
+
+      if (result.status == true) {
+        CommonDialog.showSuccessDialog(result.message ?? "Member promoted to admin");
+        onSuccess(true);
+      } else {
+        CommonDialog.errorMessage(result.message);
+        onSuccess(false);
+      }
+    } catch (e) {
+      Loading().dismissloading();
+      CommonDialog.errorMessage(e.toString());
+      onSuccess(false);
+    }
+  }
+
+  Future<void> demoteAdmin(
+    BuildContext context, {
+    required String groupId,
+    required String userId,
+    required void Function(bool) onSuccess,
+  }) async {
+    try {
+      Loading().showloading();
+
+      final dynamic param = {
+        "groupId": groupId,
+        "userId": userId,
+      };
+
+      final result = await GroupRepo.demoteAdmin(param);
+
+      Loading().dismissloading();
+
+      if (result.status == true) {
+        CommonDialog.showSuccessDialog(result.message ?? "Admin dismissed");
+        onSuccess(true);
+      } else {
+        CommonDialog.errorMessage(result.message);
+        onSuccess(false);
+      }
+    } catch (e) {
+      Loading().dismissloading();
+      CommonDialog.errorMessage(e.toString());
+      onSuccess(false);
+    }
+  }
+
   Future<void> confirmAndExitGroup(
     BuildContext context, {
     required String groupId,

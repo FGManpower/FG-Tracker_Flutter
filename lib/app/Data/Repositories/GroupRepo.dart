@@ -119,4 +119,20 @@ class GroupRepo {
     var response = await HttpUtil().Authpost("/deleteGroup", data: data);
     return CommonResponse.fromJson(response);
   }
+
+  static Future<CommonResponse> promoteAdmin(dynamic data) async {
+    var response = await HttpUtil().Authpost(
+      "/promoteAdmin",
+      data: data,
+    );
+    return CommonResponse.fromJson(response);
+  }
+
+  static Future<CommonResponse> demoteAdmin(dynamic data) async {
+    var response = await HttpUtil().Authpost(
+      "/demoteAdmin",
+      data: data,
+    );
+    return CommonResponse.fromJson(response);
+  }
 }
