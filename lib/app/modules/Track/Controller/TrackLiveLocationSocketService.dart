@@ -267,7 +267,36 @@ class TrackLiveLocationSocketService extends GetxService {
           _processSingleItem(item);
         }
       } else if (data is Map) {
-        _processSingleItem(data);
+        final dynamic groupId = data['groupId'];
+        if (data['updatedUser'] is Map) {
+          final updated = Map<String, dynamic>.from(data['updatedUser'] as Map);
+          if (groupId != null && updated['groupId'] == null) {
+            updated['groupId'] = groupId;
+          }
+          _processSingleItem(updated);
+        } else if (data['data'] is List) {
+          for (var item in (data['data'] as List)) {
+            if (item is Map) {
+              final m = Map<String, dynamic>.from(item);
+              if (groupId != null && m['groupId'] == null) {
+                m['groupId'] = groupId;
+              }
+              _processSingleItem(m);
+            }
+          }
+        } else if (data['locations'] is List) {
+          for (var item in (data['locations'] as List)) {
+            if (item is Map) {
+              final m = Map<String, dynamic>.from(item);
+              if (groupId != null && m['groupId'] == null) {
+                m['groupId'] = groupId;
+              }
+              _processSingleItem(m);
+            }
+          }
+        } else {
+          _processSingleItem(data);
+        }
       }
     } catch (e, stack) {
       AppLog.d('❌ [TrackLiveSocket] Error processing location data: $e\n$stack');

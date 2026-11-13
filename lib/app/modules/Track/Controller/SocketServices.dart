@@ -197,17 +197,50 @@ class SocketService extends GetxService with WidgetsBindingObserver {
   void onGroupLocationUpdate(Function(dynamic) callback) {
     _socket?.on("group-location-update", (data) {
       log("[SocketService] group-location-update received: $data");
+      final myUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+
       if (data is List) {
         for (var item in data) {
           if (item is Map &&
-              item["userId"].toString() !=
-                  Global.storageServices.get(PrefConst.userId).toString()) {
+              item["userId"] != null &&
+              item["userId"].toString() != myUserId) {
             callback(item);
           }
         }
       } else if (data is Map) {
-        if (data["userId"].toString() !=
-            Global.storageServices.get(PrefConst.userId).toString()) {
+        final dynamic groupId = data["groupId"];
+
+        // 1. If wrapper contains updatedUser
+        if (data["updatedUser"] is Map) {
+          final updated = Map<String, dynamic>.from(data["updatedUser"] as Map);
+          if (groupId != null && updated["groupId"] == null) {
+            updated["groupId"] = groupId;
+          }
+          if (updated["userId"] != null &&
+              updated["userId"].toString() != myUserId) {
+            callback(updated);
+          }
+        }
+
+        // 2. If wrapper contains data list of members
+        if (data["data"] is List) {
+          for (var item in (data["data"] as List)) {
+            if (item is Map) {
+              final memberMap = Map<String, dynamic>.from(item);
+              if (groupId != null && memberMap["groupId"] == null) {
+                memberMap["groupId"] = groupId;
+              }
+              if (memberMap["userId"] != null &&
+                  memberMap["userId"].toString() != myUserId) {
+                callback(memberMap);
+              }
+            }
+          }
+        }
+
+        // 3. If direct map with userId
+        if (data["userId"] != null &&
+            data["userId"].toString() != myUserId) {
           callback(data);
         }
       }

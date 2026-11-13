@@ -497,29 +497,39 @@ class TrackController extends GetxController {
             lat != 0.0 &&
             lng != 0.0) {
           final nowIso = DateTime.now().toIso8601String();
+          final rawLocSharing =
+              item['locationSharing'] ?? item['location_sharing'];
+          final bool isLocSharing = rawLocSharing is bool
+              ? rawLocSharing
+              : (rawLocSharing == null
+                  ? true
+                  : (rawLocSharing == 1 ||
+                      rawLocSharing == '1' ||
+                      rawLocSharing.toString().toLowerCase() == 'true'));
+
           final existingIdx = radiusUsers
               .indexWhere((u) => u.userId.toString() == userId.toString());
           if (existingIdx >= 0) {
-            final prev = radiusUsers[existingIdx];
-            final bool moved = (prev.latitude != null &&
-                    (prev.latitude! - lat).abs() > 0.0001) ||
-                (prev.longitude != null &&
-                    (prev.longitude! - lng).abs() > 0.0001);
-            prev.latitude = lat;
-            prev.longitude = lng;
-            prev.isOnline = true;
-            prev.lastSeen = nowIso;
-            if (item['name'] != null && item['name'].toString().isNotEmpty) {
-              prev.name = item['name'].toString();
+            if (!isLocSharing) {
+              radiusUsers.removeAt(existingIdx);
+            } else {
+              final prev = radiusUsers[existingIdx];
+              prev.latitude = lat;
+              prev.longitude = lng;
+              prev.isOnline = true;
+              prev.lastSeen = nowIso;
+              if (item['name'] != null && item['name'].toString().isNotEmpty) {
+                prev.name = item['name'].toString();
+              }
+              if (addr != null && addr.isNotEmpty) {
+                prev.location = addr;
+              }
+              if (item['battery'] != null) {
+                prev.battery = item['battery'];
+              }
+              _resolveAddressForUser(prev);
             }
-            if (addr != null && addr.isNotEmpty) {
-              prev.location = addr;
-            }
-            if (item['battery'] != null) {
-              prev.battery = item['battery'];
-            }
-            _resolveAddressForUser(prev);
-          } else {
+          } else if (isLocSharing) {
             _knownUserCoordinates[userId.toString()] = LatLng(lat, lng);
             final String? itemName = item['name']?.toString();
             if (!isLoading.value &&
@@ -543,6 +553,7 @@ class TrackController extends GetxController {
               _resolveAddressForUser(newUser);
             }
           }
+
           if (isGroupMode.value) {
             final gIdx = groupModeUsers
                 .indexWhere((u) => u.userId.toString() == userId.toString());
@@ -555,6 +566,27 @@ class TrackController extends GetxController {
               if (addr != null && addr.isNotEmpty) gu.location = addr;
             }
           }
+
+          // Also live update the group members dropdown in the Group Tab
+          final String? gIdStr = item['groupId']?.toString() ??
+              (selectedGroupId.value.isNotEmpty ? selectedGroupId.value : null);
+          if (gIdStr != null && groupMembersMap.containsKey(gIdStr)) {
+            final list = groupMembersMap[gIdStr]!;
+            final mIdx = list.indexWhere((m) =>
+                (m.userId ?? m.id)?.toString() == userId.toString());
+            if (mIdx >= 0) {
+              final gm = list[mIdx];
+              gm.latitude = lat;
+              gm.longitude = lng;
+              gm.isOnline = true;
+              gm.lastSeen = nowIso;
+              gm.locationSharing = isLocSharing;
+              if (addr != null && addr.isNotEmpty) gm.location = addr;
+              if (item['battery'] != null) gm.battery = item['battery'];
+              groupMembersMap.refresh();
+            }
+          }
+
           _refreshMembersAndMap();
           if (isGroupMode.value) {
             updateMapMarkersAndCircle();
