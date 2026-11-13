@@ -161,6 +161,102 @@ Widget _quotedReplyCard({
   );
 }
 
+String formatSystemMessageText(MessageData message, String currentUserId) {
+  final meta = message.systemMeta;
+  final defaultContent = message.content?.toString() ?? '';
+  if (meta == null || meta.isEmpty) {
+    return defaultContent;
+  }
+
+  final action = meta['action']?.toString() ?? '';
+  final actorId = meta['actorId']?.toString();
+  final targetUserId = (meta['targetUserId'] ??
+          meta['userId'] ??
+          meta['promotedUserId'] ??
+          meta['demotedUserId'] ??
+          meta['removedUserId'])
+      ?.toString();
+  final actorName = meta['actorName']?.toString() ?? 'Admin';
+  final targetName = meta['targetName']?.toString() ?? 'Member';
+  final groupName = meta['groupName']?.toString();
+  final newName = meta['newName']?.toString();
+
+  final isMeActor = actorId == currentUserId;
+  final isMeTarget = targetUserId == currentUserId;
+
+  switch (action) {
+    case 'member_left':
+      if (isMeTarget || isMeActor) return 'You left';
+      return '$targetName left';
+
+    case 'member_removed':
+      if (isMeTarget) {
+        return groupName != null
+            ? 'You were removed from $groupName'
+            : 'You were removed';
+      }
+      if (isMeActor) {
+        return groupName != null
+            ? 'You removed $targetName from $groupName'
+            : 'You removed $targetName';
+      }
+      return groupName != null
+          ? '$actorName removed $targetName from $groupName'
+          : '$actorName removed $targetName';
+
+    case 'admin_promoted':
+      if (isMeTarget) {
+        return groupName != null
+            ? 'You are now an admin in $groupName'
+            : 'You are now an admin';
+      }
+      if (isMeActor) {
+        return groupName != null
+            ? 'You added $targetName as an admin in $groupName'
+            : 'You added $targetName as an admin';
+      }
+      return groupName != null
+          ? '$actorName added $targetName as an admin in $groupName'
+          : '$actorName added $targetName as an admin';
+
+    case 'admin_demoted':
+      if (isMeTarget) {
+        return groupName != null
+            ? 'You are no longer an admin in $groupName'
+            : 'You are no longer an admin';
+      }
+      if (isMeActor) {
+        return groupName != null
+            ? 'You removed $targetName as an admin in $groupName'
+            : 'You removed $targetName as an admin';
+      }
+      return groupName != null
+          ? '$actorName removed $targetName as an admin in $groupName'
+          : '$actorName removed $targetName as an admin';
+
+    case 'group_name_changed':
+      if (isMeActor) {
+        return newName != null && newName.isNotEmpty
+            ? 'You changed the group name to "$newName"'
+            : 'You changed the group name';
+      }
+      return newName != null && newName.isNotEmpty
+          ? '$actorName changed the group name to "$newName"'
+          : '$actorName changed the group name';
+
+    case 'group_icon_changed':
+      if (isMeActor) return "You changed this group's icon";
+      return "$actorName changed this group's icon";
+
+    case 'group_description_changed':
+      if (isMeActor) return 'You changed the group description';
+      return '$actorName changed the group description';
+
+    default:
+      return defaultContent;
+  }
+}
+
 Widget _buildSystemMessageTile(String content) {
   return Center(
     child: Container(
@@ -345,7 +441,9 @@ class ChatBubble extends StatelessWidget {
     final isSentByMe = message.senderId.toString() == currentUserId;
 
     if (message.isSystemMessage) {
-      return _buildSystemMessageTile(message.content?.toString() ?? '');
+      return _buildSystemMessageTile(
+        formatSystemMessageText(message, currentUserId),
+      );
     }
 
     if (message.isCallLogMessage) {
@@ -1791,7 +1889,9 @@ class GroupChatBubble extends StatelessWidget {
     final isSentByMe = message.senderId.toString() == currentUserId;
 
     if (message.isSystemMessage) {
-      return _buildSystemMessageTile(message.content?.toString() ?? '');
+      return _buildSystemMessageTile(
+        formatSystemMessageText(message, currentUserId),
+      );
     }
 
     if (message.isCallLogMessage) {

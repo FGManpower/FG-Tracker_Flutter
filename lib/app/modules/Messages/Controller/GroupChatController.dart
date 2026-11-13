@@ -849,6 +849,10 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       // to me): show the "no longer a member" banner; history stays.
       removedFromGroup.value = true;
       showEmoji.value = false;
+      socketService.clearActiveGroup(groupId);
+      if (me != null && me.isNotEmpty) {
+        socketService.leaveUserFromGroup(me, groupId);
+      }
       return;
     }
 
@@ -2353,6 +2357,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     final userId = Global.storageServices.get(PrefConst.userId)?.toString();
     if (userId == null || userId.isEmpty) return;
     socketService.markSeen(userId, groupId);
+    unreadCount.value = 0;
+    firstUnreadMessageId.value = null;
   }
 
   @override

@@ -231,6 +231,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       otherUserId: peerId,
     );
     socketService.markPrivateChatRead(userId: userId, chatId: chatId);
+    unreadCount.value = 0;
+    firstUnreadMessageId.value = null;
   }
 
   @override

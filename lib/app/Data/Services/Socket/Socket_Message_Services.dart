@@ -1919,6 +1919,22 @@ class SocketMessageService extends GetxService {
     _socket?.on("group_left", handler);
   }
 
+  void listenGroupExit({required Function(dynamic) callback}) {
+    final events = [
+      "user_removed_from_group",
+      "group_left",
+      "member_removed",
+      "group_chat_removed",
+      "group_removed",
+    ];
+    for (final ev in events) {
+      _privateChatListSocket?.off(ev);
+      _privateChatListSocket?.on(ev, callback);
+      _socket?.off(ev);
+      _socket?.on(ev, callback);
+    }
+  }
+
   void forwardMessage({
     required int messageId,
     String? receiverId,

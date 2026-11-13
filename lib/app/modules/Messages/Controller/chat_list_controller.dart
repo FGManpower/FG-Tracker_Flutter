@@ -985,6 +985,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     );
     socketService.listenChatListReconnect(_resyncWithServer);
     socketService.listenGroupUpdated(callback: _handleGroupUpdated);
+    socketService.listenGroupExit(callback: _handleGroupExitEvent);
 
     // Group list updates, group typing and group "read" travel on /chat,
     // which otherwise only exists after a group chat was opened.
@@ -1173,6 +1174,26 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
           updatedChat.userId == null &&
           updatedChat.groupId == null) {
         return;
+      }
+
+      // Suppress group messages if the user is no longer an active member of this group
+      final bool isGroupPayload = updatedChat.isGroup == true ||
+          updatedChat.groupId != null ||
+          payload['chatType'] == 'group';
+      final bool notAMember =
+          payload['isMember'] == false || updatedChat.isMember == false;
+      if (isGroupPayload) {
+        final targetGid = updatedChat.groupId ?? updatedChat.id;
+        final existingMatch =
+            privateChats.firstWhereOrNull((c) => _isSameChat(c, updatedChat));
+        if (notAMember ||
+            (existingMatch != null && existingMatch.isMember == false)) {
+          if (targetGid != null) {
+            socketService.clearActiveGroup(targetGid);
+            socketService.leaveUserFromGroup(currentUserId, targetGid);
+          }
+          return;
+        }
       }
 
       // The server answered for this chat: an optimistic action succeeded.
@@ -2106,11 +2127,13 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     ).catchError((_) {});
 
     final keys = _getAllChatKeys(chat);
-    if (keys.isNotEmpty) {
-      manuallyUnreadChatKeys.removeAll(keys);
-      manuallyUnreadChatKeys.refresh();
-      await _saveManuallyUnreadKeys();
+    final now = DateTime.now();
+    for (final k in keys) {
+      _readLocallyAt[k] = now;
+      manuallyUnreadChatKeys.remove(k);
     }
+    manuallyUnreadChatKeys.refresh();
+    await _saveManuallyUnreadKeys();
 
     if (previousUnread > 0) {
       unreadTotalCount.value =
@@ -2118,6 +2141,20 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     }
     chat.unreadCount = 0;
     chat.isMarkedUnread = false;
+
+    for (final c in privateChats) {
+      if (_isSameChat(c, chat)) {
+        c.unreadCount = 0;
+        c.isMarkedUnread = false;
+      }
+    }
+    for (final c in archivedChats) {
+      if (_isSameChat(c, chat)) {
+        c.unreadCount = 0;
+        c.isMarkedUnread = false;
+      }
+    }
+
     privateChats.refresh();
     archivedChats.refresh();
     _syncChattingNotificationMarker();
@@ -2206,6 +2243,32 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       privateChats.refresh();
       archivedChats.refresh();
     }
+  }
+
+  void _handleGroupExitEvent(dynamic data) {
+    if (data is! Map) return;
+    try {
+      final map = Map<String, dynamic>.from(data);
+      final rawGid = map['groupId'] ?? map['group_id'] ?? map['chatId'] ?? map['id'];
+      final gid = int.tryParse(rawGid?.toString() ?? '');
+      final uid = (map['userId'] ?? map['user_id'] ?? map['removedUserId'])?.toString();
+      if (gid != null && (uid == null || uid == currentUserId)) {
+        socketService.clearActiveGroup(gid);
+        socketService.leaveUserFromGroup(currentUserId, gid);
+        for (final c in privateChats) {
+          if ((c.isGroup == true || c.chatType == 'group') && (c.groupId == gid || c.id == gid)) {
+            c.isMember = false;
+          }
+        }
+        for (final c in archivedChats) {
+          if ((c.isGroup == true || c.chatType == 'group') && (c.groupId == gid || c.id == gid)) {
+            c.isMember = false;
+          }
+        }
+        privateChats.refresh();
+        archivedChats.refresh();
+      }
+    } catch (_) {}
   }
 
   /// `private_chat_action_error`: roll back the matching optimistic action.
