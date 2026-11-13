@@ -298,7 +298,6 @@ class GroupController extends GetxController {
       Loading().dismissloading();
 
       if (result.status == true) {
-        CommonDialog.showSuccessDialog(result.message ?? "Member promoted to admin");
         onSuccess(true);
       } else {
         CommonDialog.errorMessage(result.message);
@@ -330,7 +329,6 @@ class GroupController extends GetxController {
       Loading().dismissloading();
 
       if (result.status == true) {
-        CommonDialog.showSuccessDialog(result.message ?? "Admin dismissed");
         onSuccess(true);
       } else {
         CommonDialog.errorMessage(result.message);
