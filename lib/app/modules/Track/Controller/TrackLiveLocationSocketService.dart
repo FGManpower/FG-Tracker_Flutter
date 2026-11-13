@@ -274,27 +274,7 @@ class TrackLiveLocationSocketService extends GetxService {
             updated['groupId'] = groupId;
           }
           _processSingleItem(updated);
-        } else if (data['data'] is List) {
-          for (var item in (data['data'] as List)) {
-            if (item is Map) {
-              final m = Map<String, dynamic>.from(item);
-              if (groupId != null && m['groupId'] == null) {
-                m['groupId'] = groupId;
-              }
-              _processSingleItem(m);
-            }
-          }
-        } else if (data['locations'] is List) {
-          for (var item in (data['locations'] as List)) {
-            if (item is Map) {
-              final m = Map<String, dynamic>.from(item);
-              if (groupId != null && m['groupId'] == null) {
-                m['groupId'] = groupId;
-              }
-              _processSingleItem(m);
-            }
-          }
-        } else {
+        } else if (data['userId'] != null) {
           _processSingleItem(data);
         }
       }

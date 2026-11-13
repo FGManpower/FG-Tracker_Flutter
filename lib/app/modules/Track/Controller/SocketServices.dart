@@ -210,7 +210,7 @@ class SocketService extends GetxService with WidgetsBindingObserver {
       } else if (data is Map) {
         final dynamic groupId = data["groupId"];
 
-        // 1. If wrapper contains updatedUser
+        // 1. If wrapper contains updatedUser (the specific user who moved/emitted location)
         if (data["updatedUser"] is Map) {
           final updated = Map<String, dynamic>.from(data["updatedUser"] as Map);
           if (groupId != null && updated["groupId"] == null) {
@@ -220,27 +220,9 @@ class SocketService extends GetxService with WidgetsBindingObserver {
               updated["userId"].toString() != myUserId) {
             callback(updated);
           }
-        }
-
-        // 2. If wrapper contains data list of members
-        if (data["data"] is List) {
-          for (var item in (data["data"] as List)) {
-            if (item is Map) {
-              final memberMap = Map<String, dynamic>.from(item);
-              if (groupId != null && memberMap["groupId"] == null) {
-                memberMap["groupId"] = groupId;
-              }
-              if (memberMap["userId"] != null &&
-                  memberMap["userId"].toString() != myUserId) {
-                callback(memberMap);
-              }
-            }
-          }
-        }
-
-        // 3. If direct map with userId
-        if (data["userId"] != null &&
+        } else if (data["userId"] != null &&
             data["userId"].toString() != myUserId) {
+          // Direct map for a single user
           callback(data);
         }
       }

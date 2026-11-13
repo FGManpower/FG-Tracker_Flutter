@@ -295,6 +295,14 @@ class TrackController extends GetxController {
       if (gIdx >= 0) {
         onlineGroupMembers[gIdx].isOnline = status.isOnline ? 1 : 0;
       }
+      for (final list in groupMembersMap.values) {
+        final mIdx = list.indexWhere((m) =>
+            (m.userId ?? m.id)?.toString() == status.userId);
+        if (mIdx >= 0) {
+          list[mIdx].isOnline = status.isOnline;
+          groupMembersMap.refresh();
+        }
+      }
       _refreshMembersAndMap();
     });
   }
@@ -318,9 +326,34 @@ class TrackController extends GetxController {
       }
     }
 
+    // Distance check for Live Tracking tab (radiusUsers)
+    double myLat = currentLat.value;
+    double myLng = currentLong.value;
+    if (myLat == 0.0 || myLng == 0.0) {
+      final loc = LocationService.instance.currentPosition;
+      if (loc?.latitude != null && loc?.longitude != null) {
+        myLat = loc!.latitude!;
+        myLng = loc.longitude!;
+      }
+    }
+
+    final double maxRadiusMeters =
+        getApiRadiusParam(selectedRadius.value).toDouble();
+    bool isWithinRadius = true;
+    if (myLat != 0.0 && myLng != 0.0) {
+      final double distMeters =
+          Geolocator.distanceBetween(myLat, myLng, data.lat, data.lng);
+      isWithinRadius = distMeters <= maxRadiusMeters;
+    }
+
     final existingIdx =
         radiusUsers.indexWhere((u) => u.userId.toString() == userIdStr);
-    if (existingIdx >= 0) {
+
+    if (!isWithinRadius) {
+      if (existingIdx >= 0) {
+        radiusUsers.removeAt(existingIdx);
+      }
+    } else if (existingIdx >= 0) {
       final prev = radiusUsers[existingIdx];
       prev.latitude = data.lat;
       prev.longitude = data.lng;
@@ -507,13 +540,34 @@ class TrackController extends GetxController {
                       rawLocSharing == '1' ||
                       rawLocSharing.toString().toLowerCase() == 'true'));
 
+          // Distance check for Live Tracking tab (radiusUsers)
+          double myLat = currentLat.value;
+          double myLng = currentLong.value;
+          if (myLat == 0.0 || myLng == 0.0) {
+            final loc = LocationService.instance.currentPosition;
+            if (loc?.latitude != null && loc?.longitude != null) {
+              myLat = loc!.latitude!;
+              myLng = loc.longitude!;
+            }
+          }
+
+          final double maxRadiusMeters =
+              getApiRadiusParam(selectedRadius.value).toDouble();
+          bool isWithinRadius = true;
+          if (myLat != 0.0 && myLng != 0.0) {
+            final double distMeters =
+                Geolocator.distanceBetween(myLat, myLng, lat, lng);
+            isWithinRadius = distMeters <= maxRadiusMeters;
+          }
+
           final existingIdx = radiusUsers
               .indexWhere((u) => u.userId.toString() == userId.toString());
-          if (existingIdx >= 0) {
-            if (!isLocSharing) {
+          if (!isWithinRadius || !isLocSharing) {
+            if (existingIdx >= 0) {
               radiusUsers.removeAt(existingIdx);
-            } else {
-              final prev = radiusUsers[existingIdx];
+            }
+          } else if (existingIdx >= 0) {
+            final prev = radiusUsers[existingIdx];
               prev.latitude = lat;
               prev.longitude = lng;
               prev.isOnline = true;
@@ -996,12 +1050,11 @@ class TrackController extends GetxController {
         }
 
         // Resolved Online Status & Last Seen
-        final bool isOnline = loc?.isOnline == true ||
-            (m?.isOnline == true) ||
-            Tracking().isOnline(
-              rawIsOnline: loc?.isOnline ?? m?.isOnline,
-              lastSeen: loc?.lastSeen?.toString() ?? m?.lastSeen?.toString(),
-            );
+        final bool isOnline = Tracking().isOnline(
+          rawIsOnline: loc?.isOnline ?? m?.isOnline,
+          lastSeen: loc?.lastSeen?.toString() ?? m?.lastSeen?.toString(),
+          thresholdMinutes: 5,
+        );
 
         final bool isGhost = (loc?.locationSharing == false ||
             loc?.locationSharing == 0 ||
@@ -1057,12 +1110,11 @@ class TrackController extends GetxController {
         final m = memberMap[uId];
         final loc = locationMap[uId];
 
-        final bool isOnline = loc?.isOnline == true ||
-            (m?.isOnline == true) ||
-            Tracking().isOnline(
-              rawIsOnline: loc?.isOnline ?? m?.isOnline,
-              lastSeen: loc?.lastSeen?.toString() ?? m?.lastSeen?.toString(),
-            );
+        final bool isOnline = Tracking().isOnline(
+          rawIsOnline: loc?.isOnline ?? m?.isOnline,
+          lastSeen: loc?.lastSeen?.toString() ?? m?.lastSeen?.toString(),
+          thresholdMinutes: 5,
+        );
 
         final bool isGhost = (loc?.locationSharing == false ||
             loc?.locationSharing == 0 ||
@@ -1667,10 +1719,23 @@ class TrackController extends GetxController {
 
         final String myUserIdStr =
             Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
-        final validData = result.data!
-            .where((u) =>
-                myUserIdStr.isEmpty || u.userId?.toString() != myUserIdStr)
-            .toList();
+        final double maxRadiusMeters = radiusParam.toDouble();
+        final validData = result.data!.where((u) {
+          if (myUserIdStr.isNotEmpty && u.userId?.toString() == myUserIdStr) {
+            return false;
+          }
+          if (lat != 0.0 &&
+              long != 0.0 &&
+              u.latitude != null &&
+              u.longitude != null &&
+              u.latitude != 0.0 &&
+              u.longitude != 0.0) {
+            final double dist =
+                Geolocator.distanceBetween(lat, long, u.latitude!, u.longitude!);
+            if (dist > maxRadiusMeters) return false;
+          }
+          return true;
+        }).toList();
         radiusUsers.assignAll(validData);
         await _resolveAllMembersAddresses();
       } else {
@@ -1980,6 +2045,13 @@ class TrackController extends GetxController {
           u.longitude != null &&
           u.latitude != 0.0 &&
           u.longitude != 0.0) {
+        if (!isGroupMode.value && lat != 0.0 && lng != 0.0) {
+          final double dist =
+              Geolocator.distanceBetween(lat, lng, u.latitude!, u.longitude!);
+          if (dist > radiusMeters) {
+            continue;
+          }
+        }
         if (q.isNotEmpty) {
           final matches = (u.name ?? "").toLowerCase().contains(q) ||
               (u.team ?? "").toLowerCase().contains(q) ||

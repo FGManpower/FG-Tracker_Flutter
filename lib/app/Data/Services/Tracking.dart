@@ -87,26 +87,34 @@ class Tracking {
 
   /// Check if a user is considered online/live based on explicit status or recency of lastSeen.
   bool isOnline({dynamic rawIsOnline, dynamic lastSeen, int thresholdMinutes = 5}) {
-    if (rawIsOnline != null) {
-      if (rawIsOnline == true || rawIsOnline == 1 || rawIsOnline == '1') return true;
-      if (rawIsOnline is String) {
-        final lower = rawIsOnline.trim().toLowerCase();
-        if (lower == 'true' || lower == '1' || lower == 'online') return true;
-        if (lower == 'false' || lower == '0' || lower == 'offline') return false;
-      }
-      if (rawIsOnline == false || rawIsOnline == 0) return false;
-    }
-
     if (lastSeen != null) {
       final dt = parseDateTime(lastSeen);
       if (dt != null) {
         final now = DateTime.now();
         final diff = now.difference(dt);
-        if (diff.isNegative || diff.inMinutes < thresholdMinutes) {
-          return true;
+        if (!diff.isNegative && diff.inMinutes >= thresholdMinutes) {
+          return false;
         }
+        return true;
       }
     }
+
+    if (rawIsOnline != null) {
+      if (rawIsOnline == false ||
+          rawIsOnline == 0 ||
+          rawIsOnline == '0' ||
+          rawIsOnline == 'false' ||
+          rawIsOnline == 'offline') {
+        return false;
+      }
+      if (rawIsOnline == true ||
+          rawIsOnline == 1 ||
+          rawIsOnline == '1' ||
+          rawIsOnline == 'online') {
+        return true;
+      }
+    }
+
     return false;
   }
 

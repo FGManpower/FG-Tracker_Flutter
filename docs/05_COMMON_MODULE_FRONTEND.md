@@ -1,8 +1,8 @@
 # Frontend Guide: Common Module (App Load, Screen Priority, Auth & Core Systems)
 
-> **Document Version:** `v2.3.1`  
+> **Document Version:** `v2.4.0`  
 > **Target Framework:** Flutter (Dart)  
-> **Scope:** App Bootstrap & Screen Priority Hierarchy, Pre-Navigation Permission Evaluation, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing, "Last seen" format across all modules (§7)
+> **Scope:** App Bootstrap & Screen Priority Hierarchy, Pre-Navigation Permission Evaluation, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing, "Last seen" format across all modules (§7), Real-time Location Tracking & Socket Synchronization Architecture (§8)
 
 ---
 
@@ -502,6 +502,7 @@ Screen sharing is initiated and controlled over the calling socket connection:
 ### 6.2 Change Log
 | Version | Date | Description |
 |---|---|---|
+| v2.4.0 | 2026-11-13 | §8 Tracking Screen & Socket Synchronization Architecture: Live Tracking (radius boundary filtering) & Group Tracking ("Location Hidden" ghost mode); fixed `join-group` on Node.js /location socket; single moving user packet extraction for `group-location-update`; 5-min inactivity threshold for Online vs Last-seen; unit tests added under `test/tracking_unit_test.dart`. |
 | v2.3.1 | 2026-11-12 | §7.7 Private Mode add-on: audit P1–P5, what the string API does to every last-seen place (crash risk in Group Members, false "Offline" / "Just now"), backend request for ISO `lastSeenAt` / `privateModeStartedAt`, interim rule. D2 answered (strings, not ISO). Test cases LS-17–LS-25. **Audit only — no code changed yet.** |
 | v2.3.0 | 2026-11-12 | §7 "Last seen" in one format across the app: target format, audit of all 13 places (branch `multi-language`), findings, open decisions, build plan and manual test cases. **Audit only — no code changed yet.** |
 | v2.2.0 | 2026-11-10 | Documented App Launch & Screen Priority State Machine; added root cause analysis & architectural resolution for millisecond permission screen flicker; established 'Evaluate-Before-Navigate' rule across Auth and Splash workflows. |
@@ -642,3 +643,56 @@ The data comes from `LiveStatus_controller.getPrivateMembers` (**protected**, no
 - Labels from ARB (all 10 languages): `Last seen: {time}`, `Private since: {time}`.
 - When an ISO field is present → `formatLastSeen` (§7.5) for both.
 - Online / live states unchanged.
+
+---
+
+## 8. Real-time Location Tracking & Socket Synchronization Architecture (Tab 1: Live Tracking & Tab 2: Group)
+
+### 8.1 Functional Overview & Business Logic
+The Location Tracking module under Quick Actions provides two primary view modes:
+
+1. **Tab 1: Live Tracking (Radius-based Nearby Users in Common Groups)**
+   - **Strict Privacy & Authorization Policy**: A user can only track or view locations of other users who share at least one common group with the logged-in user. If User A and User B are both registered in the system but share no common group, they are strictly invisible to each other.
+   - **Dynamic Radius Filtering**: Users configure a radius slider/selector (e.g., 500m, 1km, 2km, 5km). Changing the radius dynamically triggers an API query (`/getUsersWithinRadius`) and redraws the Google Maps radius circle and user list.
+   - **Geofence Enforcement**: `TrackingController` validates all incoming socket coordinates using `Geolocator.distanceBetween(myLat, myLng, targetLat, targetLng)`. If a user moves beyond the selected radius limit, they are immediately stripped from `radiusUsers` and their marker is removed from Google Maps. Only users strictly within the radius boundary appear inside the circle.
+
+2. **Tab 2: Group (Group-Wise Live Member Tracking)**
+   - **Group Selection**: Tapping any group lists all labour / members enrolled in that group.
+   - **Ghost Mode / Location Hidden**: If a user has turned off Location Sharing (`locationSharing == false` / `0`), their card appears in the group member list displaying `"Location Hidden"`, their coordinates are suppressed, and no location marker is drawn on the map.
+   - **Online / Inactivity / Last-Seen State**:
+     - Status evaluation conforms to §7 of the Common Module specification.
+     - `Tracking().isOnline(...)` inspects both the socket connection state and `lastSeen` timestamp.
+     - If the member's `lastSeen` is older than 5 minutes (`thresholdMinutes: 5`), the member is evaluated as `Offline`, and their relative last-seen label is rendered (e.g., `"Last seen: Today, 12:49 AM"`).
+     - Live socket packets update timestamps and status dynamically without marking the entire group active.
+
+---
+
+### 8.2 Real-time Socket Architecture (`/location` Namespace)
+
+| Event Name | Direction | Payload Structure | Purpose |
+|---|---|---|---|
+| `join-group` / `join_group` | Client → Server | `{ "groupId": 12 }` | Joins the socket room for real-time group broadcasts. Note: the Node.js server also auto-joins all authenticated user groups upon socket connection. |
+| `send-location` | Client → Server | `{ "groupId": 12, "lat": 19.0760, "lng": 72.8777, "battery": 85, "speed": 0 }` | Emits the user's latest GPS fix to the backend. |
+| `group-location-update` | Server → Room | `{ "status": true, "groupId": 12, "updatedUserId": 101, "updatedUser": { ... }, "data": [ ... ] }` | Broadcasts location updates to all members of `group_<groupId>`. `TrackingController` specifically extracts `updatedUser` to update the active moving member and avoids bulk-mutating inactive members. |
+| `user-offline` / `userStatus` | Server → Client | `{ "userId": 101, "isOnline": false, "lastSeen": "2026-11-13T10:00:00Z" }` | Updates the live online/offline indicator across group member lists and map markers. |
+
+---
+
+### 8.3 Unit Testing Suite (`test/tracking_unit_test.dart`)
+
+The test suite validates tracking models, distance geofencing, and socket processing:
+
+1. **`UsersWithinRadiusRes` & `LocationData` Model Unit Tests**:
+   - Parses nearby users with latitude, longitude, and formatted distance strings.
+   - Accurately parses `locationSharing` flag to support Ghost Mode / Private Mode.
+2. **`LiveLocationSocketModel` Unit Tests**:
+   - Parses incoming socket location dictionaries with address fallbacks (`area`, `city`).
+   - Normalizes raw string coordinates (`"19.0123"`) and percentage strings (`"95%"`) into clean numeric values without runtime exceptions.
+3. **Activity & Online / Last-Seen State Tests**:
+   - Validates that users with `lastSeen` within 5 minutes evaluate to `Online`.
+   - Validates that users with `lastSeen` older than 5 minutes evaluate to `Offline` (even if stale database flags indicate `1`).
+4. **Radius Boundary & Distance Filtering Tests**:
+   - Verifies `Geolocator.distanceBetween` boundary checks (accepts points within radius, excludes points outside).
+   - Verifies radius unit parsing (`"0.5"`, `"1"`, `"2"`, `"5"`, `"500m"`, `"2km"`).
+5. **Socket Event Packet Unwrapping Tests**:
+   - Validates extraction of `updatedUser` from `group-location-update` events, ensuring static member arrays in `data` do not falsely mark everyone active.
