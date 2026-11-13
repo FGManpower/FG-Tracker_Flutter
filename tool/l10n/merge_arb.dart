@@ -19,7 +19,26 @@
 import 'dart:convert';
 import 'dart:io';
 
-const codes = ['en', 'hi', 'mr', 'gu', 'kn', 'bn', 'ml', 'ta', 'te', 'pa'];
+const codes = [
+  'en',
+  'hi',
+  'mr',
+  'gu',
+  'kn',
+  'bn',
+  'ml',
+  'ta',
+  'te',
+  'pa',
+  'or',
+  'es',
+  'fr',
+  'de',
+  'ar',
+  'pt',
+  'ja',
+  'zh',
+];
 const fragmentsDir = 'tool/l10n/fragments';
 const lockPath = 'build/l10n_merge.lock';
 

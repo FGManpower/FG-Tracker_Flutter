@@ -15,7 +15,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get about_address => 'पता';
 
   @override
-  String get about_appBarTitle => 'FG Tracker के बारे में';
+  String get about_appBarTitle => 'FG ट्रैकर के बारे में';
 
   @override
   String get about_company => 'कंपनी';
@@ -31,42 +31,43 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get about_howItWorksIntro =>
-      'FG Tracker ग्रुप यात्रा का तालमेल आसान बनाता है। ऐसे:';
+      'FG ट्रैकर समूह यात्रा समन्वय को सरल बनाता है। ऐसे:';
 
   @override
   String get about_howItWorksTitle => '⚙️ यह कैसे काम करता है';
 
   @override
-  String get about_howStep1 => 'एक ग्रुप बनाएं';
+  String get about_howStep1 => 'एक समूह बनाएं';
 
   @override
   String get about_howStep2 =>
-      'ग्रुप कोड या QR कोड अपने साथियों के साथ शेयर करें';
+      'अपने साथियों के साथ समूह कोड या QR कोड साझा करें';
 
   @override
-  String get about_howStep3 => 'हर सदस्य शेयर किए गए कोड या QR से जुड़ता है';
+  String get about_howStep3 =>
+      'प्रत्येक सदस्य साझा किए गए कोड या QR से जुड़ता है';
 
   @override
   String get about_howStep4 =>
-      'शेयर्ड मैप पर सभी की लाइव लोकेशन रियल-टाइम में ट्रैक करें';
+      'साझा मानचित्र पर वास्तविक समय में सभी का लाइव स्थान ट्रैक करें';
 
   @override
   String get about_howStep5 =>
-      'शेयरिंग फ़ीचर से और लोगों को आसानी से आमंत्रित करें';
+      'अधिक लोगों को आसानी से आमंत्रित करने के लिए शेयर सुविधा का उपयोग करें';
 
   @override
   String get about_intro =>
-      'ग्रुप में सफ़र करते समय जुड़े और सुरक्षित रहने के लिए FG Tracker आपका भरोसेमंद साथी है। चाहे परिवार के साथ रोड ट्रिप हो, दोस्तों के साथ पिकनिक हो या सहकर्मियों के साथ आना-जाना — FG Tracker पक्का करता है कि कोई पीछे न छूटे।';
+      'FG ट्रैकर समूह में यात्रा करते समय जुड़े रहने और सुरक्षित रहने के लिए आपका आदर्श साथी है। चाहे पारिवारिक यात्रा हो, दोस्तों के साथ पिकनिक हो या सहकर्मियों के साथ सफर — FG ट्रैकर सुनिश्चित करता है कि कोई पीछे न छूटे।';
 
   @override
   String get about_privacyBody =>
-      'आपकी सुरक्षा और प्राइवेसी मायने रखती है। FG Tracker आपकी लोकेशन आपके ग्रुप के बाहर किसी के साथ शेयर नहीं करता। सारा डेटा एन्क्रिप्टेड है और सिर्फ़ उन्हीं लोगों के साथ शेयर होता है जिन्हें आप अनुमति देते हैं।';
+      'आपकी सुरक्षा और गोपनीयता महत्वपूर्ण है। FG ट्रैकर आपके समूह से बाहर किसी के साथ आपका स्थान साझा नहीं करता है। सभी डेटा एन्क्रिप्टेड है और केवल आपके अधिकृत लोगों के साथ साझा किया जाता है।';
 
   @override
-  String get about_privacyPolicy => 'प्राइवेसी पॉलिसी';
+  String get about_privacyPolicy => 'गोपनीयता नीति';
 
   @override
-  String get about_privacyTitle => '🔐 प्राइवेसी और सुरक्षा';
+  String get about_privacyTitle => '🔐 गोपनीयता और सुरक्षा';
 
   @override
   String get about_supportEmail => 'सहायता ईमेल';
@@ -78,30 +79,32 @@ class AppLocalizationsHi extends AppLocalizations {
   String get about_termsConditions => 'नियम और शर्तें';
 
   @override
-  String get about_title => 'जानकारी';
+  String get about_title => 'परिचय';
 
   @override
   String get about_website => 'वेबसाइट';
 
   @override
-  String get about_welcomeTitle => 'FG Tracker में आपका स्वागत है';
+  String get about_welcomeTitle => 'FG ट्रैकर में आपका स्वागत है';
 
   @override
-  String get about_whyBuiltFor => 'परिवार, दोस्तों और छोटी टीमों के लिए बना।';
+  String get about_whyBuiltFor =>
+      'परिवारों, दोस्तों और छोटी टीमों के लिए निर्मित।';
 
   @override
-  String get about_whyChooseTitle => '🌟 FG Tracker क्यों चुनें?';
+  String get about_whyChooseTitle => '🌟 FG ट्रैकर क्यों चुनें?';
 
   @override
-  String get about_whyEasy => 'प्राइवेसी कंट्रोल के साथ आसान और हल्का ऐप।';
+  String get about_whyEasy =>
+      'गोपनीयता नियंत्रण के साथ उपयोग में आसान और हल्का ऐप।';
 
   @override
   String get about_whyNoCalls =>
-      'कॉल या मैसेज की ज़रूरत नहीं — मैप पर लाइव ट्रैक करें।';
+      'कॉल या मैसेज करने की जरूरत नहीं—मानचित्र पर लाइव ट्रैक करें।';
 
   @override
   String get about_whyRealTime =>
-      'ग्रुप के सभी सदस्यों के साथ रियल-टाइम लोकेशन शेयरिंग।';
+      'सभी समूह सदस्यों के साथ रीयल-टाइम स्थान साझाकरण।';
 
   @override
   String appUpdate_checkError(String error) {
@@ -112,10 +115,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get appUpdate_exitConfirmTitle => 'क्या आप बाहर निकलना चाहते हैं?';
 
   @override
-  String get appUpdate_noUpdateAvailable => 'कोई अपडेट उपलब्ध नहीं';
+  String get appUpdate_noUpdateAvailable => 'कोई अपडेट उपलब्ध नहीं है';
 
   @override
-  String get appUpdate_restartApp => 'ऐप रीस्टार्ट करें';
+  String get appUpdate_restartApp => 'ऐप पुनरारंभ करें';
 
   @override
   String get appUpdate_updateApp => 'ऐप अपडेट करें';
@@ -125,10 +128,10 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get appUpdate_updateAvailableMessage =>
-      'नया अपडेट उपलब्ध है। कृपया ऐप अपडेट करें';
+      'एक नया अपडेट उपलब्ध है। कृपया ऐप अपडेट करें';
 
   @override
-  String get appUpdate_updateUnavailable => 'अपडेट उपलब्ध नहीं है';
+  String get appUpdate_updateUnavailable => 'अपडेट अनुपलब्ध है';
 
   @override
   String appUpdate_updatingProgress(int progress) {
@@ -2624,25 +2627,25 @@ class AppLocalizationsHi extends AppLocalizations {
   String get editProfile_title => 'प्रोफ़ाइल संपादित करें';
 
   @override
-  String get forceUpdate_currentInstalled => 'अभी इंस्टॉल';
+  String get forceUpdate_currentInstalled => 'वर्तमान में स्थापित';
 
   @override
   String get forceUpdate_defaultMessage =>
-      'FG Tracker का नया वर्ज़न उपलब्ध है। जारी रखने के लिए कृपया अपडेट करें।';
+      'FG ट्रैकर का नया संस्करण उपलब्ध है। जारी रखने के लिए कृपया अपडेट करें।';
 
   @override
-  String get forceUpdate_defaultTitle => 'अपडेट ज़रूरी है';
+  String get forceUpdate_defaultTitle => 'अपडेट आवश्यक है';
 
   @override
   String get forceUpdate_fallbackMessage =>
-      'FG Tracker का नया वर्ज़न ज़रूरी सुधारों के साथ उपलब्ध है। ऐप इस्तेमाल करते रहने के लिए कृपया अपडेट करें।';
+      'महत्वपूर्ण सुधारों के साथ FG ट्रैकर का नया संस्करण उपलब्ध है। ऐप का उपयोग जारी रखने के लिए कृपया अपडेट करें।';
 
   @override
   String get forceUpdate_footer =>
-      'FG Tracker जारी रखने के लिए अपडेट ज़रूरी है';
+      'FG ट्रैकर के साथ आगे बढ़ने के लिए अपडेट आवश्यक है';
 
   @override
-  String get forceUpdate_requiredVersion => 'ज़रूरी वर्ज़न';
+  String get forceUpdate_requiredVersion => 'आवश्यक संस्करण';
 
   @override
   String forceUpdate_updateOnStore(String storeName) {
@@ -2900,109 +2903,110 @@ class AppLocalizationsHi extends AppLocalizations {
   String get groupInfo_viewAllMembers => 'सभी सदस्य देखें';
 
   @override
-  String get group_activatedSuccess => 'ग्रुप सक्रिय हो गया';
+  String get group_activatedSuccess => 'समूह सफलतापूर्वक सक्रिय किया गया';
 
   @override
   String get group_addMember => 'सदस्य जोड़ें';
 
   @override
-  String get group_alignQr => 'QR को फ़्रेम के अंदर रखें';
+  String get group_alignQr => 'फ़्रेम के अंदर QR कोड संरेखित करें';
 
   @override
-  String get group_areYouSure => 'क्या आप निश्चित हैं?';
+  String get group_areYouSure => 'क्या आप सुनिश्चित हैं?';
 
   @override
-  String get group_chatWithMembers => 'ग्रुप के सदस्यों से चैट करें';
+  String get group_chatWithMembers => 'समूह के सदस्यों के साथ चैट करें';
 
   @override
-  String get group_codeCopied => 'ग्रुप कोड कॉपी हो गया!';
+  String get group_codeCopied => 'समूह कोड कॉपी हो गया!';
 
   @override
   String group_codeShareInfo(String code) {
-    return 'ग्रुप कोड: $code — इसे शेयर करें ताकि दूसरे जुड़ सकें';
+    return 'समूह कोड: $code — इसे साझा करें ताकि अन्य शामिल हो सकें';
   }
 
   @override
   String get group_copyCode => 'कोड कॉपी करें';
 
   @override
-  String get group_created => 'बनाया';
+  String get group_created => 'बनाया गया';
 
   @override
-  String get group_createdJustNow => 'अभी बनाया गया';
+  String get group_createdJustNow => 'अभी-अभी बनाया गया';
 
   @override
-  String get group_deactivatedSuccess => 'ग्रुप निष्क्रिय हो गया';
+  String get group_deactivatedSuccess => 'समूह सफलतापूर्वक निष्क्रिय किया गया';
 
   @override
-  String get group_defaultName => 'ग्रुप';
+  String get group_defaultName => 'समूह';
 
   @override
-  String get group_deleteGroup => 'ग्रुप डिलीट करें';
+  String get group_deleteGroup => 'समूह हटाएं';
 
   @override
-  String get group_deleteGroupConfirm =>
-      'क्या आप यह ग्रुप डिलीट करना चाहते हैं?';
+  String get group_deleteGroupConfirm => 'क्या आप इस समूह को हटाना चाहते हैं?';
 
   @override
-  String get group_deletedSuccess => 'ग्रुप डिलीट हो गया';
+  String get group_deletedSuccess => 'समूह सफलतापूर्वक हटा दिया गया';
 
   @override
-  String get group_download => 'डाउनलोड';
+  String get group_download => 'डाउनलोड करें';
 
   @override
   String get group_downloadChannelDescription =>
-      'QR कोड डाउनलोड होने पर सूचना देता है';
+      'QR कोड डाउनलोड होने पर सूचित करता है';
 
   @override
-  String get group_downloadChannelName => 'डाउनलोड नोटिफ़िकेशन';
+  String get group_downloadChannelName => 'डाउनलोड सूचनाएं';
 
   @override
   String get group_enableLocationToJoin =>
-      'ग्रुप जॉइन करने के लिए कृपया लोकेशन सर्विस चालू करें।';
+      'समूह में शामिल होने के लिए कृपया स्थान सेवाएँ सक्षम करें।';
 
   @override
-  String get group_exitGroup => 'ग्रुप छोड़ें';
+  String get group_exitGroup => 'समूह छोड़ें';
 
   @override
-  String get group_exitGroupConfirm => 'क्या आप यह ग्रुप छोड़ना चाहते हैं?';
+  String get group_exitGroupConfirm =>
+      'क्या आप इस समूह से बाहर निकलना चाहते हैं?';
 
   @override
   String group_exitGroupNamedConfirm(String groupName) {
-    return 'क्या आप सच में \"$groupName\" छोड़ना चाहते हैं? दोबारा जुड़ने के लिए ग्रुप कोड चाहिए होगा।';
+    return 'क्या आप वाकई \"$groupName\" छोड़ना चाहते हैं? दोबारा जुड़ने के लिए आपको समूह कोड की आवश्यकता होगी।';
   }
 
   @override
-  String get group_exitedSuccess => 'ग्रुप छोड़ दिया';
+  String get group_exitedSuccess => 'समूह से सफलतापूर्वक बाहर निकल गए';
 
   @override
-  String get group_goToGroups => 'ग्रुप पर जाएं →';
+  String get group_goToGroups => 'समूहों पर जाएं →';
 
   @override
-  String get group_groupMessage => 'ग्रुप मैसेज';
+  String get group_groupMessage => 'समूह संदेश';
 
   @override
-  String get group_invalidResponseFormat => 'अमान्य फ़ॉर्मेट';
+  String get group_invalidResponseFormat => 'अमान्य प्रारूप';
 
   @override
-  String get group_joinedJustNow => 'अभी जुड़े';
+  String get group_joinedJustNow => 'अभी-अभी जुड़े';
 
   @override
-  String get group_joinedRecently => 'हाल ही में';
+  String get group_joinedRecently => 'हालिया';
 
   @override
-  String get group_leftJustNow => 'अभी छोड़ा';
+  String get group_leftJustNow => 'अभी-अभी छोड़ दिया';
 
   @override
   String get group_locationNoLongerShared =>
-      'आपकी लोकेशन अब इस ग्रुप के साथ शेयर नहीं होती';
+      'आपका स्थान अब इस समूह के साथ साझा नहीं किया जाता है';
 
   @override
   String get group_locationPermissionToJoin =>
-      'ग्रुप जॉइन करने के लिए लोकेशन की अनुमति ज़रूरी है।';
+      'समूह में शामिल होने के लिए स्थान की अनुमति आवश्यक है।';
 
   @override
-  String get group_locationShared => 'आपकी लोकेशन इस ग्रुप के साथ शेयर होती है';
+  String get group_locationShared =>
+      'आपका स्थान इस समूह के साथ साझा किया जा रहा है';
 
   @override
   String get group_memberFallbackName => 'सदस्य';
@@ -3019,19 +3023,19 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get group_noContactsFound => 'कोई कॉन्टैक्ट नहीं मिला';
+  String get group_noContactsFound => 'कोई संपर्क नहीं मिला';
 
   @override
-  String get group_noGroupCode => 'कोई ग्रुप कोड उपलब्ध नहीं';
+  String get group_noGroupCode => 'कोई समूह कोड उपलब्ध नहीं है';
 
   @override
-  String get group_noNewMessages => 'आपको इस ग्रुप से नए मैसेज नहीं मिलेंगे';
+  String get group_noNewMessages => 'आपको इस समूह से नए संदेश नहीं मिलेंगे';
 
   @override
   String get group_noNumber => 'कोई नंबर नहीं';
 
   @override
-  String get group_openGroup => 'ग्रुप खोलें →';
+  String get group_openGroup => 'समूह खोलें →';
 
   @override
   String get group_other => 'अन्य';
@@ -3040,72 +3044,74 @@ class AppLocalizationsHi extends AppLocalizations {
   String get group_qrSavedBody => 'अपना QR कोड खोलने के लिए टैप करें';
 
   @override
-  String get group_qrSavedTitle => 'QR कोड सेव हो गया';
+  String get group_qrSavedTitle => 'QR कोड सहेजा गया';
 
   @override
   String group_qrShareMessage(String groupCode, String appLink) {
-    return '📌 ग्रुप कोड: $groupCode\n\nQR कोड या ऊपर दिए कोड से मेरे ग्रुप से तुरंत जुड़ें।\n\n📲 जुड़े रहने के लिए ऐप डाउनलोड करें:\n$appLink';
+    return '📌 समूह कोड: $groupCode\n\nQR कोड या ऊपर दिए गए कोड का उपयोग करके तुरंत मेरे समूह में शामिल हों।\n\n📲 जुड़े रहने के लिए ऐप डाउनलोड करें:\n$appLink';
   }
 
   @override
-  String get group_scanToJoin => 'ग्रुप जॉइन करने के लिए यह QR कोड स्कैन करें';
+  String get group_scanToJoin =>
+      'समूह में शामिल होने के लिए इस QR कोड को स्कैन करें';
 
   @override
   String get group_searchMemberHint => 'सदस्य खोजें...';
 
   @override
-  String get group_shareCodeInfo => 'ग्रुप कोड शेयर करें ताकि दूसरे जुड़ सकें';
+  String get group_shareCodeInfo =>
+      'समूह कोड साझा करें ताकि अन्य शामिल हो सकें';
 
   @override
-  String get group_shareQr => 'QR शेयर करें';
+  String get group_shareQr => 'QR साझा करें';
 
   @override
   String get group_shareQrToInvite =>
-      'सदस्यों को आमंत्रित करने के लिए QR कोड शेयर करें';
+      'सदस्यों को आमंत्रित करने के लिए QR कोड साझा करें';
 
   @override
   String get group_sheetCreatedSubtitle =>
-      'आपका ग्रुप तैयार है। कोड शेयर करें ताकि सदस्य जुड़ सकें।';
+      'आपका समूह तैयार है। कोड साझा करें ताकि सदस्य शामिल हो सकें।';
 
   @override
   String group_sheetCreatedSubtitleNamed(String name) {
-    return '$name, आपका ग्रुप तैयार है। कोड शेयर करें ताकि सदस्य जुड़ सकें।';
+    return '$name, आपका समूह तैयार है। कोड साझा करें ताकि सदस्य शामिल हो सकें।';
   }
 
   @override
-  String get group_sheetCreatedTitle => 'ग्रुप बन गया!';
+  String get group_sheetCreatedTitle => 'समूह बन गया!';
 
   @override
   String get group_sheetJoinedSubtitle =>
-      'स्वागत है, अब आप इस ग्रुप के सदस्य हैं।';
+      'स्वागत है, अब आप इस समूह के सदस्य हैं।';
 
   @override
   String group_sheetJoinedSubtitleNamed(String name) {
-    return 'स्वागत है $name, अब आप इस ग्रुप के सदस्य हैं।';
+    return 'स्वागत है $name, अब आप इस समूह के सदस्य हैं।';
   }
 
   @override
-  String get group_sheetJoinedTitle => 'सफलतापूर्वक जुड़ गए!';
+  String get group_sheetJoinedTitle => 'सफलतापूर्वक शामिल हुए!';
 
   @override
-  String get group_sheetLeftSubtitle => 'अब आप इस ग्रुप के सदस्य नहीं हैं।';
+  String get group_sheetLeftSubtitle => 'अब आप इस समूह के सदस्य नहीं हैं।';
 
   @override
   String group_sheetLeftSubtitleNamed(String name) {
-    return '$name, अब आप इस ग्रुप के सदस्य नहीं हैं।';
+    return '$name, अब आप इस समूह के सदस्य नहीं हैं।';
   }
 
   @override
-  String get group_sheetLeftTitle => 'आपने ग्रुप छोड़ दिया';
+  String get group_sheetLeftTitle => 'आपने समूह छोड़ दिया';
 
   @override
   String get group_showQrCode => 'QR कोड दिखाएं';
 
   @override
-  String get group_startConversation => 'बेझिझक बातचीत शुरू करें ';
+  String get group_startConversation => 'बातचीत शुरू करने में संकोच न करें';
 
   @override
-  String get group_statusUpdateFailed => 'ग्रुप स्टेटस अपडेट नहीं हो सका';
+  String get group_statusUpdateFailed => 'समूह स्थिति अपडेट करने में विफल';
 
   @override
   String get group_teamCode => 'टीम कोड';
@@ -3114,26 +3120,26 @@ class AppLocalizationsHi extends AppLocalizations {
   String get group_teamCodeLabel => 'टीम कोड: ';
 
   @override
-  String get group_track => 'ट्रैक करें';
+  String get group_track => 'ट्रैक';
 
   @override
-  String get group_unnamedMember => 'बिना नाम का सदस्य';
+  String get group_unnamedMember => 'अनाम सदस्य';
 
   @override
-  String get group_unnamedTrip => 'बिना नाम की यात्रा';
+  String get group_unnamedTrip => 'अनाम यात्रा';
 
   @override
   String get group_updateGroupConfirm =>
-      'क्या आप सच में ग्रुप की जानकारी अपडेट करना चाहते हैं?';
+      'क्या आप वाकई समूह विवरण अपडेट करना चाहते हैं?';
 
   @override
-  String get group_updateGroupTitle => 'ग्रुप अपडेट करें';
+  String get group_updateGroupTitle => 'समूह अपडेट करें';
 
   @override
-  String get group_youAreAdmin => 'आप इस ग्रुप के एडमिन हैं';
+  String get group_youAreAdmin => 'आप इस समूह के व्यवस्थापक (एडमिन) हैं';
 
   @override
-  String get home_actionAllContacts => 'सभी कॉन्टैक्ट';
+  String get home_actionAllContacts => 'सभी संपर्क';
 
   @override
   String get home_actionAudioVideoCall => 'ऑडियो/वीडियो कॉल';
@@ -3142,27 +3148,27 @@ class AppLocalizationsHi extends AppLocalizations {
   String get home_actionChatting => 'चैटिंग';
 
   @override
-  String get home_actionSafeZone => 'सेफ़ ज़ोन';
+  String get home_actionSafeZone => 'सुरक्षित क्षेत्र (सेफ ज़ोन)';
 
   @override
   String get home_actionTracking => 'ट्रैकिंग';
 
   @override
-  String get home_actionWalkieTalkie => 'वॉकी-टॉकी';
+  String get home_actionWalkieTalkie => 'वॉकी टॉकी';
 
   @override
   String get home_active => 'सक्रिय';
 
   @override
-  String get home_activeSessions => 'सक्रिय सेशन';
+  String get home_activeSessions => 'सक्रिय सत्र';
 
   @override
   String home_activeSessionsCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count सक्रिय सेशन',
-      one: '1 सक्रिय सेशन',
+      other: '$count सक्रिय सत्र',
+      one: '1 सक्रिय सत्र',
     );
     return '$_temp0';
   }
@@ -3171,10 +3177,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get home_allMembers => 'सभी सदस्य';
 
   @override
-  String get home_createGroup => 'ग्रुप बनाएं';
+  String get home_createGroup => 'समूह बनाएं';
 
   @override
-  String get home_createGroupSubtitle => 'नया ग्रुप बनाएं';
+  String get home_createGroupSubtitle => 'नया समूह बनाएं';
 
   @override
   String get home_goodToSeeYou => 'आपको फिर से देखकर अच्छा लगा 👋';
@@ -3184,8 +3190,8 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count ग्रुप',
-      one: '1 ग्रुप',
+      other: '$count समूह',
+      one: '1 समूह',
     );
     return '$_temp0';
   }
@@ -3199,45 +3205,44 @@ class AppLocalizationsHi extends AppLocalizations {
   String get home_inactive => 'निष्क्रिय';
 
   @override
-  String get home_joinGroup => 'ग्रुप जॉइन करें';
+  String get home_joinGroup => 'समूह में शामिल हों';
 
   @override
-  String get home_joinGroupSubtitle => 'मौजूदा ग्रुप से जुड़ें';
+  String get home_joinGroupSubtitle => 'मौजूदा समूह से जुड़ें';
 
   @override
   String home_lastSeen(String time) {
-    return 'आखिरी बार $time देखा गया';
+    return 'अंतिम बार देखा गया $time';
   }
 
   @override
   String get home_newThisMonth => 'इस महीने नए';
 
   @override
-  String get home_noActivePrivateSessions => 'कोई सक्रिय प्राइवेट सेशन नहीं';
+  String get home_noActivePrivateSessions => 'कोई सक्रिय निजी सत्र नहीं';
 
   @override
-  String get home_noGroupsAvailable => 'कोई ग्रुप उपलब्ध नहीं';
+  String get home_noGroupsAvailable => 'कोई समूह उपलब्ध नहीं है';
 
   @override
-  String get home_noGroupsFound => 'कोई ग्रुप नहीं मिला';
+  String get home_noGroupsFound => 'कोई समूह नहीं मिला';
 
   @override
   String get home_noMembersFound => 'कोई सदस्य नहीं मिला';
 
   @override
   String home_noMembersMatch(String query) {
-    return '\'$query\' से कोई सदस्य नहीं मिला';
+    return 'कोई भी सदस्य \'$query\' से मेल नहीं खाता';
   }
 
   @override
-  String get home_noMembersOnline => 'अभी कोई सदस्य ऑनलाइन नहीं है';
+  String get home_noMembersOnline => 'वर्तमान में कोई सदस्य ऑनलाइन नहीं है';
 
   @override
-  String get home_noNameGroup => 'बिना नाम का ग्रुप';
+  String get home_noNameGroup => 'बिना नाम का समूह';
 
   @override
-  String get home_noRecentlyActiveMembers =>
-      'हाल में कोई सदस्य सक्रिय नहीं रहा';
+  String get home_noRecentlyActiveMembers => 'हाल ही में कोई सक्रिय सदस्य नहीं';
 
   @override
   String get home_onlineNow => 'अभी ऑनलाइन';
@@ -3247,46 +3252,46 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get home_peopleOnlineSubtitle =>
-      'ये सदस्य अभी ऐप पर सक्रिय हैं और जुड़ने के लिए उपलब्ध हैं।';
+      'ये सदस्य अभी ऐप में सक्रिय हैं और जुड़ने के लिए उपलब्ध हैं।';
 
   @override
-  String get home_privateMode => 'प्राइवेट मोड';
+  String get home_privateMode => 'निजी मोड (प्राइवेट)';
 
   @override
-  String get home_privateModeIsOn => 'प्राइवेट मोड चालू है';
+  String get home_privateModeIsOn => 'निजी मोड चालू है';
 
   @override
   String get home_privateModeOffHint =>
-      'प्राइवेट मोड बंद होने पर दूसरे आपकी लोकेशन देख सकते हैं।';
+      'जब निजी मोड बंद होता है, तो अन्य आपका स्थान देख सकते हैं।';
 
   @override
   String get home_privateModeOnHint =>
-      'प्राइवेट मोड चालू होने पर दूसरे आपकी लोकेशन नहीं देख सकते।';
+      'जब निजी मोड चालू होता है, तो अन्य आपका स्थान नहीं देख सकते।';
 
   @override
   String get home_quickActionsSubtitle =>
-      'आपकी ज़रूरत की हर चीज़, बस एक टैप पर।';
+      'सब कुछ आपकी पहुंच में, सिर्फ एक टैप दूर।';
 
   @override
-  String get home_quickActionsTitle => 'क्विक एक्शन';
+  String get home_quickActionsTitle => 'त्वरित कार्रवाइयां';
 
   @override
   String get home_recentlyOnline => 'हाल ही में ऑनलाइन';
 
   @override
-  String get home_searchGroupsHint => 'ग्रुप खोजें...';
+  String get home_searchGroupsHint => 'समूह खोजें...';
 
   @override
-  String get home_searchMembersHint => 'सदस्य खोजें...';
+  String get home_searchMembersHint => 'सदस्यों को खोजें...';
 
   @override
   String get home_showLess => 'कम दिखाएं';
 
   @override
-  String get home_sortNameAsc => 'क्रम: नाम (A-Z)';
+  String get home_sortNameAsc => 'क्रमबद्ध: नाम (A-Z)';
 
   @override
-  String get home_sortNameDesc => 'क्रम: नाम (Z-A)';
+  String get home_sortNameDesc => 'क्रमबद्ध: नाम (Z-A)';
 
   @override
   String home_startedAt(String time) {
@@ -3294,7 +3299,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get home_statGroups => 'ग्रुप';
+  String get home_statGroups => 'समूह';
 
   @override
   String get home_statMembers => 'सदस्य';
@@ -3313,26 +3318,27 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'कुल $count सदस्य',
-      one: 'कुल 1 सदस्य',
+      other: '$count कुल सदस्य',
+      one: '1 कुल सदस्य',
     );
     return '$_temp0';
   }
 
   @override
-  String get home_unableToFetchGroups => 'ग्रुप लोड नहीं हो सके';
+  String get home_unableToFetchGroups => 'समूह प्राप्त करने में असमर्थ';
 
   @override
   String get home_unknownMember => 'अज्ञात सदस्य';
 
   @override
-  String get home_upgradeSubtitle => 'अपनी टीम के लिए एडवांस फ़ीचर अनलॉक करें';
+  String get home_upgradeSubtitle =>
+      'अपनी टीम के लिए उन्नत सुविधाएं अनलॉक करें';
 
   @override
   String get home_upgradeToPremium => 'प्रीमियम में अपग्रेड करें';
 
   @override
-  String get home_viewPlans => 'प्लान देखें';
+  String get home_viewPlans => 'योजनाएं देखें';
 
   @override
   String get home_walkieExpired => 'समाप्त';
@@ -3341,16 +3347,16 @@ class AppLocalizationsHi extends AppLocalizations {
   String get home_walkieOneHourFree => '1 घंटा मुफ़्त';
 
   @override
-  String get home_walkieRenew => 'रिन्यू करें';
+  String get home_walkieRenew => 'नवीनीकरण करें';
 
   @override
-  String get home_walkieSubscribed => 'सब्सक्राइब्ड';
+  String get home_walkieSubscribed => 'सक्रिय सदस्यता';
 
   @override
-  String get home_youAreInvisible => 'आप छिपे हुए हैं';
+  String get home_youAreInvisible => 'आप अदृश्य हैं';
 
   @override
-  String get home_youAreVisible => 'आप दिख रहे हैं';
+  String get home_youAreVisible => 'आप दिखाई दे रहे हैं';
 
   @override
   String get http_networkError => 'कोई त्रुटि हुई। कृपया दोबारा कोशिश करें!';
@@ -3380,14 +3386,14 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get intro_realTimeTrackingSubtitle =>
-      'दोस्तों, परिवार या टीम के सदस्यों की लाइव लोकेशन मैप पर तुरंत देखें।';
+      'मानचित्र पर तुरंत मित्रों, परिवार या टीम के सदस्यों के लाइव स्थान देखें।';
 
   @override
-  String get intro_realTimeTrackingTitle => 'रियल-टाइम ट्रैकिंग';
+  String get intro_realTimeTrackingTitle => 'वास्तविक समय ट्रैकिंग';
 
   @override
   String get intro_secureSubtitle =>
-      'चुने हुए कॉन्टैक्ट के साथ अपनी लाइव लोकेशन सुरक्षित और निजी रूप से शेयर करें।';
+      'चयनित संपर्कों के साथ अपना लाइव स्थान\nसुरक्षित और निजी तौर पर साझा करें।';
 
   @override
   String get intro_secureTitle => 'सुरक्षित और आसान';
@@ -3397,10 +3403,10 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get intro_walkieSubtitle =>
-      'सिग्नल नहीं? कोई बात नहीं। कहीं भी जुड़े रहें।';
+      'कोई सिग्नल नहीं। कोई समस्या नहीं। कहीं भी\nजुड़े रहें।';
 
   @override
-  String get intro_walkieTitle => 'वॉकी-टॉकी फ़ीचर';
+  String get intro_walkieTitle => 'वॉकी-टॉकी\nसुविधा';
 
   @override
   String get media_cannotOpen => 'खोल नहीं सकते';
@@ -3451,10 +3457,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get media_videoNotFound => 'वीडियो नहीं मिला';
 
   @override
-  String get menu_contactUsSubtitle => 'हमारे बारे में और जानें';
+  String get menu_contactUsSubtitle => 'हमारे बारे में अधिक जानें';
 
   @override
-  String get menu_editProfile => 'प्रोफ़ाइल एडिट करें';
+  String get menu_editProfile => 'प्रोफ़ाइल संपादित करें';
 
   @override
   String get menu_editProfileSubtitle => 'अपनी जानकारी अपडेट करें';
@@ -3467,17 +3473,18 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get menu_logOutConfirmMessage =>
-      'क्या आप सच में लॉग आउट करना चाहते हैं?';
+      'क्या आप वाकई लॉग आउट करना चाहते हैं?';
 
   @override
   String get menu_logOutSubtitle => 'ऐप से साइन आउट करें';
 
   @override
   String get menu_profileImageUpdateFailed =>
-      'प्रोफ़ाइल फ़ोटो अपडेट नहीं हो सकी';
+      'प्रोफ़ाइल फ़ोटो अपडेट करने में विफल';
 
   @override
-  String get menu_profileImageUpdated => 'प्रोफ़ाइल फ़ोटो अपडेट हो गई';
+  String get menu_profileImageUpdated =>
+      'प्रोफ़ाइल फ़ोटो सफलतापूर्वक अपडेट की गई';
 
   @override
   String get notif_accept => 'स्वीकारें';
@@ -3556,17 +3563,18 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get notifications_clearAll => 'सभी नोटिफ़िकेशन हटाएं';
+  String get notifications_clearAll => 'सभी सूचनाएं हटाएं';
 
   @override
-  String get notifications_clearedSuccess => 'सभी नोटिफ़िकेशन हटा दिए गए';
+  String get notifications_clearedSuccess =>
+      'सभी सूचनाएं सफलतापूर्वक हटा दी गईं';
 
   @override
   String get notifications_emptySubtitle =>
-      'अभी आपके लिए कोई नया अलर्ट नहीं है।';
+      'इस समय आपके पास कोई नया अलर्ट नहीं है।';
 
   @override
-  String get notifications_emptyTitle => 'अभी कोई नोटिफ़िकेशन नहीं';
+  String get notifications_emptyTitle => 'अभी कोई सूचना नहीं है';
 
   @override
   String get notifications_filterAll => 'सभी';
@@ -3581,33 +3589,32 @@ class AppLocalizationsHi extends AppLocalizations {
   String get notifications_filterUnread => 'अपठित';
 
   @override
-  String get notifications_loadingDetails =>
-      'नोटिफ़िकेशन की जानकारी लोड हो रही है';
+  String get notifications_loadingDetails => 'सूचना विवरण लोड हो रहा है';
 
   @override
   String get notifications_recentCalls => 'हाल की कॉल';
 
   @override
-  String get notifications_title => 'नोटिफ़िकेशन';
+  String get notifications_title => 'सूचनाएं';
 
   @override
   String get otpCharges_chargedNotice =>
-      'अब से, आपके नंबर पर हर लॉगिन OTP का शुल्क लगेगा। OTP दोबारा भेजना मुफ़्त है (3 बार तक)।';
+      'अब से, आपके नंबर पर प्रत्येक लॉगिन OTP चार्ज किया जाएगा। OTP दोबारा भेजना मुफ़्त है (अधिकतम 3 प्रयास)।';
 
   @override
-  String get otpCharges_chargesApplyTo => 'शुल्क इस पर लागू है';
+  String get otpCharges_chargesApplyTo => 'शुल्क इस पर लागू होते हैं';
 
   @override
-  String get otpCharges_eachOtpCosts => 'हर OTP की कीमत';
+  String get otpCharges_eachOtpCosts => 'प्रत्येक OTP की लागत';
 
   @override
   String otpCharges_eachOtpCostsSpoken(String amount) {
-    return 'हर OTP की कीमत $amount';
+    return 'प्रत्येक OTP की लागत $amount है';
   }
 
   @override
   String otpCharges_eachOtpCostsSpokenGst(String amount, String percent) {
-    return 'हर OTP की कीमत $amount, $percent प्रतिशत GST सहित';
+    return 'प्रत्येक OTP की लागत $amount है, जिसमें $percent प्रतिशत जीएसटी शामिल है';
   }
 
   @override
@@ -3615,29 +3622,29 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get otpCharges_freeBody =>
-      'इस नंबर पर भेजे गए लॉगिन OTP का कोई शुल्क नहीं है।';
+      'इस नंबर पर भेजे गए लॉगिन OTP पर कोई शुल्क नहीं लिया जाता है।';
 
   @override
   String get otpCharges_freeTitle => 'आपके नंबर के लिए OTP मुफ़्त है';
 
   @override
   String otpCharges_gstTitle(String percent) {
-    return 'GST ($percent%)';
+    return 'जीएसटी ($percent%)';
   }
 
   @override
   String otpCharges_includingGst(String percent) {
-    return '$percent% GST सहित';
+    return '$percent% जीएसटी शामिल';
   }
 
   @override
   String otpCharges_includingTax(String percent) {
-    return '$percent% टैक्स सहित';
+    return '$percent% कर शामिल';
   }
 
   @override
   String get otpCharges_noInternet =>
-      'इंटरनेट कनेक्शन नहीं है। अपना नेटवर्क जांचें और फिर से कोशिश करें।';
+      'कोई इंटरनेट कनेक्शन नहीं है। अपना नेटवर्क जांचें और पुनः प्रयास करें।';
 
   @override
   String get otpCharges_otpCharge => 'OTP शुल्क';
@@ -3649,36 +3656,36 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get otpCharges_paymentCancelled =>
-      'भुगतान रद्द। आपने भुगतान रद्द किया। कोई पैसा नहीं कटा।';
+      'भुगतान रद्द किया गया। आपने भुगतान रद्द कर दिया। कोई पैसा नहीं काटा गया।';
 
   @override
   String get otpCharges_paymentFailed =>
-      'भुगतान विफल रहा। अगर पैसे कटे हैं तो 5–7 कार्य दिवसों में वापस आ जाएंगे।';
+      'भुगतान विफल रहा। यदि पैसे कट गए हैं तो 5-7 कार्य दिवसों में वापस कर दिए जाएंगे।';
 
   @override
   String otpCharges_paymentPausedButton(String amount) {
-    return 'भुगतान रुका है ($amount)';
+    return 'भुगतान रुका हुआ ($amount)';
   }
 
   @override
   String get otpCharges_paymentReceived =>
-      'भुगतान मिल गया। आपका OTP आने में थोड़ा समय लग सकता है।';
+      'भुगतान प्राप्त हुआ। आपका OTP आने में कुछ समय लग सकता है।';
 
   @override
   String get otpCharges_paymentStartFailed =>
-      'भुगतान शुरू नहीं हो सका। कृपया फिर से कोशिश करें।';
+      'भुगतान शुरू नहीं किया जा सका। कृपया पुनः प्रयास करें।';
 
   @override
   String get otpCharges_paymentsPaused =>
-      'एडमिन ने OTP भुगतान अस्थायी रूप से रोक दिए हैं। जानकारी के लिए नीचे टैप करें।';
+      'प्रशासक द्वारा OTP भुगतान अस्थायी रूप से रोक दिए गए हैं। विवरण के लिए नीचे टैप करें।';
 
   @override
   String get otpCharges_paymentsUnavailable =>
-      'OTP भुगतान अभी उपलब्ध नहीं है। कृपया बाद में फिर कोशिश करें।';
+      'OTP भुगतान अस्थायी रूप से अनुपलब्ध हैं। कृपया बाद में पुनः प्रयास करें।';
 
   @override
   String get otpCharges_sessionExpired =>
-      'सेशन खत्म हो गया। कृपया फिर से शुरू करें।';
+      'सत्र समाप्त हो गया। कृपया फिर से शुरू करें।';
 
   @override
   String get otpCharges_title => 'OTP शुल्क';
@@ -3688,27 +3695,27 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get otpCharges_tryAgainMoment =>
-      'कुछ गलत हो गया। कृपया थोड़ी देर में फिर से कोशिश करें।';
+      'कुछ गलत हो गया। कृपया कुछ पलों में पुनः प्रयास करें।';
 
   @override
   String get otpCharges_unknownBody =>
-      'भारतीय नंबरों पर लॉगिन OTP मुफ़्त हैं। दूसरे देशों के लिए, लॉगिन के समय भुगतान से पहले सही कीमत दिखाई जाती है।';
+      'भारतीय नंबरों पर लॉगिन OTP मुफ़्त हैं। अन्य देशों के लिए, लॉगिन पर भुगतान करने से पहले सटीक मूल्य दिखाया जाता है।';
 
   @override
   String get otpCharges_unknownTitle => 'OTP शुल्क आपके देश पर निर्भर करता है';
 
   @override
   String get otpCharges_updateApp =>
-      'भुगतान शुरू नहीं हो सका। कृपया ऐप अपडेट करके फिर से कोशिश करें।';
+      'भुगतान शुरू नहीं हो सका। कृपया ऐप अपडेट करें और पुनः प्रयास करें।';
 
   @override
   String otpCharges_vatTitle(String percent) {
-    return 'VAT / टैक्स ($percent%)';
+    return 'वैट / कर ($percent%)';
   }
 
   @override
   String get otpCharges_verificationFailed =>
-      'भुगतान की पुष्टि नहीं हो सकी। अगर पैसे कटे हैं तो 5–7 कार्य दिवसों में वापस आ जाएंगे।';
+      'भुगतान सत्यापन विफल रहा। यदि पैसे कट गए हैं तो 5-7 कार्य दिवसों में वापस कर दिए जाएंगे।';
 
   @override
   String get otpCharges_yourNumber => 'आपका नंबर';
@@ -3718,17 +3725,17 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String package_plansComingSoon(String title) {
-    return '$title प्लान जल्द आ रहे हैं';
+    return '$title योजनाएं जल्द आ रही हैं';
   }
 
   @override
-  String get package_subtitle => 'प्लान देखने के लिए मॉड्यूल चुनें';
+  String get package_subtitle => 'योजनाएं देखने के लिए कोई मॉड्यूल चुनें';
 
   @override
-  String get package_title => 'पैकेज और कीमतें';
+  String get package_title => 'पैकेज और मूल्य निर्धारण';
 
   @override
-  String get package_viewPlans => 'प्लान देखें';
+  String get package_viewPlans => 'योजनाएं देखें';
 
   @override
   String get perm_alwaysLocationBody =>
@@ -3770,14 +3777,13 @@ class AppLocalizationsHi extends AppLocalizations {
       'लॉग इन रहने के दौरान लोकेशन ट्रैक करने के लिए FG Partner ऐप को आपकी अनुमति चाहिए।';
 
   @override
-  String get permission_allowAllTheTime => 'हर समय अनुमति दें';
+  String get permission_allowAllTheTime => 'हमेशा अनुमति दें';
 
   @override
-  String get permission_allowLocation => 'लोकेशन की अनुमति दें';
+  String get permission_allowLocation => 'स्थान की अनुमति दें';
 
   @override
-  String get permission_allowLocationFirst =>
-      'कृपया पहले लोकेशन की अनुमति दें।';
+  String get permission_allowLocationFirst => 'कृपया पहले स्थान की अनुमति दें।';
 
   @override
   String permission_allowNamed(String permission) {
@@ -3785,121 +3791,121 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get permission_allowNotifications => 'नोटिफ़िकेशन की अनुमति दें';
+  String get permission_allowNotifications => 'सूचनाओं की अनुमति दें';
 
   @override
-  String get permission_appPermissionsSubtitle => 'ज़रूरी अनुमतियां देखें।';
+  String get permission_appPermissionsSubtitle =>
+      'आवश्यक अनुमतियों की समीक्षा करें।';
 
   @override
-  String get permission_appPermissionsTitle => 'ऐप अनुमतियां';
+  String get permission_appPermissionsTitle => 'ऐप अनुमतियाँ';
 
   @override
-  String get permission_badgeGranted => 'अनुमति दी';
+  String get permission_badgeGranted => 'अनुमत';
 
   @override
   String get permission_badgeOptional => 'वैकल्पिक';
 
   @override
-  String get permission_badgeRecommended => 'सुझाया गया';
+  String get permission_badgeRecommended => 'अनुशंसित';
 
   @override
-  String get permission_badgeRequired => 'ज़रूरी';
+  String get permission_badgeRequired => 'आवश्यक';
 
   @override
   String get permission_camera => 'कैमरा';
 
   @override
   String get permission_cameraDescription =>
-      'फ़ोटो या वीडियो लेने वाले ऐप फ़ीचर इसका इस्तेमाल करते हैं।';
+      'फ़ोटो या वीडियो कैप्चर करने वाली ऐप सुविधाओं द्वारा उपयोग किया जाता है।';
 
   @override
   String get permission_cameraSettingsMessage =>
-      'फ़ोटो और वीडियो लेने के लिए कैमरा की अनुमति ज़रूरी है। कृपया ऐप सेटिंग्स से चालू करें।';
+      'फ़ोटो और वीडियो लेने के लिए कैमरा अनुमति आवश्यक है। कृपया इसे ऐप सेटिंग्स से सक्षम करें।';
 
   @override
   String get permission_cameraWhy =>
-      'प्रोफ़ाइल, चैट और अन्य ऐप फ़ीचर के लिए फ़ोटो और वीडियो लेने देता है।';
+      'समर्थित प्रोफ़ाइल, चैट और अन्य ऐप सुविधाओं के लिए फ़ोटो और वीडियो लेने की अनुमति देता है।';
 
   @override
-  String get permission_contacts => 'कॉन्टैक्ट';
+  String get permission_contacts => 'संपर्क';
 
   @override
   String get permission_contactsDescription =>
-      'कॉन्टैक्ट से जुड़े ऐप फ़ीचर के लिए कॉन्टैक्ट ढूंढने या चुनने में इस्तेमाल होता है।';
+      'संपर्क संबंधी सुविधाओं के लिए संपर्कों को खोजने या चुनने के लिए उपयोग किया जाता है।';
 
   @override
   String get permission_contactsSettingsMessage =>
-      'कॉन्टैक्ट ढूंढने और चुनने के लिए कॉन्टैक्ट की अनुमति ज़रूरी है। कृपया ऐप सेटिंग्स से चालू करें।';
+      'संपर्कों को खोजने और चुनने के लिए संपर्क अनुमति की आवश्यकता है। कृपया इसे ऐप सेटिंग्स से सक्षम करें।';
 
   @override
   String get permission_contactsWhy =>
-      'कॉन्टैक्ट से जुड़े फ़ीचर इस्तेमाल करते समय कॉन्टैक्ट ढूंढने और चुनने में मदद करता है।';
+      'समर्थित संपर्क सुविधाओं का उपयोग करते समय संपर्कों को ढूंढने और चुनने में मदद करता है।';
 
   @override
   String get permission_gateCheckFailed =>
-      'हम आपकी अनुमतियां जांच नहीं सके। कृपया फिर से कोशिश करें।';
+      'हम आपकी अनुमतियों की जांच नहीं कर सके। कृपया पुनः प्रयास करें।';
 
   @override
   String get permission_gateSubtitle =>
-      'कॉल और अलर्ट पाने तथा हाज़िरी, लाइव ट्रैकिंग और सेफ़ ज़ोन चलाने के लिए FG Tracker को ये अनुमतियां चाहिए।';
+      'FG ट्रैकर को कॉल और अलर्ट प्राप्त करने और उपस्थिति, लाइव ट्रैकिंग और सुरक्षित क्षेत्र चलाने के लिए इन अनुमतियों की आवश्यकता है।';
 
   @override
-  String get permission_gateTitle => 'अनुमतियां ज़रूरी हैं';
+  String get permission_gateTitle => 'अनुमतियाँ आवश्यक हैं';
 
   @override
   String get permission_genericSettingsMessage =>
-      'यह अनुमति ज़रूरी है। कृपया ऐप सेटिंग्स से चालू करें।';
+      'यह अनुमति आवश्यक है। कृपया इसे ऐप सेटिंग्स से सक्षम करें।';
 
   @override
   String get permission_iosLocationServicesOff =>
-      'लोकेशन सर्विसेज़ बंद हैं। सेटिंग्स → प्राइवेसी और सुरक्षा → लोकेशन सर्विसेज़ खोलकर इसे चालू करें, फिर वापस आएं।';
+      'स्थान सेवाएं बंद हैं। सेटिंग्स → गोपनीयता और सुरक्षा → स्थान सेवाएं खोलें और इसे चालू करें, फिर वापस आएं।';
 
   @override
-  String get permission_location => 'लोकेशन';
+  String get permission_location => 'स्थान';
 
   @override
   String get permission_locationAndNotificationRequired =>
-      'आगे बढ़ने के लिए लोकेशन और नोटिफ़िकेशन की अनुमति ज़रूरी है।';
+      'जारी रखने के लिए स्थान और सूचना अनुमतियाँ आवश्यक हैं।';
 
   @override
   String get permission_locationAndNotificationsRequiredHint =>
-      'आगे बढ़ने के लिए लोकेशन और नोटिफ़िकेशन ज़रूरी हैं।';
+      'जारी रखने के लिए स्थान और सूचनाएं आवश्यक हैं।';
 
   @override
   String get permission_locationDescription =>
-      'हाज़िरी, लाइव ट्रैकिंग और सेफ़ ज़ोन के लिए ज़रूरी — ऐप बैकग्राउंड में होने पर भी।';
+      'उपस्थिति, लाइव ट्रैकिंग और सुरक्षित क्षेत्र के लिए आवश्यक — जिसमें बैकग्राउंड में होना भी शामिल है।';
 
   @override
   String get permission_locationRequiredToContinue =>
-      'आगे बढ़ने के लिए लोकेशन की अनुमति ज़रूरी है।';
+      'जारी रखने के लिए स्थान की अनुमति आवश्यक है।';
 
   @override
   String get permission_locationStatusApproximate =>
-      'सिर्फ़ अनुमानित लोकेशन की अनुमति है। प्रिसाइज़ लोकेशन ज़रूरी है।';
+      'केवल अनुमानित स्थान की अनुमति है। सटीक आवश्यक है।';
 
   @override
   String get permission_locationStatusBlocked =>
-      'लोकेशन ब्लॉक है। सेटिंग्स से चालू करें।';
+      'स्थान अवरुद्ध है। इसे सेटिंग्स से सक्षम करें।';
 
   @override
   String get permission_locationStatusDone =>
-      'हर समय अनुमति · प्रिसाइज़ · GPS चालू';
+      'हमेशा अनुमत · सटीक · जीपीएस चालू';
 
   @override
-  String get permission_locationStatusGpsOff =>
-      'डिवाइस की लोकेशन (GPS) बंद है।';
+  String get permission_locationStatusGpsOff => 'डिवाइस स्थान (GPS) बंद है।';
 
   @override
   String get permission_locationStatusNeedAlways =>
-      '\"हर समय अनुमति दें\" ज़रूरी है।';
+      '\"हमेशा अनुमति दें\" आवश्यक है।';
 
   @override
   String get permission_locationStatusNotAllowed =>
-      'लोकेशन की अनुमति अभी नहीं दी गई है।';
+      'स्थान की अनुमति अभी नहीं दी गई है।';
 
   @override
   String get permission_locationWhyExtra =>
-      'कृपया \"हर समय अनुमति दें\" चुनें और प्रिसाइज़ लोकेशन चालू रखें।';
+      'कृपया \"हमेशा अनुमति दें\" चुनें और सटीक स्थान चालू रखें।';
 
   @override
   String get permission_logout => 'लॉग आउट';
@@ -3909,121 +3915,121 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get permission_microphoneDescription =>
-      'वॉइस, वॉकी-टॉकी और कॉलिंग फ़ीचर में ज़रूरत पड़ने पर इस्तेमाल होता है।';
+      'आवाज़, वॉकी-टॉकी और कॉलिंग सुविधाओं द्वारा उपयोग किया जाता है।';
 
   @override
   String get permission_microphoneSettingsMessage =>
-      'वॉइस, वॉकी-टॉकी और कॉल के लिए माइक्रोफ़ोन की अनुमति ज़रूरी है। कृपया ऐप सेटिंग्स से चालू करें।';
+      'आवाज़, वॉकी-टॉकी और कॉल के लिए माइक्रोफ़ोन की अनुमति आवश्यक है। कृपया इसे ऐप सेटिंग्स से सक्षम करें।';
 
   @override
   String get permission_microphoneWhy =>
-      'इन फ़ीचर का इस्तेमाल करते समय वॉइस बातचीत, वॉकी-टॉकी और कॉल की सुविधा देता है।';
+      'वॉइस संचार, वॉकी-टॉकी ट्रांसमिशन और कॉल करने की अनुमति देता है।';
 
   @override
   String permission_notGrantedNamed(String permission) {
-    return '$permission की अनुमति नहीं मिली। कृपया फिर से कोशिश करें।';
+    return '$permission की अनुमति नहीं दी गई थी। कृपया पुनः प्रयास करें।';
   }
 
   @override
   String get permission_notificationRequiredToContinue =>
-      'आगे बढ़ने के लिए नोटिफ़िकेशन की अनुमति ज़रूरी है।';
+      'जारी रखने के लिए सूचना की अनुमति आवश्यक है।';
 
   @override
   String get permission_notificationSettingsText =>
-      'FG Tracker के नोटिफ़िकेशन बंद हैं। सेटिंग्स → नोटिफ़िकेशन खोलकर इन्हें अनुमति दें।';
+      'FG ट्रैकर के लिए सूचनाएं बंद हैं। सेटिंग्स → सूचनाएं खोलें और अनुमति दें।';
 
   @override
   String get permission_notificationStatusBlocked =>
-      'नोटिफ़िकेशन ब्लॉक हैं। सेटिंग्स से चालू करें।';
+      'सूचनाएं अवरुद्ध हैं। उन्हें सेटिंग्स से सक्षम करें।';
 
   @override
-  String get permission_notificationStatusDone => 'अनुमति है';
+  String get permission_notificationStatusDone => 'अनुमत';
 
   @override
   String get permission_notificationStatusNotAllowed =>
-      'नोटिफ़िकेशन की अनुमति अभी नहीं दी गई है।';
+      'सूचना की अनुमति अभी नहीं दी गई है।';
 
   @override
-  String get permission_notifications => 'नोटिफ़िकेशन';
+  String get permission_notifications => 'सूचनाएं';
 
   @override
   String get permission_notificationsDescription =>
-      'इनकमिंग कॉल, चैट मैसेज और हाज़िरी / सेफ़ ज़ोन अलर्ट पाने के लिए ज़रूरी।';
+      'इनकमिंग कॉल, चैट संदेश और उपस्थिति/सुरक्षित क्षेत्र अलर्ट प्राप्त करने के लिए आवश्यक।';
 
   @override
   String get permission_notificationsWhyExtra =>
-      'इस अनुमति के बिना इनकमिंग कॉल की घंटी नहीं बजेगी।';
+      'इस अनुमति के बिना इनकमिंग कॉल की घंटी नहीं बज सकती।';
 
   @override
   String get permission_openSettings => 'सेटिंग्स खोलें';
 
   @override
-  String get permission_preciseLocation => 'प्रिसाइज़ लोकेशन';
+  String get permission_preciseLocation => 'सटीक स्थान';
 
   @override
-  String get permission_pushNotifications => 'पुश नोटिफ़िकेशन';
+  String get permission_pushNotifications => 'पुश सूचनाएं';
 
   @override
   String get permission_reasonLocation =>
-      'हाज़िरी, लाइव ट्रैकिंग और सेफ़ ज़ोन अलर्ट के लिए लोकेशन ज़रूरी है।';
+      'उपस्थिति, लाइव ट्रैकिंग और सुरक्षित क्षेत्र अलर्ट के लिए स्थान आवश्यक है।';
 
   @override
   String get permission_reasonLocationAlways =>
-      '\"हर समय अनुमति दें\" चुनें ताकि ऐप बैकग्राउंड में होने पर भी लाइव ट्रैकिंग और सेफ़ ज़ोन काम करते रहें।';
+      '\"हमेशा अनुमति दें\" चुनें ताकि ऐप बैकग्राउंड में होने पर भी लाइव ट्रैकिंग और सेफ ज़ोन काम करते रहें।';
 
   @override
   String get permission_reasonNotification =>
-      'इनकमिंग कॉल, चैट मैसेज, हाज़िरी और सेफ़ ज़ोन अलर्ट पाने के लिए नोटिफ़िकेशन ज़रूरी हैं।';
+      'इनकमिंग कॉल, चैट संदेश, उपस्थिति और सुरक्षित क्षेत्र अलर्ट प्राप्त करने के लिए सूचनाएं आवश्यक हैं।';
 
   @override
   String get permission_reasonPrecise =>
-      'सटीक हाज़िरी, लाइव ट्रैकिंग और सेफ़ ज़ोन अलर्ट के लिए प्रिसाइज़ लोकेशन ज़रूरी है।';
+      'सटीक उपस्थिति, लाइव ट्रैकिंग और सुरक्षित क्षेत्र अलर्ट के लिए सटीक स्थान आवश्यक है।';
 
   @override
-  String get permission_required => 'अनुमति ज़रूरी है';
+  String get permission_required => 'अनुमति आवश्यक है';
 
   @override
   String get permission_selectAllowAllTheTime =>
-      'आगे बढ़ने के लिए कृपया \"हर समय अनुमति दें\" चुनें।';
+      'जारी रखने के लिए कृपया \"हमेशा अनुमति दें\" चुनें।';
 
   @override
   String get permission_settingsAndroidAlways =>
-      'सेटिंग्स → अनुमतियां → लोकेशन खोलें और \"हर समय अनुमति दें\" चुनें।';
+      'सेटिंग्स → अनुमतियाँ → स्थान खोलें और \"हमेशा अनुमति दें\" चुनें।';
 
   @override
   String get permission_settingsAndroidBlocked =>
-      'FG Tracker के लिए लोकेशन एक्सेस ब्लॉक है। सेटिंग्स → अनुमतियां → लोकेशन खोलें और \"हर समय अनुमति दें\" चुनें।';
+      'FG ट्रैकर के लिए स्थान पहुंच अवरुद्ध है। सेटिंग्स → अनुमतियाँ → स्थान खोलें और \"हमेशा अनुमति दें\" चुनें।';
 
   @override
   String get permission_settingsAndroidPrecise =>
-      'सेटिंग्स → अनुमतियां → लोकेशन खोलें और \"सटीक लोकेशन इस्तेमाल करें\" चालू करें।';
+      'सेटिंग्स → अनुमतियाँ → स्थान खोलें और \"सटीक स्थान का उपयोग करें\" चालू करें।';
 
   @override
   String get permission_settingsIosAlways =>
-      'सेटिंग्स → लोकेशन खोलें और \"हमेशा\" चुनें।';
+      'सेटिंग्स → स्थान खोलें और \"हमेशा\" चुनें।';
 
   @override
   String get permission_settingsIosBlocked =>
-      'FG Tracker के लिए लोकेशन एक्सेस बंद है। सेटिंग्स → लोकेशन खोलें और \"हमेशा\" चुनें।';
+      'FG ट्रैकर के लिए स्थान पहुंच बंद है। सेटिंग्स → स्थान खोलें और \"हमेशा\" चुनें।';
 
   @override
   String get permission_settingsIosPrecise =>
-      'सेटिंग्स → लोकेशन खोलें और \"सटीक लोकेशन\" चालू करें।';
+      'सेटिंग्स → स्थान खोलें और \"सटीक स्थान\" चालू करें।';
 
   @override
-  String get permission_skipAndContinue => 'छोड़ें और आगे बढ़ें';
+  String get permission_skipAndContinue => 'छोड़ें और जारी रखें';
 
   @override
-  String get permission_turnOnLocation => 'लोकेशन चालू करें';
+  String get permission_turnOnLocation => 'स्थान (GPS) चालू करें';
 
   @override
-  String get permission_turnOnPreciseLocation => 'प्रिसाइज़ लोकेशन चालू करें';
+  String get permission_turnOnPreciseLocation => 'सटीक स्थान चालू करें';
 
   @override
-  String get permission_unableToRequest => 'अनुमति का अनुरोध नहीं किया जा सका।';
+  String get permission_unableToRequest => 'अनुमति का अनुरोध करने में असमर्थ।';
 
   @override
-  String get permission_whyWeNeedThis => 'हमें इसकी ज़रूरत क्यों है?';
+  String get permission_whyWeNeedThis => 'हमें इसकी आवश्यकता क्यों है?';
 
   @override
   String get registration_contactNumberHint => 'संपर्क नंबर दर्ज करें';
@@ -4032,7 +4038,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get registration_contactNumberLabel => 'संपर्क नंबर';
 
   @override
-  String get registration_doneButton => 'हो गया';
+  String get registration_doneButton => 'पूर्ण';
 
   @override
   String get registration_emailHint => 'ईमेल पता दर्ज करें';
@@ -4105,32 +4111,32 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get safeRoute_activeTitle => 'सक्रिय सेफ रूट';
+  String get safeRoute_activeTitle => 'सक्रिय सुरक्षित मार्ग';
 
   @override
   String get safeRoute_alertSettingsDesc =>
-      'सेफ रूट अलर्ट, विचलन सीमा और नोटिफ़िकेशन पसंद मैनेज करें।';
+      'सुरक्षित मार्ग अलर्ट, विचलन सीमाएं और अधिसूचना प्राथमिकताएं प्रबंधित करें।';
 
   @override
   String get safeRoute_alertSheetDesc =>
-      'टीम सदस्यों के सेफ रूट से भटकने पर रियल-टाइम अलर्ट';
+      'जब टीम के सदस्य सुरक्षित मार्ग से भटकते हैं तो रीयल-टाइम अलर्ट';
 
   @override
-  String get safeRoute_alertTitle => 'सेफ रूट अलर्ट';
+  String get safeRoute_alertTitle => 'सुरक्षित मार्ग अलर्ट';
 
   @override
   String get safeRoute_appBarSubtitle =>
-      'अपने टीम सदस्य के लिए सेफ रूट सेट करें।';
+      'अपनी टीम के सदस्य के लिए एक सुरक्षित मार्ग निर्धारित करें।';
 
   @override
-  String get safeRoute_destination => 'मंज़िल';
+  String get safeRoute_destination => 'गंतव्य';
 
   @override
-  String get safeRoute_deviated => 'सेफ रूट से भटक गए';
+  String get safeRoute_deviated => 'सुरक्षित मार्ग से भटक गए';
 
   @override
   String safeRoute_deviationAlertNote(String distance) {
-    return 'अगर सदस्य सेफ रूट से $distance से ज़्यादा भटकता है तो अलर्ट आएगा।';
+    return 'यदि सदस्य सुरक्षित मार्ग से $distance से अधिक भटकता है तो अलर्ट चालू हो जाएगा।';
   }
 
   @override
@@ -4143,21 +4149,21 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get safeRoute_deviationSubtitle =>
-      'चुने गए रूट से कितना भटकाव ठीक है, यह सेट करें।';
+      'निर्धारित करें कि चयनित मार्ग से कितने विचलन की अनुमति है।';
 
   @override
   String get safeRoute_distance => 'दूरी';
 
   @override
   String safeRoute_distanceEta(String distance, int minutes) {
-    return '$distance km • $minutes मिनट';
+    return '$distance किमी • $minutes मिनट';
   }
 
   @override
-  String get safeRoute_edit => 'सेफ रूट बदलें';
+  String get safeRoute_edit => 'सुरक्षित मार्ग संपादित करें';
 
   @override
-  String get safeRoute_end => 'अंत';
+  String get safeRoute_end => 'समाप्त';
 
   @override
   String safeRoute_estTime(int minutes) {
@@ -4166,7 +4172,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get safeRoute_featureDesc =>
-      'टीम सदस्यों के लिए पहले से रूट तय करें। कोई सेफ रूट से भटके तो अलर्ट पाएं।';
+      'अपनी टीम के सदस्यों के लिए पूर्व-निर्धारित मार्ग निर्धारित करें। यदि कोई सुरक्षित मार्ग से भटकता है तो अलर्ट प्राप्त करें।';
 
   @override
   String safeRoute_groupWithCount(String group, int count) {
@@ -4181,101 +4187,101 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get safeRoute_helpDeviationBody =>
-      'सदस्य चुने गए रूट से कितनी दूर जा सकता है, यह सेट करें। सीमा पार होने पर आपको अलर्ट मिलेगा।';
+      'निर्धारित दूरी सेट करें जिससे सदस्य चयनित मार्ग से दूर जा सकता है। सीमा पार होने पर आपको अलर्ट मिलेगा।';
 
   @override
   String get safeRoute_helpDeviationTitle => 'विचलन सीमा क्या है?';
 
   @override
   String get safeRoute_helpHowBody =>
-      'सदस्य चुनें, शुरुआती और मंज़िल लोकेशन चुनें, सबसे अच्छा रूट चुनें और विचलन सीमा सेट करें।';
+      'सदस्य चुनें, प्रारंभ और गंतव्य स्थान चुनें, सर्वश्रेष्ठ मार्ग चुनें और विचलन सीमा निर्धारित करें।';
 
   @override
-  String get safeRoute_helpHowTitle => 'सेफ रूट कैसे बनाएं?';
+  String get safeRoute_helpHowTitle => 'सुरक्षित मार्ग कैसे बनाएं?';
 
   @override
-  String get safeRoute_helpTitle => 'सेफ रूट सहायता';
+  String get safeRoute_helpTitle => 'सुरक्षित मार्ग सहायता';
 
   @override
   String get safeRoute_helpWhatBody =>
-      'अपने टीम सदस्य के लिए सुरक्षित यात्रा रूट बनाने के लिए शुरुआती और मंज़िल लोकेशन सेट करें।';
+      'अपनी टीम के सदस्य के लिए एक सुरक्षित यात्रा मार्ग बनाने के लिए एक प्रारंभ और गंतव्य स्थान निर्धारित करें।';
 
   @override
-  String get safeRoute_helpWhatTitle => 'सेफ रूट क्या है?';
+  String get safeRoute_helpWhatTitle => 'सुरक्षित मार्ग क्या है?';
 
   @override
   String safeRoute_memberDeviated(String name) {
-    return '$name सेफ रूट से भटक गए';
+    return '$name सुरक्षित मार्ग से भटक गए हैं';
   }
 
   @override
-  String get safeRoute_recommended => 'सुझाया गया';
+  String get safeRoute_recommended => 'अनुशंसित';
 
   @override
   String safeRoute_recommendedRoute(String name) {
-    return '$name (सुझाया गया)';
+    return '$name (अनुशंसित)';
   }
 
   @override
   String safeRoute_routeFor(String name) {
-    return 'रूट ($name)';
+    return 'मार्ग ($name)';
   }
 
   @override
-  String get safeRoute_saveActivate => 'सेव करें और सेफ रूट चालू करें';
+  String get safeRoute_saveActivate => 'सुरक्षित मार्ग सहेजें और सक्रिय करें';
 
   @override
   String get safeRoute_saveActivateGroup =>
-      'सेव करें और ग्रुप के लिए सेफ रूट चालू करें';
+      'समूह के लिए सुरक्षित मार्ग सहेजें और सक्रिय करें';
 
   @override
-  String get safeRoute_selectedRoute => 'चुना गया रूट';
+  String get safeRoute_selectedRoute => 'चयनित मार्ग';
 
   @override
   String get safeRoute_setRoutesSubtitle =>
-      'ग्रुप के सभी सदस्यों के लिए सेफ रूट बनाएं और मैनेज करें।';
+      'सभी समूह सदस्यों के लिए सुरक्षित मार्ग बनाएं और प्रबंधित करें।';
 
   @override
-  String get safeRoute_start => 'शुरुआत';
+  String get safeRoute_start => 'शुरू';
 
   @override
-  String get safeRoute_startLocation => 'शुरुआती लोकेशन';
+  String get safeRoute_startLocation => 'प्रस्थान स्थान';
 
   @override
   String safeRoute_stepDeviation(int step) {
-    return '$step. विचलन सीमा सेट करें';
+    return '$step. विचलन सीमा निर्धारित करें';
   }
 
   @override
   String safeRoute_stepPreviewApply(int step) {
-    return '$step. प्रीव्यू और लागू करें';
+    return '$step. पूर्वावलोकन करें और लागू करें';
   }
 
   @override
   String safeRoute_stepPreviewRoute(int step) {
-    return '$step. रूट का प्रीव्यू';
+    return '$step. मार्ग का पूर्वावलोकन करें';
   }
 
   @override
   String safeRoute_stepSelectRoute(int step) {
-    return '$step. रूट चुनें';
+    return '$step. मार्ग चुनें';
   }
 
   @override
   String safeRoute_stepSetRoutesForMembers(int step) {
-    return '$step. सदस्यों के लिए रूट सेट करें';
+    return '$step. सदस्यों के लिए मार्ग निर्धारित करें';
   }
 
   @override
   String safeRoute_stepStartDest(int step) {
-    return '$step. शुरुआत और मंज़िल सेट करें';
+    return '$step. प्रस्थान और गंतव्य निर्धारित करें';
   }
 
   @override
-  String get safeRoute_subtitle => 'रूट सुरक्षा';
+  String get safeRoute_subtitle => 'मार्ग सुरक्षा';
 
   @override
-  String get safeRoute_title => 'सेफ रूट';
+  String get safeRoute_title => 'सुरक्षित मार्ग (सेफ रूट)';
 
   @override
   String safeZone_activeDetails(String radius, String center) {
@@ -4283,90 +4289,92 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get safeZone_activePreview => 'सक्रिय (प्रीव्यू)';
+  String get safeZone_activePreview => 'सक्रिय (पूर्वावलोकन)';
 
   @override
-  String get safeZone_activeTitle => 'सक्रिय सेफ ज़ोन';
+  String get safeZone_activeTitle => 'सक्रिय सुरक्षित क्षेत्र';
 
   @override
   String get safeZone_alertSettingsDesc =>
-      'सेफ ज़ोन, अलर्ट दूरी और नोटिफ़िकेशन पसंद मैनेज करें';
+      'सुरक्षित क्षेत्र, अलर्ट दूरी और अधिसूचना प्राथमिकताएं प्रबंधित करें';
 
   @override
   String get safeZone_alertSheetDesc =>
-      'टीम सदस्यों के सेफ ज़ोन छोड़ने पर रियल-टाइम अलर्ट';
+      'जब टीम के सदस्य सुरक्षित क्षेत्र छोड़ते हैं तो रीयल-टाइम अलर्ट';
 
   @override
-  String get safeZone_alertTitle => 'सेफ ज़ोन अलर्ट';
+  String get safeZone_alertTitle => 'सुरक्षित क्षेत्र अलर्ट';
 
   @override
   String safeZone_allMonitored(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'इस सेफ ज़ोन में सभी $count सदस्यों पर\nनज़र रखी जाएगी।',
-      one: 'इस सेफ ज़ोन में 1 सदस्य पर\nनज़र रखी जाएगी।',
+      other:
+          'इस सुरक्षित क्षेत्र के भीतर सभी $count सदस्यों की\nनिगरानी की जाएगी।',
+      one: 'इस सुरक्षित क्षेत्र के भीतर 1 सदस्य की\nनिगरानी की जाएगी।',
     );
     return '$_temp0';
   }
 
   @override
   String get safeZone_appBarSubtitle =>
-      'एक सुरक्षित क्षेत्र तय करें। कोई सेफ ज़ोन से\nबाहर जाए तो अलर्ट पाएं।';
+      'एक सुरक्षित क्षेत्र परिभाषित करें। यदि कोई सुरक्षित\nक्षेत्र से बाहर निकलता है तो अलर्ट प्राप्त करें।';
 
   @override
   String safeZone_appliedToGroup(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'यह सेफ ज़ोन चुने गए ग्रुप के सभी $count सदस्यों पर लागू होगा।',
-      one: 'यह सेफ ज़ोन चुने गए ग्रुप के 1 सदस्य पर लागू होगा।',
+      other:
+          'यह सुरक्षित क्षेत्र चयनित समूह के सभी $count सदस्यों पर लागू होगा।',
+      one: 'यह सुरक्षित क्षेत्र चयनित समूह के 1 सदस्य पर लागू होगा।',
     );
     return '$_temp0';
   }
 
   @override
-  String get safeZone_edit => 'सेफ ज़ोन बदलें';
+  String get safeZone_edit => 'सुरक्षित क्षेत्र संपादित करें';
 
   @override
-  String get safeZone_exited => 'सेफ ज़ोन से बाहर गए';
+  String get safeZone_exited => 'सुरक्षित क्षेत्र से बाहर निकल गए';
 
   @override
   String get safeZone_featureDesc =>
-      'अपनी टीम के लिए एक सुरक्षित क्षेत्र तय करें। कोई सेफ ज़ोन से बाहर जाए तो तुरंत अलर्ट पाएं।';
+      'अपनी टीम के लिए एक सुरक्षित भौगोलिक क्षेत्र परिभाषित करें। यदि कोई सुरक्षित क्षेत्र से बाहर कदम रखता है तो तुरंत अलर्ट प्राप्त करें।';
 
   @override
   String get safeZone_helpHowBody =>
-      'सदस्य चुनें, मैप पर लोकेशन चुनें और दायरा सेट करें।';
+      'एक सदस्य चुनें, मानचित्र पर एक स्थान चुनें और दायरा निर्धारित करें।';
 
   @override
-  String get safeZone_helpHowTitle => 'सेफ ज़ोन कैसे बनाएं?';
+  String get safeZone_helpHowTitle => 'सुरक्षित क्षेत्र कैसे बनाएं?';
 
   @override
   String get safeZone_helpRadiusBody =>
-      'अपनी ज़रूरत के अनुसार क्षेत्र का दायरा (500 m, 1 km, 2 km या 5 km) सेट करें।';
+      'अपनी आवश्यकता के अनुसार क्षेत्र का दायरा (500 मी, 1 किमी, 2 किमी या 5 किमी) निर्धारित करें।';
 
   @override
-  String get safeZone_helpRadiusTitle => 'सेफ ज़ोन का दायरा क्या है?';
+  String get safeZone_helpRadiusTitle => 'सुरक्षित क्षेत्र का दायरा क्या है?';
 
   @override
-  String get safeZone_helpTitle => 'सेफ ज़ोन सहायता';
+  String get safeZone_helpTitle => 'सुरक्षित क्षेत्र सहायता';
 
   @override
   String get safeZone_helpWhatBody =>
-      'मैप पर एक क्षेत्र तय करें और सदस्य के सेफ ज़ोन से बाहर जाने पर अलर्ट पाएं।';
+      'मानचित्र पर एक विशिष्ट क्षेत्र निर्धारित करें और यदि सदस्य सुरक्षित क्षेत्र से बाहर निकलता है तो अलर्ट प्राप्त करें।';
 
   @override
-  String get safeZone_helpWhatTitle => 'सेफ ज़ोन क्या है?';
+  String get safeZone_helpWhatTitle => 'सुरक्षित क्षेत्र क्या है?';
 
   @override
   String safeZone_memberLeft(String name) {
-    return '$name सेफ ज़ोन से बाहर चले गए';
+    return '$name सुरक्षित क्षेत्र से बाहर चले गए हैं';
   }
 
   @override
   String get safeZone_membersMonitored =>
-      'इस सेफ ज़ोन में सदस्यों पर नज़र रखी जाएगी।';
+      'इस सुरक्षित क्षेत्र के भीतर सदस्यों की निगरानी की जाएगी।';
 
   @override
   String safeZone_nearOutsideZone(String place, String zone) {
@@ -4379,38 +4387,38 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get safeZone_saveActivate => 'सेव करें और सेफ ज़ोन चालू करें';
+  String get safeZone_saveActivate => 'सुरक्षित क्षेत्र सहेजें और सक्रिय करें';
 
   @override
   String get safeZone_saveActivateGroup =>
-      'सेव करें और ग्रुप के लिए सेफ ज़ोन चालू करें';
+      'समूह के लिए सुरक्षित क्षेत्र सहेजें और सक्रिय करें';
 
   @override
-  String get safeZone_searchLocation => 'लोकेशन खोजें...';
+  String get safeZone_searchLocation => 'स्थान खोजें...';
 
   @override
   String get safeZone_statusLabel => 'स्थिति:';
 
   @override
   String safeZone_stepPreview(int step) {
-    return '$step. सेफ ज़ोन का प्रीव्यू';
+    return '$step. सुरक्षित क्षेत्र का पूर्वावलोकन करें';
   }
 
   @override
   String safeZone_stepRadius(int step) {
-    return '$step. सेफ ज़ोन का दायरा सेट करें';
+    return '$step. सुरक्षित क्षेत्र का दायरा निर्धारित करें';
   }
 
   @override
   String safeZone_stepSelectLocation(int step) {
-    return '$step. मैप पर लोकेशन चुनें';
+    return '$step. मानचित्र पर स्थान चुनें';
   }
 
   @override
   String get safeZone_subtitle => 'क्षेत्र सुरक्षा';
 
   @override
-  String get safeZone_title => 'सेफ ज़ोन';
+  String get safeZone_title => 'सुरक्षित क्षेत्र (सेफ ज़ोन)';
 
   @override
   String safeZone_totalMembers(int count) {
@@ -4433,33 +4441,34 @@ class AppLocalizationsHi extends AppLocalizations {
   String get safety_alerts => 'अलर्ट';
 
   @override
-  String get safety_alertsDesc => 'तुरंत ध्यान देने की ज़रूरत';
+  String get safety_alertsDesc => 'तत्काल ध्यान देने की आवश्यकता है';
 
   @override
   String get safety_bannerBody =>
-      'स्मार्ट सेफ्टी फीचर्स से अपनी टीम पर नज़र रखें और उसे सुरक्षित रखें।';
+      'स्मार्ट सुरक्षा सुविधाओं के साथ अपनी टीम की निगरानी और सुरक्षा करें।';
 
   @override
   String get safety_bannerTitle => 'आपकी सुरक्षा, हमारी प्राथमिकता';
 
   @override
-  String get safety_chooseFeature => 'सुरक्षा फीचर चुनें';
+  String get safety_chooseFeature => 'एक सुरक्षा सुविधा चुनें';
 
   @override
   String get safety_comingSoonBody =>
-      'आपकी टीम की सुरक्षा के लिए स्मार्ट सेफ्टी फीचर्स जल्द आ रहे हैं।';
+      'आपकी टीम की सुरक्षा के लिए स्मार्ट सुरक्षा सुविधाएं जल्द आ रही हैं।';
 
   @override
-  String get safety_contactSupport => 'सपोर्ट से संपर्क करें';
+  String get safety_contactSupport => 'सहायता से संपर्क करें';
 
   @override
-  String get safety_editAnytime => 'आप बाद में कभी भी बदल या बंद कर सकते हैं।';
+  String get safety_editAnytime =>
+      'आप बाद में कभी भी संपादित या निष्क्रिय कर सकते हैं।';
 
   @override
   String get safety_mapCityPark => 'सिटी पार्क';
 
   @override
-  String get safety_mapMainRoad => 'मेन रोड';
+  String get safety_mapMainRoad => 'मुख्य मार्ग';
 
   @override
   String get safety_mapMarketLane => 'मार्केट लेन';
@@ -4472,26 +4481,26 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get safety_needHelpBody =>
-      'सुरक्षा से जुड़ी किसी भी मदद के लिए सपोर्ट टीम से संपर्क करें।';
+      'सुरक्षा संबंधी किसी भी सहायता के लिए सहायता टीम से संपर्क करें।';
 
   @override
-  String get safety_quickOverview => 'त्वरित झलक';
+  String get safety_quickOverview => 'त्वरित समीक्षा';
 
   @override
   String get safety_recentAlerts => 'हाल के अलर्ट';
 
   @override
-  String get safety_recenter => 'बीच में लाएं';
+  String get safety_recenter => 'पुनः केंद्रित करें';
 
   @override
   String get safety_safeNow => 'अभी सुरक्षित';
 
   @override
-  String get safety_safeNowDesc => 'सदस्य सेफ ज़ोन/रूट के अंदर हैं';
+  String get safety_safeNowDesc => 'सदस्य सुरक्षित क्षेत्र/मार्ग के भीतर हैं';
 
   @override
   String safety_stepSelectGroup(int step) {
-    return '$step. ग्रुप चुनें';
+    return '$step. समूह चुनें';
   }
 
   @override
@@ -4506,7 +4515,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get safety_tagline => 'सुरक्षित रहें। जुड़े रहें।';
 
   @override
-  String get safety_title => 'सुरक्षा';
+  String get safety_title => 'सुरक्षा (सेफ्टी)';
 
   @override
   String get safety_viewAllMembers => 'सभी सदस्य देखें';
@@ -4596,62 +4605,63 @@ class AppLocalizationsHi extends AppLocalizations {
   String get sheet_walkieCallSubtitle => 'दबाकर बात करें (PTT)';
 
   @override
-  String get sos_addDetailsMandatory => 'विवरण जोड़ें (ज़रूरी)';
+  String get sos_addDetailsMandatory => 'विवरण जोड़ें (अनिवार्य)';
 
   @override
   String get sos_addDetailsOptional => 'विवरण जोड़ें (वैकल्पिक)';
 
   @override
-  String get sos_addFamilyMember => 'परिवार सदस्य जोड़ें';
+  String get sos_addFamilyMember => 'परिवार का सदस्य जोड़ें';
 
   @override
   String get sos_addFamilyMemberRequired =>
-      'SOS अलर्ट भेजने के लिए कम से कम 1 परिवार सदस्य जोड़ें';
+      'SOS अलर्ट भेजने के लिए कम से कम 1 परिवार का सदस्य जोड़ें';
 
   @override
-  String get sos_addPhotoHint => 'दूसरों को बेहतर समझाने के लिए फोटो जोड़ें।';
+  String get sos_addPhotoHint =>
+      'दूसरों को स्थिति बेहतर ढंग से समझने में मदद के लिए फ़ोटो संलग्न करें।';
 
   @override
-  String get sos_addPhotoOptional => 'फोटो जोड़ें (वैकल्पिक)';
+  String get sos_addPhotoOptional => 'फ़ोटो जोड़ें (वैकल्पिक)';
 
   @override
   String get sos_alertSent => 'SOS अलर्ट भेजा गया!';
 
   @override
   String get sos_alertSentToNearby =>
-      'आपका अलर्ट आसपास के लोगों को भेज दिया गया है।';
+      'आपका अलर्ट आस-पास के लोगों को भेज दिया गया है।';
 
   @override
-  String get sos_alertWillBeSent => 'अलर्ट आसपास के लोगों को भेजा जाएगा';
+  String get sos_alertWillBeSent => 'अलर्ट आस-पास के लोगों को भेजा जाएगा';
 
   @override
   String get sos_alertWillBeSentFamily =>
-      'आपका अलर्ट आसपास के लोगों और आपके परिवार को भेजा जाएगा।';
+      'आपका अलर्ट आस-पास के लोगों और आपके परिवार को भेजा जाएगा।';
 
   @override
   String sos_availableUsers(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count उपलब्ध यूज़र',
-      one: '1 उपलब्ध यूज़र',
+      other: '$count उपलब्ध उपयोगकर्ता',
+      one: '1 उपलब्ध उपयोगकर्ता',
     );
     return '$_temp0';
   }
 
   @override
-  String get sos_detailsHint => 'कोई अतिरिक्त जानकारी लिखें...';
+  String get sos_detailsHint => 'कोई अतिरिक्त विवरण लिखें...';
 
   @override
   String get sos_detailsMandatoryForOther =>
-      '\'अन्य\' कारण चुनने पर विवरण जोड़ना ज़रूरी है';
+      'जब \'अन्य\' कारण चुना जाता है तो विवरण जोड़ना अनिवार्य है';
 
   @override
   String get sos_howItWorks => 'यह कैसे काम करता है';
 
   @override
   String get sos_howItWorksIntro =>
-      'SOS अलर्ट से आप आपात स्थिति में आसपास के लोगों और अपने परिवार को सूचित कर सकते हैं।';
+      'SOS अलर्ट आपातकालीन स्थितियों में आस-पास के लोगों और आपके परिवार को सूचित करने में मदद करता है।';
 
   @override
   String get sos_howItWorksTitle => 'SOS अलर्ट कैसे काम करता है?';
@@ -4664,8 +4674,8 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'आपकी लोकेशन $count परिवार सदस्यों के साथ शेयर की जा रही है',
-      one: 'आपकी लोकेशन 1 परिवार सदस्य के साथ शेयर की जा रही है',
+      other: 'आपका स्थान परिवार के $count सदस्यों के साथ साझा किया जा रहा है',
+      one: 'आपका स्थान परिवार के 1 सदस्य के साथ साझा किया जा रहा है',
     );
     return '$_temp0';
   }
@@ -4686,51 +4696,52 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get sos_needHelpBody =>
-      'आसपास के लोगों को SOS अलर्ट भेजें।\nउन्हें सूचना मिलेगी और वे आपकी मदद कर सकते हैं।';
+      'आस-पास के लोगों को SOS अलर्ट भेजें।\nउन्हें सूचित किया जाएगा और वे आपकी सहायता कर सकते हैं।';
 
   @override
   String get sos_noMatchFound => 'कोई मिलान नहीं मिला';
 
   @override
-  String get sos_noUsersFound => 'कोई यूज़र नहीं मिला';
+  String get sos_noUsersFound => 'कोई उपयोगकर्ता नहीं मिला';
 
   @override
   String get sos_notifyFamilyTitle =>
-      'अपने परिवार को सूचित करें (1 से 5 ज़रूरी)';
+      'अपने परिवार को सूचित करें (1 से 5 आवश्यक)';
 
   @override
-  String get sos_notifyUpdates => 'कोई भी अपडेट होने पर हम आपको सूचित करेंगे';
+  String get sos_notifyUpdates =>
+      'हम आपको किसी भी अपडेट के बारे में सूचित करेंगे';
 
   @override
   String get sos_okGotIt => 'ठीक है, समझ गया';
 
   @override
-  String get sos_peopleWithinRadius => '2 km दायरे के लोग';
+  String get sos_peopleWithinRadius => '2 किमी के दायरे में लोग';
 
   @override
   String get sos_privacyNote =>
-      'आपकी प्राइवेसी ज़रूरी है। आपकी लोकेशन केवल सक्रिय SOS अलर्ट के दौरान शेयर होती है।';
+      'आपकी गोपनीयता महत्वपूर्ण है। आपका स्थान केवल सक्रिय SOS अलर्ट के दौरान साझा किया जाता है।';
 
   @override
   String get sos_reasonAccident => 'दुर्घटना';
 
   @override
-  String get sos_reasonMedical => 'मेडिकल';
+  String get sos_reasonMedical => 'चिकित्सा आपातकाल';
 
   @override
   String get sos_reasonOther => 'अन्य';
 
   @override
-  String get sos_reasonSafety => 'सुरक्षा';
+  String get sos_reasonSafety => 'सुरक्षा खतरा';
 
   @override
-  String get sos_reasonThreat => 'खतरा';
+  String get sos_reasonThreat => 'धमकी / ख़तरा';
 
   @override
   String get sos_required => 'आवश्यक';
 
   @override
-  String get sos_searchUsers => 'यूज़र खोजें';
+  String get sos_searchUsers => 'उपयोगकर्ता खोजें';
 
   @override
   String get sos_selectReason => 'कारण चुनें';
@@ -4739,44 +4750,44 @@ class AppLocalizationsHi extends AppLocalizations {
   String get sos_sendSosAlert => 'SOS अलर्ट भेजें';
 
   @override
-  String get sos_stayCalm => 'शांत रहें, मदद आ रही है';
+  String get sos_stayCalm => 'शांत रहें, मदद रास्ते में है';
 
   @override
   String get sos_step1Body =>
-      'SOS बटन पर टैप करें और आसपास के लोगों को अलर्ट भेजें।';
+      'SOS बटन पर टैप करें और आस-पास के लोगों को अलर्ट भेजें।';
 
   @override
   String get sos_step1Title => '1. SOS अलर्ट भेजें';
 
   @override
   String get sos_step2Body =>
-      'आसपास के लोगों को आपकी लोकेशन के साथ अलर्ट मिलेगा।';
+      'आस-पास के लोगों को आपके स्थान के साथ आपका अलर्ट प्राप्त होगा।';
 
   @override
-  String get sos_step2Title => '2. आसपास के लोगों को सूचित करें';
+  String get sos_step2Title => '2. आस-पास के लोगों को सूचित करें';
 
   @override
   String get sos_step3Body =>
-      'आसपास के लोग आपका अलर्ट देखकर आपकी मदद के लिए पहुंच सकते हैं।';
+      'आस-पास के लोग आपका अलर्ट देख सकते हैं और आपकी मदद के लिए पहुंच सकते हैं।';
 
   @override
-  String get sos_step3Title => '3. जल्दी मदद पाएं';
+  String get sos_step3Title => '3. तेजी से मदद पाएं';
 
   @override
   String get sos_step4Body =>
-      'आपके SOS के बारे में परिवार के सदस्यों को तुरंत सूचना मिलेगी।';
+      'आपके परिवार के सदस्यों को आपके SOS के बारे में तुरंत सूचित किया जाएगा।';
 
   @override
-  String get sos_step4Title => '4. परिवार को सूचना मिलती है';
+  String get sos_step4Title => '4. परिवार को सूचित किया जाता है';
 
   @override
-  String get sos_subtitle => 'आसपास के लोगों को अलर्ट भेजें';
+  String get sos_subtitle => 'आस-पास के लोगों को अलर्ट भेजें';
 
   @override
   String get sos_title => 'SOS अलर्ट';
 
   @override
-  String get sos_willBeNotified => 'को सूचना दी जाएगी';
+  String get sos_willBeNotified => 'को सूचित किया जाएगा';
 
   @override
   String status_activeCount(int count) {
@@ -4930,21 +4941,21 @@ class AppLocalizationsHi extends AppLocalizations {
   String get status_whoCanSee => 'कौन देख सकता है?';
 
   @override
-  String get track_admin => 'एडमिन';
+  String get track_admin => 'व्यवस्थापक (एडमिन)';
 
   @override
   String get track_applyRadius => 'दायरा लागू करें';
 
   @override
   String get track_checkNetworkConnection =>
-      'कृपया अपना नेटवर्क कनेक्शन जांचें और फिर से कोशिश करें।';
+      'कृपया अपना नेटवर्क कनेक्शन जांचें और पुनः प्रयास करें।';
 
   @override
   String get track_checkNetworkMembers =>
-      'आसपास के सदस्य देखने के लिए अपना नेटवर्क जांचें और फिर से कोशिश करें।';
+      'आस-पास के सदस्यों को देखने के लिए कृपया अपना नेटवर्क जांचें और पुनः प्रयास करें।';
 
   @override
-  String get track_currentLocation => 'मौजूदा लोकेशन';
+  String get track_currentLocation => 'वर्तमान स्थान';
 
   @override
   String get track_custom => 'कस्टम';
@@ -4960,33 +4971,33 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get track_enable => 'चालू करें';
+  String get track_enable => 'सक्षम करें';
 
   @override
   String get track_enableGpsBody =>
-      'अपने ग्रुप को रियल टाइम में ट्रैक करने के लिए कृपया GPS चालू करें।';
+      'अपने समूह को वास्तविक समय में ट्रैक करने के लिए, कृपया अपना जीपीएस चालू करें।';
 
   @override
-  String get track_enableGpsTitle => 'GPS चालू करें';
+  String get track_enableGpsTitle => 'जीपीएस सक्षम करें';
 
   @override
-  String get track_errorFailedLoadGroups => 'ग्रुप लोड नहीं हो सके';
+  String get track_errorFailedLoadGroups => 'समूह लोड करने में विफल';
 
   @override
   String get track_errorLoadGroups =>
-      'ग्रुप लोड नहीं हो सके। कृपया फिर से कोशिश करें।';
+      'समूह लोड करने में असमर्थ। कृपया पुनः प्रयास करें।';
 
   @override
   String get track_errorLoadMembers =>
-      'आसपास के सदस्य लोड नहीं हो सके। कृपया फिर से कोशिश करें।';
+      'आस-पास के सदस्यों को लोड करने में असमर्थ। कृपया पुनः प्रयास करें।';
 
   @override
   String get track_errorNoInternet =>
-      'इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क जांचें।';
+      'कोई इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क जांचें।';
 
   @override
   String get track_errorServer =>
-      'सर्वर से कनेक्ट नहीं हो सका। कृपया फिर से कोशिश करें।';
+      'सर्वर से कनेक्ट करने में असमर्थ। कृपया पुनः प्रयास करें।';
 
   @override
   String track_groupCode(String code) {
@@ -4994,7 +5005,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get track_groupMembers => 'ग्रुप सदस्य';
+  String get track_groupMembers => 'समूह सदस्य';
 
   @override
   String track_groupMembersAndCode(int count, String code) {
@@ -5008,40 +5019,41 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get track_groupTab => 'ग्रुप';
+  String get track_groupTab => 'समूह';
 
   @override
   String track_groupsCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count ग्रुप',
-      one: '1 ग्रुप',
+      other: '$count समूह',
+      one: '1 समूह',
     );
     return '$_temp0';
   }
 
   @override
   String track_groupsHeader(int count) {
-    return 'ग्रुप ($count)';
+    return 'समूह ($count)';
   }
 
   @override
   String get track_helpGroupBody =>
-      'कई सदस्यों को ट्रैक करने के लिए ग्रुप बनाएं।';
+      'एकाधिक सदस्यों को ट्रैक करने के लिए एक समूह बनाएं।';
 
   @override
-  String get track_helpGroupTitle => 'ग्रुप कैसे जोड़ें?';
+  String get track_helpGroupTitle => 'समूह कैसे जोड़ें?';
 
   @override
-  String get track_helpLiveBody => 'मैप पर टीम की रियल-टाइम लोकेशन ट्रैक करें।';
+  String get track_helpLiveBody =>
+      'मानचित्र पर टीम के वास्तविक समय के स्थान को ट्रैक करें।';
 
   @override
   String get track_helpLiveTitle => 'लाइव ट्रैकिंग क्या है?';
 
   @override
   String get track_helpRadiusBody =>
-      'मैप पर आसपास के सदस्य ढूंढने के लिए क्षेत्र सेट करें।';
+      'मानचित्र पर आस-पास के सदस्यों को खोजने के लिए क्षेत्र सेट करें।';
 
   @override
   String get track_helpRadiusTitle => 'ट्रैकिंग दायरा क्या है?';
@@ -5051,7 +5063,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String track_lastSeen(String time) {
-    return 'आखिरी बार देखा गया: $time';
+    return 'अंतिम बार देखा गया: $time';
   }
 
   @override
@@ -5066,27 +5078,27 @@ class AppLocalizationsHi extends AppLocalizations {
   String get track_liveTracking => 'लाइव ट्रैकिंग';
 
   @override
-  String get track_locating => 'लोकेशन खोजी जा रही है...';
+  String get track_locating => 'स्थान खोज रहे हैं...';
 
   @override
-  String get track_locationHidden => 'लोकेशन छिपी है';
+  String get track_locationHidden => 'स्थान छिपा हुआ है';
 
   @override
-  String get track_locationUnavailable => 'लोकेशन उपलब्ध नहीं';
+  String get track_locationUnavailable => 'स्थान अनुपलब्ध है';
 
   @override
   String get track_mapOfflineBody =>
-      'लाइव मैप और सदस्यों की रियल-टाइम लोकेशन लोड करने के लिए इंटरनेट कनेक्शन ज़रूरी है।';
+      'लाइव मानचित्र डेटा और रीयल-टाइम सदस्य स्थान लोड करने के लिए इंटरनेट कनेक्शन आवश्यक है।';
 
   @override
-  String get track_mapUnavailableOffline => 'ऑफ़लाइन में मैप उपलब्ध नहीं';
+  String get track_mapUnavailableOffline => 'मानचित्र ऑफ़लाइन अनुपलब्ध है';
 
   @override
   String get track_member => 'सदस्य';
 
   @override
   String track_memberPausedSharing(String name) {
-    return '$name ने लोकेशन शेयरिंग रोक दी है। लाइव लोकेशन उपलब्ध नहीं है।';
+    return '$name ने स्थान साझाकरण रोक दिया है। लाइव स्थान उपलब्ध नहीं है।';
   }
 
   @override
@@ -5109,42 +5121,42 @@ class AppLocalizationsHi extends AppLocalizations {
   String get track_menuMembers => 'सदस्य';
 
   @override
-  String get track_menuRefreshMap => 'मैप रीफ़्रेश करें';
+  String get track_menuRefreshMap => 'मानचित्र रिफ्रेश करें';
 
   @override
   String get track_menuTheme => 'थीम';
 
   @override
-  String get track_nearbyYou => 'आपके आसपास';
+  String get track_nearbyYou => 'आपके आस-पास';
 
   @override
   String get track_noActiveMembers => 'कोई सक्रिय सदस्य नहीं';
 
   @override
   String track_noActiveMembersWithin(String radius) {
-    return '$radius के दायरे में कोई सक्रिय सदस्य नहीं मिला';
+    return '$radius के भीतर कोई सक्रिय सदस्य नहीं मिला';
   }
 
   @override
   String get track_noDescription => 'कोई विवरण नहीं';
 
   @override
-  String get track_noGroupsFound => 'कोई ग्रुप नहीं मिला';
+  String get track_noGroupsFound => 'कोई समूह नहीं मिला';
 
   @override
-  String get track_noGroupsMatch => 'कोई ग्रुप मेल नहीं खाता';
+  String get track_noGroupsMatch => 'कोई समूह मेल नहीं खाता';
 
   @override
   String track_noGroupsMatchQuery(String query) {
-    return '\'$query\' से कोई ग्रुप मेल नहीं खाता';
+    return 'कोई भी समूह \'$query\' से मेल नहीं खाता';
   }
 
   @override
   String get track_noGroupsYet =>
-      'आपने अभी तक कोई ग्रुप जॉइन नहीं किया है और न ही बनाया है।';
+      'आप अभी तक किसी भी समूह में शामिल नहीं हुए हैं या कोई समूह नहीं बनाया है।';
 
   @override
-  String get track_noInternetTitle => 'इंटरनेट कनेक्शन नहीं है';
+  String get track_noInternetTitle => 'कोई इंटरनेट कनेक्शन नहीं';
 
   @override
   String get track_noMembersFound => 'कोई सदस्य नहीं मिला';
@@ -5153,53 +5165,53 @@ class AppLocalizationsHi extends AppLocalizations {
   String get track_noMembersFoundPlain => 'कोई सदस्य नहीं मिला';
 
   @override
-  String get track_noMembersInGroup => 'इस ग्रुप में कोई सदस्य नहीं मिला';
+  String get track_noMembersInGroup => 'इस समूह में कोई सदस्य नहीं मिला';
 
   @override
   String track_noMembersMatch(String query) {
-    return '\'$query\' से कोई सदस्य मेल नहीं खाता';
+    return 'कोई भी सदस्य \'$query\' से मेल नहीं खाता';
   }
 
   @override
   String track_noSearchMatches(String query) {
-    return 'इससे मेल खाते कोई सदस्य या ग्रुप नहीं\n\'$query\'';
+    return 'कोई मेल खाते सदस्य या समूह नहीं';
   }
 
   @override
   String track_noSearchResults(String query) {
-    return '\'$query\' के लिए कोई सदस्य या ग्रुप नहीं मिला';
+    return '\'$query\' के लिए कोई सदस्य या समूह नहीं मिला';
   }
 
   @override
-  String get track_notAvailable => 'उपलब्ध नहीं';
+  String get track_notAvailable => 'लागू नहीं';
 
   @override
   String get track_offlineBanner =>
-      'इंटरनेट कनेक्शन नहीं है। मैप और ट्रैकिंग ऑफ़लाइन हैं।';
+      'कोई इंटरनेट कनेक्शन नहीं है। मानचित्र और ट्रैकिंग ऑफ़लाइन हैं।';
 
   @override
-  String get track_private => 'प्राइवेट';
+  String get track_private => 'निजी';
 
   @override
-  String get track_radius => 'दायरा';
+  String get track_radius => 'दायरा (रेडियस)';
 
   @override
-  String get track_refresh => 'रीफ़्रेश';
+  String get track_refresh => 'रिफ्रेश करें';
 
   @override
-  String get track_refreshing => 'रीफ़्रेश हो रहा है...';
+  String get track_refreshing => 'ताज़ा किया जा रहा है...';
 
   @override
-  String get track_retryConnection => 'फिर से कनेक्ट करें';
+  String get track_retryConnection => 'कनेक्शन पुनः प्रयास करें';
 
   @override
-  String get track_searchHint => 'सदस्य या ग्रुप खोजें...';
+  String get track_searchHint => 'सदस्य या समूह खोजें...';
 
   @override
   String get track_searchMembersHint => 'सदस्य खोजें...';
 
   @override
-  String get track_selectedLocation => 'चुनी गई लोकेशन';
+  String get track_selectedLocation => 'चयनित स्थान';
 
   @override
   String get track_setRadiusSubtitle =>
@@ -5209,23 +5221,23 @@ class AppLocalizationsHi extends AppLocalizations {
   String get track_setRadiusTitle => 'ट्रैकिंग दायरा सेट करें';
 
   @override
-  String get track_unableToLoadGroups => 'ग्रुप लोड नहीं हो सके';
+  String get track_unableToLoadGroups => 'समूह लोड करने में असमर्थ';
 
   @override
-  String get track_unableToLoadMembers => 'सदस्य लोड नहीं हो सके';
+  String get track_unableToLoadMembers => 'सदस्यों को लोड करने में असमर्थ';
 
   @override
-  String get track_unnamedGroup => 'बिना नाम का ग्रुप';
+  String get track_unnamedGroup => 'बिना नाम का समूह';
 
   @override
-  String get track_unnamedMember => 'बिना नाम का सदस्य';
+  String get track_unnamedMember => 'अनाम सदस्य';
 
   @override
-  String get track_yourGroups => 'आपके ग्रुप';
+  String get track_yourGroups => 'आपके समूह';
 
   @override
   String get track_yourLocationPaused =>
-      'आपकी लाइव लोकेशन शेयरिंग रुकी हुई है और प्राइवेट है।';
+      'आपका लाइव स्थान साझाकरण रुका हुआ और निजी है।';
 
   @override
   String get util_previewContact => '👤 संपर्क';
@@ -5294,19 +5306,19 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get voice_appLanguage => 'ऐप भाषा';
+  String get voice_appLanguage => 'ऐप की भाषा';
 
   @override
   String get voice_audioChip => 'ऑडियो';
 
   @override
-  String get voice_captionReady => 'कैप्शन तैयार';
+  String get voice_captionReady => 'कैप्शन तैयार है';
 
   @override
-  String get voice_chooseSpeechLanguage => 'बोलने की भाषा चुनें';
+  String get voice_chooseSpeechLanguage => 'भाषण की भाषा चुनें';
 
   @override
-  String get voice_couldntPlay => 'वॉइस मैसेज नहीं चल सका';
+  String get voice_couldntPlay => 'वॉइस संदेश चलाया नहीं जा सका';
 
   @override
   String get voice_didntCatch =>
@@ -5316,34 +5328,35 @@ class AppLocalizationsHi extends AppLocalizations {
   String get voice_language => 'भाषा';
 
   @override
-  String get voice_listenBack => 'वापस सुनें';
+  String get voice_listenBack => 'फिर से सुनें';
 
   @override
-  String get voice_listenBeforeSending => 'वॉइस मैसेज भेजने से पहले सुन लें।';
+  String get voice_listenBeforeSending =>
+      'अपना वॉइस संदेश भेजने से पहले सुनें।';
 
   @override
   String get voice_listening => 'सुन रहे हैं…';
 
   @override
   String get voice_micPermissionNeeded =>
-      'आवाज़ इस्तेमाल करने के लिए माइक्रोफ़ोन की अनुमति ज़रूरी है।';
+      'वॉइस का उपयोग करने के लिए माइक्रोफ़ोन अनुमति आवश्यक है।';
 
   @override
   String get voice_micUnavailable =>
-      'माइक्रोफ़ोन उपलब्ध नहीं है। कृपया सेटिंग्स जांचें।';
+      'माइक्रोफ़ोन अनुपलब्ध है। कृपया सेटिंग्स जांचें।';
 
   @override
   String get voice_noTextCaptured =>
-      'कोई टेक्स्ट नहीं मिला — दोबारा रिकॉर्ड करें।';
+      'कोई टेक्स्ट कैप्चर नहीं हुआ — पुनः रिकॉर्ड करने का प्रयास करें।';
 
   @override
   String get voice_openSettings => 'सेटिंग्स खोलें';
 
   @override
-  String get voice_permissionRequired => 'अनुमति ज़रूरी है';
+  String get voice_permissionRequired => 'अनुमति आवश्यक है';
 
   @override
-  String get voice_reRecord => 'दोबारा रिकॉर्ड करें';
+  String get voice_reRecord => 'फिर से रिकॉर्ड करें';
 
   @override
   String get voice_readyToSend => 'भेजने के लिए तैयार';
@@ -5353,23 +5366,23 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get voice_recordVoiceSubtitle =>
-      'रिकॉर्ड करें और ऑडियो मैसेज के रूप में भेजें';
+      'रिकॉर्ड करें और ऑडियो संदेश के रूप में भेजें';
 
   @override
-  String get voice_recordingYourVoice => 'आपकी आवाज़ रिकॉर्ड हो रही है…';
+  String get voice_recordingYourVoice => 'आपकी आवाज़ रिकॉर्ड की जा रही है…';
 
   @override
-  String get voice_replyReady => 'जवाब तैयार';
+  String get voice_replyReady => 'उत्तर तैयार है';
 
   @override
   String get voice_reviewTextHint =>
-      'भेजने से पहले ऊपर अपनी आवाज़ सुनें या मैसेज बॉक्स में टेक्स्ट बदलें।';
+      'ऊपर अपनी आवाज़ सुनें, या भेजने से पहले संदेश बॉक्स में टेक्स्ट संपादित करें।';
 
   @override
-  String get voice_sendMessage => 'मैसेज भेजें';
+  String get voice_sendMessage => 'संदेश भेजें';
 
   @override
-  String get voice_sendVoiceMessage => 'वॉइस मैसेज भेजें';
+  String get voice_sendVoiceMessage => 'वॉइस संदेश भेजें';
 
   @override
   String get voice_speakNowCaption =>
@@ -5377,56 +5390,58 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get voice_speakNowMessage =>
-      'अब बोलें – आपके शब्द मैसेज बॉक्स में दिखेंगे';
+      'अब बोलें – आपके शब्द संदेश बॉक्स में दिखाई देंगे';
 
   @override
-  String get voice_speakNowReply => 'अब बोलें – हम आपका जवाब टाइप कर रहे हैं';
+  String get voice_speakNowReply => 'अब बोलें – हम आपका उत्तर टाइप कर रहे हैं';
 
   @override
-  String get voice_speakPlaceholder => 'बोलिए… टेक्स्ट यहाँ दिखेगा';
+  String get voice_speakPlaceholder => 'बोलें… आपका टेक्स्ट यहां दिखाई देगा';
 
   @override
   String get voice_speechPermissionNeeded =>
-      'आवाज़ को टेक्स्ट में बदलने के लिए स्पीच रिकग्निशन की अनुमति ज़रूरी है।';
+      'आवाज़ को टेक्स्ट में बदलने के लिए वाक् पहचान अनुमति आवश्यक है।';
 
   @override
   String get voice_tapToStop => 'रोकने के लिए टैप करें';
 
   @override
-  String get voice_textReady => 'टेक्स्ट तैयार';
+  String get voice_textReady => 'टेक्स्ट तैयार है';
 
   @override
-  String get voice_tooMuchNoise => 'बहुत शोर है – फ़ोन पास रखें और साफ़ बोलें';
+  String get voice_tooMuchNoise =>
+      'बहुत अधिक शोर है – फ़ोन को पास रखें और स्पष्ट बोलें';
 
   @override
-  String get voice_type => 'टाइप';
+  String get voice_type => 'प्रकार';
 
   @override
-  String get voice_voiceToText => 'वॉइस से टेक्स्ट';
+  String get voice_voiceToText => 'आवाज़ से टेक्स्ट';
 
   @override
-  String get voice_voiceToTextSubtitle => 'बोलें और मैसेज बॉक्स में टाइप करें';
+  String get voice_voiceToTextSubtitle =>
+      'बोलें और संदेश बॉक्स में टाइप करवाएं';
 
   @override
   String get voice_willSendAudioMessage =>
-      'आपकी आवाज़ ऑडियो मैसेज के रूप में भेजी जाएगी';
+      'आपकी आवाज़ ऑडियो संदेश के रूप में भेजी जाएगी';
 
   @override
   String get voice_willSendAudioReply =>
-      'आपकी आवाज़ ऑडियो जवाब के रूप में भेजी जाएगी';
+      'आपकी आवाज़ ऑडियो उत्तर के रूप में भेजी जाएगी';
 
   @override
   String get voice_willSendWithFile =>
       'आपकी आवाज़ फ़ाइल के साथ ऑडियो के रूप में भेजी जाएगी';
 
   @override
-  String get voice_yourMessage => 'आपका मैसेज';
+  String get voice_yourMessage => 'आपका संदेश';
 
   @override
-  String get voice_yourVoiceMessage => 'आपका वॉइस मैसेज';
+  String get voice_yourVoiceMessage => 'आपका वॉइस संदेश';
 
   @override
-  String get walkiePlan_availableIndividualPlans => 'व्यक्तिगत प्लान';
+  String get walkiePlan_availableIndividualPlans => 'व्यक्तिगत योजनाएं';
 
   @override
   String get walkiePlan_availablePerMonth => '/ महीना';
@@ -5435,31 +5450,31 @@ class AppLocalizationsHi extends AppLocalizations {
   String get walkiePlan_availablePerSeat => '/ सीट';
 
   @override
-  String get walkiePlan_availableSingleMember => 'एक सदस्य (निजी एक्सेस)';
+  String get walkiePlan_availableSingleMember => 'एकल सदस्य (व्यक्तिगत पहुंच)';
 
   @override
   String get walkiePlan_availableSubtitle =>
-      'सब्सक्रिप्शन शुरू या अपग्रेड करने के लिए प्लान चुनें';
+      'अपनी सदस्यता शुरू करने या अपग्रेड करने के लिए योजना चुनें';
 
   @override
-  String get walkiePlan_availableTeamPlans => 'टीम प्लान';
+  String get walkiePlan_availableTeamPlans => 'टीम योजनाएं';
 
   @override
   String walkiePlan_availableTeamSeats(int min, int max) {
-    return '$min-$max सीटें  •  ग्रुप सहयोग';
+    return '$min-$max सीटें  •  समूह सहयोग';
   }
 
   @override
-  String get walkiePlan_availableTitle => 'उपलब्ध प्लान';
+  String get walkiePlan_availableTitle => 'उपलब्ध योजनाएं';
 
   @override
-  String get walkiePlan_bottomBarAfterTrial => 'फ्री ट्रायल के बाद';
+  String get walkiePlan_bottomBarAfterTrial => 'आपके मुफ़्त परीक्षण के बाद';
 
   @override
-  String get walkiePlan_bottomBarChoosePlan => 'प्लान चुनें';
+  String get walkiePlan_bottomBarChoosePlan => 'एक योजना चुनें';
 
   @override
-  String get walkiePlan_bottomBarContinue => 'वॉकी-टॉकी के साथ जारी रखें';
+  String get walkiePlan_bottomBarContinue => 'वॉकी टॉकी के साथ जारी रखें';
 
   @override
   String walkiePlan_bottomBarPricePer(String price, String period) {
@@ -5472,49 +5487,49 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get walkiePlan_cardActive => 'चालू';
+  String get walkiePlan_cardActive => 'सक्रिय';
 
   @override
   String walkiePlan_cardActiveSince(String date) {
-    return '$date से चालू';
+    return '$date से सक्रिय';
   }
 
   @override
-  String get walkiePlan_cardAssigned => 'असाइन की गईं';
+  String get walkiePlan_cardAssigned => 'असाइन किया गया';
 
   @override
   String walkiePlan_cardAssignedBy(String name) {
-    return '$name द्वारा असाइन किया गया';
+    return '$name द्वारा सौंपा गया';
   }
 
   @override
-  String get walkiePlan_cardAssignedToYou => 'आपको असाइन किया गया';
+  String get walkiePlan_cardAssignedToYou => 'आपको सौंपा गया';
 
   @override
   String get walkiePlan_cardAvailable => 'उपलब्ध';
 
   @override
-  String get walkiePlan_cardManageMembers => 'सदस्य मैनेज करें';
+  String get walkiePlan_cardManageMembers => 'सदस्यों को प्रबंधित करें';
 
   @override
   String get walkiePlan_cardNoActiveIndividual =>
-      'कोई चालू व्यक्तिगत सब्सक्रिप्शन नहीं';
+      'कोई सक्रिय व्यक्तिगत सदस्यता नहीं है';
 
   @override
   String get walkiePlan_cardNoActiveTeam =>
-      'कोई चालू टीम प्लान या असाइन की गई सीट नहीं';
+      'कोई सक्रिय टीम योजना या सौंपी गई सीट नहीं है';
 
   @override
   String get walkiePlan_cardOneSeatSelf => '1 सीट (स्वयं)';
 
   @override
-  String get walkiePlan_cardPersonal => 'निजी';
+  String get walkiePlan_cardPersonal => 'व्यक्तिगत';
 
   @override
-  String get walkiePlan_cardPurchased => 'खरीदी गईं';
+  String get walkiePlan_cardPurchased => 'खरीदा गया';
 
   @override
-  String get walkiePlan_cardPurchasedByYou => 'आपने खरीदा';
+  String get walkiePlan_cardPurchasedByYou => 'आपके द्वारा खरीदा गया';
 
   @override
   String get walkiePlan_cardPurchasedOn => 'खरीद की तारीख';
@@ -5523,19 +5538,20 @@ class AppLocalizationsHi extends AppLocalizations {
   String get walkiePlan_cardSeatsMembers => 'सीटें / सदस्य';
 
   @override
-  String get walkiePlan_cardSubscribedByYou => 'आपने सब्सक्राइब किया';
+  String get walkiePlan_cardSubscribedByYou =>
+      'आपके द्वारा सब्सक्राइब किया गया';
 
   @override
-  String get walkiePlan_cardTeamAdministrator => 'टीम एडमिनिस्ट्रेटर';
+  String get walkiePlan_cardTeamAdministrator => 'टीम व्यवस्थापक';
 
   @override
-  String get walkiePlan_cardValidUntil => 'मान्य तक';
+  String get walkiePlan_cardValidUntil => 'वैधता तिथि';
 
   @override
   String get walkiePlan_cardView => 'देखें';
 
   @override
-  String get walkiePlan_cardViewPlan => 'प्लान देखें';
+  String get walkiePlan_cardViewPlan => 'योजना देखें';
 
   @override
   String walkiePlan_couponDiscount(String value) {
@@ -5543,11 +5559,11 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get walkiePlan_couponExpired => 'कूपन की अवधि समाप्त हो गई है';
+  String get walkiePlan_couponExpired => 'कूपन समाप्त हो गया है';
 
   @override
   String walkiePlan_couponFlatOff(String amount) {
-    return 'फ्लैट $amount की छूट';
+    return 'सीधे $amount की छूट';
   }
 
   @override
@@ -5555,10 +5571,11 @@ class AppLocalizationsHi extends AppLocalizations {
       'न्यूनतम ऑर्डर राशि पूरी नहीं हुई';
 
   @override
-  String get walkiePlan_couponNotEligible => 'मौजूदा प्लान के लिए मान्य नहीं';
+  String get walkiePlan_couponNotEligible =>
+      'वर्तमान योजना के लिए पात्र नहीं है';
 
   @override
-  String get walkiePlan_couponNotStarted => 'कूपन ऑफ़र अभी शुरू नहीं हुआ है';
+  String get walkiePlan_couponNotStarted => 'कूपन ऑफ़र अभी सक्रिय नहीं है';
 
   @override
   String walkiePlan_couponPercentOff(int percent) {
@@ -5566,7 +5583,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get walkiePlan_couponPlanNotApplicable => 'इस प्लान पर लागू नहीं';
+  String get walkiePlan_couponPlanNotApplicable => 'इस योजना पर लागू नहीं है';
 
   @override
   String walkiePlan_couponValidTill(String date) {
@@ -5574,57 +5591,57 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get walkiePlan_ctrlContinueToPayment => 'पेमेंट के लिए आगे बढ़ें';
+  String get walkiePlan_ctrlContinueToPayment => 'भुगतान के लिए आगे बढ़ें';
 
   @override
   String walkiePlan_ctrlContinueWith(String plan) {
-    return '$plan के साथ आगे बढ़ें';
+    return '$plan के साथ जारी रखें';
   }
 
   @override
-  String get walkiePlan_ctrlCouponApplied => 'कूपन सफलतापूर्वक लागू हो गया!';
+  String get walkiePlan_ctrlCouponApplied => 'कूपन सफलतापूर्वक लागू हुआ!';
 
   @override
   String walkiePlan_ctrlCouponAppliedSave(String amount) {
-    return 'कूपन लागू हो गया! आप $amount बचाते हैं';
+    return 'कूपन लागू हुआ! आप $amount बचाते हैं';
   }
 
   @override
-  String get walkiePlan_ctrlCouponFailed => 'कूपन लागू नहीं हो सका';
+  String get walkiePlan_ctrlCouponFailed => 'कूपन लागू करने में विफल';
 
   @override
   String get walkiePlan_ctrlCouponRemoved => 'कूपन हटा दिया गया';
 
   @override
   String walkiePlan_ctrlGatewayError(String code) {
-    return 'Cashfree त्रुटि ($code)';
+    return 'कैशफ़्री त्रुटि ($code)';
   }
 
   @override
-  String get walkiePlan_ctrlGatewayInitFailed => 'पेमेंट शुरू नहीं हो सका।';
+  String get walkiePlan_ctrlGatewayInitFailed => 'भुगतान आरंभ विफल रहा।';
 
   @override
   String walkiePlan_ctrlGatewaySessionFailed(String error) {
-    return 'पेमेंट सेशन नहीं बन सका: $error';
+    return 'भुगतान सत्र बनाने में विफल: $error';
   }
 
   @override
   String walkiePlan_ctrlGatewayUnableToProcess(String error) {
-    return 'पेमेंट प्रोसेस नहीं हो सका: $error';
+    return 'भुगतान संसाधित करने में असमर्थ: $error';
   }
 
   @override
-  String get walkiePlan_ctrlLoadingPlans => 'प्लान लोड हो रहे हैं...';
+  String get walkiePlan_ctrlLoadingPlans => 'योजनाएं लोड हो रही हैं...';
 
   @override
   String get walkiePlan_ctrlUnableToLoadPlans =>
-      'प्लान लोड नहीं हो सके। कृपया फिर से कोशिश करें।';
+      'योजनाएं लोड करने में असमर्थ। कृपया पुनः प्रयास करें।';
 
   @override
-  String get walkiePlan_detailsAllBanks => 'सभी भारतीय बैंक समर्थित';
+  String get walkiePlan_detailsAllBanks => 'सभी भारतीय बैंक समर्थित हैं';
 
   @override
-  String get walkiePlan_detailsApplied => 'लागू है';
+  String get walkiePlan_detailsApplied => 'लागू किया गया';
 
   @override
   String get walkiePlan_detailsApply => 'लागू करें';
@@ -5639,7 +5656,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get walkiePlan_detailsCard => 'क्रेडिट / डेबिट कार्ड';
 
   @override
-  String get walkiePlan_detailsChooseTitle => 'प्लान चुनें';
+  String get walkiePlan_detailsChooseTitle => 'एक योजना चुनें';
 
   @override
   String walkiePlan_detailsCodeLabel(String code) {
@@ -5650,43 +5667,45 @@ class AppLocalizationsHi extends AppLocalizations {
   String get walkiePlan_detailsCouponsOffers => 'कूपन और ऑफ़र';
 
   @override
-  String get walkiePlan_detailsEnterCouponHint => 'कूपन कोड डालें';
+  String get walkiePlan_detailsEnterCouponHint => 'कूपन कोड दर्ज करें';
 
   @override
-  String get walkiePlan_detailsEnterValidCoupon => 'कृपया सही कूपन कोड डालें';
+  String get walkiePlan_detailsEnterValidCoupon =>
+      'कृपया एक वैध कूपन कोड दर्ज करें';
 
   @override
-  String get walkiePlan_detailsFeatGroupComm => 'ग्रुप में बातचीत';
+  String get walkiePlan_detailsFeatGroupComm => 'समूह संचार';
 
   @override
-  String get walkiePlan_detailsFeatHqVoice => 'हाई क्वालिटी आवाज़';
+  String get walkiePlan_detailsFeatHqVoice => 'उच्च गुणवत्ता वाली आवाज़';
 
   @override
-  String get walkiePlan_detailsFeatPrioritySupport => 'प्राथमिकता सपोर्ट';
+  String get walkiePlan_detailsFeatPrioritySupport => 'प्राथमिकता सहायता';
 
   @override
-  String get walkiePlan_detailsFeatUnlimitedRange => 'अनलिमिटेड रेंज';
+  String get walkiePlan_detailsFeatUnlimitedRange => 'असीमित रेंज';
 
   @override
-  String get walkiePlan_detailsFeatUnlimitedWalkie => 'अनलिमिटेड वॉकी-टॉकी';
+  String get walkiePlan_detailsFeatUnlimitedWalkie => 'असीमित वॉकी टॉकी';
 
   @override
-  String get walkiePlan_detailsHavePromoCode => 'प्रोमो कोड है?';
+  String get walkiePlan_detailsHavePromoCode =>
+      'क्या आपके पास कोई प्रोमो कोड है?';
 
   @override
   String get walkiePlan_detailsIndividualSubtitle =>
-      'अपनी टीम के लिए सही प्लान के साथ वॉकी-टॉकी का उपयोग जारी रखें';
+      'अपनी टीम के अनुकूल योजना के साथ वॉकी टॉकी का उपयोग जारी रखें';
 
   @override
-  String get walkiePlan_detailsLockedCaps => 'लॉक';
+  String get walkiePlan_detailsLockedCaps => 'लॉक्ड';
 
   @override
   String walkiePlan_detailsMaxMembersReached(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'अधिकतम $count सदस्यों की सीमा पूरी हो गई',
-      one: 'अधिकतम 1 सदस्य की सीमा पूरी हो गई',
+      other: 'अधिकतम $count सदस्यों की सीमा समाप्त हो गई',
+      one: 'अधिकतम 1 सदस्य की सीमा समाप्त हो गई',
     );
     return '$_temp0';
   }
@@ -5713,18 +5732,18 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'टीम में कम से कम $count सदस्य होने चाहिए',
-      one: 'टीम में कम से कम 1 सदस्य होना चाहिए',
+      other: 'न्यूनतम टीम आकार $count सदस्य है',
+      one: 'न्यूनतम टीम आकार 1 सदस्य है',
     );
     return '$_temp0';
   }
 
   @override
   String get walkiePlan_detailsMoreMembersBody =>
-      'कभी भी सदस्य जोड़ें या हटाएं।';
+      'किसी भी समय सदस्यों को जोड़ें या निकालें।';
 
   @override
-  String get walkiePlan_detailsMoreMembersTitle => 'और सदस्य?';
+  String get walkiePlan_detailsMoreMembersTitle => 'अधिक सदस्य?';
 
   @override
   String get walkiePlan_detailsMostPopular => 'सबसे लोकप्रिय';
@@ -5734,73 +5753,74 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get walkiePlan_detailsNoCouponsBody =>
-      'इस प्लान के लिए अभी कोई सक्रिय कूपन नहीं है।';
+      'इस समय इस योजना के लिए कोई सक्रिय कूपन नहीं हैं।';
 
   @override
-  String get walkiePlan_detailsNoCouponsTitle => 'कोई कूपन उपलब्ध नहीं';
+  String get walkiePlan_detailsNoCouponsTitle => 'कोई कूपन उपलब्ध नहीं है';
 
   @override
   String get walkiePlan_detailsNoIndividualPlans =>
-      'अभी कोई व्यक्तिगत वॉकी-टॉकी प्लान उपलब्ध नहीं है। कृपया बाद में देखें या फिर से कोशिश करें।';
+      'वर्तमान में कोई व्यक्तिगत वॉकी-टॉकी योजनाएं उपलब्ध नहीं हैं। कृपया बाद में जांचें या पुनः प्रयास करें।';
 
   @override
-  String get walkiePlan_detailsNoPlansTitle => 'कोई प्लान उपलब्ध नहीं';
+  String get walkiePlan_detailsNoPlansTitle => 'कोई योजना उपलब्ध नहीं है';
 
   @override
   String get walkiePlan_detailsNoTeamPlans =>
-      'अभी कोई टीम वॉकी-टॉकी प्लान उपलब्ध नहीं है। कृपया बाद में देखें या फिर से कोशिश करें।';
+      'वर्तमान में कोई टीम वॉकी-टॉकी योजनाएं उपलब्ध नहीं हैं। कृपया बाद में जांचें या पुनः प्रयास करें।';
 
   @override
   String walkiePlan_detailsOriginalTotal(String amount) {
-    return 'कुल $amount';
+    return '$amount कुल';
   }
 
   @override
-  String get walkiePlan_detailsPayActivate => 'पेमेंट करें और प्लान चालू करें';
+  String get walkiePlan_detailsPayActivate =>
+      'भुगतान करें और योजना सक्रिय करें';
 
   @override
   String get walkiePlan_detailsPerPerson => '/ व्यक्ति';
 
   @override
-  String get walkiePlan_detailsPillAllSizes => 'टीमों के लिए';
+  String get walkiePlan_detailsPillAllSizes => 'सभी आकारों के';
 
   @override
-  String get walkiePlan_detailsPillCommunication => 'बातचीत';
+  String get walkiePlan_detailsPillCommunication => 'संचार';
 
   @override
-  String get walkiePlan_detailsPillForTeams => 'हर आकार की';
+  String get walkiePlan_detailsPillForTeams => 'टीमों के लिए';
 
   @override
-  String get walkiePlan_detailsPillInstant => 'तुरंत';
+  String get walkiePlan_detailsPillInstant => 'त्वरित';
 
   @override
   String get walkiePlan_detailsPillPriority => 'प्राथमिकता';
 
   @override
-  String get walkiePlan_detailsPillReliable => 'भरोसेमंद और';
+  String get walkiePlan_detailsPillReliable => 'विश्वसनीय और';
 
   @override
   String get walkiePlan_detailsPillSecure => 'सुरक्षित';
 
   @override
-  String get walkiePlan_detailsPillSupport => 'सपोर्ट';
+  String get walkiePlan_detailsPillSupport => 'सहायता';
 
   @override
-  String get walkiePlan_detailsPillUnlimited => 'अनलिमिटेड';
+  String get walkiePlan_detailsPillUnlimited => 'असीमित';
 
   @override
-  String get walkiePlan_detailsPillWalkieTalkie => 'वॉकी-टॉकी';
+  String get walkiePlan_detailsPillWalkieTalkie => 'वॉकी टॉकी';
 
   @override
   String get walkiePlan_detailsPlanActivated =>
-      'प्लान सफलतापूर्वक चालू हो गया!';
+      'योजना सफलतापूर्वक सक्रिय की गई!';
 
   @override
   String get walkiePlan_detailsPlanActiveBody =>
-      'आपका वॉकी-टॉकी प्लान अब चालू है। बिना रुकावट तुरंत वॉइस बातचीत का आनंद लें।';
+      'आपकी वॉकी टॉकी योजना अब सक्रिय है। निर्बाध त्वरित वॉइस संचार का आनंद लें।';
 
   @override
-  String get walkiePlan_detailsPlanSummary => 'प्लान सारांश';
+  String get walkiePlan_detailsPlanSummary => 'योजना सारांश';
 
   @override
   String walkiePlan_detailsPromoApplied(String code) {
@@ -5811,59 +5831,60 @@ class AppLocalizationsHi extends AppLocalizations {
   String get walkiePlan_detailsRemoveCaps => 'हटाएं';
 
   @override
-  String get walkiePlan_detailsSelectPaymentMethod => 'पेमेंट का तरीका चुनें';
+  String get walkiePlan_detailsSelectPaymentMethod => 'भुगतान विधि चुनें';
 
   @override
   String get walkiePlan_detailsSkeletonCouponNote =>
-      'सभी प्लान पर मान्य • जल्द समाप्त';
+      'सभी योजनाओं पर मान्य • जल्द समाप्त हो रहा है';
 
   @override
   String get walkiePlan_detailsStep1Subtitle =>
-      'चुनें कि आप टीम में कितने सदस्य जोड़ना चाहते हैं';
+      'चुनें कि आप कितने टीम सदस्यों को जोड़ना चाहते हैं';
 
   @override
   String get walkiePlan_detailsStep1Title => 'सदस्यों की संख्या चुनें';
 
   @override
-  String get walkiePlan_detailsStep2Subtitle => 'अपने लिए सही प्लान अवधि चुनें';
+  String get walkiePlan_detailsStep2Subtitle =>
+      'वह योजना अवधि चुनें जो आपके लिए उपयुक्त हो';
 
   @override
-  String get walkiePlan_detailsStep2Title => 'प्लान की अवधि चुनें';
+  String get walkiePlan_detailsStep2Title => 'योजना की अवधि चुनें';
 
   @override
-  String get walkiePlan_detailsSubtitleDefault => 'तुरंत वॉकी-टॉकी वॉइस एक्सेस';
+  String get walkiePlan_detailsSubtitleDefault => 'त्वरित वॉकी टॉकी वॉइस पहुंच';
 
   @override
   String get walkiePlan_detailsSubtitleGrowingTeams =>
-      'बढ़ती टीमों के लिए किफ़ायती';
+      'बढ़ती टीमों के लिए बेहतरीन मूल्य';
 
   @override
   String get walkiePlan_detailsSubtitleLongTerm =>
-      'लंबे समय के उपयोग के लिए सबसे अच्छा';
+      'दीर्घकालिक उपयोग के लिए सर्वश्रेष्ठ';
 
   @override
   String get walkiePlan_detailsSubtitleShortTerm =>
-      'कम समय के उपयोग के लिए बेहतरीन';
+      'अल्पकालिक उपयोग के लिए बिल्कुल सही';
 
   @override
   String get walkiePlan_detailsTabIndividual => 'व्यक्तिगत';
 
   @override
-  String get walkiePlan_detailsTabMultipleMembers => 'कई सदस्यों के लिए';
+  String get walkiePlan_detailsTabMultipleMembers => 'एकाधिक सदस्यों के लिए';
 
   @override
   String get walkiePlan_detailsTabPerPerson => 'प्रति व्यक्ति';
 
   @override
   String get walkiePlan_detailsTeamSubtitle =>
-      'टीम के सदस्य जोड़ें और वॉकी-टॉकी से सबको जोड़ें';
+      'टीम के सदस्यों को जोड़ें और सभी को वॉकी टॉकी से जोड़ें';
 
   @override
   String get walkiePlan_detailsUpiQr => 'UPI / QR कोड';
 
   @override
   String walkiePlan_detailsYouSaveWithCoupon(String amount) {
-    return 'इस कूपन से आप $amount बचाते हैं!';
+    return 'आप इस कूपन से $amount बचाते हैं!';
   }
 
   @override
@@ -5890,19 +5911,19 @@ class AppLocalizationsHi extends AppLocalizations {
   String get walkiePlan_durationYearly => 'वार्षिक';
 
   @override
-  String get walkiePlan_individualPlan => 'व्यक्तिगत प्लान';
+  String get walkiePlan_individualPlan => 'व्यक्तिगत योजना';
 
   @override
   String walkiePlan_intervalPlan(String interval) {
-    return '$interval प्लान';
+    return '$interval योजना';
   }
 
   @override
-  String get walkiePlan_monthlyPlan => 'मासिक प्लान';
+  String get walkiePlan_monthlyPlan => 'मासिक योजना';
 
   @override
   String get walkiePlan_noInternetCheckNetwork =>
-      'इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क जांचें।';
+      'कोई इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क जांचें।';
 
   @override
   String get walkiePlan_order100Secure => '100% सुरक्षित';
@@ -5911,7 +5932,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get walkiePlan_order3ds2Secure => '3DS2 सुरक्षित';
 
   @override
-  String get walkiePlan_orderAgreePrefix => 'आगे बढ़कर, आप सहमत हैं: ';
+  String get walkiePlan_orderAgreePrefix =>
+      'आगे बढ़कर, आप हमारी सहमति देते हैं ';
 
   @override
   String get walkiePlan_orderAmountAfterDiscount => 'छूट के बाद राशि';
@@ -5920,11 +5942,11 @@ class AppLocalizationsHi extends AppLocalizations {
   String get walkiePlan_orderCards => 'कार्ड';
 
   @override
-  String get walkiePlan_orderChangeMethod => 'तरीका बदलें';
+  String get walkiePlan_orderChangeMethod => 'विधि बदलें';
 
   @override
   String get walkiePlan_orderCouldNotStart =>
-      'पेमेंट शुरू नहीं हो सका। कृपया फिर से कोशिश करें।';
+      'भुगतान शुरू नहीं किया जा सका। कृपया पुनः प्रयास करें।';
 
   @override
   String get walkiePlan_orderCouponApplied => 'कूपन सफलतापूर्वक लागू हुआ!';
@@ -5935,11 +5957,11 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get walkiePlan_orderCouponRemoved => 'कूपन हटा दिया गया';
+  String get walkiePlan_orderCouponRemoved => 'कूपन सफलतापूर्वक हटा दिया गया';
 
   @override
   String get walkiePlan_orderCreateFailed =>
-      'पेमेंट ऑर्डर नहीं बन सका। कृपया फिर से कोशिश करें।';
+      'भुगतान आदेश बनाने में विफल। कृपया पुनः प्रयास करें।';
 
   @override
   String get walkiePlan_orderDiscount => 'छूट';
@@ -5951,32 +5973,33 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get walkiePlan_orderDomesticHint =>
-      'अगले चरण में GPay, PhonePe, कार्ड, नेटबैंकिंग या वॉलेट में से चुनें।';
+      'अगले चरण पर GPay, PhonePe, कार्ड, नेटबैंकिंग या वॉलेट में से चुनें।';
 
   @override
-  String get walkiePlan_orderEncryptedPayment => 'एन्क्रिप्टेड पेमेंट';
+  String get walkiePlan_orderEncryptedPayment => 'एन्क्रिप्टेड भुगतान';
 
   @override
-  String get walkiePlan_orderEnterValidCoupon => 'कृपया सही कूपन कोड डालें';
+  String get walkiePlan_orderEnterValidCoupon =>
+      'कृपया एक वैध कूपन कोड दर्ज करें';
 
   @override
-  String get walkiePlan_orderForMultipleMembers => 'कई सदस्यों के लिए';
+  String get walkiePlan_orderForMultipleMembers => 'एकाधिक सदस्यों के लिए';
 
   @override
-  String get walkiePlan_orderForSingleMember => 'एक सदस्य के लिए';
+  String get walkiePlan_orderForSingleMember => 'एकल सदस्य के लिए';
 
   @override
   String walkiePlan_orderGstTitle(String percent) {
-    return 'GST ($percent%)';
+    return 'जीएसटी ($percent%)';
   }
 
   @override
   String get walkiePlan_orderIntlHint =>
-      'अंतरराष्ट्रीय क्रेडिट/डेबिट कार्ड (Visa, Mastercard, Amex) से सुरक्षित पेमेंट करें।';
+      'अंतर्राष्ट्रीय क्रेडिट/डेबिट कार्ड (Visa, Mastercard, Amex) से सुरक्षित भुगतान करें।';
 
   @override
   String get walkiePlan_orderIntlHintPaypal =>
-      'अंतरराष्ट्रीय क्रेडिट/डेबिट कार्ड (Visa, Mastercard, Amex) या PayPal से सुरक्षित पेमेंट करें।';
+      'अंतर्राष्ट्रीय क्रेडिट/डेबिट कार्ड (Visa, Mastercard, Amex) या PayPal से सुरक्षित भुगतान करें।';
 
   @override
   String get walkiePlan_orderInvalidCoupon => 'अमान्य या समाप्त कूपन कोड';
@@ -6010,44 +6033,45 @@ class AppLocalizationsHi extends AppLocalizations {
   String get walkiePlan_orderNetBanking => 'नेटबैंकिंग';
 
   @override
-  String get walkiePlan_orderOnlineViaRazorpay => 'Razorpay से ऑनलाइन पेमेंट';
+  String get walkiePlan_orderOnlineViaRazorpay =>
+      'रेज़रपे के माध्यम से ऑनलाइन भुगतान';
 
   @override
   String get walkiePlan_orderOpeningCheckout =>
-      'Razorpay पेमेंट चेकआउट खुल रहा है...';
+      'रेज़रपे भुगतान चेकआउट खोला जा रहा है...';
 
   @override
-  String get walkiePlan_orderPaymentDetails => 'पेमेंट विवरण';
+  String get walkiePlan_orderPaymentDetails => 'भुगतान विवरण';
 
   @override
-  String get walkiePlan_orderPaymentMethod => 'पेमेंट का तरीका';
+  String get walkiePlan_orderPaymentMethod => 'भुगतान विधि';
 
   @override
-  String get walkiePlan_orderPricePerMember => 'प्रति सदस्य कीमत';
+  String get walkiePlan_orderPricePerMember => 'प्रति सदस्य मूल्य';
 
   @override
   String walkiePlan_orderProceedToPay(String amount) {
-    return 'पेमेंट करें • $amount';
+    return 'भुगतान के लिए आगे बढ़ें • $amount';
   }
 
   @override
-  String get walkiePlan_orderProcessingPayment => 'पेमेंट प्रोसेस हो रहा है...';
+  String get walkiePlan_orderProcessingPayment => 'भुगतान संसाधित हो रहा है...';
 
   @override
-  String get walkiePlan_orderRetryPay => 'फिर से पेमेंट करें';
+  String get walkiePlan_orderRetryPay => 'पुनः भुगतान करें';
 
   @override
   String get walkiePlan_orderSecureBadge => 'सुरक्षित';
 
   @override
   String get walkiePlan_orderSubtitle =>
-      'अपने प्लान की जानकारी देखें और पेमेंट करें';
+      'अपनी योजना के विवरण की समीक्षा करें और भुगतान के लिए आगे बढ़ें';
 
   @override
-  String get walkiePlan_orderSubtotal => 'उप-योग';
+  String get walkiePlan_orderSubtotal => 'उप-योग (सबटोटल)';
 
   @override
-  String get walkiePlan_orderTaxExport => 'टैक्स (0% निर्यात)';
+  String get walkiePlan_orderTaxExport => 'कर (0% निर्यात)';
 
   @override
   String get walkiePlan_orderTermsConditions => 'नियम और शर्तें';
@@ -6062,14 +6086,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get walkiePlan_orderTotalPayable => 'कुल देय';
 
   @override
-  String get walkiePlan_orderUnableToLoad => 'ऑर्डर सारांश लोड नहीं हो सका।';
+  String get walkiePlan_orderUnableToLoad =>
+      'ऑर्डर सारांश लोड करने में असमर्थ।';
 
   @override
   String get walkiePlan_orderUpiQr => 'UPI / QR';
 
   @override
   String walkiePlan_orderVatTitle(String percent) {
-    return 'VAT / टैक्स ($percent%)';
+    return 'वैट / कर ($percent%)';
   }
 
   @override
@@ -6077,71 +6102,72 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String walkiePlan_orderYouSaved(String amount) {
-    return 'इस ऑर्डर पर आपने $amount बचाए!';
+    return 'आपने इस ऑर्डर पर $amount बचाए!';
   }
 
   @override
-  String get walkiePlan_payAnnualPlan => 'वार्षिक प्लान';
+  String get walkiePlan_payAnnualPlan => 'वार्षिक योजना';
 
   @override
-  String get walkiePlan_payBadgeCompleted => 'पूरा हुआ';
+  String get walkiePlan_payBadgeCompleted => 'पूर्ण';
 
   @override
-  String get walkiePlan_payBadgeInProgress => 'जारी है';
+  String get walkiePlan_payBadgeInProgress => 'प्रगति पर है';
 
   @override
-  String get walkiePlan_payBadgePending => 'बाकी';
+  String get walkiePlan_payBadgePending => 'लंबित';
 
   @override
   String get walkiePlan_payCancelledByUser =>
-      'पेमेंट आपने रद्द कर दिया। आपके खाते से कोई राशि नहीं कटी है।';
+      'उपयोगकर्ता द्वारा भुगतान रद्द कर दिया गया था। आपके खाते से कोई राशि नहीं काटी गई है।';
 
   @override
-  String get walkiePlan_payCouldNotBeProcessed => 'पेमेंट प्रोसेस नहीं हो सका';
+  String get walkiePlan_payCouldNotBeProcessed =>
+      'भुगतान संसाधित नहीं किया जा सका';
 
   @override
-  String get walkiePlan_payFailedContactSupport => 'सपोर्ट से संपर्क करें';
+  String get walkiePlan_payFailedContactSupport => 'सहायता से संपर्क करें';
 
   @override
   String walkiePlan_payFailedOn(String time) {
-    return '$time को पेमेंट विफल हुआ';
+    return '$time पर भुगतान विफल रहा';
   }
 
   @override
   String get walkiePlan_payFailedSubtitleLong =>
-      'हम आपका पेमेंट पूरा नहीं कर सके।\nकृपया फिर से कोशिश करें या कोई दूसरा पेमेंट तरीका चुनें।';
+      'हम आपका भुगतान पूरा नहीं कर सके।\nकृपया पुनः प्रयास करें या भिन्न भुगतान विधि का उपयोग करें।';
 
   @override
   String get walkiePlan_payFailedSubtitleShort =>
-      'हम आपका पेमेंट पूरा नहीं कर सके';
+      'हम आपका भुगतान पूरा नहीं कर सके';
 
   @override
   String get walkiePlan_payFailedSupportHelp =>
-      'पेमेंट में मदद चाहिए? हमारी टीम 24/7 आपकी मदद के लिए उपलब्ध है।';
+      'भुगतान में मदद चाहिए? हमारी टीम आपकी सहायता के लिए 24/7 उपलब्ध है।';
 
   @override
-  String get walkiePlan_payFailedTitle => 'पेमेंट विफल';
+  String get walkiePlan_payFailedTitle => 'भुगतान विफल रहा';
 
   @override
   String get walkiePlan_payIndividualFeatures =>
-      'रियल-टाइम निगरानी • तुरंत अलर्ट';
+      'रीयल-टाइम निगरानी • त्वरित अलर्ट';
 
   @override
   String walkiePlan_payInitiatedOn(String time) {
-    return '$time को पेमेंट शुरू हुआ';
+    return '$time पर भुगतान शुरू किया गया';
   }
 
   @override
   String get walkiePlan_payIntervalMonth => 'महीना';
 
   @override
-  String get walkiePlan_payIntervalPlan => 'प्लान';
+  String get walkiePlan_payIntervalPlan => 'योजना';
 
   @override
   String get walkiePlan_payIntervalQuarter => 'तिमाही';
 
   @override
-  String get walkiePlan_payIntervalYear => 'साल';
+  String get walkiePlan_payIntervalYear => 'वर्ष';
 
   @override
   String walkiePlan_payMethodCreditCard(String network) {
@@ -6155,7 +6181,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get walkiePlan_payMethodInternational =>
-      'अंतरराष्ट्रीय कार्ड / PayPal';
+      'अंतर्राष्ट्रीय कार्ड / PayPal';
 
   @override
   String walkiePlan_payMethodNetBanking(String bank) {
@@ -6163,16 +6189,16 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get walkiePlan_payMethodRazorpay => 'Razorpay पेमेंट';
+  String get walkiePlan_payMethodRazorpay => 'रेज़रपे भुगतान';
 
   @override
-  String get walkiePlan_payMethodRazorpayCheckout => 'Razorpay चेकआउट';
+  String get walkiePlan_payMethodRazorpayCheckout => 'रेज़रपे चेकआउट';
 
   @override
-  String get walkiePlan_payMethodRazorpayUpiCard => 'Razorpay (UPI / कार्ड)';
+  String get walkiePlan_payMethodRazorpayUpiCard => 'रेज़रपे (UPI / कार्ड)';
 
   @override
-  String get walkiePlan_payMethodUpi => 'UPI पेमेंट';
+  String get walkiePlan_payMethodUpi => 'UPI भुगतान';
 
   @override
   String walkiePlan_payMethodWallet(String wallet) {
@@ -6181,11 +6207,11 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get walkiePlan_payNetworkIssue =>
-      'पेमेंट के दौरान नेटवर्क में समस्या आई। कृपया अपना इंटरनेट जांचें और फिर से कोशिश करें।';
+      'भुगतान के दौरान नेटवर्क कनेक्शन समस्या। कृपया अपना इंटरनेट जांचें और पुनः प्रयास करें।';
 
   @override
   String get walkiePlan_payNotCompleted =>
-      'आपका पेमेंट पूरा नहीं हुआ। आपके खाते से कोई राशि नहीं कटी है।';
+      'आपका भुगतान पूरा नहीं हुआ था। आपके खाते से कोई राशि नहीं काटी गई है।';
 
   @override
   String get walkiePlan_payOtpCharge => 'OTP शुल्क';
@@ -6195,128 +6221,129 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get walkiePlan_payOtpChargedPerLogin =>
-      'हर लॉगिन पर शुल्क। OTP दोबारा भेजना मुफ्त है';
+      'प्रति लॉगिन शुल्क। OTP दोबारा भेजना मुफ़्त है';
 
   @override
   String get walkiePlan_payOtpCharges => 'OTP शुल्क';
 
   @override
   String get walkiePlan_payPendingDoNotClose =>
-      'कृपया ऐप बंद न करें। पेमेंट की पुष्टि होने और प्लान सक्रिय होने पर हम आपको सूचित करेंगे।';
+      'कृपया ऐप बंद न करें। भुगतान की पुष्टि होने और योजना सक्रिय होने पर हम आपको सूचित करेंगे।';
 
   @override
   String get walkiePlan_payPendingStillInProgress =>
-      'पेमेंट अभी जारी है। पुष्टि होते ही हम अपडेट करेंगे।';
+      'भुगतान अभी भी प्रगति पर है। पुष्टि होने पर हम अपडेट करेंगे।';
 
   @override
   String get walkiePlan_payPendingStillProcessing =>
-      'पेमेंट अभी प्रोसेस हो रहा है। कृपया इंतज़ार करें।';
+      'भुगतान स्थिति अभी भी प्रसंस्करण में है। कृपया प्रतीक्षा करें।';
 
   @override
   String get walkiePlan_payPendingSubtitleLong =>
-      'आपका पेमेंट पेमेंट प्रोवाइडर द्वारा प्रोसेस हो रहा है।\nइसमें कुछ मिनट लग सकते हैं।';
+      'आपका भुगतान प्रदाता द्वारा संसाधित किया जा रहा है।\nइसमें कुछ मिनट लग सकते हैं।';
 
   @override
   String get walkiePlan_payPendingSubtitleShort =>
-      'आपका पेमेंट प्रोसेस हो रहा है';
+      'आपका भुगतान संसाधित किया जा रहा है';
 
   @override
-  String get walkiePlan_payPendingTitle => 'पेमेंट बाकी';
+  String get walkiePlan_payPendingTitle => 'भुगतान लंबित है';
 
   @override
-  String get walkiePlan_payPlanDetails => 'प्लान विवरण';
+  String get walkiePlan_payPlanDetails => 'योजना विवरण';
 
   @override
-  String get walkiePlan_payRefreshStatus => 'स्थिति रीफ्रेश करें';
+  String get walkiePlan_payRefreshStatus => 'स्थिति रिफ्रेश करें';
 
   @override
-  String get walkiePlan_payStatusTitle => 'पेमेंट स्थिति';
+  String get walkiePlan_payStatusTitle => 'भुगतान स्थिति';
 
   @override
-  String get walkiePlan_payStepActivate => 'प्लान सक्रिय करें';
+  String get walkiePlan_payStepActivate => 'योजना सक्रिय करें';
 
   @override
   String get walkiePlan_payStepActivateSub =>
-      'आपका प्लान अपने-आप सक्रिय हो जाएगा';
+      'आपकी योजना अपने आप सक्रिय हो जाएगी';
 
   @override
-  String get walkiePlan_payStepInitiated => 'पेमेंट शुरू हुआ';
+  String get walkiePlan_payStepInitiated => 'भुगतान शुरू हुआ';
 
   @override
-  String get walkiePlan_payStepProcessing => 'पेमेंट प्रोसेस हो रहा है';
+  String get walkiePlan_payStepProcessing => 'भुगतान प्रसंस्करण';
 
   @override
   String get walkiePlan_payStepProcessingSub =>
-      'आपके पेमेंट की पुष्टि हो रही है';
+      'आपके भुगतान की पुष्टि की जा रही है';
 
   @override
-  String get walkiePlan_payTeamFeatures => 'कई सदस्यों की पहुंच • तुरंत अलर्ट';
+  String get walkiePlan_payTeamFeatures => 'बहु-सदस्य पहुंच • त्वरित अलर्ट';
 
   @override
   String get walkiePlan_payTotalPerOtp => 'प्रति OTP कुल';
 
   @override
-  String get walkiePlan_payTryAgain => 'फिर से कोशिश करें';
+  String get walkiePlan_payTryAgain => 'पुनः प्रयास करें';
 
   @override
-  String get walkiePlan_payViewPlanDetails => 'प्लान विवरण देखें';
+  String get walkiePlan_payViewPlanDetails => 'योजना विवरण देखें';
 
   @override
   String get walkiePlan_perMember => 'प्रति सदस्य';
 
   @override
-  String get walkiePlan_planFallback => 'प्लान';
+  String get walkiePlan_planFallback => 'योजना';
 
   @override
-  String get walkiePlan_quarterlyPlan => 'त्रैमासिक प्लान';
+  String get walkiePlan_quarterlyPlan => 'त्रैमासिक योजना';
 
   @override
   String get walkiePlan_razorpayCompleteInWindow =>
-      'कृपया Razorpay पेमेंट विंडो में ट्रांज़ैक्शन पूरा करें।';
+      'कृपया रेज़रपे भुगतान विंडो में लेन-देन पूरा करें।';
 
   @override
-  String get walkiePlan_razorpayCompletePayment => 'पेमेंट पूरा करें';
+  String get walkiePlan_razorpayCompletePayment => 'भुगतान पूरा करें';
 
   @override
   String get walkiePlan_razorpayConfirmingWithBank =>
-      'पेमेंट शुरू हो गया है। हम बैंक से पुष्टि कर रहे हैं।';
+      'भुगतान शुरू किया गया था। हम बैंक से पुष्टि कर रहे हैं।';
 
   @override
-  String get walkiePlan_razorpayConnecting => 'Razorpay से कनेक्ट हो रहा है...';
+  String get walkiePlan_razorpayConnecting => 'रेज़रपे से कनेक्ट हो रहा है...';
 
   @override
   String get walkiePlan_razorpayCouldNotProcess =>
-      'पेमेंट प्रोसेस नहीं हो सका। कृपया फिर से कोशिश करें।';
+      'भुगतान संसाधित नहीं किया जा सका। कृपया पुनः प्रयास करें।';
 
   @override
   String get walkiePlan_razorpayFailedTryAgain =>
-      'पेमेंट विफल रहा। कृपया फिर से कोशिश करें।';
+      'भुगतान विफल रहा। कृपया पुनः प्रयास करें।';
 
   @override
   String get walkiePlan_razorpayOneMonthActive => '1 महीना सक्रिय';
 
   @override
   String walkiePlan_razorpayPayAmountVia(String amount) {
-    return 'Razorpay से $amount पे करें';
+    return 'रेज़रपे के माध्यम से $amount का भुगतान करें';
   }
 
   @override
-  String get walkiePlan_razorpayPaymentCancelled => 'पेमेंट रद्द हुआ';
+  String get walkiePlan_razorpayPaymentCancelled => 'भुगतान रद्द किया गया';
 
   @override
-  String get walkiePlan_razorpayPaymentIdCopied => 'पेमेंट ID कॉपी हो गई!';
+  String get walkiePlan_razorpayPaymentIdCopied =>
+      'भुगतान आईडी क्लिपबोर्ड पर कॉपी हो गई!';
 
   @override
   String get walkiePlan_razorpayPciCompliant =>
-      '100% सुरक्षित और PCI-DSS अनुपालित';
+      '100% सुरक्षित और PCI-DSS अनुरूप';
 
   @override
   String get walkiePlan_razorpayPendingConfirmation =>
-      'पेमेंट की पुष्टि बाकी है।';
+      'भुगतान की पुष्टि लंबित है।';
 
   @override
   String get walkiePlan_razorpayProcessing =>
-      'Razorpay से प्रोसेस हो रहा है...';
+      'रेज़रपे के साथ प्रसंस्करण हो रहा है...';
 
   @override
   String walkiePlan_razorpayReceiptAmount(String amount) {
@@ -6324,160 +6351,162 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get walkiePlan_razorpayReceiptCopied => 'रसीद की जानकारी कॉपी हो गई!';
+  String get walkiePlan_razorpayReceiptCopied =>
+      'रसीद विवरण क्लिपबोर्ड पर कॉपी हो गया!';
 
   @override
   String walkiePlan_razorpayReceiptDate(String date) {
-    return 'तारीख: $date';
+    return 'दिनांक: $date';
   }
 
   @override
   String walkiePlan_razorpayReceiptMode(String mode) {
-    return 'पेमेंट का तरीका: $mode';
+    return 'भुगतान मोड: $mode';
   }
 
   @override
   String walkiePlan_razorpayReceiptOrderId(String id) {
-    return 'ऑर्डर ID: $id';
+    return 'ऑर्डर आईडी: $id';
   }
 
   @override
   String walkiePlan_razorpayReceiptPaymentId(String id) {
-    return 'पेमेंट ID: $id';
+    return 'भुगतान आईडी: $id';
   }
 
   @override
   String walkiePlan_razorpayReceiptPlan(String plan) {
-    return 'प्लान: $plan';
+    return 'योजना: $plan';
   }
 
   @override
-  String get walkiePlan_razorpayReceiptStatusCompleted => 'स्थिति: पूरा हुआ';
+  String get walkiePlan_razorpayReceiptStatusCompleted => 'स्थिति: पूर्ण';
 
   @override
-  String get walkiePlan_razorpayReceiptTitle => 'FG Tracker पेमेंट रसीद';
+  String get walkiePlan_razorpayReceiptTitle => 'FG ट्रैकर भुगतान रसीद';
 
   @override
-  String get walkiePlan_razorpayRetryPayment => 'फिर से पेमेंट करें';
+  String get walkiePlan_razorpayRetryPayment => 'पुनः भुगतान करें';
 
   @override
   String get walkiePlan_razorpaySecureCheckout =>
-      'Razorpay द्वारा सुरक्षित चेकआउट';
+      'रेज़रपे द्वारा संचालित सुरक्षित चेकआउट';
 
   @override
   String get walkiePlan_razorpaySslEncrypted =>
-      'ट्रांज़ैक्शन 256-बिट SSL सुरक्षा के साथ एंड-टू-एंड एन्क्रिप्टेड हैं।';
+      'लेन-देन एंड-टू-एंड 256-बिट एसएसएल सुरक्षा के साथ एन्क्रिप्टेड हैं।';
 
   @override
-  String get walkiePlan_razorpaySupportedModes => 'समर्थित पेमेंट तरीके';
+  String get walkiePlan_razorpaySupportedModes => 'समर्थित भुगतान मोड';
 
   @override
   String get walkiePlan_razorpayTotalPayableAmount => 'कुल देय राशि';
 
   @override
   String walkiePlan_razorpayUnableToLaunch(String error) {
-    return 'पेमेंट गेटवे नहीं खुल सका: $error';
+    return 'भुगतान गेटवे लॉन्च करने में असमर्थ: $error';
   }
 
   @override
-  String get walkiePlan_razorpayVerifyFailed => 'पेमेंट सत्यापन विफल रहा।';
+  String get walkiePlan_razorpayVerifyFailed => 'भुगतान सत्यापन विफल रहा।';
 
   @override
-  String get walkiePlan_seatAssignedSeat => 'असाइन की गई सीट';
+  String get walkiePlan_seatAssignedSeat => 'सौंपी गई सीट';
 
   @override
   String get walkiePlan_seatAssignment => 'सीट असाइनमेंट';
 
   @override
-  String get walkiePlan_seatTeamAccess => 'टीम एक्सेस';
+  String get walkiePlan_seatTeamAccess => 'टीम पहुंच';
 
   @override
-  String get walkiePlan_seatTeamMember => 'टीम सदस्य';
+  String get walkiePlan_seatTeamMember => 'टीम के सदस्य';
 
   @override
   String get walkiePlan_secureEncryptedPayment =>
-      'सुरक्षित और एन्क्रिप्टेड पेमेंट';
+      'सुरक्षित और एन्क्रिप्टेड भुगतान';
 
   @override
-  String get walkiePlan_successAccessActivated => 'एक्सेस चालू हो गया';
+  String get walkiePlan_successAccessActivated => 'पहुंच सक्रिय हो गई';
 
   @override
   String get walkiePlan_successAccessActivatedDesc =>
-      'आपका निजी वॉकी-टॉकी एक्सेस अब चालू है।';
+      'आपकी व्यक्तिगत वॉकी-टॉकी पहुंच अब सक्रिय है।';
 
   @override
   String get walkiePlan_successAmountPaid => 'भुगतान की गई राशि';
 
   @override
   String get walkiePlan_successAssignLaterNote =>
-      'आप बाद में कभी भी टीम सेटिंग्स से वॉकी एक्सेस दे सकते हैं।';
+      'आप टीम सेटिंग्स से कभी भी बाद में वॉकी एक्सेस असाइन कर सकते हैं।';
 
   @override
   String get walkiePlan_successAssignMembers => 'सदस्य असाइन करें';
 
   @override
-  String get walkiePlan_successAssignWalkieAccess => 'वॉकी एक्सेस दें';
+  String get walkiePlan_successAssignWalkieAccess => 'वॉकी एक्सेस असाइन करें';
 
   @override
   String get walkiePlan_successChooseMembersDesc =>
-      'चुनें कि कौन से सदस्य वॉकी-टॉकी इस्तेमाल कर सकते हैं।';
+      'चुनें कि कौन से सदस्य वॉकी टॉकी का उपयोग कर सकते हैं।';
 
   @override
   String get walkiePlan_successContinueHome => 'होम पर जारी रखें';
 
   @override
-  String get walkiePlan_successDateTime => 'तारीख और समय';
+  String get walkiePlan_successDateTime => 'दिनांक और समय';
 
   @override
-  String get walkiePlan_successDefaultPaymentMethod => 'Razorpay (UPI / कार्ड)';
+  String get walkiePlan_successDefaultPaymentMethod => 'रेज़रपे (UPI / कार्ड)';
 
   @override
   String get walkiePlan_successIndividualActive =>
-      'आपका व्यक्तिगत प्लान अब चालू है';
+      'आपकी व्यक्तिगत योजना अब सक्रिय है';
 
   @override
   String get walkiePlan_successIndividualActiveDesc =>
-      'आपका व्यक्तिगत प्लान चालू है। होम पर जाएं और बात करना शुरू करें।';
+      'आपकी व्यक्तिगत योजना सक्रिय है। होम पर जाएं और बात करना शुरू करें।';
 
   @override
   String get walkiePlan_successIndividualLinkedNote =>
-      'आपका व्यक्तिगत सब्सक्रिप्शन चालू है और सीधे आपके अकाउंट से जुड़ा है।';
+      'आपकी व्यक्तिगत सदस्यता सक्रिय है और सीधे आपके खाते से जुड़ी है।';
 
   @override
   String get walkiePlan_successManageAccessNote =>
-      'आप टीम सेटिंग्स से कभी भी वॉकी एक्सेस मैनेज या बदल सकते हैं।';
+      'आप टीम सेटिंग्स से कभी भी वॉकी एक्सेस प्रबंधित या बदल सकते हैं।';
 
   @override
-  String get walkiePlan_successMaybeLater => 'बाद में';
+  String get walkiePlan_successMaybeLater => 'शायद बाद में';
 
   @override
   String get walkiePlan_successNoAccessUntilAssigned =>
-      'आपका प्लान चालू है। जब तक आप असाइन नहीं करते, टीम सदस्यों को वॉकी एक्सेस नहीं मिलेगा।';
+      'आपकी योजना सक्रिय है। जब तक आप असाइन नहीं करेंगे तब तक टीम के सदस्यों के पास वॉकी का उपयोग नहीं होगा।';
 
   @override
   String get walkiePlan_successNotNow => 'अभी नहीं?';
 
   @override
-  String get walkiePlan_successPaid => 'भुगतान हुआ';
+  String get walkiePlan_successPaid => 'भुगतान किया गया';
 
   @override
-  String get walkiePlan_successPaymentId => 'पेमेंट ID';
+  String get walkiePlan_successPaymentId => 'भुगतान आईडी';
 
   @override
-  String get walkiePlan_successPaymentIdCopied => 'पेमेंट ID कॉपी हो गई!';
+  String get walkiePlan_successPaymentIdCopied =>
+      'भुगतान आईडी क्लिपबोर्ड पर कॉपी हो गई!';
 
   @override
-  String get walkiePlan_successPaymentMode => 'पेमेंट का तरीका';
+  String get walkiePlan_successPaymentMode => 'भुगतान मोड';
 
   @override
-  String get walkiePlan_successPaymentReceipt => 'पेमेंट रसीद';
+  String get walkiePlan_successPaymentReceipt => 'भुगतान रसीद';
 
   @override
   String get walkiePlan_successPushToTalkDesc =>
-      'पुश करके बोलें और अपनी टीम से तुरंत जुड़ें।';
+      'पुश टू टॉक करें और अपनी टीम से तुरंत जुड़ें।';
 
   @override
-  String get walkiePlan_successRazorpayVerified => 'Razorpay द्वारा सत्यापित';
+  String get walkiePlan_successRazorpayVerified => 'रेज़रपे सत्यापित';
 
   @override
   String walkiePlan_successReceiptAmount(String amount) {
@@ -6485,62 +6514,63 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get walkiePlan_successReceiptCopied => 'रसीद की जानकारी कॉपी हो गई!';
+  String get walkiePlan_successReceiptCopied =>
+      'रसीद विवरण क्लिपबोर्ड पर कॉपी हो गया!';
 
   @override
   String walkiePlan_successReceiptDate(String date) {
-    return 'तारीख: $date';
+    return 'दिनांक: $date';
   }
 
   @override
-  String get walkiePlan_successReceiptHeader => 'FG Tracker पेमेंट रसीद';
+  String get walkiePlan_successReceiptHeader => 'FG ट्रैकर भुगतान रसीद';
 
   @override
   String walkiePlan_successReceiptOrderId(String id) {
-    return 'ऑर्डर ID: $id';
+    return 'ऑर्डर आईडी: $id';
   }
 
   @override
   String walkiePlan_successReceiptPaymentId(String id) {
-    return 'पेमेंट ID: $id';
+    return 'भुगतान आईडी: $id';
   }
 
   @override
   String walkiePlan_successReceiptPaymentMode(String mode) {
-    return 'पेमेंट का तरीका: $mode';
+    return 'भुगतान मोड: $mode';
   }
 
   @override
   String walkiePlan_successReceiptPlan(String plan) {
-    return 'प्लान: $plan';
+    return 'योजना: $plan';
   }
 
   @override
-  String get walkiePlan_successReceiptStatusCompleted => 'स्थिति: पूरा हुआ';
+  String get walkiePlan_successReceiptStatusCompleted => 'स्थिति: पूर्ण';
 
   @override
   String get walkiePlan_successSelectChannel => 'चैनल चुनें';
 
   @override
   String get walkiePlan_successSelectChannelDesc =>
-      'सदस्यों से जुड़ने के लिए किसी भी ग्रुप या चैनल में शामिल हों।';
+      'सदस्यों से जुड़ने के लिए किसी भी समूह या चैनल में शामिल हों।';
 
   @override
   String get walkiePlan_successSelectMembersDesc =>
-      'वॉकी-टॉकी इस्तेमाल करने वाले टीम सदस्य चुनें।';
+      'उन टीम सदस्यों का चयन करें जो वॉकी टॉकी का उपयोग करेंगे।';
 
   @override
   String get walkiePlan_successSetUpTeam => 'टीम सेट अप करें';
 
   @override
   String get walkiePlan_successSetUpTeamDesc =>
-      'सदस्यों को आमंत्रित करें, भूमिकाएं और अनुमतियां मैनेज करें।';
+      'सदस्यों को आमंत्रित करें, भूमिकाएं और अनुमतियां प्रबंधित करें।';
 
   @override
-  String get walkiePlan_successShareReceipt => 'रसीद शेयर करें';
+  String get walkiePlan_successShareReceipt => 'रसीद साझा करें';
 
   @override
-  String get walkiePlan_successStartCommunicating => 'बात करना शुरू करें';
+  String get walkiePlan_successStartCommunicating => 'संवाद शुरू करें';
 
   @override
   String get walkiePlan_successStatus => 'स्थिति';
@@ -6549,13 +6579,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get walkiePlan_successSuccessful => 'सफल';
 
   @override
-  String get walkiePlan_successTeamActive => 'आपका टीम प्लान अब चालू है';
+  String get walkiePlan_successTeamActive => 'आपकी टीम योजना अब सक्रिय है';
 
   @override
-  String get walkiePlan_successTeamReady => 'आपकी टीम तैयार है!';
+  String get walkiePlan_successTeamReady => 'आपकी टीम पूरी तरह तैयार है!';
 
   @override
-  String get walkiePlan_successTitle => 'खरीदारी सफल रही!';
+  String get walkiePlan_successTitle => 'खरीद सफल!';
 
   @override
   String walkiePlan_successValidTill(String date) {
@@ -6566,53 +6596,53 @@ class AppLocalizationsHi extends AppLocalizations {
   String get walkiePlan_successVisitHome => 'होम स्क्रीन पर जाएं';
 
   @override
-  String get walkiePlan_successWhatsNext => 'आगे क्या?';
+  String get walkiePlan_successWhatsNext => 'आगे क्या है?';
 
   @override
-  String get walkiePlan_teamPlan => 'टीम प्लान';
+  String get walkiePlan_teamPlan => 'टीम योजना';
 
   @override
   String walkiePlan_teamPlanWithDuration(String duration) {
-    return 'टीम प्लान ($duration)';
+    return 'टीम योजना ($duration)';
   }
 
   @override
-  String get walkiePlan_trial7DaysPeriod => '7 दिन की ट्रायल अवधि';
+  String get walkiePlan_trial7DaysPeriod => '7 दिन की परीक्षण अवधि';
 
   @override
-  String get walkiePlan_trialActiveLabel => 'ट्रायल चालू';
+  String get walkiePlan_trialActiveLabel => 'परीक्षण सक्रिय है';
 
   @override
-  String get walkiePlan_trialActiveSubscription => 'चालू सब्सक्रिप्शन';
+  String get walkiePlan_trialActiveSubscription => 'सक्रिय सदस्यता';
 
   @override
-  String get walkiePlan_trialActiveSubscriptions => 'चालू सब्सक्रिप्शन';
+  String get walkiePlan_trialActiveSubscriptions => 'सक्रिय सदस्यताएँ';
 
   @override
   String get walkiePlan_trialAvailableToStart => 'शुरू करने के लिए उपलब्ध';
 
   @override
   String get walkiePlan_trialCheckConnectionRetry =>
-      'कृपया अपना इंटरनेट कनेक्शन जांचें और फिर से कोशिश करें।';
+      'कृपया अपना इंटरनेट कनेक्शन जांचें और पुनः प्रयास करें।';
 
   @override
   String get walkiePlan_trialChoosePlanBelow =>
-      'वॉकी-टॉकी इस्तेमाल शुरू करने के लिए नीचे एक प्लान चुनें।';
+      'वॉकी टॉकी का उपयोग शुरू करने के लिए नीचे दी गई योजना चुनें।';
 
   @override
   String get walkiePlan_trialChooseSubscription =>
-      'वॉकी-टॉकी इस्तेमाल करते रहने के लिए सब्सक्रिप्शन चुनें।';
+      'वॉकी टॉकी का उपयोग जारी रखने के लिए एक सदस्यता चुनें।';
 
   @override
-  String get walkiePlan_trialCompleted => 'ट्रायल पूरा हुआ';
+  String get walkiePlan_trialCompleted => 'परीक्षण पूर्ण';
 
   @override
   String walkiePlan_trialDaysLeft(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count दिन बाकी',
-      one: '1 दिन बाकी',
+      other: '$count दिन शेष',
+      one: '1 दिन शेष',
     );
     return '$_temp0';
   }
@@ -6624,104 +6654,106 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String walkiePlan_trialEndedOn(String date) {
-    return '$date को समाप्त';
+    return '$date को समाप्त हुआ';
   }
 
   @override
   String walkiePlan_trialEnjoyAllFeatures(String duration) {
-    return '$duration तक वॉकी-टॉकी के सभी फीचर मुफ़्त में इस्तेमाल करें।\nकोई पेमेंट नहीं चाहिए।';
+    return '$duration के लिए वॉकी टॉकी की सभी सुविधाओं का मुफ़्त आनंद लें।\nकिसी भुगतान की आवश्यकता नहीं है।';
   }
 
   @override
   String get walkiePlan_trialEnjoyDuringActive =>
-      'अपने चालू ट्रायल के दौरान वॉकी-टॉकी का आनंद लें।';
+      'अपनी सक्रिय परीक्षण अवधि के दौरान वॉकी टॉकी का आनंद लें।';
 
   @override
   String get walkiePlan_trialErrAccessMissing =>
-      'वॉकी-टॉकी एक्सेस की जानकारी उपलब्ध नहीं है।';
+      'वॉकी-टॉकी पहुंच जानकारी गायब है।';
 
   @override
   String get walkiePlan_trialErrFetchDetails =>
-      'वॉकी-टॉकी की जानकारी नहीं मिल सकी।';
+      'वॉकी-टॉकी विवरण प्राप्त करने में असमर्थ।';
 
   @override
-  String get walkiePlan_trialErrInvalidResponse => 'सर्वर से अमान्य जवाब मिला।';
+  String get walkiePlan_trialErrInvalidResponse =>
+      'सर्वर से अमान्य प्रतिक्रिया प्राप्त हुई।';
 
   @override
   String get walkiePlan_trialErrNoInternetRetry =>
-      'इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क जांचें और फिर से कोशिश करें।';
+      'कोई इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क जांचें और पुनः प्रयास करें।';
 
   @override
   String get walkiePlan_trialErrOverviewMissing =>
-      'वॉकी-टॉकी की सारांश जानकारी उपलब्ध नहीं है।';
+      'वॉकी-टॉकी अवलोकन डेटा गायब है।';
 
   @override
   String get walkiePlan_trialErrTimeout =>
-      'अनुरोध का समय समाप्त हो गया। कृपया फिर से कोशिश करें।';
+      'अनुरोध का समय समाप्त हो गया। कृपया पुनः प्रयास करें।';
 
   @override
   String get walkiePlan_trialErrUnableToLoad =>
-      'वॉकी-टॉकी की जानकारी लोड नहीं हो सकी। कृपया अपना कनेक्शन जांचें।';
+      'वॉकी-टॉकी विवरण लोड करने में असमर्थ। कृपया अपना कनेक्शन जांचें।';
 
   @override
-  String get walkiePlan_trialExpired => 'ट्रायल समाप्त';
+  String get walkiePlan_trialExpired => 'परीक्षण समाप्त';
 
   @override
-  String get walkiePlan_trialExpiredLabel => 'ट्रायल समाप्त';
+  String get walkiePlan_trialExpiredLabel => 'परीक्षण समाप्त हो गया';
 
   @override
   String get walkiePlan_trialExpiringSoon => 'जल्द समाप्त हो रहा है';
 
   @override
-  String get walkiePlan_trialFeatClearAudio => 'साफ़ ऑडियो';
+  String get walkiePlan_trialFeatClearAudio => 'स्पष्ट ऑडियो';
 
   @override
   String get walkiePlan_trialFeatClearAudioDesc => 'उच्च गुणवत्ता वाली आवाज़';
 
   @override
-  String get walkiePlan_trialFeatGroupComm => 'ग्रुप बातचीत';
+  String get walkiePlan_trialFeatGroupComm => 'समूह संचार';
 
   @override
   String get walkiePlan_trialFeatGroupCommDesc => 'अपनी टीम से जुड़ें';
 
   @override
-  String get walkiePlan_trialFeatPtt => 'पुश-टू-टॉक';
+  String get walkiePlan_trialFeatPtt => 'पुश-टू-टॉक (दबाकर बोलें)';
 
   @override
-  String get walkiePlan_trialFeatPttDesc => 'तुरंत वॉइस बातचीत';
+  String get walkiePlan_trialFeatPttDesc => 'त्वरित वॉइस संचार';
 
   @override
   String get walkiePlan_trialFeatUnlimited => 'असीमित उपयोग';
 
   @override
   String get walkiePlan_trialFeatUnlimitedDesc =>
-      'बिना किसी सीमा के इस्तेमाल करें';
+      'बिना किसी सीमा के उपयोग करें';
 
   @override
-  String get walkiePlan_trialFreeAvailable => 'फ्री ट्रायल उपलब्ध';
+  String get walkiePlan_trialFreeAvailable => 'मुफ़्त परीक्षण उपलब्ध है';
 
   @override
-  String get walkiePlan_trialFreeTrialLabel => 'फ्री ट्रायल';
+  String get walkiePlan_trialFreeTrialLabel => 'मुफ़्त परीक्षण';
 
   @override
-  String get walkiePlan_trialFreeTrialRunning => 'फ्री ट्रायल चल रहा है';
+  String get walkiePlan_trialFreeTrialRunning => 'मुफ़्त परीक्षण चल रहा है';
 
   @override
-  String get walkiePlan_trialFullAccess => 'सभी फीचर का पूरा एक्सेस';
+  String get walkiePlan_trialFullAccess => 'सभी सुविधाओं तक पूर्ण पहुंच';
 
   @override
   String get walkiePlan_trialFullyConsumed =>
-      'आपका फ्री ट्रायल पूरी तरह इस्तेमाल हो चुका है।';
+      'आपका मुफ़्त परीक्षण पूरी तरह से समाप्त हो गया है।';
 
   @override
-  String get walkiePlan_trialHasEnded => 'आपका ट्रायल खत्म हो गया है';
+  String get walkiePlan_trialHasEnded => 'आपका परीक्षण समाप्त हो गया है';
 
   @override
-  String get walkiePlan_trialHeaderInstant => 'अपने ग्रुप से तुरंत बात करें';
+  String get walkiePlan_trialHeaderInstant =>
+      'अपने समूह के साथ तुरंत संवाद करें';
 
   @override
   String get walkiePlan_trialHeaderPlanStatus =>
-      'आपका प्लान और सब्सक्रिप्शन स्टेटस';
+      'आपकी योजना और सदस्यता की स्थिति';
 
   @override
   String walkiePlan_trialHours(int count) {
@@ -6739,8 +6771,8 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count घंटे बाकी',
-      one: '1 घंटा बाकी',
+      other: '$count घंटे शेष',
+      one: '1 घंटा शेष',
     );
     return '$_temp0';
   }
@@ -6756,7 +6788,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get walkiePlan_trialIsActive => 'आपका ट्रायल चालू है';
+  String get walkiePlan_trialIsActive => 'आपका परीक्षण सक्रिय है';
 
   @override
   String walkiePlan_trialMin(int count) {
@@ -6773,8 +6805,8 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count मिनट बाकी',
-      one: '1 मिनट बाकी',
+      other: '$count मिनट शेष',
+      one: '1 मिनट शेष',
     );
     return '$_temp0';
   }
@@ -6791,25 +6823,25 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get walkiePlan_trialNoActivePlan => 'कोई चालू प्लान नहीं';
+  String get walkiePlan_trialNoActivePlan => 'कोई सक्रिय योजना नहीं';
 
   @override
   String get walkiePlan_trialNoCardRequired =>
-      '7 दिनों में कभी भी इस्तेमाल करें  •  क्रेडिट कार्ड की ज़रूरत नहीं';
+      '7 दिनों के भीतर कभी भी उपयोग करें  •  क्रेडिट कार्ड की आवश्यकता नहीं है';
 
   @override
-  String get walkiePlan_trialNoInternetTitle => 'इंटरनेट कनेक्शन नहीं है';
+  String get walkiePlan_trialNoInternetTitle => 'कोई इंटरनेट कनेक्शन नहीं';
 
   @override
   String walkiePlan_trialNoPaymentNow(String price) {
-    return 'अभी कोई पेमेंट नहीं चाहिए। ट्रायल के बाद, चाहें तो पेड प्लान ($price/व्यक्ति) के साथ जारी रख सकते हैं।';
+    return 'अभी किसी भुगतान की आवश्यकता नहीं है। परीक्षण के बाद, आप चाहें तो सशुल्क योजना ($price/व्यक्ति) के साथ जारी रख सकते हैं।';
   }
 
   @override
   String get walkiePlan_trialPeriodMonth => 'महीना';
 
   @override
-  String get walkiePlan_trialRetrying => 'फिर से कोशिश हो रही है...';
+  String get walkiePlan_trialRetrying => 'पुनः प्रयास किया जा रहा है...';
 
   @override
   String walkiePlan_trialSec(int count) {
@@ -6818,88 +6850,90 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String walkiePlan_trialStartFreeTrial(String duration) {
-    return '$duration का फ्री ट्रायल शुरू करें';
+    return '$duration मुफ़्त परीक्षण शुरू करें';
   }
 
   @override
-  String get walkiePlan_trialStartYourFreeTrial => 'अपना फ्री ट्रायल शुरू करें';
+  String get walkiePlan_trialStartYourFreeTrial =>
+      'अपना मुफ़्त परीक्षण शुरू करें';
 
   @override
-  String get walkiePlan_trialStatusCompleted => 'पूरा हुआ';
+  String get walkiePlan_trialStatusCompleted => 'पूर्ण';
 
   @override
   String get walkiePlan_trialStatusExpired => 'समाप्त';
 
   @override
-  String get walkiePlan_trialSubscriptionActive => 'सब्सक्रिप्शन चालू है';
+  String get walkiePlan_trialSubscriptionActive => 'सदस्यता सक्रिय है';
 
   @override
   String get walkiePlan_trialSubscriptionEndedMsg =>
-      'आपका वॉकी-टॉकी सब्सक्रिप्शन खत्म हो गया है। अपनी टीम से बात करते रहने के लिए प्लान रिन्यू करें।';
+      'आपकी वॉकी टॉकी सदस्यता समाप्त हो गई है। अपनी टीम से बात करते रहने के लिए नवीनीकरण करें।';
 
   @override
-  String get walkiePlan_trialSubscriptionExpired => 'सब्सक्रिप्शन समाप्त';
+  String get walkiePlan_trialSubscriptionExpired => 'सदस्यता समाप्त हो गई';
 
   @override
-  String get walkiePlan_trialTalkFree => 'अपने ग्रुप से मुफ़्त बात करें।';
+  String get walkiePlan_trialTalkFree => 'अपने समूह के साथ मुफ़्त बात करें।';
 
   @override
   String walkiePlan_trialTalkFreeTill(String date) {
-    return '$date तक अपने ग्रुप से मुफ़्त बात करें।';
+    return '$date तक अपने समूह के साथ मुफ़्त बात करें।';
   }
 
   @override
   String get walkiePlan_trialTeamAccessMsg =>
-      'आपको अपने टीम प्लान से वॉकी-टॉकी एक्सेस मिला है।';
+      'आपके पास अपनी टीम योजना के माध्यम से वॉकी टॉकी पहुंच है।';
 
   @override
   String walkiePlan_trialTimeLeft(String time) {
-    return '$time बाकी';
+    return '$time शेष';
   }
 
   @override
-  String get walkiePlan_trialTimeRemaining => 'ट्रायल का बचा समय';
+  String get walkiePlan_trialTimeRemaining => 'शेष परीक्षण समय';
 
   @override
-  String get walkiePlan_trialTimeUsedUp => 'ट्रायल का समय खत्म हो गया';
+  String get walkiePlan_trialTimeUsedUp => 'परीक्षण का समय समाप्त हो गया';
 
   @override
-  String get walkiePlan_trialTryAgain => 'फिर से कोशिश करें';
+  String get walkiePlan_trialTryAgain => 'पुनः प्रयास करें';
 
   @override
-  String get walkiePlan_trialUnableToLoadTitle => 'वॉकी-टॉकी लोड नहीं हो सका';
+  String get walkiePlan_trialUnableToLoadTitle =>
+      'वॉकी टॉकी लोड करने में असमर्थ';
 
   @override
-  String get walkiePlan_trialUsage => 'ट्रायल उपयोग';
+  String get walkiePlan_trialUsage => 'परीक्षण उपयोग';
 
   @override
   String get walkiePlan_trialUseAnytime7Days =>
-      '7 दिनों में कभी भी ट्रायल इस्तेमाल करें';
+      '7 दिनों में कभी भी परीक्षण का उपयोग करें';
 
   @override
   String walkiePlan_trialUseWithin7Days(String duration) {
-    return 'अपना $duration का ट्रायल 7 दिनों के भीतर कभी भी इस्तेमाल करें।';
+    return '7 दिनों के भीतर कभी भी अपने $duration परीक्षण का उपयोग करें।';
   }
 
   @override
-  String get walkiePlan_trialUsed => 'ट्रायल इस्तेमाल हो गया';
+  String get walkiePlan_trialUsed => 'परीक्षण का उपयोग किया गया';
 
   @override
-  String get walkiePlan_trialValidityPeriod => 'ट्रायल की वैधता अवधि';
+  String get walkiePlan_trialValidityPeriod => 'परीक्षण वैधता अवधि';
 
   @override
-  String get walkiePlan_trialWalkieTalkieTitle => 'वॉकी-टॉकी';
+  String get walkiePlan_trialWalkieTalkieTitle => 'वॉकी टॉकी';
 
   @override
   String get walkiePlan_trialWhatYouCanDo =>
-      'ट्रायल के दौरान आप क्या कर सकते हैं';
+      'परीक्षण के दौरान आप क्या कर सकते हैं';
 
   @override
   String get walkiePlan_unableToConnect =>
-      'सर्वर से कनेक्ट नहीं हो सका। कृपया फिर से कोशिश करें।';
+      'सर्वर से कनेक्ट करने में असमर्थ। कृपया पुनः प्रयास करें।';
 
   @override
-  String get walkiePlan_yearlyPlan => 'वार्षिक प्लान';
+  String get walkiePlan_yearlyPlan => 'वार्षिक योजना';
 
   @override
   String get walkie_aMember => 'एक सदस्य';
@@ -7673,23 +7707,23 @@ class AppLocalizationsHi extends AppLocalizations {
   String get widget_lostConnection => 'कनेक्शन टूट गया';
 
   @override
-  String get widget_manageGroups => 'अपने ग्रुप आसानी से मैनेज करें';
+  String get widget_manageGroups => 'अपने समूहों को आसानी से प्रबंधित करें';
 
   @override
   String get widget_noInternetBody =>
-      'ओह... इंटरनेट कनेक्शन नहीं मिला। अपना कनेक्शन जांचें';
+      'उफ़... कोई इंटरनेट कनेक्शन नहीं मिला। कृपया अपना कनेक्शन जांचें';
 
   @override
-  String get widget_notSeenYet => 'अभी देखा नहीं गया';
+  String get widget_notSeenYet => 'अभी तक नहीं देखा';
 
   @override
-  String get widget_pinnedMessage => 'पिन किया गया मैसेज';
+  String get widget_pinnedMessage => 'पिन किया गया संदेश';
 
   @override
-  String get widget_private => 'प्राइवेट';
+  String get widget_private => 'निजी';
 
   @override
-  String get widget_refreshPage => 'पेज रीफ़्रेश करें';
+  String get widget_refreshPage => 'पेज रिफ्रेश करें';
 
   @override
   String get widget_seen => 'देखा गया';
@@ -7701,12 +7735,12 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String widget_seenCountOfTotal(int count, int total) {
-    return '($total में से $count)';
+    return '($count में से $total)';
   }
 
   @override
   String get widget_somethingWentWrongTitle => 'कुछ गलत हो गया';
 
   @override
-  String get widget_userFallback => 'यूज़र';
+  String get widget_userFallback => 'उपयोगकर्ता';
 }

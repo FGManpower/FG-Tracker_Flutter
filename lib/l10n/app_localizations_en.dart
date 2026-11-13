@@ -3104,7 +3104,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get group_showQrCode => 'Show QR Code';
 
   @override
-  String get group_startConversation => 'Feel Free to start a conversation ';
+  String get group_startConversation => 'Feel Free to start a conversation';
 
   @override
   String get group_statusUpdateFailed => 'Failed to update group status';
@@ -3379,14 +3379,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get intro_realTimeTrackingSubtitle =>
-      'View live locations of friends, \n family, or team members on \n the map instantly.';
+      'View live locations of friends, family, or team members on the map instantly.';
 
   @override
   String get intro_realTimeTrackingTitle => 'Real-Time Tracking';
 
   @override
   String get intro_secureSubtitle =>
-      'Share your live location with \n selected contacts safely and \n privately.';
+      'Share your live location with\nselected contacts safely and\nprivately.';
 
   @override
   String get intro_secureTitle => 'Secure & Easy';
@@ -3396,10 +3396,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get intro_walkieSubtitle =>
-      'No signal. No problem. Stay \n connected anywhere.';
+      'No signal. No problem. Stay\nconnected anywhere.';
 
   @override
-  String get intro_walkieTitle => 'Walkie-Talkie \n feature';
+  String get intro_walkieTitle => 'Walkie-Talkie\nfeature';
 
   @override
   String get media_cannotOpen => 'Cannot open';
@@ -5165,7 +5165,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String track_noSearchMatches(String query) {
-    return 'No members or groups matching\n\'$query\'';
+    return 'No members or groups matching';
   }
 
   @override

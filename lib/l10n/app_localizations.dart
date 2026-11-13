@@ -5,16 +5,24 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_ar.dart';
 import 'app_localizations_bn.dart';
+import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
 import 'app_localizations_gu.dart';
 import 'app_localizations_hi.dart';
+import 'app_localizations_ja.dart';
 import 'app_localizations_kn.dart';
 import 'app_localizations_ml.dart';
 import 'app_localizations_mr.dart';
+import 'app_localizations_or.dart';
 import 'app_localizations_pa.dart';
+import 'app_localizations_pt.dart';
 import 'app_localizations_ta.dart';
 import 'app_localizations_te.dart';
+import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
 
@@ -102,16 +110,24 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('ar'),
     Locale('bn'),
+    Locale('de'),
     Locale('en'),
+    Locale('es'),
+    Locale('fr'),
     Locale('gu'),
     Locale('hi'),
+    Locale('ja'),
     Locale('kn'),
     Locale('ml'),
     Locale('mr'),
+    Locale('or'),
     Locale('pa'),
+    Locale('pt'),
     Locale('ta'),
-    Locale('te')
+    Locale('te'),
+    Locale('zh')
   ];
 
   /// No description provided for @about_aboutUs.
@@ -5416,7 +5432,7 @@ abstract class AppLocalizations {
   /// No description provided for @group_startConversation.
   ///
   /// In en, this message translates to:
-  /// **'Feel Free to start a conversation '**
+  /// **'Feel Free to start a conversation'**
   String get group_startConversation;
 
   /// No description provided for @group_statusUpdateFailed.
@@ -5890,7 +5906,7 @@ abstract class AppLocalizations {
   /// No description provided for @intro_realTimeTrackingSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'View live locations of friends, \n family, or team members on \n the map instantly.'**
+  /// **'View live locations of friends, family, or team members on the map instantly.'**
   String get intro_realTimeTrackingSubtitle;
 
   /// No description provided for @intro_realTimeTrackingTitle.
@@ -5902,7 +5918,7 @@ abstract class AppLocalizations {
   /// No description provided for @intro_secureSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Share your live location with \n selected contacts safely and \n privately.'**
+  /// **'Share your live location with\nselected contacts safely and\nprivately.'**
   String get intro_secureSubtitle;
 
   /// No description provided for @intro_secureTitle.
@@ -5920,13 +5936,13 @@ abstract class AppLocalizations {
   /// No description provided for @intro_walkieSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'No signal. No problem. Stay \n connected anywhere.'**
+  /// **'No signal. No problem. Stay\nconnected anywhere.'**
   String get intro_walkieSubtitle;
 
   /// No description provided for @intro_walkieTitle.
   ///
   /// In en, this message translates to:
-  /// **'Walkie-Talkie \n feature'**
+  /// **'Walkie-Talkie\nfeature'**
   String get intro_walkieTitle;
 
   /// No description provided for @media_cannotOpen.
@@ -8788,7 +8804,7 @@ abstract class AppLocalizations {
   /// No description provided for @track_noSearchMatches.
   ///
   /// In en, this message translates to:
-  /// **'No members or groups matching\n\'{query}\''**
+  /// **'No members or groups matching'**
   String track_noSearchMatches(String query);
 
   /// No description provided for @track_noSearchResults.
@@ -12949,16 +12965,24 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) => <String>[
+        'ar',
         'bn',
+        'de',
         'en',
+        'es',
+        'fr',
         'gu',
         'hi',
+        'ja',
         'kn',
         'ml',
         'mr',
+        'or',
         'pa',
+        'pt',
         'ta',
-        'te'
+        'te',
+        'zh'
       ].contains(locale.languageCode);
 
   @override
@@ -12968,26 +12992,42 @@ class _AppLocalizationsDelegate
 AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'ar':
+      return AppLocalizationsAr();
     case 'bn':
       return AppLocalizationsBn();
+    case 'de':
+      return AppLocalizationsDe();
     case 'en':
       return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'fr':
+      return AppLocalizationsFr();
     case 'gu':
       return AppLocalizationsGu();
     case 'hi':
       return AppLocalizationsHi();
+    case 'ja':
+      return AppLocalizationsJa();
     case 'kn':
       return AppLocalizationsKn();
     case 'ml':
       return AppLocalizationsMl();
     case 'mr':
       return AppLocalizationsMr();
+    case 'or':
+      return AppLocalizationsOr();
     case 'pa':
       return AppLocalizationsPa();
+    case 'pt':
+      return AppLocalizationsPt();
     case 'ta':
       return AppLocalizationsTa();
     case 'te':
       return AppLocalizationsTe();
+    case 'zh':
+      return AppLocalizationsZh();
   }
 
   throw FlutterError(

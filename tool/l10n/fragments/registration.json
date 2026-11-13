@@ -9,7 +9,15 @@
     "ml": "ഉപയോക്തൃനാമം",
     "ta": "பயனர் பெயர்",
     "te": "వినియోగదారు పేరు",
-    "pa": "ਵਰਤੋਂਕਾਰ ਨਾਮ"
+    "pa": "ਵਰਤੋਂਕਾਰ ਨਾਮ",
+    "es": "Nombre de usuario",
+    "fr": "Nom d'utilisateur",
+    "de": "Benutzername",
+    "ar": "اسم المستخدم",
+    "pt": "Nome de usuário",
+    "ja": "ユーザー名",
+    "zh": "用户名",
+    "or": "ଉପଯୋଗକର୍ତ୍ତା ନାମ"
   },
   "registration_userNameHint": {
     "en": "Enter User Name",
@@ -21,7 +29,15 @@
     "ml": "ഉപയോക്തൃനാമം നൽകുക",
     "ta": "பயனர் பெயரை உள்ளிடவும்",
     "te": "వినియోగదారు పేరు నమోదు చేయండి",
-    "pa": "ਵਰਤੋਂਕਾਰ ਨਾਮ ਦਰਜ ਕਰੋ"
+    "pa": "ਵਰਤੋਂਕਾਰ ਨਾਮ ਦਰਜ ਕਰੋ",
+    "es": "Introduce el nombre de usuario",
+    "fr": "Entrez le nom d'utilisateur",
+    "de": "Benutzernamen eingeben",
+    "ar": "أدخل اسم المستخدم",
+    "pt": "Digite o nome de usuário",
+    "ja": "ユーザー名を入力",
+    "zh": "输入用户名",
+    "or": "ଉପଯୋଗକର୍ତ୍ତା ନାମ ପ୍ରବେଶ କରନ୍ତୁ |"
   },
   "registration_contactNumberLabel": {
     "en": "Contact Number",
@@ -33,7 +49,15 @@
     "ml": "ബന്ധപ്പെടാനുള്ള നമ്പർ",
     "ta": "தொடர்பு எண்",
     "te": "సంప్రదింపు నంబర్",
-    "pa": "ਸੰਪਰਕ ਨੰਬਰ"
+    "pa": "ਸੰਪਰਕ ਨੰਬਰ",
+    "es": "Número de contacto",
+    "fr": "Numéro de contact",
+    "de": "Kontaktnummer",
+    "ar": "رقم الاتصال",
+    "pt": "Número de contato",
+    "ja": "連絡先番号",
+    "zh": "联系电话",
+    "or": "ଯୋଗାଯୋଗ ନମ୍ବର |"
   },
   "registration_contactNumberHint": {
     "en": "Enter Contact Number",
@@ -46,7 +70,15 @@
     "ta": "தொடர்பு எண்ணை உள்ளிடவும்",
     "te": "సంప్రదింపు నంబర్ నమోదు చేయండి",
     "pa": "ਸੰਪਰਕ ਨੰਬਰ ਦਰਜ ਕਰੋ",
-    "description": "Hint in the (read-only) mobile number field."
+    "description": "Hint in the (read-only) mobile number field.",
+    "es": "Introduce el número de contacto",
+    "fr": "Entrez le numéro de contact",
+    "de": "Kontaktnummer eingeben",
+    "ar": "أدخل رقم الاتصال",
+    "pt": "Digite o número de contato",
+    "ja": "連絡先番号を入力",
+    "zh": "输入联系电话",
+    "or": "ଯୋଗାଯୋଗ ନମ୍ବର ପ୍ରବେଶ କରନ୍ତୁ |"
   },
   "registration_emailLabel": {
     "en": "Email Address",
@@ -58,7 +90,15 @@
     "ml": "ഇമെയിൽ വിലാസം",
     "ta": "மின்னஞ்சல் முகவரி",
     "te": "ఇమెయిల్ చిరునామా",
-    "pa": "ਈਮੇਲ ਪਤਾ"
+    "pa": "ਈਮੇਲ ਪਤਾ",
+    "es": "Dirección de correo",
+    "fr": "Adresse e-mail",
+    "de": "E-Mail-Adresse",
+    "ar": "البريد الإلكتروني",
+    "pt": "Endereço de e-mail",
+    "ja": "メールアドレス",
+    "zh": "电子邮件地址",
+    "or": "ଇମେଲ୍ ଠିକଣା"
   },
   "registration_emailHint": {
     "en": "Enter Email Address",
@@ -70,7 +110,15 @@
     "ml": "ഇമെയിൽ വിലാസം നൽകുക",
     "ta": "மின்னஞ்சல் முகவரியை உள்ளிடவும்",
     "te": "ఇమెయిల్ చిరునామా నమోదు చేయండి",
-    "pa": "ਈਮੇਲ ਪਤਾ ਦਰਜ ਕਰੋ"
+    "pa": "ਈਮੇਲ ਪਤਾ ਦਰਜ ਕਰੋ",
+    "es": "Introduce la dirección de correo",
+    "fr": "Entrez l'adresse e-mail",
+    "de": "E-Mail-Adresse eingeben",
+    "ar": "أدخل البريد الإلكتروني",
+    "pt": "Digite o endereço de e-mail",
+    "ja": "メールアドレスを入力",
+    "zh": "输入电子邮件地址",
+    "or": "ଇମେଲ୍ ଠିକଣା ପ୍ରବେଶ କରନ୍ତୁ |"
   },
   "registration_genderLabel": {
     "en": "Select Gender",
@@ -82,7 +130,15 @@
     "ml": "ലിംഗഭേദം തിരഞ്ഞെടുക്കുക",
     "ta": "பாலினத்தைத் தேர்ந்தெடுக்கவும்",
     "te": "లింగాన్ని ఎంచుకోండి",
-    "pa": "ਲਿੰਗ ਚੁਣੋ"
+    "pa": "ਲਿੰਗ ਚੁਣੋ",
+    "es": "Seleccionar género",
+    "fr": "Sélectionner le genre",
+    "de": "Geschlecht auswählen",
+    "ar": "حدد الجنس",
+    "pt": "Selecionar gênero",
+    "ja": "性別を選択",
+    "zh": "选择性别",
+    "or": "ଲିଙ୍ଗ ଚୟନ କରନ୍ତୁ |"
   },
   "registration_genderMale": {
     "en": "Male",
@@ -94,7 +150,15 @@
     "ml": "പുരുഷൻ",
     "ta": "ஆண்",
     "te": "పురుషుడు",
-    "pa": "ਪੁਰਸ਼"
+    "pa": "ਪੁਰਸ਼",
+    "es": "Masculino",
+    "fr": "Homme",
+    "de": "Männlich",
+    "ar": "ذكر",
+    "pt": "Masculino",
+    "ja": "男性",
+    "zh": "男",
+    "or": "ପୁରୁଷ"
   },
   "registration_genderFemale": {
     "en": "Female",
@@ -106,7 +170,15 @@
     "ml": "സ്ത്രീ",
     "ta": "பெண்",
     "te": "స్త్రీ",
-    "pa": "ਔਰਤ"
+    "pa": "ਔਰਤ",
+    "es": "Femenino",
+    "fr": "Femme",
+    "de": "Weiblich",
+    "ar": "أنثى",
+    "pt": "Feminino",
+    "ja": "女性",
+    "zh": "女",
+    "or": "ମହିଳା"
   },
   "registration_genderOther": {
     "en": "Other",
@@ -118,11 +190,19 @@
     "ml": "മറ്റുള്ളവ",
     "ta": "மற்றவை",
     "te": "ఇతర",
-    "pa": "ਹੋਰ"
+    "pa": "ਹੋਰ",
+    "es": "Otro",
+    "fr": "Autre",
+    "de": "Divers",
+    "ar": "آخر",
+    "pt": "Outro",
+    "ja": "その他",
+    "zh": "其他",
+    "or": "ଅନ୍ୟମାନେ |"
   },
   "registration_doneButton": {
     "en": "Done",
-    "hi": "हो गया",
+    "hi": "पूर्ण",
     "mr": "पूर्ण",
     "gu": "થઈ ગયું",
     "kn": "ಮುಗಿದಿದೆ",
@@ -131,7 +211,15 @@
     "ta": "முடிந்தது",
     "te": "పూర్తయింది",
     "pa": "ਹੋ ਗਿਆ",
-    "description": "Submit button on the Registration screen."
+    "description": "Submit button on the Registration screen.",
+    "es": "Listo",
+    "fr": "Terminé",
+    "de": "Fertig",
+    "ar": "تم",
+    "pt": "Concluir",
+    "ja": "完了",
+    "zh": "完成",
+    "or": "ସମାପ୍ତ"
   },
   "registration_selectGenderError": {
     "en": "Please select your gender",
@@ -143,7 +231,15 @@
     "ml": "ദയവായി നിങ്ങളുടെ ലിംഗഭേദം തിരഞ്ഞെടുക്കുക",
     "ta": "உங்கள் பாலினத்தைத் தேர்ந்தெடுக்கவும்",
     "te": "దయచేసి మీ లింగాన్ని ఎంచుకోండి",
-    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਲਿੰਗ ਚੁਣੋ"
+    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਲਿੰਗ ਚੁਣੋ",
+    "es": "Por favor, selecciona tu género",
+    "fr": "Veuillez sélectionner votre genre",
+    "de": "Bitte wähle dein Geschlecht",
+    "ar": "يرجى تحديد جنسك",
+    "pt": "Por favor, selecione seu gênero",
+    "ja": "性別を選択してください",
+    "zh": "请选择您的性别",
+    "or": "ଦୟାକରି ଆପଣଙ୍କର ଲିଙ୍ଗ ଚୟନ କରନ୍ତୁ |"
   },
   "editProfile_title": {
     "en": "Edit Profile",
@@ -155,7 +251,15 @@
     "ml": "പ്രൊഫൈൽ എഡിറ്റ് ചെയ്യുക",
     "ta": "சுயவிவரத்தைத் திருத்து",
     "te": "ప్రొఫైల్‌ను సవరించండి",
-    "pa": "ਪ੍ਰੋਫਾਈਲ ਸੋਧੋ"
+    "pa": "ਪ੍ਰੋਫਾਈਲ ਸੋਧੋ",
+    "es": "Editar perfil",
+    "fr": "Modifier le profil",
+    "de": "Profil bearbeiten",
+    "ar": "تعديل الملف الشخصي",
+    "pt": "Editar perfil",
+    "ja": "プロフィールを編集",
+    "zh": "编辑个人资料",
+    "or": "ପ୍ରୋଫାଇଲ୍ ସଂପାଦନ କରନ୍ତୁ |"
   },
   "editProfile_tapPhotoHint": {
     "en": "Tap on the photo to change",
@@ -167,7 +271,15 @@
     "ml": "മാറ്റാൻ ഫോട്ടോയിൽ ടാപ്പ് ചെയ്യുക",
     "ta": "மாற்ற புகைப்படத்தைத் தட்டவும்",
     "te": "మార్చడానికి ఫోటోపై నొక్కండి",
-    "pa": "ਬਦਲਣ ਲਈ ਫੋਟੋ ਉੱਤੇ ਟੈਪ ਕਰੋ"
+    "pa": "ਬਦਲਣ ਲਈ ਫੋਟੋ ਉੱਤੇ ਟੈਪ ਕਰੋ",
+    "es": "Toca la foto para cambiarla",
+    "fr": "Appuyez sur la photo pour changer",
+    "de": "Tippe auf das Foto zum Ändern",
+    "ar": "اضغط على الصورة للتغيير",
+    "pt": "Toque na foto para alterar",
+    "ja": "写真をタップして変更",
+    "zh": "点击照片以更换",
+    "or": "ପରିବର୍ତ୍ତନ କରିବାକୁ ଫଟୋ ଉପରେ ଟ୍ୟାପ୍ କରନ୍ତୁ |"
   },
   "editProfile_personalInfo": {
     "en": "Personal Information",
@@ -179,7 +291,15 @@
     "ml": "വ്യക്തിഗത വിവരങ്ങൾ",
     "ta": "தனிப்பட்ட தகவல்",
     "te": "వ్యక్తిగత సమాచారం",
-    "pa": "ਨਿੱਜੀ ਜਾਣਕਾਰੀ"
+    "pa": "ਨਿੱਜੀ ਜਾਣਕਾਰੀ",
+    "es": "Información personal",
+    "fr": "Informations personnelles",
+    "de": "Persönliche Angaben",
+    "ar": "المعلومات الشخصية",
+    "pt": "Informações pessoais",
+    "ja": "個人情報",
+    "zh": "个人信息",
+    "or": "ବ୍ୟକ୍ତିଗତ ସୂଚନା"
   },
   "editProfile_fullNameLabel": {
     "en": "Full Name",
@@ -191,7 +311,15 @@
     "ml": "പൂർണ്ണ നാമം",
     "ta": "முழுப் பெயர்",
     "te": "పూర్తి పేరు",
-    "pa": "ਪੂਰਾ ਨਾਮ"
+    "pa": "ਪੂਰਾ ਨਾਮ",
+    "es": "Nombre completo",
+    "fr": "Nom complet",
+    "de": "Vollständiger Name",
+    "ar": "الاسم الكامل",
+    "pt": "Nome completo",
+    "ja": "氏名",
+    "zh": "全名",
+    "or": "ପୂର୍ଣ୍ଣ ନାମ"
   },
   "editProfile_phoneLabel": {
     "en": "Phone Number",
@@ -203,7 +331,15 @@
     "ml": "ഫോൺ നമ്പർ",
     "ta": "தொலைபேசி எண்",
     "te": "ఫోన్ నంబర్",
-    "pa": "ਫ਼ੋਨ ਨੰਬਰ"
+    "pa": "ਫ਼ੋਨ ਨੰਬਰ",
+    "es": "Número de teléfono",
+    "fr": "Numéro de téléphone",
+    "de": "Telefonnummer",
+    "ar": "رقم الهاتف",
+    "pt": "Número de telefone",
+    "ja": "電話番号",
+    "zh": "电话号码",
+    "or": "ଫୋନ୍ ନମ୍ବର |"
   },
   "editProfile_saveButton": {
     "en": "Save Changes",
@@ -215,7 +351,15 @@
     "ml": "മാറ്റങ്ങൾ സംരക്ഷിക്കുക",
     "ta": "மாற்றங்களைச் சேமி",
     "te": "మార్పులను సేవ్ చేయండి",
-    "pa": "ਤਬਦੀਲੀਆਂ ਸੰਭਾਲੋ"
+    "pa": "ਤਬਦੀਲੀਆਂ ਸੰਭਾਲੋ",
+    "es": "Guardar cambios",
+    "fr": "Enregistrer les modifications",
+    "de": "Änderungen speichern",
+    "ar": "حفظ التغييرات",
+    "pt": "Salvar alterações",
+    "ja": "変更を保存",
+    "zh": "保存更改",
+    "or": "ପରିବର୍ତ୍ତନଗୁଡିକ ସଞ୍ଚୟ କରନ୍ତୁ |"
   },
   "validation_required": {
     "en": "{field} is required",
@@ -234,7 +378,15 @@
         "type": "String",
         "example": "User Name"
       }
-    }
+    },
+    "es": "{field} es obligatorio",
+    "fr": "{field} est requis",
+    "de": "{field} ist erforderlich",
+    "ar": "{field} مطلوب",
+    "pt": "{field} é obrigatório",
+    "ja": "{field}は必須です",
+    "zh": "{field} 为必填项",
+    "or": "{field} ଆବଶ୍ୟକ |"
   },
   "validation_emailEmpty": {
     "en": "Email address cannot be empty",
@@ -246,7 +398,15 @@
     "ml": "ഇമെയിൽ വിലാസം ശൂന്യമായിരിക്കരുത്",
     "ta": "மின்னஞ்சல் முகவரி காலியாக இருக்கக்கூடாது",
     "te": "ఇమెయిల్ చిరునామా ఖాళీగా ఉండకూడదు",
-    "pa": "ਈਮੇਲ ਪਤਾ ਖਾਲੀ ਨਹੀਂ ਹੋ ਸਕਦਾ"
+    "pa": "ਈਮੇਲ ਪਤਾ ਖਾਲੀ ਨਹੀਂ ਹੋ ਸਕਦਾ",
+    "es": "El correo electrónico no puede estar vacío",
+    "fr": "L'adresse e-mail ne peut pas être vide",
+    "de": "E-Mail-Adresse darf nicht leer sein",
+    "ar": "لا يمكن أن يكون البريد الإلكتروني فارغاً",
+    "pt": "O endereço de e-mail não pode ficar em branco",
+    "ja": "メールアドレスを入力してください",
+    "zh": "电子邮件地址不能为空",
+    "or": "ଇମେଲ୍ ଠିକଣା ଖାଲି ହୋଇପାରିବ ନାହିଁ |"
   },
   "validation_emailInvalid": {
     "en": "Please enter a valid email address.",
@@ -258,7 +418,15 @@
     "ml": "ദയവായി സാധുവായ ഒരു ഇമെയിൽ വിലാസം നൽകുക.",
     "ta": "சரியான மின்னஞ்சல் முகவரியை உள்ளிடவும்.",
     "te": "దయచేసి చెల్లుబాటు అయ్యే ఇమెయిల్ చిరునామాను నమోదు చేయండి.",
-    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ ਈਮੇਲ ਪਤਾ ਦਰਜ ਕਰੋ।"
+    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ ਈਮੇਲ ਪਤਾ ਦਰਜ ਕਰੋ।",
+    "es": "Por favor, introduce un correo electrónico válido.",
+    "fr": "Veuillez saisir une adresse e-mail valide.",
+    "de": "Bitte gib eine gültige E-Mail-Adresse ein.",
+    "ar": "يرجى إدخال عنوان بريد إلكتروني صالح.",
+    "pt": "Por favor, insira um e-mail válido.",
+    "ja": "有効なメールアドレスを入力してください。",
+    "zh": "请输入有效的电子邮件地址。",
+    "or": "ଦୟାକରି ଏକ ବ email ଧ ଇମେଲ୍ ଠିକଣା ପ୍ରବେଶ କରନ୍ତୁ |"
   },
   "imagePicker_title": {
     "en": "Choose an Option",
@@ -270,7 +438,15 @@
     "ml": "ഒരു ഓപ്ഷൻ തിരഞ്ഞെടുക്കുക",
     "ta": "ஒரு விருப்பத்தைத் தேர்ந்தெடுக்கவும்",
     "te": "ఒక ఎంపికను ఎంచుకోండి",
-    "pa": "ਇੱਕ ਵਿਕਲਪ ਚੁਣੋ"
+    "pa": "ਇੱਕ ਵਿਕਲਪ ਚੁਣੋ",
+    "es": "Elige una opción",
+    "fr": "Choisissez une option",
+    "de": "Option auswählen",
+    "ar": "اختر خياراً",
+    "pt": "Escolha uma opção",
+    "ja": "オプションを選択",
+    "zh": "选择一个选项",
+    "or": "ଏକ ବିକଳ୍ପ ବାଛନ୍ତୁ |"
   },
   "imagePicker_gallery": {
     "en": "Gallery",
@@ -282,7 +458,15 @@
     "ml": "ഗാലറി",
     "ta": "கேலரி",
     "te": "గ్యాలరీ",
-    "pa": "ਗੈਲਰੀ"
+    "pa": "ਗੈਲਰੀ",
+    "es": "Galería",
+    "fr": "Galerie",
+    "de": "Galerie",
+    "ar": "المعرض",
+    "pt": "Galeria",
+    "ja": "ギャラリー",
+    "zh": "相册",
+    "or": "ଗ୍ୟାଲେରୀ"
   },
   "imagePicker_camera": {
     "en": "Camera",
@@ -294,7 +478,15 @@
     "ml": "ക്യാമറ",
     "ta": "கேமரா",
     "te": "కెమెరా",
-    "pa": "ਕੈਮਰਾ"
+    "pa": "ਕੈਮਰਾ",
+    "es": "Cámara",
+    "fr": "Appareil photo",
+    "de": "Kamera",
+    "ar": "الكاميرا",
+    "pt": "Câmera",
+    "ja": "カメラ",
+    "zh": "相机",
+    "or": "କ୍ୟାମେରା |"
   },
   "imagePicker_cancel": {
     "en": "Cancel",
@@ -306,7 +498,15 @@
     "ml": "റദ്ദാക്കുക",
     "ta": "ரத்துசெய்",
     "te": "రద్దు చేయండి",
-    "pa": "ਰੱਦ ਕਰੋ"
+    "pa": "ਰੱਦ ਕਰੋ",
+    "es": "Cancelar",
+    "fr": "Annuler",
+    "de": "Abbrechen",
+    "ar": "إلغاء",
+    "pt": "Cancelar",
+    "ja": "キャンセル",
+    "zh": "取消",
+    "or": "ବାତିଲ୍ କରନ୍ତୁ |"
   },
   "imagePicker_cropTitle": {
     "en": "Crop Image",
@@ -318,6 +518,14 @@
     "ml": "ചിത്രം ക്രോപ്പ് ചെയ്യുക",
     "ta": "படத்தைச் செதுக்கு",
     "te": "చిత్రాన్ని క్రాప్ చేయండి",
-    "pa": "ਤਸਵੀਰ ਕ੍ਰੌਪ ਕਰੋ"
+    "pa": "ਤਸਵੀਰ ਕ੍ਰੌਪ ਕਰੋ",
+    "es": "Recortar imagen",
+    "fr": "Recadrer l'image",
+    "de": "Bild zuschneiden",
+    "ar": "قص الصورة",
+    "pt": "Cortar imagem",
+    "ja": "画像を切り抜き",
+    "zh": "裁剪图片",
+    "or": "କ୍ରପ୍ ପ୍ରତିଛବି |"
   }
 }

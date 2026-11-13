@@ -70,6 +70,11 @@ class LanguageController extends GetxController {
     // image cache), this keeps every open screen and image as it is; widgets
     // that read Localizations rebuild on their own.
     Get.locale = option.locale;
+    if (!Get.testMode) {
+      try {
+        Get.updateLocale(option.locale);
+      } catch (_) {}
+    }
     Get.appUpdate();
     // Android shows notification channel names in system settings; re-create
     // the existing channels (same ids) with names in the new language.

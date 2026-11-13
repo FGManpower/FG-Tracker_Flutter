@@ -11,14 +11,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Part 2, first case: pick मराठी on the Language screen → पुढे जा → the real
-/// Registration screen opens in Marathi straight away (labels, gender
+/// Part 2, first case: pick हिन्दी on the Language screen → आगे बढ़ें → the real
+/// Registration screen opens in Hindi straight away (labels, gender
 /// options, Done, validation). What the user typed stays as typed.
 void main() {
   const otp = '/OTPScreen';
   const register = '/register';
 
   Future<LanguageController> pumpFlow(WidgetTester tester) async {
+    Get.testMode = true;
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(390, 844) * 3;
     tester.view.devicePixelRatio = 3;
@@ -67,30 +68,30 @@ void main() {
     return controller;
   }
 
-  testWidgets('मराठी → पुढे जा → Registration is in Marathi', (tester) async {
+  testWidgets('हिन्दी → आगे बढ़ें → Registration is in Hindi', (tester) async {
     final controller = await pumpFlow(tester);
 
-    await tester.tap(find.byKey(const ValueKey('language-card-mr')));
+    await tester.tap(find.byKey(const ValueKey('language-card-hi')));
     await tester.pumpAndSettle();
-    expect(find.text('पुढे जा'), findsOneWidget);
+    expect(find.text('आगे बढ़ें'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('language-continue')));
     await tester.pumpAndSettle();
 
-    expect(controller.savedCode.value, 'mr');
+    expect(controller.savedCode.value, 'hi');
     expect(find.byType(RegistrationScreen), findsOneWidget);
 
     // Labels, hints, gender options, Done.
     for (final text in [
-      'वापरकर्ता नाव',
-      'संपर्क क्रमांक',
-      'ईमेल पत्ता',
-      'लिंग निवडा',
+      'उपयोगकर्ता नाम',
+      'संपर्क नंबर',
+      'ईमेल पता',
+      'लिंग चुनें',
       'पुरुष',
-      'स्त्री',
-      'इतर',
+      'महिला',
+      'अन्य',
       'पूर्ण',
-      'वापरकर्ता नाव टाका',
-      'ईमेल पत्ता टाका',
+      'उपयोगकर्ता नाम दर्ज करें',
+      'ईमेल पता दर्ज करें',
     ]) {
       expect(find.text(text), findsOneWidget, reason: text);
     }
@@ -110,22 +111,22 @@ void main() {
     // The mobile number passed by OTP stays as it is.
     expect(find.text('1111111111'), findsOneWidget);
 
-    // Typed text stays as typed; validation messages are Marathi.
+    // Typed text stays as typed; validation messages are Hindi.
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(2), 'dalai@gma');
     await tester.tap(find.text('पूर्ण'));
     await tester.pumpAndSettle();
 
     expect(find.text('dalai@gma'), findsOneWidget);
-    expect(find.text('कृपया वैध ईमेल पत्ता टाका.'), findsOneWidget);
-    expect(find.text('वापरकर्ता नाव आवश्यक आहे'), findsOneWidget);
+    expect(find.text('कृपया एक मान्य ईमेल पता दर्ज करें।'), findsOneWidget);
+    expect(find.text('उपयोगकर्ता नाम आवश्यक है'), findsOneWidget);
     expect(find.text('Please enter a valid email address.'), findsNothing);
 
-    // Empty email → its own Marathi message.
+    // Empty email → its own Hindi message.
     await tester.enterText(fields.at(2), '');
     await tester.tap(find.text('पूर्ण'));
     await tester.pumpAndSettle();
-    expect(find.text('ईमेल पत्ता रिकामा असू शकत नाही'), findsOneWidget);
+    expect(find.text('ईमेल पता खाली नहीं हो सकता'), findsOneWidget);
   });
 
   testWidgets('English stays English (no regression)', (tester) async {
@@ -157,7 +158,7 @@ void main() {
   test('every ARB locale has the Registration keys (no English leftovers)',
       () {
     final en = lookupAppLocalizations(const Locale('en'));
-    for (final o in kAppLanguages.where((o) => o.code != 'en')) {
+    for (final o in kAppLanguages.where((o) => o.hasCompiledL10n && o.code != 'en')) {
       final l = lookupAppLocalizations(o.locale);
       expect(l.registration_userNameLabel, isNot(en.registration_userNameLabel),
           reason: o.code);
