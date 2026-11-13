@@ -10,7 +10,15 @@
     "ta": "அழைப்பு",
     "te": "కాల్",
     "pa": "ਕਾਲ",
-    "description": "Title of the Call screen (noun)"
+    "description": "Title of the Call screen (noun)",
+    "es": "Llamada",
+    "fr": "Appel",
+    "de": "Anruf",
+    "ar": "مكالمة",
+    "pt": "Chamada",
+    "ja": "通話",
+    "zh": "通话",
+    "or": "କଲ୍ କରନ୍ତୁ |"
   },
   "call_subtitle": {
     "en": "Audio / Video Call",
@@ -22,7 +30,15 @@
     "ml": "ഓഡിയോ / വീഡിയോ കോൾ",
     "ta": "ஆடியோ / வீடியோ அழைப்பு",
     "te": "ఆడియో / వీడియో కాల్",
-    "pa": "ਆਡੀਓ / ਵੀਡੀਓ ਕਾਲ"
+    "pa": "ਆਡੀਓ / ਵੀਡੀਓ ਕਾਲ",
+    "es": "Llamada de audio / video",
+    "fr": "Appel audio / vidéo",
+    "de": "Audio- / Videoanruf",
+    "ar": "مكالمة صوتية / فيديو",
+    "pt": "Chamada de áudio / vídeo",
+    "ja": "音声 / ビデオ通話",
+    "zh": "音频 / 视频通话",
+    "or": "ଅଡିଓ / ଭିଡିଓ କଲ୍ |"
   },
   "call_selectedCount": {
     "en": "{count} Selected",
@@ -39,7 +55,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count} seleccionados",
+    "fr": "{count} sélectionnés",
+    "de": "{count} ausgewählt",
+    "ar": "{count} محدد",
+    "pt": "{count} selecionados",
+    "ja": "{count}件選択中",
+    "zh": "已选择 {count} 项",
+    "or": "{count} ମନୋନୀତ |"
   },
   "call_searchHint": {
     "en": "Search contacts or groups",
@@ -51,7 +75,15 @@
     "ml": "കോൺടാക്റ്റുകളോ ഗ്രൂപ്പുകളോ തിരയുക",
     "ta": "தொடர்புகள் அல்லது குழுக்களைத் தேடுக",
     "te": "కాంటాక్ట్‌లు లేదా గ్రూప్‌లను వెతకండి",
-    "pa": "ਸੰਪਰਕ ਜਾਂ ਗਰੁੱਪ ਖੋਜੋ"
+    "pa": "ਸੰਪਰਕ ਜਾਂ ਗਰੁੱਪ ਖੋਜੋ",
+    "es": "Buscar contactos o grupos",
+    "fr": "Rechercher des contacts ou groupes",
+    "de": "Kontakte oder Gruppen suchen",
+    "ar": "البحث في جهات الاتصال أو المجموعات",
+    "pt": "Pesquisar contatos ou grupos",
+    "ja": "連絡先またはグループを検索",
+    "zh": "搜索联系人或群组",
+    "or": "ସମ୍ପର୍କ କିମ୍ବା ଗୋଷ୍ଠୀ ଖୋଜ |"
   },
   "call_tabRecent": {
     "en": "Recent",
@@ -64,7 +96,15 @@
     "ta": "சமீபத்தியவை",
     "te": "ఇటీవలివి",
     "pa": "ਹਾਲੀਆ",
-    "description": "Tab / section of recent calls"
+    "description": "Tab / section of recent calls",
+    "es": "Recientes",
+    "fr": "Récents",
+    "de": "Letzte",
+    "ar": "الأخيرة",
+    "pt": "Recentes",
+    "ja": "履歴",
+    "zh": "最近",
+    "or": "ସମ୍ପ୍ରତି"
   },
   "call_tabContacts": {
     "en": "Contacts",
@@ -76,7 +116,15 @@
     "ml": "കോൺടാക്റ്റുകൾ",
     "ta": "தொடர்புகள்",
     "te": "కాంటాక్ట్‌లు",
-    "pa": "ਸੰਪਰਕ"
+    "pa": "ਸੰਪਰਕ",
+    "es": "Contactos",
+    "fr": "Contacts",
+    "de": "Kontakte",
+    "ar": "جهات الاتصال",
+    "pt": "Contatos",
+    "ja": "連絡先",
+    "zh": "联系人",
+    "or": "ସମ୍ପର୍କଗୁଡିକ"
   },
   "call_tabGroups": {
     "en": "Groups",
@@ -88,7 +136,15 @@
     "ml": "ഗ്രൂപ്പുകൾ",
     "ta": "குழுக்கள்",
     "te": "గ్రూప్‌లు",
-    "pa": "ਗਰੁੱਪ"
+    "pa": "ਗਰੁੱਪ",
+    "es": "Grupos",
+    "fr": "Groupes",
+    "de": "Gruppen",
+    "ar": "المجموعات",
+    "pt": "Grupos",
+    "ja": "グループ",
+    "zh": "群组",
+    "or": "ଗୋଷ୍ଠୀଗୁଡିକ"
   },
   "call_enterNumber": {
     "en": "Enter number",
@@ -100,7 +156,15 @@
     "ml": "നമ്പർ നൽകുക",
     "ta": "எண்ணை உள்ளிடவும்",
     "te": "నంబర్ నమోదు చేయండి",
-    "pa": "ਨੰਬਰ ਦਰਜ ਕਰੋ"
+    "pa": "ਨੰਬਰ ਦਰਜ ਕਰੋ",
+    "es": "Introduce el número",
+    "fr": "Entrez le numéro",
+    "de": "Nummer eingeben",
+    "ar": "أدخل الرقم",
+    "pt": "Digite o número",
+    "ja": "番号を入力",
+    "zh": "输入号码",
+    "or": "ସଂଖ୍ୟା ପ୍ରବେଶ କରନ୍ତୁ |"
   },
   "call_enterPhoneNumber": {
     "en": "Please enter a phone number",
@@ -112,7 +176,15 @@
     "ml": "ദയവായി ഫോൺ നമ്പർ നൽകുക",
     "ta": "தொலைபேசி எண்ணை உள்ளிடவும்",
     "te": "దయచేసి ఫోన్ నంబర్ నమోదు చేయండి",
-    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਫ਼ੋਨ ਨੰਬਰ ਦਰਜ ਕਰੋ"
+    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਫ਼ੋਨ ਨੰਬਰ ਦਰਜ ਕਰੋ",
+    "es": "Por favor, introduce un número de teléfono",
+    "fr": "Veuillez entrer un numéro de téléphone",
+    "de": "Bitte gib eine Telefonnummer ein",
+    "ar": "يرجى إدخال رقم هاتف",
+    "pt": "Por favor, insira um número de telefone",
+    "ja": "電話番号を入力してください",
+    "zh": "请输入电话号码",
+    "or": "ଦୟାକରି ଏକ ଫୋନ୍ ନମ୍ବର ପ୍ରବେଶ କରନ୍ତୁ |"
   },
   "call_loginToCall": {
     "en": "Please login to make a call",
@@ -124,7 +196,15 @@
     "ml": "കോൾ ചെയ്യാൻ ദയവായി ലോഗിൻ ചെയ്യുക",
     "ta": "அழைக்க உள்நுழையவும்",
     "te": "కాల్ చేయడానికి దయచేసి లాగిన్ అవ్వండి",
-    "pa": "ਕਾਲ ਕਰਨ ਲਈ ਕਿਰਪਾ ਕਰਕੇ ਲੌਗ ਇਨ ਕਰੋ"
+    "pa": "ਕਾਲ ਕਰਨ ਲਈ ਕਿਰਪਾ ਕਰਕੇ ਲੌਗ ਇਨ ਕਰੋ",
+    "es": "Por favor, inicia sesión para realizar una llamada",
+    "fr": "Veuillez vous connecter pour passer un appel",
+    "de": "Bitte anmelden, um anzurufen",
+    "ar": "يرجى تسجيل الدخول لإجراء مكالمة",
+    "pt": "Por favor, faça login para fazer uma chamada",
+    "ja": "通話を発信するにはログインしてください",
+    "zh": "请先登录后再拨打电话",
+    "or": "ଏକ କଲ କରିବାକୁ ଦୟାକରି ଲଗଇନ୍ କରନ୍ତୁ |"
   },
   "call_notInContacts": {
     "en": "This number is not in your contacts",
@@ -136,7 +216,15 @@
     "ml": "ഈ നമ്പർ നിങ്ങളുടെ കോൺടാക്റ്റുകളിൽ ഇല്ല",
     "ta": "இந்த எண் உங்கள் தொடர்புகளில் இல்லை",
     "te": "ఈ నంబర్ మీ కాంటాక్ట్‌లలో లేదు",
-    "pa": "ਇਹ ਨੰਬਰ ਤੁਹਾਡੇ ਸੰਪਰਕਾਂ ਵਿੱਚ ਨਹੀਂ ਹੈ"
+    "pa": "ਇਹ ਨੰਬਰ ਤੁਹਾਡੇ ਸੰਪਰਕਾਂ ਵਿੱਚ ਨਹੀਂ ਹੈ",
+    "es": "Este número no está en tus contactos",
+    "fr": "Ce numéro n'est pas dans vos contacts",
+    "de": "Diese Nummer ist nicht in deinen Kontakten",
+    "ar": "هذا الرقم ليس في جهات اتصالك",
+    "pt": "Este número não está em seus contatos",
+    "ja": "この番号は連絡先に登録されていません",
+    "zh": "此号码不在您的联系人中",
+    "or": "ଏହି ସଂଖ୍ୟା ଆପଣଙ୍କ ସମ୍ପର୍କରେ ନାହିଁ |"
   },
   "call_user": {
     "en": "User",
@@ -149,7 +237,15 @@
     "ta": "பயனர்",
     "te": "యూజర్",
     "pa": "ਯੂਜ਼ਰ",
-    "description": "Fallback name when a contact has no name"
+    "description": "Fallback name when a contact has no name",
+    "es": "Usuario",
+    "fr": "Utilisateur",
+    "de": "Benutzer",
+    "ar": "مستخدم",
+    "pt": "Usuário",
+    "ja": "ユーザー",
+    "zh": "用户",
+    "or": "ଉପଯୋଗକର୍ତ୍ତା |"
   },
   "call_userWithId": {
     "en": "User {id}",
@@ -166,7 +262,15 @@
       "id": {
         "type": "String"
       }
-    }
+    },
+    "es": "Usuario {id}",
+    "fr": "Utilisateur {id}",
+    "de": "Benutzer {id}",
+    "ar": "مستخدم {id}",
+    "pt": "Usuário {id}",
+    "ja": "ユーザー {id}",
+    "zh": "用户 {id}",
+    "or": "ଉପଯୋଗକର୍ତ୍ତା {id}"
   },
   "call_unknown": {
     "en": "Unknown",
@@ -179,7 +283,15 @@
     "ta": "தெரியாதவர்",
     "te": "తెలియదు",
     "pa": "ਅਣਜਾਣ",
-    "description": "Fallback name of an unknown caller"
+    "description": "Fallback name of an unknown caller",
+    "es": "Desconocido",
+    "fr": "Inconnu",
+    "de": "Unbekannt",
+    "ar": "غير معروف",
+    "pt": "Desconhecido",
+    "ja": "不明",
+    "zh": "未知",
+    "or": "ଅଜ୍ଞାତ"
   },
   "call_unknownUser": {
     "en": "Unknown User",
@@ -191,7 +303,15 @@
     "ml": "അജ്ഞാത ഉപയോക്താവ്",
     "ta": "தெரியாத பயனர்",
     "te": "తెలియని యూజర్",
-    "pa": "ਅਣਜਾਣ ਯੂਜ਼ਰ"
+    "pa": "ਅਣਜਾਣ ਯੂਜ਼ਰ",
+    "es": "Usuario desconocido",
+    "fr": "Utilisateur inconnu",
+    "de": "Unbekannter Benutzer",
+    "ar": "مستخدم غير معروف",
+    "pt": "Usuário desconhecido",
+    "ja": "不明なユーザー",
+    "zh": "未知用户",
+    "or": "ଅଜ୍ଞାତ ବ୍ୟବହାରକାରୀ |"
   },
   "call_unknownGroup": {
     "en": "Unknown Group",
@@ -203,7 +323,15 @@
     "ml": "അജ്ഞാത ഗ്രൂപ്പ്",
     "ta": "தெரியாத குழு",
     "te": "తెలియని గ్రూప్",
-    "pa": "ਅਣਜਾਣ ਗਰੁੱਪ"
+    "pa": "ਅਣਜਾਣ ਗਰੁੱਪ",
+    "es": "Grupo desconocido",
+    "fr": "Groupe inconnu",
+    "de": "Unbekannte Gruppe",
+    "ar": "مجموعة غير معروفة",
+    "pt": "Grupo desconhecido",
+    "ja": "不明なグループ",
+    "zh": "未知群组",
+    "or": "ଅଜ୍ଞାତ ଗୋଷ୍ଠୀ |"
   },
   "call_noNameGroup": {
     "en": "Unnamed group",
@@ -215,7 +343,15 @@
     "ml": "പേരില്ലാത്ത ഗ്രൂപ്പ്",
     "ta": "பெயரற்ற குழு",
     "te": "పేరు లేని గ్రూప్",
-    "pa": "ਬਿਨਾਂ ਨਾਮ ਵਾਲਾ ਗਰੁੱਪ"
+    "pa": "ਬਿਨਾਂ ਨਾਮ ਵਾਲਾ ਗਰੁੱਪ",
+    "es": "Grupo sin nombre",
+    "fr": "Groupe sans nom",
+    "de": "Unbenannte Gruppe",
+    "ar": "مجموعة بدون اسم",
+    "pt": "Grupo sem nome",
+    "ja": "名称未設定のグループ",
+    "zh": "未命名群组",
+    "or": "ନାମହୀନ ଗୋଷ୍ଠୀ |"
   },
   "call_groupWithId": {
     "en": "Group {id}",
@@ -232,7 +368,15 @@
       "id": {
         "type": "String"
       }
-    }
+    },
+    "es": "Grupo {id}",
+    "fr": "Groupe {id}",
+    "de": "Gruppe {id}",
+    "ar": "مجموعة {id}",
+    "pt": "Grupo {id}",
+    "ja": "グループ {id}",
+    "zh": "群组 {id}",
+    "or": "ଗୋଷ୍ଠୀ {id} |"
   },
   "call_groupBadge": {
     "en": "Group",
@@ -245,7 +389,15 @@
     "ta": "குழு",
     "te": "గ్రూప్",
     "pa": "ਗਰੁੱਪ",
-    "description": "Small badge / fallback name for a group"
+    "description": "Small badge / fallback name for a group",
+    "es": "Grupo",
+    "fr": "Groupe",
+    "de": "Gruppe",
+    "ar": "مجموعة",
+    "pt": "Grupo",
+    "ja": "グループ",
+    "zh": "群组",
+    "or": "ଗୋଷ୍ଠୀ"
   },
   "call_callIdNotFound": {
     "en": "Call ID not found",
@@ -257,7 +409,15 @@
     "ml": "കോൾ ID കണ്ടെത്തിയില്ല",
     "ta": "அழைப்பு ID கிடைக்கவில்லை",
     "te": "కాల్ ID కనుగొనబడలేదు",
-    "pa": "ਕਾਲ ID ਨਹੀਂ ਮਿਲੀ"
+    "pa": "ਕਾਲ ID ਨਹੀਂ ਮਿਲੀ",
+    "es": "ID de llamada no encontrado",
+    "fr": "ID d'appel introuvable",
+    "de": "Anruf-ID nicht gefunden",
+    "ar": "معرف المكالمة غير موجود",
+    "pt": "ID da chamada não encontrado",
+    "ja": "通話IDが見つかりません",
+    "zh": "未找到通话ID",
+    "or": "କଲ୍ ID ମିଳିଲା ନାହିଁ |"
   },
   "call_entryDeleted": {
     "en": "Call entry deleted",
@@ -269,7 +429,15 @@
     "ml": "കോൾ എൻട്രി ഇല്ലാതാക്കി",
     "ta": "அழைப்புப் பதிவு நீக்கப்பட்டது",
     "te": "కాల్ ఎంట్రీ తొలగించబడింది",
-    "pa": "ਕਾਲ ਐਂਟਰੀ ਮਿਟਾ ਦਿੱਤੀ ਗਈ"
+    "pa": "ਕਾਲ ਐਂਟਰੀ ਮਿਟਾ ਦਿੱਤੀ ਗਈ",
+    "es": "Registro de llamada eliminado",
+    "fr": "Entrée d'appel supprimée",
+    "de": "Anrufeintrag gelöscht",
+    "ar": "تم حذف سجل المكالمة",
+    "pt": "Registro de chamada excluído",
+    "ja": "通話履歴を削除しました",
+    "zh": "通话记录已删除",
+    "or": "କଲ୍ ଏଣ୍ଟ୍ରି ଡିଲିଟ୍ ହୋଇଛି |"
   },
   "call_entryDeleteFailed": {
     "en": "Failed to delete call entry",
@@ -281,7 +449,15 @@
     "ml": "കോൾ എൻട്രി ഇല്ലാതാക്കാനായില്ല",
     "ta": "அழைப்புப் பதிவை நீக்க முடியவில்லை",
     "te": "కాల్ ఎంట్రీని తొలగించడం విఫలమైంది",
-    "pa": "ਕਾਲ ਐਂਟਰੀ ਮਿਟਾਈ ਨਹੀਂ ਜਾ ਸਕੀ"
+    "pa": "ਕਾਲ ਐਂਟਰੀ ਮਿਟਾਈ ਨਹੀਂ ਜਾ ਸਕੀ",
+    "es": "Error al eliminar el registro de llamada",
+    "fr": "Échec de suppression de l'entrée d'appel",
+    "de": "Anrufeintrag konnte nicht gelöscht werden",
+    "ar": "فشل حذف سجل المكالمة",
+    "pt": "Falha ao excluir registro de chamada",
+    "ja": "通話履歴の削除に失敗しました",
+    "zh": "删除通话记录失败",
+    "or": "କଲ୍ ଏଣ୍ଟ୍ରି ବିଲୋପ କରିବାରେ ବିଫଳ |"
   },
   "call_entryDeleteFailedError": {
     "en": "Failed to delete call entry: {error}",
@@ -298,7 +474,15 @@
       "error": {
         "type": "String"
       }
-    }
+    },
+    "es": "Error al eliminar el registro de llamada: {error}",
+    "fr": "Échec de suppression de l'entrée d'appel : {error}",
+    "de": "Anrufeintrag konnte nicht gelöscht werden: {error}",
+    "ar": "فشل حذف سجل المكالمة: {error}",
+    "pt": "Falha ao excluir registro de chamada: {error}",
+    "ja": "通話履歴の削除に失敗しました: {error}",
+    "zh": "删除通话记录失败：{error}",
+    "or": "କଲ୍ ଏଣ୍ଟ୍ରି ବିଲୋପ କରିବାରେ ବିଫଳ: {error}"
   },
   "call_callsDeleted": {
     "en": "{count, plural, =1{1 call deleted} other{{count} calls deleted}}",
@@ -315,7 +499,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{1 llamada eliminada} other{{count} llamadas eliminadas}}",
+    "fr": "{count, plural, =1{1 appel supprimé} other{{count} appels supprimés}}",
+    "de": "{count, plural, =1{1 Anruf gelöscht} other{{count} Anrufe gelöscht}}",
+    "ar": "{count, plural, =1{تم حذف مكالمة واحدة} other{تم حذف {count} مكالمات}}",
+    "pt": "{count, plural, =1{1 chamada excluída} other{{count} chamadas excluídas}}",
+    "ja": "{count, plural, =1{1件の通話を削除しました} other{{count}件の通話を削除しました}}",
+    "zh": "{count, plural, =1{已删除 1 条通话记录} other{已删除 {count} 条通话记录}}",
+    "or": "{count, plural, =1{1 କଲ୍ ଡିଲିଟ୍ ହୋଇଛି |} other{{count} କଲ୍ ବିଲୋପ ହେଲା |}}"
   },
   "call_callsDeleteFailed": {
     "en": "{count, plural, =1{Couldn't delete 1 call. Try again.} other{Couldn't delete {count} calls. Try again.}}",
@@ -332,7 +524,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{No se pudo eliminar 1 llamada. Inténtalo de nuevo.} other{No se pudieron eliminar {count} llamadas. Inténtalo de nuevo.}}",
+    "fr": "{count, plural, =1{Impossible de supprimer 1 appel. Réessayez.} other{Impossible de supprimer {count} appels. Réessayez.}}",
+    "de": "{count, plural, =1{1 Anruf konnte nicht gelöscht werden. Bitte erneut versuchen.} other{{count} Anrufe konnten nicht gelöscht werden. Bitte erneut versuchen.}}",
+    "ar": "{count, plural, =1{تعذر حذف مكالمة واحدة. حاول مجدداً.} other{تعذر حذف {count} مكالمات. حاول مجدداً.}}",
+    "pt": "{count, plural, =1{Não foi possível excluir 1 chamada. Tente novamente.} other{Não foi possível excluir {count} chamadas. Tente novamente.}}",
+    "ja": "{count, plural, =1{1件の通話を削除できませんでした。もう一度お試しください。} other{{count}件の通話を削除できませんでした。もう一度お試しください。}}",
+    "zh": "{count, plural, =1{无法删除 1 条通话。请重试。} other{无法删除 {count} 条通话。请重试。}}",
+    "or": "{count, plural, =1{1 କଲ୍ ବିଲୋପ କରିପାରିଲା ନାହିଁ | ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |} other{{count} କଲ୍ ବିଲୋପ କରିପାରିଲା ନାହିଁ | ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |}}"
   },
   "call_selectedDeleted": {
     "en": "Selected calls deleted",
@@ -344,7 +544,15 @@
     "ml": "തിരഞ്ഞെടുത്ത കോളുകൾ ഇല്ലാതാക്കി",
     "ta": "தேர்ந்தெடுத்த அழைப்புகள் நீக்கப்பட்டன",
     "te": "ఎంచుకున్న కాల్‌లు తొలగించబడ్డాయి",
-    "pa": "ਚੁਣੀਆਂ ਕਾਲਾਂ ਮਿਟਾ ਦਿੱਤੀਆਂ ਗਈਆਂ"
+    "pa": "ਚੁਣੀਆਂ ਕਾਲਾਂ ਮਿਟਾ ਦਿੱਤੀਆਂ ਗਈਆਂ",
+    "es": "Llamadas seleccionadas eliminadas",
+    "fr": "Appels sélectionnés supprimés",
+    "de": "Ausgewählte Anrufe gelöscht",
+    "ar": "تم حذف المكالمات المحددة",
+    "pt": "Chamadas selecionadas excluídas",
+    "ja": "選択した通話を削除しました",
+    "zh": "已删除选中的通话",
+    "or": "ମନୋନୀତ କଲ୍ ଡିଲିଟ୍ ହୋଇଛି |"
   },
   "call_selectedDeleteFailed": {
     "en": "Failed to delete selected calls",
@@ -356,7 +564,15 @@
     "ml": "തിരഞ്ഞെടുത്ത കോളുകൾ ഇല്ലാതാക്കാനായില്ല",
     "ta": "தேர்ந்தெடுத்த அழைப்புகளை நீக்க முடியவில்லை",
     "te": "ఎంచుకున్న కాల్‌లను తొలగించడం విఫలమైంది",
-    "pa": "ਚੁਣੀਆਂ ਕਾਲਾਂ ਮਿਟਾਈਆਂ ਨਹੀਂ ਜਾ ਸਕੀਆਂ"
+    "pa": "ਚੁਣੀਆਂ ਕਾਲਾਂ ਮਿਟਾਈਆਂ ਨਹੀਂ ਜਾ ਸਕੀਆਂ",
+    "es": "Error al eliminar las llamadas seleccionadas",
+    "fr": "Échec de suppression des appels sélectionnés",
+    "de": "Ausgewählte Anrufe konnten nicht gelöscht werden",
+    "ar": "فشل حذف المكالمات المحددة",
+    "pt": "Falha ao excluir chamadas selecionadas",
+    "ja": "選択した通話の削除に失敗しました",
+    "zh": "删除选中的通话失败",
+    "or": "ମନୋନୀତ କଲ୍ ବିଲୋପ କରିବାରେ ବିଫଳ |"
   },
   "call_selectedDeleteFailedError": {
     "en": "Failed to delete selected calls: {error}",
@@ -373,7 +589,15 @@
       "error": {
         "type": "String"
       }
-    }
+    },
+    "es": "Error al eliminar las llamadas seleccionadas: {error}",
+    "fr": "Échec de suppression des appels sélectionnés : {error}",
+    "de": "Ausgewählte Anrufe konnten nicht gelöscht werden: {error}",
+    "ar": "فشل حذف المكالمات المحددة: {error}",
+    "pt": "Falha ao excluir chamadas selecionadas: {error}",
+    "ja": "選択した通話の削除に失敗しました: {error}",
+    "zh": "删除选中的通话失败：{error}",
+    "or": "ମନୋନୀତ କଲ୍ ବିଲୋପ କରିବାରେ ବିଫଳ: {error}"
   },
   "call_historyCleared": {
     "en": "All call history cleared",
@@ -385,7 +609,15 @@
     "ml": "എല്ലാ കോൾ ചരിത്രവും മായ്ച്ചു",
     "ta": "அனைத்து அழைப்பு வரலாறும் அழிக்கப்பட்டது",
     "te": "మొత్తం కాల్ హిస్టరీ క్లియర్ చేయబడింది",
-    "pa": "ਸਾਰੀ ਕਾਲ ਹਿਸਟਰੀ ਸਾਫ਼ ਕਰ ਦਿੱਤੀ ਗਈ"
+    "pa": "ਸਾਰੀ ਕਾਲ ਹਿਸਟਰੀ ਸਾਫ਼ ਕਰ ਦਿੱਤੀ ਗਈ",
+    "es": "Todo el historial de llamadas ha sido borrado",
+    "fr": "Tout l’historique des appels est effacé",
+    "de": "Gesamter Anrufverlauf gelöscht",
+    "ar": "تم مسح كامل سجل المكالمات",
+    "pt": "Todo o histórico de chamadas foi limpo",
+    "ja": "すべての通話履歴を消去しました",
+    "zh": "所有通话记录已清除",
+    "or": "ସମସ୍ତ କଲ୍ ଇତିହାସ ସଫା ହୋଇଛି |"
   },
   "call_historyClearFailed": {
     "en": "Failed to clear call history",
@@ -397,7 +629,15 @@
     "ml": "കോൾ ചരിത്രം മായ്ക്കാനായില്ല",
     "ta": "அழைப்பு வரலாற்றை அழிக்க முடியவில்லை",
     "te": "కాల్ హిస్టరీ క్లియర్ చేయడం విఫలమైంది",
-    "pa": "ਕਾਲ ਹਿਸਟਰੀ ਸਾਫ਼ ਨਹੀਂ ਹੋ ਸਕੀ"
+    "pa": "ਕਾਲ ਹਿਸਟਰੀ ਸਾਫ਼ ਨਹੀਂ ਹੋ ਸਕੀ",
+    "es": "Error al borrar el historial de llamadas",
+    "fr": "Échec de l'effacement de l'historique des appels",
+    "de": "Anrufverlauf konnte nicht gelöscht werden",
+    "ar": "فشل مسح سجل المكالمات",
+    "pt": "Falha ao limpar histórico de chamadas",
+    "ja": "通話履歴の消去に失敗しました",
+    "zh": "清除通话记录失败",
+    "or": "କଲ୍ ଇତିହାସ ସଫା କରିବାରେ ବିଫଳ |"
   },
   "call_historyClearFailedError": {
     "en": "Failed to clear call history: {error}",
@@ -414,7 +654,15 @@
       "error": {
         "type": "String"
       }
-    }
+    },
+    "es": "Error al borrar el historial de llamadas: {error}",
+    "fr": "Échec de l'effacement de l'historique des appels : {error}",
+    "de": "Anrufverlauf konnte nicht gelöscht werden: {error}",
+    "ar": "فشل مسح سجل المكالمات: {error}",
+    "pt": "Falha ao limpar histórico de chamadas: {error}",
+    "ja": "通話履歴の消去に失敗しました: {error}",
+    "zh": "清除通话记录失败：{error}",
+    "or": "କଲ୍ ଇତିହାସ ସଫା କରିବାରେ ବିଫଳ: {error}"
   },
   "call_sectionThisWeek": {
     "en": "This Week",
@@ -426,7 +674,15 @@
     "ml": "ഈ ആഴ്ച",
     "ta": "இந்த வாரம்",
     "te": "ఈ వారం",
-    "pa": "ਇਸ ਹਫ਼ਤੇ"
+    "pa": "ਇਸ ਹਫ਼ਤੇ",
+    "es": "Esta semana",
+    "fr": "Cette semaine",
+    "de": "Diese Woche",
+    "ar": "هذا الأسبوع",
+    "pt": "Esta semana",
+    "ja": "今週",
+    "zh": "本周",
+    "or": "ଏହି ସପ୍ତାହ"
   },
   "call_sectionLastWeek": {
     "en": "Last Week",
@@ -438,7 +694,15 @@
     "ml": "കഴിഞ്ഞ ആഴ്ച",
     "ta": "கடந்த வாரம்",
     "te": "గత వారం",
-    "pa": "ਪਿਛਲੇ ਹਫ਼ਤੇ"
+    "pa": "ਪਿਛਲੇ ਹਫ਼ਤੇ",
+    "es": "La semana pasada",
+    "fr": "La semaine dernière",
+    "de": "Letzte Woche",
+    "ar": "الأسبوع الماضي",
+    "pt": "Semana passada",
+    "ja": "先週",
+    "zh": "上周",
+    "or": "ଗତ ସପ୍ତାହ"
   },
   "call_sectionOlder": {
     "en": "Older",
@@ -451,7 +715,15 @@
     "ta": "பழையவை",
     "te": "పాతవి",
     "pa": "ਪੁਰਾਣੇ",
-    "description": "Section of older calls"
+    "description": "Section of older calls",
+    "es": "Anteriores",
+    "fr": "Plus ancien",
+    "de": "Älter",
+    "ar": "أقدم",
+    "pt": "Mais antigos",
+    "ja": "以前",
+    "zh": "更早",
+    "or": "ପୁରାତନ"
   },
   "call_kindCall": {
     "en": "Call",
@@ -464,7 +736,15 @@
     "ta": "அழைப்பு",
     "te": "కాల్",
     "pa": "ਕਾਲ",
-    "description": "A call (noun) in call history"
+    "description": "A call (noun) in call history",
+    "es": "Llamada",
+    "fr": "Appel",
+    "de": "Anruf",
+    "ar": "مكالمة",
+    "pt": "Chamada",
+    "ja": "通話",
+    "zh": "通话",
+    "or": "କଲ୍ କରନ୍ତୁ |"
   },
   "call_kindVideo": {
     "en": "Video Call",
@@ -476,7 +756,15 @@
     "ml": "വീഡിയോ കോൾ",
     "ta": "வீடியோ அழைப்பு",
     "te": "వీడియో కాల్",
-    "pa": "ਵੀਡੀਓ ਕਾਲ"
+    "pa": "ਵੀਡੀਓ ਕਾਲ",
+    "es": "Videollamada",
+    "fr": "Appel vidéo",
+    "de": "Videoanruf",
+    "ar": "مكالمة فيديو",
+    "pt": "Chamada de vídeo",
+    "ja": "ビデオ通話",
+    "zh": "视频通话",
+    "or": "ଭିଡିଓ କଲ୍ |"
   },
   "call_kindAudio": {
     "en": "Audio Call",
@@ -488,7 +776,15 @@
     "ml": "ഓഡിയോ കോൾ",
     "ta": "ஆடியோ அழைப்பு",
     "te": "ఆడియో కాల్",
-    "pa": "ਆਡੀਓ ਕਾਲ"
+    "pa": "ਆਡੀਓ ਕਾਲ",
+    "es": "Llamada de voz",
+    "fr": "Appel audio",
+    "de": "Sprachanruf",
+    "ar": "مكالمة صوتية",
+    "pt": "Chamada de voz",
+    "ja": "音声通話",
+    "zh": "语音通话",
+    "or": "ଅଡିଓ କଲ୍ |"
   },
   "call_kindGroupCall": {
     "en": "Group Call",
@@ -500,7 +796,15 @@
     "ml": "ഗ്രൂപ്പ് കോൾ",
     "ta": "குழு அழைப்பு",
     "te": "గ్రూప్ కాల్",
-    "pa": "ਗਰੁੱਪ ਕਾਲ"
+    "pa": "ਗਰੁੱਪ ਕਾਲ",
+    "es": "Llamada grupal",
+    "fr": "Appel de groupe",
+    "de": "Gruppenanruf",
+    "ar": "مكالمة جماعية",
+    "pt": "Chamada em grupo",
+    "ja": "グループ通話",
+    "zh": "群组通话",
+    "or": "ଗ୍ରୁପ୍ କଲ୍ |"
   },
   "call_kindGroupVideo": {
     "en": "Group Video Call",
@@ -512,7 +816,15 @@
     "ml": "ഗ്രൂപ്പ് വീഡിയോ കോൾ",
     "ta": "குழு வீடியோ அழைப்பு",
     "te": "గ్రూప్ వీడియో కాల్",
-    "pa": "ਗਰੁੱਪ ਵੀਡੀਓ ਕਾਲ"
+    "pa": "ਗਰੁੱਪ ਵੀਡੀਓ ਕਾਲ",
+    "es": "Videollamada grupal",
+    "fr": "Appel vidéo de groupe",
+    "de": "Gruppen-Videoanruf",
+    "ar": "مكالمة فيديو جماعية",
+    "pt": "Chamada de vídeo em grupo",
+    "ja": "グループビデオ通話",
+    "zh": "群组视频通话",
+    "or": "ଗ୍ରୁପ୍ ଭିଡିଓ କଲ୍ |"
   },
   "call_kindGroupAudio": {
     "en": "Group Audio Call",
@@ -524,7 +836,15 @@
     "ml": "ഗ്രൂപ്പ് ഓഡിയോ കോൾ",
     "ta": "குழு ஆடியோ அழைப்பு",
     "te": "గ్రూప్ ఆడియో కాల్",
-    "pa": "ਗਰੁੱਪ ਆਡੀਓ ਕਾਲ"
+    "pa": "ਗਰੁੱਪ ਆਡੀਓ ਕਾਲ",
+    "es": "Llamada de voz grupal",
+    "fr": "Appel audio de groupe",
+    "de": "Gruppen-Sprachanruf",
+    "ar": "مكالمة صوتية جماعية",
+    "pt": "Chamada de voz em grupo",
+    "ja": "グループ音声通話",
+    "zh": "群组语音通话",
+    "or": "ଗ୍ରୁପ୍ ଅଡିଓ କଲ୍ |"
   },
   "call_kindOther": {
     "en": "{kind} Call",
@@ -542,7 +862,15 @@
         "type": "String"
       }
     },
-    "description": "kind is a call type name from the server"
+    "description": "kind is a call type name from the server",
+    "es": "Llamada {kind}",
+    "fr": "Appel {kind}",
+    "de": "{kind}-Anruf",
+    "ar": "مكالمة {kind}",
+    "pt": "Chamada {kind}",
+    "ja": "{kind}通話",
+    "zh": "{kind} 通话",
+    "or": "{kind} କଲ୍ |"
   },
   "call_kindGroupOther": {
     "en": "Group {kind} Call",
@@ -560,7 +888,15 @@
         "type": "String"
       }
     },
-    "description": "kind is a call type name from the server"
+    "description": "kind is a call type name from the server",
+    "es": "Llamada grupal {kind}",
+    "fr": "Appel de groupe {kind}",
+    "de": "Gruppen-{kind}-Anruf",
+    "ar": "مكالمة جماعية {kind}",
+    "pt": "Chamada em grupo {kind}",
+    "ja": "グループ{kind}通話",
+    "zh": "群组 {kind} 通话",
+    "or": "ଗୋଷ୍ଠୀ {kind} କଲ୍ |"
   },
   "call_historyMissed": {
     "en": "Missed {callType}",
@@ -578,7 +914,15 @@
         "type": "String"
       }
     },
-    "description": "callType is e.g. \"Video Call\""
+    "description": "callType is e.g. \"Video Call\"",
+    "es": "{callType} perdida",
+    "fr": "{callType} manqué",
+    "de": "Verpasster {callType}",
+    "ar": "{callType} فائتة",
+    "pt": "{callType} perdida",
+    "ja": "不在着信 {callType}",
+    "zh": "未接 {callType}",
+    "or": "ହଜିଯାଇଛି {callType}"
   },
   "call_historyRejected": {
     "en": "Rejected {callType}",
@@ -596,7 +940,15 @@
         "type": "String"
       }
     },
-    "description": "callType is e.g. \"Video Call\""
+    "description": "callType is e.g. \"Video Call\"",
+    "es": "{callType} rechazada",
+    "fr": "{callType} rejeté",
+    "de": "Abgelehnter {callType}",
+    "ar": "{callType} مرفوضة",
+    "pt": "{callType} recusada",
+    "ja": "拒否した {callType}",
+    "zh": "已拒绝 {callType}",
+    "or": "ପ୍ରତ୍ୟାଖ୍ୟାନ {callType} |"
   },
   "call_historyOutgoing": {
     "en": "Outgoing {callType}",
@@ -614,7 +966,15 @@
         "type": "String"
       }
     },
-    "description": "callType is e.g. \"Video Call\""
+    "description": "callType is e.g. \"Video Call\"",
+    "es": "{callType} saliente",
+    "fr": "{callType} sortant",
+    "de": "Ausgehender {callType}",
+    "ar": "{callType} صادرة",
+    "pt": "{callType} efetuada",
+    "ja": "発信 {callType}",
+    "zh": "呼出 {callType}",
+    "or": "ଯାଉଥିବା {callType}"
   },
   "call_historyIncoming": {
     "en": "Incoming {callType}",
@@ -632,7 +992,15 @@
         "type": "String"
       }
     },
-    "description": "callType is e.g. \"Video Call\""
+    "description": "callType is e.g. \"Video Call\"",
+    "es": "{callType} entrante",
+    "fr": "{callType} entrant",
+    "de": "Eingehender {callType}",
+    "ar": "{callType} واردة",
+    "pt": "{callType} recebida",
+    "ja": "着信 {callType}",
+    "zh": "呼入 {callType}",
+    "or": "ଆସୁଥିବା {callType}"
   },
   "call_selfCallWarning": {
     "en": "You cannot call your own number.",
@@ -644,7 +1012,15 @@
     "ml": "നിങ്ങളുടെ സ്വന്തം നമ്പറിലേക്ക് കോൾ ചെയ്യാനാകില്ല.",
     "ta": "உங்கள் சொந்த எண்ணை அழைக்க முடியாது.",
     "te": "మీ సొంత నంబర్‌కు కాల్ చేయలేరు.",
-    "pa": "ਤੁਸੀਂ ਆਪਣੇ ਹੀ ਨੰਬਰ 'ਤੇ ਕਾਲ ਨਹੀਂ ਕਰ ਸਕਦੇ।"
+    "pa": "ਤੁਸੀਂ ਆਪਣੇ ਹੀ ਨੰਬਰ 'ਤੇ ਕਾਲ ਨਹੀਂ ਕਰ ਸਕਦੇ।",
+    "es": "No puedes llamar a tu propio número.",
+    "fr": "Vous ne pouvez pas appeler votre propre numéro.",
+    "de": "Du kannst deine eigene Nummer nicht anrufen.",
+    "ar": "لا يمكنك الاتصال برقمك الخاص.",
+    "pt": "Você não pode ligar para o seu próprio número.",
+    "ja": "自分自身の番号には発信できません。",
+    "zh": "您不能拨打自己的号码。",
+    "or": "ଆପଣ ନିଜ ନମ୍ବରକୁ କଲ କରିପାରିବେ ନାହିଁ |"
   },
   "call_noGroupsYet": {
     "en": "No groups yet",
@@ -656,7 +1032,15 @@
     "ml": "ഇതുവരെ ഗ്രൂപ്പുകളൊന്നുമില്ല",
     "ta": "இதுவரை குழுக்கள் இல்லை",
     "te": "ఇంకా గ్రూప్‌లు లేవు",
-    "pa": "ਅਜੇ ਕੋਈ ਗਰੁੱਪ ਨਹੀਂ"
+    "pa": "ਅਜੇ ਕੋਈ ਗਰੁੱਪ ਨਹੀਂ",
+    "es": "Aún no hay grupos",
+    "fr": "Aucun groupe pour le moment",
+    "de": "Noch keine Gruppen",
+    "ar": "لا توجد مجموعات بعد",
+    "pt": "Nenhum grupo ainda",
+    "ja": "グループがまだありません",
+    "zh": "暂无群组",
+    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ groups ଣସି ଗୋଷ୍ଠୀ ନାହିଁ |"
   },
   "call_noGroupsFound": {
     "en": "No groups found",
@@ -668,7 +1052,15 @@
     "ml": "ഗ്രൂപ്പുകളൊന്നും കണ്ടെത്തിയില്ല",
     "ta": "குழுக்கள் எதுவும் கிடைக்கவில்லை",
     "te": "గ్రూప్‌లు ఏవీ కనుగొనబడలేదు",
-    "pa": "ਕੋਈ ਗਰੁੱਪ ਨਹੀਂ ਮਿਲਿਆ"
+    "pa": "ਕੋਈ ਗਰੁੱਪ ਨਹੀਂ ਮਿਲਿਆ",
+    "es": "No se encontraron grupos",
+    "fr": "Aucun groupe trouvé",
+    "de": "Keine Gruppen gefunden",
+    "ar": "لم يتم العثور على مجموعات",
+    "pt": "Nenhum grupo encontrado",
+    "ja": "グループが見つかりません",
+    "zh": "未找到群组",
+    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |"
   },
   "call_groupCallStartFailed": {
     "en": "Could not start group call. Please try again.",
@@ -680,7 +1072,15 @@
     "ml": "ഗ്രൂപ്പ് കോൾ ആരംഭിക്കാനായില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക.",
     "ta": "குழு அழைப்பைத் தொடங்க முடியவில்லை. மீண்டும் முயலவும்.",
     "te": "గ్రూప్ కాల్ ప్రారంభించలేకపోయాం. దయచేసి మళ్ళీ ప్రయత్నించండి.",
-    "pa": "ਗਰੁੱਪ ਕਾਲ ਸ਼ੁਰੂ ਨਹੀਂ ਹੋ ਸਕੀ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"
+    "pa": "ਗਰੁੱਪ ਕਾਲ ਸ਼ੁਰੂ ਨਹੀਂ ਹੋ ਸਕੀ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    "es": "No se pudo iniciar la llamada grupal. Inténtalo de nuevo.",
+    "fr": "Impossible de démarrer l'appel de groupe. Veuillez réessayer.",
+    "de": "Gruppenanruf konnte nicht gestartet werden. Bitte erneut versuchen.",
+    "ar": "تعذر بدء المكالمة الجماعية. يرجى المحاولة مرة أخرى.",
+    "pt": "Não foi possível iniciar a chamada em grupo. Tente novamente.",
+    "ja": "グループ通話を開始できませんでした。もう一度お試しください。",
+    "zh": "无法发起群组通话，请重试。",
+    "or": "ଗୋଷ୍ଠୀ କଲ୍ ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
   },
   "call_contactsAccessTitle": {
     "en": "Allow contacts access",
@@ -692,7 +1092,15 @@
     "ml": "കോൺടാക്റ്റുകളിലേക്ക് ആക്സസ് അനുവദിക്കുക",
     "ta": "தொடர்புகளுக்கு அனுமதி வழங்குக",
     "te": "కాంటాక్ట్‌ల యాక్సెస్ అనుమతించండి",
-    "pa": "ਸੰਪਰਕਾਂ ਦੀ ਪਹੁੰਚ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"
+    "pa": "ਸੰਪਰਕਾਂ ਦੀ ਪਹੁੰਚ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ",
+    "es": "Permitir acceso a contactos",
+    "fr": "Autoriser l'accès aux contacts",
+    "de": "Kontaktzugriff erlauben",
+    "ar": "السماح بالوصول إلى جهات الاتصال",
+    "pt": "Permitir acesso aos contatos",
+    "ja": "連絡先へのアクセスを許可",
+    "zh": "允许访问通讯录",
+    "or": "ଯୋଗାଯୋଗ ପ୍ରବେଶକୁ ଅନୁମତି ଦିଅନ୍ତୁ |"
   },
   "call_contactsAccessMessage": {
     "en": "We need access to your contacts to show who is on FG Tracker and to let you call them or send an invite.",
@@ -704,7 +1112,15 @@
     "ml": "FG Tracker-ൽ ആരൊക്കെ ഉണ്ടെന്ന് കാണിക്കാനും അവരെ വിളിക്കാനോ ക്ഷണം അയയ്ക്കാനോ നിങ്ങളെ അനുവദിക്കാനും ഞങ്ങൾക്ക് നിങ്ങളുടെ കോൺടാക്റ്റുകളിലേക്ക് ആക്സസ് വേണം.",
     "ta": "FG Tracker-இல் யார் இருக்கிறார்கள் எனக் காட்டவும், அவர்களை அழைக்கவோ அழைப்பிதழ் அனுப்பவோ உங்கள் தொடர்புகளுக்கான அனுமதி தேவை.",
     "te": "FG Trackerలో ఎవరు ఉన్నారో చూపించడానికి, వారికి కాల్ చేయడానికి లేదా ఆహ్వానం పంపడానికి మాకు మీ కాంటాక్ట్‌ల యాక్సెస్ కావాలి.",
-    "pa": "FG Tracker 'ਤੇ ਕੌਣ ਹੈ ਇਹ ਦਿਖਾਉਣ ਅਤੇ ਤੁਹਾਨੂੰ ਉਨ੍ਹਾਂ ਨੂੰ ਕਾਲ ਕਰਨ ਜਾਂ ਸੱਦਾ ਭੇਜਣ ਦੇਣ ਲਈ ਸਾਨੂੰ ਤੁਹਾਡੇ ਸੰਪਰਕਾਂ ਦੀ ਪਹੁੰਚ ਚਾਹੀਦੀ ਹੈ।"
+    "pa": "FG Tracker 'ਤੇ ਕੌਣ ਹੈ ਇਹ ਦਿਖਾਉਣ ਅਤੇ ਤੁਹਾਨੂੰ ਉਨ੍ਹਾਂ ਨੂੰ ਕਾਲ ਕਰਨ ਜਾਂ ਸੱਦਾ ਭੇਜਣ ਦੇਣ ਲਈ ਸਾਨੂੰ ਤੁਹਾਡੇ ਸੰਪਰਕਾਂ ਦੀ ਪਹੁੰਚ ਚਾਹੀਦੀ ਹੈ।",
+    "es": "Necesitamos acceso a tus contactos para mostrar quién está en FG Tracker y permitirte llamarlos o enviar una invitación.",
+    "fr": "Nous avons besoin d'accéder à vos contacts pour savoir qui est sur FG Tracker et vous permettre de les appeler ou de les inviter.",
+    "de": "Wir benötigen Zugriff auf deine Kontakte, um zu sehen, wer FG Tracker nutzt, und damit du sie anrufen oder einladen kannst.",
+    "ar": "نحتاج إلى الوصول إلى جهات اتصالك لمعرفة من يستخدم FG Tracker والسماح لك بالاتصال بهم أو إرسال دعوة.",
+    "pt": "Precisamos de acesso aos seus contatos para mostrar quem está no FG Tracker e permitir que você ligue ou envie um convite.",
+    "ja": "FG Trackerを利用しているユーザーを表示し、通話や招待を行えるようにするために連絡先へのアクセスが必要です。",
+    "zh": "我们需要访问您的通讯录以显示谁在使用 FG Tracker，并方便您向其呼叫或发送邀请。",
+    "or": "FG ଟ୍ରାକରରେ କିଏ ଅଛି ତାହା ଦେଖାଇବାକୁ ଏବଂ ଆପଣଙ୍କୁ ସେମାନଙ୍କୁ କଲ କରିବାକୁ କିମ୍ବା ଆମନ୍ତ୍ରଣ ପଠାଇବାକୁ ଆମକୁ ଆପଣଙ୍କର ସମ୍ପର୍କକୁ ପ୍ରବେଶ ଆବଶ୍ୟକ |"
   },
   "call_allowAccess": {
     "en": "Allow Access",
@@ -716,7 +1132,15 @@
     "ml": "അനുവദിക്കുക",
     "ta": "அனுமதி",
     "te": "అనుమతించండి",
-    "pa": "ਇਜਾਜ਼ਤ ਦਿਓ"
+    "pa": "ਇਜਾਜ਼ਤ ਦਿਓ",
+    "es": "Permitir acceso",
+    "fr": "Autoriser l'accès",
+    "de": "Zugriff erlauben",
+    "ar": "السماح بالوصول",
+    "pt": "Permitir acesso",
+    "ja": "アクセスを許可",
+    "zh": "允许访问",
+    "or": "ପ୍ରବେଶ ଅନୁମତି ଦିଅନ୍ତୁ |"
   },
   "call_noContactsMatch": {
     "en": "No contacts match your search",
@@ -728,7 +1152,15 @@
     "ml": "നിങ്ങളുടെ തിരയലുമായി പൊരുത്തപ്പെടുന്ന കോൺടാക്റ്റുകളില്ല",
     "ta": "உங்கள் தேடலுக்குப் பொருந்தும் தொடர்புகள் இல்லை",
     "te": "మీ శోధనకు సరిపోయే కాంటాక్ట్‌లు లేవు",
-    "pa": "ਤੁਹਾਡੀ ਖੋਜ ਨਾਲ ਕੋਈ ਸੰਪਰਕ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ"
+    "pa": "ਤੁਹਾਡੀ ਖੋਜ ਨਾਲ ਕੋਈ ਸੰਪਰਕ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ",
+    "es": "Ningún contacto coincide con tu búsqueda",
+    "fr": "Aucun contact ne correspond à votre recherche",
+    "de": "Keine Kontakte stimmen mit deiner Suche überein",
+    "ar": "لا توجد جهات اتصال مطابقة لبحثك",
+    "pt": "Nenhum contato corresponde à sua pesquisa",
+    "ja": "検索に一致する連絡先がありません",
+    "zh": "没有匹配的联系人",
+    "or": "କ search ଣସି ସମ୍ପର୍କ ଆପଣଙ୍କ ସନ୍ଧାନ ସହିତ ମେଳ ଖାଉ ନାହିଁ |"
   },
   "call_noRegisteredContacts": {
     "en": "No registered contacts found",
@@ -740,7 +1172,15 @@
     "ml": "രജിസ്റ്റർ ചെയ്ത കോൺടാക്റ്റുകളൊന്നും കണ്ടെത്തിയില്ല",
     "ta": "பதிவுசெய்த தொடர்புகள் எதுவும் இல்லை",
     "te": "నమోదైన కాంటాక్ట్‌లు ఏవీ కనుగొనబడలేదు",
-    "pa": "ਕੋਈ ਰਜਿਸਟਰਡ ਸੰਪਰਕ ਨਹੀਂ ਮਿਲਿਆ"
+    "pa": "ਕੋਈ ਰਜਿਸਟਰਡ ਸੰਪਰਕ ਨਹੀਂ ਮਿਲਿਆ",
+    "es": "No se encontraron contactos registrados",
+    "fr": "Aucun contact enregistré trouvé",
+    "de": "Keine registrierten Kontakte gefunden",
+    "ar": "لم يتم العثور على جهات اتصال مسجلة",
+    "pt": "Nenhum contato cadastrado encontrado",
+    "ja": "登録済みの連絡先が見つかりません",
+    "zh": "未找到已注册的联系人",
+    "or": "କ registered ଣସି ପଞ୍ଜୀକୃତ ସମ୍ପର୍କ ମିଳିଲା ନାହିଁ |"
   },
   "call_allContacts": {
     "en": "All Contacts",
@@ -752,7 +1192,15 @@
     "ml": "എല്ലാ കോൺടാക്റ്റുകളും",
     "ta": "அனைத்து தொடர்புகள்",
     "te": "అన్ని కాంటాక్ట్‌లు",
-    "pa": "ਸਾਰੇ ਸੰਪਰਕ"
+    "pa": "ਸਾਰੇ ਸੰਪਰਕ",
+    "es": "Todos los contactos",
+    "fr": "Tous les contacts",
+    "de": "Alle Kontakte",
+    "ar": "جميع جهات الاتصال",
+    "pt": "Todos os contatos",
+    "ja": "すべての連絡先",
+    "zh": "所有联系人",
+    "or": "ସମସ୍ତ ସମ୍ପର୍କ"
   },
   "call_inviteToApp": {
     "en": "Invite to FG Tracker",
@@ -764,7 +1212,15 @@
     "ml": "FG Tracker-ലേക്ക് ക്ഷണിക്കുക",
     "ta": "FG Tracker-க்கு அழைக்கவும்",
     "te": "FG Trackerకి ఆహ్వానించండి",
-    "pa": "FG Tracker 'ਤੇ ਸੱਦਾ ਦਿਓ"
+    "pa": "FG Tracker 'ਤੇ ਸੱਦਾ ਦਿਓ",
+    "es": "Invitar a FG Tracker",
+    "fr": "Inviter sur FG Tracker",
+    "de": "Zu FG Tracker einladen",
+    "ar": "دعوة إلى FG Tracker",
+    "pt": "Convidar para o FG Tracker",
+    "ja": "FG Trackerに招待",
+    "zh": "邀请加入 FG Tracker",
+    "or": "FG ଟ୍ରାକରକୁ ଆମନ୍ତ୍ରଣ କରନ୍ତୁ |"
   },
   "call_invite": {
     "en": "Invite",
@@ -777,7 +1233,15 @@
     "ta": "அழை",
     "te": "ఆహ్వానించు",
     "pa": "ਸੱਦਾ ਦਿਓ",
-    "description": "Button: invite a contact to the app"
+    "description": "Button: invite a contact to the app",
+    "es": "Invitar",
+    "fr": "Inviter",
+    "de": "Einladen",
+    "ar": "دعوة",
+    "pt": "Convidar",
+    "ja": "招待",
+    "zh": "邀请",
+    "or": "ଆମନ୍ତ୍ରଣ"
   },
   "call_contactsAccessBannerTitle": {
     "en": "Let us access your contacts",
@@ -789,7 +1253,15 @@
     "ml": "നിങ്ങളുടെ കോൺടാക്റ്റുകൾ കാണാൻ ഞങ്ങളെ അനുവദിക്കുക",
     "ta": "உங்கள் தொடர்புகளை அணுக அனுமதியுங்கள்",
     "te": "మీ కాంటాక్ట్‌లను చూడనివ్వండి",
-    "pa": "ਸਾਨੂੰ ਆਪਣੇ ਸੰਪਰਕ ਦੇਖਣ ਦਿਓ"
+    "pa": "ਸਾਨੂੰ ਆਪਣੇ ਸੰਪਰਕ ਦੇਖਣ ਦਿਓ",
+    "es": "Permítenos acceder a tus contactos",
+    "fr": "Autorisez l’accès à vos contacts",
+    "de": "Erlaube uns den Zugriff auf deine Kontakte",
+    "ar": "اسمح لنا بالوصول إلى جهات اتصالك",
+    "pt": "Permita o acesso aos seus contatos",
+    "ja": "連絡先へのアクセスを許可してください",
+    "zh": "请允许我们访问您的通讯录",
+    "or": "ଆସନ୍ତୁ ଆପଣଙ୍କ ସମ୍ପର୍କକୁ ପ୍ରବେଶ କରିବା |"
   },
   "call_contactsAccessBannerMessage": {
     "en": "Find and call your team members easily.",
@@ -801,7 +1273,15 @@
     "ml": "നിങ്ങളുടെ ടീം അംഗങ്ങളെ എളുപ്പത്തിൽ കണ്ടെത്തി വിളിക്കുക.",
     "ta": "உங்கள் குழு உறுப்பினர்களை எளிதாகக் கண்டறிந்து அழைக்கவும்.",
     "te": "మీ టీమ్ సభ్యులను సులభంగా కనుగొని కాల్ చేయండి.",
-    "pa": "ਆਪਣੀ ਟੀਮ ਦੇ ਮੈਂਬਰਾਂ ਨੂੰ ਆਸਾਨੀ ਨਾਲ ਲੱਭੋ ਅਤੇ ਕਾਲ ਕਰੋ।"
+    "pa": "ਆਪਣੀ ਟੀਮ ਦੇ ਮੈਂਬਰਾਂ ਨੂੰ ਆਸਾਨੀ ਨਾਲ ਲੱਭੋ ਅਤੇ ਕਾਲ ਕਰੋ।",
+    "es": "Encuentra y llama fácilmente a los miembros de tu equipo.",
+    "fr": "Trouvez et appelez facilement les membres de votre équipe.",
+    "de": "Finde und rufe deine Teammitglieder einfach an.",
+    "ar": "اعثر على أعضاء فريقك واتصل بهم بسهولة.",
+    "pt": "Encontre e ligue para os membros da sua equipe facilmente.",
+    "ja": "チームメンバーを簡単に見つけて通話できます。",
+    "zh": "轻松查找并致电您的团队成员。",
+    "or": "ତୁମ ଦଳର ସଦସ୍ୟମାନଙ୍କୁ ସହଜରେ ଖୋଜ ଏବଂ କଲ କର |"
   },
   "call_deleteHistoryTitle": {
     "en": "Delete Call History",
@@ -813,7 +1293,15 @@
     "ml": "കോൾ ചരിത്രം ഇല്ലാതാക്കുക",
     "ta": "அழைப்பு வரலாற்றை நீக்கு",
     "te": "కాల్ హిస్టరీ తొలగించండి",
-    "pa": "ਕਾਲ ਹਿਸਟਰੀ ਮਿਟਾਓ"
+    "pa": "ਕਾਲ ਹਿਸਟਰੀ ਮਿਟਾਓ",
+    "es": "Eliminar historial de llamadas",
+    "fr": "Supprimer l'historique des appels",
+    "de": "Anrufverlauf löschen",
+    "ar": "حذف سجل المكالمات",
+    "pt": "Excluir histórico de chamadas",
+    "ja": "通話履歴を削除",
+    "zh": "删除通话记录",
+    "or": "କଲ୍ ଇତିହାସ ବିଲୋପ କରନ୍ତୁ |"
   },
   "call_deleteHistoryMessage": {
     "en": "Are you sure you want to delete this call history?",
@@ -825,7 +1313,15 @@
     "ml": "ഈ കോൾ ചരിത്രം ഇല്ലാതാക്കണമെന്ന് ഉറപ്പാണോ?",
     "ta": "இந்த அழைப்பு வரலாற்றை நீக்க விரும்புகிறீர்களா?",
     "te": "ఈ కాల్ హిస్టరీని తొలగించాలనుకుంటున్నారా?",
-    "pa": "ਕੀ ਤੁਸੀਂ ਸੱਚਮੁੱਚ ਇਹ ਕਾਲ ਹਿਸਟਰੀ ਮਿਟਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ?"
+    "pa": "ਕੀ ਤੁਸੀਂ ਸੱਚਮੁੱਚ ਇਹ ਕਾਲ ਹਿਸਟਰੀ ਮਿਟਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ?",
+    "es": "¿Seguro que deseas eliminar este historial de llamadas?",
+    "fr": "Voulez-vous vraiment supprimer cet historique d’appels ?",
+    "de": "Möchtest du diesen Anrufverlauf wirklich löschen?",
+    "ar": "هل أنت متأكد من حذف هذا السجل للمكالمات؟",
+    "pt": "Tem certeza de que deseja excluir este histórico de chamadas?",
+    "ja": "この通話履歴を削除してもよろしいですか？",
+    "zh": "确定要删除此通话记录吗？",
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି କଲ୍ ଇତିହାସ ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?"
   },
   "call_yesDelete": {
     "en": "Yes, Delete",
@@ -837,7 +1333,15 @@
     "ml": "അതെ, ഇല്ലാതാക്കുക",
     "ta": "ஆம், நீக்கு",
     "te": "అవును, తొలగించండి",
-    "pa": "ਹਾਂ, ਮਿਟਾਓ"
+    "pa": "ਹਾਂ, ਮਿਟਾਓ",
+    "es": "Sí, eliminar",
+    "fr": "Oui, supprimer",
+    "de": "Ja, löschen",
+    "ar": "نعم، حذف",
+    "pt": "Sim, excluir",
+    "ja": "はい、削除します",
+    "zh": "是，删除",
+    "or": "ହଁ, ଡିଲିଟ୍ କରନ୍ତୁ |"
   },
   "call_deleteSelectedTitle": {
     "en": "Delete Selected Calls",
@@ -849,7 +1353,15 @@
     "ml": "തിരഞ്ഞെടുത്ത കോളുകൾ ഇല്ലാതാക്കുക",
     "ta": "தேர்ந்தெடுத்த அழைப்புகளை நீக்கு",
     "te": "ఎంచుకున్న కాల్‌లను తొలగించండి",
-    "pa": "ਚੁਣੀਆਂ ਕਾਲਾਂ ਮਿਟਾਓ"
+    "pa": "ਚੁਣੀਆਂ ਕਾਲਾਂ ਮਿਟਾਓ",
+    "es": "Eliminar llamadas seleccionadas",
+    "fr": "Supprimer les appels sélectionnés",
+    "de": "Ausgewählte Anrufe löschen",
+    "ar": "حذف المكالمات المحددة",
+    "pt": "Excluir chamadas selecionadas",
+    "ja": "選択した通話を削除",
+    "zh": "删除选中的通话",
+    "or": "ମନୋନୀତ କଲ୍ ବିଲୋପ କରନ୍ତୁ |"
   },
   "call_deleteSelectedMessage": {
     "en": "{count, plural, =1{Are you sure you want to delete this selected call history?} other{Are you sure you want to delete these {count} selected call history entries?}}",
@@ -866,7 +1378,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{¿Seguro que deseas eliminar este historial de llamadas seleccionado?} other{¿Seguro que deseas eliminar estas {count} entradas seleccionadas del historial de llamadas?}}",
+    "fr": "{count, plural, =1{Voulez-vous vraiment supprimer cet appel sélectionné ?} other{Voulez-vous vraiment supprimer ces {count} appels sélectionnés de l’historique ?}}",
+    "de": "{count, plural, =1{Möchtest du diesen ausgewählten Anrufverlauf wirklich löschen?} other{Möchtest du diese {count} ausgewählten Anrufeinträge wirklich löschen?}}",
+    "ar": "{count, plural, =1{هل أنت متأكد من حذف سجل المكالمة المحدد هذا؟} other{هل أنت متأكد من حذف هذه السجلات الـ {count} المحددة للمكالمات؟}}",
+    "pt": "{count, plural, =1{Tem certeza de que deseja excluir este histórico de chamada selecionado?} other{Tem certeza de que deseja excluir estas {count} entradas selecionadas do histórico?}}",
+    "ja": "{count, plural, =1{選択したこの通話履歴を削除してもよろしいですか？} other{選択したこれら {count} 件の通話履歴を削除してもよろしいですか？}}",
+    "zh": "{count, plural, =1{确定要删除此选定的通话记录吗？} other{确定要删除选中的这 {count} 条通话记录吗？}}",
+    "or": "{count, plural, =1{ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ମନୋନୀତ କଲ ଇତିହାସ ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?} other{ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି {count} ମନୋନୀତ କଲ ଇତିହାସ ପ୍ରବିଷ୍ଟଗୁଡିକ ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?}}"
   },
   "call_deleteWithCount": {
     "en": "Delete ({count})",
@@ -883,7 +1403,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "Eliminar ({count})",
+    "fr": "Supprimer ({count})",
+    "de": "Löschen ({count})",
+    "ar": "حذف ({count})",
+    "pt": "Excluir ({count})",
+    "ja": "削除 ({count})",
+    "zh": "删除 ({count})",
+    "or": "ବିଲୋପ କରନ୍ତୁ ({count})"
   },
   "call_noRecentMatch": {
     "en": "No recent calls match your search",
@@ -895,7 +1423,15 @@
     "ml": "നിങ്ങളുടെ തിരയലുമായി പൊരുത്തപ്പെടുന്ന സമീപകാല കോളുകളില്ല",
     "ta": "உங்கள் தேடலுக்குப் பொருந்தும் சமீபத்திய அழைப்புகள் இல்லை",
     "te": "మీ శోధనకు సరిపోయే ఇటీవలి కాల్‌లు లేవు",
-    "pa": "ਤੁਹਾਡੀ ਖੋਜ ਨਾਲ ਕੋਈ ਹਾਲੀਆ ਕਾਲ ਮੇਲ ਨਹੀਂ ਖਾਂਦੀ"
+    "pa": "ਤੁਹਾਡੀ ਖੋਜ ਨਾਲ ਕੋਈ ਹਾਲੀਆ ਕਾਲ ਮੇਲ ਨਹੀਂ ਖਾਂਦੀ",
+    "es": "Ninguna llamada reciente coincide con tu búsqueda",
+    "fr": "Aucun appel récent ne correspond à votre recherche",
+    "de": "Keine letzten Anrufe stimmen mit deiner Suche überein",
+    "ar": "لا توجد مكالمات حديثة مطابقة لبحثك",
+    "pt": "Nenhuma chamada recente corresponde à sua pesquisa",
+    "ja": "検索に一致する最近の通話はありません",
+    "zh": "没有匹配的最近通话",
+    "or": "କ search ଣସି ସାମ୍ପ୍ରତିକ କଲ୍ ଆପଣଙ୍କ ସନ୍ଧାନ ସହିତ ମେଳ ଖାଉ ନାହିଁ |"
   },
   "call_noRecentYet": {
     "en": "No recent calls yet",
@@ -907,7 +1443,15 @@
     "ml": "ഇതുവരെ സമീപകാല കോളുകളില്ല",
     "ta": "இதுவரை சமீபத்திய அழைப்புகள் இல்லை",
     "te": "ఇంకా ఇటీవలి కాల్‌లు లేవు",
-    "pa": "ਅਜੇ ਕੋਈ ਹਾਲੀਆ ਕਾਲ ਨਹੀਂ"
+    "pa": "ਅਜੇ ਕੋਈ ਹਾਲੀਆ ਕਾਲ ਨਹੀਂ",
+    "es": "Aún no hay llamadas recientes",
+    "fr": "Aucun appel récent pour le moment",
+    "de": "Noch keine Anrufe vorhanden",
+    "ar": "لا توجد مكالمات حديثة بعد",
+    "pt": "Nenhuma chamada recente ainda",
+    "ja": "最近の通話履歴はありません",
+    "zh": "暂无最近通话",
+    "or": "ବର୍ତ୍ତମାନ ପର୍ଯ୍ୟନ୍ତ କ calls ଣସି କଲ ନାହିଁ |"
   },
   "call_unableToCallContact": {
     "en": "Unable to call this contact",
@@ -919,7 +1463,15 @@
     "ml": "ഈ കോൺടാക്റ്റിനെ വിളിക്കാനാകുന്നില്ല",
     "ta": "இந்தத் தொடர்பை அழைக்க முடியவில்லை",
     "te": "ఈ కాంటాక్ట్‌కు కాల్ చేయలేకపోయాం",
-    "pa": "ਇਸ ਸੰਪਰਕ ਨੂੰ ਕਾਲ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ"
+    "pa": "ਇਸ ਸੰਪਰਕ ਨੂੰ ਕਾਲ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ",
+    "es": "No se puede llamar a este contacto",
+    "fr": "Impossible d’appeler ce contact",
+    "de": "Dieser Kontakt kann nicht angerufen werden",
+    "ar": "تعذر الاتصال بجهة الاتصال هذه",
+    "pt": "Não foi possível ligar para este contato",
+    "ja": "この連絡先に通話を発信できません",
+    "zh": "无法呼叫此联系人",
+    "or": "ଏହି ସମ୍ପର୍କକୁ କଲ୍ କରିବାକୁ ଅସମର୍ଥ |"
   },
   "call_deleteCallsTitle": {
     "en": "{count, plural, =1{Delete 1 call?} other{Delete {count} calls?}}",
@@ -936,7 +1488,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{¿Eliminar 1 llamada?} other{¿Eliminar {count} llamadas?}}",
+    "fr": "{count, plural, =1{Supprimer 1 appel ?} other{Supprimer {count} appels ?}}",
+    "de": "{count, plural, =1{1 Anruf löschen?} other{{count} Anrufe löschen?}}",
+    "ar": "{count, plural, =1{حذف مكالمة واحدة؟} other{حذف {count} مكالمات؟}}",
+    "pt": "{count, plural, =1{Excluir 1 chamada?} other{Excluir {count} chamadas?}}",
+    "ja": "{count, plural, =1{1件の通話を削除しますか？} other{{count}件の通話を削除しますか？}}",
+    "zh": "{count, plural, =1{删除 1 条通话？} other{删除 {count} 条通话？}}",
+    "or": "{count, plural, =1{1 କଲ୍ ବିଲୋପ କରିବେ କି?} other{{count} କଲ୍ ବିଲୋପ କରନ୍ତୁ?}}"
   },
   "call_deleteCallsMessage": {
     "en": "These calls will be removed from your call history.",
@@ -948,7 +1508,15 @@
     "ml": "ഈ കോളുകൾ നിങ്ങളുടെ കോൾ ചരിത്രത്തിൽ നിന്ന് നീക്കം ചെയ്യും.",
     "ta": "இந்த அழைப்புகள் உங்கள் அழைப்பு வரலாற்றிலிருந்து அகற்றப்படும்.",
     "te": "ఈ కాల్‌లు మీ కాల్ హిస్టరీ నుండి తీసివేయబడతాయి.",
-    "pa": "ਇਹ ਕਾਲਾਂ ਤੁਹਾਡੀ ਕਾਲ ਹਿਸਟਰੀ ਵਿੱਚੋਂ ਹਟਾ ਦਿੱਤੀਆਂ ਜਾਣਗੀਆਂ।"
+    "pa": "ਇਹ ਕਾਲਾਂ ਤੁਹਾਡੀ ਕਾਲ ਹਿਸਟਰੀ ਵਿੱਚੋਂ ਹਟਾ ਦਿੱਤੀਆਂ ਜਾਣਗੀਆਂ।",
+    "es": "Estas llamadas se eliminarán de tu historial.",
+    "fr": "Ces appels seront retirés de votre historique.",
+    "de": "Diese Anrufe werden aus deinem Verlauf entfernt.",
+    "ar": "ستتم إزالة هذه المكالمات من سجل مكالماتك.",
+    "pt": "Essas chamadas serão removidas do seu histórico.",
+    "ja": "これらの通話は履歴から削除されます。",
+    "zh": "这些记录将从您的通话历史中移除。",
+    "or": "ଏହି କଲ୍ ଗୁଡିକ ଆପଣଙ୍କ କଲ ଇତିହାସରୁ ଅପସାରିତ ହେବ |"
   },
   "call_selectAll": {
     "en": "Select all",
@@ -960,7 +1528,15 @@
     "ml": "എല്ലാം തിരഞ്ഞെടുക്കുക",
     "ta": "அனைத்தையும் தேர்ந்தெடு",
     "te": "అన్నీ ఎంచుకోండి",
-    "pa": "ਸਭ ਚੁਣੋ"
+    "pa": "ਸਭ ਚੁਣੋ",
+    "es": "Seleccionar todo",
+    "fr": "Tout sélectionner",
+    "de": "Alle auswählen",
+    "ar": "تحديد الكل",
+    "pt": "Selecionar tudo",
+    "ja": "すべて選択",
+    "zh": "全选",
+    "or": "ସମସ୍ତ ଚୟନ କରନ୍ତୁ |"
   },
   "call_unselectAll": {
     "en": "Unselect all",
@@ -972,7 +1548,15 @@
     "ml": "എല്ലാ തിരഞ്ഞെടുപ്പും മാറ്റുക",
     "ta": "அனைத்துத் தேர்வையும் நீக்கு",
     "te": "అన్నీ ఎంపిక తీసివేయండి",
-    "pa": "ਸਭ ਦੀ ਚੋਣ ਹਟਾਓ"
+    "pa": "ਸਭ ਦੀ ਚੋਣ ਹਟਾਓ",
+    "es": "Deseleccionar todo",
+    "fr": "Tout désélectionner",
+    "de": "Auswahl aufheben",
+    "ar": "إلغاء تحديد الكل",
+    "pt": "Desmarcar tudo",
+    "ja": "選択を解除",
+    "zh": "取消全选",
+    "or": "ସମସ୍ତ ଚୟନ କରନ୍ତୁ |"
   },
   "call_otherStartingVideo": {
     "en": "The other person is starting video",
@@ -984,7 +1568,15 @@
     "ml": "മറ്റേയാൾ വീഡിയോ ആരംഭിക്കുന്നു",
     "ta": "மற்றவர் வீடியோவைத் தொடங்குகிறார்",
     "te": "అవతలి వ్యక్తి వీడియో ప్రారంభిస్తున్నారు",
-    "pa": "ਦੂਜਾ ਵਿਅਕਤੀ ਵੀਡੀਓ ਸ਼ੁਰੂ ਕਰ ਰਿਹਾ ਹੈ"
+    "pa": "ਦੂਜਾ ਵਿਅਕਤੀ ਵੀਡੀਓ ਸ਼ੁਰੂ ਕਰ ਰਿਹਾ ਹੈ",
+    "es": "La otra persona está activando el video",
+    "fr": "L'autre personne active la vidéo",
+    "de": "Die andere Person startet das Video",
+    "ar": "الطرف الآخر يقوم بتشغيل الفيديو",
+    "pt": "A outra pessoa está iniciando o vídeo",
+    "ja": "相手がビデオを開始しています",
+    "zh": "对方正在开启视频",
+    "or": "ଅନ୍ୟ ବ୍ୟକ୍ତି ଭିଡିଓ ଆରମ୍ଭ କରୁଛନ୍ତି |"
   },
   "call_notReady": {
     "en": "Call not ready",
@@ -996,7 +1588,15 @@
     "ml": "കോൾ ഇതുവരെ തയ്യാറായിട്ടില്ല",
     "ta": "அழைப்பு இன்னும் தயாராகவில்லை",
     "te": "కాల్ ఇంకా సిద్ధంగా లేదు",
-    "pa": "ਕਾਲ ਅਜੇ ਤਿਆਰ ਨਹੀਂ ਹੈ"
+    "pa": "ਕਾਲ ਅਜੇ ਤਿਆਰ ਨਹੀਂ ਹੈ",
+    "es": "Llamada no lista",
+    "fr": "Appel non prêt",
+    "de": "Anruf nicht bereit",
+    "ar": "المكالمة غير جاهزة",
+    "pt": "Chamada não pronta",
+    "ja": "通話の準備ができていません",
+    "zh": "通话未就绪",
+    "or": "କଲ୍ ପ୍ରସ୍ତୁତ ନୁହେଁ |"
   },
   "call_failedTitle": {
     "en": "Call Failed",
@@ -1008,7 +1608,15 @@
     "ml": "കോൾ പരാജയപ്പെട്ടു",
     "ta": "அழைப்பு தோல்வியடைந்தது",
     "te": "కాల్ విఫలమైంది",
-    "pa": "ਕਾਲ ਅਸਫਲ"
+    "pa": "ਕਾਲ ਅਸਫਲ",
+    "es": "Llamada fallida",
+    "fr": "Échec de l’appel",
+    "de": "Anruf fehlgeschlagen",
+    "ar": "فشلت المكالمة",
+    "pt": "Falha na chamada",
+    "ja": "通話失敗",
+    "zh": "通话失败",
+    "or": "କଲ୍ ବିଫଳ ହେଲା |"
   },
   "call_unableToMakeCall": {
     "en": "Unable to make call",
@@ -1020,7 +1628,15 @@
     "ml": "കോൾ ചെയ്യാനായില്ല",
     "ta": "அழைக்க முடியவில்லை",
     "te": "కాల్ చేయలేకపోయాం",
-    "pa": "ਕਾਲ ਨਹੀਂ ਹੋ ਸਕੀ"
+    "pa": "ਕਾਲ ਨਹੀਂ ਹੋ ਸਕੀ",
+    "es": "No se puede realizar la llamada",
+    "fr": "Impossible de passer l’appel",
+    "de": "Anruf kann nicht getätigt werden",
+    "ar": "تعذر إجراء المكالمة",
+    "pt": "Não foi possível fazer a chamada",
+    "ja": "通話を発信できません",
+    "zh": "无法拨打电话",
+    "or": "କଲ୍ କରିବାକୁ ଅସମର୍ଥ |"
   },
   "call_unavailableTitle": {
     "en": "Call unavailable",
@@ -1032,7 +1648,15 @@
     "ml": "കോൾ ലഭ്യമല്ല",
     "ta": "அழைப்பு கிடைக்கவில்லை",
     "te": "కాల్ అందుబాటులో లేదు",
-    "pa": "ਕਾਲ ਉਪਲਬਧ ਨਹੀਂ"
+    "pa": "ਕਾਲ ਉਪਲਬਧ ਨਹੀਂ",
+    "es": "Llamada no disponible",
+    "fr": "Appel indisponible",
+    "de": "Anruf nicht verfügbar",
+    "ar": "المكالمة غير متاحة",
+    "pt": "Chamada indisponível",
+    "ja": "通話を利用できません",
+    "zh": "通话不可用",
+    "or": "କଲ୍ ଉପଲବ୍ଧ ନାହିଁ |"
   },
   "call_communicationUnavailable": {
     "en": "Communication is not available with this user",
@@ -1044,7 +1668,15 @@
     "ml": "ഈ ഉപയോക്താവുമായി ആശയവിനിമയം ലഭ്യമല്ല",
     "ta": "இந்தப் பயனருடன் தொடர்புகொள்ள முடியாது",
     "te": "ఈ యూజర్‌తో సంప్రదింపు అందుబాటులో లేదు",
-    "pa": "ਇਸ ਯੂਜ਼ਰ ਨਾਲ ਸੰਪਰਕ ਉਪਲਬਧ ਨਹੀਂ ਹੈ"
+    "pa": "ਇਸ ਯੂਜ਼ਰ ਨਾਲ ਸੰਪਰਕ ਉਪਲਬਧ ਨਹੀਂ ਹੈ",
+    "es": "La comunicación no está disponible con este usuario",
+    "fr": "La communication n'est pas disponible avec cet utilisateur",
+    "de": "Kommunikation mit diesem Benutzer nicht verfügbar",
+    "ar": "الاتصال غير متاح مع هذا المستخدم",
+    "pt": "A comunicação não está disponível com este usuário",
+    "ja": "このユーザーとは通話できません",
+    "zh": "无法与该用户通信",
+    "or": "ଏହି ଉପଭୋକ୍ତା ସହିତ ଯୋଗାଯୋଗ ଉପଲବ୍ଧ ନାହିଁ |"
   },
   "call_otherAlreadySharing": {
     "en": "The other person is already sharing the screen",
@@ -1056,7 +1688,15 @@
     "ml": "മറ്റേയാൾ ഇതിനകം സ്ക്രീൻ പങ്കിടുന്നു",
     "ta": "மற்றவர் ஏற்கனவே திரையைப் பகிர்கிறார்",
     "te": "అవతలి వ్యక్తి ఇప్పటికే స్క్రీన్ షేర్ చేస్తున్నారు",
-    "pa": "ਦੂਜਾ ਵਿਅਕਤੀ ਪਹਿਲਾਂ ਹੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰ ਰਿਹਾ ਹੈ"
+    "pa": "ਦੂਜਾ ਵਿਅਕਤੀ ਪਹਿਲਾਂ ਹੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰ ਰਿਹਾ ਹੈ",
+    "es": "La otra persona ya está compartiendo la pantalla",
+    "fr": "L'autre personne partage déjà son écran",
+    "de": "Die andere Person teilt bereits den Bildschirm",
+    "ar": "الطرف الآخر يشارك شاشته بالفعل",
+    "pt": "A outra pessoa já está compartilhando a tela",
+    "ja": "相手が既に画面を共有しています",
+    "zh": "对方已经在共享屏幕",
+    "or": "ଅନ୍ୟ ବ୍ୟକ୍ତି ସ୍କ୍ରିନ୍ ସେୟାର କରିସାରିଛନ୍ତି |"
   },
   "call_unableToShareScreen": {
     "en": "Unable to share screen",
@@ -1068,7 +1708,15 @@
     "ml": "സ്ക്രീൻ പങ്കിടാനായില്ല",
     "ta": "திரையைப் பகிர முடியவில்லை",
     "te": "స్క్రీన్ షేర్ చేయలేకపోయాం",
-    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਨਹੀਂ ਹੋ ਸਕੀ"
+    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਨਹੀਂ ਹੋ ਸਕੀ",
+    "es": "No se puede compartir la pantalla",
+    "fr": "Impossible de partager l’écran",
+    "de": "Bildschirm kann nicht geteilt werden",
+    "ar": "تعذر مشاركة الشاشة",
+    "pt": "Não foi possível compartilhar a tela",
+    "ja": "画面を共有できません",
+    "zh": "无法共享屏幕",
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରିବାକୁ ଅସମର୍ଥ |"
   },
   "call_screenShareStopped": {
     "en": "Screen sharing stopped",
@@ -1080,7 +1728,15 @@
     "ml": "സ്ക്രീൻ പങ്കിടൽ നിർത്തി",
     "ta": "திரைப் பகிர்வு நிறுத்தப்பட்டது",
     "te": "స్క్రీన్ షేరింగ్ ఆగిపోయింది",
-    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨਾ ਬੰਦ ਹੋ ਗਿਆ"
+    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨਾ ਬੰਦ ਹੋ ਗਿਆ",
+    "es": "Se detuvo el uso compartido de pantalla",
+    "fr": "Le partage d'écran s'est arrêté",
+    "de": "Bildschirmfreigabe beendet",
+    "ar": "تم إيقاف مشاركة الشاشة",
+    "pt": "Compartilhamento de tela interrompido",
+    "ja": "画面共有が停止しました",
+    "zh": "屏幕共享已停止",
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ବନ୍ଦ ହୋଇଗଲା |"
   },
   "call_screenShareStartFailed": {
     "en": "Could not start screen sharing",
@@ -1092,7 +1748,15 @@
     "ml": "സ്ക്രീൻ പങ്കിടൽ ആരംഭിക്കാനായില്ല",
     "ta": "திரைப் பகிர்வைத் தொடங்க முடியவில்லை",
     "te": "స్క్రీన్ షేరింగ్ ప్రారంభించలేకపోయాం",
-    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨਾ ਸ਼ੁਰੂ ਨਹੀਂ ਹੋ ਸਕਿਆ"
+    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨਾ ਸ਼ੁਰੂ ਨਹੀਂ ਹੋ ਸਕਿਆ",
+    "es": "No se pudo iniciar el uso compartido de pantalla",
+    "fr": "Impossible de démarrer le partage d'écran",
+    "de": "Bildschirmfreigabe konnte nicht gestartet werden",
+    "ar": "تعذر بدء مشاركة الشاشة",
+    "pt": "Não foi possível iniciar o compartilhamento de tela",
+    "ja": "画面共有を開始できませんでした",
+    "zh": "无法启动屏幕共享",
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ |"
   },
   "call_screenSharePermissionDenied": {
     "en": "Screen sharing permission denied",
@@ -1104,7 +1768,15 @@
     "ml": "സ്ക്രീൻ പങ്കിടാനുള്ള അനുമതി നിരസിച്ചു",
     "ta": "திரைப் பகிர்வு அனுமதி மறுக்கப்பட்டது",
     "te": "స్క్రీన్ షేరింగ్ అనుమతి నిరాకరించబడింది",
-    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਮਿਲੀ"
+    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਮਿਲੀ",
+    "es": "Permiso para compartir pantalla denegado",
+    "fr": "Autorisation de partage d'écran refusée",
+    "de": "Berechtigung zur Bildschirmfreigabe verweigert",
+    "ar": "تم رفض إذن مشاركة الشاشة",
+    "pt": "Permissão de compartilhamento de tela negada",
+    "ja": "画面共有の権限が拒否されました",
+    "zh": "屏幕共享权限被拒绝",
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ଅନୁମତି ପ୍ରତ୍ୟାଖ୍ୟାନ |"
   },
   "call_ongoingChannelName": {
     "en": "Ongoing call",
@@ -1117,7 +1789,15 @@
     "ta": "நடப்பு அழைப்பு",
     "te": "కొనసాగుతున్న కాల్",
     "pa": "ਚੱਲ ਰਹੀ ਕਾਲ",
-    "description": "Android notification channel name"
+    "description": "Android notification channel name",
+    "es": "Llamada en curso",
+    "fr": "Appel en cours",
+    "de": "Laufender Anruf",
+    "ar": "مكالمة جارية",
+    "pt": "Chamada em andamento",
+    "ja": "通話中",
+    "zh": "正在通话",
+    "or": "ଚାଲୁଥିବା କଲ୍ |"
   },
   "call_ongoingChannelDescription": {
     "en": "Keeps the call and screen sharing alive",
@@ -1129,7 +1809,15 @@
     "ml": "കോളും സ്ക്രീൻ പങ്കിടലും സജീവമായി നിലനിർത്തുന്നു",
     "ta": "அழைப்பையும் திரைப் பகிர்வையும் தொடர வைக்கிறது",
     "te": "కాల్ మరియు స్క్రీన్ షేరింగ్‌ను కొనసాగిస్తుంది",
-    "pa": "ਕਾਲ ਅਤੇ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨਾ ਚਾਲੂ ਰੱਖਦਾ ਹੈ"
+    "pa": "ਕਾਲ ਅਤੇ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨਾ ਚਾਲੂ ਰੱਖਦਾ ਹੈ",
+    "es": "Mantiene activa la llamada y el uso compartido de pantalla",
+    "fr": "Maintient l'appel et le partage d'écran actifs",
+    "de": "Hält den Anruf und die Bildschirmfreigabe aktiv",
+    "ar": "يحافظ على استمرار المكالمة ومشاركة الشاشة",
+    "pt": "Mantém a chamada e o compartilhamento de tela ativos",
+    "ja": "通話と画面共有を維持します",
+    "zh": "保持通话和屏幕共享",
+    "or": "କଲ୍ ଏବଂ ସ୍କ୍ରିନ୍ ସେୟାରିଂକୁ ଜୀବନ୍ତ ରଖେ |"
   },
   "call_screenSharingTitle": {
     "en": "Screen sharing",
@@ -1141,7 +1829,15 @@
     "ml": "സ്ക്രീൻ പങ്കിടൽ",
     "ta": "திரைப் பகிர்வு",
     "te": "స్క్రీన్ షేరింగ్",
-    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨਾ"
+    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨਾ",
+    "es": "Compartiendo pantalla",
+    "fr": "Partage d'écran",
+    "de": "Bildschirmfreigabe",
+    "ar": "مشاركة الشاشة",
+    "pt": "Compartilhamento de tela",
+    "ja": "画面共有中",
+    "zh": "屏幕共享",
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର |"
   },
   "call_youAreSharingScreen": {
     "en": "You are sharing your screen",
@@ -1153,7 +1849,15 @@
     "ml": "നിങ്ങൾ സ്ക്രീൻ പങ്കിടുന്നു",
     "ta": "நீங்கள் உங்கள் திரையைப் பகிர்கிறீர்கள்",
     "te": "మీరు మీ స్క్రీన్‌ను షేర్ చేస్తున్నారు",
-    "pa": "ਤੁਸੀਂ ਆਪਣੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰ ਰਹੇ ਹੋ"
+    "pa": "ਤੁਸੀਂ ਆਪਣੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰ ਰਹੇ ਹੋ",
+    "es": "Estás compartiendo tu pantalla",
+    "fr": "Vous partagez votre écran",
+    "de": "Du teilst deinen Bildschirm",
+    "ar": "أنت تشارك شاشتك الآن",
+    "pt": "Você está compartilhando sua tela",
+    "ja": "画面を共有しています",
+    "zh": "您正在共享屏幕",
+    "or": "ତୁମେ ତୁମର ସ୍କ୍ରିନ୍ ସେୟାର କରୁଛ |"
   },
   "call_statusCalling": {
     "en": "Calling",
@@ -1166,7 +1870,15 @@
     "ta": "அழைக்கிறது",
     "te": "కాల్ చేస్తోంది",
     "pa": "ਕਾਲ ਹੋ ਰਹੀ ਹੈ",
-    "description": "Call status; the UI adds \"...\" after it"
+    "description": "Call status; the UI adds \"...\" after it",
+    "es": "Llamando",
+    "fr": "Appel...",
+    "de": "Ruft an",
+    "ar": "جارٍ الاتصال",
+    "pt": "Chamando",
+    "ja": "発信中",
+    "zh": "正在呼叫",
+    "or": "କଲ୍ କରୁଛି |"
   },
   "call_statusConnecting": {
     "en": "Connecting",
@@ -1179,7 +1891,15 @@
     "ta": "இணைக்கிறது",
     "te": "కనెక్ట్ అవుతోంది",
     "pa": "ਕਨੈਕਟ ਹੋ ਰਿਹਾ ਹੈ",
-    "description": "Call status"
+    "description": "Call status",
+    "es": "Conectando",
+    "fr": "Connexion...",
+    "de": "Verbinden",
+    "ar": "جارٍ الربط",
+    "pt": "Conectando",
+    "ja": "接続中",
+    "zh": "正在连接",
+    "or": "ସଂଯୋଗ କରୁଛି |"
   },
   "call_connectingProgress": {
     "en": "Connecting…",
@@ -1191,7 +1911,15 @@
     "ml": "കണക്റ്റ് ചെയ്യുന്നു…",
     "ta": "இணைக்கிறது…",
     "te": "కనెక్ట్ అవుతోంది…",
-    "pa": "ਕਨੈਕਟ ਹੋ ਰਿਹਾ ਹੈ…"
+    "pa": "ਕਨੈਕਟ ਹੋ ਰਿਹਾ ਹੈ…",
+    "es": "Conectando…",
+    "fr": "Connexion…",
+    "de": "Verbindet…",
+    "ar": "جارٍ الاتصال…",
+    "pt": "Conectando…",
+    "ja": "接続中…",
+    "zh": "正在连接…",
+    "or": "ସଂଯୋଗ…"
   },
   "call_statusConnected": {
     "en": "Connected",
@@ -1204,7 +1932,15 @@
     "ta": "இணைக்கப்பட்டது",
     "te": "కనెక్ట్ అయింది",
     "pa": "ਕਨੈਕਟ ਹੋ ਗਿਆ",
-    "description": "Call status"
+    "description": "Call status",
+    "es": "Conectado",
+    "fr": "Connecté",
+    "de": "Verbunden",
+    "ar": "تم الاتصال",
+    "pt": "Conectado",
+    "ja": "接続完了",
+    "zh": "已连接",
+    "or": "ସଂଯୋଗ ହୋଇଛି |"
   },
   "call_statusVideoConnecting": {
     "en": "Video connecting",
@@ -1217,7 +1953,15 @@
     "ta": "வீடியோ இணைக்கிறது",
     "te": "వీడియో కనెక్ట్ అవుతోంది",
     "pa": "ਵੀਡੀਓ ਕਨੈਕਟ ਹੋ ਰਿਹਾ ਹੈ",
-    "description": "Call status"
+    "description": "Call status",
+    "es": "Conectando video",
+    "fr": "Connexion vidéo",
+    "de": "Video verbindet",
+    "ar": "جارٍ ربط الفيديو",
+    "pt": "Conectando vídeo",
+    "ja": "ビデオ接続中",
+    "zh": "正在连接视频",
+    "or": "ଭିଡିଓ ସଂଯୋଗ"
   },
   "call_statusReconnecting": {
     "en": "Reconnecting",
@@ -1230,7 +1974,15 @@
     "ta": "மீண்டும் இணைக்கிறது",
     "te": "మళ్ళీ కనెక్ట్ అవుతోంది",
     "pa": "ਮੁੜ ਕਨੈਕਟ ਹੋ ਰਿਹਾ ਹੈ",
-    "description": "Call status"
+    "description": "Call status",
+    "es": "Reconectando",
+    "fr": "Reconnexion",
+    "de": "Neu verbinden",
+    "ar": "جارٍ إعادة الاتصال",
+    "pt": "Reconectando",
+    "ja": "再接続中",
+    "zh": "正在重新连接",
+    "or": "ପୁନ on ସଂଯୋଗ କରୁଛି |"
   },
   "call_statusRinging": {
     "en": "Ringing",
@@ -1243,7 +1995,15 @@
     "ta": "ஒலிக்கிறது",
     "te": "రింగ్ అవుతోంది",
     "pa": "ਘੰਟੀ ਵੱਜ ਰਹੀ ਹੈ",
-    "description": "Call status"
+    "description": "Call status",
+    "es": "Sonando",
+    "fr": "Sonnerie",
+    "de": "Klingelt",
+    "ar": "رنين",
+    "pt": "Chamando",
+    "ja": "呼び出し中",
+    "zh": "响铃中",
+    "or": "ରିଙ୍ଗ୍"
   },
   "call_statusBusy": {
     "en": "Busy",
@@ -1256,7 +2016,15 @@
     "ta": "பிஸி",
     "te": "బిజీ",
     "pa": "ਰੁੱਝਿਆ ਹੋਇਆ",
-    "description": "Call status: the other person is busy"
+    "description": "Call status: the other person is busy",
+    "es": "Ocupado",
+    "fr": "Occupé",
+    "de": "Besetzt",
+    "ar": "مشغول",
+    "pt": "Ocupado",
+    "ja": "通話中",
+    "zh": "占线",
+    "or": "ବ୍ୟସ୍ତ"
   },
   "call_statusCompleted": {
     "en": "Completed",
@@ -1269,7 +2037,15 @@
     "ta": "முடிந்தது",
     "te": "పూర్తయింది",
     "pa": "ਪੂਰੀ ਹੋਈ",
-    "description": "Call status"
+    "description": "Call status",
+    "es": "Completada",
+    "fr": "Terminé",
+    "de": "Beendet",
+    "ar": "مكتملة",
+    "pt": "Concluída",
+    "ja": "終了",
+    "zh": "已完成",
+    "or": "ସମାପ୍ତ"
   },
   "call_statusDeclined": {
     "en": "Declined",
@@ -1282,7 +2058,15 @@
     "ta": "நிராகரிக்கப்பட்டது",
     "te": "తిరస్కరించారు",
     "pa": "ਅਸਵੀਕਾਰ",
-    "description": "Call status"
+    "description": "Call status",
+    "es": "Rechazada",
+    "fr": "Refusé",
+    "de": "Abgelehnt",
+    "ar": "تم الرفض",
+    "pt": "Recusada",
+    "ja": "拒否",
+    "zh": "已拒绝",
+    "or": "ପ୍ରତ୍ୟାଖ୍ୟାନ"
   },
   "call_statusCancelled": {
     "en": "Cancelled",
@@ -1295,7 +2079,15 @@
     "ta": "ரத்துசெய்யப்பட்டது",
     "te": "రద్దు చేయబడింది",
     "pa": "ਰੱਦ ਕੀਤੀ",
-    "description": "Call status"
+    "description": "Call status",
+    "es": "Cancelada",
+    "fr": "Annulé",
+    "de": "Abgebrochen",
+    "ar": "ملغاة",
+    "pt": "Cancelada",
+    "ja": "キャンセル",
+    "zh": "已取消",
+    "or": "ବାତିଲ"
   },
   "call_statusJoined": {
     "en": "Joined",
@@ -1308,7 +2100,15 @@
     "ta": "இணைந்தார்",
     "te": "చేరారు",
     "pa": "ਸ਼ਾਮਲ ਹੋਏ",
-    "description": "Group call participant status"
+    "description": "Group call participant status",
+    "es": "Se unió",
+    "fr": "Rejoint",
+    "de": "Beigetreten",
+    "ar": "انضم",
+    "pt": "Entrou",
+    "ja": "参加しました",
+    "zh": "已加入",
+    "or": "ଯୋଗଦାନ"
   },
   "call_statusMissed": {
     "en": "Missed",
@@ -1321,7 +2121,15 @@
     "ta": "தவறியது",
     "te": "మిస్డ్",
     "pa": "ਮਿਸਡ",
-    "description": "Call status"
+    "description": "Call status",
+    "es": "Perdida",
+    "fr": "Manqué",
+    "de": "Verpasst",
+    "ar": "فائتة",
+    "pt": "Perdida",
+    "ja": "不在着信",
+    "zh": "未接",
+    "or": "ନିଖୋଜ |"
   },
   "call_missedCall": {
     "en": "Missed Call",
@@ -1333,7 +2141,15 @@
     "ml": "മിസ്ഡ് കോൾ",
     "ta": "தவறிய அழைப்பு",
     "te": "మిస్డ్ కాల్",
-    "pa": "ਮਿਸਡ ਕਾਲ"
+    "pa": "ਮਿਸਡ ਕਾਲ",
+    "es": "Llamada perdida",
+    "fr": "Appel manqué",
+    "de": "Verpasster Anruf",
+    "ar": "مكالمة فائتة",
+    "pt": "Chamada perdida",
+    "ja": "不在着信",
+    "zh": "未接来电",
+    "or": "ମିସ୍ କଲ୍"
   },
   "call_missedCallNotification": {
     "en": "Missed call",
@@ -1346,7 +2162,15 @@
     "ta": "தவறிய அழைப்பு",
     "te": "మిస్డ్ కాల్",
     "pa": "ਮਿਸਡ ਕਾਲ",
-    "description": "Subtitle of the missed call system notification"
+    "description": "Subtitle of the missed call system notification",
+    "es": "Llamada perdida",
+    "fr": "Appel manqué",
+    "de": "Verpasster Anruf",
+    "ar": "مكالمة فائتة",
+    "pt": "Chamada perdida",
+    "ja": "不在着信",
+    "zh": "未接来电",
+    "or": "ମିସ୍ କଲ୍"
   },
   "call_screenBeingShared": {
     "en": "Screen is being shared",
@@ -1358,7 +2182,15 @@
     "ml": "സ്ക്രീൻ പങ്കിടുന്നു",
     "ta": "திரை பகிரப்படுகிறது",
     "te": "స్క్రీన్ షేర్ అవుతోంది",
-    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
+    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ",
+    "es": "Se está compartiendo la pantalla",
+    "fr": "L'écran est en cours de partage",
+    "de": "Bildschirm wird geteilt",
+    "ar": "تتم مشاركة الشاشة",
+    "pt": "A tela está sendo compartilhada",
+    "ja": "画面が共有されています",
+    "zh": "正在共享屏幕",
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ହେଉଛି |"
   },
   "call_personSharingScreen": {
     "en": "{name} is sharing the screen",
@@ -1375,7 +2207,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "{name} está compartiendo la pantalla",
+    "fr": "{name} partage son écran",
+    "de": "{name} teilt den Bildschirm",
+    "ar": "{name} يشارك الشاشة",
+    "pt": "{name} está compartilhando a tela",
+    "ja": "{name}が画面を共有しています",
+    "zh": "{name} 正在共享屏幕",
+    "or": "{name} ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରୁଛି |"
   },
   "call_cameraOff": {
     "en": "Camera off",
@@ -1387,7 +2227,15 @@
     "ml": "ക്യാമറ ഓഫ്",
     "ta": "கேமரா ஆஃப்",
     "te": "కెమెరా ఆఫ్",
-    "pa": "ਕੈਮਰਾ ਬੰਦ"
+    "pa": "ਕੈਮਰਾ ਬੰਦ",
+    "es": "Cámara desactivada",
+    "fr": "Caméra désactivée",
+    "de": "Kamera aus",
+    "ar": "الكاميرا مغلقة",
+    "pt": "Câmera desligada",
+    "ja": "カメラオフ",
+    "zh": "相机已关闭",
+    "or": "କ୍ୟାମେରା ବନ୍ଦ |"
   },
   "call_cameraOn": {
     "en": "Camera on",
@@ -1399,7 +2247,15 @@
     "ml": "ക്യാമറ ഓൺ",
     "ta": "கேமரா ஆன்",
     "te": "కెమెరా ఆన్",
-    "pa": "ਕੈਮਰਾ ਚਾਲੂ"
+    "pa": "ਕੈਮਰਾ ਚਾਲੂ",
+    "es": "Cámara activada",
+    "fr": "Caméra activée",
+    "de": "Kamera an",
+    "ar": "الكاميرا مفتوحة",
+    "pt": "Câmera ligada",
+    "ja": "カメラオン",
+    "zh": "相机已开启",
+    "or": "କ୍ୟାମେରା ଅନ୍"
   },
   "call_camera": {
     "en": "Camera",
@@ -1411,7 +2267,15 @@
     "ml": "ക്യാമറ",
     "ta": "கேமரா",
     "te": "కెమెరా",
-    "pa": "ਕੈਮਰਾ"
+    "pa": "ਕੈਮਰਾ",
+    "es": "Cámara",
+    "fr": "Caméra",
+    "de": "Kamera",
+    "ar": "الكاميرا",
+    "pt": "Câmera",
+    "ja": "カメラ",
+    "zh": "相机",
+    "or": "କ୍ୟାମେରା |"
   },
   "call_startingScreenShare": {
     "en": "Starting screen share…",
@@ -1423,7 +2287,15 @@
     "ml": "സ്ക്രീൻ പങ്കിടൽ ആരംഭിക്കുന്നു…",
     "ta": "திரைப் பகிர்வு தொடங்குகிறது…",
     "te": "స్క్రీన్ షేర్ ప్రారంభమవుతోంది…",
-    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨਾ ਸ਼ੁਰੂ ਹੋ ਰਿਹਾ ਹੈ…"
+    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨਾ ਸ਼ੁਰੂ ਹੋ ਰਿਹਾ ਹੈ…",
+    "es": "Iniciando uso compartido de pantalla…",
+    "fr": "Démarrage du partage d'écran…",
+    "de": "Bildschirmfreigabe startet…",
+    "ar": "بدء مشاركة الشاشة…",
+    "pt": "Iniciando compartilhamento de tela…",
+    "ja": "画面共有を開始しています…",
+    "zh": "正在启动屏幕共享…",
+    "or": "ସ୍କ୍ରିନ୍ ସେୟାର ଆରମ୍ଭ…"
   },
   "call_screenVisibleToOther": {
     "en": "Your screen is visible to the other person",
@@ -1435,7 +2307,15 @@
     "ml": "നിങ്ങളുടെ സ്ക്രീൻ മറ്റേയാൾക്ക് കാണാം",
     "ta": "உங்கள் திரை மற்றவருக்குத் தெரிகிறது",
     "te": "మీ స్క్రీన్ అవతలి వ్యక్తికి కనిపిస్తోంది",
-    "pa": "ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਦੂਜੇ ਵਿਅਕਤੀ ਨੂੰ ਦਿਖ ਰਹੀ ਹੈ"
+    "pa": "ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਦੂਜੇ ਵਿਅਕਤੀ ਨੂੰ ਦਿਖ ਰਹੀ ਹੈ",
+    "es": "Tu pantalla es visible para la otra persona",
+    "fr": "Votre écran est visible par l'autre personne",
+    "de": "Dein Bildschirm ist für die andere Person sichtbar",
+    "ar": "شاشتك مرئية للطرف الآخر",
+    "pt": "Sua tela está visível para a outra pessoa",
+    "ja": "相手に画面が表示されています",
+    "zh": "对方可以看到您的屏幕",
+    "or": "ତୁମର ପରଦା ଅନ୍ୟ ଜଣକୁ ଦୃଶ୍ୟମାନ ହୁଏ |"
   },
   "call_screenVisibleToName": {
     "en": "Your screen is visible to {name}",
@@ -1452,7 +2332,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "Tu pantalla es visible para {name}",
+    "fr": "Votre écran est visible par {name}",
+    "de": "Dein Bildschirm ist für {name} sichtbar",
+    "ar": "شاشتك مرئية لـ {name}",
+    "pt": "Sua tela está visível para {name}",
+    "ja": "{name}に画面が表示されています",
+    "zh": "{name} 可以看到您的屏幕",
+    "or": "ଆପଣଙ୍କର ପରଦା {name} କୁ ଦୃଶ୍ୟମାନ ହେଉଛି |"
   },
   "call_tapStartBroadcastHint": {
     "en": "Tap Start Broadcast if the system prompt appears",
@@ -1465,7 +2353,15 @@
     "ta": "சிஸ்டம் அறிவிப்பு தோன்றினால் Start Broadcast-ஐத் தட்டவும்",
     "te": "సిస్టమ్ ప్రాంప్ట్ కనిపిస్తే Start Broadcast నొక్కండి",
     "pa": "ਸਿਸਟਮ ਪ੍ਰੌਂਪਟ ਆਵੇ ਤਾਂ Start Broadcast 'ਤੇ ਟੈਪ ਕਰੋ",
-    "description": "\"Start Broadcast\" is the iOS system button text, keep it in English"
+    "description": "\"Start Broadcast\" is the iOS system button text, keep it in English",
+    "es": "Toca Iniciar transmisión si aparece el mensaje del sistema",
+    "fr": "Appuyez sur Démarrer la diffusion si l'invite apparaît",
+    "de": "Tippe auf Übertragung starten, falls die Systemmeldung erscheint",
+    "ar": "اضغط على بدء البث إذا ظهرت رسالة النظام",
+    "pt": "Toque em Iniciar transmissão se o aviso do sistema aparecer",
+    "ja": "システムの確認メッセージが表示されたら「ブロードキャストを開始」をタップしてください",
+    "zh": "如果出现系统提示，请点击“开始直播”",
+    "or": "ଯଦି ସିଷ୍ଟମ୍ ପ୍ରମ୍ପ୍ଟ ଦେଖାଯାଏ ତେବେ ଷ୍ଟାର୍ଟ ବ୍ରୋଡକାଷ୍ଟ ଟ୍ୟାପ୍ କରନ୍ତୁ |"
   },
   "call_stopSharing": {
     "en": "Stop sharing",
@@ -1477,7 +2373,15 @@
     "ml": "പങ്കിടൽ നിർത്തുക",
     "ta": "பகிர்வதை நிறுத்து",
     "te": "షేర్ చేయడం ఆపండి",
-    "pa": "ਸਾਂਝਾ ਕਰਨਾ ਬੰਦ ਕਰੋ"
+    "pa": "ਸਾਂਝਾ ਕਰਨਾ ਬੰਦ ਕਰੋ",
+    "es": "Dejar de compartir",
+    "fr": "Arrêter le partage",
+    "de": "Freigabe beenden",
+    "ar": "إيقاف المشاركة",
+    "pt": "Parar compartilhamento",
+    "ja": "共有を停止",
+    "zh": "停止共享",
+    "or": "ଅଂଶୀଦାର ବନ୍ଦ କରନ୍ତୁ |"
   },
   "call_waitingForBroadcast": {
     "en": "Waiting for Start Broadcast",
@@ -1490,7 +2394,15 @@
     "ta": "Start Broadcast-க்காகக் காத்திருக்கிறது",
     "te": "Start Broadcast కోసం వేచి ఉంది",
     "pa": "Start Broadcast ਦੀ ਉਡੀਕ",
-    "description": "\"Start Broadcast\" is the iOS system button text, keep it in English"
+    "description": "\"Start Broadcast\" is the iOS system button text, keep it in English",
+    "es": "Esperando inicio de transmisión",
+    "fr": "En attente du lancement de la diffusion",
+    "de": "Warten auf Übertragungsstart",
+    "ar": "في انتظار بدء البث",
+    "pt": "Aguardando início da transmissão",
+    "ja": "配信開始を待機中",
+    "zh": "等待开始直播",
+    "or": "ଆରମ୍ଭ ପ୍ରସାରଣ ପାଇଁ ଅପେକ୍ଷା |"
   },
   "call_waitingForBroadcastMessage": {
     "en": "Tap “Start Broadcast” in the system dialog to share your screen. Sharing begins only after that.",
@@ -1503,7 +2415,15 @@
     "ta": "உங்கள் திரையைப் பகிர சிஸ்டம் உரையாடலில் “Start Broadcast”-ஐத் தட்டவும். அதன் பிறகே பகிர்வு தொடங்கும்.",
     "te": "మీ స్క్రీన్ షేర్ చేయడానికి సిస్టమ్ డైలాగ్‌లో “Start Broadcast” నొక్కండి. ఆ తర్వాతే షేరింగ్ మొదలవుతుంది.",
     "pa": "ਆਪਣੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨ ਲਈ ਸਿਸਟਮ ਡਾਇਲਾਗ ਵਿੱਚ “Start Broadcast” 'ਤੇ ਟੈਪ ਕਰੋ। ਸਾਂਝਾ ਕਰਨਾ ਉਸ ਤੋਂ ਬਾਅਦ ਹੀ ਸ਼ੁਰੂ ਹੋਵੇਗਾ।",
-    "description": "\"Start Broadcast\" is the iOS system button text, keep it in English"
+    "description": "\"Start Broadcast\" is the iOS system button text, keep it in English",
+    "es": "Toca \"Iniciar transmisión\" en el cuadro de diálogo del sistema para compartir tu pantalla.",
+    "fr": "Appuyez sur « Démarrer la diffusion » dans la boîte de dialogue pour partager votre écran.",
+    "de": "Tippe im Systemdialog auf „Übertragung starten“, um deinen Bildschirm zu teilen.",
+    "ar": "اضغط على \"بدء البث\" في نافذة النظام لمشاركة شاشتك.",
+    "pt": "Toque em \"Iniciar transmissão\" na caixa de diálogo do sistema para compartilhar sua tela.",
+    "ja": "画面を共有するには、システムダイアログで「ブロードキャストを開始」をタップしてください。",
+    "zh": "请在系统弹窗中点击“开始直播”以共享屏幕。",
+    "or": "ଆପଣଙ୍କର ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରିବାକୁ ସିଷ୍ଟମ୍ ଡାୟଲଗ୍ ରେ “ଷ୍ଟାର୍ଟ ବ୍ରୋଡକାଷ୍ଟ” ଟ୍ୟାପ୍ କରନ୍ତୁ | ସେୟାର ପରେ ହିଁ ଆରମ୍ଭ ହୁଏ |"
   },
   "call_callFrom": {
     "en": "Call From",
@@ -1516,7 +2436,15 @@
     "ta": "அழைப்பு வருகிறது",
     "te": "కాల్ వస్తోంది",
     "pa": "ਕਾਲ ਆ ਰਹੀ ਹੈ",
-    "description": "Shown above the caller's name on an incoming call"
+    "description": "Shown above the caller's name on an incoming call",
+    "es": "Llamada de",
+    "fr": "Appel de",
+    "de": "Anruf von",
+    "ar": "مكالمة من",
+    "pt": "Chamada de",
+    "ja": "着信:",
+    "zh": "来电自",
+    "or": "ଠାରୁ କଲ୍ କରନ୍ତୁ |"
   },
   "call_stop": {
     "en": "Stop",
@@ -1529,7 +2457,15 @@
     "ta": "நிறுத்து",
     "te": "ఆపు",
     "pa": "ਰੋਕੋ",
-    "description": "Button: stop screen sharing"
+    "description": "Button: stop screen sharing",
+    "es": "Detener",
+    "fr": "Arrêter",
+    "de": "Stopp",
+    "ar": "إيقاف",
+    "pt": "Parar",
+    "ja": "停止",
+    "zh": "停止",
+    "or": "ବନ୍ଦ କର |"
   },
   "call_shareScreenShort": {
     "en": "Share",
@@ -1542,7 +2478,15 @@
     "ta": "பகிர்",
     "te": "షేర్",
     "pa": "ਸਾਂਝਾ ਕਰੋ",
-    "description": "Short button: share the screen"
+    "description": "Short button: share the screen",
+    "es": "Compartir",
+    "fr": "Partager",
+    "de": "Teilen",
+    "ar": "مشاركة",
+    "pt": "Compartilhar",
+    "ja": "共有",
+    "zh": "共享",
+    "or": "ଅଂଶୀଦାର କରନ୍ତୁ |"
   },
   "call_shareScreen": {
     "en": "Share screen",
@@ -1554,7 +2498,15 @@
     "ml": "സ്ക്രീൻ പങ്കിടുക",
     "ta": "திரையைப் பகிர்",
     "te": "స్క్రీన్ షేర్ చేయండి",
-    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰੋ"
+    "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰੋ",
+    "es": "Compartir pantalla",
+    "fr": "Partager l’écran",
+    "de": "Bildschirm teilen",
+    "ar": "مشاركة الشاشة",
+    "pt": "Compartilhar tela",
+    "ja": "画面共有",
+    "zh": "共享屏幕",
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରନ୍ତୁ |"
   },
   "call_switchToVideoToShare": {
     "en": "Switch to video call to share your screen",
@@ -1566,7 +2518,15 @@
     "ml": "സ്ക്രീൻ പങ്കിടാൻ വീഡിയോ കോളിലേക്ക് മാറുക",
     "ta": "உங்கள் திரையைப் பகிர வீடியோ அழைப்புக்கு மாறவும்",
     "te": "మీ స్క్రీన్ షేర్ చేయడానికి వీడియో కాల్‌కు మారండి",
-    "pa": "ਆਪਣੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨ ਲਈ ਵੀਡੀਓ ਕਾਲ 'ਤੇ ਜਾਓ"
+    "pa": "ਆਪਣੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨ ਲਈ ਵੀਡੀਓ ਕਾਲ 'ਤੇ ਜਾਓ",
+    "es": "Cambia a videollamada para compartir tu pantalla",
+    "fr": "Passez en appel vidéo pour partager l'écran",
+    "de": "Wechsle zum Videoanruf, um deinen Bildschirm zu teilen",
+    "ar": "التبديل إلى مكالمة فيديو لمشاركة الشاشة",
+    "pt": "Mude para chamada de vídeo para compartilhar a tela",
+    "ja": "画面を共有するにはビデオ通話に切り替えてください",
+    "zh": "切换到视频通话以共享屏幕",
+    "or": "ଆପଣଙ୍କର ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରିବାକୁ ଭିଡିଓ କଲ୍ କୁ ସୁଇଚ୍ କରନ୍ତୁ |"
   },
   "call_switch": {
     "en": "Switch",
@@ -1579,7 +2539,15 @@
     "ta": "மாற்று",
     "te": "మార్చు",
     "pa": "ਬਦਲੋ",
-    "description": "Button: switch to video call"
+    "description": "Button: switch to video call",
+    "es": "Cambiar",
+    "fr": "Changer",
+    "de": "Wechseln",
+    "ar": "تبديل",
+    "pt": "Alternar",
+    "ja": "切り替え",
+    "zh": "切换",
+    "or": "ସୁଇଚ୍"
   },
   "call_decline": {
     "en": "Decline",
@@ -1592,7 +2560,15 @@
     "ta": "நிராகரி",
     "te": "తిరస్కరించు",
     "pa": "ਅਸਵੀਕਾਰ",
-    "description": "Button: decline a call"
+    "description": "Button: decline a call",
+    "es": "Rechazar",
+    "fr": "Refuser",
+    "de": "Ablehnen",
+    "ar": "رفض",
+    "pt": "Recusar",
+    "ja": "拒否",
+    "zh": "拒绝",
+    "or": "ଅଗ୍ରାହ୍ୟ କରନ୍ତୁ |"
   },
   "call_accept": {
     "en": "Accept",
@@ -1605,7 +2581,15 @@
     "ta": "ஏற்கவும்",
     "te": "స్వీకరించు",
     "pa": "ਸਵੀਕਾਰ",
-    "description": "Button: accept an incoming call"
+    "description": "Button: accept an incoming call",
+    "es": "Aceptar",
+    "fr": "Accepter",
+    "de": "Annehmen",
+    "ar": "قبول",
+    "pt": "Aceitar",
+    "ja": "応答",
+    "zh": "接听",
+    "or": "ଗ୍ରହଣ କରନ୍ତୁ"
   },
   "call_answer": {
     "en": "Answer",
@@ -1618,7 +2602,15 @@
     "ta": "பதிலளி",
     "te": "సమాధానం ఇవ్వండి",
     "pa": "ਜਵਾਬ ਦਿਓ",
-    "description": "Button: answer an incoming call"
+    "description": "Button: answer an incoming call",
+    "es": "Responder",
+    "fr": "Répondre",
+    "de": "Antworten",
+    "ar": "رد",
+    "pt": "Atender",
+    "ja": "応答",
+    "zh": "接听",
+    "or": "ଉତ୍ତର"
   },
   "call_mute": {
     "en": "Mute",
@@ -1631,7 +2623,15 @@
     "ta": "மியூட்",
     "te": "మ్యూట్",
     "pa": "ਮਿਊਟ",
-    "description": "Button: mute the microphone"
+    "description": "Button: mute the microphone",
+    "es": "Silenciar",
+    "fr": "Muet",
+    "de": "Stummschalten",
+    "ar": "كتم",
+    "pt": "Mudo",
+    "ja": "ミュート",
+    "zh": "静音",
+    "or": "ମୂକ"
   },
   "call_unmute": {
     "en": "Unmute",
@@ -1644,7 +2644,15 @@
     "ta": "அன்மியூட்",
     "te": "అన్‌మ్యూట్",
     "pa": "ਅਨਮਿਊਟ",
-    "description": "Button: unmute the microphone"
+    "description": "Button: unmute the microphone",
+    "es": "Activar sonido",
+    "fr": "Réactiver micro",
+    "de": "Laut schalten",
+    "ar": "إلغاء الكتم",
+    "pt": "Ativar microfone",
+    "ja": "ミュート解除",
+    "zh": "取消静音",
+    "or": "ଅନ୍ମୁଟ୍ କରନ୍ତୁ |"
   },
   "call_muted": {
     "en": "Muted",
@@ -1657,7 +2665,15 @@
     "ta": "மியூட் செய்யப்பட்டது",
     "te": "మ్యూట్ చేయబడింది",
     "pa": "ਮਿਊਟ ਹੈ",
-    "description": "State: microphone is muted"
+    "description": "State: microphone is muted",
+    "es": "Silenciado",
+    "fr": "Désactivé",
+    "de": "Stumm",
+    "ar": "مكتوم",
+    "pt": "Mutado",
+    "ja": "ミュート中",
+    "zh": "已静音",
+    "or": "ନିରବ |"
   },
   "call_video": {
     "en": "Video",
@@ -1670,7 +2686,15 @@
     "ta": "வீடியோ",
     "te": "వీడియో",
     "pa": "ਵੀਡੀਓ",
-    "description": "Button: switch to video"
+    "description": "Button: switch to video",
+    "es": "Video",
+    "fr": "Vidéo",
+    "de": "Video",
+    "ar": "فيديو",
+    "pt": "Vídeo",
+    "ja": "ビデオ",
+    "zh": "视频",
+    "or": "ଭିଡିଓ"
   },
   "call_incomingVideo": {
     "en": "Incoming video call",
@@ -1682,7 +2706,15 @@
     "ml": "ഇൻകമിംഗ് വീഡിയോ കോൾ",
     "ta": "உள்வரும் வீடியோ அழைப்பு",
     "te": "ఇన్‌కమింగ్ వీడియో కాల్",
-    "pa": "ਇਨਕਮਿੰਗ ਵੀਡੀਓ ਕਾਲ"
+    "pa": "ਇਨਕਮਿੰਗ ਵੀਡੀਓ ਕਾਲ",
+    "es": "Videollamada entrante",
+    "fr": "Appel vidéo entrant",
+    "de": "Eingehender Videoanruf",
+    "ar": "مكالمة فيديو واردة",
+    "pt": "Chamada de vídeo recebida",
+    "ja": "着信ビデオ通話",
+    "zh": "视频来电",
+    "or": "ଆସୁଥିବା ଭିଡିଓ କଲ୍ |"
   },
   "call_incomingAudio": {
     "en": "Incoming audio call",
@@ -1694,7 +2726,15 @@
     "ml": "ഇൻകമിംഗ് ഓഡിയോ കോൾ",
     "ta": "உள்வரும் ஆடியோ அழைப்பு",
     "te": "ఇన్‌కమింగ్ ఆడియో కాల్",
-    "pa": "ਇਨਕਮਿੰਗ ਆਡੀਓ ਕਾਲ"
+    "pa": "ਇਨਕਮਿੰਗ ਆਡੀਓ ਕਾਲ",
+    "es": "Llamada de voz entrante",
+    "fr": "Appel audio entrant",
+    "de": "Eingehender Sprachanruf",
+    "ar": "مكالمة صوتية واردة",
+    "pt": "Chamada de voz recebida",
+    "ja": "着信音声通話",
+    "zh": "语音来电",
+    "or": "ଆସୁଥିବା ଅଡିଓ କଲ୍ |"
   },
   "call_incomingGroupVideo": {
     "en": "Incoming group video call",
@@ -1706,7 +2746,15 @@
     "ml": "ഇൻകമിംഗ് ഗ്രൂപ്പ് വീഡിയോ കോൾ",
     "ta": "உள்வரும் குழு வீடியோ அழைப்பு",
     "te": "ఇన్‌కమింగ్ గ్రూప్ వీడియో కాల్",
-    "pa": "ਇਨਕਮਿੰਗ ਗਰੁੱਪ ਵੀਡੀਓ ਕਾਲ"
+    "pa": "ਇਨਕਮਿੰਗ ਗਰੁੱਪ ਵੀਡੀਓ ਕਾਲ",
+    "es": "Videollamada grupal entrante",
+    "fr": "Appel vidéo de groupe entrant",
+    "de": "Eingehender Gruppen-Videoanruf",
+    "ar": "مكالمة فيديو جماعية واردة",
+    "pt": "Chamada de vídeo em grupo recebida",
+    "ja": "着信グループビデオ通話",
+    "zh": "群组视频来电",
+    "or": "ଆସୁଥିବା ଗୋଷ୍ଠୀ ଭିଡିଓ କଲ୍ |"
   },
   "call_incomingGroupAudio": {
     "en": "Incoming group audio call",
@@ -1718,7 +2766,15 @@
     "ml": "ഇൻകമിംഗ് ഗ്രൂപ്പ് ഓഡിയോ കോൾ",
     "ta": "உள்வரும் குழு ஆடியோ அழைப்பு",
     "te": "ఇన్‌కమింగ్ గ్రూప్ ఆడియో కాల్",
-    "pa": "ਇਨਕਮਿੰਗ ਗਰੁੱਪ ਆਡੀਓ ਕਾਲ"
+    "pa": "ਇਨਕਮਿੰਗ ਗਰੁੱਪ ਆਡੀਓ ਕਾਲ",
+    "es": "Llamada de voz grupal entrante",
+    "fr": "Appel audio de groupe entrant",
+    "de": "Eingehender Gruppen-Sprachanruf",
+    "ar": "مكالمة صوتية جماعية واردة",
+    "pt": "Chamada de voz em grupo recebida",
+    "ja": "着信グループ音声通話",
+    "zh": "群组语音来电",
+    "or": "ଆସୁଥିବା ଗ୍ରୁପ୍ ଅଡିଓ କଲ୍ |"
   },
   "call_turnOnVideo": {
     "en": "Turn on your video",
@@ -1730,7 +2786,15 @@
     "ml": "നിങ്ങളുടെ വീഡിയോ ഓണാക്കുക",
     "ta": "உங்கள் வீடியோவை இயக்கவும்",
     "te": "మీ వీడియో ఆన్ చేయండి",
-    "pa": "ਆਪਣੀ ਵੀਡੀਓ ਚਾਲੂ ਕਰੋ"
+    "pa": "ਆਪਣੀ ਵੀਡੀਓ ਚਾਲੂ ਕਰੋ",
+    "es": "Activa tu video",
+    "fr": "Activez votre vidéo",
+    "de": "Video einschalten",
+    "ar": "تشغيل الفيديو",
+    "pt": "Ative seu vídeo",
+    "ja": "ビデオをオンにする",
+    "zh": "开启视频",
+    "or": "ଆପଣଙ୍କର ଭିଡିଓ ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |"
   },
   "call_swipeUpToAnswer": {
     "en": "Swipe up to answer",
@@ -1742,7 +2806,15 @@
     "ml": "മറുപടി നൽകാൻ മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്യുക",
     "ta": "பதிலளிக்க மேலே ஸ்வைப் செய்யவும்",
     "te": "సమాధానం ఇవ్వడానికి పైకి స్వైప్ చేయండి",
-    "pa": "ਜਵਾਬ ਦੇਣ ਲਈ ਉੱਪਰ ਸਵਾਈਪ ਕਰੋ"
+    "pa": "ਜਵਾਬ ਦੇਣ ਲਈ ਉੱਪਰ ਸਵਾਈਪ ਕਰੋ",
+    "es": "Desliza hacia arriba para responder",
+    "fr": "Glissez vers le haut pour répondre",
+    "de": "Nach oben wischen zum Annehmen",
+    "ar": "اسحب للأعلى للرد",
+    "pt": "Deslize para cima para atender",
+    "ja": "上にスワイプして応答",
+    "zh": "上滑接听",
+    "or": "ଉତ୍ତର ଦେବାକୁ ସ୍ୱାଇପ୍ କରନ୍ତୁ |"
   },
   "call_pleaseWait": {
     "en": "Please wait",
@@ -1754,7 +2826,15 @@
     "ml": "ദയവായി കാത്തിരിക്കുക",
     "ta": "காத்திருக்கவும்",
     "te": "దయచేసి వేచి ఉండండి",
-    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਉਡੀਕ ਕਰੋ"
+    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਉਡੀਕ ਕਰੋ",
+    "es": "Por favor, espera",
+    "fr": "Veuillez patienter",
+    "de": "Bitte warten",
+    "ar": "يرجى الانتظار",
+    "pt": "Por favor, aguarde",
+    "ja": "お待ちください",
+    "zh": "请稍候",
+    "or": "ଦୟାକରି ଅପେକ୍ଷା କରନ୍ତୁ |"
   },
   "call_callerAndOthers": {
     "en": "{count, plural, =0{{name}} =1{{name} and 1 other} other{{name} and {count} others}}",
@@ -1774,7 +2854,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =0{{name}} =1{{name} y 1 más} other{{name} y {count} más}}",
+    "fr": "{count, plural, =0{{name}} =1{{name} et 1 autre} other{{name} et {count} autres}}",
+    "de": "{count, plural, =0{{name}} =1{{name} und 1 weiterer} other{{name} und {count} weitere}}",
+    "ar": "{count, plural, =0{{name}} =1{{name} وآخر} other{{name} و {count} آخرين}}",
+    "pt": "{count, plural, =0{{name}} =1{{name} e mais 1} other{{name} e mais {count}}}",
+    "ja": "{count, plural, =0{{name}} =1{{name} と他1名} other{{name} と他{count}名}}",
+    "zh": "{count, plural, =0{{name}} =1{{name} 及另外 1 人} other{{name} 及另外 {count} 人}}",
+    "or": "{count, plural, =0{{name}} =1{{name} ଏବଂ ଅନ୍ୟ 1 |} other{{name} ଏବଂ {count} ଅନ୍ୟମାନେ |}}"
   },
   "call_membersInCall": {
     "en": "{count, plural, =1{1 member in this call} other{{count} members in this call}}",
@@ -1791,7 +2879,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{1 miembro en esta llamada} other{{count} miembros en esta llamada}}",
+    "fr": "{count, plural, =1{1 membre dans cet appel} other{{count} membres dans cet appel}}",
+    "de": "{count, plural, =1{1 Mitglied im Anruf} other{{count} Mitglieder im Anruf}}",
+    "ar": "{count, plural, =1{عضو واحد في هذه المكالمة} other{{count} أعضاء في هذه المكالمة}}",
+    "pt": "{count, plural, =1{1 membro nesta chamada} other{{count} membros nesta chamada}}",
+    "ja": "{count, plural, =1{1名がこの通話に参加中} other{{count}名がこの通話に参加中}}",
+    "zh": "{count, plural, =1{1 位成员在此通话中} other{{count} 位成员在此通话中}}",
+    "or": "{count, plural, =1{ଏହି କଲ୍ ରେ 1 ସଦସ୍ୟ |} other{ଏହି କଲ୍ ରେ {count} ସଦସ୍ୟମାନେ |}}"
   },
   "call_joinOnAnswer": {
     "en": "You will join as soon as you answer",
@@ -1803,7 +2899,15 @@
     "ml": "മറുപടി നൽകിയാലുടൻ നിങ്ങൾ ചേരും",
     "ta": "பதிலளித்தவுடன் நீங்கள் இணைவீர்கள்",
     "te": "సమాధానం ఇవ్వగానే మీరు చేరతారు",
-    "pa": "ਜਵਾਬ ਦਿੰਦੇ ਹੀ ਤੁਸੀਂ ਸ਼ਾਮਲ ਹੋ ਜਾਓਗੇ"
+    "pa": "ਜਵਾਬ ਦਿੰਦੇ ਹੀ ਤੁਸੀਂ ਸ਼ਾਮਲ ਹੋ ਜਾਓਗੇ",
+    "es": "Te unirás tan pronto como respondas",
+    "fr": "Vous rejoindrez dès que vous répondrez",
+    "de": "Du trittst bei, sobald du abhebst",
+    "ar": "ستنضم بمجرد الرد",
+    "pt": "Você entrará assim que atender",
+    "ja": "応答するとすぐに参加します",
+    "zh": "接听后立即加入",
+    "or": "ତୁମେ ଉତ୍ତର ଦେବା ମାତ୍ରେ ଯୋଗ ଦେବ |"
   },
   "call_join": {
     "en": "Join",
@@ -1816,7 +2920,15 @@
     "ta": "இணை",
     "te": "చేరండి",
     "pa": "ਸ਼ਾਮਲ ਹੋਵੋ",
-    "description": "Button: join a group call"
+    "description": "Button: join a group call",
+    "es": "Unirse",
+    "fr": "Rejoindre",
+    "de": "Beitreten",
+    "ar": "انضمام",
+    "pt": "Entrar",
+    "ja": "参加",
+    "zh": "加入",
+    "or": "ଯୋଗ ଦିଅନ୍ତୁ |"
   },
   "call_waitingForMedia": {
     "en": "Waiting for media stream...",
@@ -1828,7 +2940,15 @@
     "ml": "മീഡിയ സ്ട്രീമിനായി കാത്തിരിക്കുന്നു...",
     "ta": "மீடியா ஸ்ட்ரீமுக்காகக் காத்திருக்கிறது...",
     "te": "మీడియా స్ట్రీమ్ కోసం వేచి ఉంది...",
-    "pa": "ਮੀਡੀਆ ਸਟ੍ਰੀਮ ਦੀ ਉਡੀਕ..."
+    "pa": "ਮੀਡੀਆ ਸਟ੍ਰੀਮ ਦੀ ਉਡੀਕ...",
+    "es": "Esperando transmisión de medios...",
+    "fr": "En attente du flux média...",
+    "de": "Warten auf Medien-Stream...",
+    "ar": "في انتظار تدفق الوسائط...",
+    "pt": "Aguardando transmissão de mídia...",
+    "ja": "メディアストリームを待機中...",
+    "zh": "正在等待媒体流...",
+    "or": "ମିଡିଆ ଷ୍ଟ୍ରିମ୍ ପାଇଁ ଅପେକ୍ଷା ..."
   },
   "call_zoomIn": {
     "en": "Zoom in",
@@ -1840,7 +2960,15 @@
     "ml": "സൂം ഇൻ",
     "ta": "பெரிதாக்கு",
     "te": "జూమ్ ఇన్",
-    "pa": "ਜ਼ੂਮ ਇਨ"
+    "pa": "ਜ਼ੂਮ ਇਨ",
+    "es": "Acercar",
+    "fr": "Zoom avant",
+    "de": "Vergrößern",
+    "ar": "تكبير",
+    "pt": "Aproximar",
+    "ja": "拡大",
+    "zh": "放大",
+    "or": "ଜୁମ୍ ଇନ୍ କରନ୍ତୁ |"
   },
   "call_zoomOut": {
     "en": "Zoom out",
@@ -1852,7 +2980,15 @@
     "ml": "സൂം ഔട്ട്",
     "ta": "சிறிதாக்கு",
     "te": "జూమ్ అవుట్",
-    "pa": "ਜ਼ੂਮ ਆਊਟ"
+    "pa": "ਜ਼ੂਮ ਆਊਟ",
+    "es": "Alejar",
+    "fr": "Zoom arrière",
+    "de": "Verkleinern",
+    "ar": "تصغير",
+    "pt": "Afastar",
+    "ja": "縮小",
+    "zh": "缩小",
+    "or": "ଜୁମ୍ ଆଉଟ୍ କରନ୍ତୁ |"
   },
   "call_resetZoom": {
     "en": "Reset zoom",
@@ -1864,7 +3000,15 @@
     "ml": "സൂം റീസെറ്റ് ചെയ്യുക",
     "ta": "பெரிதாக்கலை மீட்டமை",
     "te": "జూమ్ రీసెట్ చేయండి",
-    "pa": "ਜ਼ੂਮ ਰੀਸੈੱਟ ਕਰੋ"
+    "pa": "ਜ਼ੂਮ ਰੀਸੈੱਟ ਕਰੋ",
+    "es": "Restablecer zoom",
+    "fr": "Réinitialiser le zoom",
+    "de": "Zoom zurücksetzen",
+    "ar": "إعادة ضبط التكبير",
+    "pt": "Redefinir zoom",
+    "ja": "ズームをリセット",
+    "zh": "重置缩放",
+    "or": "ଜୁମ୍ ପୁନ Res ସେଟ୍ କରନ୍ତୁ |"
   },
   "call_closeFullScreen": {
     "en": "Close full screen",
@@ -1876,7 +3020,15 @@
     "ml": "ഫുൾ സ്ക്രീൻ അടയ്ക്കുക",
     "ta": "முழுத் திரையை மூடு",
     "te": "ఫుల్ స్క్రీన్ మూసివేయండి",
-    "pa": "ਫੁੱਲ ਸਕ੍ਰੀਨ ਬੰਦ ਕਰੋ"
+    "pa": "ਫੁੱਲ ਸਕ੍ਰੀਨ ਬੰਦ ਕਰੋ",
+    "es": "Cerrar pantalla completa",
+    "fr": "Quitter plein écran",
+    "de": "Vollbild schließen",
+    "ar": "إغلاق ملء الشاشة",
+    "pt": "Sair da tela cheia",
+    "ja": "全画面を閉じる",
+    "zh": "退出全屏",
+    "or": "ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍ ବନ୍ଦ କରନ୍ତୁ |"
   },
   "call_phone": {
     "en": "Phone",
@@ -1889,7 +3041,15 @@
     "ta": "ஃபோன்",
     "te": "ఫోన్",
     "pa": "ਫ਼ੋਨ",
-    "description": "Audio output: the phone's earpiece"
+    "description": "Audio output: the phone's earpiece",
+    "es": "Teléfono",
+    "fr": "Téléphone",
+    "de": "Telefon",
+    "ar": "الهاتف",
+    "pt": "Telefone",
+    "ja": "電話",
+    "zh": "电话",
+    "or": "ଫୋନ୍ |"
   },
   "call_speaker": {
     "en": "Speaker",
@@ -1902,7 +3062,15 @@
     "ta": "ஸ்பீக்கர்",
     "te": "స్పీకర్",
     "pa": "ਸਪੀਕਰ",
-    "description": "Audio output: loudspeaker"
+    "description": "Audio output: loudspeaker",
+    "es": "Altavoz",
+    "fr": "Haut-parleur",
+    "de": "Lautsprecher",
+    "ar": "مكبر الصوت",
+    "pt": "Alto-falante",
+    "ja": "スピーカー",
+    "zh": "扬声器",
+    "or": "ବକ୍ତା"
   },
   "call_earpiece": {
     "en": "Earpiece",
@@ -1915,7 +3083,15 @@
     "ta": "இயர்பீஸ்",
     "te": "ఇయర్‌పీస్",
     "pa": "ਈਅਰਪੀਸ",
-    "description": "Audio output"
+    "description": "Audio output",
+    "es": "Auricular",
+    "fr": "Écouteur",
+    "de": "Hörmuschel",
+    "ar": "سماعة الأذن",
+    "pt": "Auricular",
+    "ja": "イヤピース",
+    "zh": "听筒",
+    "or": "କାନଫୁଲ"
   },
   "call_wired": {
     "en": "Wired",
@@ -1928,7 +3104,15 @@
     "ta": "வயர்டு",
     "te": "వైర్డ్",
     "pa": "ਵਾਇਰਡ",
-    "description": "Audio output: wired headset"
+    "description": "Audio output: wired headset",
+    "es": "Con cable",
+    "fr": "Filaire",
+    "de": "Kabelgebunden",
+    "ar": "سلكي",
+    "pt": "Com fio",
+    "ja": "有線",
+    "zh": "有线",
+    "or": "ତାରଯୁକ୍ତ |"
   },
   "call_headphones": {
     "en": "Headphones",
@@ -1941,7 +3125,15 @@
     "ta": "ஹெட்ஃபோன்",
     "te": "హెడ్‌ఫోన్‌లు",
     "pa": "ਹੈੱਡਫ਼ੋਨ",
-    "description": "Audio output: wired headphones (no device name)"
+    "description": "Audio output: wired headphones (no device name)",
+    "es": "Auriculares",
+    "fr": "Casque",
+    "de": "Kopfhörer",
+    "ar": "سماعات الرأس",
+    "pt": "Fones de ouvido",
+    "ja": "ヘッドホン",
+    "zh": "耳机",
+    "or": "ହେଡଫୋନ୍ |"
   },
   "call_audioOutput": {
     "en": "Audio Output",
@@ -1953,7 +3145,15 @@
     "ml": "ഓഡിയോ ഔട്ട്‌പുട്ട്",
     "ta": "ஆடியோ வெளியீடு",
     "te": "ఆడియో అవుట్‌పుట్",
-    "pa": "ਆਡੀਓ ਆਊਟਪੁੱਟ"
+    "pa": "ਆਡੀਓ ਆਊਟਪੁੱਟ",
+    "es": "Salida de audio",
+    "fr": "Sortie audio",
+    "de": "Audioausgabe",
+    "ar": "مخرج الصوت",
+    "pt": "Saída de áudio",
+    "ja": "音声出力",
+    "zh": "音频输出",
+    "or": "ଅଡିଓ ଆଉଟପୁଟ୍"
   },
   "call_more": {
     "en": "More",
@@ -1966,7 +3166,15 @@
     "ta": "மேலும்",
     "te": "మరిన్ని",
     "pa": "ਹੋਰ",
-    "description": "Button: more options"
+    "description": "Button: more options",
+    "es": "Más",
+    "fr": "Plus",
+    "de": "Mehr",
+    "ar": "المزيد",
+    "pt": "Mais",
+    "ja": "その他",
+    "zh": "更多",
+    "or": "ଅଧିକ"
   },
   "call_endCall": {
     "en": "End call",
@@ -1978,7 +3186,15 @@
     "ml": "കോൾ അവസാനിപ്പിക്കുക",
     "ta": "அழைப்பை முடி",
     "te": "కాల్ ముగించండి",
-    "pa": "ਕਾਲ ਖ਼ਤਮ ਕਰੋ"
+    "pa": "ਕਾਲ ਖ਼ਤਮ ਕਰੋ",
+    "es": "Finalizar llamada",
+    "fr": "Terminer l’appel",
+    "de": "Anruf beenden",
+    "ar": "إنهاء المكالمة",
+    "pt": "Encerrar chamada",
+    "ja": "通話を終了",
+    "zh": "结束通话",
+    "or": "ଶେଷ କଲ୍ |"
   },
   "call_inThisCall": {
     "en": "In this call ({count})",
@@ -1995,7 +3211,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "En esta llamada ({count})",
+    "fr": "Dans cet appel ({count})",
+    "de": "In diesem Anruf ({count})",
+    "ar": "في هذه المكالمة ({count})",
+    "pt": "Nesta chamada ({count})",
+    "ja": "通話中 ({count})",
+    "zh": "通话中 ({count})",
+    "or": "ଏହି କଲ୍ ରେ ({count})"
   },
   "call_notInThisCall": {
     "en": "Not in this call ({count})",
@@ -2012,7 +3236,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "No están en esta llamada ({count})",
+    "fr": "Pas dans cet appel ({count})",
+    "de": "Nicht in diesem Anruf ({count})",
+    "ar": "ليسوا في هذه المكالمة ({count})",
+    "pt": "Fora desta chamada ({count})",
+    "ja": "通話外 ({count})",
+    "zh": "未在通话中 ({count})",
+    "or": "ଏହି କଲ୍ ରେ ନୁହେଁ ({count})"
   },
   "call_noActiveParticipants": {
     "en": "No active participants",
@@ -2024,7 +3256,15 @@
     "ml": "സജീവ പങ്കാളികളില്ല",
     "ta": "செயலில் உள்ள பங்கேற்பாளர்கள் இல்லை",
     "te": "సక్రియ పాల్గొనేవారు లేరు",
-    "pa": "ਕੋਈ ਸਰਗਰਮ ਭਾਗੀਦਾਰ ਨਹੀਂ"
+    "pa": "ਕੋਈ ਸਰਗਰਮ ਭਾਗੀਦਾਰ ਨਹੀਂ",
+    "es": "No hay participantes activos",
+    "fr": "Aucun participant actif",
+    "de": "Keine aktiven Teilnehmer",
+    "ar": "لا يوجد مشاركون نشطون",
+    "pt": "Nenhum participante ativo",
+    "ja": "アクティブな参加者はいません",
+    "zh": "无活跃参与者",
+    "or": "କ active ଣସି ସକ୍ରିୟ ଅଂଶଗ୍ରହଣକାରୀ ନାହିଁ |"
   },
   "call_everyoneInCall": {
     "en": "Everyone is already in the call",
@@ -2036,7 +3276,15 @@
     "ml": "എല്ലാവരും ഇതിനകം കോളിലുണ്ട്",
     "ta": "அனைவரும் ஏற்கனவே அழைப்பில் உள்ளனர்",
     "te": "అందరూ ఇప్పటికే కాల్‌లో ఉన్నారు",
-    "pa": "ਸਾਰੇ ਪਹਿਲਾਂ ਹੀ ਕਾਲ ਵਿੱਚ ਹਨ"
+    "pa": "ਸਾਰੇ ਪਹਿਲਾਂ ਹੀ ਕਾਲ ਵਿੱਚ ਹਨ",
+    "es": "Todos ya están en la llamada",
+    "fr": "Tout le monde est déjà dans l’appel",
+    "de": "Alle sind bereits im Anruf",
+    "ar": "الجميع في المكالمة بالفعل",
+    "pt": "Todos já estão na chamada",
+    "ja": "全員が既に参加しています",
+    "zh": "所有人均已在通话中",
+    "or": "ସମସ୍ତେ କଲ୍ ରେ ଅଛନ୍ତି |"
   },
   "call_tapNotifyToInvite": {
     "en": "Tap notify to invite",
@@ -2048,7 +3296,15 @@
     "ml": "ക്ഷണിക്കാൻ അറിയിക്കുക ടാപ്പ് ചെയ്യുക",
     "ta": "அழைக்க அறிவி என்பதைத் தட்டவும்",
     "te": "ఆహ్వానించడానికి తెలియజేయి నొక్కండి",
-    "pa": "ਸੱਦਾ ਦੇਣ ਲਈ ਸੂਚਿਤ ਕਰੋ 'ਤੇ ਟੈਪ ਕਰੋ"
+    "pa": "ਸੱਦਾ ਦੇਣ ਲਈ ਸੂਚਿਤ ਕਰੋ 'ਤੇ ਟੈਪ ਕਰੋ",
+    "es": "Toca notificar para invitar",
+    "fr": "Appuyez sur notifier pour inviter",
+    "de": "Tippe auf Benachrichtigen zum Einladen",
+    "ar": "اضغط على إشعار للدعوة",
+    "pt": "Toque em notificar para convidar",
+    "ja": "通知をタップして招待",
+    "zh": "点击通知以邀请",
+    "or": "ଆମନ୍ତ୍ରଣ କରିବାକୁ ବିଜ୍ଞପ୍ତି ଟ୍ୟାପ୍ କରନ୍ତୁ |"
   },
   "call_notify": {
     "en": "Notify",
@@ -2061,7 +3317,15 @@
     "ta": "அறிவி",
     "te": "తెలియజేయి",
     "pa": "ਸੂਚਿਤ ਕਰੋ",
-    "description": "Button: notify a member to join the call"
+    "description": "Button: notify a member to join the call",
+    "es": "Notificar",
+    "fr": "Notifier",
+    "de": "Benachrichtigen",
+    "ar": "إشعار",
+    "pt": "Notificar",
+    "ja": "通知",
+    "zh": "通知",
+    "or": "ସୂଚିତ କର |"
   },
   "call_nameYou": {
     "en": "{name} (You)",
@@ -2078,7 +3342,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "{name} (Tú)",
+    "fr": "{name} (Vous)",
+    "de": "{name} (Du)",
+    "ar": "{name} (أنت)",
+    "pt": "{name} (Você)",
+    "ja": "{name}（あなた）",
+    "zh": "{name}（您）",
+    "or": "{name} (ତୁମେ)"
   },
   "call_inCall": {
     "en": "In call",
@@ -2090,7 +3362,15 @@
     "ml": "കോളിൽ",
     "ta": "அழைப்பில்",
     "te": "కాల్‌లో",
-    "pa": "ਕਾਲ ਵਿੱਚ"
+    "pa": "ਕਾਲ ਵਿੱਚ",
+    "es": "En llamada",
+    "fr": "En appel",
+    "de": "Im Anruf",
+    "ar": "في مكالمة",
+    "pt": "Em chamada",
+    "ja": "通話中",
+    "zh": "通话中",
+    "or": "କଲ୍ ରେ |"
   },
   "call_youAreSharing": {
     "en": "You're sharing",
@@ -2102,7 +3382,15 @@
     "ml": "നിങ്ങൾ പങ്കിടുന്നു",
     "ta": "நீங்கள் பகிர்கிறீர்கள்",
     "te": "మీరు షేర్ చేస్తున్నారు",
-    "pa": "ਤੁਸੀਂ ਸਾਂਝਾ ਕਰ ਰਹੇ ਹੋ"
+    "pa": "ਤੁਸੀਂ ਸਾਂਝਾ ਕਰ ਰਹੇ ਹੋ",
+    "es": "Estás compartiendo",
+    "fr": "Vous partagez",
+    "de": "Du teilst",
+    "ar": "أنت تشارك الآن",
+    "pt": "Você está compartilhando",
+    "ja": "共有中",
+    "zh": "您正在共享",
+    "or": "ଆପଣ ଅଂଶୀଦାର କରୁଛନ୍ତି |"
   },
   "call_personIsSharing": {
     "en": "{name} is sharing",
@@ -2119,7 +3407,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "{name} está compartiendo",
+    "fr": "{name} partage",
+    "de": "{name} teilt",
+    "ar": "{name} يشارك الآن",
+    "pt": "{name} está compartilhando",
+    "ja": "{name}が共有中",
+    "zh": "{name} 正在共享",
+    "or": "{name} ଅଂଶୀଦାର କରୁଛି |"
   },
   "call_groupCallInitFailed": {
     "en": "Unable to initialize group call",
@@ -2131,7 +3427,15 @@
     "ml": "ഗ്രൂപ്പ് കോൾ ആരംഭിക്കാനായില്ല",
     "ta": "குழு அழைப்பைத் தொடங்க முடியவில்லை",
     "te": "గ్రూప్ కాల్ ప్రారంభించలేకపోయాం",
-    "pa": "ਗਰੁੱਪ ਕਾਲ ਸ਼ੁਰੂ ਨਹੀਂ ਹੋ ਸਕੀ"
+    "pa": "ਗਰੁੱਪ ਕਾਲ ਸ਼ੁਰੂ ਨਹੀਂ ਹੋ ਸਕੀ",
+    "es": "No se pudo inicializar la llamada grupal",
+    "fr": "Impossible d'initialiser l'appel de groupe",
+    "de": "Gruppenanruf konnte nicht initialisiert werden",
+    "ar": "تعذر تهيئة المكالمة الجماعية",
+    "pt": "Não foi possível inicializar a chamada em grupo",
+    "ja": "グループ通話を初期化できませんでした",
+    "zh": "无法初始化群组通话",
+    "or": "ଗୋଷ୍ଠୀ କଲ୍ ଆରମ୍ଭ କରିବାକୁ ଅସମର୍ଥ |"
   },
   "call_sessionConnectFailed": {
     "en": "Failed to connect to the call session",
@@ -2143,7 +3447,15 @@
     "ml": "കോളിലേക്ക് കണക്റ്റ് ചെയ്യാനായില്ല",
     "ta": "அழைப்புடன் இணைக்க முடியவில்லை",
     "te": "కాల్‌కు కనెక్ట్ కాలేకపోయాం",
-    "pa": "ਕਾਲ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਹੋ ਸਕਿਆ"
+    "pa": "ਕਾਲ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਹੋ ਸਕਿਆ",
+    "es": "Error al conectar a la sesión de llamada",
+    "fr": "Échec de connexion à la session d'appel",
+    "de": "Verbindung zur Anrufsitzung fehlgeschlagen",
+    "ar": "فشل الاتصال بجلسة المكالمة",
+    "pt": "Falha ao conectar à sessão de chamada",
+    "ja": "通話セッションへの接続に失敗しました",
+    "zh": "连接通话会话失败",
+    "or": "କଲ୍ ଅଧିବେଶନ ସହିତ ସଂଯୋଗ କରିବାରେ ବିଫଳ |"
   },
   "call_cameraMicRequired": {
     "en": "Camera or Mic permissions are required",
@@ -2155,7 +3467,15 @@
     "ml": "ക്യാമറ അല്ലെങ്കിൽ മൈക്ക് അനുമതി ആവശ്യമാണ്",
     "ta": "கேமரா அல்லது மைக் அனுமதி தேவை",
     "te": "కెమెరా లేదా మైక్ అనుమతి అవసరం",
-    "pa": "ਕੈਮਰਾ ਜਾਂ ਮਾਈਕ ਦੀ ਇਜਾਜ਼ਤ ਲੋੜੀਂਦੀ ਹੈ"
+    "pa": "ਕੈਮਰਾ ਜਾਂ ਮਾਈਕ ਦੀ ਇਜਾਜ਼ਤ ਲੋੜੀਂਦੀ ਹੈ",
+    "es": "Se requieren permisos de cámara o micrófono",
+    "fr": "Autorisations de caméra ou micro requises",
+    "de": "Kamera- oder Mikrofonberechtigungen erforderlich",
+    "ar": "أذونات الكاميرا أو الميكروفون مطلوبة",
+    "pt": "Permissões de câmera ou microfone são necessárias",
+    "ja": "カメラまたはマイクの権限が必要です",
+    "zh": "需要相机或麦克风权限",
+    "or": "କ୍ୟାମେରା କିମ୍ବା ମାଇକ୍ ଅନୁମତି ଆବଶ୍ୟକ |"
   },
   "call_someone": {
     "en": "Someone",
@@ -2168,7 +3488,15 @@
     "ta": "ஒருவர்",
     "te": "ఎవరో",
     "pa": "ਕੋਈ",
-    "description": "Fallback name of an unknown caller in a group call"
+    "description": "Fallback name of an unknown caller in a group call",
+    "es": "Alguien",
+    "fr": "Quelqu’un",
+    "de": "Jemand",
+    "ar": "شخص ما",
+    "pt": "Alguém",
+    "ja": "誰か",
+    "zh": "某人",
+    "or": "କେହି ଜଣେ"
   },
   "call_switchCameraFailed": {
     "en": "Unable to switch camera",
@@ -2180,7 +3508,15 @@
     "ml": "ക്യാമറ മാറ്റാനായില്ല",
     "ta": "கேமராவை மாற்ற முடியவில்லை",
     "te": "కెమెరా మార్చలేకపోయాం",
-    "pa": "ਕੈਮਰਾ ਬਦਲਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ"
+    "pa": "ਕੈਮਰਾ ਬਦਲਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ",
+    "es": "No se puede cambiar de cámara",
+    "fr": "Impossible de basculer la caméra",
+    "de": "Kamera konnte nicht gewechselt werden",
+    "ar": "تعذر تبديل الكاميرا",
+    "pt": "Não foi possível alternar a câmera",
+    "ja": "カメラを切り替えられませんでした",
+    "zh": "无法切换相机",
+    "or": "କ୍ୟାମେରା ସୁଇଚ୍ କରିବାକୁ ଅସମର୍ଥ |"
   },
   "call_notifyFailed": {
     "en": "Notify failed",
@@ -2192,7 +3528,15 @@
     "ml": "അറിയിപ്പ് അയയ്ക്കാനായില്ല",
     "ta": "அறிவிக்க முடியவில்லை",
     "te": "తెలియజేయడం విఫలమైంది",
-    "pa": "ਸੂਚਨਾ ਨਹੀਂ ਭੇਜੀ ਜਾ ਸਕੀ"
+    "pa": "ਸੂਚਨਾ ਨਹੀਂ ਭੇਜੀ ਜਾ ਸਕੀ",
+    "es": "Error al notificar",
+    "fr": "Échec de la notification",
+    "de": "Benachrichtigung fehlgeschlagen",
+    "ar": "فشل الإشعار",
+    "pt": "Falha ao notificar",
+    "ja": "通知に失敗しました",
+    "zh": "通知失败",
+    "or": "ବିଜ୍ଞପ୍ତି ବିଫଳ ହେଲା |"
   },
   "call_notifySent": {
     "en": "Notified successfully",
@@ -2204,7 +3548,15 @@
     "ml": "അറിയിപ്പ് അയച്ചു",
     "ta": "வெற்றிகரமாக அறிவிக்கப்பட்டது",
     "te": "విజయవంతంగా తెలియజేశాం",
-    "pa": "ਸੂਚਨਾ ਭੇਜ ਦਿੱਤੀ ਗਈ"
+    "pa": "ਸੂਚਨਾ ਭੇਜ ਦਿੱਤੀ ਗਈ",
+    "es": "Notificado con éxito",
+    "fr": "Notifié avec succès",
+    "de": "Erfolgreich benachrichtigt",
+    "ar": "تم الإشعار بنجاح",
+    "pt": "Notificado com sucesso",
+    "ja": "正常に通知されました",
+    "zh": "通知已发送",
+    "or": "ସଫଳତାର ସହିତ ସୂଚିତ |"
   },
   "call_cameraUnavailable": {
     "en": "Sorry, camera access is currently unavailable. Please try again later.",
@@ -2216,7 +3568,15 @@
     "ml": "ക്ഷമിക്കണം, ക്യാമറ ഇപ്പോൾ ലഭ്യമല്ല. ദയവായി പിന്നീട് വീണ്ടും ശ്രമിക്കുക.",
     "ta": "மன்னிக்கவும், இப்போது கேமரா கிடைக்கவில்லை. பிறகு மீண்டும் முயலவும்.",
     "te": "క్షమించండి, ప్రస్తుతం కెమెరా అందుబాటులో లేదు. దయచేసి తర్వాత మళ్ళీ ప్రయత్నించండి.",
-    "pa": "ਮਾਫ਼ ਕਰਨਾ, ਹੁਣ ਕੈਮਰਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"
+    "pa": "ਮਾਫ਼ ਕਰਨਾ, ਹੁਣ ਕੈਮਰਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    "es": "El acceso a la cámara no está disponible en este momento. Inténtalo más tarde.",
+    "fr": "L'accès à la caméra est actuellement indisponible. Veuillez réessayer plus tard.",
+    "de": "Kamerazugriff ist derzeit nicht verfügbar. Bitte später erneut versuchen.",
+    "ar": "الوصول إلى الكاميرا غير متاح حالياً. يرجى المحاولة مرة أخرى لاحقاً.",
+    "pt": "O acesso à câmera está indisponível no momento. Tente novamente mais tarde.",
+    "ja": "カメラへのアクセスは現在利用できません。後でもう一度お試しください。",
+    "zh": "相机访问目前不可用，请稍后重试。",
+    "or": "ଦୁ Sorry ଖିତ, କ୍ୟାମେରା ପ୍ରବେଶ ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ନାହିଁ | ଦୟାକରି ପରେ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
   },
   "call_connectionTimeout": {
     "en": "Connection timed out",
@@ -2228,7 +3588,15 @@
     "ml": "കണക്ഷൻ സമയം കഴിഞ്ഞു",
     "ta": "இணைப்பு நேரம் முடிந்தது",
     "te": "కనెక్షన్ సమయం ముగిసింది",
-    "pa": "ਕਨੈਕਸ਼ਨ ਦਾ ਸਮਾਂ ਖ਼ਤਮ ਹੋ ਗਿਆ"
+    "pa": "ਕਨੈਕਸ਼ਨ ਦਾ ਸਮਾਂ ਖ਼ਤਮ ਹੋ ਗਿਆ",
+    "es": "Tiempo de conexión agotado",
+    "fr": "Délai de connexion dépassé",
+    "de": "Verbindungszeitüberschreitung",
+    "ar": "انتهت مهلة الاتصال",
+    "pt": "Tempo limite de conexão esgotado",
+    "ja": "接続がタイムアウトしました",
+    "zh": "连接超时",
+    "or": "ସଂଯୋଗ ସମୟ ସମାପ୍ତ ହୋଇଛି |"
   },
   "call_unexpectedResponse": {
     "en": "Unexpected response from server",
@@ -2240,7 +3608,15 @@
     "ml": "സെർവറിൽ നിന്ന് അപ്രതീക്ഷിത പ്രതികരണം",
     "ta": "சர்வரிடமிருந்து எதிர்பாராத பதில்",
     "te": "సర్వర్ నుండి ఊహించని ప్రతిస్పందన",
-    "pa": "ਸਰਵਰ ਤੋਂ ਅਚਾਨਕ ਜਵਾਬ"
+    "pa": "ਸਰਵਰ ਤੋਂ ਅਚਾਨਕ ਜਵਾਬ",
+    "es": "Respuesta inesperada del servidor",
+    "fr": "Réponse inattendue du serveur",
+    "de": "Unerwartete Serverantwort",
+    "ar": "استجابة غير متوقعة من الخادم",
+    "pt": "Resposta inesperada do servidor",
+    "ja": "サーバーからの予期しない応答です",
+    "zh": "服务器返回异常响应",
+    "or": "ସର୍ଭରରୁ ଅପ୍ରତ୍ୟାଶିତ ପ୍ରତିକ୍ରିୟା |"
   },
   "call_cannotReachCallServer": {
     "en": "Unable to connect to call server. Please check your network.",
@@ -2252,7 +3628,15 @@
     "ml": "കോൾ സെർവറിലേക്ക് കണക്റ്റ് ചെയ്യാനായില്ല. ദയവായി നിങ്ങളുടെ നെറ്റ്‌വർക്ക് പരിശോധിക്കുക.",
     "ta": "அழைப்பு சர்வருடன் இணைக்க முடியவில்லை. உங்கள் நெட்வொர்க்கைச் சரிபார்க்கவும்.",
     "te": "కాల్ సర్వర్‌కు కనెక్ట్ కాలేకపోయాం. దయచేసి మీ నెట్‌వర్క్ తనిఖీ చేయండి.",
-    "pa": "ਕਾਲ ਸਰਵਰ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਹੋ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਨੈੱਟਵਰਕ ਜਾਂਚੋ।"
+    "pa": "ਕਾਲ ਸਰਵਰ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਹੋ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਨੈੱਟਵਰਕ ਜਾਂਚੋ।",
+    "es": "No se puede conectar al servidor de llamadas. Comprueba tu red.",
+    "fr": "Impossible de joindre le serveur d’appels. Vérifiez votre réseau.",
+    "de": "Verbindung zum Anrufserver fehlgeschlagen. Bitte Netzwerk prüfen.",
+    "ar": "تعذر الاتصال بخادم المكالمات. يرجى التحقق من شبكتك.",
+    "pt": "Não foi possível conectar ao servidor de chamadas. Verifique sua rede.",
+    "ja": "通話サーバーに接続できません。ネットワークを確認してください。",
+    "zh": "无法连接到通话服务器，请检查网络。",
+    "or": "କଲ୍ ସର୍ଭରକୁ ସଂଯୋଗ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ |"
   },
   "call_screenShareChannelName": {
     "en": "Screen Sharing Service",
@@ -2265,7 +3649,15 @@
     "ta": "திரைப் பகிர்வு சேவை",
     "te": "స్క్రీన్ షేరింగ్ సేవ",
     "pa": "ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨ ਦੀ ਸੇਵਾ",
-    "description": "Android notification channel name"
+    "description": "Android notification channel name",
+    "es": "Servicio de uso compartido de pantalla",
+    "fr": "Service de partage d'écran",
+    "de": "Bildschirmfreigabe-Dienst",
+    "ar": "خدمة مشاركة الشاشة",
+    "pt": "Serviço de compartilhamento de tela",
+    "ja": "画面共有サービス",
+    "zh": "屏幕共享服务",
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ସେବା |"
   },
   "call_screenShareChannelDescription": {
     "en": "Active screen sharing session notification",
@@ -2277,7 +3669,15 @@
     "ml": "സജീവ സ്ക്രീൻ പങ്കിടൽ അറിയിപ്പ്",
     "ta": "செயலில் உள்ள திரைப் பகிர்வு அறிவிப்பு",
     "te": "సక్రియ స్క్రీన్ షేరింగ్ నోటిఫికేషన్",
-    "pa": "ਚੱਲ ਰਹੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨ ਦੀ ਸੂਚਨਾ"
+    "pa": "ਚੱਲ ਰਹੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰਨ ਦੀ ਸੂਚਨਾ",
+    "es": "Notificación de sesión activa de pantalla compartida",
+    "fr": "Notification de session de partage d’écran active",
+    "de": "Benachrichtigung für aktive Bildschirmfreigabesitzung",
+    "ar": "إشعار جلسة مشاركة الشاشة النشطة",
+    "pt": "Notificação de sessão ativa de compartilhamento de tela",
+    "ja": "アクティブな画面共有セッションの通知",
+    "zh": "活跃屏幕共享会话通知",
+    "or": "ସକ୍ରିୟ ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ଅଧିବେଶନ ବିଜ୍ଞପ୍ତି |"
   },
   "call_inCallWithGroup": {
     "en": "In call · {groupName}",
@@ -2294,7 +3694,15 @@
       "groupName": {
         "type": "String"
       }
-    }
+    },
+    "es": "En llamada · {groupName}",
+    "fr": "En appel · {groupName}",
+    "de": "Im Anruf · {groupName}",
+    "ar": "في مكالمة · {groupName}",
+    "pt": "Em chamada · {groupName}",
+    "ja": "通話中 · {groupName}",
+    "zh": "通话中 · {groupName}",
+    "or": "କଲ୍ ରେ · {groupName} |"
   },
   "call_micActive": {
     "en": "Microphone is active",
@@ -2306,7 +3714,15 @@
     "ml": "മൈക്രോഫോൺ സജീവമാണ്",
     "ta": "மைக்ரோஃபோன் இயக்கத்தில் உள்ளது",
     "te": "మైక్రోఫోన్ యాక్టివ్‌గా ఉంది",
-    "pa": "ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਚਾਲੂ ਹੈ"
+    "pa": "ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਚਾਲੂ ਹੈ",
+    "es": "El micrófono está activo",
+    "fr": "Le micro est actif",
+    "de": "Mikrofon ist aktiv",
+    "ar": "الميكروفون نشط",
+    "pt": "O microfone está ativo",
+    "ja": "マイクがアクティブです",
+    "zh": "麦克风处于活动状态",
+    "or": "ମାଇକ୍ରୋଫୋନ୍ ସକ୍ରିୟ ଅଛି |"
   },
   "call_sharingYourScreen": {
     "en": "Sharing your screen",
@@ -2318,7 +3734,15 @@
     "ml": "നിങ്ങളുടെ സ്ക്രീൻ പങ്കിടുന്നു",
     "ta": "உங்கள் திரை பகிரப்படுகிறது",
     "te": "మీ స్క్రీన్ షేర్ అవుతోంది",
-    "pa": "ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਹੋ ਰਹੀ ਹੈ"
+    "pa": "ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਹੋ ਰਹੀ ਹੈ",
+    "es": "Compartiendo tu pantalla",
+    "fr": "Partage de votre écran",
+    "de": "Du teilst deinen Bildschirm",
+    "ar": "مشاركة شاشتك",
+    "pt": "Compartilhando sua tela",
+    "ja": "画面を共有中",
+    "zh": "正在共享您的屏幕",
+    "or": "ଆପଣଙ୍କର ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର |"
   },
   "call_sharingInGroupTapReturn": {
     "en": "Sharing in {groupName} • Tap to return to call",
@@ -2335,7 +3759,15 @@
       "groupName": {
         "type": "String"
       }
-    }
+    },
+    "es": "Compartiendo en {groupName} • Toca para volver a la llamada",
+    "fr": "Partage dans {groupName} • Appuyez pour revenir",
+    "de": "Freigabe in {groupName} • Tippe zum Zurückkehren",
+    "ar": "مشاركة في {groupName} • اضغط للعودة للمكالمة",
+    "pt": "Compartilhando em {groupName} • Toque para retornar",
+    "ja": "{groupName}で共有中 • タップして通話に戻る",
+    "zh": "在 {groupName} 中共享 • 点击返回通话",
+    "or": "{groupName} ରେ ଅଂଶୀଦାର • କଲ୍ କୁ ଫେରିବା ପାଇଁ ଟ୍ୟାପ୍ କରନ୍ତୁ |"
   },
   "call_returnToCall": {
     "en": "Return to Call",
@@ -2347,7 +3779,15 @@
     "ml": "കോളിലേക്ക് മടങ്ങുക",
     "ta": "அழைப்புக்குத் திரும்பு",
     "te": "కాల్‌కు తిరిగి వెళ్ళండి",
-    "pa": "ਕਾਲ 'ਤੇ ਵਾਪਸ ਜਾਓ"
+    "pa": "ਕਾਲ 'ਤੇ ਵਾਪਸ ਜਾਓ",
+    "es": "Volver a la llamada",
+    "fr": "Retour à l’appel",
+    "de": "Zurück zum Anruf",
+    "ar": "العودة إلى المكالمة",
+    "pt": "Voltar à chamada",
+    "ja": "通話に戻る",
+    "zh": "返回通话",
+    "or": "କଲ୍ କୁ ଫେରନ୍ତୁ |"
   },
   "call_groupCallComingSoon": {
     "en": "Group calling is coming soon",
@@ -2359,7 +3799,15 @@
     "ml": "ഗ്രൂപ്പ് കോളിംഗ് ഉടൻ വരുന്നു",
     "ta": "குழு அழைப்பு விரைவில் வருகிறது",
     "te": "గ్రూప్ కాలింగ్ త్వరలో వస్తోంది",
-    "pa": "ਗਰੁੱਪ ਕਾਲਿੰਗ ਜਲਦੀ ਆ ਰਹੀ ਹੈ"
+    "pa": "ਗਰੁੱਪ ਕਾਲਿੰਗ ਜਲਦੀ ਆ ਰਹੀ ਹੈ",
+    "es": "Las llamadas grupales estarán disponibles pronto",
+    "fr": "Les appels de groupe arrivent bientôt",
+    "de": "Gruppenanrufe demnächst verfügbar",
+    "ar": "المكالمات الجماعية قريباً",
+    "pt": "Chamadas em grupo em breve",
+    "ja": "グループ通話は近日公開予定です",
+    "zh": "群组通话即将推出",
+    "or": "ଗ୍ରୁପ୍ କଲିଂ ଶୀଘ୍ର ଆସୁଛି |"
   },
   "call_message": {
     "en": "Message",
@@ -2372,7 +3820,15 @@
     "ta": "செய்தி",
     "te": "మెసేజ్",
     "pa": "ਮੈਸੇਜ",
-    "description": "Button: open chat with the contact"
+    "description": "Button: open chat with the contact",
+    "es": "Mensaje",
+    "fr": "Message",
+    "de": "Nachricht",
+    "ar": "رسالة",
+    "pt": "Mensagem",
+    "ja": "メッセージ",
+    "zh": "消息",
+    "or": "ବାର୍ତ୍ତା |"
   },
   "call_callInformation": {
     "en": "Call Information",
@@ -2384,7 +3840,15 @@
     "ml": "കോൾ വിവരങ്ങൾ",
     "ta": "அழைப்பு தகவல்",
     "te": "కాల్ సమాచారం",
-    "pa": "ਕਾਲ ਦੀ ਜਾਣਕਾਰੀ"
+    "pa": "ਕਾਲ ਦੀ ਜਾਣਕਾਰੀ",
+    "es": "Información de la llamada",
+    "fr": "Informations sur l'appel",
+    "de": "Anrufinformationen",
+    "ar": "معلومات المكالمة",
+    "pt": "Informações da chamada",
+    "ja": "通話情報",
+    "zh": "通话信息",
+    "or": "କଲ୍ ସୂଚନା"
   },
   "call_duration": {
     "en": "Duration",
@@ -2396,7 +3860,15 @@
     "ml": "ദൈർഘ്യം",
     "ta": "கால அளவு",
     "te": "వ్యవధి",
-    "pa": "ਮਿਆਦ"
+    "pa": "ਮਿਆਦ",
+    "es": "Duración",
+    "fr": "Durée",
+    "de": "Dauer",
+    "ar": "المدة",
+    "pt": "Duração",
+    "ja": "通話時間",
+    "zh": "时长",
+    "or": "ଅବଧି"
   },
   "call_durationValue": {
     "en": "Duration: {duration}",
@@ -2413,7 +3885,15 @@
       "duration": {
         "type": "String"
       }
-    }
+    },
+    "es": "Duración: {duration}",
+    "fr": "Durée : {duration}",
+    "de": "Dauer: {duration}",
+    "ar": "المدة: {duration}",
+    "pt": "Duração: {duration}",
+    "ja": "通話時間: {duration}",
+    "zh": "时长：{duration}",
+    "or": "ସମୟ: {duration}"
   },
   "call_started": {
     "en": "Started",
@@ -2426,7 +3906,15 @@
     "ta": "தொடங்கியது",
     "te": "ప్రారంభం",
     "pa": "ਸ਼ੁਰੂ ਹੋਈ",
-    "description": "Time the call started"
+    "description": "Time the call started",
+    "es": "Iniciada",
+    "fr": "Débuté",
+    "de": "Gestartet",
+    "ar": "بدأت",
+    "pt": "Iniciada",
+    "ja": "開始",
+    "zh": "开始时间",
+    "or": "ଆରମ୍ଭ ହୋଇଛି"
   },
   "call_ended": {
     "en": "Ended",
@@ -2439,7 +3927,15 @@
     "ta": "முடிந்தது",
     "te": "ముగింపు",
     "pa": "ਖ਼ਤਮ ਹੋਈ",
-    "description": "Time the call ended"
+    "description": "Time the call ended",
+    "es": "Finalizada",
+    "fr": "Terminé",
+    "de": "Beendet",
+    "ar": "انتهت",
+    "pt": "Encerrada",
+    "ja": "終了",
+    "zh": "结束时间",
+    "or": "ସମାପ୍ତ"
   },
   "call_durHrMin": {
     "en": "{hours} hr {minutes} min",
@@ -2459,7 +3955,15 @@
       "minutes": {
         "type": "int"
       }
-    }
+    },
+    "es": "{hours} h {minutes} min",
+    "fr": "{hours} h {minutes} min",
+    "de": "{hours} Std. {minutes} Min.",
+    "ar": "{hours} س {minutes} د",
+    "pt": "{hours} h {minutes} min",
+    "ja": "{hours}時間{minutes}分",
+    "zh": "{hours} 小时 {minutes} 分钟",
+    "or": "{hours} ଘଣ୍ଟା {minutes} ମିନିଟ୍ |"
   },
   "call_durHr": {
     "en": "{hours} hr",
@@ -2476,7 +3980,15 @@
       "hours": {
         "type": "int"
       }
-    }
+    },
+    "es": "{hours} h",
+    "fr": "{hours} h",
+    "de": "{hours} Std.",
+    "ar": "{hours} س",
+    "pt": "{hours} h",
+    "ja": "{hours}時間",
+    "zh": "{hours} 小时",
+    "or": "{hours} ଘଣ୍ଟା"
   },
   "call_durMinSec": {
     "en": "{minutes} min {seconds} sec",
@@ -2496,7 +4008,15 @@
       "seconds": {
         "type": "int"
       }
-    }
+    },
+    "es": "{minutes} min {seconds} s",
+    "fr": "{minutes} min {seconds} s",
+    "de": "{minutes} Min. {seconds} Sek.",
+    "ar": "{minutes} د {seconds} ث",
+    "pt": "{minutes} min {seconds} s",
+    "ja": "{minutes}分{seconds}秒",
+    "zh": "{minutes} 分钟 {seconds} 秒",
+    "or": "{minutes} ମିନିଟ୍ {seconds} ସେକେଣ୍ଡ୍ |"
   },
   "call_durMin": {
     "en": "{minutes} min",
@@ -2513,7 +4033,15 @@
       "minutes": {
         "type": "int"
       }
-    }
+    },
+    "es": "{minutes} min",
+    "fr": "{minutes} min",
+    "de": "{minutes} Min.",
+    "ar": "{minutes} د",
+    "pt": "{minutes} min",
+    "ja": "{minutes}分",
+    "zh": "{minutes} 分钟",
+    "or": "{minutes} ମିନିଟ୍"
   },
   "call_durSec": {
     "en": "{seconds} sec",
@@ -2530,7 +4058,15 @@
       "seconds": {
         "type": "int"
       }
-    }
+    },
+    "es": "{seconds} s",
+    "fr": "{seconds} s",
+    "de": "{seconds} Sek.",
+    "ar": "{seconds} ث",
+    "pt": "{seconds} s",
+    "ja": "{seconds}秒",
+    "zh": "{seconds} 秒",
+    "or": "{seconds} ସେକେଣ୍ଡ୍"
   },
   "call_durShortHrMin": {
     "en": "{hours}h {minutes}m",
@@ -2551,7 +4087,15 @@
         "type": "int"
       }
     },
-    "description": "Very short duration, e.g. 1h 5m"
+    "description": "Very short duration, e.g. 1h 5m",
+    "es": "{hours}h {minutes}m",
+    "fr": "{hours}h {minutes}m",
+    "de": "{hours}h {minutes}m",
+    "ar": "{hours}س {minutes}د",
+    "pt": "{hours}h {minutes}m",
+    "ja": "{hours}h {minutes}m",
+    "zh": "{hours}小时 {minutes}分",
+    "or": "{hours}h {minutes} ମି"
   },
   "call_durShortHr": {
     "en": "{hours}h",
@@ -2568,7 +4112,15 @@
       "hours": {
         "type": "int"
       }
-    }
+    },
+    "es": "{hours}h",
+    "fr": "{hours}h",
+    "de": "{hours}h",
+    "ar": "{hours}س",
+    "pt": "{hours}h",
+    "ja": "{hours}h",
+    "zh": "{hours}小时",
+    "or": "{hours} ଘ"
   },
   "call_durShortMinSec": {
     "en": "{minutes}m {seconds}s",
@@ -2588,7 +4140,15 @@
       "seconds": {
         "type": "int"
       }
-    }
+    },
+    "es": "{minutes}m {seconds}s",
+    "fr": "{minutes}m {seconds}s",
+    "de": "{minutes}m {seconds}s",
+    "ar": "{minutes}د {seconds}ث",
+    "pt": "{minutes}m {seconds}s",
+    "ja": "{minutes}m {seconds}s",
+    "zh": "{minutes}分 {seconds}秒",
+    "or": "{minutes}m {seconds}s |"
   },
   "call_durShortMin": {
     "en": "{minutes}m",
@@ -2605,7 +4165,15 @@
       "minutes": {
         "type": "int"
       }
-    }
+    },
+    "es": "{minutes}m",
+    "fr": "{minutes}m",
+    "de": "{minutes}m",
+    "ar": "{minutes}د",
+    "pt": "{minutes}m",
+    "ja": "{minutes}m",
+    "zh": "{minutes}分",
+    "or": "{minutes} ମି"
   },
   "call_durShortSec": {
     "en": "{seconds}s",
@@ -2622,7 +4190,15 @@
       "seconds": {
         "type": "int"
       }
-    }
+    },
+    "es": "{seconds}s",
+    "fr": "{seconds}s",
+    "de": "{seconds}s",
+    "ar": "{seconds}ث",
+    "pt": "{seconds}s",
+    "ja": "{seconds}s",
+    "zh": "{seconds}秒",
+    "or": "{seconds}s |"
   },
   "call_todayAt": {
     "en": "Today, {value}",
@@ -2640,7 +4216,15 @@
         "type": "String"
       }
     },
-    "description": "value is a date or a time"
+    "description": "value is a date or a time",
+    "es": "Hoy, {value}",
+    "fr": "Aujourd'hui, {value}",
+    "de": "Heute, {value}",
+    "ar": "اليوم، {value}",
+    "pt": "Hoje, {value}",
+    "ja": "今日、{value}",
+    "zh": "今天 {value}",
+    "or": "ଆଜି, {value} |"
   },
   "call_yesterdayAt": {
     "en": "Yesterday, {value}",
@@ -2658,7 +4242,15 @@
         "type": "String"
       }
     },
-    "description": "value is a date or a time"
+    "description": "value is a date or a time",
+    "es": "Ayer, {value}",
+    "fr": "Hier, {value}",
+    "de": "Gestern, {value}",
+    "ar": "أمس، {value}",
+    "pt": "Ontem, {value}",
+    "ja": "昨日、{value}",
+    "zh": "昨天 {value}",
+    "or": "ଗତକାଲି, {value} |"
   },
   "call_callSummary": {
     "en": "Call Summary",
@@ -2670,7 +4262,15 @@
     "ml": "കോൾ സംഗ്രഹം",
     "ta": "அழைப்பு சுருக்கம்",
     "te": "కాల్ సారాంశం",
-    "pa": "ਕਾਲ ਸਾਰ"
+    "pa": "ਕਾਲ ਸਾਰ",
+    "es": "Resumen de la llamada",
+    "fr": "Résumé de l'appel",
+    "de": "Anrufzusammenfassung",
+    "ar": "ملخص المكالمة",
+    "pt": "Resumo da chamada",
+    "ja": "通話概要",
+    "zh": "通话摘要",
+    "or": "ସାରାଂଶକୁ କଲ୍ କରନ୍ତୁ |"
   },
   "call_total": {
     "en": "Total",
@@ -2682,7 +4282,15 @@
     "ml": "ആകെ",
     "ta": "மொத்தம்",
     "te": "మొత్తం",
-    "pa": "ਕੁੱਲ"
+    "pa": "ਕੁੱਲ",
+    "es": "Total",
+    "fr": "Total",
+    "de": "Gesamt",
+    "ar": "الإجمالي",
+    "pt": "Total",
+    "ja": "合計",
+    "zh": "总计",
+    "or": "ସମୁଦାୟ"
   },
   "call_participants": {
     "en": "Participants",
@@ -2694,7 +4302,15 @@
     "ml": "പങ്കാളികൾ",
     "ta": "பங்கேற்பாளர்கள்",
     "te": "పాల్గొనేవారు",
-    "pa": "ਭਾਗੀਦਾਰ"
+    "pa": "ਭਾਗੀਦਾਰ",
+    "es": "Participantes",
+    "fr": "Participants",
+    "de": "Teilnehmer",
+    "ar": "المشاركون",
+    "pt": "Participantes",
+    "ja": "参加者",
+    "zh": "参与者",
+    "or": "ଅଂଶଗ୍ରହଣକାରୀ"
   },
   "call_participant": {
     "en": "Participant",
@@ -2706,7 +4322,15 @@
     "ml": "പങ്കാളി",
     "ta": "பங்கேற்பாளர்",
     "te": "పాల్గొనే వ్యక్తి",
-    "pa": "ਭਾਗੀਦਾਰ"
+    "pa": "ਭਾਗੀਦਾਰ",
+    "es": "Participante",
+    "fr": "Participant",
+    "de": "Teilnehmer",
+    "ar": "مشارك",
+    "pt": "Participante",
+    "ja": "参加者",
+    "zh": "参与者",
+    "or": "ଅଂଶଗ୍ରହଣକାରୀ"
   },
   "call_caller": {
     "en": "Caller",
@@ -2719,7 +4343,15 @@
     "ta": "அழைத்தவர்",
     "te": "కాలర్",
     "pa": "ਕਾਲਰ",
-    "description": "Badge: the person who started the call"
+    "description": "Badge: the person who started the call",
+    "es": "Llamante",
+    "fr": "Appelant",
+    "de": "Anrufer",
+    "ar": "المتصل",
+    "pt": "Autor da chamada",
+    "ja": "発信者",
+    "zh": "呼叫者",
+    "or": "କଲର୍"
   },
   "call_infoGroupName": {
     "en": "Group Name",
@@ -2731,7 +4363,15 @@
     "ml": "ഗ്രൂപ്പിന്റെ പേര്",
     "ta": "குழுவின் பெயர்",
     "te": "గ్రూప్ పేరు",
-    "pa": "ਗਰੁੱਪ ਦਾ ਨਾਮ"
+    "pa": "ਗਰੁੱਪ ਦਾ ਨਾਮ",
+    "es": "Nombre del grupo",
+    "fr": "Nom du groupe",
+    "de": "Gruppenname",
+    "ar": "اسم المجموعة",
+    "pt": "Nome do grupo",
+    "ja": "グループ名",
+    "zh": "群组名称",
+    "or": "ଗୋଷ୍ଠୀ ନାମ"
   },
   "call_infoGroupCode": {
     "en": "Group Code",
@@ -2743,7 +4383,15 @@
     "ml": "ഗ്രൂപ്പ് കോഡ്",
     "ta": "குழு குறியீடு",
     "te": "గ్రూప్ కోడ్",
-    "pa": "ਗਰੁੱਪ ਕੋਡ"
+    "pa": "ਗਰੁੱਪ ਕੋਡ",
+    "es": "Código del grupo",
+    "fr": "Code de groupe",
+    "de": "Gruppencode",
+    "ar": "رمز المجموعة",
+    "pt": "Código do grupo",
+    "ja": "グループコード",
+    "zh": "群组代码",
+    "or": "ଗୋଷ୍ଠୀ କୋଡ୍ |"
   },
   "call_infoTotalMembers": {
     "en": "Total Members",
@@ -2755,7 +4403,15 @@
     "ml": "ആകെ അംഗങ്ങൾ",
     "ta": "மொத்த உறுப்பினர்கள்",
     "te": "మొత్తం సభ్యులు",
-    "pa": "ਕੁੱਲ ਮੈਂਬਰ"
+    "pa": "ਕੁੱਲ ਮੈਂਬਰ",
+    "es": "Miembros totales",
+    "fr": "Total des membres",
+    "de": "Gesamtmitglieder",
+    "ar": "إجمالي الأعضاء",
+    "pt": "Total de membros",
+    "ja": "総メンバー数",
+    "zh": "总成员数",
+    "or": "ସମୁଦାୟ ସଦସ୍ୟ"
   },
   "call_infoDescription": {
     "en": "Description",
@@ -2767,7 +4423,15 @@
     "ml": "വിവരണം",
     "ta": "விளக்கம்",
     "te": "వివరణ",
-    "pa": "ਵੇਰਵਾ"
+    "pa": "ਵੇਰਵਾ",
+    "es": "Descripción",
+    "fr": "Description",
+    "de": "Beschreibung",
+    "ar": "الوصف",
+    "pt": "Descrição",
+    "ja": "説明",
+    "zh": "描述",
+    "or": "ବର୍ଣ୍ଣନା"
   },
   "call_infoMobile": {
     "en": "Mobile",
@@ -2779,7 +4443,15 @@
     "ml": "മൊബൈൽ",
     "ta": "மொபைல்",
     "te": "మొబైల్",
-    "pa": "ਮੋਬਾਈਲ"
+    "pa": "ਮੋਬਾਈਲ",
+    "es": "Móvil",
+    "fr": "Mobile",
+    "de": "Mobil",
+    "ar": "الجوال",
+    "pt": "Celular",
+    "ja": "携帯電話",
+    "zh": "手机",
+    "or": "ମୋବାଇଲ୍ |"
   },
   "call_infoEmail": {
     "en": "Email",
@@ -2791,7 +4463,15 @@
     "ml": "ഇമെയിൽ",
     "ta": "மின்னஞ்சல்",
     "te": "ఇమెయిల్",
-    "pa": "ਈਮੇਲ"
+    "pa": "ਈਮੇਲ",
+    "es": "Correo",
+    "fr": "E-mail",
+    "de": "E-Mail",
+    "ar": "البريد",
+    "pt": "E-mail",
+    "ja": "メール",
+    "zh": "电子邮件",
+    "or": "ଇମେଲ୍ କରନ୍ତୁ |"
   },
   "call_groupInformation": {
     "en": "Group Information",
@@ -2803,7 +4483,15 @@
     "ml": "ഗ്രൂപ്പ് വിവരങ്ങൾ",
     "ta": "குழு தகவல்",
     "te": "గ్రూప్ సమాచారం",
-    "pa": "ਗਰੁੱਪ ਦੀ ਜਾਣਕਾਰੀ"
+    "pa": "ਗਰੁੱਪ ਦੀ ਜਾਣਕਾਰੀ",
+    "es": "Información del grupo",
+    "fr": "Informations sur le groupe",
+    "de": "Gruppeninformationen",
+    "ar": "معلومات المجموعة",
+    "pt": "Informações do grupo",
+    "ja": "グループ情報",
+    "zh": "群组信息",
+    "or": "ଗୋଷ୍ଠୀ ସୂଚନା"
   },
   "call_contactInformation": {
     "en": "Contact Information",
@@ -2815,7 +4503,15 @@
     "ml": "കോൺടാക്റ്റ് വിവരങ്ങൾ",
     "ta": "தொடர்பு தகவல்",
     "te": "కాంటాక్ట్ సమాచారం",
-    "pa": "ਸੰਪਰਕ ਦੀ ਜਾਣਕਾਰੀ"
+    "pa": "ਸੰਪਰਕ ਦੀ ਜਾਣਕਾਰੀ",
+    "es": "Información de contacto",
+    "fr": "Informations sur le contact",
+    "de": "Kontaktinformationen",
+    "ar": "معلومات الاتصال",
+    "pt": "Informações de contato",
+    "ja": "連絡先情報",
+    "zh": "联系人信息",
+    "or": "ଯୋଗାଯୋଗ ସୂଚନା"
   },
   "call_recentCalls": {
     "en": "Recent Calls",
@@ -2827,7 +4523,15 @@
     "ml": "സമീപകാല കോളുകൾ",
     "ta": "சமீபத்திய அழைப்புகள்",
     "te": "ఇటీవలి కాల్‌లు",
-    "pa": "ਹਾਲੀਆ ਕਾਲਾਂ"
+    "pa": "ਹਾਲੀਆ ਕਾਲਾਂ",
+    "es": "Llamadas recientes",
+    "fr": "Appels récents",
+    "de": "Letzte Anrufe",
+    "ar": "المكالمات الأخيرة",
+    "pt": "Chamadas recentes",
+    "ja": "最近の通話",
+    "zh": "最近通话",
+    "or": "ସାମ୍ପ୍ରତିକ କଲ୍ |"
   },
   "call_loadMore": {
     "en": "Load more",
@@ -2839,7 +4543,15 @@
     "ml": "കൂടുതൽ ലോഡ് ചെയ്യുക",
     "ta": "மேலும் ஏற்று",
     "te": "మరిన్ని లోడ్ చేయండి",
-    "pa": "ਹੋਰ ਦੇਖੋ"
+    "pa": "ਹੋਰ ਦੇਖੋ",
+    "es": "Cargar más",
+    "fr": "Charger plus",
+    "de": "Mehr laden",
+    "ar": "تحميل المزيد",
+    "pt": "Carregar mais",
+    "ja": "もっと読み込む",
+    "zh": "加载更多",
+    "or": "ଅଧିକ ଲୋଡ୍ କରନ୍ତୁ |"
   },
   "call_noRecentCalls": {
     "en": "No recent calls",
@@ -2851,7 +4563,15 @@
     "ml": "സമീപകാല കോളുകളില്ല",
     "ta": "சமீபத்திய அழைப்புகள் இல்லை",
     "te": "ఇటీవలి కాల్‌లు లేవు",
-    "pa": "ਕੋਈ ਹਾਲੀਆ ਕਾਲ ਨਹੀਂ"
+    "pa": "ਕੋਈ ਹਾਲੀਆ ਕਾਲ ਨਹੀਂ",
+    "es": "No hay llamadas recientes",
+    "fr": "Aucun appel récent",
+    "de": "Keine letzten Anrufe",
+    "ar": "لا توجد مكالمات حديثة",
+    "pt": "Sem chamadas recentes",
+    "ja": "最近の通話はありません",
+    "zh": "无最近通话",
+    "or": "ସାମ୍ପ୍ରତିକ କଲ୍ ନାହିଁ |"
   },
   "call_loadDetailFailed": {
     "en": "Failed to load call detail",
@@ -2863,7 +4583,15 @@
     "ml": "കോൾ വിവരങ്ങൾ ലോഡ് ചെയ്യാനായില്ല",
     "ta": "அழைப்பு விவரத்தை ஏற்ற முடியவில்லை",
     "te": "కాల్ వివరాలు లోడ్ చేయడం విఫలమైంది",
-    "pa": "ਕਾਲ ਦੀ ਜਾਣਕਾਰੀ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕੀ"
+    "pa": "ਕਾਲ ਦੀ ਜਾਣਕਾਰੀ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕੀ",
+    "es": "Error al cargar los detalles de la llamada",
+    "fr": "Échec du chargement des détails de l'appel",
+    "de": "Anrufdetails konnten nicht geladen werden",
+    "ar": "فشل تحميل تفاصيل المكالمة",
+    "pt": "Falha ao carregar detalhes da chamada",
+    "ja": "通話詳細の読み込みに失敗しました",
+    "zh": "加载通话详情失败",
+    "or": "କଲ୍ ବିବରଣୀ ଲୋଡ୍ କରିବାରେ ବିଫଳ |"
   },
   "call_loadRecentFailed": {
     "en": "Failed to load recent calls",
@@ -2875,7 +4603,15 @@
     "ml": "സമീപകാല കോളുകൾ ലോഡ് ചെയ്യാനായില്ല",
     "ta": "சமீபத்திய அழைப்புகளை ஏற்ற முடியவில்லை",
     "te": "ఇటీవలి కాల్‌లు లోడ్ చేయడం విఫలమైంది",
-    "pa": "ਹਾਲੀਆ ਕਾਲਾਂ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕੀਆਂ"
+    "pa": "ਹਾਲੀਆ ਕਾਲਾਂ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕੀਆਂ",
+    "es": "Error al cargar las llamadas recientes",
+    "fr": "Échec du chargement des appels récents",
+    "de": "Letzte Anrufe konnten nicht geladen werden",
+    "ar": "فشل تحميل المكالمات الأخيرة",
+    "pt": "Falha ao carregar chamadas recentes",
+    "ja": "最近の通話の読み込みに失敗しました",
+    "zh": "加载最近通话失败",
+    "or": "ସାମ୍ପ୍ରତିକ କଲ୍ ଲୋଡ୍ କରିବାରେ ବିଫଳ |"
   },
   "call_userNotFound": {
     "en": "User not found",
@@ -2887,7 +4623,15 @@
     "ml": "ഉപയോക്താവിനെ കണ്ടെത്തിയില്ല",
     "ta": "பயனர் கிடைக்கவில்லை",
     "te": "యూజర్ కనుగొనబడలేదు",
-    "pa": "ਯੂਜ਼ਰ ਨਹੀਂ ਮਿਲਿਆ"
+    "pa": "ਯੂਜ਼ਰ ਨਹੀਂ ਮਿਲਿਆ",
+    "es": "Usuario no encontrado",
+    "fr": "Utilisateur introuvable",
+    "de": "Benutzer nicht gefunden",
+    "ar": "المستخدم غير موجود",
+    "pt": "Usuário não encontrado",
+    "ja": "ユーザーが見つかりません",
+    "zh": "未找到用户",
+    "or": "ଉପଯୋଗକର୍ତ୍ତା ମିଳିଲା ନାହିଁ |"
   },
   "call_unableToOpenChat": {
     "en": "Unable to open chat for this contact",
@@ -2899,7 +4643,15 @@
     "ml": "ഈ കോൺടാക്റ്റിന്റെ ചാറ്റ് തുറക്കാനായില്ല",
     "ta": "இந்தத் தொடர்பின் சாட்டைத் திறக்க முடியவில்லை",
     "te": "ఈ కాంటాక్ట్ చాట్ తెరవలేకపోయాం",
-    "pa": "ਇਸ ਸੰਪਰਕ ਦੀ ਚੈਟ ਨਹੀਂ ਖੁੱਲ੍ਹ ਸਕੀ"
+    "pa": "ਇਸ ਸੰਪਰਕ ਦੀ ਚੈਟ ਨਹੀਂ ਖੁੱਲ੍ਹ ਸਕੀ",
+    "es": "No se puede abrir el chat con este contacto",
+    "fr": "Impossible d'ouvrir le chat pour ce contact",
+    "de": "Chat für diesen Kontakt kann nicht geöffnet werden",
+    "ar": "تعذر فتح الدردشة لجهة الاتصال هذه",
+    "pt": "Não foi possível abrir a conversa com este contato",
+    "ja": "この連絡先のチャットを開けません",
+    "zh": "无法为此联系人打开聊天",
+    "or": "ଏହି ଯୋଗାଯୋଗ ପାଇଁ ଚାଟ୍ ଖୋଲିବାକୁ ଅସମର୍ଥ |"
   },
   "call_chatFallback": {
     "en": "Chat",
@@ -2912,7 +4664,15 @@
     "ta": "சாட்",
     "te": "చాట్",
     "pa": "ਚੈਟ",
-    "description": "Fallback title of a chat with no name"
+    "description": "Fallback title of a chat with no name",
+    "es": "Chat",
+    "fr": "Discussion",
+    "de": "Chat",
+    "ar": "دردشة",
+    "pt": "Chat",
+    "ja": "チャット",
+    "zh": "聊天",
+    "or": "ଚାଟ୍ କରନ୍ତୁ |"
   },
   "call_historyCancelled": {
     "en": "Cancelled {callType}",
@@ -2930,7 +4690,15 @@
         "type": "String"
       }
     },
-    "description": "callType is e.g. \"Video Call\""
+    "description": "callType is e.g. \"Video Call\"",
+    "es": "{callType} cancelada",
+    "fr": "{callType} annulé",
+    "de": "Abgebrochener {callType}",
+    "ar": "{callType} ملغاة",
+    "pt": "{callType} cancelada",
+    "ja": "キャンセルされた {callType}",
+    "zh": "已取消的 {callType}",
+    "or": "ବାତିଲ {callType}"
   },
   "call_notificationPermissionTitle": {
     "en": "Notification permission",
@@ -2942,7 +4710,15 @@
     "ml": "അറിയിപ്പ് അനുമതി",
     "ta": "அறிவிப்பு அனுமதி",
     "te": "నోటిఫికేషన్ అనుమతి",
-    "pa": "ਸੂਚਨਾ ਦੀ ਇਜਾਜ਼ਤ"
+    "pa": "ਸੂਚਨਾ ਦੀ ਇਜਾਜ਼ਤ",
+    "es": "Permiso de notificación",
+    "fr": "Autorisation de notification",
+    "de": "Benachrichtigungsberechtigung",
+    "ar": "إذن الإشعارات",
+    "pt": "Permissão de notificação",
+    "ja": "通知の権限",
+    "zh": "通知权限",
+    "or": "ବିଜ୍ଞପ୍ତି ଅନୁମତି |"
   },
   "call_notificationPermissionRationale": {
     "en": "Needed to show incoming calls.",
@@ -2954,7 +4730,15 @@
     "ml": "ഇൻകമിംഗ് കോളുകൾ കാണിക്കാൻ ആവശ്യമാണ്.",
     "ta": "உள்வரும் அழைப்புகளைக் காட்ட தேவை.",
     "te": "ఇన్‌కమింగ్ కాల్‌లను చూపడానికి అవసరం.",
-    "pa": "ਆਉਣ ਵਾਲੀਆਂ ਕਾਲਾਂ ਦਿਖਾਉਣ ਲਈ ਲੋੜੀਂਦੀ ਹੈ।"
+    "pa": "ਆਉਣ ਵਾਲੀਆਂ ਕਾਲਾਂ ਦਿਖਾਉਣ ਲਈ ਲੋੜੀਂਦੀ ਹੈ।",
+    "es": "Necesario para mostrar llamadas entrantes.",
+    "fr": "Nécessaire pour afficher les appels entrants.",
+    "de": "Erforderlich zur Anzeige eingehender Anrufe.",
+    "ar": "مطلوب لإظهار المكالمات الواردة.",
+    "pt": "Necessário para exibir chamadas recebidas.",
+    "ja": "着信を表示するために必要です。",
+    "zh": "用于显示来电。",
+    "or": "ଆସୁଥିବା କଲ୍ ଦେଖାଇବା ଆବଶ୍ୟକ |"
   },
   "call_notificationPermissionSettings": {
     "en": "Enable notifications in Settings.",
@@ -2966,7 +4750,15 @@
     "ml": "ക്രമീകരണങ്ങളിൽ അറിയിപ്പുകൾ ഓണാക്കുക.",
     "ta": "அமைப்புகளில் அறிவிப்புகளை இயக்கவும்.",
     "te": "సెట్టింగ్‌లలో నోటిఫికేషన్‌లను ఆన్ చేయండి.",
-    "pa": "ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਸੂਚਨਾਵਾਂ ਚਾਲੂ ਕਰੋ।"
+    "pa": "ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਸੂਚਨਾਵਾਂ ਚਾਲੂ ਕਰੋ।",
+    "es": "Activa las notificaciones en Ajustes.",
+    "fr": "Activez les notifications dans Paramètres.",
+    "de": "Benachrichtigungen in den Einstellungen aktivieren.",
+    "ar": "تفعيل الإشعارات في الإعدادات.",
+    "pt": "Ative as notificações nas Configurações.",
+    "ja": "設定で通知を有効にしてください。",
+    "zh": "在设置中启用通知。",
+    "or": "ସେଟିଂସମୂହରେ ବିଜ୍ଞପ୍ତିଗୁଡିକ ସକ୍ଷମ କରନ୍ତୁ |"
   },
   "call_incomingCallChannelName": {
     "en": "Incoming Call",
@@ -2979,7 +4771,15 @@
     "ta": "உள்வரும் அழைப்பு",
     "te": "ఇన్‌కమింగ్ కాల్",
     "pa": "ਇਨਕਮਿੰਗ ਕਾਲ",
-    "description": "Android notification channel name"
+    "description": "Android notification channel name",
+    "es": "Llamada entrante",
+    "fr": "Appel entrant",
+    "de": "Eingehender Anruf",
+    "ar": "مكالمة واردة",
+    "pt": "Chamada recebida",
+    "ja": "着信通話",
+    "zh": "来电",
+    "or": "ଆସୁଥିବା କଲ୍ |"
   },
   "call_missedCallChannelName": {
     "en": "Missed Call",
@@ -2992,6 +4792,14 @@
     "ta": "தவறிய அழைப்பு",
     "te": "మిస్డ్ కాల్",
     "pa": "ਮਿਸਡ ਕਾਲ",
-    "description": "Android notification channel name"
+    "description": "Android notification channel name",
+    "es": "Llamada perdida",
+    "fr": "Appel manqué",
+    "de": "Verpasster Anruf",
+    "ar": "مكالمة فائتة",
+    "pt": "Chamada perdida",
+    "ja": "不在着信",
+    "zh": "未接来电",
+    "or": "ମିସ୍ କଲ୍"
   }
 }

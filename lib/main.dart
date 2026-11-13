@@ -377,38 +377,40 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context)
               .copyWith(textScaler: const TextScaler.linear(1.0)),
-          child: GetMaterialApp(
-            navigatorKey: ContextUtility.navigatorkey,
-            debugShowCheckedModeBanner: false,
-            title: "FG Tracker",
-            initialRoute: Routes.Splash,
-            getPages: AppPages.routes,
-            theme: ThemeData(
-              appBarTheme: const AppBarTheme(
-                centerTitle: true,
-                backgroundColor: Colors.white,
-                iconTheme: IconThemeData(color: Colors.black),
-                actionsIconTheme: IconThemeData(color: Colors.black),
-                elevation: 0,
+          child: Obx(
+            () => GetMaterialApp(
+              navigatorKey: ContextUtility.navigatorkey,
+              debugShowCheckedModeBanner: false,
+              title: "FG Tracker",
+              initialRoute: Routes.Splash,
+              getPages: AppPages.routes,
+              theme: ThemeData(
+                appBarTheme: const AppBarTheme(
+                  centerTitle: true,
+                  backgroundColor: Colors.white,
+                  iconTheme: IconThemeData(color: Colors.black),
+                  actionsIconTheme: IconThemeData(color: Colors.black),
+                  elevation: 0,
+                ),
               ),
+              // The saved language always wins over the phone's language.
+              // Null until the user picks one, so behaviour is unchanged.
+              locale: LanguageController.to.appLocale,
+              fallbackLocale: const Locale('en'),
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: [
+                ...kAppLanguages.map((o) => o.locale),
+                // Kept from before so existing behaviour does not change.
+                const Locale('en', 'US'),
+                const Locale('hi', 'IN'),
+                const Locale('ur', 'PK'),
+              ],
             ),
-            // The saved language always wins over the phone's language.
-            // Null until the user picks one, so behaviour is unchanged.
-            locale: LanguageController.to.appLocale,
-            fallbackLocale: const Locale('en'),
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: [
-              ...kAppLanguages.map((o) => o.locale),
-              // Kept from before so existing behaviour does not change.
-              const Locale('en', 'US'),
-              const Locale('hi', 'IN'),
-              const Locale('ur', 'PK'),
-            ],
           ),
         ),
       ),

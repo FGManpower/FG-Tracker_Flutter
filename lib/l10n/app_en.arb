@@ -1993,7 +1993,7 @@
   },
   "group_sheetLeftTitle": "You left the group",
   "group_showQrCode": "Show QR Code",
-  "group_startConversation": "Feel Free to start a conversation ",
+  "group_startConversation": "Feel Free to start a conversation",
   "group_statusUpdateFailed": "Failed to update group status",
   "group_teamCode": "Team Code",
   "group_teamCodeLabel": "Team Code: ",
@@ -2124,13 +2124,13 @@
   "imagePicker_cropTitle": "Crop Image",
   "imagePicker_gallery": "Gallery",
   "imagePicker_title": "Choose an Option",
-  "intro_realTimeTrackingSubtitle": "View live locations of friends, \n family, or team members on \n the map instantly.",
+  "intro_realTimeTrackingSubtitle": "View live locations of friends, family, or team members on the map instantly.",
   "intro_realTimeTrackingTitle": "Real-Time Tracking",
-  "intro_secureSubtitle": "Share your live location with \n selected contacts safely and \n privately.",
+  "intro_secureSubtitle": "Share your live location with\nselected contacts safely and\nprivately.",
   "intro_secureTitle": "Secure & Easy",
   "intro_skip": "Skip",
-  "intro_walkieSubtitle": "No signal. No problem. Stay \n connected anywhere.",
-  "intro_walkieTitle": "Walkie-Talkie \n feature",
+  "intro_walkieSubtitle": "No signal. No problem. Stay\nconnected anywhere.",
+  "intro_walkieTitle": "Walkie-Talkie\nfeature",
   "media_cannotOpen": "Cannot open",
   "media_documentNotFound": "Document not found",
   "media_invalidLink": "Invalid link",
@@ -3174,7 +3174,7 @@
       }
     }
   },
-  "track_noSearchMatches": "No members or groups matching\n'{query}'",
+  "track_noSearchMatches": "No members or groups matching",
   "@track_noSearchMatches": {
     "placeholders": {
       "query": {

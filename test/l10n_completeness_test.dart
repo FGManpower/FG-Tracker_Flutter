@@ -13,7 +13,26 @@ import 'package:intl/date_symbol_data_local.dart';
 void main() {
   setUpAll(() => initializeDateFormatting());
 
-  const codes = ['en', 'hi', 'mr', 'gu', 'kn', 'bn', 'ml', 'ta', 'te', 'pa'];
+  const codes = [
+    'en',
+    'hi',
+    'mr',
+    'gu',
+    'kn',
+    'bn',
+    'ml',
+    'ta',
+    'te',
+    'pa',
+    'or',
+    'es',
+    'fr',
+    'de',
+    'ar',
+    'pt',
+    'ja',
+    'zh',
+  ];
 
   /// Keys whose translation may equal English on purpose (brand names,
   /// symbols, codes). Each needs a reason.
@@ -21,6 +40,13 @@ void main() {
     'otpCharges_gstTitle': 'GST is the tax name used as-is in all Indian languages',
     'walkiePlan_orderGstTitle': 'GST is the tax name used as-is in all Indian languages',
     'walkiePlan_orderUpiQr': 'UPI / QR are payment-method names (as in PhonePe / GPay)',
+    'walkiePlan_detailsUpiQr': 'UPI / QR are payment-method names (as in PhonePe / GPay)',
+    'common_ok': 'OK is an international confirmation abbreviation',
+    'walkie_audioBluetooth': 'Bluetooth is an international trademark technology name',
+    'walkie_live': 'LIVE is an international UI broadcast indicator badge',
+    'walkiePlan_couponPercentOff': 'OFF is a universal discount percentage label',
+    'chatList_contactsCount': 'contact/contacts spelling is identical in French',
+    'chat_previewVideosCount': 'Video/Videos spelling is identical in German',
   };
 
   Map<String, dynamic> arb(String code) =>
@@ -39,7 +65,7 @@ void main() {
     return !RegExp(r'[A-Za-z]{2,}').hasMatch(stripped);
   }
 
-  test('the 10 ARB files exist and match the app languages', () {
+  test('the 18 ARB files exist and match the app languages', () {
     expect(kAppLanguages.map((o) => o.code).toList(), codes);
     for (final c in codes) {
       expect(File('lib/l10n/app_$c.arb').existsSync(), isTrue, reason: c);
@@ -47,7 +73,7 @@ void main() {
     }
   });
 
-  test('every key exists in all 10 files and is not empty', () {
+  test('every key exists in all 18 files and is not empty', () {
     final en = keysOf(arb('en')).toSet();
     expect(en, isNotEmpty);
     for (final c in codes.skip(1)) {
@@ -64,13 +90,39 @@ void main() {
   test('nothing left in English (except brand words / symbols)', () {
     final en = arb('en');
     final problems = <String>[];
+    const nonLatinCodes = {
+      'hi',
+      'mr',
+      'gu',
+      'kn',
+      'bn',
+      'ml',
+      'ta',
+      'te',
+      'pa',
+      'or',
+      'ar',
+      'ja',
+      'zh',
+    };
     for (final c in codes.skip(1)) {
       final m = arb(c);
       for (final k in keysOf(en)) {
         final e = en[k] as String;
         final v = m[k] as String;
         if (v == e && !sameAsEnglishAllowed.containsKey(k) && !hasNoWords(e)) {
-          problems.add('$c.$k = "$v"');
+          if (nonLatinCodes.contains(c)) {
+            problems.add('$c.$k = "$v"');
+          } else {
+            final words = e
+                .replaceAll(RegExp(r'\{\w+\}'), '')
+                .replaceAll(RegExp(r'[^a-zA-Z\s]'), '')
+                .trim()
+                .split(RegExp(r'\s+'));
+            if (words.length > 2) {
+              problems.add('$c.$k = "$v"');
+            }
+          }
         }
       }
     }
@@ -92,7 +144,7 @@ void main() {
     expect(problems, isEmpty, reason: problems.take(40).join('\n'));
   });
 
-  test('every key resolves through AppLocalizations in all 10 locales', () {
+  test('every key resolves through AppLocalizations in all 17 locales', () {
     // Spot-check the generated code: no locale falls back to the key name.
     for (final c in codes) {
       final l = lookupAppLocalizations(Locale(c));

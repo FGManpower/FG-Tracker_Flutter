@@ -99,32 +99,51 @@ class LanguageSettingsRow extends StatelessWidget {
   }
 }
 
-/// Opens the "Choose your language" bottom sheet. Picking a language saves
-/// it, closes the sheet and applies it to the whole app instantly.
+/// Opens the full-screen "Choose your language" screen. Picking a language saves
+/// it, closes the screen and applies it to the whole app instantly.
 Future<void> showLanguageSheet(BuildContext context,
     {LanguageController? controller}) {
   final c = controller ?? LanguageController.to;
-  return showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: 0.35),
-    builder: (_) => LanguageSheet(controller: c),
+  return Navigator.of(context).push<void>(
+    MaterialPageRoute<void>(
+      builder: (_) => Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: LanguageSheet(controller: c, isFullScreen: true),
+        ),
+      ),
+    ),
   );
 }
 
 class LanguageSheet extends StatefulWidget {
-  const LanguageSheet({super.key, required this.controller});
+  const LanguageSheet({
+    super.key,
+    required this.controller,
+    this.isFullScreen = true,
+  });
 
   final LanguageController controller;
+  final bool isFullScreen;
 
   @override
   State<LanguageSheet> createState() => _LanguageSheetState();
 }
 
 class _LanguageSheetState extends State<LanguageSheet> {
+  final TextEditingController _search = TextEditingController();
+  String _query = '';
   bool _busy = false;
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  List<LanguageOption> get _visible => _query.trim().isEmpty
+      ? kAppLanguages
+      : kAppLanguages.where((o) => o.matches(_query)).toList(growable: false);
 
   Future<void> _pick(LanguageOption option) async {
     if (_busy) return;
@@ -143,78 +162,173 @@ class _LanguageSheetState extends State<LanguageSheet> {
   Widget build(BuildContext context) {
     final current = widget.controller.current;
     final media = MediaQuery.of(context);
-    return Align(
-      alignment: Alignment.bottomCenter,
+    final visible = _visible;
+
+    return Center(
       child: ConstrainedBox(
-        constraints: BoxConstraints(
+        constraints: const BoxConstraints(
           maxWidth: 520,
-          maxHeight: media.size.height * 0.88,
         ),
         child: Container(
           key: const Key('language-sheet'),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-          ),
+          color: Colors.white,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 10),
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: LanguageColors.cardBorder,
-                    borderRadius: BorderRadius.circular(2),
+              if (!widget.isFullScreen) ...[
+                const SizedBox(height: 10),
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: LanguageColors.cardBorder,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
+              ],
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
-                child: Column(
+                padding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      current.title,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        height: 1.3,
-                        fontWeight: FontWeight.w700,
-                        color: LanguageColors.text,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            current.title,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              height: 1.3,
+                              fontWeight: FontWeight.w700,
+                              color: LanguageColors.text,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            current.subtitle,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              height: 1.35,
+                              color: LanguageColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      current.subtitle,
-                      style: const TextStyle(
-                        fontSize: 13.5,
-                        height: 1.35,
+                    IconButton(
+                      key: const Key('language-sheet-close'),
+                      icon: const Icon(
+                        Icons.close_rounded,
                         color: LanguageColors.textSecondary,
+                        size: 26,
                       ),
+                      tooltip: 'Close',
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
                 ),
               ),
-              Flexible(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  padding: EdgeInsets.fromLTRB(
-                      20, 4, 20, 16 + media.viewPadding.bottom),
-                  itemCount: kAppLanguages.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                  itemBuilder: (_, i) {
-                    final o = kAppLanguages[i];
-                    return LanguageCard(
-                      option: o,
-                      height: 62,
-                      marker: LanguageCardMarker.radio,
-                      selected: o.code == current.code,
-                      onTap: () => _pick(o),
-                    );
-                  },
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                child: SizedBox(
+                  height: 48,
+                  child: TextField(
+                    key: const Key('language-sheet-search'),
+                    controller: _search,
+                    onChanged: (v) => setState(() => _query = v),
+                    textInputAction: TextInputAction.search,
+                    textAlignVertical: TextAlignVertical.center,
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      color: LanguageColors.text,
+                    ),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: LanguageColors.card,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                      hintText: current.searchHint,
+                      hintStyle: const TextStyle(
+                        fontSize: 14.5,
+                        color: LanguageColors.textSecondary,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search_rounded,
+                        color: LanguageColors.textSecondary,
+                        size: 20,
+                      ),
+                      suffixIcon: _query.isEmpty
+                          ? null
+                          : IconButton(
+                              icon: const Icon(
+                                Icons.close_rounded,
+                                color: LanguageColors.textSecondary,
+                                size: 18,
+                              ),
+                              onPressed: () {
+                                _search.clear();
+                                setState(() => _query = '');
+                              },
+                            ),
+                      border: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(14)),
+                        borderSide: BorderSide(
+                          color: LanguageColors.cardBorder,
+                          width: 1,
+                        ),
+                      ),
+                      enabledBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(14)),
+                        borderSide: BorderSide(
+                          color: LanguageColors.cardBorder,
+                          width: 1,
+                        ),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(14)),
+                        borderSide: BorderSide(
+                          color: LanguageColors.primary,
+                          width: 1.2,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
+              ),
+              Expanded(
+                child: visible.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Text(
+                            current.noResults,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: LanguageColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: EdgeInsets.fromLTRB(
+                            20, 4, 20, 24 + media.viewPadding.bottom),
+                        itemCount: visible.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        itemBuilder: (_, i) {
+                          final o = visible[i];
+                          return LanguageCard(
+                            option: o,
+                            height: 64,
+                            marker: LanguageCardMarker.radio,
+                            selected: o.code == current.code,
+                            onTap: () => _pick(o),
+                          );
+                        },
+                      ),
               ),
             ],
           ),

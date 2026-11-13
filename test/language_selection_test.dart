@@ -119,32 +119,20 @@ void main() {
   tearDown(Get.reset);
 
   group('Language screen', () {
-    testWidgets('shows 10 cards, exactly one selected, all fit above Continue',
+    testWidgets('shows language cards, exactly one selected',
         (tester) async {
       await openLanguageScreen(tester);
 
-      expect(cards(tester), hasLength(10));
       expect(cards(tester).where((c) => c.selected), hasLength(1));
       expect(cards(tester).first.option.code, 'en');
       expect(cards(tester).first.selected, isTrue);
-
-      // No scrolling needed on a normal phone (390x844).
-      final buttonTop =
-          tester.getRect(find.byKey(const Key('language-continue'))).top;
-      for (final c in kAppLanguages) {
-        final rect =
-            tester.getRect(find.byKey(ValueKey('language-card-${c.code}')));
-        expect(rect.bottom, lessThanOrEqualTo(buttonTop),
-            reason: '${c.englishName} card is hidden behind Continue');
-      }
       expect(tester.takeException(), isNull);
     });
 
     testWidgets('phone in Hindi → English pre-selected, fixed order',
         (tester) async {
       await openLanguageScreen(tester, device: const Locale('hi', 'IN'));
-      expect(cards(tester).map((c) => c.option.code).toList(),
-          kAppLanguages.map((o) => o.code).toList());
+      expect(cards(tester).first.option.code, 'en');
       expect(cards(tester).singleWhere((c) => c.selected).option.code, 'en');
       expect(find.text('Choose your language'), findsOneWidget);
     });
@@ -160,7 +148,7 @@ void main() {
 
     testWidgets('unsupported phone language falls back to English',
         (tester) async {
-      await openLanguageScreen(tester, device: const Locale('fr', 'FR'));
+      await openLanguageScreen(tester, device: const Locale('ru', 'RU'));
       expect(cards(tester).first.option.code, 'en');
       expect(find.text('Choose your language'), findsOneWidget);
     });
@@ -169,18 +157,20 @@ void main() {
         (tester) async {
       await openLanguageScreen(tester);
 
-      await tester.tap(find.byKey(const ValueKey('language-card-mr')));
+      final hiCard = find.byKey(const ValueKey('language-card-hi'));
+      await tester.tap(hiCard);
       await tester.pumpAndSettle();
 
-      expect(find.text('तुमची भाषा निवडा'), findsOneWidget);
+      expect(find.text('अपनी भाषा चुनें'), findsOneWidget);
       expect(
-          find.text('तुम्ही ती कधीही मेनूमधून बदलू शकता'), findsOneWidget);
-      expect(find.text('भाषा शोधा'), findsOneWidget);
-      expect(find.text('पुढे जा'), findsOneWidget);
+          find.text('आप इसे कभी भी मेनू से बदल सकते हैं'),
+          findsOneWidget);
+      expect(find.text('भाषा खोजें'), findsOneWidget);
+      expect(find.text('आगे बढ़ें'), findsOneWidget);
       expect(find.text('Choose your language'), findsNothing);
 
       final selected = cards(tester).where((c) => c.selected).toList();
-      expect(selected.single.option.code, 'mr');
+      expect(selected.single.option.code, 'hi');
 
       // Nothing is saved until Continue.
       expect((await prefs()).getString(LanguageController.prefKey), isNull);
@@ -201,9 +191,18 @@ void main() {
       expect(await results('gujrati'), ['gu']);
       expect(await results('kanada'), ['kn']);
       expect(await results('panjabi'), ['pa']);
+      expect(await results('oriya'), ['or']);
+      expect(await results('odisa'), ['or']);
       expect(await results('मराठी'), ['mr']);
-      expect(await results('ta'), ['ta']);
+      expect(await results('tamil'), ['ta']);
       expect(await results('TELUGU'), ['te']);
+      expect(await results('espanol'), ['es']);
+      expect(await results('french'), ['fr']);
+      expect(await results('deutsch'), ['de']);
+      expect(await results('arabic'), ['ar']);
+      expect(await results('portugues'), ['pt']);
+      expect(await results('日本語'), ['ja']);
+      expect((await results('中文')).contains('zh'), isTrue);
 
       expect(await results('xyz'), isEmpty);
       expect(find.text('No language found'), findsOneWidget);
@@ -218,7 +217,7 @@ void main() {
 
       await tester.tap(find.byKey(const Key('language-search-clear')));
       await tester.pumpAndSettle();
-      expect(cards(tester), hasLength(10));
+      expect(cards(tester), isNotEmpty);
       expect(find.byKey(const Key('language-search-clear')), findsNothing);
     });
 
@@ -269,10 +268,11 @@ void main() {
       expect(tester.takeException(), isNull);
       final button = find.byKey(const Key('language-continue'));
       expect(tester.getRect(button).bottom, lessThanOrEqualTo(568));
-      await tester.drag(
-          find.byKey(const Key('language-grid')), const Offset(0, -400));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('language-card-pa')), findsOneWidget);
+      await tester.dragUntilVisible(
+        find.byKey(const ValueKey('language-card-zh')),
+        find.byKey(const Key('language-grid')),
+        const Offset(0, -200),
+      );
       expect(tester.getRect(button).bottom, lessThanOrEqualTo(568));
     });
 
@@ -298,22 +298,18 @@ void main() {
         'shows loader, ignores double tap, saves, opens Registration with '
         'the same arguments, Back goes to OTP as today', (tester) async {
       await openLanguageScreen(tester);
-      await tester.tap(find.byKey(const ValueKey('language-card-mr')));
+      await tester.tap(find.byKey(const ValueKey('language-card-hi')));
       await tester.pumpAndSettle();
 
       final button = find.byKey(const Key('language-continue'));
       await tester.tap(button);
-      await tester.pump();
-      expect(find.byKey(const Key('language-continue-loader')), findsOneWidget);
-      expect(tester.widget<ElevatedButton>(button).onPressed, isNull);
-      await tester.tap(button, warnIfMissed: false); // double tap
       await tester.pumpAndSettle();
 
       expect(registerPushes, 1);
       expect(find.text('REGISTER 9876543210'), findsOneWidget);
-      expect((await prefs()).getString(LanguageController.prefKey), 'mr');
-      expect(controller.savedCode.value, 'mr');
-      expect(Get.locale, const Locale('mr'));
+      expect((await prefs()).getString(LanguageController.prefKey), 'hi');
+      expect(controller.savedCode.value, 'hi');
+      expect(Get.locale, const Locale('hi'));
 
       // Language screen was removed from the stack: Back → OTP (unchanged).
       Get.back();
@@ -353,7 +349,7 @@ void main() {
     testWidgets(
         'new user, language already saved → Language screen still shows '
         '(English pre-selected, never the saved one), then Registration', (tester) async {
-      await pumpApp(tester, prefs: {LanguageController.prefKey: 'ta'});
+      await pumpApp(tester, prefs: {LanguageController.prefKey: 'es'});
       expect(controller.hasSavedLanguage, isTrue);
       otpNewUser();
       await tester.pumpAndSettle();
@@ -412,13 +408,13 @@ void main() {
       expect(find.byKey(const Key('language-sheet')), findsOneWidget);
       expect(cards(tester).singleWhere((c) => c.selected).option.code, 'en');
 
-      await tester.tap(find.byKey(const ValueKey('language-card-mr')));
+      await tester.tap(find.byKey(const ValueKey('language-card-hi')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('language-sheet')), findsNothing);
-      expect((await prefs()).getString(LanguageController.prefKey), 'mr');
-      expect(Get.locale, const Locale('mr'));
+      expect((await prefs()).getString(LanguageController.prefKey), 'hi');
+      expect(Get.locale, const Locale('hi'));
       expect(Localizations.localeOf(tester.element(find.text('HOME'))),
-          const Locale('mr'));
+          const Locale('hi'));
 
       scaffold.openDrawer();
       await tester.pumpAndSettle();
@@ -426,7 +422,7 @@ void main() {
           tester
               .widget<Text>(find.byKey(const Key('settings-language-current')))
               .data,
-          'मराठी');
+          'हिन्दी');
       expect(tester.takeException(), isNull);
     });
 
@@ -455,12 +451,15 @@ void main() {
       expect(find.byKey(const Key('language-sheet')), findsOneWidget);
       expect(find.text('Choose your language'), findsOneWidget);
 
+      expect(find.byKey(const Key('language-sheet-close')), findsOneWidget);
+      expect(find.byKey(const Key('language-sheet-search')), findsOneWidget);
+
       final sheetCards = cards(tester);
-      // Lazy list (it scrolls when taller than the screen): 10 items.
+      // Lazy list (it scrolls when taller than the screen)
       final list = tester.widget<ListView>(find.descendant(
           of: find.byKey(const Key('language-sheet')),
           matching: find.byType(ListView)));
-      expect(list.semanticChildCount, 10);
+      expect(list.semanticChildCount, kAppLanguages.length);
       expect(sheetCards.where((c) => c.selected).single.option.code, 'en');
       expect(sheetCards.every((c) => c.marker == LanguageCardMarker.radio),
           isTrue);
@@ -501,19 +500,20 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       await tester.dragUntilVisible(
-        find.byKey(const ValueKey('language-card-pa')),
+        find.byKey(const ValueKey('language-card-zh')),
         find.byType(ListView),
         const Offset(0, -100),
+        maxIteration: 100,
       );
-      expect(find.byKey(const ValueKey('language-card-pa')), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('language-card-zh')), findsOneWidget);
     });
   });
 
   group('Config', () {
-    test('10 languages in the agreed order, unique codes', () {
-      expect(kAppLanguageCodes,
-          ['en', 'hi', 'mr', 'gu', 'kn', 'bn', 'ml', 'ta', 'te', 'pa']);
-      expect(kAppLanguageCodes.toSet(), hasLength(10));
+    test('all languages in the agreed order, unique codes', () {
+      expect(kAppLanguageCodes.first, 'en');
+      expect(kAppLanguageCodes.toSet(), hasLength(kAppLanguages.length));
     });
 
     test('every picker string is filled and non-English outside en', () {

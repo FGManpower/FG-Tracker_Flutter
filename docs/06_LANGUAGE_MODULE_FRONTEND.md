@@ -187,18 +187,26 @@ This is the only maintained language doc. It includes the audit summary (§4.6),
 
 ## 3. Supported languages
 
-| # | Code | English name | Native name | Tile letter |
-|---|---|---|---|---|
-| 1 | `en` | English | English | Aa |
-| 2 | `hi` | Hindi | हिन्दी | हि |
-| 3 | `mr` | Marathi | मराठी | म |
-| 4 | `gu` | Gujarati | ગુજરાતી | ગુ |
-| 5 | `kn` | Kannada | ಕನ್ನಡ | ಕ |
-| 6 | `bn` | Bengali | বাংলা | বা |
-| 7 | `ml` | Malayalam | മലയാളം | മ |
-| 8 | `ta` | Tamil | தமிழ் | த |
-| 9 | `te` | Telugu | తెలుగు | తె |
-| 10 | `pa` | Punjabi | ਪੰਜਾਬੀ | ਪੰ |
+| # | Code | English name | Native name | Tile letter | Region / Category |
+|---|---|---|---|---|---|
+| 1 | `en` | English | English | Aa | International / Global |
+| 2 | `hi` | Hindi | हिन्दी | हि | India (National / North / Central) |
+| 3 | `mr` | Marathi | मराठी | म | India (Maharashtra) |
+| 4 | `gu` | Gujarati | ગુજરાતી | ગુ | India (Gujarat) |
+| 5 | `kn` | Kannada | ಕನ್ನಡ | ಕ | India (Karnataka) |
+| 6 | `bn` | Bengali | বাংলা | বা | India (West Bengal) |
+| 7 | `ml` | Malayalam | മലയാളം | മ | India (Kerala) |
+| 8 | `ta` | Tamil | தமிழ் | த | India (Tamil Nadu) |
+| 9 | `te` | Telugu | తెలుగు | తె | India (Andhra Pradesh / Telangana) |
+| 10 | `pa` | Punjabi | ਪੰਜਾਬੀ | ਪੰ | India (Punjab) |
+| 11 | `or` | Odia | ଓଡ଼ିଆ | ଓ | India (Odisha) |
+| 12 | `es` | Spanish | Español | Es | Global (Europe / Americas) |
+| 13 | `fr` | French | Français | Fr | Global (Europe / Africa) |
+| 14 | `de` | German | Deutsch | De | Global (Europe) |
+| 15 | `ar` | Arabic | العربية | عر | Global (UAE / Dubai / Middle East) |
+| 16 | `pt` | Portuguese | Português | Pt | Global (Brazil / Portugal) |
+| 17 | `ja` | Japanese | 日本語 | 日 | Global (East Asia) |
+| 18 | `zh` | Chinese | 中文 | 中 | Global (East Asia) |
 
 - Picker strings per language: `kAppLanguages` in `language_options.dart`.
 - Material and Cupertino (`flutter_localizations`) support all 10.

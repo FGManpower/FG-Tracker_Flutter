@@ -9,7 +9,15 @@
     "ml": "ശരി",
     "ta": "சரி",
     "te": "సరే",
-    "pa": "ਠੀਕ ਹੈ"
+    "pa": "ਠੀਕ ਹੈ",
+    "es": "Aceptar",
+    "fr": "OK",
+    "de": "OK",
+    "ar": "موافق",
+    "pt": "OK",
+    "ja": "OK",
+    "zh": "确定",
+    "or": "ଠିକ ଅଛି |"
   },
   "common_cancel": {
     "en": "Cancel",
@@ -21,7 +29,15 @@
     "ml": "റദ്ദാക്കുക",
     "ta": "ரத்துசெய்",
     "te": "రద్దు చేయండి",
-    "pa": "ਰੱਦ ਕਰੋ"
+    "pa": "ਰੱਦ ਕਰੋ",
+    "es": "Cancelar",
+    "fr": "Annuler",
+    "de": "Abbrechen",
+    "ar": "إلغاء",
+    "pt": "Cancelar",
+    "ja": "キャンセル",
+    "zh": "取消",
+    "or": "ବାତିଲ୍ କରନ୍ତୁ |"
   },
   "common_done": {
     "en": "Done",
@@ -33,7 +49,15 @@
     "ml": "പൂർത്തിയായി",
     "ta": "முடிந்தது",
     "te": "పూర్తయింది",
-    "pa": "ਹੋ ਗਿਆ"
+    "pa": "ਹੋ ਗਿਆ",
+    "es": "Listo",
+    "fr": "Terminé",
+    "de": "Fertig",
+    "ar": "تم",
+    "pt": "Concluído",
+    "ja": "完了",
+    "zh": "完成",
+    "or": "ସମାପ୍ତ"
   },
   "common_save": {
     "en": "Save",
@@ -45,7 +69,15 @@
     "ml": "സംരക്ഷിക്കുക",
     "ta": "சேமி",
     "te": "సేవ్ చేయండి",
-    "pa": "ਸੰਭਾਲੋ"
+    "pa": "ਸੰਭਾਲੋ",
+    "es": "Guardar",
+    "fr": "Enregistrer",
+    "de": "Speichern",
+    "ar": "حفظ",
+    "pt": "Salvar",
+    "ja": "保存",
+    "zh": "保存",
+    "or": "ସଞ୍ଚୟ କରନ୍ତୁ |"
   },
   "common_delete": {
     "en": "Delete",
@@ -57,7 +89,15 @@
     "ml": "ഇല്ലാതാക്കുക",
     "ta": "நீக்கு",
     "te": "తొలగించండి",
-    "pa": "ਮਿਟਾਓ"
+    "pa": "ਮਿਟਾਓ",
+    "es": "Eliminar",
+    "fr": "Supprimer",
+    "de": "Löschen",
+    "ar": "حذف",
+    "pt": "Excluir",
+    "ja": "削除",
+    "zh": "删除",
+    "or": "ବିଲୋପ କରନ୍ତୁ |"
   },
   "common_retry": {
     "en": "Retry",
@@ -69,7 +109,15 @@
     "ml": "വീണ്ടും ശ്രമിക്കുക",
     "ta": "மீண்டும் முயற்சி செய்",
     "te": "మళ్లీ ప్రయత్నించండి",
-    "pa": "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ"
+    "pa": "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
+    "es": "Reintentar",
+    "fr": "Réessayer",
+    "de": "Wiederholen",
+    "ar": "إعادة المحاولة",
+    "pt": "Tentar novamente",
+    "ja": "再試行",
+    "zh": "重试",
+    "or": "ପୁନ ry ଚେଷ୍ଟା କରନ୍ତୁ |"
   },
   "common_yes": {
     "en": "Yes",
@@ -81,7 +129,15 @@
     "ml": "അതെ",
     "ta": "ஆம்",
     "te": "అవును",
-    "pa": "ਹਾਂ"
+    "pa": "ਹਾਂ",
+    "es": "Sí",
+    "fr": "Oui",
+    "de": "Ja",
+    "ar": "نعم",
+    "pt": "Sim",
+    "ja": "はい",
+    "zh": "是",
+    "or": "ହଁ"
   },
   "common_no": {
     "en": "No",
@@ -93,7 +149,15 @@
     "ml": "ഇല്ല",
     "ta": "இல்லை",
     "te": "కాదు",
-    "pa": "ਨਹੀਂ"
+    "pa": "ਨਹੀਂ",
+    "es": "No",
+    "fr": "Non",
+    "de": "Nein",
+    "ar": "لا",
+    "pt": "Não",
+    "ja": "いいえ",
+    "zh": "否",
+    "or": "ନା"
   },
   "common_close": {
     "en": "Close",
@@ -105,7 +169,15 @@
     "ml": "അടയ്ക്കുക",
     "ta": "மூடு",
     "te": "మూసివేయండి",
-    "pa": "ਬੰਦ ਕਰੋ"
+    "pa": "ਬੰਦ ਕਰੋ",
+    "es": "Cerrar",
+    "fr": "Fermer",
+    "de": "Schließen",
+    "ar": "إغلاق",
+    "pt": "Fechar",
+    "ja": "閉じる",
+    "zh": "关闭",
+    "or": "ବନ୍ଦ"
   },
   "common_error": {
     "en": "Error",
@@ -117,7 +189,15 @@
     "ml": "പിശക്",
     "ta": "பிழை",
     "te": "లోపం",
-    "pa": "ਗਲਤੀ"
+    "pa": "ਗਲਤੀ",
+    "es": "Error",
+    "fr": "Erreur",
+    "de": "Fehler",
+    "ar": "خطأ",
+    "pt": "Erro",
+    "ja": "エラー",
+    "zh": "错误",
+    "or": "ତ୍ରୁଟି |"
   },
   "common_success": {
     "en": "Success",
@@ -129,7 +209,15 @@
     "ml": "വിജയകരം",
     "ta": "வெற்றி",
     "te": "విజయవంతం",
-    "pa": "ਸਫਲ"
+    "pa": "ਸਫਲ",
+    "es": "Éxito",
+    "fr": "Succès",
+    "de": "Erfolg",
+    "ar": "نجاح",
+    "pt": "Sucesso",
+    "ja": "成功",
+    "zh": "成功",
+    "or": "ସଫଳତା |"
   },
   "common_search": {
     "en": "Search",
@@ -141,7 +229,15 @@
     "ml": "തിരയുക",
     "ta": "தேடு",
     "te": "వెతకండి",
-    "pa": "ਖੋਜੋ"
+    "pa": "ਖੋਜੋ",
+    "es": "Buscar",
+    "fr": "Rechercher",
+    "de": "Suchen",
+    "ar": "بحث",
+    "pt": "Pesquisar",
+    "ja": "検索",
+    "zh": "搜索",
+    "or": "ସନ୍ଧାନ କର |"
   },
   "common_loading": {
     "en": "Loading…",
@@ -153,7 +249,15 @@
     "ml": "ലോഡ് ചെയ്യുന്നു…",
     "ta": "ஏற்றுகிறது…",
     "te": "లోడ్ అవుతోంది…",
-    "pa": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ…"
+    "pa": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ…",
+    "es": "Cargando…",
+    "fr": "Chargement…",
+    "de": "Laden…",
+    "ar": "جارٍ التحميل…",
+    "pt": "Carregando…",
+    "ja": "読み込み中…",
+    "zh": "加载中…",
+    "or": "ଲୋଡିଂ…"
   },
   "common_noInternet": {
     "en": "No internet connection",
@@ -165,7 +269,15 @@
     "ml": "ഇന്റർനെറ്റ് കണക്ഷനില്ല",
     "ta": "இணைய இணைப்பு இல்லை",
     "te": "ఇంటర్నెట్ కనెక్షన్ లేదు",
-    "pa": "ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਨਹੀਂ ਹੈ"
+    "pa": "ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਨਹੀਂ ਹੈ",
+    "es": "Sin conexión a internet",
+    "fr": "Pas de connexion Internet",
+    "de": "Keine Internetverbindung",
+    "ar": "لا يوجد اتصال بالإنترنت",
+    "pt": "Sem conexão com a internet",
+    "ja": "インターネット接続がありません",
+    "zh": "无网络连接",
+    "or": "କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ |"
   },
   "common_somethingWentWrong": {
     "en": "Something went wrong. Please try again.",
@@ -177,7 +289,15 @@
     "ml": "എന്തോ പിശക് സംഭവിച്ചു. ദയവായി വീണ്ടും ശ്രമിക്കുക.",
     "ta": "ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்.",
     "te": "ఏదో తప్పు జరిగింది. దయచేసి మళ్లీ ప్రయత్నించండి.",
-    "pa": "ਕੁਝ ਗਲਤ ਹੋ ਗਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"
+    "pa": "ਕੁਝ ਗਲਤ ਹੋ ਗਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    "es": "Algo salió mal. Por favor, inténtalo de nuevo.",
+    "fr": "Une erreur est survenue. Veuillez réessayer.",
+    "de": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "ar": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "pt": "Ocorreu um erro. Tente novamente.",
+    "ja": "問題が発生しました。もう一度お試しください。",
+    "zh": "出错了，请重试。",
+    "or": "କିଛି ଭୁଲ୍ ହୋଇଗଲା | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
   },
   "common_today": {
     "en": "Today",
@@ -189,7 +309,15 @@
     "ml": "ഇന്ന്",
     "ta": "இன்று",
     "te": "ఈరోజు",
-    "pa": "ਅੱਜ"
+    "pa": "ਅੱਜ",
+    "es": "Hoy",
+    "fr": "Aujourd'hui",
+    "de": "Heute",
+    "ar": "اليوم",
+    "pt": "Hoje",
+    "ja": "今日",
+    "zh": "今天",
+    "or": "ଆଜି |"
   },
   "common_yesterday": {
     "en": "Yesterday",
@@ -201,7 +329,15 @@
     "ml": "ഇന്നലെ",
     "ta": "நேற்று",
     "te": "నిన్న",
-    "pa": "ਕੱਲ੍ਹ"
+    "pa": "ਕੱਲ੍ਹ",
+    "es": "Ayer",
+    "fr": "Hier",
+    "de": "Gestern",
+    "ar": "أمس",
+    "pt": "Ontem",
+    "ja": "昨日",
+    "zh": "昨天",
+    "or": "ଗତକାଲି"
   },
   "common_justNow": {
     "en": "Just now",
@@ -213,7 +349,15 @@
     "ml": "ഇപ്പോൾ",
     "ta": "இப்போது",
     "te": "ఇప్పుడే",
-    "pa": "ਹੁਣੇ"
+    "pa": "ਹੁਣੇ",
+    "es": "Ahora mismo",
+    "fr": "À l'instant",
+    "de": "Gerade eben",
+    "ar": "الآن",
+    "pt": "Agora mesmo",
+    "ja": "たった今",
+    "zh": "刚刚",
+    "or": "ବର୍ତ୍ତମାନ"
   },
   "common_lastSeen": {
     "en": "Last seen: {time}",
@@ -230,7 +374,15 @@
       "time": {
         "type": "String"
       }
-    }
+    },
+    "es": "Última vez: {time}",
+    "fr": "Vu pour la dernière fois: {time}",
+    "de": "Zuletzt gesehen: {time}",
+    "ar": "آخر ظهور: {time}",
+    "pt": "Visto por último: {time}",
+    "ja": "最終ログイン: {time}",
+    "zh": "最后上线: {time}",
+    "or": "ଶେଷ ଦର୍ଶନ: {time}"
   },
   "common_todayAt": {
     "en": "Today, {time}",
@@ -247,7 +399,15 @@
       "time": {
         "type": "String"
       }
-    }
+    },
+    "es": "Hoy, {time}",
+    "fr": "Aujourd'hui, {time}",
+    "de": "Heute, {time}",
+    "ar": "اليوم، {time}",
+    "pt": "Hoje, {time}",
+    "ja": "今日、{time}",
+    "zh": "今天 {time}",
+    "or": "ଆଜି, {time} |"
   },
   "common_minutesAgo": {
     "en": "{count, plural, =1{1 min ago} other{{count} min ago}}",
@@ -264,7 +424,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{Hace 1 min} other{Hace {count} min}}",
+    "fr": "{count, plural, =1{Il y a 1 min} other{Il y a {count} min}}",
+    "de": "{count, plural, =1{Vor 1 Min.} other{Vor {count} Min.}}",
+    "ar": "{count, plural, =1{منذ دقيقة واحدة} other{منذ {count} دقيقة}}",
+    "pt": "{count, plural, =1{Há 1 min} other{Há {count} min}}",
+    "ja": "{count, plural, =1{1分前} other{{count}分前}}",
+    "zh": "{count, plural, =1{1分钟前} other{{count}分钟前}}",
+    "or": "{count, plural, =1{1 ମିନିଟ୍ ପୂର୍ବରୁ} other{{count} ମିନିଟ୍ ପୂର୍ବରୁ |}}"
   },
   "common_hoursAgo": {
     "en": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
@@ -281,7 +449,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{Hace 1 hora} other{Hace {count} horas}}",
+    "fr": "{count, plural, =1{Il y a 1 heure} other{Il y a {count} heures}}",
+    "de": "{count, plural, =1{Vor 1 Stunde} other{Vor {count} Stunden}}",
+    "ar": "{count, plural, =1{منذ ساعة واحدة} other{منذ {count} ساعة}}",
+    "pt": "{count, plural, =1{Há 1 hora} other{Há {count} horas}}",
+    "ja": "{count, plural, =1{1時間前} other{{count}時間前}}",
+    "zh": "{count, plural, =1{1小时前} other{{count}小时前}}",
+    "or": "{count, plural, =1{1 ଘଣ୍ଟା ପୂର୍ବରୁ |} other{{count} ଘଣ୍ଟା ପୂର୍ବରୁ |}}"
   },
   "common_daysAgo": {
     "en": "{count, plural, =1{1 day ago} other{{count} days ago}}",
@@ -298,7 +474,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{Hace 1 día} other{Hace {count} días}}",
+    "fr": "{count, plural, =1{Il y a 1 jour} other{Il y a {count} jours}}",
+    "de": "{count, plural, =1{Vor 1 Tag} other{Vor {count} Tagen}}",
+    "ar": "{count, plural, =1{منذ يوم واحد} other{منذ {count} يوم}}",
+    "pt": "{count, plural, =1{Há 1 dia} other{Há {count} dias}}",
+    "ja": "{count, plural, =1{1日前} other{{count}日前}}",
+    "zh": "{count, plural, =1{1天前} other{{count}天前}}",
+    "or": "{count, plural, =1{1 ଦିନ ପୂର୍ବରୁ} other{{count} ଦିନ ପୂର୍ବରୁ |}}"
   },
   "common_send": {
     "en": "Send",
@@ -310,7 +494,15 @@
     "ml": "അയയ്ക്കുക",
     "ta": "அனுப்பு",
     "te": "పంపండి",
-    "pa": "ਭੇਜੋ"
+    "pa": "ਭੇਜੋ",
+    "es": "Enviar",
+    "fr": "Envoyer",
+    "de": "Senden",
+    "ar": "إرسال",
+    "pt": "Enviar",
+    "ja": "送信",
+    "zh": "发送",
+    "or": "ପଠାନ୍ତୁ |"
   },
   "common_edit": {
     "en": "Edit",
@@ -322,7 +514,15 @@
     "ml": "എഡിറ്റ് ചെയ്യുക",
     "ta": "திருத்து",
     "te": "సవరించండి",
-    "pa": "ਸੋਧੋ"
+    "pa": "ਸੋਧੋ",
+    "es": "Editar",
+    "fr": "Modifier",
+    "de": "Bearbeiten",
+    "ar": "تعديل",
+    "pt": "Editar",
+    "ja": "編集",
+    "zh": "编辑",
+    "or": "ସଂପାଦନା କରନ୍ତୁ |"
   },
   "common_share": {
     "en": "Share",
@@ -334,7 +534,15 @@
     "ml": "പങ്കിടുക",
     "ta": "பகிர்",
     "te": "షేర్ చేయండి",
-    "pa": "ਸਾਂਝਾ ਕਰੋ"
+    "pa": "ਸਾਂਝਾ ਕਰੋ",
+    "es": "Compartir",
+    "fr": "Partager",
+    "de": "Teilen",
+    "ar": "مشاركة",
+    "pt": "Compartilhar",
+    "ja": "共有",
+    "zh": "分享",
+    "or": "ଅଂଶୀଦାର କରନ୍ତୁ |"
   },
   "common_copy": {
     "en": "Copy",
@@ -346,7 +554,15 @@
     "ml": "പകർത്തുക",
     "ta": "நகலெடு",
     "te": "కాపీ చేయండి",
-    "pa": "ਕਾਪੀ ਕਰੋ"
+    "pa": "ਕਾਪੀ ਕਰੋ",
+    "es": "Copiar",
+    "fr": "Copier",
+    "de": "Kopieren",
+    "ar": "نسخ",
+    "pt": "Copiar",
+    "ja": "コピー",
+    "zh": "复制",
+    "or": "କପି କରନ୍ତୁ |"
   },
   "common_copied": {
     "en": "Copied",
@@ -358,7 +574,15 @@
     "ml": "പകർത്തി",
     "ta": "நகலெடுக்கப்பட்டது",
     "te": "కాపీ అయింది",
-    "pa": "ਕਾਪੀ ਹੋ ਗਿਆ"
+    "pa": "ਕਾਪੀ ਹੋ ਗਿਆ",
+    "es": "Copiado",
+    "fr": "Copié",
+    "de": "Kopiert",
+    "ar": "تم النسخ",
+    "pt": "Copiado",
+    "ja": "コピーしました",
+    "zh": "已复制",
+    "or": "କପି କରାଯାଇଛି |"
   },
   "common_next": {
     "en": "Next",
@@ -370,7 +594,15 @@
     "ml": "അടുത്തത്",
     "ta": "அடுத்து",
     "te": "తదుపరి",
-    "pa": "ਅੱਗੇ"
+    "pa": "ਅੱਗੇ",
+    "es": "Siguiente",
+    "fr": "Suivant",
+    "de": "Weiter",
+    "ar": "التالي",
+    "pt": "Próximo",
+    "ja": "次へ",
+    "zh": "下一步",
+    "or": "ପରବର୍ତ୍ତୀ"
   },
   "common_back": {
     "en": "Back",
@@ -382,7 +614,15 @@
     "ml": "തിരികെ",
     "ta": "பின்",
     "te": "వెనుకకు",
-    "pa": "ਵਾਪਸ"
+    "pa": "ਵਾਪਸ",
+    "es": "Atrás",
+    "fr": "Retour",
+    "de": "Zurück",
+    "ar": "رجوع",
+    "pt": "Voltar",
+    "ja": "戻る",
+    "zh": "返回",
+    "or": "ପଛକୁ"
   },
   "common_continue": {
     "en": "Continue",
@@ -394,7 +634,15 @@
     "ml": "തുടരുക",
     "ta": "தொடரவும்",
     "te": "కొనసాగించండి",
-    "pa": "ਜਾਰੀ ਰੱਖੋ"
+    "pa": "ਜਾਰੀ ਰੱਖੋ",
+    "es": "Continuar",
+    "fr": "Continuer",
+    "de": "Weiter",
+    "ar": "متابعة",
+    "pt": "Continuar",
+    "ja": "続行",
+    "zh": "继续",
+    "or": "ଜାରି ରଖ |"
   },
   "common_submit": {
     "en": "Submit",
@@ -406,7 +654,15 @@
     "ml": "സമർപ്പിക്കുക",
     "ta": "சமர்ப்பி",
     "te": "సమర్పించండి",
-    "pa": "ਜਮ੍ਹਾਂ ਕਰੋ"
+    "pa": "ਜਮ੍ਹਾਂ ਕਰੋ",
+    "es": "Enviar",
+    "fr": "Soumettre",
+    "de": "Absenden",
+    "ar": "إرسال",
+    "pt": "Enviar",
+    "ja": "提出",
+    "zh": "提交",
+    "or": "ଦାଖଲ କରନ୍ତୁ |"
   },
   "common_confirm": {
     "en": "Confirm",
@@ -418,7 +674,15 @@
     "ml": "സ്ഥിരീകരിക്കുക",
     "ta": "உறுதிப்படுத்து",
     "te": "నిర్ధారించండి",
-    "pa": "ਪੁਸ਼ਟੀ ਕਰੋ"
+    "pa": "ਪੁਸ਼ਟੀ ਕਰੋ",
+    "es": "Confirmar",
+    "fr": "Confirmer",
+    "de": "Bestätigen",
+    "ar": "تأكيد",
+    "pt": "Confirmar",
+    "ja": "確認",
+    "zh": "确认",
+    "or": "ନିଶ୍ଚିତ କରନ୍ତୁ |"
   },
   "common_dismiss": {
     "en": "DISMISS",
@@ -431,7 +695,15 @@
     "ta": "சரி",
     "te": "సరే",
     "pa": "ਬੰਦ ਕਰੋ",
-    "description": "Default button of the error dialog. Login / OTP always show English."
+    "description": "Default button of the error dialog. Login / OTP always show English.",
+    "es": "Descartar",
+    "fr": "Ignorer",
+    "de": "Verwerfen",
+    "ar": "تجاهل",
+    "pt": "Dispensar",
+    "ja": "閉じる",
+    "zh": "关闭",
+    "or": "ଡିସମିସ୍ |"
   },
   "common_settings": {
     "en": "Settings",
@@ -443,7 +715,15 @@
     "ml": "ക്രമീകരണങ്ങൾ",
     "ta": "அமைப்புகள்",
     "te": "సెట్టింగ్‌లు",
-    "pa": "ਸੈਟਿੰਗਾਂ"
+    "pa": "ਸੈਟਿੰਗਾਂ",
+    "es": "Ajustes",
+    "fr": "Paramètres",
+    "de": "Einstellungen",
+    "ar": "الإعدادات",
+    "pt": "Configurações",
+    "ja": "設定",
+    "zh": "设置",
+    "or": "ସେଟିଂସମୂହ"
   },
   "common_allow": {
     "en": "Allow",
@@ -455,7 +735,15 @@
     "ml": "അനുവദിക്കുക",
     "ta": "அனுமதி",
     "te": "అనుమతించండి",
-    "pa": "ਇਜਾਜ਼ਤ ਦਿਓ"
+    "pa": "ਇਜਾਜ਼ਤ ਦਿਓ",
+    "es": "Permitir",
+    "fr": "Autoriser",
+    "de": "Erlauben",
+    "ar": "السماح",
+    "pt": "Permitir",
+    "ja": "許可",
+    "zh": "允许",
+    "or": "ଅନୁମତି ଦିଅନ୍ତୁ |"
   },
   "common_notNow": {
     "en": "Not now",
@@ -467,7 +755,15 @@
     "ml": "ഇപ്പോൾ വേണ്ട",
     "ta": "இப்போது வேண்டாம்",
     "te": "ఇప్పుడు కాదు",
-    "pa": "ਹੁਣ ਨਹੀਂ"
+    "pa": "ਹੁਣ ਨਹੀਂ",
+    "es": "Ahora no",
+    "fr": "Pas maintenant",
+    "de": "Nicht jetzt",
+    "ar": "ليس الآن",
+    "pt": "Agora não",
+    "ja": "後で",
+    "zh": "暂不",
+    "or": "ବର୍ତ୍ତମାନ ନୁହେଁ |"
   },
   "common_open": {
     "en": "Open",
@@ -479,7 +775,15 @@
     "ml": "തുറക്കുക",
     "ta": "திற",
     "te": "తెరవండి",
-    "pa": "ਖੋਲ੍ਹੋ"
+    "pa": "ਖੋਲ੍ਹੋ",
+    "es": "Abrir",
+    "fr": "Ouvrir",
+    "de": "Öffnen",
+    "ar": "فتح",
+    "pt": "Abrir",
+    "ja": "開く",
+    "zh": "打开",
+    "or": "ଖୋଲନ୍ତୁ |"
   },
   "common_gotIt": {
     "en": "Got it",
@@ -491,7 +795,15 @@
     "ml": "മനസ്സിലായി",
     "ta": "புரிந்தது",
     "te": "అర్థమైంది",
-    "pa": "ਸਮਝ ਗਿਆ"
+    "pa": "ਸਮਝ ਗਿਆ",
+    "es": "Entendido",
+    "fr": "Compris",
+    "de": "Verstanden",
+    "ar": "فهمت",
+    "pt": "Entendi",
+    "ja": "了解",
+    "zh": "知道了",
+    "or": "ପାଇଛି"
   },
   "common_comingSoon": {
     "en": "Coming soon",
@@ -503,7 +815,15 @@
     "ml": "ഉടൻ വരുന്നു",
     "ta": "விரைவில் வருகிறது",
     "te": "త్వరలో వస్తోంది",
-    "pa": "ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ"
+    "pa": "ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ",
+    "es": "Próximamente",
+    "fr": "Bientôt disponible",
+    "de": "Demnächst",
+    "ar": "قريباً",
+    "pt": "Em breve",
+    "ja": "近日公開",
+    "zh": "敬请期待",
+    "or": "ଶୀଘ୍ର ଆସୁଛି |"
   },
   "common_noData": {
     "en": "No data found",
@@ -515,7 +835,15 @@
     "ml": "ഡാറ്റയൊന്നും കണ്ടെത്തിയില്ല",
     "ta": "தரவு எதுவும் இல்லை",
     "te": "డేటా ఏదీ కనుగొనబడలేదు",
-    "pa": "ਕੋਈ ਡਾਟਾ ਨਹੀਂ ਮਿਲਿਆ"
+    "pa": "ਕੋਈ ਡਾਟਾ ਨਹੀਂ ਮਿਲਿਆ",
+    "es": "No se encontraron datos",
+    "fr": "Aucune donnée trouvée",
+    "de": "Keine Daten gefunden",
+    "ar": "لم يتم العثور على بيانات",
+    "pt": "Nenhum dado encontrado",
+    "ja": "データが見つかりません",
+    "zh": "暂无数据",
+    "or": "କ data ଣସି ତଥ୍ୟ ମିଳିଲା ନାହିଁ |"
   },
   "common_viewAll": {
     "en": "View all",
@@ -527,7 +855,15 @@
     "ml": "എല്ലാം കാണുക",
     "ta": "அனைத்தையும் காண்க",
     "te": "అన్నీ చూడండి",
-    "pa": "ਸਭ ਵੇਖੋ"
+    "pa": "ਸਭ ਵੇਖੋ",
+    "es": "Ver todo",
+    "fr": "Voir tout",
+    "de": "Alle anzeigen",
+    "ar": "عرض الكل",
+    "pt": "Ver tudo",
+    "ja": "すべて表示",
+    "zh": "查看全部",
+    "or": "ସମସ୍ତ ଦେଖନ୍ତୁ |"
   },
   "common_online": {
     "en": "Online",
@@ -539,7 +875,15 @@
     "ml": "ഓൺലൈൻ",
     "ta": "ஆன்லைன்",
     "te": "ఆన్‌లైన్",
-    "pa": "ਆਨਲਾਈਨ"
+    "pa": "ਆਨਲਾਈਨ",
+    "es": "En línea",
+    "fr": "En ligne",
+    "de": "Online",
+    "ar": "متصل",
+    "pt": "Online",
+    "ja": "オンライン",
+    "zh": "在线",
+    "or": "ଅନଲାଇନ୍ |"
   },
   "common_offline": {
     "en": "Offline",
@@ -551,7 +895,15 @@
     "ml": "ഓഫ്‌ലൈൻ",
     "ta": "ஆஃப்லைன்",
     "te": "ఆఫ్‌లైన్",
-    "pa": "ਆਫਲਾਈਨ"
+    "pa": "ਆਫਲਾਈਨ",
+    "es": "Desconectado",
+    "fr": "Hors ligne",
+    "de": "Offline",
+    "ar": "غير متصل",
+    "pt": "Offline",
+    "ja": "オフライン",
+    "zh": "离线",
+    "or": "ଅଫଲାଇନ୍ |"
   },
   "common_membersCount": {
     "en": "{count, plural, =1{1 member} other{{count} members}}",
@@ -568,7 +920,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{1 miembro} other{{count} miembros}}",
+    "fr": "{count, plural, =1{1 membre} other{{count} membres}}",
+    "de": "{count, plural, =1{1 Mitglied} other{{count} Mitglieder}}",
+    "ar": "{count, plural, =1{عضو واحد} other{{count} أعضاء}}",
+    "pt": "{count, plural, =1{1 membro} other{{count} membros}}",
+    "ja": "{count, plural, =1{1名のメンバー} other{{count}名のメンバー}}",
+    "zh": "{count, plural, =1{1位成员} other{{count}位成员}}",
+    "or": "{count, plural, =1{1 ସଦସ୍ୟ} other{{count} ସଦସ୍ୟମାନେ |}}"
   },
   "common_permissionDenied": {
     "en": "Permission denied",
@@ -580,7 +940,15 @@
     "ml": "അനുമതി നിഷേധിച്ചു",
     "ta": "அனுமதி மறுக்கப்பட்டது",
     "te": "అనుమతి నిరాకరించబడింది",
-    "pa": "ਇਜਾਜ਼ਤ ਨਹੀਂ ਮਿਲੀ"
+    "pa": "ਇਜਾਜ਼ਤ ਨਹੀਂ ਮਿਲੀ",
+    "es": "Permiso denegado",
+    "fr": "Autorisation refusée",
+    "de": "Berechtigung verweigert",
+    "ar": "تم رفض الإذن",
+    "pt": "Permissão negada",
+    "ja": "権限が拒否されました",
+    "zh": "权限被拒绝",
+    "or": "ଅନୁମତି ପ୍ରତ୍ୟାଖ୍ୟାନ |"
   },
   "common_you": {
     "en": "You",
@@ -592,7 +960,15 @@
     "ml": "നിങ്ങൾ",
     "ta": "நீங்கள்",
     "te": "మీరు",
-    "pa": "ਤੁਸੀਂ"
+    "pa": "ਤੁਸੀਂ",
+    "es": "Tú",
+    "fr": "Vous",
+    "de": "Du",
+    "ar": "أنت",
+    "pt": "Você",
+    "ja": "あなた",
+    "zh": "你",
+    "or": "ତୁମେ"
   },
   "common_add": {
     "en": "Add",
@@ -604,7 +980,15 @@
     "ml": "ചേർക്കുക",
     "ta": "சேர்",
     "te": "జోడించండి",
-    "pa": "ਸ਼ਾਮਲ ਕਰੋ"
+    "pa": "ਸ਼ਾਮਲ ਕਰੋ",
+    "es": "Añadir",
+    "fr": "Ajouter",
+    "de": "Hinzufügen",
+    "ar": "إضافة",
+    "pt": "Adicionar",
+    "ja": "追加",
+    "zh": "添加",
+    "or": "ଯୋଡନ୍ତୁ |"
   },
   "common_remove": {
     "en": "Remove",
@@ -616,7 +1000,15 @@
     "ml": "നീക്കം ചെയ്യുക",
     "ta": "அகற்று",
     "te": "తీసివేయండి",
-    "pa": "ਹਟਾਓ"
+    "pa": "ਹਟਾਓ",
+    "es": "Eliminar",
+    "fr": "Supprimer",
+    "de": "Entfernen",
+    "ar": "إزالة",
+    "pt": "Remover",
+    "ja": "削除",
+    "zh": "移除",
+    "or": "ଅପସାରଣ କରନ୍ତୁ |"
   },
   "common_exit": {
     "en": "Exit",
@@ -628,7 +1020,15 @@
     "ml": "പുറത്തുകടക്കുക",
     "ta": "வெளியேறு",
     "te": "నిష్క్రమించండి",
-    "pa": "ਬਾਹਰ ਨਿਕਲੋ"
+    "pa": "ਬਾਹਰ ਨਿਕਲੋ",
+    "es": "Salir",
+    "fr": "Quitter",
+    "de": "Beenden",
+    "ar": "خروج",
+    "pt": "Sair",
+    "ja": "退出",
+    "zh": "退出",
+    "or": "ପ୍ରସ୍ଥାନ"
   },
   "common_tryAgain": {
     "en": "Try again",
@@ -640,6 +1040,14 @@
     "ml": "വീണ്ടും ശ്രമിക്കുക",
     "ta": "மீண்டும் முயல்க",
     "te": "మళ్లీ ప్రయత్నించండి",
-    "pa": "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ"
+    "pa": "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
+    "es": "Intentar de nuevo",
+    "fr": "Réessayer",
+    "de": "Erneut versuchen",
+    "ar": "حاول مرة أخرى",
+    "pt": "Tentar novamente",
+    "ja": "再試行",
+    "zh": "再试一次",
+    "or": "ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
   }
 }

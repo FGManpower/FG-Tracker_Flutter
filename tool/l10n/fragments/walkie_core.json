@@ -9,7 +9,15 @@
     "ml": "വാക്കി-ടോക്കി",
     "ta": "வாக்கி-டாக்கி",
     "te": "వాకీ-టాకీ",
-    "pa": "ਵਾਕੀ-ਟਾਕੀ"
+    "pa": "ਵਾਕੀ-ਟਾਕੀ",
+    "es": "Walkie Talkie",
+    "fr": "Talkie-walkie",
+    "de": "Walkie-Talkie",
+    "ar": "لاسلكي",
+    "pt": "Walkie-Talkie",
+    "ja": "トランシーバー",
+    "zh": "对讲机",
+    "or": "ୱାକି ଟକି |"
   },
   "walkie_someone": {
     "en": "Someone",
@@ -21,7 +29,15 @@
     "ml": "ആരോ",
     "ta": "யாரோ",
     "te": "ఎవరో",
-    "pa": "ਕੋਈ"
+    "pa": "ਕੋਈ",
+    "es": "Alguien",
+    "fr": "Quelqu’un",
+    "de": "Jemand",
+    "ar": "شخص ما",
+    "pt": "Alguém",
+    "ja": "誰か",
+    "zh": "某人",
+    "or": "କେହି ଜଣେ"
   },
   "walkie_aMember": {
     "en": "A member",
@@ -33,7 +49,15 @@
     "ml": "ഒരു അംഗം",
     "ta": "ஒரு உறுப்பினர்",
     "te": "ఒక సభ్యుడు",
-    "pa": "ਇੱਕ ਮੈਂਬਰ"
+    "pa": "ਇੱਕ ਮੈਂਬਰ",
+    "es": "Un miembro",
+    "fr": "Un membre",
+    "de": "Ein Mitglied",
+    "ar": "عضو",
+    "pt": "Um membro",
+    "ja": "メンバー",
+    "zh": "一位成员",
+    "or": "ଜଣେ ସଦସ୍ୟ"
   },
   "walkie_defaultGroupName": {
     "en": "Walkie Group",
@@ -45,7 +69,15 @@
     "ml": "വാക്കി ഗ്രൂപ്പ്",
     "ta": "வாக்கி குழு",
     "te": "వాకీ గ్రూప్",
-    "pa": "ਵਾਕੀ ਗਰੁੱਪ"
+    "pa": "ਵਾਕੀ ਗਰੁੱਪ",
+    "es": "Grupo Walkie",
+    "fr": "Groupe Talkie",
+    "de": "Walkie-Gruppe",
+    "ar": "مجموعة اللاسلكي",
+    "pt": "Grupo de Walkie",
+    "ja": "トランシーバーグループ",
+    "zh": "对讲群组",
+    "or": "ୱାକି ଗ୍ରୁପ୍ |"
   },
   "walkie_groupFallback": {
     "en": "Group",
@@ -57,7 +89,15 @@
     "ml": "ഗ്രൂപ്പ്",
     "ta": "குழு",
     "te": "గ్రూప్",
-    "pa": "ਗਰੁੱਪ"
+    "pa": "ਗਰੁੱਪ",
+    "es": "Grupo",
+    "fr": "Groupe",
+    "de": "Gruppe",
+    "ar": "المجموعة",
+    "pt": "Grupo",
+    "ja": "グループ",
+    "zh": "群组",
+    "or": "ଗୋଷ୍ଠୀ"
   },
   "walkie_fieldTeam": {
     "en": "Field Team",
@@ -69,7 +109,15 @@
     "ml": "ഫീൽഡ് ടീം",
     "ta": "களக் குழு",
     "te": "ఫీల్డ్ టీమ్",
-    "pa": "ਫੀਲਡ ਟੀਮ"
+    "pa": "ਫੀਲਡ ਟੀਮ",
+    "es": "Equipo de campo",
+    "fr": "Équipe de terrain",
+    "de": "Außendienst-Team",
+    "ar": "فريق الميدان",
+    "pt": "Equipe de campo",
+    "ja": "フィールドチーム",
+    "zh": "现场团队",
+    "or": "ଫିଲ୍ଡ ଦଳ |"
   },
   "walkie_member": {
     "en": "Member",
@@ -81,7 +129,15 @@
     "ml": "അംഗം",
     "ta": "உறுப்பினர்",
     "te": "సభ్యుడు",
-    "pa": "ਮੈਂਬਰ"
+    "pa": "ਮੈਂਬਰ",
+    "es": "Miembro",
+    "fr": "Membre",
+    "de": "Mitglied",
+    "ar": "عضو",
+    "pt": "Membro",
+    "ja": "メンバー",
+    "zh": "成员",
+    "or": "ସଦସ୍ୟ"
   },
   "walkie_noNameGroup": {
     "en": "No Name Group",
@@ -93,7 +149,15 @@
     "ml": "പേരില്ലാത്ത ഗ്രൂപ്പ്",
     "ta": "பெயரில்லா குழு",
     "te": "పేరు లేని గ్రూప్",
-    "pa": "ਬਿਨਾਂ ਨਾਮ ਦਾ ਗਰੁੱਪ"
+    "pa": "ਬਿਨਾਂ ਨਾਮ ਦਾ ਗਰੁੱਪ",
+    "es": "Grupo sin nombre",
+    "fr": "Groupe sans nom",
+    "de": "Gruppe ohne Namen",
+    "ar": "مجموعة بدون اسم",
+    "pt": "Grupo sem nome",
+    "ja": "名称未設定グループ",
+    "zh": "未命名群组",
+    "or": "କ Name ଣସି ନାମ ଗୋଷ୍ଠୀ ନାହିଁ |"
   },
   "walkie_isSpeaking": {
     "en": "{name} is speaking...",
@@ -110,7 +174,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "{name} está hablando...",
+    "fr": "{name} est en train de parler...",
+    "de": "{name} spricht...",
+    "ar": "{name} يتحدث الآن...",
+    "pt": "{name} está falando...",
+    "ja": "{name}が話しています...",
+    "zh": "{name} 正在讲话...",
+    "or": "{name} କହୁଛି ..."
   },
   "walkie_someoneSpeaking": {
     "en": "Someone is speaking...",
@@ -122,7 +194,15 @@
     "ml": "ആരോ സംസാരിക്കുന്നു...",
     "ta": "யாரோ பேசுகிறார்...",
     "te": "ఎవరో మాట్లాడుతున్నారు...",
-    "pa": "ਕੋਈ ਬੋਲ ਰਿਹਾ ਹੈ..."
+    "pa": "ਕੋਈ ਬੋਲ ਰਿਹਾ ਹੈ...",
+    "es": "Alguien está hablando...",
+    "fr": "Quelqu’un parle...",
+    "de": "Jemand spricht...",
+    "ar": "شخص ما يتحدث...",
+    "pt": "Alguém está falando...",
+    "ja": "誰かが話しています...",
+    "zh": "有人正在讲话...",
+    "or": "କେହି ଜଣେ କହୁଛନ୍ତି ..."
   },
   "walkie_joinedCount": {
     "en": "{count, plural, =1{1 Joined} other{{count} Joined}}",
@@ -139,7 +219,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{1 unido} other{{count} unidos}}",
+    "fr": "{count, plural, =1{1 rejoint} other{{count} rejoints}}",
+    "de": "{count, plural, =1{1 beigetreten} other{{count} beigetreten}}",
+    "ar": "{count, plural, =1{انضم 1} other{انضم {count}}}",
+    "pt": "{count, plural, =1{1 conectado} other{{count} conectados}}",
+    "ja": "{count, plural, =1{1名参加} other{{count}名参加}}",
+    "zh": "{count, plural, =1{1 人已加入} other{{count} 人已加入}}",
+    "or": "{count, plural, =1{1 ଯୋଗଦାନ} other{{count} ଯୋଗଦାନ |}}"
   },
   "walkie_live": {
     "en": "LIVE",
@@ -152,7 +240,15 @@
     "ta": "நேரலை",
     "te": "లైవ్",
     "pa": "ਲਾਈਵ",
-    "description": "Badge on a live walkie call; keep very short"
+    "description": "Badge on a live walkie call; keep very short",
+    "es": "EN VIVO",
+    "fr": "EN DIRECT",
+    "de": "LIVE",
+    "ar": "مباشر",
+    "pt": "AO VIVO",
+    "ja": "LIVE",
+    "zh": "实时",
+    "or": "ଜୀବନ୍ତ |"
   },
   "walkie_accept": {
     "en": "Accept",
@@ -164,7 +260,15 @@
     "ml": "സ്വീകരിക്കുക",
     "ta": "ஏற்கவும்",
     "te": "అంగీకరించు",
-    "pa": "ਸਵੀਕਾਰ ਕਰੋ"
+    "pa": "ਸਵੀਕਾਰ ਕਰੋ",
+    "es": "Aceptar",
+    "fr": "Accepter",
+    "de": "Annehmen",
+    "ar": "قبول",
+    "pt": "Aceitar",
+    "ja": "応答",
+    "zh": "接听",
+    "or": "ଗ୍ରହଣ କରନ୍ତୁ"
   },
   "walkie_activeBadge": {
     "en": "Active",
@@ -177,7 +281,15 @@
     "ta": "செயலில்",
     "te": "యాక్టివ్",
     "pa": "ਸਰਗਰਮ",
-    "description": "Status badge: active / online"
+    "description": "Status badge: active / online",
+    "es": "Activo",
+    "fr": "Actif",
+    "de": "Aktiv",
+    "ar": "نشط",
+    "pt": "Ativo",
+    "ja": "アクティブ",
+    "zh": "活跃",
+    "or": "ସକ୍ରିୟ |"
   },
   "walkie_speaking": {
     "en": "Speaking...",
@@ -189,7 +301,15 @@
     "ml": "സംസാരിക്കുന്നു...",
     "ta": "பேசுகிறார்...",
     "te": "మాట్లాడుతున్నారు...",
-    "pa": "ਬੋਲ ਰਹੇ ਹਨ..."
+    "pa": "ਬੋਲ ਰਹੇ ਹਨ...",
+    "es": "Hablando...",
+    "fr": "Parle...",
+    "de": "Spricht...",
+    "ar": "يتحدث...",
+    "pt": "Falando...",
+    "ja": "通話中...",
+    "zh": "正在讲话...",
+    "or": "କଥାବାର୍ତ୍ତା ..."
   },
   "walkie_muted": {
     "en": "Muted",
@@ -201,7 +321,15 @@
     "ml": "മ്യൂട്ട്",
     "ta": "மியூட்",
     "te": "మ్యూట్",
-    "pa": "ਮਿਊਟ"
+    "pa": "ਮਿਊਟ",
+    "es": "Silenciado",
+    "fr": "Muet",
+    "de": "Stumm",
+    "ar": "مكتوم",
+    "pt": "Mutado",
+    "ja": "ミュート中",
+    "zh": "已静音",
+    "or": "ନିରବ |"
   },
   "walkie_admin": {
     "en": "Admin",
@@ -213,7 +341,15 @@
     "ml": "അഡ്മിൻ",
     "ta": "அட்மின்",
     "te": "అడ్మిన్",
-    "pa": "ਐਡਮਿਨ"
+    "pa": "ਐਡਮਿਨ",
+    "es": "Admin",
+    "fr": "Admin",
+    "de": "Admin",
+    "ar": "مشرف",
+    "pt": "Admin",
+    "ja": "管理者",
+    "zh": "管理员",
+    "or": "ଆଡମିନି"
   },
   "walkie_adminMuted": {
     "en": "Admin • Muted",
@@ -225,7 +361,15 @@
     "ml": "അഡ്മിൻ • മ്യൂട്ട്",
     "ta": "அட்மின் • மியூட்",
     "te": "అడ్మిన్ • మ్యూట్",
-    "pa": "ਐਡਮਿਨ • ਮਿਊਟ"
+    "pa": "ਐਡਮਿਨ • ਮਿਊਟ",
+    "es": "Admin • Silenciado",
+    "fr": "Admin • Muet",
+    "de": "Admin • Stumm",
+    "ar": "مشرف • مكتوم",
+    "pt": "Admin • Mutado",
+    "ja": "管理者 • ミュート中",
+    "zh": "管理员 • 已静音",
+    "or": "ଆଡମିନି • ମ୍ୟୁଟ୍"
   },
   "walkie_listening": {
     "en": "Listening",
@@ -237,7 +381,15 @@
     "ml": "കേൾക്കുന്നു",
     "ta": "கேட்கிறீர்கள்",
     "te": "వింటున్నారు",
-    "pa": "ਸੁਣ ਰਹੇ ਹੋ"
+    "pa": "ਸੁਣ ਰਹੇ ਹੋ",
+    "es": "Escuchando",
+    "fr": "Écoute",
+    "de": "Hört zu",
+    "ar": "استماع",
+    "pt": "Ouvindo",
+    "ja": "受信中",
+    "zh": "正在收听",
+    "or": "ଶୁଣିବା"
   },
   "walkie_exitWalkieTitle": {
     "en": "Exit Walkie?",
@@ -249,7 +401,15 @@
     "ml": "വാക്കിയിൽ നിന്ന് പുറത്തുകടക്കണോ?",
     "ta": "வாக்கியிலிருந்து வெளியேறவா?",
     "te": "వాకీ నుండి నిష్క్రమించాలా?",
-    "pa": "ਕੀ ਵਾਕੀ ਤੋਂ ਬਾਹਰ ਜਾਣਾ ਹੈ?"
+    "pa": "ਕੀ ਵਾਕੀ ਤੋਂ ਬਾਹਰ ਜਾਣਾ ਹੈ?",
+    "es": "¿Salir de Walkie?",
+    "fr": "Quitter le talkie-walkie ?",
+    "de": "Walkie verlassen?",
+    "ar": "الخروج من اللاسلكي؟",
+    "pt": "Sair do Walkie?",
+    "ja": "トランシーバーを終了しますか？",
+    "zh": "退出对讲机？",
+    "or": "ୱାକି ଛାଡନ୍ତୁ?"
   },
   "walkie_exitWalkieMessage": {
     "en": "You will disconnect from this walkie channel. You will still remain a member of the group.",
@@ -261,7 +421,15 @@
     "ml": "നിങ്ങൾ ഈ വാക്കി ചാനലിൽ നിന്ന് വിച്ഛേദിക്കപ്പെടും. നിങ്ങൾ ഗ്രൂപ്പിലെ അംഗമായി തുടരും.",
     "ta": "இந்த வாக்கி சேனலிலிருந்து துண்டிக்கப்படுவீர்கள். நீங்கள் குழுவின் உறுப்பினராகவே இருப்பீர்கள்.",
     "te": "మీరు ఈ వాకీ ఛానెల్ నుండి డిస్‌కనెక్ట్ అవుతారు. మీరు గ్రూప్ సభ్యులుగానే ఉంటారు.",
-    "pa": "ਤੁਸੀਂ ਇਸ ਵਾਕੀ ਚੈਨਲ ਤੋਂ ਡਿਸਕਨੈਕਟ ਹੋ ਜਾਓਗੇ। ਤੁਸੀਂ ਗਰੁੱਪ ਦੇ ਮੈਂਬਰ ਬਣੇ ਰਹੋਗੇ।"
+    "pa": "ਤੁਸੀਂ ਇਸ ਵਾਕੀ ਚੈਨਲ ਤੋਂ ਡਿਸਕਨੈਕਟ ਹੋ ਜਾਓਗੇ। ਤੁਸੀਂ ਗਰੁੱਪ ਦੇ ਮੈਂਬਰ ਬਣੇ ਰਹੋਗੇ।",
+    "es": "Te desconectarás de este canal walkie. Seguirás siendo miembro del grupo.",
+    "fr": "Vous serez déconnecté de ce canal. Vous resterez toujours membre du groupe.",
+    "de": "Du wirst von diesem Kanal getrennt. Du bleibst weiterhin Mitglied der Gruppe.",
+    "ar": "سيتم قطع اتصالك بهذه القناة. ستظل عضواً في المجموعة.",
+    "pt": "Você será desconectado deste canal. Você ainda continuará membro do grupo.",
+    "ja": "このトランシーバーチャンネルから切断されます。グループのメンバーシップは維持されます。",
+    "zh": "您将与此对讲频道断开连接。您仍保留群组成员身份。",
+    "or": "ଆପଣ ଏହି ୱାକି ଚ୍ୟାନେଲରୁ ବିଚ୍ଛିନ୍ନ ହେବେ | ଆପଣ ତଥାପି ଗୋଷ୍ଠୀର ଜଣେ ସଦସ୍ୟ ରହିବେ |"
   },
   "walkie_exitWalkie": {
     "en": "Exit Walkie",
@@ -273,7 +441,15 @@
     "ml": "വാക്കിയിൽ നിന്ന് പുറത്തുകടക്കുക",
     "ta": "வாக்கியிலிருந்து வெளியேறு",
     "te": "వాకీ నుండి నిష్క్రమించు",
-    "pa": "ਵਾਕੀ ਤੋਂ ਬਾਹਰ ਜਾਓ"
+    "pa": "ਵਾਕੀ ਤੋਂ ਬਾਹਰ ਜਾਓ",
+    "es": "Salir de Walkie",
+    "fr": "Quitter le talkie",
+    "de": "Walkie verlassen",
+    "ar": "الخروج من اللاسلكي",
+    "pt": "Sair do Walkie",
+    "ja": "トランシーバーを退出",
+    "zh": "退出对讲",
+    "or": "ୱାକିରୁ ବାହାରକୁ ଯାଆନ୍ତୁ |"
   },
   "walkie_connectedWaiting": {
     "en": "Connected to channel • Waiting for others to join",
@@ -285,7 +461,15 @@
     "ml": "ചാനലിൽ കണക്റ്റ് ചെയ്തു • മറ്റുള്ളവർ ചേരാൻ കാത്തിരിക്കുന്നു",
     "ta": "சேனலுடன் இணைந்தது • மற்றவர்கள் சேரக் காத்திருக்கிறது",
     "te": "ఛానెల్‌కు కనెక్ట్ అయింది • ఇతరులు చేరడానికి వేచి ఉంది",
-    "pa": "ਚੈਨਲ ਨਾਲ ਜੁੜੇ • ਦੂਜਿਆਂ ਦੇ ਜੁੜਨ ਦੀ ਉਡੀਕ"
+    "pa": "ਚੈਨਲ ਨਾਲ ਜੁੜੇ • ਦੂਜਿਆਂ ਦੇ ਜੁੜਨ ਦੀ ਉਡੀਕ",
+    "es": "Conectado al canal • Esperando a que otros se unan",
+    "fr": "Connecté au canal • En attente des autres",
+    "de": "Mit Kanal verbunden • Warten auf andere Teilnehmer",
+    "ar": "متصل بالقناة • بانتظار انضمام الآخرين",
+    "pt": "Conectado ao canal • Aguardando outros entrarem",
+    "ja": "チャンネルに接続しました • 他のメンバーの参加を待機中",
+    "zh": "已连接至频道 • 等待其他人加入",
+    "or": "ଚ୍ୟାନେଲ ସହିତ ସଂଯୁକ୍ତ • ଅନ୍ୟମାନେ ଯୋଗଦେବାକୁ ଅପେକ୍ଷା କରନ୍ତୁ |"
   },
   "walkie_chat": {
     "en": "Chat",
@@ -297,7 +481,15 @@
     "ml": "ചാറ്റ്",
     "ta": "அரட்டை",
     "te": "చాట్",
-    "pa": "ਚੈਟ"
+    "pa": "ਚੈਟ",
+    "es": "Chat",
+    "fr": "Discussion",
+    "de": "Chat",
+    "ar": "دردشة",
+    "pt": "Chat",
+    "ja": "チャット",
+    "zh": "聊天",
+    "or": "ଚାଟ୍ କରନ୍ତୁ |"
   },
   "walkie_heroTitle": {
     "en": "Stay Connected, Talk Instantly",
@@ -309,7 +501,15 @@
     "ml": "ബന്ധം നിലനിർത്തൂ, ഉടൻ സംസാരിക്കൂ",
     "ta": "இணைந்திருங்கள், உடனே பேசுங்கள்",
     "te": "కనెక్ట్‌గా ఉండండి, వెంటనే మాట్లాడండి",
-    "pa": "ਜੁੜੇ ਰਹੋ, ਤੁਰੰਤ ਗੱਲ ਕਰੋ"
+    "pa": "ਜੁੜੇ ਰਹੋ, ਤੁਰੰਤ ਗੱਲ ਕਰੋ",
+    "es": "Mantente conectado, habla al instante",
+    "fr": "Restez connecté, parlez instantanément",
+    "de": "Verbunden bleiben, sofort sprechen",
+    "ar": "ابقَ على اتصال وتحدث فوراً",
+    "pt": "Fique conectado, fale instantaneamente",
+    "ja": "常時接続、即座に通話",
+    "zh": "保持连接，即时对讲",
+    "or": "ସଂଯୋଜିତ ରୁହ, ତୁରନ୍ତ କଥା ହୁଅ |"
   },
   "walkie_heroSubtitle": {
     "en": "Use push-to-talk voice communication with your group\nwithout making a phone call.",
@@ -321,7 +521,15 @@
     "ml": "ഫോൺ കോൾ ചെയ്യാതെ നിങ്ങളുടെ ഗ്രൂപ്പുമായി\nപുഷ്-ടു-ടോക്ക് വോയ്സ് ആശയവിനിമയം ഉപയോഗിക്കുക.",
     "ta": "ஃபோன் அழைப்பு இல்லாமல் உங்கள் குழுவுடன்\nபுஷ்-டு-டாக் குரல் தொடர்பைப் பயன்படுத்துங்கள்.",
     "te": "ఫోన్ కాల్ చేయకుండానే మీ గ్రూప్‌తో\nపుష్-టు-టాక్ వాయిస్ కమ్యూనికేషన్ ఉపయోగించండి.",
-    "pa": "ਫ਼ੋਨ ਕਾਲ ਕੀਤੇ ਬਿਨਾਂ ਆਪਣੇ ਗਰੁੱਪ ਨਾਲ\nਪੁਸ਼-ਟੂ-ਟਾਕ ਵੌਇਸ ਸੰਚਾਰ ਵਰਤੋ।"
+    "pa": "ਫ਼ੋਨ ਕਾਲ ਕੀਤੇ ਬਿਨਾਂ ਆਪਣੇ ਗਰੁੱਪ ਨਾਲ\nਪੁਸ਼-ਟੂ-ਟਾਕ ਵੌਇਸ ਸੰਚਾਰ ਵਰਤੋ।",
+    "es": "Usa la comunicación de voz pulsar para hablar con tu grupo sin hacer una llamada telefónica.",
+    "fr": "Utilisez la communication vocale Push-to-Talk sans passer d'appel téléphonique.",
+    "de": "Nutze Push-to-Talk-Sprachkommunikation mit deiner Gruppe ohne Telefonanruf.",
+    "ar": "استخدم الاتصال الصوتي عبر الضغط للتحدث مع مجموعتك دون الحاجة لإجراء مكالمة هاتفية.",
+    "pt": "Use a comunicação de voz aperte para falar (PTT) com seu grupo sem precisar fazer ligação telefônica.",
+    "ja": "電話をかけずにグループメンバーとプッシュツートーク音声通信を利用できます。",
+    "zh": "无需拨打电话，即可通过一键对讲功能与群组成员进行语音沟通。",
+    "or": "ଆପଣଙ୍କ ଗୋଷ୍ଠୀ ସହିତ ପୁସ୍-ଟୁ-ଟକ୍ ଭଏସ୍ ଯୋଗାଯୋଗ ବ୍ୟବହାର କରନ୍ତୁ |\nବିନା ଫୋନ୍ କଲ୍ ରେ |"
   },
   "walkie_featurePtt": {
     "en": "Push-to-talk\ncommunication",
@@ -333,7 +541,15 @@
     "ml": "പുഷ്-ടു-ടോക്ക്\nആശയവിനിമയം",
     "ta": "புஷ்-டு-டாக்\nதொடர்பு",
     "te": "పుష్-టు-టాక్\nకమ్యూనికేషన్",
-    "pa": "ਪੁਸ਼-ਟੂ-ਟਾਕ\nਸੰਚਾਰ"
+    "pa": "ਪੁਸ਼-ਟੂ-ਟਾਕ\nਸੰਚਾਰ",
+    "es": "Pulsar para hablar",
+    "fr": "Push-to-talk",
+    "de": "Push-to-Talk",
+    "ar": "الضغط للتحدث",
+    "pt": "Aperte para falar",
+    "ja": "プッシュツートーク",
+    "zh": "一键对讲",
+    "or": "ପୁସ୍-ଟୁ-ଟକ୍ |\nଯୋଗାଯୋଗ |"
   },
   "walkie_featureQuickGroup": {
     "en": "Quick group\ncommunication",
@@ -345,7 +561,15 @@
     "ml": "വേഗത്തിലുള്ള ഗ്രൂപ്പ്\nആശയവിനിമയം",
     "ta": "விரைவான குழு\nதொடர்பு",
     "te": "వేగవంతమైన గ్రూప్\nకమ్యూనికేషన్",
-    "pa": "ਤੇਜ਼ ਗਰੁੱਪ\nਸੰਚਾਰ"
+    "pa": "ਤੇਜ਼ ਗਰੁੱਪ\nਸੰਚਾਰ",
+    "es": "Comunicación rápida en grupo",
+    "fr": "Communication de groupe rapide",
+    "de": "Schnelle Gruppenkommunikation",
+    "ar": "اتصال جماعي سريع",
+    "pt": "Comunicação rápida em grupo",
+    "ja": "迅速なグループ通信",
+    "zh": "快速群组沟通",
+    "or": "ଦ୍ରୁତ ଗୋଷ୍ଠୀ |\nଯୋଗାଯୋଗ |"
   },
   "walkie_featureHoldToTalk": {
     "en": "Hold to talk",
@@ -357,7 +581,15 @@
     "ml": "സംസാരിക്കാൻ അമർത്തിപ്പിടിക്കുക",
     "ta": "பேச அழுத்திப் பிடிக்கவும்",
     "te": "మాట్లాడటానికి నొక్కి పట్టుకోండి",
-    "pa": "ਬੋਲਣ ਲਈ ਦਬਾ ਕੇ ਰੱਖੋ"
+    "pa": "ਬੋਲਣ ਲਈ ਦਬਾ ਕੇ ਰੱਖੋ",
+    "es": "Mantén pulsado para hablar",
+    "fr": "Maintenez pour parler",
+    "de": "Zum Sprechen gedrückt halten",
+    "ar": "اضغط مطولاً للتحدث",
+    "pt": "Segure para falar",
+    "ja": "長押しして通話",
+    "zh": "按住通话",
+    "or": "କଥାବାର୍ତ୍ତା କରିବାକୁ ଧର |"
   },
   "walkie_featureEasyCoordination": {
     "en": "Easy group\ncoordination",
@@ -369,7 +601,15 @@
     "ml": "എളുപ്പമുള്ള ഗ്രൂപ്പ്\nഏകോപനം",
     "ta": "எளிய குழு\nஒருங்கிணைப்பு",
     "te": "సులభమైన గ్రూప్\nసమన్వయం",
-    "pa": "ਆਸਾਨ ਗਰੁੱਪ\nਤਾਲਮੇਲ"
+    "pa": "ਆਸਾਨ ਗਰੁੱਪ\nਤਾਲਮੇਲ",
+    "es": "Fácil coordinación grupal",
+    "fr": "Coordination de groupe facile",
+    "de": "Einfache Gruppenkoordination",
+    "ar": "تنسيق جماعي سهل",
+    "pt": "Coordenação fácil em grupo",
+    "ja": "円滑なグループ連携",
+    "zh": "便捷群组协同",
+    "or": "ସହଜ ଗୋଷ୍ଠୀ |\nସମନ୍ୱୟ"
   },
   "walkie_purchaseUpgradePlan": {
     "en": "Purchase / Upgrade Plan",
@@ -381,7 +621,15 @@
     "ml": "പ്ലാൻ വാങ്ങുക / അപ്ഗ്രേഡ് ചെയ്യുക",
     "ta": "பிளான் வாங்கு / மேம்படுத்து",
     "te": "ప్లాన్ కొనండి / అప్‌గ్రేడ్ చేయండి",
-    "pa": "ਪਲਾਨ ਖਰੀਦੋ / ਅੱਪਗ੍ਰੇਡ ਕਰੋ"
+    "pa": "ਪਲਾਨ ਖਰੀਦੋ / ਅੱਪਗ੍ਰੇਡ ਕਰੋ",
+    "es": "Comprar / Mejorar plan",
+    "fr": "Acheter / Mettre à niveau le forfait",
+    "de": "Plan kaufen / upgraden",
+    "ar": "شراء / ترقية الخطة",
+    "pt": "Comprar / Atualizar plano",
+    "ja": "プランを購入 / アップグレード",
+    "zh": "购买 / 升级方案",
+    "or": "କ୍ରୟ / ଉନ୍ନୟନ ଯୋଜନା"
   },
   "walkie_openWalkieTalkie": {
     "en": "Open Walkie Talkie",
@@ -393,7 +641,15 @@
     "ml": "വാക്കി-ടോക്കി തുറക്കുക",
     "ta": "வாக்கி-டாக்கியைத் திற",
     "te": "వాకీ-టాకీ తెరవండి",
-    "pa": "ਵਾਕੀ-ਟਾਕੀ ਖੋਲ੍ਹੋ"
+    "pa": "ਵਾਕੀ-ਟਾਕੀ ਖੋਲ੍ਹੋ",
+    "es": "Abrir Walkie Talkie",
+    "fr": "Ouvrir le Talkie-walkie",
+    "de": "Walkie-Talkie öffnen",
+    "ar": "فتح اللاسلكي",
+    "pt": "Abrir Walkie-Talkie",
+    "ja": "トランシーバーを開く",
+    "zh": "打开对讲机",
+    "or": "ୱାକି ଟକି ଖୋଲନ୍ତୁ |"
   },
   "walkie_startFreeTrial": {
     "en": "Start {duration} Free Trial",
@@ -410,7 +666,15 @@
       "duration": {
         "type": "String"
       }
-    }
+    },
+    "es": "Iniciar prueba gratuita de {duration}",
+    "fr": "Démarrer l’essai gratuit de {duration}",
+    "de": "Kostenlose {duration}-Testversion starten",
+    "ar": "بدء فترة تجريبية مجانية لمدة {duration}",
+    "pt": "Iniciar teste grátis de {duration}",
+    "ja": "{duration}無料トライアルを開始",
+    "zh": "开始 {duration} 免费试用",
+    "or": "{duration} ମାଗଣା ପରୀକ୍ଷା ଆରମ୍ଭ କରନ୍ତୁ |"
   },
   "walkie_noSeatTitle": {
     "en": "No Voice Seat Assigned",
@@ -422,7 +686,15 @@
     "ml": "വോയ്സ് സീറ്റ് നൽകിയിട്ടില്ല",
     "ta": "குரல் இருக்கை ஒதுக்கப்படவில்லை",
     "te": "వాయిస్ సీట్ కేటాయించబడలేదు",
-    "pa": "ਕੋਈ ਵੌਇਸ ਸੀਟ ਨਹੀਂ ਦਿੱਤੀ ਗਈ"
+    "pa": "ਕੋਈ ਵੌਇਸ ਸੀਟ ਨਹੀਂ ਦਿੱਤੀ ਗਈ",
+    "es": "Sin puesto de voz asignado",
+    "fr": "Aucun siège vocal attribué",
+    "de": "Kein Sprachplatz zugewiesen",
+    "ar": "لم يتم تعيين مقعد صوتي",
+    "pt": "Nenhum posto de voz atribuído",
+    "ja": "音声シートが割り当てられていません",
+    "zh": "未分配语音席位",
+    "or": "କ Voice ଣସି ଭଏସ୍ ସିଟ୍ ନ୍ୟସ୍ତ ହୋଇନାହିଁ |"
   },
   "walkie_noSeatMessage": {
     "en": "You have an active Team Plan, but all active voice seats are currently assigned to other team members.\n\nYou can listen to group conversations in real-time, but to speak, you must assign a seat to yourself or upgrade your plan.",
@@ -434,7 +706,15 @@
     "ml": "നിങ്ങൾക്ക് സജീവമായ ടീം പ്ലാൻ ഉണ്ട്, എന്നാൽ എല്ലാ വോയ്സ് സീറ്റുകളും ഇപ്പോൾ മറ്റ് ടീം അംഗങ്ങൾക്ക് നൽകിയിരിക്കുന്നു.\n\nനിങ്ങൾക്ക് ഗ്രൂപ്പ് സംഭാഷണങ്ങൾ തത്സമയം കേൾക്കാം, എന്നാൽ സംസാരിക്കാൻ നിങ്ങൾക്ക് ഒരു സീറ്റ് നൽകുകയോ പ്ലാൻ അപ്ഗ്രേഡ് ചെയ്യുകയോ ചെയ്യുക.",
     "ta": "உங்களிடம் செயலில் உள்ள டீம் பிளான் உள்ளது, ஆனால் எல்லா குரல் இருக்கைகளும் தற்போது மற்ற குழு உறுப்பினர்களுக்கு ஒதுக்கப்பட்டுள்ளன.\n\nகுழு உரையாடல்களை நேரலையில் கேட்கலாம், ஆனால் பேச உங்களுக்கு ஒரு இருக்கையை ஒதுக்குங்கள் அல்லது பிளானை மேம்படுத்துங்கள்.",
     "te": "మీకు యాక్టివ్ టీమ్ ప్లాన్ ఉంది, కానీ అన్ని వాయిస్ సీట్లు ప్రస్తుతం ఇతర టీమ్ సభ్యులకు కేటాయించబడ్డాయి.\n\nమీరు గ్రూప్ సంభాషణలను లైవ్‌గా వినవచ్చు, కానీ మాట్లాడటానికి మీకు సీట్ కేటాయించుకోండి లేదా ప్లాన్‌ను అప్‌గ్రేడ్ చేయండి.",
-    "pa": "ਤੁਹਾਡੇ ਕੋਲ ਸਰਗਰਮ ਟੀਮ ਪਲਾਨ ਹੈ, ਪਰ ਸਾਰੀਆਂ ਵੌਇਸ ਸੀਟਾਂ ਹੁਣ ਹੋਰ ਟੀਮ ਮੈਂਬਰਾਂ ਨੂੰ ਦਿੱਤੀਆਂ ਹੋਈਆਂ ਹਨ।\n\nਤੁਸੀਂ ਗਰੁੱਪ ਦੀ ਗੱਲਬਾਤ ਲਾਈਵ ਸੁਣ ਸਕਦੇ ਹੋ, ਪਰ ਬੋਲਣ ਲਈ ਆਪਣੇ ਆਪ ਨੂੰ ਸੀਟ ਦਿਓ ਜਾਂ ਪਲਾਨ ਅੱਪਗ੍ਰੇਡ ਕਰੋ।"
+    "pa": "ਤੁਹਾਡੇ ਕੋਲ ਸਰਗਰਮ ਟੀਮ ਪਲਾਨ ਹੈ, ਪਰ ਸਾਰੀਆਂ ਵੌਇਸ ਸੀਟਾਂ ਹੁਣ ਹੋਰ ਟੀਮ ਮੈਂਬਰਾਂ ਨੂੰ ਦਿੱਤੀਆਂ ਹੋਈਆਂ ਹਨ।\n\nਤੁਸੀਂ ਗਰੁੱਪ ਦੀ ਗੱਲਬਾਤ ਲਾਈਵ ਸੁਣ ਸਕਦੇ ਹੋ, ਪਰ ਬੋਲਣ ਲਈ ਆਪਣੇ ਆਪ ਨੂੰ ਸੀਟ ਦਿਓ ਜਾਂ ਪਲਾਨ ਅੱਪਗ੍ਰੇਡ ਕਰੋ।",
+    "es": "Tienes un Plan de equipo activo, pero todos los puestos de voz están asignados actualmente a otros miembros.\n\nPuedes escuchar las conversaciones en tiempo real, pero para hablar debes asignarte un puesto o mejorar tu plan.",
+    "fr": "Vous avez un forfait d'équipe actif, mais tous les sièges vocaux sont actuellement attribués à d'autres membres.\n\nVous pouvez écouter les conversations en direct, mais pour parler, vous devez vous attribuer un siège ou mettre à niveau votre forfait.",
+    "de": "Du hast einen aktiven Team-Plan, aber alle Sprachplätze sind derzeit anderen Teammitgliedern zugewiesen.\n\nDu kannst Gespräche in Echtzeit mithören. Um zu sprechen, weise dir einen Platz zu oder erweitere deinen Plan.",
+    "ar": "لديك خطة فريق نشطة، ولكن تم تعيين جميع المقاعد الصوتية النشطة حالياً لأعضاء آخرين في الفريق.\n\nيمكنك الاستماع إلى محادثات المجموعة في الوقت الفعلي، ولكن للتحدث، يجب عليك تعيين مقعد لنفسك أو ترقية خطتك.",
+    "pt": "Você tem um Plano de Equipe ativo, mas todos os postos de voz estão atribuídos a outros membros.\n\nVocê pode ouvir as conversas em tempo real, mas para falar é necessário atribuir um posto a si mesmo ou atualizar seu plano.",
+    "ja": "有効なチームプランがありますが、現在すべての音声シートが他のメンバーに割り当てられています。\n\n会話をリアルタイムで聴くことはできますが、発言するにはシートをご自身に割り当てるかプランをアップグレードしてください。",
+    "zh": "您拥有有效的团队方案，但所有语音席位当前均已分配给其他成员。\n\n您可以实时收听群组对话，但如需讲话，请为自己分配席位或升级方案。",
+    "or": "ଆପଣଙ୍କର ଏକ ସକ୍ରିୟ ଟିମ୍ ଯୋଜନା ଅଛି, କିନ୍ତୁ ସମସ୍ତ ସକ୍ରିୟ ଭଏସ୍ ସିଟ୍ ବର୍ତ୍ତମାନ ଅନ୍ୟ ଦଳର ସଦସ୍ୟମାନଙ୍କୁ ଦିଆଯାଇଛି |\n\nଆପଣ ରିଅଲ୍-ଟାଇମ୍ରେ ଗୋଷ୍ଠୀ ବାର୍ତ୍ତାଳାପ ଶୁଣିପାରିବେ, କିନ୍ତୁ କହିବାକୁ ଗଲେ ଆପଣ ନିଶ୍ଚିତ ଭାବରେ ନିଜକୁ ଏକ ସିଟ୍ ନ୍ୟସ୍ତ କରିବେ କିମ୍ବା ଆପଣଙ୍କର ଯୋଜନାକୁ ନବୀକରଣ କରିବେ |"
   },
   "walkie_teamPlanStatus": {
     "en": "Team Plan Status",
@@ -446,7 +726,15 @@
     "ml": "ടീം പ്ലാൻ നില",
     "ta": "டீம் பிளான் நிலை",
     "te": "టీమ్ ప్లాన్ స్థితి",
-    "pa": "ਟੀਮ ਪਲਾਨ ਸਥਿਤੀ"
+    "pa": "ਟੀਮ ਪਲਾਨ ਸਥਿਤੀ",
+    "es": "Estado del Plan de equipo",
+    "fr": "Statut du forfait d'équipe",
+    "de": "Team-Plan-Status",
+    "ar": "حالة خطة الفريق",
+    "pt": "Status do Plano de Equipe",
+    "ja": "チームプランのステータス",
+    "zh": "团队方案状态",
+    "or": "ଦଳ ଯୋଜନା ସ୍ଥିତି |"
   },
   "walkie_assignedSeats": {
     "en": "Assigned Seats",
@@ -458,7 +746,15 @@
     "ml": "നൽകിയ സീറ്റുകൾ",
     "ta": "ஒதுக்கப்பட்ட இருக்கைகள்",
     "te": "కేటాయించిన సీట్లు",
-    "pa": "ਦਿੱਤੀਆਂ ਸੀਟਾਂ"
+    "pa": "ਦਿੱਤੀਆਂ ਸੀਟਾਂ",
+    "es": "Puestos asignados",
+    "fr": "Sièges attribués",
+    "de": "Zugewiesene Plätze",
+    "ar": "المقاعد المعينة",
+    "pt": "Postos atribuídos",
+    "ja": "割り当て済みシート",
+    "zh": "已分配席位",
+    "or": "ନ୍ୟସ୍ତ ହୋଇଥିବା ଆସନଗୁଡିକ |"
   },
   "walkie_seatsUsed": {
     "en": "{assigned} / {total} Seats Used",
@@ -478,7 +774,15 @@
       "total": {
         "type": "String"
       }
-    }
+    },
+    "es": "{assigned} / {total} puestos usados",
+    "fr": "{assigned} / {total} sièges utilisés",
+    "de": "{assigned} / {total} Plätze belegt",
+    "ar": "تم استخدام {assigned} / {total} مقعد",
+    "pt": "{assigned} / {total} postos usados",
+    "ja": "{assigned} / {total} 席使用中",
+    "zh": "已使用 {assigned} / {total} 个席位",
+    "or": "{assigned} / {total} ବ୍ୟବହୃତ ଆସନ |"
   },
   "walkie_yourVoiceAccess": {
     "en": "Your Voice Access",
@@ -490,7 +794,15 @@
     "ml": "നിങ്ങളുടെ വോയ്സ് ആക്സസ്",
     "ta": "உங்கள் குரல் அணுகல்",
     "te": "మీ వాయిస్ యాక్సెస్",
-    "pa": "ਤੁਹਾਡੀ ਵੌਇਸ ਪਹੁੰਚ"
+    "pa": "ਤੁਹਾਡੀ ਵੌਇਸ ਪਹੁੰਚ",
+    "es": "Tu acceso de voz",
+    "fr": "Votre accès vocal",
+    "de": "Dein Sprachzugriff",
+    "ar": "صلاحية الصوت الخاصة بك",
+    "pt": "Seu acesso de voz",
+    "ja": "あなたの音声アクセス権",
+    "zh": "您的语音权限",
+    "or": "ତୁମର ଭଏସ୍ ଆକ୍ସେସ୍ |"
   },
   "walkie_listenOnly": {
     "en": "Listen Only",
@@ -502,7 +814,15 @@
     "ml": "കേൾക്കാൻ മാത്രം",
     "ta": "கேட்க மட்டும்",
     "te": "వినడం మాత్రమే",
-    "pa": "ਸਿਰਫ਼ ਸੁਣੋ"
+    "pa": "ਸਿਰਫ਼ ਸੁਣੋ",
+    "es": "Solo escuchar",
+    "fr": "Écoute uniquement",
+    "de": "Nur Zuhören",
+    "ar": "استماع فقط",
+    "pt": "Apenas ouvir",
+    "ja": "受話のみ",
+    "zh": "仅收听",
+    "or": "କେବଳ ଶୁଣ |"
   },
   "walkie_upgradeAddSeats": {
     "en": "Upgrade & Add Seats",
@@ -514,7 +834,15 @@
     "ml": "അപ്ഗ്രേഡ് ചെയ്ത് സീറ്റ് ചേർക്കുക",
     "ta": "மேம்படுத்தி இருக்கைகள் சேர்",
     "te": "అప్‌గ్రేడ్ చేసి సీట్లు జోడించండి",
-    "pa": "ਅੱਪਗ੍ਰੇਡ ਕਰੋ ਅਤੇ ਸੀਟਾਂ ਜੋੜੋ"
+    "pa": "ਅੱਪਗ੍ਰੇਡ ਕਰੋ ਅਤੇ ਸੀਟਾਂ ਜੋੜੋ",
+    "es": "Mejorar y añadir puestos",
+    "fr": "Mettre à niveau et ajouter des sièges",
+    "de": "Upgraden & Plätze hinzufügen",
+    "ar": "ترقية وإضافة مقاعد",
+    "pt": "Atualizar e adicionar postos",
+    "ja": "アップグレードしてシートを追加",
+    "zh": "升级并增添席位",
+    "or": "ସିଟ୍ ଅପଗ୍ରେଡ୍ ଏବଂ ଯୋଡନ୍ତୁ |"
   },
   "walkie_continueListenOnly": {
     "en": "Continue in Listen-Only Mode",
@@ -526,7 +854,15 @@
     "ml": "കേൾക്കാൻ-മാത്രം മോഡിൽ തുടരുക",
     "ta": "கேட்க-மட்டும் பயன்முறையில் தொடர்",
     "te": "వినడం-మాత్రమే మోడ్‌లో కొనసాగండి",
-    "pa": "ਸਿਰਫ਼-ਸੁਣੋ ਮੋਡ ਵਿੱਚ ਜਾਰੀ ਰੱਖੋ"
+    "pa": "ਸਿਰਫ਼-ਸੁਣੋ ਮੋਡ ਵਿੱਚ ਜਾਰੀ ਰੱਖੋ",
+    "es": "Continuar en modo de solo escucha",
+    "fr": "Continuer en mode écoute seule",
+    "de": "Im Nur-Zuhören-Modus fortfahren",
+    "ar": "المتابعة في وضع الاستماع فقط",
+    "pt": "Continuar no modo apenas ouvir",
+    "ja": "受話専用モードで続行",
+    "zh": "继续以仅收听模式运行",
+    "or": "କେବଳ ଶୁଣନ୍ତୁ ମୋଡ୍ ରେ ଜାରି ରଖନ୍ତୁ |"
   },
   "walkie_description": {
     "en": "Description",
@@ -538,7 +874,15 @@
     "ml": "വിവരണം",
     "ta": "விளக்கம்",
     "te": "వివరణ",
-    "pa": "ਵੇਰਵਾ"
+    "pa": "ਵੇਰਵਾ",
+    "es": "Descripción",
+    "fr": "Description",
+    "de": "Beschreibung",
+    "ar": "الوصف",
+    "pt": "Descrição",
+    "ja": "説明",
+    "zh": "描述",
+    "or": "ବର୍ଣ୍ଣନା"
   },
   "walkie_groupCode": {
     "en": "Group Code: {code}",
@@ -555,7 +899,15 @@
       "code": {
         "type": "String"
       }
-    }
+    },
+    "es": "Código de grupo: {code}",
+    "fr": "Code de groupe : {code}",
+    "de": "Gruppencode: {code}",
+    "ar": "رمز المجموعة: {code}",
+    "pt": "Código do grupo: {code}",
+    "ja": "グループコード: {code}",
+    "zh": "群组代码：{code}",
+    "or": "ଗୋଷ୍ଠୀ କୋଡ୍: {code} |"
   },
   "walkie_noMembersFound": {
     "en": "No members found",
@@ -567,7 +919,15 @@
     "ml": "അംഗങ്ങളെ കണ്ടെത്തിയില്ല",
     "ta": "உறுப்பினர்கள் இல்லை",
     "te": "సభ్యులు ఎవరూ కనబడలేదు",
-    "pa": "ਕੋਈ ਮੈਂਬਰ ਨਹੀਂ ਮਿਲਿਆ"
+    "pa": "ਕੋਈ ਮੈਂਬਰ ਨਹੀਂ ਮਿਲਿਆ",
+    "es": "No se encontraron miembros",
+    "fr": "Aucun membre trouvé",
+    "de": "Keine Mitglieder gefunden",
+    "ar": "لم يتم العثور على أعضاء",
+    "pt": "Nenhum membro encontrado",
+    "ja": "メンバーが見つかりません",
+    "zh": "未找到成员",
+    "or": "କ members ଣସି ସଦସ୍ୟ ପାଇଲେ ନାହିଁ |"
   },
   "walkie_activeInWalkie": {
     "en": "{count, plural, =1{1 Active in Walkie} other{{count} Active in Walkie}}",
@@ -584,7 +944,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{1 activo en Walkie} other{{count} activos en Walkie}}",
+    "fr": "{count, plural, =1{1 actif sur le talkie} other{{count} actifs sur le talkie}}",
+    "de": "{count, plural, =1{1 aktiv im Walkie} other{{count} aktiv im Walkie}}",
+    "ar": "{count, plural, =1{1 نشط في اللاسلكي} other{{count} نشطين في اللاسلكي}}",
+    "pt": "{count, plural, =1{1 ativo no Walkie} other{{count} ativos no Walkie}}",
+    "ja": "{count, plural, =1{1名が通信中} other{{count}名が通信中}}",
+    "zh": "{count, plural, =1{1 人在对讲中活跃} other{{count} 人在对讲中活跃}}",
+    "or": "{count, plural, =1{ୱାକିରେ ସକ୍ରିୟ |} other{{count} ୱାକିରେ ସକ୍ରିୟ |}}"
   },
   "walkie_groupMembers": {
     "en": "Group Members",
@@ -596,7 +964,15 @@
     "ml": "ഗ്രൂപ്പ് അംഗങ്ങൾ",
     "ta": "குழு உறுப்பினர்கள்",
     "te": "గ్రూప్ సభ్యులు",
-    "pa": "ਗਰੁੱਪ ਮੈਂਬਰ"
+    "pa": "ਗਰੁੱਪ ਮੈਂਬਰ",
+    "es": "Miembros del grupo",
+    "fr": "Membres du groupe",
+    "de": "Gruppenmitglieder",
+    "ar": "أعضاء المجموعة",
+    "pt": "Membros do grupo",
+    "ja": "グループメンバー",
+    "zh": "群组成员",
+    "or": "ଗୋଷ୍ଠୀ ସଦସ୍ୟମାନେ |"
   },
   "walkie_totalCount": {
     "en": "{count, plural, =1{1 total} other{{count} total}}",
@@ -613,7 +989,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{1 en total} other{{count} en total}}",
+    "fr": "{count, plural, =1{1 au total} other{{count} au total}}",
+    "de": "{count, plural, =1{1 Gesamt} other{{count} Gesamt}}",
+    "ar": "{count, plural, =1{1 إجمالي} other{{count} إجمالي}}",
+    "pt": "{count, plural, =1{1 no total} other{{count} no total}}",
+    "ja": "{count, plural, =1{合計 1名} other{合計 {count}名}}",
+    "zh": "{count, plural, =1{共 1 人} other{共 {count} 人}}",
+    "or": "{count, plural, =1{ସମୁଦାୟ 1} other{{count} ସମୁଦାୟ |}}"
   },
   "walkie_mutedInWalkie": {
     "en": "Muted • In Walkie",
@@ -625,7 +1009,15 @@
     "ml": "മ്യൂട്ട് • വാക്കിയിൽ",
     "ta": "மியூட் • வாக்கியில்",
     "te": "మ్యూట్ • వాకీలో",
-    "pa": "ਮਿਊਟ • ਵਾਕੀ ਵਿੱਚ"
+    "pa": "ਮਿਊਟ • ਵਾਕੀ ਵਿੱਚ",
+    "es": "Silenciado • En Walkie",
+    "fr": "Muet • Sur le talkie",
+    "de": "Stumm • Im Walkie",
+    "ar": "مكتوم • في اللاسلكي",
+    "pt": "Mutado • No Walkie",
+    "ja": "ミュート中 • トランシーバー内",
+    "zh": "已静音 • 正在对讲",
+    "or": "ଚୁପ୍ • ୱାକିରେ |"
   },
   "walkie_inWalkieChannel": {
     "en": "In Walkie Channel",
@@ -637,7 +1029,15 @@
     "ml": "വാക്കി ചാനലിൽ",
     "ta": "வாக்கி சேனலில்",
     "te": "వాకీ ఛానెల్‌లో",
-    "pa": "ਵਾਕੀ ਚੈਨਲ ਵਿੱਚ"
+    "pa": "ਵਾਕੀ ਚੈਨਲ ਵਿੱਚ",
+    "es": "En el canal Walkie",
+    "fr": "Dans le canal talkie",
+    "de": "Im Walkie-Kanal",
+    "ar": "في قناة اللاسلكي",
+    "pt": "No canal de Walkie",
+    "ja": "トランシーバーチャンネル内",
+    "zh": "在对讲频道中",
+    "or": "ୱାକି ଚ୍ୟାନେଲରେ |"
   },
   "walkie_lastSeen": {
     "en": "Last seen {time}",
@@ -654,7 +1054,15 @@
       "time": {
         "type": "String"
       }
-    }
+    },
+    "es": "Última vez {time}",
+    "fr": "Vu pour la dernière fois {time}",
+    "de": "Zuletzt gesehen {time}",
+    "ar": "آخر ظهور {time}",
+    "pt": "Visto por último {time}",
+    "ja": "最終オンライン {time}",
+    "zh": "上次在线 {time}",
+    "or": "ଶେଷ ଦେଖାଯାଇଥିବା {time} |"
   },
   "walkie_secondsShort": {
     "en": "{seconds}s",
@@ -671,7 +1079,15 @@
       "seconds": {
         "type": "int"
       }
-    }
+    },
+    "es": "{seconds} s",
+    "fr": "{seconds} s",
+    "de": "{seconds} Sek.",
+    "ar": "{seconds} ث",
+    "pt": "{seconds} s",
+    "ja": "{seconds}秒",
+    "zh": "{seconds} 秒",
+    "or": "{seconds}s |"
   },
   "walkie_onlyAdminCanAlert": {
     "en": "Only Group Admin can send alert",
@@ -683,7 +1099,15 @@
     "ml": "ഗ്രൂപ്പ് അഡ്മിന് മാത്രമേ അലേർട്ട് അയയ്ക്കാനാകൂ",
     "ta": "குழு அட்மின் மட்டுமே எச்சரிக்கை அனுப்ப முடியும்",
     "te": "గ్రూప్ అడ్మిన్ మాత్రమే అలర్ట్ పంపగలరు",
-    "pa": "ਸਿਰਫ਼ ਗਰੁੱਪ ਐਡਮਿਨ ਅਲਰਟ ਭੇਜ ਸਕਦੇ ਹਨ"
+    "pa": "ਸਿਰਫ਼ ਗਰੁੱਪ ਐਡਮਿਨ ਅਲਰਟ ਭੇਜ ਸਕਦੇ ਹਨ",
+    "es": "Solo el admin del grupo puede enviar alertas",
+    "fr": "Seul l’admin du groupe peut envoyer des alertes",
+    "de": "Nur der Gruppen-Admin kann Alarme senden",
+    "ar": "يمكن لمشرف المجموعة فقط إرسال تنبيهات",
+    "pt": "Apenas o administrador do grupo pode enviar alertas",
+    "ja": "アラートを送信できるのはグループ管理者のみです",
+    "zh": "仅群组管理员可发送警报",
+    "or": "କେବଳ ଗ୍ରୁପ୍ ଆଡମିନି ଆଲର୍ଟ ପଠାଇ ପାରିବେ |"
   },
   "walkie_adminOnlyAction": {
     "en": "Admin Only Action",
@@ -695,7 +1119,15 @@
     "ml": "അഡ്മിന് മാത്രം",
     "ta": "அட்மினுக்கு மட்டும்",
     "te": "అడ్మిన్‌కు మాత్రమే",
-    "pa": "ਸਿਰਫ਼ ਐਡਮਿਨ ਲਈ"
+    "pa": "ਸਿਰਫ਼ ਐਡਮਿਨ ਲਈ",
+    "es": "Acción solo para administradores",
+    "fr": "Action réservée aux administrateurs",
+    "de": "Aktion nur für Admins",
+    "ar": "إجراء مخصص للمشرفين فقط",
+    "pt": "Ação exclusiva para administradores",
+    "ja": "管理者専用のアクション",
+    "zh": "仅限管理员操作",
+    "or": "ଆଡମିନି କେବଳ କ୍ରିୟା |"
   },
   "walkie_adminOnlyActionMessage": {
     "en": "Only group admin can send notification alerts to members.",
@@ -707,7 +1139,15 @@
     "ml": "ഗ്രൂപ്പ് അഡ്മിന് മാത്രമേ അംഗങ്ങൾക്ക് നോട്ടിഫിക്കേഷൻ അലേർട്ട് അയയ്ക്കാനാകൂ.",
     "ta": "குழு அட்மின் மட்டுமே உறுப்பினர்களுக்கு அறிவிப்பு எச்சரிக்கை அனுப்ப முடியும்.",
     "te": "గ్రూప్ అడ్మిన్ మాత్రమే సభ్యులకు నోటిఫికేషన్ అలర్ట్‌లు పంపగలరు.",
-    "pa": "ਸਿਰਫ਼ ਗਰੁੱਪ ਐਡਮਿਨ ਮੈਂਬਰਾਂ ਨੂੰ ਨੋਟੀਫਿਕੇਸ਼ਨ ਅਲਰਟ ਭੇਜ ਸਕਦੇ ਹਨ।"
+    "pa": "ਸਿਰਫ਼ ਗਰੁੱਪ ਐਡਮਿਨ ਮੈਂਬਰਾਂ ਨੂੰ ਨੋਟੀਫਿਕੇਸ਼ਨ ਅਲਰਟ ਭੇਜ ਸਕਦੇ ਹਨ।",
+    "es": "Solo el administrador del grupo puede enviar alertas de notificación a los miembros.",
+    "fr": "Seul l'administrateur du groupe peut envoyer des alertes de notification aux membres.",
+    "de": "Nur Gruppen-Admins können Benachrichtigungsalarme an Mitglieder senden.",
+    "ar": "يمكن لمشرف المجموعة فقط إرسال تنبيهات الإشعارات إلى الأعضاء.",
+    "pt": "Apenas o administrador do grupo pode enviar alertas de notificação para os membros.",
+    "ja": "メンバーへの通知アラート送信はグループ管理者のみが行えます。",
+    "zh": "仅群组管理员可向成员发送通知警报。",
+    "or": "କେବଳ ଗୋଷ୍ଠୀ ଆଡମିନି ସଦସ୍ୟମାନଙ୍କୁ ବିଜ୍ଞପ୍ତି ଆଲର୍ଟ ପଠାଇ ପାରିବେ |"
   },
   "walkie_alertSentTitle": {
     "en": "Alert Sent",
@@ -719,7 +1159,15 @@
     "ml": "അലേർട്ട് അയച്ചു",
     "ta": "எச்சரிக்கை அனுப்பப்பட்டது",
     "te": "అలర్ట్ పంపబడింది",
-    "pa": "ਅਲਰਟ ਭੇਜਿਆ ਗਿਆ"
+    "pa": "ਅਲਰਟ ਭੇਜਿਆ ਗਿਆ",
+    "es": "Alerta enviada",
+    "fr": "Alerte envoyée",
+    "de": "Alarm gesendet",
+    "ar": "تم إرسال التنبيه",
+    "pt": "Alerta enviado",
+    "ja": "アラートを送信しました",
+    "zh": "警报已发送",
+    "or": "ସତର୍କ ସୂଚନା ପଠାଯାଇଛି |"
   },
   "walkie_alertSentMessage": {
     "en": "Notification sent to {name}. Retry available in 10s.",
@@ -736,7 +1184,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "Notificación enviada a {name}. Reintento disponible en 10 s.",
+    "fr": "Notification envoyée à {name}. Réessai possible dans 10 s.",
+    "de": "Benachrichtigung an {name} gesendet. Wiederholung in 10 Sek. verfügbar.",
+    "ar": "تم إرسال الإشعار إلى {name}. يمكن إعادة المحاولة بعد 10 ثوانٍ.",
+    "pt": "Notificação enviada para {name}. Nova tentativa em 10 s.",
+    "ja": "{name}に通知を送信しました。10秒後に再試行できます。",
+    "zh": "通知已发送至 {name}。可在 10 秒后重试。",
+    "or": "{name} କୁ ପଠାଯାଇଥିବା ବିଜ୍ଞପ୍ତି | ୧୦ ଦଶକରେ ଉପଲବ୍ଧ ଚେଷ୍ଟା କରନ୍ତୁ |"
   },
   "walkie_audioBluetooth": {
     "en": "Bluetooth",
@@ -748,7 +1204,15 @@
     "ml": "ബ്ലൂടൂത്ത്",
     "ta": "புளூடூத்",
     "te": "బ్లూటూత్",
-    "pa": "ਬਲੂਟੁੱਥ"
+    "pa": "ਬਲੂਟੁੱਥ",
+    "es": "Bluetooth",
+    "fr": "Bluetooth",
+    "de": "Bluetooth",
+    "ar": "بلوتوث",
+    "pt": "Bluetooth",
+    "ja": "Bluetooth",
+    "zh": "蓝牙",
+    "or": "ବ୍ଲୁଟୁଥ୍"
   },
   "walkie_audioHeadset": {
     "en": "Headset",
@@ -760,7 +1224,15 @@
     "ml": "ഹെഡ്സെറ്റ്",
     "ta": "ஹெட்செட்",
     "te": "హెడ్‌సెట్",
-    "pa": "ਹੈੱਡਸੈੱਟ"
+    "pa": "ਹੈੱਡਸੈੱਟ",
+    "es": "Auriculares con micro",
+    "fr": "Casque micro",
+    "de": "Headset",
+    "ar": "سماعة رأس",
+    "pt": "Headset",
+    "ja": "ヘッドセット",
+    "zh": "头戴式耳机",
+    "or": "ହେଡସେଟ୍ |"
   },
   "walkie_audioPhone": {
     "en": "Phone",
@@ -773,7 +1245,15 @@
     "ta": "ஃபோன்",
     "te": "ఫోన్",
     "pa": "ਫ਼ੋਨ",
-    "description": "Audio output: the phone earpiece"
+    "description": "Audio output: the phone earpiece",
+    "es": "Teléfono",
+    "fr": "Téléphone",
+    "de": "Telefon",
+    "ar": "الهاتف",
+    "pt": "Telefone",
+    "ja": "電話",
+    "zh": "听筒",
+    "or": "ଫୋନ୍ |"
   },
   "walkie_audioSpeaker": {
     "en": "Speaker",
@@ -786,7 +1266,15 @@
     "ta": "ஸ்பீக்கர்",
     "te": "స్పీకర్",
     "pa": "ਸਪੀਕਰ",
-    "description": "Audio output: loudspeaker"
+    "description": "Audio output: loudspeaker",
+    "es": "Altavoz",
+    "fr": "Haut-parleur",
+    "de": "Lautsprecher",
+    "ar": "مكبر الصوت",
+    "pt": "Alto-falante",
+    "ja": "スピーカー",
+    "zh": "扬声器",
+    "or": "ବକ୍ତା"
   },
   "walkie_audioWiredHeadphones": {
     "en": "Wired Headphones",
@@ -798,7 +1286,15 @@
     "ml": "വയേർഡ് ഹെഡ്ഫോൺ",
     "ta": "வயர் ஹெட்ஃபோன்",
     "te": "వైర్డ్ హెడ్‌ఫోన్స్",
-    "pa": "ਵਾਇਰਡ ਹੈੱਡਫ਼ੋਨ"
+    "pa": "ਵਾਇਰਡ ਹੈੱਡਫ਼ੋਨ",
+    "es": "Auriculares con cable",
+    "fr": "Casque filaire",
+    "de": "Kabelgebundene Kopfhörer",
+    "ar": "سماعات سلكية",
+    "pt": "Fones de ouvido com fio",
+    "ja": "有線ヘッドホン",
+    "zh": "有线耳机",
+    "or": "ତାରଯୁକ୍ତ ହେଡଫୋନ୍ |"
   },
   "walkie_audioOutput": {
     "en": "Audio Output",
@@ -810,7 +1306,15 @@
     "ml": "ഓഡിയോ ഔട്ട്പുട്ട്",
     "ta": "ஆடியோ வெளியீடு",
     "te": "ఆడియో అవుట్‌పుట్",
-    "pa": "ਆਡੀਓ ਆਉਟਪੁੱਟ"
+    "pa": "ਆਡੀਓ ਆਉਟਪੁੱਟ",
+    "es": "Salida de audio",
+    "fr": "Sortie audio",
+    "de": "Audioausgabe",
+    "ar": "مخرج الصوت",
+    "pt": "Saída de áudio",
+    "ja": "音声出力",
+    "zh": "音频输出",
+    "or": "ଅଡିଓ ଆଉଟପୁଟ୍"
   },
   "walkie_channelBusy": {
     "en": "Channel is busy",
@@ -822,7 +1326,15 @@
     "ml": "ചാനൽ തിരക്കിലാണ്",
     "ta": "சேனல் பிஸியாக உள்ளது",
     "te": "ఛానెల్ బిజీగా ఉంది",
-    "pa": "ਚੈਨਲ ਰੁੱਝਿਆ ਹੈ"
+    "pa": "ਚੈਨਲ ਰੁੱਝਿਆ ਹੈ",
+    "es": "El canal está ocupado",
+    "fr": "Le canal est occupé",
+    "de": "Kanal ist belegt",
+    "ar": "القناة مشغولة",
+    "pt": "O canal está ocupado",
+    "ja": "チャンネルが通話中です",
+    "zh": "频道正忙",
+    "or": "ଚ୍ୟାନେଲ ବ୍ୟସ୍ତ ଅଛି |"
   },
   "walkie_isTalking": {
     "en": "{name} is talking...",
@@ -839,7 +1351,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "{name} está hablando...",
+    "fr": "{name} parle...",
+    "de": "{name} spricht...",
+    "ar": "{name} يتحدث الآن...",
+    "pt": "{name} está falando...",
+    "ja": "{name}が話しています...",
+    "zh": "{name} 正在讲话...",
+    "or": "{name} କଥାବାର୍ତ୍ତା କରୁଛି ..."
   },
   "walkie_mutedListeningOnly": {
     "en": "You are muted — Listening only",
@@ -851,7 +1371,15 @@
     "ml": "നിങ്ങൾ മ്യൂട്ടിലാണ് — കേൾക്കാൻ മാത്രം",
     "ta": "நீங்கள் மியூட்டில் உள்ளீர்கள் — கேட்க மட்டும்",
     "te": "మీరు మ్యూట్‌లో ఉన్నారు — వినడం మాత్రమే",
-    "pa": "ਤੁਸੀਂ ਮਿਊਟ ਹੋ — ਸਿਰਫ਼ ਸੁਣ ਸਕਦੇ ਹੋ"
+    "pa": "ਤੁਸੀਂ ਮਿਊਟ ਹੋ — ਸਿਰਫ਼ ਸੁਣ ਸਕਦੇ ਹੋ",
+    "es": "Estás silenciado — Modo solo escucha",
+    "fr": "Vous êtes en sourdine — Écoute seule",
+    "de": "Du bist stummgeschaltet — Nur Zuhören",
+    "ar": "أنت مكتوم — استماع فقط",
+    "pt": "Você está mutado — Apenas ouvindo",
+    "ja": "ミュート中 — 受話専用",
+    "zh": "您已静音 — 仅收听",
+    "or": "ତୁମେ ନିରବ - କେବଳ ଶୁଣିବା |"
   },
   "walkie_channelLocked": {
     "en": "Channel locked",
@@ -863,7 +1391,15 @@
     "ml": "ചാനൽ ലോക്ക് ചെയ്തു",
     "ta": "சேனல் பூட்டப்பட்டது",
     "te": "ఛానెల్ లాక్ అయింది",
-    "pa": "ਚੈਨਲ ਲੌਕ ਹੈ"
+    "pa": "ਚੈਨਲ ਲੌਕ ਹੈ",
+    "es": "Canal bloqueado",
+    "fr": "Canal verrouillé",
+    "de": "Kanal gesperrt",
+    "ar": "القناة مقفلة",
+    "pt": "Canal bloqueado",
+    "ja": "チャンネルがロックされました",
+    "zh": "频道已锁定",
+    "or": "ଚ୍ୟାନେଲ ଲକ୍ ହୋଇଛି |"
   },
   "walkie_channelUnlocked": {
     "en": "Channel unlocked",
@@ -875,7 +1411,15 @@
     "ml": "ചാനൽ അൺലോക്ക് ചെയ്തു",
     "ta": "சேனல் திறக்கப்பட்டது",
     "te": "ఛానెల్ అన్‌లాక్ అయింది",
-    "pa": "ਚੈਨਲ ਅਨਲੌਕ ਹੋਇਆ"
+    "pa": "ਚੈਨਲ ਅਨਲੌਕ ਹੋਇਆ",
+    "es": "Canal desbloqueado",
+    "fr": "Canal déverrouillé",
+    "de": "Kanal entsperrt",
+    "ar": "تم فتح قفل القناة",
+    "pt": "Canal desbloqueado",
+    "ja": "チャンネルのロックが解除されました",
+    "zh": "频道已解锁",
+    "or": "ଚ୍ୟାନେଲ ଅନଲକ୍ ହୋଇଛି |"
   },
   "walkie_micPermissionRequired": {
     "en": "Microphone permission required",
@@ -887,7 +1431,15 @@
     "ml": "മൈക്രോഫോൺ അനുമതി ആവശ്യമാണ്",
     "ta": "மைக்ரோஃபோன் அனுமதி தேவை",
     "te": "మైక్రోఫోన్ అనుమతి అవసరం",
-    "pa": "ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਇਜਾਜ਼ਤ ਲੋੜੀਂਦੀ ਹੈ"
+    "pa": "ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਇਜਾਜ਼ਤ ਲੋੜੀਂਦੀ ਹੈ",
+    "es": "Permiso de micrófono requerido",
+    "fr": "Autorisation du micro requise",
+    "de": "Mikrofonberechtigung erforderlich",
+    "ar": "إذن الميكروفون مطلوب",
+    "pt": "Permissão de microfone necessária",
+    "ja": "マイクの権限が必要です",
+    "zh": "需要麦克风权限",
+    "or": "ମାଇକ୍ରୋଫୋନ୍ ଅନୁମତି ଆବଶ୍ୟକ |"
   },
   "walkie_lockTimeout": {
     "en": "Lock timeout — Mic released",
@@ -899,7 +1451,15 @@
     "ml": "ലോക്ക് സമയം കഴിഞ്ഞു — മൈക്ക് വിട്ടു",
     "ta": "பூட்டு நேரம் முடிந்தது — மைக் விடுவிக்கப்பட்டது",
     "te": "లాక్ సమయం ముగిసింది — మైక్ విడుదలైంది",
-    "pa": "ਲੌਕ ਦਾ ਸਮਾਂ ਖ਼ਤਮ — ਮਾਈਕ ਛੱਡਿਆ ਗਿਆ"
+    "pa": "ਲੌਕ ਦਾ ਸਮਾਂ ਖ਼ਤਮ — ਮਾਈਕ ਛੱਡਿਆ ਗਿਆ",
+    "es": "Tiempo de bloqueo agotado — Micrófono liberado",
+    "fr": "Délai dépassé — Micro libéré",
+    "de": "Sperrzeit abgelaufen — Mikrofon freigegeben",
+    "ar": "انتهت مهلة القفل — تم تحرير الميكروفون",
+    "pt": "Tempo limite de bloqueio esgotado — Microfone liberado",
+    "ja": "ロックがタイムアウトしました — マイクを解放しました",
+    "zh": "锁定超时 — 麦克风已释放",
+    "or": "ଲକ୍ ଟାଇମଆଉଟ୍ - ମାଇକ୍ ମୁକ୍ତ ହେଲା |"
   },
   "walkie_trialEndedSubscribe": {
     "en": "Free trial ended — Please subscribe to continue",
@@ -911,7 +1471,15 @@
     "ml": "സൗജന്യ ട്രയൽ കഴിഞ്ഞു — തുടരാൻ സബ്സ്ക്രൈബ് ചെയ്യുക",
     "ta": "இலவச சோதனை முடிந்தது — தொடர சந்தா செலுத்துங்கள்",
     "te": "ఉచిత ట్రయల్ ముగిసింది — కొనసాగించడానికి సబ్‌స్క్రైబ్ చేయండి",
-    "pa": "ਮੁਫ਼ਤ ਟ੍ਰਾਇਲ ਖ਼ਤਮ — ਜਾਰੀ ਰੱਖਣ ਲਈ ਸਬਸਕ੍ਰਾਈਬ ਕਰੋ"
+    "pa": "ਮੁਫ਼ਤ ਟ੍ਰਾਇਲ ਖ਼ਤਮ — ਜਾਰੀ ਰੱਖਣ ਲਈ ਸਬਸਕ੍ਰਾਈਬ ਕਰੋ",
+    "es": "Prueba gratuita finalizada — Suscríbete para continuar",
+    "fr": "Essai gratuit terminé — Abonnez-vous pour continuer",
+    "de": "Testversion beendet — Bitte abonnieren, um fortzufahren",
+    "ar": "انتهت الفترة التجريبية — يرجى الاشتراك للمتابعة",
+    "pt": "Teste grátis finalizado — Assine para continuar",
+    "ja": "無料トライアルが終了しました — 継続するにはサブスクリプションに登録してください",
+    "zh": "免费试用已结束 — 请订阅以继续使用",
+    "or": "ମାଗଣା ପରୀକ୍ଷା ସମାପ୍ତ ହେଲା - ଜାରି ରଖିବାକୁ ଦୟାକରି ସବସ୍କ୍ରାଇବ କରନ୍ତୁ |"
   },
   "walkie_noVoiceSeatListenOnly": {
     "en": "No voice seat assigned — You are in Listen-Only mode",
@@ -923,7 +1491,15 @@
     "ml": "വോയ്സ് സീറ്റ് നൽകിയിട്ടില്ല — നിങ്ങൾ കേൾക്കാൻ-മാത്രം മോഡിലാണ്",
     "ta": "குரல் இருக்கை இல்லை — நீங்கள் கேட்க-மட்டும் பயன்முறையில் உள்ளீர்கள்",
     "te": "వాయిస్ సీట్ లేదు — మీరు వినడం-మాత్రమే మోడ్‌లో ఉన్నారు",
-    "pa": "ਵੌਇਸ ਸੀਟ ਨਹੀਂ ਦਿੱਤੀ — ਤੁਸੀਂ ਸਿਰਫ਼-ਸੁਣੋ ਮੋਡ ਵਿੱਚ ਹੋ"
+    "pa": "ਵੌਇਸ ਸੀਟ ਨਹੀਂ ਦਿੱਤੀ — ਤੁਸੀਂ ਸਿਰਫ਼-ਸੁਣੋ ਮੋਡ ਵਿੱਚ ਹੋ",
+    "es": "Sin puesto de voz asignado — Modo solo escucha",
+    "fr": "Aucun siège vocal attribué — Mode écoute seule",
+    "de": "Kein Sprachplatz zugewiesen — Nur-Zuhören-Modus",
+    "ar": "لم يتم تعيين مقعد صوتي — أنت في وضع الاستماع فقط",
+    "pt": "Nenhum posto de voz atribuído — Você está no modo apenas ouvir",
+    "ja": "音声シートが割り当てられていません — 受話専用モードです",
+    "zh": "未分配语音席位 — 您处于仅收听模式",
+    "or": "କ voice ଣସି ଭଏସ୍ ସିଟ୍ ନ୍ୟସ୍ତ ହୋଇନାହିଁ - ଆପଣ କେବଳ ଶ୍ରବଣ-ମୋଡ୍ ରେ ଅଛନ୍ତି |"
   },
   "walkie_poorConnection": {
     "en": "Poor network connection — Audio may lag",
@@ -935,7 +1511,15 @@
     "ml": "ദുർബലമായ നെറ്റ്‌വർക്ക് — ഓഡിയോ വൈകിയേക്കാം",
     "ta": "மோசமான நெட்வொர்க் — ஆடியோ தாமதமாகலாம்",
     "te": "బలహీన నెట్‌వర్క్ — ఆడియో ఆలస్యం కావచ్చు",
-    "pa": "ਕਮਜ਼ੋਰ ਨੈੱਟਵਰਕ — ਆਡੀਓ ਵਿੱਚ ਦੇਰੀ ਹੋ ਸਕਦੀ ਹੈ"
+    "pa": "ਕਮਜ਼ੋਰ ਨੈੱਟਵਰਕ — ਆਡੀਓ ਵਿੱਚ ਦੇਰੀ ਹੋ ਸਕਦੀ ਹੈ",
+    "es": "Conexión débil — El audio puede tener retraso",
+    "fr": "Connexion faible — L’audio peut être saccadé",
+    "de": "Schwache Verbindung — Audio kann verzögert sein",
+    "ar": "اتصال ضعيف — قد يتأخر الصوت",
+    "pt": "Conexão fraca — O áudio pode apresentar atrasos",
+    "ja": "通信状態が不安定です — 音声に遅延が発生する可能性があります",
+    "zh": "网络连接较差 — 音频可能有延迟",
+    "or": "ଖରାପ ନେଟୱାର୍କ ସଂଯୋଗ - ଅଡିଓ ପଛରେ ପଡିପାରେ |"
   },
   "walkie_reconnectingServer": {
     "en": "Reconnecting to walkie server...",
@@ -947,7 +1531,15 @@
     "ml": "വാക്കി സെർവറിലേക്ക് വീണ്ടും കണക്റ്റ് ചെയ്യുന്നു...",
     "ta": "வாக்கி சர்வருடன் மீண்டும் இணைக்கிறது...",
     "te": "వాకీ సర్వర్‌కు మళ్లీ కనెక్ట్ అవుతోంది...",
-    "pa": "ਵਾਕੀ ਸਰਵਰ ਨਾਲ ਦੁਬਾਰਾ ਜੁੜ ਰਹੇ ਹਾਂ..."
+    "pa": "ਵਾਕੀ ਸਰਵਰ ਨਾਲ ਦੁਬਾਰਾ ਜੁੜ ਰਹੇ ਹਾਂ...",
+    "es": "Reconectando con el servidor walkie...",
+    "fr": "Reconnexion au serveur talkie-walkie...",
+    "de": "Neuverbindung zum Walkie-Server...",
+    "ar": "جارٍ إعادة الاتصال بخادم اللاسلكي...",
+    "pt": "Reconectando ao servidor de walkie...",
+    "ja": "トランシーバーサーバーに再接続中...",
+    "zh": "正在重新连接对讲服务器...",
+    "or": "ୱାକି ସର୍ଭର ସହିତ ପୁନ on ସଂଯୋଗ ..."
   },
   "walkie_notificationSettingTitle": {
     "en": "Notification Setting",
@@ -959,7 +1551,15 @@
     "ml": "നോട്ടിഫിക്കേഷൻ ക്രമീകരണം",
     "ta": "அறிவிப்பு அமைப்பு",
     "te": "నోటిఫికేషన్ సెట్టింగ్",
-    "pa": "ਨੋਟੀਫਿਕੇਸ਼ਨ ਸੈਟਿੰਗ"
+    "pa": "ਨੋਟੀਫਿਕੇਸ਼ਨ ਸੈਟਿੰਗ",
+    "es": "Ajustes de notificaciones",
+    "fr": "Paramètres de notification",
+    "de": "Benachrichtigungseinstellung",
+    "ar": "إعدادات الإشعارات",
+    "pt": "Configurações de notificação",
+    "ja": "通知設定",
+    "zh": "通知设置",
+    "or": "ବିଜ୍ଞପ୍ତି ସେଟିଂ |"
   },
   "walkie_notificationSettingFailed": {
     "en": "Could not update notification setting for {group}. Please try again.",
@@ -976,7 +1576,15 @@
       "group": {
         "type": "String"
       }
-    }
+    },
+    "es": "No se pudo actualizar el ajuste de notificaciones para {group}. Inténtalo de nuevo.",
+    "fr": "Impossible de mettre à jour les notifications pour {group}. Veuillez réessayer.",
+    "de": "Benachrichtigungseinstellung für {group} konnte nicht aktualisiert werden. Bitte erneut versuchen.",
+    "ar": "تعذر تحديث إعداد الإشعارات للمجموعة {group}. يرجى المحاولة مرة أخرى.",
+    "pt": "Não foi possível atualizar as configurações de notificação para {group}. Tente novamente.",
+    "ja": "{group}の通知設定を更新できませんでした。もう一度お試しください。",
+    "zh": "无法更新 {group} 的通知设置，请重试。",
+    "or": "{group} ପାଇଁ ବିଜ୍ଞପ୍ତି ସେଟିଂ ଅପଡେଟ୍ ହୋଇପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
   },
   "walkie_channelSwitchErrorTitle": {
     "en": "Channel Switch Error",
@@ -988,7 +1596,15 @@
     "ml": "ചാനൽ മാറ്റുന്നതിൽ പിശക്",
     "ta": "சேனல் மாற்றுவதில் பிழை",
     "te": "ఛానెల్ మార్చడంలో లోపం",
-    "pa": "ਚੈਨਲ ਬਦਲਣ ਵਿੱਚ ਗਲਤੀ"
+    "pa": "ਚੈਨਲ ਬਦਲਣ ਵਿੱਚ ਗਲਤੀ",
+    "es": "Error al cambiar de canal",
+    "fr": "Erreur de changement de canal",
+    "de": "Kanalwechsel-Fehler",
+    "ar": "خطأ في تبديل القناة",
+    "pt": "Erro ao alternar canal",
+    "ja": "チャンネル切り替えエラー",
+    "zh": "切换频道出错",
+    "or": "ଚ୍ୟାନେଲ ସୁଇଚ୍ ତ୍ରୁଟି |"
   },
   "walkie_channelSwitchErrorMessage": {
     "en": "Could not set {group} as active speaking channel.",
@@ -1005,7 +1621,15 @@
       "group": {
         "type": "String"
       }
-    }
+    },
+    "es": "No se pudo establecer {group} como canal de voz activo.",
+    "fr": "Impossible de définir {group} comme canal vocal actif.",
+    "de": "{group} konnte nicht als aktiver Sprechkanal festgelegt werden.",
+    "ar": "تعذر تعيين {group} كقناة تحدث نشطة.",
+    "pt": "Não foi possível definir {group} como canal ativo.",
+    "ja": "{group}をアクティブな通話チャンネルに設定できませんでした。",
+    "zh": "无法将 {group} 设置为当前活跃对讲频道。",
+    "or": "ସକ୍ରିୟ କଥାବାର୍ତ୍ତା ଚ୍ୟାନେଲ ଭାବରେ {group} ସେଟ୍ କରିପାରିଲା ନାହିଁ |"
   },
   "walkie_userJoined": {
     "en": "{name} joined",
@@ -1022,7 +1646,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "{name} se unió",
+    "fr": "{name} a rejoint",
+    "de": "{name} ist beigetreten",
+    "ar": "انضم {name}",
+    "pt": "{name} entrou",
+    "ja": "{name}が参加しました",
+    "zh": "{name} 已加入",
+    "or": "{name} ଯୋଗଦାନ କଲେ |"
   },
   "walkie_userLeft": {
     "en": "{name} left",
@@ -1039,7 +1671,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "{name} salió",
+    "fr": "{name} est parti",
+    "de": "{name} hat verlassen",
+    "ar": "غادر {name}",
+    "pt": "{name} saiu",
+    "ja": "{name}が退出しました",
+    "zh": "{name} 已离开",
+    "or": "{name} ବାମ"
   },
   "walkie_userCancelled": {
     "en": "{name} cancelled",
@@ -1056,7 +1696,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "{name} canceló",
+    "fr": "{name} a annulé",
+    "de": "{name} hat abgebrochen",
+    "ar": "ألغى {name}",
+    "pt": "{name} cancelou",
+    "ja": "{name}がキャンセルしました",
+    "zh": "{name} 已取消",
+    "or": "{name} ବାତିଲ୍ |"
   },
   "walkie_cannotSpeak": {
     "en": "Cannot speak on this channel",
@@ -1068,7 +1716,15 @@
     "ml": "ഈ ചാനലിൽ സംസാരിക്കാനാകില്ല",
     "ta": "இந்த சேனலில் பேச முடியாது",
     "te": "ఈ ఛానెల్‌లో మాట్లాడలేరు",
-    "pa": "ਇਸ ਚੈਨਲ 'ਤੇ ਬੋਲ ਨਹੀਂ ਸਕਦੇ"
+    "pa": "ਇਸ ਚੈਨਲ 'ਤੇ ਬੋਲ ਨਹੀਂ ਸਕਦੇ",
+    "es": "No se puede hablar en este canal",
+    "fr": "Impossible de parler sur ce canal",
+    "de": "Sprechen auf diesem Kanal nicht möglich",
+    "ar": "لا يمكن التحدث في هذه القناة",
+    "pt": "Não é possível falar neste canal",
+    "ja": "このチャンネルでは発言できません",
+    "zh": "无法在此频道讲话",
+    "or": "ଏହି ଚ୍ୟାନେଲରେ କଥା ହୋଇପାରିବ ନାହିଁ |"
   },
   "walkie_voiceNotPermitted": {
     "en": "Voice transmission not permitted",
@@ -1080,7 +1736,15 @@
     "ml": "ശബ്ദം അയയ്ക്കാൻ അനുമതിയില്ല",
     "ta": "குரல் அனுப்ப அனுமதி இல்லை",
     "te": "వాయిస్ పంపడానికి అనుమతి లేదు",
-    "pa": "ਆਵਾਜ਼ ਭੇਜਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ"
+    "pa": "ਆਵਾਜ਼ ਭੇਜਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ",
+    "es": "Transmisión de voz no permitida",
+    "fr": "Transmission vocale non autorisée",
+    "de": "Sprachübertragung nicht gestattet",
+    "ar": "إرسال الصوت غير مسموح به",
+    "pt": "Transmissão de voz não permitida",
+    "ja": "音声送信が許可されていません",
+    "zh": "不允许进行语音传输",
+    "or": "ଭଏସ୍ ଟ୍ରାନ୍ସମିସନ୍ ଅନୁମୋଦିତ ନୁହେଁ |"
   },
   "walkie_genericError": {
     "en": "Walkie Talkie Error",
@@ -1092,7 +1756,15 @@
     "ml": "വാക്കി-ടോക്കി പിശക്",
     "ta": "வாக்கி-டாக்கி பிழை",
     "te": "వాకీ-టాకీ లోపం",
-    "pa": "ਵਾਕੀ-ਟਾਕੀ ਗਲਤੀ"
+    "pa": "ਵਾਕੀ-ਟਾਕੀ ਗਲਤੀ",
+    "es": "Error de Walkie Talkie",
+    "fr": "Erreur de Talkie-walkie",
+    "de": "Walkie-Talkie-Fehler",
+    "ar": "خطأ في اللاسلكي",
+    "pt": "Erro no Walkie-Talkie",
+    "ja": "トランシーバーエラー",
+    "zh": "对讲机错误",
+    "or": "ୱାକି ଟକି ତ୍ରୁଟି |"
   },
   "walkie_notifTalking": {
     "en": "{name} is talking",
@@ -1109,7 +1781,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "{name} está hablando",
+    "fr": "{name} est en train de parler",
+    "de": "{name} spricht",
+    "ar": "{name} يتحدث الآن",
+    "pt": "{name} está falando",
+    "ja": "{name}が話しています",
+    "zh": "{name} 正在讲话",
+    "or": "{name} କଥାବାର୍ତ୍ତା କରୁଛି |"
   },
   "walkie_notifStoppedTalking": {
     "en": "{name} stopped talking",
@@ -1126,7 +1806,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "{name} dejó de hablar",
+    "fr": "{name} a fini de parler",
+    "de": "{name} hat aufgehört zu sprechen",
+    "ar": "{name} توقف عن التحدث",
+    "pt": "{name} parou de falar",
+    "ja": "{name}が発言を終了しました",
+    "zh": "{name} 已停止讲话",
+    "or": "{name} କଥାବାର୍ତ୍ତା ବନ୍ଦ କରିଦେଲେ |"
   },
   "walkie_notifOpenWalkie": {
     "en": "Open Walkie",
@@ -1138,7 +1826,15 @@
     "ml": "വാക്കി തുറക്കുക",
     "ta": "வாக்கியைத் திற",
     "te": "వాకీ తెరవండి",
-    "pa": "ਵਾਕੀ ਖੋਲ੍ਹੋ"
+    "pa": "ਵਾਕੀ ਖੋਲ੍ਹੋ",
+    "es": "Abrir Walkie",
+    "fr": "Ouvrir Talkie",
+    "de": "Walkie öffnen",
+    "ar": "فتح اللاسلكي",
+    "pt": "Abrir Walkie",
+    "ja": "トランシーバーを開く",
+    "zh": "打开对讲",
+    "or": "ୱାକି ଖୋଲନ୍ତୁ |"
   },
   "walkie_notifLeave": {
     "en": "Leave",
@@ -1151,7 +1847,15 @@
     "ta": "வெளியேறு",
     "te": "వదిలేయండి",
     "pa": "ਛੱਡੋ",
-    "description": "Notification action: leave the walkie channel"
+    "description": "Notification action: leave the walkie channel",
+    "es": "Salir",
+    "fr": "Quitter",
+    "de": "Verlassen",
+    "ar": "مغادرة",
+    "pt": "Sair",
+    "ja": "退出",
+    "zh": "离开",
+    "or": "ଛାଡ"
   },
   "walkie_selectGroupFirst": {
     "en": "Please select a group first",
@@ -1163,7 +1867,15 @@
     "ml": "ആദ്യം ഒരു ഗ്രൂപ്പ് തിരഞ്ഞെടുക്കുക",
     "ta": "முதலில் ஒரு குழுவைத் தேர்ந்தெடுக்கவும்",
     "te": "దయచేసి ముందుగా గ్రూప్ ఎంచుకోండి",
-    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਗਰੁੱਪ ਚੁਣੋ"
+    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਗਰੁੱਪ ਚੁਣੋ",
+    "es": "Por favor, selecciona un grupo primero",
+    "fr": "Veuillez sélectionner un groupe d’abord",
+    "de": "Bitte wähle zuerst eine Gruppe aus",
+    "ar": "يرجى تحديد مجموعة أولاً",
+    "pt": "Por favor, selecione um grupo primeiro",
+    "ja": "先にグループを選択してください",
+    "zh": "请先选择一个群组",
+    "or": "ଦୟାକରି ପ୍ରଥମେ ଏକ ଗୋଷ୍ଠୀ ଚୟନ କରନ୍ତୁ |"
   },
   "walkie_connectingChannel": {
     "en": "Connecting to channel...",
@@ -1175,7 +1887,15 @@
     "ml": "ചാനലിലേക്ക് കണക്റ്റ് ചെയ്യുന്നു...",
     "ta": "சேனலுடன் இணைக்கிறது...",
     "te": "ఛానెల్‌కు కనెక్ట్ అవుతోంది...",
-    "pa": "ਚੈਨਲ ਨਾਲ ਜੁੜ ਰਹੇ ਹਾਂ..."
+    "pa": "ਚੈਨਲ ਨਾਲ ਜੁੜ ਰਹੇ ਹਾਂ...",
+    "es": "Conectando al canal...",
+    "fr": "Connexion au canal...",
+    "de": "Verbinde mit Kanal...",
+    "ar": "جارٍ الاتصال بالقناة...",
+    "pt": "Conectando ao canal...",
+    "ja": "チャンネルに接続中...",
+    "zh": "正在连接频道...",
+    "or": "ଚ୍ୟାନେଲ ସହିତ ସଂଯୋଗ ..."
   },
   "walkie_preparingAudio": {
     "en": "Preparing audio...",
@@ -1187,7 +1907,15 @@
     "ml": "ഓഡിയോ തയ്യാറാക്കുന്നു...",
     "ta": "ஆடியோ தயாராகிறது...",
     "te": "ఆడియో సిద్ధమవుతోంది...",
-    "pa": "ਆਡੀਓ ਤਿਆਰ ਹੋ ਰਿਹਾ ਹੈ..."
+    "pa": "ਆਡੀਓ ਤਿਆਰ ਹੋ ਰਿਹਾ ਹੈ...",
+    "es": "Preparando audio...",
+    "fr": "Préparation de l’audio...",
+    "de": "Audio wird vorbereitet...",
+    "ar": "جارٍ تجهيز الصوت...",
+    "pt": "Preparando áudio...",
+    "ja": "音声を準備中...",
+    "zh": "正在准备音频...",
+    "or": "ଅଡିଓ ପ୍ରସ୍ତୁତ କରୁଛି ..."
   },
   "walkie_unableToConnectReconnecting": {
     "en": "Unable to connect to channel — Reconnecting...",
@@ -1199,7 +1927,15 @@
     "ml": "ചാനലിലേക്ക് കണക്റ്റ് ചെയ്യാനായില്ല — വീണ്ടും ശ്രമിക്കുന്നു...",
     "ta": "சேனலுடன் இணைக்க முடியவில்லை — மீண்டும் இணைக்கிறது...",
     "te": "ఛానెల్‌కు కనెక్ట్ కాలేకపోయాం — మళ్లీ కనెక్ట్ అవుతోంది...",
-    "pa": "ਚੈਨਲ ਨਾਲ ਨਹੀਂ ਜੁੜ ਸਕੇ — ਦੁਬਾਰਾ ਜੁੜ ਰਹੇ ਹਾਂ..."
+    "pa": "ਚੈਨਲ ਨਾਲ ਨਹੀਂ ਜੁੜ ਸਕੇ — ਦੁਬਾਰਾ ਜੁੜ ਰਹੇ ਹਾਂ...",
+    "es": "No se puede conectar al canal — Reconectando...",
+    "fr": "Impossible de se connecter au canal — Reconnexion...",
+    "de": "Kanalverbindung fehlgeschlagen — Neuverbindung...",
+    "ar": "تعذر الاتصال بالقناة — جارٍ إعادة الاتصال...",
+    "pt": "Não foi possível conectar ao canal — Reconectando...",
+    "ja": "チャンネルに接続できません — 再接続中...",
+    "zh": "无法连接至频道 — 正在重新连接...",
+    "or": "ଚ୍ୟାନେଲ ସହିତ ସଂଯୋଗ କରିବାକୁ ଅସମର୍ଥ - ପୁନ on ସଂଯୋଗ ..."
   },
   "walkie_groupCommunication": {
     "en": "Group Communication",
@@ -1211,7 +1947,15 @@
     "ml": "ഗ്രൂപ്പ് ആശയവിനിമയം",
     "ta": "குழுத் தொடர்பு",
     "te": "గ్రూప్ కమ్యూనికేషన్",
-    "pa": "ਗਰੁੱਪ ਸੰਚਾਰ"
+    "pa": "ਗਰੁੱਪ ਸੰਚਾਰ",
+    "es": "Comunicación grupal",
+    "fr": "Communication de groupe",
+    "de": "Gruppenkommunikation",
+    "ar": "اتصالات المجموعة",
+    "pt": "Comunicação em grupo",
+    "ja": "グループ通信",
+    "zh": "群组通信",
+    "or": "ଗୋଷ୍ଠୀ ଯୋଗାଯୋଗ |"
   },
   "walkie_subscribed": {
     "en": "Subscribed",
@@ -1223,7 +1967,15 @@
     "ml": "സബ്സ്ക്രൈബ് ചെയ്തു",
     "ta": "சந்தா உள்ளது",
     "te": "సబ్‌స్క్రైబ్ అయింది",
-    "pa": "ਸਬਸਕ੍ਰਾਈਬ ਕੀਤਾ"
+    "pa": "ਸਬਸਕ੍ਰਾਈਬ ਕੀਤਾ",
+    "es": "Suscrito",
+    "fr": "Abonné",
+    "de": "Abonniert",
+    "ar": "مشترك",
+    "pt": "Inscrito",
+    "ja": "サブスクリプション登録済み",
+    "zh": "已订阅",
+    "or": "ସଦସ୍ୟତା"
   },
   "walkie_freeTrialEnded": {
     "en": "Free trial ended",
@@ -1235,7 +1987,15 @@
     "ml": "സൗജന്യ ട്രയൽ കഴിഞ്ഞു",
     "ta": "இலவச சோதனை முடிந்தது",
     "te": "ఉచిత ట్రయల్ ముగిసింది",
-    "pa": "ਮੁਫ਼ਤ ਟ੍ਰਾਇਲ ਖ਼ਤਮ"
+    "pa": "ਮੁਫ਼ਤ ਟ੍ਰਾਇਲ ਖ਼ਤਮ",
+    "es": "Prueba gratuita finalizada",
+    "fr": "Essai gratuit terminé",
+    "de": "Kostenlose Testversion beendet",
+    "ar": "انتهت الفترة التجريبية",
+    "pt": "Teste grátis encerrado",
+    "ja": "無料トライアルが終了しました",
+    "zh": "免费试用已结束",
+    "or": "ମାଗଣା ପରୀକ୍ଷା ସମାପ୍ତ ହେଲା |"
   },
   "walkie_consumingTrial": {
     "en": "Consuming trial...",
@@ -1247,7 +2007,15 @@
     "ml": "ട്രയൽ ഉപയോഗിക്കുന്നു...",
     "ta": "சோதனை பயன்பாட்டில்...",
     "te": "ట్రయల్ వాడుతున్నారు...",
-    "pa": "ਟ੍ਰਾਇਲ ਚੱਲ ਰਿਹਾ ਹੈ..."
+    "pa": "ਟ੍ਰਾਇਲ ਚੱਲ ਰਿਹਾ ਹੈ...",
+    "es": "Consumiendo prueba...",
+    "fr": "Utilisation de l’essai...",
+    "de": "Testversion wird genutzt...",
+    "ar": "استهلاك الفترة التجريبية...",
+    "pt": "Utilizando teste...",
+    "ja": "トライアルを適用中...",
+    "zh": "正在使用试用...",
+    "or": "ଗ୍ରାହକ ପରୀକ୍ଷା ..."
   },
   "walkie_trialActive1hr": {
     "en": "1 hr trial active",
@@ -1259,7 +2027,15 @@
     "ml": "1 മണിക്കൂർ ട്രയൽ സജീവം",
     "ta": "1 மணிநேர சோதனை செயலில்",
     "te": "1 గంట ట్రయల్ యాక్టివ్",
-    "pa": "1 ਘੰਟੇ ਦਾ ਟ੍ਰਾਇਲ ਸਰਗਰਮ"
+    "pa": "1 ਘੰਟੇ ਦਾ ਟ੍ਰਾਇਲ ਸਰਗਰਮ",
+    "es": "Prueba activa de 1 h",
+    "fr": "Essai actif 1 h",
+    "de": "1 Std. Testversion aktiv",
+    "ar": "فترة تجريبية نشطة لمدة ساعة",
+    "pt": "Teste de 1 h ativo",
+    "ja": "1時間トライアル有効",
+    "zh": "1小时试用激活",
+    "or": "1 ଘଣ୍ଟା ପରୀକ୍ଷା ସକ୍ରିୟ |"
   },
   "walkie_micPermissionTitle": {
     "en": "Microphone Permission",
@@ -1271,7 +2047,15 @@
     "ml": "മൈക്രോഫോൺ അനുമതി",
     "ta": "மைக்ரோஃபோன் அனுமதி",
     "te": "మైక్రోఫోన్ అనుమతి",
-    "pa": "ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਇਜਾਜ਼ਤ"
+    "pa": "ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਇਜਾਜ਼ਤ",
+    "es": "Permiso de micrófono",
+    "fr": "Autorisation du microphone",
+    "de": "Mikrofonberechtigung",
+    "ar": "إذن الميكروفون",
+    "pt": "Permissão de microfone",
+    "ja": "マイクの権限",
+    "zh": "麦克风权限",
+    "or": "ମାଇକ୍ରୋଫୋନ୍ ଅନୁମତି |"
   },
   "walkie_micDisabledMessage": {
     "en": "Microphone access is disabled in device settings. To speak in this group, please allow microphone access in Settings.\n\nYou can still listen to other members.",
@@ -1283,7 +2067,15 @@
     "ml": "ഉപകരണ ക്രമീകരണങ്ങളിൽ മൈക്രോഫോൺ ആക്സസ് ഓഫാണ്. ഈ ഗ്രൂപ്പിൽ സംസാരിക്കാൻ ക്രമീകരണങ്ങളിൽ മൈക്രോഫോൺ ആക്സസ് അനുവദിക്കുക.\n\nനിങ്ങൾക്ക് ഇപ്പോഴും മറ്റ് അംഗങ്ങളെ കേൾക്കാം.",
     "ta": "சாதன அமைப்புகளில் மைக்ரோஃபோன் அணுகல் முடக்கப்பட்டுள்ளது. இந்தக் குழுவில் பேச, அமைப்புகளில் மைக்ரோஃபோன் அணுகலை அனுமதிக்கவும்.\n\nமற்ற உறுப்பினர்களை இன்னும் கேட்கலாம்.",
     "te": "డివైస్ సెట్టింగ్‌లలో మైక్రోఫోన్ యాక్సెస్ ఆఫ్‌లో ఉంది. ఈ గ్రూప్‌లో మాట్లాడటానికి సెట్టింగ్‌లలో మైక్రోఫోన్ యాక్సెస్‌ను అనుమతించండి.\n\nమీరు ఇప్పటికీ ఇతర సభ్యులను వినవచ్చు.",
-    "pa": "ਡਿਵਾਈਸ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਪਹੁੰਚ ਬੰਦ ਹੈ। ਇਸ ਗਰੁੱਪ ਵਿੱਚ ਬੋਲਣ ਲਈ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਪਹੁੰਚ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ।\n\nਤੁਸੀਂ ਅਜੇ ਵੀ ਦੂਜੇ ਮੈਂਬਰਾਂ ਨੂੰ ਸੁਣ ਸਕਦੇ ਹੋ।"
+    "pa": "ਡਿਵਾਈਸ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਪਹੁੰਚ ਬੰਦ ਹੈ। ਇਸ ਗਰੁੱਪ ਵਿੱਚ ਬੋਲਣ ਲਈ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਪਹੁੰਚ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ।\n\nਤੁਸੀਂ ਅਜੇ ਵੀ ਦੂਜੇ ਮੈਂਬਰਾਂ ਨੂੰ ਸੁਣ ਸਕਦੇ ਹੋ।",
+    "es": "El acceso al micrófono está desactivado en los ajustes del dispositivo. Para hablar en este grupo, permite el acceso en Ajustes.\n\nAún puedes escuchar a los demás miembros.",
+    "fr": "L'accès au micro est désactivé dans les paramètres de l'appareil. Pour parler, autorisez le micro dans les Réglages.\n\nVous pouvez toujours écouter les autres.",
+    "de": "Mikrofonzugriff ist in den Geräteeinstellungen deaktiviert. Bitte erlaube den Zugriff in den Einstellungen, um zu sprechen.\n\nDu kannst andere weiterhin hören.",
+    "ar": "الوصول إلى الميكروفون معطل في إعدادات الجهاز. للتحدث في هذه المجموعة، يرجى السماح بالوصول إلى الميكروفون في الإعدادات.\n\nلا يزال بإمكانك الاستماع إلى الأعضاء الآخرين.",
+    "pt": "O acesso ao microfone está desativado nas configurações do dispositivo. Para falar, permita o acesso nas Configurações.\n\nVocê ainda pode ouvir os outros membros.",
+    "ja": "端末の設定でマイクへのアクセスが無効になっています。このグループで発言するには、設定でマイクへのアクセスを許可してください。\n\n他のメンバーの音声を聴くことは引き続き可能です。",
+    "zh": "设备设置中已禁用麦克风访问权限。如需在此群组中讲话，请在设置中允许访问麦克风。\n\n您仍可收听其他成员的语音。",
+    "or": "ଡିଭାଇସ୍ ସେଟିଙ୍ଗରେ ମାଇକ୍ରୋଫୋନ୍ ଆକ୍ସେସ୍ ଅକ୍ଷମ ହୋଇଛି | ଏହି ଗୋଷ୍ଠୀରେ କହିବାକୁ, ଦୟାକରି ସେଟିଂସମୂହରେ ମାଇକ୍ରୋଫୋନ୍ ପ୍ରବେଶକୁ ଅନୁମତି ଦିଅନ୍ତୁ |\n\nଆପଣ ତଥାପି ଅନ୍ୟ ସଦସ୍ୟମାନଙ୍କ କଥା ଶୁଣିପାରିବେ |"
   },
   "walkie_micRequiredMessage": {
     "en": "Microphone permission is required to talk in this Walkie-Talkie group.\n\nYou can still listen to others without enabling microphone.",
@@ -1295,7 +2087,15 @@
     "ml": "ഈ വാക്കി-ടോക്കി ഗ്രൂപ്പിൽ സംസാരിക്കാൻ മൈക്രോഫോൺ അനുമതി ആവശ്യമാണ്.\n\nമൈക്രോഫോൺ ഓണാക്കാതെ തന്നെ നിങ്ങൾക്ക് മറ്റുള്ളവരെ കേൾക്കാം.",
     "ta": "இந்த வாக்கி-டாக்கி குழுவில் பேச மைக்ரோஃபோன் அனுமதி தேவை.\n\nமைக்ரோஃபோனை இயக்காமலும் மற்றவர்களைக் கேட்கலாம்.",
     "te": "ఈ వాకీ-టాకీ గ్రూప్‌లో మాట్లాడటానికి మైక్రోఫోన్ అనుమతి అవసరం.\n\nమైక్రోఫోన్ ఆన్ చేయకుండానే మీరు ఇతరులను వినవచ్చు.",
-    "pa": "ਇਸ ਵਾਕੀ-ਟਾਕੀ ਗਰੁੱਪ ਵਿੱਚ ਬੋਲਣ ਲਈ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਇਜਾਜ਼ਤ ਲੋੜੀਂਦੀ ਹੈ।\n\nਮਾਈਕ੍ਰੋਫ਼ੋਨ ਚਾਲੂ ਕੀਤੇ ਬਿਨਾਂ ਵੀ ਤੁਸੀਂ ਦੂਜਿਆਂ ਨੂੰ ਸੁਣ ਸਕਦੇ ਹੋ।"
+    "pa": "ਇਸ ਵਾਕੀ-ਟਾਕੀ ਗਰੁੱਪ ਵਿੱਚ ਬੋਲਣ ਲਈ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਇਜਾਜ਼ਤ ਲੋੜੀਂਦੀ ਹੈ।\n\nਮਾਈਕ੍ਰੋਫ਼ੋਨ ਚਾਲੂ ਕੀਤੇ ਬਿਨਾਂ ਵੀ ਤੁਸੀਂ ਦੂਜਿਆਂ ਨੂੰ ਸੁਣ ਸਕਦੇ ਹੋ।",
+    "es": "Se requiere permiso de micrófono para hablar en este grupo de Walkie-Talkie.\n\nPuedes seguir escuchando a los demás sin activar el micrófono.",
+    "fr": "L'autorisation du micro est requise pour parler dans ce groupe de talkie-walkie.\n\nVous pouvez toujours écouter les autres sans activer le micro.",
+    "de": "Mikrofonberechtigung ist erforderlich, um in dieser Walkie-Talkie-Gruppe zu sprechen.\n\nDu kannst weiterhin zuhören, ohne das Mikrofon zu aktivieren.",
+    "ar": "مطلوب إذن الميكروفون للتحدث في مجموعة اللاسلكي هذه.\n\nلا يزال بإمكانك الاستماع للآخرين دون تفعيل الميكروفون.",
+    "pt": "A permissão de microfone é necessária para falar neste grupo de Walkie-Talkie.\n\nVocê pode continuar ouvindo os outros sem ativar o microfone.",
+    "ja": "このトランシーバーグループで発言するにはマイクの権限が必要です。\n\nマイクを有効にしなくても、他のメンバーの音声を聴くことはできます。",
+    "zh": "在此对讲群组中讲话需要麦克风权限。\n\n即使不开启麦克风，您仍可收听其他人发言。",
+    "or": "ଏହି ୱାକି-ଟକି ଗୋଷ୍ଠୀରେ କଥା ହେବା ପାଇଁ ମାଇକ୍ରୋଫୋନ୍ ଅନୁମତି ଆବଶ୍ୟକ |\n\nମାଇକ୍ରୋଫୋନ୍ ସକ୍ଷମ ନକରି ଆପଣ ତଥାପି ଅନ୍ୟମାନଙ୍କ କଥା ଶୁଣିପାରିବେ |"
   },
   "walkie_enable": {
     "en": "Enable",
@@ -1308,7 +2108,15 @@
     "ta": "இயக்கு",
     "te": "ఎనేబుల్ చేయండి",
     "pa": "ਚਾਲੂ ਕਰੋ",
-    "description": "Button: turn on (microphone permission)"
+    "description": "Button: turn on (microphone permission)",
+    "es": "Activar",
+    "fr": "Activer",
+    "de": "Aktivieren",
+    "ar": "تفعيل",
+    "pt": "Ativar",
+    "ja": "有効にする",
+    "zh": "开启",
+    "or": "ସକ୍ଷମ କରନ୍ତୁ |"
   },
   "walkie_freeTrialEndedTitle": {
     "en": "Free Trial Ended",
@@ -1320,7 +2128,15 @@
     "ml": "സൗജന്യ ട്രയൽ അവസാനിച്ചു",
     "ta": "இலவச சோதனை முடிந்தது",
     "te": "ఉచిత ట్రయల్ ముగిసింది",
-    "pa": "ਮੁਫ਼ਤ ਟ੍ਰਾਇਲ ਖ਼ਤਮ ਹੋਇਆ"
+    "pa": "ਮੁਫ਼ਤ ਟ੍ਰਾਇਲ ਖ਼ਤਮ ਹੋਇਆ",
+    "es": "Prueba gratuita finalizada",
+    "fr": "Essai gratuit terminé",
+    "de": "Kostenlose Testphase beendet",
+    "ar": "انتهت الفترة التجريبية",
+    "pt": "Teste grátis encerrado",
+    "ja": "無料トライアル終了",
+    "zh": "免费试用已结束",
+    "or": "ମାଗଣା ପରୀକ୍ଷା ଶେଷ ହୋଇଛି |"
   },
   "walkie_freeTrialEndedMessage": {
     "en": "Your 1 hour free trial for Walkie Talkie has ended.\nUpgrade now to continue using group communication\nwith your team.",
@@ -1332,7 +2148,15 @@
     "ml": "വാക്കി-ടോക്കിയുടെ നിങ്ങളുടെ 1 മണിക്കൂർ സൗജന്യ ട്രയൽ അവസാനിച്ചു.\nനിങ്ങളുടെ ടീമുമായി ഗ്രൂപ്പ് ആശയവിനിമയം തുടരാൻ\nഇപ്പോൾ അപ്ഗ്രേഡ് ചെയ്യുക.",
     "ta": "வாக்கி-டாக்கிக்கான உங்கள் 1 மணிநேர இலவச சோதனை முடிந்தது.\nஉங்கள் குழுவுடன் குழுத் தொடர்பைத் தொடர\nஇப்போதே மேம்படுத்துங்கள்.",
     "te": "వాకీ-టాకీ కోసం మీ 1 గంట ఉచిత ట్రయల్ ముగిసింది.\nమీ టీమ్‌తో గ్రూప్ కమ్యూనికేషన్ కొనసాగించడానికి\nఇప్పుడే అప్‌గ్రేడ్ చేయండి.",
-    "pa": "ਵਾਕੀ-ਟਾਕੀ ਦਾ ਤੁਹਾਡਾ 1 ਘੰਟੇ ਦਾ ਮੁਫ਼ਤ ਟ੍ਰਾਇਲ ਖ਼ਤਮ ਹੋ ਗਿਆ ਹੈ।\nਆਪਣੀ ਟੀਮ ਨਾਲ ਗਰੁੱਪ ਸੰਚਾਰ ਜਾਰੀ ਰੱਖਣ ਲਈ\nਹੁਣੇ ਅੱਪਗ੍ਰੇਡ ਕਰੋ।"
+    "pa": "ਵਾਕੀ-ਟਾਕੀ ਦਾ ਤੁਹਾਡਾ 1 ਘੰਟੇ ਦਾ ਮੁਫ਼ਤ ਟ੍ਰਾਇਲ ਖ਼ਤਮ ਹੋ ਗਿਆ ਹੈ।\nਆਪਣੀ ਟੀਮ ਨਾਲ ਗਰੁੱਪ ਸੰਚਾਰ ਜਾਰੀ ਰੱਖਣ ਲਈ\nਹੁਣੇ ਅੱਪਗ੍ਰੇਡ ਕਰੋ।",
+    "es": "Tu prueba gratuita de 1 hora para Walkie Talkie ha finalizado.\nMejora ahora para seguir comunicándote con tu equipo.",
+    "fr": "Votre essai gratuit d’une heure est terminé.\nPassez à la version supérieure pour continuer à communiquer.",
+    "de": "Deine 1-stündige Testphase für Walkie-Talkie ist abgelaufen.\nJetzt upgraden, um weiterhin mit deinem Team zu kommunizieren.",
+    "ar": "انتهت فترتك التجريبية المجانية لمدة ساعة واحدة للاسلكي.\nقم بالترقية الآن لمواصلة استخدام التواصل الجماعي مع فريقك.",
+    "pt": "Seu teste grátis de 1 hora para o Walkie-Talkie terminou.\nAtualize agora para continuar se comunicando com sua equipe.",
+    "ja": "トランシーバーの1時間無料トライアルが終了しました。\nチームとのグループ通信を継続するには今すぐアップグレードしてください。",
+    "zh": "您的 1 小时对讲机免费试用已结束。\n立即升级以继续与团队进行对讲沟通。",
+    "or": "ୱାକି ଟକି ପାଇଁ ଆପଣଙ୍କର 1 ଘଣ୍ଟା ମାଗଣା ପରୀକ୍ଷା ସମାପ୍ତ ହୋଇଛି |\nଗୋଷ୍ଠୀ ଯୋଗାଯୋଗ ବ୍ୟବହାର ଜାରି ରଖିବା ପାଇଁ ବର୍ତ୍ତମାନ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ |\nତୁମ ଦଳ ସହିତ"
   },
   "walkie_featureUnlimited": {
     "en": "Unlimited",
@@ -1344,7 +2168,15 @@
     "ml": "അൺലിമിറ്റഡ്",
     "ta": "வரம்பற்ற",
     "te": "అపరిమిత",
-    "pa": "ਅਸੀਮਤ"
+    "pa": "ਅਸੀਮਤ",
+    "es": "Ilimitado",
+    "fr": "Illimité",
+    "de": "Unbegrenzt",
+    "ar": "غير محدود",
+    "pt": "Ilimitado",
+    "ja": "無制限",
+    "zh": "无限制",
+    "or": "ଅସୀମିତ |"
   },
   "walkie_featureTeamCommunication": {
     "en": "Team Communication",
@@ -1356,7 +2188,15 @@
     "ml": "ടീം ആശയവിനിമയം",
     "ta": "குழுத் தொடர்பு",
     "te": "టీమ్ కమ్యూనికేషన్",
-    "pa": "ਟੀਮ ਸੰਚਾਰ"
+    "pa": "ਟੀਮ ਸੰਚਾਰ",
+    "es": "Comunicación de equipo",
+    "fr": "Communication d'équipe",
+    "de": "Team-Kommunikation",
+    "ar": "تواصل الفريق",
+    "pt": "Comunicação da equipe",
+    "ja": "チーム通信",
+    "zh": "团队沟通",
+    "or": "ଦଳ ଯୋଗାଯୋଗ |"
   },
   "walkie_featureSafeReliable": {
     "en": "Safe & Reliable",
@@ -1368,7 +2208,15 @@
     "ml": "സുരക്ഷിതവും വിശ്വസനീയവും",
     "ta": "பாதுகாப்பானது & நம்பகமானது",
     "te": "సురక్షితం & నమ్మదగినది",
-    "pa": "ਸੁਰੱਖਿਅਤ ਅਤੇ ਭਰੋਸੇਯੋਗ"
+    "pa": "ਸੁਰੱਖਿਅਤ ਅਤੇ ਭਰੋਸੇਯੋਗ",
+    "es": "Seguro y confiable",
+    "fr": "Sûr et fiable",
+    "de": "Sicher & zuverlässig",
+    "ar": "آمن وموثوق",
+    "pt": "Seguro e confiável",
+    "ja": "安全で信頼性が高い",
+    "zh": "安全可靠",
+    "or": "ନିରାପଦ ଏବଂ ନିର୍ଭରଯୋଗ୍ୟ |"
   },
   "walkie_featureRealtime": {
     "en": "Real-time Connectivity",
@@ -1380,7 +2228,15 @@
     "ml": "തത്സമയ കണക്റ്റിവിറ്റി",
     "ta": "நிகழ்நேர இணைப்பு",
     "te": "రియల్-టైమ్ కనెక్టివిటీ",
-    "pa": "ਰੀਅਲ-ਟਾਈਮ ਕਨੈਕਟੀਵਿਟੀ"
+    "pa": "ਰੀਅਲ-ਟਾਈਮ ਕਨੈਕਟੀਵਿਟੀ",
+    "es": "Conectividad en tiempo real",
+    "fr": "Connectivité en temps réel",
+    "de": "Echtzeit-Konnektivität",
+    "ar": "اتصال في الوقت الفعلي",
+    "pt": "Conectividade em tempo real",
+    "ja": "リアルタイム接続",
+    "zh": "实时连接",
+    "or": "ପ୍ରକୃତ ସମୟ ସଂଯୋଗୀକରଣ |"
   },
   "walkie_featureAllDevices": {
     "en": "Use on All Devices",
@@ -1392,7 +2248,15 @@
     "ml": "എല്ലാ ഉപകരണങ്ങളിലും ഉപയോഗിക്കുക",
     "ta": "எல்லா சாதனங்களிலும் பயன்படுத்துங்கள்",
     "te": "అన్ని డివైస్‌లలో వాడండి",
-    "pa": "ਸਾਰੀਆਂ ਡਿਵਾਈਸਾਂ 'ਤੇ ਵਰਤੋ"
+    "pa": "ਸਾਰੀਆਂ ਡਿਵਾਈਸਾਂ 'ਤੇ ਵਰਤੋ",
+    "es": "Úsalo en todos los dispositivos",
+    "fr": "Utilisable sur tous les appareils",
+    "de": "Auf allen Geräten nutzbar",
+    "ar": "استخدمه على جميع الأجهزة",
+    "pt": "Use em todos os dispositivos",
+    "ja": "すべての端末で使用可能",
+    "zh": "全设备支持",
+    "or": "ସମସ୍ତ ଉପକରଣରେ ବ୍ୟବହାର କରନ୍ତୁ |"
   },
   "walkie_featureStayConnected": {
     "en": "Stay Connected Always",
@@ -1404,7 +2268,15 @@
     "ml": "എപ്പോഴും കണക്റ്റഡായിരിക്കൂ",
     "ta": "எப்போதும் இணைந்திருங்கள்",
     "te": "ఎల్లప్పుడూ కనెక్ట్‌గా ఉండండి",
-    "pa": "ਹਮੇਸ਼ਾ ਜੁੜੇ ਰਹੋ"
+    "pa": "ਹਮੇਸ਼ਾ ਜੁੜੇ ਰਹੋ",
+    "es": "Mantente siempre conectado",
+    "fr": "Restez toujours connecté",
+    "de": "Immer verbunden bleiben",
+    "ar": "ابقَ على اتصال دائم",
+    "pt": "Fique sempre conectado",
+    "ja": "いつでもつながる",
+    "zh": "时刻保持联系",
+    "or": "ସର୍ବଦା ସଂଯୋଜିତ ରୁହନ୍ତୁ |"
   },
   "walkie_upgradeNow": {
     "en": "Upgrade Now",
@@ -1416,7 +2288,15 @@
     "ml": "ഇപ്പോൾ അപ്ഗ്രേഡ് ചെയ്യുക",
     "ta": "இப்போதே மேம்படுத்து",
     "te": "ఇప్పుడే అప్‌గ్రేడ్ చేయండి",
-    "pa": "ਹੁਣੇ ਅੱਪਗ੍ਰੇਡ ਕਰੋ"
+    "pa": "ਹੁਣੇ ਅੱਪਗ੍ਰੇਡ ਕਰੋ",
+    "es": "Mejorar ahora",
+    "fr": "Mettre à niveau maintenant",
+    "de": "Jetzt upgraden",
+    "ar": "الترقية الآن",
+    "pt": "Atualizar agora",
+    "ja": "今すぐアップグレード",
+    "zh": "立即升级",
+    "or": "ବର୍ତ୍ତମାନ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ |"
   },
   "walkie_maybeLater": {
     "en": "Maybe Later",
@@ -1428,7 +2308,15 @@
     "ml": "പിന്നീട്",
     "ta": "பிறகு",
     "te": "తర్వాత",
-    "pa": "ਬਾਅਦ ਵਿੱਚ"
+    "pa": "ਬਾਅਦ ਵਿੱਚ",
+    "es": "Quizás más tarde",
+    "fr": "Peut-être plus tard",
+    "de": "Vielleicht später",
+    "ar": "ربما لاحقاً",
+    "pt": "Talvez mais tarde",
+    "ja": "後で",
+    "zh": "以后再说",
+    "or": "ବୋଧହୁଏ ପରେ |"
   },
   "walkie_membersOnlineLabel": {
     "en": "{count, plural, =1{Member Online} other{Members Online}}",
@@ -1446,7 +2334,15 @@
         "type": "int"
       }
     },
-    "description": "Shown after a separately styled number, e.g. \"3 Members Online\""
+    "description": "Shown after a separately styled number, e.g. \"3 Members Online\"",
+    "es": "{count, plural, =1{Miembro en línea} other{Miembros en línea}}",
+    "fr": "{count, plural, =1{Membre en ligne} other{Membres en ligne}}",
+    "de": "{count, plural, =1{Mitglied online} other{Mitglieder online}}",
+    "ar": "{count, plural, =1{عضو متصل} other{أعضاء متصلون}}",
+    "pt": "{count, plural, =1{Membro online} other{Membros online}}",
+    "ja": "{count, plural, =1{オンラインメンバー} other{オンラインメンバー}}",
+    "zh": "{count, plural, =1{位在线成员} other{位在线成员}}",
+    "or": "{count, plural, =1{ସଦସ୍ୟ ଅନଲାଇନ୍ |} other{ସଦସ୍ୟମାନେ ଅନଲାଇନ୍ |}}"
   },
   "walkie_info": {
     "en": "Info",
@@ -1459,7 +2355,15 @@
     "ta": "தகவல்",
     "te": "సమాచారం",
     "pa": "ਜਾਣਕਾਰੀ",
-    "description": "Button that opens group info"
+    "description": "Button that opens group info",
+    "es": "Información",
+    "fr": "Infos",
+    "de": "Info",
+    "ar": "معلومات",
+    "pt": "Informações",
+    "ja": "情報",
+    "zh": "信息",
+    "or": "ସୂଚନା"
   },
   "walkie_membersInChannel": {
     "en": "Members In Channel",
@@ -1471,7 +2375,15 @@
     "ml": "ചാനലിലെ അംഗങ്ങൾ",
     "ta": "சேனலில் உள்ள உறுப்பினர்கள்",
     "te": "ఛానెల్‌లోని సభ్యులు",
-    "pa": "ਚੈਨਲ ਵਿੱਚ ਮੈਂਬਰ"
+    "pa": "ਚੈਨਲ ਵਿੱਚ ਮੈਂਬਰ",
+    "es": "Miembros en el canal",
+    "fr": "Membres dans le canal",
+    "de": "Mitglieder im Kanal",
+    "ar": "الأعضاء في القناة",
+    "pt": "Membros no canal",
+    "ja": "チャンネル内のメンバー",
+    "zh": "频道中的成员",
+    "or": "ଚ୍ୟାନେଲରେ ସଦସ୍ୟମାନେ |"
   },
   "walkie_reconnecting": {
     "en": "Reconnecting...",
@@ -1483,7 +2395,15 @@
     "ml": "വീണ്ടും കണക്റ്റ് ചെയ്യുന്നു...",
     "ta": "மீண்டும் இணைக்கிறது...",
     "te": "మళ్లీ కనెక్ట్ అవుతోంది...",
-    "pa": "ਦੁਬਾਰਾ ਜੁੜ ਰਹੇ ਹਾਂ..."
+    "pa": "ਦੁਬਾਰਾ ਜੁੜ ਰਹੇ ਹਾਂ...",
+    "es": "Reconectando...",
+    "fr": "Reconnexion...",
+    "de": "Verbindet neu...",
+    "ar": "جارٍ إعادة الاتصال...",
+    "pt": "Reconectando...",
+    "ja": "再接続中...",
+    "zh": "正在重新连接...",
+    "or": "ପୁନ on ସଂଯୋଗ ..."
   },
   "walkie_strongConnection": {
     "en": "Strong Connection",
@@ -1495,7 +2415,15 @@
     "ml": "ശക്തമായ കണക്ഷൻ",
     "ta": "வலுவான இணைப்பு",
     "te": "బలమైన కనెక్షన్",
-    "pa": "ਮਜ਼ਬੂਤ ਕਨੈਕਸ਼ਨ"
+    "pa": "ਮਜ਼ਬੂਤ ਕਨੈਕਸ਼ਨ",
+    "es": "Conexión fuerte",
+    "fr": "Connexion excellente",
+    "de": "Starke Verbindung",
+    "ar": "اتصال قوي",
+    "pt": "Conexão forte",
+    "ja": "強力な接続",
+    "zh": "信号极佳",
+    "or": "ଦୃ onn ସଂଯୋଗ |"
   },
   "walkie_strongConnectionMs": {
     "en": "Strong Connection ({ms}ms)",
@@ -1512,7 +2440,15 @@
       "ms": {
         "type": "int"
       }
-    }
+    },
+    "es": "Conexión fuerte ({ms} ms)",
+    "fr": "Connexion excellente ({ms} ms)",
+    "de": "Starke Verbindung ({ms} ms)",
+    "ar": "اتصال قوي ({ms} م.ث)",
+    "pt": "Conexão forte ({ms} ms)",
+    "ja": "良好な接続 ({ms}ms)",
+    "zh": "信号极佳 ({ms}ms)",
+    "or": "ଶକ୍ତିଶାଳୀ ସଂଯୋଗ ({ms}ms)"
   },
   "walkie_goodConnectionMs": {
     "en": "Good Connection ({ms}ms)",
@@ -1529,7 +2465,15 @@
       "ms": {
         "type": "int"
       }
-    }
+    },
+    "es": "Buena conexión ({ms} ms)",
+    "fr": "Bonne connexion ({ms} ms)",
+    "de": "Gute Verbindung ({ms} ms)",
+    "ar": "اتصال جيد ({ms} م.ث)",
+    "pt": "Boa conexão ({ms} ms)",
+    "ja": "安定した接続 ({ms}ms)",
+    "zh": "信号良好 ({ms}ms)",
+    "or": "ଭଲ ସଂଯୋଗ ({ms}ms)"
   },
   "walkie_connected": {
     "en": "Connected",
@@ -1541,7 +2485,15 @@
     "ml": "കണക്റ്റഡ്",
     "ta": "இணைக்கப்பட்டது",
     "te": "కనెక్ట్ అయింది",
-    "pa": "ਕਨੈਕਟਡ"
+    "pa": "ਕਨੈਕਟਡ",
+    "es": "Conectado",
+    "fr": "Connecté",
+    "de": "Verbunden",
+    "ar": "متصل",
+    "pt": "Conectado",
+    "ja": "接続済み",
+    "zh": "已连接",
+    "or": "ସଂଯୋଗ ହୋଇଛି |"
   },
   "walkie_fairConnection": {
     "en": "Fair Connection",
@@ -1553,7 +2505,15 @@
     "ml": "ഇടത്തരം കണക്ഷൻ",
     "ta": "சுமாரான இணைப்பு",
     "te": "సాధారణ కనెక్షన్",
-    "pa": "ਠੀਕ-ਠਾਕ ਕਨੈਕਸ਼ਨ"
+    "pa": "ਠੀਕ-ਠਾਕ ਕਨੈਕਸ਼ਨ",
+    "es": "Conexión regular",
+    "fr": "Connexion moyenne",
+    "de": "Ausreichende Verbindung",
+    "ar": "اتصال مقبول",
+    "pt": "Conexão regular",
+    "ja": "普通の接続",
+    "zh": "信号一般",
+    "or": "ଯଥାର୍ଥ ସଂଯୋଗ |"
   },
   "walkie_fairConnectionMs": {
     "en": "Fair Connection ({ms}ms)",
@@ -1570,7 +2530,15 @@
       "ms": {
         "type": "int"
       }
-    }
+    },
+    "es": "Conexión regular ({ms} ms)",
+    "fr": "Connexion moyenne ({ms} ms)",
+    "de": "Ausreichende Verbindung ({ms} ms)",
+    "ar": "اتصال مقبول ({ms} م.ث)",
+    "pt": "Conexão regular ({ms} ms)",
+    "ja": "普通の接続 ({ms}ms)",
+    "zh": "信号一般 ({ms}ms)",
+    "or": "ଯଥାର୍ଥ ସଂଯୋଗ ({ms}ms)"
   },
   "walkie_weakSignal": {
     "en": "Weak Signal",
@@ -1582,7 +2550,15 @@
     "ml": "ദുർബലമായ സിഗ്നൽ",
     "ta": "பலவீனமான சிக்னல்",
     "te": "బలహీన సిగ్నల్",
-    "pa": "ਕਮਜ਼ੋਰ ਸਿਗਨਲ"
+    "pa": "ਕਮਜ਼ੋਰ ਸਿਗਨਲ",
+    "es": "Señal débil",
+    "fr": "Signal faible",
+    "de": "Schwaches Signal",
+    "ar": "إشارة ضعيفة",
+    "pt": "Sinal fraco",
+    "ja": "微弱な信号",
+    "zh": "信号微弱",
+    "or": "ଦୁର୍ବଳ ସଙ୍କେତ |"
   },
   "walkie_weakSignalMs": {
     "en": "Weak Signal ({ms}ms)",
@@ -1599,7 +2575,15 @@
       "ms": {
         "type": "int"
       }
-    }
+    },
+    "es": "Señal débil ({ms} ms)",
+    "fr": "Signal faible ({ms} ms)",
+    "de": "Schwaches Signal ({ms} ms)",
+    "ar": "إشارة ضعيفة ({ms} م.ث)",
+    "pt": "Sinal fraco ({ms} ms)",
+    "ja": "微弱な信号 ({ms}ms)",
+    "zh": "信号微弱 ({ms}ms)",
+    "or": "ଦୁର୍ବଳ ସଙ୍କେତ ({ms}ms)"
   },
   "walkie_disconnected": {
     "en": "Disconnected",
@@ -1611,7 +2595,15 @@
     "ml": "വിച്ഛേദിച്ചു",
     "ta": "துண்டிக்கப்பட்டது",
     "te": "డిస్‌కనెక్ట్ అయింది",
-    "pa": "ਡਿਸਕਨੈਕਟ ਹੋ ਗਿਆ"
+    "pa": "ਡਿਸਕਨੈਕਟ ਹੋ ਗਿਆ",
+    "es": "Desconectado",
+    "fr": "Déconnecté",
+    "de": "Getrennt",
+    "ar": "غير متصل",
+    "pt": "Desconectado",
+    "ja": "切断されました",
+    "zh": "已断开连接",
+    "or": "ବିଚ୍ଛିନ୍ନ ହୋଇଛି |"
   },
   "walkie_youAreConnected": {
     "en": "You are Connected",
@@ -1623,7 +2615,15 @@
     "ml": "നിങ്ങൾ കണക്റ്റഡാണ്",
     "ta": "நீங்கள் இணைக்கப்பட்டுள்ளீர்கள்",
     "te": "మీరు కనెక్ట్ అయ్యారు",
-    "pa": "ਤੁਸੀਂ ਕਨੈਕਟਡ ਹੋ"
+    "pa": "ਤੁਸੀਂ ਕਨੈਕਟਡ ਹੋ",
+    "es": "Estás conectado",
+    "fr": "Vous êtes connecté",
+    "de": "Du bist verbunden",
+    "ar": "أنت متصل الآن",
+    "pt": "Você está conectado",
+    "ja": "接続しています",
+    "zh": "您已连接",
+    "or": "ଆପଣ ସଂଯୁକ୍ତ ଅଟନ୍ତି |"
   },
   "walkie_slideUpToLock": {
     "en": "Slide up to lock",
@@ -1635,7 +2635,15 @@
     "ml": "ലോക്ക് ചെയ്യാൻ മുകളിലേക്ക് സ്ലൈഡ് ചെയ്യുക",
     "ta": "பூட்ட மேலே ஸ்லைடு செய்யவும்",
     "te": "లాక్ చేయడానికి పైకి స్లైడ్ చేయండి",
-    "pa": "ਲੌਕ ਕਰਨ ਲਈ ਉੱਪਰ ਸਲਾਈਡ ਕਰੋ"
+    "pa": "ਲੌਕ ਕਰਨ ਲਈ ਉੱਪਰ ਸਲਾਈਡ ਕਰੋ",
+    "es": "Desliza hacia arriba para bloquear",
+    "fr": "Glissez vers le haut pour verrouiller",
+    "de": "Zum Sperren nach oben wischen",
+    "ar": "اسحب للأعلى للقفل",
+    "pt": "Deslize para cima para travar",
+    "ja": "上にスライドしてロック",
+    "zh": "上滑锁定",
+    "or": "ଲକ୍ କରିବାକୁ ସ୍ଲାଇଡ୍ କରନ୍ତୁ |"
   },
   "walkie_autoUnlockIn": {
     "en": "Auto-unlock in {seconds}s",
@@ -1652,7 +2660,15 @@
       "seconds": {
         "type": "int"
       }
-    }
+    },
+    "es": "Desbloqueo automático en {seconds} s",
+    "fr": "Déverrouillage auto dans {seconds} s",
+    "de": "Automatische Entsperrung in {seconds} Sek.",
+    "ar": "فتح القفل تلقائياً خلال {seconds} ث",
+    "pt": "Desbloqueio automático em {seconds} s",
+    "ja": "{seconds}秒後に自動ロック解除",
+    "zh": "{seconds} 秒后自动解锁",
+    "or": "{seconds}s ରେ ଅଟୋ-ଅନଲକ୍ କରନ୍ତୁ |"
   },
   "walkie_micAccessRequired": {
     "en": "Microphone access required to talk.",
@@ -1664,7 +2680,15 @@
     "ml": "സംസാരിക്കാൻ മൈക്രോഫോൺ ആക്സസ് ആവശ്യമാണ്.",
     "ta": "பேச மைக்ரோஃபோன் அணுகல் தேவை.",
     "te": "మాట్లాడటానికి మైక్రోఫోన్ యాక్సెస్ అవసరం.",
-    "pa": "ਬੋਲਣ ਲਈ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਪਹੁੰਚ ਲੋੜੀਂਦੀ ਹੈ।"
+    "pa": "ਬੋਲਣ ਲਈ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਪਹੁੰਚ ਲੋੜੀਂਦੀ ਹੈ।",
+    "es": "Se requiere acceso al micrófono para hablar.",
+    "fr": "Accès au micro requis pour parler.",
+    "de": "Mikrofonzugriff erforderlich, um zu sprechen.",
+    "ar": "مطلوب إذن الميكروفون للتحدث.",
+    "pt": "Acesso ao microfone necessário para falar.",
+    "ja": "通話にはマイクへのアクセス権が必要です。",
+    "zh": "讲话需要麦克风权限。",
+    "or": "କଥାବାର୍ତ୍ତା ପାଇଁ ମାଇକ୍ରୋଫୋନ୍ ପ୍ରବେଶ ଆବଶ୍ୟକ |"
   },
   "walkie_listeningOnly": {
     "en": "Listening Only",
@@ -1676,7 +2700,15 @@
     "ml": "കേൾക്കുന്നു മാത്രം",
     "ta": "கேட்கிறீர்கள் மட்டும்",
     "te": "వింటున్నారు మాత్రమే",
-    "pa": "ਸਿਰਫ਼ ਸੁਣ ਰਹੇ ਹੋ"
+    "pa": "ਸਿਰਫ਼ ਸੁਣ ਰਹੇ ਹੋ",
+    "es": "Solo escuchando",
+    "fr": "Écoute seule",
+    "de": "Hört nur zu",
+    "ar": "استماع فقط",
+    "pt": "Apenas ouvindo",
+    "ja": "受話のみ",
+    "zh": "仅收听中",
+    "or": "କେବଳ ଶୁଣିବା |"
   },
   "walkie_listenOnlyTapPlan": {
     "en": "Listen Only — Tap to View Plan",
@@ -1688,7 +2720,15 @@
     "ml": "കേൾക്കാൻ മാത്രം — പ്ലാൻ കാണാൻ ടാപ്പ് ചെയ്യുക",
     "ta": "கேட்க மட்டும் — பிளானைப் பார்க்கத் தட்டவும்",
     "te": "వినడం మాత్రమే — ప్లాన్ చూడటానికి ట్యాప్ చేయండి",
-    "pa": "ਸਿਰਫ਼ ਸੁਣੋ — ਪਲਾਨ ਦੇਖਣ ਲਈ ਟੈਪ ਕਰੋ"
+    "pa": "ਸਿਰਫ਼ ਸੁਣੋ — ਪਲਾਨ ਦੇਖਣ ਲਈ ਟੈਪ ਕਰੋ",
+    "es": "Solo escuchar — Toca para ver el plan",
+    "fr": "Écoute seule — Touchez pour voir le forfait",
+    "de": "Nur Zuhören — Tippen, um Plan anzuzeigen",
+    "ar": "استماع فقط — اضغط لعرض الخطة",
+    "pt": "Apenas ouvir — Toque para ver o plano",
+    "ja": "受話専用 — タップしてプランを確認",
+    "zh": "仅收听 — 点击查看方案",
+    "or": "କେବଳ ଶୁଣନ୍ତୁ - ଯୋଜନା ଦେଖିବା ପାଇଁ ଟ୍ୟାପ୍ କରନ୍ତୁ |"
   },
   "walkie_lockedTapMic": {
     "en": "Locked — Tap mic to stop",
@@ -1700,7 +2740,15 @@
     "ml": "ലോക്ക് ചെയ്തു — നിർത്താൻ മൈക്ക് ടാപ്പ് ചെയ്യുക",
     "ta": "பூட்டப்பட்டது — நிறுத்த மைக்கைத் தட்டவும்",
     "te": "లాక్ అయింది — ఆపడానికి మైక్ ట్యాప్ చేయండి",
-    "pa": "ਲੌਕ ਹੈ — ਰੋਕਣ ਲਈ ਮਾਈਕ ਟੈਪ ਕਰੋ"
+    "pa": "ਲੌਕ ਹੈ — ਰੋਕਣ ਲਈ ਮਾਈਕ ਟੈਪ ਕਰੋ",
+    "es": "Bloqueado — Toca el micro para detener",
+    "fr": "Verrouillé — Touchez le micro pour arrêter",
+    "de": "Gesperrt — Auf Mikrofon tippen zum Stoppen",
+    "ar": "مقفل — اضغط على الميكروفون للإيقاف",
+    "pt": "Travado — Toque no microfone para parar",
+    "ja": "ロック中 — マイクをタップして停止",
+    "zh": "已锁定 — 点击麦克风停止",
+    "or": "ଲକ୍ ହୋଇଛି - ବନ୍ଦ କରିବାକୁ ମାଇକ୍ ଟ୍ୟାପ୍ କରନ୍ତୁ |"
   },
   "walkie_releaseToStop": {
     "en": "Release to Stop",
@@ -1712,7 +2760,15 @@
     "ml": "നിർത്താൻ വിടുക",
     "ta": "நிறுத்த விடுவிக்கவும்",
     "te": "ఆపడానికి వదలండి",
-    "pa": "ਰੋਕਣ ਲਈ ਛੱਡੋ"
+    "pa": "ਰੋਕਣ ਲਈ ਛੱਡੋ",
+    "es": "Suelta para detener",
+    "fr": "Relâchez pour arrêter",
+    "de": "Loslassen zum Beenden",
+    "ar": "اترك للإيقاف",
+    "pt": "Solte para parar",
+    "ja": "離して停止",
+    "zh": "松开停止",
+    "or": "ବନ୍ଦ କରିବାକୁ ମୁକ୍ତ କରନ୍ତୁ |"
   },
   "walkie_holdToTalkSlideLock": {
     "en": "Hold to Talk, Slide Up to Lock",
@@ -1724,7 +2780,15 @@
     "ml": "സംസാരിക്കാൻ അമർത്തുക, ലോക്കിന് മുകളിലേക്ക് സ്ലൈഡ് ചെയ്യുക",
     "ta": "பேச அழுத்தவும், பூட்ட மேலே ஸ்லைடு செய்யவும்",
     "te": "మాట్లాడటానికి నొక్కండి, లాక్‌కు పైకి స్లైడ్ చేయండి",
-    "pa": "ਬੋਲਣ ਲਈ ਦਬਾਓ, ਲੌਕ ਲਈ ਉੱਪਰ ਸਲਾਈਡ ਕਰੋ"
+    "pa": "ਬੋਲਣ ਲਈ ਦਬਾਓ, ਲੌਕ ਲਈ ਉੱਪਰ ਸਲਾਈਡ ਕਰੋ",
+    "es": "Mantén para hablar, desliza hacia arriba para bloquear",
+    "fr": "Maintenez pour parler, glissez pour verrouiller",
+    "de": "Halten zum Sprechen, nach oben wischen zum Sperren",
+    "ar": "اضغط مطولاً للتحدث، واسحب للأعلى للقفل",
+    "pt": "Segure para falar, deslize para travar",
+    "ja": "長押しで通話、上にスライドでロック",
+    "zh": "按住讲话，上滑锁定",
+    "or": "ଟକ୍ ଟୁ ଧରି ରଖନ୍ତୁ, ଲକ୍ ଅପ୍ ସ୍ଲାଇଡ୍ କରନ୍ତୁ |"
   },
   "walkie_muteMe": {
     "en": "Mute Me",
@@ -1736,7 +2800,15 @@
     "ml": "എന്നെ മ്യൂട്ട് ചെയ്യുക",
     "ta": "என்னை மியூட் செய்",
     "te": "నన్ను మ్యూట్ చేయండి",
-    "pa": "ਮੈਨੂੰ ਮਿਊਟ ਕਰੋ"
+    "pa": "ਮੈਨੂੰ ਮਿਊਟ ਕਰੋ",
+    "es": "Silenciarme",
+    "fr": "Me couper le micro",
+    "de": "Mich stummschalten",
+    "ar": "كتم صوتي",
+    "pt": "Silenciar-me",
+    "ja": "自分をミュート",
+    "zh": "将我静音",
+    "or": "ମୋତେ ଚୁପ୍ କର |"
   },
   "walkie_othersWontHear": {
     "en": "Others won't hear you",
@@ -1748,7 +2820,15 @@
     "ml": "മറ്റുള്ളവർ നിങ്ങളെ കേൾക്കില്ല",
     "ta": "மற்றவர்களுக்கு உங்கள் குரல் கேட்காது",
     "te": "ఇతరులకు మీ మాట వినిపించదు",
-    "pa": "ਦੂਜੇ ਤੁਹਾਨੂੰ ਨਹੀਂ ਸੁਣਨਗੇ"
+    "pa": "ਦੂਜੇ ਤੁਹਾਨੂੰ ਨਹੀਂ ਸੁਣਨਗੇ",
+    "es": "Los demás no te escucharán",
+    "fr": "Les autres ne vous entendront pas",
+    "de": "Andere werden dich nicht hören",
+    "ar": "لن يسمعك الآخرون",
+    "pt": "Os outros não ouvirão você",
+    "ja": "他の人にはあなたの声が聞こえません",
+    "zh": "其他人将听不到您的声音",
+    "or": "ଅନ୍ୟମାନେ ତୁମ କଥା ଶୁଣିବେ ନାହିଁ |"
   },
   "walkie_notConnected": {
     "en": "Not connected",
@@ -1760,7 +2840,15 @@
     "ml": "കണക്റ്റ് ചെയ്തിട്ടില്ല",
     "ta": "இணைக்கப்படவில்லை",
     "te": "కనెక్ట్ కాలేదు",
-    "pa": "ਕਨੈਕਟ ਨਹੀਂ ਹੈ"
+    "pa": "ਕਨੈਕਟ ਨਹੀਂ ਹੈ",
+    "es": "No conectado",
+    "fr": "Non connecté",
+    "de": "Nicht verbunden",
+    "ar": "غير متصل",
+    "pt": "Não conectado",
+    "ja": "未接続",
+    "zh": "未连接",
+    "or": "ସଂଯୁକ୍ତ ନୁହେଁ |"
   },
   "walkie_noBluetoothDevice": {
     "en": "No Bluetooth audio device connected. Please pair your Bluetooth headset in settings.",
@@ -1772,7 +2860,15 @@
     "ml": "ബ്ലൂടൂത്ത് ഓഡിയോ ഉപകരണമൊന്നും കണക്റ്റ് ചെയ്തിട്ടില്ല. ക്രമീകരണങ്ങളിൽ നിങ്ങളുടെ ബ്ലൂടൂത്ത് ഹെഡ്സെറ്റ് പെയർ ചെയ്യുക.",
     "ta": "புளூடூத் ஆடியோ சாதனம் எதுவும் இணைக்கப்படவில்லை. அமைப்புகளில் உங்கள் புளூடூத் ஹெட்செட்டை இணைக்கவும்.",
     "te": "బ్లూటూత్ ఆడియో డివైస్ ఏదీ కనెక్ట్ కాలేదు. దయచేసి సెట్టింగ్‌లలో మీ బ్లూటూత్ హెడ్‌సెట్‌ను పెయిర్ చేయండి.",
-    "pa": "ਕੋਈ ਬਲੂਟੁੱਥ ਆਡੀਓ ਡਿਵਾਈਸ ਕਨੈਕਟ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਪਣਾ ਬਲੂਟੁੱਥ ਹੈੱਡਸੈੱਟ ਜੋੜੋ।"
+    "pa": "ਕੋਈ ਬਲੂਟੁੱਥ ਆਡੀਓ ਡਿਵਾਈਸ ਕਨੈਕਟ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਪਣਾ ਬਲੂਟੁੱਥ ਹੈੱਡਸੈੱਟ ਜੋੜੋ।",
+    "es": "No hay ningún dispositivo Bluetooth conectado. Empareja tus auriculares en los ajustes.",
+    "fr": "Aucun appareil Bluetooth connecté. Associez votre casque dans les paramètres.",
+    "de": "Kein Bluetooth-Gerät verbunden. Bitte kopple dein Headset in den Einstellungen.",
+    "ar": "لا يوجد جهاز بلوتوث متصل. يرجى إقران سماعة الرأس في الإعدادات.",
+    "pt": "Nenhum dispositivo Bluetooth conectado. Conecte seu fone nas configurações.",
+    "ja": "Bluetoothオーディオ機器が接続されていません。設定からペアリングしてください。",
+    "zh": "未连接蓝牙音频设备。请在设置中配对您的蓝牙耳机。",
+    "or": "କ Bluetooth ଣସି ବ୍ଲୁଟୁଥ୍ ଅଡିଓ ଉପକରଣ ସଂଯୁକ୍ତ ନୁହେଁ | ଦୟାକରି ସେଟିଂରେ ଆପଣଙ୍କର ବ୍ଲୁଟୁଥ୍ ହେଡସେଟ୍ ଯୋଡନ୍ତୁ |"
   },
   "walkie_noWiredDevice": {
     "en": "No wired earphones or headset connected. Please plug them into your device.",
@@ -1784,7 +2880,15 @@
     "ml": "വയേർഡ് ഇയർഫോണോ ഹെഡ്സെറ്റോ കണക്റ്റ് ചെയ്തിട്ടില്ല. അവ നിങ്ങളുടെ ഉപകരണത്തിൽ ഘടിപ്പിക്കുക.",
     "ta": "வயர் இயர்ஃபோன் அல்லது ஹெட்செட் எதுவும் இணைக்கப்படவில்லை. அவற்றை உங்கள் சாதனத்தில் பொருத்தவும்.",
     "te": "వైర్డ్ ఇయర్‌ఫోన్లు లేదా హెడ్‌సెట్ ఏదీ కనెక్ట్ కాలేదు. దయచేసి వాటిని మీ డివైస్‌కు ప్లగ్ చేయండి.",
-    "pa": "ਕੋਈ ਵਾਇਰਡ ਈਅਰਫ਼ੋਨ ਜਾਂ ਹੈੱਡਸੈੱਟ ਕਨੈਕਟ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਉਨ੍ਹਾਂ ਨੂੰ ਆਪਣੀ ਡਿਵਾਈਸ ਵਿੱਚ ਲਗਾਓ।"
+    "pa": "ਕੋਈ ਵਾਇਰਡ ਈਅਰਫ਼ੋਨ ਜਾਂ ਹੈੱਡਸੈੱਟ ਕਨੈਕਟ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਉਨ੍ਹਾਂ ਨੂੰ ਆਪਣੀ ਡਿਵਾਈਸ ਵਿੱਚ ਲਗਾਓ।",
+    "es": "No hay auriculares con cable conectados. Conéctalos a tu dispositivo.",
+    "fr": "Aucun écouteur filaire connecté. Veuillez les brancher.",
+    "de": "Keine kabelgebundenen Kopfhörer angeschlossen. Bitte einstecken.",
+    "ar": "لا توجد سماعات رأس سلكية متصلة. يرجى توصيلها بجهازك.",
+    "pt": "Nenhum fone de ouvido com fio conectado. Conecte-o ao seu dispositivo.",
+    "ja": "有線イヤホンが接続されていません。端末に接続してください。",
+    "zh": "未连接有线耳机。请将其插入设备。",
+    "or": "କ w ଣସି ତାରଯୁକ୍ତ ଇୟରଫୋନ୍ କିମ୍ବା ହେଡସେଟ୍ ସଂଯୁକ୍ତ ନୁହେଁ | ଦୟାକରି ସେଗୁଡିକୁ ଆପଣଙ୍କର ଡିଭାଇସରେ ପ୍ଲଗ୍ କରନ୍ତୁ |"
   },
   "walkie_tapToUnlock": {
     "en": "Tap to Unlock",
@@ -1796,7 +2900,15 @@
     "ml": "അൺലോക്കിന് ടാപ്പ് ചെയ്യുക",
     "ta": "திறக்கத் தட்டவும்",
     "te": "అన్‌లాక్‌కు ట్యాప్ చేయండి",
-    "pa": "ਅਨਲੌਕ ਲਈ ਟੈਪ ਕਰੋ"
+    "pa": "ਅਨਲੌਕ ਲਈ ਟੈਪ ਕਰੋ",
+    "es": "Toca para desbloquear",
+    "fr": "Touchez pour déverrouiller",
+    "de": "Tippen zum Entsperren",
+    "ar": "اضغط لفتح القفل",
+    "pt": "Toque para destravar",
+    "ja": "タップしてロック解除",
+    "zh": "点击解锁",
+    "or": "ଅନଲକ୍ କରିବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ |"
   },
   "walkie_talking": {
     "en": "Talking...",
@@ -1808,7 +2920,15 @@
     "ml": "സംസാരിക്കുന്നു...",
     "ta": "பேசுகிறீர்கள்...",
     "te": "మాట్లాడుతున్నారు...",
-    "pa": "ਬੋਲ ਰਹੇ ਹੋ..."
+    "pa": "ਬੋਲ ਰਹੇ ਹੋ...",
+    "es": "Hablando...",
+    "fr": "Parle...",
+    "de": "Spricht...",
+    "ar": "يتحدث...",
+    "pt": "Falando...",
+    "ja": "通話中...",
+    "zh": "正在讲话...",
+    "or": "କଥାବାର୍ତ୍ତା ..."
   },
   "walkie_holdToTalk": {
     "en": "Hold to Talk",
@@ -1820,7 +2940,15 @@
     "ml": "സംസാരിക്കാൻ അമർത്തുക",
     "ta": "பேச அழுத்தவும்",
     "te": "మాట్లాడటానికి నొక్కండి",
-    "pa": "ਬੋਲਣ ਲਈ ਦਬਾਓ"
+    "pa": "ਬੋਲਣ ਲਈ ਦਬਾਓ",
+    "es": "Mantén pulsado para hablar",
+    "fr": "Maintenez pour parler",
+    "de": "Gedrückt halten zum Sprechen",
+    "ar": "اضغط مطولاً للتحدث",
+    "pt": "Segure para falar",
+    "ja": "長押しして通話",
+    "zh": "按住通话",
+    "or": "କଥାବାର୍ତ୍ତା କରିବାକୁ ଧର |"
   },
   "walkie_selectGroupToConnect": {
     "en": "Select a group to connect",
@@ -1832,7 +2960,15 @@
     "ml": "കണക്റ്റ് ചെയ്യാൻ ഒരു ഗ്രൂപ്പ് തിരഞ്ഞെടുക്കുക",
     "ta": "இணைய ஒரு குழுவைத் தேர்ந்தெடுக்கவும்",
     "te": "కనెక్ట్ కావడానికి గ్రూప్ ఎంచుకోండి",
-    "pa": "ਜੁੜਨ ਲਈ ਗਰੁੱਪ ਚੁਣੋ"
+    "pa": "ਜੁੜਨ ਲਈ ਗਰੁੱਪ ਚੁਣੋ",
+    "es": "Selecciona un grupo para conectar",
+    "fr": "Sélectionnez un groupe à connecter",
+    "de": "Wähle eine Gruppe zum Verbinden",
+    "ar": "حدد مجموعة للاتصال بها",
+    "pt": "Selecione um grupo para conectar",
+    "ja": "接続するグループを選択してください",
+    "zh": "选择要连接的群组",
+    "or": "ସଂଯୋଗ କରିବାକୁ ଏକ ଗୋଷ୍ଠୀ ଚୟନ କରନ୍ତୁ |"
   },
   "walkie_searchGroups": {
     "en": "Search groups",
@@ -1844,7 +2980,15 @@
     "ml": "ഗ്രൂപ്പുകൾ തിരയുക",
     "ta": "குழுக்களைத் தேடு",
     "te": "గ్రూప్‌లను వెతకండి",
-    "pa": "ਗਰੁੱਪ ਖੋਜੋ"
+    "pa": "ਗਰੁੱਪ ਖੋਜੋ",
+    "es": "Buscar grupos",
+    "fr": "Rechercher des groupes",
+    "de": "Gruppen suchen",
+    "ar": "بحث في المجموعات",
+    "pt": "Pesquisar grupos",
+    "ja": "グループを検索",
+    "zh": "搜索群组",
+    "or": "ଗୋଷ୍ଠୀ ଖୋଜ |"
   },
   "walkie_noGroupsFound": {
     "en": "No groups found",
@@ -1856,7 +3000,15 @@
     "ml": "ഗ്രൂപ്പുകളൊന്നും കണ്ടെത്തിയില്ല",
     "ta": "குழுக்கள் இல்லை",
     "te": "గ్రూప్‌లు ఏవీ కనబడలేదు",
-    "pa": "ਕੋਈ ਗਰੁੱਪ ਨਹੀਂ ਮਿਲਿਆ"
+    "pa": "ਕੋਈ ਗਰੁੱਪ ਨਹੀਂ ਮਿਲਿਆ",
+    "es": "No se encontraron grupos",
+    "fr": "Aucun groupe trouvé",
+    "de": "Keine Gruppen gefunden",
+    "ar": "لم يتم العثور على مجموعات",
+    "pt": "Nenhum grupo encontrado",
+    "ja": "グループが見つかりません",
+    "zh": "未找到群组",
+    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |"
   },
   "walkie_assignedCount": {
     "en": "Assigned ({count})",
@@ -1873,7 +3025,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count} asignados",
+    "fr": "{count} attribués",
+    "de": "{count} zugewiesen",
+    "ar": "{count} تم تعيينهم",
+    "pt": "{count} atribuídos",
+    "ja": "{count}名割り当て済み",
+    "zh": "已分配 {count} 人",
+    "or": "ନ୍ୟସ୍ତ ({count})"
   },
   "walkie_nameSpeaking": {
     "en": "{name} speaking...",
@@ -1890,7 +3050,15 @@
       "name": {
         "type": "String"
       }
-    }
+    },
+    "es": "{name} está hablando...",
+    "fr": "{name} parle...",
+    "de": "{name} spricht...",
+    "ar": "{name} يتحدث...",
+    "pt": "{name} falando...",
+    "ja": "{name}が話しています...",
+    "zh": "{name} 正在讲话...",
+    "or": "{name} କହିବା ..."
   },
   "walkie_channelSpeaking": {
     "en": "Channel speaking...",
@@ -1902,7 +3070,15 @@
     "ml": "ചാനലിൽ സംസാരം നടക്കുന്നു...",
     "ta": "சேனலில் பேச்சு நடக்கிறது...",
     "te": "ఛానెల్‌లో మాట్లాడుతున్నారు...",
-    "pa": "ਚੈਨਲ 'ਤੇ ਗੱਲ ਚੱਲ ਰਹੀ ਹੈ..."
+    "pa": "ਚੈਨਲ 'ਤੇ ਗੱਲ ਚੱਲ ਰਹੀ ਹੈ...",
+    "es": "Canal transmitiendo...",
+    "fr": "Canal en cours...",
+    "de": "Kanal überträgt...",
+    "ar": "القناة تتحدث...",
+    "pt": "Canal transmitindo...",
+    "ja": "チャンネル通話中...",
+    "zh": "频道正在通话...",
+    "or": "ଚ୍ୟାନେଲ କହିବା ..."
   },
   "walkie_planRequiredToTalk": {
     "en": "Plan Required to Talk",
@@ -1914,7 +3090,15 @@
     "ml": "സംസാരിക്കാൻ പ്ലാൻ ആവശ്യമാണ്",
     "ta": "பேச பிளான் தேவை",
     "te": "మాట్లాడటానికి ప్లాన్ అవసరం",
-    "pa": "ਗੱਲ ਕਰਨ ਲਈ ਪਲਾਨ ਲੋੜੀਂਦਾ"
+    "pa": "ਗੱਲ ਕਰਨ ਲਈ ਪਲਾਨ ਲੋੜੀਂਦਾ",
+    "es": "Se requiere plan para hablar",
+    "fr": "Forfait requis pour parler",
+    "de": "Plan erforderlich zum Sprechen",
+    "ar": "الخطة مطلوبة للتحدث",
+    "pt": "Plano necessário para falar",
+    "ja": "発言にはプランが必要です",
+    "zh": "讲话需要订购方案",
+    "or": "କଥାବାର୍ତ୍ତା ପାଇଁ ଯୋଜନା ଆବଶ୍ୟକ |"
   },
   "walkie_subscribeToStartTalk": {
     "en": "Subscribe to start voice talk & assign members",
@@ -1926,7 +3110,15 @@
     "ml": "വോയ്സ് സംസാരം ആരംഭിക്കാനും അംഗങ്ങളെ ചേർക്കാനും സബ്സ്ക്രൈബ് ചെയ്യുക",
     "ta": "குரல் பேச்சைத் தொடங்கவும் உறுப்பினர்களை ஒதுக்கவும் சந்தா செலுத்துங்கள்",
     "te": "వాయిస్ సంభాషణ ప్రారంభించడానికి, సభ్యులను కేటాయించడానికి సబ్‌స్క్రైబ్ చేయండి",
-    "pa": "ਵੌਇਸ ਗੱਲਬਾਤ ਸ਼ੁਰੂ ਕਰਨ ਅਤੇ ਮੈਂਬਰ ਜੋੜਨ ਲਈ ਸਬਸਕ੍ਰਾਈਬ ਕਰੋ"
+    "pa": "ਵੌਇਸ ਗੱਲਬਾਤ ਸ਼ੁਰੂ ਕਰਨ ਅਤੇ ਮੈਂਬਰ ਜੋੜਨ ਲਈ ਸਬਸਕ੍ਰਾਈਬ ਕਰੋ",
+    "es": "Suscríbete para hablar por voz y asignar miembros",
+    "fr": "Abonnez-vous pour parler et assigner des membres",
+    "de": "Abonnieren, um zu sprechen und Mitglieder zuzuweisen",
+    "ar": "اشترك لبدء التحدث الصوتي وتعيين الأعضاء",
+    "pt": "Assine para falar por voz e atribuir membros",
+    "ja": "定期購入して音声通話とメンバー割り当てを開始",
+    "zh": "订阅以开始语音对讲并分配成员",
+    "or": "ଭଏସ୍ ଟକ୍ ଆରମ୍ଭ ଏବଂ ସଦସ୍ୟମାନଙ୍କୁ ନ୍ୟସ୍ତ କରିବାକୁ ସବସ୍କ୍ରାଇବ କରନ୍ତୁ |"
   },
   "walkie_getPlan": {
     "en": "Get Plan",
@@ -1938,7 +3130,15 @@
     "ml": "പ്ലാൻ നേടുക",
     "ta": "பிளான் பெறு",
     "te": "ప్లాన్ పొందండి",
-    "pa": "ਪਲਾਨ ਲਓ"
+    "pa": "ਪਲਾਨ ਲਓ",
+    "es": "Obtener plan",
+    "fr": "Obtenir un forfait",
+    "de": "Plan holen",
+    "ar": "الحصول على خطة",
+    "pt": "Obter plano",
+    "ja": "プランを取得",
+    "zh": "获取方案",
+    "or": "ଯୋଜନା ପ୍ରାପ୍ତ କରନ୍ତୁ |"
   },
   "walkie_viewPlan": {
     "en": "View Plan",
@@ -1950,7 +3150,15 @@
     "ml": "പ്ലാൻ കാണുക",
     "ta": "பிளானைப் பார்",
     "te": "ప్లాన్ చూడండి",
-    "pa": "ਪਲਾਨ ਦੇਖੋ"
+    "pa": "ਪਲਾਨ ਦੇਖੋ",
+    "es": "Ver plan",
+    "fr": "Voir le forfait",
+    "de": "Plan anzeigen",
+    "ar": "عرض الخطة",
+    "pt": "Ver plano",
+    "ja": "プランを表示",
+    "zh": "查看方案",
+    "or": "ଯୋଜନା ଦେଖନ୍ତୁ |"
   },
   "walkie_teamPlan": {
     "en": "Team Plan",
@@ -1962,7 +3170,15 @@
     "ml": "ടീം പ്ലാൻ",
     "ta": "டீம் பிளான்",
     "te": "టీమ్ ప్లాన్",
-    "pa": "ਟੀਮ ਪਲਾਨ"
+    "pa": "ਟੀਮ ਪਲਾਨ",
+    "es": "Plan de equipo",
+    "fr": "Forfait d'équipe",
+    "de": "Team-Plan",
+    "ar": "خطة الفريق",
+    "pt": "Plano de equipe",
+    "ja": "チームプラン",
+    "zh": "团队方案",
+    "or": "ଦଳ ଯୋଜନା"
   },
   "walkie_individualPlan": {
     "en": "Individual Plan",
@@ -1974,7 +3190,15 @@
     "ml": "വ്യക്തിഗത പ്ലാൻ",
     "ta": "தனிநபர் பிளான்",
     "te": "వ్యక్తిగత ప్లాన్",
-    "pa": "ਨਿੱਜੀ ਪਲਾਨ"
+    "pa": "ਨਿੱਜੀ ਪਲਾਨ",
+    "es": "Plan individual",
+    "fr": "Forfait individuel",
+    "de": "Einzelplan",
+    "ar": "خطة فردية",
+    "pt": "Plano individual",
+    "ja": "個人プラン",
+    "zh": "个人方案",
+    "or": "ବ୍ୟକ୍ତିଗତ ଯୋଜନା"
   },
   "walkie_teamSeatMember": {
     "en": "Team Seat Member",
@@ -1986,7 +3210,15 @@
     "ml": "ടീം സീറ്റ് അംഗം",
     "ta": "டீம் இருக்கை உறுப்பினர்",
     "te": "టీమ్ సీట్ సభ్యుడు",
-    "pa": "ਟੀਮ ਸੀਟ ਮੈਂਬਰ"
+    "pa": "ਟੀਮ ਸੀਟ ਮੈਂਬਰ",
+    "es": "Miembro con puesto de equipo",
+    "fr": "Membre d'un siège d'équipe",
+    "de": "Team-Platz-Mitglied",
+    "ar": "عضو بمقعد الفريق",
+    "pt": "Membro com posto de equipe",
+    "ja": "チームシートメンバー",
+    "zh": "团队席位成员",
+    "or": "ଦଳ ଆସନ ସଦସ୍ୟ |"
   },
   "walkie_noActivePlan": {
     "en": "No Active Plan",
@@ -1998,7 +3230,15 @@
     "ml": "സജീവ പ്ലാൻ ഇല്ല",
     "ta": "செயலில் உள்ள பிளான் இல்லை",
     "te": "యాక్టివ్ ప్లాన్ లేదు",
-    "pa": "ਕੋਈ ਸਰਗਰਮ ਪਲਾਨ ਨਹੀਂ"
+    "pa": "ਕੋਈ ਸਰਗਰਮ ਪਲਾਨ ਨਹੀਂ",
+    "es": "Sin plan activo",
+    "fr": "Aucun forfait actif",
+    "de": "Kein aktiver Plan",
+    "ar": "لا توجد خطة نشطة",
+    "pt": "Nenhum plano ativo",
+    "ja": "有効なプランがありません",
+    "zh": "无活跃方案",
+    "or": "କ Act ଣସି ସକ୍ରିୟ ଯୋଜନା ନାହିଁ |"
   },
   "walkie_validTill": {
     "en": "Valid till {date}",
@@ -2015,7 +3255,15 @@
       "date": {
         "type": "String"
       }
-    }
+    },
+    "es": "Válido hasta {date}",
+    "fr": "Valable jusqu'au {date}",
+    "de": "Gültig bis {date}",
+    "ar": "صالح حتى {date}",
+    "pt": "Válido até {date}",
+    "ja": "{date}まで有効",
+    "zh": "有效期至 {date}",
+    "or": "{date} ପର୍ଯ୍ୟନ୍ତ ବ id ଧ |"
   },
   "walkie_seatsFraction": {
     "en": "{assigned}/{total} seats",
@@ -2035,7 +3283,15 @@
       "total": {
         "type": "int"
       }
-    }
+    },
+    "es": "{assigned}/{total} puestos",
+    "fr": "{assigned}/{total} sièges",
+    "de": "{assigned}/{total} Plätze",
+    "ar": "{assigned}/{total} مقاعد",
+    "pt": "{assigned}/{total} postos",
+    "ja": "{assigned}/{total} 席",
+    "zh": "{assigned}/{total} 席位",
+    "or": "{assigned} / {total} ଆସନ |"
   },
   "walkie_planRequiredTitle": {
     "en": "Walkie Talkie Plan Required",
@@ -2047,7 +3303,15 @@
     "ml": "വാക്കി-ടോക്കി പ്ലാൻ ആവശ്യമാണ്",
     "ta": "வாக்கி-டாக்கி பிளான் தேவை",
     "te": "వాకీ-టాకీ ప్లాన్ అవసరం",
-    "pa": "ਵਾਕੀ-ਟਾਕੀ ਪਲਾਨ ਲੋੜੀਂਦਾ ਹੈ"
+    "pa": "ਵਾਕੀ-ਟਾਕੀ ਪਲਾਨ ਲੋੜੀਂਦਾ ਹੈ",
+    "es": "Plan de Walkie Talkie requerido",
+    "fr": "Forfait Talkie-walkie requis",
+    "de": "Walkie-Talkie-Plan erforderlich",
+    "ar": "مطلوب خطة لاسلكي",
+    "pt": "Plano de Walkie-Talkie necessário",
+    "ja": "トランシーバープランが必要です",
+    "zh": "需要对讲机方案",
+    "or": "ୱାକି ଟକି ଯୋଜନା ଆବଶ୍ୟକ |"
   },
   "walkie_teamPlanRequired": {
     "en": "Team Plan Required",
@@ -2059,7 +3323,15 @@
     "ml": "ടീം പ്ലാൻ ആവശ്യമാണ്",
     "ta": "டீம் பிளான் தேவை",
     "te": "టీమ్ ప్లాన్ అవసరం",
-    "pa": "ਟੀਮ ਪਲਾਨ ਲੋੜੀਂਦਾ ਹੈ"
+    "pa": "ਟੀਮ ਪਲਾਨ ਲੋੜੀਂਦਾ ਹੈ",
+    "es": "Plan de equipo requerido",
+    "fr": "Forfait d’équipe requis",
+    "de": "Team-Plan erforderlich",
+    "ar": "مطلوب خطة فريق",
+    "pt": "Plano de equipe necessário",
+    "ja": "チームプランが必要です",
+    "zh": "需要团队方案",
+    "or": "ଦଳ ଯୋଜନା ଆବଶ୍ୟକ |"
   },
   "walkie_noSubscriptionMessage": {
     "en": "You do not have an active Walkie Talkie subscription. Subscribe to a plan to assign members and start instant voice communication.",
@@ -2071,7 +3343,15 @@
     "ml": "നിങ്ങൾക്ക് സജീവമായ വാക്കി-ടോക്കി സബ്സ്ക്രിപ്ഷൻ ഇല്ല. അംഗങ്ങളെ ചേർക്കാനും ഉടൻ വോയ്സ് ആശയവിനിമയം ആരംഭിക്കാനും ഒരു പ്ലാനിൽ സബ്സ്ക്രൈബ് ചെയ്യുക.",
     "ta": "உங்களிடம் செயலில் உள்ள வாக்கி-டாக்கி சந்தா இல்லை. உறுப்பினர்களை ஒதுக்கவும் உடனடி குரல் தொடர்பைத் தொடங்கவும் ஒரு பிளானுக்குச் சந்தா செலுத்துங்கள்.",
     "te": "మీకు యాక్టివ్ వాకీ-టాకీ సబ్‌స్క్రిప్షన్ లేదు. సభ్యులను కేటాయించడానికి, వెంటనే వాయిస్ కమ్యూనికేషన్ ప్రారంభించడానికి ప్లాన్‌కు సబ్‌స్క్రైబ్ చేయండి.",
-    "pa": "ਤੁਹਾਡੇ ਕੋਲ ਕੋਈ ਸਰਗਰਮ ਵਾਕੀ-ਟਾਕੀ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਨਹੀਂ ਹੈ। ਮੈਂਬਰ ਜੋੜਨ ਅਤੇ ਤੁਰੰਤ ਵੌਇਸ ਸੰਚਾਰ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਪਲਾਨ ਲਓ।"
+    "pa": "ਤੁਹਾਡੇ ਕੋਲ ਕੋਈ ਸਰਗਰਮ ਵਾਕੀ-ਟਾਕੀ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਨਹੀਂ ਹੈ। ਮੈਂਬਰ ਜੋੜਨ ਅਤੇ ਤੁਰੰਤ ਵੌਇਸ ਸੰਚਾਰ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਪਲਾਨ ਲਓ।",
+    "es": "No tienes una suscripción activa de Walkie Talkie. Suscríbete a un plan para asignar miembros y comenzar la comunicación de voz instantánea.",
+    "fr": "Vous n'avez pas d'abonnement actif. Abonnez-vous pour assigner des membres et commencer à communiquer.",
+    "de": "Du hast kein aktives Walkie-Talkie-Abonnement. Schließe ein Abo ab, um Mitglieder zuzuweisen und sofort zu sprechen.",
+    "ar": "ليس لديك اشتراك نشط في اللاسلكي. اشترك في خطة لتعيين الأعضاء وبدء الاتصال الصوتي الفوري.",
+    "pt": "Você não tem uma assinatura ativa do Walkie-Talkie. Assine um plano para atribuir membros e iniciar a comunicação de voz.",
+    "ja": "有効なトランシーバーの定期購入がありません。プランに登録してメンバーを割り当て、即時音声通信を開始してください。",
+    "zh": "您没有活跃的对讲机订阅。请订阅方案以分配成员并开始即时语音对讲。",
+    "or": "ଆପଣଙ୍କର ଏକ ସକ୍ରିୟ ୱାକି ଟକି ସବସ୍କ୍ରିପସନ୍ ନାହିଁ | ସଦସ୍ୟମାନଙ୍କୁ ନ୍ୟସ୍ତ କରିବାକୁ ଏବଂ ତତକ୍ଷଣାତ୍ ଭଏସ୍ ଯୋଗାଯୋଗ ଆରମ୍ଭ କରିବାକୁ ଏକ ଯୋଜନାକୁ ସବସ୍କ୍ରାଇବ କରନ୍ତୁ |"
   },
   "walkie_individualLimitMessage": {
     "en": "Your Individual Plan allows 1 member seat only. To assign multiple members and connect your entire team, please upgrade to a Team Plan.",
@@ -2083,7 +3363,15 @@
     "ml": "നിങ്ങളുടെ വ്യക്തിഗത പ്ലാനിൽ 1 അംഗ സീറ്റ് മാത്രമേയുള്ളൂ. ഒന്നിലധികം അംഗങ്ങളെ ചേർക്കാനും മുഴുവൻ ടീമിനെയും ബന്ധിപ്പിക്കാനും ടീം പ്ലാനിലേക്ക് അപ്ഗ്രേഡ് ചെയ്യുക.",
     "ta": "உங்கள் தனிநபர் பிளானில் 1 உறுப்பினர் இருக்கை மட்டுமே உள்ளது. பல உறுப்பினர்களை ஒதுக்கவும் முழுக் குழுவையும் இணைக்கவும் டீம் பிளானுக்கு மேம்படுத்துங்கள்.",
     "te": "మీ వ్యక్తిగత ప్లాన్‌లో 1 సభ్యుని సీట్ మాత్రమే ఉంది. ఎక్కువ మంది సభ్యులను కేటాయించడానికి, మొత్తం టీమ్‌ను కనెక్ట్ చేయడానికి టీమ్ ప్లాన్‌కు అప్‌గ్రేడ్ చేయండి.",
-    "pa": "ਤੁਹਾਡੇ ਨਿੱਜੀ ਪਲਾਨ ਵਿੱਚ ਸਿਰਫ਼ 1 ਮੈਂਬਰ ਸੀਟ ਹੈ। ਕਈ ਮੈਂਬਰ ਜੋੜਨ ਅਤੇ ਪੂਰੀ ਟੀਮ ਨੂੰ ਜੋੜਨ ਲਈ ਟੀਮ ਪਲਾਨ ਵਿੱਚ ਅੱਪਗ੍ਰੇਡ ਕਰੋ।"
+    "pa": "ਤੁਹਾਡੇ ਨਿੱਜੀ ਪਲਾਨ ਵਿੱਚ ਸਿਰਫ਼ 1 ਮੈਂਬਰ ਸੀਟ ਹੈ। ਕਈ ਮੈਂਬਰ ਜੋੜਨ ਅਤੇ ਪੂਰੀ ਟੀਮ ਨੂੰ ਜੋੜਨ ਲਈ ਟੀਮ ਪਲਾਨ ਵਿੱਚ ਅੱਪਗ੍ਰੇਡ ਕਰੋ।",
+    "es": "Tu Plan individual permite 1 puesto solamente. Para asignar a varios miembros y conectar a todo tu equipo, actualiza a un Plan de equipo.",
+    "fr": "Votre forfait individuel permet 1 seul siège. Pour connecter toute votre équipe, passez au forfait d’équipe.",
+    "de": "Dein Einzelplan erlaubt nur 1 Platz. Um mehrere Mitglieder zuzuweisen, upgrade bitte auf einen Team-Plan.",
+    "ar": "تتيح خطتك الفردية مقعداً واحداً فقط. لتعيين أعضاء متعددين وتوصيل فريقك بأكمله، يرجى الترقية إلى خطة الفريق.",
+    "pt": "Seu Plano Individual permite apenas 1 posto. Para atribuir vários membros e conectar toda a equipe, atualize para um Plano de Equipe.",
+    "ja": "個人プランでは1席のみ許可されています。複数のメンバーを割り当ててチーム全体をつなぐには、チームプランにアップグレードしてください。",
+    "zh": "您的个人方案仅支持 1 个席位。如需分配多名成员并连接整个团队，请升级至团队方案。",
+    "or": "ଆପଣଙ୍କର ବ୍ୟକ୍ତିଗତ ଯୋଜନା କେବଳ 1 ସଦସ୍ୟ ଆସନକୁ ଅନୁମତି ଦିଏ | ଏକାଧିକ ସଦସ୍ୟଙ୍କୁ ନ୍ୟସ୍ତ କରିବାକୁ ଏବଂ ଆପଣଙ୍କର ସମଗ୍ର ଦଳକୁ ସଂଯୋଗ କରିବାକୁ, ଦୟାକରି ଏକ ଟିମ୍ ଯୋଜନାକୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ |"
   },
   "walkie_chooseAPlan": {
     "en": "Choose a Plan",
@@ -2095,7 +3383,15 @@
     "ml": "പ്ലാൻ തിരഞ്ഞെടുക്കുക",
     "ta": "பிளானைத் தேர்ந்தெடு",
     "te": "ప్లాన్ ఎంచుకోండి",
-    "pa": "ਪਲਾਨ ਚੁਣੋ"
+    "pa": "ਪਲਾਨ ਚੁਣੋ",
+    "es": "Elige un plan",
+    "fr": "Choisir un forfait",
+    "de": "Wähle einen Plan",
+    "ar": "اختر خطة",
+    "pt": "Escolha um plano",
+    "ja": "プランを選択",
+    "zh": "选择方案",
+    "or": "ଏକ ଯୋଜନା ବାଛନ୍ତୁ |"
   },
   "walkie_upgradeToTeamPlan": {
     "en": "Upgrade to Team Plan",
@@ -2107,7 +3403,15 @@
     "ml": "ടീം പ്ലാനിലേക്ക് അപ്ഗ്രേഡ് ചെയ്യുക",
     "ta": "டீம் பிளானுக்கு மேம்படுத்து",
     "te": "టీమ్ ప్లాన్‌కు అప్‌గ్రేడ్ చేయండి",
-    "pa": "ਟੀਮ ਪਲਾਨ ਵਿੱਚ ਅੱਪਗ੍ਰੇਡ ਕਰੋ"
+    "pa": "ਟੀਮ ਪਲਾਨ ਵਿੱਚ ਅੱਪਗ੍ਰੇਡ ਕਰੋ",
+    "es": "Mejorar a Plan de equipo",
+    "fr": "Passer au forfait d’équipe",
+    "de": "Auf Team-Plan upgraden",
+    "ar": "الترقية إلى خطة الفريق",
+    "pt": "Atualizar para Plano de Equipe",
+    "ja": "チームプランにアップグレード",
+    "zh": "升级至团队方案",
+    "or": "ଦଳ ଯୋଜନାକୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ |"
   },
   "walkie_editAssignedMembers": {
     "en": "Edit Assigned Members",
@@ -2119,7 +3423,15 @@
     "ml": "നൽകിയ അംഗങ്ങളെ എഡിറ്റ് ചെയ്യുക",
     "ta": "ஒதுக்கிய உறுப்பினர்களைத் திருத்து",
     "te": "కేటాయించిన సభ్యులను సవరించండి",
-    "pa": "ਦਿੱਤੇ ਮੈਂਬਰ ਸੋਧੋ"
+    "pa": "ਦਿੱਤੇ ਮੈਂਬਰ ਸੋਧੋ",
+    "es": "Editar miembros asignados",
+    "fr": "Modifier les membres attribués",
+    "de": "Zugewiesene Mitglieder bearbeiten",
+    "ar": "تعديل الأعضاء المعينين",
+    "pt": "Editar membros atribuídos",
+    "ja": "割り当てメンバーを編集",
+    "zh": "编辑已分配成员",
+    "or": "ନ୍ୟସ୍ତ ସଦସ୍ୟମାନଙ୍କୁ ସଂପାଦନ କରନ୍ତୁ |"
   },
   "walkie_noPlanSubscribeAssign": {
     "en": "No active plan • Subscribe to assign members",
@@ -2131,7 +3443,15 @@
     "ml": "സജീവ പ്ലാൻ ഇല്ല • അംഗങ്ങളെ ചേർക്കാൻ സബ്സ്ക്രൈബ് ചെയ്യുക",
     "ta": "செயலில் பிளான் இல்லை • உறுப்பினர்களை ஒதுக்க சந்தா செலுத்துங்கள்",
     "te": "యాక్టివ్ ప్లాన్ లేదు • సభ్యులను కేటాయించడానికి సబ్‌స్క్రైబ్ చేయండి",
-    "pa": "ਕੋਈ ਸਰਗਰਮ ਪਲਾਨ ਨਹੀਂ • ਮੈਂਬਰ ਜੋੜਨ ਲਈ ਸਬਸਕ੍ਰਾਈਬ ਕਰੋ"
+    "pa": "ਕੋਈ ਸਰਗਰਮ ਪਲਾਨ ਨਹੀਂ • ਮੈਂਬਰ ਜੋੜਨ ਲਈ ਸਬਸਕ੍ਰਾਈਬ ਕਰੋ",
+    "es": "Sin plan activo • Suscríbete para asignar miembros",
+    "fr": "Aucun forfait actif • Abonnez-vous pour assigner",
+    "de": "Kein aktiver Plan • Abonnieren zur Zuweisung",
+    "ar": "لا توجد خطة نشطة • اشترك لتعيين الأعضاء",
+    "pt": "Nenhum plano ativo • Assine para atribuir membros",
+    "ja": "有効なプランがありません • 定期購入してメンバーを割り当て",
+    "zh": "无活跃方案 • 订阅以分配成员",
+    "or": "କ active ଣସି ସକ୍ରିୟ ଯୋଜନା ନାହିଁ • ସଦସ୍ୟମାନଙ୍କୁ ନ୍ୟସ୍ତ କରିବାକୁ ସବସ୍କ୍ରାଇବ କରନ୍ତୁ |"
   },
   "walkie_individualSelfOnlyUpgrade": {
     "en": "Individual Plan (Self Access Only) • Upgrade to Team to assign members",
@@ -2143,7 +3463,15 @@
     "ml": "വ്യക്തിഗത പ്ലാൻ (സ്വന്തം ആക്സസ് മാത്രം) • അംഗങ്ങളെ ചേർക്കാൻ ടീമിലേക്ക് അപ്ഗ്രേഡ് ചെയ്യുക",
     "ta": "தனிநபர் பிளான் (உங்களுக்கு மட்டும்) • உறுப்பினர்களை ஒதுக்க டீமுக்கு மேம்படுத்துங்கள்",
     "te": "వ్యక్తిగత ప్లాన్ (మీకు మాత్రమే) • సభ్యులను కేటాయించడానికి టీమ్‌కు అప్‌గ్రేడ్ చేయండి",
-    "pa": "ਨਿੱਜੀ ਪਲਾਨ (ਸਿਰਫ਼ ਆਪਣੇ ਲਈ) • ਮੈਂਬਰ ਜੋੜਨ ਲਈ ਟੀਮ ਵਿੱਚ ਅੱਪਗ੍ਰੇਡ ਕਰੋ"
+    "pa": "ਨਿੱਜੀ ਪਲਾਨ (ਸਿਰਫ਼ ਆਪਣੇ ਲਈ) • ਮੈਂਬਰ ਜੋੜਨ ਲਈ ਟੀਮ ਵਿੱਚ ਅੱਪਗ੍ਰੇਡ ਕਰੋ",
+    "es": "Plan individual (Solo acceso personal) • Mejora a Equipo para asignar miembros",
+    "fr": "Forfait individuel (Accès personnel) • Passez à Équipe",
+    "de": "Einzelplan (Nur Eigenzugriff) • Upgrade auf Team",
+    "ar": "خطة فردية (وصول ذاتي فقط) • قم بالترقية للفريق لتعيين الأعضاء",
+    "pt": "Plano Individual (Apenas acesso próprio) • Atualize para Equipe",
+    "ja": "個人プラン（本人のみ利用可能）• メンバーを割り当てるにはチームにアップグレード",
+    "zh": "个人方案（仅限个人使用）• 升级至团队方案以分配成员",
+    "or": "ବ୍ୟକ୍ତିଗତ ଯୋଜନା (କେବଳ ସେଲ୍ଫ୍ ଆକ୍ସେସ୍) • ସଦସ୍ୟମାନଙ୍କୁ ନ୍ୟସ୍ତ କରିବାକୁ ଦଳକୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ |"
   },
   "walkie_canAssignUpTo": {
     "en": "{count, plural, =1{You can assign up to 1 member in this group} other{You can assign up to {count} members in this group}}",
@@ -2160,7 +3488,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count, plural, =1{Puedes asignar hasta 1 miembro en este grupo} other{Puedes asignar hasta {count} miembros en este grupo}}",
+    "fr": "{count, plural, =1{Vous pouvez assigner jusqu’à 1 membre} other{Vous pouvez assigner jusqu’à {count} membres}}",
+    "de": "{count, plural, =1{Du kannst bis zu 1 Mitglied in dieser Gruppe zuweisen} other{Du kannst bis zu {count} Mitglieder in dieser Gruppe zuweisen}}",
+    "ar": "{count, plural, =1{يمكنك تعيين عضو واحد في هذه المجموعة} other{يمكنك تعيين ما يصل إلى {count} أعضاء في هذه المجموعة}}",
+    "pt": "{count, plural, =1{Você pode atribuir até 1 membro neste grupo} other{Você pode atribuir até {count} membros neste grupo}}",
+    "ja": "{count, plural, =1{このグループで最大1名を割り当て可能} other{このグループで最大{count}名を割り当て可能}}",
+    "zh": "{count, plural, =1{您可以在此群组中最多分配 1 位成员} other{您可以在此群组中最多分配 {count} 位成员}}",
+    "or": "{count, plural, =1{ଆପଣ ଏହି ଗୋଷ୍ଠୀର 1 ଜଣ ସଦସ୍ୟଙ୍କୁ ନ୍ୟସ୍ତ କରିପାରିବେ |} other{ଆପଣ ଏହି ଗୋଷ୍ଠୀର {count} ସଦସ୍ୟମାନଙ୍କୁ ନ୍ୟସ୍ତ କରିପାରିବେ |}}"
   },
   "walkie_assignMembersToCommunicate": {
     "en": "Assign members to communicate in this group",
@@ -2172,7 +3508,15 @@
     "ml": "ഈ ഗ്രൂപ്പിൽ ആശയവിനിമയത്തിന് അംഗങ്ങളെ ചേർക്കുക",
     "ta": "இந்தக் குழுவில் தொடர்பு கொள்ள உறுப்பினர்களை ஒதுக்குங்கள்",
     "te": "ఈ గ్రూప్‌లో మాట్లాడటానికి సభ్యులను కేటాయించండి",
-    "pa": "ਇਸ ਗਰੁੱਪ ਵਿੱਚ ਗੱਲ ਕਰਨ ਲਈ ਮੈਂਬਰ ਜੋੜੋ"
+    "pa": "ਇਸ ਗਰੁੱਪ ਵਿੱਚ ਗੱਲ ਕਰਨ ਲਈ ਮੈਂਬਰ ਜੋੜੋ",
+    "es": "Asigna miembros para comunicarse en este grupo",
+    "fr": "Assignez des membres pour communiquer",
+    "de": "Weise Mitglieder zu, um in dieser Gruppe zu sprechen",
+    "ar": "قم بتعيين أعضاء للتواصل في هذه المجموعة",
+    "pt": "Atribua membros para se comunicar neste grupo",
+    "ja": "このグループで通話するメンバーを割り当ててください",
+    "zh": "分配成员以在此群组中进行对讲",
+    "or": "ଏହି ଗୋଷ୍ଠୀରେ ଯୋଗାଯୋଗ କରିବାକୁ ସଦସ୍ୟମାନଙ୍କୁ ନ୍ୟସ୍ତ କରନ୍ତୁ |"
   },
   "walkie_individualSelectedCount": {
     "en": "{count}/1 (Individual)",
@@ -2189,7 +3533,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "{count}/1 (Individual)",
+    "fr": "{count}/1 (Individuel)",
+    "de": "{count}/1 (Einzeln)",
+    "ar": "{count}/1 (فردي)",
+    "pt": "{count}/1 (Individual)",
+    "ja": "{count}/1 (個人)",
+    "zh": "{count}/1 (个人)",
+    "or": "{count} / 1 (ବ୍ୟକ୍ତିଗତ)"
   },
   "walkie_selected": {
     "en": "Selected",
@@ -2201,7 +3553,15 @@
     "ml": "തിരഞ്ഞെടുത്തത്",
     "ta": "தேர்ந்தெடுத்தவை",
     "te": "ఎంచుకున్నవి",
-    "pa": "ਚੁਣੇ ਗਏ"
+    "pa": "ਚੁਣੇ ਗਏ",
+    "es": "Seleccionado",
+    "fr": "Sélectionné",
+    "de": "Ausgewählt",
+    "ar": "محدد",
+    "pt": "Selecionado",
+    "ja": "選択済み",
+    "zh": "已选",
+    "or": "ମନୋନୀତ |"
   },
   "walkie_purchaseTeamPlanToAssign": {
     "en": "Purchase a Team Plan to assign Walkie-Talkie access to members.",
@@ -2213,7 +3573,15 @@
     "ml": "അംഗങ്ങൾക്ക് വാക്കി-ടോക്കി ആക്സസ് നൽകാൻ ടീം പ്ലാൻ വാങ്ങുക.",
     "ta": "உறுப்பினர்களுக்கு வாக்கி-டாக்கி அணுகலை வழங்க டீம் பிளான் வாங்குங்கள்.",
     "te": "సభ్యులకు వాకీ-టాకీ యాక్సెస్ ఇవ్వడానికి టీమ్ ప్లాన్ కొనండి.",
-    "pa": "ਮੈਂਬਰਾਂ ਨੂੰ ਵਾਕੀ-ਟਾਕੀ ਪਹੁੰਚ ਦੇਣ ਲਈ ਟੀਮ ਪਲਾਨ ਖਰੀਦੋ।"
+    "pa": "ਮੈਂਬਰਾਂ ਨੂੰ ਵਾਕੀ-ਟਾਕੀ ਪਹੁੰਚ ਦੇਣ ਲਈ ਟੀਮ ਪਲਾਨ ਖਰੀਦੋ।",
+    "es": "Compra un Plan de equipo para asignar acceso de Walkie-Talkie a los miembros.",
+    "fr": "Achetez un forfait d’équipe pour attribuer l’accès aux membres.",
+    "de": "Kaufe einen Team-Plan, um Mitgliedern Zugang zuzuweisen.",
+    "ar": "اشترِ خطة فريق لتعيين صلاحية استخدام اللاسلكي للأعضاء.",
+    "pt": "Compre um Plano de Equipe para atribuir acesso de Walkie-Talkie aos membros.",
+    "ja": "メンバーにトランシーバー利用権を割り当てるにはチームプランをご購入ください。",
+    "zh": "购买团队方案以为成员分配对讲机使用权限。",
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ୱାକି-ଟକି ପ୍ରବେଶ ନ୍ୟସ୍ତ କରିବାକୁ ଏକ ଟିମ୍ ଯୋଜନା କ୍ରୟ କରନ୍ତୁ |"
   },
   "walkie_individualActiveUpgrade": {
     "en": "Individual Plan active (Self access only) • Upgrade to Team Plan to assign members.",
@@ -2225,7 +3593,15 @@
     "ml": "വ്യക്തിഗത പ്ലാൻ സജീവം (സ്വന്തം ആക്സസ് മാത്രം) • അംഗങ്ങളെ ചേർക്കാൻ ടീം പ്ലാനിലേക്ക് അപ്ഗ്രേഡ് ചെയ്യുക.",
     "ta": "தனிநபர் பிளான் செயலில் (உங்களுக்கு மட்டும்) • உறுப்பினர்களை ஒதுக்க டீம் பிளானுக்கு மேம்படுத்துங்கள்.",
     "te": "వ్యక్తిగత ప్లాన్ యాక్టివ్ (మీకు మాత్రమే) • సభ్యులను కేటాయించడానికి టీమ్ ప్లాన్‌కు అప్‌గ్రేడ్ చేయండి.",
-    "pa": "ਨਿੱਜੀ ਪਲਾਨ ਸਰਗਰਮ (ਸਿਰਫ਼ ਆਪਣੇ ਲਈ) • ਮੈਂਬਰ ਜੋੜਨ ਲਈ ਟੀਮ ਪਲਾਨ ਵਿੱਚ ਅੱਪਗ੍ਰੇਡ ਕਰੋ।"
+    "pa": "ਨਿੱਜੀ ਪਲਾਨ ਸਰਗਰਮ (ਸਿਰਫ਼ ਆਪਣੇ ਲਈ) • ਮੈਂਬਰ ਜੋੜਨ ਲਈ ਟੀਮ ਪਲਾਨ ਵਿੱਚ ਅੱਪਗ੍ਰੇਡ ਕਰੋ।",
+    "es": "Plan individual activo (Solo acceso personal) • Mejora a Plan de equipo para asignar miembros.",
+    "fr": "Forfait individuel actif (Accès perso) • Passez au forfait d’équipe.",
+    "de": "Einzelplan aktiv (Nur Eigenzugriff) • Auf Team-Plan upgraden.",
+    "ar": "الخطة الفردية نشطة (وصول ذاتي فقط) • قم بالترقية لخطة الفريق لتعيين الأعضاء.",
+    "pt": "Plano Individual ativo (Apenas próprio) • Atualize para Plano de Equipe.",
+    "ja": "個人プランが有効（個人のみ利用可能）• メンバーを割り当てるにはチームプランへアップグレード。",
+    "zh": "个人方案已激活（仅本人可用）• 升级至团队方案以分配成员。",
+    "or": "ବ୍ୟକ୍ତିଗତ ଯୋଜନା ସକ୍ରିୟ (କେବଳ ସେଲ୍ଫ୍ ଆକ୍ସେସ୍) • ସଦସ୍ୟମାନଙ୍କୁ ନ୍ୟସ୍ତ କରିବାକୁ ଟିମ୍ ପ୍ଲାନ୍କୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ |"
   },
   "walkie_seatsSummary": {
     "en": "{total} Total Seats • {assigned} Assigned • {available} Available",
@@ -2248,7 +3624,15 @@
       "available": {
         "type": "int"
       }
-    }
+    },
+    "es": "{total} puestos totales • {assigned} asignados • {available} disponibles",
+    "fr": "{total} sièges au total • {assigned} attribués • {available} disponibles",
+    "de": "{total} Plätze gesamt • {assigned} zugewiesen • {available} verfügbar",
+    "ar": "{total} إجمالي المقاعد • {assigned} معين • {available} متاح",
+    "pt": "{total} postos no total • {assigned} atribuídos • {available} disponíveis",
+    "ja": "合計 {total} 席 • 割り当て済み {assigned} • 利用可能 {available}",
+    "zh": "总计 {total} 席位 • 已分配 {assigned} • 可用 {available}",
+    "or": "{total} ସମୁଦାୟ ଆସନ • {assigned} ନ୍ୟସ୍ତ • {available} ଉପଲବ୍ଧ |"
   },
   "walkie_planStartsOnFirstAssign": {
     "en": "Plan starts when the first member is assigned.",
@@ -2260,7 +3644,15 @@
     "ml": "ആദ്യ അംഗത്തെ ചേർക്കുമ്പോൾ പ്ലാൻ ആരംഭിക്കും.",
     "ta": "முதல் உறுப்பினர் ஒதுக்கப்பட்டதும் பிளான் தொடங்கும்.",
     "te": "మొదటి సభ్యుడిని కేటాయించినప్పుడు ప్లాన్ ప్రారంభమవుతుంది.",
-    "pa": "ਪਹਿਲਾ ਮੈਂਬਰ ਜੋੜਦੇ ਹੀ ਪਲਾਨ ਸ਼ੁਰੂ ਹੋਵੇਗਾ।"
+    "pa": "ਪਹਿਲਾ ਮੈਂਬਰ ਜੋੜਦੇ ਹੀ ਪਲਾਨ ਸ਼ੁਰੂ ਹੋਵੇਗਾ।",
+    "es": "El plan comienza cuando se asigna el primer miembro.",
+    "fr": "Le forfait commence dès l’attribution du premier membre.",
+    "de": "Der Plan beginnt, sobald das erste Mitglied zugewiesen wird.",
+    "ar": "تبدأ الخطة عند تعيين أول عضو.",
+    "pt": "O plano começa quando o primeiro membro é atribuído.",
+    "ja": "最初のメンバーが割り当てられた時点でプランが開始されます。",
+    "zh": "方案自第一位成员被分配时起生效。",
+    "or": "ପ୍ରଥମ ସଦସ୍ୟ ନ୍ୟସ୍ତ ହେଲେ ଯୋଜନା ଆରମ୍ଭ ହୁଏ |"
   },
   "walkie_ready": {
     "en": "Ready",
@@ -2272,7 +3664,15 @@
     "ml": "തയ്യാർ",
     "ta": "தயார்",
     "te": "సిద్ధం",
-    "pa": "ਤਿਆਰ"
+    "pa": "ਤਿਆਰ",
+    "es": "Listo",
+    "fr": "Prêt",
+    "de": "Bereit",
+    "ar": "جاهز",
+    "pt": "Pronto",
+    "ja": "準備完了",
+    "zh": "准备就绪",
+    "or": "ପ୍ରସ୍ତୁତ |"
   },
   "walkie_searchMembers": {
     "en": "Search members...",
@@ -2284,7 +3684,15 @@
     "ml": "അംഗങ്ങളെ തിരയുക...",
     "ta": "உறுப்பினர்களைத் தேடு...",
     "te": "సభ్యులను వెతకండి...",
-    "pa": "ਮੈਂਬਰ ਖੋਜੋ..."
+    "pa": "ਮੈਂਬਰ ਖੋਜੋ...",
+    "es": "Buscar miembros...",
+    "fr": "Rechercher des membres...",
+    "de": "Mitglieder suchen...",
+    "ar": "بحث في الأعضاء...",
+    "pt": "Pesquisar membros...",
+    "ja": "メンバーを検索...",
+    "zh": "搜索成员...",
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଖୋଜ ..."
   },
   "walkie_noMembersMatch": {
     "en": "No Members Match",
@@ -2296,7 +3704,15 @@
     "ml": "പൊരുത്തപ്പെടുന്ന അംഗങ്ങളില്ല",
     "ta": "பொருந்தும் உறுப்பினர்கள் இல்லை",
     "te": "సరిపోలే సభ్యులు లేరు",
-    "pa": "ਕੋਈ ਮੇਲ ਖਾਂਦਾ ਮੈਂਬਰ ਨਹੀਂ"
+    "pa": "ਕੋਈ ਮੇਲ ਖਾਂਦਾ ਮੈਂਬਰ ਨਹੀਂ",
+    "es": "Ningún miembro coincide",
+    "fr": "Aucun membre ne correspond",
+    "de": "Keine passenden Mitglieder",
+    "ar": "لا يوجد أعضاء مطابقون",
+    "pt": "Nenhum membro correspondente",
+    "ja": "一致するメンバーがいません",
+    "zh": "没有匹配的成员",
+    "or": "କ Members ଣସି ସଦସ୍ୟ ମେଳ ଖାଉ ନାହାଁନ୍ତି |"
   },
   "walkie_noMembersFoundTitle": {
     "en": "No Members Found",
@@ -2308,7 +3724,15 @@
     "ml": "അംഗങ്ങളെ കണ്ടെത്തിയില്ല",
     "ta": "உறுப்பினர்கள் கிடைக்கவில்லை",
     "te": "సభ్యులు కనబడలేదు",
-    "pa": "ਕੋਈ ਮੈਂਬਰ ਨਹੀਂ ਮਿਲਿਆ"
+    "pa": "ਕੋਈ ਮੈਂਬਰ ਨਹੀਂ ਮਿਲਿਆ",
+    "es": "No se encontraron miembros",
+    "fr": "Aucun membre trouvé",
+    "de": "Keine Mitglieder gefunden",
+    "ar": "لم يتم العثور على أعضاء",
+    "pt": "Nenhum membro encontrado",
+    "ja": "メンバーが見つかりません",
+    "zh": "未找到成员",
+    "or": "କ Members ଣସି ସଦସ୍ୟ ମିଳିଲା ନାହିଁ |"
   },
   "walkie_checkNetworkTryAgain": {
     "en": "Please check your network connection and try again.",
@@ -2320,7 +3744,15 @@
     "ml": "നിങ്ങളുടെ നെറ്റ്‌വർക്ക് കണക്ഷൻ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.",
     "ta": "உங்கள் நெட்வொர்க் இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.",
     "te": "దయచేసి మీ నెట్‌వర్క్ కనెక్షన్ తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.",
-    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਨੈੱਟਵਰਕ ਕਨੈਕਸ਼ਨ ਜਾਂਚੋ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"
+    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਨੈੱਟਵਰਕ ਕਨੈਕਸ਼ਨ ਜਾਂਚੋ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    "es": "Comprueba tu conexión de red e inténtalo de nuevo.",
+    "fr": "Vérifiez votre connexion réseau et réessayez.",
+    "de": "Bitte überprüfe deine Netzwerkverbindung und versuche es erneut.",
+    "ar": "يرجى التحقق من اتصال الشبكة والمحاولة مرة أخرى.",
+    "pt": "Verifique sua conexão de rede e tente novamente.",
+    "ja": "ネットワーク接続を確認してもう一度お試しください。",
+    "zh": "请检查网络连接并重试。",
+    "or": "ଦୟାକରି ଆପଣଙ୍କର ନେଟୱର୍କ ସଂଯୋଗ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
   },
   "walkie_noMembersMatchQuery": {
     "en": "No members match '{query}'",
@@ -2337,7 +3769,15 @@
       "query": {
         "type": "String"
       }
-    }
+    },
+    "es": "Ningún miembro coincide con '{query}'",
+    "fr": "Aucun membre ne correspond à '{query}'",
+    "de": "Keine Mitglieder entsprechen '{query}'",
+    "ar": "لا يوجد أعضاء مطابقون لـ '{query}'",
+    "pt": "Nenhum membro corresponde a '{query}'",
+    "ja": "「{query}」に一致するメンバーはいません",
+    "zh": "没有匹配“{query}”的成员",
+    "or": "କ members ଣସି ସଦସ୍ୟ '{query}' ସହିତ ମେଳ ଖାଉ ନାହାଁନ୍ତି |"
   },
   "walkie_noMembersToAssign": {
     "en": "No group members available to assign.",
@@ -2349,7 +3789,15 @@
     "ml": "ചേർക്കാൻ ഗ്രൂപ്പ് അംഗങ്ങളൊന്നും ലഭ്യമല്ല.",
     "ta": "ஒதுக்க குழு உறுப்பினர்கள் யாரும் இல்லை.",
     "te": "కేటాయించడానికి గ్రూప్ సభ్యులు ఎవరూ అందుబాటులో లేరు.",
-    "pa": "ਜੋੜਨ ਲਈ ਕੋਈ ਗਰੁੱਪ ਮੈਂਬਰ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।"
+    "pa": "ਜੋੜਨ ਲਈ ਕੋਈ ਗਰੁੱਪ ਮੈਂਬਰ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।",
+    "es": "No hay miembros del grupo disponibles para asignar.",
+    "fr": "Aucun membre du groupe disponible à assigner.",
+    "de": "Keine Gruppenmitglieder zum Zuweisen verfügbar.",
+    "ar": "لا يوجد أعضاء متاحون للتعيين في المجموعة.",
+    "pt": "Nenhum membro do grupo disponível para atribuir.",
+    "ja": "割り当て可能なグループメンバーがいません。",
+    "zh": "没有可供分配的群组成员。",
+    "or": "କ group ଣସି ଗୋଷ୍ଠୀ ସଦସ୍ୟ ନ୍ୟସ୍ତ କରିବାକୁ ଉପଲବ୍ଧ ନୁହଁନ୍ତି |"
   },
   "walkie_currentlyAssigned": {
     "en": "Currently Assigned ({count})",
@@ -2366,7 +3814,15 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "es": "Actualmente asignados ({count})",
+    "fr": "Actuellement attribués ({count})",
+    "de": "Derzeit zugewiesen ({count})",
+    "ar": "تم تعيينهم حالياً ({count})",
+    "pt": "Atualmente atribuídos ({count})",
+    "ja": "現在割り当て中 ({count})",
+    "zh": "当前已分配 ({count})",
+    "or": "ସମ୍ପ୍ରତି ନ୍ୟସ୍ତ ହୋଇଛି ({count})"
   },
   "walkie_removeAll": {
     "en": "Remove All",
@@ -2378,7 +3834,15 @@
     "ml": "എല്ലാം നീക്കുക",
     "ta": "அனைத்தையும் அகற்று",
     "te": "అన్నీ తీసివేయండి",
-    "pa": "ਸਾਰੇ ਹਟਾਓ"
+    "pa": "ਸਾਰੇ ਹਟਾਓ",
+    "es": "Eliminar todos",
+    "fr": "Tout retirer",
+    "de": "Alle entfernen",
+    "ar": "إزالة الكل",
+    "pt": "Remover todos",
+    "ja": "すべて削除",
+    "zh": "全部移除",
+    "or": "ସମସ୍ତ ଅପସାରଣ କରନ୍ତୁ |"
   },
   "walkie_noMembersAssigned": {
     "en": "No members currently assigned",
@@ -2390,7 +3854,15 @@
     "ml": "നിലവിൽ അംഗങ്ങളെ നൽകിയിട്ടില്ല",
     "ta": "தற்போது உறுப்பினர்கள் யாரும் ஒதுக்கப்படவில்லை",
     "te": "ప్రస్తుతం సభ్యులు ఎవరూ కేటాయించబడలేదు",
-    "pa": "ਹੁਣ ਕੋਈ ਮੈਂਬਰ ਨਹੀਂ ਦਿੱਤਾ ਗਿਆ"
+    "pa": "ਹੁਣ ਕੋਈ ਮੈਂਬਰ ਨਹੀਂ ਦਿੱਤਾ ਗਿਆ",
+    "es": "No hay miembros asignados actualmente",
+    "fr": "Aucun membre actuellement attribué",
+    "de": "Derzeit keine Mitglieder zugewiesen",
+    "ar": "لم يتم تعيين أي أعضاء حالياً",
+    "pt": "Nenhum membro atribuído no momento",
+    "ja": "現在割り当てられているメンバーはいません",
+    "zh": "目前未分配任何成员",
+    "or": "ବର୍ତ୍ତମାନ କ No ଣସି ସଦସ୍ୟ ନିଯୁକ୍ତ ନୁହଁନ୍ତି |"
   },
   "walkie_availableMembers": {
     "en": "Available Members",
@@ -2402,7 +3874,15 @@
     "ml": "ലഭ്യമായ അംഗങ്ങൾ",
     "ta": "கிடைக்கும் உறுப்பினர்கள்",
     "te": "అందుబాటులో ఉన్న సభ్యులు",
-    "pa": "ਉਪਲਬਧ ਮੈਂਬਰ"
+    "pa": "ਉਪਲਬਧ ਮੈਂਬਰ",
+    "es": "Miembros disponibles",
+    "fr": "Membres disponibles",
+    "de": "Verfügbare Mitglieder",
+    "ar": "الأعضاء المتاحون",
+    "pt": "Membros disponíveis",
+    "ja": "利用可能なメンバー",
+    "zh": "可用成员",
+    "or": "ଉପଲବ୍ଧ ସଦସ୍ୟମାନେ |"
   },
   "walkie_noAvailableMembers": {
     "en": "No available members",
@@ -2414,7 +3894,15 @@
     "ml": "ലഭ്യമായ അംഗങ്ങളില്ല",
     "ta": "கிடைக்கும் உறுப்பினர்கள் இல்லை",
     "te": "అందుబాటులో సభ్యులు లేరు",
-    "pa": "ਕੋਈ ਉਪਲਬਧ ਮੈਂਬਰ ਨਹੀਂ"
+    "pa": "ਕੋਈ ਉਪਲਬਧ ਮੈਂਬਰ ਨਹੀਂ",
+    "es": "No hay miembros disponibles",
+    "fr": "Aucun membre disponible",
+    "de": "Keine verfügbaren Mitglieder",
+    "ar": "لا يوجد أعضاء متاحون",
+    "pt": "Nenhum membro disponível",
+    "ja": "利用可能なメンバーはいません",
+    "zh": "无可用成员",
+    "or": "କ members ଣସି ସଦସ୍ୟ ନାହିଁ |"
   },
   "walkie_upgradeTeamAssign": {
     "en": "Upgrade to Team Plan (Assign Members)",
@@ -2426,7 +3914,15 @@
     "ml": "ടീം പ്ലാനിലേക്ക് അപ്ഗ്രേഡ് (അംഗങ്ങളെ ചേർക്കുക)",
     "ta": "டீம் பிளானுக்கு மேம்படுத்து (உறுப்பினர்கள் ஒதுக்க)",
     "te": "టీమ్ ప్లాన్‌కు అప్‌గ్రేడ్ (సభ్యుల కేటాయింపు)",
-    "pa": "ਟੀਮ ਪਲਾਨ ਵਿੱਚ ਅੱਪਗ੍ਰੇਡ (ਮੈਂਬਰ ਜੋੜੋ)"
+    "pa": "ਟੀਮ ਪਲਾਨ ਵਿੱਚ ਅੱਪਗ੍ਰੇਡ (ਮੈਂਬਰ ਜੋੜੋ)",
+    "es": "Mejorar a Plan de equipo (Asignar miembros)",
+    "fr": "Passer au forfait d’équipe (Assigner)",
+    "de": "Auf Team-Plan upgraden (Mitglieder zuweisen)",
+    "ar": "الترقية لخطة الفريق (تعيين الأعضاء)",
+    "pt": "Atualizar para Plano de Equipe (Atribuir membros)",
+    "ja": "チームプランにアップグレード（メンバーを割り当て）",
+    "zh": "升级至团队方案（分配成员）",
+    "or": "ଦଳ ଯୋଜନାକୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ (ସଦସ୍ୟମାନଙ୍କୁ ନ୍ୟସ୍ତ କରନ୍ତୁ)"
   },
   "walkie_updatingMembers": {
     "en": "Updating Members...",
@@ -2438,7 +3934,15 @@
     "ml": "അംഗങ്ങളെ അപ്ഡേറ്റ് ചെയ്യുന്നു...",
     "ta": "உறுப்பினர்கள் புதுப்பிக்கப்படுகின்றனர்...",
     "te": "సభ్యులను అప్‌డేట్ చేస్తోంది...",
-    "pa": "ਮੈਂਬਰ ਅੱਪਡੇਟ ਹੋ ਰਹੇ ਹਨ..."
+    "pa": "ਮੈਂਬਰ ਅੱਪਡੇਟ ਹੋ ਰਹੇ ਹਨ...",
+    "es": "Actualizando miembros...",
+    "fr": "Mise à jour des membres...",
+    "de": "Mitglieder werden aktualisiert...",
+    "ar": "جارٍ تحديث الأعضاء...",
+    "pt": "Atualizando membros...",
+    "ja": "メンバーを更新中...",
+    "zh": "正在更新成员...",
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଅଦ୍ୟତନ କରିବା ..."
   },
   "walkie_updateMembers": {
     "en": "Update Members ({assigned}/{total})",
@@ -2458,7 +3962,15 @@
       "total": {
         "type": "int"
       }
-    }
+    },
+    "es": "Actualizar miembros ({assigned}/{total})",
+    "fr": "Mettre à jour les membres ({assigned}/{total})",
+    "de": "Mitglieder aktualisieren ({assigned}/{total})",
+    "ar": "تحديث الأعضاء ({assigned}/{total})",
+    "pt": "Atualizar membros ({assigned}/{total})",
+    "ja": "メンバーを更新 ({assigned}/{total})",
+    "zh": "更新成员 ({assigned}/{total})",
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଅଦ୍ୟତନ କରନ୍ତୁ ({assigned} / {total})"
   },
   "walkie_assignedByYou": {
     "en": "Assigned by You",
@@ -2470,7 +3982,15 @@
     "ml": "നിങ്ങൾ നൽകിയത്",
     "ta": "நீங்கள் ஒதுக்கியது",
     "te": "మీరు కేటాయించినది",
-    "pa": "ਤੁਹਾਡੇ ਵੱਲੋਂ ਦਿੱਤਾ"
+    "pa": "ਤੁਹਾਡੇ ਵੱਲੋਂ ਦਿੱਤਾ",
+    "es": "Asignado por ti",
+    "fr": "Attribué par vous",
+    "de": "Von dir zugewiesen",
+    "ar": "تم تعيينه بواسطتك",
+    "pt": "Atribuído por você",
+    "ja": "あなたが割り当てました",
+    "zh": "由您分配",
+    "or": "ତୁମ ଦ୍ୱାରା ନ୍ୟସ୍ତ |"
   },
   "walkie_activeMember": {
     "en": "Active Member",
@@ -2482,7 +4002,15 @@
     "ml": "സജീവ അംഗം",
     "ta": "செயலில் உள்ள உறுப்பினர்",
     "te": "యాక్టివ్ సభ్యుడు",
-    "pa": "ਸਰਗਰਮ ਮੈਂਬਰ"
+    "pa": "ਸਰਗਰਮ ਮੈਂਬਰ",
+    "es": "Miembro activo",
+    "fr": "Membre actif",
+    "de": "Aktives Mitglied",
+    "ar": "عضو نشط",
+    "pt": "Membro ativo",
+    "ja": "アクティブメンバー",
+    "zh": "活跃成员",
+    "or": "ସକ୍ରିୟ ସଦସ୍ୟ |"
   },
   "walkie_selfAccess": {
     "en": "Self Access",
@@ -2494,7 +4022,15 @@
     "ml": "സ്വന്തം ആക്സസ്",
     "ta": "சொந்த அணுகல்",
     "te": "సొంత యాక్సెస్",
-    "pa": "ਆਪਣੀ ਪਹੁੰਚ"
+    "pa": "ਆਪਣੀ ਪਹੁੰਚ",
+    "es": "Acceso propio",
+    "fr": "Accès personnel",
+    "de": "Eigenzugriff",
+    "ar": "وصول ذاتي",
+    "pt": "Acesso próprio",
+    "ja": "本人アクセス",
+    "zh": "本人访问",
+    "or": "ସେଲ୍ଫ୍ ଆକ୍ସେସ୍ |"
   },
   "walkie_otherTeam": {
     "en": "Other Team",
@@ -2506,7 +4042,15 @@
     "ml": "മറ്റൊരു ടീം",
     "ta": "வேறு குழு",
     "te": "వేరే టీమ్",
-    "pa": "ਹੋਰ ਟੀਮ"
+    "pa": "ਹੋਰ ਟੀਮ",
+    "es": "Otro equipo",
+    "fr": "Autre équipe",
+    "de": "Anderes Team",
+    "ar": "فريق آخر",
+    "pt": "Outra equipe",
+    "ja": "他のチーム",
+    "zh": "其他团队",
+    "or": "ଅନ୍ୟ ଦଳ |"
   },
   "walkie_cannotRemoveOtherAdminSeat": {
     "en": "Cannot remove seat assigned by another admin",
@@ -2518,7 +4062,15 @@
     "ml": "മറ്റൊരു അഡ്മിൻ നൽകിയ സീറ്റ് നീക്കാനാകില്ല",
     "ta": "வேறு அட்மின் ஒதுக்கிய இருக்கையை அகற்ற முடியாது",
     "te": "వేరే అడ్మిన్ కేటాయించిన సీట్‌ను తీసివేయలేరు",
-    "pa": "ਕਿਸੇ ਹੋਰ ਐਡਮਿਨ ਵੱਲੋਂ ਦਿੱਤੀ ਸੀਟ ਹਟਾਈ ਨਹੀਂ ਜਾ ਸਕਦੀ"
+    "pa": "ਕਿਸੇ ਹੋਰ ਐਡਮਿਨ ਵੱਲੋਂ ਦਿੱਤੀ ਸੀਟ ਹਟਾਈ ਨਹੀਂ ਜਾ ਸਕਦੀ",
+    "es": "No se puede eliminar un puesto asignado por otro administrador",
+    "fr": "Impossible de retirer un siège attribué par un autre admin",
+    "de": "Ein von einem anderen Admin zugewiesener Platz kann nicht entfernt werden",
+    "ar": "لا يمكن إزالة مقعد تم تعيينه بواسطة مشرف آخر",
+    "pt": "Não é possível remover o posto atribuído por outro administrador",
+    "ja": "他の管理者によって割り当てられたシートは削除できません",
+    "zh": "无法移除其他管理员分配的席位",
+    "or": "ଅନ୍ୟ ଜଣେ ଆଡମିନିଷ୍ଟ୍ରେଟ୍ ଦ୍ୱାରା ଦିଆଯାଇଥିବା ସିଟ୍ ଅପସାରଣ କରିପାରିବ ନାହିଁ |"
   },
   "walkie_individualSubscribedSelf": {
     "en": "Individual Plan • Subscribed by Self",
@@ -2530,7 +4082,15 @@
     "ml": "വ്യക്തിഗത പ്ലാൻ • സ്വയം സബ്സ്ക്രൈബ് ചെയ്തു",
     "ta": "தனிநபர் பிளான் • தாமே சந்தா செலுத்தியது",
     "te": "వ్యక్తిగత ప్లాన్ • స్వయంగా సబ్‌స్క్రైబ్ చేశారు",
-    "pa": "ਨਿੱਜੀ ਪਲਾਨ • ਖੁਦ ਸਬਸਕ੍ਰਾਈਬ ਕੀਤਾ"
+    "pa": "ਨਿੱਜੀ ਪਲਾਨ • ਖੁਦ ਸਬਸਕ੍ਰਾਈਬ ਕੀਤਾ",
+    "es": "Plan individual • Suscrito por ti mismo",
+    "fr": "Forfait individuel • Souscrit par vous",
+    "de": "Einzelplan • Selbst abonniert",
+    "ar": "خطة فردية • تم الاشتراك ذاتياً",
+    "pt": "Plano Individual • Assinado pelo próprio",
+    "ja": "個人プラン • 本人契約",
+    "zh": "个人方案 • 自行订阅",
+    "or": "ବ୍ୟକ୍ତିଗତ ଯୋଜନା • ସେଲ୍ଫ ଦ୍ୱାରା ଗ୍ରହୀତା |"
   },
   "walkie_teamAssignedElsewhere": {
     "en": "Team Plan • Assigned Elsewhere",
@@ -2542,7 +4102,15 @@
     "ml": "ടീം പ്ലാൻ • മറ്റൊരിടത്ത് നൽകി",
     "ta": "டீம் பிளான் • வேறிடத்தில் ஒதுக்கப்பட்டது",
     "te": "టీమ్ ప్లాన్ • వేరే చోట కేటాయించబడింది",
-    "pa": "ਟੀਮ ਪਲਾਨ • ਕਿਤੇ ਹੋਰ ਦਿੱਤਾ"
+    "pa": "ਟੀਮ ਪਲਾਨ • ਕਿਤੇ ਹੋਰ ਦਿੱਤਾ",
+    "es": "Plan de equipo • Asignado en otro lugar",
+    "fr": "Forfait d’équipe • Attribué ailleurs",
+    "de": "Team-Plan • Woanders zugewiesen",
+    "ar": "خطة الفريق • تم التعيين في مكان آخر",
+    "pt": "Plano de Equipe • Atribuído em outro lugar",
+    "ja": "チームプラン • 他で割り当て済み",
+    "zh": "团队方案 • 已在别处分配",
+    "or": "ଦଳ ଯୋଜନା • ଅନ୍ୟତ୍ର ନ୍ୟସ୍ତ |"
   },
   "walkie_activeAccess": {
     "en": "Active Access",
@@ -2554,7 +4122,15 @@
     "ml": "സജീവ ആക്സസ്",
     "ta": "செயலில் உள்ள அணுகல்",
     "te": "యాక్టివ్ యాక్సెస్",
-    "pa": "ਸਰਗਰਮ ਪਹੁੰਚ"
+    "pa": "ਸਰਗਰਮ ਪਹੁੰਚ",
+    "es": "Acceso activo",
+    "fr": "Accès actif",
+    "de": "Aktiver Zugriff",
+    "ar": "صلاحية نشطة",
+    "pt": "Acesso ativo",
+    "ja": "有効なアクセス権",
+    "zh": "有效权限",
+    "or": "ସକ୍ରିୟ ପ୍ରବେଶ"
   },
   "walkie_selfPlan": {
     "en": "Self Plan",
@@ -2566,7 +4142,15 @@
     "ml": "സ്വന്തം പ്ലാൻ",
     "ta": "சொந்த பிளான்",
     "te": "సొంత ప్లాన్",
-    "pa": "ਆਪਣਾ ਪਲਾਨ"
+    "pa": "ਆਪਣਾ ਪਲਾਨ",
+    "es": "Plan personal",
+    "fr": "Forfait personnel",
+    "de": "Eigener Plan",
+    "ar": "خطة ذاتية",
+    "pt": "Plano próprio",
+    "ja": "自身のプラン",
+    "zh": "自购方案",
+    "or": "ଆତ୍ମ ଯୋଜନା"
   },
   "walkie_unavailable": {
     "en": "Unavailable",
@@ -2578,7 +4162,15 @@
     "ml": "ലഭ്യമല്ല",
     "ta": "கிடைக்கவில்லை",
     "te": "అందుబాటులో లేదు",
-    "pa": "ਉਪਲਬਧ ਨਹੀਂ"
+    "pa": "ਉਪਲਬਧ ਨਹੀਂ",
+    "es": "No disponible",
+    "fr": "Indisponible",
+    "de": "Nicht verfügbar",
+    "ar": "غير متاح",
+    "pt": "Indisponível",
+    "ja": "利用不可",
+    "zh": "不可用",
+    "or": "ଉପଲବ୍ଧ ନାହିଁ"
   },
   "walkie_noTeamSubscription": {
     "en": "No active team subscription found",
@@ -2590,7 +4182,15 @@
     "ml": "സജീവ ടീം സബ്സ്ക്രിപ്ഷൻ കണ്ടെത്തിയില്ല",
     "ta": "செயலில் உள்ள டீம் சந்தா இல்லை",
     "te": "యాక్టివ్ టీమ్ సబ్‌స్క్రిప్షన్ కనబడలేదు",
-    "pa": "ਕੋਈ ਸਰਗਰਮ ਟੀਮ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਨਹੀਂ ਮਿਲੀ"
+    "pa": "ਕੋਈ ਸਰਗਰਮ ਟੀਮ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਨਹੀਂ ਮਿਲੀ",
+    "es": "No se encontró ninguna suscripción de equipo activa",
+    "fr": "Aucun abonnement d’équipe actif trouvé",
+    "de": "Kein aktives Team-Abonnement gefunden",
+    "ar": "لم يتم العثور على اشتراك فريق نشط",
+    "pt": "Nenhuma assinatura de equipe ativa encontrada",
+    "ja": "有効なチーム定期購入が見つかりません",
+    "zh": "未找到活跃的团队订阅",
+    "or": "କ active ଣସି ସକ୍ରିୟ ଦଳ ସଦସ୍ୟତା ମିଳିଲା ନାହିଁ |"
   },
   "walkie_teamPlanRequiredToAssign": {
     "en": "Team Plan required to assign members",
@@ -2602,7 +4202,15 @@
     "ml": "അംഗങ്ങളെ ചേർക്കാൻ ടീം പ്ലാൻ ആവശ്യമാണ്",
     "ta": "உறுப்பினர்களை ஒதுக்க டீம் பிளான் தேவை",
     "te": "సభ్యులను కేటాయించడానికి టీమ్ ప్లాన్ అవసరం",
-    "pa": "ਮੈਂਬਰ ਜੋੜਨ ਲਈ ਟੀਮ ਪਲਾਨ ਲੋੜੀਂਦਾ ਹੈ"
+    "pa": "ਮੈਂਬਰ ਜੋੜਨ ਲਈ ਟੀਮ ਪਲਾਨ ਲੋੜੀਂਦਾ ਹੈ",
+    "es": "Se requiere Plan de equipo para asignar miembros",
+    "fr": "Forfait d’équipe requis pour assigner des membres",
+    "de": "Team-Plan zum Zuweisen von Mitgliedern erforderlich",
+    "ar": "مطلوب خطة فريق لتعيين الأعضاء",
+    "pt": "Plano de Equipe necessário para atribuir membros",
+    "ja": "メンバーを割り当てるにはチームプランが必要です",
+    "zh": "分配成员需要团队方案",
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ନ୍ୟସ୍ତ କରିବାକୁ ଦଳ ଯୋଜନା ଆବଶ୍ୟକ |"
   },
   "walkie_selectAtLeastOne": {
     "en": "Please select at least one member to assign",
@@ -2614,7 +4222,15 @@
     "ml": "ചേർക്കാൻ കുറഞ്ഞത് ഒരു അംഗത്തെ തിരഞ്ഞെടുക്കുക",
     "ta": "ஒதுக்க குறைந்தது ஒரு உறுப்பினரைத் தேர்ந்தெடுக்கவும்",
     "te": "దయచేసి కేటాయించడానికి కనీసం ఒక సభ్యుడిని ఎంచుకోండి",
-    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਜੋੜਨ ਲਈ ਘੱਟੋ-ਘੱਟ ਇੱਕ ਮੈਂਬਰ ਚੁਣੋ"
+    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਜੋੜਨ ਲਈ ਘੱਟੋ-ਘੱਟ ਇੱਕ ਮੈਂਬਰ ਚੁਣੋ",
+    "es": "Por favor, selecciona al menos un miembro para asignar",
+    "fr": "Veuillez sélectionner au moins un membre",
+    "de": "Bitte wähle mindestens ein Mitglied zum Zuweisen aus",
+    "ar": "يرجى تحديد عضو واحد على الأقل لتعيينه",
+    "pt": "Selecione pelo menos um membro para atribuir",
+    "ja": "割り当てるメンバーを少なくとも1名選択してください",
+    "zh": "请选择至少一位成员进行分配",
+    "or": "ନ୍ୟସ୍ତ କରିବାକୁ ଦୟାକରି ଅତିକମରେ ଜଣେ ସଦସ୍ୟ ଚୟନ କରନ୍ତୁ |"
   },
   "walkie_noValidMembers": {
     "en": "No valid members selected to assign",
@@ -2626,7 +4242,15 @@
     "ml": "ചേർക്കാൻ സാധുവായ അംഗങ്ങളെ തിരഞ്ഞെടുത്തിട്ടില്ല",
     "ta": "ஒதுக்க சரியான உறுப்பினர்கள் தேர்ந்தெடுக்கப்படவில்லை",
     "te": "కేటాయించడానికి సరైన సభ్యులు ఎవరూ ఎంచుకోబడలేదు",
-    "pa": "ਜੋੜਨ ਲਈ ਕੋਈ ਵੈਧ ਮੈਂਬਰ ਨਹੀਂ ਚੁਣਿਆ ਗਿਆ"
+    "pa": "ਜੋੜਨ ਲਈ ਕੋਈ ਵੈਧ ਮੈਂਬਰ ਨਹੀਂ ਚੁਣਿਆ ਗਿਆ",
+    "es": "No hay miembros válidos seleccionados para asignar",
+    "fr": "Aucun membre valide sélectionné",
+    "de": "Keine gültigen Mitglieder zum Zuweisen ausgewählt",
+    "ar": "لم يتم تحديد أعضاء صالحين لتعيينهم",
+    "pt": "Nenhum membro válido selecionado para atribuir",
+    "ja": "割り当て可能な有効なメンバーが選択されていません",
+    "zh": "未选择有效的成员进行分配",
+    "or": "ନ୍ୟସ୍ତ କରିବାକୁ କ valid ଣସି ବ valid ଧ ସଦସ୍ୟ ଚୟନ କରାଯାଇ ନାହିଁ |"
   },
   "walkie_membersUpdated": {
     "en": "Assigned members updated successfully",
@@ -2638,7 +4262,15 @@
     "ml": "നൽകിയ അംഗങ്ങളെ വിജയകരമായി അപ്ഡേറ്റ് ചെയ്തു",
     "ta": "ஒதுக்கிய உறுப்பினர்கள் வெற்றிகரமாகப் புதுப்பிக்கப்பட்டனர்",
     "te": "కేటాయించిన సభ్యులు విజయవంతంగా అప్‌డేట్ అయ్యారు",
-    "pa": "ਦਿੱਤੇ ਮੈਂਬਰ ਸਫਲਤਾਪੂਰਵਕ ਅੱਪਡੇਟ ਹੋਏ"
+    "pa": "ਦਿੱਤੇ ਮੈਂਬਰ ਸਫਲਤਾਪੂਰਵਕ ਅੱਪਡੇਟ ਹੋਏ",
+    "es": "Miembros asignados actualizados con éxito",
+    "fr": "Membres attribués mis à jour avec succès",
+    "de": "Zugewiesene Mitglieder erfolgreich aktualisiert",
+    "ar": "تم تحديث الأعضاء المعينين بنجاح",
+    "pt": "Membros atribuídos atualizados com sucesso",
+    "ja": "割り当てメンバーを更新しました",
+    "zh": "已成功更新分配的成员",
+    "or": "ନ୍ୟସ୍ତ ସଦସ୍ୟମାନେ ସଫଳତାର ସହିତ ଅଦ୍ୟତନ କଲେ |"
   },
   "walkie_membersUpdateFailed": {
     "en": "Failed to update assigned members",
@@ -2650,7 +4282,15 @@
     "ml": "നൽകിയ അംഗങ്ങളെ അപ്ഡേറ്റ് ചെയ്യാനായില്ല",
     "ta": "ஒதுக்கிய உறுப்பினர்களைப் புதுப்பிக்க முடியவில்லை",
     "te": "కేటాయించిన సభ్యులను అప్‌డేట్ చేయడం విఫలమైంది",
-    "pa": "ਦਿੱਤੇ ਮੈਂਬਰ ਅੱਪਡੇਟ ਨਹੀਂ ਹੋ ਸਕੇ"
+    "pa": "ਦਿੱਤੇ ਮੈਂਬਰ ਅੱਪਡੇਟ ਨਹੀਂ ਹੋ ਸਕੇ",
+    "es": "Error al actualizar los miembros asignados",
+    "fr": "Échec de mise à jour des membres attribués",
+    "de": "Aktualisierung der zugewiesenen Mitglieder fehlgeschlagen",
+    "ar": "فشل تحديث الأعضاء المعينين",
+    "pt": "Falha ao atualizar membros atribuídos",
+    "ja": "割り当てメンバーの更新に失敗しました",
+    "zh": "更新分配成员失败",
+    "or": "ନ୍ୟସ୍ତ ସଦସ୍ୟମାନଙ୍କୁ ଅଦ୍ୟତନ କରିବାରେ ବିଫଳ |"
   },
   "walkie_noSeatsRefreshing": {
     "en": "No team seats available. Refreshing member list...",
@@ -2662,7 +4302,15 @@
     "ml": "ടീം സീറ്റുകളൊന്നും ലഭ്യമല്ല. അംഗ ലിസ്റ്റ് പുതുക്കുന്നു...",
     "ta": "டீம் இருக்கைகள் இல்லை. உறுப்பினர் பட்டியல் புதுப்பிக்கப்படுகிறது...",
     "te": "టీమ్ సీట్లు ఏవీ అందుబాటులో లేవు. సభ్యుల జాబితా రిఫ్రెష్ అవుతోంది...",
-    "pa": "ਕੋਈ ਟੀਮ ਸੀਟ ਉਪਲਬਧ ਨਹੀਂ। ਮੈਂਬਰ ਸੂਚੀ ਰਿਫ੍ਰੈਸ਼ ਹੋ ਰਹੀ ਹੈ..."
+    "pa": "ਕੋਈ ਟੀਮ ਸੀਟ ਉਪਲਬਧ ਨਹੀਂ। ਮੈਂਬਰ ਸੂਚੀ ਰਿਫ੍ਰੈਸ਼ ਹੋ ਰਹੀ ਹੈ...",
+    "es": "No hay puestos de equipo disponibles. Actualizando lista...",
+    "fr": "Aucun siège disponible. Actualisation...",
+    "de": "Keine Teamplätze verfügbar. Liste wird aktualisiert...",
+    "ar": "لا تتوفر مقاعد فريق. جارٍ تحديث القائمة...",
+    "pt": "Sem postos de equipe disponíveis. Atualizando lista...",
+    "ja": "利用可能なチームシートがありません。リストを更新しています...",
+    "zh": "无可用团队席位，正在刷新成员列表...",
+    "or": "କ team ଣସି ଦଳ ସିଟ୍ ଉପଲବ୍ଧ ନାହିଁ | ସଭ୍ୟ ସତେଜ ..."
   },
   "walkie_errorWithDetails": {
     "en": "Error: {details}",
@@ -2679,6 +4327,14 @@
       "details": {
         "type": "String"
       }
-    }
+    },
+    "es": "Error: {details}",
+    "fr": "Erreur : {details}",
+    "de": "Fehler: {details}",
+    "ar": "خطأ: {details}",
+    "pt": "Erro: {details}",
+    "ja": "エラー: {details}",
+    "zh": "错误：{details}",
+    "or": "ତ୍ରୁଟି: {details}"
   }
 }
