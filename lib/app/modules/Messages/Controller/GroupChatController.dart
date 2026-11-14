@@ -838,7 +838,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
           final rawReactions = data['reactions'];
 
           bool found = false;
-          for (var msg in messages) {
+          for (var msg in _messages) {
             if (msg.id == targetMsgId) {
               if (rawReactions is List) {
                 msg.reactions = rawReactions
@@ -855,7 +855,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
           }
 
           if (found) {
-            messages.refresh();
+            updateMessageStream();
           }
         } catch (e) {
           log("Error handling message_reaction_updated in group chat: $e");
@@ -2764,7 +2764,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       }
     }
     message.reactions = currentReactions;
-    messages.refresh();
+    updateMessageStream();
 
     // Emit over socket
     socketService.sendReaction(

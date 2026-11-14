@@ -2515,7 +2515,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final currentUserId = Global.storageServices.get(PrefConst.userId)?.toString();
     if (currentUserId == null) return;
 
-    final targetPeerId = memberData.userId?.toString() ?? receiverId;
+    final targetPeerId = memberData.userId?.toString() ?? _privatePeerId ?? '';
 
     // Optimistic local update
     final existingUserReaction = message.userReaction;

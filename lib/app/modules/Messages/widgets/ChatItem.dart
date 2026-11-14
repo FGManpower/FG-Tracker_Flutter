@@ -1748,6 +1748,74 @@ class ChatBubble extends StatelessWidget {
       bubbleContext: bubbleContext,
       isSentByMe: isSentByMe,
       actions: actions,
+      currentReaction: message.userReaction,
+      onReactionSelected: (emoji) {
+        try {
+          controller.toggleReaction(message, emoji);
+        } catch (_) {}
+      },
+    );
+  }
+
+  // ==========================================
+  // WHATSAPP PARITY: MESSAGE REACTION PILL
+  // ==========================================
+  Widget _buildReactionPill(MessageData message, bool isSentByMe) {
+    final reactions = message.reactions ?? [];
+    if (reactions.isEmpty) return const SizedBox.shrink();
+
+    final totalCount = reactions.fold<int>(0, (sum, r) => sum + (r.count ?? 0));
+    final displayEmojis = reactions.take(3).map((r) => r.emoji ?? '').join('');
+
+    return GestureDetector(
+      onTap: () {
+        if (message.userReaction != null) {
+          controller.toggleReaction(message, message.userReaction!);
+        } else if (reactions.isNotEmpty && reactions.first.emoji != null) {
+          controller.toggleReaction(message, reactions.first.emoji!);
+        }
+      },
+      child: Transform.translate(
+        offset: Offset(isSentByMe ? -6.w : 6.w, -6.h),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.5.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: Colors.grey.withValues(alpha: 0.25),
+              width: 0.8,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                displayEmojis,
+                style: TextStyle(fontSize: 12.sp),
+              ),
+              if (totalCount > 1) ...[
+                SizedBox(width: 3.w),
+                Text(
+                  totalCount.toString(),
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 
