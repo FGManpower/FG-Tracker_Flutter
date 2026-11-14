@@ -17,7 +17,9 @@
     "pt": "Esta mensagem foi apagada",
     "ja": "このメッセージは削除されました",
     "zh": "此消息已删除",
-    "or": "ଏହି ବାର୍ତ୍ତା ବିଲୋପ ହେଲା |"
+    "or": "ଏହି ବାର୍ତ୍ତା ବିଲୋପ ହେଲା |",
+    "ur": "یہ پیغام حذف کر دیا گیا تھا۔",
+    "zh_Hant": "此訊息已被刪除"
   },
   "chat_previewOwnDeleted": {
     "en": "You deleted this message",
@@ -37,7 +39,9 @@
     "pt": "Você apagou esta mensagem",
     "ja": "このメッセージを削除しました",
     "zh": "您删除了此消息",
-    "or": "ଆପଣ ଏହି ବାର୍ତ୍ତା ବିଲୋପ କରିଛନ୍ତି |"
+    "or": "ଆପଣ ଏହି ବାର୍ତ୍ତା ବିଲୋପ କରିଛନ୍ତି |",
+    "ur": "آپ نے یہ پیغام حذف کر دیا۔",
+    "zh_Hant": "你刪除了這則訊息"
   },
   "chat_previewNewMessage": {
     "en": "New message",
@@ -57,7 +61,9 @@
     "pt": "Nova mensagem",
     "ja": "新しいメッセージ",
     "zh": "新消息",
-    "or": "ନୂତନ ବାର୍ତ୍ତା |"
+    "or": "ନୂତନ ବାର୍ତ୍ତା |",
+    "ur": "نیا پیغام",
+    "zh_Hant": "新消息"
   },
   "chat_previewMessage": {
     "en": "Message",
@@ -78,7 +84,9 @@
     "pt": "Mensagem",
     "ja": "メッセージ",
     "zh": "消息",
-    "or": "ବାର୍ତ୍ତା |"
+    "or": "ବାର୍ତ୍ତା |",
+    "ur": "پیغام",
+    "zh_Hant": "訊息"
   },
   "chat_previewLocation": {
     "en": "Location",
@@ -98,7 +106,9 @@
     "pt": "Localização",
     "ja": "現在地",
     "zh": "位置",
-    "or": "ଅବସ୍ଥାନ"
+    "or": "ଅବସ୍ଥାନ",
+    "ur": "مقام",
+    "zh_Hant": "地點"
   },
   "chat_previewPoll": {
     "en": "Poll",
@@ -118,7 +128,9 @@
     "pt": "Enquete",
     "ja": "投票",
     "zh": "投票",
-    "or": "ମତଦାନ"
+    "or": "ମତଦାନ",
+    "ur": "رائے شماری",
+    "zh_Hant": "輪詢"
   },
   "chat_previewAttendancePoll": {
     "en": "Attendance poll",
@@ -138,7 +150,9 @@
     "pt": "Enquete de presença",
     "ja": "出欠確認の投票",
     "zh": "考勤投票",
-    "or": "ଉପସ୍ଥାନ ପୋଲ୍"
+    "or": "ଉପସ୍ଥାନ ପୋଲ୍",
+    "ur": "حاضری کا سروے",
+    "zh_Hant": "出席率調查"
   },
   "chat_previewContact": {
     "en": "Contact",
@@ -158,7 +172,9 @@
     "pt": "Contato",
     "ja": "連絡先",
     "zh": "联系人",
-    "or": "ଯୋଗାଯୋଗ କରନ୍ତୁ |"
+    "or": "ଯୋଗାଯୋଗ କରନ୍ତୁ |",
+    "ur": "رابطہ کریں۔",
+    "zh_Hant": "接觸"
   },
   "chat_previewPhoto": {
     "en": "Photo",
@@ -178,7 +194,9 @@
     "pt": "Foto",
     "ja": "写真",
     "zh": "照片",
-    "or": "ଫଟୋ"
+    "or": "ଫଟୋ",
+    "ur": "تصویر",
+    "zh_Hant": "照片"
   },
   "chat_previewVideo": {
     "en": "Video",
@@ -198,7 +216,9 @@
     "pt": "Vídeo",
     "ja": "動画",
     "zh": "视频",
-    "or": "ଭିଡିଓ"
+    "or": "ଭିଡିଓ",
+    "ur": "ویڈیو",
+    "zh_Hant": "影片"
   },
   "chat_previewAudio": {
     "en": "Audio",
@@ -218,7 +238,9 @@
     "pt": "Áudio",
     "ja": "音声",
     "zh": "音频",
-    "or": "ଅଡିଓ"
+    "or": "ଅଡିଓ",
+    "ur": "آڈیو",
+    "zh_Hant": "聲音的"
   },
   "chat_previewDocument": {
     "en": "Document",
@@ -238,7 +260,9 @@
     "pt": "Documento",
     "ja": "ドキュメント",
     "zh": "文档",
-    "or": "ଡକ୍ୟୁମେଣ୍ଟ୍"
+    "or": "ଡକ୍ୟୁମେଣ୍ଟ୍",
+    "ur": "دستاویز",
+    "zh_Hant": "文件"
   },
   "chat_previewSticker": {
     "en": "Sticker",
@@ -258,7 +282,9 @@
     "pt": "Figurinha",
     "ja": "ステッカー",
     "zh": "贴纸",
-    "or": "ଷ୍ଟିକର୍ |"
+    "or": "ଷ୍ଟିକର୍ |",
+    "ur": "اسٹیکر",
+    "zh_Hant": "貼紙"
   },
   "chat_previewVoiceMessage": {
     "en": "Voice message",
@@ -278,7 +304,9 @@
     "pt": "Mensagem de voz",
     "ja": "音声メッセージ",
     "zh": "语音消息",
-    "or": "ସ୍ୱର ବାର୍ତ୍ତା"
+    "or": "ସ୍ୱର ବାର୍ତ୍ତା",
+    "ur": "صوتی پیغام",
+    "zh_Hant": "語音留言"
   },
   "chat_previewVoiceMessageDuration": {
     "en": "Voice message ({duration})",
@@ -303,7 +331,9 @@
     "pt": "Mensagem de voz ({duration})",
     "ja": "音声メッセージ ({duration})",
     "zh": "语音消息 ({duration})",
-    "or": "ସ୍ୱର ବାର୍ତ୍ତା ({duration})"
+    "or": "ସ୍ୱର ବାର୍ତ୍ତା ({duration})",
+    "ur": "صوتی پیغام ({duration})",
+    "zh_Hant": "語音留言 ({duration})"
   },
   "chat_previewVideosCount": {
     "en": "{count, plural, =1{1 Video} other{{count} Videos}}",
@@ -328,7 +358,9 @@
     "pt": "{count, plural, =1{1 vídeo} other{{count} vídeos}}",
     "ja": "{count, plural, =1{1件の動画} other{{count}件の動画}}",
     "zh": "{count, plural, =1{1个视频} other{{count}个视频}}",
-    "or": "{count, plural, =1{1 ଭିଡିଓ} other{{count} ଭିଡିଓଗୁଡିକ |}}"
+    "or": "{count, plural, =1{1 ଭିଡିଓ} other{{count} ଭିଡିଓଗୁଡିକ |}}",
+    "ur": "{count, plural, =1{1 ویڈیو} other{{count} ویڈیوز}}",
+    "zh_Hant": "{count, plural, =1{1 影片} other{{count} 視頻}}"
   },
   "chat_previewPhotosCount": {
     "en": "{count, plural, =1{1 Photo} other{{count} Photos}}",
@@ -353,7 +385,9 @@
     "pt": "{count, plural, =1{1 foto} other{{count} fotos}}",
     "ja": "{count, plural, =1{1枚の写真} other{{count}枚の写真}}",
     "zh": "{count, plural, =1{1张照片} other{{count}张照片}}",
-    "or": "{count, plural, =1{1 ଫଟୋ} other{{count} ଫଟୋ}}"
+    "or": "{count, plural, =1{1 ଫଟୋ} other{{count} ଫଟୋ}}",
+    "ur": "{count, plural, =1{1 تصویر} other{{count} تصاویر}}",
+    "zh_Hant": "{count, plural, =1{1 張照片} other{{count} 照片}}"
   },
   "chat_unsupportedMessage": {
     "en": "This message isn't supported in this version of the app",
@@ -373,7 +407,9 @@
     "pt": "Esta mensagem não é suportada nesta versão do aplicativo",
     "ja": "このメッセージはこのバージョンのアプリではサポートされていません",
     "zh": "此版本的应用不支持此消息",
-    "or": "ଏହି ବାର୍ତ୍ତା ଆପର ଏହି ସଂସ୍କରଣରେ ସମର୍ଥିତ ନୁହେଁ |"
+    "or": "ଏହି ବାର୍ତ୍ତା ଆପର ଏହି ସଂସ୍କରଣରେ ସମର୍ଥିତ ନୁହେଁ |",
+    "ur": "یہ پیغام ایپ کے اس ورژن میں تعاون یافتہ نہیں ہے۔",
+    "zh_Hant": "此版本的應用程式不支援此訊息"
   },
   "chat_forwarded": {
     "en": "Forwarded",
@@ -393,7 +429,9 @@
     "pt": "Encaminhada",
     "ja": "転送済み",
     "zh": "已转发",
-    "or": "ଅଗ୍ରଗାମୀ"
+    "or": "ଅଗ୍ରଗାମୀ",
+    "ur": "آگے بڑھایا",
+    "zh_Hant": "轉發"
   },
   "chat_edited": {
     "en": "edited",
@@ -414,7 +452,9 @@
     "pt": "editada",
     "ja": "編集済み",
     "zh": "已编辑",
-    "or": "ସମ୍ପାଦିତ"
+    "or": "ସମ୍ପାଦିତ",
+    "ur": "ترمیم شدہ",
+    "zh_Hant": "已編輯"
   },
   "chat_statusLabel": {
     "en": "Status",
@@ -435,7 +475,9 @@
     "pt": "Status",
     "ja": "ステータス",
     "zh": "状态",
-    "or": "ସ୍ଥିତି"
+    "or": "ସ୍ଥିତି",
+    "ur": "حیثیت",
+    "zh_Hant": "地位"
   },
   "chat_statusUnavailable": {
     "en": "This status update is no longer available",
@@ -455,7 +497,9 @@
     "pt": "Esta atualização de status não está mais disponível",
     "ja": "このステータスの更新は利用できなくなりました",
     "zh": "此状态更新已不再可用",
-    "or": "ଏହି ସ୍ଥିତି ଅଦ୍ୟତନ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ଏହି ସ୍ଥିତି ଅଦ୍ୟତନ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "یہ اسٹیٹس اپ ڈیٹ مزید دستیاب نہیں ہے۔",
+    "zh_Hant": "此狀態更新不再可用"
   },
   "chat_menuReply": {
     "en": "Reply",
@@ -475,7 +519,9 @@
     "pt": "Responder",
     "ja": "返信",
     "zh": "回复",
-    "or": "ଉତ୍ତର ଦିଅ"
+    "or": "ଉତ୍ତର ଦିଅ",
+    "ur": "جواب دیں۔",
+    "zh_Hant": "回覆"
   },
   "chat_messageCopied": {
     "en": "Message copied",
@@ -495,7 +541,9 @@
     "pt": "Mensagem copiada",
     "ja": "メッセージをコピーしました",
     "zh": "消息已复制",
-    "or": "ବାର୍ତ୍ତା କପି ହୋଇଛି |"
+    "or": "ବାର୍ତ୍ତା କପି ହୋଇଛି |",
+    "ur": "پیغام کاپی ہو گیا۔",
+    "zh_Hant": "訊息已複製"
   },
   "chat_menuForward": {
     "en": "Forward",
@@ -515,7 +563,9 @@
     "pt": "Encaminhar",
     "ja": "転送",
     "zh": "转发",
-    "or": "ଅଗ୍ରଗାମୀ"
+    "or": "ଅଗ୍ରଗାମୀ",
+    "ur": "آگے",
+    "zh_Hant": "向前"
   },
   "chat_menuPin": {
     "en": "Pin Message",
@@ -535,7 +585,9 @@
     "pt": "Fixar mensagem",
     "ja": "メッセージを固定",
     "zh": "置顶消息",
-    "or": "ପିନ୍ ବାର୍ତ୍ତା |"
+    "or": "ପିନ୍ ବାର୍ତ୍ତା |",
+    "ur": "پیغام پن کریں۔",
+    "zh_Hant": "PIN 訊息"
   },
   "chat_menuUnpin": {
     "en": "Unpin Message",
@@ -555,7 +607,9 @@
     "pt": "Desafixar mensagem",
     "ja": "固定を解除",
     "zh": "取消置顶消息",
-    "or": "ମେସେଜ୍ ଅନ୍ପିନ୍ କରନ୍ତୁ |"
+    "or": "ମେସେଜ୍ ଅନ୍ପିନ୍ କରନ୍ତୁ |",
+    "ur": "پیغام کو ان پن کریں۔",
+    "zh_Hant": "取消固定訊息"
   },
   "chat_menuMessageInfo": {
     "en": "Message Info",
@@ -575,7 +629,9 @@
     "pt": "Dados da mensagem",
     "ja": "メッセージ情報",
     "zh": "消息信息",
-    "or": "ବାର୍ତ୍ତା ସୂଚନା"
+    "or": "ବାର୍ତ୍ତା ସୂଚନା",
+    "ur": "پیغام کی معلومات",
+    "zh_Hant": "留言訊息"
   },
   "chat_deleteForEveryone": {
     "en": "Delete for Everyone",
@@ -595,7 +651,9 @@
     "pt": "Apagar para todos",
     "ja": "全員に対して削除",
     "zh": "为所有人删除",
-    "or": "ସମସ୍ତଙ୍କ ପାଇଁ ଡିଲିଟ୍ କରନ୍ତୁ |"
+    "or": "ସମସ୍ତଙ୍କ ପାଇଁ ଡିଲିଟ୍ କରନ୍ତୁ |",
+    "ur": "ہر کسی کے لیے حذف کریں۔",
+    "zh_Hant": "為所有人刪除"
   },
   "chat_deleteForEveryoneConfirm": {
     "en": "Are you sure you want to delete this message for everyone?",
@@ -615,7 +673,9 @@
     "pt": "Tem certeza de que deseja apagar esta mensagem para todos?",
     "ja": "このメッセージを全員に対して削除してもよろしいですか？",
     "zh": "确定要为所有人删除此消息吗？",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ସମସ୍ତଙ୍କ ପାଇଁ ଏହି ବାର୍ତ୍ତା ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି?"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ସମସ୍ତଙ୍କ ପାଇଁ ଏହି ବାର୍ତ୍ତା ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି?",
+    "ur": "کیا آپ واقعی اس پیغام کو سب کے لیے حذف کرنا چاہتے ہیں؟",
+    "zh_Hant": "您確定要為所有人刪除此訊息嗎？"
   },
   "chat_deleteForMe": {
     "en": "Delete for Me",
@@ -635,7 +695,9 @@
     "pt": "Apagar para mim",
     "ja": "自分のみ削除",
     "zh": "为我删除",
-    "or": "ମୋ ପାଇଁ ଡିଲିଟ୍ କରନ୍ତୁ |"
+    "or": "ମୋ ପାଇଁ ଡିଲିଟ୍ କରନ୍ତୁ |",
+    "ur": "میرے لیے حذف کریں۔",
+    "zh_Hant": "幫我刪除"
   },
   "chat_deleteForMeConfirm": {
     "en": "Are you sure you want to delete this message for you?",
@@ -655,7 +717,9 @@
     "pt": "Tem certeza de que deseja apagar esta mensagem para você?",
     "ja": "このメッセージをご自身のアカウントから削除してもよろしいですか？",
     "zh": "确定要为您删除此消息吗？",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ବାର୍ତ୍ତା ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ବାର୍ତ୍ତା ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?",
+    "ur": "کیا آپ واقعی اپنے لیے یہ پیغام حذف کرنا چاہتے ہیں؟",
+    "zh_Hant": "您確定要為您刪除此訊息嗎？"
   },
   "chat_noMediaAvailable": {
     "en": "No media available",
@@ -675,7 +739,9 @@
     "pt": "Nenhuma mídia disponível",
     "ja": "利用可能なメディアがありません",
     "zh": "无可用媒体",
-    "or": "କ media ଣସି ମିଡିଆ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "କ media ଣସି ମିଡିଆ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "کوئی میڈیا دستیاب نہیں ہے۔",
+    "zh_Hant": "沒有可用的媒體"
   },
   "chat_galleryCounter": {
     "en": "{current} of {total}",
@@ -703,7 +769,9 @@
     "pt": "{current} de {total}",
     "ja": "{current} / {total}",
     "zh": "{current} / {total}",
-    "or": "{total} ର {current} |"
+    "or": "{total} ର {current} |",
+    "ur": "{current} از {total}",
+    "zh_Hant": "{total} 的 {current}"
   },
   "chat_emptyTitle": {
     "en": "No messages here yet",
@@ -723,7 +791,9 @@
     "pt": "Nenhuma mensagem aqui ainda",
     "ja": "まだメッセージはありません",
     "zh": "这里还没有消息",
-    "or": "ଏପର୍ଯ୍ୟନ୍ତ ଏଠାରେ କ messages ଣସି ସନ୍ଦେଶ ନାହିଁ |"
+    "or": "ଏପର୍ଯ୍ୟନ୍ତ ଏଠାରେ କ messages ଣସି ସନ୍ଦେଶ ନାହିଁ |",
+    "ur": "ابھی تک یہاں کوئی پیغام نہیں ہے۔",
+    "zh_Hant": "這裡還沒有消息"
   },
   "chat_emptySubtitle": {
     "en": "Say hi 👋 to start the conversation",
@@ -743,7 +813,9 @@
     "pt": "Diga oi 👋 para iniciar a conversa",
     "ja": "「こんにちは 👋」と挨拶して会話を始めましょう",
     "zh": "打个招呼 👋 开始聊天吧",
-    "or": "ବାର୍ତ୍ତାଳାପ ଆରମ୍ଭ କରିବାକୁ ହାଏ say କୁହ |"
+    "or": "ବାର୍ତ୍ତାଳାପ ଆରମ୍ଭ କରିବାକୁ ହାଏ say କୁହ |",
+    "ur": "گفتگو شروع کرنے کے لیے ہیلو 👋 کہیں۔",
+    "zh_Hant": "打個招呼👋開始對話"
   },
   "chat_loadFailedTitle": {
     "en": "Couldn't load messages",
@@ -763,7 +835,9 @@
     "pt": "Não foi possível carregar as mensagens",
     "ja": "メッセージを読み込めませんでした",
     "zh": "无法加载消息",
-    "or": "ବାର୍ତ୍ତା ଲୋଡ୍ ହୋଇପାରିଲା ନାହିଁ |"
+    "or": "ବାର୍ତ୍ତା ଲୋଡ୍ ହୋଇପାରିଲା ନାହିଁ |",
+    "ur": "پیغامات لوڈ نہیں ہو سکے۔",
+    "zh_Hant": "無法載入訊息"
   },
   "chat_loadFailedSubtitle": {
     "en": "Check your connection and try again.",
@@ -783,7 +857,9 @@
     "pt": "Verifique sua conexão e tente novamente.",
     "ja": "接続を確認してもう一度お試しください。",
     "zh": "请检查网络连接并重试。",
-    "or": "ଆପଣଙ୍କର ସଂଯୋଗ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ସଂଯୋଗ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
+    "zh_Hant": "檢查您的連線並重試。"
   },
   "chat_translatedToEnglish": {
     "en": "Translated to English",
@@ -803,7 +879,9 @@
     "pt": "Traduzido para o inglês",
     "ja": "英語に翻訳済み",
     "zh": "已翻译为英语",
-    "or": "ଇଂରାଜୀକୁ ଅନୁବାଦ କରାଯାଇଛି |"
+    "or": "ଇଂରାଜୀକୁ ଅନୁବାଦ କରାଯାଇଛି |",
+    "ur": "انگریزی میں ترجمہ کیا گیا۔",
+    "zh_Hant": "翻譯成英文"
   },
   "chat_translatedToHindi": {
     "en": "Translated to Hindi",
@@ -823,7 +901,9 @@
     "pt": "Traduzido para o hindi",
     "ja": "ヒンディー語に翻訳済み",
     "zh": "已翻译为印地语",
-    "or": "ହିନ୍ଦୀକୁ ଅନୁବାଦ କରାଯାଇଛି |"
+    "or": "ହିନ୍ଦୀକୁ ଅନୁବାଦ କରାଯାଇଛି |",
+    "ur": "ہندی میں ترجمہ کیا گیا۔",
+    "zh_Hant": "翻譯成印地語"
   },
   "chat_listenEnglish": {
     "en": "Listen (English)",
@@ -843,7 +923,9 @@
     "pt": "Ouvir (Inglês)",
     "ja": "聴く（英語）",
     "zh": "收听（英语）",
-    "or": "ଶୁଣ (ଇଂରାଜୀ)"
+    "or": "ଶୁଣ (ଇଂରାଜୀ)",
+    "ur": "سنو (انگریزی)",
+    "zh_Hant": "聽（英語）"
   },
   "chat_listenHindi": {
     "en": "Listen (Hindi)",
@@ -863,7 +945,9 @@
     "pt": "Ouvir (Hindi)",
     "ja": "聴く（ヒンディー語）",
     "zh": "收听（印地语）",
-    "or": "ଶୁଣ (ହିନ୍ଦୀ)"
+    "or": "ଶୁଣ (ହିନ୍ଦୀ)",
+    "ur": "سنو (ہندی)",
+    "zh_Hant": "聽（印地語）"
   },
   "chat_stopEnglish": {
     "en": "Stop (English)",
@@ -883,7 +967,9 @@
     "pt": "Parar (Inglês)",
     "ja": "停止（英語）",
     "zh": "停止（英语）",
-    "or": "ବନ୍ଦ (ଇଂରାଜୀ)"
+    "or": "ବନ୍ଦ (ଇଂରାଜୀ)",
+    "ur": "روکیں (انگریزی)",
+    "zh_Hant": "停止（英語）"
   },
   "chat_stopHindi": {
     "en": "Stop (Hindi)",
@@ -903,7 +989,9 @@
     "pt": "Parar (Hindi)",
     "ja": "停止（ヒンディー語）",
     "zh": "停止（印地语）",
-    "or": "ବନ୍ଦ (ହିନ୍ଦୀ)"
+    "or": "ବନ୍ଦ (ହିନ୍ଦୀ)",
+    "ur": "روک (ہندی)",
+    "zh_Hant": "停止（印地語）"
   },
   "chat_showOriginal": {
     "en": "Show Original",
@@ -923,7 +1011,9 @@
     "pt": "Mostrar original",
     "ja": "原文を表示",
     "zh": "显示原文",
-    "or": "ମୂଳ ଦେଖାନ୍ତୁ |"
+    "or": "ମୂଳ ଦେଖାନ୍ତୁ |",
+    "ur": "اصل دکھائیں۔",
+    "zh_Hant": "顯示原件"
   },
   "chat_translating": {
     "en": "Translating...",
@@ -943,7 +1033,9 @@
     "pt": "Traduzindo...",
     "ja": "翻訳中...",
     "zh": "翻译中...",
-    "or": "ଅନୁବାଦ ..."
+    "or": "ଅନୁବାଦ ...",
+    "ur": "ترجمہ ہو رہا ہے...",
+    "zh_Hant": "翻譯..."
   },
   "chat_listen": {
     "en": "Listen",
@@ -963,7 +1055,9 @@
     "pt": "Ouvir",
     "ja": "聴く",
     "zh": "收听",
-    "or": "ଶୁଣ"
+    "or": "ଶୁଣ",
+    "ur": "سنو",
+    "zh_Hant": "聽"
   },
   "chat_stop": {
     "en": "Stop",
@@ -983,7 +1077,9 @@
     "pt": "Parar",
     "ja": "停止",
     "zh": "停止",
-    "or": "ବନ୍ଦ କର |"
+    "or": "ବନ୍ଦ କର |",
+    "ur": "رک جاؤ",
+    "zh_Hant": "停止"
   },
   "chat_photoUnavailable": {
     "en": "This photo is no longer available",
@@ -1003,7 +1099,9 @@
     "pt": "Esta foto não está mais disponível",
     "ja": "この写真は利用できなくなりました",
     "zh": "此照片已不再可用",
-    "or": "ଏହି ଫଟୋ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ଏହି ଫଟୋ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "یہ تصویر اب دستیاب نہیں ہے۔",
+    "zh_Hant": "這張照片不再可用"
   },
   "chat_videoUnavailable": {
     "en": "This video is no longer available",
@@ -1023,7 +1121,9 @@
     "pt": "Este vídeo não está mais disponível",
     "ja": "この動画は利用できなくなりました",
     "zh": "此视频已不再可用",
-    "or": "ଏହି ଭିଡିଓ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ଏହି ଭିଡିଓ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "یہ ویڈیو اب دستیاب نہیں ہے۔",
+    "zh_Hant": "該視頻不再可用"
   },
   "chat_audioUnavailable": {
     "en": "This audio is no longer available",
@@ -1043,7 +1143,9 @@
     "pt": "Este áudio não está mais disponível",
     "ja": "この音声は利用できなくなりました",
     "zh": "此音频已不再可用",
-    "or": "ଏହି ଅଡିଓ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ଏହି ଅଡିଓ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "یہ آڈیو مزید دستیاب نہیں ہے۔",
+    "zh_Hant": "該音訊不再可用"
   },
   "chat_documentUnavailable": {
     "en": "This document is no longer available",
@@ -1063,7 +1165,9 @@
     "pt": "Este documento não está mais disponível",
     "ja": "このドキュメントは利用できなくなりました",
     "zh": "此文档已不再可用",
-    "or": "ଏହି ଡକ୍ୟୁମେଣ୍ଟ୍ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ଏହି ଡକ୍ୟୁମେଣ୍ଟ୍ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "یہ دستاویز اب دستیاب نہیں ہے۔",
+    "zh_Hant": "該文件不再可用"
   },
   "chat_mediaUnavailable": {
     "en": "This media is no longer available",
@@ -1083,7 +1187,9 @@
     "pt": "Esta mídia não está mais disponível",
     "ja": "このメディアは利用できなくなりました",
     "zh": "此媒体已不再可用",
-    "or": "ଏହି ମିଡିଆ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ଏହି ମିଡିଆ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "یہ میڈیا اب دستیاب نہیں ہے۔",
+    "zh_Hant": "該媒體不再可用"
   },
   "chat_mediaMissing": {
     "en": "Media is missing",
@@ -1103,7 +1209,9 @@
     "pt": "Mídia ausente",
     "ja": "メディアが見つかりません",
     "zh": "媒体缺失",
-    "or": "ମିଡିଆ ନିଖୋଜ ଅଛି |"
+    "or": "ମିଡିଆ ନିଖୋଜ ଅଛି |",
+    "ur": "میڈیا غائب ہے۔",
+    "zh_Hant": "媒體缺失"
   },
   "chat_mediaMissingToast": {
     "en": "Media is missing. This file is no longer available.",
@@ -1123,7 +1231,9 @@
     "pt": "Mídia ausente. Este arquivo não está mais disponível.",
     "ja": "メディアが見つかりません。このファイルは利用できなくなりました。",
     "zh": "媒体缺失。此文件已不再可用。",
-    "or": "ମିଡିଆ ନିଖୋଜ ଅଛି | ଏହି ଫାଇଲ୍ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ମିଡିଆ ନିଖୋଜ ଅଛି | ଏହି ଫାଇଲ୍ ଆଉ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "میڈیا غائب ہے۔ یہ فائل اب دستیاب نہیں ہے۔",
+    "zh_Hant": "媒體缺失。該文件不再可用。"
   },
   "chat_documentOpenFailed": {
     "en": "Couldn't open the document. Please try again.",
@@ -1143,7 +1253,9 @@
     "pt": "Não foi possível abrir o documento. Tente novamente.",
     "ja": "ドキュメントを開けませんでした。もう一度お試しください。",
     "zh": "无法打开文档，请重试。",
-    "or": "ଡକ୍ୟୁମେଣ୍ଟ୍ ଖୋଲିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଡକ୍ୟୁମେଣ୍ଟ୍ ଖୋଲିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "دستاویز نہیں کھول سکا۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法開啟文檔。請再試一次。"
   },
   "chat_groupActionsTitle": {
     "en": "Group Actions",
@@ -1163,7 +1275,9 @@
     "pt": "Ações do grupo",
     "ja": "グループ操作",
     "zh": "群组操作",
-    "or": "ଗୋଷ୍ଠୀ କାର୍ଯ୍ୟ"
+    "or": "ଗୋଷ୍ଠୀ କାର୍ଯ୍ୟ",
+    "ur": "گروپ ایکشنز",
+    "zh_Hant": "團體行動"
   },
   "chat_groupActionsSubtitle": {
     "en": "Manage your group settings",
@@ -1183,7 +1297,9 @@
     "pt": "Gerencie as configurações do seu grupo",
     "ja": "グループ設定を管理",
     "zh": "管理您的群组设置",
-    "or": "ଆପଣଙ୍କର ଗୋଷ୍ଠୀ ସେଟିଂସମୂହ ପରିଚାଳନା କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ଗୋଷ୍ଠୀ ସେଟିଂସମୂହ ପରିଚାଳନା କରନ୍ତୁ |",
+    "ur": "اپنے گروپ کی ترتیبات کا نظم کریں۔",
+    "zh_Hant": "管理您的群組設置"
   },
   "chat_chatActionsTitle": {
     "en": "Chat Actions",
@@ -1203,7 +1319,9 @@
     "pt": "Ações de conversa",
     "ja": "チャット操作",
     "zh": "聊天操作",
-    "or": "ଚାଟ୍ କ୍ରିୟା"
+    "or": "ଚାଟ୍ କ୍ରିୟା",
+    "ur": "چیٹ ایکشنز",
+    "zh_Hant": "聊天操作"
   },
   "chat_chatActionsSubtitle": {
     "en": "Manage your chat",
@@ -1223,7 +1341,9 @@
     "pt": "Gerencie sua conversa",
     "ja": "チャットを管理",
     "zh": "管理您的聊天",
-    "or": "ଆପଣଙ୍କର ଚାଟ୍ ପରିଚାଳନା କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ଚାଟ୍ ପରିଚାଳନା କରନ୍ତୁ |",
+    "ur": "اپنی چیٹ کا نظم کریں۔",
+    "zh_Hant": "管理您的聊天"
   },
   "chat_searchMessages": {
     "en": "Search Messages",
@@ -1243,7 +1363,9 @@
     "pt": "Pesquisar mensagens",
     "ja": "メッセージを検索",
     "zh": "搜索消息",
-    "or": "ସନ୍ଧାନ ବାର୍ତ୍ତାଗୁଡିକ |"
+    "or": "ସନ୍ଧାନ ବାର୍ତ୍ତାଗୁଡିକ |",
+    "ur": "پیغامات تلاش کریں۔",
+    "zh_Hant": "搜尋訊息"
   },
   "chat_searchMessagesSubtitle": {
     "en": "Find messages by keyword",
@@ -1263,7 +1385,9 @@
     "pt": "Encontrar mensagens por palavra-chave",
     "ja": "キーワードでメッセージを検索",
     "zh": "按关键词查找消息",
-    "or": "କୀୱାର୍ଡ ଦ୍ୱାରା ବାର୍ତ୍ତା ଖୋଜ |"
+    "or": "କୀୱାର୍ଡ ଦ୍ୱାରା ବାର୍ତ୍ତା ଖୋଜ |",
+    "ur": "مطلوبہ الفاظ کے ذریعہ پیغامات تلاش کریں۔",
+    "zh_Hant": "按關鍵字找訊息"
   },
   "chat_searchMessagesHint": {
     "en": "Search messages...",
@@ -1283,7 +1407,9 @@
     "pt": "Pesquisar mensagens...",
     "ja": "メッセージを検索...",
     "zh": "搜索消息...",
-    "or": "ବାର୍ତ୍ତା ଖୋଜ ..."
+    "or": "ବାର୍ତ୍ତା ଖୋଜ ...",
+    "ur": "پیغامات تلاش کریں...",
+    "zh_Hant": "搜尋訊息..."
   },
   "chat_updateGroup": {
     "en": "Update Group",
@@ -1303,7 +1429,9 @@
     "pt": "Atualizar grupo",
     "ja": "グループを更新",
     "zh": "更新群组",
-    "or": "ଗୋଷ୍ଠୀ ଅଦ୍ୟତନ କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ ଅଦ୍ୟତନ କରନ୍ତୁ |",
+    "ur": "گروپ کو اپ ڈیٹ کریں۔",
+    "zh_Hant": "更新群組"
   },
   "chat_updateGroupSubtitle": {
     "en": "Change the current group detail",
@@ -1323,7 +1451,9 @@
     "pt": "Alterar detalhes do grupo atual",
     "ja": "現在のグループ詳細を変更",
     "zh": "更改当前群组详细信息",
-    "or": "ସାମ୍ପ୍ରତିକ ଗୋଷ୍ଠୀ ବିବରଣୀ ପରିବର୍ତ୍ତନ କରନ୍ତୁ |"
+    "or": "ସାମ୍ପ୍ରତିକ ଗୋଷ୍ଠୀ ବିବରଣୀ ପରିବର୍ତ୍ତନ କରନ୍ତୁ |",
+    "ur": "موجودہ گروپ کی تفصیل کو تبدیل کریں۔",
+    "zh_Hant": "更改當前組詳細信息"
   },
   "chat_deleteMember": {
     "en": "Delete Member",
@@ -1343,7 +1473,9 @@
     "pt": "Remover membro",
     "ja": "メンバーを削除",
     "zh": "删除成员",
-    "or": "ସଦସ୍ୟ ବିଲୋପ କରନ୍ତୁ |"
+    "or": "ସଦସ୍ୟ ବିଲୋପ କରନ୍ତୁ |",
+    "ur": "ممبر کو حذف کریں۔",
+    "zh_Hant": "刪除會員"
   },
   "chat_deleteMemberSubtitle": {
     "en": "Remove a member from this group",
@@ -1363,7 +1495,9 @@
     "pt": "Remover um membro deste grupo",
     "ja": "このグループからメンバーを削除",
     "zh": "从此群组中移除成员",
-    "or": "ଏହି ଗୋଷ୍ଠୀର ଜଣେ ସଦସ୍ୟଙ୍କୁ ହଟାନ୍ତୁ |"
+    "or": "ଏହି ଗୋଷ୍ଠୀର ଜଣେ ସଦସ୍ୟଙ୍କୁ ହଟାନ୍ତୁ |",
+    "ur": "اس گروپ سے کسی ممبر کو نکال دیں۔",
+    "zh_Hant": "從該群組中刪除成員"
   },
   "chat_imageFailed": {
     "en": "Image failed",
@@ -1383,7 +1517,9 @@
     "pt": "Falha na imagem",
     "ja": "画像の読み込みに失敗しました",
     "zh": "图片加载失败",
-    "or": "ପ୍ରତିଛବି ବିଫଳ ହେଲା |"
+    "or": "ପ୍ରତିଛବି ବିଫଳ ହେଲା |",
+    "ur": "تصویر ناکام ہوگئی",
+    "zh_Hant": "圖片失敗"
   },
   "chat_sharedLocation": {
     "en": "Shared Location",
@@ -1403,7 +1539,9 @@
     "pt": "Localização compartilhada",
     "ja": "共有された現在地",
     "zh": "共享位置",
-    "or": "ଅଂଶୀଦାର ଅବସ୍ଥାନ"
+    "or": "ଅଂଶୀଦାର ଅବସ୍ଥାନ",
+    "ur": "مشترکہ مقام",
+    "zh_Hant": "共享位置"
   },
   "chat_openInGoogleMaps": {
     "en": "Open in Google Maps",
@@ -1423,7 +1561,9 @@
     "pt": "Abrir no Google Maps",
     "ja": "Google マップで開く",
     "zh": "在 Google 地图中打开",
-    "or": "ଗୁଗୁଲ୍ ମ୍ୟାପ୍ସରେ ଖୋଲନ୍ତୁ |"
+    "or": "ଗୁଗୁଲ୍ ମ୍ୟାପ୍ସରେ ଖୋଲନ୍ତୁ |",
+    "ur": "گوگل میپس میں کھولیں۔",
+    "zh_Hant": "在 Google 地圖中開啟"
   },
   "chat_locationUnavailable": {
     "en": "Location unavailable",
@@ -1443,7 +1583,9 @@
     "pt": "Localização indisponível",
     "ja": "現在地を利用できません",
     "zh": "位置不可用",
-    "or": "ଅବସ୍ଥାନ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ଅବସ୍ଥାନ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "مقام دستیاب نہیں ہے۔",
+    "zh_Hant": "位置不可用"
   },
   "chat_unableToOpenGoogleMaps": {
     "en": "Unable to open Google Maps",
@@ -1463,7 +1605,9 @@
     "pt": "Não foi possível abrir o Google Maps",
     "ja": "Google マップを開けません",
     "zh": "无法打开 Google 地图",
-    "or": "ଗୁଗୁଲ୍ ମ୍ୟାପ୍ ଖୋଲିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଗୁଗୁଲ୍ ମ୍ୟାପ୍ ଖୋଲିବାକୁ ଅସମର୍ଥ |",
+    "ur": "Google Maps کو کھولنے سے قاصر",
+    "zh_Hant": "無法開啟Google地圖"
   },
   "chat_call": {
     "en": "Call",
@@ -1484,7 +1628,9 @@
     "pt": "Ligar",
     "ja": "発信",
     "zh": "通话",
-    "or": "କଲ୍ କରନ୍ତୁ |"
+    "or": "କଲ୍ କରନ୍ତୁ |",
+    "ur": "کال کریں۔",
+    "zh_Hant": "稱呼"
   },
   "chat_contactUnavailable": {
     "en": "Contact unavailable",
@@ -1504,7 +1650,9 @@
     "pt": "Contato indisponível",
     "ja": "連絡先が利用できません",
     "zh": "联系人不可用",
-    "or": "ଯୋଗାଯୋଗ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ଯୋଗାଯୋଗ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "رابطہ دستیاب نہیں ہے۔",
+    "zh_Hant": "無法聯繫"
   },
   "chat_voicePlayFailed": {
     "en": "Couldn't play voice message",
@@ -1524,7 +1672,9 @@
     "pt": "Não foi possível reproduzir a mensagem de voz",
     "ja": "音声メッセージを再生できませんでした",
     "zh": "无法播放语音消息",
-    "or": "ଭଏସ୍ ମେସେଜ୍ ଚଲାଇ ପାରିଲା ନାହିଁ |"
+    "or": "ଭଏସ୍ ମେସେଜ୍ ଚଲାଇ ପାରିଲା ନାହିଁ |",
+    "ur": "صوتی پیغام نہیں چل سکا",
+    "zh_Hant": "無法播放語音留言"
   },
   "chat_finishVoiceRecordingFirst": {
     "en": "Finish or cancel the voice recording first",
@@ -1544,7 +1694,9 @@
     "pt": "Conclua ou cancele a gravação de voz primeiro",
     "ja": "先に音声録音を完了またはキャンセルしてください",
     "zh": "请先完成或取消语音录音",
-    "or": "ପ୍ରଥମେ ଭଏସ୍ ରେକର୍ଡିଂ ଶେଷ କରନ୍ତୁ କିମ୍ବା ବାତିଲ୍ କରନ୍ତୁ |"
+    "or": "ପ୍ରଥମେ ଭଏସ୍ ରେକର୍ଡିଂ ଶେଷ କରନ୍ତୁ କିମ୍ବା ବାତିଲ୍ କରନ୍ତୁ |",
+    "ur": "پہلے آواز کی ریکارڈنگ کو ختم یا منسوخ کریں۔",
+    "zh_Hant": "先完成或取消錄音"
   },
   "chat_addCaptionHint": {
     "en": "Add a caption...",
@@ -1564,7 +1716,9 @@
     "pt": "Adicionar uma legenda...",
     "ja": "キャプションを追加...",
     "zh": "添加说明...",
-    "or": "ଏକ କ୍ୟାପସନ୍ ଯୋଡନ୍ତୁ ..."
+    "or": "ଏକ କ୍ୟାପସନ୍ ଯୋଡନ୍ତୁ ...",
+    "ur": "ایک کیپشن شامل کریں...",
+    "zh_Hant": "新增標題..."
   },
   "chat_replyHint": {
     "en": "Reply to message...",
@@ -1584,7 +1738,9 @@
     "pt": "Responder à mensagem...",
     "ja": "メッセージに返信...",
     "zh": "回复消息...",
-    "or": "ସନ୍ଦେଶକୁ ଉତ୍ତର ଦିଅ ..."
+    "or": "ସନ୍ଦେଶକୁ ଉତ୍ତର ଦିଅ ...",
+    "ur": "پیغام کا جواب دیں...",
+    "zh_Hant": "回覆訊息..."
   },
   "chat_typeMessageHint": {
     "en": "Type a message...",
@@ -1604,7 +1760,9 @@
     "pt": "Digite uma mensagem...",
     "ja": "メッセージを入力...",
     "zh": "输入消息...",
-    "or": "ଏକ ବାର୍ତ୍ତା ଟାଇପ୍ କରନ୍ତୁ ..."
+    "or": "ଏକ ବାର୍ତ୍ତା ଟାଇପ୍ କରନ୍ତୁ ...",
+    "ur": "ایک پیغام ٹائپ کریں...",
+    "zh_Hant": "輸入訊息..."
   },
   "chat_unknown": {
     "en": "Unknown",
@@ -1625,7 +1783,9 @@
     "pt": "Desconhecido",
     "ja": "不明",
     "zh": "未知",
-    "or": "ଅଜ୍ଞାତ"
+    "or": "ଅଜ୍ଞାତ",
+    "ur": "نامعلوم",
+    "zh_Hant": "未知"
   },
   "chat_messageNotAvailable": {
     "en": "Message not available",
@@ -1645,7 +1805,9 @@
     "pt": "Mensagem não disponível",
     "ja": "メッセージを利用できません",
     "zh": "消息不可用",
-    "or": "ବାର୍ତ୍ତା ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ବାର୍ତ୍ତା ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "پیغام دستیاب نہیں ہے۔",
+    "zh_Hant": "訊息不可用"
   },
   "chat_noLongerMember": {
     "en": "You're no longer a member of this group",
@@ -1665,7 +1827,9 @@
     "pt": "Você não é mais membro deste grupo",
     "ja": "あなたはこのグループのメンバーではなくなりました",
     "zh": "您已不再是此群组成员",
-    "or": "ଆପଣ ଆଉ ଏହି ଗୋଷ୍ଠୀର ସଦସ୍ୟ ନୁହଁନ୍ତି |"
+    "or": "ଆପଣ ଆଉ ଏହି ଗୋଷ୍ଠୀର ସଦସ୍ୟ ନୁହଁନ୍ତି |",
+    "ur": "اب آپ اس گروپ کے رکن نہیں ہیں۔",
+    "zh_Hant": "您不再是該群組的成員"
   },
   "chat_groupDeactivated": {
     "en": "This group has been deactivated by the Admin",
@@ -1685,7 +1849,9 @@
     "pt": "Este grupo foi desativado pelo administrador",
     "ja": "このグループは管理者によって無効化されました",
     "zh": "该群组已被管理员停用",
-    "or": "ଏହି ଗୋଷ୍ଠୀ ଆଡମିନି ଦ୍ୱାରା ନିଷ୍କ୍ରିୟ ହୋଇଯାଇଛି |"
+    "or": "ଏହି ଗୋଷ୍ଠୀ ଆଡମିନି ଦ୍ୱାରା ନିଷ୍କ୍ରିୟ ହୋଇଯାଇଛି |",
+    "ur": "اس گروپ کو ایڈمن نے غیر فعال کر دیا ہے۔",
+    "zh_Hant": "該群組已被管理員停用"
   },
   "chat_someone": {
     "en": "Someone",
@@ -1705,7 +1871,9 @@
     "pt": "Alguém",
     "ja": "誰か",
     "zh": "某人",
-    "or": "କେହି ଜଣେ"
+    "or": "କେହି ଜଣେ",
+    "ur": "کوئی",
+    "zh_Hant": "有人"
   },
   "chat_typing": {
     "en": "typing...",
@@ -1725,7 +1893,9 @@
     "pt": "digitando...",
     "ja": "入力中...",
     "zh": "正在输入...",
-    "or": "ଟାଇପିଂ ..."
+    "or": "ଟାଇପିଂ ...",
+    "ur": "ٹائپنگ...",
+    "zh_Hant": "打字..."
   },
   "chat_typingOne": {
     "en": "{name} is typing...",
@@ -1751,7 +1921,9 @@
     "pt": "{name} está digitando...",
     "ja": "{name}が入力中...",
     "zh": "{name} 正在输入...",
-    "or": "{name} ଟାଇପ୍ କରୁଛି ..."
+    "or": "{name} ଟାଇପ୍ କରୁଛି ...",
+    "ur": "{name} ٹائپ کر رہا ہے...",
+    "zh_Hant": "{name} 正在輸入..."
   },
   "chat_typingTwo": {
     "en": "{name1}, {name2} are typing...",
@@ -1780,7 +1952,9 @@
     "pt": "{name1}, {name2} estão digitando...",
     "ja": "{name1}と{name2}が入力中...",
     "zh": "{name1}、{name2} 正在输入...",
-    "or": "{name1}, {name2} ଟାଇପ୍ କରୁଛନ୍ତି ..."
+    "or": "{name1}, {name2} ଟାଇପ୍ କରୁଛନ୍ତି ...",
+    "ur": "{name1}، {name2} ٹائپ کر رہے ہیں...",
+    "zh_Hant": "{name1}、{name2} 正在輸入..."
   },
   "chat_typingMany": {
     "en": "{count, plural, =1{1 person is typing...} other{{count} people are typing...}}",
@@ -1806,7 +1980,9 @@
     "pt": "{count, plural, =1{1 pessoa está digitando...} other{{count} pessoas estão digitando...}}",
     "ja": "{count, plural, =1{1名が入力中...} other{{count}名が入力中...}}",
     "zh": "{count, plural, =1{1人正在输入...} other{{count}人正在输入...}}",
-    "or": "{count, plural, =1{1 ଜଣ ଟାଇପ୍ କରୁଛନ୍ତି ...} other{{count} ଲୋକମାନେ ଟାଇପ୍ କରୁଛନ୍ତି ...}}"
+    "or": "{count, plural, =1{1 ଜଣ ଟାଇପ୍ କରୁଛନ୍ତି ...} other{{count} ଲୋକମାନେ ଟାଇପ୍ କରୁଛନ୍ତି ...}}",
+    "ur": "{count, plural, =1{1 شخص ٹائپ کر رہا ہے...} other{{count} افراد ٹائپ کر رہے ہیں...}}",
+    "zh_Hant": "{count, plural, =1{1 人正在打字...} other{{count} 人們正在輸入...}}"
   },
   "chat_peopleCount": {
     "en": "{count, plural, =1{1 person} other{{count} people}}",
@@ -1831,7 +2007,9 @@
     "pt": "{count, plural, =1{1 pessoa} other{{count} pessoas}}",
     "ja": "{count, plural, =1{1名} other{{count}名}}",
     "zh": "{count, plural, =1{1人} other{{count}人}}",
-    "or": "{count, plural, =1{1 ଜଣ} other{{count} ଲୋକ}}"
+    "or": "{count, plural, =1{1 ଜଣ} other{{count} ଲୋକ}}",
+    "ur": "{count, plural, =1{1 شخص} other{{count} افراد}}",
+    "zh_Hant": "{count, plural, =1{1人} other{{count} 人}}"
   },
   "chat_uploadFileFailed": {
     "en": "Failed to upload {path}",
@@ -1856,7 +2034,9 @@
     "pt": "Falha ao enviar {path}",
     "ja": "{path}のアップロードに失敗しました",
     "zh": "上传 {path} 失败",
-    "or": "{path} ଅପଲୋଡ୍ କରିବାରେ ବିଫଳ |"
+    "or": "{path} ଅପଲୋଡ୍ କରିବାରେ ବିଫଳ |",
+    "ur": "{path} اپ لوڈ کرنے میں ناکام",
+    "zh_Hant": "上傳{path}失敗"
   },
   "chat_videoUploadFailed": {
     "en": "Failed to upload video",
@@ -1876,7 +2056,9 @@
     "pt": "Falha ao enviar o vídeo",
     "ja": "動画のアップロードに失敗しました",
     "zh": "视频上传失败",
-    "or": "ଭିଡିଓ ଅପଲୋଡ୍ କରିବାରେ ବିଫଳ |"
+    "or": "ଭିଡିଓ ଅପଲୋଡ୍ କରିବାରେ ବିଫଳ |",
+    "ur": "ویڈیو اپ لوڈ کرنے میں ناکام",
+    "zh_Hant": "影片上傳失敗"
   },
   "chat_videoThumbnailFailed": {
     "en": "Failed to generate video thumbnail",
@@ -1896,7 +2078,9 @@
     "pt": "Falha ao gerar miniatura do vídeo",
     "ja": "動画サムネイルの生成に失敗しました",
     "zh": "生成视频缩略图失败",
-    "or": "ଭିଡିଓ ଥମ୍ବନେଲ ସୃଷ୍ଟି କରିବାରେ ବିଫଳ |"
+    "or": "ଭିଡିଓ ଥମ୍ବନେଲ ସୃଷ୍ଟି କରିବାରେ ବିଫଳ |",
+    "ur": "ویڈیو تھمب نیل بنانے میں ناکام",
+    "zh_Hant": "生成影片縮圖失敗"
   },
   "chat_groupChatCleared": {
     "en": "Group chat cleared successfully",
@@ -1916,7 +2100,9 @@
     "pt": "Conversa em grupo limpa com sucesso",
     "ja": "グループチャットを消去しました",
     "zh": "群聊已成功清除",
-    "or": "ଗୋଷ୍ଠୀ ଚାଟ୍ ସଫଳତାର ସହିତ ସଫା ହେଲା |"
+    "or": "ଗୋଷ୍ଠୀ ଚାଟ୍ ସଫଳତାର ସହିତ ସଫା ହେଲା |",
+    "ur": "گروپ چیٹ کامیابی سے صاف ہو گئی۔",
+    "zh_Hant": "群聊清除成功"
   },
   "chat_clearGroupChatFailed": {
     "en": "Failed to clear group chat",
@@ -1936,7 +2122,9 @@
     "pt": "Falha ao limpar conversa em grupo",
     "ja": "グループチャットの消去に失敗しました",
     "zh": "清除群聊失败",
-    "or": "ଗୋଷ୍ଠୀ ଚାଟ୍ ସଫା କରିବାରେ ବିଫଳ |"
+    "or": "ଗୋଷ୍ଠୀ ଚାଟ୍ ସଫା କରିବାରେ ବିଫଳ |",
+    "ur": "گروپ چیٹ صاف کرنے میں ناکام",
+    "zh_Hant": "清除群組聊天失敗"
   },
   "chat_offlineNotSent": {
     "en": "You're offline. Message not sent.",
@@ -1956,7 +2144,9 @@
     "pt": "Você está offline. Mensagem não enviada.",
     "ja": "オフラインです。メッセージは送信されませんでした。",
     "zh": "您处于离线状态。消息未发送。",
-    "or": "ଆପଣ ଅଫଲାଇନରେ ଅଛନ୍ତି | ବାର୍ତ୍ତା ପଠାଯାଇ ନାହିଁ |"
+    "or": "ଆପଣ ଅଫଲାଇନରେ ଅଛନ୍ତି | ବାର୍ତ୍ତା ପଠାଯାଇ ନାହିଁ |",
+    "ur": "آپ آف لائن ہیں۔ پیغام نہیں بھیجا گیا۔",
+    "zh_Hant": "你離線了。訊息未發送。"
   },
   "chat_voiceUploadFailed": {
     "en": "Voice message upload failed. Please try again.",
@@ -1976,7 +2166,9 @@
     "pt": "Falha ao enviar mensagem de voz. Tente novamente.",
     "ja": "音声メッセージのアップロードに失敗しました。もう一度お試しください。",
     "zh": "语音消息上传失败，请重试。",
-    "or": "ଭଏସ୍ ମେସେଜ୍ ଅପଲୋଡ୍ ବିଫଳ ହେଲା | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଭଏସ୍ ମେସେଜ୍ ଅପଲୋଡ୍ ବିଫଳ ହେଲା | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "صوتی پیغام اپ لوڈ ناکام ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "語音留言上傳失敗。請再試一次。"
   },
   "chat_userBlocked": {
     "en": "User blocked successfully",
@@ -1996,7 +2188,9 @@
     "pt": "Usuário bloqueado com sucesso",
     "ja": "ユーザーをブロックしました",
     "zh": "用户已被成功屏蔽",
-    "or": "ଉପଯୋଗକର୍ତ୍ତା ସଫଳତାର ସହିତ ଅବରୋଧ କଲେ |"
+    "or": "ଉପଯୋଗକର୍ତ୍ତା ସଫଳତାର ସହିତ ଅବରୋଧ କଲେ |",
+    "ur": "صارف کو کامیابی سے مسدود کر دیا گیا۔",
+    "zh_Hant": "用戶被成功封鎖"
   },
   "chat_blockFailed": {
     "en": "Unable to block user",
@@ -2016,7 +2210,9 @@
     "pt": "Não foi possível bloquear o usuário",
     "ja": "ユーザーをブロックできませんでした",
     "zh": "无法屏蔽用户",
-    "or": "ଚାଳକକୁ ଅବରୋଧ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଚାଳକକୁ ଅବରୋଧ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "صارف کو بلاک کرنے سے قاصر",
+    "zh_Hant": "無法封鎖用戶"
   },
   "chat_userUnblocked": {
     "en": "User unblocked successfully",
@@ -2036,7 +2232,9 @@
     "pt": "Usuário desbloqueado com sucesso",
     "ja": "ユーザーのブロックを解除しました",
     "zh": "用户已解除屏蔽",
-    "or": "ଉପଯୋଗକର୍ତ୍ତା ସଫଳତାର ସହିତ ଅନାବରଣ କଲେ |"
+    "or": "ଉପଯୋଗକର୍ତ୍ତା ସଫଳତାର ସହିତ ଅନାବରଣ କଲେ |",
+    "ur": "صارف کو کامیابی کے ساتھ غیر مسدود کر دیا گیا۔",
+    "zh_Hant": "用戶解封成功"
   },
   "chat_unblockFailed": {
     "en": "Unable to unblock user",
@@ -2056,7 +2254,9 @@
     "pt": "Não foi possível desbloquear o usuário",
     "ja": "ユーザーのブロック解除に失敗しました",
     "zh": "无法解除屏蔽用户",
-    "or": "ଚାଳକକୁ ଅବରୋଧ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଚାଳକକୁ ଅବରୋଧ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "صارف کو غیر مسدود کرنے سے قاصر",
+    "zh_Hant": "無法解鎖用戶"
   },
   "chat_noCameraFound": {
     "en": "No camera found on this device.",
@@ -2076,7 +2276,9 @@
     "pt": "Nenhuma câmera encontrada neste dispositivo.",
     "ja": "この端末にカメラが見つかりません。",
     "zh": "在此设备上未找到相机。",
-    "or": "ଏହି ଡିଭାଇସରେ କ camera ଣସି କ୍ୟାମେରା ମିଳିଲା ନାହିଁ |"
+    "or": "ଏହି ଡିଭାଇସରେ କ camera ଣସି କ୍ୟାମେରା ମିଳିଲା ନାହିଁ |",
+    "ur": "اس ڈیوائس پر کوئی کیمرہ نہیں ملا۔",
+    "zh_Hant": "在此裝置上找不到相機。"
   },
   "chat_cameraStartFailed": {
     "en": "Couldn't start the camera.",
@@ -2096,7 +2298,9 @@
     "pt": "Não foi possível iniciar a câmera.",
     "ja": "カメラを起動できませんでした。",
     "zh": "无法启动相机。",
-    "or": "କ୍ୟାମେରା ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ |"
+    "or": "କ୍ୟାମେରା ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ |",
+    "ur": "کیمرہ شروع نہیں ہو سکا۔",
+    "zh_Hant": "無法啟動相機。"
   },
   "chat_cameraAccessNeeded": {
     "en": "Camera access is needed to take photos and videos in chat.",
@@ -2116,7 +2320,9 @@
     "pt": "O acesso à câmera é necessário para tirar fotos e vídeos no chat.",
     "ja": "チャットで写真や動画を撮影するにはカメラへのアクセスが必要です。",
     "zh": "在聊天中拍摄照片和视频需要相机权限。",
-    "or": "ଚାଟରେ ଫଟୋ ଏବଂ ଭିଡିଓ ନେବା ପାଇଁ କ୍ୟାମେରା ପ୍ରବେଶ ଆବଶ୍ୟକ |"
+    "or": "ଚାଟରେ ଫଟୋ ଏବଂ ଭିଡିଓ ନେବା ପାଇଁ କ୍ୟାମେରା ପ୍ରବେଶ ଆବଶ୍ୟକ |",
+    "ur": "چیٹ میں تصاویر اور ویڈیوز لینے کے لیے کیمرے تک رسائی درکار ہے۔",
+    "zh_Hant": "需要使用相機權限才能在聊天中拍攝照片和影片。"
   },
   "chat_takePhotoFailed": {
     "en": "Failed to take photo",
@@ -2136,7 +2342,9 @@
     "pt": "Falha ao tirar foto",
     "ja": "写真の撮影に失敗しました",
     "zh": "拍照失败",
-    "or": "ଫଟୋ ଉଠାଇବାରେ ବିଫଳ"
+    "or": "ଫଟୋ ଉଠାଇବାରେ ବିଫଳ",
+    "ur": "تصویر لینے میں ناکام",
+    "zh_Hant": "拍照失敗"
   },
   "chat_recordingFailed": {
     "en": "Recording failed",
@@ -2156,7 +2364,9 @@
     "pt": "Falha na gravação",
     "ja": "録音・録画に失敗しました",
     "zh": "录制失败",
-    "or": "ରେକର୍ଡିଂ ବିଫଳ ହେଲା |"
+    "or": "ରେକର୍ଡିଂ ବିଫଳ ହେଲା |",
+    "ur": "ریکارڈنگ ناکام ہو گئی۔",
+    "zh_Hant": "錄音失敗"
   },
   "chat_shareVideoFailed": {
     "en": "Unable to share video",
@@ -2176,7 +2386,9 @@
     "pt": "Não foi possível compartilhar o vídeo",
     "ja": "動画を共有できませんでした",
     "zh": "无法分享视频",
-    "or": "ଭିଡିଓ ଅଂଶୀଦାର କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଭିଡିଓ ଅଂଶୀଦାର କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "ویڈیو شیئر کرنے سے قاصر",
+    "zh_Hant": "無法分享影片"
   },
   "chat_videoDownloaded": {
     "en": "Video downloaded successfully",
@@ -2196,7 +2408,9 @@
     "pt": "Vídeo baixado com sucesso",
     "ja": "動画をダウンロードしました",
     "zh": "视频下载成功",
-    "or": "ଭିଡିଓ ସଫଳତାର ସହିତ ଡାଉନଲୋଡ୍ ହୋଇଛି |"
+    "or": "ଭିଡିଓ ସଫଳତାର ସହିତ ଡାଉନଲୋଡ୍ ହୋଇଛି |",
+    "ur": "ویڈیو کامیابی سے ڈاؤن لوڈ ہو گئی۔",
+    "zh_Hant": "影片下載成功"
   },
   "chat_downloadFailed": {
     "en": "Download failed",
@@ -2216,7 +2430,9 @@
     "pt": "Falha no download",
     "ja": "ダウンロードに失敗しました",
     "zh": "下载失败",
-    "or": "ଡାଉନଲୋଡ୍ ବିଫଳ ହେଲା |"
+    "or": "ଡାଉନଲୋଡ୍ ବିଫଳ ହେଲା |",
+    "ur": "ڈاؤن لوڈ ناکام ہو گیا۔",
+    "zh_Hant": "下載失敗"
   },
   "chat_unableToOpen": {
     "en": "Unable to Open",
@@ -2236,7 +2452,9 @@
     "pt": "Não foi possível abrir",
     "ja": "開けません",
     "zh": "无法打开",
-    "or": "ଖୋଲିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଖୋଲିବାକୁ ଅସମର୍ଥ |",
+    "ur": "کھولنے سے قاصر",
+    "zh_Hant": "無法打開"
   },
   "chat_documentDownloadFailed": {
     "en": "The document couldn't be downloaded.",
@@ -2256,7 +2474,9 @@
     "pt": "O documento não pôde ser baixado.",
     "ja": "ドキュメントをダウンロードできませんでした。",
     "zh": "文档无法下载。",
-    "or": "ଡକ୍ୟୁମେଣ୍ଟ୍ ଡାଉନଲୋଡ୍ ହୋଇପାରିବ ନାହିଁ |"
+    "or": "ଡକ୍ୟୁମେଣ୍ଟ୍ ଡାଉନଲୋଡ୍ ହୋଇପାରିବ ନାହିଁ |",
+    "ur": "دستاویز کو ڈاؤن لوڈ نہیں کیا جا سکا۔",
+    "zh_Hant": "無法下載該文檔。"
   },
   "chat_locationServicesOff": {
     "en": "Turn on location services to share your location.",
@@ -2276,7 +2496,9 @@
     "pt": "Ative os serviços de localização para compartilhar sua localização.",
     "ja": "現在地を共有するには位置情報サービスをオンにしてください。",
     "zh": "请开启位置服务以共享您的位置。",
-    "or": "ଆପଣଙ୍କର ଅବସ୍ଥାନ ଅଂଶୀଦାର କରିବାକୁ ଅବସ୍ଥାନ ସେବା ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ଅବସ୍ଥାନ ଅଂଶୀଦାର କରିବାକୁ ଅବସ୍ଥାନ ସେବା ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |",
+    "ur": "اپنے مقام کا اشتراک کرنے کے لیے مقام کی خدمات کو آن کریں۔",
+    "zh_Hant": "開啟定位服務以共享您的位置。"
   },
   "chat_locationPermissionOff": {
     "en": "Location permission is turned off for this app. Enable it in Settings to share your location.",
@@ -2296,7 +2518,9 @@
     "pt": "A permissão de localização está desativada para este aplicativo. Ative-a nas Configurações para compartilhar sua localização.",
     "ja": "このアプリの位置情報の権限がオフになっています。現在地を共有するには設定で有効にしてください。",
     "zh": "此应用的位置权限已关闭。请在设置中启用它以共享您的位置。",
-    "or": "ଏହି ଆପ୍ ପାଇଁ ଅବସ୍ଥାନ ଅନୁମତି ବନ୍ଦ ଅଛି | ଆପଣଙ୍କର ଅବସ୍ଥାନ ଅଂଶୀଦାର କରିବାକୁ ସେଟିଂସମୂହରେ ଏହାକୁ ସକ୍ଷମ କରନ୍ତୁ |"
+    "or": "ଏହି ଆପ୍ ପାଇଁ ଅବସ୍ଥାନ ଅନୁମତି ବନ୍ଦ ଅଛି | ଆପଣଙ୍କର ଅବସ୍ଥାନ ଅଂଶୀଦାର କରିବାକୁ ସେଟିଂସମୂହରେ ଏହାକୁ ସକ୍ଷମ କରନ୍ତୁ |",
+    "ur": "اس ایپ کے لیے مقام کی اجازت بند ہے۔ اپنے مقام کا اشتراک کرنے کے لیے اسے ترتیبات میں فعال کریں۔",
+    "zh_Hant": "此應用程式的位置權限已關閉。在“設定”中啟用它以共享您的位置。"
   },
   "chat_locationPermissionNeeded": {
     "en": "Location permission is needed to share your location.",
@@ -2316,7 +2540,9 @@
     "pt": "A permissão de localização é necessária para compartilhar sua localização.",
     "ja": "現在地を共有するには位置情報の権限が必要です。",
     "zh": "共享位置需要位置权限。",
-    "or": "ଆପଣଙ୍କର ଅବସ୍ଥାନ ଅଂଶୀଦାର କରିବାକୁ ଅବସ୍ଥାନ ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ଆପଣଙ୍କର ଅବସ୍ଥାନ ଅଂଶୀଦାର କରିବାକୁ ଅବସ୍ଥାନ ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "آپ کے مقام کا اشتراک کرنے کے لیے مقام کی اجازت درکار ہے۔",
+    "zh_Hant": "需要位置權限才能共享您的位置。"
   },
   "chat_locationFetchFailed": {
     "en": "Couldn't get your location. Please try again.",
@@ -2336,7 +2562,9 @@
     "pt": "Não foi possível obter sua localização. Tente novamente.",
     "ja": "現在地を取得できませんでした。もう一度お試しください。",
     "zh": "无法获取您的位置，请重试。",
-    "or": "ତୁମର ଅବସ୍ଥାନ ପାଇପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ତୁମର ଅବସ୍ଥାନ ପାଇପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "آپ کا مقام حاصل نہیں ہو سکا۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法取得您的位置。請再試一次。"
   },
   "chat_fetchingLocation": {
     "en": "Fetching location...",
@@ -2356,7 +2584,9 @@
     "pt": "Buscando localização...",
     "ja": "現在地を取得中...",
     "zh": "正在获取位置...",
-    "or": "ସ୍ଥାନ ପାଇବା ..."
+    "or": "ସ୍ଥାନ ପାଇବା ...",
+    "ur": "مقام حاصل کر رہا ہے...",
+    "zh_Hant": "正在獲取位置..."
   },
   "chat_unknownLocation": {
     "en": "Unknown Location",
@@ -2376,7 +2606,9 @@
     "pt": "Localização desconhecida",
     "ja": "不明な現在地",
     "zh": "未知位置",
-    "or": "ଅଜ୍ଞାତ ସ୍ଥାନ |"
+    "or": "ଅଜ୍ଞାତ ସ୍ଥାନ |",
+    "ur": "نامعلوم مقام",
+    "zh_Hant": "未知地點"
   },
   "chat_shareLocation": {
     "en": "Share Location",
@@ -2396,7 +2628,9 @@
     "pt": "Compartilhar localização",
     "ja": "現在地を共有",
     "zh": "共享位置",
-    "or": "ଅବସ୍ଥାନ ଅଂଶୀଦାର କରନ୍ତୁ |"
+    "or": "ଅବସ୍ଥାନ ଅଂଶୀଦାର କରନ୍ତୁ |",
+    "ur": "مقام کا اشتراک کریں۔",
+    "zh_Hant": "分享位置"
   },
   "chat_sendLocation": {
     "en": "Send Location",
@@ -2416,7 +2650,9 @@
     "pt": "Enviar localização",
     "ja": "現在地を送信",
     "zh": "发送位置",
-    "or": "ଅବସ୍ଥାନ ପଠାନ୍ତୁ |"
+    "or": "ଅବସ୍ଥାନ ପଠାନ୍ତୁ |",
+    "ur": "مقام بھیجیں۔",
+    "zh_Hant": "發送位置"
   },
   "chat_tryAgain": {
     "en": "Try again",
@@ -2436,7 +2672,9 @@
     "pt": "Tentar novamente",
     "ja": "再試行",
     "zh": "重试",
-    "or": "ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "دوبارہ کوشش کریں۔",
+    "zh_Hant": "再試一次"
   },
   "chat_openSettings": {
     "en": "Open Settings",
@@ -2456,7 +2694,9 @@
     "pt": "Abrir Configurações",
     "ja": "設定を開く",
     "zh": "打开设置",
-    "or": "ସେଟିଂସମୂହ ଖୋଲନ୍ତୁ |"
+    "or": "ସେଟିଂସମୂହ ଖୋଲନ୍ତୁ |",
+    "ur": "ترتیبات کھولیں۔",
+    "zh_Hant": "開啟設定"
   },
   "chat_documentAvailable": {
     "en": "Document is available",
@@ -2476,7 +2716,9 @@
     "pt": "O documento está disponível",
     "ja": "ドキュメントを利用できます",
     "zh": "文档可用",
-    "or": "ଡକ୍ୟୁମେଣ୍ଟ୍ ଉପଲବ୍ଧ |"
+    "or": "ଡକ୍ୟୁମେଣ୍ଟ୍ ଉପଲବ୍ଧ |",
+    "ur": "دستاویز دستیاب ہے۔",
+    "zh_Hant": "文件可用"
   },
   "chat_documentPreviewUnavailable": {
     "en": "Preview is not available for this file type. Open the document using your installed application.",
@@ -2496,7 +2738,9 @@
     "pt": "A visualização não está disponível para este tipo de arquivo. Abra o documento usando seu aplicativo instalado.",
     "ja": "このファイル形式のプレビューは利用できません。インストールされているアプリを使用してドキュメントを開いてください。",
     "zh": "此类文件不支持预览。请使用已安装的应用程序打开文档。",
-    "or": "ଏହି ଫାଇଲ୍ ପ୍ରକାର ପାଇଁ ପୂର୍ବାବଲୋକନ ଉପଲବ୍ଧ ନାହିଁ | ଆପଣଙ୍କର ସଂସ୍ଥାପିତ ପ୍ରୟୋଗ ବ୍ୟବହାର କରି ଡକ୍ୟୁମେଣ୍ଟ୍ ଖୋଲନ୍ତୁ |"
+    "or": "ଏହି ଫାଇଲ୍ ପ୍ରକାର ପାଇଁ ପୂର୍ବାବଲୋକନ ଉପଲବ୍ଧ ନାହିଁ | ଆପଣଙ୍କର ସଂସ୍ଥାପିତ ପ୍ରୟୋଗ ବ୍ୟବହାର କରି ଡକ୍ୟୁମେଣ୍ଟ୍ ଖୋଲନ୍ତୁ |",
+    "ur": "اس فائل کی قسم کے لیے پیش نظارہ دستیاب نہیں ہے۔ اپنی انسٹال کردہ ایپلیکیشن کا استعمال کرتے ہوئے دستاویز کو کھولیں۔",
+    "zh_Hant": "此文件類型無法預覽。使用您安裝的應用程式開啟文件。"
   },
   "chat_openDocument": {
     "en": "Open Document",
@@ -2516,7 +2760,9 @@
     "pt": "Abrir documento",
     "ja": "ドキュメントを開く",
     "zh": "打开文档",
-    "or": "ଡକ୍ୟୁମେଣ୍ଟ୍ ଖୋଲନ୍ତୁ |"
+    "or": "ଡକ୍ୟୁମେଣ୍ଟ୍ ଖୋଲନ୍ତୁ |",
+    "ur": "دستاویز کھولیں۔",
+    "zh_Hant": "開啟文件"
   },
   "chat_clearChat": {
     "en": "Clear Chat",
@@ -2536,7 +2782,9 @@
     "pt": "Limpar conversa",
     "ja": "チャットを消去",
     "zh": "清空聊天",
-    "or": "ଚାଟ୍ ସଫା କରନ୍ତୁ |"
+    "or": "ଚାଟ୍ ସଫା କରନ୍ତୁ |",
+    "ur": "چیٹ صاف کریں۔",
+    "zh_Hant": "清除聊天"
   },
   "chat_clearChatConfirm": {
     "en": "Clear all messages from this chat?",
@@ -2556,7 +2804,9 @@
     "pt": "Limpar todas as mensagens desta conversa?",
     "ja": "このチャットのすべてのメッセージを消去しますか？",
     "zh": "清除此聊天的所有消息吗？",
-    "or": "ଏହି ଚାଟରୁ ସମସ୍ତ ବାର୍ତ୍ତା ସଫା କରନ୍ତୁ?"
+    "or": "ଏହି ଚାଟରୁ ସମସ୍ତ ବାର୍ତ୍ତା ସଫା କରନ୍ତୁ?",
+    "ur": "اس چیٹ سے تمام پیغامات صاف کریں؟",
+    "zh_Hant": "清除此聊天中的所有訊息嗎？"
   },
   "chat_clear": {
     "en": "Clear",
@@ -2577,7 +2827,9 @@
     "pt": "Limpar",
     "ja": "消去",
     "zh": "清空",
-    "or": "ସଫା"
+    "or": "ସଫା",
+    "ur": "صاف",
+    "zh_Hant": "清除"
   },
   "chat_removeMember": {
     "en": "Remove Member",
@@ -2597,7 +2849,9 @@
     "pt": "Remover membro",
     "ja": "メンバーを削除",
     "zh": "移除成员",
-    "or": "ସଦସ୍ୟ ଅପସାରଣ କରନ୍ତୁ |"
+    "or": "ସଦସ୍ୟ ଅପସାରଣ କରନ୍ତୁ |",
+    "ur": "ممبر کو ہٹا دیں۔",
+    "zh_Hant": "刪除會員"
   },
   "chat_removeMemberConfirm": {
     "en": "Are you sure you want to remove this member from the group?",
@@ -2617,7 +2871,9 @@
     "pt": "Tem certeza de que deseja remover este membro do grupo?",
     "ja": "このメンバーをグループから削除してもよろしいですか？",
     "zh": "确定要将此成员从群组中移除吗？",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ସଦସ୍ୟଙ୍କୁ ଗୋଷ୍ଠୀରୁ ହଟାଇବାକୁ ଚାହୁଁଛନ୍ତି କି?"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ସଦସ୍ୟଙ୍କୁ ଗୋଷ୍ଠୀରୁ ହଟାଇବାକୁ ଚାହୁଁଛନ୍ତି କି?",
+    "ur": "کیا آپ واقعی اس ممبر کو گروپ سے نکالنا چاہتے ہیں؟",
+    "zh_Hant": "您確定要從群組中刪除該成員嗎？"
   },
   "chat_youBlockedContact": {
     "en": "You blocked this contact",
@@ -2637,7 +2893,9 @@
     "pt": "Você bloqueou este contato",
     "ja": "この連絡先をブロックしました",
     "zh": "您已屏蔽此联系人",
-    "or": "ଆପଣ ଏହି ସମ୍ପର୍କକୁ ଅବରୋଧ କରିଛନ୍ତି |"
+    "or": "ଆପଣ ଏହି ସମ୍ପର୍କକୁ ଅବରୋଧ କରିଛନ୍ତି |",
+    "ur": "آپ نے اس رابطے کو مسدود کر دیا ہے۔",
+    "zh_Hant": "您封鎖了此聯絡人"
   },
   "chat_contactBlockedYou": {
     "en": "This contact has blocked you",
@@ -2657,7 +2915,9 @@
     "pt": "Este contato bloqueou você",
     "ja": "この連絡先にブロックされています",
     "zh": "此联系人已将您屏蔽",
-    "or": "ଏହି ସମ୍ପର୍କ ଆପଣଙ୍କୁ ଅବରୋଧ କରିଛି |"
+    "or": "ଏହି ସମ୍ପର୍କ ଆପଣଙ୍କୁ ଅବରୋଧ କରିଛି |",
+    "ur": "اس رابطے نے آپ کو مسدود کر دیا ہے۔",
+    "zh_Hant": "此聯絡人已封鎖您"
   },
   "chat_unblockContact": {
     "en": "Unblock Contact",
@@ -2677,7 +2937,9 @@
     "pt": "Desbloquear contato",
     "ja": "連絡先のブロックを解除",
     "zh": "解除屏蔽联系人",
-    "or": "ସମ୍ପର୍କକୁ ଅବରୋଧ କରନ୍ତୁ |"
+    "or": "ସମ୍ପର୍କକୁ ଅବରୋଧ କରନ୍ତୁ |",
+    "ur": "رابطہ کو غیر مسدود کریں۔",
+    "zh_Hant": "取消阻止聯繫"
   },
   "chat_unblockContactConfirm": {
     "en": "Are you sure you want to unblock this contact?",
@@ -2697,7 +2959,9 @@
     "pt": "Tem certeza de que deseja desbloquear este contato?",
     "ja": "この連絡先のブロックを解除してもよろしいですか？",
     "zh": "确定要解除屏蔽此联系人吗？",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ସମ୍ପର୍କକୁ ଅବରୋଧ କରିବାକୁ ଚାହୁଁଛନ୍ତି?"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ସମ୍ପର୍କକୁ ଅବରୋଧ କରିବାକୁ ଚାହୁଁଛନ୍ତି?",
+    "ur": "کیا آپ واقعی اس رابطے کو غیر مسدود کرنا چاہتے ہیں؟",
+    "zh_Hant": "您確定要取消封鎖此聯絡人嗎？"
   },
   "chat_unblock": {
     "en": "Unblock",
@@ -2717,7 +2981,9 @@
     "pt": "Desbloquear",
     "ja": "ブロック解除",
     "zh": "解除屏蔽",
-    "or": "ଅନାବରଣ କରନ୍ତୁ |"
+    "or": "ଅନାବରଣ କରନ୍ତୁ |",
+    "ur": "غیر مسدود کریں۔",
+    "zh_Hant": "解鎖"
   },
   "chat_cantMessageUser": {
     "en": "You can't message this user",
@@ -2737,7 +3003,9 @@
     "pt": "Você não pode enviar mensagens para este usuário",
     "ja": "このユーザーにメッセージを送信することはできません",
     "zh": "您无法向此用户发送消息",
-    "or": "ଆପଣ ଏହି ଉପଭୋକ୍ତାଙ୍କୁ ବାର୍ତ୍ତା କରିପାରିବେ ନାହିଁ |"
+    "or": "ଆପଣ ଏହି ଉପଭୋକ୍ତାଙ୍କୁ ବାର୍ତ୍ତା କରିପାରିବେ ନାହିଁ |",
+    "ur": "آپ اس صارف کو پیغام نہیں بھیج سکتے",
+    "zh_Hant": "您無法向該用戶發送訊息"
   },
   "chat_messageNotSent": {
     "en": "Message not sent. Please try again.",
@@ -2757,7 +3025,9 @@
     "pt": "Mensagem não enviada. Tente novamente.",
     "ja": "メッセージは送信されませんでした。もう一度お試しください。",
     "zh": "消息未发送，请重试。",
-    "or": "ବାର୍ତ୍ତା ପଠାଯାଇ ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ବାର୍ତ୍ତା ପଠାଯାଇ ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "پیغام نہیں بھیجا گیا۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "訊息未發送。請再試一次。"
   },
   "chat_sharedFromApp": {
     "en": "Shared from FG Tracker",
@@ -2777,7 +3047,9 @@
     "pt": "Compartilhado pelo FG Tracker",
     "ja": "FG Tracker から共有",
     "zh": "分享自 FG Tracker",
-    "or": "FG ଟ୍ରାକରରୁ ଅଂଶୀଦାର |"
+    "or": "FG ଟ୍ରାକରରୁ ଅଂଶୀଦାର |",
+    "ur": "ایف جی ٹریکر سے شیئر کیا گیا۔",
+    "zh_Hant": "分享自 FG Tracker"
   },
   "groupInfo_unknownGroup": {
     "en": "Unknown Group",
@@ -2797,7 +3069,9 @@
     "pt": "Grupo desconhecido",
     "ja": "不明なグループ",
     "zh": "未知群组",
-    "or": "ଅଜ୍ଞାତ ଗୋଷ୍ଠୀ |"
+    "or": "ଅଜ୍ଞାତ ଗୋଷ୍ଠୀ |",
+    "ur": "نامعلوم گروپ",
+    "zh_Hant": "未知組"
   },
   "groupInfo_groupCallFailed": {
     "en": "Could not start group call. Please try again.",
@@ -2817,7 +3091,9 @@
     "pt": "Não foi possível iniciar a chamada em grupo. Tente novamente.",
     "ja": "グループ通話を開始できませんでした。もう一度お試しください。",
     "zh": "无法发起群组通话，请重试。",
-    "or": "ଗୋଷ୍ଠୀ କଲ୍ ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ କଲ୍ ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "گروپ کال شروع نہیں ہو سکی۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法發起群組通話。請再試一次。"
   },
   "groupInfo_detailsNotFound": {
     "en": "Group details not found",
@@ -2837,7 +3113,9 @@
     "pt": "Detalhes do grupo não encontrados",
     "ja": "グループの詳細が見つかりません",
     "zh": "未找到群组详细信息",
-    "or": "ଗୋଷ୍ଠୀ ବିବରଣୀ ମିଳିଲା ନାହିଁ |"
+    "or": "ଗୋଷ୍ଠୀ ବିବରଣୀ ମିଳିଲା ନାହିଁ |",
+    "ur": "گروپ کی تفصیلات نہیں ملی",
+    "zh_Hant": "未找到群組詳細信息"
   },
   "groupInfo_audioCall": {
     "en": "Audio Call",
@@ -2857,7 +3135,9 @@
     "pt": "Chamada de voz",
     "ja": "音声通話",
     "zh": "语音通话",
-    "or": "ଅଡିଓ କଲ୍ |"
+    "or": "ଅଡିଓ କଲ୍ |",
+    "ur": "آڈیو کال",
+    "zh_Hant": "音訊通話"
   },
   "groupInfo_videoCall": {
     "en": "Video Call",
@@ -2877,7 +3157,9 @@
     "pt": "Chamada de vídeo",
     "ja": "ビデオ通話",
     "zh": "视频通话",
-    "or": "ଭିଡିଓ କଲ୍ |"
+    "or": "ଭିଡିଓ କଲ୍ |",
+    "ur": "ویڈیو کال",
+    "zh_Hant": "視訊通話"
   },
   "groupInfo_mediaLinksDocs": {
     "en": "Media, Links & Docs",
@@ -2897,7 +3179,9 @@
     "pt": "Mídia, links e docs",
     "ja": "メディア・リンク・ドキュメント",
     "zh": "媒体、链接和文档",
-    "or": "ମିଡିଆ, ଲିଙ୍କ୍ ଏବଂ ଡକସ୍ |"
+    "or": "ମିଡିଆ, ଲିଙ୍କ୍ ଏବଂ ଡକସ୍ |",
+    "ur": "میڈیا، لنکس اور دستاویزات",
+    "zh_Hant": "媒體、連結和文檔"
   },
   "groupInfo_noMediaYet": {
     "en": "No media shared yet",
@@ -2917,7 +3201,9 @@
     "pt": "Nenhuma mídia compartilhada ainda",
     "ja": "共有されたメディアはまだありません",
     "zh": "暂无共享媒体",
-    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ media ଣସି ମିଡିଆ ଅଂଶୀଦାର ହୋଇନାହିଁ |"
+    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ media ଣସି ମିଡିଆ ଅଂଶୀଦାର ହୋଇନାହିଁ |",
+    "ur": "ابھی تک کوئی میڈیا شیئر نہیں کیا گیا۔",
+    "zh_Hant": "尚未分享任何媒體"
   },
   "groupInfo_inviteViaLink": {
     "en": "Invite via Link",
@@ -2937,7 +3223,9 @@
     "pt": "Convidar por link",
     "ja": "リンクで招待",
     "zh": "通过链接邀请",
-    "or": "ଲିଙ୍କ୍ ମାଧ୍ୟମରେ ଆମନ୍ତ୍ରଣ କରନ୍ତୁ |"
+    "or": "ଲିଙ୍କ୍ ମାଧ୍ୟମରେ ଆମନ୍ତ୍ରଣ କରନ୍ତୁ |",
+    "ur": "لنک کے ذریعے مدعو کریں۔",
+    "zh_Hant": "透過連結邀請"
   },
   "groupInfo_inviteTextWithCode": {
     "en": "Join my group \"{groupName}\" on FG Tracker. Code: {code}",
@@ -2965,7 +3253,9 @@
     "pt": "Entre no meu grupo \"{groupName}\" no FG Tracker. Código: {code}",
     "ja": "FG Trackerの私のグループ「{groupName}」に参加してください。コード: {code}",
     "zh": "加入我在 FG Tracker 上的群组“{groupName}”。代码：{code}",
-    "or": "FG ଟ୍ରାକରରେ ମୋ ଗୋଷ୍ଠୀ \"{groupName}\" ରେ ଯୋଗ ଦିଅ | କୋଡ୍: {code} |"
+    "or": "FG ଟ୍ରାକରରେ ମୋ ଗୋଷ୍ଠୀ \"{groupName}\" ରେ ଯୋଗ ଦିଅ | କୋଡ୍: {code} |",
+    "ur": "FG ٹریکر پر میرے گروپ \"{groupName}\" میں شامل ہوں۔ کوڈ: {code}",
+    "zh_Hant": "加入我在 FG Tracker 上的群組「{groupName}」。代碼：{code}"
   },
   "groupInfo_inviteText": {
     "en": "Join my group \"{groupName}\" on FG Tracker",
@@ -2990,7 +3280,9 @@
     "pt": "Entre no meu grupo \"{groupName}\" no FG Tracker",
     "ja": "FG Trackerの私のグループ「{groupName}」に参加してください",
     "zh": "加入我在 FG Tracker 上的群组“{groupName}”",
-    "or": "FG ଟ୍ରାକରରେ ମୋ ଗୋଷ୍ଠୀ \"{groupName}\" ରେ ଯୋଗ ଦିଅ |"
+    "or": "FG ଟ୍ରାକରରେ ମୋ ଗୋଷ୍ଠୀ \"{groupName}\" ରେ ଯୋଗ ଦିଅ |",
+    "ur": "FG ٹریکر پر میرے گروپ \"{groupName}\" میں شامل ہوں۔",
+    "zh_Hant": " {groupName}"
   },
   "groupInfo_inviteCopied": {
     "en": "Invite text copied",
@@ -3010,7 +3302,9 @@
     "pt": "Texto de convite copiado",
     "ja": "招待テキストをコピーしました",
     "zh": "邀请文本已复制",
-    "or": "କପି ହୋଇଥିବା ଆମନ୍ତ୍ରଣ କରନ୍ତୁ |"
+    "or": "କପି ହୋଇଥିବା ଆମନ୍ତ୍ରଣ କରନ୍ତୁ |",
+    "ur": "مدعو متن کاپی ہو گیا۔",
+    "zh_Hant": "邀請文字已複製"
   },
   "groupInfo_groupSettings": {
     "en": "Group Settings",
@@ -3030,7 +3324,9 @@
     "pt": "Configurações do grupo",
     "ja": "グループ設定",
     "zh": "群组设置",
-    "or": "ଗୋଷ୍ଠୀ ସେଟିଂସମୂହ |"
+    "or": "ଗୋଷ୍ଠୀ ସେଟିଂସମୂହ |",
+    "ur": "گروپ کی ترتیبات",
+    "zh_Hant": "群組設定"
   },
   "groupInfo_groupSettingsSubtitle": {
     "en": "Edit group info, privacy, and more",
@@ -3050,7 +3346,9 @@
     "pt": "Editar dados do grupo, privacidade e mais",
     "ja": "グループ情報やプライバシーなどを編集",
     "zh": "编辑群组信息、隐私等",
-    "or": "ଗୋଷ୍ଠୀ ସୂଚନା, ଗୋପନୀୟତା, ଏବଂ ଅଧିକ ସଂପାଦନ କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ ସୂଚନା, ଗୋପନୀୟତା, ଏବଂ ଅଧିକ ସଂପାଦନ କରନ୍ତୁ |",
+    "ur": "گروپ کی معلومات، رازداری اور مزید میں ترمیم کریں۔",
+    "zh_Hant": "編輯群組資訊、隱私等"
   },
   "groupInfo_members": {
     "en": "Members",
@@ -3070,7 +3368,9 @@
     "pt": "Membros",
     "ja": "メンバー",
     "zh": "成员",
-    "or": "ସଦସ୍ୟମାନେ |"
+    "or": "ସଦସ୍ୟମାନେ |",
+    "ur": "ممبران",
+    "zh_Hant": "會員"
   },
   "groupInfo_showLess": {
     "en": "Show less",
@@ -3090,7 +3390,9 @@
     "pt": "Mostrar menos",
     "ja": "一部のみ表示",
     "zh": "收起",
-    "or": "କମ୍ ଦେଖାନ୍ତୁ |"
+    "or": "କମ୍ ଦେଖାନ୍ତୁ |",
+    "ur": "کم دکھائیں۔",
+    "zh_Hant": "顯示較少"
   },
   "groupInfo_viewAllMembers": {
     "en": "View all members",
@@ -3110,7 +3412,9 @@
     "pt": "Ver todos os membros",
     "ja": "全メンバーを表示",
     "zh": "查看全部成员",
-    "or": "ସମସ୍ତ ସଦସ୍ୟଙ୍କୁ ଦେଖନ୍ତୁ |"
+    "or": "ସମସ୍ତ ସଦସ୍ୟଙ୍କୁ ଦେଖନ୍ତୁ |",
+    "ur": "تمام ممبران کو دیکھیں",
+    "zh_Hant": "看全部會員"
   },
   "groupInfo_member": {
     "en": "Member",
@@ -3130,7 +3434,9 @@
     "pt": "Membro",
     "ja": "メンバー",
     "zh": "成员",
-    "or": "ସଦସ୍ୟ"
+    "or": "ସଦସ୍ୟ",
+    "ur": "ممبر",
+    "zh_Hant": "成員"
   },
   "groupInfo_nameYou": {
     "en": "{name} (You)",
@@ -3155,7 +3461,9 @@
     "pt": "{name} (Você)",
     "ja": "{name}（あなた）",
     "zh": "{name}（您）",
-    "or": "{name} (ତୁମେ)"
+    "or": "{name} (ତୁମେ)",
+    "ur": "{name} (آپ)",
+    "zh_Hant": "{name}（你）"
   },
   "groupInfo_admin": {
     "en": "Admin",
@@ -3175,7 +3483,9 @@
     "pt": "Admin",
     "ja": "管理者",
     "zh": "管理员",
-    "or": "ଆଡମିନି"
+    "or": "ଆଡମିନି",
+    "ur": "ایڈمن",
+    "zh_Hant": "行政"
   },
   "groupInfo_groupAdmin": {
     "en": "Group Admin",
@@ -3195,7 +3505,9 @@
     "pt": "Admin do grupo",
     "ja": "グループ管理者",
     "zh": "群组管理员",
-    "or": "ଗୋଷ୍ଠୀ ଆଡମିନି"
+    "or": "ଗୋଷ୍ଠୀ ଆଡମିନି",
+    "ur": "گروپ ایڈمن",
+    "zh_Hant": "群組管理員"
   },
   "groupInfo_removeMemberConfirm": {
     "en": "Are you sure you want to remove {name} from the group?",
@@ -3220,7 +3532,9 @@
     "pt": "Tem certeza de que deseja remover {name} do grupo?",
     "ja": "{name}をグループから削除してもよろしいですか？",
     "zh": "确定要将 {name} 从群组中移除吗？",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଗୋଷ୍ଠୀରୁ {name} ଅପସାରଣ କରିବାକୁ ଚାହୁଁଛନ୍ତି?"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଗୋଷ୍ଠୀରୁ {name} ଅପସାରଣ କରିବାକୁ ଚାହୁଁଛନ୍ତି?",
+    "ur": "کیا آپ واقعی {name} کو گروپ سے ہٹانا چاہتے ہیں؟",
+    "zh_Hant": "您確定要從群組中刪除 {name} 嗎？"
   },
   "groupInfo_messageAction": {
     "en": "Message",
@@ -3241,7 +3555,9 @@
     "pt": "Mensagem",
     "ja": "メッセージ",
     "zh": "发送消息",
-    "or": "ବାର୍ତ୍ତା |"
+    "or": "ବାର୍ତ୍ତା |",
+    "ur": "پیغام",
+    "zh_Hant": "訊息"
   },
   "groupInfo_removeFromGroup": {
     "en": "Remove from group",
@@ -3261,7 +3577,9 @@
     "pt": "Remover do grupo",
     "ja": "グループから削除",
     "zh": "从群组中移除",
-    "or": "ଗୋଷ୍ଠୀରୁ ଅପସାରଣ କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀରୁ ଅପସାରଣ କରନ୍ତୁ |",
+    "ur": "گروپ سے نکال دیں۔",
+    "zh_Hant": "從群組中刪除"
   },
   "groupInfo_clearChatConfirm": {
     "en": "Delete all messages from this device?",
@@ -3281,7 +3599,9 @@
     "pt": "Apagar todas as mensagens deste dispositivo?",
     "ja": "この端末からすべてのメッセージを削除しますか？",
     "zh": "从此设备删除所有消息吗？",
-    "or": "ଏହି ଉପକରଣରୁ ସମସ୍ତ ସନ୍ଦେଶ ବିଲୋପ କରିବେ କି?"
+    "or": "ଏହି ଉପକରଣରୁ ସମସ୍ତ ସନ୍ଦେଶ ବିଲୋପ କରିବେ କି?",
+    "ur": "اس آلہ سے تمام پیغامات حذف کریں؟",
+    "zh_Hant": "刪除該裝置上的所有訊息？"
   },
   "groupInfo_exitGroup": {
     "en": "Exit Group",
@@ -3301,7 +3621,9 @@
     "pt": "Sair do grupo",
     "ja": "グループを退出",
     "zh": "退出群组",
-    "or": "ଗୋଷ୍ଠୀ ଛାଡନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ ଛାଡନ୍ତୁ |",
+    "ur": "گروپ سے باہر نکلیں۔",
+    "zh_Hant": "退出組"
   },
   "groupInfo_exitGroupConfirm": {
     "en": "Are you sure you want to exit \"{groupName}\"?",
@@ -3326,7 +3648,9 @@
     "pt": "Tem certeza de que deseja sair de \"{groupName}\"?",
     "ja": "「{groupName}」を退出してもよろしいですか？",
     "zh": "确定要退出“{groupName}”吗？",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ \"{groupName}\" ଛାଡିବାକୁ ଚାହୁଁଛନ୍ତି?"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ \"{groupName}\" ଛାଡିବାକୁ ଚାହୁଁଛନ୍ତି?",
+    "ur": "کیا آپ واقعی \"{groupName}\" سے باہر نکلنا چاہتے ہیں؟",
+    "zh_Hant": "您確定要退出「{groupName}」嗎？"
   },
   "groupInfo_group": {
     "en": "Group",
@@ -3347,7 +3671,9 @@
     "pt": "Grupo",
     "ja": "グループ",
     "zh": "群组",
-    "or": "ଗୋଷ୍ଠୀ"
+    "or": "ଗୋଷ୍ଠୀ",
+    "ur": "گروپ",
+    "zh_Hant": "團體"
   },
   "groupInfo_allGroups": {
     "en": "All Groups",
@@ -3367,7 +3693,9 @@
     "pt": "Todos os grupos",
     "ja": "すべてのグループ",
     "zh": "所有群组",
-    "or": "ସମସ୍ତ ଗୋଷ୍ଠୀ"
+    "or": "ସମସ୍ତ ଗୋଷ୍ଠୀ",
+    "ur": "تمام گروپس",
+    "zh_Hant": "所有團體"
   },
   "groupInfo_totalCount": {
     "en": "{count} Total",
@@ -3392,7 +3720,9 @@
     "pt": "{count} no total",
     "ja": "合計 {count}",
     "zh": "共 {count} 个",
-    "or": "{count} ସମୁଦାୟ |"
+    "or": "{count} ସମୁଦାୟ |",
+    "ur": "{count} کل",
+    "zh_Hant": "{count} 總計"
   },
   "groupInfo_noGroupFound": {
     "en": "No group found for '{query}'",
@@ -3417,7 +3747,9 @@
     "pt": "Nenhum grupo encontrado para '{query}'",
     "ja": "「{query}」に一致するグループが見つかりません",
     "zh": "未找到与“{query}”相关的群组",
-    "or": "'{query}' ପାଇଁ କ group ଣସି ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |"
+    "or": "'{query}' ପାଇଁ କ group ଣସି ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |",
+    "ur": "'{query}' کے لیے کوئی گروپ نہیں ملا",
+    "zh_Hant": "未找到「{query}」的群組"
   },
   "groupInfo_noGroupsYet": {
     "en": "You haven't joined or created any groups yet.\nStart exploring now!",
@@ -3437,7 +3769,9 @@
     "pt": "Você ainda não entrou nem criou nenhum grupo.\nComece a explorar agora!",
     "ja": "まだグループに参加または作成していません。\n今すぐ始めましょう！",
     "zh": "您尚未加入或创建任何群组。\n立即开始探索吧！",
-    "or": "ଆପଣ ଏପର୍ଯ୍ୟନ୍ତ ଯୋଗ ଦେଇ ନାହାଁନ୍ତି କିମ୍ବା କ groups ଣସି ଗୋଷ୍ଠୀ ସୃଷ୍ଟି କରିନାହାଁନ୍ତି |\nବର୍ତ୍ତମାନ ଅନୁସନ୍ଧାନ ଆରମ୍ଭ କର!"
+    "or": "ଆପଣ ଏପର୍ଯ୍ୟନ୍ତ ଯୋଗ ଦେଇ ନାହାଁନ୍ତି କିମ୍ବା କ groups ଣସି ଗୋଷ୍ଠୀ ସୃଷ୍ଟି କରିନାହାଁନ୍ତି |\nବର୍ତ୍ତମାନ ଅନୁସନ୍ଧାନ ଆରମ୍ଭ କର!",
+    "ur": "آپ نے ابھی تک کوئی گروپ جوائن نہیں کیا اور نہ ہی بنایا ہے۔\nابھی دریافت کرنا شروع کریں!",
+    "zh_Hant": "您尚未加入或建立任何群組。\n現在就開始探索吧！"
   },
   "groupInfo_allGroupsSubtitle": {
     "en": "Stay connected with your teams",
@@ -3457,7 +3791,9 @@
     "pt": "Mantenha-se conectado com suas equipes",
     "ja": "チームとつながりを保ちましょう",
     "zh": "与您的团队保持联系",
-    "or": "ତୁମର ଦଳ ସହିତ ସଂଯୁକ୍ତ ରୁହ |"
+    "or": "ତୁମର ଦଳ ସହିତ ସଂଯୁକ୍ତ ରୁହ |",
+    "ur": "اپنی ٹیموں کے ساتھ جڑے رہیں",
+    "zh_Hant": "與您的團隊保持聯繫"
   },
   "groupInfo_searchGroupsHint": {
     "en": "Search groups...",
@@ -3477,7 +3813,9 @@
     "pt": "Pesquisar grupos...",
     "ja": "グループを検索...",
     "zh": "搜索群组...",
-    "or": "ଗୋଷ୍ଠୀ ଖୋଜ ..."
+    "or": "ଗୋଷ୍ଠୀ ଖୋଜ ...",
+    "ur": "گروپس تلاش کریں...",
+    "zh_Hant": "搜尋組..."
   },
   "groupInfo_unnamedGroup": {
     "en": "Unnamed Group",
@@ -3497,7 +3835,9 @@
     "pt": "Grupo sem nome",
     "ja": "名称未設定のグループ",
     "zh": "未命名群组",
-    "or": "ନାମହୀନ ଗୋଷ୍ଠୀ |"
+    "or": "ନାମହୀନ ଗୋଷ୍ଠୀ |",
+    "ur": "بے نام گروپ",
+    "zh_Hant": "未命名團體"
   },
   "groupInfo_active": {
     "en": "Active",
@@ -3518,7 +3858,9 @@
     "pt": "Ativo",
     "ja": "アクティブ",
     "zh": "活跃",
-    "or": "ସକ୍ରିୟ |"
+    "or": "ସକ୍ରିୟ |",
+    "ur": "فعال",
+    "zh_Hant": "積極的"
   },
   "groupInfo_inactive": {
     "en": "Inactive",
@@ -3539,7 +3881,9 @@
     "pt": "Inativo",
     "ja": "非アクティブ",
     "zh": "未激活",
-    "or": "ନିଷ୍କ୍ରିୟ |"
+    "or": "ନିଷ୍କ୍ରିୟ |",
+    "ur": "غیر فعال",
+    "zh_Hant": "不活躍"
   },
   "groupInfo_teamCode": {
     "en": "Team Code",
@@ -3559,7 +3903,9 @@
     "pt": "Código da equipe",
     "ja": "チームコード",
     "zh": "团队代码",
-    "or": "ଟିମ୍ କୋଡ୍ |"
+    "or": "ଟିମ୍ କୋଡ୍ |",
+    "ur": "ٹیم کوڈ",
+    "zh_Hant": "團隊程式碼"
   },
   "groupInfo_groupCodeCopied": {
     "en": "Group code copied!",
@@ -3579,7 +3925,9 @@
     "pt": "Código do grupo copiado!",
     "ja": "グループコードをコピーしました！",
     "zh": "群组代码已复制！",
-    "or": "ଗୋଷ୍ଠୀ କୋଡ୍ କପି ହୋଇଛି!"
+    "or": "ଗୋଷ୍ଠୀ କୋଡ୍ କପି ହୋଇଛି!",
+    "ur": "گروپ کوڈ کاپی ہو گیا!",
+    "zh_Hant": "群組代碼已複製！"
   },
   "groupInfo_createdBy": {
     "en": "Created By",
@@ -3599,7 +3947,9 @@
     "pt": "Criado por",
     "ja": "作成者",
     "zh": "创建者",
-    "or": "ଦ୍ୱାରା ସୃଷ୍ଟି |"
+    "or": "ଦ୍ୱାରା ସୃଷ୍ଟି |",
+    "ur": "کے ذریعہ تخلیق کیا گیا۔",
+    "zh_Hant": "創建者"
   },
   "groupInfo_areYouSure": {
     "en": "Are you sure?",
@@ -3619,7 +3969,9 @@
     "pt": "Tem certeza?",
     "ja": "本当によろしいですか？",
     "zh": "确定吗？",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି?"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି?",
+    "ur": "کیا آپ کو یقین ہے؟",
+    "zh_Hant": "你確定嗎？"
   },
   "groupInfo_exitGroupQuestion": {
     "en": "Do you want to Exit this Group?",
@@ -3639,7 +3991,9 @@
     "pt": "Deseja sair deste grupo?",
     "ja": "このグループを退出しますか？",
     "zh": "您要退出此群组吗？",
-    "or": "ଆପଣ ଏହି ଗୋଷ୍ଠୀରୁ ବାହାରକୁ ଯିବାକୁ ଚାହୁଁଛନ୍ତି କି?"
+    "or": "ଆପଣ ଏହି ଗୋଷ୍ଠୀରୁ ବାହାରକୁ ଯିବାକୁ ଚାହୁଁଛନ୍ତି କି?",
+    "ur": "کیا آپ اس گروپ سے باہر نکلنا چاہتے ہیں؟",
+    "zh_Hant": "您要退出該群組嗎？"
   },
   "media_title": {
     "en": "Media, links, and docs",
@@ -3659,7 +4013,9 @@
     "pt": "Mídia, links e docs",
     "ja": "メディア・リンク・ドキュメント",
     "zh": "媒体、链接和文档",
-    "or": "ମିଡିଆ, ଲିଙ୍କ୍, ଏବଂ ଡକସ୍ |"
+    "or": "ମିଡିଆ, ଲିଙ୍କ୍, ଏବଂ ଡକସ୍ |",
+    "ur": "میڈیا، لنکس، اور دستاویزات",
+    "zh_Hant": "媒體、連結和文檔"
   },
   "media_tabMedia": {
     "en": "Media",
@@ -3679,7 +4035,9 @@
     "pt": "Mídia",
     "ja": "メディア",
     "zh": "媒体",
-    "or": "ମିଡିଆ |"
+    "or": "ମିଡିଆ |",
+    "ur": "میڈیا",
+    "zh_Hant": "媒體"
   },
   "media_tabLinks": {
     "en": "Links",
@@ -3699,7 +4057,9 @@
     "pt": "Links",
     "ja": "リンク",
     "zh": "链接",
-    "or": "ଲିଙ୍କ୍"
+    "or": "ଲିଙ୍କ୍",
+    "ur": "لنکس",
+    "zh_Hant": "連結"
   },
   "media_tabDocs": {
     "en": "Docs",
@@ -3719,7 +4079,9 @@
     "pt": "Documentos",
     "ja": "ドキュメント",
     "zh": "文档",
-    "or": "ଡକସ୍"
+    "or": "ଡକସ୍",
+    "ur": "دستاویزات",
+    "zh_Hant": "文件"
   },
   "media_tabMediaCount": {
     "en": "Media ({count})",
@@ -3744,7 +4106,9 @@
     "pt": "Mídia ({count})",
     "ja": "メディア ({count})",
     "zh": "媒体 ({count})",
-    "or": "ମିଡିଆ ({count})"
+    "or": "ମିଡିଆ ({count})",
+    "ur": "میڈیا ({count})",
+    "zh_Hant": "媒體 ({count})"
   },
   "media_tabLinksCount": {
     "en": "Links ({count})",
@@ -3769,7 +4133,9 @@
     "pt": "Links ({count})",
     "ja": "リンク ({count})",
     "zh": "链接 ({count})",
-    "or": "ଲିଙ୍କ୍ ({count})"
+    "or": "ଲିଙ୍କ୍ ({count})",
+    "ur": "لنکس ({count})",
+    "zh_Hant": "連結 ({count})"
   },
   "media_tabDocsCount": {
     "en": "Docs ({count})",
@@ -3794,7 +4160,9 @@
     "pt": "Docs ({count})",
     "ja": "ドキュメント ({count})",
     "zh": "文档 ({count})",
-    "or": "ଡକସ୍ ({count})"
+    "or": "ଡକସ୍ ({count})",
+    "ur": "دستاویزات ({count})",
+    "zh_Hant": "文檔 ({count})"
   },
   "media_noMedia": {
     "en": "No media found",
@@ -3814,7 +4182,9 @@
     "pt": "Nenhuma mídia encontrada",
     "ja": "メディアが見つかりません",
     "zh": "未找到媒体",
-    "or": "କ media ଣସି ମିଡିଆ ମିଳିଲା ନାହିଁ |"
+    "or": "କ media ଣସି ମିଡିଆ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی میڈیا نہیں ملا",
+    "zh_Hant": "未找到媒體"
   },
   "media_noLinks": {
     "en": "No links found",
@@ -3834,7 +4204,9 @@
     "pt": "Nenhum link encontrado",
     "ja": "リンクが見つかりません",
     "zh": "未找到链接",
-    "or": "କ links ଣସି ଲିଙ୍କ୍ ମିଳିଲା ନାହିଁ |"
+    "or": "କ links ଣସି ଲିଙ୍କ୍ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی لنکس نہیں ملے",
+    "zh_Hant": "沒有找到連結"
   },
   "media_noDocuments": {
     "en": "No documents found",
@@ -3854,7 +4226,9 @@
     "pt": "Nenhum documento encontrado",
     "ja": "ドキュメントが見つかりません",
     "zh": "未找到文档",
-    "or": "କ documents ଣସି ଦଲିଲ ମିଳିଲା ନାହିଁ |"
+    "or": "କ documents ଣସି ଦଲିଲ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی دستاویزات نہیں ملے",
+    "zh_Hant": "沒有找到文件"
   },
   "media_videoNotFound": {
     "en": "Video not found",
@@ -3874,7 +4248,9 @@
     "pt": "Vídeo não encontrado",
     "ja": "動画が見つかりません",
     "zh": "未找到视频",
-    "or": "ଭିଡିଓ ମିଳିଲା ନାହିଁ"
+    "or": "ଭିଡିଓ ମିଳିଲା ନାହିଁ",
+    "ur": "ویڈیو نہیں ملی",
+    "zh_Hant": "找不到視頻"
   },
   "media_documentNotFound": {
     "en": "Document not found",
@@ -3894,7 +4270,9 @@
     "pt": "Documento não encontrado",
     "ja": "ドキュメントが見つかりません",
     "zh": "未找到文档",
-    "or": "ଡକ୍ୟୁମେଣ୍ଟ୍ ମିଳିଲା ନାହିଁ |"
+    "or": "ଡକ୍ୟୁମେଣ୍ଟ୍ ମିଳିଲା ନାହିଁ |",
+    "ur": "دستاویز نہیں ملی",
+    "zh_Hant": "未找到文檔"
   },
   "media_invalidLink": {
     "en": "Invalid link",
@@ -3914,7 +4292,9 @@
     "pt": "Link inválido",
     "ja": "無効なリンク",
     "zh": "无效链接",
-    "or": "ଅବ val ଧ ଲିଙ୍କ୍ |"
+    "or": "ଅବ val ଧ ଲିଙ୍କ୍ |",
+    "ur": "غلط لنک",
+    "zh_Hant": "連結無效"
   },
   "media_cannotOpen": {
     "en": "Cannot open",
@@ -3934,7 +4314,9 @@
     "pt": "Não foi possível abrir",
     "ja": "開けません",
     "zh": "无法打开",
-    "or": "ଖୋଲିପାରିବ ନାହିଁ |"
+    "or": "ଖୋଲିପାରିବ ନାହିଁ |",
+    "ur": "نہیں کھل سکتا",
+    "zh_Hant": "打不開"
   },
   "chat_cameraModePortrait": {
     "en": "PORTRAIT",
@@ -3955,7 +4337,9 @@
     "pt": "RETRATO",
     "ja": "ポートレート",
     "zh": "人像",
-    "or": "ପୋର୍ଟ୍ରାଟ୍ |"
+    "or": "ପୋର୍ଟ୍ରାଟ୍ |",
+    "ur": "پورٹریٹ",
+    "zh_Hant": "肖像"
   },
   "chat_cameraModePhoto": {
     "en": "PHOTO",
@@ -3976,7 +4360,9 @@
     "pt": "FOTO",
     "ja": "写真",
     "zh": "照片",
-    "or": "ଫଟୋ"
+    "or": "ଫଟୋ",
+    "ur": "تصویر",
+    "zh_Hant": "照片"
   },
   "chat_cameraModeVideo": {
     "en": "VIDEO",
@@ -3997,6 +4383,8 @@
     "pt": "VÍDEO",
     "ja": "動画",
     "zh": "视频",
-    "or": "ଭିଡିଓ"
+    "or": "ଭିଡିଓ",
+    "ur": "ویڈیو",
+    "zh_Hant": "影片"
   }
 }

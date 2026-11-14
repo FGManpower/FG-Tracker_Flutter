@@ -41,8 +41,8 @@ class _LanguageScreenState extends State<LanguageScreen> {
     // A new user always starts with English selected (product rule), then
     // picks any language. The order is the fixed order of kAppLanguages
     // (English first); the phone language and any saved language are ignored.
-    _selected = kAppLanguages.first;
-    _ordered = kAppLanguages;
+    _selected = kWorkingLanguages.first;
+    _ordered = kWorkingLanguages;
   }
 
   @override

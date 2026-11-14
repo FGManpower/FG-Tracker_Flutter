@@ -22,6 +22,7 @@ import 'app_localizations_pa.dart';
 import 'app_localizations_pt.dart';
 import 'app_localizations_ta.dart';
 import 'app_localizations_te.dart';
+import 'app_localizations_ur.dart';
 import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
@@ -127,7 +128,9 @@ abstract class AppLocalizations {
     Locale('pt'),
     Locale('ta'),
     Locale('te'),
-    Locale('zh')
+    Locale('ur'),
+    Locale('zh'),
+    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant')
   ];
 
   /// No description provided for @about_aboutUs.
@@ -5944,6 +5947,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Walkie-Talkie\nfeature'**
   String get intro_walkieTitle;
+
+  /// No description provided for @login_dataSecure.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is {percent} secure'**
+  String login_dataSecure(String percent);
+
+  /// No description provided for @login_enterMobileNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Mobile Number'**
+  String get login_enterMobileNumber;
 
   /// No description provided for @media_cannotOpen.
   ///
@@ -12982,6 +12997,7 @@ class _AppLocalizationsDelegate
         'pt',
         'ta',
         'te',
+        'ur',
         'zh'
       ].contains(locale.languageCode);
 
@@ -12990,6 +13006,18 @@ class _AppLocalizationsDelegate
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when language+script codes are specified.
+  switch (locale.languageCode) {
+    case 'zh':
+      {
+        switch (locale.scriptCode) {
+          case 'Hant':
+            return AppLocalizationsZhHant();
+        }
+        break;
+      }
+  }
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
     case 'ar':
@@ -13026,6 +13054,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsTa();
     case 'te':
       return AppLocalizationsTe();
+    case 'ur':
+      return AppLocalizationsUr();
     case 'zh':
       return AppLocalizationsZh();
   }

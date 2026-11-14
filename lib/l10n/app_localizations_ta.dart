@@ -3453,6 +3453,14 @@ class AppLocalizationsTa extends AppLocalizations {
   String get intro_walkieTitle => 'வாக்கி-டாக்கி வசதி';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'உங்கள் தரவு $percent பாதுகாப்பானது';
+  }
+
+  @override
+  String get login_enterMobileNumber => 'மொபைல் எண்ணை உள்ளிடவும்';
+
+  @override
   String get media_cannotOpen => 'திறக்க முடியாது';
 
   @override

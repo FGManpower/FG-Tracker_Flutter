@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 
 class LoginPage extends GetView<Login_Controller> {
   const LoginPage({super.key});
@@ -79,7 +80,8 @@ class LoginPage extends GetView<Login_Controller> {
                                               height: 310.h,
                                               child: Opacity(
                                                 opacity: 0.85,
-                                                child: _buildAuthWatermarkImage(),
+                                                child:
+                                                    _buildAuthWatermarkImage(),
                                               ),
                                             ),
                                             Positioned(
@@ -203,7 +205,7 @@ class LoginPage extends GetView<Login_Controller> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            _buildPhoneInputField(),
+                                            _buildPhoneInputField(context),
                                             Obx(
                                               () => controller.mobileErrorText
                                                       .value.isNotEmpty
@@ -249,7 +251,8 @@ class LoginPage extends GetView<Login_Controller> {
                               ],
                             ),
                             SizedBox(height: 24.h),
-                            if (!isKeyboardOpen) _buildBottomSecurityBadge(),
+                            if (!isKeyboardOpen)
+                              _buildBottomSecurityBadge(context),
                             SizedBox(height: 35.h),
                           ],
                         ),
@@ -265,7 +268,7 @@ class LoginPage extends GetView<Login_Controller> {
     );
   }
 
-  Widget _buildPhoneInputField() {
+  Widget _buildPhoneInputField(BuildContext context) {
     return Container(
       height: 56.h,
       padding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -337,7 +340,7 @@ class LoginPage extends GetView<Login_Controller> {
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
-                    hintText: 'Enter Mobile Number',
+                    hintText: context.l10n.login_enterMobileNumber,
                     hintStyle: TextStyle(
                       fontSize: 13.5.sp,
                       color: const Color(0xFF9E9EAF),
@@ -361,7 +364,7 @@ class LoginPage extends GetView<Login_Controller> {
     );
   }
 
-  Widget _buildBottomSecurityBadge() {
+  Widget _buildBottomSecurityBadge(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.centerRight,
@@ -401,18 +404,24 @@ class LoginPage extends GetView<Login_Controller> {
                     fontSize: 12.sp,
                     fontFamily: FontFamily.interMedium,
                   ),
-                  children: [
-                    const TextSpan(text: "Your data is "),
-                    TextSpan(
-                      text: "100% ",
-                      style: TextStyle(
-                        color: AppColors.authGradientTop,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: FontFamily.interBold,
+                  children: () {
+                    final fullText = context.l10n.login_dataSecure('100%');
+                    final parts = fullText.split('100%');
+                    return [
+                      TextSpan(text: parts.first),
+                      TextSpan(
+                        text: "100% ",
+                        style: TextStyle(
+                          color: AppColors.authGradientTop,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: FontFamily.interBold,
+                        ),
                       ),
-                    ),
-                    const TextSpan(text: "secure"),
-                  ],
+                      if (parts.length > 1)
+                        TextSpan(
+                            text: parts.sublist(1).join('100%').trimLeft()),
+                    ];
+                  }(),
                 ),
               ),
             ],

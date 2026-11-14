@@ -3402,6 +3402,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get intro_walkieTitle => 'Walkie-Talkie\nfeature';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'Your data is $percent secure';
+  }
+
+  @override
+  String get login_enterMobileNumber => 'Enter Mobile Number';
+
+  @override
   String get media_cannotOpen => 'Cannot open';
 
   @override

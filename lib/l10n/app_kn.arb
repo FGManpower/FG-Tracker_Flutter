@@ -969,6 +969,8 @@
   "intro_skip": "ಬಿಟ್ಟುಬಿಡಿ",
   "intro_walkieSubtitle": "ಸಿಗ್ನಲ್ ಇಲ್ಲವೇ? ಚಿಂತೆ ಇಲ್ಲ. ಎಲ್ಲಿಯಾದರೂ ಸಂಪರ್ಕದಲ್ಲಿರಿ.",
   "intro_walkieTitle": "ವಾಕಿ-ಟಾಕಿ ವೈಶಿಷ್ಟ್ಯ",
+  "login_dataSecure": "ನಿಮ್ಮ ಡೇಟಾ {percent} ಸುರಕ್ಷಿತವಾಗಿದೆ",
+  "login_enterMobileNumber": "ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ",
   "media_cannotOpen": "ತೆರೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ",
   "media_documentNotFound": "ಡಾಕ್ಯುಮೆಂಟ್ ಸಿಗಲಿಲ್ಲ",
   "media_invalidLink": "ಅಮಾನ್ಯ ಲಿಂಕ್",

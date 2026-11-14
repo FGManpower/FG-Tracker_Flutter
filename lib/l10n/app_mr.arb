@@ -969,6 +969,8 @@
   "intro_skip": "वगळा",
   "intro_walkieSubtitle": "सिग्नल नाही? हरकत नाही. कुठेही जोडलेले रहा.",
   "intro_walkieTitle": "वॉकी-टॉकी फीचर",
+  "login_dataSecure": "तुमचा डेटा {percent} सुरक्षित आहे",
+  "login_enterMobileNumber": "मोबाइल नंबर टाका",
   "media_cannotOpen": "उघडता येत नाही",
   "media_documentNotFound": "डॉक्युमेंट सापडले नाही",
   "media_invalidLink": "अवैध लिंक",

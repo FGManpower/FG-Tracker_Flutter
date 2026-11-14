@@ -969,6 +969,8 @@
   "intro_skip": "Pular",
   "intro_walkieSubtitle": "Sem sinal? Sem problemas. Fique\nconectado em qualquer lugar.",
   "intro_walkieTitle": "Recurso de\nWalkie-Talkie",
+  "login_dataSecure": "Seus dados estão {percent} seguros",
+  "login_enterMobileNumber": "Digite o número de celular",
   "media_cannotOpen": "Não foi possível abrir",
   "media_documentNotFound": "Documento não encontrado",
   "media_invalidLink": "Link inválido",

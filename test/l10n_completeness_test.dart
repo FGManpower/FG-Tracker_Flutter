@@ -32,20 +32,29 @@ void main() {
     'pt',
     'ja',
     'zh',
+    'zh_Hant',
+    'ur',
   ];
 
   /// Keys whose translation may equal English on purpose (brand names,
   /// symbols, codes). Each needs a reason.
   const sameAsEnglishAllowed = <String, String>{
-    'otpCharges_gstTitle': 'GST is the tax name used as-is in all Indian languages',
-    'walkiePlan_orderGstTitle': 'GST is the tax name used as-is in all Indian languages',
-    'walkiePlan_orderUpiQr': 'UPI / QR are payment-method names (as in PhonePe / GPay)',
-    'walkiePlan_detailsUpiQr': 'UPI / QR are payment-method names (as in PhonePe / GPay)',
+    'otpCharges_gstTitle':
+        'GST is the tax name used as-is in all Indian languages',
+    'walkiePlan_orderGstTitle':
+        'GST is the tax name used as-is in all Indian languages',
+    'walkiePlan_orderUpiQr':
+        'UPI / QR are payment-method names (as in PhonePe / GPay)',
+    'walkiePlan_detailsUpiQr':
+        'UPI / QR are payment-method names (as in PhonePe / GPay)',
     'common_ok': 'OK is an international confirmation abbreviation',
-    'walkie_audioBluetooth': 'Bluetooth is an international trademark technology name',
+    'walkie_audioBluetooth':
+        'Bluetooth is an international trademark technology name',
     'walkie_live': 'LIVE is an international UI broadcast indicator badge',
-    'walkiePlan_couponPercentOff': 'OFF is a universal discount percentage label',
-    'chatList_contactsCount': 'contact/contacts spelling is identical in French',
+    'walkiePlan_couponPercentOff':
+        'OFF is a universal discount percentage label',
+    'chatList_contactsCount':
+        'contact/contacts spelling is identical in French',
     'chat_previewVideosCount': 'Video/Videos spelling is identical in German',
   };
 
@@ -59,18 +68,25 @@ void main() {
   /// True when the text has no Latin letters outside {placeholders} and ICU
   /// keywords, i.e. it is only symbols / digits / emoji / placeholders.
   bool hasNoWords(String s) {
-    final stripped = s
-        .replaceAll(RegExp(r'\{\w+\}'), '')
-        .replaceAll(RegExp(r'\b(plural|select|other|=\d+|zero|one|two|few|many)\b'), '');
+    final stripped = s.replaceAll(RegExp(r'\{\w+\}'), '').replaceAll(
+        RegExp(r'\b(plural|select|other|=\d+|zero|one|two|few|many)\b'), '');
     return !RegExp(r'[A-Za-z]{2,}').hasMatch(stripped);
   }
 
-  test('the 18 ARB files exist and match the app languages', () {
-    expect(kAppLanguages.map((o) => o.code).toList(), codes);
+  test('the 20 ARB files exist and match the app languages', () {
+    expect(kWorkingLanguages.map((o) => o.code).toList(), codes);
     for (final c in codes) {
       expect(File('lib/l10n/app_$c.arb').existsSync(), isTrue, reason: c);
       expect(arb(c)['@@locale'], c);
     }
+  });
+
+  test('the number of languages shown on the picker equals the number of codes in _compiledL10nCodes (20)', () {
+    expect(kWorkingLanguages.length, codes.length);
+    expect(kWorkingLanguages.length, 20);
+    expect(kWorkingLanguages.map((o) => o.code).toList(), codes);
+    // Total catalog has 140 entries, but only 20 working are shown
+    expect(kAppLanguages.length, 140);
   });
 
   test('every key exists in all 18 files and is not empty', () {
@@ -104,6 +120,7 @@ void main() {
       'ar',
       'ja',
       'zh',
+      'ur',
     };
     for (final c in codes.skip(1)) {
       final m = arb(c);
@@ -134,9 +151,13 @@ void main() {
     final ph = RegExp(r'\{(\w+)[,}]');
     final problems = <String>[];
     for (final k in keysOf(en)) {
-      final want = ph.allMatches(en[k] as String).map((m) => m.group(1)).toSet();
+      final want =
+          ph.allMatches(en[k] as String).map((m) => m.group(1)).toSet();
       for (final c in codes.skip(1)) {
-        final got = ph.allMatches(arb(c)[k] as String).map((m) => m.group(1)).toSet()
+        final got = ph
+            .allMatches(arb(c)[k] as String)
+            .map((m) => m.group(1))
+            .toSet()
           ..removeWhere((p) => !want.contains(p) && p == 'other');
         if (!got.containsAll(want)) problems.add('$c.$k: $got vs $want');
       }
@@ -144,10 +165,19 @@ void main() {
     expect(problems, isEmpty, reason: problems.take(40).join('\n'));
   });
 
+  Locale parseLocale(String c) {
+    if (c.contains('_')) {
+      final parts = c.split('_');
+      return Locale.fromSubtags(languageCode: parts[0], scriptCode: parts[1]);
+    }
+    return Locale(c);
+  }
+
   test('every key resolves through AppLocalizations in all 17 locales', () {
     // Spot-check the generated code: no locale falls back to the key name.
     for (final c in codes) {
       final l = lookupAppLocalizations(Locale(c));
+      final l = lookupAppLocalizations(parseLocale(c));
       expect(l.localeName, c);
       expect(l.common_cancel, isNot('common_cancel'));
       expect(l.common_minutesAgo(5), contains('5'));
@@ -161,13 +191,15 @@ void main() {
     for (final c in codes) {
       test(c, () {
         final l = lookupAppLocalizations(Locale(c));
+        final l = lookupAppLocalizations(parseLocale(c));
         final d = appDateFormat('d MMM yyyy', l).format(date);
         final t = appTime(date, l);
         expect(d, matches(latinDigitsOnly), reason: d);
         expect(d, contains('12'));
         expect(d, contains('2026'));
         expect(t, matches(latinDigitsOnly), reason: t);
-        expect(appRelativeTime(date.subtract(const Duration(minutes: 5)),
+        expect(
+            appRelativeTime(date.subtract(const Duration(minutes: 5)),
                 now: date, l10n: l),
             contains('5'));
         expect(appDayLabel(date, now: date, l10n: l), l.common_today);

@@ -17,7 +17,9 @@
     "pt": "Médica",
     "ja": "医療・救護",
     "zh": "医疗急救",
-    "or": "ମେଡିକାଲ୍"
+    "or": "ମେଡିକାଲ୍",
+    "ur": "میڈیکل",
+    "zh_Hant": "醫療的"
   },
   "sos_reasonAccident": {
     "en": "Accident",
@@ -37,7 +39,9 @@
     "pt": "Acidente",
     "ja": "事故",
     "zh": "交通事故",
-    "or": "ଦୁର୍ଘଟଣା"
+    "or": "ଦୁର୍ଘଟଣା",
+    "ur": "حادثہ",
+    "zh_Hant": "意外事故"
   },
   "sos_reasonSafety": {
     "en": "Safety",
@@ -57,7 +61,9 @@
     "pt": "Segurança",
     "ja": "安全・防犯",
     "zh": "人身安全",
-    "or": "ସୁରକ୍ଷା"
+    "or": "ସୁରକ୍ଷା",
+    "ur": "حفاظت",
+    "zh_Hant": "安全"
   },
   "sos_reasonThreat": {
     "en": "Threat",
@@ -77,7 +83,9 @@
     "pt": "Ameaça",
     "ja": "脅迫・危険",
     "zh": "威胁/危险",
-    "or": "ଧମକ"
+    "or": "ଧମକ",
+    "ur": "دھمکی",
+    "zh_Hant": "威脅"
   },
   "sos_reasonOther": {
     "en": "Other",
@@ -97,7 +105,9 @@
     "pt": "Outro",
     "ja": "その他",
     "zh": "其他",
-    "or": "ଅନ୍ୟମାନେ |"
+    "or": "ଅନ୍ୟମାନେ |",
+    "ur": "دیگر",
+    "zh_Hant": "其他"
   },
   "sos_required": {
     "en": "Required",
@@ -117,7 +127,9 @@
     "pt": "Obrigatório",
     "ja": "必須",
     "zh": "必需",
-    "or": "ଆବଶ୍ୟକ"
+    "or": "ଆବଶ୍ୟକ",
+    "ur": "درکار ہے۔",
+    "zh_Hant": "必需的"
   },
   "sos_addFamilyMemberRequired": {
     "en": "Add at least 1 family member to send SOS alert",
@@ -137,7 +149,9 @@
     "pt": "Adicione pelo menos 1 membro da família para enviar alerta SOS",
     "ja": "SOSアラートを送信するには、少なくとも1人の家族を追加してください",
     "zh": "发送 SOS 紧急求救前请至少添加 1 位家庭成员",
-    "or": "SOS ଆଲର୍ଟ ପଠାଇବାକୁ ଅତି କମରେ 1 ପରିବାର ସଦସ୍ୟ ଯୋଗ କରନ୍ତୁ |"
+    "or": "SOS ଆଲର୍ଟ ପଠାଇବାକୁ ଅତି କମରେ 1 ପରିବାର ସଦସ୍ୟ ଯୋଗ କରନ୍ତୁ |",
+    "ur": "SOS الرٹ بھیجنے کے لیے کم از کم 1 فیملی ممبر شامل کریں۔",
+    "zh_Hant": "新增至少 1 名家庭成員以發送 SOS 警報"
   },
   "sos_detailsMandatoryForOther": {
     "en": "Add Details is mandatory when 'Other' reason is selected",
@@ -157,7 +171,9 @@
     "pt": "Adicionar detalhes é obrigatório ao selecionar 'Outro'",
     "ja": "理由に「その他」を選択した場合は詳細の入力が必須です",
     "zh": "选择“其他”原因时必须填写补充说明",
-    "or": "'ଅନ୍ୟ' କାରଣ ଚୟନ ହେବାବେଳେ ସବିଶେଷ ତଥ୍ୟ ଯୋଡିବା ବାଧ୍ୟତାମୂଳକ ଅଟେ |"
+    "or": "'ଅନ୍ୟ' କାରଣ ଚୟନ ହେବାବେଳେ ସବିଶେଷ ତଥ୍ୟ ଯୋଡିବା ବାଧ୍ୟତାମୂଳକ ଅଟେ |",
+    "ur": "جب 'دیگر' وجہ کا انتخاب کیا جاتا ہے تو تفصیلات شامل کرنا لازمی ہے۔",
+    "zh_Hant": "選擇“其他”原因時，必須添加詳細信息"
   },
   "sos_alertSent": {
     "en": "SOS Alert Sent!",
@@ -177,7 +193,9 @@
     "pt": "Alerta SOS Enviado!",
     "ja": "SOSアラートを送信しました！",
     "zh": "SOS 求救信号已发出！",
-    "or": "SOS ଆଲର୍ଟ ପଠାଯାଇଛି!"
+    "or": "SOS ଆଲର୍ଟ ପଠାଯାଇଛି!",
+    "ur": "SOS الرٹ بھیجا گیا!",
+    "zh_Hant": "SOS 警報已發送！"
   },
   "sos_alertSentToNearby": {
     "en": "Your alert has been sent to nearby people.",
@@ -197,7 +215,9 @@
     "pt": "Seu alerta foi enviado para pessoas próximas.",
     "ja": "周辺のユーザーにアラートが送信されました。",
     "zh": "您的求救警报已发送给附近的人。",
-    "or": "ଆପଣଙ୍କର ଆଲର୍ଟ ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ପଠାଯାଇଛି |"
+    "or": "ଆପଣଙ୍କର ଆଲର୍ଟ ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ପଠାଯାଇଛି |",
+    "ur": "آپ کا الرٹ قریبی لوگوں کو بھیج دیا گیا ہے۔",
+    "zh_Hant": "您的警報已發送給附近的人。"
   },
   "sos_peopleWithinRadius": {
     "en": "People within 2 km radius",
@@ -217,7 +237,9 @@
     "pt": "Pessoas em um raio de 2 km",
     "ja": "半径2km以内のユーザー",
     "zh": "方圆 2 公里范围内的人员",
-    "or": "2 କିଲୋମିଟର ବ୍ୟାସାର୍ଦ୍ଧରେ ଥିବା ଲୋକମାନେ |"
+    "or": "2 କିଲୋମିଟର ବ୍ୟାସାର୍ଦ୍ଧରେ ଥିବା ଲୋକମାନେ |",
+    "ur": "2 کلومیٹر کے دائرے میں لوگ",
+    "zh_Hant": "半徑2公里以內的人"
   },
   "sos_willBeNotified": {
     "en": "will be notified",
@@ -237,7 +259,9 @@
     "pt": "serão notificados",
     "ja": "に通知されます",
     "zh": "将收到通知",
-    "or": "ସୂଚିତ କରାଯିବ |"
+    "or": "ସୂଚିତ କରାଯିବ |",
+    "ur": "مطلع کیا جائے گا",
+    "zh_Hant": "將被通知"
   },
   "sos_stayCalm": {
     "en": "Stay calm, help is on the way",
@@ -257,7 +281,9 @@
     "pt": "Mantenha a calma, a ajuda está a caminho",
     "ja": "落ち着いてお待ちください。助けが向かっています",
     "zh": "请保持冷静，救援正在赶来",
-    "or": "ଶାନ୍ତ ରୁହ, ସାହାଯ୍ୟ ବାଟରେ ଅଛି |"
+    "or": "ଶାନ୍ତ ରୁହ, ସାହାଯ୍ୟ ବାଟରେ ଅଛି |",
+    "ur": "پرسکون رہیں، مدد جاری ہے۔",
+    "zh_Hant": "保持冷靜，幫助正在路上"
   },
   "sos_notifyUpdates": {
     "en": "We will notify you of any updates",
@@ -277,7 +303,9 @@
     "pt": "Notificaremos você sobre qualquer atualização",
     "ja": "最新情報が入り次第お知らせします",
     "zh": "有最新动态我们将第一时间通知您",
-    "or": "ଆମେ ଆପଣଙ୍କୁ କ any ଣସି ଅଦ୍ୟତନ ବିଷୟରେ ଜଣାଇବୁ |"
+    "or": "ଆମେ ଆପଣଙ୍କୁ କ any ଣସି ଅଦ୍ୟତନ ବିଷୟରେ ଜଣାଇବୁ |",
+    "ur": "ہم آپ کو کسی بھی اپ ڈیٹ کے بارے میں مطلع کریں گے۔",
+    "zh_Hant": "如有任何更新，我們將通知您"
   },
   "sos_liveTrackingStarted": {
     "en": "Live tracking started",
@@ -297,7 +325,9 @@
     "pt": "Rastreamento ao vivo iniciado",
     "ja": "リアルタイム追跡を開始しました",
     "zh": "实时追踪已启动",
-    "or": "ଲାଇଭ୍ ଟ୍ରାକିଂ ଆରମ୍ଭ ହେଲା |"
+    "or": "ଲାଇଭ୍ ଟ୍ରାକିଂ ଆରମ୍ଭ ହେଲା |",
+    "ur": "لائیو ٹریکنگ شروع ہو گئی۔",
+    "zh_Hant": "即時追蹤開始"
   },
   "sos_locationSharedWithFamily": {
     "en": "{count, plural, =1{Your location is being shared with 1 family member} other{Your location is being shared with {count} family members}}",
@@ -322,7 +352,9 @@
     "pt": "{count, plural, =1{Sua localização está sendo compartilhada com 1 familiar} other{Sua localização está sendo compartilhada com {count} familiares}}",
     "ja": "{count}名の家族と現在地を共有中",
     "zh": "正在与 {count} 位家庭成员共享您的实时位置",
-    "or": "{count, plural, =1{ଆପଣଙ୍କର ଅବସ୍ଥାନ 1 ପରିବାର ସଦସ୍ୟଙ୍କ ସହିତ ଅଂଶୀଦାର ହେଉଛି |} other{ଆପଣଙ୍କର ଅବସ୍ଥାନ {count} ପରିବାର ସଦସ୍ୟଙ୍କ ସହିତ ଅଂଶୀଦାର ହେଉଛି |}}"
+    "or": "{count, plural, =1{ଆପଣଙ୍କର ଅବସ୍ଥାନ 1 ପରିବାର ସଦସ୍ୟଙ୍କ ସହିତ ଅଂଶୀଦାର ହେଉଛି |} other{ଆପଣଙ୍କର ଅବସ୍ଥାନ {count} ପରିବାର ସଦସ୍ୟଙ୍କ ସହିତ ଅଂଶୀଦାର ହେଉଛି |}}",
+    "ur": "{count, plural, =1{آپ کا مقام 1 فیملی ممبر کے ساتھ شیئر کیا جا رہا ہے} other{آپ کا مقام {count} فیملی ممبرز کے ساتھ شیئر کیا جا رہا ہے}}",
+    "zh_Hant": "{count, plural, =1{您的位置正在與 1 位家庭成員共享} other{您的位置正在與 {count} 家庭成員共享}}"
   },
   "sos_okGotIt": {
     "en": "OK, Got It",
@@ -342,7 +374,9 @@
     "pt": "Entendi",
     "ja": "了解",
     "zh": "知道了",
-    "or": "ଠିକ ଅଛି, ପାଇଛି"
+    "or": "ଠିକ ଅଛି, ପାଇଛି",
+    "ur": "ٹھیک ہے، سمجھ گیا۔",
+    "zh_Hant": "好的，明白了"
   },
   "sos_howItWorksTitle": {
     "en": "How SOS Alert Works?",
@@ -362,7 +396,9 @@
     "pt": "Como Funciona o Alerta SOS?",
     "ja": "SOSアラートの仕組み",
     "zh": "SOS 紧急求救如何运作？",
-    "or": "SOS ଆଲର୍ଟ କିପରି କାମ କରେ?"
+    "or": "SOS ଆଲର୍ଟ କିପରି କାମ କରେ?",
+    "ur": "SOS الرٹ کیسے کام کرتا ہے؟",
+    "zh_Hant": "SOS 警報如何運作？"
   },
   "sos_howItWorksIntro": {
     "en": "SOS Alert helps you notify nearby people and your family in emergency situations.",
@@ -382,7 +418,9 @@
     "pt": "O Alerta SOS notifica pessoas próximas e sua família em situações de emergência.",
     "ja": "SOSアラートは、緊急時に近くの人や家族へ素早く助けを求める機能です。",
     "zh": "SOS 求救警报可在紧急情况下及时通知附近的人员和您的家人。",
-    "or": "ଜରୁରୀକାଳୀନ ପରିସ୍ଥିତିରେ SOS ଆଲର୍ଟ ଆପଣଙ୍କୁ ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ଏବଂ ଆପଣଙ୍କ ପରିବାରକୁ ଜଣାଇବାରେ ସାହାଯ୍ୟ କରେ |"
+    "or": "ଜରୁରୀକାଳୀନ ପରିସ୍ଥିତିରେ SOS ଆଲର୍ଟ ଆପଣଙ୍କୁ ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ଏବଂ ଆପଣଙ୍କ ପରିବାରକୁ ଜଣାଇବାରେ ସାହାଯ୍ୟ କରେ |",
+    "ur": "SOS الرٹ آپ کو قریبی لوگوں اور آپ کے خاندان کو ہنگامی حالات میں مطلع کرنے میں مدد کرتا ہے۔",
+    "zh_Hant": "SOS 警報可協助您在緊急情況下通知附近的人和您的家人。"
   },
   "sos_step1Title": {
     "en": "1. Send SOS Alert",
@@ -402,7 +440,9 @@
     "pt": "1. Enviar Alerta SOS",
     "ja": "1. SOSアラートを送信",
     "zh": "1. 发出 SOS 警报",
-    "or": "SOS ଆଲର୍ଟ ପଠାନ୍ତୁ |"
+    "or": "SOS ଆଲର୍ଟ ପଠାନ୍ତୁ |",
+    "ur": "1. SOS الرٹ بھیجیں۔",
+    "zh_Hant": "1. 發送SOS警報"
   },
   "sos_step1Body": {
     "en": "Tap on the SOS button and send alert to people nearby.",
@@ -422,7 +462,9 @@
     "pt": "Toque no botão SOS e envie um alerta para as pessoas próximas.",
     "ja": "SOSボタンをタップして、周囲のユーザーへ警報を送信します。",
     "zh": "点击 SOS 按钮向附近人员发出紧急警报。",
-    "or": "SOS ବଟନ୍ ଉପରେ ଟ୍ୟାପ୍ କରନ୍ତୁ ଏବଂ ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ସତର୍କ ସୂଚନା ପଠାନ୍ତୁ |"
+    "or": "SOS ବଟନ୍ ଉପରେ ଟ୍ୟାପ୍ କରନ୍ତୁ ଏବଂ ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ସତର୍କ ସୂଚନା ପଠାନ୍ତୁ |",
+    "ur": "SOS بٹن پر ٹیپ کریں اور قریبی لوگوں کو الرٹ بھیجیں۔",
+    "zh_Hant": "點擊 SOS 按鈕並向附近的人發送警報。"
   },
   "sos_step2Title": {
     "en": "2. Notify Nearby People",
@@ -442,7 +484,9 @@
     "pt": "2. Notificar Pessoas Próximas",
     "ja": "2. 周囲の人へ通知",
     "zh": "2. 通知附近人群",
-    "or": "2। ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ଜଣାନ୍ତୁ |"
+    "or": "2। ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ଜଣାନ୍ତୁ |",
+    "ur": "2. قریبی لوگوں کو مطلع کریں۔",
+    "zh_Hant": "2. 通知附近的人"
   },
   "sos_step2Body": {
     "en": "People nearby will receive your alert with your location.",
@@ -462,7 +506,9 @@
     "pt": "Pessoas próximas receberão seu alerta com sua localização.",
     "ja": "近くの人にあなたの現在地と共にアラートが届きます。",
     "zh": "附近人员将收到包含您精确位置的紧急警报。",
-    "or": "ନିକଟସ୍ଥ ଲୋକମାନେ ଆପଣଙ୍କ ଅବସ୍ଥାନ ସହିତ ଆପଣଙ୍କର ଆଲର୍ଟ ଗ୍ରହଣ କରିବେ |"
+    "or": "ନିକଟସ୍ଥ ଲୋକମାନେ ଆପଣଙ୍କ ଅବସ୍ଥାନ ସହିତ ଆପଣଙ୍କର ଆଲର୍ଟ ଗ୍ରହଣ କରିବେ |",
+    "ur": "آس پاس کے لوگ آپ کے مقام کے ساتھ آپ کا الرٹ وصول کریں گے۔",
+    "zh_Hant": "附近的人將收到您的警報以及您的位置。"
   },
   "sos_step3Title": {
     "en": "3. Get Help Faster",
@@ -482,7 +528,9 @@
     "pt": "3. Obtenha Ajuda Mais Rápido",
     "ja": "3. 素早く助けを得る",
     "zh": "3. 迅速获得援助",
-    "or": "3। ଶୀଘ୍ର ସାହାଯ୍ୟ ପ୍ରାପ୍ତ କରନ୍ତୁ |"
+    "or": "3। ଶୀଘ୍ର ସାହାଯ୍ୟ ପ୍ରାପ୍ତ କରନ୍ତୁ |",
+    "ur": "3. تیزی سے مدد حاصل کریں۔",
+    "zh_Hant": "3.更快獲得協助"
   },
   "sos_step3Body": {
     "en": "Nearby people can view your alert and reach out to help you.",
@@ -502,7 +550,9 @@
     "pt": "Pessoas próximas podem ver seu alerta e vir em seu auxílio.",
     "ja": "周囲の人がアラートを確認し、すぐに救援に向かうことができます。",
     "zh": "附近的人可以查看警报并尽快前往协助您。",
-    "or": "ନିକଟସ୍ଥ ଲୋକମାନେ ଆପଣଙ୍କ ସତର୍କତା ଦେଖିପାରିବେ ଏବଂ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିବାକୁ ପହ reach ୍ଚିବେ |"
+    "or": "ନିକଟସ୍ଥ ଲୋକମାନେ ଆପଣଙ୍କ ସତର୍କତା ଦେଖିପାରିବେ ଏବଂ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିବାକୁ ପହ reach ୍ଚିବେ |",
+    "ur": "قریبی لوگ آپ کا الرٹ دیکھ سکتے ہیں اور آپ کی مدد کے لیے رابطہ کر سکتے ہیں۔",
+    "zh_Hant": "附近的人可以查看您的警報並為您提供協助。"
   },
   "sos_step4Title": {
     "en": "4. Family Gets Notified",
@@ -522,7 +572,9 @@
     "pt": "4. Família é Notificada",
     "ja": "4. 家族への自動通知",
     "zh": "4. 家属即时获悉",
-    "or": "ପରିବାରକୁ ସୂଚିତ କରାଯାଇଛି |"
+    "or": "ପରିବାରକୁ ସୂଚିତ କରାଯାଇଛି |",
+    "ur": "4. خاندان کو اطلاع دی جاتی ہے۔",
+    "zh_Hant": "4. 家人收到通知"
   },
   "sos_step4Body": {
     "en": "Your family members will be instantly notified about your SOS.",
@@ -542,7 +594,9 @@
     "pt": "Seus familiares serão notificados instantaneamente sobre seu SOS.",
     "ja": "指定されたご家族にも即座にSOSメッセージが届きます。",
     "zh": "您的家人将立即收到您的 SOS 求救信息。",
-    "or": "ତୁମର ପରିବାର ସଦସ୍ୟଙ୍କୁ ତୁମର SOS ବିଷୟରେ ତୁରନ୍ତ ସୂଚିତ କରାଯିବ |"
+    "or": "ତୁମର ପରିବାର ସଦସ୍ୟଙ୍କୁ ତୁମର SOS ବିଷୟରେ ତୁରନ୍ତ ସୂଚିତ କରାଯିବ |",
+    "ur": "آپ کے خاندان کے اراکین کو آپ کے SOS کے بارے میں فوری طور پر مطلع کیا جائے گا۔",
+    "zh_Hant": "您的家人將立即收到有關您的 SOS 的通知。"
   },
   "sos_privacyNote": {
     "en": "Your privacy is important. Your location is shared only during an active SOS alert.",
@@ -562,7 +616,9 @@
     "pt": "Sua privacidade é essencial. Sua localização só é compartilhada durante um alerta SOS ativo.",
     "ja": "プライバシーを保護します。位置情報はアクティブなSOS発信時のみ共有されます。",
     "zh": "隐私安全第一。您的实时位置仅在 SOS 警报生效期间共享。",
-    "or": "ଆପଣଙ୍କର ଗୋପନୀୟତା ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ | ଆପଣଙ୍କର ଅବସ୍ଥାନ କେବଳ ଏକ ସକ୍ରିୟ SOS ଆଲର୍ଟ ସମୟରେ ଅଂଶୀଦାର ହୋଇଥାଏ |"
+    "or": "ଆପଣଙ୍କର ଗୋପନୀୟତା ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ | ଆପଣଙ୍କର ଅବସ୍ଥାନ କେବଳ ଏକ ସକ୍ରିୟ SOS ଆଲର୍ଟ ସମୟରେ ଅଂଶୀଦାର ହୋଇଥାଏ |",
+    "ur": "آپ کی رازداری اہم ہے۔ آپ کے مقام کا اشتراک صرف ایک فعال SOS الرٹ کے دوران کیا جاتا ہے۔",
+    "zh_Hant": "您的隱私很重要。仅在 SOS 警报有效期间才会共享您的位置。"
   },
   "sos_addFamilyMember": {
     "en": "Add Family Member",
@@ -582,7 +638,9 @@
     "pt": "Adicionar Membro da Família",
     "ja": "家族を追加",
     "zh": "添加家庭成员",
-    "or": "ପରିବାର ସଦସ୍ୟ ଯୋଡନ୍ତୁ |"
+    "or": "ପରିବାର ସଦସ୍ୟ ଯୋଡନ୍ତୁ |",
+    "ur": "فیملی ممبر شامل کریں۔",
+    "zh_Hant": "新增家庭成員"
   },
   "sos_availableUsers": {
     "en": "{count, plural, =1{1 Available User} other{{count} Available Users}}",
@@ -607,7 +665,9 @@
     "pt": "{count, plural, =1{1 usuário disponível} other{{count} usuários disponíveis}}",
     "ja": "{count}名の利用可能なユーザー",
     "zh": "{count} 位可用用户",
-    "or": "{count, plural, =1{1 ଉପଲବ୍ଧ ବ୍ୟବହାରକାରୀ |} other{{count} ଉପଲବ୍ଧ ବ୍ୟବହାରକାରୀ |}}"
+    "or": "{count, plural, =1{1 ଉପଲବ୍ଧ ବ୍ୟବହାରକାରୀ |} other{{count} ଉପଲବ୍ଧ ବ୍ୟବହାରକାରୀ |}}",
+    "ur": "{count, plural, =1{1 دستیاب صارف} other{{count} دستیاب صارفین}}",
+    "zh_Hant": "{count, plural, =1{1 個可用用戶} other{{count} 可用用戶}}"
   },
   "sos_searchUsers": {
     "en": "Search users",
@@ -627,7 +687,9 @@
     "pt": "Pesquisar usuários",
     "ja": "ユーザーを検索",
     "zh": "搜索用户",
-    "or": "ବ୍ୟବହାରକାରୀଙ୍କୁ ଖୋଜ |"
+    "or": "ବ୍ୟବହାରକାରୀଙ୍କୁ ଖୋଜ |",
+    "ur": "صارفین کو تلاش کریں۔",
+    "zh_Hant": "搜尋用戶"
   },
   "sos_noUsersFound": {
     "en": "No Users Found",
@@ -647,7 +709,9 @@
     "pt": "Nenhum usuário encontrado",
     "ja": "ユーザーが見つかりません",
     "zh": "未找到用户",
-    "or": "କ Users ଣସି ଉପଭୋକ୍ତା ମିଳିଲା ନାହିଁ |"
+    "or": "କ Users ଣସି ଉପଭୋକ୍ତା ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی صارف نہیں ملا",
+    "zh_Hant": "未找到用戶"
   },
   "sos_noMatchFound": {
     "en": "No Match Found",
@@ -667,7 +731,9 @@
     "pt": "Nenhuma correspondência encontrada",
     "ja": "一致する項目がありません",
     "zh": "未找到匹配项",
-    "or": "କ No ଣସି ମ୍ୟାଚ୍ ମିଳିଲା ନାହିଁ |"
+    "or": "କ No ଣସି ମ୍ୟାଚ୍ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی میچ نہیں ملا",
+    "zh_Hant": "未找到匹配項"
   },
   "sos_title": {
     "en": "SOS Alert",
@@ -687,7 +753,9 @@
     "pt": "Alerta SOS",
     "ja": "SOSアラート",
     "zh": "SOS 求救",
-    "or": "SOS ଆଲର୍ଟ |"
+    "or": "SOS ଆଲର୍ଟ |",
+    "ur": "ایس او ایس الرٹ",
+    "zh_Hant": "SOS警報"
   },
   "sos_subtitle": {
     "en": "Send alert to nearby people",
@@ -707,7 +775,9 @@
     "pt": "Envie alerta para pessoas próximas",
     "ja": "周辺のユーザーへアラートを送信",
     "zh": "向附近人员发送警报",
-    "or": "ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ସତର୍କ ପଠାନ୍ତୁ |"
+    "or": "ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ସତର୍କ ପଠାନ୍ତୁ |",
+    "ur": "قریبی لوگوں کو الرٹ بھیجیں۔",
+    "zh_Hant": "向附近的人發送警報"
   },
   "sos_howItWorks": {
     "en": "How it works",
@@ -727,7 +797,9 @@
     "pt": "Como funciona",
     "ja": "仕組み",
     "zh": "运作流程",
-    "or": "ଏହା କିପରି କାମ କରେ |"
+    "or": "ଏହା କିପରି କାମ କରେ |",
+    "ur": "یہ کیسے کام کرتا ہے۔",
+    "zh_Hant": "它是如何運作的"
   },
   "sos_needHelp": {
     "en": "Need Help?",
@@ -747,7 +819,9 @@
     "pt": "Precisa de Ajuda?",
     "ja": "助けが必要ですか？",
     "zh": "需要帮助吗？",
-    "or": "ସାହାଯ୍ୟ ଦରକାର କି?"
+    "or": "ସାହାଯ୍ୟ ଦରକାର କି?",
+    "ur": "مدد کی ضرورت ہے؟",
+    "zh_Hant": "需要幫助嗎？"
   },
   "sos_needHelpBody": {
     "en": "Send an SOS alert to nearby people.\nThey will be notified and can assist you.",
@@ -767,7 +841,9 @@
     "pt": "Envie um alerta SOS para pessoas próximas.\nElas serão notificadas e poderão te ajudar.",
     "ja": "周辺の人へSOSアラートを送信します。\n通知が届き、すぐに支援を求められます。",
     "zh": "向附近的人发送 SOS 警报。\n他们将收到提醒并前来协助您。",
-    "or": "ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ଏକ SOS ଆଲର୍ଟ ପଠାନ୍ତୁ |\nସେମାନଙ୍କୁ ସୂଚିତ କରାଯିବ ଏବଂ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିପାରିବେ |"
+    "or": "ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ଏକ SOS ଆଲର୍ଟ ପଠାନ୍ତୁ |\nସେମାନଙ୍କୁ ସୂଚିତ କରାଯିବ ଏବଂ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିପାରିବେ |",
+    "ur": "قریبی لوگوں کو SOS الرٹ بھیجیں۔\nانہیں مطلع کیا جائے گا اور وہ آپ کی مدد کر سکتے ہیں۔",
+    "zh_Hant": "向附近的人發送 SOS 警報。\n他們將收到通知並可以為您提供幫助。"
   },
   "sos_addPhotoOptional": {
     "en": "Add Photo (Optional)",
@@ -787,7 +863,9 @@
     "pt": "Adicionar Foto (Opcional)",
     "ja": "写真を追加 (任意)",
     "zh": "添加现场照片 (可选)",
-    "or": "ଫଟୋ ଯୋଡନ୍ତୁ (ବ al କଳ୍ପିକ)"
+    "or": "ଫଟୋ ଯୋଡନ୍ତୁ (ବ al କଳ୍ପିକ)",
+    "ur": "تصویر شامل کریں (اختیاری)",
+    "zh_Hant": "新增照片（可選）"
   },
   "sos_addPhotoHint": {
     "en": "Attach a photo to help others understand better.",
@@ -807,7 +885,9 @@
     "pt": "Anexe uma foto para ajudar a entender melhor.",
     "ja": "状況を正しく伝えるために写真を添付できます。",
     "zh": "附上照片有助于他人快速了解现场状况。",
-    "or": "ଅନ୍ୟମାନଙ୍କୁ ଭଲ ଭାବରେ ବୁ understand ିବାରେ ସାହାଯ୍ୟ କରିବାକୁ ଏକ ଫଟୋ ସଂଲଗ୍ନ କରନ୍ତୁ |"
+    "or": "ଅନ୍ୟମାନଙ୍କୁ ଭଲ ଭାବରେ ବୁ understand ିବାରେ ସାହାଯ୍ୟ କରିବାକୁ ଏକ ଫଟୋ ସଂଲଗ୍ନ କରନ୍ତୁ |",
+    "ur": "دوسروں کو بہتر طور پر سمجھنے میں مدد کے لیے ایک تصویر منسلک کریں۔",
+    "zh_Hant": "附上照片以幫助其他人更好地理解。"
   },
   "sos_notifyFamilyTitle": {
     "en": "Notify Your Family (1 to 5 required)",
@@ -827,7 +907,9 @@
     "pt": "Notifique sua Família (1 a 5 obrigatórios)",
     "ja": "家族へ通知 (1〜5人必須)",
     "zh": "通知您的家人 (需选择 1 至 5 位)",
-    "or": "ତୁମ ପରିବାରକୁ ଜଣାନ୍ତୁ (1 ରୁ 5 ଆବଶ୍ୟକ)"
+    "or": "ତୁମ ପରିବାରକୁ ଜଣାନ୍ତୁ (1 ରୁ 5 ଆବଶ୍ୟକ)",
+    "ur": "اپنے خاندان کو مطلع کریں (1 سے 5 کی ضرورت ہے)",
+    "zh_Hant": "通知您的家人（需要 1 至 5）"
   },
   "sos_membersSelected": {
     "en": "{count, plural, =1{1 member selected} other{{count} members selected}}",
@@ -852,7 +934,9 @@
     "pt": "{count, plural, =1{1 membro selecionado} other{{count} membros selecionados}}",
     "ja": "{count}名を選択中",
     "zh": "已选择 {count} 位成员",
-    "or": "{count, plural, =1{1 ସଦସ୍ୟ ମନୋନୀତ |} other{{count} ସଦସ୍ୟ ଚୟନ କରାଯାଇଛି |}}"
+    "or": "{count, plural, =1{1 ସଦସ୍ୟ ମନୋନୀତ |} other{{count} ସଦସ୍ୟ ଚୟନ କରାଯାଇଛି |}}",
+    "ur": "{count, plural, =1{1 رکن منتخب کیا گیا} other{{count} اراکین منتخب کیے گئے}}",
+    "zh_Hant": "{count, plural, =1{已選定 1 名成員} other{選定 {count} 成員}}"
   },
   "sos_selectReason": {
     "en": "Select Reason",
@@ -872,7 +956,9 @@
     "pt": "Selecione o Motivo",
     "ja": "理由を選択",
     "zh": "选择紧急原因",
-    "or": "କାରଣ ଚୟନ କରନ୍ତୁ |"
+    "or": "କାରଣ ଚୟନ କରନ୍ତୁ |",
+    "ur": "وجہ منتخب کریں۔",
+    "zh_Hant": "選擇原因"
   },
   "sos_addDetailsMandatory": {
     "en": "Add Details (Mandatory)",
@@ -892,7 +978,9 @@
     "pt": "Adicionar Detalhes (Obrigatório)",
     "ja": "詳細を入力 (必須)",
     "zh": "补充说明 (必填)",
-    "or": "ବିବରଣୀ ଯୋଡନ୍ତୁ (ବାଧ୍ୟତାମୂଳକ)"
+    "or": "ବିବରଣୀ ଯୋଡନ୍ତୁ (ବାଧ୍ୟତାମୂଳକ)",
+    "ur": "تفصیلات شامل کریں (لازمی)",
+    "zh_Hant": "新增詳細資訊（必填）"
   },
   "sos_addDetailsOptional": {
     "en": "Add Details (Optional)",
@@ -912,7 +1000,9 @@
     "pt": "Adicionar Detalhes (Opcional)",
     "ja": "詳細を入力 (任意)",
     "zh": "补充说明 (可选)",
-    "or": "ବିବରଣୀ ଯୋଡନ୍ତୁ (ବ al କଳ୍ପିକ)"
+    "or": "ବିବରଣୀ ଯୋଡନ୍ତୁ (ବ al କଳ୍ପିକ)",
+    "ur": "تفصیلات شامل کریں (اختیاری)",
+    "zh_Hant": "新增詳細資訊（可選）"
   },
   "sos_detailsHint": {
     "en": "Type any additional details...",
@@ -932,7 +1022,9 @@
     "pt": "Digite detalhes adicionais...",
     "ja": "追加の詳細を入力してください...",
     "zh": "请输入其他补充信息...",
-    "or": "କ additional ଣସି ଅତିରିକ୍ତ ବିବରଣୀ ଟାଇପ୍ କରନ୍ତୁ ..."
+    "or": "କ additional ଣସି ଅତିରିକ୍ତ ବିବରଣୀ ଟାଇପ୍ କରନ୍ତୁ ...",
+    "ur": "کوئی اضافی تفصیلات ٹائپ کریں...",
+    "zh_Hant": "輸入任何其他詳細資訊..."
   },
   "sos_sendSosAlert": {
     "en": "Send SOS Alert",
@@ -952,7 +1044,9 @@
     "pt": "Enviar Alerta SOS",
     "ja": "SOSアラートを送信",
     "zh": "立即发送 SOS 警报",
-    "or": "SOS ଆଲର୍ଟ ପଠାନ୍ତୁ |"
+    "or": "SOS ଆଲର୍ଟ ପଠାନ୍ତୁ |",
+    "ur": "SOS الرٹ بھیجیں۔",
+    "zh_Hant": "發送 SOS 警報"
   },
   "sos_alertWillBeSent": {
     "en": "Alert will be sent to nearby people",
@@ -972,7 +1066,9 @@
     "pt": "O alerta será enviado para pessoas próximas",
     "ja": "周辺のユーザーへアラートが送信されます",
     "zh": "警报将发送给附近的联络人",
-    "or": "ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ସତର୍କ ସୂଚନା ପଠାଯିବ |"
+    "or": "ନିକଟସ୍ଥ ଲୋକଙ୍କୁ ସତର୍କ ସୂଚନା ପଠାଯିବ |",
+    "ur": "قریبی لوگوں کو الرٹ بھیجا جائے گا۔",
+    "zh_Hant": "警報將發送給附近的人"
   },
   "sos_alertWillBeSentFamily": {
     "en": "Your alert will be sent to nearby people and your family.",
@@ -992,7 +1088,9 @@
     "pt": "Seu alerta será enviado para pessoas próximas e sua família.",
     "ja": "周囲の人および登録されたご家族へアラートが送信されます。",
     "zh": "您的警报将同时发送给附近人员及紧急联系家属。",
-    "or": "ତୁମର ଆଲର୍ଟ ନିକଟସ୍ଥ ଲୋକ ଏବଂ ଆପଣଙ୍କ ପରିବାରକୁ ପଠାଯିବ |"
+    "or": "ତୁମର ଆଲର୍ଟ ନିକଟସ୍ଥ ଲୋକ ଏବଂ ଆପଣଙ୍କ ପରିବାରକୁ ପଠାଯିବ |",
+    "ur": "آپ کا الرٹ قریبی لوگوں اور آپ کے خاندان کو بھیجا جائے گا۔",
+    "zh_Hant": "您的警報將發送給附近的人和您的家人。"
   },
   "safety_title": {
     "en": "Safety",
@@ -1012,7 +1110,9 @@
     "pt": "Segurança",
     "ja": "セーフティ",
     "zh": "安全守护",
-    "or": "ସୁରକ୍ଷା"
+    "or": "ସୁରକ୍ଷା",
+    "ur": "حفاظت",
+    "zh_Hant": "安全"
   },
   "safety_comingSoonBody": {
     "en": "Smart safety features to protect your team are on the way.",
@@ -1032,7 +1132,9 @@
     "pt": "Recursos inteligentes de segurança para proteger sua equipe em breve.",
     "ja": "チームを守るスマートセーフティ機能がまもなく登場します。",
     "zh": "保护团队安全的智能防护功能即将上线。",
-    "or": "ଆପଣଙ୍କ ଦଳକୁ ସୁରକ୍ଷା ଦେବା ପାଇଁ ସ୍ମାର୍ଟ ସୁରକ୍ଷା ବ features ଶିଷ୍ଟ୍ୟ ବାଟରେ ଅଛି |"
+    "or": "ଆପଣଙ୍କ ଦଳକୁ ସୁରକ୍ଷା ଦେବା ପାଇଁ ସ୍ମାର୍ଟ ସୁରକ୍ଷା ବ features ଶିଷ୍ଟ୍ୟ ବାଟରେ ଅଛି |",
+    "ur": "آپ کی ٹیم کی حفاظت کے لیے اسمارٹ سیفٹی فیچرز راستے میں ہیں۔",
+    "zh_Hant": "保護您團隊的智慧安全功能即將推出。"
   },
   "safety_mapStationRoad": {
     "en": "Station Road",
@@ -1052,7 +1154,9 @@
     "pt": "Rua da Estação",
     "ja": "駅前通り",
     "zh": "车站路",
-    "or": "ଷ୍ଟେସନ ରୋଡ୍ |"
+    "or": "ଷ୍ଟେସନ ରୋଡ୍ |",
+    "ur": "اسٹیشن روڈ",
+    "zh_Hant": "車站路"
   },
   "safety_mapMainRoad": {
     "en": "Main Road",
@@ -1072,7 +1176,9 @@
     "pt": "Estrada Principal",
     "ja": "本通り",
     "zh": "主干道",
-    "or": "ମୁଖ୍ୟ ରାସ୍ତା"
+    "or": "ମୁଖ୍ୟ ରାସ୍ତା",
+    "ur": "مین روڈ",
+    "zh_Hant": "主幹道"
   },
   "safety_mapCityPark": {
     "en": "City Park",
@@ -1092,7 +1198,9 @@
     "pt": "Parque da Cidade",
     "ja": "中央公園",
     "zh": "城市公园",
-    "or": "ସିଟି ପାର୍କ |"
+    "or": "ସିଟି ପାର୍କ |",
+    "ur": "سٹی پارک",
+    "zh_Hant": "城市公園"
   },
   "safety_mapRiver": {
     "en": "River",
@@ -1112,7 +1220,9 @@
     "pt": "Rio",
     "ja": "リバー沿い",
     "zh": "河畔",
-    "or": "ନଦୀ"
+    "or": "ନଦୀ",
+    "ur": "دریا",
+    "zh_Hant": "河"
   },
   "safety_mapMarketLane": {
     "en": "Market Lane",
@@ -1132,7 +1242,9 @@
     "pt": "Beco do Mercado",
     "ja": "マーケット通り",
     "zh": "集市巷",
-    "or": "ମାର୍କେଟ ଲେନ୍"
+    "or": "ମାର୍କେଟ ଲେନ୍",
+    "ur": "مارکیٹ لین",
+    "zh_Hant": "市場巷"
   },
   "safeZone_title": {
     "en": "Safe Zone",
@@ -1152,7 +1264,9 @@
     "pt": "Zona Segura",
     "ja": "セーフゾーン",
     "zh": "安全区域",
-    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ |"
+    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ |",
+    "ur": "سیف زون",
+    "zh_Hant": "安全區"
   },
   "safeZone_subtitle": {
     "en": "Area protection",
@@ -1172,7 +1286,9 @@
     "pt": "Proteção de área",
     "ja": "エリア保護",
     "zh": "区域防护",
-    "or": "କ୍ଷେତ୍ର ସୁରକ୍ଷା"
+    "or": "କ୍ଷେତ୍ର ସୁରକ୍ଷା",
+    "ur": "علاقے کی حفاظت",
+    "zh_Hant": "區域保護"
   },
   "safeRoute_title": {
     "en": "Safe Route",
@@ -1192,7 +1308,9 @@
     "pt": "Rota Segura",
     "ja": "セーフルート",
     "zh": "安全路线",
-    "or": "ସୁରକ୍ଷିତ ମାର୍ଗ"
+    "or": "ସୁରକ୍ଷିତ ମାର୍ଗ",
+    "ur": "محفوظ راستہ",
+    "zh_Hant": "安全路線"
   },
   "safeRoute_subtitle": {
     "en": "Route protection",
@@ -1212,7 +1330,9 @@
     "pt": "Proteção de rota",
     "ja": "ルート保護",
     "zh": "路线监护",
-    "or": "ମାର୍ଗ ସୁରକ୍ଷା"
+    "or": "ମାର୍ଗ ସୁରକ୍ଷା",
+    "ur": "راستے کی حفاظت",
+    "zh_Hant": "路由保護"
   },
   "package_title": {
     "en": "Packages & Pricing",
@@ -1232,7 +1352,9 @@
     "pt": "Pacotes e Preços",
     "ja": "プランと料金",
     "zh": "套餐与定价",
-    "or": "ପ୍ୟାକେଜ୍ ଏବଂ ମୂଲ୍ୟ"
+    "or": "ପ୍ୟାକେଜ୍ ଏବଂ ମୂଲ୍ୟ",
+    "ur": "پیکجز اور قیمتوں کا تعین",
+    "zh_Hant": "套餐及定價"
   },
   "package_subtitle": {
     "en": "Pick a module to see its plans",
@@ -1252,7 +1374,9 @@
     "pt": "Escolha um módulo para ver seus planos",
     "ja": "機能を選択してプラン一覧を表示",
     "zh": "选择功能模块以查看相应套餐",
-    "or": "ଏହାର ଯୋଜନା ଦେଖିବାକୁ ଏକ ମଡ୍ୟୁଲ୍ ବାଛନ୍ତୁ |"
+    "or": "ଏହାର ଯୋଜନା ଦେଖିବାକୁ ଏକ ମଡ୍ୟୁଲ୍ ବାଛନ୍ତୁ |",
+    "ur": "اس کے منصوبے دیکھنے کے لیے ایک ماڈیول چنیں۔",
+    "zh_Hant": "選擇一個模組以查看其計劃"
   },
   "package_noPackages": {
     "en": "No packages are available right now.",
@@ -1272,7 +1396,9 @@
     "pt": "Nenhum pacote disponível no momento.",
     "ja": "現在利用可能なプランはありません。",
     "zh": "目前暂无可用套餐。",
-    "or": "ବର୍ତ୍ତମାନ କ No ଣସି ପ୍ୟାକେଜ୍ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ବର୍ତ୍ତମାନ କ No ଣସି ପ୍ୟାକେଜ୍ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "ابھی کوئی پیکیج دستیاب نہیں ہے۔",
+    "zh_Hant": "目前沒有可用的軟體包。"
   },
   "package_viewPlans": {
     "en": "View plans",
@@ -1292,7 +1418,9 @@
     "pt": "Ver planos",
     "ja": "プランを見る",
     "zh": "查看套餐",
-    "or": "ଯୋଜନାଗୁଡିକ ଦେଖନ୍ତୁ |"
+    "or": "ଯୋଜନାଗୁଡିକ ଦେଖନ୍ତୁ |",
+    "ur": "منصوبے دیکھیں",
+    "zh_Hant": "查看計劃"
   },
   "package_plansComingSoon": {
     "en": "{title} plans are coming soon",
@@ -1318,7 +1446,9 @@
     "pt": "Os planos de {title} estarão disponíveis em breve",
     "ja": "{title}のプランは近日公開予定です",
     "zh": "{title} 相关套餐即将推出",
-    "or": "{title} ଯୋଜନା ଶୀଘ୍ର ଆସିବ |"
+    "or": "{title} ଯୋଜନା ଶୀଘ୍ର ଆସିବ |",
+    "ur": "{title} منصوبے جلد آرہے ہیں۔",
+    "zh_Hant": "{title} 計畫即將推出"
   },
   "otpCharges_title": {
     "en": "OTP Charges",
@@ -1338,7 +1468,9 @@
     "pt": "Tarifas de OTP",
     "ja": "OTP認証料金",
     "zh": "短信验证码费用",
-    "or": "OTP ଚାର୍ଜ |"
+    "or": "OTP ଚାର୍ଜ |",
+    "ur": "OTP چارجز",
+    "zh_Hant": "一次性密碼費用"
   },
   "otpCharges_freeTitle": {
     "en": "OTP is free for your number",
@@ -1358,7 +1490,9 @@
     "pt": "O OTP é gratuito para seu número",
     "ja": "お使いの電話番号はOTPが無料です",
     "zh": "您的手机号接收验证码完全免费",
-    "or": "ଆପଣଙ୍କ ନମ୍ବର ପାଇଁ OTP ମାଗଣା |"
+    "or": "ଆପଣଙ୍କ ନମ୍ବର ପାଇଁ OTP ମାଗଣା |",
+    "ur": "آپ کے نمبر کے لیے OTP مفت ہے۔",
+    "zh_Hant": "您的號碼的 OTP 是免費的"
   },
   "otpCharges_freeBody": {
     "en": "Login OTPs sent to this number are not charged.",
@@ -1378,7 +1512,9 @@
     "pt": "OTPs de login enviados para este número não são cobrados.",
     "ja": "この番号へのログイン確認コード送信には料金はかかりません。",
     "zh": "发送至该号码的登录短信验证码不产生任何费用。",
-    "or": "ଏହି ନମ୍ବରକୁ ପଠାଯାଇଥିବା ଲଗଇନ୍ OTP ଗୁଡିକ ଚାର୍ଜ କରାଯାଏ ନାହିଁ |"
+    "or": "ଏହି ନମ୍ବରକୁ ପଠାଯାଇଥିବା ଲଗଇନ୍ OTP ଗୁଡିକ ଚାର୍ଜ କରାଯାଏ ନାହିଁ |",
+    "ur": "اس نمبر پر بھیجے گئے لاگ ان OTP پر کوئی چارج نہیں لیا جاتا ہے۔",
+    "zh_Hant": "發送至此號碼的登入 OTP 不收費。"
   },
   "otpCharges_unknownTitle": {
     "en": "OTP charges depend on your country",
@@ -1398,7 +1534,9 @@
     "pt": "As taxas de OTP dependem do seu país",
     "ja": "OTP料金はお住まいの国によって異なります",
     "zh": "短信验证码费用取决于您所在的国家或地区",
-    "or": "OTP ଦେୟ ଆପଣଙ୍କ ଦେଶ ଉପରେ ନିର୍ଭର କରେ |"
+    "or": "OTP ଦେୟ ଆପଣଙ୍କ ଦେଶ ଉପରେ ନିର୍ଭର କରେ |",
+    "ur": "OTP چارجز آپ کے ملک پر منحصر ہیں۔",
+    "zh_Hant": "OTP 費用取決於您所在的國家/地區"
   },
   "otpCharges_unknownBody": {
     "en": "Login OTPs to Indian numbers are free. For other countries, the exact price is shown before you pay at login.",
@@ -1418,7 +1556,9 @@
     "pt": "OTPs para números indianos são gratuitos. Para outros países, o preço exato é exibido antes do pagamento.",
     "ja": "インドの電話番号へのOTPは無料です。その他の国についてはログイン時に支払額が表示されます。",
     "zh": "印度号码的登录验证码免费。其他国家或地区将在登录付款前显示具体资费。",
-    "or": "ଭାରତୀୟ ସଂଖ୍ୟାରେ OTP ଲଗଇନ୍ ମାଗଣା | ଅନ୍ୟ ଦେଶଗୁଡିକ ପାଇଁ, ଆପଣ ଲଗଇନ୍ ରେ ଦେୟ ଦେବା ପୂର୍ବରୁ ସଠିକ୍ ମୂଲ୍ୟ ଦେଖାଯାଏ |"
+    "or": "ଭାରତୀୟ ସଂଖ୍ୟାରେ OTP ଲଗଇନ୍ ମାଗଣା | ଅନ୍ୟ ଦେଶଗୁଡିକ ପାଇଁ, ଆପଣ ଲଗଇନ୍ ରେ ଦେୟ ଦେବା ପୂର୍ବରୁ ସଠିକ୍ ମୂଲ୍ୟ ଦେଖାଯାଏ |",
+    "ur": "ہندوستانی نمبروں پر لاگ ان OTPs مفت ہیں۔ دوسرے ممالک کے لیے، لاگ ان پر ادائیگی کرنے سے پہلے درست قیمت دکھائی جاتی ہے۔",
+    "zh_Hant": "印度號碼的登入 OTP 是免費的。對於其他國家/地區，準確的價格會在您登入付款之前顯示。"
   },
   "otpCharges_chargesApplyTo": {
     "en": "Charges apply to",
@@ -1438,7 +1578,9 @@
     "pt": "Cobranças aplicam-se a",
     "ja": "適用対象",
     "zh": "资费适用于",
-    "or": "ଚାର୍ଜ ପ୍ରଯୁଜ୍ୟ |"
+    "or": "ଚାର୍ଜ ପ୍ରଯୁଜ୍ୟ |",
+    "ur": "چارجز لاگو ہوتے ہیں۔",
+    "zh_Hant": "收費適用於"
   },
   "otpCharges_yourNumber": {
     "en": "Your number",
@@ -1458,7 +1600,9 @@
     "pt": "Seu número",
     "ja": "お客様の番号",
     "zh": "您的号码",
-    "or": "ତୁମର ନମ୍ବର"
+    "or": "ତୁମର ନମ୍ବର",
+    "ur": "آپ کا نمبر",
+    "zh_Hant": "您的號碼"
   },
   "otpCharges_eachOtpCosts": {
     "en": "Each OTP costs",
@@ -1478,7 +1622,9 @@
     "pt": "Cada OTP custa",
     "ja": "OTP 1回あたりの料金",
     "zh": "每条验证码费用",
-    "or": "ପ୍ରତ୍ୟେକ OTP ଖର୍ଚ୍ଚ |"
+    "or": "ପ୍ରତ୍ୟେକ OTP ଖର୍ଚ୍ଚ |",
+    "ur": "ہر OTP کی قیمت ہے۔",
+    "zh_Hant": "每個 OTP 成本"
   },
   "otpCharges_eachOtpCostsSpoken": {
     "en": "Each OTP costs {amount}",
@@ -1503,7 +1649,9 @@
     "pt": "Cada OTP custa {amount}",
     "ja": "OTP 1回につき {amount}",
     "zh": "每条验证码费用为 {amount}",
-    "or": "ପ୍ରତ୍ୟେକ OTP ମୂଲ୍ୟ {amount} |"
+    "or": "ପ୍ରତ୍ୟେକ OTP ମୂଲ୍ୟ {amount} |",
+    "ur": "ہر OTP کی قیمت {amount} ہے۔",
+    "zh_Hant": "每 OTP 成本 {amount}"
   },
   "otpCharges_eachOtpCostsSpokenGst": {
     "en": "Each OTP costs {amount}, including {percent} percent GST",
@@ -1531,7 +1679,9 @@
     "pt": "Cada OTP custa {amount}, incluindo {percent}% de imposto",
     "ja": "OTP 1回につき {amount} (消費税 {percent}% 込)",
     "zh": "每条验证码费用为 {amount}（含 {percent}% 税费）",
-    "or": "ପ୍ରତ୍ୟେକ OTP ମୂଲ୍ୟ {amount}, {percent} ପ୍ରତିଶତ GST ଅନ୍ତର୍ଭୁକ୍ତ କରେ |"
+    "or": "ପ୍ରତ୍ୟେକ OTP ମୂଲ୍ୟ {amount}, {percent} ପ୍ରତିଶତ GST ଅନ୍ତର୍ଭୁକ୍ତ କରେ |",
+    "ur": "ہر OTP کی قیمت {amount} ہے، بشمول {percent} فیصد جی ایس ٹی",
+    "zh_Hant": " {amount} {percent}"
   },
   "otpCharges_includingGst": {
     "en": "Including {percent}% GST",
@@ -1556,7 +1706,9 @@
     "pt": "Inclui {percent}% de imposto",
     "ja": "{percent}% 税込み",
     "zh": "含 {percent}% 税费",
-    "or": "{percent}% GST ଅନ୍ତର୍ଭୁକ୍ତ କରି |"
+    "or": "{percent}% GST ଅନ୍ତର୍ଭୁକ୍ତ କରି |",
+    "ur": "بشمول {percent}% GST",
+    "zh_Hant": "包括 {percent}% 商品及服務稅"
   },
   "otpCharges_includingTax": {
     "en": "Including {percent}% Tax",
@@ -1581,7 +1733,9 @@
     "pt": "Inclui {percent}% de taxa",
     "ja": "{percent}% 税込み",
     "zh": "含 {percent}% 综合税",
-    "or": "{percent}% ଟ୍ୟାକ୍ସ ଅନ୍ତର୍ଭୁକ୍ତ କରି |"
+    "or": "{percent}% ଟ୍ୟାକ୍ସ ଅନ୍ତର୍ଭୁକ୍ତ କରି |",
+    "ur": "بشمول {percent}% ٹیکس",
+    "zh_Hant": "包括 {percent}% 稅"
   },
   "otpCharges_gstTitle": {
     "en": "GST ({percent}%)",
@@ -1606,7 +1760,9 @@
     "pt": "Imposto ({percent}%)",
     "ja": "消費税 ({percent}%)",
     "zh": "增值税 ({percent}%)",
-    "or": "GST ({percent}%)"
+    "or": "GST ({percent}%)",
+    "ur": "GST ({percent}%)",
+    "zh_Hant": "商品及服務稅 ({percent}%)"
   },
   "otpCharges_vatTitle": {
     "en": "VAT / Tax ({percent}%)",
@@ -1631,7 +1787,9 @@
     "pt": "IVA / Imposto ({percent}%)",
     "ja": "税 ({percent}%)",
     "zh": "税率 ({percent}%)",
-    "or": "ଭ୍ୟାଟ୍ / ଟ୍ୟାକ୍ସ ({percent}%)"
+    "or": "ଭ୍ୟାଟ୍ / ଟ୍ୟାକ୍ସ ({percent}%)",
+    "ur": "VAT / ٹیکس ({percent}%)",
+    "zh_Hant": "增值稅/稅 ({percent}%)"
   },
   "otpCharges_firstLoginFree": {
     "en": "Your first login was free.",
@@ -1651,7 +1809,9 @@
     "pt": "Seu primeiro login foi gratuito.",
     "ja": "初回ログインは無料でした。",
     "zh": "您的首次登录为免费体验。",
-    "or": "ତୁମର ପ୍ରଥମ ଲଗଇନ୍ ମାଗଣା ଥିଲା |"
+    "or": "ତୁମର ପ୍ରଥମ ଲଗଇନ୍ ମାଗଣା ଥିଲା |",
+    "ur": "آپ کا پہلا لاگ ان مفت تھا۔",
+    "zh_Hant": "您的首次登入是免費的。"
   },
   "otpCharges_chargedNotice": {
     "en": "From now on, each login OTP to your number is charged. Resending the OTP is free (up to 3 attempts).",
@@ -1671,7 +1831,9 @@
     "pt": "A partir de agora, cada OTP de login será cobrado. O reenvio é gratuito (até 3 tentativas).",
     "ja": "次回以降、この番号へのログインOTP送信は有料となります。再送信は3回まで無料です。",
     "zh": "后续向该号码发送登录验证码将产生相应费用。重发验证码免费（最多 3 次）。",
-    "or": "ବର୍ତ୍ତମାନଠାରୁ, ଆପଣଙ୍କର ନମ୍ବରକୁ ପ୍ରତ୍ୟେକ ଲଗଇନ୍ OTP ଚାର୍ଜ କରାଯାଏ | OTP କୁ ପଠାଇବା ମାଗଣା (3 ଟି ଚେଷ୍ଟା ପର୍ଯ୍ୟନ୍ତ) |"
+    "or": "ବର୍ତ୍ତମାନଠାରୁ, ଆପଣଙ୍କର ନମ୍ବରକୁ ପ୍ରତ୍ୟେକ ଲଗଇନ୍ OTP ଚାର୍ଜ କରାଯାଏ | OTP କୁ ପଠାଇବା ମାଗଣା (3 ଟି ଚେଷ୍ଟା ପର୍ଯ୍ୟନ୍ତ) |",
+    "ur": "اب سے، آپ کے نمبر پر لاگ ان ہونے والا ہر OTP چارج کیا جائے گا۔ OTP کو دوبارہ بھیجنا مفت ہے (3 کوششوں تک)۔",
+    "zh_Hant": "從現在開始，您的號碼每次登入 OTP 都會收費。重新發送 OTP 是免費的（最多嘗試 3 次）。"
   },
   "otpCharges_otpCharge": {
     "en": "OTP charge",
@@ -1691,7 +1853,9 @@
     "pt": "Tarifa de OTP",
     "ja": "OTP送信料",
     "zh": "短信资费",
-    "or": "OTP ଚାର୍ଜ |"
+    "or": "OTP ଚାର୍ଜ |",
+    "ur": "OTP چارج",
+    "zh_Hant": "一次性密碼費用"
   },
   "otpCharges_totalPerOtp": {
     "en": "Total per OTP",
@@ -1711,7 +1875,9 @@
     "pt": "Total por OTP",
     "ja": "OTP 1件あたりの合計",
     "zh": "每条验证码总计",
-    "or": "OTP ପ୍ରତି ସମୁଦାୟ |"
+    "or": "OTP ପ୍ରତି ସମୁଦାୟ |",
+    "ur": "کل فی OTP",
+    "zh_Hant": "每個 OTP 總計"
   },
   "otpCharges_paymentsPaused": {
     "en": "OTP payments are temporarily paused by administrator. Tap below for details.",
@@ -1731,7 +1897,9 @@
     "pt": "Os pagamentos de OTP foram pausados temporariamente pelo administrador. Toque abaixo.",
     "ja": "管理者によりOTP決済が一時停止されています。詳細は以下をご確認ください。",
     "zh": "管理员已暂停短信支付功能。详情请点击下方。",
-    "or": "ପ୍ରଶାସକଙ୍କ ଦ୍ O ାରା OTP ଦେୟ ସାମୟିକ ଭାବରେ ବିରତ | ବିବରଣୀ ପାଇଁ ନିମ୍ନରେ ଟ୍ୟାପ୍ କରନ୍ତୁ |"
+    "or": "ପ୍ରଶାସକଙ୍କ ଦ୍ O ାରା OTP ଦେୟ ସାମୟିକ ଭାବରେ ବିରତ | ବିବରଣୀ ପାଇଁ ନିମ୍ନରେ ଟ୍ୟାପ୍ କରନ୍ତୁ |",
+    "ur": "منتظم کی طرف سے OTP ادائیگیوں کو عارضی طور پر روک دیا گیا ہے۔ تفصیلات کے لیے نیچے تھپتھپائیں۔",
+    "zh_Hant": "管理員暫時暫停 OTP 付款。點擊下方了解詳情。"
   },
   "otpCharges_pay": {
     "en": "Pay {amount}",
@@ -1756,7 +1924,9 @@
     "pt": "Pagar {amount}",
     "ja": "{amount} を支払う",
     "zh": "支付 {amount}",
-    "or": "{amount} ଦେୟ ଦିଅ |"
+    "or": "{amount} ଦେୟ ଦିଅ |",
+    "ur": "{amount} ادا کریں۔",
+    "zh_Hant": "支付{amount}"
   },
   "otpCharges_paymentPausedButton": {
     "en": "Payment Paused ({amount})",
@@ -1781,7 +1951,9 @@
     "pt": "Pagamento Pausado ({amount})",
     "ja": "決済一時停止中 ({amount})",
     "zh": "支付暂停 ({amount})",
-    "or": "ଦେୟ ବିରତି ({amount})"
+    "or": "ଦେୟ ବିରତି ({amount})",
+    "ur": "ادائیگی روک دی گئی ({amount})",
+    "zh_Hant": "付款已暫停 ({amount})"
   },
   "otpCharges_sessionExpired": {
     "en": "Session expired. Please start again.",
@@ -1801,7 +1973,9 @@
     "pt": "Sessão expirada. Inicie novamente.",
     "ja": "セッションの有効期限が切れました。最初からやり直してください。",
     "zh": "会话已过期，请重新发起操作。",
-    "or": "ଅଧିବେଶନ ସମାପ୍ତ ହୋଇଛି | ଦୟାକରି ପୁନର୍ବାର ଆରମ୍ଭ କରନ୍ତୁ |"
+    "or": "ଅଧିବେଶନ ସମାପ୍ତ ହୋଇଛି | ଦୟାକରି ପୁନର୍ବାର ଆରମ୍ଭ କରନ୍ତୁ |",
+    "ur": "سیشن ختم ہو گیا۔ براہ کرم دوبارہ شروع کریں۔",
+    "zh_Hant": "會話已過期。請重新開始。"
   },
   "otpCharges_paymentsUnavailable": {
     "en": "OTP payments are temporarily unavailable. Please try again later.",
@@ -1821,7 +1995,9 @@
     "pt": "Os pagamentos de OTP estão indisponíveis temporariamente. Tente mais tarde.",
     "ja": "OTP決済は現在利用できません。しばらくしてからお試しください。",
     "zh": "短信支付服务暂时不可用，请稍后重试。",
-    "or": "OTP ଦେୟ ସାମୟିକ ଭାବରେ ଉପଲବ୍ଧ ନାହିଁ | ଦୟାକରି ପରେ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "OTP ଦେୟ ସାମୟିକ ଭାବରେ ଉପଲବ୍ଧ ନାହିଁ | ଦୟାକରି ପରେ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "OTP ادائیگیاں عارضی طور پر دستیاب نہیں ہیں۔ براہ کرم بعد میں دوبارہ کوشش کریں۔",
+    "zh_Hant": "OTP 付款暫時無法使用。請稍後重試。"
   },
   "otpCharges_paymentStartFailed": {
     "en": "Could not start the payment. Please try again.",
@@ -1841,7 +2017,9 @@
     "pt": "Não foi possível iniciar o pagamento. Tente novamente.",
     "ja": "支払いを開始できませんでした。もう一度お試しください。",
     "zh": "发起支付失败，请重试。",
-    "or": "ଦେୟ ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଦେୟ ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "ادائیگی شروع نہیں ہو سکی۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法開始付款。請再試一次。"
   },
   "otpCharges_paymentReceived": {
     "en": "Payment received. Your OTP may take a moment to arrive.",
@@ -1861,7 +2039,9 @@
     "pt": "Pagamento recebido. Seu OTP pode levar alguns instantes para chegar.",
     "ja": "支払いを受領しました。確認コードが届くまで少々お待ちください。",
     "zh": "已收到付款。验证码可能需要稍等片刻送达。",
-    "or": "ଦେୟ ଗ୍ରହଣ କରାଯାଇଛି ଆପଣଙ୍କର OTP ପହଞ୍ଚିବାକୁ କିଛି ସମୟ ନେଇପାରେ |"
+    "or": "ଦେୟ ଗ୍ରହଣ କରାଯାଇଛି ଆପଣଙ୍କର OTP ପହଞ୍ଚିବାକୁ କିଛି ସମୟ ନେଇପାରେ |",
+    "ur": "ادائیگی موصول ہوئی۔ آپ کا OTP پہنچنے میں تھوڑا وقت لگ سکتا ہے۔",
+    "zh_Hant": "付款已收到。您的 OTP 可能需要一些時間才能到達。"
   },
   "otpCharges_verificationFailed": {
     "en": "Payment verification failed. If money was deducted it will be refunded in 5–7 working days.",
@@ -1881,7 +2061,9 @@
     "pt": "Falha na verificação do pagamento. Se o valor foi debitado, será reembolsado em 5 a 7 dias úteis.",
     "ja": "支払いの確認に失敗しました。引き落とされた場合は5〜7営業日以内に返金されます。",
     "zh": "支付验证失败。如果已扣款，款项将在 5–7 个工作日内原路退回。",
-    "or": "ଦେୟ ଯାଞ୍ଚ ବିଫଳ ହେଲା | ଯଦି ଟଙ୍କା କଟାଯାଇଥାଏ ତେବେ ଏହାକୁ 5-7 କାର୍ଯ୍ୟ ଦିନରେ ଫେରସ୍ତ କରାଯିବ |"
+    "or": "ଦେୟ ଯାଞ୍ଚ ବିଫଳ ହେଲା | ଯଦି ଟଙ୍କା କଟାଯାଇଥାଏ ତେବେ ଏହାକୁ 5-7 କାର୍ଯ୍ୟ ଦିନରେ ଫେରସ୍ତ କରାଯିବ |",
+    "ur": "ادائیگی کی توثیق ناکام ہو گئی۔ اگر رقم کاٹی گئی ہے تو اسے 5-7 کام کے دنوں میں واپس کر دیا جائے گا۔",
+    "zh_Hant": "付款驗證失敗。若已扣款，將在 5-7 個工作天內退還。"
   },
   "otpCharges_paymentCancelled": {
     "en": "Payment cancelled. You cancelled the payment. No money was deducted.",
@@ -1901,7 +2083,9 @@
     "pt": "Pagamento cancelado. Você cancelou a operação. Nenhum valor foi debitado.",
     "ja": "支払いがキャンセルされました。金額は引き落とされていません。",
     "zh": "支付已取消。您主动取消了交易，未产生任何扣费。",
-    "or": "ଦେୟ ବାତିଲ ହୋଇଛି | ଆପଣ ଦେୟ ବାତିଲ କରିଛନ୍ତି | କ money ଣସି ଟଙ୍କା କଟାଯାଇ ନାହିଁ |"
+    "or": "ଦେୟ ବାତିଲ ହୋଇଛି | ଆପଣ ଦେୟ ବାତିଲ କରିଛନ୍ତି | କ money ଣସି ଟଙ୍କା କଟାଯାଇ ନାହିଁ |",
+    "ur": "ادائیگی منسوخ کر دی گئی۔ آپ نے ادائیگی منسوخ کردی۔ کوئی رقم نہیں کاٹی گئی۔",
+    "zh_Hant": "付款已取消。您取消了付款。沒有扣錢。"
   },
   "otpCharges_noInternet": {
     "en": "No internet connection. Check your network and try again.",
@@ -1921,7 +2105,9 @@
     "pt": "Sem conexão com a internet. Verifique sua rede e tente novamente.",
     "ja": "インターネットに接続されていません。ネットワークを確認してください。",
     "zh": "无网络连接，请检查您的网络设置后重试。",
-    "or": "କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ | ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ | ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "انٹرنیٹ کنکشن نہیں ہے۔ اپنا نیٹ ورک چیک کریں اور دوبارہ کوشش کریں۔",
+    "zh_Hant": "沒有網路連線。檢查您的網路並重試。"
   },
   "otpCharges_updateApp": {
     "en": "Payment couldn't start. Please update the app and try again.",
@@ -1941,7 +2127,9 @@
     "pt": "Não foi possível iniciar o pagamento. Atualize o app e tente novamente.",
     "ja": "支払いを開始できませんでした。アプリを更新してから再試行してください。",
     "zh": "无法启动支付，请更新应用后重试。",
-    "or": "ଦେୟ ଆରମ୍ଭ ହୋଇପାରିଲା ନାହିଁ | ଦୟାକରି ଆପ୍ ଅପଡେଟ୍ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଦେୟ ଆରମ୍ଭ ହୋଇପାରିଲା ନାହିଁ | ଦୟାକରି ଆପ୍ ଅପଡେଟ୍ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "ادائیگی شروع نہیں ہو سکی۔ براہ کرم ایپ کو اپ ڈیٹ کریں اور دوبارہ کوشش کریں۔",
+    "zh_Hant": "付款無法開始。請更新應用程式並重試。"
   },
   "otpCharges_tryAgainMoment": {
     "en": "Something went wrong. Please try again in a moment.",
@@ -1961,7 +2149,9 @@
     "pt": "Algo deu errado. Tente novamente em alguns instantes.",
     "ja": "問題が発生しました。しばらくしてからもう一度お試しください。",
     "zh": "发生未知错误，请稍后重试。",
-    "or": "କିଛି ଭୁଲ୍ ହୋଇଗଲା | ଦୟାକରି ଏକ ମୁହୂର୍ତ୍ତରେ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "କିଛି ଭୁଲ୍ ହୋଇଗଲା | ଦୟାକରି ଏକ ମୁହୂର୍ତ୍ତରେ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "کچھ غلط ہو گیا۔ براہ کرم ایک لمحے میں دوبارہ کوشش کریں۔",
+    "zh_Hant": "出了點問題。請稍後重試。"
   },
   "otpCharges_paymentFailed": {
     "en": "Payment failed. If money was deducted it will be refunded in 5–7 working days.",
@@ -1981,7 +2171,9 @@
     "pt": "Falha no pagamento. Se houve débito, será estornado em 5 a 7 dias úteis.",
     "ja": "支払いに失敗しました。引き落としがあった場合は5〜7営業日以内に返金されます。",
     "zh": "支付失败。如已扣款，费用将在 5–7 个工作日内退还。",
-    "or": "ଦେୟ ବିଫଳ ହେଲା | ଯଦି ଟଙ୍କା କଟାଯାଇଥାଏ ତେବେ ଏହାକୁ 5-7 କାର୍ଯ୍ୟ ଦିନରେ ଫେରସ୍ତ କରାଯିବ |"
+    "or": "ଦେୟ ବିଫଳ ହେଲା | ଯଦି ଟଙ୍କା କଟାଯାଇଥାଏ ତେବେ ଏହାକୁ 5-7 କାର୍ଯ୍ୟ ଦିନରେ ଫେରସ୍ତ କରାଯିବ |",
+    "ur": "ادائیگی ناکام ہو گئی۔ اگر رقم کاٹی گئی ہے تو اسے 5-7 کام کے دنوں میں واپس کر دیا جائے گا۔",
+    "zh_Hant": "付款失敗。若已扣款，將在 5-7 個工作天內退還。"
   },
   "voice_micUnavailable": {
     "en": "Microphone unavailable. Please check settings.",
@@ -2001,7 +2193,9 @@
     "pt": "Microfone indisponível. Verifique as configurações.",
     "ja": "マイクが利用できません。設定を確認してください。",
     "zh": "麦克风不可用，请检查系统设置。",
-    "or": "ମାଇକ୍ରୋଫୋନ୍ ଉପଲବ୍ଧ ନାହିଁ | ଦୟାକରି ସେଟିଂସମୂହ ଯାଞ୍ଚ କରନ୍ତୁ |"
+    "or": "ମାଇକ୍ରୋଫୋନ୍ ଉପଲବ୍ଧ ନାହିଁ | ଦୟାକରି ସେଟିଂସମୂହ ଯାଞ୍ଚ କରନ୍ତୁ |",
+    "ur": "مائیکروفون دستیاب نہیں ہے۔ براہ کرم ترتیبات کو چیک کریں۔",
+    "zh_Hant": "麥克風不可用。請檢查設定。"
   },
   "voice_speakNowReply": {
     "en": "Speak now – we are typing your reply",
@@ -2021,7 +2215,9 @@
     "pt": "Fale agora – estamos digitando sua resposta",
     "ja": "話してください – 返信を入力しています",
     "zh": "请说话 – 正在将语音转为文字回复",
-    "or": "ବର୍ତ୍ତମାନ କୁହ - ଆମେ ତୁମର ଉତ୍ତର ଟାଇପ୍ କରୁଛୁ |"
+    "or": "ବର୍ତ୍ତମାନ କୁହ - ଆମେ ତୁମର ଉତ୍ତର ଟାଇପ୍ କରୁଛୁ |",
+    "ur": "ابھی بولیں – ہم آپ کا جواب ٹائپ کر رہے ہیں۔",
+    "zh_Hant": "現在說話 – 我們正在輸入您的回复"
   },
   "voice_speakNowCaption": {
     "en": "Speak now – we are typing your caption",
@@ -2041,7 +2237,9 @@
     "pt": "Fale agora – estamos digitando sua legenda",
     "ja": "話してください – キャプションを入力しています",
     "zh": "请说话 – 正在输入说明文字",
-    "or": "ବର୍ତ୍ତମାନ କୁହ - ଆମେ ତୁମର କ୍ୟାପସନ୍ ଟାଇପ୍ କରୁଛୁ |"
+    "or": "ବର୍ତ୍ତମାନ କୁହ - ଆମେ ତୁମର କ୍ୟାପସନ୍ ଟାଇପ୍ କରୁଛୁ |",
+    "ur": "ابھی بولیں – ہم آپ کا کیپشن ٹائپ کر رہے ہیں۔",
+    "zh_Hant": "現在說話 – 我們正在輸入您的標題"
   },
   "voice_speakNowMessage": {
     "en": "Speak now – your words appear in the message box",
@@ -2061,7 +2259,9 @@
     "pt": "Fale agora – suas palavras aparecerão na caixa de texto",
     "ja": "話してください – メッセージ入力欄にテキストが表示されます",
     "zh": "请说话 – 识别出的文字将填入输入框",
-    "or": "ବର୍ତ୍ତମାନ କୁହ - ତୁମର ଶବ୍ଦ ବାର୍ତ୍ତା ବାକ୍ସରେ ଦେଖାଯାଏ |"
+    "or": "ବର୍ତ୍ତମାନ କୁହ - ତୁମର ଶବ୍ଦ ବାର୍ତ୍ତା ବାକ୍ସରେ ଦେଖାଯାଏ |",
+    "ur": "ابھی بولیں - آپ کے الفاظ میسج باکس میں ظاہر ہوں گے۔",
+    "zh_Hant": "現在說話 – 您的話會出現在訊息框中"
   },
   "voice_tooMuchNoise": {
     "en": "Too much noise – hold the phone closer and speak clearly",
@@ -2081,7 +2281,9 @@
     "pt": "Muito barulho – aproxime o telefone e fale com clareza",
     "ja": "周囲の雑音が多すぎます – 電話を近づけてはっきり話してください",
     "zh": "环境噪音较大 – 请靠近手机并清晰发音",
-    "or": "ଅତ୍ୟଧିକ ଶବ୍ଦ - ଫୋନକୁ ନିକଟତର କର ଏବଂ ସ୍ପଷ୍ଟ ଭାବରେ କୁହ |"
+    "or": "ଅତ୍ୟଧିକ ଶବ୍ଦ - ଫୋନକୁ ନିକଟତର କର ଏବଂ ସ୍ପଷ୍ଟ ଭାବରେ କୁହ |",
+    "ur": "بہت زیادہ شور – فون کو قریب رکھیں اور صاف بولیں۔",
+    "zh_Hant": "噪音太大 – 將手機拿近並清晰說話"
   },
   "voice_didntCatch": {
     "en": "Didn't catch that. Tap the mic and speak a little louder.",
@@ -2101,7 +2303,9 @@
     "pt": "Não entendi. Toque no microfone e fale um pouco mais alto.",
     "ja": "聞き取れませんでした。マイクをタップしてもう少し大きな声で話してください。",
     "zh": "未能识别。请点击麦克风并稍微提高音量重试。",
-    "or": "ତାହା ଧରିଲା ନାହିଁ | ମାଇକ୍ ଟ୍ୟାପ୍ କରନ୍ତୁ ଏବଂ ଟିକିଏ ଅଧିକ ଜୋରରେ କୁହନ୍ତୁ |"
+    "or": "ତାହା ଧରିଲା ନାହିଁ | ମାଇକ୍ ଟ୍ୟାପ୍ କରନ୍ତୁ ଏବଂ ଟିକିଏ ଅଧିକ ଜୋରରେ କୁହନ୍ତୁ |",
+    "ur": "یہ سمجھ نہیں آیا۔ مائیک کو تھپتھپائیں اور تھوڑی زور سے بولیں۔",
+    "zh_Hant": "沒聽清楚。輕按麥克風並大聲說話。"
   },
   "voice_willSendAudioReply": {
     "en": "Your voice will be sent as an audio reply",
@@ -2121,7 +2325,9 @@
     "pt": "Sua voz será enviada como resposta de áudio",
     "ja": "音声メッセージとして返信されます",
     "zh": "您的录音将作为语音回复发出",
-    "or": "ତୁମର ସ୍ୱର ଏକ ଅଡିଓ ଉତ୍ତର ଭାବରେ ପଠାଯିବ |"
+    "or": "ତୁମର ସ୍ୱର ଏକ ଅଡିଓ ଉତ୍ତର ଭାବରେ ପଠାଯିବ |",
+    "ur": "آپ کی آواز آڈیو جواب کے طور پر بھیجی جائے گی۔",
+    "zh_Hant": "您的聲音將作為音頻回復發送"
   },
   "voice_willSendWithFile": {
     "en": "Your voice will be sent with the file as audio",
@@ -2141,7 +2347,9 @@
     "pt": "Sua voz será enviada junto com o arquivo",
     "ja": "ファイルと共に音声が送信されます",
     "zh": "您的语音将随文件一同发送",
-    "or": "ତୁମର ସ୍ୱର ଫାଇଲ୍ ସହିତ ଅଡିଓ ଭାବରେ ପଠାଯିବ |"
+    "or": "ତୁମର ସ୍ୱର ଫାଇଲ୍ ସହିତ ଅଡିଓ ଭାବରେ ପଠାଯିବ |",
+    "ur": "آپ کی آواز فائل کے ساتھ آڈیو کے طور پر بھیجی جائے گی۔",
+    "zh_Hant": "您的聲音將與文件一起作為音訊發送"
   },
   "voice_willSendAudioMessage": {
     "en": "Your voice will be sent as an audio message",
@@ -2161,7 +2369,9 @@
     "pt": "Sua voz será enviada como mensagem de voz",
     "ja": "ボイスメッセージとして送信されます",
     "zh": "您的声音将作为语音消息发送",
-    "or": "ତୁମର ସ୍ୱର ଏକ ଅଡିଓ ବାର୍ତ୍ତା ଭାବରେ ପଠାଯିବ |"
+    "or": "ତୁମର ସ୍ୱର ଏକ ଅଡିଓ ବାର୍ତ୍ତା ଭାବରେ ପଠାଯିବ |",
+    "ur": "آپ کی آواز ایک آڈیو پیغام کے طور پر بھیجی جائے گی۔",
+    "zh_Hant": "您的聲音將作為音訊訊息發送"
   },
   "voice_couldntPlay": {
     "en": "Couldn't play voice message",
@@ -2181,7 +2391,9 @@
     "pt": "Não foi possível reproduzir a mensagem de voz",
     "ja": "ボイスメッセージを再生できませんでした",
     "zh": "无法播放语音消息",
-    "or": "ଭଏସ୍ ମେସେଜ୍ ଚଲାଇ ପାରିଲା ନାହିଁ |"
+    "or": "ଭଏସ୍ ମେସେଜ୍ ଚଲାଇ ପାରିଲା ନାହିଁ |",
+    "ur": "صوتی پیغام نہیں چل سکا",
+    "zh_Hant": "無法播放語音留言"
   },
   "voice_speechPermissionNeeded": {
     "en": "Speech recognition permission is needed to convert voice to text.",
@@ -2201,7 +2413,9 @@
     "pt": "A permissão de reconhecimento de voz é necessária para transcrever.",
     "ja": "音声をテキストに変換するには音声認識権限が必要です。",
     "zh": "语音转文字需要语音识别权限。",
-    "or": "ସ୍ୱରକୁ ପାଠ୍ୟରେ ପରିଣତ କରିବା ପାଇଁ ବକ୍ତବ୍ୟ ସ୍ୱୀକୃତି ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ସ୍ୱରକୁ ପାଠ୍ୟରେ ପରିଣତ କରିବା ପାଇଁ ବକ୍ତବ୍ୟ ସ୍ୱୀକୃତି ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "آواز کو متن میں تبدیل کرنے کے لیے اسپیچ ریکگنیشن کی اجازت درکار ہے۔",
+    "zh_Hant": "需要語音辨識權限才能將語音轉換為文字。"
   },
   "voice_micPermissionNeeded": {
     "en": "Microphone permission is needed to use voice.",
@@ -2221,7 +2435,9 @@
     "pt": "A permissão do microfone é necessária para usar voz.",
     "ja": "音声機能を利用するにはマイクの権限が必要です。",
     "zh": "使用语音功能需要麦克风权限。",
-    "or": "ସ୍ୱର ବ୍ୟବହାର କରିବାକୁ ମାଇକ୍ରୋଫୋନ୍ ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ସ୍ୱର ବ୍ୟବହାର କରିବାକୁ ମାଇକ୍ରୋଫୋନ୍ ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "آواز استعمال کرنے کے لیے مائیکروفون کی اجازت درکار ہے۔",
+    "zh_Hant": "使用語音需要麥克風許可。"
   },
   "voice_permissionRequired": {
     "en": "Permission Required",
@@ -2241,7 +2457,9 @@
     "pt": "Permissão Necessária",
     "ja": "権限が必要です",
     "zh": "需要权限",
-    "or": "ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "اجازت درکار ہے۔",
+    "zh_Hant": "需要許可"
   },
   "voice_openSettings": {
     "en": "Open settings",
@@ -2261,7 +2479,9 @@
     "pt": "Abrir configurações",
     "ja": "設定を開く",
     "zh": "打开设置",
-    "or": "ସେଟିଂସମୂହ ଖୋଲନ୍ତୁ |"
+    "or": "ସେଟିଂସମୂହ ଖୋଲନ୍ତୁ |",
+    "ur": "ترتیبات کھولیں۔",
+    "zh_Hant": "開啟設定"
   },
   "voice_voiceToText": {
     "en": "Voice to Text",
@@ -2281,7 +2501,9 @@
     "pt": "Voz para Texto",
     "ja": "音声入力",
     "zh": "语音转文字",
-    "or": "ଭଏସ୍ ଟୁ ଟେକ୍ସଟ୍ |"
+    "or": "ଭଏସ୍ ଟୁ ଟେକ୍ସଟ୍ |",
+    "ur": "وائس ٹو ٹیکسٹ",
+    "zh_Hant": "語音轉文字"
   },
   "voice_voiceToTextSubtitle": {
     "en": "Speak and type into the message box",
@@ -2301,7 +2523,9 @@
     "pt": "Fale para digitar na caixa de mensagens",
     "ja": "話してメッセージを入力",
     "zh": "说话即可自动转换为文字输入",
-    "or": "ବାର୍ତ୍ତା ବାକ୍ସରେ କୁହ ଏବଂ ଟାଇପ୍ କର |"
+    "or": "ବାର୍ତ୍ତା ବାକ୍ସରେ କୁହ ଏବଂ ଟାଇପ୍ କର |",
+    "ur": "میسج باکس میں بولیں اور ٹائپ کریں۔",
+    "zh_Hant": "說話並在訊息框中輸入內容"
   },
   "voice_recordVoice": {
     "en": "Record Voice",
@@ -2321,7 +2545,9 @@
     "pt": "Gravar Voz",
     "ja": "音声を録音",
     "zh": "录制语音",
-    "or": "ଭଏସ୍ ରେକର୍ଡ କରନ୍ତୁ |"
+    "or": "ଭଏସ୍ ରେକର୍ଡ କରନ୍ତୁ |",
+    "ur": "آواز ریکارڈ کریں۔",
+    "zh_Hant": "錄音"
   },
   "voice_recordVoiceSubtitle": {
     "en": "Record and send as an audio message",
@@ -2341,7 +2567,9 @@
     "pt": "Grave e envie como mensagem de voz",
     "ja": "録音してボイスメッセージとして送信",
     "zh": "录制并发送为语音消息",
-    "or": "ଏକ ଅଡିଓ ବାର୍ତ୍ତା ଭାବରେ ରେକର୍ଡ ଏବଂ ପଠାନ୍ତୁ |"
+    "or": "ଏକ ଅଡିଓ ବାର୍ତ୍ତା ଭାବରେ ରେକର୍ଡ ଏବଂ ପଠାନ୍ତୁ |",
+    "ur": "ریکارڈ کریں اور بطور آڈیو پیغام بھیجیں۔",
+    "zh_Hant": "錄製並作為音訊訊息發送"
   },
   "voice_chooseSpeechLanguage": {
     "en": "Choose Speech Language",
@@ -2361,7 +2589,9 @@
     "pt": "Escolher Idioma da Fala",
     "ja": "音声認識の言語を選択",
     "zh": "选择语音识别语言",
-    "or": "ବକ୍ତୃତା ଭାଷା ବାଛନ୍ତୁ |"
+    "or": "ବକ୍ତୃତା ଭାଷା ବାଛନ୍ତୁ |",
+    "ur": "تقریر کی زبان کا انتخاب کریں۔",
+    "zh_Hant": "選擇語音語言"
   },
   "voice_appLanguage": {
     "en": "App language",
@@ -2381,7 +2611,9 @@
     "pt": "Idioma do app",
     "ja": "アプリの言語",
     "zh": "应用语言",
-    "or": "ଆପ୍ ଭାଷା |"
+    "or": "ଆପ୍ ଭାଷା |",
+    "ur": "ایپ کی زبان",
+    "zh_Hant": "應用語言"
   },
   "voice_listening": {
     "en": "Listening…",
@@ -2401,7 +2633,9 @@
     "pt": "Ouvindo…",
     "ja": "聞き取り中…",
     "zh": "正在聆听…",
-    "or": "ଶୁଣିବା…"
+    "or": "ଶୁଣିବା…",
+    "ur": "سن رہا ہے…",
+    "zh_Hant": "正在聽…"
   },
   "voice_speakPlaceholder": {
     "en": "Speak… your text will appear here",
@@ -2421,7 +2655,9 @@
     "pt": "Fale… seu texto aparecerá aqui",
     "ja": "話してください… ここに文字が表示されます",
     "zh": "请说话… 转换的文字将显示在此处",
-    "or": "କୁହ… ତୁମର ପାଠ ଏଠାରେ ଦେଖାଯିବ |"
+    "or": "କୁହ… ତୁମର ପାଠ ଏଠାରେ ଦେଖାଯିବ |",
+    "ur": "بولیں… آپ کا متن یہاں ظاہر ہوگا۔",
+    "zh_Hant": "說…您的文字將出現在此處"
   },
   "voice_tapToStop": {
     "en": "Tap to stop",
@@ -2441,7 +2677,9 @@
     "pt": "Toque para parar",
     "ja": "タップして停止",
     "zh": "点击停止",
-    "or": "ବନ୍ଦ କରିବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ |"
+    "or": "ବନ୍ଦ କରିବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ |",
+    "ur": "روکنے کے لیے تھپتھپائیں۔",
+    "zh_Hant": "點擊停止"
   },
   "voice_language": {
     "en": "Language",
@@ -2461,7 +2699,9 @@
     "pt": "Idioma",
     "ja": "言語",
     "zh": "语言",
-    "or": "ଭାଷା"
+    "or": "ଭାଷା",
+    "ur": "زبان",
+    "zh_Hant": "語言"
   },
   "voice_recordingYourVoice": {
     "en": "Recording your voice…",
@@ -2481,7 +2721,9 @@
     "pt": "Gravando sua voz…",
     "ja": "音声を録音中…",
     "zh": "正在录制您的语音…",
-    "or": "ତୁମର ସ୍ୱର ରେକର୍ଡିଂ…"
+    "or": "ତୁମର ସ୍ୱର ରେକର୍ଡିଂ…",
+    "ur": "آپ کی آواز ریکارڈ کی جا رہی ہے…",
+    "zh_Hant": "錄製你的聲音..."
   },
   "voice_audioChip": {
     "en": "AUDIO",
@@ -2501,7 +2743,9 @@
     "pt": "ÁUDIO",
     "ja": "音声",
     "zh": "音频",
-    "or": "ଅଡିଓ"
+    "or": "ଅଡିଓ",
+    "ur": "آڈیو",
+    "zh_Hant": "聲音的"
   },
   "voice_type": {
     "en": "Type",
@@ -2522,7 +2766,9 @@
     "pt": "Tipo",
     "ja": "タイプ",
     "zh": "类型",
-    "or": "ଟାଇପ୍ କରନ୍ତୁ |"
+    "or": "ଟାଇପ୍ କରନ୍ତୁ |",
+    "ur": "قسم",
+    "zh_Hant": "類型"
   },
   "voice_replyReady": {
     "en": "Reply ready",
@@ -2542,7 +2788,9 @@
     "pt": "Resposta pronta",
     "ja": "返信準備完了",
     "zh": "回复已准备就绪",
-    "or": "ପ୍ରସ୍ତୁତ ଉତ୍ତର ଦିଅ |"
+    "or": "ପ୍ରସ୍ତୁତ ଉତ୍ତର ଦିଅ |",
+    "ur": "جواب تیار ہے۔",
+    "zh_Hant": "回覆已準備好"
   },
   "voice_captionReady": {
     "en": "Caption ready",
@@ -2562,7 +2810,9 @@
     "pt": "Legenda pronta",
     "ja": "キャプション準備完了",
     "zh": "说明文字已准备就绪",
-    "or": "କ୍ୟାପସନ୍ ପ୍ରସ୍ତୁତ |"
+    "or": "କ୍ୟାପସନ୍ ପ୍ରସ୍ତୁତ |",
+    "ur": "کیپشن تیار ہے۔",
+    "zh_Hant": "字幕已準備好"
   },
   "voice_textReady": {
     "en": "Text ready",
@@ -2582,7 +2832,9 @@
     "pt": "Texto pronto",
     "ja": "テキスト準備完了",
     "zh": "文字已生成",
-    "or": "ପାଠ ପ୍ରସ୍ତୁତ |"
+    "or": "ପାଠ ପ୍ରସ୍ତୁତ |",
+    "ur": "متن تیار ہے۔",
+    "zh_Hant": "文字準備好"
   },
   "voice_listenBack": {
     "en": "Listen back",
@@ -2602,7 +2854,9 @@
     "pt": "Ouvir gravação",
     "ja": "聞き直す",
     "zh": "试听录音",
-    "or": "ପୁନର୍ବାର ଶୁଣ |"
+    "or": "ପୁନର୍ବାର ଶୁଣ |",
+    "ur": "واپس سنو",
+    "zh_Hant": "回聽"
   },
   "voice_yourMessage": {
     "en": "Your message",
@@ -2622,7 +2876,9 @@
     "pt": "Sua mensagem",
     "ja": "あなたのメッセージ",
     "zh": "您的消息",
-    "or": "ତୁମର ବାର୍ତ୍ତା"
+    "or": "ତୁମର ବାର୍ତ୍ତା",
+    "ur": "آپ کا پیغام",
+    "zh_Hant": "您的留言"
   },
   "voice_noTextCaptured": {
     "en": "No text captured — try re-recording.",
@@ -2642,7 +2898,9 @@
     "pt": "Nenhum texto capturado — tente gravar novamente.",
     "ja": "テキストを取得できませんでした。録音し直してください。",
     "zh": "未能获取文本，请尝试重新录制。",
-    "or": "କ text ଣସି ପାଠ୍ୟ ଧରାଯାଇ ନାହିଁ - ପୁନ - ରେକର୍ଡିଂ କରିବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "କ text ଣସି ପାଠ୍ୟ ଧରାଯାଇ ନାହିଁ - ପୁନ - ରେକର୍ଡିଂ କରିବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "کوئی متن نہیں پکڑا گیا — دوبارہ ریکارڈ کرنے کی کوشش کریں۔",
+    "zh_Hant": "未捕獲任何文字 - 嘗試重新錄製。"
   },
   "voice_reviewTextHint": {
     "en": "Listen to your voice above, or edit the text in the message box before sending.",
@@ -2662,7 +2920,9 @@
     "pt": "Ouça sua voz acima ou edite o texto na caixa antes de enviar.",
     "ja": "上の音声を再生して確認するか、送信前に入力ボックスで編集できます。",
     "zh": "可在上方试听语音，或在发送前于输入框中校对修改文字。",
-    "or": "ଉପରେ ତୁମର ସ୍ୱର ଶୁଣ, କିମ୍ବା ପଠାଇବା ପୂର୍ବରୁ ମେସେଜ୍ ବକ୍ସରେ ଥିବା ଟେକ୍ସଟ୍ ଏଡିଟ୍ କର |"
+    "or": "ଉପରେ ତୁମର ସ୍ୱର ଶୁଣ, କିମ୍ବା ପଠାଇବା ପୂର୍ବରୁ ମେସେଜ୍ ବକ୍ସରେ ଥିବା ଟେକ୍ସଟ୍ ଏଡିଟ୍ କର |",
+    "ur": "اوپر اپنی آواز سنیں، یا بھیجنے سے پہلے میسج باکس میں متن میں ترمیم کریں۔",
+    "zh_Hant": "聆聽上面的聲音，或在發送前編輯訊息框中的文字。"
   },
   "voice_reRecord": {
     "en": "Re-record",
@@ -2682,7 +2942,9 @@
     "pt": "Gravar Novamente",
     "ja": "再録音",
     "zh": "重新录制",
-    "or": "ପୁନ record ରେକର୍ଡ କରନ୍ତୁ |"
+    "or": "ପୁନ record ରେକର୍ଡ କରନ୍ତୁ |",
+    "ur": "دوبارہ ریکارڈ کریں۔",
+    "zh_Hant": "重新錄製"
   },
   "voice_sendMessage": {
     "en": "Send message",
@@ -2702,7 +2964,9 @@
     "pt": "Enviar mensagem",
     "ja": "メッセージを送信",
     "zh": "发送消息",
-    "or": "ବାର୍ତ୍ତା ପଠାନ୍ତୁ |"
+    "or": "ବାର୍ତ୍ତା ପଠାନ୍ତୁ |",
+    "ur": "پیغام بھیجیں۔",
+    "zh_Hant": "發送訊息"
   },
   "voice_yourVoiceMessage": {
     "en": "Your voice message",
@@ -2722,7 +2986,9 @@
     "pt": "Sua mensagem de voz",
     "ja": "あなたのボイスメッセージ",
     "zh": "您的语音消息",
-    "or": "ତୁମର ସ୍ୱର ବାର୍ତ୍ତା"
+    "or": "ତୁମର ସ୍ୱର ବାର୍ତ୍ତା",
+    "ur": "آپ کا صوتی پیغام",
+    "zh_Hant": "你的語音留言"
   },
   "voice_readyToSend": {
     "en": "Ready to send",
@@ -2742,7 +3008,9 @@
     "pt": "Pronto para enviar",
     "ja": "送信の準備ができました",
     "zh": "准备发送",
-    "or": "ପଠାଇବାକୁ ପ୍ରସ୍ତୁତ |"
+    "or": "ପଠାଇବାକୁ ପ୍ରସ୍ତୁତ |",
+    "ur": "بھیجنے کے لیے تیار ہیں۔",
+    "zh_Hant": "準備發送"
   },
   "voice_listenBeforeSending": {
     "en": "Listen before sending your voice message.",
@@ -2762,7 +3030,9 @@
     "pt": "Ouça antes de enviar sua mensagem de voz.",
     "ja": "送信前にボイスメッセージを試聴できます。",
     "zh": "在发出前可先试听您的语音消息。",
-    "or": "ତୁମର ସ୍ୱର ବାର୍ତ୍ତା ପଠାଇବା ପୂର୍ବରୁ ଶୁଣ |"
+    "or": "ତୁମର ସ୍ୱର ବାର୍ତ୍ତା ପଠାଇବା ପୂର୍ବରୁ ଶୁଣ |",
+    "ur": "اپنا صوتی پیغام بھیجنے سے پہلے سن لیں۔",
+    "zh_Hant": "在發送語音訊息之前先聽一下。"
   },
   "voice_sendVoiceMessage": {
     "en": "Send voice message",
@@ -2782,7 +3052,9 @@
     "pt": "Enviar mensagem de voz",
     "ja": "ボイスメッセージを送信",
     "zh": "发送语音消息",
-    "or": "ଭଏସ୍ ମେସେଜ୍ ପଠାନ୍ତୁ |"
+    "or": "ଭଏସ୍ ମେସେଜ୍ ପଠାନ୍ତୁ |",
+    "ur": "صوتی پیغام بھیجیں۔",
+    "zh_Hant": "傳送語音訊息"
   },
   "track_offlineBanner": {
     "en": "No internet connection. Map & tracking are offline.",
@@ -2802,7 +3074,9 @@
     "pt": "Sem conexão com a internet. Mapa e rastreamento estão offline.",
     "ja": "インターネット未接続。地図と追跡機能はオフラインです。",
     "zh": "无网络连接，地图与追踪当前处于离线模式。",
-    "or": "କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ | ମାନଚିତ୍ର ଏବଂ ଟ୍ରାକିଂ ଅଫଲାଇନରେ ଅଛି |"
+    "or": "କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ | ମାନଚିତ୍ର ଏବଂ ଟ୍ରାକିଂ ଅଫଲାଇନରେ ଅଛି |",
+    "ur": "انٹرنیٹ کنکشن نہیں ہے۔ نقشہ اور ٹریکنگ آف لائن ہیں۔",
+    "zh_Hant": "沒有網路連線。地圖和追蹤處於離線狀態。"
   },
   "track_searchHint": {
     "en": "Search members or groups...",
@@ -2822,7 +3096,9 @@
     "pt": "Pesquisar membros ou grupos...",
     "ja": "メンバーまたはグループを検索...",
     "zh": "搜索成员或群组...",
-    "or": "ସଦସ୍ୟ କିମ୍ବା ଗୋଷ୍ଠୀ ଖୋଜ ..."
+    "or": "ସଦସ୍ୟ କିମ୍ବା ଗୋଷ୍ଠୀ ଖୋଜ ...",
+    "ur": "ممبران یا گروپس تلاش کریں...",
+    "zh_Hant": "搜尋成員或群組..."
   },
   "track_noSearchMatches": {
     "en": "No members or groups matching",
@@ -2847,7 +3123,9 @@
     "pt": "Nenhum membro ou grupo correspondente",
     "ja": "一致するメンバーまたはグループがありません",
     "zh": "未找到匹配的成员或群组",
-    "or": "କ members ଣସି ସଦସ୍ୟ କିମ୍ବା ଗୋଷ୍ଠୀ ମେଳ ଖାଉ ନାହାଁନ୍ତି |"
+    "or": "କ members ଣସି ସଦସ୍ୟ କିମ୍ବା ଗୋଷ୍ଠୀ ମେଳ ଖାଉ ନାହାଁନ୍ତି |",
+    "ur": "کوئی ممبر یا گروپ مماثل نہیں ہے۔",
+    "zh_Hant": "沒有符合的成員或群組"
   },
   "track_membersHeader": {
     "en": "MEMBERS ({count})",
@@ -2872,7 +3150,9 @@
     "pt": "MEMBROS ({count})",
     "ja": "メンバー ({count})",
     "zh": "成员 ({count})",
-    "or": "ସଦସ୍ୟ ({count})"
+    "or": "ସଦସ୍ୟ ({count})",
+    "ur": "ممبرز ({count})",
+    "zh_Hant": "會員 ({count})"
   },
   "track_groupsHeader": {
     "en": "GROUPS ({count})",
@@ -2897,7 +3177,9 @@
     "pt": "GRUPOS ({count})",
     "ja": "グループ ({count})",
     "zh": "群组 ({count})",
-    "or": "ଗୋଷ୍ଠୀ ({count})"
+    "or": "ଗୋଷ୍ଠୀ ({count})",
+    "ur": "گروپس ({count})",
+    "zh_Hant": "團體 ({count})"
   },
   "track_unnamedGroup": {
     "en": "Unnamed Group",
@@ -2917,7 +3199,9 @@
     "pt": "Grupo sem nome",
     "ja": "名前なしグループ",
     "zh": "未命名群组",
-    "or": "ନାମହୀନ ଗୋଷ୍ଠୀ |"
+    "or": "ନାମହୀନ ଗୋଷ୍ଠୀ |",
+    "ur": "بے نام گروپ",
+    "zh_Hant": "未命名團體"
   },
   "track_groupMembersAndCode": {
     "en": "{count, plural, =1{1 member • Code: {code}} other{{count} members • Code: {code}}}",
@@ -2945,7 +3229,9 @@
     "pt": "{count, plural, =1{1 membro • Código: {code}} other{{count} membros • Código: {code}}}",
     "ja": "{count}名のメンバー • コード: {code}",
     "zh": "{count} 名成员 • 代码：{code}",
-    "or": "{count, plural, =1{1 ସଦସ୍ୟ • କୋଡ୍: {code}} other{{count} ସଦସ୍ୟ • ସଂକେତ: {code}}}"
+    "or": "{count, plural, =1{1 ସଦସ୍ୟ • କୋଡ୍: {code}} other{{count} ସଦସ୍ୟ • ସଂକେତ: {code}}}",
+    "ur": "{count, plural, =1{1 رکن • کوڈ: {code}} other{{count} اراکین • کوڈ: {code}}}",
+    "zh_Hant": "{count, plural, =1{1 名成員 • 代碼：{code}} other{{count} 成員 • 代碼：{code}}}"
   },
   "track_notAvailable": {
     "en": "N/A",
@@ -2966,7 +3252,9 @@
     "pt": "N/D",
     "ja": "なし",
     "zh": "无",
-    "or": "N / A"
+    "or": "N / A",
+    "ur": "N/A",
+    "zh_Hant": "不適用"
   },
   "track_mapUnavailableOffline": {
     "en": "Map Unavailable Offline",
@@ -2986,7 +3274,9 @@
     "pt": "Mapa Indisponível Offline",
     "ja": "オフラインのため地図を表示できません",
     "zh": "离线状态下地图不可用",
-    "or": "ମାନଚିତ୍ର ଉପଲବ୍ଧ ନାହିଁ ଅଫଲାଇନ୍ |"
+    "or": "ମାନଚିତ୍ର ଉପଲବ୍ଧ ନାହିଁ ଅଫଲାଇନ୍ |",
+    "ur": "نقشہ آف لائن دستیاب نہیں ہے۔",
+    "zh_Hant": "地圖無法離線使用"
   },
   "track_mapOfflineBody": {
     "en": "Internet connection is required to load live map data and real-time member locations.",
@@ -3006,7 +3296,9 @@
     "pt": "Conexão com a internet necessária para carregar mapa e localizações em tempo real.",
     "ja": "リアルタイムの地図データとメンバー位置情報を読み込むにはインターネット接続が必要です。",
     "zh": "需要连接网络以加载实时地图数据及成员位置。",
-    "or": "ଲାଇଭ୍ ମ୍ୟାପ୍ ଡାଟା ଏବଂ ରିଅଲ୍-ଟାଇମ୍ ସଦସ୍ୟ ଅବସ୍ଥାନ ଲୋଡ୍ କରିବାକୁ ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ଆବଶ୍ୟକ |"
+    "or": "ଲାଇଭ୍ ମ୍ୟାପ୍ ଡାଟା ଏବଂ ରିଅଲ୍-ଟାଇମ୍ ସଦସ୍ୟ ଅବସ୍ଥାନ ଲୋଡ୍ କରିବାକୁ ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ଆବଶ୍ୟକ |",
+    "ur": "لائیو میپ ڈیٹا اور ریئل ٹائم ممبر لوکیشن لوڈ کرنے کے لیے انٹرنیٹ کنکشن کی ضرورت ہے۔",
+    "zh_Hant": "需要網路連線來載入即時地圖資料和即時會員位置。"
   },
   "track_retryConnection": {
     "en": "Retry Connection",
@@ -3026,7 +3318,9 @@
     "pt": "Tentar Conexão Novamente",
     "ja": "再接続する",
     "zh": "重试连接",
-    "or": "ସଂଯୋଗ ପୁନ ry ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ସଂଯୋଗ ପୁନ ry ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "کنکشن کی دوبارہ کوشش کریں۔",
+    "zh_Hant": "重試連接"
   },
   "track_custom": {
     "en": "Custom",
@@ -3047,7 +3341,9 @@
     "pt": "Personalizado",
     "ja": "カスタム",
     "zh": "自定义",
-    "or": "କଷ୍ଟମ୍"
+    "or": "କଷ୍ଟମ୍",
+    "ur": "حسب ضرورت",
+    "zh_Hant": "風俗"
   },
   "track_customWithValue": {
     "en": "Custom ({radius})",
@@ -3072,7 +3368,9 @@
     "pt": "Personalizado ({radius})",
     "ja": "カスタム ({radius})",
     "zh": "自定义 ({radius})",
-    "or": "କଷ୍ଟମ୍ ({radius})"
+    "or": "କଷ୍ଟମ୍ ({radius})",
+    "ur": "حسب ضرورت ({radius})",
+    "zh_Hant": "自訂 ({radius})"
   },
   "track_setRadiusTitle": {
     "en": "Set Tracking Radius",
@@ -3092,7 +3390,9 @@
     "pt": "Definir Raio de Rastreamento",
     "ja": "追跡範囲を設定",
     "zh": "设置追踪半径",
-    "or": "ଟ୍ରାକିଂ ରେଡିଓ ସେଟ୍ କରନ୍ତୁ |"
+    "or": "ଟ୍ରାକିଂ ରେଡିଓ ସେଟ୍ କରନ୍ତୁ |",
+    "ur": "ٹریکنگ ریڈیس سیٹ کریں۔",
+    "zh_Hant": "設定跟踪半徑"
   },
   "track_setRadiusSubtitle": {
     "en": "Slide to select area radius",
@@ -3112,7 +3412,9 @@
     "pt": "Deslize para selecionar o raio da área",
     "ja": "スライダーで半径を選択してください",
     "zh": "滑动滑块选择区域半径",
-    "or": "କ୍ଷେତ୍ର ପରିସରକୁ ବାଛିବା ପାଇଁ ସ୍ଲାଇଡ୍ |"
+    "or": "କ୍ଷେତ୍ର ପରିସରକୁ ବାଛିବା ପାଇଁ ସ୍ଲାଇଡ୍ |",
+    "ur": "علاقے کے رداس کو منتخب کرنے کے لیے سلائیڈ کریں۔",
+    "zh_Hant": "滑動選擇區域半徑"
   },
   "track_selectedLocation": {
     "en": "Selected Location",
@@ -3132,7 +3434,9 @@
     "pt": "Local Selecionado",
     "ja": "選択した場所",
     "zh": "选定位置",
-    "or": "ମନୋନୀତ ସ୍ଥାନ"
+    "or": "ମନୋନୀତ ସ୍ଥାନ",
+    "ur": "منتخب کردہ مقام",
+    "zh_Hant": "選定地點"
   },
   "track_currentLocation": {
     "en": "Current Location",
@@ -3152,7 +3456,9 @@
     "pt": "Localização Atual",
     "ja": "現在地",
     "zh": "当前位置",
-    "or": "ସାମ୍ପ୍ରତିକ ଅବସ୍ଥାନ"
+    "or": "ସାମ୍ପ୍ରତିକ ଅବସ୍ଥାନ",
+    "ur": "موجودہ مقام",
+    "zh_Hant": "目前位置"
   },
   "track_radius": {
     "en": "Radius",
@@ -3172,7 +3478,9 @@
     "pt": "Raio",
     "ja": "半径",
     "zh": "半径",
-    "or": "ରେଡିଓ"
+    "or": "ରେଡିଓ",
+    "ur": "رداس",
+    "zh_Hant": "半徑"
   },
   "track_applyRadius": {
     "en": "Apply Radius",
@@ -3192,7 +3500,9 @@
     "pt": "Aplicar Raio",
     "ja": "半径を適用",
     "zh": "应用半径",
-    "or": "ରେଡିଓ ପ୍ରୟୋଗ କରନ୍ତୁ |"
+    "or": "ରେଡିଓ ପ୍ରୟୋଗ କରନ୍ତୁ |",
+    "ur": "رداس کا اطلاق کریں۔",
+    "zh_Hant": "應用半徑"
   },
   "track_membersLive": {
     "en": "{count, plural, =1{1 Member Live} other{{count} Members Live}}",
@@ -3217,7 +3527,9 @@
     "pt": "{count, plural, =1{1 membro ao vivo} other{{count} membros ao vivo}}",
     "ja": "{count}名がライブ配信中",
     "zh": "{count} 位成员在线",
-    "or": "{count, plural, =1{1 ସଦସ୍ୟ ଲାଇଭ୍ |} other{{count} ସଦସ୍ୟମାନେ ଜୀବନ୍ତ |}}"
+    "or": "{count, plural, =1{1 ସଦସ୍ୟ ଲାଇଭ୍ |} other{{count} ସଦସ୍ୟମାନେ ଜୀବନ୍ତ |}}",
+    "ur": "{count, plural, =1{1 رکن لائیو} other{{count} اراکین لائیو}}",
+    "zh_Hant": "{count, plural, =1{1 位會員直播} other{{count} 會員直播}}"
   },
   "track_liveTracking": {
     "en": "Live Tracking",
@@ -3237,7 +3549,9 @@
     "pt": "Rastreamento ao Vivo",
     "ja": "ライブ追跡",
     "zh": "实时追踪",
-    "or": "ଲାଇଭ୍ ଟ୍ରାକିଂ |"
+    "or": "ଲାଇଭ୍ ଟ୍ରାକିଂ |",
+    "ur": "لائیو ٹریکنگ",
+    "zh_Hant": "即時追蹤"
   },
   "track_groupTab": {
     "en": "Group",
@@ -3258,7 +3572,9 @@
     "pt": "Grupo",
     "ja": "グループ",
     "zh": "群组",
-    "or": "ଗୋଷ୍ଠୀ"
+    "or": "ଗୋଷ୍ଠୀ",
+    "ur": "گروپ",
+    "zh_Hant": "團體"
   },
   "track_liveMembers": {
     "en": "Live Members",
@@ -3278,7 +3594,9 @@
     "pt": "Membros ao Vivo",
     "ja": "ライブ中のメンバー",
     "zh": "在线成员",
-    "or": "ଜୀବନ୍ତ ସଦସ୍ୟମାନେ |"
+    "or": "ଜୀବନ୍ତ ସଦସ୍ୟମାନେ |",
+    "ur": "لائیو ممبرز",
+    "zh_Hant": "現場會員"
   },
   "track_liveCount": {
     "en": "{count} Live",
@@ -3303,7 +3621,9 @@
     "pt": "{count} Ao Vivo",
     "ja": "{count}名 ライブ中",
     "zh": "{count} 在线",
-    "or": "{count} ଲାଇଭ୍ |"
+    "or": "{count} ଲାଇଭ୍ |",
+    "ur": "{count} لائیو",
+    "zh_Hant": "{count} 直播"
   },
   "track_refreshing": {
     "en": "Refreshing...",
@@ -3323,7 +3643,9 @@
     "pt": "Atualizando...",
     "ja": "更新中...",
     "zh": "正在刷新...",
-    "or": "ସତେଜ ..."
+    "or": "ସତେଜ ...",
+    "ur": "ریفریش ہو رہا ہے...",
+    "zh_Hant": "清爽..."
   },
   "track_refresh": {
     "en": "Refresh",
@@ -3343,7 +3665,9 @@
     "pt": "Atualizar",
     "ja": "更新",
     "zh": "刷新",
-    "or": "ସତେଜ କରନ୍ତୁ |"
+    "or": "ସତେଜ କରନ୍ତୁ |",
+    "ur": "ریفریش کریں۔",
+    "zh_Hant": "重新整理"
   },
   "track_noInternetTitle": {
     "en": "No Internet Connection",
@@ -3363,7 +3687,9 @@
     "pt": "Sem Conexão com a Internet",
     "ja": "インターネット未接続",
     "zh": "无网络连接",
-    "or": "କ Internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ |"
+    "or": "କ Internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ |",
+    "ur": "کوئی انٹرنیٹ کنکشن نہیں ہے۔",
+    "zh_Hant": "無網路連線"
   },
   "track_noMembersFound": {
     "en": "No Members Found",
@@ -3383,7 +3709,9 @@
     "pt": "Nenhum membro encontrado",
     "ja": "メンバーが見つかりません",
     "zh": "未找到成员",
-    "or": "କ Members ଣସି ସଦସ୍ୟ ମିଳିଲା ନାହିଁ |"
+    "or": "କ Members ଣସି ସଦସ୍ୟ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی ممبر نہیں ملا",
+    "zh_Hant": "未找到會員"
   },
   "track_unableToLoadMembers": {
     "en": "Unable to Load Members",
@@ -3403,7 +3731,9 @@
     "pt": "Não foi possível carregar os membros",
     "ja": "メンバーを読み込めません",
     "zh": "加载成员列表失败",
-    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଧାରଣ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଧାରଣ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "اراکین کو لوڈ کرنے سے قاصر",
+    "zh_Hant": "無法載入會員"
   },
   "track_noActiveMembers": {
     "en": "No Active Members",
@@ -3423,7 +3753,9 @@
     "pt": "Nenhum membro ativo",
     "ja": "アクティブなメンバーはいません",
     "zh": "暂无活跃成员",
-    "or": "କ No ଣସି ସକ୍ରିୟ ସଦସ୍ୟ ନାହିଁ |"
+    "or": "କ No ଣସି ସକ୍ରିୟ ସଦସ୍ୟ ନାହିଁ |",
+    "ur": "کوئی ایکٹیو ممبر نہیں۔",
+    "zh_Hant": "沒有活躍會員"
   },
   "track_checkNetworkMembers": {
     "en": "Please check your network and try again to view nearby members.",
@@ -3443,7 +3775,9 @@
     "pt": "Verifique sua rede e tente novamente para ver membros próximos.",
     "ja": "近くのメンバーを表示するにはネットワークを確認して再試行してください。",
     "zh": "请检查网络连接后重试以查看附近成员。",
-    "or": "ଦୟାକରି ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ନିକଟସ୍ଥ ସଦସ୍ୟମାନଙ୍କୁ ଦେଖିବାକୁ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ନିକଟସ୍ଥ ସଦସ୍ୟମାନଙ୍କୁ ଦେଖିବାକୁ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "براہ کرم اپنا نیٹ ورک چیک کریں اور قریبی اراکین کو دیکھنے کے لیے دوبارہ کوشش کریں۔",
+    "zh_Hant": "請檢查您的網路並再次嘗試查看附近的成員。"
   },
   "track_noMembersMatch": {
     "en": "No members match '{query}'",
@@ -3468,7 +3802,9 @@
     "pt": "Nenhum membro corresponde a '{query}'",
     "ja": "'{query}' に一致するメンバーはいません",
     "zh": "未找到匹配“{query}”的成员",
-    "or": "କ members ଣସି ସଦସ୍ୟ '{query}' ସହିତ ମେଳ ଖାଉ ନାହାଁନ୍ତି |"
+    "or": "କ members ଣସି ସଦସ୍ୟ '{query}' ସହିତ ମେଳ ଖାଉ ନାହାଁନ୍ତି |",
+    "ur": "کوئی ممبر '{query}' سے مماثل نہیں ہے",
+    "zh_Hant": " {query}"
   },
   "track_noActiveMembersWithin": {
     "en": "No active members found within {radius}",
@@ -3493,7 +3829,9 @@
     "pt": "Nenhum membro ativo encontrado dentro de {radius}",
     "ja": "{radius}以内にアクティブなメンバーはいません",
     "zh": "在 {radius} 范围内未发现活跃成员",
-    "or": "{radius} ମଧ୍ୟରେ କ active ଣସି ସକ୍ରିୟ ସଦସ୍ୟ ମିଳିଲା ନାହିଁ |"
+    "or": "{radius} ମଧ୍ୟରେ କ active ଣସି ସକ୍ରିୟ ସଦସ୍ୟ ମିଳିଲା ନାହିଁ |",
+    "ur": "{radius} کے اندر کوئی فعال ممبر نہیں ملا",
+    "zh_Hant": "在 {radius} 中找不到活躍成員"
   },
   "track_yourGroups": {
     "en": "Your Groups",
@@ -3513,7 +3851,9 @@
     "pt": "Seus Grupos",
     "ja": "所属グループ",
     "zh": "您的群组",
-    "or": "ଆପଣଙ୍କର ଗୋଷ୍ଠୀଗୁଡିକ"
+    "or": "ଆପଣଙ୍କର ଗୋଷ୍ଠୀଗୁଡିକ",
+    "ur": "آپ کے گروپس",
+    "zh_Hant": "您的群組"
   },
   "track_groupsCount": {
     "en": "{count, plural, =1{1 Group} other{{count} Groups}}",
@@ -3538,7 +3878,9 @@
     "pt": "{count, plural, =1{1 grupo} other{{count} grupos}}",
     "ja": "{count}個のグループ",
     "zh": "{count} 个群组",
-    "or": "{count, plural, =1{1 ଗୋଷ୍ଠୀ} other{{count} ଗୋଷ୍ଠୀ |}}"
+    "or": "{count, plural, =1{1 ଗୋଷ୍ଠୀ} other{{count} ଗୋଷ୍ଠୀ |}}",
+    "ur": "{count, plural, =1{1 گروپ} other{{count} گروپس}}",
+    "zh_Hant": "{count, plural, =1{1組} other{{count} 組}}"
   },
   "track_noGroupsMatch": {
     "en": "No Groups Match",
@@ -3558,7 +3900,9 @@
     "pt": "Nenhum grupo correspondente",
     "ja": "一致するグループがありません",
     "zh": "未找到匹配的群组",
-    "or": "କ Gr ଣସି ଗୋଷ୍ଠୀ ମେଳ ନାହିଁ |"
+    "or": "କ Gr ଣସି ଗୋଷ୍ଠୀ ମେଳ ନାହିଁ |",
+    "ur": "کوئی گروپ میچ نہیں",
+    "zh_Hant": "沒有分組匹配"
   },
   "track_unableToLoadGroups": {
     "en": "Unable to Load Groups",
@@ -3578,7 +3922,9 @@
     "pt": "Não foi possível carregar os grupos",
     "ja": "グループを読み込めません",
     "zh": "加载群组失败",
-    "or": "ଗୋଷ୍ଠୀ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଗୋଷ୍ଠୀ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "گروپس لوڈ کرنے سے قاصر",
+    "zh_Hant": "無法載入群組"
   },
   "track_noGroupsFound": {
     "en": "No Groups Found",
@@ -3598,7 +3944,9 @@
     "pt": "Nenhum grupo encontrado",
     "ja": "グループが見つかりません",
     "zh": "未找到群组",
-    "or": "କ Gr ଣସି ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |"
+    "or": "କ Gr ଣସି ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی گروپ نہیں ملا",
+    "zh_Hant": "未找到群組"
   },
   "track_checkNetworkConnection": {
     "en": "Please check your network connection and try again.",
@@ -3618,7 +3966,9 @@
     "pt": "Verifique sua conexão de rede e tente novamente.",
     "ja": "ネットワーク接続を確認して再試行してください。",
     "zh": "请检查网络连接后重试。",
-    "or": "ଦୟାକରି ଆପଣଙ୍କର ନେଟୱର୍କ ସଂଯୋଗ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ଆପଣଙ୍କର ନେଟୱର୍କ ସଂଯୋଗ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "براہ کرم اپنا نیٹ ورک کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
+    "zh_Hant": "請檢查您的網路連線並重試。"
   },
   "track_noGroupsMatchQuery": {
     "en": "No groups match '{query}'",
@@ -3643,7 +3993,9 @@
     "pt": "Nenhum grupo corresponde a '{query}'",
     "ja": "'{query}' に一致するグループはありません",
     "zh": "未找到匹配“{query}”的群组",
-    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ '{query}' ସହିତ ମେଳ ଖାଉ ନାହାଁନ୍ତି |"
+    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ '{query}' ସହିତ ମେଳ ଖାଉ ନାହାଁନ୍ତି |",
+    "ur": "کوئی گروپ '{query}' سے مماثل نہیں ہے",
+    "zh_Hant": "沒有組別匹配“{query}”"
   },
   "track_noGroupsYet": {
     "en": "You haven't joined or created any groups yet.",
@@ -3663,7 +4015,9 @@
     "pt": "Você ainda não entrou nem criou nenhum grupo.",
     "ja": "参加または作成したグループはまだありません。",
     "zh": "您尚未加入或创建任何群组。",
-    "or": "ଆପଣ ଏପର୍ଯ୍ୟନ୍ତ ଯୋଗ ଦେଇ ନାହାଁନ୍ତି କିମ୍ବା କ groups ଣସି ଗୋଷ୍ଠୀ ସୃଷ୍ଟି କରିନାହାଁନ୍ତି |"
+    "or": "ଆପଣ ଏପର୍ଯ୍ୟନ୍ତ ଯୋଗ ଦେଇ ନାହାଁନ୍ତି କିମ୍ବା କ groups ଣସି ଗୋଷ୍ଠୀ ସୃଷ୍ଟି କରିନାହାଁନ୍ତି |",
+    "ur": "آپ نے ابھی تک کوئی گروپ جوائن نہیں کیا اور نہ ہی بنایا ہے۔",
+    "zh_Hant": "您尚未加入或建立任何群組。"
   },
   "track_locationUnavailable": {
     "en": "Location unavailable",
@@ -3683,7 +4037,9 @@
     "pt": "Localização indisponível",
     "ja": "位置情報を取得できません",
     "zh": "位置不可用",
-    "or": "ଅବସ୍ଥାନ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ଅବସ୍ଥାନ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "مقام دستیاب نہیں ہے۔",
+    "zh_Hant": "位置不可用"
   },
   "track_locating": {
     "en": "Locating...",
@@ -3703,7 +4059,9 @@
     "pt": "Localizando...",
     "ja": "測位中...",
     "zh": "正在定位...",
-    "or": "ଅବସ୍ଥାନ ..."
+    "or": "ଅବସ୍ଥାନ ...",
+    "ur": "تلاش کر رہا ہے...",
+    "zh_Hant": "正在定位..."
   },
   "track_nearbyYou": {
     "en": "Nearby you",
@@ -3723,7 +4081,9 @@
     "pt": "Perto de você",
     "ja": "あなたの近く",
     "zh": "在您附近",
-    "or": "ତୁମ ପାଖରେ"
+    "or": "ତୁମ ପାଖରେ",
+    "ur": "آپ کے آس پاس",
+    "zh_Hant": "在你附近"
   },
   "track_distanceAway": {
     "en": "{distance} away",
@@ -3749,7 +4109,9 @@
     "pt": "a {distance}",
     "ja": "{distance} 離れた場所",
     "zh": "距离 {distance}",
-    "or": "{distance} ଦୂରରେ |"
+    "or": "{distance} ଦୂରରେ |",
+    "ur": "{distance} دور",
+    "zh_Hant": "{distance} 遠"
   },
   "track_admin": {
     "en": "Admin",
@@ -3769,7 +4131,9 @@
     "pt": "Admin",
     "ja": "管理者",
     "zh": "管理员",
-    "or": "ଆଡମିନି"
+    "or": "ଆଡମିନି",
+    "ur": "ایڈمن",
+    "zh_Hant": "行政"
   },
   "track_groupCode": {
     "en": "Code: {code}",
@@ -3794,7 +4158,9 @@
     "pt": "Código: {code}",
     "ja": "コード: {code}",
     "zh": "代码：{code}",
-    "or": "କୋଡ୍: {code} |"
+    "or": "କୋଡ୍: {code} |",
+    "ur": "کوڈ: {code}",
+    "zh_Hant": "代碼：{code}"
   },
   "track_noDescription": {
     "en": "No description",
@@ -3814,7 +4180,9 @@
     "pt": "Sem descrição",
     "ja": "説明なし",
     "zh": "暂无描述",
-    "or": "କ description ଣସି ବର୍ଣ୍ଣନା ନାହିଁ |"
+    "or": "କ description ଣସି ବର୍ଣ୍ଣନା ନାହିଁ |",
+    "ur": "کوئی تفصیل نہیں۔",
+    "zh_Hant": "無描述"
   },
   "track_groupMembers": {
     "en": "Group Members",
@@ -3834,7 +4202,9 @@
     "pt": "Membros do Grupo",
     "ja": "グループメンバー",
     "zh": "群组成员",
-    "or": "ଗୋଷ୍ଠୀ ସଦସ୍ୟମାନେ |"
+    "or": "ଗୋଷ୍ଠୀ ସଦସ୍ୟମାନେ |",
+    "ur": "گروپ ممبران",
+    "zh_Hant": "團體成員"
   },
   "track_noMembersInGroup": {
     "en": "No members found in this group",
@@ -3854,7 +4224,9 @@
     "pt": "Nenhum membro encontrado neste grupo",
     "ja": "このグループにはメンバーがいません",
     "zh": "该群组中暂无成员",
-    "or": "ଏହି ଗୋଷ୍ଠୀରେ କ members ଣସି ସଦସ୍ୟ ପାଇଲେ ନାହିଁ |"
+    "or": "ଏହି ଗୋଷ୍ଠୀରେ କ members ଣସି ସଦସ୍ୟ ପାଇଲେ ନାହିଁ |",
+    "ur": "اس گروپ میں کوئی ممبر نہیں ملا",
+    "zh_Hant": "該群組中未找到任何成員"
   },
   "track_lastSeen": {
     "en": "Last seen: {time}",
@@ -3879,7 +4251,9 @@
     "pt": "Visto pela última vez: {time}",
     "ja": "最終確認: {time}",
     "zh": "最后在线：{time}",
-    "or": "ଶେଷ ଦର୍ଶନ: {time}"
+    "or": "ଶେଷ ଦର୍ଶନ: {time}",
+    "ur": "آخری بار دیکھا گیا: {time}",
+    "zh_Hant": "最後上線時間：{time}"
   },
   "track_private": {
     "en": "Private",
@@ -3899,7 +4273,9 @@
     "pt": "Privado",
     "ja": "非公開",
     "zh": "私密",
-    "or": "ବ୍ୟକ୍ତିଗତ"
+    "or": "ବ୍ୟକ୍ତିଗତ",
+    "ur": "نجی",
+    "zh_Hant": "私人的"
   },
   "track_locationHidden": {
     "en": "Location Hidden",
@@ -3919,7 +4295,9 @@
     "pt": "Localização Oculta",
     "ja": "位置情報非公開",
     "zh": "位置已隐藏",
-    "or": "ଅବସ୍ଥାନ ଲୁକ୍କାୟିତ |"
+    "or": "ଅବସ୍ଥାନ ଲୁକ୍କାୟିତ |",
+    "ur": "مقام پوشیدہ ہے۔",
+    "zh_Hant": "地點隱藏"
   },
   "track_yourLocationPaused": {
     "en": "Your live location sharing is paused and private.",
@@ -3939,7 +4317,9 @@
     "pt": "Seu compartilhamento de localização está pausado e privado.",
     "ja": "位置情報の共有は一時停止中で非公開です。",
     "zh": "您的实时位置共享已暂停，当前处于私密状态。",
-    "or": "ତୁମର ଲାଇଭ୍ ଲୋକେସନ ଅଂଶୀଦାର ବିରାମ ଏବଂ ବ୍ୟକ୍ତିଗତ ଅଟେ |"
+    "or": "ତୁମର ଲାଇଭ୍ ଲୋକେସନ ଅଂଶୀଦାର ବିରାମ ଏବଂ ବ୍ୟକ୍ତିଗତ ଅଟେ |",
+    "ur": "آپ کی لائیو لوکیشن شیئرنگ موقوف اور نجی ہے۔",
+    "zh_Hant": "您的即時位置共享已暫停且私密。"
   },
   "track_memberPausedSharing": {
     "en": "{name} has paused location sharing. Live location is not available.",
@@ -3964,7 +4344,9 @@
     "pt": "{name} pausou o compartilhamento de localização. Localização ao vivo indisponível.",
     "ja": "{name}さんは位置情報の共有を一時停止しました。現在地は表示されません。",
     "zh": "{name} 已暂停位置共享，其实时位置暂不可用。",
-    "or": "{name} ଅବସ୍ଥାନ ବଣ୍ଟନକୁ ସ୍ଥଗିତ ରଖିଛି | ଲାଇଭ୍ ଅବସ୍ଥାନ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "{name} ଅବସ୍ଥାନ ବଣ୍ଟନକୁ ସ୍ଥଗିତ ରଖିଛି | ଲାଇଭ୍ ଅବସ୍ଥାନ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "{name} نے مقام کا اشتراک روک دیا ہے۔ لائیو لوکیشن دستیاب نہیں ہے۔",
+    "zh_Hant": "{name} 已暫停位置共用。即時位置不可用。"
   },
   "track_member": {
     "en": "Member",
@@ -3985,7 +4367,9 @@
     "pt": "Membro",
     "ja": "メンバー",
     "zh": "成员",
-    "or": "ସଦସ୍ୟ"
+    "or": "ସଦସ୍ୟ",
+    "ur": "ممبر",
+    "zh_Hant": "成員"
   },
   "track_helpTitle": {
     "en": "Tracking Help",
@@ -4005,7 +4389,9 @@
     "pt": "Ajuda com Rastreamento",
     "ja": "追跡ヘルプ",
     "zh": "追踪帮助",
-    "or": "ଟ୍ରାକିଂ ସହାୟତା"
+    "or": "ଟ୍ରାକିଂ ସହାୟତା",
+    "ur": "ٹریکنگ مدد",
+    "zh_Hant": "追蹤幫助"
   },
   "track_helpLiveTitle": {
     "en": "What is Live Tracking?",
@@ -4025,7 +4411,9 @@
     "pt": "O que é Rastreamento ao Vivo?",
     "ja": "リアルタイム追跡とは？",
     "zh": "什么是实时追踪？",
-    "or": "ଲାଇଭ୍ ଟ୍ରାକିଂ କ’ଣ?"
+    "or": "ଲାଇଭ୍ ଟ୍ରାକିଂ କ’ଣ?",
+    "ur": "لائیو ٹریکنگ کیا ہے؟",
+    "zh_Hant": "什麼是即時追蹤？"
   },
   "track_helpLiveBody": {
     "en": "Track team's real-time location on the map.",
@@ -4045,7 +4433,9 @@
     "pt": "Acompanhe a localização em tempo real da equipe no mapa.",
     "ja": "地図上でチームメンバーの現在地をリアルタイムに確認できます。",
     "zh": "在地图上实时追踪团队成员的具体位置。",
-    "or": "ମାନଚିତ୍ରରେ ଦଳର ପ୍ରକୃତ ସମୟ ଅବସ୍ଥାନ ଟ୍ରାକ୍ କରନ୍ତୁ |"
+    "or": "ମାନଚିତ୍ରରେ ଦଳର ପ୍ରକୃତ ସମୟ ଅବସ୍ଥାନ ଟ୍ରାକ୍ କରନ୍ତୁ |",
+    "ur": "نقشے پر ٹیم کے ریئل ٹائم لوکیشن کو ٹریک کریں۔",
+    "zh_Hant": "追蹤團隊在地圖上的即時位置。"
   },
   "track_helpGroupTitle": {
     "en": "How to Add Group?",
@@ -4065,7 +4455,9 @@
     "pt": "Como Adicionar um Grupo?",
     "ja": "グループを追加するには？",
     "zh": "如何添加群组？",
-    "or": "ଗୋଷ୍ଠୀ କିପରି ଯୋଗ କରିବେ?"
+    "or": "ଗୋଷ୍ଠୀ କିପରି ଯୋଗ କରିବେ?",
+    "ur": "گروپ کیسے شامل کریں؟",
+    "zh_Hant": "如何新增群組？"
   },
   "track_helpGroupBody": {
     "en": "Create a group to track multiple members.",
@@ -4085,7 +4477,9 @@
     "pt": "Crie um grupo para rastrear vários membros.",
     "ja": "複数人を同時に追跡するにはグループを作成します。",
     "zh": "创建群组以同时追踪多位成员。",
-    "or": "ଏକାଧିକ ସଦସ୍ୟଙ୍କୁ ଟ୍ରାକ୍ କରିବାକୁ ଏକ ଗୋଷ୍ଠୀ ସୃଷ୍ଟି କରନ୍ତୁ |"
+    "or": "ଏକାଧିକ ସଦସ୍ୟଙ୍କୁ ଟ୍ରାକ୍ କରିବାକୁ ଏକ ଗୋଷ୍ଠୀ ସୃଷ୍ଟି କରନ୍ତୁ |",
+    "ur": "متعدد اراکین کو ٹریک کرنے کے لیے ایک گروپ بنائیں۔",
+    "zh_Hant": "建立一個群組來追蹤多個成員。"
   },
   "track_helpRadiusTitle": {
     "en": "What is Tracking Radius?",
@@ -4105,7 +4499,9 @@
     "pt": "O que é o Raio de Rastreamento?",
     "ja": "追跡半径とは？",
     "zh": "什么是追踪半径？",
-    "or": "ଟ୍ରାକିଂ ରେଡିଓ କ’ଣ?"
+    "or": "ଟ୍ରାକିଂ ରେଡିଓ କ’ଣ?",
+    "ur": "ٹریکنگ ریڈیس کیا ہے؟",
+    "zh_Hant": "什麼是跟踪半徑？"
   },
   "track_helpRadiusBody": {
     "en": "Set the area to find nearby members on the map.",
@@ -4125,7 +4521,9 @@
     "pt": "Defina a área para encontrar membros próximos no mapa.",
     "ja": "地図上で周囲のメンバーを検出する範囲を設定します。",
     "zh": "设定用于在地图上搜索周边成员的区域范围。",
-    "or": "ମାନଚିତ୍ରରେ ନିକଟସ୍ଥ ସଦସ୍ୟ ଖୋଜିବା ପାଇଁ କ୍ଷେତ୍ର ସେଟ୍ କରନ୍ତୁ |"
+    "or": "ମାନଚିତ୍ରରେ ନିକଟସ୍ଥ ସଦସ୍ୟ ଖୋଜିବା ପାଇଁ କ୍ଷେତ୍ର ସେଟ୍ କରନ୍ତୁ |",
+    "ur": "نقشے پر قریبی اراکین کو تلاش کرنے کے لیے علاقہ سیٹ کریں۔",
+    "zh_Hant": "設定區域以在地圖上尋找附近的成員。"
   },
   "track_errorFailedLoadGroups": {
     "en": "Failed to load groups",
@@ -4145,7 +4543,9 @@
     "pt": "Falha ao carregar grupos",
     "ja": "グループの読み込みに失敗しました",
     "zh": "加载群组失败",
-    "or": "ଗୋଷ୍ଠୀ ଲୋଡ୍ କରିବାରେ ବିଫଳ |"
+    "or": "ଗୋଷ୍ଠୀ ଲୋଡ୍ କରିବାରେ ବିଫଳ |",
+    "ur": "گروپس لوڈ کرنے میں ناکام",
+    "zh_Hant": "載入組失敗"
   },
   "track_errorServer": {
     "en": "Unable to connect to server. Please try again.",
@@ -4165,7 +4565,9 @@
     "pt": "Não foi possível conectar ao servidor. Tente novamente.",
     "ja": "サーバーに接続できません。もう一度お試しください。",
     "zh": "无法连接到服务器，请重试。",
-    "or": "ସର୍ଭର ସହିତ ସଂଯୋଗ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ସର୍ଭର ସହିତ ସଂଯୋଗ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "سرور سے جڑنے سے قاصر۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法連接到伺服器。請再試一次。"
   },
   "track_errorLoadGroups": {
     "en": "Unable to load groups. Please try again.",
@@ -4185,7 +4587,9 @@
     "pt": "Não foi possível carregar grupos. Tente novamente.",
     "ja": "グループを読み込めません。もう一度お試しください。",
     "zh": "无法加载群组，请重试。",
-    "or": "ଗୋଷ୍ଠୀ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "گروپس لوڈ کرنے سے قاصر۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法載入群組。請再試一次。"
   },
   "track_errorLoadMembers": {
     "en": "Unable to load nearby members. Please try again.",
@@ -4205,7 +4609,9 @@
     "pt": "Não foi possível carregar membros próximos. Tente novamente.",
     "ja": "近くのメンバーを読み込めません。もう一度お試しください。",
     "zh": "无法加载附近成员，请重试。",
-    "or": "ନିକଟସ୍ଥ ସଦସ୍ୟମାନଙ୍କୁ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ନିକଟସ୍ଥ ସଦସ୍ୟମାନଙ୍କୁ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "قریبی اراکین کو لوڈ کرنے سے قاصر۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法載入附近的成員。請再試一次。"
   },
   "track_errorNoInternet": {
     "en": "No internet connection. Please check your network.",
@@ -4225,7 +4631,9 @@
     "pt": "Sem conexão com a internet. Verifique sua rede.",
     "ja": "インターネットに接続されていません。ネットワークを確認してください。",
     "zh": "无网络连接，请检查您的网络。",
-    "or": "କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ | ଦୟାକରି ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ |"
+    "or": "କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ | ଦୟାକରି ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ |",
+    "ur": "انٹرنیٹ کنکشن نہیں ہے۔ براہ کرم اپنا نیٹ ورک چیک کریں۔",
+    "zh_Hant": "沒有網路連線。請檢查您的網路。"
   },
   "track_noSearchResults": {
     "en": "No members or groups found for '{query}'",
@@ -4250,7 +4658,9 @@
     "pt": "Nenhum membro ou grupo encontrado para '{query}'",
     "ja": "'{query}' に該当するメンバーまたはグループは見つかりませんでした",
     "zh": "未找到符合“{query}”的成员或群组",
-    "or": "'{query}' ପାଇଁ କ members ଣସି ସଦସ୍ୟ କିମ୍ବା ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |"
+    "or": "'{query}' ପାଇଁ କ members ଣସି ସଦସ୍ୟ କିମ୍ବା ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |",
+    "ur": "'{query}' کے لیے کوئی ممبر یا گروپ نہیں ملا",
+    "zh_Hant": "未找到「{query}」的成員或群組"
   },
   "track_enable": {
     "en": "Enable",
@@ -4271,7 +4681,9 @@
     "pt": "Ativar",
     "ja": "有効化",
     "zh": "开启",
-    "or": "ସକ୍ଷମ କରନ୍ତୁ |"
+    "or": "ସକ୍ଷମ କରନ୍ତୁ |",
+    "ur": "فعال کریں۔",
+    "zh_Hant": "使能夠"
   },
   "track_enableGpsTitle": {
     "en": "Enable GPS",
@@ -4291,7 +4703,9 @@
     "pt": "Ativar GPS",
     "ja": "GPSを有効にする",
     "zh": "开启 GPS 定位",
-    "or": "GPS ସକ୍ଷମ କରନ୍ତୁ |"
+    "or": "GPS ସକ୍ଷମ କରନ୍ତୁ |",
+    "ur": "GPS کو فعال کریں۔",
+    "zh_Hant": "啟用 GPS"
   },
   "track_enableGpsBody": {
     "en": "To track your group in real time, please turn on your GPS.",
@@ -4311,7 +4725,9 @@
     "pt": "Para rastrear seu grupo em tempo real, ative o GPS.",
     "ja": "グループをリアルタイムで追跡するには、GPSをオンにしてください。",
     "zh": "若要实时追踪群组位置，请开启手机 GPS。",
-    "or": "ପ୍ରକୃତ ସମୟରେ ଆପଣଙ୍କର ଗୋଷ୍ଠୀକୁ ଟ୍ରାକ୍ କରିବାକୁ, ଦୟାକରି ଆପଣଙ୍କର GPS ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |"
+    "or": "ପ୍ରକୃତ ସମୟରେ ଆପଣଙ୍କର ଗୋଷ୍ଠୀକୁ ଟ୍ରାକ୍ କରିବାକୁ, ଦୟାକରି ଆପଣଙ୍କର GPS ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |",
+    "ur": "اپنے گروپ کو حقیقی وقت میں ٹریک کرنے کے لیے، براہ کرم اپنا GPS آن کریں۔",
+    "zh_Hant": "若要即時追蹤您的團隊，請開啟您的 GPS。"
   },
   "track_menuMembers": {
     "en": "Members",
@@ -4331,7 +4747,9 @@
     "pt": "Membros",
     "ja": "メンバー",
     "zh": "成员",
-    "or": "ସଦସ୍ୟମାନେ |"
+    "or": "ସଦସ୍ୟମାନେ |",
+    "ur": "ممبران",
+    "zh_Hant": "會員"
   },
   "track_menuRefreshMap": {
     "en": "Refresh Map",
@@ -4351,7 +4769,9 @@
     "pt": "Atualizar Mapa",
     "ja": "地図を再読み込み",
     "zh": "刷新地图",
-    "or": "ମାନଚିତ୍ର ସତେଜ କରନ୍ତୁ |"
+    "or": "ମାନଚିତ୍ର ସତେଜ କରନ୍ତୁ |",
+    "ur": "نقشہ تازہ کریں۔",
+    "zh_Hant": "刷新地圖"
   },
   "track_menuTheme": {
     "en": "Theme",
@@ -4371,7 +4791,9 @@
     "pt": "Tema",
     "ja": "テーマ",
     "zh": "地图主题",
-    "or": "ଥିମ୍"
+    "or": "ଥିମ୍",
+    "ur": "تھیم",
+    "zh_Hant": "主題"
   },
   "track_searchMembersHint": {
     "en": "Search Members...",
@@ -4391,7 +4813,9 @@
     "pt": "Pesquisar Membros...",
     "ja": "メンバーを検索...",
     "zh": "搜索成员...",
-    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଖୋଜ ..."
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଖୋଜ ...",
+    "ur": "اراکین کو تلاش کریں...",
+    "zh_Hant": "搜尋會員..."
   },
   "track_noMembersFoundPlain": {
     "en": "No members found",
@@ -4411,7 +4835,9 @@
     "pt": "Nenhum membro encontrado",
     "ja": "メンバーが見つかりません",
     "zh": "未找到成员",
-    "or": "କ members ଣସି ସଦସ୍ୟ ପାଇଲେ ନାହିଁ |"
+    "or": "କ members ଣସି ସଦସ୍ୟ ପାଇଲେ ନାହିଁ |",
+    "ur": "کوئی ممبر نہیں ملا",
+    "zh_Hant": "沒有找到會員"
   },
   "track_unnamedMember": {
     "en": "Unnamed Member",
@@ -4431,7 +4857,9 @@
     "pt": "Membro Sem Nome",
     "ja": "名前なしメンバー",
     "zh": "未命名成员",
-    "or": "ନାମହୀନ ସଦସ୍ୟ |"
+    "or": "ନାମହୀନ ସଦସ୍ୟ |",
+    "ur": "بے نام ممبر",
+    "zh_Hant": "未命名會員"
   },
   "safety_chooseFeature": {
     "en": "Choose a Safety Feature",
@@ -4451,7 +4879,9 @@
     "pt": "Escolha um Recurso de Segurança",
     "ja": "安全機能を選択",
     "zh": "选择安全功能",
-    "or": "ଏକ ସୁରକ୍ଷା ବ ature ଶିଷ୍ଟ୍ୟ ବାଛନ୍ତୁ |"
+    "or": "ଏକ ସୁରକ୍ଷା ବ ature ଶିଷ୍ଟ୍ୟ ବାଛନ୍ତୁ |",
+    "ur": "ایک حفاظتی خصوصیت کا انتخاب کریں۔",
+    "zh_Hant": "選擇安全功能"
   },
   "safeZone_featureDesc": {
     "en": "Define a safe geographic area for your team. Get instant alerts if someone steps outside the safe zone.",
@@ -4471,7 +4901,9 @@
     "pt": "Defina uma área segura para sua equipe. Receba alertas se alguém sair da zona segura.",
     "ja": "安全なエリアを設定し、メンバーが範囲外へ出た時に即座に通知を受け取ります。",
     "zh": "为团队划定安全地理区域。当有人离开安全区时立即收到警报。",
-    "or": "ଆପଣଙ୍କ ଦଳ ପାଇଁ ଏକ ସୁରକ୍ଷିତ ଭ ographic ଗୋଳିକ କ୍ଷେତ୍ର ବ୍ୟାଖ୍ୟା କରନ୍ତୁ | ଯଦି କେହି ସୁରକ୍ଷିତ ଜୋନ୍ ବାହାରେ ପାଦ ଦିଅନ୍ତି ତେବେ ତୁରନ୍ତ ଆଲର୍ଟ ପାଆନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କ ଦଳ ପାଇଁ ଏକ ସୁରକ୍ଷିତ ଭ ographic ଗୋଳିକ କ୍ଷେତ୍ର ବ୍ୟାଖ୍ୟା କରନ୍ତୁ | ଯଦି କେହି ସୁରକ୍ଷିତ ଜୋନ୍ ବାହାରେ ପାଦ ଦିଅନ୍ତି ତେବେ ତୁରନ୍ତ ଆଲର୍ଟ ପାଆନ୍ତୁ |",
+    "ur": "اپنی ٹیم کے لیے محفوظ جغرافیائی علاقے کی وضاحت کریں۔ اگر کوئی محفوظ زون سے باہر قدم رکھتا ہے تو فوری انتباہات حاصل کریں۔",
+    "zh_Hant": "為您的團隊定義一個安全的地理區域。如果有人走出安全區，您會立即收到警報。"
   },
   "safeRoute_featureDesc": {
     "en": "Set predefined routes for your team members. Get alerts if someone deviates from the safe route.",
@@ -4491,7 +4923,9 @@
     "pt": "Defina rotas predefinidas. Receba alertas se alguém se desviar da rota segura.",
     "ja": "事前に安全なルートを設定し、ルートを外れた際に自動でアラートを通知します。",
     "zh": "为成员设定预定行进路线。一旦有人偏离路线即可即时收到提醒。",
-    "or": "ଆପଣଙ୍କ ଦଳର ସଦସ୍ୟମାନଙ୍କ ପାଇଁ ପୂର୍ବ ନିର୍ଦ୍ଧାରିତ ମାର୍ଗ ସେଟ୍ କରନ୍ତୁ | ଯଦି କେହି ସୁରକ୍ଷିତ ମାର୍ଗରୁ ବିଚ୍ୟୁତ ହୁଅନ୍ତି ତେବେ ସତର୍କତା ଅବଲମ୍ବନ କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କ ଦଳର ସଦସ୍ୟମାନଙ୍କ ପାଇଁ ପୂର୍ବ ନିର୍ଦ୍ଧାରିତ ମାର୍ଗ ସେଟ୍ କରନ୍ତୁ | ଯଦି କେହି ସୁରକ୍ଷିତ ମାର୍ଗରୁ ବିଚ୍ୟୁତ ହୁଅନ୍ତି ତେବେ ସତର୍କତା ଅବଲମ୍ବନ କରନ୍ତୁ |",
+    "ur": "اپنی ٹیم کے اراکین کے لیے پہلے سے طے شدہ راستے طے کریں۔ اگر کوئی محفوظ راستے سے ہٹ جاتا ہے تو الرٹ حاصل کریں۔",
+    "zh_Hant": "為您的團隊成員設定預定義路線。如果有人偏離安全路線，則會收到警報。"
   },
   "safety_quickOverview": {
     "en": "Quick Overview",
@@ -4511,7 +4945,9 @@
     "pt": "Visão Geral Rápida",
     "ja": "概要",
     "zh": "快速概览",
-    "or": "ଶୀଘ୍ର ସମୀକ୍ଷା"
+    "or": "ଶୀଘ୍ର ସମୀକ୍ଷା",
+    "ur": "فوری جائزہ",
+    "zh_Hant": "快速概覽"
   },
   "safety_recentAlerts": {
     "en": "Recent Alerts",
@@ -4531,7 +4967,9 @@
     "pt": "Alertas Recentes",
     "ja": "最近のアラート",
     "zh": "最近警报",
-    "or": "ସାମ୍ପ୍ରତିକ ସତର୍କତା |"
+    "or": "ସାମ୍ପ୍ରତିକ ସତର୍କତା |",
+    "ur": "حالیہ الرٹس",
+    "zh_Hant": "最近的警報"
   },
   "safety_tagline": {
     "en": "Stay protected. Stay connected.",
@@ -4551,7 +4989,9 @@
     "pt": "Fique protegido. Fique conectado.",
     "ja": "いつも安全に、常につながる。",
     "zh": "时刻守护，保持连接。",
-    "or": "ସୁରକ୍ଷିତ ରୁହନ୍ତୁ | ସଂଯୁକ୍ତ ରୁହନ୍ତୁ |"
+    "or": "ସୁରକ୍ଷିତ ରୁହନ୍ତୁ | ସଂଯୁକ୍ତ ରୁହନ୍ତୁ |",
+    "ur": "محفوظ رہیں۔ جڑے رہیں۔",
+    "zh_Hant": "保持受到保護。保持聯繫。"
   },
   "safety_bannerTitle": {
     "en": "Your Safety, Our Priority",
@@ -4571,7 +5011,9 @@
     "pt": "Sua Segurança, Nossa Prioridade",
     "ja": "安全を最優先に",
     "zh": "您的安全，我们的首要使命",
-    "or": "ତୁମର ସୁରକ୍ଷା, ଆମର ପ୍ରାଥମିକତା |"
+    "or": "ତୁମର ସୁରକ୍ଷା, ଆମର ପ୍ରାଥମିକତା |",
+    "ur": "آپ کی حفاظت، ہماری ترجیح",
+    "zh_Hant": "您的安全，我們的首要任務"
   },
   "safety_bannerBody": {
     "en": "Monitor and protect your team with smart safety features.",
@@ -4591,7 +5033,9 @@
     "pt": "Monitore e proteja sua equipe com recursos inteligentes de segurança.",
     "ja": "スマート安全機能でチームメンバーを常に見守ります。",
     "zh": "借助智能安全功能实时监护并守护您的团队。",
-    "or": "ସ୍ମାର୍ଟ ସୁରକ୍ଷା ବ features ଶିଷ୍ଟ୍ୟ ସହିତ ଆପଣଙ୍କ ଦଳ ଉପରେ ନଜର ରଖନ୍ତୁ ଏବଂ ସୁରକ୍ଷା କରନ୍ତୁ |"
+    "or": "ସ୍ମାର୍ଟ ସୁରକ୍ଷା ବ features ଶିଷ୍ଟ୍ୟ ସହିତ ଆପଣଙ୍କ ଦଳ ଉପରେ ନଜର ରଖନ୍ତୁ ଏବଂ ସୁରକ୍ଷା କରନ୍ତୁ |",
+    "ur": "ہوشیار حفاظتی خصوصیات کے ساتھ اپنی ٹیم کی نگرانی اور حفاظت کریں۔",
+    "zh_Hant": "透過智慧安全功能監控和保護您的團隊。"
   },
   "safety_safeNow": {
     "en": "Safe Now",
@@ -4611,7 +5055,9 @@
     "pt": "Seguro Agora",
     "ja": "現在安全",
     "zh": "当前安全",
-    "or": "ବର୍ତ୍ତମାନ ସୁରକ୍ଷିତ |"
+    "or": "ବର୍ତ୍ତମାନ ସୁରକ୍ଷିତ |",
+    "ur": "اب محفوظ",
+    "zh_Hant": "現在安全"
   },
   "safety_safeNowDesc": {
     "en": "Members are within safe zone/route",
@@ -4631,7 +5077,9 @@
     "pt": "Membros estão dentro da zona/rota segura",
     "ja": "メンバーは安全ゾーン/ルート内にいます",
     "zh": "所有成员均在安全区域/路线内",
-    "or": "ସଦସ୍ୟମାନେ ସୁରକ୍ଷିତ ଜୋନ୍ / ରୁଟ୍ ମଧ୍ୟରେ ଅଛନ୍ତି |"
+    "or": "ସଦସ୍ୟମାନେ ସୁରକ୍ଷିତ ଜୋନ୍ / ରୁଟ୍ ମଧ୍ୟରେ ଅଛନ୍ତି |",
+    "ur": "اراکین محفوظ زون/روٹ کے اندر ہیں۔",
+    "zh_Hant": "成員位於安全區域/路線內"
   },
   "safety_alerts": {
     "en": "Alerts",
@@ -4651,7 +5099,9 @@
     "pt": "Alertas",
     "ja": "アラート",
     "zh": "警报",
-    "or": "ସତର୍କତା"
+    "or": "ସତର୍କତା",
+    "ur": "انتباہات",
+    "zh_Hant": "警報"
   },
   "safety_alertsDesc": {
     "en": "Require immediate attention",
@@ -4671,7 +5121,9 @@
     "pt": "Requerem atenção imediata",
     "ja": "緊急の対応が必要です",
     "zh": "需要立即处理",
-    "or": "ତୁରନ୍ତ ଧ୍ୟାନ ଆବଶ୍ୟକ |"
+    "or": "ତୁରନ୍ତ ଧ୍ୟାନ ଆବଶ୍ୟକ |",
+    "ur": "فوری توجہ کی ضرورت ہے۔",
+    "zh_Hant": "需要立即關注"
   },
   "safety_needHelpBody": {
     "en": "Contact support team for any safety related assistance.",
@@ -4691,7 +5143,9 @@
     "pt": "Entre em contato com o suporte para assistência de segurança.",
     "ja": "安全に関するご相談はサポートチームまでお問い合わせください。",
     "zh": "如需任何安全相关支持，请联络我们的技术客服团队。",
-    "or": "କ safety ଣସି ସୁରକ୍ଷା ସମ୍ବନ୍ଧୀୟ ସହାୟତା ପାଇଁ ସମର୍ଥନ ଦଳ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ |"
+    "or": "କ safety ଣସି ସୁରକ୍ଷା ସମ୍ବନ୍ଧୀୟ ସହାୟତା ପାଇଁ ସମର୍ଥନ ଦଳ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ |",
+    "ur": "حفاظت سے متعلق کسی بھی مدد کے لیے سپورٹ ٹیم سے رابطہ کریں۔",
+    "zh_Hant": "請聯絡支援團隊以獲得任何與安全相關的協助。"
   },
   "safety_contactSupport": {
     "en": "Contact Support",
@@ -4711,7 +5165,9 @@
     "pt": "Fale com o Suporte",
     "ja": "サポートに問い合わせる",
     "zh": "联系支持团队",
-    "or": "ସମର୍ଥନ ଯୋଗାଯୋଗ କରନ୍ତୁ |"
+    "or": "ସମର୍ଥନ ଯୋଗାଯୋଗ କରନ୍ତୁ |",
+    "ur": "سپورٹ سے رابطہ کریں۔",
+    "zh_Hant": "聯繫支援人員"
   },
   "safeZone_alertTitle": {
     "en": "Safe Zone Alert",
@@ -4731,7 +5187,9 @@
     "pt": "Alerta de Zona Segura",
     "ja": "セーフゾーン通知",
     "zh": "安全区域警报",
-    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ ଆଲର୍ଟ |"
+    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ ଆଲର୍ଟ |",
+    "ur": "سیف زون الرٹ",
+    "zh_Hant": "安全區警報"
   },
   "safeRoute_alertTitle": {
     "en": "Safe Route Alert",
@@ -4751,7 +5209,9 @@
     "pt": "Alerta de Rota Segura",
     "ja": "セーフルート通知",
     "zh": "安全路线偏离警报",
-    "or": "ସୁରକ୍ଷିତ ମାର୍ଗ ଆଲର୍ଟ |"
+    "or": "ସୁରକ୍ଷିତ ମାର୍ଗ ଆଲର୍ଟ |",
+    "ur": "محفوظ روٹ الرٹ",
+    "zh_Hant": "安全路線警報"
   },
   "safeZone_memberLeft": {
     "en": "{name} has left the Safe Zone",
@@ -4776,7 +5236,9 @@
     "pt": "{name} saiu da Zona Segura",
     "ja": "{name}さんがセーフゾーンから出ました",
     "zh": "{name} 已离开安全区域",
-    "or": "{name} ନିରାପଦ ଅଞ୍ଚଳ ଛାଡିଛି |"
+    "or": "{name} ନିରାପଦ ଅଞ୍ଚଳ ଛାଡିଛି |",
+    "ur": "{name} نے سیف زون چھوڑ دیا ہے۔",
+    "zh_Hant": "{name} 已離開安全區"
   },
   "safeRoute_memberDeviated": {
     "en": "{name} has deviated from Safe Route",
@@ -4801,7 +5263,9 @@
     "pt": "{name} desviou da Rota Segura",
     "ja": "{name}さんがセーフルートから逸脱しました",
     "zh": "{name} 已偏离预定安全路线",
-    "or": "{name} ନିରାପଦ ମାର୍ଗରୁ ବିଚ୍ୟୁତ ହୋଇଛି |"
+    "or": "{name} ନିରାପଦ ମାର୍ଗରୁ ବିଚ୍ୟୁତ ହୋଇଛି |",
+    "ur": "{name} محفوظ راستے سے ہٹ گیا ہے۔",
+    "zh_Hant": "{name} 已偏離安全路線"
   },
   "safeZone_outsideZone": {
     "en": "{place} (Outside {zone})",
@@ -4829,7 +5293,9 @@
     "pt": "{place} (Fora da {zone})",
     "ja": "{place} ({zone} の外)",
     "zh": "{place} (在 {zone} 之外)",
-    "or": "{place} (ବାହାରେ {zone})"
+    "or": "{place} (ବାହାରେ {zone})",
+    "ur": "{place} ({zone} سے باہر)",
+    "zh_Hant": "{place}（{zone} 之外）"
   },
   "safeZone_nearOutsideZone": {
     "en": "Near {place} (Outside {zone})",
@@ -4857,7 +5323,9 @@
     "pt": "Perto de {place} (Fora da {zone})",
     "ja": "{place} 付近 ({zone} の外)",
     "zh": "靠近 {place} (在 {zone} 之外)",
-    "or": "{place} ନିକଟରେ (ବାହାରେ {zone})"
+    "or": "{place} ନିକଟରେ (ବାହାରେ {zone})",
+    "ur": "{place} کے قریب ({zone} سے باہر)",
+    "zh_Hant": "{place} 附近（{zone} 以外）"
   },
   "safeRoute_deviationAt": {
     "en": "{place} (Deviation: {distance})",
@@ -4885,7 +5353,9 @@
     "pt": "{place} (Desvio: {distance})",
     "ja": "{place} (逸脱距離: {distance})",
     "zh": "{place} (偏离距离：{distance})",
-    "or": "{place} (ବିଘ୍ନ: {distance})"
+    "or": "{place} (ବିଘ୍ନ: {distance})",
+    "ur": "{place} (انحراف: {distance})",
+    "zh_Hant": "{place}（偏差：{distance}）"
   },
   "safeRoute_appBarSubtitle": {
     "en": "Set a safe route for your team member.",
@@ -4905,7 +5375,9 @@
     "pt": "Defina uma rota segura para o membro da equipe.",
     "ja": "メンバーに安全な移動ルートを設定します。",
     "zh": "为您的团队成员规划一条安全行进路线。",
-    "or": "ଆପଣଙ୍କ ଦଳର ସଦସ୍ୟଙ୍କ ପାଇଁ ଏକ ସୁରକ୍ଷିତ ମାର୍ଗ ସ୍ଥିର କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କ ଦଳର ସଦସ୍ୟଙ୍କ ପାଇଁ ଏକ ସୁରକ୍ଷିତ ମାର୍ଗ ସ୍ଥିର କରନ୍ତୁ |",
+    "ur": "اپنی ٹیم کے رکن کے لیے محفوظ راستہ طے کریں۔",
+    "zh_Hant": "為您的團隊成員設定安全路線。"
   },
   "safety_stepSelectMember": {
     "en": "{step}. Select Member",
@@ -4930,7 +5402,9 @@
     "pt": "{step}. Selecionar Membro",
     "ja": "{step}. メンバーを選択",
     "zh": "{step}. 选择成员",
-    "or": "{step}। ସଦସ୍ୟ ଚୟନ କରନ୍ତୁ |"
+    "or": "{step}। ସଦସ୍ୟ ଚୟନ କରନ୍ତୁ |",
+    "ur": "{step} ممبر منتخب کریں۔",
+    "zh_Hant": "{step}。選擇會員"
   },
   "safety_stepSelectGroup": {
     "en": "{step}. Select Group",
@@ -4955,7 +5429,9 @@
     "pt": "{step}. Selecionar Grupo",
     "ja": "{step}. グループを選択",
     "zh": "{step}. 选择群组",
-    "or": "{step}। ଗୋଷ୍ଠୀ ଚୟନ କରନ୍ତୁ |"
+    "or": "{step}। ଗୋଷ୍ଠୀ ଚୟନ କରନ୍ତୁ |",
+    "ur": "{step} گروپ کو منتخب کریں۔",
+    "zh_Hant": "{step}。選擇組"
   },
   "safeRoute_stepStartDest": {
     "en": "{step}. Set Start & Destination",
@@ -4980,7 +5456,9 @@
     "pt": "{step}. Definir Partida e Destino",
     "ja": "{step}. 出発地と目的地を設定",
     "zh": "{step}. 设置起点与终点",
-    "or": "{step}। ଆରମ୍ଭ ଏବଂ ଗନ୍ତବ୍ୟସ୍ଥଳ ସେଟ୍ କରନ୍ତୁ |"
+    "or": "{step}। ଆରମ୍ଭ ଏବଂ ଗନ୍ତବ୍ୟସ୍ଥଳ ସେଟ୍ କରନ୍ତୁ |",
+    "ur": "{step} آغاز اور منزل طے کریں۔",
+    "zh_Hant": "{step}。設定起點和目的地"
   },
   "safeRoute_stepSelectRoute": {
     "en": "{step}. Select Route",
@@ -5005,7 +5483,9 @@
     "pt": "{step}. Selecionar Rota",
     "ja": "{step}. ルートを選択",
     "zh": "{step}. 选择路线",
-    "or": "{step}। ମାର୍ଗ ଚୟନ କରନ୍ତୁ |"
+    "or": "{step}। ମାର୍ଗ ଚୟନ କରନ୍ତୁ |",
+    "ur": "{step} روٹ منتخب کریں۔",
+    "zh_Hant": "{step}。選擇路線"
   },
   "safeRoute_stepDeviation": {
     "en": "{step}. Set Deviation Limit",
@@ -5030,7 +5510,9 @@
     "pt": "{step}. Definir Limite de Desvio",
     "ja": "{step}. 逸脱許容範囲を設定",
     "zh": "{step}. 设置允许偏离限额",
-    "or": "{step}। ବିଚ୍ୟୁତି ସୀମା ସେଟ୍ କରନ୍ତୁ |"
+    "or": "{step}। ବିଚ୍ୟୁତି ସୀମା ସେଟ୍ କରନ୍ତୁ |",
+    "ur": "{step} انحراف کی حد مقرر کریں۔",
+    "zh_Hant": "{step}。設定偏差限制"
   },
   "safeRoute_stepPreviewRoute": {
     "en": "{step}. Preview Route",
@@ -5055,7 +5537,9 @@
     "pt": "{step}. Pré-visualizar Rota",
     "ja": "{step}. ルートをプレビュー",
     "zh": "{step}. 预览路线",
-    "or": "{step}। ମାର୍ଗ ପୂର୍ବାବଲୋକନ କରନ୍ତୁ |"
+    "or": "{step}। ମାର୍ଗ ପୂର୍ବାବଲୋକନ କରନ୍ତୁ |",
+    "ur": "{step} پیش نظارہ روٹ",
+    "zh_Hant": "{step}。預覽路線"
   },
   "safeRoute_stepSetRoutesForMembers": {
     "en": "{step}. Set Routes for Members",
@@ -5080,7 +5564,9 @@
     "pt": "{step}. Definir Rotas para Membros",
     "ja": "{step}. メンバー用ルートを設定",
     "zh": "{step}. 为成员设置路线",
-    "or": "{step}। ସଦସ୍ୟମାନଙ୍କ ପାଇଁ ମାର୍ଗ ସେଟ୍ କରନ୍ତୁ |"
+    "or": "{step}। ସଦସ୍ୟମାନଙ୍କ ପାଇଁ ମାର୍ଗ ସେଟ୍ କରନ୍ତୁ |",
+    "ur": "{step} اراکین کے لیے راستے طے کریں۔",
+    "zh_Hant": "{step}。為會員設定路線"
   },
   "safeRoute_stepPreviewApply": {
     "en": "{step}. Preview & Apply",
@@ -5105,7 +5591,9 @@
     "pt": "{step}. Visualizar e Aplicar",
     "ja": "{step}. プレビューして適用",
     "zh": "{step}. 预览并生效",
-    "or": "{step}। ପୂର୍ବାବଲୋକନ ଏବଂ ପ୍ରୟୋଗ କରନ୍ତୁ |"
+    "or": "{step}। ପୂର୍ବାବଲୋକନ ଏବଂ ପ୍ରୟୋଗ କରନ୍ତୁ |",
+    "ur": "{step} پیش نظارہ کریں اور درخواست دیں۔",
+    "zh_Hant": "{step}。預覽並應用"
   },
   "safeZone_stepSelectLocation": {
     "en": "{step}. Select Location on Map",
@@ -5130,7 +5618,9 @@
     "pt": "{step}. Selecionar Local no Mapa",
     "ja": "{step}. 地図上で場所を選択",
     "zh": "{step}. 在地图上选择位置",
-    "or": "{step}। ମାନଚିତ୍ରରେ ସ୍ଥାନ ଚୟନ କରନ୍ତୁ |"
+    "or": "{step}। ମାନଚିତ୍ରରେ ସ୍ଥାନ ଚୟନ କରନ୍ତୁ |",
+    "ur": "{step} نقشے پر مقام منتخب کریں۔",
+    "zh_Hant": "{step}。在地圖上選擇位置"
   },
   "safeZone_stepRadius": {
     "en": "{step}. Set Safe Zone Radius",
@@ -5155,7 +5645,9 @@
     "pt": "{step}. Definir Raio da Zona Segura",
     "ja": "{step}. セーフゾーンの半径を設定",
     "zh": "{step}. 设置安全区半径",
-    "or": "{step}। ସୁରକ୍ଷିତ ଜୋନ୍ ରେଡିଓ ସେଟ୍ କରନ୍ତୁ |"
+    "or": "{step}। ସୁରକ୍ଷିତ ଜୋନ୍ ରେଡିଓ ସେଟ୍ କରନ୍ତୁ |",
+    "ur": "{step} سیف زون کا رداس سیٹ کریں۔",
+    "zh_Hant": "{step}。設定安全區半徑"
   },
   "safeZone_stepPreview": {
     "en": "{step}. Preview Safe Zone",
@@ -5180,7 +5672,9 @@
     "pt": "{step}. Pré-visualizar Zona Segura",
     "ja": "{step}. セーフゾーンをプレビュー",
     "zh": "{step}. 预览安全区域",
-    "or": "{step}। ନିରାପଦ ଜୋନ୍ ପୂର୍ବାବଲୋକନ କରନ୍ତୁ |"
+    "or": "{step}। ନିରାପଦ ଜୋନ୍ ପୂର୍ବାବଲୋକନ କରନ୍ତୁ |",
+    "ur": "{step} سیف زون کا پیش نظارہ کریں۔",
+    "zh_Hant": "{step}。預覽安全區"
   },
   "safeRoute_setRoutesSubtitle": {
     "en": "Create and manage safe routes for all group members.",
@@ -5200,7 +5694,9 @@
     "pt": "Crie e gerencie rotas seguras para todos os membros.",
     "ja": "グループ全メンバーの安全ルートを作成・管理します。",
     "zh": "为所有群组成员创建并管理安全行进路线。",
-    "or": "ସମସ୍ତ ଗୋଷ୍ଠୀ ସଦସ୍ୟଙ୍କ ପାଇଁ ସୁରକ୍ଷିତ ମାର୍ଗ ସୃଷ୍ଟି ଏବଂ ପରିଚାଳନା କରନ୍ତୁ |"
+    "or": "ସମସ୍ତ ଗୋଷ୍ଠୀ ସଦସ୍ୟଙ୍କ ପାଇଁ ସୁରକ୍ଷିତ ମାର୍ଗ ସୃଷ୍ଟି ଏବଂ ପରିଚାଳନା କରନ୍ତୁ |",
+    "ur": "گروپ کے تمام اراکین کے لیے محفوظ راستے بنائیں اور ان کا نظم کریں۔",
+    "zh_Hant": "為所有團體成員建立和管理安全路線。"
   },
   "safeRoute_saveActivate": {
     "en": "Save & Activate Safe Route",
@@ -5220,7 +5716,9 @@
     "pt": "Salvar e Ativar Rota Segura",
     "ja": "セーフルートを保存して有効化",
     "zh": "保存并激活安全路线",
-    "or": "ସୁରକ୍ଷିତ ମାର୍ଗ ସଂରକ୍ଷଣ ଏବଂ ସକ୍ରିୟ କରନ୍ତୁ |"
+    "or": "ସୁରକ୍ଷିତ ମାର୍ଗ ସଂରକ୍ଷଣ ଏବଂ ସକ୍ରିୟ କରନ୍ତୁ |",
+    "ur": "محفوظ روٹ کو محفوظ کریں اور چالو کریں۔",
+    "zh_Hant": "保存並啟動安全路線"
   },
   "safeRoute_saveActivateGroup": {
     "en": "Save & Activate Safe Route for Group",
@@ -5240,7 +5738,9 @@
     "pt": "Salvar e Ativar Rota para o Grupo",
     "ja": "グループ用セーフルートを保存して有効化",
     "zh": "保存并为群组激活安全路线",
-    "or": "ଗୋଷ୍ଠୀ ପାଇଁ ନିରାପଦ ମାର୍ଗ ସଂରକ୍ଷଣ ଏବଂ ସକ୍ରିୟ କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ ପାଇଁ ନିରାପଦ ମାର୍ଗ ସଂରକ୍ଷଣ ଏବଂ ସକ୍ରିୟ କରନ୍ତୁ |",
+    "ur": "گروپ کے لیے محفوظ راستے کو محفوظ اور فعال کریں۔",
+    "zh_Hant": "保存並啟動團體安全路線"
   },
   "safeZone_saveActivate": {
     "en": "Save & Activate Safe Zone",
@@ -5260,7 +5760,9 @@
     "pt": "Salvar e Ativar Zona Segura",
     "ja": "セーフゾーンを保存して有効化",
     "zh": "保存并激活安全区域",
-    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ ସଂରକ୍ଷଣ ଏବଂ ସକ୍ରିୟ କରନ୍ତୁ |"
+    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ ସଂରକ୍ଷଣ ଏବଂ ସକ୍ରିୟ କରନ୍ତୁ |",
+    "ur": "محفوظ کریں اور محفوظ زون کو فعال کریں۔",
+    "zh_Hant": "保存並啟動安全區"
   },
   "safeZone_saveActivateGroup": {
     "en": "Save & Activate Safe Zone for Group",
@@ -5280,7 +5782,9 @@
     "pt": "Salvar e Ativar Zona Segura para o Grupo",
     "ja": "グループ用セーフゾーンを保存して有効化",
     "zh": "保存并为群组激活安全区域",
-    "or": "ଗୋଷ୍ଠୀ ପାଇଁ ନିରାପଦ ଜୋନ୍ ସଞ୍ଚୟ ଏବଂ ସକ୍ରିୟ କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ ପାଇଁ ନିରାପଦ ଜୋନ୍ ସଞ୍ଚୟ ଏବଂ ସକ୍ରିୟ କରନ୍ତୁ |",
+    "ur": "گروپ کے لیے محفوظ زون کو محفوظ اور فعال کریں۔",
+    "zh_Hant": "保存並啟動群組安全區"
   },
   "safeRoute_startLocation": {
     "en": "Start Location",
@@ -5300,7 +5804,9 @@
     "pt": "Local de Partida",
     "ja": "出発地",
     "zh": "出发地点",
-    "or": "ଅବସ୍ଥାନ ଆରମ୍ଭ କରନ୍ତୁ |"
+    "or": "ଅବସ୍ଥାନ ଆରମ୍ଭ କରନ୍ତୁ |",
+    "ur": "مقام شروع کریں۔",
+    "zh_Hant": "起始位置"
   },
   "safeRoute_destination": {
     "en": "Destination",
@@ -5320,7 +5826,9 @@
     "pt": "Destino",
     "ja": "目的地",
     "zh": "目的地点",
-    "or": "ଗନ୍ତବ୍ୟସ୍ଥଳ"
+    "or": "ଗନ୍ତବ୍ୟସ୍ଥଳ",
+    "ur": "منزل",
+    "zh_Hant": "目的地"
   },
   "safeRoute_start": {
     "en": "Start",
@@ -5340,7 +5848,9 @@
     "pt": "Início",
     "ja": "スタート",
     "zh": "起点",
-    "or": "ଆରମ୍ଭ କରନ୍ତୁ |"
+    "or": "ଆରମ୍ଭ କରନ୍ତୁ |",
+    "ur": "شروع کریں۔",
+    "zh_Hant": "開始"
   },
   "safeRoute_end": {
     "en": "End",
@@ -5360,7 +5870,9 @@
     "pt": "Fim",
     "ja": "ゴール",
     "zh": "终点",
-    "or": "ଶେଷ"
+    "or": "ଶେଷ",
+    "ur": "ختم",
+    "zh_Hant": "結尾"
   },
   "safeRoute_distanceEta": {
     "en": "{distance} km • {minutes} min",
@@ -5388,7 +5900,9 @@
     "pt": "{distance} km • {minutes} min",
     "ja": "{distance} km • 約{minutes}分",
     "zh": "{distance} 公里 • {minutes} 分钟",
-    "or": "{distance} କିମି • {minutes} ମିନିଟ୍ |"
+    "or": "{distance} କିମି • {minutes} ମିନିଟ୍ |",
+    "ur": "{distance} کلومیٹر • {minutes} منٹ",
+    "zh_Hant": "{distance} 公里 • {minutes} 分鐘"
   },
   "safeRoute_recommended": {
     "en": "Recommended",
@@ -5408,7 +5922,9 @@
     "pt": "Recomendado",
     "ja": "おすすめ",
     "zh": "推荐路线",
-    "or": "ପରାମର୍ଶିତ"
+    "or": "ପରାମର୍ଶିତ",
+    "ur": "تجویز کردہ",
+    "zh_Hant": "受到推崇的"
   },
   "safeRoute_deviationSubtitle": {
     "en": "Set how much deviation is allowed from the selected route.",
@@ -5428,7 +5944,9 @@
     "pt": "Defina quanto desvio é permitido da rota.",
     "ja": "設定したルートから離れてよい許容距離を設定します。",
     "zh": "设置允许偏离既定路线的最大距离。",
-    "or": "ମନୋନୀତ ମାର୍ଗରୁ କେତେ ବିଚ୍ୟୁତିକୁ ଅନୁମତି ଦିଆଯାଇଛି ସେଟ୍ କରନ୍ତୁ |"
+    "or": "ମନୋନୀତ ମାର୍ଗରୁ କେତେ ବିଚ୍ୟୁତିକୁ ଅନୁମତି ଦିଆଯାଇଛି ସେଟ୍ କରନ୍ତୁ |",
+    "ur": "سیٹ کریں کہ منتخب کردہ راستے سے کتنا انحراف کی اجازت ہے۔",
+    "zh_Hant": "設定允許偏離所選路線的程度。"
   },
   "safeRoute_deviationAlertNote": {
     "en": "Alert will be triggered if the member deviates more than {distance} from the safe route.",
@@ -5453,7 +5971,9 @@
     "pt": "Um alerta será acionado se o membro se desviar mais de {distance}.",
     "ja": "メンバーが安全ルートから {distance} 以上逸脱した場合、アラートが送信されます。",
     "zh": "当成员偏离安全路线超过 {distance} 时将触发警报。",
-    "or": "ଯଦି ସଦସ୍ୟ ସୁରକ୍ଷିତ ମାର୍ଗରୁ {distance} ରୁ ଅଧିକ ବିଚ୍ୟୁତ ହୁଅନ୍ତି ତେବେ ସତର୍କତା ସୃଷ୍ଟି ହେବ |"
+    "or": "ଯଦି ସଦସ୍ୟ ସୁରକ୍ଷିତ ମାର୍ଗରୁ {distance} ରୁ ଅଧିକ ବିଚ୍ୟୁତ ହୁଅନ୍ତି ତେବେ ସତର୍କତା ସୃଷ୍ଟି ହେବ |",
+    "ur": "اگر ممبر محفوظ راستے سے {distance} سے زیادہ انحراف کرتا ہے تو الرٹ کو متحرک کیا جائے گا۔",
+    "zh_Hant": "如果會員偏離安全路線超過{distance}，則會觸發警報。"
   },
   "safeRoute_groupWithCount": {
     "en": "{group} ({count, plural, =1{1 Member} other{{count} Members}})",
@@ -5481,7 +6001,9 @@
     "pt": "{group} ({count, plural, =1{1 membro} other{{count} membros}})",
     "ja": "{group} ({count}名のメンバー)",
     "zh": "{group} ({count} 名成员)",
-    "or": "{group} ({count, plural, =1{1 ସଦସ୍ୟ} other{{count} ସଦସ୍ୟମାନେ |}})"
+    "or": "{group} ({count, plural, =1{1 ସଦସ୍ୟ} other{{count} ସଦସ୍ୟମାନେ |}})",
+    "ur": "{group} ({count, plural, =1{1 رکن} other{{count} اراکین}})",
+    "zh_Hant": "{group} ({count, plural, =1{1 名會員} other{{count} 成員}})"
   },
   "safeRoute_routeFor": {
     "en": "Route ({name})",
@@ -5506,7 +6028,9 @@
     "pt": "Rota ({name})",
     "ja": "ルート ({name})",
     "zh": "路线 ({name})",
-    "or": "ମାର୍ଗ ({name})"
+    "or": "ମାର୍ଗ ({name})",
+    "ur": "راستہ ({name})",
+    "zh_Hant": "路線 ({name})"
   },
   "safeRoute_distance": {
     "en": "Distance",
@@ -5526,7 +6050,9 @@
     "pt": "Distância",
     "ja": "距離",
     "zh": "距离",
-    "or": "ଦୂରତା |"
+    "or": "ଦୂରତା |",
+    "ur": "فاصلہ",
+    "zh_Hant": "距離"
   },
   "safeRoute_estTime": {
     "en": "Est. Time: {minutes} min",
@@ -5551,7 +6077,9 @@
     "pt": "Tempo Estimado: {minutes} min",
     "ja": "所要時間目安: 約{minutes}分",
     "zh": "预计用时：{minutes} 分钟",
-    "or": "ଇଷ୍ଟ ସମୟ: {minutes} ମିନିଟ୍ |"
+    "or": "ଇଷ୍ଟ ସମୟ: {minutes} ମିନିଟ୍ |",
+    "ur": "تخمینہ وقت: {minutes} منٹ",
+    "zh_Hant": "預計。時間：{minutes} 分鐘"
   },
   "safeRoute_deviationLimit": {
     "en": "Deviation Limit",
@@ -5571,7 +6099,9 @@
     "pt": "Limite de Desvio",
     "ja": "逸脱許容範囲",
     "zh": "偏离限额",
-    "or": "ବିଚ୍ୟୁତି ସୀମା |"
+    "or": "ବିଚ୍ୟୁତି ସୀମା |",
+    "ur": "انحراف کی حد",
+    "zh_Hant": "偏差極限"
   },
   "safeRoute_selectedRoute": {
     "en": "Selected Route",
@@ -5591,7 +6121,9 @@
     "pt": "Rota Selecionada",
     "ja": "選択されたルート",
     "zh": "已选路线",
-    "or": "ମନୋନୀତ ମାର୍ଗ"
+    "or": "ମନୋନୀତ ମାର୍ଗ",
+    "ur": "منتخب راستہ",
+    "zh_Hant": "所選路線"
   },
   "safeRoute_recommendedRoute": {
     "en": "{name} (Recommended)",
@@ -5616,7 +6148,9 @@
     "pt": "{name} (Recomendado)",
     "ja": "{name} (おすすめ)",
     "zh": "{name} (推荐)",
-    "or": "{name} (ପରାମର୍ଶିତ)"
+    "or": "{name} (ପରାମର୍ଶିତ)",
+    "ur": "{name} (تجویز کردہ)",
+    "zh_Hant": "{name}（建議）"
   },
   "safeRoute_helpTitle": {
     "en": "Safe Route Help",
@@ -5636,7 +6170,9 @@
     "pt": "Ajuda com Rota Segura",
     "ja": "セーフルートのヘルプ",
     "zh": "安全路线帮助",
-    "or": "ନିରାପଦ ମାର୍ଗ ସହାୟତା"
+    "or": "ନିରାପଦ ମାର୍ଗ ସହାୟତା",
+    "ur": "محفوظ راستے کی مدد",
+    "zh_Hant": "安全路線幫助"
   },
   "safeRoute_helpWhatTitle": {
     "en": "What is Safe Route?",
@@ -5656,7 +6192,9 @@
     "pt": "O que é Rota Segura?",
     "ja": "セーフルートとは？",
     "zh": "什么是安全路线？",
-    "or": "ନିରାପଦ ମାର୍ଗ କ’ଣ?"
+    "or": "ନିରାପଦ ମାର୍ଗ କ’ଣ?",
+    "ur": "محفوظ راستہ کیا ہے؟",
+    "zh_Hant": "什麼是安全路線？"
   },
   "safeRoute_helpWhatBody": {
     "en": "Set a start and destination location to create a safe travel route for your team member.",
@@ -5676,7 +6214,9 @@
     "pt": "Defina partida e destino para criar uma rota segura para seu membro.",
     "ja": "出発地と目的地を指定して、メンバーのための安全な移動ルートを作成します。",
     "zh": "设定起点和目的地，为团队成员规划安全的通勤或出行路线。",
-    "or": "ଆପଣଙ୍କ ଦଳର ସଦସ୍ୟଙ୍କ ପାଇଁ ଏକ ସୁରକ୍ଷିତ ଭ୍ରମଣ ମାର୍ଗ ସୃଷ୍ଟି କରିବାକୁ ଏକ ଆରମ୍ଭ ଏବଂ ଗନ୍ତବ୍ୟ ସ୍ଥଳ ସ୍ଥିର କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କ ଦଳର ସଦସ୍ୟଙ୍କ ପାଇଁ ଏକ ସୁରକ୍ଷିତ ଭ୍ରମଣ ମାର୍ଗ ସୃଷ୍ଟି କରିବାକୁ ଏକ ଆରମ୍ଭ ଏବଂ ଗନ୍ତବ୍ୟ ସ୍ଥଳ ସ୍ଥିର କରନ୍ତୁ |",
+    "ur": "اپنی ٹیم کے رکن کے لیے ایک محفوظ سفری راستہ بنانے کے لیے آغاز اور منزل کا مقام متعین کریں۔",
+    "zh_Hant": "設定起點和目的地，為您的團隊成員建立安全的旅行路線。"
   },
   "safeRoute_helpHowTitle": {
     "en": "How to Create Safe Route?",
@@ -5696,7 +6236,9 @@
     "pt": "Como Criar uma Rota Segura?",
     "ja": "安全ルートの作成手順",
     "zh": "如何创建安全路线？",
-    "or": "ନିରାପଦ ମାର୍ଗ କିପରି ସୃଷ୍ଟି କରିବେ?"
+    "or": "ନିରାପଦ ମାର୍ଗ କିପରି ସୃଷ୍ଟି କରିବେ?",
+    "ur": "محفوظ راستہ کیسے بنایا جائے؟",
+    "zh_Hant": "如何打造安全路線？"
   },
   "safeRoute_helpHowBody": {
     "en": "Select the member, choose start and destination locations, pick the best route and set a deviation limit.",
@@ -5716,7 +6258,9 @@
     "pt": "Selecione o membro, escolha início e destino, escolha a melhor rota e defina o desvio.",
     "ja": "メンバーを選び、出発地と目的地を設定後、最適なルートと許容距離を指定します。",
     "zh": "选择成员，设定起点与终点，选取最佳路线并设置允许的偏离范围。",
-    "or": "ସଦସ୍ୟ ଚୟନ କରନ୍ତୁ, ଆରମ୍ଭ ଏବଂ ଗନ୍ତବ୍ୟ ସ୍ଥଳ ବାଛନ୍ତୁ, ସର୍ବୋତ୍ତମ ମାର୍ଗ ବାଛନ୍ତୁ ଏବଂ ଏକ ବିଚ୍ଛିନ୍ନତା ସୀମା ସ୍ଥିର କରନ୍ତୁ |"
+    "or": "ସଦସ୍ୟ ଚୟନ କରନ୍ତୁ, ଆରମ୍ଭ ଏବଂ ଗନ୍ତବ୍ୟ ସ୍ଥଳ ବାଛନ୍ତୁ, ସର୍ବୋତ୍ତମ ମାର୍ଗ ବାଛନ୍ତୁ ଏବଂ ଏକ ବିଚ୍ଛିନ୍ନତା ସୀମା ସ୍ଥିର କରନ୍ତୁ |",
+    "ur": "ممبر منتخب کریں، آغاز اور منزل کے مقامات کا انتخاب کریں، بہترین راستہ منتخب کریں اور انحراف کی حد مقرر کریں۔",
+    "zh_Hant": "選擇成員，選擇起點和目的地位置，選擇最佳路線並設定偏差限制。"
   },
   "safeRoute_helpDeviationTitle": {
     "en": "What is Deviation Limit?",
@@ -5736,7 +6280,9 @@
     "pt": "O que é Limite de Desvio?",
     "ja": "逸脱限度とは？",
     "zh": "什么是偏离限额？",
-    "or": "ବିଚ୍ୟୁତି ସୀମା କ’ଣ?"
+    "or": "ବିଚ୍ୟୁତି ସୀମା କ’ଣ?",
+    "ur": "انحراف کی حد کیا ہے؟",
+    "zh_Hant": "什麼是偏差極限？"
   },
   "safeRoute_helpDeviationBody": {
     "en": "Set the allowed distance a member can move away from the selected route. You’ll get an alert if they exceed this limit.",
@@ -5756,7 +6302,9 @@
     "pt": "Distância permitida fora da rota. Você receberá um alerta se o limite for ultrapassado.",
     "ja": "ルートから外れて移動できる許容距離です。これを超えると通知が届きます。",
     "zh": "设置成员可以偏离既定路线的距离阈值。超出阈值将自动发送警报。",
-    "or": "ଜଣେ ସଦସ୍ୟ ମନୋନୀତ ମାର୍ଗରୁ ଦୂରେଇ ଯାଇଥିବା ଅନୁମତି ପ୍ରାପ୍ତ ଦୂରତା ସେଟ୍ କରନ୍ତୁ | ଯଦି ସେମାନେ ଏହି ସୀମା ଅତିକ୍ରମ କରନ୍ତି ତେବେ ଆପଣ ଏକ ଆଲର୍ଟ ପାଇବେ |"
+    "or": "ଜଣେ ସଦସ୍ୟ ମନୋନୀତ ମାର୍ଗରୁ ଦୂରେଇ ଯାଇଥିବା ଅନୁମତି ପ୍ରାପ୍ତ ଦୂରତା ସେଟ୍ କରନ୍ତୁ | ଯଦି ସେମାନେ ଏହି ସୀମା ଅତିକ୍ରମ କରନ୍ତି ତେବେ ଆପଣ ଏକ ଆଲର୍ଟ ପାଇବେ |",
+    "ur": "وہ فاصلہ طے کریں جو ایک رکن منتخب راستے سے ہٹ سکتا ہے۔ اگر وہ اس حد سے تجاوز کرتے ہیں تو آپ کو الرٹ ملے گا۔",
+    "zh_Hant": "設置成員可以遠離所選路線的允許距離。如果超出此限制，您將收到警報。"
   },
   "safeZone_appBarSubtitle": {
     "en": "Define a safe area. Get alerts if someone\nsteps outside the safe zone.",
@@ -5776,7 +6324,9 @@
     "pt": "Defina uma área segura. Receba alertas se alguém\nsair da zona.",
     "ja": "安全なエリアを定義。エリア外へ\n出た時に即座にアラートを通知。",
     "zh": "划定安全防护区。当有人离开该区域时\n即刻向您发送警报。",
-    "or": "ଏକ ସୁରକ୍ଷିତ କ୍ଷେତ୍ର ବ୍ୟାଖ୍ୟା କରନ୍ତୁ | ଯଦି କେହି ଅଛନ୍ତି ତେବେ ଆଲର୍ଟ ପାଆନ୍ତୁ |\nସୁରକ୍ଷିତ ଜୋନ୍ ବାହାରେ ପଦାଙ୍କ |"
+    "or": "ଏକ ସୁରକ୍ଷିତ କ୍ଷେତ୍ର ବ୍ୟାଖ୍ୟା କରନ୍ତୁ | ଯଦି କେହି ଅଛନ୍ତି ତେବେ ଆଲର୍ଟ ପାଆନ୍ତୁ |\nସୁରକ୍ଷିତ ଜୋନ୍ ବାହାରେ ପଦାଙ୍କ |",
+    "ur": "محفوظ علاقے کی وضاحت کریں۔ انتباہات حاصل کریں اگر کوئی\nسیف زون سے باہر قدم۔",
+    "zh_Hant": "定義一個安全區域。如果有人\n走出安全區。"
   },
   "safeZone_appliedToGroup": {
     "en": "{count, plural, =1{This safe zone will be applied to the 1 member in the selected group.} other{This safe zone will be applied to all {count} members in the selected group.}}",
@@ -5801,7 +6351,9 @@
     "pt": "{count, plural, =1{Esta zona segura será aplicada ao 1 membro do grupo selecionado.} other{Esta zona segura será aplicada a todos os {count} membros do grupo selecionado.}}",
     "ja": "選択したグループの全 {count} 名にこのセーフゾーンが適用されます。",
     "zh": "该安全区域将应用于所选群组内的全部 {count} 名成员。",
-    "or": "{count, plural, =1{ଏହି ସୁରକ୍ଷିତ ଜୋନ୍ ମନୋନୀତ ଗୋଷ୍ଠୀର 1 ସଦସ୍ୟଙ୍କ ପାଇଁ ପ୍ରୟୋଗ ହେବ |} other{ଏହି ସୁରକ୍ଷିତ ଜୋନ୍ ମନୋନୀତ ଗୋଷ୍ଠୀର ସମସ୍ତ {count} ସଦସ୍ୟଙ୍କ ପାଇଁ ପ୍ରୟୋଗ ହେବ |}}"
+    "or": "{count, plural, =1{ଏହି ସୁରକ୍ଷିତ ଜୋନ୍ ମନୋନୀତ ଗୋଷ୍ଠୀର 1 ସଦସ୍ୟଙ୍କ ପାଇଁ ପ୍ରୟୋଗ ହେବ |} other{ଏହି ସୁରକ୍ଷିତ ଜୋନ୍ ମନୋନୀତ ଗୋଷ୍ଠୀର ସମସ୍ତ {count} ସଦସ୍ୟଙ୍କ ପାଇଁ ପ୍ରୟୋଗ ହେବ |}}",
+    "ur": "{count, plural, =1{یہ سیف زون منتخب کردہ گروپ کے 1 رکن پر لاگو ہوگا۔} other{یہ سیف زون منتخب کردہ گروپ کے تمام {count} اراکین پر لاگو ہوگا۔}}",
+    "zh_Hant": "{count, plural, =1{此安全區將應用於所選群組中的 1 名成員。} other{此安全區將套用於所選群組中的所有 {count} 成員。}}"
   },
   "safeZone_statusLabel": {
     "en": "Status:",
@@ -5821,7 +6373,9 @@
     "pt": "Status:",
     "ja": "状態:",
     "zh": "状态：",
-    "or": "ସ୍ଥିତି:"
+    "or": "ସ୍ଥିତି:",
+    "ur": "حیثیت:",
+    "zh_Hant": "地位："
   },
   "safeZone_activePreview": {
     "en": "Active (Preview)",
@@ -5841,7 +6395,9 @@
     "pt": "Ativo (Pré-visualização)",
     "ja": "有効 (プレビュー)",
     "zh": "生效中 (预览)",
-    "or": "ସକ୍ରିୟ (ପୂର୍ବାବଲୋକନ)"
+    "or": "ସକ୍ରିୟ (ପୂର୍ବାବଲୋକନ)",
+    "ur": "فعال (پیش نظارہ)",
+    "zh_Hant": "活動（預覽）"
   },
   "safeZone_allMonitored": {
     "en": "{count, plural, =1{1 member will be monitored\nwithin this safe zone.} other{All {count} members will be monitored\nwithin this safe zone.}}",
@@ -5866,7 +6422,9 @@
     "pt": "{count, plural, =1{1 membro será monitorado\nnesta zona segura.} other{Todos os {count} membros serão monitorados\nnesta zona segura.}}",
     "ja": "このセーフゾーン内で全 {count} 名のメンバーが見守られます。",
     "zh": "该安全区域内将对全部 {count} 名成员进行实时监护。",
-    "or": "{count, plural, =1{1 ସଦସ୍ୟଙ୍କ ଉପରେ ନଜର ରଖାଯିବ |\nଏହି ସୁରକ୍ଷିତ ଜୋନ୍ ମଧ୍ୟରେ |} other{ସମସ୍ତ {count} ସଦସ୍ୟଙ୍କ ଉପରେ ନଜର ରଖାଯିବ |\nଏହି ସୁରକ୍ଷିତ ଜୋନ୍ ମଧ୍ୟରେ |}}"
+    "or": "{count, plural, =1{1 ସଦସ୍ୟଙ୍କ ଉପରେ ନଜର ରଖାଯିବ |\nଏହି ସୁରକ୍ଷିତ ଜୋନ୍ ମଧ୍ୟରେ |} other{ସମସ୍ତ {count} ସଦସ୍ୟଙ୍କ ଉପରେ ନଜର ରଖାଯିବ |\nଏହି ସୁରକ୍ଷିତ ଜୋନ୍ ମଧ୍ୟରେ |}}",
+    "ur": "{count, plural, =1{اس سیف زون کے اندر 1 رکن کی نگرانی کی جائے گی۔} other{اس سیف زون کے اندر تمام {count} اراکین کی نگرانی کی جائے گی۔}}",
+    "zh_Hant": "{count, plural, =1{1 名成員將受到監控\n在這個安全區內。} other{所有 {count} 成员都将受到监控\n在這個安全區內。}}"
   },
   "safeZone_membersMonitored": {
     "en": "Members will be monitored within this safe zone.",
@@ -5886,7 +6444,9 @@
     "pt": "Os membros serão monitorados dentro desta zona segura.",
     "ja": "この安全ゾーン内でメンバーが見守られます。",
     "zh": "成员将在此安全区域内受到实时监护。",
-    "or": "ଏହି ସୁରକ୍ଷିତ ଜୋନ୍ ମଧ୍ୟରେ ସଦସ୍ୟମାନଙ୍କୁ ନଜର ରଖାଯିବ |"
+    "or": "ଏହି ସୁରକ୍ଷିତ ଜୋନ୍ ମଧ୍ୟରେ ସଦସ୍ୟମାନଙ୍କୁ ନଜର ରଖାଯିବ |",
+    "ur": "اس محفوظ زون کے اندر ممبران کی نگرانی کی جائے گی۔",
+    "zh_Hant": "成員將在該安全區內受到監控。"
   },
   "safeZone_helpTitle": {
     "en": "Safe Zone Help",
@@ -5906,7 +6466,9 @@
     "pt": "Ajuda com Zona Segura",
     "ja": "セーフゾーンのヘルプ",
     "zh": "安全区域帮助",
-    "or": "ନିରାପଦ ଜୋନ୍ ସହାୟତା |"
+    "or": "ନିରାପଦ ଜୋନ୍ ସହାୟତା |",
+    "ur": "سیف زون مدد",
+    "zh_Hant": "安全區幫助"
   },
   "safeZone_helpWhatTitle": {
     "en": "What is Safe Zone?",
@@ -5926,7 +6488,9 @@
     "pt": "O que é Zona Segura?",
     "ja": "セーフゾーンとは？",
     "zh": "什么是安全区域？",
-    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ କ’ଣ?"
+    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ କ’ଣ?",
+    "ur": "سیف زون کیا ہے؟",
+    "zh_Hant": "什麼是安全區？"
   },
   "safeZone_helpWhatBody": {
     "en": "Set a specific area on the map and get alerts if the member steps outside the safe zone.",
@@ -5946,7 +6510,9 @@
     "pt": "Defina uma área no mapa e receba alertas se o membro sair da zona.",
     "ja": "地図上に範囲を指定し、メンバーが外へ出た時に警告アラートを受け取ります。",
     "zh": "在地图上划定特定范围，并在成员走出该范围时自动触发警报。",
-    "or": "ମାନଚିତ୍ରରେ ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ କ୍ଷେତ୍ର ସେଟ୍ କରନ୍ତୁ ଏବଂ ଯଦି ସଦସ୍ୟ ସୁରକ୍ଷିତ ଜୋନ୍ ବାହାରେ ପଦକ୍ଷେପ ନିଅନ୍ତି ତେବେ ଆଲର୍ଟ ପ୍ରାପ୍ତ କରନ୍ତୁ |"
+    "or": "ମାନଚିତ୍ରରେ ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ କ୍ଷେତ୍ର ସେଟ୍ କରନ୍ତୁ ଏବଂ ଯଦି ସଦସ୍ୟ ସୁରକ୍ଷିତ ଜୋନ୍ ବାହାରେ ପଦକ୍ଷେପ ନିଅନ୍ତି ତେବେ ଆଲର୍ଟ ପ୍ରାପ୍ତ କରନ୍ତୁ |",
+    "ur": "نقشے پر ایک مخصوص علاقہ متعین کریں اور اگر رکن محفوظ زون سے باہر نکلتا ہے تو الرٹس حاصل کریں۔",
+    "zh_Hant": "在地圖上設定特定區域，如果成員走出安全區域，則會收到警報。"
   },
   "safeZone_helpHowTitle": {
     "en": "How to Create Safe Zone?",
@@ -5966,7 +6532,9 @@
     "pt": "Como Criar uma Zona Segura?",
     "ja": "セーフゾーンの作成方法",
     "zh": "如何创建安全区域？",
-    "or": "ନିରାପଦ ଜୋନ୍ କିପରି ସୃଷ୍ଟି କରିବେ?"
+    "or": "ନିରାପଦ ଜୋନ୍ କିପରି ସୃଷ୍ଟି କରିବେ?",
+    "ur": "سیف زون کیسے بنایا جائے؟",
+    "zh_Hant": "如何建立安全區？"
   },
   "safeZone_helpHowBody": {
     "en": "Select a member, choose a location on the map and set the radius.",
@@ -5986,7 +6554,9 @@
     "pt": "Selecione um membro, escolha um local no mapa e defina o raio.",
     "ja": "メンバーを選び、地図上で中心地点と半径を指定します。",
     "zh": "选择成员，在地图上选定中心点并设置相应半径。",
-    "or": "ଜଣେ ସଦସ୍ୟ ଚୟନ କରନ୍ତୁ, ମାନଚିତ୍ରରେ ଏକ ସ୍ଥାନ ବାଛନ୍ତୁ ଏବଂ ବ୍ୟାସାର୍ଦ୍ଧ ସେଟ୍ କରନ୍ତୁ |"
+    "or": "ଜଣେ ସଦସ୍ୟ ଚୟନ କରନ୍ତୁ, ମାନଚିତ୍ରରେ ଏକ ସ୍ଥାନ ବାଛନ୍ତୁ ଏବଂ ବ୍ୟାସାର୍ଦ୍ଧ ସେଟ୍ କରନ୍ତୁ |",
+    "ur": "ایک رکن منتخب کریں، نقشے پر ایک مقام منتخب کریں اور رداس سیٹ کریں۔",
+    "zh_Hant": "選擇一個成員，在地圖上選擇一個位置並設定半徑。"
   },
   "safeZone_helpRadiusTitle": {
     "en": "What is Safe Zone Radius?",
@@ -6006,7 +6576,9 @@
     "pt": "O que é o Raio da Zona Segura?",
     "ja": "セーフゾーン半径とは？",
     "zh": "什么是安全区半径？",
-    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ ରେଡିଓ କ’ଣ?"
+    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ ରେଡିଓ କ’ଣ?",
+    "ur": "سیف زون ریڈیئس کیا ہے؟",
+    "zh_Hant": "什麼是安全區半徑？"
   },
   "safeZone_helpRadiusBody": {
     "en": "Set the area radius (500 m, 1 km, 2 km or 5 km) according to your need.",
@@ -6026,7 +6598,9 @@
     "pt": "Defina o raio (500 m, 1 km, 2 km ou 5 km) conforme sua necessidade.",
     "ja": "必要に応じて範囲半径 (500m、1km、2km、5km) を選択します。",
     "zh": "根据实际需求设定安全区域半径（500米、1公里、2公里或5公里）。",
-    "or": "ଆପଣଙ୍କ ଆବଶ୍ୟକତା ଅନୁଯାୟୀ କ୍ଷେତ୍ର ପରିସର (500 ମିଟର, 1 କିଲୋମିଟର, 2 କିଲୋମିଟର କିମ୍ବା 5 କିଲୋମିଟର) ସେଟ୍ କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କ ଆବଶ୍ୟକତା ଅନୁଯାୟୀ କ୍ଷେତ୍ର ପରିସର (500 ମିଟର, 1 କିଲୋମିଟର, 2 କିଲୋମିଟର କିମ୍ବା 5 କିଲୋମିଟର) ସେଟ୍ କରନ୍ତୁ |",
+    "ur": "اپنی ضرورت کے مطابق علاقے کا رداس (500 میٹر، 1 کلومیٹر، 2 کلومیٹر یا 5 کلومیٹر) سیٹ کریں۔",
+    "zh_Hant": "根據需要設定區域半徑（500 m、1 km、2 km 或 5 km）。"
   },
   "safety_tabIndividual": {
     "en": "Individual",
@@ -6046,7 +6620,9 @@
     "pt": "Individual",
     "ja": "個人",
     "zh": "个人",
-    "or": "ବ୍ୟକ୍ତିଗତ"
+    "or": "ବ୍ୟକ୍ତିଗତ",
+    "ur": "انفرادی",
+    "zh_Hant": "個人"
   },
   "safeZone_totalMembers": {
     "en": "{count, plural, =1{Total 1 Member} other{Total {count} Members}}",
@@ -6071,7 +6647,9 @@
     "pt": "{count, plural, =1{Total 1 Membro} other{Total de {count} Membros}}",
     "ja": "合計 {count} 名のメンバー",
     "zh": "共 {count} 名成员",
-    "or": "{count, plural, =1{ମୋଟ 1 ସଦସ୍ୟ |} other{ସମୁଦାୟ {count} ସଦସ୍ୟମାନେ |}}"
+    "or": "{count, plural, =1{ମୋଟ 1 ସଦସ୍ୟ |} other{ସମୁଦାୟ {count} ସଦସ୍ୟମାନେ |}}",
+    "ur": "{count, plural, =1{کل 1 رکن} other{کل {count} اراکین}}",
+    "zh_Hant": "{count, plural, =1{共有 1 位會員} other{共有 {count} 名成員}}"
   },
   "safety_viewAllMembers": {
     "en": "View All Members",
@@ -6091,7 +6669,9 @@
     "pt": "Ver Todos os Membros",
     "ja": "全メンバーを表示",
     "zh": "查看全部成员",
-    "or": "ସମସ୍ତ ସଦସ୍ୟଙ୍କୁ ଦେଖନ୍ତୁ |"
+    "or": "ସମସ୍ତ ସଦସ୍ୟଙ୍କୁ ଦେଖନ୍ତୁ |",
+    "ur": "تمام ممبران کو دیکھیں",
+    "zh_Hant": "看全部會員"
   },
   "safeZone_searchLocation": {
     "en": "Search Location...",
@@ -6111,7 +6691,9 @@
     "pt": "Pesquisar Local...",
     "ja": "場所を検索...",
     "zh": "搜索地点...",
-    "or": "ସନ୍ଧାନ ସ୍ଥାନ ..."
+    "or": "ସନ୍ଧାନ ସ୍ଥାନ ...",
+    "ur": "مقام تلاش کریں...",
+    "zh_Hant": "搜尋位置..."
   },
   "safety_recenter": {
     "en": "Re-center",
@@ -6131,7 +6713,9 @@
     "pt": "Recentralizar",
     "ja": "中心に戻す",
     "zh": "重新居中",
-    "or": "ପୁନ center- କେନ୍ଦ୍ର |"
+    "or": "ପୁନ center- କେନ୍ଦ୍ର |",
+    "ur": "دوبارہ مرکز کریں۔",
+    "zh_Hant": "重新居中"
   },
   "safety_editAnytime": {
     "en": "You can edit or deactivate anytime later.",
@@ -6151,7 +6735,9 @@
     "pt": "Você pode editar ou desativar a qualquer momento depois.",
     "ja": "後からいつでも変更・無効化が可能です。",
     "zh": "您可以在日后随时对其进行修改或停用。",
-    "or": "ଆପଣ ଯେକ time ଣସି ସମୟରେ ପରେ ସଂପାଦନ କିମ୍ବା ନିଷ୍କ୍ରିୟ କରିପାରିବେ |"
+    "or": "ଆପଣ ଯେକ time ଣସି ସମୟରେ ପରେ ସଂପାଦନ କିମ୍ବା ନିଷ୍କ୍ରିୟ କରିପାରିବେ |",
+    "ur": "آپ بعد میں کسی بھی وقت ترمیم یا غیر فعال کر سکتے ہیں۔",
+    "zh_Hant": "您可以稍後隨時編輯或停用。"
   },
   "safeZone_alertSheetDesc": {
     "en": "Real-time alerts when team members leave the safe zone",
@@ -6171,7 +6757,9 @@
     "pt": "Alertas em tempo real quando membros saem da zona segura",
     "ja": "メンバーが安全ゾーンを離れた時のリアルタイム通知",
     "zh": "团队成员离开安全区域时的实时警报",
-    "or": "ଯେତେବେଳେ ଦଳର ସଦସ୍ୟମାନେ ସୁରକ୍ଷିତ ଜୋନ୍ ଛାଡନ୍ତି ରିଅଲ୍ ଟାଇମ୍ ଆଲର୍ଟ |"
+    "or": "ଯେତେବେଳେ ଦଳର ସଦସ୍ୟମାନେ ସୁରକ୍ଷିତ ଜୋନ୍ ଛାଡନ୍ତି ରିଅଲ୍ ଟାଇମ୍ ଆଲର୍ଟ |",
+    "ur": "ریئل ٹائم انتباہات جب ٹیم کے اراکین محفوظ زون سے نکل جاتے ہیں۔",
+    "zh_Hant": "團隊成員離開安全區時即時警報"
   },
   "safeRoute_alertSheetDesc": {
     "en": "Real-time alerts when team members deviate from the safe route",
@@ -6191,7 +6779,9 @@
     "pt": "Alertas em tempo real quando membros desviam da rota segura",
     "ja": "メンバーが安全ルートから外れた時のリアルタイム通知",
     "zh": "团队成员偏离既定安全路线时的实时警报",
-    "or": "ଯେତେବେଳେ ଦଳର ସଦସ୍ୟମାନେ ସୁରକ୍ଷିତ ମାର୍ଗରୁ ବିଚ୍ୟୁତ ହୁଅନ୍ତି ରିଅଲ୍ ଟାଇମ୍ ଆଲର୍ଟ |"
+    "or": "ଯେତେବେଳେ ଦଳର ସଦସ୍ୟମାନେ ସୁରକ୍ଷିତ ମାର୍ଗରୁ ବିଚ୍ୟୁତ ହୁଅନ୍ତି ରିଅଲ୍ ଟାଇମ୍ ଆଲର୍ଟ |",
+    "ur": "ریئل ٹائم الرٹس جب ٹیم کے اراکین محفوظ راستے سے ہٹ جاتے ہیں۔",
+    "zh_Hant": "當團隊成員偏離安全路線時即時警報"
   },
   "safeZone_activeTitle": {
     "en": "Active Safe Zone",
@@ -6211,7 +6801,9 @@
     "pt": "Zona Segura Ativa",
     "ja": "有効なセーフゾーン",
     "zh": "生效中的安全区域",
-    "or": "ସକ୍ରିୟ ସୁରକ୍ଷିତ ଜୋନ୍ |"
+    "or": "ସକ୍ରିୟ ସୁରକ୍ଷିତ ଜୋନ୍ |",
+    "ur": "ایکٹو سیف زون",
+    "zh_Hant": "主動安全區"
   },
   "safeRoute_activeTitle": {
     "en": "Active Safe Route",
@@ -6231,7 +6823,9 @@
     "pt": "Rota Segura Ativa",
     "ja": "有効なセーフルート",
     "zh": "生效中的安全路线",
-    "or": "ସକ୍ରିୟ ନିରାପଦ ମାର୍ଗ |"
+    "or": "ସକ୍ରିୟ ନିରାପଦ ମାର୍ଗ |",
+    "ur": "فعال محفوظ راستہ",
+    "zh_Hant": "主動安全路線"
   },
   "safeZone_activeDetails": {
     "en": "Radius: {radius}  •  Center: {center}",
@@ -6259,7 +6853,9 @@
     "pt": "Raio: {radius}  •  Centro: {center}",
     "ja": "半径: {radius}  •  中心: {center}",
     "zh": "半径：{radius}  •  中心：{center}",
-    "or": "ରେଡିଓ: {radius} • କେନ୍ଦ୍ର: {center}"
+    "or": "ରେଡିଓ: {radius} • କେନ୍ଦ୍ର: {center}",
+    "ur": "رداس: {radius} • مرکز: {center}",
+    "zh_Hant": "半徑：{radius} • 中心：{center}"
   },
   "safeRoute_activeDetails": {
     "en": "Total Distance: {distance}  •  Allowed Deviation: {deviation}",
@@ -6287,7 +6883,9 @@
     "pt": "Distância Total: {distance}  •  Desvio Permitido: {deviation}",
     "ja": "総距離: {distance}  •  許容偏差: {deviation}",
     "zh": "总距离：{distance}  •  允许偏离：{deviation}",
-    "or": "ସମୁଦାୟ ଦୂରତା: {distance} • ଅନୁମତିପ୍ରାପ୍ତ ବିଘ୍ନ: {deviation}"
+    "or": "ସମୁଦାୟ ଦୂରତା: {distance} • ଅନୁମତିପ୍ରାପ୍ତ ବିଘ୍ନ: {deviation}",
+    "ur": "کل فاصلہ: {distance} • اجازت شدہ انحراف: {deviation}",
+    "zh_Hant": "總距離：{distance} • 允許偏差：{deviation}"
   },
   "safety_active": {
     "en": "Active",
@@ -6308,7 +6906,9 @@
     "pt": "Ativo",
     "ja": "有効",
     "zh": "有效",
-    "or": "ସକ୍ରିୟ |"
+    "or": "ସକ୍ରିୟ |",
+    "ur": "فعال",
+    "zh_Hant": "積極的"
   },
   "safeZone_exited": {
     "en": "Exited safe zone",
@@ -6328,7 +6928,9 @@
     "pt": "Saiu da zona segura",
     "ja": "セーフゾーンから出ました",
     "zh": "已离开安全区域",
-    "or": "ସୁରକ୍ଷିତ ଜୋନ୍"
+    "or": "ସୁରକ୍ଷିତ ଜୋନ୍",
+    "ur": "محفوظ زون سے باہر نکلا۔",
+    "zh_Hant": "退出安全區"
   },
   "safeRoute_deviated": {
     "en": "Deviated from safe route",
@@ -6348,7 +6950,9 @@
     "pt": "Desviou da rota segura",
     "ja": "セーフルートから逸脱しました",
     "zh": "已偏离安全路线",
-    "or": "ସୁରକ୍ଷିତ ମାର୍ଗରୁ ବିଚ୍ଛିନ୍ନ |"
+    "or": "ସୁରକ୍ଷିତ ମାର୍ଗରୁ ବିଚ୍ଛିନ୍ନ |",
+    "ur": "محفوظ راستے سے ہٹ گئے۔",
+    "zh_Hant": "偏離安全路線"
   },
   "safety_alertSettings": {
     "en": "Alert Settings",
@@ -6368,7 +6972,9 @@
     "pt": "Configurações de Alerta",
     "ja": "アラート設定",
     "zh": "警报设置",
-    "or": "ଆଲର୍ଟ ସେଟିଂସମୂହ |"
+    "or": "ଆଲର୍ଟ ସେଟିଂସମୂହ |",
+    "ur": "الرٹ کی ترتیبات",
+    "zh_Hant": "警報設定"
   },
   "safeZone_alertSettingsDesc": {
     "en": "Manage safe zone, alert distance and notification preferences",
@@ -6388,7 +6994,9 @@
     "pt": "Gerencie zona segura, distância de alerta e notificações",
     "ja": "セーフゾーン、通知距離、通知設定を管理します",
     "zh": "管理安全区域、警报距离及通知偏好设置",
-    "or": "ସୁରକ୍ଷିତ ଜୋନ୍, ଆଲର୍ଟ ଦୂରତା ଏବଂ ବିଜ୍ଞପ୍ତି ପସନ୍ଦଗୁଡିକ ପରିଚାଳନା କରନ୍ତୁ |"
+    "or": "ସୁରକ୍ଷିତ ଜୋନ୍, ଆଲର୍ଟ ଦୂରତା ଏବଂ ବିଜ୍ଞପ୍ତି ପସନ୍ଦଗୁଡିକ ପରିଚାଳନା କରନ୍ତୁ |",
+    "ur": "محفوظ زون، الرٹ فاصلے اور اطلاع کی ترجیحات کا نظم کریں۔",
+    "zh_Hant": "管理安全區、警報距離和通知首選項"
   },
   "safeRoute_alertSettingsDesc": {
     "en": "Manage safe route alerts, deviation limits and notification preferences.",
@@ -6408,7 +7016,9 @@
     "pt": "Gerencie alertas de rota, limites de desvio e notificações.",
     "ja": "セーフルート通知、許容範囲、通知設定を管理します。",
     "zh": "管理安全路线警报、偏离限额及通知偏好。",
-    "or": "ସୁରକ୍ଷିତ ମାର୍ଗ ଆଲର୍ଟ, ବିଚ୍ୟୁତି ସୀମା ଏବଂ ବିଜ୍ଞପ୍ତି ପସନ୍ଦଗୁଡିକ ପରିଚାଳନା କରନ୍ତୁ |"
+    "or": "ସୁରକ୍ଷିତ ମାର୍ଗ ଆଲର୍ଟ, ବିଚ୍ୟୁତି ସୀମା ଏବଂ ବିଜ୍ଞପ୍ତି ପସନ୍ଦଗୁଡିକ ପରିଚାଳନା କରନ୍ତୁ |",
+    "ur": "محفوظ راستے کے انتباہات، انحراف کی حدود اور اطلاع کی ترجیحات کا نظم کریں۔",
+    "zh_Hant": "管理安全路線警報、偏差限制和通知首選項。"
   },
   "safeZone_edit": {
     "en": "Edit Safe Zone",
@@ -6428,7 +7038,9 @@
     "pt": "Editar Zona Segura",
     "ja": "セーフゾーンを編集",
     "zh": "编辑安全区域",
-    "or": "ନିରାପଦ ଜୋନ୍ ସଂପାଦନ କରନ୍ତୁ |"
+    "or": "ନିରାପଦ ଜୋନ୍ ସଂପାଦନ କରନ୍ତୁ |",
+    "ur": "سیف زون میں ترمیم کریں۔",
+    "zh_Hant": "編輯安全區"
   },
   "safeRoute_edit": {
     "en": "Edit Safe Route",
@@ -6448,6 +7060,8 @@
     "pt": "Editar Rota Segura",
     "ja": "セーフルートを編集",
     "zh": "编辑安全路线",
-    "or": "ନିରାପଦ ମାର୍ଗ ସଂପାଦନ କରନ୍ତୁ |"
+    "or": "ନିରାପଦ ମାର୍ଗ ସଂପାଦନ କରନ୍ତୁ |",
+    "ur": "محفوظ راستے میں ترمیم کریں۔",
+    "zh_Hant": "編輯安全路線"
   }
 }

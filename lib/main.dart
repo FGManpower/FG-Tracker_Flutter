@@ -14,6 +14,7 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
+import 'package:fgtracker/features/language/fallback_localizations_delegate.dart';
 import 'package:fgtracker/features/language/language_controller.dart';
 import 'package:fgtracker/features/language/language_options.dart';
 import 'package:flutter/foundation.dart';
@@ -399,9 +400,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               fallbackLocale: const Locale('en'),
               localizationsDelegates: const [
                 AppLocalizations.delegate,
+                RtlWidgetsLocalizationsDelegate(),
                 GlobalMaterialLocalizations.delegate,
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
+                FallbackMaterialLocalizationsDelegate(),
+                FallbackCupertinoLocalizationsDelegate(),
               ],
               supportedLocales: [
                 ...kAppLanguages.map((o) => o.locale),

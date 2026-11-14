@@ -969,6 +969,8 @@
   "intro_skip": "దాటవేయి",
   "intro_walkieSubtitle": "సిగ్నల్ లేదా? పర్వాలేదు. ఎక్కడైనా కనెక్ట్‌గా ఉండండి.",
   "intro_walkieTitle": "వాకీ-టాకీ ఫీచర్",
+  "login_dataSecure": "మీ డేటా {percent} సురక్షితం",
+  "login_enterMobileNumber": "మొబైల్ నంబర్ నమోదు చేయండి",
   "media_cannotOpen": "తెరవలేము",
   "media_documentNotFound": "డాక్యుమెంట్ కనుగొనబడలేదు",
   "media_invalidLink": "చెల్లని లింక్",

@@ -2131,6 +2131,15 @@
   "intro_skip": "Skip",
   "intro_walkieSubtitle": "No signal. No problem. Stay\nconnected anywhere.",
   "intro_walkieTitle": "Walkie-Talkie\nfeature",
+  "login_dataSecure": "Your data is {percent} secure",
+  "@login_dataSecure": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "login_enterMobileNumber": "Enter Mobile Number",
   "media_cannotOpen": "Cannot open",
   "media_documentNotFound": "Document not found",
   "media_invalidLink": "Invalid link",

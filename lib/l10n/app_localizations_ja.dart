@@ -3279,6 +3279,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get intro_walkieTitle => 'トランシーバー\n機能';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'あなたのデータは $percent 安全です';
+  }
+
+  @override
+  String get login_enterMobileNumber => '携帯電話番号を入力';
+
+  @override
   String get media_cannotOpen => '開けません';
 
   @override

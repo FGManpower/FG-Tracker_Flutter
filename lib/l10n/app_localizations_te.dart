@@ -3422,6 +3422,14 @@ class AppLocalizationsTe extends AppLocalizations {
   String get intro_walkieTitle => 'వాకీ-టాకీ ఫీచర్';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'మీ డేటా $percent సురక్షితం';
+  }
+
+  @override
+  String get login_enterMobileNumber => 'మొబైల్ నంబర్ నమోదు చేయండి';
+
+  @override
   String get media_cannotOpen => 'తెరవలేము';
 
   @override

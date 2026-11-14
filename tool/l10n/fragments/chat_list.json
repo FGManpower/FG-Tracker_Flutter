@@ -18,7 +18,9 @@
     "pt": "Chat",
     "ja": "チャット",
     "zh": "聊天",
-    "or": "ଚାଟ୍ କରନ୍ତୁ |"
+    "or": "ଚାଟ୍ କରନ୍ତୁ |",
+    "ur": "گپ شپ",
+    "zh_Hant": "聊天"
   },
   "chatList_subtitle": {
     "en": "Stay connected with your team",
@@ -38,7 +40,9 @@
     "pt": "Mantenha-se conectado com sua equipe",
     "ja": "チームとつながりを維持",
     "zh": "与您的团队保持联系",
-    "or": "ତୁମ ଦଳ ସହିତ ସଂଯୁକ୍ତ ରୁହ |"
+    "or": "ତୁମ ଦଳ ସହିତ ସଂଯୁକ୍ତ ରୁହ |",
+    "ur": "اپنی ٹیم کے ساتھ جڑے رہیں",
+    "zh_Hant": "與您的團隊保持聯繫"
   },
   "chatList_searchHint": {
     "en": "Search chats or messages...",
@@ -58,7 +62,9 @@
     "pt": "Pesquisar conversas ou mensagens...",
     "ja": "チャットまたはメッセージを検索...",
     "zh": "搜索聊天或消息...",
-    "or": "ଚାଟ୍ କିମ୍ବା ବାର୍ତ୍ତା ଖୋଜ ..."
+    "or": "ଚାଟ୍ କିମ୍ବା ବାର୍ତ୍ତା ଖୋଜ ...",
+    "ur": "چیٹس یا پیغامات تلاش کریں...",
+    "zh_Hant": "搜尋聊天或訊息..."
   },
   "chatList_quickCommTitle": {
     "en": "Quick Communication",
@@ -78,7 +84,9 @@
     "pt": "Comunicação rápida",
     "ja": "クイック通信",
     "zh": "快捷沟通",
-    "or": "ଶୀଘ୍ର ଯୋଗାଯୋଗ |"
+    "or": "ଶୀଘ୍ର ଯୋଗାଯୋଗ |",
+    "ur": "فوری مواصلت",
+    "zh_Hant": "快速溝通"
   },
   "chatList_quickCommSubtitle": {
     "en": "Connect with your team instantly",
@@ -98,7 +106,9 @@
     "pt": "Conecte-se com sua equipe instantaneamente",
     "ja": "チームと即座につながる",
     "zh": "即时连接您的团队",
-    "or": "ତୁରନ୍ତ ତୁମ ଦଳ ସହିତ ସଂଯୋଗ କର |"
+    "or": "ତୁରନ୍ତ ତୁମ ଦଳ ସହିତ ସଂଯୋଗ କର |",
+    "ur": "اپنی ٹیم کے ساتھ فوری طور پر جڑیں۔",
+    "zh_Hant": "立即與您的團隊聯繫"
   },
   "chatList_quickWalkie": {
     "en": "Walkie",
@@ -118,7 +128,9 @@
     "pt": "Walkie",
     "ja": "トランシーバー",
     "zh": "对讲",
-    "or": "ୱାକି"
+    "or": "ୱାକି",
+    "ur": "واکی",
+    "zh_Hant": "對講機"
   },
   "chatList_quickWalkieSub": {
     "en": "Push to Talk",
@@ -138,7 +150,9 @@
     "pt": "Aperte para falar",
     "ja": "プッシュツートーク",
     "zh": "一键对讲",
-    "or": "କଥାବାର୍ତ୍ତା କରିବାକୁ ଠେଲିଦିଅ |"
+    "or": "କଥାବାର୍ତ୍ତା କରିବାକୁ ଠେଲିଦିଅ |",
+    "ur": "پش ٹو ٹاک",
+    "zh_Hant": "一鍵通"
   },
   "chatList_quickTracking": {
     "en": "Tracking",
@@ -158,7 +172,9 @@
     "pt": "Rastreamento",
     "ja": "追跡",
     "zh": "追踪",
-    "or": "ଟ୍ରାକିଂ"
+    "or": "ଟ୍ରାକିଂ",
+    "ur": "ٹریکنگ",
+    "zh_Hant": "追蹤"
   },
   "chatList_quickTrackingSub": {
     "en": "Live Location",
@@ -178,7 +194,9 @@
     "pt": "Localização ao vivo",
     "ja": "リアルタイム位置情報",
     "zh": "实时位置",
-    "or": "ଲାଇଭ୍ ଅବସ୍ଥାନ |"
+    "or": "ଲାଇଭ୍ ଅବସ୍ଥାନ |",
+    "ur": "لائیو مقام",
+    "zh_Hant": "居住地點"
   },
   "chatList_quickGroups": {
     "en": "Groups",
@@ -198,7 +216,9 @@
     "pt": "Grupos",
     "ja": "グループ",
     "zh": "群组",
-    "or": "ଗୋଷ୍ଠୀଗୁଡିକ"
+    "or": "ଗୋଷ୍ଠୀଗୁଡିକ",
+    "ur": "گروپس",
+    "zh_Hant": "團體"
   },
   "chatList_quickGroupsSub": {
     "en": "Team Chats",
@@ -218,7 +238,9 @@
     "pt": "Conversas de equipe",
     "ja": "チームチャット",
     "zh": "团队群聊",
-    "or": "ଦଳ ଚାଟ୍ |"
+    "or": "ଦଳ ଚାଟ୍ |",
+    "ur": "ٹیم چیٹس",
+    "zh_Hant": "團隊聊天"
   },
   "chatList_quickSafeZone": {
     "en": "Safe Zone",
@@ -238,7 +260,9 @@
     "pt": "Zona Segura",
     "ja": "セーフゾーン",
     "zh": "安全区域",
-    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ |"
+    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ |",
+    "ur": "سیف زون",
+    "zh_Hant": "安全區"
   },
   "chatList_quickSafeZoneSub": {
     "en": "Safety & Alerts",
@@ -258,7 +282,9 @@
     "pt": "Segurança e alertas",
     "ja": "安全とアラート",
     "zh": "安全与警报",
-    "or": "ସୁରକ୍ଷା ଏବଂ ଆଲର୍ଟ |"
+    "or": "ସୁରକ୍ଷା ଏବଂ ଆଲର୍ଟ |",
+    "ur": "سیفٹی اور الرٹس",
+    "zh_Hant": "安全與警報"
   },
   "chatList_searchResults": {
     "en": "Search Results",
@@ -278,7 +304,9 @@
     "pt": "Resultados da pesquisa",
     "ja": "検索結果",
     "zh": "搜索结果",
-    "or": "ସନ୍ଧାନ ଫଳାଫଳ"
+    "or": "ସନ୍ଧାନ ଫଳାଫଳ",
+    "ur": "تلاش کے نتائج",
+    "zh_Hant": "搜尋結果"
   },
   "chatList_allChats": {
     "en": "All Chats",
@@ -298,7 +326,9 @@
     "pt": "Todas as conversas",
     "ja": "すべてのチャット",
     "zh": "所有聊天",
-    "or": "ସମସ୍ତ ଚାଟ୍ |"
+    "or": "ସମସ୍ତ ଚାଟ୍ |",
+    "ur": "تمام چیٹس",
+    "zh_Hant": "所有聊天"
   },
   "chatList_unknownUser": {
     "en": "Unknown User",
@@ -318,7 +348,9 @@
     "pt": "Usuário desconhecido",
     "ja": "不明なユーザー",
     "zh": "未知用户",
-    "or": "ଅଜ୍ଞାତ ବ୍ୟବହାରକାରୀ |"
+    "or": "ଅଜ୍ଞାତ ବ୍ୟବହାରକାରୀ |",
+    "ur": "نامعلوم صارف",
+    "zh_Hant": "未知用戶"
   },
   "chatList_unknown": {
     "en": "Unknown",
@@ -338,7 +370,9 @@
     "pt": "Desconhecido",
     "ja": "不明",
     "zh": "未知",
-    "or": "ଅଜ୍ଞାତ"
+    "or": "ଅଜ୍ଞାତ",
+    "ur": "نامعلوم",
+    "zh_Hant": "未知"
   },
   "chatList_groupFallback": {
     "en": "Group",
@@ -359,7 +393,9 @@
     "pt": "Grupo",
     "ja": "グループ",
     "zh": "群组",
-    "or": "ଗୋଷ୍ଠୀ"
+    "or": "ଗୋଷ୍ଠୀ",
+    "ur": "گروپ",
+    "zh_Hant": "團體"
   },
   "chatList_groupChatFallback": {
     "en": "Group Chat",
@@ -379,7 +415,9 @@
     "pt": "Conversa em grupo",
     "ja": "グループチャット",
     "zh": "群聊",
-    "or": "ଗୋଷ୍ଠୀ ଚାଟ୍ |"
+    "or": "ଗୋଷ୍ଠୀ ଚାଟ୍ |",
+    "ur": "گروپ چیٹ",
+    "zh_Hant": "群聊"
   },
   "chatList_noChatsFound": {
     "en": "No chats found",
@@ -399,7 +437,9 @@
     "pt": "Nenhuma conversa encontrada",
     "ja": "チャットが見つかりません",
     "zh": "未找到聊天",
-    "or": "କ chat ଣସି ଚାଟ୍ ମିଳିଲା ନାହିଁ |"
+    "or": "କ chat ଣସି ଚାଟ୍ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی چیٹس نہیں ملے",
+    "zh_Hant": "沒有找到聊天記錄"
   },
   "chatList_noChatsSubtitle": {
     "en": "Your private chats will appear here.",
@@ -419,7 +459,9 @@
     "pt": "Suas conversas privadas aparecerão aqui.",
     "ja": "個別のチャットがここに表示されます。",
     "zh": "您的私聊消息将在此显示。",
-    "or": "ଆପଣଙ୍କର ବ୍ୟକ୍ତିଗତ ଚାଟ୍ ଏଠାରେ ଦେଖାଯିବ |"
+    "or": "ଆପଣଙ୍କର ବ୍ୟକ୍ତିଗତ ଚାଟ୍ ଏଠାରେ ଦେଖାଯିବ |",
+    "ur": "آپ کی نجی چیٹس یہاں ظاہر ہوں گی۔",
+    "zh_Hant": "您的私人聊天將顯示在這裡。"
   },
   "chatList_noResultsFor": {
     "en": "No results found for \"{query}\"",
@@ -444,7 +486,9 @@
     "pt": "Nenhum resultado encontrado para \"{query}\"",
     "ja": "「{query}」の検索結果はありません",
     "zh": "未找到与“{query}”相关的结果",
-    "or": "\"{query}\" ପାଇଁ କ results ଣସି ଫଳାଫଳ ମିଳିଲା ନାହିଁ |"
+    "or": "\"{query}\" ପାଇଁ କ results ଣସି ଫଳାଫଳ ମିଳିଲା ନାହିଁ |",
+    "ur": "\"{query}\" کے لیے کوئی نتیجہ نہیں ملا",
+    "zh_Hant": "未找到「{query}」的結果"
   },
   "chatList_tryDifferentSearch": {
     "en": "Try searching with a different name or message.",
@@ -464,7 +508,9 @@
     "pt": "Tente pesquisar com outro nome ou mensagem.",
     "ja": "別の名前やメッセージで検索してみてください。",
     "zh": "请尝试用其他名称或消息内容搜索。",
-    "or": "ଏକ ଭିନ୍ନ ନାମ କିମ୍ବା ବାର୍ତ୍ତା ସହିତ ଖୋଜିବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଏକ ଭିନ୍ନ ନାମ କିମ୍ବା ବାର୍ତ୍ତା ସହିତ ଖୋଜିବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "کسی مختلف نام یا پیغام سے تلاش کرنے کی کوشش کریں۔",
+    "zh_Hant": "嘗試使用不同的名稱或訊息進行搜尋。"
   },
   "chatList_pinnedChats": {
     "en": "Pinned Chats",
@@ -484,7 +530,9 @@
     "pt": "Conversas fixadas",
     "ja": "固定されたチャット",
     "zh": "置顶聊天",
-    "or": "ପିନ୍ ହୋଇଥିବା ଚାଟ୍ |"
+    "or": "ପିନ୍ ହୋଇଥିବା ଚାଟ୍ |",
+    "ur": "پن کردہ چیٹس",
+    "zh_Hant": "固定聊天"
   },
   "chatList_forwarded": {
     "en": "Forwarded",
@@ -504,7 +552,9 @@
     "pt": "Encaminhada",
     "ja": "転送済み",
     "zh": "已转发",
-    "or": "ଅଗ୍ରଗାମୀ"
+    "or": "ଅଗ୍ରଗାମୀ",
+    "ur": "آگے بڑھایا",
+    "zh_Hant": "轉發"
   },
   "chatList_messageDeleted": {
     "en": "This message was deleted",
@@ -524,7 +574,9 @@
     "pt": "Esta mensagem foi apagada",
     "ja": "このメッセージは削除されました",
     "zh": "此消息已删除",
-    "or": "ଏହି ବାର୍ତ୍ତା ବିଲୋପ ହେଲା |"
+    "or": "ଏହି ବାର୍ତ୍ତା ବିଲୋପ ହେଲା |",
+    "ur": "یہ پیغام حذف کر دیا گیا تھا۔",
+    "zh_Hant": "此訊息已被刪除"
   },
   "chatList_blocked": {
     "en": "Blocked",
@@ -544,7 +596,9 @@
     "pt": "Bloqueado",
     "ja": "ブロック中",
     "zh": "已屏蔽",
-    "or": "ଅବରୋଧିତ |"
+    "or": "ଅବରୋଧିତ |",
+    "ur": "مسدود",
+    "zh_Hant": "被阻止"
   },
   "chatList_pinChat": {
     "en": "Pin Chat",
@@ -564,7 +618,9 @@
     "pt": "Fixar conversa",
     "ja": "チャットを固定",
     "zh": "置顶聊天",
-    "or": "ପିନ୍ ଚାଟ୍ |"
+    "or": "ପିନ୍ ଚାଟ୍ |",
+    "ur": "پن چیٹ",
+    "zh_Hant": "固定聊天"
   },
   "chatList_unpinChat": {
     "en": "Unpin Chat",
@@ -584,7 +640,9 @@
     "pt": "Desafixar conversa",
     "ja": "固定を解除",
     "zh": "取消置顶",
-    "or": "ଚାଟ୍ ଅନ୍ପିନ୍ କରନ୍ତୁ |"
+    "or": "ଚାଟ୍ ଅନ୍ପିନ୍ କରନ୍ତୁ |",
+    "ur": "چیٹ کو ان پن کریں۔",
+    "zh_Hant": "取消固定聊天"
   },
   "chatList_markAsRead": {
     "en": "Mark as Read",
@@ -604,7 +662,9 @@
     "pt": "Marcar como lida",
     "ja": "既読にする",
     "zh": "标为已读",
-    "or": "ପ as ଼ିବା ପରି ଚିହ୍ନିତ କର |"
+    "or": "ପ as ଼ିବା ପରି ଚିହ୍ନିତ କର |",
+    "ur": "پڑھا ہوا نشان زد کریں۔",
+    "zh_Hant": "標記為已讀"
   },
   "chatList_markAsUnread": {
     "en": "Mark as Unread",
@@ -624,7 +684,9 @@
     "pt": "Marcar como não lida",
     "ja": "未読にする",
     "zh": "标为未读",
-    "or": "ପ read ି ନଥିବା ଭାବରେ ଚିହ୍ନିତ କର |"
+    "or": "ପ read ି ନଥିବା ଭାବରେ ଚିହ୍ନିତ କର |",
+    "ur": "بغیر پڑھے کے بطور نشان زد کریں۔",
+    "zh_Hant": "標記為未讀"
   },
   "chatList_archiveChat": {
     "en": "Archive Chat",
@@ -644,7 +706,9 @@
     "pt": "Arquivar conversa",
     "ja": "チャットをアーカイブ",
     "zh": "归档聊天",
-    "or": "ଚାଟ୍ ଆର୍କାଇଭ୍ କରନ୍ତୁ |"
+    "or": "ଚାଟ୍ ଆର୍କାଇଭ୍ କରନ୍ତୁ |",
+    "ur": "آرکائیو چیٹ",
+    "zh_Hant": "存檔聊天"
   },
   "chatList_deleteChat": {
     "en": "Delete Chat",
@@ -664,7 +728,9 @@
     "pt": "Excluir conversa",
     "ja": "チャットを削除",
     "zh": "删除聊天",
-    "or": "ଚାଟ୍ ଡିଲିଟ୍ କରନ୍ତୁ |"
+    "or": "ଚାଟ୍ ଡିଲିଟ୍ କରନ୍ତୁ |",
+    "ur": "چیٹ کو حذف کریں۔",
+    "zh_Hant": "刪除聊天記錄"
   },
   "chatList_deleteChatConfirm": {
     "en": "Delete this conversation from your chat list?",
@@ -684,7 +750,9 @@
     "pt": "Excluir esta conversa da sua lista de chats?",
     "ja": "この会話をチャット一覧から削除しますか？",
     "zh": "从聊天列表中删除此会话吗？",
-    "or": "ଏହି ବାର୍ତ୍ତାଳାପକୁ ଆପଣଙ୍କର ଚାଟ୍ ତାଲିକାରୁ ବିଲୋପ କରନ୍ତୁ?"
+    "or": "ଏହି ବାର୍ତ୍ତାଳାପକୁ ଆପଣଙ୍କର ଚାଟ୍ ତାଲିକାରୁ ବିଲୋପ କରନ୍ତୁ?",
+    "ur": "اس گفتگو کو اپنی چیٹ لسٹ سے حذف کریں؟",
+    "zh_Hant": "從您的聊天清單中刪除此對話嗎？"
   },
   "chatList_minutesShort": {
     "en": "{count} min",
@@ -710,7 +778,9 @@
     "pt": "{count} min",
     "ja": "{count}分",
     "zh": "{count} 分钟",
-    "or": "{count} ମିନିଟ୍"
+    "or": "{count} ମିନିଟ୍",
+    "ur": "{count} منٹ",
+    "zh_Hant": "{count} 分鐘"
   },
   "chatList_daysShort": {
     "en": "{count, plural, =1{1 day} other{{count} days}}",
@@ -736,7 +806,9 @@
     "pt": "{count, plural, =1{1 dia} other{{count} dias}}",
     "ja": "{count, plural, =1{1日} other{{count}日}}",
     "zh": "{count, plural, =1{1 天} other{{count} 天}}",
-    "or": "{count, plural, =1{1 ଦିନ |} other{{count} ଦିନ |}}"
+    "or": "{count, plural, =1{1 ଦିନ |} other{{count} ଦିନ |}}",
+    "ur": "{count, plural, =1{1 دن} other{{count} دن}}",
+    "zh_Hant": "{count, plural, =1{1天} other{{count} 天}}"
   },
   "chatList_muteTitle": {
     "en": "Mute notifications",
@@ -756,7 +828,9 @@
     "pt": "Silenciar notificações",
     "ja": "通知をミュート",
     "zh": "静音通知",
-    "or": "ନିରବ ବିଜ୍ଞପ୍ତିଗୁଡିକ |"
+    "or": "ନିରବ ବିଜ୍ଞପ୍ତିଗୁଡିକ |",
+    "ur": "اطلاعات کو خاموش کریں۔",
+    "zh_Hant": "靜音通知"
   },
   "chatList_muteSubtitle": {
     "en": "Choose how long you want to pause notifications.",
@@ -776,7 +850,9 @@
     "pt": "Escolha por quanto tempo deseja pausar as notificações.",
     "ja": "通知を一時停止する期間を選択してください。",
     "zh": "选择暂停接收通知的时间。",
-    "or": "ଆପଣ କେତେ ଦିନ ବିଜ୍ଞପ୍ତିକୁ ବିରାମ ଦେବାକୁ ଚାହୁଁଛନ୍ତି ବାଛନ୍ତୁ |"
+    "or": "ଆପଣ କେତେ ଦିନ ବିଜ୍ଞପ୍ତିକୁ ବିରାମ ଦେବାକୁ ଚାହୁଁଛନ୍ତି ବାଛନ୍ତୁ |",
+    "ur": "منتخب کریں کہ آپ کتنی دیر تک اطلاعات کو روکنا چاہتے ہیں۔",
+    "zh_Hant": "選擇您想要暫停通知的時間。"
   },
   "chatList_mute1Hour": {
     "en": "1 hour",
@@ -796,7 +872,9 @@
     "pt": "1 hora",
     "ja": "1時間",
     "zh": "1 小时",
-    "or": "1 ଘଣ୍ଟା |"
+    "or": "1 ଘଣ୍ଟା |",
+    "ur": "1 گھنٹہ",
+    "zh_Hant": "1小時"
   },
   "chatList_mute8Hours": {
     "en": "8 hours",
@@ -816,7 +894,9 @@
     "pt": "8 horas",
     "ja": "8時間",
     "zh": "8 小时",
-    "or": "8 ଘଣ୍ଟା |"
+    "or": "8 ଘଣ୍ଟା |",
+    "ur": "8 گھنٹے",
+    "zh_Hant": "8小時"
   },
   "chatList_muteUntilTomorrow": {
     "en": "Until tomorrow",
@@ -836,7 +916,9 @@
     "pt": "Até amanhã",
     "ja": "明日まで",
     "zh": "直到明天",
-    "or": "ଆସନ୍ତାକାଲି ପର୍ଯ୍ୟନ୍ତ"
+    "or": "ଆସନ୍ତାକାଲି ପର୍ଯ୍ୟନ୍ତ",
+    "ur": "کل تک",
+    "zh_Hant": "直到明天"
   },
   "chatList_muteAlways": {
     "en": "Until I turn it back on",
@@ -856,7 +938,9 @@
     "pt": "Até eu reativar",
     "ja": "再度オンにするまで",
     "zh": "直到我手动开启",
-    "or": "ଯେପର୍ଯ୍ୟନ୍ତ ମୁଁ ଏହାକୁ ଟର୍ନ୍ ଅନ୍ କରିବି |"
+    "or": "ଯେପର୍ଯ୍ୟନ୍ତ ମୁଁ ଏହାକୁ ଟର୍ନ୍ ଅନ୍ କରିବି |",
+    "ur": "جب تک میں اسے واپس نہ کر دوں",
+    "zh_Hant": "直到我重新打開它"
   },
   "chatList_searchGroupsHint": {
     "en": "Search groups...",
@@ -876,7 +960,9 @@
     "pt": "Pesquisar grupos...",
     "ja": "グループを検索...",
     "zh": "搜索群组...",
-    "or": "ଗୋଷ୍ଠୀ ଖୋଜ ..."
+    "or": "ଗୋଷ୍ଠୀ ଖୋଜ ...",
+    "ur": "گروپس تلاش کریں...",
+    "zh_Hant": "搜尋組..."
   },
   "chatList_noGroupsFound": {
     "en": "No groups found",
@@ -896,7 +982,9 @@
     "pt": "Nenhum grupo encontrado",
     "ja": "グループが見つかりません",
     "zh": "未找到群组",
-    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |"
+    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی گروپ نہیں ملا",
+    "zh_Hant": "未找到群組"
   },
   "chatList_noGroupsAvailable": {
     "en": "No groups available",
@@ -916,7 +1004,9 @@
     "pt": "Nenhum grupo disponível",
     "ja": "利用可能なグループはありません",
     "zh": "没有可用的群组",
-    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "کوئی گروپ دستیاب نہیں ہے۔",
+    "zh_Hant": "沒有可用的群組"
   },
   "chatList_deactivated": {
     "en": "Deactivated",
@@ -937,7 +1027,9 @@
     "pt": "Desativado",
     "ja": "無効化済み",
     "zh": "已停用",
-    "or": "ନିଷ୍କ୍ରିୟ"
+    "or": "ନିଷ୍କ୍ରିୟ",
+    "ur": "غیر فعال",
+    "zh_Hant": "已停用"
   },
   "chatList_groupDeactivatedBanner": {
     "en": "This group has been deactivated by the Admin",
@@ -957,7 +1049,9 @@
     "pt": "Este grupo foi desativado pelo administrador",
     "ja": "このグループは管理者によって無効化されました",
     "zh": "该群组已被管理员停用",
-    "or": "ଏହି ଗୋଷ୍ଠୀ ଆଡମିନି ଦ୍ୱାରା ନିଷ୍କ୍ରିୟ ହୋଇଯାଇଛି |"
+    "or": "ଏହି ଗୋଷ୍ଠୀ ଆଡମିନି ଦ୍ୱାରା ନିଷ୍କ୍ରିୟ ହୋଇଯାଇଛି |",
+    "ur": "اس گروپ کو ایڈمن نے غیر فعال کر دیا ہے۔",
+    "zh_Hant": "該群組已被管理員停用"
   },
   "chatList_archivedCount": {
     "en": "Archived ({count})",
@@ -982,7 +1076,9 @@
     "pt": "Arquivados ({count})",
     "ja": "アーカイブ ({count})",
     "zh": "已归档 ({count})",
-    "or": "ସଂଗୃହିତ ({count})"
+    "or": "ସଂଗୃହିତ ({count})",
+    "ur": "محفوظ شدہ ({count})",
+    "zh_Hant": "已存檔 ({count})"
   },
   "chatList_unreadMessages": {
     "en": "{count, plural, =1{1 unread message} other{{count} unread messages}}",
@@ -1007,7 +1103,9 @@
     "pt": "{count, plural, =1{1 mensagem não lida} other{{count} mensagens não lidas}}",
     "ja": "{count, plural, =1{未読メッセージ 1件} other{未読メッセージ {count}件}}",
     "zh": "{count, plural, =1{1 条未读消息} other{{count} 条未读消息}}",
-    "or": "{count, plural, =1{1 ପ read ି ନଥିବା ବାର୍ତ୍ତା |} other{{count} ପ read ି ନଥିବା ସନ୍ଦେଶ |}}"
+    "or": "{count, plural, =1{1 ପ read ି ନଥିବା ବାର୍ତ୍ତା |} other{{count} ପ read ି ନଥିବା ସନ୍ଦେଶ |}}",
+    "ur": "{count, plural, =1{1 نہ پڑھا ہوا پیغام} other{{count} نہ پڑھے ہوئے پیغامات}}",
+    "zh_Hant": "{count, plural, =1{1 條未讀訊息} other{{count} 未讀訊息}}"
   },
   "chatList_viewArchived": {
     "en": "View archived conversations",
@@ -1027,7 +1125,9 @@
     "pt": "Ver conversas arquivadas",
     "ja": "アーカイブされた会話を表示",
     "zh": "查看已归档的会话",
-    "or": "ସଂଗୃହିତ ବାର୍ତ୍ତାଳାପଗୁଡିକ ଦେଖନ୍ତୁ |"
+    "or": "ସଂଗୃହିତ ବାର୍ତ୍ତାଳାପଗୁଡିକ ଦେଖନ୍ତୁ |",
+    "ur": "محفوظ شدہ گفتگو دیکھیں",
+    "zh_Hant": "查看存檔的對話"
   },
   "chatList_typing": {
     "en": "typing...",
@@ -1047,7 +1147,9 @@
     "pt": "digitando...",
     "ja": "入力中...",
     "zh": "正在输入...",
-    "or": "ଟାଇପିଂ ..."
+    "or": "ଟାଇପିଂ ...",
+    "ur": "ٹائپنگ...",
+    "zh_Hant": "打字..."
   },
   "chatList_oneTyping": {
     "en": "{name} is typing...",
@@ -1072,7 +1174,9 @@
     "pt": "{name} está digitando...",
     "ja": "{name}が入力中...",
     "zh": "{name} 正在输入...",
-    "or": "{name} ଟାଇପ୍ କରୁଛି ..."
+    "or": "{name} ଟାଇପ୍ କରୁଛି ...",
+    "ur": "{name} ٹائپ کر رہا ہے...",
+    "zh_Hant": "{name} 正在輸入..."
   },
   "chatList_twoTyping": {
     "en": "{name1}, {name2} are typing...",
@@ -1100,7 +1204,9 @@
     "pt": "{name1}, {name2} estão digitando...",
     "ja": "{name1}と{name2}が入力中...",
     "zh": "{name1}、{name2} 正在输入...",
-    "or": "{name1}, {name2} ଟାଇପ୍ କରୁଛନ୍ତି ..."
+    "or": "{name1}, {name2} ଟାଇପ୍ କରୁଛନ୍ତି ...",
+    "ur": "{name1}، {name2} ٹائپ کر رہے ہیں...",
+    "zh_Hant": "{name1}、{name2} 正在輸入..."
   },
   "chatList_manyTyping": {
     "en": "{name1}, {name2} +{count} are typing...",
@@ -1131,7 +1237,9 @@
     "pt": "{name1}, {name2} +{count} estão digitando...",
     "ja": "{name1}、{name2} 他{count}名が入力中...",
     "zh": "{name1}、{name2} 等 {count} 人正在输入...",
-    "or": "{name1}, {name2} + {count} ଟାଇପ୍ କରୁଛନ୍ତି ..."
+    "or": "{name1}, {name2} + {count} ଟାଇପ୍ କରୁଛନ୍ତି ...",
+    "ur": "{name1}, {name2} +{count} ٹائپ کر رہے ہیں...",
+    "zh_Hant": "{name1}、{name2} +{count} 正在輸入..."
   },
   "chatList_someone": {
     "en": "Someone",
@@ -1151,7 +1259,9 @@
     "pt": "Alguém",
     "ja": "誰か",
     "zh": "某人",
-    "or": "କେହି ଜଣେ"
+    "or": "କେହି ଜଣେ",
+    "ur": "کوئی",
+    "zh_Hant": "有人"
   },
   "chatList_offlineNotSaved": {
     "en": "You're offline. The change wasn't saved, please try again.",
@@ -1171,7 +1281,9 @@
     "pt": "Você está offline. A alteração não foi salva, tente novamente.",
     "ja": "オフラインです。変更は保存されませんでした。もう一度お試しください。",
     "zh": "您处于离线状态。更改未保存，请重试。",
-    "or": "ଆପଣ ଅଫଲାଇନରେ ଅଛନ୍ତି | ପରିବର୍ତ୍ତନ ସଞ୍ଚୟ ହୋଇନାହିଁ, ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଆପଣ ଅଫଲାଇନରେ ଅଛନ୍ତି | ପରିବର୍ତ୍ତନ ସଞ୍ଚୟ ହୋଇନାହିଁ, ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "آپ آف لائن ہیں۔ تبدیلی محفوظ نہیں ہوئی، براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "你離線了。更改未儲存，請重試。"
   },
   "chatList_updateFailed": {
     "en": "Couldn't update the chat. Please try again.",
@@ -1191,7 +1303,9 @@
     "pt": "Não foi possível atualizar o chat. Tente novamente.",
     "ja": "チャットを更新できませんでした。もう一度お試しください。",
     "zh": "无法更新聊天，请重试。",
-    "or": "ଚାଟ୍ ଅପଡେଟ୍ କରିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଚାଟ୍ ଅପଡେଟ୍ କରିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "چیٹ کو اپ ڈیٹ نہیں کیا جا سکا۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法更新聊天。請再試一次。"
   },
   "chatList_archivedChatsTitle": {
     "en": "Archived Chats",
@@ -1211,7 +1325,9 @@
     "pt": "Conversas arquivadas",
     "ja": "アーカイブされたチャット",
     "zh": "已归档聊天",
-    "or": "ଆର୍କାଇଭ୍ ଚାଟ୍ |"
+    "or": "ଆର୍କାଇଭ୍ ଚାଟ୍ |",
+    "ur": "آرکائیو شدہ چیٹس",
+    "zh_Hant": "存檔的聊天記錄"
   },
   "chatList_archivedChatsSubtitle": {
     "en": "Your hidden conversations",
@@ -1231,7 +1347,9 @@
     "pt": "Suas conversas ocultas",
     "ja": "非表示の会話",
     "zh": "您的隐藏会话",
-    "or": "ତୁମର ଲୁକ୍କାୟିତ ବାର୍ତ୍ତାଳାପ |"
+    "or": "ତୁମର ଲୁକ୍କାୟିତ ବାର୍ତ୍ତାଳାପ |",
+    "ur": "آپ کی پوشیدہ گفتگو",
+    "zh_Hant": "你的隱藏對話"
   },
   "chatList_archived": {
     "en": "Archived",
@@ -1251,7 +1369,9 @@
     "pt": "Arquivado",
     "ja": "アーカイブ済み",
     "zh": "已归档",
-    "or": "ସଂଗୃହିତ"
+    "or": "ସଂଗୃହିତ",
+    "ur": "محفوظ شدہ",
+    "zh_Hant": "已存檔"
   },
   "chatList_noMessagesYet": {
     "en": "No messages yet",
@@ -1271,7 +1391,9 @@
     "pt": "Nenhuma mensagem ainda",
     "ja": "メッセージはまだありません",
     "zh": "暂无消息",
-    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ No ଣସି ସନ୍ଦେଶ ନାହିଁ |"
+    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ No ଣସି ସନ୍ଦେଶ ନାହିଁ |",
+    "ur": "ابھی تک کوئی پیغامات نہیں ہیں۔",
+    "zh_Hant": "還沒有消息"
   },
   "chatList_unarchiveChat": {
     "en": "Unarchive Chat",
@@ -1291,7 +1413,9 @@
     "pt": "Desarquivar conversa",
     "ja": "アーカイブを解除",
     "zh": "取消归档聊天",
-    "or": "ଅରାଜକ ଚାଟ୍ |"
+    "or": "ଅରାଜକ ଚାଟ୍ |",
+    "ur": "چیٹ کو غیر محفوظ کریں۔",
+    "zh_Hant": "取消存檔聊天"
   },
   "chatList_noArchivedChats": {
     "en": "No Archived Chats",
@@ -1311,7 +1435,9 @@
     "pt": "Nenhuma conversa arquivada",
     "ja": "アーカイブされたチャットはありません",
     "zh": "没有已归档的聊天",
-    "or": "କ Arch ଣସି ଆର୍କାଇଭ୍ ଚାଟ୍ ନାହିଁ |"
+    "or": "କ Arch ଣସି ଆର୍କାଇଭ୍ ଚାଟ୍ ନାହିଁ |",
+    "ur": "کوئی آرکائیو شدہ چیٹس نہیں۔",
+    "zh_Hant": "沒有存檔的聊天記錄"
   },
   "chatList_noArchivedChatsSubtitle": {
     "en": "Archived conversations will appear here.",
@@ -1331,7 +1457,9 @@
     "pt": "As conversas arquivadas aparecerão aqui.",
     "ja": "アーカイブされた会話がここに表示されます。",
     "zh": "已归档的会话将在此显示。",
-    "or": "ସଂଗୃହିତ ବାର୍ତ୍ତାଳାପ ଏଠାରେ ଦେଖାଯିବ |"
+    "or": "ସଂଗୃହିତ ବାର୍ତ୍ତାଳାପ ଏଠାରେ ଦେଖାଯିବ |",
+    "ur": "محفوظ شدہ گفتگو یہاں ظاہر ہو گی۔",
+    "zh_Hant": "存檔的對話將顯示在此。"
   },
   "chatList_shareContactTitle": {
     "en": "Share Contact",
@@ -1351,7 +1479,9 @@
     "pt": "Compartilhar contato",
     "ja": "連絡先を共有",
     "zh": "分享联系人",
-    "or": "ସମ୍ପର୍କ ଅଂଶୀଦାର କରନ୍ତୁ |"
+    "or": "ସମ୍ପର୍କ ଅଂଶୀଦାର କରନ୍ତୁ |",
+    "ur": "رابطہ شیئر کریں۔",
+    "zh_Hant": "分享聯絡方式"
   },
   "chatList_contactsCount": {
     "en": "{count, plural, =1{1 contact} other{{count} contacts}}",
@@ -1376,7 +1506,9 @@
     "pt": "{count, plural, =1{1 contato} other{{count} contatos}}",
     "ja": "{count, plural, =1{1件の連絡先} other{{count}件の連絡先}}",
     "zh": "{count, plural, =1{1 个联系人} other{{count} 个联系人}}",
-    "or": "{count, plural, =1{1 ସମ୍ପର୍କ} other{{count} ସମ୍ପର୍କଗୁଡିକ |}}"
+    "or": "{count, plural, =1{1 ସମ୍ପର୍କ} other{{count} ସମ୍ପର୍କଗୁଡିକ |}}",
+    "ur": "{count, plural, =1{1 رابطہ} other{{count} رابطے}}",
+    "zh_Hant": "{count, plural, =1{1 個聯絡人} other{{count} 聯絡人}}"
   },
   "chatList_searchNameOrNumber": {
     "en": "Search name or number",
@@ -1396,7 +1528,9 @@
     "pt": "Pesquisar nome ou número",
     "ja": "名前または番号を検索",
     "zh": "搜索姓名或号码",
-    "or": "ନାମ କିମ୍ବା ସଂଖ୍ୟା ଖୋଜ |"
+    "or": "ନାମ କିମ୍ବା ସଂଖ୍ୟା ଖୋଜ |",
+    "ur": "نام یا نمبر تلاش کریں۔",
+    "zh_Hant": "搜尋姓名或號碼"
   },
   "chatList_clearSearch": {
     "en": "Clear search",
@@ -1416,7 +1550,9 @@
     "pt": "Limpar pesquisa",
     "ja": "検索をクリア",
     "zh": "清除搜索",
-    "or": "ସନ୍ଧାନ ସଫା କରନ୍ତୁ |"
+    "or": "ସନ୍ଧାନ ସଫା କରନ୍ତୁ |",
+    "ur": "تلاش صاف کریں۔",
+    "zh_Hant": "清除搜尋"
   },
   "chatList_unnamedContact": {
     "en": "Unnamed contact",
@@ -1436,7 +1572,9 @@
     "pt": "Contato sem nome",
     "ja": "名称未設定の連絡先",
     "zh": "未命名联系人",
-    "or": "ନାମହୀନ ସମ୍ପର୍କ |"
+    "or": "ନାମହୀନ ସମ୍ପର୍କ |",
+    "ur": "بے نام رابطہ",
+    "zh_Hant": "未透露姓名的聯絡人"
   },
   "chatList_yourContacts": {
     "en": "Your contacts",
@@ -1456,7 +1594,9 @@
     "pt": "Seus contatos",
     "ja": "連絡先",
     "zh": "您的通讯录",
-    "or": "ତୁମର ସମ୍ପର୍କ"
+    "or": "ତୁମର ସମ୍ପର୍କ",
+    "ur": "آپ کے رابطے",
+    "zh_Hant": "您的聯絡人"
   },
   "chatList_chooseContactToShare": {
     "en": "Choose a contact to share in your chat.",
@@ -1476,7 +1616,9 @@
     "pt": "Escolha um contato para compartilhar na conversa.",
     "ja": "チャットで共有する連絡先を選択してください。",
     "zh": "选择要在聊天中分享的联系人。",
-    "or": "ଆପଣଙ୍କ ଚାଟରେ ଅଂଶୀଦାର କରିବାକୁ ଏକ ସମ୍ପର୍କ ବାଛନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କ ଚାଟରେ ଅଂଶୀଦାର କରିବାକୁ ଏକ ସମ୍ପର୍କ ବାଛନ୍ତୁ |",
+    "ur": "اپنی چیٹ میں اشتراک کرنے کے لیے ایک رابطہ منتخب کریں۔",
+    "zh_Hant": "選擇要在聊天中共享的聯絡人。"
   },
   "chatList_noContactsFound": {
     "en": "No contacts found",
@@ -1496,7 +1638,9 @@
     "pt": "Nenhum contato encontrado",
     "ja": "連絡先が見つかりません",
     "zh": "未找到联系人",
-    "or": "କ contacts ଣସି ସମ୍ପର୍କ ମିଳିଲା ନାହିଁ |"
+    "or": "କ contacts ଣସି ସମ୍ପର୍କ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی رابطے نہیں ملے",
+    "zh_Hant": "未找到聯絡人"
   },
   "chatList_noContactsAvailable": {
     "en": "No contacts available",
@@ -1516,7 +1660,9 @@
     "pt": "Nenhum contato disponível",
     "ja": "利用可能な連絡先はありません",
     "zh": "无可用联系人",
-    "or": "କ contacts ଣସି ସମ୍ପର୍କ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "କ contacts ଣସି ସମ୍ପର୍କ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "کوئی رابطے دستیاب نہیں ہیں۔",
+    "zh_Hant": "沒有可用的聯絡人"
   },
   "chatList_tryAnotherNameOrNumber": {
     "en": "Try another name or phone number.",
@@ -1536,7 +1682,9 @@
     "pt": "Tente outro nome ou número de telefone.",
     "ja": "別の名前または電話番号でお試しください。",
     "zh": "请尝试搜索其他姓名或电话号码。",
-    "or": "ଅନ୍ୟ ନାମ କିମ୍ବା ଫୋନ୍ ନମ୍ବର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଅନ୍ୟ ନାମ କିମ୍ବା ଫୋନ୍ ନମ୍ବର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "کوئی دوسرا نام یا فون نمبر آزمائیں۔",
+    "zh_Hant": "嘗試其他姓名或電話號碼。"
   },
   "chatList_contactsWillAppear": {
     "en": "Your contacts will appear here when available.",
@@ -1556,7 +1704,9 @@
     "pt": "Seus contatos aparecerão aqui quando disponíveis.",
     "ja": "連絡先が利用可能になるとここに表示されます。",
     "zh": "您的联系人将在就绪后显示在此处。",
-    "or": "ଉପଲବ୍ଧ ହେଲେ ଆପଣଙ୍କର ସମ୍ପର୍କ ଏଠାରେ ଦେଖାଯିବ |"
+    "or": "ଉପଲବ୍ଧ ହେଲେ ଆପଣଙ୍କର ସମ୍ପର୍କ ଏଠାରେ ଦେଖାଯିବ |",
+    "ur": "دستیاب ہونے پر آپ کے رابطے یہاں ظاہر ہوں گے۔",
+    "zh_Hant": "您的聯絡人將在可用時顯示在此。"
   },
   "chatList_contactsPermissionNeeded": {
     "en": "Contacts permission needed",
@@ -1576,7 +1726,9 @@
     "pt": "Permissão de contatos necessária",
     "ja": "連絡先の権限が必要です",
     "zh": "需要通讯录权限",
-    "or": "ଯୋଗାଯୋଗ ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ଯୋଗାଯୋଗ ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "رابطوں کی اجازت درکار ہے۔",
+    "zh_Hant": "需要聯絡人權限"
   },
   "chatList_unableToLoadContacts": {
     "en": "Unable to load contacts",
@@ -1596,7 +1748,9 @@
     "pt": "Não foi possível carregar os contatos",
     "ja": "連絡先を読み込めません",
     "zh": "无法加载联系人",
-    "or": "ସମ୍ପର୍କ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ସମ୍ପର୍କ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "رابطے لوڈ کرنے سے قاصر",
+    "zh_Hant": "無法載入聯絡人"
   },
   "chatList_pleaseTryAgain": {
     "en": "Please try again.",
@@ -1616,7 +1770,9 @@
     "pt": "Por favor, tente novamente.",
     "ja": "もう一度お試しください。",
     "zh": "请重试。",
-    "or": "ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "請再試一次。"
   },
   "chatList_openSettings": {
     "en": "Open Settings",
@@ -1636,7 +1792,9 @@
     "pt": "Abrir Configurações",
     "ja": "設定を開く",
     "zh": "打开设置",
-    "or": "ସେଟିଂସମୂହ ଖୋଲନ୍ତୁ |"
+    "or": "ସେଟିଂସମୂହ ଖୋଲନ୍ତୁ |",
+    "ur": "ترتیبات کھولیں۔",
+    "zh_Hant": "開啟設定"
   },
   "chatList_contactPermissionNeededMsg": {
     "en": "Contact permission is needed to share a contact in chat.",
@@ -1656,7 +1814,9 @@
     "pt": "A permissão de contatos é necessária para compartilhar um contato no chat.",
     "ja": "チャットで連絡先を共有するには連絡先の権限が必要です。",
     "zh": "在聊天中共享联系人需要通讯录权限。",
-    "or": "ଚାଟରେ ଏକ ସମ୍ପର୍କ ଅଂଶୀଦାର କରିବାକୁ ଯୋଗାଯୋଗ ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ଚାଟରେ ଏକ ସମ୍ପର୍କ ଅଂଶୀଦାର କରିବାକୁ ଯୋଗାଯୋଗ ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "چیٹ میں رابطے کا اشتراک کرنے کے لیے رابطہ کی اجازت درکار ہے۔",
+    "zh_Hant": "需要聯絡人權限才能在聊天中共享聯絡人。"
   },
   "chatList_contactsLoadFailed": {
     "en": "Failed to load contacts: {error}",
@@ -1681,7 +1841,9 @@
     "pt": "Falha ao carregar contatos: {error}",
     "ja": "連絡先の読み込みに失敗しました: {error}",
     "zh": "加载联系人失败：{error}",
-    "or": "ସମ୍ପର୍କ ଲୋଡ୍ କରିବାରେ ବିଫଳ: {error}"
+    "or": "ସମ୍ପର୍କ ଲୋଡ୍ କରିବାରେ ବିଫଳ: {error}",
+    "ur": "رابطے لوڈ کرنے میں ناکام: {error}",
+    "zh_Hant": "無法載入聯絡人：{error}"
   },
   "chatList_forwardTo": {
     "en": "Forward to...",
@@ -1701,7 +1863,9 @@
     "pt": "Encaminhar para...",
     "ja": "転送先...",
     "zh": "转发至...",
-    "or": "ଆଗକୁ ..."
+    "or": "ଆଗକୁ ...",
+    "ur": "آگے آگے...",
+    "zh_Hant": "轉發至..."
   },
   "chatList_selectedCount": {
     "en": "{count} selected",
@@ -1726,7 +1890,9 @@
     "pt": "{count} selecionados",
     "ja": "{count}件選択中",
     "zh": "已选择 {count} 项",
-    "or": "{count} ମନୋନୀତ |"
+    "or": "{count} ମନୋନୀତ |",
+    "ur": "{count} منتخب کیا گیا۔",
+    "zh_Hant": "已選擇 {count}"
   },
   "chatList_searchHintShort": {
     "en": "Search...",
@@ -1746,7 +1912,9 @@
     "pt": "Pesquisar...",
     "ja": "検索...",
     "zh": "搜索...",
-    "or": "ସନ୍ଧାନ ..."
+    "or": "ସନ୍ଧାନ ...",
+    "ur": "تلاش کریں...",
+    "zh_Hant": "搜尋..."
   },
   "chatList_noPeopleOrGroups": {
     "en": "No people or groups found",
@@ -1766,7 +1934,9 @@
     "pt": "Nenhuma pessoa ou grupo encontrado",
     "ja": "ユーザーまたはグループが見つかりません",
     "zh": "未找到人员或群组",
-    "or": "କ people ଣସି ଲୋକ କିମ୍ବା ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |"
+    "or": "କ people ଣସି ଲୋକ କିମ୍ବା ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی لوگ یا گروہ نہیں ملے",
+    "zh_Hant": "未找到人員或團體"
   },
   "chatList_sectionRecentChats": {
     "en": "RECENT CHATS",
@@ -1786,7 +1956,9 @@
     "pt": "CHATS RECENTES",
     "ja": "最近のチャット",
     "zh": "最近聊天",
-    "or": "ବର୍ତ୍ତମାନର ଚାଟ୍ |"
+    "or": "ବର୍ତ୍ତମାନର ଚାଟ୍ |",
+    "ur": "حالیہ چیٹس",
+    "zh_Hant": "最近的聊天記錄"
   },
   "chatList_sectionGroups": {
     "en": "GROUPS",
@@ -1806,7 +1978,9 @@
     "pt": "GRUPOS",
     "ja": "グループ",
     "zh": "群组",
-    "or": "ଗୋଷ୍ଠୀ"
+    "or": "ଗୋଷ୍ଠୀ",
+    "ur": "گروپس",
+    "zh_Hant": "團體"
   },
   "chatList_sectionMyContacts": {
     "en": "MY CONTACTS",
@@ -1826,7 +2000,9 @@
     "pt": "MEUS CONTATOS",
     "ja": "マイ連絡先",
     "zh": "我的联系人",
-    "or": "ମୋର ଯୋଗାଯୋଗ"
+    "or": "ମୋର ଯୋଗାଯୋଗ",
+    "ur": "میرے رابطے",
+    "zh_Hant": "我的聯絡人"
   },
   "chatList_sectionOtherContacts": {
     "en": "OTHER CONTACTS",
@@ -1846,7 +2022,9 @@
     "pt": "OUTROS CONTATOS",
     "ja": "その他の連絡先",
     "zh": "其他联系人",
-    "or": "ଅନ୍ୟାନ୍ୟ ଯୋଗାଯୋଗ |"
+    "or": "ଅନ୍ୟାନ୍ୟ ଯୋଗାଯୋଗ |",
+    "ur": "دوسرے رابطے",
+    "zh_Hant": "其他聯絡方式"
   },
   "chatList_defaultAbout": {
     "en": "Hey there! I am using FG Tracker",
@@ -1866,7 +2044,9 @@
     "pt": "Olá! Estou usando o FG Tracker",
     "ja": "こんにちは！FG Tracker を使用しています",
     "zh": "您好！我正在使用 FG Tracker",
-    "or": "ଆରେ ସେଠାରେ! ମୁଁ FG ଟ୍ରାକର୍ ବ୍ୟବହାର କରୁଛି |"
+    "or": "ଆରେ ସେଠାରେ! ମୁଁ FG ଟ୍ରାକର୍ ବ୍ୟବହାର କରୁଛି |",
+    "ur": "ارے وہاں! میں ایف جی ٹریکر استعمال کر رہا ہوں۔",
+    "zh_Hant": "嘿！我正在使用 FG 追蹤器"
   },
   "chatList_forwardListLoadFailed": {
     "en": "Unable to load forward list.",
@@ -1886,7 +2066,9 @@
     "pt": "Não foi possível carregar a lista de encaminhamento.",
     "ja": "転送先リストを読み込めませんでした。",
     "zh": "无法加载转发列表。",
-    "or": "ଅଗ୍ରଗାମୀ ତାଲିକା ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଅଗ୍ରଗାମୀ ତାଲିକା ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "فارورڈ لسٹ لوڈ کرنے سے قاصر۔",
+    "zh_Hant": "無法載入轉發列表。"
   },
   "chatList_selectDestination": {
     "en": "Select Destination",
@@ -1906,7 +2088,9 @@
     "pt": "Selecionar destino",
     "ja": "送信先を選択",
     "zh": "选择目标",
-    "or": "ଗନ୍ତବ୍ୟସ୍ଥଳ ଚୟନ କରନ୍ତୁ |"
+    "or": "ଗନ୍ତବ୍ୟସ୍ଥଳ ଚୟନ କରନ୍ତୁ |",
+    "ur": "منزل منتخب کریں۔",
+    "zh_Hant": "選擇目的地"
   },
   "chatList_selectDestinationMsg": {
     "en": "Please select at least one person or group.",
@@ -1926,7 +2110,9 @@
     "pt": "Selecione pelo menos uma pessoa ou grupo.",
     "ja": "少なくとも1人または1つのグループを選択してください。",
     "zh": "请选择至少一个人或群组。",
-    "or": "ଦୟାକରି ଅତିକମରେ ଜଣେ ବ୍ୟକ୍ତି କିମ୍ବା ଗୋଷ୍ଠୀ ଚୟନ କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ଅତିକମରେ ଜଣେ ବ୍ୟକ୍ତି କିମ୍ବା ଗୋଷ୍ଠୀ ଚୟନ କରନ୍ତୁ |",
+    "ur": "براہ کرم کم از کم ایک شخص یا گروپ منتخب کریں۔",
+    "zh_Hant": "請至少選擇一個人或一組。"
   },
   "chatList_messageIdMissing": {
     "en": "Message ID is missing.",
@@ -1946,7 +2132,9 @@
     "pt": "ID da mensagem ausente.",
     "ja": "メッセージIDが見つかりません。",
     "zh": "缺少消息ID。",
-    "or": "ବାର୍ତ୍ତା ID ନିଖୋଜ ଅଛି |"
+    "or": "ବାର୍ତ୍ତା ID ନିଖୋଜ ଅଛି |",
+    "ur": "میسج آئی ڈی غائب ہے۔",
+    "zh_Hant": "訊息 ID 遺失。"
   },
   "chatList_forwardFailed": {
     "en": "Unable to forward message.",
@@ -1966,7 +2154,9 @@
     "pt": "Não foi possível encaminhar a mensagem.",
     "ja": "メッセージを転送できませんでした。",
     "zh": "无法转发消息。",
-    "or": "ବାର୍ତ୍ତା ପଠାଇବାକୁ ଅସମର୍ଥ |"
+    "or": "ବାର୍ତ୍ତା ପଠାଇବାକୁ ଅସମର୍ଥ |",
+    "ur": "پیغام فارورڈ کرنے سے قاصر۔",
+    "zh_Hant": "無法轉發訊息。"
   },
   "chatList_messageForwarded": {
     "en": "Message forwarded",
@@ -1986,7 +2176,9 @@
     "pt": "Mensagem encaminhada",
     "ja": "メッセージを転送しました",
     "zh": "消息已转发",
-    "or": "ବାର୍ତ୍ତା ଅଗ୍ରଗାମୀ |"
+    "or": "ବାର୍ତ୍ତା ଅଗ୍ରଗାମୀ |",
+    "ur": "پیغام آگے بھیج دیا گیا۔",
+    "zh_Hant": "訊息已轉發"
   },
   "chatList_newChatSectionContacts": {
     "en": "Start a New Chat (Contacts)",
@@ -2006,7 +2198,9 @@
     "pt": "Iniciar nova conversa (Contatos)",
     "ja": "新しいチャットを開始（連絡先）",
     "zh": "发起新聊天（联系人）",
-    "or": "ଏକ ନୂତନ ଚାଟ୍ (ସମ୍ପର୍କ) ଆରମ୍ଭ କରନ୍ତୁ |"
+    "or": "ଏକ ନୂତନ ଚାଟ୍ (ସମ୍ପର୍କ) ଆରମ୍ଭ କରନ୍ତୁ |",
+    "ur": "ایک نئی چیٹ شروع کریں (رابطے)",
+    "zh_Hant": "開始新聊天（聯絡人）"
   },
   "chatList_newChatSectionInvite": {
     "en": "Invite to Chat (Unregistered Contacts)",
@@ -2026,7 +2220,9 @@
     "pt": "Convidar para o chat (Não cadastrados)",
     "ja": "チャットに招待（未登録の連絡先）",
     "zh": "邀请加入聊天（未注册联系人）",
-    "or": "ଚାଟ୍କୁ ନିମନ୍ତ୍ରଣ କରନ୍ତୁ (ପଞ୍ଜୀକୃତ ହୋଇନଥିବା ସମ୍ପର୍କ)"
+    "or": "ଚାଟ୍କୁ ନିମନ୍ତ୍ରଣ କରନ୍ତୁ (ପଞ୍ଜୀକୃତ ହୋଇନଥିବା ସମ୍ପର୍କ)",
+    "ur": "چیٹ میں مدعو کریں (غیر رجسٹرڈ رابطے)",
+    "zh_Hant": "邀請聊天（未註冊的聯絡人）"
   },
   "chatList_noTrackerContacts": {
     "en": "No active tracker contacts found",
@@ -2046,7 +2242,9 @@
     "pt": "Nenhum contato ativo encontrado no rastreador",
     "ja": "アクティブなトラッカー連絡先が見つかりません",
     "zh": "未找到活跃的追踪联系人",
-    "or": "କ active ଣସି ସକ୍ରିୟ ଟ୍ରାକର ଯୋଗାଯୋଗ ମିଳିଲା ନାହିଁ |"
+    "or": "କ active ଣସି ସକ୍ରିୟ ଟ୍ରାକର ଯୋଗାଯୋଗ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی فعال ٹریکر رابطے نہیں ملے",
+    "zh_Hant": "未找到活動的追蹤器聯絡人"
   },
   "chatList_noResultsForQuery": {
     "en": "No results for '{query}'",
@@ -2071,7 +2269,9 @@
     "pt": "Nenhum resultado para '{query}'",
     "ja": "「{query}」の結果はありません",
     "zh": "没有关于“{query}”的结果",
-    "or": "'{query}' ପାଇଁ କ results ଣସି ଫଳାଫଳ ନାହିଁ |"
+    "or": "'{query}' ପାଇଁ କ results ଣସି ଫଳାଫଳ ନାହିଁ |",
+    "ur": "'{query}' کے لیے کوئی نتیجہ نہیں",
+    "zh_Hant": "沒有「{query}」的結果"
   },
   "chatList_allowContactsTitle": {
     "en": "Allow contacts access",
@@ -2091,7 +2291,9 @@
     "pt": "Permitir acesso aos contatos",
     "ja": "連絡先へのアクセスを許可",
     "zh": "允许访问通讯录",
-    "or": "ଯୋଗାଯୋଗ ପ୍ରବେଶକୁ ଅନୁମତି ଦିଅନ୍ତୁ |"
+    "or": "ଯୋଗାଯୋଗ ପ୍ରବେଶକୁ ଅନୁମତି ଦିଅନ୍ତୁ |",
+    "ur": "رابطوں تک رسائی کی اجازت دیں۔",
+    "zh_Hant": "允許聯絡人訪問"
   },
   "chatList_allowContactsBody": {
     "en": "We need access to your contacts to show who is on FG Tracker and to let you start a chat or send an invite.",
@@ -2111,7 +2313,9 @@
     "pt": "Precisamos de acesso aos seus contatos para mostrar quem está no FG Tracker e permitir que você inicie uma conversa ou envie um convite.",
     "ja": "FG Trackerを利用しているユーザーを表示し、チャットや招待を開始できるようにするために連絡先へのアクセスが必要です。",
     "zh": "我们需要访问您的通讯录以显示谁在使用 FG Tracker，并方便您发起聊天或发送邀请。",
-    "or": "FG ଟ୍ରାକରରେ କିଏ ଅଛନ୍ତି ତାହା ଦେଖାଇବାକୁ ଏବଂ ଆପଣଙ୍କୁ ଏକ ଚାଟ୍ ଆରମ୍ଭ କରିବାକୁ କିମ୍ବା ଆମନ୍ତ୍ରଣ ପଠାଇବାକୁ ଆପଣଙ୍କ ସମ୍ପର୍କକୁ ପ୍ରବେଶ ଆବଶ୍ୟକ |"
+    "or": "FG ଟ୍ରାକରରେ କିଏ ଅଛନ୍ତି ତାହା ଦେଖାଇବାକୁ ଏବଂ ଆପଣଙ୍କୁ ଏକ ଚାଟ୍ ଆରମ୍ଭ କରିବାକୁ କିମ୍ବା ଆମନ୍ତ୍ରଣ ପଠାଇବାକୁ ଆପଣଙ୍କ ସମ୍ପର୍କକୁ ପ୍ରବେଶ ଆବଶ୍ୟକ |",
+    "ur": "ہمیں یہ بتانے کے لیے آپ کے رابطوں تک رسائی کی ضرورت ہے کہ FG ٹریکر پر کون ہے اور آپ کو چیٹ شروع کرنے یا دعوت نامہ بھیجنے کی اجازت دینے کے لیے۔",
+    "zh_Hant": "我們需要存取您的聯絡人，以顯示誰在 FG Tracker 上，並讓您開始聊天或發送邀請。"
   },
   "chatList_allowAccess": {
     "en": "Allow Access",
@@ -2131,7 +2335,9 @@
     "pt": "Permitir acesso",
     "ja": "アクセスを許可",
     "zh": "允许访问",
-    "or": "ପ୍ରବେଶ ଅନୁମତି ଦିଅନ୍ତୁ |"
+    "or": "ପ୍ରବେଶ ଅନୁମତି ଦିଅନ୍ତୁ |",
+    "ur": "رسائی کی اجازت دیں۔",
+    "zh_Hant": "允許訪問"
   },
   "chatList_howToAllow": {
     "en": "How to allow",
@@ -2151,7 +2357,9 @@
     "pt": "Como permitir",
     "ja": "許可する方法",
     "zh": "如何允许",
-    "or": "କିପରି ଅନୁମତି ଦେବେ |"
+    "or": "କିପରି ଅନୁମତି ଦେବେ |",
+    "ur": "اجازت کیسے دی جائے۔",
+    "zh_Hant": "如何允許"
   },
   "chatList_howToAllowStep1": {
     "en": "Tap \"Allow Access\" to open Settings",
@@ -2171,7 +2379,9 @@
     "pt": "Toque em \"Permitir acesso\" para abrir as Configurações",
     "ja": "「アクセスを許可」をタップして設定を開きます",
     "zh": "点击“允许访问”以打开设置",
-    "or": "ସେଟିଂସମୂହ ଖୋଲିବାକୁ \"ପ୍ରବେଶ ଅନୁମତି\" ଟ୍ୟାପ୍ କରନ୍ତୁ |"
+    "or": "ସେଟିଂସମୂହ ଖୋଲିବାକୁ \"ପ୍ରବେଶ ଅନୁମତି\" ଟ୍ୟାପ୍ କରନ୍ତୁ |",
+    "ur": "ترتیبات کو کھولنے کے لیے \"رسائی کی اجازت دیں\" پر ٹیپ کریں۔",
+    "zh_Hant": "點選「允許存取」開啟設定"
   },
   "chatList_howToAllowStep2": {
     "en": "Tap \"Permissions\"",
@@ -2191,7 +2401,9 @@
     "pt": "Toque em \"Permissões\"",
     "ja": "「権限」をタップします",
     "zh": "点击“权限”",
-    "or": "\"ଅନୁମତିଗୁଡିକ\" ଟ୍ୟାପ୍ କରନ୍ତୁ |"
+    "or": "\"ଅନୁମତିଗୁଡିକ\" ଟ୍ୟାପ୍ କରନ୍ତୁ |",
+    "ur": "\"اجازتیں\" پر ٹیپ کریں",
+    "zh_Hant": "點選“權限”"
   },
   "chatList_howToAllowStep3": {
     "en": "Select \"Contacts\"",
@@ -2211,7 +2423,9 @@
     "pt": "Selecione \"Contatos\"",
     "ja": "「連絡先」を選択します",
     "zh": "选择“通讯录”",
-    "or": "\"ସମ୍ପର୍କଗୁଡିକ\" ଚୟନ କରନ୍ତୁ |"
+    "or": "\"ସମ୍ପର୍କଗୁଡିକ\" ଚୟନ କରନ୍ତୁ |",
+    "ur": "\"رابطے\" کو منتخب کریں",
+    "zh_Hant": "選擇“聯絡人”"
   },
   "chatList_howToAllowStep4": {
     "en": "Choose \"Allow\", then come back to the app",
@@ -2231,7 +2445,9 @@
     "pt": "Escolha \"Permitir\" e volte ao aplicativo",
     "ja": "「許可」を選択し、アプリに戻ります",
     "zh": "选择“允许”，然后返回应用",
-    "or": "\"ଅନୁମତି\" ବାଛନ୍ତୁ, ତାପରେ ଆପକୁ ଫେରନ୍ତୁ |"
+    "or": "\"ଅନୁମତି\" ବାଛନ୍ତୁ, ତାପରେ ଆପକୁ ଫେରନ୍ତୁ |",
+    "ur": "\"اجازت دیں\" کا انتخاب کریں، پھر ایپ پر واپس آئیں",
+    "zh_Hant": "選擇“允許”，然後返回應用程式"
   },
   "chatList_invite": {
     "en": "Invite",
@@ -2252,7 +2468,9 @@
     "pt": "Convidar",
     "ja": "招待",
     "zh": "邀请",
-    "or": "ଆମନ୍ତ୍ରଣ"
+    "or": "ଆମନ୍ତ୍ରଣ",
+    "ur": "دعوت دیں۔",
+    "zh_Hant": "邀請"
   },
   "chatList_unableToCallContact": {
     "en": "Unable to call this contact",
@@ -2272,7 +2490,9 @@
     "pt": "Não foi possível ligar para este contato",
     "ja": "この連絡先に発信できません",
     "zh": "无法呼叫此联系人",
-    "or": "ଏହି ସମ୍ପର୍କକୁ କଲ୍ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଏହି ସମ୍ପର୍କକୁ କଲ୍ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "اس رابطہ کو کال کرنے سے قاصر ہے۔",
+    "zh_Hant": "無法呼叫此聯絡人"
   },
   "chatList_userFallback": {
     "en": "User",
@@ -2293,7 +2513,9 @@
     "pt": "Usuário",
     "ja": "ユーザー",
     "zh": "用户",
-    "or": "ଉପଯୋଗକର୍ତ୍ତା |"
+    "or": "ଉପଯୋଗକର୍ତ୍ତା |",
+    "ur": "صارف",
+    "zh_Hant": "使用者"
   },
   "chatList_inviteMessage": {
     "en": "Hey {name}! Join me on FG Tracker.\n\nDownload for Android: {playStoreLink}\n\nDownload for iOS: {appStoreLink}",
@@ -2325,7 +2547,9 @@
     "pt": "Olá {name}! Venha para o FG Tracker.\n\nBaixar para Android: {playStoreLink}\n\nBaixar para iOS: {appStoreLink}",
     "ja": "{name}さん、こんにちは！FG Trackerでつながりましょう。\n\nAndroid版ダウンロード: {playStoreLink}\n\niOS版ダウンロード: {appStoreLink}",
     "zh": "您好 {name}！快来 FG Tracker 加入我吧。\n\nAndroid 下载：{playStoreLink}\n\niOS 下载：{appStoreLink}",
-    "or": "ହେ {name}! FG ଟ୍ରାକରରେ ମୋତେ ଯୋଗ ଦିଅ |\n\nଆଣ୍ଡ୍ରଏଡ୍ ପାଇଁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ: {playStoreLink}\n\nIOS ପାଇଁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ: {appStoreLink}"
+    "or": "ହେ {name}! FG ଟ୍ରାକରରେ ମୋତେ ଯୋଗ ଦିଅ |\n\nଆଣ୍ଡ୍ରଏଡ୍ ପାଇଁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ: {playStoreLink}\n\nIOS ପାଇଁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ: {appStoreLink}",
+    "ur": "ارے {name}! FG ٹریکر پر میرے ساتھ شامل ہوں۔\n\nاینڈرائیڈ کے لیے ڈاؤن لوڈ کریں: {playStoreLink}\n\niOS کے لیے ڈاؤن لوڈ کریں: {appStoreLink}",
+    "zh_Hant": "嘿{name}！加入我的 FG Tracker。\n\nAndroid 版下載：{playStoreLink}\n\niOS 下載：{appStoreLink}"
   },
   "chatList_whatsappOpenFailed": {
     "en": "WhatsApp could not be opened",
@@ -2345,7 +2569,9 @@
     "pt": "Não foi possível abrir o WhatsApp",
     "ja": "WhatsAppを開けませんでした",
     "zh": "无法打开 WhatsApp",
-    "or": "ହ୍ ats ାଟସ୍ ଆପ୍ ଖୋଲିପାରିଲା ନାହିଁ"
+    "or": "ହ୍ ats ାଟସ୍ ଆପ୍ ଖୋଲିପାରିଲା ନାହିଁ",
+    "ur": "واٹس ایپ نہیں کھولا جا سکا",
+    "zh_Hant": "WhatsApp 無法開啟"
   },
   "chatList_telegramOpenFailed": {
     "en": "Telegram could not be opened",
@@ -2365,7 +2591,9 @@
     "pt": "Não foi possível abrir o Telegram",
     "ja": "Telegramを開けませんでした",
     "zh": "无法打开 Telegram",
-    "or": "ଟେଲିଗ୍ରାମ ଖୋଲିପାରିଲା ନାହିଁ |"
+    "or": "ଟେଲିଗ୍ରାମ ଖୋଲିପାରିଲା ନାହିଁ |",
+    "ur": "ٹیلی گرام نہیں کھولا جا سکا",
+    "zh_Hant": "電報無法打開"
   },
   "chatList_smsOpenFailed": {
     "en": "Messaging app could not be opened",
@@ -2385,7 +2613,9 @@
     "pt": "Não foi possível abrir o app de mensagens",
     "ja": "メッセージアプリを開けませんでした",
     "zh": "无法打开短信应用",
-    "or": "ମେସେଜିଂ ଆପ୍ ଖୋଲାଯାଇ ପାରିଲା ନାହିଁ |"
+    "or": "ମେସେଜିଂ ଆପ୍ ଖୋଲାଯାଇ ପାରିଲା ନାହିଁ |",
+    "ur": "میسجنگ ایپ نہیں کھولی جا سکی",
+    "zh_Hant": "無法打開訊息應用程式"
   },
   "chatList_shareMenuFailed": {
     "en": "Could not open share menu: {error}",
@@ -2410,7 +2640,9 @@
     "pt": "Não foi possível abrir o menu de compartilhamento: {error}",
     "ja": "共有メニューを開けませんでした: {error}",
     "zh": "无法打开分享菜单：{error}",
-    "or": "ସେୟାର ମେନୁ ଖୋଲିପାରିଲା ନାହିଁ: {error}"
+    "or": "ସେୟାର ମେନୁ ଖୋଲିପାରିଲା ନାହିଁ: {error}",
+    "ur": "شیئر مینو نہیں کھول سکا: {error}",
+    "zh_Hant": "無法開啟共享選單：{error}"
   },
   "chatList_inviteName": {
     "en": "Invite {name}",
@@ -2435,7 +2667,9 @@
     "pt": "Convidar {name}",
     "ja": "{name}を招待",
     "zh": "邀请 {name}",
-    "or": "{name} ଆମନ୍ତ୍ରଣ କରନ୍ତୁ |"
+    "or": "{name} ଆମନ୍ତ୍ରଣ କରନ୍ତୁ |",
+    "ur": "{name} کو مدعو کریں۔",
+    "zh_Hant": "邀請{name}"
   },
   "chatList_inviteChooseHow": {
     "en": "Choose how you want to send the invite",
@@ -2455,7 +2689,9 @@
     "pt": "Escolha como deseja enviar o convite",
     "ja": "招待の送信方法を選択してください",
     "zh": "选择发送邀请的方式",
-    "or": "ଆପଣ କିପରି ନିମନ୍ତ୍ରଣ ପଠାଇବାକୁ ଚାହୁଁଛନ୍ତି ବାଛନ୍ତୁ |"
+    "or": "ଆପଣ କିପରି ନିମନ୍ତ୍ରଣ ପଠାଇବାକୁ ଚାହୁଁଛନ୍ତି ବାଛନ୍ତୁ |",
+    "ur": "منتخب کریں کہ آپ دعوت کیسے بھیجنا چاہتے ہیں۔",
+    "zh_Hant": "選擇您想要發送邀請的方式"
   },
   "chatList_inviteViaMessage": {
     "en": "Message",
@@ -2476,7 +2712,9 @@
     "pt": "Mensagem",
     "ja": "メッセージ",
     "zh": "短信",
-    "or": "ବାର୍ତ୍ତା |"
+    "or": "ବାର୍ତ୍ତା |",
+    "ur": "پیغام",
+    "zh_Hant": "訊息"
   },
   "chatList_inviteMoreApps": {
     "en": "More apps",
@@ -2496,7 +2734,9 @@
     "pt": "Mais aplicativos",
     "ja": "その他のアプリ",
     "zh": "更多应用",
-    "or": "ଅଧିକ ଆପ୍ |"
+    "or": "ଅଧିକ ଆପ୍ |",
+    "ur": "مزید ایپس",
+    "zh_Hant": "更多應用"
   },
   "chatList_allContacts": {
     "en": "All Contacts",
@@ -2516,7 +2756,9 @@
     "pt": "Todos os contatos",
     "ja": "すべての連絡先",
     "zh": "所有联系人",
-    "or": "ସମସ୍ତ ସମ୍ପର୍କ"
+    "or": "ସମସ୍ତ ସମ୍ପର୍କ",
+    "ur": "تمام رابطے",
+    "zh_Hant": "所有聯絡人"
   },
   "chatList_newChat": {
     "en": "New Chat",
@@ -2536,7 +2778,9 @@
     "pt": "Nova conversa",
     "ja": "新しいチャット",
     "zh": "新聊天",
-    "or": "ନୂଆ ଚାଟ୍ |"
+    "or": "ନୂଆ ଚାଟ୍ |",
+    "ur": "نئی چیٹ",
+    "zh_Hant": "新聊天"
   },
   "chatList_startConversation": {
     "en": "Start a conversation",
@@ -2556,7 +2800,9 @@
     "pt": "Iniciar uma conversa",
     "ja": "会話を始める",
     "zh": "发起会话",
-    "or": "ଏକ ବାର୍ତ୍ତାଳାପ ଆରମ୍ଭ କରନ୍ତୁ |"
+    "or": "ଏକ ବାର୍ତ୍ତାଳାପ ଆରମ୍ଭ କରନ୍ତୁ |",
+    "ur": "بات چیت شروع کریں۔",
+    "zh_Hant": "開始對話"
   },
   "chatList_searchByNameOrNumber": {
     "en": "Search by name or number...",
@@ -2576,7 +2822,9 @@
     "pt": "Pesquisar por nome ou número...",
     "ja": "名前または番号で検索...",
     "zh": "按姓名或号码搜索...",
-    "or": "ନାମ କିମ୍ବା ସଂଖ୍ୟା ଅନୁଯାୟୀ ଖୋଜ ..."
+    "or": "ନାମ କିମ୍ବା ସଂଖ୍ୟା ଅନୁଯାୟୀ ଖୋଜ ...",
+    "ur": "نام یا نمبر سے تلاش کریں...",
+    "zh_Hant": "按姓名或號碼搜尋..."
   },
   "chatList_memberFallback": {
     "en": "Member",
@@ -2597,7 +2845,9 @@
     "pt": "Membro",
     "ja": "メンバー",
     "zh": "成员",
-    "or": "ସଦସ୍ୟ"
+    "or": "ସଦସ୍ୟ",
+    "ur": "ممبر",
+    "zh_Hant": "成員"
   },
   "chatList_profileNotFound": {
     "en": "Profile details not found",
@@ -2617,7 +2867,9 @@
     "pt": "Detalhes do perfil não encontrados",
     "ja": "プロフィールの詳細が見つかりません",
     "zh": "未找到个人资料",
-    "or": "ପ୍ରୋଫାଇଲ୍ ବିବରଣୀ ମିଳିଲା ନାହିଁ |"
+    "or": "ପ୍ରୋଫାଇଲ୍ ବିବରଣୀ ମିଳିଲା ନାହିଁ |",
+    "ur": "پروفائل کی تفصیلات نہیں ملی",
+    "zh_Hant": "未找到個人資料詳細信息"
   },
   "chatList_profileMessage": {
     "en": "Message",
@@ -2638,7 +2890,9 @@
     "pt": "Mensagem",
     "ja": "メッセージ",
     "zh": "消息",
-    "or": "ବାର୍ତ୍ତା |"
+    "or": "ବାର୍ତ୍ତା |",
+    "ur": "پیغام",
+    "zh_Hant": "訊息"
   },
   "chatList_profileCall": {
     "en": "Call",
@@ -2659,7 +2913,9 @@
     "pt": "Ligar",
     "ja": "通話",
     "zh": "通话",
-    "or": "କଲ୍ କରନ୍ତୁ |"
+    "or": "କଲ୍ କରନ୍ତୁ |",
+    "ur": "کال کریں۔",
+    "zh_Hant": "稱呼"
   },
   "chatList_profileVideoCall": {
     "en": "Video Call",
@@ -2679,7 +2935,9 @@
     "pt": "Chamada de vídeo",
     "ja": "ビデオ通話",
     "zh": "视频通话",
-    "or": "ଭିଡିଓ କଲ୍ |"
+    "or": "ଭିଡିଓ କଲ୍ |",
+    "ur": "ویڈیو کال",
+    "zh_Hant": "視訊通話"
   },
   "chatList_mediaLinksDocs": {
     "en": "Media, links and docs",
@@ -2699,7 +2957,9 @@
     "pt": "Mídia, links e docs",
     "ja": "メディア・リンク・ドキュメント",
     "zh": "媒体、链接和文档",
-    "or": "ମିଡିଆ, ଲିଙ୍କ୍ ଏବଂ ଡକସ୍ |"
+    "or": "ମିଡିଆ, ଲିଙ୍କ୍ ଏବଂ ଡକସ୍ |",
+    "ur": "میڈیا، لنکس اور دستاویزات",
+    "zh_Hant": "媒體、連結和文檔"
   },
   "chatList_noMediaYet": {
     "en": "No media shared yet",
@@ -2719,7 +2979,9 @@
     "pt": "Nenhuma mídia compartilhada ainda",
     "ja": "共有されたメディアはまだありません",
     "zh": "暂无共享媒体",
-    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ media ଣସି ମିଡିଆ ଅଂଶୀଦାର ହୋଇନାହିଁ |"
+    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ media ଣସି ମିଡିଆ ଅଂଶୀଦାର ହୋଇନାହିଁ |",
+    "ur": "ابھی تک کوئی میڈیا شیئر نہیں کیا گیا۔",
+    "zh_Hant": "尚未分享任何媒體"
   },
   "chatList_contactAndInfo": {
     "en": "Contact & Info",
@@ -2739,7 +3001,9 @@
     "pt": "Contato e informações",
     "ja": "連絡先と情報",
     "zh": "联系人与信息",
-    "or": "ଯୋଗାଯୋଗ ଏବଂ ସୂଚନା"
+    "or": "ଯୋଗାଯୋଗ ଏବଂ ସୂଚନା",
+    "ur": "رابطہ اور معلومات",
+    "zh_Hant": "聯絡方式和訊息"
   },
   "chatList_locationHidden": {
     "en": "Location Hidden",
@@ -2759,7 +3023,9 @@
     "pt": "Localização oculta",
     "ja": "現在地は非公開です",
     "zh": "位置已隐藏",
-    "or": "ଅବସ୍ଥାନ ଲୁକ୍କାୟିତ |"
+    "or": "ଅବସ୍ଥାନ ଲୁକ୍କାୟିତ |",
+    "ur": "مقام پوشیدہ ہے۔",
+    "zh_Hant": "地點隱藏"
   },
   "chatList_clearChat": {
     "en": "Clear Chat",
@@ -2779,7 +3045,9 @@
     "pt": "Limpar conversa",
     "ja": "チャットを消去",
     "zh": "清空聊天",
-    "or": "ଚାଟ୍ ସଫା କରନ୍ତୁ |"
+    "or": "ଚାଟ୍ ସଫା କରନ୍ତୁ |",
+    "ur": "چیٹ صاف کریں۔",
+    "zh_Hant": "清除聊天"
   },
   "chatList_clearChatConfirm": {
     "en": "Delete all messages with this user?",
@@ -2799,7 +3067,9 @@
     "pt": "Excluir todas as mensagens com este usuário?",
     "ja": "このユーザーとのすべてのメッセージを削除しますか？",
     "zh": "删除与此用户的所有消息吗？",
-    "or": "ଏହି ଉପଭୋକ୍ତା ସହିତ ସମସ୍ତ ବାର୍ତ୍ତା ବିଲୋପ କରିବେ କି?"
+    "or": "ଏହି ଉପଭୋକ୍ତା ସହିତ ସମସ୍ତ ବାର୍ତ୍ତା ବିଲୋପ କରିବେ କି?",
+    "ur": "اس صارف کے تمام پیغامات حذف کریں؟",
+    "zh_Hant": "刪除與該用戶的所有訊息？"
   },
   "chatList_clear": {
     "en": "Clear",
@@ -2820,7 +3090,9 @@
     "pt": "Limpar",
     "ja": "消去",
     "zh": "清空",
-    "or": "ସଫା"
+    "or": "ସଫା",
+    "ur": "صاف",
+    "zh_Hant": "清除"
   },
   "chatList_clearChatFailed": {
     "en": "Unable to clear chat",
@@ -2840,7 +3112,9 @@
     "pt": "Não foi possível limpar a conversa",
     "ja": "チャットを消去できませんでした",
     "zh": "无法清空聊天",
-    "or": "ଚାଟ୍ ସଫା କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଚାଟ୍ ସଫା କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "چیٹ صاف کرنے سے قاصر",
+    "zh_Hant": "無法清除聊天記錄"
   },
   "chatList_chatCleared": {
     "en": "Chat cleared",
@@ -2860,7 +3134,9 @@
     "pt": "Conversa limpa",
     "ja": "チャットを消去しました",
     "zh": "聊天已清空",
-    "or": "ଚାଟ୍ ସଫା ହେଲା |"
+    "or": "ଚାଟ୍ ସଫା ହେଲା |",
+    "ur": "چیٹ صاف ہو گئی۔",
+    "zh_Hant": "聊天已清除"
   },
   "chatList_unblockName": {
     "en": "Unblock {name}",
@@ -2885,7 +3161,9 @@
     "pt": "Desbloquear {name}",
     "ja": "{name}のブロックを解除",
     "zh": "解除屏蔽 {name}",
-    "or": "{name} କୁ ଅବରୋଧ କରନ୍ତୁ |"
+    "or": "{name} କୁ ଅବରୋଧ କରନ୍ତୁ |",
+    "ur": "{name} کو غیر مسدود کریں۔",
+    "zh_Hant": "解鎖 {name}"
   },
   "chatList_blockName": {
     "en": "Block {name}",
@@ -2910,7 +3188,9 @@
     "pt": "Bloquear {name}",
     "ja": "{name}をブロック",
     "zh": "屏蔽 {name}",
-    "or": "{name} ଅବରୋଧ କରନ୍ତୁ |"
+    "or": "{name} ଅବରୋଧ କରନ୍ତୁ |",
+    "ur": "بلاک {name}",
+    "zh_Hant": "區塊 {name}"
   },
   "chatList_unblockUser": {
     "en": "Unblock User",
@@ -2930,7 +3210,9 @@
     "pt": "Desbloquear usuário",
     "ja": "ユーザーのブロックを解除",
     "zh": "解除屏蔽用户",
-    "or": "ଉପଯୋଗକର୍ତ୍ତାଙ୍କୁ ଅବରୋଧ କରନ୍ତୁ |"
+    "or": "ଉପଯୋଗକର୍ତ୍ତାଙ୍କୁ ଅବରୋଧ କରନ୍ତୁ |",
+    "ur": "صارف کو غیر مسدود کریں۔",
+    "zh_Hant": "解除封鎖用戶"
   },
   "chatList_unblockUserConfirm": {
     "en": "Are you sure you want to unblock this user?",
@@ -2950,7 +3232,9 @@
     "pt": "Tem certeza de que deseja desbloquear este usuário?",
     "ja": "このユーザーのブロックを解除してもよろしいですか？",
     "zh": "确定要解除屏蔽此用户吗？",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ଉପଭୋକ୍ତାଙ୍କୁ ଅନାବରଣ କରିବାକୁ ଚାହୁଁଛନ୍ତି?"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ଉପଭୋକ୍ତାଙ୍କୁ ଅନାବରଣ କରିବାକୁ ଚାହୁଁଛନ୍ତି?",
+    "ur": "کیا آپ واقعی اس صارف کو غیر مسدود کرنا چاہتے ہیں؟",
+    "zh_Hant": "您確定要取消封鎖該使用者嗎？"
   },
   "chatList_unblock": {
     "en": "Unblock",
@@ -2970,7 +3254,9 @@
     "pt": "Desbloquear",
     "ja": "ブロック解除",
     "zh": "解除屏蔽",
-    "or": "ଅନାବରଣ କରନ୍ତୁ |"
+    "or": "ଅନାବରଣ କରନ୍ତୁ |",
+    "ur": "غیر مسدود کریں۔",
+    "zh_Hant": "解鎖"
   },
   "chatList_blockUser": {
     "en": "Block User",
@@ -2990,7 +3276,9 @@
     "pt": "Bloquear usuário",
     "ja": "ユーザーをブロック",
     "zh": "屏蔽用户",
-    "or": "ଉପଯୋଗକର୍ତ୍ତାଙ୍କୁ ଅବରୋଧ କରନ୍ତୁ |"
+    "or": "ଉପଯୋଗକର୍ତ୍ତାଙ୍କୁ ଅବରୋଧ କରନ୍ତୁ |",
+    "ur": "صارف کو مسدود کریں۔",
+    "zh_Hant": "封鎖用戶"
   },
   "chatList_blockUserConfirm": {
     "en": "Are you sure you want to block this user?",
@@ -3010,7 +3298,9 @@
     "pt": "Tem certeza de que deseja bloquear este usuário?",
     "ja": "このユーザーをブロックしてもよろしいですか？",
     "zh": "确定要屏蔽此用户吗？",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ଉପଭୋକ୍ତାଙ୍କୁ ଅବରୋଧ କରିବାକୁ ଚାହୁଁଛନ୍ତି?"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ଉପଭୋକ୍ତାଙ୍କୁ ଅବରୋଧ କରିବାକୁ ଚାହୁଁଛନ୍ତି?",
+    "ur": "کیا آپ واقعی اس صارف کو مسدود کرنا چاہتے ہیں؟",
+    "zh_Hant": "您確定要封鎖該使用者嗎？"
   },
   "chatList_block": {
     "en": "Block",
@@ -3030,7 +3320,9 @@
     "pt": "Bloquear",
     "ja": "ブロック",
     "zh": "屏蔽",
-    "or": "ଅବରୋଧ କରନ୍ତୁ |"
+    "or": "ଅବରୋଧ କରନ୍ତୁ |",
+    "ur": "بلاک",
+    "zh_Hant": "堵塞"
   },
   "chatList_userNotFound": {
     "en": "User not found",
@@ -3050,7 +3342,9 @@
     "pt": "Usuário não encontrado",
     "ja": "ユーザーが見つかりません",
     "zh": "未找到用户",
-    "or": "ଉପଯୋଗକର୍ତ୍ତା ମିଳିଲା ନାହିଁ |"
+    "or": "ଉପଯୋଗକର୍ତ୍ତା ମିଳିଲା ନାହିଁ |",
+    "ur": "صارف نہیں ملا",
+    "zh_Hant": "未找到用戶"
   },
   "chatList_blockFailed": {
     "en": "Unable to block user",
@@ -3070,7 +3364,9 @@
     "pt": "Não foi possível bloquear o usuário",
     "ja": "ユーザーをブロックできませんでした",
     "zh": "无法屏蔽用户",
-    "or": "ଚାଳକକୁ ଅବରୋଧ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଚାଳକକୁ ଅବରୋଧ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "صارف کو بلاک کرنے سے قاصر",
+    "zh_Hant": "無法封鎖用戶"
   },
   "chatList_unblockFailed": {
     "en": "Unable to unblock user",
@@ -3090,7 +3386,9 @@
     "pt": "Não foi possível desbloquear o usuário",
     "ja": "ユーザーのブロックを解除できませんでした",
     "zh": "无法解除屏蔽用户",
-    "or": "ଚାଳକକୁ ଅବରୋଧ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଚାଳକକୁ ଅବରୋଧ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "صارف کو غیر مسدود کرنے سے قاصر",
+    "zh_Hant": "無法解鎖用戶"
   },
   "status_title": {
     "en": "Status",
@@ -3111,7 +3409,9 @@
     "pt": "Status",
     "ja": "ステータス",
     "zh": "状态",
-    "or": "ସ୍ଥିତି"
+    "or": "ସ୍ଥିତି",
+    "ur": "حیثیت",
+    "zh_Hant": "地位"
   },
   "status_myStatus": {
     "en": "My Status",
@@ -3131,7 +3431,9 @@
     "pt": "Meu status",
     "ja": "マイステータス",
     "zh": "我的状态",
-    "or": "ମୋର ସ୍ଥିତି"
+    "or": "ମୋର ସ୍ଥିତି",
+    "ur": "میری حیثیت",
+    "zh_Hant": "我的狀態"
   },
   "status_viewMyStatus": {
     "en": "View My Status",
@@ -3151,7 +3453,9 @@
     "pt": "Ver meu status",
     "ja": "ステータスを表示",
     "zh": "查看我的状态",
-    "or": "ମୋ ସ୍ଥିତି ଦେଖନ୍ତୁ |"
+    "or": "ମୋ ସ୍ଥିତି ଦେଖନ୍ତୁ |",
+    "ur": "میرا اسٹیٹس دیکھیں",
+    "zh_Hant": "查看我的狀態"
   },
   "status_addToMyStatus": {
     "en": "Add to My Status",
@@ -3171,7 +3475,9 @@
     "pt": "Adicionar ao meu status",
     "ja": "ステータスに追加",
     "zh": "添加到我的状态",
-    "or": "ମୋ ସ୍ଥିତିରେ ଯୋଡନ୍ତୁ |"
+    "or": "ମୋ ସ୍ଥିତିରେ ଯୋଡନ୍ତୁ |",
+    "ur": "میری حیثیت میں شامل کریں۔",
+    "zh_Hant": "新增到我的狀態"
   },
   "status_activeCount": {
     "en": "{count} active",
@@ -3197,7 +3503,9 @@
     "pt": "{count} ativos",
     "ja": "{count}件アクティブ",
     "zh": "{count} 个有效",
-    "or": "{count} ସକ୍ରିୟ |"
+    "or": "{count} ସକ୍ରିୟ |",
+    "ur": "{count} فعال",
+    "zh_Hant": "{count} 活躍"
   },
   "status_viewed": {
     "en": "Viewed",
@@ -3218,7 +3526,9 @@
     "pt": "Visto",
     "ja": "閲覧済み",
     "zh": "已查看",
-    "or": "ଦେଖାଯାଇଛି"
+    "or": "ଦେଖାଯାଇଛି",
+    "ur": "دیکھا گیا",
+    "zh_Hant": "已查看"
   },
   "status_new": {
     "en": "New",
@@ -3239,7 +3549,9 @@
     "pt": "Novo",
     "ja": "新規",
     "zh": "新状态",
-    "or": "ନୂତନ"
+    "or": "ନୂତନ",
+    "ur": "نیا",
+    "zh_Hant": "新的"
   },
   "status_privacyTitle": {
     "en": "Status Privacy",
@@ -3259,7 +3571,9 @@
     "pt": "Privacidade do status",
     "ja": "ステータスのプライバシー",
     "zh": "状态隐私",
-    "or": "ସ୍ଥିତି ଗୋପନୀୟତା"
+    "or": "ସ୍ଥିତି ଗୋପନୀୟତା",
+    "ur": "اسٹیٹس پرائیویسی",
+    "zh_Hant": "狀態隱私"
   },
   "status_allContacts": {
     "en": "All Contacts",
@@ -3279,7 +3593,9 @@
     "pt": "Todos os contatos",
     "ja": "すべての連絡先",
     "zh": "所有联系人",
-    "or": "ସମସ୍ତ ସମ୍ପର୍କ"
+    "or": "ସମସ୍ତ ସମ୍ପର୍କ",
+    "ur": "تمام رابطے",
+    "zh_Hant": "所有聯絡人"
   },
   "status_exceptContacts": {
     "en": "Except Contacts",
@@ -3299,7 +3615,9 @@
     "pt": "Exceto contatos",
     "ja": "連絡先を除く",
     "zh": "排除联系人",
-    "or": "ସମ୍ପର୍କ ବ୍ୟତୀତ |"
+    "or": "ସମ୍ପର୍କ ବ୍ୟତୀତ |",
+    "ur": "سوائے رابطوں کے",
+    "zh_Hant": "聯絡人除外"
   },
   "status_exceptSelected": {
     "en": "Except Selected",
@@ -3319,7 +3637,9 @@
     "pt": "Exceto selecionados",
     "ja": "選択した連絡先を除く",
     "zh": "排除所选",
-    "or": "ଚୟନ ବ୍ୟତୀତ |"
+    "or": "ଚୟନ ବ୍ୟତୀତ |",
+    "ur": "سوائے سلیکٹڈ کے",
+    "zh_Hant": "已選除外"
   },
   "status_onlyShareWith": {
     "en": "Only Share With",
@@ -3339,7 +3659,9 @@
     "pt": "Compartilhar apenas com",
     "ja": "指定した連絡先とのみ共有",
     "zh": "仅分享给",
-    "or": "କେବଳ ସହିତ ଅଂଶୀଦାର କରନ୍ତୁ |"
+    "or": "କେବଳ ସହିତ ଅଂଶୀଦାର କରନ୍ତୁ |",
+    "ur": "صرف اس کے ساتھ اشتراک کریں۔",
+    "zh_Hant": "只分享給"
   },
   "status_noCamera": {
     "en": "No camera available",
@@ -3359,7 +3681,9 @@
     "pt": "Nenhuma câmera disponível",
     "ja": "カメラを利用できません",
     "zh": "无可用相机",
-    "or": "କ camera ଣସି କ୍ୟାମେରା ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "କ camera ଣସି କ୍ୟାମେରା ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "کوئی کیمرہ دستیاب نہیں ہے۔",
+    "zh_Hant": "沒有可用的相機"
   },
   "status_cameraAccessFailed": {
     "en": "Unable to access camera",
@@ -3379,7 +3703,9 @@
     "pt": "Não foi possível acessar a câmera",
     "ja": "カメラにアクセスできません",
     "zh": "无法访问相机",
-    "or": "କ୍ୟାମେରା ପ୍ରବେଶ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "କ୍ୟାମେରା ପ୍ରବେଶ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "کیمرے تک رسائی سے قاصر",
+    "zh_Hant": "無法存取相機"
   },
   "status_textRequired": {
     "en": "Text content is required for text status",
@@ -3399,7 +3725,9 @@
     "pt": "Conteúdo de texto obrigatório para status de texto",
     "ja": "テキストステータスには内容の入力が必要です",
     "zh": "文字状态需要输入文字内容",
-    "or": "ପାଠ୍ୟ ସ୍ଥିତି ପାଇଁ ପାଠ୍ୟ ବିଷୟବସ୍ତୁ ଆବଶ୍ୟକ |"
+    "or": "ପାଠ୍ୟ ସ୍ଥିତି ପାଇଁ ପାଠ୍ୟ ବିଷୟବସ୍ତୁ ଆବଶ୍ୟକ |",
+    "ur": "متن کی حیثیت کے لیے متن کا مواد درکار ہے۔",
+    "zh_Hant": "文字狀態需要文字內容"
   },
   "status_selectPhotoFirst": {
     "en": "Please capture or select a photo first",
@@ -3419,7 +3747,9 @@
     "pt": "Por favor, tire ou selecione uma foto primeiro",
     "ja": "先に写真を撮影または選択してください",
     "zh": "请先拍照或选择照片",
-    "or": "ଦୟାକରି ପ୍ରଥମେ ଏକ ଫଟୋ କ୍ୟାପଚର କିମ୍ବା ଚୟନ କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ପ୍ରଥମେ ଏକ ଫଟୋ କ୍ୟାପଚର କିମ୍ବା ଚୟନ କରନ୍ତୁ |",
+    "ur": "براہ کرم پہلے تصویر کھینچیں یا منتخب کریں۔",
+    "zh_Hant": "請先拍攝或選擇一張照片"
   },
   "status_selectVideoFirst": {
     "en": "Please capture or select a video first",
@@ -3439,7 +3769,9 @@
     "pt": "Por favor, grave ou selecione um vídeo primeiro",
     "ja": "先に動画を撮影または選択してください",
     "zh": "请先拍摄或选择视频",
-    "or": "ଦୟାକରି ପ୍ରଥମେ ଏକ ଭିଡିଓ କ୍ୟାପଚର କିମ୍ବା ଚୟନ କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ପ୍ରଥମେ ଏକ ଭିଡିଓ କ୍ୟାପଚର କିମ୍ବା ଚୟନ କରନ୍ତୁ |",
+    "ur": "براہ کرم پہلے ایک ویڈیو کیپچر کریں یا منتخب کریں۔",
+    "zh_Hant": "請先拍攝或選擇一個視頻"
   },
   "status_uploadFailed": {
     "en": "Upload Failed",
@@ -3459,7 +3791,9 @@
     "pt": "Falha no envio",
     "ja": "アップロードに失敗しました",
     "zh": "上传失败",
-    "or": "ଅପଲୋଡ୍ ବିଫଳ ହେଲା |"
+    "or": "ଅପଲୋଡ୍ ବିଫଳ ହେଲା |",
+    "ur": "اپ لوڈ ناکام ہو گیا۔",
+    "zh_Hant": "上傳失敗"
   },
   "status_publishFailed": {
     "en": "Unable to publish status",
@@ -3479,7 +3813,9 @@
     "pt": "Não foi possível publicar o status",
     "ja": "ステータスを公開できませんでした",
     "zh": "无法发布状态",
-    "or": "ସ୍ଥିତି ପ୍ରକାଶ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ସ୍ଥିତି ପ୍ରକାଶ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "اسٹیٹس شائع کرنے سے قاصر",
+    "zh_Hant": "無法發布狀態"
   },
   "status_deleted": {
     "en": "Status deleted",
@@ -3499,7 +3835,9 @@
     "pt": "Status excluído",
     "ja": "ステータスを削除しました",
     "zh": "状态已删除",
-    "or": "ସ୍ଥିତି ବିଲୋପ ହେଲା |"
+    "or": "ସ୍ଥିତି ବିଲୋପ ହେଲା |",
+    "ur": "اسٹیٹس ڈیلیٹ کر دیا گیا۔",
+    "zh_Hant": "狀態已刪除"
   },
   "status_deletedByOwner": {
     "en": "This status was deleted by the owner",
@@ -3519,7 +3857,9 @@
     "pt": "Este status foi excluído pelo proprietário",
     "ja": "このステータスは投稿者によって削除されました",
     "zh": "此状态已被作者删除",
-    "or": "ଏହି ସ୍ଥିତି ମାଲିକ ଦ୍ୱାରା ବିଲୋପ ହେଲା |"
+    "or": "ଏହି ସ୍ଥିତି ମାଲିକ ଦ୍ୱାରା ବିଲୋପ ହେଲା |",
+    "ur": "اس حیثیت کو مالک نے حذف کر دیا تھا۔",
+    "zh_Hant": "此狀態已被擁有者刪除"
   },
   "status_noLongerAvailable": {
     "en": "This status is no longer available",
@@ -3539,7 +3879,9 @@
     "pt": "Este status não está mais disponível",
     "ja": "このステータスは利用できなくなりました",
     "zh": "此状态已不可用",
-    "or": "ଏହି ସ୍ଥିତି ଆଉ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ଏହି ସ୍ଥିତି ଆଉ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "یہ حیثیت اب دستیاب نہیں ہے۔",
+    "zh_Hant": "此狀態不再可用"
   },
   "status_viewedBy": {
     "en": "Viewed by {count}",
@@ -3564,7 +3906,9 @@
     "pt": "Visto por {count}",
     "ja": "{count}人が閲覧",
     "zh": "{count} 人已查看",
-    "or": "{count} ଦ୍ୱାରା ଦେଖାଯାଇଛି |"
+    "or": "{count} ଦ୍ୱାରା ଦେଖାଯାଇଛି |",
+    "ur": "{count} کے ذریعے دیکھا گیا۔",
+    "zh_Hant": "查看者：{count}"
   },
   "status_noViewsYet": {
     "en": "No views yet",
@@ -3584,7 +3928,9 @@
     "pt": "Nenhuma visualização ainda",
     "ja": "閲覧者はまだいません",
     "zh": "暂无浏览",
-    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ views ଣସି ଦର୍ଶନ ନାହିଁ |"
+    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ views ଣସି ଦର୍ଶନ ନାହିଁ |",
+    "ur": "ابھی تک کوئی ملاحظات نہیں ہیں۔",
+    "zh_Hant": "還沒有瀏覽"
   },
   "status_viewsCount": {
     "en": "{count, plural, =1{1 View} other{{count} Views}}",
@@ -3609,7 +3955,9 @@
     "pt": "{count, plural, =1{1 visualização} other{{count} visualizações}}",
     "ja": "{count, plural, =1{1回の閲覧} other{{count}回の閲覧}}",
     "zh": "{count, plural, =1{1 次浏览} other{{count} 次浏览}}",
-    "or": "{count, plural, =1{1 ଦର୍ଶନ} other{{count} ଦର୍ଶନ}}"
+    "or": "{count, plural, =1{1 ଦର୍ଶନ} other{{count} ଦର୍ଶନ}}",
+    "ur": "{count, plural, =1{1 ویو} other{{count} ویوز}}",
+    "zh_Hant": "{count, plural, =1{1 視圖} other{{count} 觀看次數}}"
   },
   "status_replyHint": {
     "en": "Reply to status...",
@@ -3629,7 +3977,9 @@
     "pt": "Responder ao status...",
     "ja": "ステータスに返信...",
     "zh": "回复状态...",
-    "or": "ସ୍ଥିତିକୁ ଉତ୍ତର ଦିଅ ..."
+    "or": "ସ୍ଥିତିକୁ ଉତ୍ତର ଦିଅ ...",
+    "ur": "اسٹیٹس کا جواب دیں...",
+    "zh_Hant": "回覆狀態..."
   },
   "status_typeHint": {
     "en": "Type a status...",
@@ -3649,7 +3999,9 @@
     "pt": "Digite um status...",
     "ja": "ステータスを入力...",
     "zh": "输入状态...",
-    "or": "ଏକ ସ୍ଥିତି ଟାଇପ୍ କରନ୍ତୁ ..."
+    "or": "ଏକ ସ୍ଥିତି ଟାଇପ୍ କରନ୍ତୁ ...",
+    "ur": "اسٹیٹس ٹائپ کریں...",
+    "zh_Hant": "輸入狀態..."
   },
   "status_previewStatus": {
     "en": "Preview Status",
@@ -3669,7 +4021,9 @@
     "pt": "Prévia do status",
     "ja": "ステータスのプレビュー",
     "zh": "预览状态",
-    "or": "ସ୍ଥିତି ପୂର୍ବାବଲୋକନ କରନ୍ତୁ |"
+    "or": "ସ୍ଥିତି ପୂର୍ବାବଲୋକନ କରନ୍ତୁ |",
+    "ur": "پیش نظارہ کی حیثیت",
+    "zh_Hant": "預覽狀態"
   },
   "status_tapVideoHint": {
     "en": "Tap video to play / pause",
@@ -3689,7 +4043,9 @@
     "pt": "Toque no vídeo para reproduzir / pausar",
     "ja": "動画をタップして再生 / 一時停止",
     "zh": "点击视频播放 / 暂停",
-    "or": "ଖେଳିବା / ବିରାମ କରିବାକୁ ଭିଡିଓ ଟ୍ୟାପ୍ କରନ୍ତୁ |"
+    "or": "ଖେଳିବା / ବିରାମ କରିବାକୁ ଭିଡିଓ ଟ୍ୟାପ୍ କରନ୍ତୁ |",
+    "ur": "ویڈیو چلانے/روکنے کے لیے ٹیپ کریں۔",
+    "zh_Hant": "點擊影片即可播放/暫停"
   },
   "status_pinchZoomHint": {
     "en": "Pinch to zoom photo",
@@ -3709,7 +4065,9 @@
     "pt": "Faça movimento de pinça para zoom na foto",
     "ja": "ピンチ操作で写真を拡大",
     "zh": "双指捏合可缩放照片",
-    "or": "ଫଟୋ ଜୁମ୍ କରିବାକୁ ପିଚ୍ କରନ୍ତୁ |"
+    "or": "ଫଟୋ ଜୁମ୍ କରିବାକୁ ପିଚ୍ କରନ୍ତୁ |",
+    "ur": "تصویر کو زوم کرنے کے لیے چوٹکی لگائیں۔",
+    "zh_Hant": "捏合縮放照片"
   },
   "status_shareUpdatesHint": {
     "en": "Share updates with your team",
@@ -3729,7 +4087,9 @@
     "pt": "Compartilhe atualizações com sua equipe",
     "ja": "チームと近況を共有",
     "zh": "与您的团队分享动态",
-    "or": "ଆପଣଙ୍କ ଦଳ ସହିତ ଅଦ୍ୟତନଗୁଡିକ ଅଂଶୀଦାର କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କ ଦଳ ସହିତ ଅଦ୍ୟତନଗୁଡିକ ଅଂଶୀଦାର କରନ୍ତୁ |",
+    "ur": "اپنی ٹیم کے ساتھ اپ ڈیٹس کا اشتراک کریں۔",
+    "zh_Hant": "與您的團隊分享最新動態"
   },
   "status_captionHint": {
     "en": "Add a caption...",
@@ -3749,7 +4109,9 @@
     "pt": "Adicionar uma legenda...",
     "ja": "キャプションを追加...",
     "zh": "添加说明...",
-    "or": "ଏକ କ୍ୟାପସନ୍ ଯୋଡନ୍ତୁ ..."
+    "or": "ଏକ କ୍ୟାପସନ୍ ଯୋଡନ୍ତୁ ...",
+    "ur": "ایک کیپشن شامل کریں...",
+    "zh_Hant": "新增標題..."
   },
   "status_retake": {
     "en": "Retake",
@@ -3769,7 +4131,9 @@
     "pt": "Repetir",
     "ja": "再撮影",
     "zh": "重拍",
-    "or": "ପୁନ ake ଗ୍ରହଣ କରନ୍ତୁ |"
+    "or": "ପୁନ ake ଗ୍ରହଣ କରନ୍ତୁ |",
+    "ur": "دوبارہ لینا",
+    "zh_Hant": "重拍"
   },
   "status_changeMedia": {
     "en": "Change Media",
@@ -3789,7 +4153,9 @@
     "pt": "Alterar mídia",
     "ja": "メディアを変更",
     "zh": "更换媒体",
-    "or": "ମିଡିଆ ପରିବର୍ତ୍ତନ କରନ୍ତୁ |"
+    "or": "ମିଡିଆ ପରିବର୍ତ୍ତନ କରନ୍ତୁ |",
+    "ur": "میڈیا کو تبدیل کریں۔",
+    "zh_Hant": "改變媒體"
   },
   "status_pause": {
     "en": "Pause",
@@ -3809,7 +4175,9 @@
     "pt": "Pausar",
     "ja": "一時停止",
     "zh": "暂停",
-    "or": "ବିରାମ"
+    "or": "ବିରାମ",
+    "ur": "توقف",
+    "zh_Hant": "暫停"
   },
   "status_play": {
     "en": "Play",
@@ -3829,7 +4197,9 @@
     "pt": "Reproduzir",
     "ja": "再生",
     "zh": "播放",
-    "or": "ଖେଳନ୍ତୁ |"
+    "or": "ଖେଳନ୍ତୁ |",
+    "ur": "کھیلیں",
+    "zh_Hant": "玩"
   },
   "status_gallery": {
     "en": "Gallery",
@@ -3849,7 +4219,9 @@
     "pt": "Galeria",
     "ja": "ギャラリー",
     "zh": "相册",
-    "or": "ଗ୍ୟାଲେରୀ"
+    "or": "ଗ୍ୟାଲେରୀ",
+    "ur": "گیلری",
+    "zh_Hant": "畫廊"
   },
   "status_flip": {
     "en": "Flip",
@@ -3870,7 +4242,9 @@
     "pt": "Girar",
     "ja": "カメラ反転",
     "zh": "翻转",
-    "or": "ଫ୍ଲିପ୍ କରନ୍ତୁ |"
+    "or": "ଫ୍ଲିପ୍ କରନ୍ତୁ |",
+    "ur": "پلٹائیں",
+    "zh_Hant": "翻動"
   },
   "status_modePhoto": {
     "en": "Photo",
@@ -3890,7 +4264,9 @@
     "pt": "Foto",
     "ja": "写真",
     "zh": "照片",
-    "or": "ଫଟୋ"
+    "or": "ଫଟୋ",
+    "ur": "تصویر",
+    "zh_Hant": "照片"
   },
   "status_modeVideo": {
     "en": "Video",
@@ -3910,7 +4286,9 @@
     "pt": "Vídeo",
     "ja": "動画",
     "zh": "视频",
-    "or": "ଭିଡିଓ"
+    "or": "ଭିଡିଓ",
+    "ur": "ویڈیو",
+    "zh_Hant": "影片"
   },
   "status_modeText": {
     "en": "Text",
@@ -3931,7 +4309,9 @@
     "pt": "Texto",
     "ja": "テキスト",
     "zh": "文字",
-    "or": "ପାଠ"
+    "or": "ପାଠ",
+    "ur": "متن",
+    "zh_Hant": "文字"
   },
   "status_whoCanSee": {
     "en": "Who can see?",
@@ -3951,7 +4331,9 @@
     "pt": "Quem pode ver?",
     "ja": "公開範囲",
     "zh": "谁可以看到？",
-    "or": "କିଏ ଦେଖିପାରିବ?"
+    "or": "କିଏ ଦେଖିପାରିବ?",
+    "ur": "کون دیکھ سکتا ہے؟",
+    "zh_Hant": "誰能看見？"
   },
   "status_privacy": {
     "en": "Privacy",
@@ -3971,7 +4353,9 @@
     "pt": "Privacidade",
     "ja": "プライバシー",
     "zh": "隐私",
-    "or": "ଗୋପନୀୟତା"
+    "or": "ଗୋପନୀୟତା",
+    "ur": "رازداری",
+    "zh_Hant": "隱私"
   },
   "status_postStatus": {
     "en": "Post Status",
@@ -3991,7 +4375,9 @@
     "pt": "Publicar status",
     "ja": "ステータスを投稿",
     "zh": "发布状态",
-    "or": "ପୋଷ୍ଟ ସ୍ଥିତି |"
+    "or": "ପୋଷ୍ଟ ସ୍ଥିତି |",
+    "ur": "پوسٹ کی حیثیت",
+    "zh_Hant": "貼文狀態"
   },
   "status_dayAtTime": {
     "en": "{day}, {time}",
@@ -4020,7 +4406,9 @@
     "pt": "{day}, {time}",
     "ja": "{day} {time}",
     "zh": "{day} {time}",
-    "or": "{day}, {time}"
+    "or": "{day}, {time}",
+    "ur": "{day}، {time}",
+    "zh_Hant": "{day}，{time}"
   },
   "attendance_title": {
     "en": "Attendance",
@@ -4040,7 +4428,9 @@
     "pt": "Presença",
     "ja": "出欠確認",
     "zh": "考勤",
-    "or": "ଉପସ୍ଥାନ"
+    "or": "ଉପସ୍ଥାନ",
+    "ur": "حاضری",
+    "zh_Hant": "出席率"
   },
   "attendance_limitReached": {
     "en": "Limit Reached",
@@ -4060,7 +4450,9 @@
     "pt": "Limite atingido",
     "ja": "上限に達しました",
     "zh": "已达上限",
-    "or": "ସୀମା ପହଞ୍ଚିଲା |"
+    "or": "ସୀମା ପହଞ୍ଚିଲା |",
+    "ur": "حد ہو گئی۔",
+    "zh_Hant": "已達到限制"
   },
   "attendance_maxOptions": {
     "en": "You can add up to {count} options only",
@@ -4085,7 +4477,9 @@
     "pt": "Você pode adicionar até {count} opções apenas",
     "ja": "追加できる選択肢は最大{count}個です",
     "zh": "最多只能添加 {count} 个选项",
-    "or": "ଆପଣ କେବଳ {count} ବିକଳ୍ପଗୁଡିକ ଯୋଗ କରିପାରିବେ |"
+    "or": "ଆପଣ କେବଳ {count} ବିକଳ୍ପଗୁଡିକ ଯୋଗ କରିପାରିବେ |",
+    "ur": "آپ صرف {count} تک اختیارات شامل کر سکتے ہیں۔",
+    "zh_Hant": "您最多只能新增 {count} 選項"
   },
   "attendance_questionRequired": {
     "en": "Attendance question is required",
@@ -4105,7 +4499,9 @@
     "pt": "A pergunta de presença é obrigatória",
     "ja": "出欠の質問項目は必須です",
     "zh": "考勤问题为必填项",
-    "or": "ଉପସ୍ଥାନ ପ୍ରଶ୍ନ ଆବଶ୍ୟକ |"
+    "or": "ଉପସ୍ଥାନ ପ୍ରଶ୍ନ ଆବଶ୍ୟକ |",
+    "ur": "حاضری کا سوال درکار ہے۔",
+    "zh_Hant": "需詢問出席狀況"
   },
   "attendance_questionTooShort": {
     "en": "Question must be at least {count} characters long",
@@ -4130,7 +4526,9 @@
     "pt": "A pergunta deve ter pelo menos {count} caracteres",
     "ja": "質問は{count}文字以上で入力してください",
     "zh": "问题至少需要 {count} 个字符",
-    "or": "ପ୍ରଶ୍ନ ଅତିକମରେ {count} ଅକ୍ଷର ଲମ୍ବା ହେବା ଜରୁରୀ |"
+    "or": "ପ୍ରଶ୍ନ ଅତିକମରେ {count} ଅକ୍ଷର ଲମ୍ବା ହେବା ଜରୁରୀ |",
+    "ur": "سوال کم از کم {count} حروف کا ہونا چاہیے۔",
+    "zh_Hant": "問題的長度必須至少為 {count} 個字符"
   },
   "attendance_minOptions": {
     "en": "At least {count} options are required",
@@ -4155,7 +4553,9 @@
     "pt": "Pelo menos {count} opções são necessárias",
     "ja": "最低{count}個の選択肢が必要です",
     "zh": "至少需要 {count} 个选项",
-    "or": "ଅତିକମରେ {count} ବିକଳ୍ପଗୁଡ଼ିକ ଆବଶ୍ୟକ |"
+    "or": "ଅତିକମରେ {count} ବିକଳ୍ପଗୁଡ଼ିକ ଆବଶ୍ୟକ |",
+    "ur": "کم از کم {count} اختیارات درکار ہیں۔",
+    "zh_Hant": "至少需要 {count} 選項"
   },
   "attendance_optionLabelRequired": {
     "en": "All options must have a label",
@@ -4175,7 +4575,9 @@
     "pt": "Todas as opções devem ter um rótulo",
     "ja": "すべての選択肢にラベルを入力してください",
     "zh": "所有选项都必须有名称",
-    "or": "ସମସ୍ତ ବିକଳ୍ପଗୁଡ଼ିକର ଏକ ଲେବଲ୍ ରହିବା ଜରୁରୀ |"
+    "or": "ସମସ୍ତ ବିକଳ୍ପଗୁଡ଼ିକର ଏକ ଲେବଲ୍ ରହିବା ଜରୁରୀ |",
+    "ur": "تمام اختیارات میں ایک لیبل ہونا ضروری ہے۔",
+    "zh_Hant": "所有選項都必須有標籤"
   },
   "attendance_optionsUnique": {
     "en": "Options must be unique",
@@ -4195,7 +4597,9 @@
     "pt": "As opções devem ser exclusivas",
     "ja": "選択肢は重複しないようにしてください",
     "zh": "选项不能重复",
-    "or": "ବିକଳ୍ପଗୁଡ଼ିକ ଅନନ୍ୟ ହେବା ଜରୁରୀ |"
+    "or": "ବିକଳ୍ପଗୁଡ଼ିକ ଅନନ୍ୟ ହେବା ଜରୁରୀ |",
+    "ur": "اختیارات منفرد ہونے چاہئیں",
+    "zh_Hant": "選項必須是唯一的"
   },
   "attendance_validationError": {
     "en": "Validation Error",
@@ -4215,7 +4619,9 @@
     "pt": "Erro de validação",
     "ja": "入力エラー",
     "zh": "验证错误",
-    "or": "ବ id ଧତା ତ୍ରୁଟି"
+    "or": "ବ id ଧତା ତ୍ରୁଟି",
+    "ur": "توثیق کی خرابی۔",
+    "zh_Hant": "驗證錯誤"
   },
   "attendance_fixErrors": {
     "en": "Please fix the highlighted errors before submitting",
@@ -4235,7 +4641,9 @@
     "pt": "Corrija os erros destacados antes de enviar",
     "ja": "送信する前に強調表示されたエラーを修正してください",
     "zh": "请在提交前修正高亮显示的错误",
-    "or": "ଦାଖଲ କରିବା ପୂର୍ବରୁ ଦୟାକରି ହାଇଲାଇଟ୍ ହୋଇଥିବା ତ୍ରୁଟିଗୁଡିକ ଠିକ୍ କରନ୍ତୁ |"
+    "or": "ଦାଖଲ କରିବା ପୂର୍ବରୁ ଦୟାକରି ହାଇଲାଇଟ୍ ହୋଇଥିବା ତ୍ରୁଟିଗୁଡିକ ଠିକ୍ କରନ୍ତୁ |",
+    "ur": "براہ کرم جمع کرانے سے پہلے نمایاں کردہ غلطیوں کو ٹھیک کریں۔",
+    "zh_Hant": "請在提交前修正突出顯示的錯誤"
   },
   "attendance_failed": {
     "en": "Attendance Failed",
@@ -4255,7 +4663,9 @@
     "pt": "Falha na presença",
     "ja": "出欠処理に失敗しました",
     "zh": "考勤失败",
-    "or": "ଉପସ୍ଥାନ ବିଫଳ ହେଲା |"
+    "or": "ଉପସ୍ଥାନ ବିଫଳ ହେଲା |",
+    "ur": "حاضری ناکام ہو گئی۔",
+    "zh_Hant": "考勤失敗"
   },
   "attendance_invalidGroup": {
     "en": "Invalid group. Please reopen the chat.",
@@ -4275,7 +4685,9 @@
     "pt": "Grupo inválido. Abra a conversa novamente.",
     "ja": "無効なグループです。チャットを開き直してください。",
     "zh": "无效群组，请重新打开聊天。",
-    "or": "ଅବ val ଧ ଗୋଷ୍ଠୀ | ଦୟାକରି ଚାଟ୍ ଖୋଲନ୍ତୁ |"
+    "or": "ଅବ val ଧ ଗୋଷ୍ଠୀ | ଦୟାକରି ଚାଟ୍ ଖୋଲନ୍ତୁ |",
+    "ur": "غلط گروپ۔ براہ کرم چیٹ دوبارہ کھولیں۔",
+    "zh_Hant": "無效組。請重新開始聊天。"
   },
   "attendance_dateEnded": {
     "en": "The selected date has already ended. Pick another date or turn off auto-close.",
@@ -4295,7 +4707,9 @@
     "pt": "A data selecionada já terminou. Escolha outra data.",
     "ja": "選択した日付は既に終了しています。別の日付を選択してください。",
     "zh": "所选日期已结束。请选择其他日期或关闭自动结束。",
-    "or": "ମନୋନୀତ ତାରିଖ ସମାପ୍ତ ହୋଇସାରିଛି | ଅନ୍ୟ ଏକ ତାରିଖ ବାଛନ୍ତୁ କିମ୍ବା ଅଟୋ-ବନ୍ଦ କରନ୍ତୁ |"
+    "or": "ମନୋନୀତ ତାରିଖ ସମାପ୍ତ ହୋଇସାରିଛି | ଅନ୍ୟ ଏକ ତାରିଖ ବାଛନ୍ତୁ କିମ୍ବା ଅଟୋ-ବନ୍ଦ କରନ୍ତୁ |",
+    "ur": "منتخب کردہ تاریخ پہلے ہی ختم ہو چکی ہے۔ کوئی اور تاریخ چنیں یا آٹو کلوز کو آف کریں۔",
+    "zh_Hant": "所選日期已結束。選擇另一個日期或關閉自動關閉。"
   },
   "attendance_created": {
     "en": "Attendance Created",
@@ -4315,7 +4729,9 @@
     "pt": "Presença criada",
     "ja": "出欠確認を作成しました",
     "zh": "考勤已创建",
-    "or": "ଉପସ୍ଥାନ ସୃଷ୍ଟି |"
+    "or": "ଉପସ୍ଥାନ ସୃଷ୍ଟି |",
+    "ur": "حاضری بنائی گئی۔",
+    "zh_Hant": "考勤已創建"
   },
   "attendance_sentToGroup": {
     "en": "Attendance sent to the group",
@@ -4335,7 +4751,9 @@
     "pt": "Presença enviada para o grupo",
     "ja": "出欠確認をグループに送信しました",
     "zh": "考勤已发送至群组",
-    "or": "ଗୋଷ୍ଠୀକୁ ଉପସ୍ଥାନ ପଠାଗଲା |"
+    "or": "ଗୋଷ୍ଠୀକୁ ଉପସ୍ଥାନ ପଠାଗଲା |",
+    "ur": "حاضری گروپ کو بھیجی گئی۔",
+    "zh_Hant": "出席率已寄至群組"
   },
   "attendance_createTitle": {
     "en": "Create Attendance",
@@ -4355,7 +4773,9 @@
     "pt": "Criar presença",
     "ja": "出欠確認を作成",
     "zh": "创建考勤",
-    "or": "ଉପସ୍ଥାନ ସୃଷ୍ଟି କରନ୍ତୁ |"
+    "or": "ଉପସ୍ଥାନ ସୃଷ୍ଟି କରନ୍ତୁ |",
+    "ur": "حاضری بنائیں",
+    "zh_Hant": "創建考勤"
   },
   "attendance_createSubtitle": {
     "en": "Send an attendance poll to this group",
@@ -4375,7 +4795,9 @@
     "pt": "Enviar enquete de presença para este grupo",
     "ja": "このグループに出欠確認を送信",
     "zh": "向此群组发送考勤投票",
-    "or": "ଏହି ଗୋଷ୍ଠୀକୁ ଏକ ଉପସ୍ଥାନ ପୋଲ୍ ପଠାନ୍ତୁ |"
+    "or": "ଏହି ଗୋଷ୍ଠୀକୁ ଏକ ଉପସ୍ଥାନ ପୋଲ୍ ପଠାନ୍ତୁ |",
+    "ur": "اس گروپ کو حاضری کا پول بھیجیں۔",
+    "zh_Hant": "向該群組發送出席率調查"
   },
   "attendance_questionLabel": {
     "en": "Attendance Question",
@@ -4395,7 +4817,9 @@
     "pt": "Pergunta de presença",
     "ja": "出欠の質問",
     "zh": "考勤问题",
-    "or": "ଉପସ୍ଥାନ ପ୍ରଶ୍ନ |"
+    "or": "ଉପସ୍ଥାନ ପ୍ରଶ୍ନ |",
+    "ur": "حاضری کا سوال",
+    "zh_Hant": "考勤問題"
   },
   "attendance_questionHint": {
     "en": "Will you be available today?",
@@ -4415,7 +4839,9 @@
     "pt": "Você estará disponível hoje?",
     "ja": "今日参加できますか？",
     "zh": "您今天能参加吗？",
-    "or": "ଆଜି ଆପଣ ଉପଲବ୍ଧ ହେବେ କି?"
+    "or": "ଆଜି ଆପଣ ଉପଲବ୍ଧ ହେବେ କି?",
+    "ur": "کیا آپ آج دستیاب ہوں گے؟",
+    "zh_Hant": "您今天有空嗎？"
   },
   "attendance_dateTodaySemantics": {
     "en": "Attendance date, today",
@@ -4435,7 +4861,9 @@
     "pt": "Data da presença, hoje",
     "ja": "出欠日、今日",
     "zh": "考勤日期，今天",
-    "or": "ଉପସ୍ଥାନ ତାରିଖ, ଆଜି |"
+    "or": "ଉପସ୍ଥାନ ତାରିଖ, ଆଜି |",
+    "ur": "حاضری کی تاریخ، آج",
+    "zh_Hant": "出席日期，今天"
   },
   "attendance_dateToday": {
     "en": "Date (today)",
@@ -4455,7 +4883,9 @@
     "pt": "Data (hoje)",
     "ja": "日付（今日）",
     "zh": "日期（今天）",
-    "or": "ତାରିଖ (ଆଜି)"
+    "or": "ତାରିଖ (ଆଜି)",
+    "ur": "تاریخ (آج)",
+    "zh_Hant": "日期（今天）"
   },
   "attendance_askCommunity": {
     "en": "Ask your community",
@@ -4475,7 +4905,9 @@
     "pt": "Pergunte à sua comunidade",
     "ja": "コミュニティに質問",
     "zh": "询问您的团队社区",
-    "or": "ତୁମ ସମ୍ପ୍ରଦାୟକୁ ପଚାର |"
+    "or": "ତୁମ ସମ୍ପ୍ରଦାୟକୁ ପଚାର |",
+    "ur": "اپنی برادری سے پوچھیں۔",
+    "zh_Hant": "詢問您的社區"
   },
   "attendance_selectPhotoOption": {
     "en": "Select an option to require a live photo for it",
@@ -4495,7 +4927,9 @@
     "pt": "Selecione uma opção para exigir foto ao vivo",
     "ja": "リアルタイム写真が必要な選択肢を指定してください",
     "zh": "选择需要实时照片验证的选项",
-    "or": "ଏହା ପାଇଁ ଏକ ଲାଇଭ ଫଟୋ ଆବଶ୍ୟକ କରିବାକୁ ଏକ ବିକଳ୍ପ ବାଛନ୍ତୁ |"
+    "or": "ଏହା ପାଇଁ ଏକ ଲାଇଭ ଫଟୋ ଆବଶ୍ୟକ କରିବାକୁ ଏକ ବିକଳ୍ପ ବାଛନ୍ତୁ |",
+    "ur": "اس کے لیے لائیو تصویر کی ضرورت کے لیے ایک آپشن منتخب کریں۔",
+    "zh_Hant": "選擇一個需要即時照片的選項"
   },
   "attendance_optionPhotoRequired": {
     "en": "Option {number} • 📷 Photo required",
@@ -4520,7 +4954,9 @@
     "pt": "Opção {number} • 📷 Foto obrigatória",
     "ja": "選択肢 {number} • 📷 写真必須",
     "zh": "选项 {number} • 📷 需要照片",
-    "or": "ବିକଳ୍ପ {number} • 📷 ଫଟୋ ଆବଶ୍ୟକ |"
+    "or": "ବିକଳ୍ପ {number} • 📷 ଫଟୋ ଆବଶ୍ୟକ |",
+    "ur": "آپشن {number} • 📷 تصویر درکار ہے۔",
+    "zh_Hant": "選項 {number} • 📷 需要照片"
   },
   "attendance_optionNumber": {
     "en": "Option {number}",
@@ -4545,7 +4981,9 @@
     "pt": "Opção {number}",
     "ja": "選択肢 {number}",
     "zh": "选项 {number}",
-    "or": "ବିକଳ୍ପ {number} |"
+    "or": "ବିକଳ୍ପ {number} |",
+    "ur": "آپشن {number}",
+    "zh_Hant": "選項 {number}"
   },
   "attendance_optionHint": {
     "en": "Enter option label",
@@ -4565,7 +5003,9 @@
     "pt": "Digite o rótulo da opção",
     "ja": "選択肢名を入力",
     "zh": "输入选项名称",
-    "or": "ବିକଳ୍ପ ଲେବଲ୍ ପ୍ରବେଶ କରନ୍ତୁ |"
+    "or": "ବିକଳ୍ପ ଲେବଲ୍ ପ୍ରବେଶ କରନ୍ତୁ |",
+    "ur": "آپشن لیبل درج کریں۔",
+    "zh_Hant": "輸入選項標籤"
   },
   "attendance_addOption": {
     "en": "Add Another Option",
@@ -4585,7 +5025,9 @@
     "pt": "Adicionar outra opção",
     "ja": "選択肢を追加",
     "zh": "添加其他选项",
-    "or": "ଅନ୍ୟ ଏକ ବିକଳ୍ପ ଯୋଡନ୍ତୁ |"
+    "or": "ଅନ୍ୟ ଏକ ବିକଳ୍ପ ଯୋଡନ୍ତୁ |",
+    "ur": "ایک اور آپشن شامل کریں۔",
+    "zh_Hant": "新增另一個選項"
   },
   "attendance_sentToAllMembers": {
     "en": "Sent to all members of this group",
@@ -4605,7 +5047,9 @@
     "pt": "Enviado para todos os membros deste grupo",
     "ja": "このグループの全メンバーに送信されます",
     "zh": "已发送给该群组的所有成员",
-    "or": "ଏହି ଗୋଷ୍ଠୀର ସମସ୍ତ ସଦସ୍ୟଙ୍କୁ ପଠାଯାଇଛି |"
+    "or": "ଏହି ଗୋଷ୍ଠୀର ସମସ୍ତ ସଦସ୍ୟଙ୍କୁ ପଠାଯାଇଛି |",
+    "ur": "اس گروپ کے تمام ممبران کو بھیجا گیا۔",
+    "zh_Hant": "發送給該群組的所有成員"
   },
   "attendance_allowChange": {
     "en": "Allow changing response",
@@ -4625,7 +5069,9 @@
     "pt": "Permitir alteração de resposta",
     "ja": "回答の変更を許可",
     "zh": "允许更改回答",
-    "or": "ପ୍ରତିକ୍ରିୟା ପରିବର୍ତ୍ତନ କରିବାକୁ ଅନୁମତି ଦିଅନ୍ତୁ |"
+    "or": "ପ୍ରତିକ୍ରିୟା ପରିବର୍ତ୍ତନ କରିବାକୁ ଅନୁମତି ଦିଅନ୍ତୁ |",
+    "ur": "جواب تبدیل کرنے کی اجازت دیں۔",
+    "zh_Hant": "允許改變響應"
   },
   "attendance_allowChangeSubtitle": {
     "en": "Members can change or remove their response",
@@ -4645,7 +5091,9 @@
     "pt": "Membros podem alterar ou remover a resposta",
     "ja": "メンバーは回答の変更や取り消しができます",
     "zh": "成员可以更改或撤销其回答",
-    "or": "ସଦସ୍ୟମାନେ ସେମାନଙ୍କର ପ୍ରତିକ୍ରିୟା ପରିବର୍ତ୍ତନ କିମ୍ବା ଅପସାରଣ କରିପାରିବେ |"
+    "or": "ସଦସ୍ୟମାନେ ସେମାନଙ୍କର ପ୍ରତିକ୍ରିୟା ପରିବର୍ତ୍ତନ କିମ୍ବା ଅପସାରଣ କରିପାରିବେ |",
+    "ur": "ممبران اپنا جواب تبدیل یا ہٹا سکتے ہیں۔",
+    "zh_Hant": "會員可以更改或刪除他們的回复"
   },
   "attendance_closeEndOfDay": {
     "en": "Close at end of day",
@@ -4665,7 +5113,9 @@
     "pt": "Encerrar no fim do dia",
     "ja": "当日の終わりに締め切る",
     "zh": "在当天结束时关闭",
-    "or": "ଦିନ ଶେଷରେ ବନ୍ଦ କରନ୍ତୁ |"
+    "or": "ଦିନ ଶେଷରେ ବନ୍ଦ କରନ୍ତୁ |",
+    "ur": "دن کے اختتام پر بند کریں۔",
+    "zh_Hant": "當天結束時關閉"
   },
   "attendance_closeEndOfDaySubtitle": {
     "en": "Automatically closes at {time} today",
@@ -4690,7 +5140,9 @@
     "pt": "Fecha automaticamente às {time} de hoje",
     "ja": "本日 {time} に自動的に締め切られます",
     "zh": "今天将在 {time} 自动关闭",
-    "or": "ଆଜି {time} ରେ ସ୍ୱୟଂଚାଳିତ ଭାବରେ ବନ୍ଦ |"
+    "or": "ଆଜି {time} ରେ ସ୍ୱୟଂଚାଳିତ ଭାବରେ ବନ୍ଦ |",
+    "ur": "آج خود بخود {time} پر بند ہو جاتا ہے۔",
+    "zh_Hant": "今天 {time} 自動關閉"
   },
   "attendance_createFailed": {
     "en": "Unable to create attendance",
@@ -4710,7 +5162,9 @@
     "pt": "Não foi possível criar a presença",
     "ja": "出欠確認を作成できませんでした",
     "zh": "无法创建考勤",
-    "or": "ଉପସ୍ଥାନ ସୃଷ୍ଟି କରିବାରେ ଅସମର୍ଥ |"
+    "or": "ଉପସ୍ଥାନ ସୃଷ୍ଟି କରିବାରେ ଅସମର୍ଥ |",
+    "ur": "حاضری پیدا کرنے سے قاصر",
+    "zh_Hant": "無法創建考勤"
   },
   "attendance_voteFailed": {
     "en": "Unable to record vote",
@@ -4730,7 +5184,9 @@
     "pt": "Não foi possível registrar o voto",
     "ja": "投票を記録できませんでした",
     "zh": "无法记录投票",
-    "or": "ଭୋଟ୍ ରେକର୍ଡ କରିବାରେ ଅସମର୍ଥ |"
+    "or": "ଭୋଟ୍ ରେକର୍ଡ କରିବାରେ ଅସମର୍ଥ |",
+    "ur": "ووٹ ریکارڈ کرنے سے قاصر",
+    "zh_Hant": "無法記錄投票"
   },
   "attendance_removeVoteFailed": {
     "en": "Unable to remove vote",
@@ -4750,7 +5206,9 @@
     "pt": "Não foi possível remover o voto",
     "ja": "投票を削除できませんでした",
     "zh": "无法撤销投票",
-    "or": "ଭୋଟ୍ ହଟାଇବାକୁ ଅସମର୍ଥ |"
+    "or": "ଭୋଟ୍ ହଟାଇବାକୁ ଅସମର୍ଥ |",
+    "ur": "ووٹ ہٹانے سے قاصر",
+    "zh_Hant": "無法刪除投票"
   },
   "attendance_closeFailed": {
     "en": "Unable to close attendance",
@@ -4770,7 +5228,9 @@
     "pt": "Não foi possível encerrar a presença",
     "ja": "出欠確認を締め切れませんでした",
     "zh": "无法关闭考勤",
-    "or": "ଉପସ୍ଥାନ ବନ୍ଦ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଉପସ୍ଥାନ ବନ୍ଦ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "حاضری بند کرنے سے قاصر",
+    "zh_Hant": "無法關閉出席"
   },
   "attendance_deleteFailed": {
     "en": "Unable to delete attendance",
@@ -4790,7 +5250,9 @@
     "pt": "Não foi possível excluir a presença",
     "ja": "出欠確認を削除できませんでした",
     "zh": "无法删除考勤",
-    "or": "ଉପସ୍ଥାନ ବିଲୋପ କରିବାରେ ଅସମର୍ଥ |"
+    "or": "ଉପସ୍ଥାନ ବିଲୋପ କରିବାରେ ଅସମର୍ଥ |",
+    "ur": "حاضری کو حذف کرنے سے قاصر",
+    "zh_Hant": "無法刪除考勤"
   },
   "attendance_loadVotersFailed": {
     "en": "Unable to load voters",
@@ -4810,7 +5272,9 @@
     "pt": "Não foi possível carregar os votantes",
     "ja": "投票者を読み込めませんでした",
     "zh": "无法加载投票者",
-    "or": "ଭୋଟର ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଭୋଟର ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "ووٹرز کو لوڈ کرنے سے قاصر",
+    "zh_Hant": "無法加載選民"
   },
   "attendance_cameraStarting": {
     "en": "Starting camera…",
@@ -4830,7 +5294,9 @@
     "pt": "Iniciando câmera…",
     "ja": "カメラを起動中…",
     "zh": "正在启动相机…",
-    "or": "କ୍ୟାମେରା ଆରମ୍ଭ…"
+    "or": "କ୍ୟାମେରା ଆରମ୍ଭ…",
+    "ur": "کیمرہ شروع ہو رہا ہے…",
+    "zh_Hant": "啟動相機..."
   },
   "attendance_noFrontCamera": {
     "en": "No front camera found on this device.",
@@ -4850,7 +5316,9 @@
     "pt": "Nenhuma câmera frontal encontrada neste dispositivo.",
     "ja": "この端末にフロントカメラが見つかりません。",
     "zh": "此设备上未找到前置摄像头。",
-    "or": "ଏହି ଡିଭାଇସରେ କ front ଣସି ସାମ୍ନା କ୍ୟାମେରା ମିଳିଲା ନାହିଁ |"
+    "or": "ଏହି ଡିଭାଇସରେ କ front ଣସି ସାମ୍ନା କ୍ୟାମେରା ମିଳିଲା ନାହିଁ |",
+    "ur": "اس ڈیوائس پر کوئی فرنٹ کیمرہ نہیں ملا۔",
+    "zh_Hant": "該裝置上未找到前置鏡頭。"
   },
   "attendance_cameraStartFailedCode": {
     "en": "Couldn't start the camera ({code}).",
@@ -4875,7 +5343,9 @@
     "pt": "Não foi possível iniciar a câmera ({code}).",
     "ja": "カメラを起動できませんでした ({code})。",
     "zh": "无法启动相机 ({code})。",
-    "or": "କ୍ୟାମେରା ଆରମ୍ଭ କରିପାରିବ ନାହିଁ ({code}) |"
+    "or": "କ୍ୟାମେରା ଆରମ୍ଭ କରିପାରିବ ନାହିଁ ({code}) |",
+    "ur": "کیمرہ شروع نہیں کیا جا سکا ({code})۔",
+    "zh_Hant": "無法啟動相機 ({code})。"
   },
   "attendance_cameraStartFailed": {
     "en": "Couldn't start the camera.",
@@ -4895,7 +5365,9 @@
     "pt": "Não foi possível iniciar a câmera.",
     "ja": "カメラを起動できませんでした。",
     "zh": "无法启动相机。",
-    "or": "କ୍ୟାମେରା ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ |"
+    "or": "କ୍ୟାମେରା ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ |",
+    "ur": "کیمرہ شروع نہیں ہو سکا۔",
+    "zh_Hant": "無法啟動相機。"
   },
   "attendance_lookAtCamera": {
     "en": "Look at the camera",
@@ -4915,7 +5387,9 @@
     "pt": "Olhe para a câmera",
     "ja": "カメラを見てください",
     "zh": "请注视摄像头",
-    "or": "କ୍ୟାମେରା ଦେଖନ୍ତୁ |"
+    "or": "କ୍ୟାମେରା ଦେଖନ୍ତୁ |",
+    "ur": "کیمرے کو دیکھو",
+    "zh_Hant": "看相機"
   },
   "attendance_noFace": {
     "en": "No face detected",
@@ -4935,7 +5409,9 @@
     "pt": "Nenhum rosto detectado",
     "ja": "顔が検出されませんでした",
     "zh": "未检测到面部",
-    "or": "କ face ଣସି ଚେହେରା ଚିହ୍ନଟ ହୋଇନାହିଁ |"
+    "or": "କ face ଣସି ଚେହେରା ଚିହ୍ନଟ ହୋଇନାହିଁ |",
+    "ur": "کسی چہرے کا پتہ نہیں چلا",
+    "zh_Hant": "未偵測到人臉"
   },
   "attendance_multipleFaces": {
     "en": "Multiple faces detected — only you should be in frame",
@@ -4955,7 +5431,9 @@
     "pt": "Vários rostos detectados — apenas você deve estar no enquadramento",
     "ja": "複数の顔が検出されました — 枠内にはご自身のみが写るようにしてください",
     "zh": "检测到多张面孔 — 画面中应仅有您一人",
-    "or": "ଏକାଧିକ ଚେହେରା ଚିହ୍ନଟ ହେଲା - କେବଳ ତୁମେ ଫ୍ରେମରେ ରହିବା ଉଚିତ |"
+    "or": "ଏକାଧିକ ଚେହେରା ଚିହ୍ନଟ ହେଲା - କେବଳ ତୁମେ ଫ୍ରେମରେ ରହିବା ଉଚିତ |",
+    "ur": "متعدد چہروں کا پتہ چلا — صرف آپ کو فریم میں ہونا چاہیے۔",
+    "zh_Hant": "偵測到多張臉孔 — 只有您應該出現在畫面中"
   },
   "attendance_keepFaceInCircle": {
     "en": "Keep your face inside the circle",
@@ -4975,7 +5453,9 @@
     "pt": "Mantenha seu rosto dentro do círculo",
     "ja": "顔を円の中に収めてください",
     "zh": "请将面部保持在圆圈内",
-    "or": "ସର୍କଲ ଭିତରେ ମୁହଁ ରଖ |"
+    "or": "ସର୍କଲ ଭିତରେ ମୁହଁ ରଖ |",
+    "ur": "اپنے چہرے کو دائرے کے اندر رکھیں",
+    "zh_Hant": "將臉保持在圓圈內"
   },
   "attendance_moveCloser": {
     "en": "Move a little closer",
@@ -4995,7 +5475,9 @@
     "pt": "Aproxime-se um pouco",
     "ja": "もう少し近づいてください",
     "zh": "请稍微靠近一些",
-    "or": "ଟିକିଏ ନିକଟତର ହୁଅ |"
+    "or": "ଟିକିଏ ନିକଟତର ହୁଅ |",
+    "ur": "تھوڑا سا قریب ہو جاؤ",
+    "zh_Hant": "再靠近一點"
   },
   "attendance_lookStraight": {
     "en": "Look straight at the camera",
@@ -5015,7 +5497,9 @@
     "pt": "Olhe direto para a câmera",
     "ja": "カメラをまっすぐ見てください",
     "zh": "请正视摄像头",
-    "or": "କ୍ୟାମେରାକୁ ସିଧା ଦେଖ |"
+    "or": "କ୍ୟାମେରାକୁ ସିଧା ଦେଖ |",
+    "ur": "براہ راست کیمرے کی طرف دیکھیں",
+    "zh_Hant": "直視相機"
   },
   "attendance_faceDetectedBlink": {
     "en": "Face detected — now blink your eyes",
@@ -5035,7 +5519,9 @@
     "pt": "Rosto detectado — agora pisque os olhos",
     "ja": "顔が検出されました — まばたきしてください",
     "zh": "已检测到面部 — 请眨眼",
-    "or": "ଚେହେରା ଚିହ୍ନଟ ହେଲା - ବର୍ତ୍ତମାନ ଆଖି ବୁଜିଦିଅ |"
+    "or": "ଚେହେରା ଚିହ୍ନଟ ହେଲା - ବର୍ତ୍ତମାନ ଆଖି ବୁଜିଦିଅ |",
+    "ur": "چہرے کا پتہ چلا — اب اپنی آنکھیں جھپکائیں۔",
+    "zh_Hant": "偵測到臉部 - 現在眨一下眼睛"
   },
   "attendance_openEyes": {
     "en": "Open your eyes and look at the camera",
@@ -5055,7 +5541,9 @@
     "pt": "Abra os olhos e olhe para a câmera",
     "ja": "目を開けてカメラを見てください",
     "zh": "睁开双眼并注视摄像头",
-    "or": "ଆଖି ଖୋଲ ଏବଂ କ୍ୟାମେରାକୁ ଦେଖ |"
+    "or": "ଆଖି ଖୋଲ ଏବଂ କ୍ୟାମେରାକୁ ଦେଖ |",
+    "ur": "آنکھیں کھولیں اور کیمرے کو دیکھیں",
+    "zh_Hant": "睜開眼睛看著相機"
   },
   "attendance_holdStill": {
     "en": "Hold still…",
@@ -5075,7 +5563,9 @@
     "pt": "Fique parado…",
     "ja": "動かないでください…",
     "zh": "请保持静止…",
-    "or": "ସ୍ଥିର ରୁହ…"
+    "or": "ସ୍ଥିର ରୁହ…",
+    "ur": "چپ رہو…",
+    "zh_Hant": "保持不動…"
   },
   "attendance_capturedCheck": {
     "en": "Captured ✓",
@@ -5095,7 +5585,9 @@
     "pt": "Capturado ✓",
     "ja": "撮影完了 ✓",
     "zh": "已捕获 ✓",
-    "or": "ଧରାପଡିଛି ✓"
+    "or": "ଧରାପଡିଛି ✓",
+    "ur": "پکڑ لیا ✓",
+    "zh_Hant": "捕獲 ✓"
   },
   "attendance_captureFailedBlink": {
     "en": "Couldn't capture. Blink again to retry",
@@ -5115,7 +5607,9 @@
     "pt": "Não foi possível capturar. Pisque novamente para tentar",
     "ja": "撮影できませんでした。もう一度まばたきしてください",
     "zh": "未能捕获。请再次眨眼以重试",
-    "or": "କ୍ୟାପଚର୍ କରିପାରିଲା ନାହିଁ | ପୁନ ry ଚେଷ୍ଟା କରିବାକୁ ପୁଣି ink ଲକ |"
+    "or": "କ୍ୟାପଚର୍ କରିପାରିଲା ନାହିଁ | ପୁନ ry ଚେଷ୍ଟା କରିବାକୁ ପୁଣି ink ଲକ |",
+    "ur": "پکڑ نہیں سکا۔ دوبارہ کوشش کرنے کے لیے دوبارہ پلک جھپکائیں۔",
+    "zh_Hant": "無法捕捉。再次閃爍重試"
   },
   "attendance_photoTitle": {
     "en": "Attendance Photo",
@@ -5135,7 +5629,9 @@
     "pt": "Foto de presença",
     "ja": "出欠用写真",
     "zh": "考勤照片",
-    "or": "ଉପସ୍ଥାନ ଫଟୋ"
+    "or": "ଉପସ୍ଥାନ ଫଟୋ",
+    "ur": "حاضری کی تصویر",
+    "zh_Hant": "出席照片"
   },
   "attendance_photoSubtitle": {
     "en": "Take a live photo to verify your attendance",
@@ -5155,7 +5651,9 @@
     "pt": "Tire uma foto ao vivo para verificar sua presença",
     "ja": "リアルタイム写真を撮影して出欠を確認します",
     "zh": "拍摄实时照片以验证您的考勤",
-    "or": "ଆପଣଙ୍କର ଉପସ୍ଥାନ ଯାଞ୍ଚ କରିବାକୁ ଏକ ଲାଇଭ୍ ଫଟୋ ନିଅନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ଉପସ୍ଥାନ ଯାଞ୍ଚ କରିବାକୁ ଏକ ଲାଇଭ୍ ଫଟୋ ନିଅନ୍ତୁ |",
+    "ur": "اپنی حاضری کی تصدیق کے لیے لائیو تصویر لیں۔",
+    "zh_Hant": "拍攝即時照片以驗證您的出席情況"
   },
   "attendance_cameraPermissionRequired": {
     "en": "Camera permission is required to mark attendance.",
@@ -5175,7 +5673,9 @@
     "pt": "A permissão de câmera é necessária para registrar a presença.",
     "ja": "出欠を記録するにはカメラの権限が必要です。",
     "zh": "标记考勤需要相机权限。",
-    "or": "ଉପସ୍ଥାନ ଚିହ୍ନଟ କରିବାକୁ କ୍ୟାମେରା ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ଉପସ୍ଥାନ ଚିହ୍ନଟ କରିବାକୁ କ୍ୟାମେରା ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "حاضری کو نشان زد کرنے کے لیے کیمرے کی اجازت درکار ہے۔",
+    "zh_Hant": "需要相機許可才能標記出勤情況。"
   },
   "attendance_stepEyeLevel": {
     "en": "Hold your phone at eye level",
@@ -5195,7 +5695,9 @@
     "pt": "Segure o celular na altura dos olhos",
     "ja": "スマートフォンを目の高さで持ってください",
     "zh": "将手机保持在平视位置",
-    "or": "ଆପଣଙ୍କ ଫୋନକୁ ଆଖି ସ୍ତରରେ ଧରି ରଖନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କ ଫୋନକୁ ଆଖି ସ୍ତରରେ ଧରି ରଖନ୍ତୁ |",
+    "ur": "اپنے فون کو آنکھوں کی سطح پر رکھیں",
+    "zh_Hant": "將手機放在與視線齊平的位置"
   },
   "attendance_stepBlink": {
     "en": "Blink your eyes to capture your photo",
@@ -5215,7 +5717,9 @@
     "pt": "Pisque os olhos para capturar sua foto",
     "ja": "まばたきして写真を撮影します",
     "zh": "眨眼以拍摄照片",
-    "or": "ତୁମର ଫଟୋ କ୍ୟାପଚର କରିବାକୁ ଆଖିକୁ ink ଲକ ଦିଅ |"
+    "or": "ତୁମର ଫଟୋ କ୍ୟାପଚର କରିବାକୁ ଆଖିକୁ ink ଲକ ଦିଅ |",
+    "ur": "اپنی تصویر کھینچنے کے لیے آنکھیں جھپکائیں۔",
+    "zh_Hant": "眨眼捕捉你的照片"
   },
   "attendance_howToTakePhoto": {
     "en": "How to take your photo",
@@ -5235,7 +5739,9 @@
     "pt": "Como tirar sua foto",
     "ja": "写真の撮影方法",
     "zh": "如何拍摄照片",
-    "or": "ତୁମର ଫଟୋ କିପରି ନେବେ |"
+    "or": "ତୁମର ଫଟୋ କିପରି ନେବେ |",
+    "ur": "اپنی تصویر لینے کا طریقہ",
+    "zh_Hant": "如何拍攝你的照片"
   },
   "attendance_photoRules": {
     "en": "Only the front camera is used. The photo is taken automatically when you blink, and uploads from the gallery aren't allowed.",
@@ -5255,7 +5761,9 @@
     "pt": "Apenas a câmera frontal é usada. A foto é tirada automaticamente quando você pisca, e uploads da galeria não são permitidos.",
     "ja": "フロントカメラのみが使用されます。まばたきすると自動的に撮影され、ギャラリーからのアップロードはできません。",
     "zh": "仅使用前置摄像头。眨眼时将自动拍照，禁止从相册上传。",
-    "or": "କେବଳ ସାମ୍ନା କ୍ୟାମେରା ବ୍ୟବହୃତ ହୁଏ | ଯେତେବେଳେ ତୁମେ ink ଲସି ଉଠିବ ଫଟୋ ସ୍ୱୟଂଚାଳିତ ଭାବରେ ନିଆଯାଏ, ଏବଂ ଗ୍ୟାଲେରୀରୁ ଅପଲୋଡ୍ ଅନୁମତିପ୍ରାପ୍ତ ନୁହେଁ |"
+    "or": "କେବଳ ସାମ୍ନା କ୍ୟାମେରା ବ୍ୟବହୃତ ହୁଏ | ଯେତେବେଳେ ତୁମେ ink ଲସି ଉଠିବ ଫଟୋ ସ୍ୱୟଂଚାଳିତ ଭାବରେ ନିଆଯାଏ, ଏବଂ ଗ୍ୟାଲେରୀରୁ ଅପଲୋଡ୍ ଅନୁମତିପ୍ରାପ୍ତ ନୁହେଁ |",
+    "ur": "صرف سامنے والا کیمرہ استعمال ہوتا ہے۔ جب آپ پلک جھپکتے ہیں تو تصویر خود بخود لی جاتی ہے، اور گیلری سے اپ لوڈ کرنے کی اجازت نہیں ہے۔",
+    "zh_Hant": "僅使用前置鏡頭。當您眨眼時，照片會自動拍攝，並且不允許從圖庫上傳。"
   },
   "attendance_photoCaptured": {
     "en": "Photo Captured",
@@ -5275,7 +5783,9 @@
     "pt": "Foto capturada",
     "ja": "写真を撮影しました",
     "zh": "照片已捕获",
-    "or": "ଫଟୋ କ୍ୟାପଚର ହୋଇଛି |"
+    "or": "ଫଟୋ କ୍ୟାପଚର ହୋଇଛି |",
+    "ur": "تصویر کھینچی گئی۔",
+    "zh_Hant": "拍攝的照片"
   },
   "attendance_retakePhoto": {
     "en": "Retake Photo",
@@ -5295,7 +5805,9 @@
     "pt": "Tirar foto novamente",
     "ja": "写真を撮り直す",
     "zh": "重新拍照",
-    "or": "ଫଟୋ ପୁନ Ret ଗ୍ରହଣ କରନ୍ତୁ |"
+    "or": "ଫଟୋ ପୁନ Ret ଗ୍ରହଣ କରନ୍ତୁ |",
+    "ur": "تصویر دوبارہ لیں۔",
+    "zh_Hant": "重拍照片"
   },
   "attendance_loadMoreFailed": {
     "en": "Unable to load more",
@@ -5315,7 +5827,9 @@
     "pt": "Não foi possível carregar mais",
     "ja": "さらに読み込むことができませんでした",
     "zh": "无法加载更多",
-    "or": "ଅଧିକ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଅଧିକ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "مزید لوڈ کرنے سے قاصر",
+    "zh_Hant": "無法加載更多"
   },
   "attendance_closeConfirmTitle": {
     "en": "Close attendance?",
@@ -5335,7 +5849,9 @@
     "pt": "Encerrar presença?",
     "ja": "出欠確認を締め切りますか？",
     "zh": "关闭考勤？",
-    "or": "ବନ୍ଦ ଉପସ୍ଥାନ?"
+    "or": "ବନ୍ଦ ଉପସ୍ଥାନ?",
+    "ur": "حاضری بند کریں؟",
+    "zh_Hant": "密切出席？"
   },
   "attendance_closeConfirmBody": {
     "en": "Members won't be able to respond after it is closed.",
@@ -5355,7 +5871,9 @@
     "pt": "Os membros não poderão responder após o encerramento.",
     "ja": "締め切り後はメンバーが回答できなくなります。",
     "zh": "关闭后成员将无法再提交回答。",
-    "or": "ଏହା ବନ୍ଦ ହେବା ପରେ ସଦସ୍ୟମାନେ ପ୍ରତିକ୍ରିୟା କରିବାକୁ ସମର୍ଥ ହେବେ ନାହିଁ |"
+    "or": "ଏହା ବନ୍ଦ ହେବା ପରେ ସଦସ୍ୟମାନେ ପ୍ରତିକ୍ରିୟା କରିବାକୁ ସମର୍ଥ ହେବେ ନାହିଁ |",
+    "ur": "ممبران اس کے بند ہونے کے بعد جواب نہیں دے سکیں گے۔",
+    "zh_Hant": "關閉後會員將無法回覆。"
   },
   "attendance_closeFailedShort": {
     "en": "Unable to close",
@@ -5375,7 +5893,9 @@
     "pt": "Não foi possível encerrar",
     "ja": "締め切れません",
     "zh": "无法关闭",
-    "or": "ବନ୍ଦ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ବନ୍ଦ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "بند کرنے سے قاصر",
+    "zh_Hant": "無法關閉"
   },
   "attendance_viewTitle": {
     "en": "View Attendance",
@@ -5395,7 +5915,9 @@
     "pt": "Visualizar presença",
     "ja": "出欠確認を表示",
     "zh": "查看考勤",
-    "or": "ଉପସ୍ଥାନ ଦେଖନ୍ତୁ |"
+    "or": "ଉପସ୍ଥାନ ଦେଖନ୍ତୁ |",
+    "ur": "حاضری دیکھیں",
+    "zh_Hant": "查看出席狀況"
   },
   "attendance_deletedText": {
     "en": "This attendance was deleted",
@@ -5415,7 +5937,9 @@
     "pt": "Esta presença foi excluída",
     "ja": "この出欠確認は削除されました",
     "zh": "此考勤记录已删除",
-    "or": "ଏହି ଉପସ୍ଥାନ ବିଲୋପ କରାଯାଇଥିଲା |"
+    "or": "ଏହି ଉପସ୍ଥାନ ବିଲୋପ କରାଯାଇଥିଲା |",
+    "ur": "یہ حاضری حذف کر دی گئی۔",
+    "zh_Hant": "此出席已被刪除"
   },
   "attendance_reportEmpty": {
     "en": "The report is empty",
@@ -5435,7 +5959,9 @@
     "pt": "O relatório está vazio",
     "ja": "レポートは空です",
     "zh": "报告为空",
-    "or": "ରିପୋର୍ଟଟି ଖାଲି ଅଛି |"
+    "or": "ରିପୋର୍ଟଟି ଖାଲି ଅଛି |",
+    "ur": "رپورٹ خالی ہے۔",
+    "zh_Hant": "報告為空"
   },
   "attendance_reportInvalid": {
     "en": "The server returned an invalid report. Please try again.",
@@ -5455,7 +5981,9 @@
     "pt": "O servidor retornou um relatório inválido. Tente novamente.",
     "ja": "サーバーから無効なレポートが返されました。もう一度お試しください。",
     "zh": "服务器返回了无效的报告，请重试。",
-    "or": "ସର୍ଭର ଏକ ଅବ alid ଧ ରିପୋର୍ଟ ଫେରସ୍ତ କଲା | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ସର୍ଭର ଏକ ଅବ alid ଧ ରିପୋର୍ଟ ଫେରସ୍ତ କଲା | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "سرور نے ایک غلط رپورٹ واپس کی۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "伺服器傳回無效報告。請再試一次。"
   },
   "attendance_reportFailed": {
     "en": "Report Failed",
@@ -5475,7 +6003,9 @@
     "pt": "Falha no relatório",
     "ja": "レポートの生成に失敗しました",
     "zh": "报告生成失败",
-    "or": "ରିପୋର୍ଟ ବିଫଳ ହୋଇଛି"
+    "or": "ରିପୋର୍ଟ ବିଫଳ ହୋଇଛି",
+    "ur": "رپورٹ ناکام ہو گئی۔",
+    "zh_Hant": "報告失敗"
   },
   "attendance_reportReady": {
     "en": "Report ready • {fileName}",
@@ -5500,7 +6030,9 @@
     "pt": "Relatório pronto • {fileName}",
     "ja": "レポート作成完了 • {fileName}",
     "zh": "报告已就绪 • {fileName}",
-    "or": "ପ୍ରସ୍ତୁତ ରିପୋର୍ଟ କରନ୍ତୁ • {fileName}"
+    "or": "ପ୍ରସ୍ତୁତ ରିପୋର୍ଟ କରନ୍ତୁ • {fileName}",
+    "ur": "رپورٹ تیار • {fileName}",
+    "zh_Hant": "報告準備就緒 • {fileName}"
   },
   "attendance_saveToDevice": {
     "en": "Save to device",
@@ -5520,7 +6052,9 @@
     "pt": "Salvar no dispositivo",
     "ja": "端末に保存",
     "zh": "保存至设备",
-    "or": "ଡିଭାଇସରେ ସେଭ୍ କରନ୍ତୁ |"
+    "or": "ଡିଭାଇସରେ ସେଭ୍ କରନ୍ତୁ |",
+    "ur": "ڈیوائس میں محفوظ کریں۔",
+    "zh_Hant": "儲存到設備"
   },
   "attendance_saveInFiles": {
     "en": "Save in the Files app",
@@ -5540,7 +6074,9 @@
     "pt": "Salvar no app Arquivos",
     "ja": "ファイルアプリに保存",
     "zh": "保存至文件应用",
-    "or": "ଫାଇଲ୍ ଆପରେ ସେଭ୍ କରନ୍ତୁ |"
+    "or": "ଫାଇଲ୍ ଆପରେ ସେଭ୍ କରନ୍ତୁ |",
+    "ur": "فائلز ایپ میں محفوظ کریں۔",
+    "zh_Hant": "儲存在「檔案」應用程式中"
   },
   "attendance_chooseFolder": {
     "en": "Choose a folder, e.g. Downloads",
@@ -5560,7 +6096,9 @@
     "pt": "Escolha uma pasta, ex: Downloads",
     "ja": "フォルダ（ダウンロードなど）を選択",
     "zh": "选择文件夹，例如下载",
-    "or": "ଏକ ଫୋଲ୍ଡର ବାଛନ୍ତୁ, ଯଥା ଡାଉନଲୋଡ୍ |"
+    "or": "ଏକ ଫୋଲ୍ଡର ବାଛନ୍ତୁ, ଯଥା ଡାଉନଲୋଡ୍ |",
+    "ur": "ایک فولڈر منتخب کریں، جیسے ڈاؤن لوڈز",
+    "zh_Hant": "選擇一個資料夾，例如下載"
   },
   "attendance_openSubtitle": {
     "en": "View in Excel, Sheets or another app",
@@ -5580,7 +6118,9 @@
     "pt": "Ver no Excel, Sheets ou outro app",
     "ja": "Excel、スプレッドシートなどのアプリで表示",
     "zh": "在 Excel、表格或其他应用中查看",
-    "or": "Excel, ସିଟ୍ କିମ୍ବା ଅନ୍ୟ ଏକ ଆପ୍ ରେ ଦେଖନ୍ତୁ |"
+    "or": "Excel, ସିଟ୍ କିମ୍ବା ଅନ୍ୟ ଏକ ଆପ୍ ରେ ଦେଖନ୍ତୁ |",
+    "ur": "ایکسل، شیٹس یا کسی اور ایپ میں دیکھیں",
+    "zh_Hant": "在 Excel、表格或其他應用程式中查看"
   },
   "attendance_shareSubtitle": {
     "en": "Send via WhatsApp, email…",
@@ -5600,7 +6140,9 @@
     "pt": "Enviar via WhatsApp, e-mail...",
     "ja": "WhatsAppやメールで送信...",
     "zh": "通过微信、邮件等发送...",
-    "or": "ହ୍ ats ାଟସ୍ ଆପ୍, ଇମେଲ୍ ମାଧ୍ୟମରେ ପଠାନ୍ତୁ…"
+    "or": "ହ୍ ats ାଟସ୍ ଆପ୍, ଇମେଲ୍ ମାଧ୍ୟମରେ ପଠାନ୍ତୁ…",
+    "ur": "واٹس ایپ، ای میل کے ذریعے بھیجیں…",
+    "zh_Hant": "透過 WhatsApp、電子郵件發送..."
   },
   "attendance_saveReportDialog": {
     "en": "Save attendance report",
@@ -5620,7 +6162,9 @@
     "pt": "Salvar relatório de presença",
     "ja": "出欠レポートを保存",
     "zh": "保存考勤报告",
-    "or": "ଉପସ୍ଥାନ ରିପୋର୍ଟ ସଞ୍ଚୟ କରନ୍ତୁ |"
+    "or": "ଉପସ୍ଥାନ ରିପୋର୍ଟ ସଞ୍ଚୟ କରନ୍ତୁ |",
+    "ur": "حاضری کی رپورٹ محفوظ کریں۔",
+    "zh_Hant": "保存考勤報告"
   },
   "attendance_reportSaved": {
     "en": "Report Saved",
@@ -5640,7 +6184,9 @@
     "pt": "Relatório salvo",
     "ja": "レポートを保存しました",
     "zh": "报告已保存",
-    "or": "ରିପୋର୍ଟ ସଞ୍ଚୟ ହୋଇଛି |"
+    "or": "ରିପୋର୍ଟ ସଞ୍ଚୟ ହୋଇଛି |",
+    "ur": "رپورٹ محفوظ ہو گئی۔",
+    "zh_Hant": "報告已儲存"
   },
   "attendance_noCsvApp": {
     "en": "No app found to open CSV files. Use Save or Share instead.",
@@ -5660,7 +6206,9 @@
     "pt": "Nenhum app encontrado para abrir arquivos CSV. Use Salvar ou Compartilhar.",
     "ja": "CSVファイルを開くアプリが見つかりません。代わりに保存または共有をご利用ください。",
     "zh": "未找到可打开 CSV 文件的应用。请使用保存或分享。",
-    "or": "CSV ଫାଇଲ ଖୋଲିବାକୁ କ app ଣସି ଆପ୍ ମିଳିଲା ନାହିଁ | ଏହା ବଦଳରେ ସେଭ୍ କିମ୍ବା ସେୟାର ବ୍ୟବହାର କରନ୍ତୁ |"
+    "or": "CSV ଫାଇଲ ଖୋଲିବାକୁ କ app ଣସି ଆପ୍ ମିଳିଲା ନାହିଁ | ଏହା ବଦଳରେ ସେଭ୍ କିମ୍ବା ସେୟାର ବ୍ୟବହାର କରନ୍ତୁ |",
+    "ur": "CSV فائلوں کو کھولنے کے لیے کوئی ایپ نہیں ملی۔ اس کے بجائے محفوظ کریں یا شیئر کریں کا استعمال کریں۔",
+    "zh_Hant": "找不到可開啟 CSV 檔案的應用程式。請改用「儲存」或「共享」。"
   },
   "attendance_reportSubject": {
     "en": "Attendance Report",
@@ -5680,7 +6228,9 @@
     "pt": "Relatório de presença",
     "ja": "出欠レポート",
     "zh": "考勤报告",
-    "or": "ଉପସ୍ଥାନ ରିପୋର୍ଟ"
+    "or": "ଉପସ୍ଥାନ ରିପୋର୍ଟ",
+    "ur": "حاضری کی رپورٹ",
+    "zh_Hant": "考勤報告"
   },
   "attendance_reportSubjectWithTitle": {
     "en": "Attendance Report • {title}",
@@ -5705,7 +6255,9 @@
     "pt": "Relatório de presença • {title}",
     "ja": "出欠レポート • {title}",
     "zh": "考勤报告 • {title}",
-    "or": "ଉପସ୍ଥାନ ରିପୋର୍ଟ • {title}"
+    "or": "ଉପସ୍ଥାନ ରିପୋର୍ଟ • {title}",
+    "ur": "حاضری کی رپورٹ • {title}",
+    "zh_Hant": "出席報告 • {title}"
   },
   "attendance_members": {
     "en": "Members",
@@ -5725,7 +6277,9 @@
     "pt": "Membros",
     "ja": "メンバー",
     "zh": "成员",
-    "or": "ସଦସ୍ୟମାନେ |"
+    "or": "ସଦସ୍ୟମାନେ |",
+    "ur": "ممبران",
+    "zh_Hant": "會員"
   },
   "attendance_membersWithCount": {
     "en": "Members ({count})",
@@ -5750,7 +6304,9 @@
     "pt": "Membros ({count})",
     "ja": "メンバー ({count})",
     "zh": "成员 ({count})",
-    "or": "ସଭ୍ୟଗଣ ({count})"
+    "or": "ସଭ୍ୟଗଣ ({count})",
+    "ur": "اراکین ({count})",
+    "zh_Hant": "成員 ({count})"
   },
   "attendance_respondedCount": {
     "en": "{count} responded",
@@ -5775,7 +6331,9 @@
     "pt": "{count} responderam",
     "ja": "{count}名が回答済み",
     "zh": "{count} 人已回答",
-    "or": "{count} ପ୍ରତିକ୍ରିୟା କଲା |"
+    "or": "{count} ପ୍ରତିକ୍ରିୟା କଲା |",
+    "ur": "{count} نے جواب دیا۔",
+    "zh_Hant": "{count} 已回复"
   },
   "attendance_closeAction": {
     "en": "Close attendance",
@@ -5795,7 +6353,9 @@
     "pt": "Encerrar presença",
     "ja": "出欠確認を締め切る",
     "zh": "关闭考勤",
-    "or": "ବନ୍ଦ ଉପସ୍ଥାନ |"
+    "or": "ବନ୍ଦ ଉପସ୍ଥାନ |",
+    "ur": "قریبی حاضری",
+    "zh_Hant": "出席人數密切"
   },
   "attendance_statusOpen": {
     "en": "Open",
@@ -5816,7 +6376,9 @@
     "pt": "Aberta",
     "ja": "受付中",
     "zh": "进行中",
-    "or": "ଖୋଲନ୍ତୁ |"
+    "or": "ଖୋଲନ୍ତୁ |",
+    "ur": "کھولیں۔",
+    "zh_Hant": "打開"
   },
   "attendance_statusCompleted": {
     "en": "Completed",
@@ -5836,7 +6398,9 @@
     "pt": "Concluída",
     "ja": "完了",
     "zh": "已完成",
-    "or": "ସମାପ୍ତ"
+    "or": "ସମାପ୍ତ",
+    "ur": "مکمل",
+    "zh_Hant": "完全的"
   },
   "attendance_filterResponded": {
     "en": "Responded ({count})",
@@ -5861,7 +6425,9 @@
     "pt": "Responderam ({count})",
     "ja": "回答済み ({count})",
     "zh": "已回答 ({count})",
-    "or": "ପ୍ରତିକ୍ରିୟା ({count})"
+    "or": "ପ୍ରତିକ୍ରିୟା ({count})",
+    "ur": "جواب دیا ({count})",
+    "zh_Hant": "已回覆 ({count})"
   },
   "attendance_notResponded": {
     "en": "Not responded",
@@ -5881,7 +6447,9 @@
     "pt": "Não responderam",
     "ja": "未回答",
     "zh": "未回答",
-    "or": "ପ୍ରତିକ୍ରିୟା ହୋଇନାହିଁ |"
+    "or": "ପ୍ରତିକ୍ରିୟା ହୋଇନାହିଁ |",
+    "ur": "جواب نہیں دیا۔",
+    "zh_Hant": "未回覆"
   },
   "attendance_filterNotRespondedCount": {
     "en": "Not responded ({count})",
@@ -5906,7 +6474,9 @@
     "pt": "Não responderam ({count})",
     "ja": "未回答 ({count})",
     "zh": "未回答 ({count})",
-    "or": "ପ୍ରତିକ୍ରିୟା ହୋଇନାହିଁ ({count})"
+    "or": "ପ୍ରତିକ୍ରିୟା ହୋଇନାହିଁ ({count})",
+    "ur": "جواب نہیں دیا گیا ({count})",
+    "zh_Hant": "未回覆 ({count})"
   },
   "attendance_searchMember": {
     "en": "Search member",
@@ -5926,7 +6496,9 @@
     "pt": "Pesquisar membro",
     "ja": "メンバーを検索",
     "zh": "搜索成员",
-    "or": "ସନ୍ଧାନ ସଦସ୍ୟ |"
+    "or": "ସନ୍ଧାନ ସଦସ୍ୟ |",
+    "ur": "ممبر تلاش کریں۔",
+    "zh_Hant": "搜尋會員"
   },
   "attendance_noMembersMatch": {
     "en": "No members match your search",
@@ -5946,7 +6518,9 @@
     "pt": "Nenhum membro corresponde à sua pesquisa",
     "ja": "検索に一致するメンバーはいません",
     "zh": "没有匹配的成员",
-    "or": "କ search ଣସି ସଦସ୍ୟ ଆପଣଙ୍କ ସନ୍ଧାନ ସହିତ ମେଳ ଖାଉ ନାହାଁନ୍ତି |"
+    "or": "କ search ଣସି ସଦସ୍ୟ ଆପଣଙ୍କ ସନ୍ଧାନ ସହିତ ମେଳ ଖାଉ ନାହାଁନ୍ତି |",
+    "ur": "کوئی ممبر آپ کی تلاش سے مماثل نہیں ہے۔",
+    "zh_Hant": "沒有符合您搜尋條件的成員"
   },
   "attendance_everyoneResponded": {
     "en": "Everyone has responded",
@@ -5966,7 +6540,9 @@
     "pt": "Todos responderam",
     "ja": "全員が回答しました",
     "zh": "所有人均已回答",
-    "or": "ସମସ୍ତେ ପ୍ରତିକ୍ରିୟା ଦେଇଛନ୍ତି"
+    "or": "ସମସ୍ତେ ପ୍ରତିକ୍ରିୟା ଦେଇଛନ୍ତି",
+    "ur": "سب نے جواب دیا ہے۔",
+    "zh_Hant": "大家都已經回覆了"
   },
   "attendance_noResponses": {
     "en": "No responses yet",
@@ -5986,7 +6562,9 @@
     "pt": "Nenhuma resposta ainda",
     "ja": "回答はまだありません",
     "zh": "暂无回答",
-    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ No ଣସି ପ୍ରତିକ୍ରିୟା ନାହିଁ |"
+    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ No ଣସି ପ୍ରତିକ୍ରିୟା ନାହିଁ |",
+    "ur": "ابھی تک کوئی جواب نہیں ہے۔",
+    "zh_Hant": "尚未回覆"
   },
   "attendance_loadMore": {
     "en": "Load more",
@@ -6006,7 +6584,9 @@
     "pt": "Carregar mais",
     "ja": "もっと読み込む",
     "zh": "加载更多",
-    "or": "ଅଧିକ ଲୋଡ୍ କରନ୍ତୁ |"
+    "or": "ଅଧିକ ଲୋଡ୍ କରନ୍ତୁ |",
+    "ur": "مزید لوڈ کریں۔",
+    "zh_Hant": "加載更多"
   },
   "attendance_withinMeters": {
     "en": "Within {count} m",
@@ -6031,7 +6611,9 @@
     "pt": "A menos de {count} m",
     "ja": "{count}m以内",
     "zh": "{count} 米以内",
-    "or": "{count} ମି"
+    "or": "{count} ମି",
+    "ur": "{count} m کے اندر",
+    "zh_Hant": "{count} 公尺以內"
   },
   "attendance_withinKm": {
     "en": "Within {km} km",
@@ -6056,7 +6638,9 @@
     "pt": "A menos de {km} km",
     "ja": "{km}km以内",
     "zh": "{km} 公里以内",
-    "or": "{km} କିମି ମଧ୍ୟରେ |"
+    "or": "{km} କିମି ମଧ୍ୟରେ |",
+    "ur": "{km} کلومیٹر کے اندر",
+    "zh_Hant": "{km} 公里內"
   },
   "attendance_noLocation": {
     "en": "No location available",
@@ -6076,7 +6660,9 @@
     "pt": "Nenhuma localização disponível",
     "ja": "位置情報がありません",
     "zh": "无可用位置信息",
-    "or": "କ location ଣସି ସ୍ଥାନ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "କ location ଣସି ସ୍ଥାନ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "کوئی مقام دستیاب نہیں ہے۔",
+    "zh_Hant": "沒有可用的位置"
   },
   "attendance_photoProof": {
     "en": "Photo Proof",
@@ -6096,7 +6682,9 @@
     "pt": "Comprovante com foto",
     "ja": "写真による証明",
     "zh": "照片凭证",
-    "or": "ଫଟୋ ପ୍ରୁଫ୍ |"
+    "or": "ଫଟୋ ପ୍ରୁଫ୍ |",
+    "ur": "فوٹو پروف",
+    "zh_Hant": "照片證明"
   },
   "attendance_view": {
     "en": "View",
@@ -6117,7 +6705,9 @@
     "pt": "Ver",
     "ja": "表示",
     "zh": "查看",
-    "or": "ଦର୍ଶନ କରନ୍ତୁ |"
+    "or": "ଦର୍ଶନ କରନ୍ତୁ |",
+    "ur": "دیکھیں",
+    "zh_Hant": "看法"
   },
   "attendance_openMapFailed": {
     "en": "Unable to open map",
@@ -6137,7 +6727,9 @@
     "pt": "Não foi possível abrir o mapa",
     "ja": "マップを開けませんでした",
     "zh": "无法打开地图",
-    "or": "ମାନଚିତ୍ର ଖୋଲିବାକୁ ଅସମର୍ଥ |"
+    "or": "ମାନଚିତ୍ର ଖୋଲିବାକୁ ଅସମର୍ଥ |",
+    "ur": "نقشہ کھولنے سے قاصر",
+    "zh_Hant": "無法打開地圖"
   },
   "attendance_photoProofOf": {
     "en": "{name}'s Photo Proof",
@@ -6162,7 +6754,9 @@
     "pt": "Comprovante com foto de {name}",
     "ja": "{name}さんの写真証明",
     "zh": "{name} 的照片凭证",
-    "or": "{name} ର ଫଟୋ ପ୍ରୁଫ୍ |"
+    "or": "{name} ର ଫଟୋ ପ୍ରୁଫ୍ |",
+    "ur": "{name} کا تصویری ثبوت",
+    "zh_Hant": "{name} 的照片證明"
   },
   "attendance_capturedAtVerified": {
     "en": "Captured at {time} • Verified",
@@ -6187,7 +6781,9 @@
     "pt": "Capturada às {time} • Verificada",
     "ja": "{time}に撮影 • 確認済み",
     "zh": "于 {time} 拍摄 • 已验证",
-    "or": "{time} ରେ ଧରାଯାଇଛି • ଯାଞ୍ଚ କରାଯାଇଛି |"
+    "or": "{time} ରେ ଧରାଯାଇଛି • ଯାଞ୍ଚ କରାଯାଇଛି |",
+    "ur": "{time} پر پکڑا گیا • تصدیق شدہ",
+    "zh_Hant": "攝於 {time} • 已驗證"
   },
   "attendance_downloadReport": {
     "en": "Download Report",
@@ -6207,7 +6803,9 @@
     "pt": "Baixar relatório",
     "ja": "レポートをダウンロード",
     "zh": "下载报告",
-    "or": "ରିପୋର୍ଟ ଡାଉନଲୋଡ୍ କରନ୍ତୁ |"
+    "or": "ରିପୋର୍ଟ ଡାଉନଲୋଡ୍ କରନ୍ତୁ |",
+    "ur": "رپورٹ ڈاؤن لوڈ کریں۔",
+    "zh_Hant": "下載報告"
   },
   "attendance_selectStatus": {
     "en": "Please select your status",
@@ -6227,7 +6825,9 @@
     "pt": "Selecione seu status",
     "ja": "ステータスを選択してください",
     "zh": "请选择您的状态",
-    "or": "ଦୟାକରି ଆପଣଙ୍କର ସ୍ଥିତି ଚୟନ କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ଆପଣଙ୍କର ସ୍ଥିତି ଚୟନ କରନ୍ତୁ |",
+    "ur": "براہ کرم اپنی حیثیت منتخب کریں۔",
+    "zh_Hant": "請選擇您的狀態"
   },
   "attendance_submitted": {
     "en": "Attendance Submitted",
@@ -6247,7 +6847,9 @@
     "pt": "Presença enviada",
     "ja": "出欠を提出しました",
     "zh": "考勤已提交",
-    "or": "ଉପସ୍ଥାନ ଉପସ୍ଥାପିତ |"
+    "or": "ଉପସ୍ଥାନ ଉପସ୍ଥାପିତ |",
+    "ur": "حاضری جمع کرائی گئی۔",
+    "zh_Hant": "已提交出席情況"
   },
   "attendance_markedAs": {
     "en": "Marked as {option}",
@@ -6272,7 +6874,9 @@
     "pt": "Marcado como {option}",
     "ja": "{option}として記録",
     "zh": "已标记为 {option}",
-    "or": "{option} ଭାବରେ ଚିହ୍ନିତ |"
+    "or": "{option} ଭାବରେ ଚିହ୍ନିତ |",
+    "ur": "{option} کے بطور نشان زد",
+    "zh_Hant": "標記為 {option}"
   },
   "attendance_removeResponseTitle": {
     "en": "Remove your response?",
@@ -6292,7 +6896,9 @@
     "pt": "Remover sua resposta?",
     "ja": "回答を取り消しますか？",
     "zh": "撤回您的回答吗？",
-    "or": "ତୁମର ପ୍ରତିକ୍ରିୟା ହଟାନ୍ତୁ?"
+    "or": "ତୁମର ପ୍ରତିକ୍ରିୟା ହଟାନ୍ତୁ?",
+    "ur": "آپ کا جواب ہٹائیں؟",
+    "zh_Hant": "刪除您的回覆？"
   },
   "attendance_removeResponseBody": {
     "en": "Your attendance for this poll will be cleared.",
@@ -6312,7 +6918,9 @@
     "pt": "Sua presença nesta enquete será apagada.",
     "ja": "この出欠確認の回答が消去されます。",
     "zh": "您在此投票中的考勤记录将被清除。",
-    "or": "ଏହି ସର୍ଭେ ପାଇଁ ଆପଣଙ୍କର ଉପସ୍ଥାନ ସଫା ହେବ |"
+    "or": "ଏହି ସର୍ଭେ ପାଇଁ ଆପଣଙ୍କର ଉପସ୍ଥାନ ସଫା ହେବ |",
+    "ur": "اس پول کے لیے آپ کی حاضری صاف ہو جائے گی۔",
+    "zh_Hant": "您參加本次投票的情況將被清除。"
   },
   "attendance_removeFailedShort": {
     "en": "Unable to remove",
@@ -6332,7 +6940,9 @@
     "pt": "Não foi possível remover",
     "ja": "取り消せません",
     "zh": "无法撤销",
-    "or": "ଅପସାରଣ କରିବାରେ ଅସମର୍ଥ |"
+    "or": "ଅପସାରଣ କରିବାରେ ଅସମର୍ଥ |",
+    "ur": "ہٹانے سے قاصر",
+    "zh_Hant": "無法刪除"
   },
   "attendance_admin": {
     "en": "Admin",
@@ -6352,7 +6962,9 @@
     "pt": "Admin",
     "ja": "管理者",
     "zh": "管理员",
-    "or": "ଆଡମିନି"
+    "or": "ଆଡମିନି",
+    "ur": "ایڈمن",
+    "zh_Hant": "行政"
   },
   "attendance_loadFailed": {
     "en": "Couldn't load attendance",
@@ -6372,7 +6984,9 @@
     "pt": "Não foi possível carregar a presença",
     "ja": "出欠確認を読み込めませんでした",
     "zh": "无法加载考勤",
-    "or": "ଉପସ୍ଥାନ ଲୋଡ୍ କରିପାରିଲା ନାହିଁ |"
+    "or": "ଉପସ୍ଥାନ ଲୋଡ୍ କରିପାରିଲା ନାହିଁ |",
+    "ur": "حاضری لوڈ نہیں ہو سکی",
+    "zh_Hant": "無法加載考勤"
   },
   "attendance_markedSuccess": {
     "en": "Attendance marked successfully",
@@ -6392,7 +7006,9 @@
     "pt": "Presença registrada com sucesso",
     "ja": "出欠を記録しました",
     "zh": "考勤标记成功",
-    "or": "ଉପସ୍ଥାନ ସଫଳତାର ସହିତ ଚିହ୍ନିତ |"
+    "or": "ଉପସ୍ଥାନ ସଫଳତାର ସହିତ ଚିହ୍ନିତ |",
+    "ur": "حاضری کو کامیابی سے نشان زد کیا گیا۔",
+    "zh_Hant": "考勤標記成功"
   },
   "attendance_photoVerified": {
     "en": "Photo verified",
@@ -6412,7 +7028,9 @@
     "pt": "Foto verificada",
     "ja": "写真確認済み",
     "zh": "照片已验证",
-    "or": "ଫଟୋ ଯାଞ୍ଚ ହୋଇଛି |"
+    "or": "ଫଟୋ ଯାଞ୍ଚ ହୋଇଛି |",
+    "ur": "تصویر کی تصدیق ہو گئی۔",
+    "zh_Hant": "照片已驗證"
   },
   "attendance_changeResponse": {
     "en": "Change response",
@@ -6432,7 +7050,9 @@
     "pt": "Alterar resposta",
     "ja": "回答を変更",
     "zh": "更改回答",
-    "or": "ପ୍ରତିକ୍ରିୟା ପରିବର୍ତ୍ତନ କରନ୍ତୁ |"
+    "or": "ପ୍ରତିକ୍ରିୟା ପରିବର୍ତ୍ତନ କରନ୍ତୁ |",
+    "ur": "جواب تبدیل کریں۔",
+    "zh_Hant": "變更回應"
   },
   "attendance_markYourAttendance": {
     "en": "Mark your attendance",
@@ -6452,7 +7072,9 @@
     "pt": "Registre sua presença",
     "ja": "出欠を記録してください",
     "zh": "标记您的考勤",
-    "or": "ତୁମର ଉପସ୍ଥାନକୁ ଚିହ୍ନିତ କର |"
+    "or": "ତୁମର ଉପସ୍ଥାନକୁ ଚିହ୍ନିତ କର |",
+    "ur": "اپنی حاضری کو نشان زد کریں۔",
+    "zh_Hant": "標記您的出席情況"
   },
   "attendance_closesAt": {
     "en": "Closes {dateTime}",
@@ -6477,7 +7099,9 @@
     "pt": "Fecha em {dateTime}",
     "ja": "{dateTime}に終了",
     "zh": "截止于 {dateTime}",
-    "or": "ବନ୍ଦ {dateTime} |"
+    "or": "ବନ୍ଦ {dateTime} |",
+    "ur": "{dateTime} بند کرتا ہے۔",
+    "zh_Hant": "關閉 {dateTime}"
   },
   "attendance_update": {
     "en": "Update Attendance",
@@ -6497,7 +7121,9 @@
     "pt": "Atualizar presença",
     "ja": "出欠を更新",
     "zh": "更新考勤",
-    "or": "ଉପସ୍ଥାନ ଅଦ୍ୟତନ କରନ୍ତୁ |"
+    "or": "ଉପସ୍ଥାନ ଅଦ୍ୟତନ କରନ୍ତୁ |",
+    "ur": "حاضری کو اپ ڈیٹ کریں۔",
+    "zh_Hant": "更新考勤"
   },
   "attendance_submit": {
     "en": "Submit Attendance",
@@ -6517,7 +7143,9 @@
     "pt": "Enviar presença",
     "ja": "出欠を提出",
     "zh": "提交考勤",
-    "or": "ଉପସ୍ଥାନ ଉପସ୍ଥାପନ କରନ୍ତୁ |"
+    "or": "ଉପସ୍ଥାନ ଉପସ୍ଥାପନ କରନ୍ତୁ |",
+    "ur": "حاضری جمع کروائیں۔",
+    "zh_Hant": "提交考勤"
   },
   "attendance_photoCapturedTapRetake": {
     "en": "Photo captured ✓ (Tap to retake)",
@@ -6537,7 +7165,9 @@
     "pt": "Foto capturada ✓ (Toque para tirar novamente)",
     "ja": "写真撮影済み ✓ (タップして再撮影)",
     "zh": "照片已捕获 ✓（点击重拍）",
-    "or": "ଫଟୋ କଏଦ ହୋଇଛି ✓ (ପୁନ ake ନେବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ)"
+    "or": "ଫଟୋ କଏଦ ହୋଇଛି ✓ (ପୁନ ake ନେବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ)",
+    "ur": "تصویر کھینچی گئی ✓ (دوبارہ لینے کے لیے تھپتھپائیں)",
+    "zh_Hant": "拍攝的照片 ✓（點擊即可重拍）"
   },
   "attendance_photoRequiredFor": {
     "en": "⚠ Photo required for {option}",
@@ -6562,6 +7192,8 @@
     "pt": "⚠ Foto obrigatória para {option}",
     "ja": "⚠ {option}には写真が必要です",
     "zh": "⚠ {option} 需要拍摄照片",
-    "or": "__ ଫଟୋ {option} ପାଇଁ ଆବଶ୍ୟକ |"
+    "or": "__ ଫଟୋ {option} ପାଇଁ ଆବଶ୍ୟକ |",
+    "ur": "⚠ {option} کے لیے تصویر درکار ہے۔",
+    "zh_Hant": "⚠ {option} 需要照片"
   }
 }

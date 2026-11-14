@@ -3391,6 +3391,14 @@ class AppLocalizationsGu extends AppLocalizations {
   String get intro_walkieTitle => 'વૉકી-ટૉકી ફીચર';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'તમારો ડેટા $percent સુરક્ષિત છે';
+  }
+
+  @override
+  String get login_enterMobileNumber => 'મોબાઇલ નંબર દાખલ કરો';
+
+  @override
   String get media_cannotOpen => 'ખોલી શકાતું નથી';
 
   @override

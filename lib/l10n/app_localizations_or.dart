@@ -3454,6 +3454,14 @@ class AppLocalizationsOr extends AppLocalizations {
   String get intro_walkieTitle => 'ୱାକି-ଟକି |\nବ feature ଶିଷ୍ଟ୍ୟ';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'ଆପଣଙ୍କର ତଥ୍ୟ $percent ସୁରକ୍ଷିତ';
+  }
+
+  @override
+  String get login_enterMobileNumber => 'ମୋବାଇଲ୍ ନମ୍ବର ପ୍ରବେଶ କରନ୍ତୁ';
+
+  @override
   String get media_cannotOpen => 'ଖୋଲିପାରିବ ନାହିଁ |';
 
   @override

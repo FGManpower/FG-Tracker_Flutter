@@ -18,7 +18,9 @@
     "pt": "Mensal",
     "ja": "月額",
     "zh": "包月",
-    "or": "ମାସିକ"
+    "or": "ମାସିକ",
+    "ur": "ماہانہ",
+    "zh_Hant": "每月"
   },
   "walkiePlan_durationQuarterly": {
     "en": "Quarterly",
@@ -39,7 +41,9 @@
     "pt": "Trimestral",
     "ja": "3ヶ月",
     "zh": "包季",
-    "or": "ତ୍ର ar ମାସିକ |"
+    "or": "ତ୍ର ar ମାସିକ |",
+    "ur": "سہ ماہی",
+    "zh_Hant": "季刊"
   },
   "walkiePlan_durationYearly": {
     "en": "Yearly",
@@ -60,7 +64,9 @@
     "pt": "Anual",
     "ja": "年額",
     "zh": "包年",
-    "or": "ବାର୍ଷିକ |"
+    "or": "ବାର୍ଷିକ |",
+    "ur": "سالانہ",
+    "zh_Hant": "每年"
   },
   "walkiePlan_durationMonths": {
     "en": "{count, plural, =1{1 Month} other{{count} Months}}",
@@ -85,7 +91,9 @@
     "pt": "{count, plural, =1{1 Mês} other{{count} Meses}}",
     "ja": "{count}ヶ月",
     "zh": "{count} 个月",
-    "or": "{count, plural, =1{1 ମାସ} other{{count} ମାସଗୁଡିକ |}}"
+    "or": "{count, plural, =1{1 ମାସ} other{{count} ମାସଗୁଡିକ |}}",
+    "ur": "{count, plural, =1{1 مہینہ} other{{count} مہینے}}",
+    "zh_Hant": "{count, plural, =1{1個月} other{{count} 月}}"
   },
   "walkiePlan_durationFallback": {
     "en": "Duration",
@@ -105,7 +113,9 @@
     "pt": "Duração",
     "ja": "期間",
     "zh": "有效期",
-    "or": "ଅବଧି"
+    "or": "ଅବଧି",
+    "ur": "دورانیہ",
+    "zh_Hant": "期間"
   },
   "walkiePlan_teamPlan": {
     "en": "Team Plan",
@@ -125,7 +135,9 @@
     "pt": "Plano de Equipe",
     "ja": "チームプラン",
     "zh": "团队套餐",
-    "or": "ଦଳ ଯୋଜନା"
+    "or": "ଦଳ ଯୋଜନା",
+    "ur": "ٹیم پلان",
+    "zh_Hant": "團隊計劃"
   },
   "walkiePlan_individualPlan": {
     "en": "Individual Plan",
@@ -145,7 +157,9 @@
     "pt": "Plano Individual",
     "ja": "個人プラン",
     "zh": "个人套餐",
-    "or": "ବ୍ୟକ୍ତିଗତ ଯୋଜନା"
+    "or": "ବ୍ୟକ୍ତିଗତ ଯୋଜନା",
+    "ur": "انفرادی منصوبہ",
+    "zh_Hant": "個人計劃"
   },
   "walkiePlan_teamPlanWithDuration": {
     "en": "Team Plan ({duration})",
@@ -170,7 +184,9 @@
     "pt": "Plano de Equipe ({duration})",
     "ja": "チームプラン ({duration})",
     "zh": "团队套餐 ({duration})",
-    "or": "ଦଳ ଯୋଜନା ({duration})"
+    "or": "ଦଳ ଯୋଜନା ({duration})",
+    "ur": "ٹیم پلان ({duration})",
+    "zh_Hant": "團隊計劃 ({duration})"
   },
   "walkiePlan_planFallback": {
     "en": "Plan",
@@ -191,7 +207,9 @@
     "pt": "Plano",
     "ja": "プラン",
     "zh": "套餐",
-    "or": "ଯୋଜନା କରନ୍ତୁ |"
+    "or": "ଯୋଜନା କରନ୍ତୁ |",
+    "ur": "منصوبہ",
+    "zh_Hant": "計劃"
   },
   "walkiePlan_monthlyPlan": {
     "en": "Monthly Plan",
@@ -211,7 +229,9 @@
     "pt": "Plano Mensal",
     "ja": "月額プラン",
     "zh": "月度套餐",
-    "or": "ମାସିକ ଯୋଜନା"
+    "or": "ମାସିକ ଯୋଜନା",
+    "ur": "ماہانہ منصوبہ",
+    "zh_Hant": "每月計劃"
   },
   "walkiePlan_quarterlyPlan": {
     "en": "Quarterly Plan",
@@ -231,7 +251,9 @@
     "pt": "Plano Trimestral",
     "ja": "四半期プラン",
     "zh": "季度套餐",
-    "or": "ତ୍ର ar ମାସିକ ଯୋଜନା |"
+    "or": "ତ୍ର ar ମାସିକ ଯୋଜନା |",
+    "ur": "سہ ماہی منصوبہ",
+    "zh_Hant": "季度計劃"
   },
   "walkiePlan_yearlyPlan": {
     "en": "Yearly Plan",
@@ -251,7 +273,9 @@
     "pt": "Plano Anual",
     "ja": "年額プラン",
     "zh": "年度套餐",
-    "or": "ବାର୍ଷିକ ଯୋଜନା"
+    "or": "ବାର୍ଷିକ ଯୋଜନା",
+    "ur": "سالانہ منصوبہ",
+    "zh_Hant": "年度計劃"
   },
   "walkiePlan_intervalPlan": {
     "en": "{interval} Plan",
@@ -277,7 +301,9 @@
     "pt": "Plano {interval}",
     "ja": "{interval}プラン",
     "zh": "{interval} 套餐",
-    "or": "{interval} ଯୋଜନା |"
+    "or": "{interval} ଯୋଜନା |",
+    "ur": "{interval} پلان",
+    "zh_Hant": "{interval} 計劃"
   },
   "walkiePlan_noInternetCheckNetwork": {
     "en": "No internet connection. Please check your network.",
@@ -297,7 +323,9 @@
     "pt": "Sem conexão com a internet. Verifique sua rede.",
     "ja": "インターネットに接続されていません。ネットワークを確認してください。",
     "zh": "无网络连接，请检查您的网络。",
-    "or": "କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ | ଦୟାକରି ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ |"
+    "or": "କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ | ଦୟାକରି ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ |",
+    "ur": "انٹرنیٹ کنکشن نہیں ہے۔ براہ کرم اپنا نیٹ ورک چیک کریں۔",
+    "zh_Hant": "沒有網路連線。請檢查您的網路。"
   },
   "walkiePlan_unableToConnect": {
     "en": "Unable to connect to server. Please try again.",
@@ -317,7 +345,9 @@
     "pt": "Não foi possível conectar ao servidor. Tente novamente.",
     "ja": "サーバーに接続できません。もう一度お試しください。",
     "zh": "无法连接到服务器，请重试。",
-    "or": "ସର୍ଭର ସହିତ ସଂଯୋଗ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ସର୍ଭର ସହିତ ସଂଯୋଗ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "سرور سے جڑنے سے قاصر۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法連接到伺服器。請再試一次。"
   },
   "walkiePlan_perMember": {
     "en": "per member",
@@ -337,7 +367,9 @@
     "pt": "por membro",
     "ja": "メンバー1名あたり",
     "zh": "每位成员",
-    "or": "ପ୍ରତି ସଦସ୍ୟଙ୍କ ପାଇଁ |"
+    "or": "ପ୍ରତି ସଦସ୍ୟଙ୍କ ପାଇଁ |",
+    "ur": "فی ممبر",
+    "zh_Hant": "每個成員"
   },
   "walkiePlan_secureEncryptedPayment": {
     "en": "Secure & Encrypted Payment",
@@ -357,7 +389,9 @@
     "pt": "Pagamento Seguro e Criptografado",
     "ja": "安全で暗号化された決済",
     "zh": "安全加密支付",
-    "or": "ସୁରକ୍ଷିତ ଏବଂ ଏନକ୍ରିପ୍ଟେଡ୍ ଦେୟ |"
+    "or": "ସୁରକ୍ଷିତ ଏବଂ ଏନକ୍ରିପ୍ଟେଡ୍ ଦେୟ |",
+    "ur": "محفوظ اور خفیہ کردہ ادائیگی",
+    "zh_Hant": "安全加密的支付"
   },
   "walkiePlan_orderTitle": {
     "en": "Order Summary",
@@ -377,7 +411,9 @@
     "pt": "Resumo do Pedido",
     "ja": "注文の概要",
     "zh": "订单摘要",
-    "or": "ଅର୍ଡର ସାରାଂଶ"
+    "or": "ଅର୍ଡର ସାରାଂଶ",
+    "ur": "آرڈر کا خلاصہ",
+    "zh_Hant": "訂單摘要"
   },
   "walkiePlan_orderSubtitle": {
     "en": "Review your plan details & proceed to pay",
@@ -397,7 +433,9 @@
     "pt": "Revise os detalhes do seu plano e pague",
     "ja": "プラン内容を確認して支払いへ進む",
     "zh": "核对您的套餐详情并继续支付",
-    "or": "ଆପଣଙ୍କର ଯୋଜନା ବିବରଣୀ ସମୀକ୍ଷା କରନ୍ତୁ ଏବଂ ଦେୟ ଦେବାକୁ ଅଗ୍ରଗତି କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ଯୋଜନା ବିବରଣୀ ସମୀକ୍ଷା କରନ୍ତୁ ଏବଂ ଦେୟ ଦେବାକୁ ଅଗ୍ରଗତି କରନ୍ତୁ |",
+    "ur": "اپنے پلان کی تفصیلات کا جائزہ لیں اور ادائیگی کے لیے آگے بڑھیں۔",
+    "zh_Hant": "查看您的計劃詳細資訊並繼續付款"
   },
   "walkiePlan_order100Secure": {
     "en": "100% Secure",
@@ -417,7 +455,9 @@
     "pt": "100% Seguro",
     "ja": "100% 安全",
     "zh": "100% 安全保证",
-    "or": "100% ସୁରକ୍ଷିତ |"
+    "or": "100% ସୁରକ୍ଷିତ |",
+    "ur": "100% محفوظ",
+    "zh_Hant": "100% 安全"
   },
   "walkiePlan_orderEncryptedPayment": {
     "en": "Encrypted Payment",
@@ -437,7 +477,9 @@
     "pt": "Pagamento Criptografado",
     "ja": "暗号化決済",
     "zh": "全程加密支付",
-    "or": "ଏନକ୍ରିପ୍ଟ ପେମେଣ୍ଟ"
+    "or": "ଏନକ୍ରିପ୍ଟ ପେମେଣ୍ଟ",
+    "ur": "خفیہ کردہ ادائیگی",
+    "zh_Hant": "加密支付"
   },
   "walkiePlan_orderForMultipleMembers": {
     "en": "For Multiple Members",
@@ -457,7 +499,9 @@
     "pt": "Para Múltiplos Membros",
     "ja": "複数メンバー向け",
     "zh": "多成员套餐",
-    "or": "ଏକାଧିକ ସଦସ୍ୟଙ୍କ ପାଇଁ |"
+    "or": "ଏକାଧିକ ସଦସ୍ୟଙ୍କ ପାଇଁ |",
+    "ur": "ایک سے زیادہ ممبران کے لیے",
+    "zh_Hant": "對於多名會員"
   },
   "walkiePlan_orderForSingleMember": {
     "en": "For Single Member",
@@ -477,7 +521,9 @@
     "pt": "Para Membro Individual",
     "ja": "個人向け",
     "zh": "单人套餐",
-    "or": "ଏକକ ସଦସ୍ୟଙ୍କ ପାଇଁ |"
+    "or": "ଏକକ ସଦସ୍ୟଙ୍କ ପାଇଁ |",
+    "ur": "سنگل ممبر کے لیے",
+    "zh_Hant": "對於單一會員"
   },
   "walkiePlan_orderMembersLabel": {
     "en": "Members",
@@ -497,7 +543,9 @@
     "pt": "Membros",
     "ja": "メンバー",
     "zh": "成员",
-    "or": "ସଦସ୍ୟମାନେ |"
+    "or": "ସଦସ୍ୟମାନେ |",
+    "ur": "ممبران",
+    "zh_Hant": "會員"
   },
   "walkiePlan_orderMemberCount": {
     "en": "{count, plural, =1{1 Member} other{{count} Members}}",
@@ -522,7 +570,9 @@
     "pt": "{count, plural, =1{1 Membro} other{{count} Membros}}",
     "ja": "{count}名のメンバー",
     "zh": "{count} 位成员",
-    "or": "{count, plural, =1{1 ସଦସ୍ୟ} other{{count} ସଦସ୍ୟମାନେ |}}"
+    "or": "{count, plural, =1{1 ସଦସ୍ୟ} other{{count} ସଦସ୍ୟମାନେ |}}",
+    "ur": "{count, plural, =1{1 رکن} other{{count} اراکین}}",
+    "zh_Hant": "{count, plural, =1{1 名會員} other{{count} 成員}}"
   },
   "walkiePlan_orderPricePerMember": {
     "en": "Price per member",
@@ -542,7 +592,9 @@
     "pt": "Preço por membro",
     "ja": "メンバー1名あたりの料金",
     "zh": "单人价格",
-    "or": "ସଦସ୍ୟଙ୍କ ମୂଲ୍ୟ"
+    "or": "ସଦସ୍ୟଙ୍କ ମୂଲ୍ୟ",
+    "ur": "فی ممبر قیمت",
+    "zh_Hant": "每位會員價格"
   },
   "walkiePlan_orderTotalAmount": {
     "en": "Total Amount",
@@ -562,7 +614,9 @@
     "pt": "Valor Total",
     "ja": "合計金額",
     "zh": "总计金额",
-    "or": "ସମୁଦାୟ ରାଶି"
+    "or": "ସମୁଦାୟ ରାଶି",
+    "ur": "کل رقم",
+    "zh_Hant": "總金額"
   },
   "walkiePlan_orderMembersTimesRate": {
     "en": "{count, plural, =1{1 Member × {rate}} other{{count} Members × {rate}}}",
@@ -591,7 +645,9 @@
     "pt": "{count, plural, =1{1 Membro × {rate}} other{{count} Membros × {rate}}}",
     "ja": "{count}名 × {rate}",
     "zh": "{count} 人 × {rate}",
-    "or": "{count, plural, =1{1 ସଦସ୍ୟ × {rate} |} other{{count} ସଦସ୍ୟ × {rate}}}"
+    "or": "{count, plural, =1{1 ସଦସ୍ୟ × {rate} |} other{{count} ସଦସ୍ୟ × {rate}}}",
+    "ur": "{count, plural, =1{1 رکن × {rate}} other{{count} اراکین × {rate}}}",
+    "zh_Hant": "{count, plural, =1{1 位會員 × {rate}} other{ {count} {rate}}}"
   },
   "walkiePlan_orderPaymentMethod": {
     "en": "Payment Method",
@@ -611,7 +667,9 @@
     "pt": "Forma de Pagamento",
     "ja": "お支払い方法",
     "zh": "支付方式",
-    "or": "ଦେୟ ପଦ୍ଧତି |"
+    "or": "ଦେୟ ପଦ୍ଧତି |",
+    "ur": "ادائیگی کا طریقہ",
+    "zh_Hant": "付款方式"
   },
   "walkiePlan_orderOnlineViaRazorpay": {
     "en": "Online Payment via Razorpay",
@@ -631,7 +689,9 @@
     "pt": "Pagamento online via Razorpay",
     "ja": "Razorpay オンライン決済",
     "zh": "通过 Razorpay 在线支付",
-    "or": "ରଜରପାଇ ମାଧ୍ୟମରେ ଅନଲାଇନ୍ ଦେୟ |"
+    "or": "ରଜରପାଇ ମାଧ୍ୟମରେ ଅନଲାଇନ୍ ଦେୟ |",
+    "ur": "Razorpay کے ذریعے آن لائن ادائیگی",
+    "zh_Hant": "透過 Razorpay 線上支付"
   },
   "walkiePlan_orderSecureBadge": {
     "en": "SECURE",
@@ -651,7 +711,9 @@
     "pt": "SEGURO",
     "ja": "安全",
     "zh": "安全",
-    "or": "ନିରାପତ୍ତା |"
+    "or": "ନିରାପତ୍ତା |",
+    "ur": "محفوظ",
+    "zh_Hant": "安全的"
   },
   "walkiePlan_orderUpiQr": {
     "en": "UPI / QR",
@@ -671,7 +733,9 @@
     "pt": "UPI / QR",
     "ja": "UPI / QR",
     "zh": "UPI / 二维码",
-    "or": "UPI / QR"
+    "or": "UPI / QR",
+    "ur": "UPI/QR",
+    "zh_Hant": "統一支付介面/二維碼"
   },
   "walkiePlan_orderCards": {
     "en": "Cards",
@@ -691,7 +755,9 @@
     "pt": "Cartões",
     "ja": "クレジットカード",
     "zh": "银行卡",
-    "or": "କାର୍ଡଗୁଡ଼ିକ"
+    "or": "କାର୍ଡଗୁଡ଼ିକ",
+    "ur": "کارڈز",
+    "zh_Hant": "牌"
   },
   "walkiePlan_orderNetBanking": {
     "en": "NetBanking",
@@ -711,7 +777,9 @@
     "pt": "Internet Banking",
     "ja": "ネットバンキング",
     "zh": "网银支付",
-    "or": "ନେଟ୍ ବ୍ୟାଙ୍କିଙ୍ଗ୍"
+    "or": "ନେଟ୍ ବ୍ୟାଙ୍କିଙ୍ଗ୍",
+    "ur": "نیٹ بینکنگ",
+    "zh_Hant": "網路銀行"
   },
   "walkiePlan_orderWallets": {
     "en": "Wallets",
@@ -731,7 +799,9 @@
     "pt": "Carteiras Digitais",
     "ja": "電子マネー/ウォレット",
     "zh": "电子钱包",
-    "or": "ୱାଲେଟ୍ |"
+    "or": "ୱାଲେଟ୍ |",
+    "ur": "بٹوے",
+    "zh_Hant": "錢包"
   },
   "walkiePlan_order3ds2Secure": {
     "en": "3DS2 Secure",
@@ -751,7 +821,9 @@
     "pt": "Seguro 3DS2",
     "ja": "3DS2 認証対応",
     "zh": "3DS2 安全认证",
-    "or": "3DS2 ସୁରକ୍ଷିତ |"
+    "or": "3DS2 ସୁରକ୍ଷିତ |",
+    "ur": "3DS2 محفوظ",
+    "zh_Hant": "3DS2 安全"
   },
   "walkiePlan_orderOpeningCheckout": {
     "en": "Opening Razorpay Payment Checkout...",
@@ -771,7 +843,9 @@
     "pt": "Abrindo checkout do Razorpay...",
     "ja": "Razorpay 決済画面を開いています...",
     "zh": "正在打开 Razorpay 支付结银台...",
-    "or": "ରଜରପେ ପେମେଣ୍ଟ ଚେକଆଉଟ୍ ଖୋଲିବା ..."
+    "or": "ରଜରପେ ପେମେଣ୍ଟ ଚେକଆଉଟ୍ ଖୋଲିବା ...",
+    "ur": "Razorpay ادائیگی چیک آؤٹ کھول رہا ہے...",
+    "zh_Hant": "開啟 Razorpay 付款結帳..."
   },
   "walkiePlan_orderDomesticHint": {
     "en": "Choose from GPay, PhonePe, Cards, NetBanking or Wallets on next step.",
@@ -791,7 +865,9 @@
     "pt": "Escolha entre cartões, carteiras ou transferências no próximo passo.",
     "ja": "次の画面で各種クレジットカード、決済サービスを選択できます。",
     "zh": "下一步可自由选择银行卡、电子钱包或网银快捷付款。",
-    "or": "ପରବର୍ତ୍ତୀ ସୋପାନରେ GPay, PhonePe, Cards, NetBanking କିମ୍ବା Wallets ରୁ ବାଛନ୍ତୁ |"
+    "or": "ପରବର୍ତ୍ତୀ ସୋପାନରେ GPay, PhonePe, Cards, NetBanking କିମ୍ବା Wallets ରୁ ବାଛନ୍ତୁ |",
+    "ur": "اگلے مرحلے پر GPay، PhonePe، کارڈز، نیٹ بینکنگ یا Wallets میں سے انتخاب کریں۔",
+    "zh_Hant": "下一步從 GPay、PhonePe、卡、NetBanking 或錢包中進行選擇。"
   },
   "walkiePlan_orderIntlHint": {
     "en": "Pay securely with International Credit/Debit Cards (Visa, Mastercard, Amex).",
@@ -811,7 +887,9 @@
     "pt": "Pague com segurança com cartões internacionais (Visa, Mastercard, Amex).",
     "ja": "国際ブランドカード (Visa, Mastercard, Amex) で安全に決済できます。",
     "zh": "支持使用国际信用卡/借记卡（Visa、Mastercard、Amex）安全付款。",
-    "or": "ଆନ୍ତର୍ଜାତୀୟ କ୍ରେଡିଟ୍ / ଡେବିଟ୍ କାର୍ଡ (ଭିସା, ମାଷ୍ଟରକାର୍ଡ, ଆମକ୍ସ) ସହିତ ସୁରକ୍ଷିତ ଭାବରେ ଦେୟ ଦିଅନ୍ତୁ |"
+    "or": "ଆନ୍ତର୍ଜାତୀୟ କ୍ରେଡିଟ୍ / ଡେବିଟ୍ କାର୍ଡ (ଭିସା, ମାଷ୍ଟରକାର୍ଡ, ଆମକ୍ସ) ସହିତ ସୁରକ୍ଷିତ ଭାବରେ ଦେୟ ଦିଅନ୍ତୁ |",
+    "ur": "بین الاقوامی کریڈٹ/ڈیبٹ کارڈز (ویزا، ماسٹر کارڈ، ایمیکس) کے ساتھ محفوظ طریقے سے ادائیگی کریں۔",
+    "zh_Hant": "使用國際信用卡/金融卡（Visa、Mastercard、Amex）安全支付。"
   },
   "walkiePlan_orderIntlHintPaypal": {
     "en": "Pay securely with International Credit/Debit Cards (Visa, Mastercard, Amex) or PayPal.",
@@ -831,7 +909,9 @@
     "pt": "Pague com segurança com cartões internacionais ou PayPal.",
     "ja": "国際クレジットカードまたは PayPal で安全にお支払いいただけます。",
     "zh": "支持使用国际信用卡/借记卡或 PayPal 进行安全支付。",
-    "or": "ଆନ୍ତର୍ଜାତୀୟ କ୍ରେଡିଟ୍ / ଡେବିଟ୍ କାର୍ଡ (ଭିସା, ମାଷ୍ଟରକାର୍ଡ, ଆମକ୍ସ) କିମ୍ବା ପେପାଲ ସହିତ ସୁରକ୍ଷିତ ଭାବରେ ଦେୟ ଦିଅନ୍ତୁ |"
+    "or": "ଆନ୍ତର୍ଜାତୀୟ କ୍ରେଡିଟ୍ / ଡେବିଟ୍ କାର୍ଡ (ଭିସା, ମାଷ୍ଟରକାର୍ଡ, ଆମକ୍ସ) କିମ୍ବା ପେପାଲ ସହିତ ସୁରକ୍ଷିତ ଭାବରେ ଦେୟ ଦିଅନ୍ତୁ |",
+    "ur": "بین الاقوامی کریڈٹ/ڈیبٹ کارڈز (ویزا، ماسٹر کارڈ، ایمیکس) یا پے پال کے ساتھ محفوظ طریقے سے ادائیگی کریں۔",
+    "zh_Hant": "使用國際信用卡/金融卡（Visa、Mastercard、Amex）或 PayPal 安全付款。"
   },
   "walkiePlan_orderPaymentDetails": {
     "en": "Payment Details",
@@ -851,7 +931,9 @@
     "pt": "Detalhes do Pagamento",
     "ja": "お支払い明細",
     "zh": "支付明细",
-    "or": "ଦେୟ ବିବରଣୀ"
+    "or": "ଦେୟ ବିବରଣୀ",
+    "ur": "ادائیگی کی تفصیلات",
+    "zh_Hant": "付款詳情"
   },
   "walkiePlan_orderSubtotal": {
     "en": "Subtotal",
@@ -871,7 +953,9 @@
     "pt": "Subtotal",
     "ja": "小計",
     "zh": "小计",
-    "or": "ସବଟୋଟାଲ୍ |"
+    "or": "ସବଟୋଟାଲ୍ |",
+    "ur": "ذیلی کل",
+    "zh_Hant": "小計"
   },
   "walkiePlan_orderDiscountWithCode": {
     "en": "Discount ({code})",
@@ -896,7 +980,9 @@
     "pt": "Desconto ({code})",
     "ja": "割引 ({code})",
     "zh": "优惠扣减 ({code})",
-    "or": "ରିହାତି ({code})"
+    "or": "ରିହାତି ({code})",
+    "ur": "رعایت ({code})",
+    "zh_Hant": "折扣 ({code})"
   },
   "walkiePlan_orderDiscount": {
     "en": "Discount",
@@ -916,7 +1002,9 @@
     "pt": "Desconto",
     "ja": "割引",
     "zh": "优惠折扣",
-    "or": "ରିହାତି"
+    "or": "ରିହାତି",
+    "ur": "رعایت",
+    "zh_Hant": "折扣"
   },
   "walkiePlan_orderAmountAfterDiscount": {
     "en": "Amount After Discount",
@@ -936,7 +1024,9 @@
     "pt": "Valor após Desconto",
     "ja": "割引後金額",
     "zh": "折后金额",
-    "or": "ରିହାତି ପରେ ପରିମାଣ"
+    "or": "ରିହାତି ପରେ ପରିମାଣ",
+    "ur": "رعایت کے بعد رقم",
+    "zh_Hant": "折扣後金額"
   },
   "walkiePlan_orderGstTitle": {
     "en": "GST ({percent}%)",
@@ -961,7 +1051,9 @@
     "pt": "Imposto ({percent}%)",
     "ja": "消費税 ({percent}%)",
     "zh": "增值税 ({percent}%)",
-    "or": "GST ({percent}%)"
+    "or": "GST ({percent}%)",
+    "ur": "GST ({percent}%)",
+    "zh_Hant": "商品及服務稅 ({percent}%)"
   },
   "walkiePlan_orderVatTitle": {
     "en": "VAT / Tax ({percent}%)",
@@ -986,7 +1078,9 @@
     "pt": "IVA / Taxa ({percent}%)",
     "ja": "税 ({percent}%)",
     "zh": "增值税/综合税 ({percent}%)",
-    "or": "ଭ୍ୟାଟ୍ / ଟ୍ୟାକ୍ସ ({percent}%)"
+    "or": "ଭ୍ୟାଟ୍ / ଟ୍ୟାକ୍ସ ({percent}%)",
+    "ur": "VAT / ٹیکس ({percent}%)",
+    "zh_Hant": "增值稅/稅 ({percent}%)"
   },
   "walkiePlan_orderTaxExport": {
     "en": "Tax (0% Export)",
@@ -1006,7 +1100,9 @@
     "pt": "Taxa (0% Exportação)",
     "ja": "免税 (0% 輸出)",
     "zh": "税费 (0% 境外出口)",
-    "or": "କର (0% ରପ୍ତାନି)"
+    "or": "କର (0% ରପ୍ତାନି)",
+    "ur": "ٹیکس (0% برآمد)",
+    "zh_Hant": "稅（0% 出口）"
   },
   "walkiePlan_orderTotalPayable": {
     "en": "Total Payable",
@@ -1026,7 +1122,9 @@
     "pt": "Total a Pagar",
     "ja": "お支払い合計",
     "zh": "应付总额",
-    "or": "ସମୁଦାୟ ଦେୟ"
+    "or": "ସମୁଦାୟ ଦେୟ",
+    "ur": "کل قابل ادائیگی",
+    "zh_Hant": "應付總額"
   },
   "walkiePlan_orderYouSaved": {
     "en": "You saved {amount} on this order!",
@@ -1051,7 +1149,9 @@
     "pt": "Você economizou {amount} neste pedido!",
     "ja": "この注文で {amount} お得になりました！",
     "zh": "本单已为您节省 {amount}！",
-    "or": "ଆପଣ ଏହି କ୍ରମରେ {amount} ସଞ୍ଚୟ କରିଛନ୍ତି!"
+    "or": "ଆପଣ ଏହି କ୍ରମରେ {amount} ସଞ୍ଚୟ କରିଛନ୍ତି!",
+    "ur": "آپ نے اس آرڈر پر {amount} کو محفوظ کیا!",
+    "zh_Hant": " {amount}"
   },
   "walkiePlan_orderProceedToPay": {
     "en": "Proceed to Pay • {amount}",
@@ -1076,7 +1176,9 @@
     "pt": "Continuar para Pagamento • {amount}",
     "ja": "支払いに進む • {amount}",
     "zh": "立即支付 • {amount}",
-    "or": "ଦେୟକୁ ଅଗ୍ରଗତି କରନ୍ତୁ • {amount} |"
+    "or": "ଦେୟକୁ ଅଗ୍ରଗତି କରନ୍ତୁ • {amount} |",
+    "ur": "ادائیگی کے لیے آگے بڑھیں • {amount}",
+    "zh_Hant": "繼續付款 • {amount}"
   },
   "walkiePlan_orderProcessingPayment": {
     "en": "Processing Payment...",
@@ -1096,7 +1198,9 @@
     "pt": "Processando Pagamento...",
     "ja": "決済を処理中...",
     "zh": "正在处理付款...",
-    "or": "ଦେୟ ପ୍ରକ୍ରିୟାକରଣ ..."
+    "or": "ଦେୟ ପ୍ରକ୍ରିୟାକରଣ ...",
+    "ur": "ادائیگی پر کارروائی ہو رہی ہے...",
+    "zh_Hant": "正在處理付款..."
   },
   "walkiePlan_orderAgreePrefix": {
     "en": "By proceeding, you agree to our ",
@@ -1117,7 +1221,9 @@
     "pt": "Ao continuar, você concorda com nossos ",
     "ja": "続行することで、以下に同意したものとみなされます: ",
     "zh": "继续操作即表示您同意我们的 ",
-    "or": "ଅଗ୍ରଗତି କରି, ଆପଣ ଆମର ସହମତ ଅଟନ୍ତି |"
+    "or": "ଅଗ୍ରଗତି କରି, ଆପଣ ଆମର ସହମତ ଅଟନ୍ତି |",
+    "ur": "آگے بڑھ کر، آپ ہماری بات سے اتفاق کرتے ہیں۔",
+    "zh_Hant": "繼續操作即表示您同意我們的"
   },
   "walkiePlan_orderTermsConditions": {
     "en": "Terms & Conditions",
@@ -1137,7 +1243,9 @@
     "pt": "Termos e Condições",
     "ja": "利用規約",
     "zh": "服务条款与协议",
-    "or": "ସର୍ତ୍ତାବଳୀ"
+    "or": "ସର୍ତ୍ତାବଳୀ",
+    "ur": "شرائط و ضوابط",
+    "zh_Hant": "條款及條件"
   },
   "walkiePlan_orderUnableToLoad": {
     "en": "Unable to load order summary.",
@@ -1157,7 +1265,9 @@
     "pt": "Não foi possível carregar o resumo do pedido.",
     "ja": "注文の概要を読み込めません。",
     "zh": "无法加载订单摘要。",
-    "or": "ଅର୍ଡର ସାରାଂଶ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଅର୍ଡର ସାରାଂଶ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "آرڈر کا خلاصہ لوڈ کرنے سے قاصر۔",
+    "zh_Hant": "無法載入訂單摘要。"
   },
   "walkiePlan_orderEnterValidCoupon": {
     "en": "Please enter a valid coupon code",
@@ -1177,7 +1287,9 @@
     "pt": "Insira um código de cupom válido",
     "ja": "有効なクーポンコードを入力してください",
     "zh": "请输入有效的优惠券代码",
-    "or": "ଦୟାକରି ଏକ ବ valid ଧ କୁପନ୍ କୋଡ୍ ପ୍ରବେଶ କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ଏକ ବ valid ଧ କୁପନ୍ କୋଡ୍ ପ୍ରବେଶ କରନ୍ତୁ |",
+    "ur": "براہ کرم ایک درست کوپن کوڈ درج کریں۔",
+    "zh_Hant": "請輸入有效的優惠券代碼"
   },
   "walkiePlan_orderCouponAppliedSaved": {
     "en": "Coupon applied! You saved {amount}",
@@ -1202,7 +1314,9 @@
     "pt": "Cupom aplicado! Você economizou {amount}",
     "ja": "クーポンが適用されました！ {amount} 割引",
     "zh": "优惠券已生效！为您减免 {amount}",
-    "or": "କୁପନ ପ୍ରୟୋଗ! ଆପଣ {amount} ସଞ୍ଚୟ କରିଛନ୍ତି |"
+    "or": "କୁପନ ପ୍ରୟୋଗ! ଆପଣ {amount} ସଞ୍ଚୟ କରିଛନ୍ତି |",
+    "ur": "کوپن لاگو! آپ نے {amount} کو محفوظ کیا۔",
+    "zh_Hant": "優惠券已應用！您儲存了 {amount}"
   },
   "walkiePlan_orderCouponApplied": {
     "en": "Coupon applied successfully!",
@@ -1222,7 +1336,9 @@
     "pt": "Cupom aplicado com sucesso!",
     "ja": "クーポンが適用されました！",
     "zh": "优惠券兑换成功！",
-    "or": "କୁପନ୍ ସଫଳତାର ସହିତ ପ୍ରୟୋଗ ହେଲା!"
+    "or": "କୁପନ୍ ସଫଳତାର ସହିତ ପ୍ରୟୋଗ ହେଲା!",
+    "ur": "کوپن کامیابی سے لاگو ہو گیا!",
+    "zh_Hant": "優惠券申請成功！"
   },
   "walkiePlan_orderInvalidCoupon": {
     "en": "Invalid or expired coupon code",
@@ -1242,7 +1358,9 @@
     "pt": "Código de cupom inválido ou expirado",
     "ja": "無効または期限切れのクーポンコードです",
     "zh": "优惠券代码无效或已过期",
-    "or": "ଅବ val ଧ କିମ୍ବା ମିଆଦ ପୂର୍ଣ୍ଣ କୁପନ୍ କୋଡ୍ |"
+    "or": "ଅବ val ଧ କିମ୍ବା ମିଆଦ ପୂର୍ଣ୍ଣ କୁପନ୍ କୋଡ୍ |",
+    "ur": "غلط یا میعاد ختم ہونے والا کوپن کوڈ",
+    "zh_Hant": "優惠券代碼無效或過期"
   },
   "walkiePlan_orderCouponRemoved": {
     "en": "Coupon removed successfully",
@@ -1262,7 +1380,9 @@
     "pt": "Cupom removido com sucesso",
     "ja": "クーポンを解除しました",
     "zh": "已移除优惠券",
-    "or": "କୁପନ୍ ସଫଳତାର ସହିତ ଅପସାରିତ ହେଲା |"
+    "or": "କୁପନ୍ ସଫଳତାର ସହିତ ଅପସାରିତ ହେଲା |",
+    "ur": "کوپن کامیابی سے ہٹا دیا گیا۔",
+    "zh_Hant": "優惠券刪除成功"
   },
   "walkiePlan_orderChangeMethod": {
     "en": "Change Method",
@@ -1282,7 +1402,9 @@
     "pt": "Alterar Método",
     "ja": "支払い方法を変更",
     "zh": "更改支付方式",
-    "or": "ପଦ୍ଧତି ପରିବର୍ତ୍ତନ କରନ୍ତୁ |"
+    "or": "ପଦ୍ଧତି ପରିବର୍ତ୍ତନ କରନ୍ତୁ |",
+    "ur": "طریقہ تبدیل کریں۔",
+    "zh_Hant": "變更方法"
   },
   "walkiePlan_orderRetryPay": {
     "en": "Retry Pay",
@@ -1302,7 +1424,9 @@
     "pt": "Tentar Novamente",
     "ja": "もう一度支払う",
     "zh": "重新支付",
-    "or": "ପୁନ Pay ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ପୁନ Pay ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "ادائیگی کی دوبارہ کوشش کریں۔",
+    "zh_Hant": "重試付款"
   },
   "walkiePlan_orderCreateFailed": {
     "en": "Failed to create payment order. Please try again.",
@@ -1322,7 +1446,9 @@
     "pt": "Falha ao criar ordem de pagamento. Tente novamente.",
     "ja": "支払い注文の作成に失敗しました。もう一度お試しください。",
     "zh": "创建支付订单失败，请重试。",
-    "or": "ଦେୟ ଅର୍ଡର ସୃଷ୍ଟି କରିବାରେ ବିଫଳ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଦେୟ ଅର୍ଡର ସୃଷ୍ଟି କରିବାରେ ବିଫଳ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "ادائیگی کا آرڈر بنانے میں ناکام۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "建立付款訂單失敗。請再試一次。"
   },
   "walkiePlan_orderCouldNotStart": {
     "en": "Could not start the payment. Please try again.",
@@ -1342,7 +1468,9 @@
     "pt": "Não foi possível iniciar o pagamento. Tente novamente.",
     "ja": "支払いを開始できませんでした。もう一度お試しください。",
     "zh": "无法启动支付，请重试。",
-    "or": "ଦେୟ ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଦେୟ ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "ادائیگی شروع نہیں ہو سکی۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法開始付款。請再試一次。"
   },
   "walkiePlan_payCancelledByUser": {
     "en": "Payment was cancelled by user. No amount has been charged to your account.",
@@ -1362,7 +1490,9 @@
     "pt": "O pagamento foi cancelado pelo usuário. Nenhum valor foi debitado.",
     "ja": "支払いがキャンセルされました。お客様の口座から引き落としは発生していません。",
     "zh": "支付已被取消，您的账户未产生任何扣费。",
-    "or": "ବ୍ୟବହାରକାରୀଙ୍କ ଦ୍ୱାରା ଦେୟ ବାତିଲ କରାଯାଇଥିଲା | ଆପଣଙ୍କ ଆକାଉଣ୍ଟରେ କ amount ଣସି ରାଶି ଆଦାୟ କରାଯାଇ ନାହିଁ |"
+    "or": "ବ୍ୟବହାରକାରୀଙ୍କ ଦ୍ୱାରା ଦେୟ ବାତିଲ କରାଯାଇଥିଲା | ଆପଣଙ୍କ ଆକାଉଣ୍ଟରେ କ amount ଣସି ରାଶି ଆଦାୟ କରାଯାଇ ନାହିଁ |",
+    "ur": "صارف کی طرف سے ادائیگی منسوخ کر دی گئی تھی۔ آپ کے اکاؤنٹ سے کوئی رقم وصول نہیں کی گئی ہے۔",
+    "zh_Hant": "用戶取消付款。尚未從您的帳戶中扣除任何金額。"
   },
   "walkiePlan_payNetworkIssue": {
     "en": "Network connection issue during payment. Please check your internet and try again.",
@@ -1382,7 +1512,9 @@
     "pt": "Problema de conexão durante o pagamento. Verifique sua internet.",
     "ja": "決済中に通信エラーが発生しました。接続を確認して再試行してください。",
     "zh": "支付过程中网络连接中断，请检查网络后重试。",
-    "or": "ଦେୟ ସମୟରେ ନେଟୱର୍କ ସଂଯୋଗ ସମସ୍ୟା | ଦୟାକରି ଆପଣଙ୍କର ଇଣ୍ଟରନେଟ୍ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଦେୟ ସମୟରେ ନେଟୱର୍କ ସଂଯୋଗ ସମସ୍ୟା | ଦୟାକରି ଆପଣଙ୍କର ଇଣ୍ଟରନେଟ୍ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "ادائیگی کے دوران نیٹ ورک کنکشن کا مسئلہ۔ براہ کرم اپنا انٹرنیٹ چیک کریں اور دوبارہ کوشش کریں۔",
+    "zh_Hant": "支付時網路連線問題。請檢查您的網路並重試。"
   },
   "walkiePlan_payNotCompleted": {
     "en": "Your payment was not completed. No amount has been charged to your account.",
@@ -1402,7 +1534,9 @@
     "pt": "Seu pagamento não foi concluído. Nenhum valor foi cobrado.",
     "ja": "支払いは完了しませんでした。金額は引き落とされていません。",
     "zh": "您的付款未完成，账户未发生任何扣费。",
-    "or": "ତୁମର ଦେୟ ସମାପ୍ତ ହୋଇନାହିଁ | ଆପଣଙ୍କ ଆକାଉଣ୍ଟରେ କ amount ଣସି ରାଶି ଆଦାୟ କରାଯାଇ ନାହିଁ |"
+    "or": "ତୁମର ଦେୟ ସମାପ୍ତ ହୋଇନାହିଁ | ଆପଣଙ୍କ ଆକାଉଣ୍ଟରେ କ amount ଣସି ରାଶି ଆଦାୟ କରାଯାଇ ନାହିଁ |",
+    "ur": "آپ کی ادائیگی مکمل نہیں ہوئی۔ آپ کے اکاؤنٹ سے کوئی رقم وصول نہیں کی گئی ہے۔",
+    "zh_Hant": "您的付款尚未完成。尚未從您的帳戶中扣除任何金額。"
   },
   "walkiePlan_payMethodRazorpay": {
     "en": "Razorpay Payment",
@@ -1422,7 +1556,9 @@
     "pt": "Pagamento Razorpay",
     "ja": "Razorpay 決済",
     "zh": "Razorpay 支付",
-    "or": "ରଜରପେ ଦେୟ |"
+    "or": "ରଜରପେ ଦେୟ |",
+    "ur": "ریزر پے ادائیگی",
+    "zh_Hant": "支付寶支付"
   },
   "walkiePlan_payMethodInternational": {
     "en": "International Card / PayPal",
@@ -1442,7 +1578,9 @@
     "pt": "Cartão Internacional / PayPal",
     "ja": "国際カード / PayPal",
     "zh": "国际信用卡 / PayPal",
-    "or": "ଆନ୍ତର୍ଜାତୀୟ କାର୍ଡ / ପେପାଲ୍ |"
+    "or": "ଆନ୍ତର୍ଜାତୀୟ କାର୍ଡ / ପେପାଲ୍ |",
+    "ur": "بین الاقوامی کارڈ / پے پال",
+    "zh_Hant": "國際卡/PayPal"
   },
   "walkiePlan_payMethodUpi": {
     "en": "UPI Payment",
@@ -1462,7 +1600,9 @@
     "pt": "Pagamento UPI",
     "ja": "UPI 決済",
     "zh": "UPI 支付",
-    "or": "UPI ଦେୟ |"
+    "or": "UPI ଦେୟ |",
+    "ur": "UPI ادائیگی",
+    "zh_Hant": "銀聯支付"
   },
   "walkiePlan_payMethodCreditCard": {
     "en": "Credit Card ({network})",
@@ -1487,7 +1627,9 @@
     "pt": "Cartão de Crédito ({network})",
     "ja": "クレジットカード ({network})",
     "zh": "信用卡 ({network})",
-    "or": "କ୍ରେଡିଟ୍ କାର୍ଡ ({network})"
+    "or": "କ୍ରେଡିଟ୍ କାର୍ଡ ({network})",
+    "ur": "کریڈٹ کارڈ ({network})",
+    "zh_Hant": "信用卡 ({network})"
   },
   "walkiePlan_payMethodDebitCard": {
     "en": "Debit Card ({network})",
@@ -1512,7 +1654,9 @@
     "pt": "Cartão de Débito ({network})",
     "ja": "デビットカード ({network})",
     "zh": "借记卡 ({network})",
-    "or": "ଡେବିଟ୍ କାର୍ଡ ({network})"
+    "or": "ଡେବିଟ୍ କାର୍ଡ ({network})",
+    "ur": "ڈیبٹ کارڈ ({network})",
+    "zh_Hant": "金融卡 ({network})"
   },
   "walkiePlan_payMethodNetBanking": {
     "en": "NetBanking ({bank})",
@@ -1537,7 +1681,9 @@
     "pt": "Internet Banking ({bank})",
     "ja": "ネットバンキング ({bank})",
     "zh": "网银支付 ({bank})",
-    "or": "ନେଟ୍ ବ୍ୟାଙ୍କିଙ୍ଗ୍ ({bank})"
+    "or": "ନେଟ୍ ବ୍ୟାଙ୍କିଙ୍ଗ୍ ({bank})",
+    "ur": "نیٹ بینکنگ ({bank})",
+    "zh_Hant": "網路銀行 ({bank})"
   },
   "walkiePlan_payMethodWallet": {
     "en": "Wallet ({wallet})",
@@ -1562,7 +1708,9 @@
     "pt": "Carteira ({wallet})",
     "ja": "ウォレット ({wallet})",
     "zh": "电子钱包 ({wallet})",
-    "or": "ୱାଲେଟ୍ ({wallet})"
+    "or": "ୱାଲେଟ୍ ({wallet})",
+    "ur": "والٹ ({wallet})",
+    "zh_Hant": "錢包 ({wallet})"
   },
   "walkiePlan_payMethodRazorpayUpiCard": {
     "en": "Razorpay (UPI / Card)",
@@ -1582,7 +1730,9 @@
     "pt": "Razorpay (UPI / Cartão)",
     "ja": "Razorpay (UPI / カード)",
     "zh": "Razorpay (UPI / 银行卡)",
-    "or": "ରଜରପାଇ (UPI / କାର୍ଡ)"
+    "or": "ରଜରପାଇ (UPI / କାର୍ଡ)",
+    "ur": "Razorpay (UPI / کارڈ)",
+    "zh_Hant": "Razorpay（UPI/卡）"
   },
   "walkiePlan_payMethodRazorpayCheckout": {
     "en": "Razorpay Checkout",
@@ -1602,7 +1752,9 @@
     "pt": "Checkout Razorpay",
     "ja": "Razorpay チェックアウト",
     "zh": "Razorpay 收银台",
-    "or": "ରଜରପାୟ ଚେକଆଉଟ୍ |"
+    "or": "ରଜରପାୟ ଚେକଆଉଟ୍ |",
+    "ur": "Razorpay چیک آؤٹ",
+    "zh_Hant": "Razorpay 結帳"
   },
   "walkiePlan_razorpayVerifyFailed": {
     "en": "Payment verification failed.",
@@ -1622,7 +1774,9 @@
     "pt": "Falha na verificação do pagamento.",
     "ja": "決済の確認に失敗しました。",
     "zh": "支付验证失败。",
-    "or": "ଦେୟ ଯାଞ୍ଚ ବିଫଳ ହେଲା |"
+    "or": "ଦେୟ ଯାଞ୍ଚ ବିଫଳ ହେଲା |",
+    "ur": "ادائیگی کی توثیق ناکام ہو گئی۔",
+    "zh_Hant": "付款驗證失敗。"
   },
   "walkiePlan_razorpayConfirmingWithBank": {
     "en": "Payment was initiated. We are confirming with the bank.",
@@ -1642,7 +1796,9 @@
     "pt": "Pagamento iniciado. Estamos confirmando com o banco.",
     "ja": "決済を開始しました。銀行側で承認を確認中です。",
     "zh": "支付已发起，正在与银行确认交易状态。",
-    "or": "ଦେୟ ଆରମ୍ଭ କରାଯାଇଥିଲା | ଆମେ ବ୍ୟାଙ୍କ ସହିତ ନିଶ୍ଚିତ କରୁଛୁ |"
+    "or": "ଦେୟ ଆରମ୍ଭ କରାଯାଇଥିଲା | ଆମେ ବ୍ୟାଙ୍କ ସହିତ ନିଶ୍ଚିତ କରୁଛୁ |",
+    "ur": "ادائیگی شروع کر دی گئی۔ ہم بینک سے تصدیق کر رہے ہیں۔",
+    "zh_Hant": "付款已開始。我們正在與銀行確認。"
   },
   "walkiePlan_razorpayPendingConfirmation": {
     "en": "Payment is pending confirmation.",
@@ -1662,7 +1818,9 @@
     "pt": "O pagamento está pendente de confirmação.",
     "ja": "支払いの確認待ちです。",
     "zh": "支付处理中，等待系统最终确认。",
-    "or": "ଦେୟ ନିଶ୍ଚିତକରଣ ବିଚାରାଧୀନ ଅଛି |"
+    "or": "ଦେୟ ନିଶ୍ଚିତକରଣ ବିଚାରାଧୀନ ଅଛି |",
+    "ur": "ادائیگی کی تصدیق زیر التواء ہے۔",
+    "zh_Hant": "付款正在等待確認。"
   },
   "walkiePlan_razorpayFailedTryAgain": {
     "en": "Payment failed. Please try again.",
@@ -1682,7 +1840,9 @@
     "pt": "Pagamento falhou. Tente novamente.",
     "ja": "決済に失敗しました。もう一度お試しください。",
     "zh": "付款失败，请重新尝试。",
-    "or": "ଦେୟ ବିଫଳ ହେଲା | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଦେୟ ବିଫଳ ହେଲା | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "ادائیگی ناکام ہو گئی۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "付款失敗。請再試一次。"
   },
   "walkiePlan_razorpayOneMonthActive": {
     "en": "1 Month Active",
@@ -1702,7 +1862,9 @@
     "pt": "1 Mês Ativo",
     "ja": "1ヶ月間有効",
     "zh": "1 个月有效期",
-    "or": "1 ମାସ ସକ୍ରିୟ |"
+    "or": "1 ମାସ ସକ୍ରିୟ |",
+    "ur": "1 مہینہ فعال",
+    "zh_Hant": "1 個月活躍"
   },
   "walkiePlan_razorpayUnableToLaunch": {
     "en": "Unable to launch payment gateway: {error}",
@@ -1727,7 +1889,9 @@
     "pt": "Não foi possível abrir o gateway de pagamento: {error}",
     "ja": "決済ゲートウェイを起動できません: {error}",
     "zh": "无法打开支付网关：{error}",
-    "or": "ଦେୟ ଗେଟୱେ ଆରମ୍ଭ କରିବାକୁ ଅସମର୍ଥ: {error}"
+    "or": "ଦେୟ ଗେଟୱେ ଆରମ୍ଭ କରିବାକୁ ଅସମର୍ଥ: {error}",
+    "ur": "ادائیگی کا گیٹ وے شروع کرنے سے قاصر: {error}",
+    "zh_Hant": "無法啟動支付網關：{error}"
   },
   "walkiePlan_razorpayPaymentIdCopied": {
     "en": "Payment ID copied to clipboard!",
@@ -1747,7 +1911,9 @@
     "pt": "ID do pagamento copiado para a área de transferência!",
     "ja": "支払いIDをクリップボードにコピーしました！",
     "zh": "交易订单号已复制到剪贴板！",
-    "or": "ପେମେଣ୍ଟ ID କ୍ଲିପବୋର୍ଡରେ କପି ହୋଇଛି!"
+    "or": "ପେମେଣ୍ଟ ID କ୍ଲିପବୋର୍ଡରେ କପି ହୋଇଛି!",
+    "ur": "ادائیگی کی شناخت کلپ بورڈ پر کاپی ہو گئی!",
+    "zh_Hant": "付款 ID 已複製到剪貼簿！"
   },
   "walkiePlan_razorpayReceiptCopied": {
     "en": "Receipt details copied to clipboard!",
@@ -1767,7 +1933,9 @@
     "pt": "Comprovante copiado para a área de transferência!",
     "ja": "領収書情報をクリップボードにコピーしました！",
     "zh": "收据详情已复制到剪贴板！",
-    "or": "କ୍ଲିପବୋର୍ଡରେ କପି ହୋଇଥିବା ରସିଦ ବିବରଣୀ!"
+    "or": "କ୍ଲିପବୋର୍ଡରେ କପି ହୋଇଥିବା ରସିଦ ବିବରଣୀ!",
+    "ur": "رسید کی تفصیلات کلپ بورڈ پر کاپی کر دی گئیں!",
+    "zh_Hant": "收據詳細資料已複製到剪貼簿！"
   },
   "walkiePlan_razorpayReceiptTitle": {
     "en": "FG Tracker Payment Receipt",
@@ -1787,7 +1955,9 @@
     "pt": "Recibo de Pagamento FG Tracker",
     "ja": "FG Tracker お支払い領収書",
     "zh": "FG Tracker 付款收据",
-    "or": "FG ଟ୍ରାକର ଦେୟ ରସିଦ |"
+    "or": "FG ଟ୍ରାକର ଦେୟ ରସିଦ |",
+    "ur": "FG ٹریکر ادائیگی کی رسید",
+    "zh_Hant": "FG Tracker 付款收據"
   },
   "walkiePlan_razorpayReceiptPlan": {
     "en": "Plan: {plan}",
@@ -1812,7 +1982,9 @@
     "pt": "Plano: {plan}",
     "ja": "プラン: {plan}",
     "zh": "购买套餐：{plan}",
-    "or": "ଯୋଜନା: {plan}"
+    "or": "ଯୋଜନା: {plan}",
+    "ur": "منصوبہ: {plan}",
+    "zh_Hant": "計劃：{plan}"
   },
   "walkiePlan_razorpayReceiptAmount": {
     "en": "Amount: {amount}",
@@ -1837,7 +2009,9 @@
     "pt": "Valor: {amount}",
     "ja": "金額: {amount}",
     "zh": "付款金额：{amount}",
-    "or": "ପରିମାଣ: {amount}"
+    "or": "ପରିମାଣ: {amount}",
+    "ur": "رقم: {amount}",
+    "zh_Hant": "金額：{amount}"
   },
   "walkiePlan_razorpayReceiptPaymentId": {
     "en": "Payment ID: {id}",
@@ -1862,7 +2036,9 @@
     "pt": "ID do Pagamento: {id}",
     "ja": "支払いID: {id}",
     "zh": "交易ID：{id}",
-    "or": "ଦେୟ ID: {id}"
+    "or": "ଦେୟ ID: {id}",
+    "ur": "ادائیگی کی شناخت: {id}",
+    "zh_Hant": "付款 ID：{id}"
   },
   "walkiePlan_razorpayReceiptOrderId": {
     "en": "Order ID: {id}",
@@ -1887,7 +2063,9 @@
     "pt": "ID do Pedido: {id}",
     "ja": "注文ID: {id}",
     "zh": "订单编号：{id}",
-    "or": "ଅର୍ଡର ID: {id} |"
+    "or": "ଅର୍ଡର ID: {id} |",
+    "ur": "آرڈر ID: {id}",
+    "zh_Hant": "訂單 ID：{id}"
   },
   "walkiePlan_razorpayReceiptDate": {
     "en": "Date: {date}",
@@ -1912,7 +2090,9 @@
     "pt": "Data: {date}",
     "ja": "日付: {date}",
     "zh": "交易时间：{date}",
-    "or": "ତାରିଖ: {date} |"
+    "or": "ତାରିଖ: {date} |",
+    "ur": "تاریخ: {date}",
+    "zh_Hant": "日期：{date}"
   },
   "walkiePlan_razorpayReceiptMode": {
     "en": "Payment Mode: {mode}",
@@ -1937,7 +2117,9 @@
     "pt": "Forma de Pagamento: {mode}",
     "ja": "決済方法: {mode}",
     "zh": "支付方式：{mode}",
-    "or": "ଦେୟ ମୋଡ୍: {mode} |"
+    "or": "ଦେୟ ମୋଡ୍: {mode} |",
+    "ur": "ادائیگی کا موڈ: {mode}",
+    "zh_Hant": "付款方式：{mode}"
   },
   "walkiePlan_razorpayReceiptStatusCompleted": {
     "en": "Status: Completed",
@@ -1957,7 +2139,9 @@
     "pt": "Status: Concluído",
     "ja": "ステータス: 完了",
     "zh": "交易状态：已完成",
-    "or": "ସ୍ଥିତି: ସମାପ୍ତ"
+    "or": "ସ୍ଥିତି: ସମାପ୍ତ",
+    "ur": "حیثیت: مکمل",
+    "zh_Hant": "狀態：已完成"
   },
   "walkiePlan_razorpayCompletePayment": {
     "en": "Complete Payment",
@@ -1977,7 +2161,9 @@
     "pt": "Concluir Pagamento",
     "ja": "支払いを完了する",
     "zh": "完成付款",
-    "or": "ସମ୍ପୂର୍ଣ୍ଣ ଦେୟ |"
+    "or": "ସମ୍ପୂର୍ଣ୍ଣ ଦେୟ |",
+    "ur": "مکمل ادائیگی",
+    "zh_Hant": "完成付款"
   },
   "walkiePlan_razorpaySecureCheckout": {
     "en": "Secure Checkout powered by Razorpay",
@@ -1997,7 +2183,9 @@
     "pt": "Checkout Seguro powered by Razorpay",
     "ja": "Razorpay 提供の安全な決済",
     "zh": "由 Razorpay 提供安全支付保障",
-    "or": "ରଜରପାଇ ଦ୍ୱାରା ଚାଳିତ ସୁରକ୍ଷିତ ଚେକଆଉଟ୍ |"
+    "or": "ରଜରପାଇ ଦ୍ୱାରା ଚାଳିତ ସୁରକ୍ଷିତ ଚେକଆଉଟ୍ |",
+    "ur": "Razorpay کے ذریعے تقویت یافتہ محفوظ چیک آؤٹ",
+    "zh_Hant": "由 Razorpay 提供支援的安全結帳"
   },
   "walkiePlan_razorpayTotalPayableAmount": {
     "en": "Total Payable Amount",
@@ -2017,7 +2205,9 @@
     "pt": "Valor Total a Pagar",
     "ja": "合計お支払い金額",
     "zh": "应付总金额",
-    "or": "ସମୁଦାୟ ଦେୟ ରାଶି"
+    "or": "ସମୁଦାୟ ଦେୟ ରାଶି",
+    "ur": "کل قابل ادائیگی رقم",
+    "zh_Hant": "應付總額"
   },
   "walkiePlan_razorpayConnecting": {
     "en": "Connecting to Razorpay...",
@@ -2037,7 +2227,9 @@
     "pt": "Conectando ao Razorpay...",
     "ja": "Razorpay に接続中...",
     "zh": "正在连接 Razorpay...",
-    "or": "ରଜରପାଇ ସହିତ ସଂଯୋଗ ..."
+    "or": "ରଜରପାଇ ସହିତ ସଂଯୋଗ ...",
+    "ur": "Razorpay سے منسلک ہو رہا ہے...",
+    "zh_Hant": "正在連接到 Razorpay..."
   },
   "walkiePlan_razorpayCompleteInWindow": {
     "en": "Please complete the transaction in the Razorpay payment window.",
@@ -2057,7 +2249,9 @@
     "pt": "Conclua a transação na janela do Razorpay.",
     "ja": "Razorpay 決済ウィンドウでお支払いを完了してください。",
     "zh": "请在弹出的 Razorpay 支付窗口中完成交易。",
-    "or": "ଦୟାକରି ରଜରପାଇ ପେମେଣ୍ଟ ୱିଣ୍ଡୋରେ କାରବାର ସଂପୂର୍ଣ୍ଣ କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ରଜରପାଇ ପେମେଣ୍ଟ ୱିଣ୍ଡୋରେ କାରବାର ସଂପୂର୍ଣ୍ଣ କରନ୍ତୁ |",
+    "ur": "براہ کرم Razorpay ادائیگی کی ونڈو میں لین دین مکمل کریں۔",
+    "zh_Hant": "請在 Razorpay 付款視窗中完成交易。"
   },
   "walkiePlan_razorpayPaymentCancelled": {
     "en": "Payment Cancelled",
@@ -2077,7 +2271,9 @@
     "pt": "Pagamento Cancelado",
     "ja": "決済がキャンセルされました",
     "zh": "支付已取消",
-    "or": "ଦେୟ ବାତିଲ ହୋଇଛି |"
+    "or": "ଦେୟ ବାତିଲ ହୋଇଛି |",
+    "ur": "ادائیگی منسوخ کر دی گئی۔",
+    "zh_Hant": "付款已取消"
   },
   "walkiePlan_payFailedTitle": {
     "en": "Payment Failed",
@@ -2097,7 +2293,9 @@
     "pt": "Falha no Pagamento",
     "ja": "決済に失敗しました",
     "zh": "支付失败",
-    "or": "ଦେୟ ବିଫଳ ହେଲା |"
+    "or": "ଦେୟ ବିଫଳ ହେଲା |",
+    "ur": "ادائیگی ناکام ہو گئی۔",
+    "zh_Hant": "付款失敗"
   },
   "walkiePlan_razorpayCouldNotProcess": {
     "en": "The payment could not be processed. Please try again.",
@@ -2117,7 +2315,9 @@
     "pt": "O pagamento não pôde ser processado. Tente novamente.",
     "ja": "決済を処理できませんでした。もう一度お試しください。",
     "zh": "未能处理您的付款，请重新尝试。",
-    "or": "ଦେୟ ପ୍ରକ୍ରିୟାକରଣ ହୋଇପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଦେୟ ପ୍ରକ୍ରିୟାକରଣ ହୋଇପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "ادائیگی پر کارروائی نہیں ہو سکی۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法處理付款。請再試一次。"
   },
   "walkiePlan_razorpayRetryPayment": {
     "en": "Retry Payment",
@@ -2137,7 +2337,9 @@
     "pt": "Tentar Novamente",
     "ja": "決済を再試行",
     "zh": "重试付款",
-    "or": "ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "ادائیگی کی دوبارہ کوشش کریں۔",
+    "zh_Hant": "重試付款"
   },
   "walkiePlan_razorpaySupportedModes": {
     "en": "Supported Payment Modes",
@@ -2157,7 +2359,9 @@
     "pt": "Formas de Pagamento Aceitas",
     "ja": "ご利用可能なお支払い方法",
     "zh": "支持的支付方式",
-    "or": "ସମର୍ଥିତ ଦେୟ ମୋଡ୍ |"
+    "or": "ସମର୍ଥିତ ଦେୟ ମୋଡ୍ |",
+    "ur": "تعاون یافتہ ادائیگی کے طریقوں",
+    "zh_Hant": "支援的支付方式"
   },
   "walkiePlan_razorpayPciCompliant": {
     "en": "100% Safe & PCI-DSS Compliant",
@@ -2177,7 +2381,9 @@
     "pt": "100% Seguro e Conforme PCI-DSS",
     "ja": "100% 安全・PCI-DSS 準拠",
     "zh": "100% 安全且符合 PCI-DSS 国际安全认证",
-    "or": "100% ନିରାପଦ ଏବଂ PCI-DSS ଅନୁରୂପ |"
+    "or": "100% ନିରାପଦ ଏବଂ PCI-DSS ଅନୁରୂପ |",
+    "ur": "100% محفوظ اور PCI-DSS کے مطابق",
+    "zh_Hant": "100% 安全且符合 PCI-DSS"
   },
   "walkiePlan_razorpaySslEncrypted": {
     "en": "Transactions are encrypted with end-to-end 256-bit SSL security.",
@@ -2197,7 +2403,9 @@
     "pt": "Transações protegidas com criptografia SSL de 256 bits.",
     "ja": "256ビットSSL暗号化通信により安全に保護されています。",
     "zh": "交易全程采用 256 位 SSL 端到端安全加密保护。",
-    "or": "କାରବାରଗୁଡିକ ଏଣ୍ଡ-ଟୁ-ଏଣ୍ଡ 256-ବିଟ୍ SSL ସୁରକ୍ଷା ସହିତ ଏନକ୍ରିପ୍ଟ ହୋଇଛି |"
+    "or": "କାରବାରଗୁଡିକ ଏଣ୍ଡ-ଟୁ-ଏଣ୍ଡ 256-ବିଟ୍ SSL ସୁରକ୍ଷା ସହିତ ଏନକ୍ରିପ୍ଟ ହୋଇଛି |",
+    "ur": "ٹرانزیکشنز کو اینڈ ٹو اینڈ 256 بٹ SSL سیکیورٹی کے ساتھ انکرپٹ کیا جاتا ہے۔",
+    "zh_Hant": "交易採用端對端 256 位元 SSL 安全加密。"
   },
   "walkiePlan_razorpayProcessing": {
     "en": "Processing with Razorpay...",
@@ -2217,7 +2425,9 @@
     "pt": "Processando com Razorpay...",
     "ja": "Razorpay で処理中...",
     "zh": "正在由 Razorpay 处理付款...",
-    "or": "ରଜରପାଇ ସହିତ ପ୍ରକ୍ରିୟାକରଣ ..."
+    "or": "ରଜରପାଇ ସହିତ ପ୍ରକ୍ରିୟାକରଣ ...",
+    "ur": "Razorpay کے ساتھ کارروائی ہو رہی ہے...",
+    "zh_Hant": "使用 Razorpay 處理..."
   },
   "walkiePlan_razorpayPayAmountVia": {
     "en": "Pay {amount} via Razorpay",
@@ -2242,7 +2452,9 @@
     "pt": "Pagar {amount} via Razorpay",
     "ja": "Razorpay で {amount} を支払う",
     "zh": "通过 Razorpay 支付 {amount}",
-    "or": "ରଜରପାଇ ମାଧ୍ୟମରେ {amount} ଦେୟ ଦିଅନ୍ତୁ |"
+    "or": "ରଜରପାଇ ମାଧ୍ୟମରେ {amount} ଦେୟ ଦିଅନ୍ତୁ |",
+    "ur": "Razorpay کے ذریعے {amount} ادا کریں۔",
+    "zh_Hant": "透過 Razorpay 支付 {amount}"
   },
   "walkiePlan_payFailedContactSupport": {
     "en": "Contact Support",
@@ -2262,7 +2474,9 @@
     "pt": "Contatar Suporte",
     "ja": "サポートへ連絡",
     "zh": "联系客服支持",
-    "or": "ସମର୍ଥନ ଯୋଗାଯୋଗ କରନ୍ତୁ |"
+    "or": "ସମର୍ଥନ ଯୋଗାଯୋଗ କରନ୍ତୁ |",
+    "ur": "سپورٹ سے رابطہ کریں۔",
+    "zh_Hant": "聯繫支援人員"
   },
   "walkiePlan_payFailedSupportHelp": {
     "en": "Need help with your payment? Our team is available 24/7 to assist you.",
@@ -2282,7 +2496,9 @@
     "pt": "Precisa de ajuda com o pagamento? Suporte disponível 24/7.",
     "ja": "決済でお困りですか？サポートチームが24時間対応いたします。",
     "zh": "支付遇到问题？我们的专业团队 7x24 小时为您提供协助。",
-    "or": "ତୁମର ଦେୟ ସହିତ ସାହାଯ୍ୟ ଦରକାର କି? ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିବାକୁ ଆମର ଦଳ 24/7 ଉପଲବ୍ଧ |"
+    "or": "ତୁମର ଦେୟ ସହିତ ସାହାଯ୍ୟ ଦରକାର କି? ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିବାକୁ ଆମର ଦଳ 24/7 ଉପଲବ୍ଧ |",
+    "ur": "آپ کی ادائیگی میں مدد کی ضرورت ہے؟ ہماری ٹیم آپ کی مدد کے لیے 24/7 دستیاب ہے۔",
+    "zh_Hant": "需要付款方面的協助嗎？我們的團隊 24/7 全天候為您提供協助。"
   },
   "walkiePlan_payFailedSubtitleLong": {
     "en": "We couldn't complete your payment.\nPlease try again or use a different payment method.",
@@ -2302,7 +2518,9 @@
     "pt": "Não conseguimos concluir o pagamento.\nTente novamente ou use outro método.",
     "ja": "お支払いを完了できませんでした。\nもう一度お試しいただくか、別のお支払い方法をご利用ください。",
     "zh": "未能完成付款。\n请重试或更换其他支付方式。",
-    "or": "ଆମେ ତୁମର ଦେୟ ସଂପୂର୍ଣ୍ଣ କରିପାରିଲୁ ନାହିଁ |\nଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା ଏକ ଭିନ୍ନ ଦେୟ ପଦ୍ଧତି ବ୍ୟବହାର କରନ୍ତୁ |"
+    "or": "ଆମେ ତୁମର ଦେୟ ସଂପୂର୍ଣ୍ଣ କରିପାରିଲୁ ନାହିଁ |\nଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା ଏକ ଭିନ୍ନ ଦେୟ ପଦ୍ଧତି ବ୍ୟବହାର କରନ୍ତୁ |",
+    "ur": "ہم آپ کی ادائیگی مکمل نہیں کر سکے۔\nبراہ کرم دوبارہ کوشش کریں یا ادائیگی کا کوئی دوسرا طریقہ استعمال کریں۔",
+    "zh_Hant": "我們無法完成您的付款。\n請重試或使用其他付款方式。"
   },
   "walkiePlan_payFailedSubtitleShort": {
     "en": "We couldn't complete your payment",
@@ -2322,7 +2540,9 @@
     "pt": "Não conseguimos concluir seu pagamento",
     "ja": "お支払いを完了できませんでした",
     "zh": "未能完成您的支付",
-    "or": "ଆମେ ତୁମର ଦେୟ ସଂପୂର୍ଣ୍ଣ କରିପାରିଲୁ ନାହିଁ |"
+    "or": "ଆମେ ତୁମର ଦେୟ ସଂପୂର୍ଣ୍ଣ କରିପାରିଲୁ ନାହିଁ |",
+    "ur": "ہم آپ کی ادائیگی مکمل نہیں کر سکے۔",
+    "zh_Hant": "我們無法完成您的付款"
   },
   "walkiePlan_payPlanDetails": {
     "en": "Plan Details",
@@ -2342,7 +2562,9 @@
     "pt": "Detalhes do Plano",
     "ja": "プラン詳細",
     "zh": "套餐详情",
-    "or": "ଯୋଜନା ବିବରଣୀ"
+    "or": "ଯୋଜନା ବିବରଣୀ",
+    "ur": "پلان کی تفصیلات",
+    "zh_Hant": "計劃詳情"
   },
   "walkiePlan_payAnnualPlan": {
     "en": "Annual Plan",
@@ -2362,7 +2584,9 @@
     "pt": "Plano Anual",
     "ja": "年間プラン",
     "zh": "年度套餐",
-    "or": "ବାର୍ଷିକ ଯୋଜନା"
+    "or": "ବାର୍ଷିକ ଯୋଜନା",
+    "ur": "سالانہ منصوبہ",
+    "zh_Hant": "年度計劃"
   },
   "walkiePlan_payTeamFeatures": {
     "en": "Multi-member access • Instant alerts",
@@ -2382,7 +2606,9 @@
     "pt": "Acesso para múltiplos membros • Alertas instantâneos",
     "ja": "複数メンバー利用 • 即時通知",
     "zh": "多成员权限 • 即时警报",
-    "or": "ଏକାଧିକ ସଦସ୍ୟ ପ୍ରବେଶ • ତତକ୍ଷଣାତ୍ ଆଲର୍ଟ |"
+    "or": "ଏକାଧିକ ସଦସ୍ୟ ପ୍ରବେଶ • ତତକ୍ଷଣାତ୍ ଆଲର୍ଟ |",
+    "ur": "کثیر رکنی رسائی • فوری الرٹس",
+    "zh_Hant": "多成員存取 • 即時警報"
   },
   "walkiePlan_payIndividualFeatures": {
     "en": "Real-time monitoring • Instant alerts",
@@ -2402,7 +2628,9 @@
     "pt": "Monitoramento em tempo real • Alertas instantâneos",
     "ja": "リアルタイム監視 • 即時通知",
     "zh": "实时监控 • 即时警报",
-    "or": "ପ୍ରକୃତ ସମୟ ମନିଟରିଂ • ତତକ୍ଷଣାତ୍ ଆଲର୍ଟ |"
+    "or": "ପ୍ରକୃତ ସମୟ ମନିଟରିଂ • ତତକ୍ଷଣାତ୍ ଆଲର୍ଟ |",
+    "ur": "ریئل ٹائم مانیٹرنگ • فوری الرٹس",
+    "zh_Hant": "即時監控•即時警報"
   },
   "walkiePlan_payFailedOn": {
     "en": "Payment failed on {time}",
@@ -2427,7 +2655,9 @@
     "pt": "Falha no pagamento em {time}",
     "ja": "{time} に決済失敗",
     "zh": "付款失败于 {time}",
-    "or": "{time} ରେ ଦେୟ ବିଫଳ ହେଲା |"
+    "or": "{time} ରେ ଦେୟ ବିଫଳ ହେଲା |",
+    "ur": "{time} پر ادائیگی ناکام ہو گئی۔",
+    "zh_Hant": "{time} 付款失敗"
   },
   "walkiePlan_payInitiatedOn": {
     "en": "Payment initiated on {time}",
@@ -2452,7 +2682,9 @@
     "pt": "Pagamento iniciado em {time}",
     "ja": "{time} に決済開始",
     "zh": "支付发起于 {time}",
-    "or": "ଦେୟ {time} ରେ ଆରମ୍ଭ ହୋଇଛି |"
+    "or": "ଦେୟ {time} ରେ ଆରମ୍ଭ ହୋଇଛି |",
+    "ur": "ادائیگی {time} پر شروع کی گئی۔",
+    "zh_Hant": "付款於 {time} 開始"
   },
   "walkiePlan_payIntervalMonth": {
     "en": "month",
@@ -2473,7 +2705,9 @@
     "pt": "mês",
     "ja": "月",
     "zh": "月",
-    "or": "ମାସ"
+    "or": "ମାସ",
+    "ur": "مہینہ",
+    "zh_Hant": "月"
   },
   "walkiePlan_payIntervalYear": {
     "en": "year",
@@ -2494,7 +2728,9 @@
     "pt": "ano",
     "ja": "年",
     "zh": "年",
-    "or": "ବର୍ଷ"
+    "or": "ବର୍ଷ",
+    "ur": "سال",
+    "zh_Hant": "年"
   },
   "walkiePlan_payIntervalQuarter": {
     "en": "quarter",
@@ -2515,7 +2751,9 @@
     "pt": "trimestre",
     "ja": "四半期",
     "zh": "季度",
-    "or": "ଚତୁର୍ଥାଂଶ"
+    "or": "ଚତୁର୍ଥାଂଶ",
+    "ur": "سہ ماہی",
+    "zh_Hant": "四分之一"
   },
   "walkiePlan_payIntervalPlan": {
     "en": "plan",
@@ -2536,7 +2774,9 @@
     "pt": "plano",
     "ja": "プラン",
     "zh": "套餐",
-    "or": "ଯୋଜନା"
+    "or": "ଯୋଜନା",
+    "ur": "منصوبہ",
+    "zh_Hant": "計劃"
   },
   "walkiePlan_payOtpChargeDetails": {
     "en": "OTP Charge Details",
@@ -2556,7 +2796,9 @@
     "pt": "Detalhes da Tarifa de OTP",
     "ja": "OTP料金明細",
     "zh": "验证码费用明细",
-    "or": "OTP ଚାର୍ଜ ବିବରଣୀ |"
+    "or": "OTP ଚାର୍ଜ ବିବରଣୀ |",
+    "ur": "OTP چارج کی تفصیلات",
+    "zh_Hant": "OTP 收費詳情"
   },
   "walkiePlan_payOtpCharges": {
     "en": "OTP charges",
@@ -2576,7 +2818,9 @@
     "pt": "Tarifas de OTP",
     "ja": "OTP料金",
     "zh": "验证码资费",
-    "or": "OTP ଚାର୍ଜ |"
+    "or": "OTP ଚାର୍ଜ |",
+    "ur": "OTP چارجز",
+    "zh_Hant": "一次性密碼費用"
   },
   "walkiePlan_payOtpChargedPerLogin": {
     "en": "Charged per login. Resending the OTP is free",
@@ -2596,7 +2840,9 @@
     "pt": "Cobrado por login. Reenvio gratuito",
     "ja": "ログインごとに課金されます。再送信は無料です",
     "zh": "按每次登录计费。重发验证码免费",
-    "or": "ଲଗଇନ୍ ପ୍ରତି ଚାର୍ଜ କରାଯାଏ | OTP କୁ ପଠାଇବା ମାଗଣା |"
+    "or": "ଲଗଇନ୍ ପ୍ରତି ଚାର୍ଜ କରାଯାଏ | OTP କୁ ପଠାଇବା ମାଗଣା |",
+    "ur": "فی لاگ ان چارج کیا جاتا ہے۔ OTP دوبارہ بھیجنا مفت ہے۔",
+    "zh_Hant": "按每次登入收費。重新發送 OTP 是免費的"
   },
   "walkiePlan_payOtpCharge": {
     "en": "OTP charge",
@@ -2616,7 +2862,9 @@
     "pt": "Tarifa de OTP",
     "ja": "OTP送信料",
     "zh": "短信验证码费用",
-    "or": "OTP ଚାର୍ଜ |"
+    "or": "OTP ଚାର୍ଜ |",
+    "ur": "OTP چارج",
+    "zh_Hant": "一次性密碼費用"
   },
   "walkiePlan_payTotalPerOtp": {
     "en": "Total per OTP",
@@ -2636,7 +2884,9 @@
     "pt": "Total por OTP",
     "ja": "OTP合計",
     "zh": "每条验证码总计",
-    "or": "OTP ପ୍ରତି ସମୁଦାୟ |"
+    "or": "OTP ପ୍ରତି ସମୁଦାୟ |",
+    "ur": "کل فی OTP",
+    "zh_Hant": "每個 OTP 總計"
   },
   "walkiePlan_payCouldNotBeProcessed": {
     "en": "Payment could not be processed",
@@ -2656,7 +2906,9 @@
     "pt": "O pagamento não pôde ser processado",
     "ja": "決済を処理できませんでした",
     "zh": "未能处理您的付款",
-    "or": "ଦେୟ ପ୍ରକ୍ରିୟାକରଣ ହୋଇପାରିବ ନାହିଁ |"
+    "or": "ଦେୟ ପ୍ରକ୍ରିୟାକରଣ ହୋଇପାରିବ ନାହିଁ |",
+    "ur": "ادائیگی پر کارروائی نہیں ہو سکی",
+    "zh_Hant": "付款無法處理"
   },
   "walkiePlan_payTryAgain": {
     "en": "Try Again",
@@ -2676,7 +2928,9 @@
     "pt": "Tentar Novamente",
     "ja": "もう一度試す",
     "zh": "再试一次",
-    "or": "ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "دوبارہ کوشش کریں۔",
+    "zh_Hant": "再試一次"
   },
   "walkiePlan_payViewPlanDetails": {
     "en": "View Plan Details",
@@ -2696,7 +2950,9 @@
     "pt": "Ver Detalhes do Plano",
     "ja": "プラン詳細を見る",
     "zh": "查看套餐详情",
-    "or": "ଯୋଜନା ବିବରଣୀ ଦେଖନ୍ତୁ |"
+    "or": "ଯୋଜନା ବିବରଣୀ ଦେଖନ୍ତୁ |",
+    "ur": "پلان کی تفصیلات دیکھیں",
+    "zh_Hant": "查看計劃詳情"
   },
   "walkiePlan_payPendingStillProcessing": {
     "en": "Payment status is still processing. Please wait.",
@@ -2716,7 +2972,9 @@
     "pt": "O pagamento ainda está sendo processado. Aguarde.",
     "ja": "決済状況を処理中です。少々お待ちください。",
     "zh": "付款状态正在处理中，请稍候。",
-    "or": "ଦେୟ ସ୍ଥିତି ଏପର୍ଯ୍ୟନ୍ତ ପ୍ରକ୍ରିୟାକରଣ କରୁଛି | ଦୟାକରି ଅପେକ୍ଷା କରନ୍ତୁ |"
+    "or": "ଦେୟ ସ୍ଥିତି ଏପର୍ଯ୍ୟନ୍ତ ପ୍ରକ୍ରିୟାକରଣ କରୁଛି | ଦୟାକରି ଅପେକ୍ଷା କରନ୍ତୁ |",
+    "ur": "ادائیگی کی صورتحال پر ابھی بھی کارروائی جاری ہے۔ براہ کرم انتظار کریں۔",
+    "zh_Hant": "付款狀態仍在處理中。請稍等。"
   },
   "walkiePlan_payPendingStillInProgress": {
     "en": "Payment still in progress. We'll update once confirmed.",
@@ -2736,7 +2994,9 @@
     "pt": "Pagamento em andamento. Atualizaremos assim que confirmado.",
     "ja": "決済処理中です。確認が取れ次第反映されます。",
     "zh": "支付仍在进行中，确认后将立即更新。",
-    "or": "ଦେୟ ଏପର୍ଯ୍ୟନ୍ତ ଚାଲିଛି | ନିଶ୍ଚିତ ହେବା ପରେ ଆମେ ଅପଡେଟ୍ କରିବୁ |"
+    "or": "ଦେୟ ଏପର୍ଯ୍ୟନ୍ତ ଚାଲିଛି | ନିଶ୍ଚିତ ହେବା ପରେ ଆମେ ଅପଡେଟ୍ କରିବୁ |",
+    "ur": "ادائیگی ابھی بھی جاری ہے۔ تصدیق ہونے کے بعد ہم اپ ڈیٹ کریں گے۔",
+    "zh_Hant": "付款仍在進行中。確認後我們會更新。"
   },
   "walkiePlan_payPendingTitle": {
     "en": "Payment Pending",
@@ -2756,7 +3016,9 @@
     "pt": "Pagamento Pendente",
     "ja": "決済保留中",
     "zh": "待确认支付",
-    "or": "ଦେୟ ବିଚାରାଧୀନ ଅଛି |"
+    "or": "ଦେୟ ବିଚାରାଧୀନ ଅଛି |",
+    "ur": "ادائیگی زیر التواء",
+    "zh_Hant": "待付款"
   },
   "walkiePlan_payPendingSubtitleLong": {
     "en": "Your payment is being processed by the payment provider.\nThis may take a few minutes.",
@@ -2776,7 +3038,9 @@
     "pt": "Seu pagamento está sendo processado pelo provedor.\nIsso pode levar alguns minutos.",
     "ja": "決済機関にてお支払いを処理中です。\n完了まで数分かかる場合があります。",
     "zh": "支付渠道正在处理您的订单，\n这可能需要几分钟时间。",
-    "or": "ତୁମର ଦେୟ ଦେୟ ପ୍ରଦାନକାରୀଙ୍କ ଦ୍ୱାରା ପ୍ରକ୍ରିୟା କରାଯାଉଛି |\nଏହା ହୁଏତ କିଛି ମିନିଟ୍ ନେଇପାରେ |"
+    "or": "ତୁମର ଦେୟ ଦେୟ ପ୍ରଦାନକାରୀଙ୍କ ଦ୍ୱାରା ପ୍ରକ୍ରିୟା କରାଯାଉଛି |\nଏହା ହୁଏତ କିଛି ମିନିଟ୍ ନେଇପାରେ |",
+    "ur": "ادائیگی فراہم کنندہ آپ کی ادائیگی پر کارروائی کر رہا ہے۔\nاس میں کچھ منٹ لگ سکتے ہیں۔",
+    "zh_Hant": "您的付款正在由付款提供者處理。\n這可能需要幾分鐘。"
   },
   "walkiePlan_payPendingSubtitleShort": {
     "en": "Your payment is being processed",
@@ -2796,7 +3060,9 @@
     "pt": "Seu pagamento está sendo processado",
     "ja": "決済を処理しています",
     "zh": "正在处理您的支付",
-    "or": "ତୁମର ଦେୟ ପ୍ରକ୍ରିୟାକରଣ କରାଯାଉଛି |"
+    "or": "ତୁମର ଦେୟ ପ୍ରକ୍ରିୟାକରଣ କରାଯାଉଛି |",
+    "ur": "آپ کی ادائیگی پر کارروائی ہو رہی ہے۔",
+    "zh_Hant": "您的付款正在處理中"
   },
   "walkiePlan_payStatusTitle": {
     "en": "Payment Status",
@@ -2816,7 +3082,9 @@
     "pt": "Status do Pagamento",
     "ja": "決済状況",
     "zh": "支付状态",
-    "or": "ଦେୟ ସ୍ଥିତି"
+    "or": "ଦେୟ ସ୍ଥିତି",
+    "ur": "ادائیگی کی حیثیت",
+    "zh_Hant": "付款狀態"
   },
   "walkiePlan_payStepInitiated": {
     "en": "Payment Initiated",
@@ -2836,7 +3104,9 @@
     "pt": "Pagamento Iniciado",
     "ja": "決済開始",
     "zh": "已发起支付",
-    "or": "ଦେୟ ଆରମ୍ଭ"
+    "or": "ଦେୟ ଆରମ୍ଭ",
+    "ur": "ادائیگی شروع کر دی گئی۔",
+    "zh_Hant": "付款已啟動"
   },
   "walkiePlan_payBadgeCompleted": {
     "en": "Completed",
@@ -2856,7 +3126,9 @@
     "pt": "Concluído",
     "ja": "完了",
     "zh": "已完成",
-    "or": "ସମାପ୍ତ"
+    "or": "ସମାପ୍ତ",
+    "ur": "مکمل",
+    "zh_Hant": "完全的"
   },
   "walkiePlan_payStepProcessing": {
     "en": "Processing Payment",
@@ -2876,7 +3148,9 @@
     "pt": "Processando Pagamento",
     "ja": "決済処理中",
     "zh": "处理中",
-    "or": "ଦେୟ ପ୍ରକ୍ରିୟାକରଣ |"
+    "or": "ଦେୟ ପ୍ରକ୍ରିୟାକରଣ |",
+    "ur": "ادائیگی پر کارروائی ہو رہی ہے۔",
+    "zh_Hant": "處理付款"
   },
   "walkiePlan_payStepProcessingSub": {
     "en": "Your payment is being confirmed",
@@ -2896,7 +3170,9 @@
     "pt": "Seu pagamento está sendo confirmado",
     "ja": "決済の確認を行っています",
     "zh": "正在确认您的支付结果",
-    "or": "ତୁମର ଦେୟ ନିଶ୍ଚିତ ହୋଇଛି |"
+    "or": "ତୁମର ଦେୟ ନିଶ୍ଚିତ ହୋଇଛି |",
+    "ur": "آپ کی ادائیگی کی تصدیق ہو رہی ہے۔",
+    "zh_Hant": "正在確認您的付款"
   },
   "walkiePlan_payBadgeInProgress": {
     "en": "In Progress",
@@ -2916,7 +3192,9 @@
     "pt": "Em Andamento",
     "ja": "処理中",
     "zh": "进行中",
-    "or": "ପ୍ରଗତିରେ"
+    "or": "ପ୍ରଗତିରେ",
+    "ur": "جاری ہے۔",
+    "zh_Hant": "進行中"
   },
   "walkiePlan_payStepActivate": {
     "en": "Activate Plan",
@@ -2936,7 +3214,9 @@
     "pt": "Ativar Plano",
     "ja": "プランを有効化",
     "zh": "开通套餐",
-    "or": "ଯୋଜନା ସକ୍ରିୟ କରନ୍ତୁ |"
+    "or": "ଯୋଜନା ସକ୍ରିୟ କରନ୍ତୁ |",
+    "ur": "پلان کو چالو کریں۔",
+    "zh_Hant": "啟動計劃"
   },
   "walkiePlan_payStepActivateSub": {
     "en": "Your plan will be activated automatically",
@@ -2956,7 +3236,9 @@
     "pt": "Seu plano será ativado automaticamente",
     "ja": "プランは自動的に有効化されます",
     "zh": "套餐将在确认后自动为您激活",
-    "or": "ତୁମର ଯୋଜନା ସ୍ୱୟଂଚାଳିତ ଭାବରେ ସକ୍ରିୟ ହେବ |"
+    "or": "ତୁମର ଯୋଜନା ସ୍ୱୟଂଚାଳିତ ଭାବରେ ସକ୍ରିୟ ହେବ |",
+    "ur": "آپ کا پلان خود بخود چالو ہو جائے گا۔",
+    "zh_Hant": "您的計劃將自動激活"
   },
   "walkiePlan_payBadgePending": {
     "en": "Pending",
@@ -2976,7 +3258,9 @@
     "pt": "Pendente",
     "ja": "保留中",
     "zh": "等待中",
-    "or": "ବିଚାରାଧୀନ ଅଛି"
+    "or": "ବିଚାରାଧୀନ ଅଛି",
+    "ur": "زیر التواء",
+    "zh_Hant": "待辦的"
   },
   "walkiePlan_payPendingDoNotClose": {
     "en": "Please do not close the app. We will notify you once the payment is confirmed and your plan is activated.",
@@ -2996,7 +3280,9 @@
     "pt": "Por favor, não feche o aplicativo. Notificaremos você assim que o pagamento for confirmado.",
     "ja": "アプリを閉じずにお待ちください。決済の確認およびプランの有効化が完了次第通知します。",
     "zh": "请勿关闭应用。一旦支付确认成功且套餐开通，我们将立即通知您。",
-    "or": "ଦୟାକରି ଆପ୍ ବନ୍ଦ କରନ୍ତୁ ନାହିଁ | ଦେୟ ନିଶ୍ଚିତ ହେବା ପରେ ଏବଂ ତୁମର ଯୋଜନା ସକ୍ରିୟ ହେବା ପରେ ଆମେ ଆପଣଙ୍କୁ ଜଣାଇବୁ |"
+    "or": "ଦୟାକରି ଆପ୍ ବନ୍ଦ କରନ୍ତୁ ନାହିଁ | ଦେୟ ନିଶ୍ଚିତ ହେବା ପରେ ଏବଂ ତୁମର ଯୋଜନା ସକ୍ରିୟ ହେବା ପରେ ଆମେ ଆପଣଙ୍କୁ ଜଣାଇବୁ |",
+    "ur": "براہ کرم ایپ کو بند نہ کریں۔ ادائیگی کی تصدیق ہونے اور آپ کا پلان فعال ہونے کے بعد ہم آپ کو مطلع کریں گے۔",
+    "zh_Hant": "請不要關閉該應用程式。一旦付款被確認並且您的計劃被激活，我們將通知您。"
   },
   "walkiePlan_payRefreshStatus": {
     "en": "Refresh Status",
@@ -3016,7 +3302,9 @@
     "pt": "Atualizar Status",
     "ja": "状態を更新",
     "zh": "刷新状态",
-    "or": "ସ୍ଥିତି ସତେଜ କରନ୍ତୁ |"
+    "or": "ସ୍ଥିତି ସତେଜ କରନ୍ତୁ |",
+    "ur": "ریفریش اسٹیٹس",
+    "zh_Hant": "刷新狀態"
   },
   "walkiePlan_trialHours": {
     "en": "{count, plural, =1{1 Hour} other{{count} Hours}}",
@@ -3041,7 +3329,9 @@
     "pt": "{count, plural, =1{1 Hora} other{{count} Horas}}",
     "ja": "{count}時間",
     "zh": "{count} 小时",
-    "or": "{count, plural, =1{1 ଘଣ୍ଟା |} other{{count} ଘଣ୍ଟା |}}"
+    "or": "{count, plural, =1{1 ଘଣ୍ଟା |} other{{count} ଘଣ୍ଟା |}}",
+    "ur": "{count, plural, =1{1 گھنٹہ} other{{count} گھنٹے}}",
+    "zh_Hant": "{count, plural, =1{1小時} other{{count} 小時}}"
   },
   "walkiePlan_trialMinutes": {
     "en": "{count, plural, =1{1 Minute} other{{count} Minutes}}",
@@ -3066,7 +3356,9 @@
     "pt": "{count, plural, =1{1 Minuto} other{{count} Minutos}}",
     "ja": "{count}分",
     "zh": "{count} 分钟",
-    "or": "{count, plural, =1{1 ମିନିଟ୍ |} other{{count} ମିନିଟ୍ |}}"
+    "or": "{count, plural, =1{1 ମିନିଟ୍ |} other{{count} ମିନିଟ୍ |}}",
+    "ur": "{count, plural, =1{1 منٹ} other{{count} منٹ}}",
+    "zh_Hant": "{count, plural, =1{1分鐘} other{{count} 分鐘}}"
   },
   "walkiePlan_trialDurationFree": {
     "en": "{duration} Free",
@@ -3091,7 +3383,9 @@
     "pt": "{duration} Grátis",
     "ja": "{duration} 無料",
     "zh": "{duration} 免费试用",
-    "or": "{duration} ମାଗଣା |"
+    "or": "{duration} ମାଗଣା |",
+    "ur": "{duration} مفت",
+    "zh_Hant": "{duration} 免費"
   },
   "walkiePlan_trialPeriodMonth": {
     "en": "month",
@@ -3112,7 +3406,9 @@
     "pt": "mês",
     "ja": "月",
     "zh": "月",
-    "or": "ମାସ"
+    "or": "ମାସ",
+    "ur": "مہینہ",
+    "zh_Hant": "月"
   },
   "walkiePlan_trialDaysLeft": {
     "en": "{count, plural, =1{1 day left} other{{count} days left}}",
@@ -3137,7 +3433,9 @@
     "pt": "{count, plural, =1{Resta 1 dia} other{Restam {count} dias}}",
     "ja": "残り {count} 日",
     "zh": "还剩 {count} 天",
-    "or": "{count, plural, =1{1 ଦିନ ବାକି ଅଛି |} other{{count} ଦିନ ବାକି ଅଛି |}}"
+    "or": "{count, plural, =1{1 ଦିନ ବାକି ଅଛି |} other{{count} ଦିନ ବାକି ଅଛି |}}",
+    "ur": "{count, plural, =1{1 دن باقی ہے} other{{count} دن باقی ہیں}}",
+    "zh_Hant": "{count, plural, =1{還剩 1 天} other{剩 {count} 天}}"
   },
   "walkiePlan_trialHoursLeft": {
     "en": "{count, plural, =1{1 hour left} other{{count} hours left}}",
@@ -3162,7 +3460,9 @@
     "pt": "{count, plural, =1{Resta 1 hora} other{Restam {count} horas}}",
     "ja": "残り {count} 時間",
     "zh": "还剩 {count} 小时",
-    "or": "{count, plural, =1{1 ଘଣ୍ଟା ବାକି ଅଛି |} other{{count} ଘଣ୍ଟା ବାକି ଅଛି |}}"
+    "or": "{count, plural, =1{1 ଘଣ୍ଟା ବାକି ଅଛି |} other{{count} ଘଣ୍ଟା ବାକି ଅଛି |}}",
+    "ur": "{count, plural, =1{1 گھنٹہ باقی ہے} other{{count} گھنٹے باقی ہیں}}",
+    "zh_Hant": "{count, plural, =1{還剩 1 小時} other{剩 {count} 小時}}"
   },
   "walkiePlan_trialMinsLeft": {
     "en": "{count, plural, =1{1 min left} other{{count} mins left}}",
@@ -3187,7 +3487,9 @@
     "pt": "{count, plural, =1{Resta 1 min} other{Restam {count} mins}}",
     "ja": "残り {count} 分",
     "zh": "还剩 {count} 分钟",
-    "or": "{count, plural, =1{1 ମିନିଟ୍ ବାକି ଅଛି |} other{{count} ମିନିଟ୍ ବାକି ଅଛି |}}"
+    "or": "{count, plural, =1{1 ମିନିଟ୍ ବାକି ଅଛି |} other{{count} ମିନିଟ୍ ବାକି ଅଛି |}}",
+    "ur": "{count, plural, =1{1 منٹ باقی ہے} other{{count} منٹ باقی ہیں}}",
+    "zh_Hant": "{count, plural, =1{還剩 1 分鐘} other{剩 {count} 分鐘}}"
   },
   "walkiePlan_trialExpiringSoon": {
     "en": "Expiring soon",
@@ -3207,7 +3509,9 @@
     "pt": "Expira em breve",
     "ja": "まもなく有効期限切れ",
     "zh": "即将到期",
-    "or": "ଶୀଘ୍ର ସମାପ୍ତ ହେବ"
+    "or": "ଶୀଘ୍ର ସମାପ୍ତ ହେବ",
+    "ur": "جلد ہی میعاد ختم ہو رہی ہے۔",
+    "zh_Hant": "即將到期"
   },
   "walkiePlan_trialErrNoInternetRetry": {
     "en": "No internet connection. Please check your network and try again.",
@@ -3227,7 +3531,9 @@
     "pt": "Sem conexão com a internet. Verifique sua rede e tente novamente.",
     "ja": "インターネットに接続されていません。接続を確認して再試行してください。",
     "zh": "无网络连接，请检查网络设置后重试。",
-    "or": "କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ | ଦୟାକରି ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ | ଦୟାକରି ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "انٹرنیٹ کنکشن نہیں ہے۔ براہ کرم اپنا نیٹ ورک چیک کریں اور دوبارہ کوشش کریں۔",
+    "zh_Hant": "沒有網路連線。請檢查您的網路並重試。"
   },
   "walkiePlan_trialErrTimeout": {
     "en": "The request timed out. Please try again.",
@@ -3247,7 +3553,9 @@
     "pt": "A solicitação expirou. Tente novamente.",
     "ja": "タイムアウトしました。もう一度お試しください。",
     "zh": "请求超时，请重试。",
-    "or": "ଅନୁରୋଧ ସମୟ ସମାପ୍ତ ହୋଇଛି | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଅନୁରୋଧ ସମୟ ସମାପ୍ତ ହୋଇଛି | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "درخواست کا وقت ختم ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "請求超時。請再試一次。"
   },
   "walkiePlan_trialErrInvalidResponse": {
     "en": "Invalid response received from the server.",
@@ -3267,7 +3575,9 @@
     "pt": "Resposta inválida recebida do servidor.",
     "ja": "サーバーから無効な応答を受信しました。",
     "zh": "收到服务器无效响应。",
-    "or": "ସର୍ଭରରୁ ଅବ val ଧ ପ୍ରତିକ୍ରିୟା ଗ୍ରହଣ କରାଯାଇଛି |"
+    "or": "ସର୍ଭରରୁ ଅବ val ଧ ପ୍ରତିକ୍ରିୟା ଗ୍ରହଣ କରାଯାଇଛି |",
+    "ur": "سرور سے غلط جواب موصول ہوا۔",
+    "zh_Hant": "從伺服器收到的回應無效。"
   },
   "walkiePlan_trialErrUnableToLoad": {
     "en": "Unable to load Walkie-Talkie details. Please check your connection.",
@@ -3287,7 +3597,9 @@
     "pt": "Não foi possível carregar detalhes do Walkie-Talkie.",
     "ja": "トランシーバーの詳細情報を読み込めません。",
     "zh": "无法加载对讲机详情，请检查网络连接。",
-    "or": "ୱାକି-ଟକି ବିବରଣୀ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ଆପଣଙ୍କର ସଂଯୋଗ ଯାଞ୍ଚ କରନ୍ତୁ |"
+    "or": "ୱାକି-ଟକି ବିବରଣୀ ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ଆପଣଙ୍କର ସଂଯୋଗ ଯାଞ୍ଚ କରନ୍ତୁ |",
+    "ur": "واکی ٹاکی کی تفصیلات لوڈ کرنے سے قاصر۔ براہ کرم اپنا کنکشن چیک کریں۔",
+    "zh_Hant": "無法載入對講機詳細資料。請檢查您的連線。"
   },
   "walkiePlan_trialErrFetchDetails": {
     "en": "Unable to fetch Walkie-Talkie details.",
@@ -3307,7 +3619,9 @@
     "pt": "Não foi possível obter os detalhes do Walkie-Talkie.",
     "ja": "トランシーバー情報を取得できません。",
     "zh": "获取对讲机详细信息失败。",
-    "or": "ୱାକି-ଟକି ସବିଶେଷ ତଥ୍ୟ ଆଣିବାକୁ ଅସମର୍ଥ |"
+    "or": "ୱାକି-ଟକି ସବିଶେଷ ତଥ୍ୟ ଆଣିବାକୁ ଅସମର୍ଥ |",
+    "ur": "واکی ٹاکی کی تفصیلات حاصل کرنے سے قاصر۔",
+    "zh_Hant": "無法取得對講機詳細資料。"
   },
   "walkiePlan_trialErrOverviewMissing": {
     "en": "Walkie-Talkie overview data is missing.",
@@ -3327,7 +3641,9 @@
     "pt": "Dados da visão geral do Walkie-Talkie ausentes.",
     "ja": "トランシーバーの概要データがありません。",
     "zh": "对讲机概览数据缺失。",
-    "or": "ୱାକି-ଟକି ସମୀକ୍ଷା ସମୀକ୍ଷା ତଥ୍ୟ ହଜିଯାଇଛି |"
+    "or": "ୱାକି-ଟକି ସମୀକ୍ଷା ସମୀକ୍ଷା ତଥ୍ୟ ହଜିଯାଇଛି |",
+    "ur": "واکی ٹاکی جائزہ ڈیٹا غائب ہے۔",
+    "zh_Hant": "對講機概述資料遺失。"
   },
   "walkiePlan_trialErrAccessMissing": {
     "en": "Walkie-Talkie access information is missing.",
@@ -3347,7 +3663,9 @@
     "pt": "Informações de acesso ao Walkie-Talkie ausentes.",
     "ja": "アクセス権限情報が見つかりません。",
     "zh": "对讲机访问权限信息缺失。",
-    "or": "ୱାକି-ଟକି ଆକ୍ସେସ୍ ସୂଚନା ହଜିଯାଇଛି |"
+    "or": "ୱାକି-ଟକି ଆକ୍ସେସ୍ ସୂଚନା ହଜିଯାଇଛି |",
+    "ur": "واکی ٹاکی تک رسائی کی معلومات غائب ہے۔",
+    "zh_Hant": "缺少對講機存取資訊。"
   },
   "walkiePlan_trialFreeTrialLabel": {
     "en": "FREE TRIAL",
@@ -3368,7 +3686,9 @@
     "pt": "TESTE GRÁTIS",
     "ja": "無料トライアル",
     "zh": "免费试用",
-    "or": "ମାଗଣା ପରୀକ୍ଷା"
+    "or": "ମାଗଣା ପରୀକ୍ଷା",
+    "ur": "مفت آزمائش",
+    "zh_Hant": "免費試用"
   },
   "walkiePlan_trialActiveLabel": {
     "en": "TRIAL ACTIVE",
@@ -3388,7 +3708,9 @@
     "pt": "TESTE ATIVO",
     "ja": "トライアル有効中",
     "zh": "试用体验中",
-    "or": "ପରୀକ୍ଷା କାର୍ଯ୍ୟ"
+    "or": "ପରୀକ୍ଷା କାର୍ଯ୍ୟ",
+    "ur": "ٹرائل ایکٹو",
+    "zh_Hant": "試用活動中"
   },
   "walkiePlan_trialExpiredLabel": {
     "en": "TRIAL EXPIRED",
@@ -3408,7 +3730,9 @@
     "pt": "TESTE EXPIRADO",
     "ja": "トライアル終了",
     "zh": "试用已过期",
-    "or": "ପରୀକ୍ଷା ସମାପ୍ତ"
+    "or": "ପରୀକ୍ଷା ସମାପ୍ତ",
+    "ur": "ٹرائل کی میعاد ختم ہو گئی۔",
+    "zh_Hant": "試用期已過期"
   },
   "walkiePlan_trialUseWithin7Days": {
     "en": "Use your {duration} trial anytime within 7 days.",
@@ -3433,7 +3757,9 @@
     "pt": "Use seu teste de {duration} a qualquer momento em 7 dias.",
     "ja": "7日以内ならいつでも {duration} の無料試用をご利用いただけます。",
     "zh": "可在 7 天内随时使用您的 {duration} 免费试用。",
-    "or": "7 ଦିନ ମଧ୍ୟରେ ଯେକ time ଣସି ସମୟରେ ଆପଣଙ୍କର {duration} ପରୀକ୍ଷା ବ୍ୟବହାର କରନ୍ତୁ |"
+    "or": "7 ଦିନ ମଧ୍ୟରେ ଯେକ time ଣସି ସମୟରେ ଆପଣଙ୍କର {duration} ପରୀକ୍ଷା ବ୍ୟବହାର କରନ୍ତୁ |",
+    "ur": "7 دنوں کے اندر کسی بھی وقت اپنا {duration} ٹرائل استعمال کریں۔",
+    "zh_Hant": "7 天內隨時使用您的 {duration} 試用版。"
   },
   "walkiePlan_trialFreeTrialRunning": {
     "en": "Free Trial Running",
@@ -3453,7 +3779,9 @@
     "pt": "Teste Grátis em Andamento",
     "ja": "無料トライアル利用中",
     "zh": "免费试用进行中",
-    "or": "ମାଗଣା ପରୀକ୍ଷା ଚାଲିବା |"
+    "or": "ମାଗଣା ପରୀକ୍ଷା ଚାଲିବା |",
+    "ur": "مفت ٹرائل چل رہا ہے۔",
+    "zh_Hant": "免費試運行"
   },
   "walkiePlan_trialEnjoyDuringActive": {
     "en": "Enjoy Walkie Talkie during your active trial period.",
@@ -3473,7 +3801,9 @@
     "pt": "Aproveite o Walkie Talkie durante seu período de teste.",
     "ja": "有効期間中、トランシーバー機能を自由にご利用いただけます。",
     "zh": "在试用有效期内尽情体验对讲机所有功能。",
-    "or": "ଆପଣଙ୍କର ସକ୍ରିୟ ପରୀକ୍ଷା ଅବଧି ସମୟରେ ୱାକି ଟକି ଉପଭୋଗ କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ସକ୍ରିୟ ପରୀକ୍ଷା ଅବଧି ସମୟରେ ୱାକି ଟକି ଉପଭୋଗ କରନ୍ତୁ |",
+    "ur": "اپنی فعال آزمائشی مدت کے دوران واکی ٹاکی سے لطف اٹھائیں۔",
+    "zh_Hant": "在有效試用期內享受 Walkie Talkie。"
   },
   "walkiePlan_trialUsed": {
     "en": "Trial Used",
@@ -3493,7 +3823,9 @@
     "pt": "Teste Utilizado",
     "ja": "トライアル使用済み",
     "zh": "试用已用完",
-    "or": "ବ୍ୟବହୃତ ପରୀକ୍ଷଣ |"
+    "or": "ବ୍ୟବହୃତ ପରୀକ୍ଷଣ |",
+    "ur": "ٹرائل استعمال کیا گیا۔",
+    "zh_Hant": "試用"
   },
   "walkiePlan_trialFullyConsumed": {
     "en": "Your free trial has been completely consumed.",
@@ -3513,7 +3845,9 @@
     "pt": "Seu teste grátis foi totalmente consumido.",
     "ja": "無料トライアルの利用枠をすべて消費しました。",
     "zh": "您的免费试用额度已全部用尽。",
-    "or": "ତୁମର ମାଗଣା ପରୀକ୍ଷା ସଂପୂର୍ଣ୍ଣ ଭାବେ ନଷ୍ଟ ହୋଇଯାଇଛି |"
+    "or": "ତୁମର ମାଗଣା ପରୀକ୍ଷା ସଂପୂର୍ଣ୍ଣ ଭାବେ ନଷ୍ଟ ହୋଇଯାଇଛି |",
+    "ur": "آپ کا مفت ٹرائل مکمل طور پر ختم ہوچکا ہے۔",
+    "zh_Hant": "您的免費試用已完全用完。"
   },
   "walkiePlan_trialHasEnded": {
     "en": "Your Trial Has Ended",
@@ -3533,7 +3867,9 @@
     "pt": "Seu Teste Terminou",
     "ja": "トライアルが終了しました",
     "zh": "您的试用期已结束",
-    "or": "ତୁମର ପରୀକ୍ଷା ଶେଷ ହୋଇଛି |"
+    "or": "ତୁମର ପରୀକ୍ଷା ଶେଷ ହୋଇଛି |",
+    "ur": "آپ کا ٹرائل ختم ہو گیا ہے۔",
+    "zh_Hant": "您的試用期已結束"
   },
   "walkiePlan_trialChooseSubscription": {
     "en": "Choose a subscription to continue using Walkie Talkie.",
@@ -3553,7 +3889,9 @@
     "pt": "Escolha uma assinatura para continuar usando o Walkie Talkie.",
     "ja": "引き続きご利用いただくには、有料プランをお選びください。",
     "zh": "选择合适的订阅套餐以继续使用对讲机。",
-    "or": "ୱାକି ଟକି ବ୍ୟବହାର ଜାରି ରଖିବା ପାଇଁ ଏକ ସଦସ୍ୟତା ବାଛନ୍ତୁ |"
+    "or": "ୱାକି ଟକି ବ୍ୟବହାର ଜାରି ରଖିବା ପାଇଁ ଏକ ସଦସ୍ୟତା ବାଛନ୍ତୁ |",
+    "ur": "واکی ٹاکی کا استعمال جاری رکھنے کے لیے سبسکرپشن کا انتخاب کریں۔",
+    "zh_Hant": "選擇訂閱以繼續使用 Walkie Talkie。"
   },
   "walkiePlan_trialUsage": {
     "en": "Trial Usage",
@@ -3573,7 +3911,9 @@
     "pt": "Uso do Teste",
     "ja": "試用実績",
     "zh": "试用用量",
-    "or": "ପରୀକ୍ଷା ବ୍ୟବହାର"
+    "or": "ପରୀକ୍ଷା ବ୍ୟବହାର",
+    "ur": "آزمائشی استعمال",
+    "zh_Hant": "試用使用"
   },
   "walkiePlan_trialTimeRemaining": {
     "en": "Trial Time Remaining",
@@ -3593,7 +3933,9 @@
     "pt": "Tempo de Teste Restante",
     "ja": "残りトライアル時間",
     "zh": "试用剩余时长",
-    "or": "ପରୀକ୍ଷା ସମୟ ଅବଶିଷ୍ଟ |"
+    "or": "ପରୀକ୍ଷା ସମୟ ଅବଶିଷ୍ଟ |",
+    "ur": "آزمائش کا وقت باقی ہے۔",
+    "zh_Hant": "剩餘試用時間"
   },
   "walkiePlan_trialCompleted": {
     "en": "Trial Completed",
@@ -3613,7 +3955,9 @@
     "pt": "Teste Concluído",
     "ja": "トライアル完了",
     "zh": "试用已完成",
-    "or": "ପରୀକ୍ଷା ସମାପ୍ତ"
+    "or": "ପରୀକ୍ଷା ସମାପ୍ତ",
+    "ur": "ٹرائل مکمل ہوا۔",
+    "zh_Hant": "試用完成"
   },
   "walkiePlan_trialExpired": {
     "en": "Trial Expired",
@@ -3633,7 +3977,9 @@
     "pt": "Teste Expirado",
     "ja": "トライアル期限切れ",
     "zh": "试用已过期",
-    "or": "ପରୀକ୍ଷା ସମାପ୍ତ ହୋଇଛି"
+    "or": "ପରୀକ୍ଷା ସମାପ୍ତ ହୋଇଛି",
+    "ur": "مقدمے کی مدت ختم ہو گئی۔",
+    "zh_Hant": "試用期已過"
   },
   "walkiePlan_trialValidityPeriod": {
     "en": "Trial Validity Period",
@@ -3653,7 +3999,9 @@
     "pt": "Validade do Teste",
     "ja": "トライアル有効期間",
     "zh": "试用有效期",
-    "or": "ପରୀକ୍ଷା ବ id ଧତା ଅବଧି |"
+    "or": "ପରୀକ୍ଷା ବ id ଧତା ଅବଧି |",
+    "ur": "ٹرائل کی میعاد کی مدت",
+    "zh_Hant": "試用有效期限"
   },
   "walkiePlan_trialFreeAvailable": {
     "en": "Free Trial Available",
@@ -3673,7 +4021,9 @@
     "pt": "Teste Grátis Disponível",
     "ja": "無料トライアル利用可能",
     "zh": "可享受免费试用",
-    "or": "ମାଗଣା ପରୀକ୍ଷା ଉପଲବ୍ଧ |"
+    "or": "ମାଗଣା ପରୀକ୍ଷା ଉପଲବ୍ଧ |",
+    "ur": "مفت ٹرائل دستیاب ہے۔",
+    "zh_Hant": "提供免費試用"
   },
   "walkiePlan_trialStatusCompleted": {
     "en": "Completed",
@@ -3693,7 +4043,9 @@
     "pt": "Concluído",
     "ja": "完了",
     "zh": "已完成",
-    "or": "ସମାପ୍ତ"
+    "or": "ସମାପ୍ତ",
+    "ur": "مکمل",
+    "zh_Hant": "完全的"
   },
   "walkiePlan_trialStatusExpired": {
     "en": "Expired",
@@ -3714,7 +4066,9 @@
     "pt": "Expirado",
     "ja": "期限切れ",
     "zh": "已过期",
-    "or": "ମିଆଦ ପୂର୍ଣ୍ଣ ହୋଇଛି"
+    "or": "ମିଆଦ ପୂର୍ଣ୍ଣ ହୋଇଛି",
+    "ur": "میعاد ختم",
+    "zh_Hant": "已到期"
   },
   "walkiePlan_trialAvailableToStart": {
     "en": "Available to start",
@@ -3734,7 +4088,9 @@
     "pt": "Disponível para iniciar",
     "ja": "今すぐ開始可能",
     "zh": "随时可开启",
-    "or": "ଆରମ୍ଭ କରିବାକୁ ଉପଲବ୍ଧ |"
+    "or": "ଆରମ୍ଭ କରିବାକୁ ଉପଲବ୍ଧ |",
+    "ur": "شروع کرنے کے لیے دستیاب ہے۔",
+    "zh_Hant": "可以開始使用"
   },
   "walkiePlan_trialSec": {
     "en": "{count} sec",
@@ -3759,7 +4115,9 @@
     "pt": "{count} s",
     "ja": "{count}秒",
     "zh": "{count} 秒",
-    "or": "{count} ସେକେଣ୍ଡ୍"
+    "or": "{count} ସେକେଣ୍ଡ୍",
+    "ur": "{count} سیکنڈ",
+    "zh_Hant": "{count} 秒"
   },
   "walkiePlan_trialMin": {
     "en": "{count} min",
@@ -3784,7 +4142,9 @@
     "pt": "{count} min",
     "ja": "{count}分",
     "zh": "{count} 分钟",
-    "or": "{count} ମିନିଟ୍"
+    "or": "{count} ମିନିଟ୍",
+    "ur": "{count} منٹ",
+    "zh_Hant": "{count} 分鐘"
   },
   "walkiePlan_trialMinSec": {
     "en": "{minutes} min {seconds} sec",
@@ -3812,7 +4172,9 @@
     "pt": "{minutes} min {seconds} s",
     "ja": "{minutes}分 {seconds}秒",
     "zh": "{minutes} 分 {seconds} 秒",
-    "or": "{minutes} ମିନିଟ୍ {seconds} ସେକେଣ୍ଡ୍ |"
+    "or": "{minutes} ମିନିଟ୍ {seconds} ସେକେଣ୍ଡ୍ |",
+    "ur": "{minutes} منٹ {seconds} سیکنڈ",
+    "zh_Hant": "{minutes} 分 {seconds} 秒"
   },
   "walkiePlan_trialHr": {
     "en": "{count} hr",
@@ -3837,7 +4199,9 @@
     "pt": "{count} h",
     "ja": "{count}時間",
     "zh": "{count} 小时",
-    "or": "{count} ଘଣ୍ଟା"
+    "or": "{count} ଘଣ୍ଟା",
+    "ur": "{count} گھنٹہ",
+    "zh_Hant": "{count} 小時"
   },
   "walkiePlan_trialHrMin": {
     "en": "{hours} hr {minutes} min",
@@ -3865,7 +4229,9 @@
     "pt": "{hours} h {minutes} min",
     "ja": "{hours}時間 {minutes}分",
     "zh": "{hours} 小时 {minutes} 分钟",
-    "or": "{hours} ଘଣ୍ଟା {minutes} ମିନିଟ୍ |"
+    "or": "{hours} ଘଣ୍ଟା {minutes} ମିନିଟ୍ |",
+    "ur": "{hours} گھنٹہ {minutes} منٹ",
+    "zh_Hant": "{hours} 小時 {minutes} 分鐘"
   },
   "walkiePlan_trialIsActive": {
     "en": "Your Trial Is Active",
@@ -3885,7 +4251,9 @@
     "pt": "Seu Teste Está Ativo",
     "ja": "トライアル期間中です",
     "zh": "试用正在生效",
-    "or": "ତୁମର ପରୀକ୍ଷା ସକ୍ରିୟ ଅଟେ |"
+    "or": "ତୁମର ପରୀକ୍ଷା ସକ୍ରିୟ ଅଟେ |",
+    "ur": "آپ کا ٹرائل ایکٹو ہے۔",
+    "zh_Hant": "您的試用正在進行中"
   },
   "walkiePlan_trialTalkFreeTill": {
     "en": "Talk free with your group till {date}.",
@@ -3910,7 +4278,9 @@
     "pt": "Fale grátis com seu grupo até {date}.",
     "ja": "{date} までグループメンバーと無料で通話できます。",
     "zh": "截至 {date} 前均可与群组成员免费语音对讲。",
-    "or": "{date} ପର୍ଯ୍ୟନ୍ତ ଆପଣଙ୍କ ଗୋଷ୍ଠୀ ସହିତ ମାଗଣା କଥା ହୁଅନ୍ତୁ |"
+    "or": "{date} ପର୍ଯ୍ୟନ୍ତ ଆପଣଙ୍କ ଗୋଷ୍ଠୀ ସହିତ ମାଗଣା କଥା ହୁଅନ୍ତୁ |",
+    "ur": "{date} تک اپنے گروپ کے ساتھ مفت بات کریں۔",
+    "zh_Hant": "與您的小組自由交談直至 {date}。"
   },
   "walkiePlan_trialTalkFree": {
     "en": "Talk free with your group.",
@@ -3930,7 +4300,9 @@
     "pt": "Fale grátis com seu grupo.",
     "ja": "グループメンバーと無料で通話。",
     "zh": "与群组成员免费畅聊。",
-    "or": "ତୁମ ଗୋଷ୍ଠୀ ସହିତ ମାଗଣା କଥା ହୁଅ |"
+    "or": "ତୁମ ଗୋଷ୍ଠୀ ସହିତ ମାଗଣା କଥା ହୁଅ |",
+    "ur": "اپنے گروپ کے ساتھ مفت بات کریں۔",
+    "zh_Hant": "與您的小組自由交談。"
   },
   "walkiePlan_trialTimeLeft": {
     "en": "{time} left",
@@ -3955,7 +4327,9 @@
     "pt": "Resta {time}",
     "ja": "残り {time}",
     "zh": "剩余 {time}",
-    "or": "{time} ବାମ"
+    "or": "{time} ବାମ",
+    "ur": "{time} چھوڑ دیا۔",
+    "zh_Hant": "{time} 左"
   },
   "walkiePlan_trialTimeUsedUp": {
     "en": "Trial time used up",
@@ -3975,7 +4349,9 @@
     "pt": "Tempo de teste esgotado",
     "ja": "試用時間を使い切りました",
     "zh": "试用时长已耗尽",
-    "or": "ପରୀକ୍ଷା ସମୟ ବ୍ୟବହୃତ |"
+    "or": "ପରୀକ୍ଷା ସମୟ ବ୍ୟବହୃତ |",
+    "ur": "آزمائش کا وقت ختم ہو گیا۔",
+    "zh_Hant": "試用時間已用完"
   },
   "walkiePlan_trialEndedOn": {
     "en": "Ended on {date}",
@@ -4000,7 +4376,9 @@
     "pt": "Terminou em {date}",
     "ja": "{date} に終了",
     "zh": "结束于 {date}",
-    "or": "{date} ରେ ସମାପ୍ତ |"
+    "or": "{date} ରେ ସମାପ୍ତ |",
+    "ur": "{date} کو ختم ہوا۔",
+    "zh_Hant": "結束於 {date}"
   },
   "walkiePlan_trialActiveSubscriptions": {
     "en": "Active Subscriptions",
@@ -4020,7 +4398,9 @@
     "pt": "Assinaturas Ativas",
     "ja": "有効なサブスクリプション",
     "zh": "当前有效订阅",
-    "or": "ସକ୍ରିୟ ସଦସ୍ୟତା"
+    "or": "ସକ୍ରିୟ ସଦସ୍ୟତା",
+    "ur": "فعال سبسکرپشنز",
+    "zh_Hant": "活躍訂閱數"
   },
   "walkiePlan_trialActiveSubscription": {
     "en": "Active Subscription",
@@ -4040,7 +4420,9 @@
     "pt": "Assinatura Ativa",
     "ja": "有効なサブスクリプション",
     "zh": "有效订阅",
-    "or": "ସକ୍ରିୟ ସଦସ୍ୟତା"
+    "or": "ସକ୍ରିୟ ସଦସ୍ୟତା",
+    "ur": "فعال سبسکرپشن",
+    "zh_Hant": "活躍訂閱"
   },
   "walkiePlan_trialSubscriptionActive": {
     "en": "Subscription Active",
@@ -4060,7 +4442,9 @@
     "pt": "Assinatura Ativa",
     "ja": "サブスクリプション有効中",
     "zh": "订阅已生效",
-    "or": "ସଦସ୍ୟତା ସକ୍ରିୟ |"
+    "or": "ସଦସ୍ୟତା ସକ୍ରିୟ |",
+    "ur": "سبسکرپشن فعال",
+    "zh_Hant": "訂閱活躍"
   },
   "walkiePlan_trialTeamAccessMsg": {
     "en": "You have Walkie Talkie access through your team plan.",
@@ -4080,7 +4464,9 @@
     "pt": "Você tem acesso ao Walkie Talkie através do plano de equipe.",
     "ja": "チームプランによりトランシーバーをご利用いただけます。",
     "zh": "您已通过团队套餐获得对讲机使用权限。",
-    "or": "ତୁମର ଦଳ ଯୋଜନା ମାଧ୍ୟମରେ ତୁମର ୱାକି ଟକି ଆକ୍ସେସ୍ ଅଛି |"
+    "or": "ତୁମର ଦଳ ଯୋଜନା ମାଧ୍ୟମରେ ତୁମର ୱାକି ଟକି ଆକ୍ସେସ୍ ଅଛି |",
+    "ur": "آپ کو اپنے ٹیم پلان کے ذریعے واکی ٹاکی تک رسائی حاصل ہے۔",
+    "zh_Hant": "您可以透過團隊計劃造訪 Walkie Talkie。"
   },
   "walkiePlan_trialSubscriptionExpired": {
     "en": "Subscription Expired",
@@ -4100,7 +4486,9 @@
     "pt": "Assinatura Expirada",
     "ja": "サブスクリプション期限切れ",
     "zh": "订阅已过期",
-    "or": "ସଦସ୍ୟତା ସମାପ୍ତ ହୋଇଛି"
+    "or": "ସଦସ୍ୟତା ସମାପ୍ତ ହୋଇଛି",
+    "ur": "رکنیت ختم ہو گئی۔",
+    "zh_Hant": "訂閱已過期"
   },
   "walkiePlan_trialSubscriptionEndedMsg": {
     "en": "Your Walkie Talkie subscription has ended. Renew a plan to keep talking with your team.",
@@ -4120,7 +4508,9 @@
     "pt": "Sua assinatura terminou. Renove para continuar conversando.",
     "ja": "サブスクリプションが終了しました。継続して会話するには更新してください。",
     "zh": "您的对讲机订阅已到期。续费后可继续与团队保持对讲联系。",
-    "or": "ତୁମର ୱାକି ଟକି ସବସ୍କ୍ରିପସନ୍ ସମାପ୍ତ ହୋଇଛି | ଆପଣଙ୍କ ଦଳ ସହିତ କଥାବାର୍ତ୍ତା ଜାରି ରଖିବାକୁ ଏକ ଯୋଜନା ନବୀକରଣ କରନ୍ତୁ |"
+    "or": "ତୁମର ୱାକି ଟକି ସବସ୍କ୍ରିପସନ୍ ସମାପ୍ତ ହୋଇଛି | ଆପଣଙ୍କ ଦଳ ସହିତ କଥାବାର୍ତ୍ତା ଜାରି ରଖିବାକୁ ଏକ ଯୋଜନା ନବୀକରଣ କରନ୍ତୁ |",
+    "ur": "آپ کی واکی ٹاکی سبسکرپشن ختم ہو گئی ہے۔ اپنی ٹیم کے ساتھ بات کرتے رہنے کے لیے ایک پلان کی تجدید کریں۔",
+    "zh_Hant": "您的對講機訂閱已結束。更新計劃以繼續與您的團隊交談。"
   },
   "walkiePlan_trialNoActivePlan": {
     "en": "No Active Plan",
@@ -4140,7 +4530,9 @@
     "pt": "Nenhum Plano Ativo",
     "ja": "有効なプランがありません",
     "zh": "暂无有效套餐",
-    "or": "କ Act ଣସି ସକ୍ରିୟ ଯୋଜନା ନାହିଁ |"
+    "or": "କ Act ଣସି ସକ୍ରିୟ ଯୋଜନା ନାହିଁ |",
+    "ur": "کوئی فعال منصوبہ نہیں۔",
+    "zh_Hant": "沒有積極的計劃"
   },
   "walkiePlan_trialChoosePlanBelow": {
     "en": "Choose a plan below to start using Walkie Talkie.",
@@ -4160,7 +4552,9 @@
     "pt": "Escolha um plano abaixo para começar a usar o Walkie Talkie.",
     "ja": "トランシーバーを利用するには、以下のプランを選択してください。",
     "zh": "在下方选择套餐以开启对讲机功能。",
-    "or": "ୱାକି ଟକି ବ୍ୟବହାର କରିବା ଆରମ୍ଭ କରିବାକୁ ନିମ୍ନରେ ଏକ ଯୋଜନା ବାଛନ୍ତୁ |"
+    "or": "ୱାକି ଟକି ବ୍ୟବହାର କରିବା ଆରମ୍ଭ କରିବାକୁ ନିମ୍ନରେ ଏକ ଯୋଜନା ବାଛନ୍ତୁ |",
+    "ur": "واکی ٹاکی کا استعمال شروع کرنے کے لیے ذیل میں ایک منصوبہ منتخب کریں۔",
+    "zh_Hant": "選擇下面的計劃以開始使用 Walkie Talkie。"
   },
   "walkiePlan_trialWalkieTalkieTitle": {
     "en": "Walkie Talkie",
@@ -4180,7 +4574,9 @@
     "pt": "Walkie Talkie",
     "ja": "トランシーバー",
     "zh": "对讲机",
-    "or": "ୱାକି ଟକି |"
+    "or": "ୱାକି ଟକି |",
+    "ur": "واکی ٹاکی",
+    "zh_Hant": "對講機"
   },
   "walkiePlan_trialHeaderPlanStatus": {
     "en": "Your plan & subscription status",
@@ -4200,7 +4596,9 @@
     "pt": "Status do seu plano e assinatura",
     "ja": "現在のプランと加入状況",
     "zh": "您的套餐与订阅状态",
-    "or": "ତୁମର ଯୋଜନା ଏବଂ ସଦସ୍ୟତା ସ୍ଥିତି |"
+    "or": "ତୁମର ଯୋଜନା ଏବଂ ସଦସ୍ୟତା ସ୍ଥିତି |",
+    "ur": "آپ کا منصوبہ اور رکنیت کی حیثیت",
+    "zh_Hant": "您的方案和訂閱狀態"
   },
   "walkiePlan_trialHeaderInstant": {
     "en": "Instantly communicate with your group",
@@ -4220,7 +4618,9 @@
     "pt": "Comunique-se instantaneamente com seu grupo",
     "ja": "グループメンバーと即座に音声通話",
     "zh": "与群组即时保持语音联络",
-    "or": "ତୁରନ୍ତ ତୁମର ଗୋଷ୍ଠୀ ସହିତ ଯୋଗାଯୋଗ କର |"
+    "or": "ତୁରନ୍ତ ତୁମର ଗୋଷ୍ଠୀ ସହିତ ଯୋଗାଯୋଗ କର |",
+    "ur": "اپنے گروپ کے ساتھ فوری رابطہ کریں۔",
+    "zh_Hant": "即時與您的團隊溝通"
   },
   "walkiePlan_trialNoInternetTitle": {
     "en": "No Internet Connection",
@@ -4240,7 +4640,9 @@
     "pt": "Sem Conexão com a Internet",
     "ja": "インターネット未接続",
     "zh": "无网络连接",
-    "or": "କ Internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ |"
+    "or": "କ Internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ |",
+    "ur": "کوئی انٹرنیٹ کنکشن نہیں ہے۔",
+    "zh_Hant": "無網路連線"
   },
   "walkiePlan_trialUnableToLoadTitle": {
     "en": "Unable to Load Walkie Talkie",
@@ -4260,7 +4662,9 @@
     "pt": "Não foi possível carregar o Walkie Talkie",
     "ja": "トランシーバーを読み込めません",
     "zh": "无法加载对讲机数据",
-    "or": "ୱାକି ଟକି ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ୱାକି ଟକି ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "واکی ٹاکی لوڈ کرنے سے قاصر",
+    "zh_Hant": "無法載入對講機"
   },
   "walkiePlan_trialCheckConnectionRetry": {
     "en": "Please check your internet connection and try again.",
@@ -4280,7 +4684,9 @@
     "pt": "Verifique sua conexão com a internet e tente novamente.",
     "ja": "インターネット接続を確認して再試行してください。",
     "zh": "请检查网络连接后重试。",
-    "or": "ଦୟାକରି ଆପଣଙ୍କର ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ଆପଣଙ୍କର ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "براہ کرم اپنا انٹرنیٹ کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
+    "zh_Hant": "請檢查您的網路連接，然後重試。"
   },
   "walkiePlan_trialRetrying": {
     "en": "Retrying...",
@@ -4300,7 +4706,9 @@
     "pt": "Tentando novamente...",
     "ja": "再試行中...",
     "zh": "正在重试...",
-    "or": "ପୁନ ry ଚେଷ୍ଟା ..."
+    "or": "ପୁନ ry ଚେଷ୍ଟା ...",
+    "ur": "دوبارہ کوشش کر رہا ہے...",
+    "zh_Hant": "正在重試..."
   },
   "walkiePlan_trialTryAgain": {
     "en": "Try Again",
@@ -4320,7 +4728,9 @@
     "pt": "Tentar Novamente",
     "ja": "もう一度試す",
     "zh": "再试一次",
-    "or": "ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "دوبارہ کوشش کریں۔",
+    "zh_Hant": "再試一次"
   },
   "walkiePlan_trialStartYourFreeTrial": {
     "en": "Start Your Free Trial",
@@ -4340,7 +4750,9 @@
     "pt": "Inicie seu Teste Grátis",
     "ja": "無料トライアルを開始",
     "zh": "开启您的免费试用",
-    "or": "ତୁମର ମାଗଣା ପରୀକ୍ଷା ଆରମ୍ଭ କର |"
+    "or": "ତୁମର ମାଗଣା ପରୀକ୍ଷା ଆରମ୍ଭ କର |",
+    "ur": "اپنا مفت ٹرائل شروع کریں۔",
+    "zh_Hant": "開始免費試用"
   },
   "walkiePlan_trialEnjoyAllFeatures": {
     "en": "Enjoy all Walkie Talkie features free for {duration}.\nNo payment required.",
@@ -4365,7 +4777,9 @@
     "pt": "Aproveite todos os recursos do Walkie Talkie grátis por {duration}.\nSem cobrança.",
     "ja": "{duration}の間、すべてのトランシーバー機能を無料でお試しいただけます。\nお支払いは不要です。",
     "zh": "免费体验对讲机全部功能 {duration}。\n无需预先支付。",
-    "or": "{duration} ପାଇଁ ସମସ୍ତ ୱାକି ଟକି ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ଉପଭୋଗ କରନ୍ତୁ |\nକ payment ଣସି ଦେୟ ଆବଶ୍ୟକ ନାହିଁ |"
+    "or": "{duration} ପାଇଁ ସମସ୍ତ ୱାକି ଟକି ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ଉପଭୋଗ କରନ୍ତୁ |\nକ payment ଣସି ଦେୟ ଆବଶ୍ୟକ ନାହିଁ |",
+    "ur": "{duration} کے لیے تمام واکی ٹاکی خصوصیات سے مفت لطف اٹھائیں۔\nادائیگی کی ضرورت نہیں ہے۔",
+    "zh_Hant": "{duration} 免費享受 Walkie Talkie 的所有功能。\n無需付款。"
   },
   "walkiePlan_trialFullAccess": {
     "en": "Full access to all features",
@@ -4385,7 +4799,9 @@
     "pt": "Acesso total a todos os recursos",
     "ja": "すべての機能へのフルアクセス",
     "zh": "解锁全部功能权限",
-    "or": "ସମସ୍ତ ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ପାଇଁ ସମ୍ପୂର୍ଣ୍ଣ ପ୍ରବେଶ |"
+    "or": "ସମସ୍ତ ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ପାଇଁ ସମ୍ପୂର୍ଣ୍ଣ ପ୍ରବେଶ |",
+    "ur": "تمام خصوصیات تک مکمل رسائی",
+    "zh_Hant": "完全存取所有功能"
   },
   "walkiePlan_trial7DaysPeriod": {
     "en": "7 Days Trial Period",
@@ -4405,7 +4821,9 @@
     "pt": "Período de Teste de 7 Dias",
     "ja": "7日間のトライアル期間",
     "zh": "7 天试用有效期",
-    "or": "7 ଦିନର ପରୀକ୍ଷା ଅବଧି |"
+    "or": "7 ଦିନର ପରୀକ୍ଷା ଅବଧି |",
+    "ur": "7 دن کی آزمائشی مدت",
+    "zh_Hant": "7 天試用期"
   },
   "walkiePlan_trialUseAnytime7Days": {
     "en": "Use trial anytime in 7 days",
@@ -4425,7 +4843,9 @@
     "pt": "Use o teste quando quiser em 7 dias",
     "ja": "7日間いつでもご利用可能",
     "zh": "7 天内可随时使用",
-    "or": "7 ଦିନରେ ଯେକ time ଣସି ସମୟରେ ପରୀକ୍ଷା ବ୍ୟବହାର କରନ୍ତୁ |"
+    "or": "7 ଦିନରେ ଯେକ time ଣସି ସମୟରେ ପରୀକ୍ଷା ବ୍ୟବହାର କରନ୍ତୁ |",
+    "ur": "7 دنوں میں کسی بھی وقت ٹرائل استعمال کریں۔",
+    "zh_Hant": "7天內隨時試用"
   },
   "walkiePlan_trialWhatYouCanDo": {
     "en": "What you can do during the trial",
@@ -4445,7 +4865,9 @@
     "pt": "O que você pode fazer durante o teste",
     "ja": "試用期間中に利用できること",
     "zh": "试用期间您可享有的特权",
-    "or": "ପରୀକ୍ଷା ସମୟରେ ଆପଣ କଣ କରିପାରିବେ |"
+    "or": "ପରୀକ୍ଷା ସମୟରେ ଆପଣ କଣ କରିପାରିବେ |",
+    "ur": "ٹرائل کے دوران آپ کیا کر سکتے ہیں۔",
+    "zh_Hant": "試用期間您可以做什麼"
   },
   "walkiePlan_trialFeatGroupComm": {
     "en": "Group Communication",
@@ -4465,7 +4887,9 @@
     "pt": "Comunicação em Grupo",
     "ja": "グループ通話",
     "zh": "团队对讲",
-    "or": "ଗୋଷ୍ଠୀ ଯୋଗାଯୋଗ |"
+    "or": "ଗୋଷ୍ଠୀ ଯୋଗାଯୋଗ |",
+    "ur": "گروپ کمیونیکیشن",
+    "zh_Hant": "團體交流"
   },
   "walkiePlan_trialFeatGroupCommDesc": {
     "en": "Connect with your team",
@@ -4485,7 +4909,9 @@
     "pt": "Conecte-se com sua equipe",
     "ja": "チームと瞬時につながる",
     "zh": "与您的团队快速联络",
-    "or": "ଆପଣଙ୍କ ଦଳ ସହିତ ସଂଯୋଗ କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କ ଦଳ ସହିତ ସଂଯୋଗ କରନ୍ତୁ |",
+    "ur": "اپنی ٹیم کے ساتھ جڑیں۔",
+    "zh_Hant": "與您的團隊聯繫"
   },
   "walkiePlan_trialFeatUnlimited": {
     "en": "Unlimited Usage",
@@ -4505,7 +4931,9 @@
     "pt": "Uso Ilimitado",
     "ja": "無制限の利用",
     "zh": "无限畅聊",
-    "or": "ଅସୀମିତ ବ୍ୟବହାର |"
+    "or": "ଅସୀମିତ ବ୍ୟବହାର |",
+    "ur": "لامحدود استعمال",
+    "zh_Hant": "無限使用"
   },
   "walkiePlan_trialFeatUnlimitedDesc": {
     "en": "Use without any limits",
@@ -4525,7 +4953,9 @@
     "pt": "Use sem limites",
     "ja": "利用回数の制限なし",
     "zh": "无任何时长与频次限制",
-    "or": "କ limits ଣସି ସୀମା ବିନା ବ୍ୟବହାର କରନ୍ତୁ |"
+    "or": "କ limits ଣସି ସୀମା ବିନା ବ୍ୟବହାର କରନ୍ତୁ |",
+    "ur": "بغیر کسی حد کے استعمال کریں۔",
+    "zh_Hant": "使用無任何限制"
   },
   "walkiePlan_trialFeatPtt": {
     "en": "Push-to-talk",
@@ -4545,7 +4975,9 @@
     "pt": "Push-to-talk",
     "ja": "プッシュ・トゥ・トーク (PTT)",
     "zh": "一键对讲 (PTT)",
-    "or": "ପୁସ୍-ଟୁ-ଟକ୍ |"
+    "or": "ପୁସ୍-ଟୁ-ଟକ୍ |",
+    "ur": "پش ٹو ٹاک",
+    "zh_Hant": "一鍵通"
   },
   "walkiePlan_trialFeatPttDesc": {
     "en": "Instant voice communication",
@@ -4565,7 +4997,9 @@
     "pt": "Comunicação de voz instantânea",
     "ja": "ボタンを押して即座に通話",
     "zh": "按住按钮即时发送语音",
-    "or": "ତତକ୍ଷଣାତ୍ ସ୍ୱର ଯୋଗାଯୋଗ |"
+    "or": "ତତକ୍ଷଣାତ୍ ସ୍ୱର ଯୋଗାଯୋଗ |",
+    "ur": "فوری صوتی مواصلات",
+    "zh_Hant": "即時語音通訊"
   },
   "walkiePlan_trialFeatClearAudio": {
     "en": "Clear Audio",
@@ -4585,7 +5019,9 @@
     "pt": "Áudio Cristalino",
     "ja": "クリアな高音質",
     "zh": "高清音质",
-    "or": "ଅଡିଓ ସଫା କରନ୍ତୁ |"
+    "or": "ଅଡିଓ ସଫା କରନ୍ତୁ |",
+    "ur": "آڈیو صاف کریں۔",
+    "zh_Hant": "清晰的音訊"
   },
   "walkiePlan_trialFeatClearAudioDesc": {
     "en": "High quality voice",
@@ -4605,7 +5041,9 @@
     "pt": "Qualidade de voz superior",
     "ja": "ノイズの少ないクリアな音声",
     "zh": "低延迟高保真语音体验",
-    "or": "ଉଚ୍ଚମାନର ସ୍ୱର |"
+    "or": "ଉଚ୍ଚମାନର ସ୍ୱର |",
+    "ur": "اعلی معیار کی آواز",
+    "zh_Hant": "高品質語音"
   },
   "walkiePlan_trialNoPaymentNow": {
     "en": "No payment needed now. After your trial, you can choose to continue with a paid plan ({price}/person) if you like.",
@@ -4630,7 +5068,9 @@
     "pt": "Nenhum pagamento agora. Depois do teste, você pode assinar um plano ({price}/pessoa).",
     "ja": "今すぐのお支払いは不要です。試用終了後、有料プラン ({price}/人) へ移行するかご選択いただけます。",
     "zh": "现在无需付款。试用结束后，您可以自主选择按需订阅付费套餐 ({price}/人)。",
-    "or": "ବର୍ତ୍ତମାନ କ payment ଣସି ଦେୟ ଆବଶ୍ୟକ ନାହିଁ | ଆପଣଙ୍କର ପରୀକ୍ଷା ପରେ, ଆପଣ ଚାହିଁଲେ ଏକ ଦେୟଯୁକ୍ତ ଯୋଜନା ({price} / ବ୍ୟକ୍ତି) ସହିତ ଜାରି ରଖିବାକୁ ବାଛିପାରିବେ |"
+    "or": "ବର୍ତ୍ତମାନ କ payment ଣସି ଦେୟ ଆବଶ୍ୟକ ନାହିଁ | ଆପଣଙ୍କର ପରୀକ୍ଷା ପରେ, ଆପଣ ଚାହିଁଲେ ଏକ ଦେୟଯୁକ୍ତ ଯୋଜନା ({price} / ବ୍ୟକ୍ତି) ସହିତ ଜାରି ରଖିବାକୁ ବାଛିପାରିବେ |",
+    "ur": "اب ادائیگی کی ضرورت نہیں ہے۔ اپنے ٹرائل کے بعد، اگر آپ چاہیں تو آپ بامعاوضہ پلان ({price}/person) کے ساتھ جاری رکھنے کا انتخاب کر سکتے ہیں۔",
+    "zh_Hant": "現在不需要付款。試用後，如果您願意，可以選擇繼續付費方案（{price}/人）。"
   },
   "walkiePlan_trialStartFreeTrial": {
     "en": "Start {duration} Free Trial",
@@ -4655,7 +5095,9 @@
     "pt": "Iniciar Teste Grátis de {duration}",
     "ja": "{duration} 無料トライアルを開始",
     "zh": "开启 {duration} 免费试用",
-    "or": "{duration} ମାଗଣା ପରୀକ୍ଷା ଆରମ୍ଭ କରନ୍ତୁ |"
+    "or": "{duration} ମାଗଣା ପରୀକ୍ଷା ଆରମ୍ଭ କରନ୍ତୁ |",
+    "ur": "{duration} مفت ٹرائل شروع کریں۔",
+    "zh_Hant": "開始 {duration} 免費試用"
   },
   "walkiePlan_trialNoCardRequired": {
     "en": "Use anytime within 7 days  •  No credit card required",
@@ -4675,7 +5117,9 @@
     "pt": "Use em 7 dias  •  Sem cartão de crédito",
     "ja": "7日間いつでも利用可能  •  クレジットカード登録不要",
     "zh": "7 天内随时可用  •  无需绑定信用卡",
-    "or": "7 ଦିନ ମଧ୍ୟରେ ଯେକ time ଣସି ସମୟରେ ବ୍ୟବହାର କରନ୍ତୁ • କ credit ଣସି କ୍ରେଡିଟ୍ କାର୍ଡ ଆବଶ୍ୟକ ନାହିଁ |"
+    "or": "7 ଦିନ ମଧ୍ୟରେ ଯେକ time ଣସି ସମୟରେ ବ୍ୟବହାର କରନ୍ତୁ • କ credit ଣସି କ୍ରେଡିଟ୍ କାର୍ଡ ଆବଶ୍ୟକ ନାହିଁ |",
+    "ur": "7 دنوں کے اندر کسی بھی وقت استعمال کریں • کریڈٹ کارڈ کی ضرورت نہیں ہے۔",
+    "zh_Hant": "7 天內隨時使用 • 無信用卡"
   },
   "walkiePlan_successTitle": {
     "en": "Purchase Successful!",
@@ -4695,7 +5139,9 @@
     "pt": "Compra Realizada com Sucesso!",
     "ja": "ご購入が完了しました！",
     "zh": "购买成功！",
-    "or": "କ୍ରୟ ସଫଳ!"
+    "or": "କ୍ରୟ ସଫଳ!",
+    "ur": "خریداری کامیاب!",
+    "zh_Hant": "購買成功！"
   },
   "walkiePlan_successTeamActive": {
     "en": "Your Team Plan is now active",
@@ -4715,7 +5161,9 @@
     "pt": "Seu Plano de Equipe está ativo",
     "ja": "チームプランが有効化されました",
     "zh": "您的团队套餐已生效",
-    "or": "ତୁମର ଟିମ୍ ଯୋଜନା ବର୍ତ୍ତମାନ ସକ୍ରିୟ ଅଛି |"
+    "or": "ତୁମର ଟିମ୍ ଯୋଜନା ବର୍ତ୍ତମାନ ସକ୍ରିୟ ଅଛି |",
+    "ur": "آپ کا ٹیم پلان اب فعال ہے۔",
+    "zh_Hant": "您的團隊計劃現已生效"
   },
   "walkiePlan_successIndividualActive": {
     "en": "Your Individual Plan is now active",
@@ -4735,7 +5183,9 @@
     "pt": "Seu Plano Individual está ativo",
     "ja": "個人プランが有効化されました",
     "zh": "您的个人套餐已生效",
-    "or": "ତୁମର ବ୍ୟକ୍ତିଗତ ଯୋଜନା ବର୍ତ୍ତମାନ ସକ୍ରିୟ ଅଛି |"
+    "or": "ତୁମର ବ୍ୟକ୍ତିଗତ ଯୋଜନା ବର୍ତ୍ତମାନ ସକ୍ରିୟ ଅଛି |",
+    "ur": "آپ کا انفرادی منصوبہ اب فعال ہے۔",
+    "zh_Hant": "您的個人計畫現已生效"
   },
   "walkiePlan_successPaymentReceipt": {
     "en": "Payment Receipt",
@@ -4755,7 +5205,9 @@
     "pt": "Comprovante de Pagamento",
     "ja": "領収書",
     "zh": "付款收据",
-    "or": "ଦେୟ ରସିଦ"
+    "or": "ଦେୟ ରସିଦ",
+    "ur": "ادائیگی کی رسید",
+    "zh_Hant": "付款收據"
   },
   "walkiePlan_successRazorpayVerified": {
     "en": "Razorpay Verified",
@@ -4775,7 +5227,9 @@
     "pt": "Verificado pelo Razorpay",
     "ja": "Razorpay 確認済み",
     "zh": "Razorpay 官方认证",
-    "or": "ରଜରପାଇ ଯାଞ୍ଚ କରାଯାଇଛି |"
+    "or": "ରଜରପାଇ ଯାଞ୍ଚ କରାଯାଇଛି |",
+    "ur": "Razorpay تصدیق شدہ",
+    "zh_Hant": "已驗證"
   },
   "walkiePlan_successAmountPaid": {
     "en": "Amount Paid",
@@ -4795,7 +5249,9 @@
     "pt": "Valor Pago",
     "ja": "お支払い金額",
     "zh": "实付金额",
-    "or": "ଦେୟ ପରିମାଣ"
+    "or": "ଦେୟ ପରିମାଣ",
+    "ur": "ادا کی گئی رقم",
+    "zh_Hant": "支付金額"
   },
   "walkiePlan_successPaid": {
     "en": "PAID",
@@ -4816,7 +5272,9 @@
     "pt": "PAGO",
     "ja": "支払済",
     "zh": "已付款",
-    "or": "ପୈଠ କରାଗଲା"
+    "or": "ପୈଠ କରାଗଲା",
+    "ur": "ادا شدہ",
+    "zh_Hant": "有薪資的"
   },
   "walkiePlan_successPaymentId": {
     "en": "Payment ID",
@@ -4836,7 +5294,9 @@
     "pt": "ID do Pagamento",
     "ja": "支払いID",
     "zh": "支付ID",
-    "or": "ଦେୟ ID"
+    "or": "ଦେୟ ID",
+    "ur": "ادائیگی کی شناخت",
+    "zh_Hant": "付款ID"
   },
   "walkiePlan_successPaymentMode": {
     "en": "Payment Mode",
@@ -4856,7 +5316,9 @@
     "pt": "Forma de Pagamento",
     "ja": "お支払い方法",
     "zh": "支付方式",
-    "or": "ଦେୟ ମୋଡ୍"
+    "or": "ଦେୟ ମୋଡ୍",
+    "ur": "ادائیگی کا موڈ",
+    "zh_Hant": "付款方式"
   },
   "walkiePlan_successDateTime": {
     "en": "Date & Time",
@@ -4876,7 +5338,9 @@
     "pt": "Data e Hora",
     "ja": "日時",
     "zh": "交易时间",
-    "or": "ତାରିଖ ଏବଂ ସମୟ"
+    "or": "ତାରିଖ ଏବଂ ସମୟ",
+    "ur": "تاریخ اور وقت",
+    "zh_Hant": "日期和時間"
   },
   "walkiePlan_successStatus": {
     "en": "Status",
@@ -4896,7 +5360,9 @@
     "pt": "Status",
     "ja": "状態",
     "zh": "状态",
-    "or": "ସ୍ଥିତି"
+    "or": "ସ୍ଥିତି",
+    "ur": "حیثیت",
+    "zh_Hant": "地位"
   },
   "walkiePlan_successSuccessful": {
     "en": "Successful",
@@ -4916,7 +5382,9 @@
     "pt": "Sucesso",
     "ja": "成功",
     "zh": "成功",
-    "or": "ସଫଳ"
+    "or": "ସଫଳ",
+    "ur": "کامیاب",
+    "zh_Hant": "成功的"
   },
   "walkiePlan_successShareReceipt": {
     "en": "Share Receipt",
@@ -4936,7 +5404,9 @@
     "pt": "Compartilhar Comprovante",
     "ja": "領収書を共有",
     "zh": "分享收据",
-    "or": "ରସିଦ ଅଂଶୀଦାର କରନ୍ତୁ |"
+    "or": "ରସିଦ ଅଂଶୀଦାର କରନ୍ତୁ |",
+    "ur": "رسید بانٹیں۔",
+    "zh_Hant": "分享收據"
   },
   "walkiePlan_successValidTill": {
     "en": "Valid till {date}",
@@ -4961,7 +5431,9 @@
     "pt": "Válido até {date}",
     "ja": "{date} まで有効",
     "zh": "有效期至 {date}",
-    "or": "{date} ପର୍ଯ୍ୟନ୍ତ ବ id ଧ |"
+    "or": "{date} ପର୍ଯ୍ୟନ୍ତ ବ id ଧ |",
+    "ur": "{date} تک درست",
+    "zh_Hant": "有效期限至 {date}"
   },
   "walkiePlan_successWhatsNext": {
     "en": "What's Next?",
@@ -4981,7 +5453,9 @@
     "pt": "O que vem a seguir?",
     "ja": "次のステップ",
     "zh": "后续操作",
-    "or": "ପରବର୍ତ୍ତୀ କଣ?"
+    "or": "ପରବର୍ତ୍ତୀ କଣ?",
+    "ur": "آگے کیا ہے؟",
+    "zh_Hant": "接下來是什麼？"
   },
   "walkiePlan_successAssignWalkieAccess": {
     "en": "Assign Walkie Access",
@@ -5001,7 +5475,9 @@
     "pt": "Atribuir Acesso ao Walkie",
     "ja": "トランシーバー権限を割り当て",
     "zh": "分配对讲权限",
-    "or": "ୱାକି ଆକ୍ସେସ୍ ନ୍ୟସ୍ତ କରନ୍ତୁ |"
+    "or": "ୱାକି ଆକ୍ସେସ୍ ନ୍ୟସ୍ତ କରନ୍ତୁ |",
+    "ur": "واکی رسائی تفویض کریں۔",
+    "zh_Hant": "分配對講機存取權限"
   },
   "walkiePlan_successStartCommunicating": {
     "en": "Start Communicating",
@@ -5021,7 +5497,9 @@
     "pt": "Comece a se Comunicar",
     "ja": "通話を開始する",
     "zh": "立即开始对讲沟通",
-    "or": "ଯୋଗାଯୋଗ ଆରମ୍ଭ କରନ୍ତୁ |"
+    "or": "ଯୋଗାଯୋଗ ଆରମ୍ଭ କରନ୍ତୁ |",
+    "ur": "مواصلت شروع کریں۔",
+    "zh_Hant": "開始溝通"
   },
   "walkiePlan_successSelectMembersDesc": {
     "en": "Select team members who will use Walkie Talkie.",
@@ -5041,7 +5519,9 @@
     "pt": "Selecione os membros que usarão o Walkie Talkie.",
     "ja": "トランシーバーを使用するメンバーを選択してください。",
     "zh": "选择可以使用对讲机功能的团队成员。",
-    "or": "ଦଳର ସଦସ୍ୟ ଚୟନ କରନ୍ତୁ ଯେଉଁମାନେ ୱାକି ଟକି ବ୍ୟବହାର କରିବେ |"
+    "or": "ଦଳର ସଦସ୍ୟ ଚୟନ କରନ୍ତୁ ଯେଉଁମାନେ ୱାକି ଟକି ବ୍ୟବହାର କରିବେ |",
+    "ur": "ٹیم کے ارکان کو منتخب کریں جو واکی ٹاکی استعمال کریں گے۔",
+    "zh_Hant": "選擇將使用對講機的團隊成員。"
   },
   "walkiePlan_successIndividualActiveDesc": {
     "en": "Your individual plan is active. Head to home and start talking.",
@@ -5061,7 +5541,9 @@
     "pt": "Seu plano está ativo. Vá para o início e comece a falar.",
     "ja": "個人プランが有効です。ホーム画面からすぐに通話を開始できます。",
     "zh": "您的个人套餐已生效。返回主页即可随时发起对讲。",
-    "or": "ଆପଣଙ୍କର ବ୍ୟକ୍ତିଗତ ଯୋଜନା ସକ୍ରିୟ ଅଟେ | ଘରକୁ ଯାଅ ଏବଂ କଥାବାର୍ତ୍ତା ଆରମ୍ଭ କର |"
+    "or": "ଆପଣଙ୍କର ବ୍ୟକ୍ତିଗତ ଯୋଜନା ସକ୍ରିୟ ଅଟେ | ଘରକୁ ଯାଅ ଏବଂ କଥାବାର୍ତ୍ତା ଆରମ୍ଭ କର |",
+    "ur": "آپ کا انفرادی منصوبہ فعال ہے۔ گھر کی طرف چلیں اور بات شروع کریں۔",
+    "zh_Hant": "您的個人計劃已啟動。回家並開始交談。"
   },
   "walkiePlan_successAccessActivated": {
     "en": "Access Activated",
@@ -5081,7 +5563,9 @@
     "pt": "Acesso Ativado",
     "ja": "アクセス権が有効化されました",
     "zh": "权限已开通",
-    "or": "ପ୍ରବେଶ ସକ୍ରିୟ"
+    "or": "ପ୍ରବେଶ ସକ୍ରିୟ",
+    "ur": "رسائی چالو کر دی گئی۔",
+    "zh_Hant": "訪問已激活"
   },
   "walkiePlan_successAccessActivatedDesc": {
     "en": "Your personal Walkie-Talkie access is active now.",
@@ -5101,7 +5585,9 @@
     "pt": "Seu acesso pessoal ao Walkie-Talkie está ativo.",
     "ja": "個人のトランシーバーアクセスが有効になりました。",
     "zh": "您的个人对讲机权限已正式开通。",
-    "or": "ତୁମର ବ୍ୟକ୍ତିଗତ ୱାକି-ଟକି ଆକ୍ସେସ୍ ବର୍ତ୍ତମାନ ସକ୍ରିୟ ଅଛି |"
+    "or": "ତୁମର ବ୍ୟକ୍ତିଗତ ୱାକି-ଟକି ଆକ୍ସେସ୍ ବର୍ତ୍ତମାନ ସକ୍ରିୟ ଅଛି |",
+    "ur": "آپ کی ذاتی واکی ٹاکی رسائی اب فعال ہے۔",
+    "zh_Hant": "您的個人對講機存取現已啟用。"
   },
   "walkiePlan_successSelectChannel": {
     "en": "Select Channel",
@@ -5121,7 +5607,9 @@
     "pt": "Selecionar Canal",
     "ja": "チャンネルを選択",
     "zh": "选择频道",
-    "or": "ଚ୍ୟାନେଲ୍ ଚୟନ କରନ୍ତୁ |"
+    "or": "ଚ୍ୟାନେଲ୍ ଚୟନ କରନ୍ତୁ |",
+    "ur": "چینل منتخب کریں۔",
+    "zh_Hant": "選擇頻道"
   },
   "walkiePlan_successSelectChannelDesc": {
     "en": "Join any group or channel to connect with members.",
@@ -5141,7 +5629,9 @@
     "pt": "Entre em qualquer canal para se conectar.",
     "ja": "グループやチャンネルに参加してメンバーと会話。",
     "zh": "加入任意群组或对讲频道即可联系成员。",
-    "or": "ସଦସ୍ୟମାନଙ୍କ ସହିତ ସଂଯୋଗ କରିବାକୁ ଯେକ any ଣସି ଗୋଷ୍ଠୀ କିମ୍ବା ଚ୍ୟାନେଲରେ ଯୋଗ ଦିଅନ୍ତୁ |"
+    "or": "ସଦସ୍ୟମାନଙ୍କ ସହିତ ସଂଯୋଗ କରିବାକୁ ଯେକ any ଣସି ଗୋଷ୍ଠୀ କିମ୍ବା ଚ୍ୟାନେଲରେ ଯୋଗ ଦିଅନ୍ତୁ |",
+    "ur": "ممبران سے جڑنے کے لیے کسی بھی گروپ یا چینل میں شامل ہوں۔",
+    "zh_Hant": "加入任何群組或頻道以與會員聯繫。"
   },
   "walkiePlan_successPushToTalkDesc": {
     "en": "Push to talk and connect instantly with your team.",
@@ -5161,7 +5651,9 @@
     "pt": "Aperte para falar e conecte-se com sua equipe.",
     "ja": "ボタンを押して話すだけで、即座に仲間へ声が届きます。",
     "zh": "按住说话，即刻与团队沟通。",
-    "or": "ତୁମ ଦଳ ସହିତ ତୁରନ୍ତ କଥାବାର୍ତ୍ତା ଏବଂ ସଂଯୋଗ କରିବାକୁ ଠେଲିଦିଅ |"
+    "or": "ତୁମ ଦଳ ସହିତ ତୁରନ୍ତ କଥାବାର୍ତ୍ତା ଏବଂ ସଂଯୋଗ କରିବାକୁ ଠେଲିଦିଅ |",
+    "ur": "بات کرنے کے لیے دبائیں اور اپنی ٹیم کے ساتھ فوری طور پر جڑیں۔",
+    "zh_Hant": "一鍵通話並立即與您的團隊聯繫。"
   },
   "walkiePlan_successChooseMembersDesc": {
     "en": "Choose which members can use Walkie Talkie.",
@@ -5181,7 +5673,9 @@
     "pt": "Escolha quais membros podem usar o Walkie Talkie.",
     "ja": "トランシーバーを利用できるメンバーを指定します。",
     "zh": "选择哪些成员拥有对讲机使用权。",
-    "or": "କେଉଁ ସଦସ୍ୟ ୱାକି ଟକି ବ୍ୟବହାର କରିପାରିବେ ତାହା ବାଛନ୍ତୁ |"
+    "or": "କେଉଁ ସଦସ୍ୟ ୱାକି ଟକି ବ୍ୟବହାର କରିପାରିବେ ତାହା ବାଛନ୍ତୁ |",
+    "ur": "منتخب کریں کہ کون سے اراکین واکی ٹاکی استعمال کر سکتے ہیں۔",
+    "zh_Hant": "選擇哪些會員可以使用對講機。"
   },
   "walkiePlan_successSetUpTeam": {
     "en": "Set Up Team",
@@ -5201,7 +5695,9 @@
     "pt": "Configurar Equipe",
     "ja": "チームを設定",
     "zh": "设置团队",
-    "or": "ଦଳ ସେଟ୍ ଅପ୍ କରନ୍ତୁ |"
+    "or": "ଦଳ ସେଟ୍ ଅପ୍ କରନ୍ତୁ |",
+    "ur": "ٹیم ترتیب دیں۔",
+    "zh_Hant": "組建團隊"
   },
   "walkiePlan_successSetUpTeamDesc": {
     "en": "Invite members, manage roles and permissions.",
@@ -5221,7 +5717,9 @@
     "pt": "Convide membros, gerencie funções e permissões.",
     "ja": "メンバーを招待し、役割と権限を管理します。",
     "zh": "邀请成员，管理角色与访问权限。",
-    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଆମନ୍ତ୍ରଣ କରନ୍ତୁ, ଭୂମିକା ଏବଂ ଅନୁମତି ପରିଚାଳନା କରନ୍ତୁ |"
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଆମନ୍ତ୍ରଣ କରନ୍ତୁ, ଭୂମିକା ଏବଂ ଅନୁମତି ପରିଚାଳନା କରନ୍ତୁ |",
+    "ur": "اراکین کو مدعو کریں، کرداروں اور اجازتوں کا نظم کریں۔",
+    "zh_Hant": "邀請成員、管理角色和權限。"
   },
   "walkiePlan_successTeamReady": {
     "en": "Your team is ready to go!",
@@ -5241,7 +5739,9 @@
     "pt": "Sua equipe está pronta!",
     "ja": "チームの準備が整いました！",
     "zh": "您的团队已准备就绪！",
-    "or": "ଆପଣଙ୍କ ଦଳ ଯିବାକୁ ପ୍ରସ୍ତୁତ!"
+    "or": "ଆପଣଙ୍କ ଦଳ ଯିବାକୁ ପ୍ରସ୍ତୁତ!",
+    "ur": "آپ کی ٹیم جانے کے لیے تیار ہے!",
+    "zh_Hant": "您的團隊已準備好出發！"
   },
   "walkiePlan_successManageAccessNote": {
     "en": "You can manage or change Walkie access anytime from Team Settings.",
@@ -5261,7 +5761,9 @@
     "pt": "Você pode gerenciar ou alterar o acesso nas Configurações da Equipe.",
     "ja": "トランシーバー権限はチーム設定からいつでも変更できます。",
     "zh": "您可以随时在团队设置中管理或更改对讲机访问权限。",
-    "or": "ଟିମ୍ ସେଟିଂସମୂହରୁ ଆପଣ ଯେକ time ଣସି ସମୟରେ ୱାକି ଆକ୍ସେସ୍ ପରିଚାଳନା କିମ୍ବା ପରିବର୍ତ୍ତନ କରିପାରିବେ |"
+    "or": "ଟିମ୍ ସେଟିଂସମୂହରୁ ଆପଣ ଯେକ time ଣସି ସମୟରେ ୱାକି ଆକ୍ସେସ୍ ପରିଚାଳନା କିମ୍ବା ପରିବର୍ତ୍ତନ କରିପାରିବେ |",
+    "ur": "آپ ٹیم کی ترتیبات سے کسی بھی وقت واکی رسائی کا نظم یا تبدیلی کر سکتے ہیں۔",
+    "zh_Hant": "您可以隨時從「團隊設定」管理或變更 Walkie 存取權限。"
   },
   "walkiePlan_successIndividualLinkedNote": {
     "en": "Your individual subscription is active and linked directly to your account.",
@@ -5281,7 +5783,9 @@
     "pt": "Sua assinatura individual está ativa e vinculada à sua conta.",
     "ja": "個人サブスクリプションが有効化され、アカウントにリンクされました。",
     "zh": "您的个人订阅已生效并直接绑定至当前账号。",
-    "or": "ତୁମର ବ୍ୟକ୍ତିଗତ ସଦସ୍ୟତା ସକ୍ରିୟ ଏବଂ ସିଧାସଳଖ ତୁମର ଖାତା ସହିତ ସଂଯୁକ୍ତ |"
+    "or": "ତୁମର ବ୍ୟକ୍ତିଗତ ସଦସ୍ୟତା ସକ୍ରିୟ ଏବଂ ସିଧାସଳଖ ତୁମର ଖାତା ସହିତ ସଂଯୁକ୍ତ |",
+    "ur": "آپ کی انفرادی رکنیت فعال ہے اور براہ راست آپ کے اکاؤنٹ سے منسلک ہے۔",
+    "zh_Hant": "您的個人訂閱已啟用並直接連結到您的帳戶。"
   },
   "walkiePlan_successVisitHome": {
     "en": "Visit Home Screen",
@@ -5301,7 +5805,9 @@
     "pt": "Ir para a Tela Inicial",
     "ja": "ホーム画面へ移動",
     "zh": "前往主页面",
-    "or": "ହୋମ ସ୍କ୍ରିନ ପରିଦର୍ଶନ କରନ୍ତୁ |"
+    "or": "ହୋମ ସ୍କ୍ରିନ ପରିଦର୍ଶନ କରନ୍ତୁ |",
+    "ur": "ہوم اسکرین پر جائیں۔",
+    "zh_Hant": "存取主螢幕"
   },
   "walkiePlan_successAssignMembers": {
     "en": "Assign Members",
@@ -5321,7 +5827,9 @@
     "pt": "Atribuir Membros",
     "ja": "メンバーを割り当て",
     "zh": "分配成员",
-    "or": "ସଦସ୍ୟମାନଙ୍କୁ ନ୍ୟସ୍ତ କରନ୍ତୁ |"
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ନ୍ୟସ୍ତ କରନ୍ତୁ |",
+    "ur": "اراکین کو تفویض کریں۔",
+    "zh_Hant": "分配成員"
   },
   "walkiePlan_successMaybeLater": {
     "en": "Maybe Later",
@@ -5341,7 +5849,9 @@
     "pt": "Talvez Mais Tarde",
     "ja": "あとで",
     "zh": "稍后再说",
-    "or": "ବୋଧହୁଏ ପରେ |"
+    "or": "ବୋଧହୁଏ ପରେ |",
+    "ur": "شاید بعد میں",
+    "zh_Hant": "也許稍後"
   },
   "walkiePlan_successNotNow": {
     "en": "Not Now?",
@@ -5361,7 +5871,9 @@
     "pt": "Agora não?",
     "ja": "今はスキップしますか？",
     "zh": "暂不分配？",
-    "or": "ବର୍ତ୍ତମାନ ନୁହେଁ?"
+    "or": "ବର୍ତ୍ତମାନ ନୁହେଁ?",
+    "ur": "ابھی نہیں؟",
+    "zh_Hant": "現在不要？"
   },
   "walkiePlan_successAssignLaterNote": {
     "en": "You can assign Walkie access later from Team Settings anytime.",
@@ -5381,7 +5893,9 @@
     "pt": "Você pode atribuir o acesso depois nas Configurações da Equipe.",
     "ja": "チーム設定から後でいつでも権限を割り当てることができます。",
     "zh": "您可以日后随时在“团队设置”中分配对讲机权限。",
-    "or": "ଆପଣ ଯେକ time ଣସି ସମୟରେ ଟିମ୍ ସେଟିଂସମୂହରୁ ୱାକି ଆକ୍ସେସ୍ ନ୍ୟସ୍ତ କରିପାରିବେ |"
+    "or": "ଆପଣ ଯେକ time ଣସି ସମୟରେ ଟିମ୍ ସେଟିଂସମୂହରୁ ୱାକି ଆକ୍ସେସ୍ ନ୍ୟସ୍ତ କରିପାରିବେ |",
+    "ur": "آپ بعد میں ٹیم کی ترتیبات سے کسی بھی وقت واکی تک رسائی تفویض کر سکتے ہیں۔",
+    "zh_Hant": "您可以稍後隨時從「團隊設定」指派 Walkie 存取權限。"
   },
   "walkiePlan_successNoAccessUntilAssigned": {
     "en": "Your plan is active. Team members will not have Walkie access until you assign them.",
@@ -5401,7 +5915,9 @@
     "pt": "Seu plano está ativo. Os membros não terão acesso até que você os atribua.",
     "ja": "プランは有効です。メンバーへ割り当てを行うまで、メンバー側では利用できません。",
     "zh": "套餐已生效。在您完成分配前，团队成员暂无法使用对讲机。",
-    "or": "ତୁମର ଯୋଜନା ସକ୍ରିୟ ଅଛି | ତୁମେ ସେମାନଙ୍କୁ ନ୍ୟସ୍ତ ନକରିବା ପର୍ଯ୍ୟନ୍ତ ଦଳର ସଦସ୍ୟମାନେ ୱାକି ଆକ୍ସେସ୍ ପାଇବେ ନାହିଁ |"
+    "or": "ତୁମର ଯୋଜନା ସକ୍ରିୟ ଅଛି | ତୁମେ ସେମାନଙ୍କୁ ନ୍ୟସ୍ତ ନକରିବା ପର୍ଯ୍ୟନ୍ତ ଦଳର ସଦସ୍ୟମାନେ ୱାକି ଆକ୍ସେସ୍ ପାଇବେ ନାହିଁ |",
+    "ur": "آپ کا منصوبہ فعال ہے۔ ٹیم کے اراکین کو واکی تک رسائی حاصل نہیں ہوگی جب تک کہ آپ انہیں تفویض نہیں کرتے۔",
+    "zh_Hant": "您的計劃已啟動。在您指派團隊成員之前，他們將沒有 Walkie 存取權限。"
   },
   "walkiePlan_successContinueHome": {
     "en": "Continue to Home",
@@ -5421,7 +5937,9 @@
     "pt": "Continuar para o Início",
     "ja": "ホームへ進む",
     "zh": "返回主页",
-    "or": "ଘରକୁ ଜାରି ରଖନ୍ତୁ |"
+    "or": "ଘରକୁ ଜାରି ରଖନ୍ତୁ |",
+    "ur": "ہوم پر جاری رکھیں",
+    "zh_Hant": "繼續首頁"
   },
   "walkiePlan_successDefaultPaymentMethod": {
     "en": "Razorpay (UPI / Card)",
@@ -5441,7 +5959,9 @@
     "pt": "Razorpay (UPI / Cartão)",
     "ja": "Razorpay (UPI / カード)",
     "zh": "Razorpay (UPI / 银行卡)",
-    "or": "ରଜରପାଇ (UPI / କାର୍ଡ)"
+    "or": "ରଜରପାଇ (UPI / କାର୍ଡ)",
+    "ur": "Razorpay (UPI / کارڈ)",
+    "zh_Hant": "Razorpay（UPI/卡）"
   },
   "walkiePlan_successPaymentIdCopied": {
     "en": "Payment ID copied to clipboard!",
@@ -5461,7 +5981,9 @@
     "pt": "ID do pagamento copiado para a área de transferência!",
     "ja": "支払いIDをコピーしました！",
     "zh": "交易ID已复制！",
-    "or": "ପେମେଣ୍ଟ ID କ୍ଲିପବୋର୍ଡରେ କପି ହୋଇଛି!"
+    "or": "ପେମେଣ୍ଟ ID କ୍ଲିପବୋର୍ଡରେ କପି ହୋଇଛି!",
+    "ur": "ادائیگی کی شناخت کلپ بورڈ پر کاپی ہو گئی!",
+    "zh_Hant": "付款 ID 已複製到剪貼簿！"
   },
   "walkiePlan_successReceiptCopied": {
     "en": "Receipt details copied to clipboard!",
@@ -5481,7 +6003,9 @@
     "pt": "Detalhes do recibo copiados!",
     "ja": "領収書内容をコピーしました！",
     "zh": "收据信息已复制！",
-    "or": "କ୍ଲିପବୋର୍ଡରେ କପି ହୋଇଥିବା ରସିଦ ବିବରଣୀ!"
+    "or": "କ୍ଲିପବୋର୍ଡରେ କପି ହୋଇଥିବା ରସିଦ ବିବରଣୀ!",
+    "ur": "رسید کی تفصیلات کلپ بورڈ پر کاپی کر دی گئیں!",
+    "zh_Hant": "收據詳細資料已複製到剪貼簿！"
   },
   "walkiePlan_successReceiptHeader": {
     "en": "FG Tracker Payment Receipt",
@@ -5501,7 +6025,9 @@
     "pt": "Comprovante de Pagamento FG Tracker",
     "ja": "FG Tracker お支払い領収書",
     "zh": "FG Tracker 付款收据",
-    "or": "FG ଟ୍ରାକର ଦେୟ ରସିଦ |"
+    "or": "FG ଟ୍ରାକର ଦେୟ ରସିଦ |",
+    "ur": "FG ٹریکر ادائیگی کی رسید",
+    "zh_Hant": "FG Tracker 付款收據"
   },
   "walkiePlan_successReceiptPlan": {
     "en": "Plan: {plan}",
@@ -5526,7 +6052,9 @@
     "pt": "Plano: {plan}",
     "ja": "プラン: {plan}",
     "zh": "套餐：{plan}",
-    "or": "ଯୋଜନା: {plan}"
+    "or": "ଯୋଜନା: {plan}",
+    "ur": "منصوبہ: {plan}",
+    "zh_Hant": "計劃：{plan}"
   },
   "walkiePlan_successReceiptAmount": {
     "en": "Amount: {amount}",
@@ -5551,7 +6079,9 @@
     "pt": "Valor: {amount}",
     "ja": "金額: {amount}",
     "zh": "金额：{amount}",
-    "or": "ପରିମାଣ: {amount}"
+    "or": "ପରିମାଣ: {amount}",
+    "ur": "رقم: {amount}",
+    "zh_Hant": "金額：{amount}"
   },
   "walkiePlan_successReceiptPaymentId": {
     "en": "Payment ID: {id}",
@@ -5576,7 +6106,9 @@
     "pt": "ID do Pagamento: {id}",
     "ja": "支払いID: {id}",
     "zh": "交易ID：{id}",
-    "or": "ଦେୟ ID: {id}"
+    "or": "ଦେୟ ID: {id}",
+    "ur": "ادائیگی کی شناخت: {id}",
+    "zh_Hant": "付款 ID：{id}"
   },
   "walkiePlan_successReceiptOrderId": {
     "en": "Order ID: {id}",
@@ -5601,7 +6133,9 @@
     "pt": "ID do Pedido: {id}",
     "ja": "注文ID: {id}",
     "zh": "订单编号：{id}",
-    "or": "ଅର୍ଡର ID: {id} |"
+    "or": "ଅର୍ଡର ID: {id} |",
+    "ur": "آرڈر ID: {id}",
+    "zh_Hant": "訂單 ID：{id}"
   },
   "walkiePlan_successReceiptDate": {
     "en": "Date: {date}",
@@ -5626,7 +6160,9 @@
     "pt": "Data: {date}",
     "ja": "日付: {date}",
     "zh": "日期：{date}",
-    "or": "ତାରିଖ: {date} |"
+    "or": "ତାରିଖ: {date} |",
+    "ur": "تاریخ: {date}",
+    "zh_Hant": "日期：{date}"
   },
   "walkiePlan_successReceiptPaymentMode": {
     "en": "Payment Mode: {mode}",
@@ -5651,7 +6187,9 @@
     "pt": "Forma de Pagamento: {mode}",
     "ja": "決済方法: {mode}",
     "zh": "支付方式：{mode}",
-    "or": "ଦେୟ ମୋଡ୍: {mode} |"
+    "or": "ଦେୟ ମୋଡ୍: {mode} |",
+    "ur": "ادائیگی کا موڈ: {mode}",
+    "zh_Hant": "付款方式：{mode}"
   },
   "walkiePlan_successReceiptStatusCompleted": {
     "en": "Status: Completed",
@@ -5671,7 +6209,9 @@
     "pt": "Status: Concluído",
     "ja": "ステータス: 完了",
     "zh": "状态：已完成",
-    "or": "ସ୍ଥିତି: ସମାପ୍ତ"
+    "or": "ସ୍ଥିତି: ସମାପ୍ତ",
+    "ur": "حیثیت: مکمل",
+    "zh_Hant": "狀態：已完成"
   },
   "walkiePlan_cardActive": {
     "en": "Active",
@@ -5692,7 +6232,9 @@
     "pt": "Ativo",
     "ja": "有効",
     "zh": "已激活",
-    "or": "ସକ୍ରିୟ |"
+    "or": "ସକ୍ରିୟ |",
+    "ur": "فعال",
+    "zh_Hant": "積極的"
   },
   "walkiePlan_cardSubscribedByYou": {
     "en": "Subscribed by You",
@@ -5712,7 +6254,9 @@
     "pt": "Assinado por Você",
     "ja": "ご自身で加入",
     "zh": "本人订阅",
-    "or": "ତୁମ ଦ୍ୱାରା ଗ୍ରହୀତା |"
+    "or": "ତୁମ ଦ୍ୱାରା ଗ୍ରହୀତା |",
+    "ur": "آپ کے ذریعہ سبسکرائب کیا گیا۔",
+    "zh_Hant": "您已訂閱"
   },
   "walkiePlan_cardAssignedToYou": {
     "en": "Assigned to You",
@@ -5732,7 +6276,9 @@
     "pt": "Atribuído a Você",
     "ja": "あなたに割り当て済み",
     "zh": "分配给您",
-    "or": "ତୁମକୁ ନ୍ୟସ୍ତ"
+    "or": "ତୁମକୁ ନ୍ୟସ୍ତ",
+    "ur": "آپ کو تفویض کیا گیا۔",
+    "zh_Hant": "分配給您"
   },
   "walkiePlan_cardValidUntil": {
     "en": "Valid Until",
@@ -5752,7 +6298,9 @@
     "pt": "Válido Até",
     "ja": "有効期限",
     "zh": "有效期至",
-    "or": "ପର୍ଯ୍ୟନ୍ତ ବ id ଧ"
+    "or": "ପର୍ଯ୍ୟନ୍ତ ବ id ଧ",
+    "ur": "تک درست ہے۔",
+    "zh_Hant": "有效期限至"
   },
   "walkiePlan_cardSeatsMembers": {
     "en": "Seats / Members",
@@ -5772,7 +6320,9 @@
     "pt": "Vagas / Membros",
     "ja": "座席数 / メンバー",
     "zh": "席位 / 成员",
-    "or": "ଆସନ / ସଦସ୍ୟମାନେ |"
+    "or": "ଆସନ / ସଦସ୍ୟମାନେ |",
+    "ur": "نشستیں / ممبران",
+    "zh_Hant": "席位/會員"
   },
   "walkiePlan_cardOneSeatSelf": {
     "en": "1 Seat (Self)",
@@ -5792,7 +6342,9 @@
     "pt": "1 Vaga (Próprio)",
     "ja": "1席 (ご自身)",
     "zh": "1 席位 (本人)",
-    "or": "1 ଆସନ (ଆତ୍ମ)"
+    "or": "1 ଆସନ (ଆତ୍ମ)",
+    "ur": "1 نشست (خود)",
+    "zh_Hant": "1個座位（自備）"
   },
   "walkiePlan_cardPersonal": {
     "en": "Personal",
@@ -5812,7 +6364,9 @@
     "pt": "Pessoal",
     "ja": "個人用",
     "zh": "个人版",
-    "or": "ବ୍ୟକ୍ତିଗତ"
+    "or": "ବ୍ୟକ୍ତିଗତ",
+    "ur": "ذاتی",
+    "zh_Hant": "個人的"
   },
   "walkiePlan_cardActiveSince": {
     "en": "Active since {date}",
@@ -5837,7 +6391,9 @@
     "pt": "Ativo desde {date}",
     "ja": "{date} より有効",
     "zh": "自 {date} 起生效",
-    "or": "{date} ଠାରୁ ସକ୍ରିୟ |"
+    "or": "{date} ଠାରୁ ସକ୍ରିୟ |",
+    "ur": "{date} سے فعال",
+    "zh_Hant": "自 {date} 起活躍"
   },
   "walkiePlan_cardViewPlan": {
     "en": "View Plan",
@@ -5857,7 +6413,9 @@
     "pt": "Ver Plano",
     "ja": "プラン詳細",
     "zh": "查看套餐",
-    "or": "ଯୋଜନା ଦେଖନ୍ତୁ |"
+    "or": "ଯୋଜନା ଦେଖନ୍ତୁ |",
+    "ur": "منصوبہ دیکھیں",
+    "zh_Hant": "查看計劃"
   },
   "walkiePlan_cardNoActiveIndividual": {
     "en": "No active Individual subscription",
@@ -5877,7 +6435,9 @@
     "pt": "Nenhuma assinatura individual ativa",
     "ja": "有効な個人サブスクリプションはありません",
     "zh": "暂无有效个人订阅",
-    "or": "କ active ଣସି ସକ୍ରିୟ ବ୍ୟକ୍ତିଗତ ସଦସ୍ୟତା ନାହିଁ |"
+    "or": "କ active ଣସି ସକ୍ରିୟ ବ୍ୟକ୍ତିଗତ ସଦସ୍ୟତା ନାହିଁ |",
+    "ur": "کوئی فعال انفرادی رکنیت نہیں ہے۔",
+    "zh_Hant": "沒有有效的個人訂閱"
   },
   "walkiePlan_cardView": {
     "en": "View",
@@ -5897,7 +6457,9 @@
     "pt": "Ver",
     "ja": "表示",
     "zh": "查看",
-    "or": "ଦର୍ଶନ କରନ୍ତୁ |"
+    "or": "ଦର୍ଶନ କରନ୍ତୁ |",
+    "ur": "دیکھیں",
+    "zh_Hant": "看法"
   },
   "walkiePlan_cardPurchasedByYou": {
     "en": "Purchased by You",
@@ -5917,7 +6479,9 @@
     "pt": "Comprado por Você",
     "ja": "ご自身で購入",
     "zh": "本人购买",
-    "or": "ତୁମ ଦ୍ୱାରା କିଣାଯାଇଛି"
+    "or": "ତୁମ ଦ୍ୱାରା କିଣାଯାଇଛି",
+    "ur": "آپ کے ذریعہ خریدا گیا۔",
+    "zh_Hant": "由您購買"
   },
   "walkiePlan_cardAssignedBy": {
     "en": "Assigned by {name}",
@@ -5942,7 +6506,9 @@
     "pt": "Atribuído por {name}",
     "ja": "{name} から割り当て済み",
     "zh": "由 {name} 分配",
-    "or": "{name} ଦ୍ୱାରା ନ୍ୟସ୍ତ |"
+    "or": "{name} ଦ୍ୱାରା ନ୍ୟସ୍ତ |",
+    "ur": "{name} کے ذریعے تفویض کردہ",
+    "zh_Hant": "由 {name} 分配"
   },
   "walkiePlan_cardTeamAdministrator": {
     "en": "Team Administrator",
@@ -5962,7 +6528,9 @@
     "pt": "Administrador da Equipe",
     "ja": "チーム管理者",
     "zh": "团队管理员",
-    "or": "ଦଳ ପ୍ରଶାସକ |"
+    "or": "ଦଳ ପ୍ରଶାସକ |",
+    "ur": "ٹیم ایڈمنسٹریٹر",
+    "zh_Hant": "團隊管理員"
   },
   "walkiePlan_cardPurchased": {
     "en": "Purchased",
@@ -5983,7 +6551,9 @@
     "pt": "Comprado",
     "ja": "購入済み",
     "zh": "已购",
-    "or": "କିଣାଯାଇଛି"
+    "or": "କିଣାଯାଇଛି",
+    "ur": "خریدا گیا۔",
+    "zh_Hant": "已購買"
   },
   "walkiePlan_cardAssigned": {
     "en": "Assigned",
@@ -6004,7 +6574,9 @@
     "pt": "Atribuído",
     "ja": "割り当て済み",
     "zh": "已分配",
-    "or": "ନ୍ୟସ୍ତ |"
+    "or": "ନ୍ୟସ୍ତ |",
+    "ur": "تفویض کردہ",
+    "zh_Hant": "已分配"
   },
   "walkiePlan_cardAvailable": {
     "en": "Available",
@@ -6025,7 +6597,9 @@
     "pt": "Disponível",
     "ja": "利用可能",
     "zh": "剩余可用",
-    "or": "ଉପଲବ୍ଧ |"
+    "or": "ଉପଲବ୍ଧ |",
+    "ur": "دستیاب ہے۔",
+    "zh_Hant": "可用的"
   },
   "walkiePlan_cardPurchasedOn": {
     "en": "Purchased On",
@@ -6045,7 +6619,9 @@
     "pt": "Comprado em",
     "ja": "購入日",
     "zh": "购买日期",
-    "or": "କ୍ରୟ ଅନ୍"
+    "or": "କ୍ରୟ ଅନ୍",
+    "ur": "پر خریدی گئی۔",
+    "zh_Hant": "購買於"
   },
   "walkiePlan_cardManageMembers": {
     "en": "Manage Members",
@@ -6065,7 +6641,9 @@
     "pt": "Gerenciar Membros",
     "ja": "メンバー管理",
     "zh": "管理成员",
-    "or": "ସଦସ୍ୟମାନଙ୍କୁ ପରିଚାଳନା କରନ୍ତୁ |"
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ପରିଚାଳନା କରନ୍ତୁ |",
+    "ur": "ممبران کا نظم کریں۔",
+    "zh_Hant": "管理會員"
   },
   "walkiePlan_cardNoActiveTeam": {
     "en": "No active Team plan or assigned seat",
@@ -6085,7 +6663,9 @@
     "pt": "Nenhum plano de equipe ativo ou vaga atribuída",
     "ja": "有効なチームプランまたは割り当て座席はありません",
     "zh": "暂无有效团队套餐或分配席位",
-    "or": "କ active ଣସି ସକ୍ରିୟ ଟିମ୍ ଯୋଜନା କିମ୍ବା ନିଯୁକ୍ତ ସିଟ୍ ନାହିଁ |"
+    "or": "କ active ଣସି ସକ୍ରିୟ ଟିମ୍ ଯୋଜନା କିମ୍ବା ନିଯୁକ୍ତ ସିଟ୍ ନାହିଁ |",
+    "ur": "کوئی فعال ٹیم پلان یا تفویض کردہ سیٹ نہیں ہے۔",
+    "zh_Hant": "沒有有效的團隊計劃或分配的席位"
   },
   "walkiePlan_seatTeamAccess": {
     "en": "Team Access",
@@ -6105,7 +6685,9 @@
     "pt": "Acesso de Equipe",
     "ja": "チームアクセス",
     "zh": "团队权限",
-    "or": "ଦଳ ପ୍ରବେଶ"
+    "or": "ଦଳ ପ୍ରବେଶ",
+    "ur": "ٹیم رسائی",
+    "zh_Hant": "團隊訪問"
   },
   "walkiePlan_seatAssignment": {
     "en": "Seat Assignment",
@@ -6125,7 +6707,9 @@
     "pt": "Atribuição de Vagas",
     "ja": "座席割り当て",
     "zh": "席位分配",
-    "or": "ଆସନ ଆସାଇନମେଣ୍ଟ |"
+    "or": "ଆସନ ଆସାଇନମେଣ୍ଟ |",
+    "ur": "سیٹ اسائنمنٹ",
+    "zh_Hant": "座位分配"
   },
   "walkiePlan_seatAssignedSeat": {
     "en": "Assigned Seat",
@@ -6145,7 +6729,9 @@
     "pt": "Vaga Atribuída",
     "ja": "割り当て済み座席",
     "zh": "已分配席位",
-    "or": "ନ୍ୟସ୍ତ ହୋଇଥିବା ଆସନ |"
+    "or": "ନ୍ୟସ୍ତ ହୋଇଥିବା ଆସନ |",
+    "ur": "تفویض کردہ نشست",
+    "zh_Hant": "指定座位"
   },
   "walkiePlan_seatTeamMember": {
     "en": "Team Member",
@@ -6165,7 +6751,9 @@
     "pt": "Membro da Equipe",
     "ja": "チームメンバー",
     "zh": "团队成员",
-    "or": "ଦଳ ସଦସ୍ୟ |"
+    "or": "ଦଳ ସଦସ୍ୟ |",
+    "ur": "ٹیم ممبر",
+    "zh_Hant": "隊員"
   },
   "walkiePlan_availableTitle": {
     "en": "Available Plans",
@@ -6185,7 +6773,9 @@
     "pt": "Planos Disponíveis",
     "ja": "利用可能なプラン",
     "zh": "可选套餐",
-    "or": "ଉପଲବ୍ଧ ଯୋଜନାଗୁଡିକ |"
+    "or": "ଉପଲବ୍ଧ ଯୋଜନାଗୁଡିକ |",
+    "ur": "دستیاب منصوبے",
+    "zh_Hant": "可用計劃"
   },
   "walkiePlan_availableSubtitle": {
     "en": "Select a plan to start or upgrade your subscription",
@@ -6205,7 +6795,9 @@
     "pt": "Selecione um plano para iniciar ou atualizar sua assinatura",
     "ja": "プランを選択して利用を開始またはアップグレード",
     "zh": "选择心仪套餐以开通或升级您的订阅",
-    "or": "ଆପଣଙ୍କର ସଦସ୍ୟତା ଆରମ୍ଭ କିମ୍ବା ନବୀକରଣ କରିବାକୁ ଏକ ଯୋଜନା ଚୟନ କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ସଦସ୍ୟତା ଆରମ୍ଭ କିମ୍ବା ନବୀକରଣ କରିବାକୁ ଏକ ଯୋଜନା ଚୟନ କରନ୍ତୁ |",
+    "ur": "اپنی رکنیت شروع کرنے یا اپ گریڈ کرنے کے لیے ایک منصوبہ منتخب کریں۔",
+    "zh_Hant": "選擇一個計劃來啟動或升級您的訂閱"
   },
   "walkiePlan_availableIndividualPlans": {
     "en": "Individual Plans",
@@ -6225,7 +6817,9 @@
     "pt": "Planos Individuais",
     "ja": "個人向けプラン",
     "zh": "个人套餐",
-    "or": "ବ୍ୟକ୍ତିଗତ ଯୋଜନାଗୁଡିକ |"
+    "or": "ବ୍ୟକ୍ତିଗତ ଯୋଜନାଗୁଡିକ |",
+    "ur": "انفرادی منصوبے",
+    "zh_Hant": "個人計劃"
   },
   "walkiePlan_availableTeamPlans": {
     "en": "Team Plans",
@@ -6245,7 +6839,9 @@
     "pt": "Planos de Equipe",
     "ja": "チーム向けプラン",
     "zh": "团队套餐",
-    "or": "ଦଳ ଯୋଜନା"
+    "or": "ଦଳ ଯୋଜନା",
+    "ur": "ٹیم پلانز",
+    "zh_Hant": "團隊計劃"
   },
   "walkiePlan_availableTeamSeats": {
     "en": "{min}-{max} Seats  •  Group Collaboration",
@@ -6273,7 +6869,9 @@
     "pt": "{min}-{max} vagas  •  Colaboração em Grupo",
     "ja": "{min}〜{max}席  •  グループ連携",
     "zh": "{min}–{max} 席位  •  团队高效协作",
-    "or": "{min}-{max} ଆସନ • ଗୋଷ୍ଠୀ ସହଯୋଗ |"
+    "or": "{min}-{max} ଆସନ • ଗୋଷ୍ଠୀ ସହଯୋଗ |",
+    "ur": "{min}-{max} نشستیں • گروپ تعاون",
+    "zh_Hant": "{min}-{max} 席次 • 小組合作"
   },
   "walkiePlan_availableSingleMember": {
     "en": "Single Member (Personal Access)",
@@ -6293,7 +6891,9 @@
     "pt": "Membro Individual (Acesso Pessoal)",
     "ja": "1名様 (個人利用)",
     "zh": "单成员 (个人专属权限)",
-    "or": "ଏକକ ସଦସ୍ୟ (ବ୍ୟକ୍ତିଗତ ପ୍ରବେଶ)"
+    "or": "ଏକକ ସଦସ୍ୟ (ବ୍ୟକ୍ତିଗତ ପ୍ରବେଶ)",
+    "ur": "سنگل ممبر (ذاتی رسائی)",
+    "zh_Hant": "單一會員（個人瀏覽）"
   },
   "walkiePlan_availablePerSeat": {
     "en": "/ seat",
@@ -6313,7 +6913,9 @@
     "pt": "/ vaga",
     "ja": "/ 席",
     "zh": "/ 席位",
-    "or": "/ ଆସନ"
+    "or": "/ ଆସନ",
+    "ur": "/ نشست",
+    "zh_Hant": "/ 座位"
   },
   "walkiePlan_availablePerMonth": {
     "en": "/ month",
@@ -6333,7 +6935,9 @@
     "pt": "/ mês",
     "ja": "/ 月",
     "zh": "/ 月",
-    "or": "/ ମାସ"
+    "or": "/ ମାସ",
+    "ur": "/ مہینہ",
+    "zh_Hant": "/ 月"
   },
   "walkiePlan_bottomBarAfterTrial": {
     "en": "After your free trial",
@@ -6353,7 +6957,9 @@
     "pt": "Após seu teste grátis",
     "ja": "無料トライアル終了後",
     "zh": "免费试用期结束后",
-    "or": "ତୁମର ମାଗଣା ପରୀକ୍ଷା ପରେ |"
+    "or": "ତୁମର ମାଗଣା ପରୀକ୍ଷା ପରେ |",
+    "ur": "آپ کے مفت ٹرائل کے بعد",
+    "zh_Hant": "免費試用後"
   },
   "walkiePlan_bottomBarChoosePlan": {
     "en": "Choose a Plan",
@@ -6373,7 +6979,9 @@
     "pt": "Escolha um Plano",
     "ja": "プランを選択",
     "zh": "选择套餐",
-    "or": "ଏକ ଯୋଜନା ବାଛନ୍ତୁ |"
+    "or": "ଏକ ଯୋଜନା ବାଛନ୍ତୁ |",
+    "ur": "ایک منصوبہ منتخب کریں۔",
+    "zh_Hant": "選擇一個計劃"
   },
   "walkiePlan_bottomBarPricePer": {
     "en": "{price} / {period}",
@@ -6401,7 +7009,9 @@
     "pt": "{price} / {period}",
     "ja": "{price} / {period}",
     "zh": "{price} / {period}",
-    "or": "{price} / {period}"
+    "or": "{price} / {period}",
+    "ur": "{price} / {period}",
+    "zh_Hant": "{price} / {period}"
   },
   "walkiePlan_bottomBarContinue": {
     "en": "Continue with Walkie Talkie",
@@ -6421,7 +7031,9 @@
     "pt": "Continuar com Walkie Talkie",
     "ja": "トランシーバーを継続利用",
     "zh": "继续使用对讲机",
-    "or": "ୱାକି ଟକି ସହିତ ଜାରି ରଖନ୍ତୁ |"
+    "or": "ୱାକି ଟକି ସହିତ ଜାରି ରଖନ୍ତୁ |",
+    "ur": "واکی ٹاکی کے ساتھ جاری رکھیں",
+    "zh_Hant": "繼續使用對講機"
   },
   "walkiePlan_bottomBarPurchaseFor": {
     "en": "Purchase for {price}",
@@ -6446,7 +7058,9 @@
     "pt": "Comprar por {price}",
     "ja": "{price} で購入",
     "zh": "{price} 立即购买",
-    "or": "{price} ପାଇଁ କ୍ରୟ କରନ୍ତୁ |"
+    "or": "{price} ପାଇଁ କ୍ରୟ କରନ୍ତୁ |",
+    "ur": "{price} کے لیے خریدیں۔",
+    "zh_Hant": "購買價格為 {price}"
   },
   "walkiePlan_detailsChooseTitle": {
     "en": "Choose a Plan",
@@ -6466,7 +7080,9 @@
     "pt": "Escolha um Plano",
     "ja": "プランを選択",
     "zh": "选择套餐",
-    "or": "ଏକ ଯୋଜନା ବାଛନ୍ତୁ |"
+    "or": "ଏକ ଯୋଜନା ବାଛନ୍ତୁ |",
+    "ur": "ایک منصوبہ منتخب کریں۔",
+    "zh_Hant": "選擇一個計劃"
   },
   "walkiePlan_detailsTeamSubtitle": {
     "en": "Add team members and get everyone connected with Walkie Talkie",
@@ -6486,7 +7102,9 @@
     "pt": "Adicione membros da equipe e conecte todos com Walkie Talkie",
     "ja": "チームメンバーを追加し、全員でトランシーバーを利用できます",
     "zh": "添加团队成员，让每个人都能通过对讲机保持畅通联系",
-    "or": "ଦଳର ସଦସ୍ୟମାନଙ୍କୁ ଯୋଡନ୍ତୁ ଏବଂ ୱାକି ଟକି ସହିତ ସମସ୍ତଙ୍କୁ ସଂଯୋଗ କରନ୍ତୁ |"
+    "or": "ଦଳର ସଦସ୍ୟମାନଙ୍କୁ ଯୋଡନ୍ତୁ ଏବଂ ୱାକି ଟକି ସହିତ ସମସ୍ତଙ୍କୁ ସଂଯୋଗ କରନ୍ତୁ |",
+    "ur": "ٹیم کے اراکین کو شامل کریں اور ہر کسی کو واکی ٹاکی سے منسلک کریں۔",
+    "zh_Hant": "新增團隊成員並讓每個人透過 Walkie Talkie 保持聯繫"
   },
   "walkiePlan_detailsIndividualSubtitle": {
     "en": "Continue using Walkie Talkie with a plan that fits your team",
@@ -6506,7 +7124,9 @@
     "pt": "Continue usando o Walkie Talkie com o plano ideal para você",
     "ja": "ご自身やチームに合ったプランでトランシーバーをご利用ください",
     "zh": "选择最适合您的套餐，享受无缝对讲通话",
-    "or": "ଏକ ଯୋଜନା ସହିତ ୱାକି ଟକି ବ୍ୟବହାର ଜାରି ରଖନ୍ତୁ ଯାହା ଆପଣଙ୍କ ଦଳକୁ ଫିଟ୍ କରେ |"
+    "or": "ଏକ ଯୋଜନା ସହିତ ୱାକି ଟକି ବ୍ୟବହାର ଜାରି ରଖନ୍ତୁ ଯାହା ଆପଣଙ୍କ ଦଳକୁ ଫିଟ୍ କରେ |",
+    "ur": "واکی ٹاکی کو ایک ایسے منصوبے کے ساتھ استعمال کرنا جاری رکھیں جو آپ کی ٹیم کے مطابق ہو۔",
+    "zh_Hant": "根據適合您團隊的計劃繼續使用 Walkie Talkie"
   },
   "walkiePlan_detailsPillUnlimited": {
     "en": "Unlimited",
@@ -6527,7 +7147,9 @@
     "pt": "Ilimitado",
     "ja": "無制限",
     "zh": "无限畅聊",
-    "or": "ଅସୀମିତ |"
+    "or": "ଅସୀମିତ |",
+    "ur": "لا محدود",
+    "zh_Hant": "無限"
   },
   "walkiePlan_detailsPillWalkieTalkie": {
     "en": "Walkie Talkie",
@@ -6547,7 +7169,9 @@
     "pt": "Walkie Talkie",
     "ja": "トランシーバー",
     "zh": "对讲机",
-    "or": "ୱାକି ଟକି |"
+    "or": "ୱାକି ଟକି |",
+    "ur": "واکی ٹاکی",
+    "zh_Hant": "對講機"
   },
   "walkiePlan_detailsPillForTeams": {
     "en": "For Teams",
@@ -6568,7 +7192,9 @@
     "pt": "Para Equipes",
     "ja": "チーム向け",
     "zh": "专为团队",
-    "or": "ଦଳଗୁଡିକ ପାଇଁ |"
+    "or": "ଦଳଗୁଡିକ ପାଇଁ |",
+    "ur": "ٹیموں کے لیے",
+    "zh_Hant": "對於團隊"
   },
   "walkiePlan_detailsPillAllSizes": {
     "en": "of All Sizes",
@@ -6589,7 +7215,9 @@
     "pt": "de todos os tamanhos",
     "ja": "規模を問わず",
     "zh": "无论团队大小",
-    "or": "ସମସ୍ତ ଆକାରର |"
+    "or": "ସମସ୍ତ ଆକାରର |",
+    "ur": "تمام سائز کے",
+    "zh_Hant": "各種尺寸"
   },
   "walkiePlan_detailsPillReliable": {
     "en": "Reliable &",
@@ -6610,7 +7238,9 @@
     "pt": "Confiável e",
     "ja": "高信頼＆",
     "zh": "稳定且",
-    "or": "ନିର୍ଭରଯୋଗ୍ୟ &"
+    "or": "ନିର୍ଭରଯୋଗ୍ୟ &",
+    "ur": "قابل اعتماد اور",
+    "zh_Hant": "可靠的 ＆"
   },
   "walkiePlan_detailsPillSecure": {
     "en": "Secure",
@@ -6630,7 +7260,9 @@
     "pt": "Seguro",
     "ja": "セキュア",
     "zh": "安全",
-    "or": "ସୁରକ୍ଷିତ"
+    "or": "ସୁରକ୍ଷିତ",
+    "ur": "محفوظ",
+    "zh_Hant": "安全的"
   },
   "walkiePlan_detailsPillPriority": {
     "en": "Priority",
@@ -6651,7 +7283,9 @@
     "pt": "Prioritário",
     "ja": "優先",
     "zh": "专属",
-    "or": "ପ୍ରାଥମିକତା |"
+    "or": "ପ୍ରାଥମିକତା |",
+    "ur": "ترجیح",
+    "zh_Hant": "優先事項"
   },
   "walkiePlan_detailsPillSupport": {
     "en": "Support",
@@ -6671,7 +7305,9 @@
     "pt": "Suporte",
     "ja": "サポート",
     "zh": "客服支持",
-    "or": "ସମର୍ଥନ"
+    "or": "ସମର୍ଥନ",
+    "ur": "حمایت",
+    "zh_Hant": "支援"
   },
   "walkiePlan_detailsPillInstant": {
     "en": "Instant",
@@ -6692,7 +7328,9 @@
     "pt": "Instantâneo",
     "ja": "即時",
     "zh": "即时",
-    "or": "ତତକ୍ଷଣାତ୍"
+    "or": "ତତକ୍ଷଣାତ୍",
+    "ur": "فوری",
+    "zh_Hant": "立即的"
   },
   "walkiePlan_detailsPillCommunication": {
     "en": "Communication",
@@ -6712,7 +7350,9 @@
     "pt": "Comunicação",
     "ja": "コミュニケーション",
     "zh": "对讲通信",
-    "or": "ଯୋଗାଯୋଗ |"
+    "or": "ଯୋଗାଯୋଗ |",
+    "ur": "مواصلات",
+    "zh_Hant": "溝通"
   },
   "walkiePlan_detailsTabIndividual": {
     "en": "Individual",
@@ -6732,7 +7372,9 @@
     "pt": "Individual",
     "ja": "個人",
     "zh": "个人版",
-    "or": "ବ୍ୟକ୍ତିଗତ"
+    "or": "ବ୍ୟକ୍ତିଗତ",
+    "ur": "انفرادی",
+    "zh_Hant": "個人"
   },
   "walkiePlan_detailsTabPerPerson": {
     "en": "Per Person",
@@ -6752,7 +7394,9 @@
     "pt": "Por Pessoa",
     "ja": "1名あたり",
     "zh": "单人",
-    "or": "ପ୍ରତି ବ୍ୟକ୍ତିଙ୍କ ପାଇଁ |"
+    "or": "ପ୍ରତି ବ୍ୟକ୍ତିଙ୍କ ପାଇଁ |",
+    "ur": "فی شخص",
+    "zh_Hant": "每人"
   },
   "walkiePlan_detailsTabMultipleMembers": {
     "en": "For Multiple Members",
@@ -6772,7 +7416,9 @@
     "pt": "Para Múltiplos Membros",
     "ja": "複数メンバー",
     "zh": "多成员版",
-    "or": "ଏକାଧିକ ସଦସ୍ୟଙ୍କ ପାଇଁ |"
+    "or": "ଏକାଧିକ ସଦସ୍ୟଙ୍କ ପାଇଁ |",
+    "ur": "ایک سے زیادہ ممبران کے لیے",
+    "zh_Hant": "對於多名會員"
   },
   "walkiePlan_detailsPerPerson": {
     "en": "/ person",
@@ -6793,7 +7439,9 @@
     "pt": "/ pessoa",
     "ja": "/ 人",
     "zh": "/ 人",
-    "or": "/ ବ୍ୟକ୍ତି"
+    "or": "/ ବ୍ୟକ୍ତି",
+    "ur": "/ شخص",
+    "zh_Hant": "/ 人"
   },
   "walkiePlan_detailsSubtitleShortTerm": {
     "en": "Perfect for short-term use",
@@ -6813,7 +7461,9 @@
     "pt": "Perfeito para uso de curto prazo",
     "ja": "短期利用に最適",
     "zh": "适合短期灵活出行",
-    "or": "ସ୍ୱଳ୍ପ ମିଆଦି ବ୍ୟବହାର ପାଇଁ ଉପଯୁକ୍ତ |"
+    "or": "ସ୍ୱଳ୍ପ ମିଆଦି ବ୍ୟବହାର ପାଇଁ ଉପଯୁକ୍ତ |",
+    "ur": "قلیل مدتی استعمال کے لیے بہترین",
+    "zh_Hant": "非常適合短期使用"
   },
   "walkiePlan_detailsSubtitleGrowingTeams": {
     "en": "Great value for growing teams",
@@ -6833,7 +7483,9 @@
     "pt": "Ótimo custo-benefício para equipes em crescimento",
     "ja": "成長中のチームにおすすめ",
     "zh": "成长型团队的高性价比之选",
-    "or": "ବ growing ୁଥିବା ଦଳ ପାଇଁ ମହତ୍ value ପୂର୍ଣ୍ଣ ମୂଲ୍ୟ |"
+    "or": "ବ growing ୁଥିବା ଦଳ ପାଇଁ ମହତ୍ value ପୂର୍ଣ୍ଣ ମୂଲ୍ୟ |",
+    "ur": "بڑھتی ہوئی ٹیموں کے لیے بڑی قدر",
+    "zh_Hant": "對成長中的團隊來說物超所值"
   },
   "walkiePlan_detailsSubtitleLongTerm": {
     "en": "Best for long-term use",
@@ -6853,7 +7505,9 @@
     "pt": "Ideal para uso a longo prazo",
     "ja": "長期利用に最もお得",
     "zh": "长期使用的最佳超值之选",
-    "or": "ଦୀର୍ଘକାଳୀନ ବ୍ୟବହାର ପାଇଁ ସର୍ବୋତ୍ତମ |"
+    "or": "ଦୀର୍ଘକାଳୀନ ବ୍ୟବହାର ପାଇଁ ସର୍ବୋତ୍ତମ |",
+    "ur": "طویل مدتی استعمال کے لیے بہترین",
+    "zh_Hant": "最適合長期使用"
   },
   "walkiePlan_detailsSubtitleDefault": {
     "en": "Instant walkie talkie voice access",
@@ -6873,7 +7527,9 @@
     "pt": "Acesso de voz instantâneo ao Walkie Talkie",
     "ja": "即座に使えるトランシーバー音声機能",
     "zh": "即时对讲语音权限",
-    "or": "ତତକ୍ଷଣାତ୍ ୱାକି ଟକି ଭଏସ୍ ଆକ୍ସେସ୍ |"
+    "or": "ତତକ୍ଷଣାତ୍ ୱାକି ଟକି ଭଏସ୍ ଆକ୍ସେସ୍ |",
+    "ur": "فوری واکی ٹاکی آواز تک رسائی",
+    "zh_Hant": "即時對講機語音訪問"
   },
   "walkiePlan_detailsFeatUnlimitedRange": {
     "en": "Unlimited Range",
@@ -6893,7 +7549,9 @@
     "pt": "Alcance Ilimitado",
     "ja": "距離無制限",
     "zh": "不受距离限制",
-    "or": "ଅସୀମିତ ପରିସର |"
+    "or": "ଅସୀମିତ ପରିସର |",
+    "ur": "لامحدود رینج",
+    "zh_Hant": "無限範圍"
   },
   "walkiePlan_detailsFeatUnlimitedWalkie": {
     "en": "Unlimited Walkie Talkie",
@@ -6913,7 +7571,9 @@
     "pt": "Walkie Talkie Ilimitado",
     "ja": "無制限トランシーバー",
     "zh": "无限对讲时长",
-    "or": "ଅସୀମିତ ୱାକି ଟକି |"
+    "or": "ଅସୀମିତ ୱାକି ଟକି |",
+    "ur": "لامحدود واکی ٹاکی",
+    "zh_Hant": "無限對講機"
   },
   "walkiePlan_detailsFeatHqVoice": {
     "en": "High Quality Voice",
@@ -6933,7 +7593,9 @@
     "pt": "Voz em Alta Definição",
     "ja": "高音質音声通話",
     "zh": "高保真低延迟语音",
-    "or": "ଉଚ୍ଚ ଗୁଣବତ୍ତା ସ୍ୱର"
+    "or": "ଉଚ୍ଚ ଗୁଣବତ୍ତା ସ୍ୱର",
+    "ur": "اعلی معیار کی آواز",
+    "zh_Hant": "高品質語音"
   },
   "walkiePlan_detailsFeatGroupComm": {
     "en": "Group Communication",
@@ -6953,7 +7615,9 @@
     "pt": "Comunicação em Grupo",
     "ja": "グループコミュニケーション",
     "zh": "团队多人对讲",
-    "or": "ଗୋଷ୍ଠୀ ଯୋଗାଯୋଗ |"
+    "or": "ଗୋଷ୍ଠୀ ଯୋଗାଯୋଗ |",
+    "ur": "گروپ کمیونیکیشن",
+    "zh_Hant": "團體交流"
   },
   "walkiePlan_detailsFeatPrioritySupport": {
     "en": "Priority Support",
@@ -6973,7 +7637,9 @@
     "pt": "Suporte Prioritário",
     "ja": "優先サポート",
     "zh": "优先客服支持",
-    "or": "ପ୍ରାଥମିକତା ସମର୍ଥନ"
+    "or": "ପ୍ରାଥମିକତା ସମର୍ଥନ",
+    "ur": "ترجیحی معاونت",
+    "zh_Hant": "優先支持"
   },
   "walkiePlan_detailsMostPopular": {
     "en": "Most Popular",
@@ -6993,7 +7659,9 @@
     "pt": "Mais Popular",
     "ja": "一番人気",
     "zh": "最受欢迎",
-    "or": "ଅଧିକାଂଶ ଲୋକପ୍ରିୟ"
+    "or": "ଅଧିକାଂଶ ଲୋକପ୍ରିୟ",
+    "ur": "سب سے زیادہ مقبول",
+    "zh_Hant": "最受歡迎"
   },
   "walkiePlan_detailsStep1Title": {
     "en": "Select Number of Members",
@@ -7013,7 +7681,9 @@
     "pt": "Selecione o Número de Membros",
     "ja": "メンバー数を選択",
     "zh": "选择成员数量",
-    "or": "ସଦସ୍ୟ ସଂଖ୍ୟା ଚୟନ କରନ୍ତୁ |"
+    "or": "ସଦସ୍ୟ ସଂଖ୍ୟା ଚୟନ କରନ୍ତୁ |",
+    "ur": "ممبران کی تعداد منتخب کریں۔",
+    "zh_Hant": "選擇會員人數"
   },
   "walkiePlan_detailsStep1Subtitle": {
     "en": "Choose how many team members you want to add",
@@ -7033,7 +7703,9 @@
     "pt": "Escolha quantos membros deseja adicionar",
     "ja": "追加するチームメンバーの人数を指定してください",
     "zh": "选择您希望开通权限的团队成员人数",
-    "or": "ଆପଣ କେତେ ଦଳ ସଦସ୍ୟ ଯୋଗ କରିବାକୁ ଚାହୁଁଛନ୍ତି ତାହା ବାଛନ୍ତୁ |"
+    "or": "ଆପଣ କେତେ ଦଳ ସଦସ୍ୟ ଯୋଗ କରିବାକୁ ଚାହୁଁଛନ୍ତି ତାହା ବାଛନ୍ତୁ |",
+    "ur": "منتخب کریں کہ آپ کتنے ٹیم ممبرز کو شامل کرنا چاہتے ہیں۔",
+    "zh_Hant": "選擇您要新增的團隊成員數量"
   },
   "walkiePlan_detailsMinTeamSize": {
     "en": "{count, plural, =1{Minimum team size is 1 member} other{Minimum team size is {count} members}}",
@@ -7058,7 +7730,9 @@
     "pt": "{count, plural, =1{Tamanho mínimo de 1 membro} other{Tamanho mínimo de {count} membros}}",
     "ja": "最小チームサイズは {count} 名です",
     "zh": "最低团队规模为 {count} 人",
-    "or": "{count, plural, =1{ସର୍ବନିମ୍ନ ଦଳ ଆକାର ହେଉଛି 1 ସଦସ୍ୟ |} other{ସର୍ବନିମ୍ନ ଦଳ ଆକାର ହେଉଛି {count} ସଦସ୍ୟ |}}"
+    "or": "{count, plural, =1{ସର୍ବନିମ୍ନ ଦଳ ଆକାର ହେଉଛି 1 ସଦସ୍ୟ |} other{ସର୍ବନିମ୍ନ ଦଳ ଆକାର ହେଉଛି {count} ସଦସ୍ୟ |}}",
+    "ur": "{count, plural, =1{کم از کم ٹیم سائز 1 رکن ہے} other{کم از کم ٹیم سائز {count} اراکین ہے}}",
+    "zh_Hant": "{count, plural, =1{最小團隊規模為 1 名成員} other{ {count}}}"
   },
   "walkiePlan_detailsMaxMembersReached": {
     "en": "{count, plural, =1{Maximum limit of 1 member reached} other{Maximum limit of {count} members reached}}",
@@ -7083,7 +7757,9 @@
     "pt": "{count, plural, =1{Limite de 1 membro atingido} other{Limite de {count} membros atingido}}",
     "ja": "最大上限の {count} 名に達しました",
     "zh": "已达最大上限 {count} 人",
-    "or": "{count, plural, =1{1 ସଦସ୍ୟଙ୍କ ସର୍ବାଧିକ ସୀମା ପହଞ୍ଚିଛି |} other{{count} ସଦସ୍ୟମାନଙ୍କର ସର୍ବାଧିକ ସୀମା ପହଞ୍ଚିଲା |}}"
+    "or": "{count, plural, =1{1 ସଦସ୍ୟଙ୍କ ସର୍ବାଧିକ ସୀମା ପହଞ୍ଚିଛି |} other{{count} ସଦସ୍ୟମାନଙ୍କର ସର୍ବାଧିକ ସୀମା ପହଞ୍ଚିଲା |}}",
+    "ur": "{count, plural, =1{زیادہ سے زیادہ 1 رکن کی حد پوری ہوگئی} other{زیادہ سے زیادہ {count} اراکین کی حد پوری ہوگئی}}",
+    "zh_Hant": "{count, plural, =1{已達 1 位會員的最大限制} other{已達到 {count} 成員的最大限制}}"
   },
   "walkiePlan_detailsMoreMembersTitle": {
     "en": "More Members?",
@@ -7103,7 +7779,9 @@
     "pt": "Mais Membros?",
     "ja": "さらにメンバーを追加しますか？",
     "zh": "需要更多席位？",
-    "or": "ଅଧିକ ସଦସ୍ୟ?"
+    "or": "ଅଧିକ ସଦସ୍ୟ?",
+    "ur": "مزید اراکین؟",
+    "zh_Hant": "更多會員？"
   },
   "walkiePlan_detailsMoreMembersBody": {
     "en": "Add or remove members anytime.",
@@ -7123,7 +7801,9 @@
     "pt": "Adicione ou remova membros a qualquer momento.",
     "ja": "いつでもメンバーの追加・解除が可能です。",
     "zh": "日后可随时添加或调整成员。",
-    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଯେକ time ଣସି ସମୟରେ ଯୋଡନ୍ତୁ କିମ୍ବା ଅପସାରଣ କରନ୍ତୁ |"
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଯେକ time ଣସି ସମୟରେ ଯୋଡନ୍ତୁ କିମ୍ବା ଅପସାରଣ କରନ୍ତୁ |",
+    "ur": "کسی بھی وقت اراکین کو شامل کریں یا ہٹا دیں۔",
+    "zh_Hant": "隨時新增或刪除成員。"
   },
   "walkiePlan_detailsStep2Title": {
     "en": "Select Plan Duration",
@@ -7143,7 +7823,9 @@
     "pt": "Selecione a Duração do Plano",
     "ja": "利用期間を選択",
     "zh": "选择套餐时长",
-    "or": "ଯୋଜନା ଅବଧି ଚୟନ କରନ୍ତୁ |"
+    "or": "ଯୋଜନା ଅବଧି ଚୟନ କରନ୍ତୁ |",
+    "ur": "منصوبہ کی مدت منتخب کریں۔",
+    "zh_Hant": "選擇計劃持續時間"
   },
   "walkiePlan_detailsStep2Subtitle": {
     "en": "Choose the plan duration that works for you",
@@ -7163,7 +7845,9 @@
     "pt": "Escolha a duração ideal para você",
     "ja": "ご希望のプラン期間を選択してください",
     "zh": "选择最适合您的订阅周期",
-    "or": "ଆପଣଙ୍କ ପାଇଁ କାମ କରୁଥିବା ଯୋଜନା ଅବଧି ବାଛନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କ ପାଇଁ କାମ କରୁଥିବା ଯୋଜନା ଅବଧି ବାଛନ୍ତୁ |",
+    "ur": "پلان کی مدت کا انتخاب کریں جو آپ کے لیے کارآمد ہو۔",
+    "zh_Hant": "選擇適合您的計畫期限"
   },
   "walkiePlan_detailsPlanSummary": {
     "en": "Plan Summary",
@@ -7183,7 +7867,9 @@
     "pt": "Resumo do Plano",
     "ja": "プランの概要",
     "zh": "套餐概要",
-    "or": "ଯୋଜନା ସାରାଂଶ"
+    "or": "ଯୋଜନା ସାରାଂଶ",
+    "ur": "پلان کا خلاصہ",
+    "zh_Hant": "計劃概要"
   },
   "walkiePlan_detailsCodeLabel": {
     "en": "Code: {code}",
@@ -7208,7 +7894,9 @@
     "pt": "Código: {code}",
     "ja": "コード: {code}",
     "zh": "代码：{code}",
-    "or": "କୋଡ୍: {code} |"
+    "or": "କୋଡ୍: {code} |",
+    "ur": "کوڈ: {code}",
+    "zh_Hant": "代碼：{code}"
   },
   "walkiePlan_detailsHavePromoCode": {
     "en": "Have a Promo Code?",
@@ -7228,7 +7916,9 @@
     "pt": "Tem um Código Promocional?",
     "ja": "プロモーションコードをお持ちですか？",
     "zh": "拥有优惠码？",
-    "or": "ଏକ ପ୍ରୋମୋ କୋଡ୍ ଅଛି କି?"
+    "or": "ଏକ ପ୍ରୋମୋ କୋଡ୍ ଅଛି କି?",
+    "ur": "ایک پرومو کوڈ ہے؟",
+    "zh_Hant": "有促銷代碼嗎？"
   },
   "walkiePlan_detailsMembersTimesRate": {
     "en": "{count, plural, =1{1 Member × {rate}} other{{count} Members × {rate}}}",
@@ -7256,7 +7946,9 @@
     "pt": "{count, plural, =1{1 Membro × {rate}} other{{count} Membros × {rate}}}",
     "ja": "{count}名 × {rate}",
     "zh": "{count} 位成员 × {rate}",
-    "or": "{count, plural, =1{1 ସଦସ୍ୟ × {rate} |} other{{count} ସଦସ୍ୟ × {rate}}}"
+    "or": "{count, plural, =1{1 ସଦସ୍ୟ × {rate} |} other{{count} ସଦସ୍ୟ × {rate}}}",
+    "ur": "{count, plural, =1{1 رکن × {rate}} other{{count} اراکین × {rate}}}",
+    "zh_Hant": "{count, plural, =1{1 位會員 × {rate}} other{ {count} {rate}}}"
   },
   "walkiePlan_detailsOriginalTotal": {
     "en": "{amount} total",
@@ -7281,7 +7973,9 @@
     "pt": "{amount} total",
     "ja": "合計 {amount}",
     "zh": "原价总计 {amount}",
-    "or": "{amount} ସମୁଦାୟ |"
+    "or": "{amount} ସମୁଦାୟ |",
+    "ur": "{amount} کل",
+    "zh_Hant": "{amount} 總計"
   },
   "walkiePlan_detailsPromoApplied": {
     "en": "Promo ({code}) applied",
@@ -7306,7 +8000,9 @@
     "pt": "Promo ({code}) aplicado",
     "ja": "プロモ ({code}) 適用済み",
     "zh": "优惠代码 ({code}) 已应用",
-    "or": "ପ୍ରୋମୋ ({code}) ପ୍ରୟୋଗ ହେଲା |"
+    "or": "ପ୍ରୋମୋ ({code}) ପ୍ରୟୋଗ ହେଲା |",
+    "ur": "پرومو ({code}) لاگو کیا گیا۔",
+    "zh_Hant": "已套用促銷 ({code})"
   },
   "walkiePlan_detailsYouSaveWithCoupon": {
     "en": "You save {amount} with this coupon!",
@@ -7331,7 +8027,9 @@
     "pt": "Você economiza {amount} com este cupom!",
     "ja": "このクーポンで {amount} お得になります！",
     "zh": "使用此券可立减 {amount}！",
-    "or": "ଆପଣ ଏହି କୁପନ ସହିତ {amount} ସଞ୍ଚୟ କରନ୍ତୁ!"
+    "or": "ଆପଣ ଏହି କୁପନ ସହିତ {amount} ସଞ୍ଚୟ କରନ୍ତୁ!",
+    "ur": "آپ اس کوپن کے ساتھ {amount} کو بچاتے ہیں!",
+    "zh_Hant": "使用此優惠券您可以節省 {amount}！"
   },
   "walkiePlan_detailsNoPlansTitle": {
     "en": "No Plans Available",
@@ -7351,7 +8049,9 @@
     "pt": "Nenhum Plano Disponível",
     "ja": "利用可能なプランがありません",
     "zh": "暂无可用套餐",
-    "or": "କ No ଣସି ଯୋଜନା ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "କ No ଣସି ଯୋଜନା ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "کوئی پلان دستیاب نہیں ہے۔",
+    "zh_Hant": "沒有可用的計劃"
   },
   "walkiePlan_detailsNoTeamPlans": {
     "en": "No team walkie-talkie plans are currently available. Please check back later or retry.",
@@ -7371,7 +8071,9 @@
     "pt": "Nenhum plano de equipe disponível no momento. Tente novamente mais tarde.",
     "ja": "現在利用可能なチームプランはありません。後ほど再度ご確認ください。",
     "zh": "当前暂无团队对讲套餐，请稍后重试或查看。",
-    "or": "କ No ଣସି ଦଳ ୱାକି-ଟକି ଯୋଜନା ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ନାହିଁ | ଦୟାକରି ପରେ ଯାଞ୍ଚ କରନ୍ତୁ କିମ୍ବା ପୁନ ry ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "କ No ଣସି ଦଳ ୱାକି-ଟକି ଯୋଜନା ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ନାହିଁ | ଦୟାକରି ପରେ ଯାଞ୍ଚ କରନ୍ତୁ କିମ୍ବା ପୁନ ry ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "ٹیم کا کوئی واکی ٹاکی پلان فی الحال دستیاب نہیں ہے۔ براہ کرم بعد میں دوبارہ چیک کریں یا دوبارہ کوشش کریں۔",
+    "zh_Hant": "目前沒有可用的團隊對講機計劃。請稍後再回來查看或重試。"
   },
   "walkiePlan_detailsNoIndividualPlans": {
     "en": "No individual walkie-talkie plans are currently available. Please check back later or retry.",
@@ -7391,7 +8093,9 @@
     "pt": "Nenhum plano individual disponível no momento. Tente novamente mais tarde.",
     "ja": "現在利用可能な個人プランはありません。後ほど再度ご確認ください。",
     "zh": "当前暂无个人对讲套餐，请稍后重试或查看。",
-    "or": "କ No ଣସି ବ୍ୟକ୍ତିଗତ ୱାକି-ଟକି ଯୋଜନା ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ନାହିଁ | ଦୟାକରି ପରେ ଯାଞ୍ଚ କରନ୍ତୁ କିମ୍ବା ପୁନ ry ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "କ No ଣସି ବ୍ୟକ୍ତିଗତ ୱାକି-ଟକି ଯୋଜନା ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ନାହିଁ | ଦୟାକରି ପରେ ଯାଞ୍ଚ କରନ୍ତୁ କିମ୍ବା ପୁନ ry ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "کوئی انفرادی واکی ٹاکی پلان فی الحال دستیاب نہیں ہے۔ براہ کرم بعد میں دوبارہ چیک کریں یا دوبارہ کوشش کریں۔",
+    "zh_Hant": "目前沒有單獨的對講機計劃。請稍後再回來查看或重試。"
   },
   "walkiePlan_detailsCouponsOffers": {
     "en": "Coupons & Offers",
@@ -7411,7 +8115,9 @@
     "pt": "Cupons e Ofertas",
     "ja": "クーポン＆割引",
     "zh": "优惠券与促销",
-    "or": "କୁପନ୍ ଏବଂ ଅଫର୍ |"
+    "or": "କୁପନ୍ ଏବଂ ଅଫର୍ |",
+    "ur": "کوپن اور آفرز",
+    "zh_Hant": "優惠券和優惠"
   },
   "walkiePlan_detailsEnterCouponHint": {
     "en": "Enter coupon code",
@@ -7431,7 +8137,9 @@
     "pt": "Insira o código do cupom",
     "ja": "クーポンコードを入力",
     "zh": "输入优惠券码",
-    "or": "କୁପନ କୋଡ୍ ପ୍ରବେଶ କରନ୍ତୁ |"
+    "or": "କୁପନ କୋଡ୍ ପ୍ରବେଶ କରନ୍ତୁ |",
+    "ur": "کوپن کوڈ درج کریں۔",
+    "zh_Hant": "輸入優惠券代碼"
   },
   "walkiePlan_detailsEnterValidCoupon": {
     "en": "Please enter a valid coupon code",
@@ -7451,7 +8159,9 @@
     "pt": "Insira um código de cupom válido",
     "ja": "有効なクーポンコードを入力してください",
     "zh": "请输入有效的优惠代码",
-    "or": "ଦୟାକରି ଏକ ବ valid ଧ କୁପନ୍ କୋଡ୍ ପ୍ରବେଶ କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ଏକ ବ valid ଧ କୁପନ୍ କୋଡ୍ ପ୍ରବେଶ କରନ୍ତୁ |",
+    "ur": "براہ کرم ایک درست کوپن کوڈ درج کریں۔",
+    "zh_Hant": "請輸入有效的優惠券代碼"
   },
   "walkiePlan_detailsApplied": {
     "en": "Applied",
@@ -7472,7 +8182,9 @@
     "pt": "Aplicado",
     "ja": "適用済み",
     "zh": "已应用",
-    "or": "ପ୍ରୟୋଗ |"
+    "or": "ପ୍ରୟୋଗ |",
+    "ur": "لاگو",
+    "zh_Hant": "應用"
   },
   "walkiePlan_detailsApply": {
     "en": "Apply",
@@ -7493,7 +8205,9 @@
     "pt": "Aplicar",
     "ja": "適用",
     "zh": "应用",
-    "or": "ପ୍ରୟୋଗ କରନ୍ତୁ |"
+    "or": "ପ୍ରୟୋଗ କରନ୍ତୁ |",
+    "ur": "لگائیں",
+    "zh_Hant": "申請"
   },
   "walkiePlan_detailsApplyCaps": {
     "en": "APPLY",
@@ -7514,7 +8228,9 @@
     "pt": "APLICAR",
     "ja": "適用",
     "zh": "兑换",
-    "or": "ପ୍ରୟୋଗ କରନ୍ତୁ |"
+    "or": "ପ୍ରୟୋଗ କରନ୍ତୁ |",
+    "ur": "اپلائی کریں۔",
+    "zh_Hant": "申請"
   },
   "walkiePlan_detailsRemoveCaps": {
     "en": "REMOVE",
@@ -7535,7 +8251,9 @@
     "pt": "REMOVER",
     "ja": "削除",
     "zh": "移除",
-    "or": "ଅପସାରଣ କରନ୍ତୁ |"
+    "or": "ଅପସାରଣ କରନ୍ତୁ |",
+    "ur": "ہٹائیں",
+    "zh_Hant": "消除"
   },
   "walkiePlan_detailsLockedCaps": {
     "en": "LOCKED",
@@ -7556,7 +8274,9 @@
     "pt": "BLOQUEADO",
     "ja": "ロック中",
     "zh": "未解锁",
-    "or": "ଲକ୍ ହୋଇଛି |"
+    "or": "ଲକ୍ ହୋଇଛି |",
+    "ur": "مقفل",
+    "zh_Hant": "鎖定"
   },
   "walkiePlan_detailsAvailableCoupons": {
     "en": "Available Coupons",
@@ -7576,7 +8296,9 @@
     "pt": "Cupons Disponíveis",
     "ja": "利用可能なクーポン",
     "zh": "可用优惠券",
-    "or": "ଉପଲବ୍ଧ କୁପନ୍ |"
+    "or": "ଉପଲବ୍ଧ କୁପନ୍ |",
+    "ur": "دستیاب کوپن",
+    "zh_Hant": "可用優惠券"
   },
   "walkiePlan_detailsSkeletonCouponNote": {
     "en": "Valid on all plans • Expires soon",
@@ -7597,7 +8319,9 @@
     "pt": "Válido em todos os planos • Expira em breve",
     "ja": "全プラン対象 • まもなく期限切れ",
     "zh": "全套餐通用 • 即将到期",
-    "or": "ସମସ୍ତ ଯୋଜନା ଉପରେ ବ id ଧ • ଶୀଘ୍ର ସମାପ୍ତ ହେବ |"
+    "or": "ସମସ୍ତ ଯୋଜନା ଉପରେ ବ id ଧ • ଶୀଘ୍ର ସମାପ୍ତ ହେବ |",
+    "ur": "تمام منصوبوں پر درست • میعاد جلد ختم ہو رہی ہے۔",
+    "zh_Hant": "所有計劃均有效 • 即將到期"
   },
   "walkiePlan_detailsNoCouponsTitle": {
     "en": "No Coupons Available",
@@ -7617,7 +8341,9 @@
     "pt": "Nenhum Cupom Disponível",
     "ja": "利用可能なクーポンはありません",
     "zh": "暂无可用优惠券",
-    "or": "କ C ଣସି କୁପନ୍ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "କ C ଣସି କୁପନ୍ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "کوئی کوپن دستیاب نہیں ہے۔",
+    "zh_Hant": "沒有可用優惠券"
   },
   "walkiePlan_detailsNoCouponsBody": {
     "en": "There are no active coupons for this plan right now.",
@@ -7637,7 +8363,9 @@
     "pt": "Não há cupons ativos para este plano no momento.",
     "ja": "現在このプランで利用できるクーポンはありません。",
     "zh": "当前该套餐暂无生效中的优惠券。",
-    "or": "ଏହି ଯୋଜନା ପାଇଁ ବର୍ତ୍ତମାନ କ active ଣସି ସକ୍ରିୟ କୁପନ୍ ନାହିଁ |"
+    "or": "ଏହି ଯୋଜନା ପାଇଁ ବର୍ତ୍ତମାନ କ active ଣସି ସକ୍ରିୟ କୁପନ୍ ନାହିଁ |",
+    "ur": "اس پلان کے لیے ابھی کوئی فعال کوپن نہیں ہیں۔",
+    "zh_Hant": "目前該計劃沒有有效的優惠券。"
   },
   "walkiePlan_detailsSelectPaymentMethod": {
     "en": "Select Payment Method",
@@ -7657,7 +8385,9 @@
     "pt": "Selecione a Forma de Pagamento",
     "ja": "お支払い方法を選択",
     "zh": "选择付款方式",
-    "or": "ଦେୟ ପଦ୍ଧତି ଚୟନ କରନ୍ତୁ |"
+    "or": "ଦେୟ ପଦ୍ଧତି ଚୟନ କରନ୍ତୁ |",
+    "ur": "ادائیگی کا طریقہ منتخب کریں۔",
+    "zh_Hant": "選擇付款方式"
   },
   "walkiePlan_detailsUpiQr": {
     "en": "UPI / QR Code",
@@ -7677,7 +8407,9 @@
     "pt": "UPI / QR Code",
     "ja": "UPI / QRコード",
     "zh": "UPI / 二维码",
-    "or": "UPI / QR କୋଡ୍ |"
+    "or": "UPI / QR କୋଡ୍ |",
+    "ur": "UPI/QR کوڈ",
+    "zh_Hant": "UPI / 二維碼"
   },
   "walkiePlan_detailsCard": {
     "en": "Credit / Debit Card",
@@ -7697,7 +8429,9 @@
     "pt": "Cartão de Crédito / Débito",
     "ja": "クレジットカード / デビットカード",
     "zh": "信用卡 / 借记卡",
-    "or": "କ୍ରେଡିଟ୍ / ଡେବିଟ୍ କାର୍ଡ |"
+    "or": "କ୍ରେଡିଟ୍ / ଡେବିଟ୍ କାର୍ଡ |",
+    "ur": "کریڈٹ/ڈیبٹ کارڈ",
+    "zh_Hant": "信用卡/金融卡"
   },
   "walkiePlan_detailsNetBanking": {
     "en": "Net Banking",
@@ -7717,7 +8451,9 @@
     "pt": "Internet Banking",
     "ja": "ネットバンキング",
     "zh": "网银快捷支付",
-    "or": "ନିଟ୍ ବ୍ୟାଙ୍କିଙ୍ଗ୍ |"
+    "or": "ନିଟ୍ ବ୍ୟାଙ୍କିଙ୍ଗ୍ |",
+    "ur": "نیٹ بینکنگ",
+    "zh_Hant": "網路銀行"
   },
   "walkiePlan_detailsAllBanks": {
     "en": "All Indian Banks supported",
@@ -7737,7 +8473,9 @@
     "pt": "Compatível com todos os bancos indianos",
     "ja": "すべての主要銀行に対応",
     "zh": "支持所有主流印度银行",
-    "or": "ସମସ୍ତ ଭାରତୀୟ ବ୍ୟାଙ୍କ ସମର୍ଥିତ |"
+    "or": "ସମସ୍ତ ଭାରତୀୟ ବ୍ୟାଙ୍କ ସମର୍ଥିତ |",
+    "ur": "تمام ہندوستانی بینکوں نے تعاون کیا۔",
+    "zh_Hant": "所有印度銀行均受支持"
   },
   "walkiePlan_detailsPayActivate": {
     "en": "Pay & Activate Plan",
@@ -7757,7 +8495,9 @@
     "pt": "Pagar e Ativar Plano",
     "ja": "支払ってプランを有効化",
     "zh": "支付并开通套餐",
-    "or": "ଯୋଜନା ଏବଂ ସକ୍ରିୟ ଯୋଜନା"
+    "or": "ଯୋଜନା ଏବଂ ସକ୍ରିୟ ଯୋଜନା",
+    "ur": "ادائیگی اور ایکٹیویٹ پلان",
+    "zh_Hant": "付款並啟動計劃"
   },
   "walkiePlan_detailsPlanActivated": {
     "en": "Plan Activated Successfully!",
@@ -7777,7 +8517,9 @@
     "pt": "Plano Ativado com Sucesso!",
     "ja": "プランが有効化されました！",
     "zh": "套餐开通成功！",
-    "or": "ଯୋଜନା ସଫଳତାର ସହିତ ସକ୍ରିୟ ହୋଇଛି!"
+    "or": "ଯୋଜନା ସଫଳତାର ସହିତ ସକ୍ରିୟ ହୋଇଛି!",
+    "ur": "منصوبہ کامیابی کے ساتھ چالو ہو گیا!",
+    "zh_Hant": "計劃啟動成功！"
   },
   "walkiePlan_detailsPlanActiveBody": {
     "en": "Your Walkie Talkie plan is now active. Enjoy uninterrupted instant voice communication.",
@@ -7797,7 +8539,9 @@
     "pt": "Seu plano do Walkie Talkie está ativo. Aproveite a comunicação instantânea.",
     "ja": "トランシーバープランが有効になりました。いつでも快適な音声通話をお楽しみください。",
     "zh": "您的对讲机套餐现已生效。尽情享受不间断的高清实时语音沟通。",
-    "or": "ତୁମର ୱାକି ଟକି ଯୋଜନା ବର୍ତ୍ତମାନ ସକ୍ରିୟ ଅଛି | ନିରବଚ୍ଛିନ୍ନ ତତକ୍ଷଣାତ୍ ସ୍ୱର ଯୋଗାଯୋଗ ଉପଭୋଗ କରନ୍ତୁ |"
+    "or": "ତୁମର ୱାକି ଟକି ଯୋଜନା ବର୍ତ୍ତମାନ ସକ୍ରିୟ ଅଛି | ନିରବଚ୍ଛିନ୍ନ ତତକ୍ଷଣାତ୍ ସ୍ୱର ଯୋଗାଯୋଗ ଉପଭୋଗ କରନ୍ତୁ |",
+    "ur": "آپ کا واکی ٹاکی پلان اب فعال ہے۔ بلا تعطل فوری صوتی مواصلت کا لطف اٹھائیں۔",
+    "zh_Hant": "您的對講機計劃現已啟用。享受不間斷的即時語音通訊。"
   },
   "walkiePlan_ctrlLoadingPlans": {
     "en": "Loading plans...",
@@ -7817,7 +8561,9 @@
     "pt": "Carregando planos...",
     "ja": "プランを読み込み中...",
     "zh": "正在加载套餐...",
-    "or": "ଯୋଜନା ଲୋଡିଂ ..."
+    "or": "ଯୋଜନା ଲୋଡିଂ ...",
+    "ur": "پلانز لوڈ ہو رہے ہیں...",
+    "zh_Hant": "正在加載計劃..."
   },
   "walkiePlan_ctrlContinueToPayment": {
     "en": "Continue to Payment",
@@ -7837,7 +8583,9 @@
     "pt": "Continuar para o Pagamento",
     "ja": "お支払いへ進む",
     "zh": "继续支付",
-    "or": "ଦେୟ ଜାରି ରଖ |"
+    "or": "ଦେୟ ଜାରି ରଖ |",
+    "ur": "ادائیگی جاری رکھیں",
+    "zh_Hant": "繼續付款"
   },
   "walkiePlan_ctrlContinueWith": {
     "en": "Continue with {plan}",
@@ -7863,7 +8611,9 @@
     "pt": "Continuar com {plan}",
     "ja": "{plan} で続ける",
     "zh": "继续开通 {plan}",
-    "or": "{plan} ସହିତ ଜାରି ରଖନ୍ତୁ |"
+    "or": "{plan} ସହିତ ଜାରି ରଖନ୍ତୁ |",
+    "ur": "{plan} کے ساتھ جاری رکھیں",
+    "zh_Hant": "繼續 {plan}"
   },
   "walkiePlan_ctrlUnableToLoadPlans": {
     "en": "Unable to load plans. Please try again.",
@@ -7883,7 +8633,9 @@
     "pt": "Não foi possível carregar os planos. Tente novamente.",
     "ja": "プランを読み込めません。もう一度お試しください。",
     "zh": "无法加载套餐列表，请重试。",
-    "or": "ଯୋଜନା ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଯୋଜନା ଲୋଡ୍ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "پلانز لوڈ کرنے سے قاصر۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法載入計劃。請再試一次。"
   },
   "walkiePlan_ctrlCouponAppliedSave": {
     "en": "Coupon applied! You save {amount}",
@@ -7908,7 +8660,9 @@
     "pt": "Cupom aplicado! Você economiza {amount}",
     "ja": "クーポン適用！ {amount} お得",
     "zh": "优惠券兑换成功！立省 {amount}",
-    "or": "କୁପନ ପ୍ରୟୋଗ! ଆପଣ {amount} ସଞ୍ଚୟ କରନ୍ତୁ |"
+    "or": "କୁପନ ପ୍ରୟୋଗ! ଆପଣ {amount} ସଞ୍ଚୟ କରନ୍ତୁ |",
+    "ur": "کوپن لاگو! آپ {amount} کو بچاتے ہیں۔",
+    "zh_Hant": "優惠券已應用！您儲存 {amount}"
   },
   "walkiePlan_ctrlCouponApplied": {
     "en": "Coupon applied successfully!",
@@ -7928,7 +8682,9 @@
     "pt": "Cupom aplicado com sucesso!",
     "ja": "クーポンが適用されました！",
     "zh": "优惠券已成功生效！",
-    "or": "କୁପନ୍ ସଫଳତାର ସହିତ ପ୍ରୟୋଗ ହେଲା!"
+    "or": "କୁପନ୍ ସଫଳତାର ସହିତ ପ୍ରୟୋଗ ହେଲା!",
+    "ur": "کوپن کامیابی سے لاگو ہو گیا!",
+    "zh_Hant": "優惠券申請成功！"
   },
   "walkiePlan_ctrlCouponFailed": {
     "en": "Failed to apply coupon",
@@ -7948,7 +8704,9 @@
     "pt": "Falha ao aplicar cupom",
     "ja": "クーポンの適用に失敗しました",
     "zh": "应用优惠券失败",
-    "or": "କୁପନ୍ ପ୍ରୟୋଗ କରିବାରେ ବିଫଳ |"
+    "or": "କୁପନ୍ ପ୍ରୟୋଗ କରିବାରେ ବିଫଳ |",
+    "ur": "کوپن لاگو کرنے میں ناکام",
+    "zh_Hant": "優惠券申請失敗"
   },
   "walkiePlan_ctrlCouponRemoved": {
     "en": "Coupon removed",
@@ -7968,7 +8726,9 @@
     "pt": "Cupom removido",
     "ja": "クーポンを解除しました",
     "zh": "已移除优惠券",
-    "or": "କୁପନ୍ ଅପସାରିତ ହେଲା |"
+    "or": "କୁପନ୍ ଅପସାରିତ ହେଲା |",
+    "ur": "کوپن ہٹا دیا گیا۔",
+    "zh_Hant": "優惠券已移除"
   },
   "walkiePlan_couponFlatOff": {
     "en": "Flat {amount} OFF",
@@ -7994,7 +8754,9 @@
     "pt": "Desconto direto de {amount}",
     "ja": "{amount} 引き",
     "zh": "立减 {amount}",
-    "or": "ଫ୍ଲାଟ {amount} ବନ୍ଦ |"
+    "or": "ଫ୍ଲାଟ {amount} ବନ୍ଦ |",
+    "ur": "فلیٹ {amount} آف",
+    "zh_Hant": "平 {amount} 關閉"
   },
   "walkiePlan_couponPercentOff": {
     "en": "{percent}% OFF",
@@ -8019,7 +8781,9 @@
     "pt": "{percent}% de Desconto",
     "ja": "{percent}% OFF",
     "zh": "{percent}% 折扣",
-    "or": "{percent}% ବନ୍ଦ |"
+    "or": "{percent}% ବନ୍ଦ |",
+    "ur": "{percent}% آف",
+    "zh_Hant": "{percent}% 折扣"
   },
   "walkiePlan_couponDiscount": {
     "en": "{value} Discount",
@@ -8044,7 +8808,9 @@
     "pt": "Desconto de {value}",
     "ja": "{value} 割引",
     "zh": "{value} 优惠",
-    "or": "{value} ରିହାତି"
+    "or": "{value} ରିହାତି",
+    "ur": "{value} ڈسکاؤنٹ",
+    "zh_Hant": "{value} 折扣"
   },
   "walkiePlan_couponValidTill": {
     "en": "Valid till {date}",
@@ -8069,7 +8835,9 @@
     "pt": "Válido até {date}",
     "ja": "{date} まで有効",
     "zh": "有效期至 {date}",
-    "or": "{date} ପର୍ଯ୍ୟନ୍ତ ବ id ଧ |"
+    "or": "{date} ପର୍ଯ୍ୟନ୍ତ ବ id ଧ |",
+    "ur": "{date} تک درست",
+    "zh_Hant": "有效期限至 {date}"
   },
   "walkiePlan_couponNotEligible": {
     "en": "Not eligible for current plan",
@@ -8089,7 +8857,9 @@
     "pt": "Não elegível para o plano atual",
     "ja": "選択中のプランでは利用できません",
     "zh": "当前套餐不满足使用条件",
-    "or": "ସାମ୍ପ୍ରତିକ ଯୋଜନା ପାଇଁ ଯୋଗ୍ୟ ନୁହେଁ |"
+    "or": "ସାମ୍ପ୍ରତିକ ଯୋଜନା ପାଇଁ ଯୋଗ୍ୟ ନୁହେଁ |",
+    "ur": "موجودہ پلان کے لیے اہل نہیں ہے۔",
+    "zh_Hant": "不符合當前計劃的資格"
   },
   "walkiePlan_couponNotStarted": {
     "en": "Coupon offer is not active yet",
@@ -8109,7 +8879,9 @@
     "pt": "A oferta do cupom ainda não está ativa",
     "ja": "このクーポンはまだ開始されていません",
     "zh": "该优惠活动尚未开始",
-    "or": "କୁପନ ଅଫର ଏପର୍ଯ୍ୟନ୍ତ ସକ୍ରିୟ ନୁହେଁ |"
+    "or": "କୁପନ ଅଫର ଏପର୍ଯ୍ୟନ୍ତ ସକ୍ରିୟ ନୁହେଁ |",
+    "ur": "کوپن پیشکش ابھی فعال نہیں ہے۔",
+    "zh_Hant": "優惠券優惠尚未激活"
   },
   "walkiePlan_couponExpired": {
     "en": "Coupon has expired",
@@ -8129,7 +8901,9 @@
     "pt": "O cupom expirou",
     "ja": "クーポンの有効期限が切れています",
     "zh": "优惠券已过期",
-    "or": "କୁପନ୍ ମିଆଦ ପୂର୍ଣ୍ଣ ହୋଇଛି |"
+    "or": "କୁପନ୍ ମିଆଦ ପୂର୍ଣ୍ଣ ହୋଇଛି |",
+    "ur": "کوپن کی میعاد ختم ہو گئی ہے۔",
+    "zh_Hant": "優惠券已過期"
   },
   "walkiePlan_couponMinOrderNotMet": {
     "en": "Minimum order amount not met",
@@ -8149,7 +8923,9 @@
     "pt": "Valor mínimo do pedido não atingido",
     "ja": "最低注文金額に達していません",
     "zh": "未达到最低订单金额门槛",
-    "or": "ସର୍ବନିମ୍ନ ଅର୍ଡର ପରିମାଣ ପୂରଣ ହୋଇନାହିଁ |"
+    "or": "ସର୍ବନିମ୍ନ ଅର୍ଡର ପରିମାଣ ପୂରଣ ହୋଇନାହିଁ |",
+    "ur": "کم از کم آرڈر کی رقم پوری نہیں ہوئی۔",
+    "zh_Hant": "未達最低訂購量"
   },
   "walkiePlan_couponPlanNotApplicable": {
     "en": "Not applicable on this plan",
@@ -8169,7 +8945,9 @@
     "pt": "Não aplicável a este plano",
     "ja": "このプランには適用できません",
     "zh": "此优惠券不可用于该套餐",
-    "or": "ଏହି ଯୋଜନାରେ ପ୍ରଯୁଜ୍ୟ ନୁହେଁ |"
+    "or": "ଏହି ଯୋଜନାରେ ପ୍ରଯୁଜ୍ୟ ନୁହେଁ |",
+    "ur": "اس پلان پر لاگو نہیں ہے۔",
+    "zh_Hant": "不適用於此計劃"
   },
   "walkiePlan_ctrlGatewayInitFailed": {
     "en": "Payment initiation failed.",
@@ -8189,7 +8967,9 @@
     "pt": "Falha na inicialização do pagamento.",
     "ja": "支払いの初期化に失敗しました。",
     "zh": "支付初始化失败。",
-    "or": "ଦେୟ ଆରମ୍ଭ ବିଫଳ ହେଲା |"
+    "or": "ଦେୟ ଆରମ୍ଭ ବିଫଳ ହେଲା |",
+    "ur": "ادائیگی کا آغاز ناکام ہو گیا۔",
+    "zh_Hant": "付款發起失敗。"
   },
   "walkiePlan_ctrlGatewaySessionFailed": {
     "en": "Failed to create payment session: {error}",
@@ -8214,7 +8994,9 @@
     "pt": "Falha ao criar sessão de pagamento: {error}",
     "ja": "決済セッションの作成に失敗しました: {error}",
     "zh": "创建支付会话失败：{error}",
-    "or": "ଦେୟ ଅଧିବେଶନ ସୃଷ୍ଟି କରିବାରେ ବିଫଳ: {error}"
+    "or": "ଦେୟ ଅଧିବେଶନ ସୃଷ୍ଟି କରିବାରେ ବିଫଳ: {error}",
+    "ur": "ادائیگی کا سیشن بنانے میں ناکام: {error}",
+    "zh_Hant": "建立支付會話失敗：{error}"
   },
   "walkiePlan_ctrlGatewayError": {
     "en": "Cashfree error ({code})",
@@ -8239,7 +9021,9 @@
     "pt": "Erro do Cashfree ({code})",
     "ja": "Cashfree エラー ({code})",
     "zh": "Cashfree 错误 ({code})",
-    "or": "କ୍ୟାସଫ୍ରି ତ୍ରୁଟି ({code})"
+    "or": "କ୍ୟାସଫ୍ରି ତ୍ରୁଟି ({code})",
+    "ur": "کیش فری ایرر ({code})",
+    "zh_Hant": "無現金錯誤 ({code})"
   },
   "walkiePlan_ctrlGatewayUnableToProcess": {
     "en": "Unable to process payment: {error}",
@@ -8264,7 +9048,9 @@
     "pt": "Não foi possível processar o pagamento: {error}",
     "ja": "支払いを処理できません: {error}",
     "zh": "无法处理付款：{error}",
-    "or": "ଦେୟ ପ୍ରକ୍ରିୟାକରଣ କରିବାରେ ଅସମର୍ଥ: {error}"
+    "or": "ଦେୟ ପ୍ରକ୍ରିୟାକରଣ କରିବାରେ ଅସମର୍ଥ: {error}",
+    "ur": "ادائیگی پر کارروائی کرنے سے قاصر: {error}",
+    "zh_Hant": "無法處理付款：{error}"
   },
   "walkiePlan_detailsMemberSingular": {
     "en": "Member",
@@ -8285,7 +9071,9 @@
     "pt": "Membro",
     "ja": "名",
     "zh": "人",
-    "or": "ସଦସ୍ୟ"
+    "or": "ସଦସ୍ୟ",
+    "ur": "ممبر",
+    "zh_Hant": "成員"
   },
   "walkiePlan_detailsMemberPlural": {
     "en": "Members",
@@ -8306,6 +9094,8 @@
     "pt": "Membros",
     "ja": "名",
     "zh": "人",
-    "or": "ସଦସ୍ୟମାନେ |"
+    "or": "ସଦସ୍ୟମାନେ |",
+    "ur": "ممبران",
+    "zh_Hant": "會員"
   }
 }

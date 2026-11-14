@@ -969,6 +969,8 @@
   "intro_skip": "છોડો",
   "intro_walkieSubtitle": "સિગ્નલ નથી? કોઈ વાંધો નહીં. ગમે ત્યાં જોડાયેલા રહો.",
   "intro_walkieTitle": "વૉકી-ટૉકી ફીચર",
+  "login_dataSecure": "તમારો ડેટા {percent} સુરક્ષિત છે",
+  "login_enterMobileNumber": "મોબાઇલ નંબર દાખલ કરો",
   "media_cannotOpen": "ખોલી શકાતું નથી",
   "media_documentNotFound": "ડૉક્યુમેન્ટ મળ્યો નથી",
   "media_invalidLink": "અમાન્ય લિંક",

@@ -233,7 +233,7 @@ class ChatListScreen extends StatelessWidget {
               children: [
                 Icon(Icons.chat_bubble_rounded, size: 18.sp),
                 SizedBox(width: 8.w),
-                const Text("All Chats"),
+                Text(context.l10n.chatList_allChats),
               ],
             ),
           ),
@@ -243,7 +243,7 @@ class ChatListScreen extends StatelessWidget {
               children: [
                 Icon(Icons.people_alt_rounded, size: 18.sp),
                 SizedBox(width: 8.w),
-                const Text("Groups"),
+                Text(context.l10n.chatList_quickGroups),
               ],
             ),
           ),
@@ -523,104 +523,109 @@ class _AllChatsBody extends StatelessWidget {
                 return false;
               },
               child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Obx(
-                    () {
-                      arcRowBuild(controller.archivedChats.length, // TODO(arc-diagnostics)
-                          controller.archivedUnreadCount);
-                      return (!controller.isSearching.value &&
-                            controller.archivedChats.isNotEmpty)
-                        ? _archivedChatsRow()
-                        : const SizedBox.shrink();
-                    },
-                  ),
-                  Obx(
-                    () => _sectionTitle(
-                      controller.isSearching.value ? appL10n.chatList_searchResults : appL10n.chatList_allChats,
-                      // Unread chats in the main list (archived excluded),
-                      // not the number of loaded rows.
-                      badgeCount: controller.mainUnreadChatCount > 0
-                          ? controller.mainUnreadChatCount
-                          : null,
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Obx(
+                      () {
+                        arcRowBuild(
+                            controller
+                                .archivedChats.length, // TODO(arc-diagnostics)
+                            controller.archivedUnreadCount);
+                        return (!controller.isSearching.value &&
+                                controller.archivedChats.isNotEmpty)
+                            ? _archivedChatsRow()
+                            : const SizedBox.shrink();
+                      },
                     ),
-                  ),
-                  Obx(() {
-                    if (controller.isLoading.value &&
-                        controller.displayedChats.isEmpty) {
-                      return _buildSkeletonList();
-                    }
-
-                    if (controller.displayedChats.isEmpty) {
-                      return controller.isSearching.value
-                          ? _emptySearchResults()
-                          : _emptyChats();
-                    }
-
-                    return Container(
-                      margin: EdgeInsets.symmetric(horizontal: 16.w),
-                      padding: EdgeInsets.symmetric(vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
-                            blurRadius: 12,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
+                    Obx(
+                      () => _sectionTitle(
+                        controller.isSearching.value
+                            ? appL10n.chatList_searchResults
+                            : appL10n.chatList_allChats,
+                        // Unread chats in the main list (archived excluded),
+                        // not the number of loaded rows.
+                        badgeCount: controller.mainUnreadChatCount > 0
+                            ? controller.mainUnreadChatCount
+                            : null,
                       ),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: EdgeInsets.zero,
-                        itemCount: controller.displayedChats.length,
-                        separatorBuilder: (_, __) => Divider(
-                          color: Colors.grey.withOpacity(0.12),
-                          height: 1,
-                          indent: 16.w,
-                          endIndent: 16.w,
+                    ),
+                    Obx(() {
+                      if (controller.isLoading.value &&
+                          controller.displayedChats.isEmpty) {
+                        return _buildSkeletonList();
+                      }
+
+                      if (controller.displayedChats.isEmpty) {
+                        return controller.isSearching.value
+                            ? _emptySearchResults()
+                            : _emptyChats();
+                      }
+
+                      return Container(
+                        margin: EdgeInsets.symmetric(horizontal: 16.w),
+                        padding: EdgeInsets.symmetric(vertical: 4.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 12,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
-                        itemBuilder: (context, index) {
-                          final chat = controller.displayedChats[index];
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: EdgeInsets.zero,
+                          itemCount: controller.displayedChats.length,
+                          separatorBuilder: (_, __) => Divider(
+                            color: Colors.grey.withOpacity(0.12),
+                            height: 1,
+                            indent: 16.w,
+                            endIndent: 16.w,
+                          ),
+                          itemBuilder: (context, index) {
+                            final chat = controller.displayedChats[index];
 
-                          return KeyedSubtree(
-                            key: ValueKey(ChatListRules.chatKey(chat)),
-                            child: _chatRow(
-                            context: context,
-                            index: index,
-                            chat: chat,
-                            typingLabel: controller.typingLabelFor(chat),
-                            name: chatListDisplayName(chat.name ?? chat.groupName),
-                            role: chat.role ?? "",
-                            msg: MessagePreviewBuilder.forChat(
-                              chat,
-                              currentUserId: controller.currentUserId,
-                            ).rowText,
-                            time: _formatChatTime(
-                              chat.timestamp ?? chat.time ?? "",
-                            ),
-                            unreadCount: chat.unreadCount ?? 0,
-                            statusColor: chat.isGroup == true
-                                ? null
-                                : (chat.isOnline == true
-                                    ? const Color(0xFF16A765)
-                                    : Colors.grey),
-                            isGroup: chat.isGroup ?? false,
-                            image: chat.image,
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  }),
-                  SizedBox(height: 20.h),
-                ],
+                            return KeyedSubtree(
+                              key: ValueKey(ChatListRules.chatKey(chat)),
+                              child: _chatRow(
+                                context: context,
+                                index: index,
+                                chat: chat,
+                                typingLabel: controller.typingLabelFor(chat),
+                                name: chatListDisplayName(
+                                    chat.name ?? chat.groupName),
+                                role: chat.role ?? "",
+                                msg: MessagePreviewBuilder.forChat(
+                                  chat,
+                                  currentUserId: controller.currentUserId,
+                                ).rowText,
+                                time: _formatChatTime(
+                                  chat.timestamp ?? chat.time ?? "",
+                                ),
+                                unreadCount: chat.unreadCount ?? 0,
+                                statusColor: chat.isGroup == true
+                                    ? null
+                                    : (chat.isOnline == true
+                                        ? const Color(0xFF16A765)
+                                        : Colors.grey),
+                                isGroup: chat.isGroup ?? false,
+                                image: chat.image,
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    }),
+                    SizedBox(height: 20.h),
+                  ],
+                ),
               ),
-            ),
             ),
           ),
         ),
@@ -773,7 +778,8 @@ class _AllChatsBody extends StatelessWidget {
             Obx(
               () => reausabletext(
                 controller.searchQuery.value.isNotEmpty
-                    ? appL10n.chatList_noResultsFor(controller.searchQuery.value)
+                    ? appL10n
+                        .chatList_noResultsFor(controller.searchQuery.value)
                     : appL10n.chatList_tryDifferentSearch,
                 fontsize: 11.sp,
                 color: Colors.grey,
@@ -900,78 +906,79 @@ class _AllChatsBody extends StatelessWidget {
     Offset tapPos = Offset.zero;
 
     Future<void> openChat() async {
-        if (chat.isGroup == true) {
-          final effectiveGroupId =
-              chat.groupId?.toString() ?? chat.id?.toString() ?? '';
-          if (effectiveGroupId.isEmpty) return;
-
-          if (Get.isRegistered<ChatListController>()) {
-            Get.find<ChatListController>().markChatAsRead(chat);
-          }
-
-          String groupCode = '';
-          String isCreator = 'false';
-          String isActive = 'true';
-          String profileImg = chat.image ?? '';
-
-          if (Get.isRegistered<GroupController>()) {
-            final gc = Get.find<GroupController>();
-            final matched = gc.groupData.firstWhereOrNull(
-              (g) => g.id == (chat.groupId ?? chat.id),
-            );
-            if (matched != null) {
-              groupCode = matched.groupCode ?? '';
-              isCreator = (matched.isCreator ?? false).toString();
-              isActive = (matched.isActive ?? true).toString();
-              if ((profileImg.isEmpty || _isPlaceholderImage(profileImg)) &&
-                  matched.groupProfile != null &&
-                  !_isPlaceholderImage(matched.groupProfile)) {
-                profileImg = matched.groupProfile!;
-              }
-            }
-          }
-
-          await Get.toNamed(
-            Routes.groupChatScreen,
-            arguments: {
-              "groupId": effectiveGroupId,
-              "groupName": chat.name ?? chat.groupName ?? appL10n.chatList_groupChatFallback,
-              "groupProfile": profileImg,
-              "groupImage": profileImg,
-              "groupCode": groupCode,
-              "isCreator": isCreator,
-              "isActive": isActive,
-              if (controller.isGroupDeactivated(chat))
-                "groupStatus": "deactivated",
-            },
-          );
-          return;
-        }
-
-        if (chat.userId == null && chat.id == null) {
-          return;
-        }
+      if (chat.isGroup == true) {
+        final effectiveGroupId =
+            chat.groupId?.toString() ?? chat.id?.toString() ?? '';
+        if (effectiveGroupId.isEmpty) return;
 
         if (Get.isRegistered<ChatListController>()) {
           Get.find<ChatListController>().markChatAsRead(chat);
         }
 
-        await Get.to(
-          () => ChatScreen(),
+        String groupCode = '';
+        String isCreator = 'false';
+        String isActive = 'true';
+        String profileImg = chat.image ?? '';
+
+        if (Get.isRegistered<GroupController>()) {
+          final gc = Get.find<GroupController>();
+          final matched = gc.groupData.firstWhereOrNull(
+            (g) => g.id == (chat.groupId ?? chat.id),
+          );
+          if (matched != null) {
+            groupCode = matched.groupCode ?? '';
+            isCreator = (matched.isCreator ?? false).toString();
+            isActive = (matched.isActive ?? true).toString();
+            if ((profileImg.isEmpty || _isPlaceholderImage(profileImg)) &&
+                matched.groupProfile != null &&
+                !_isPlaceholderImage(matched.groupProfile)) {
+              profileImg = matched.groupProfile!;
+            }
+          }
+        }
+
+        await Get.toNamed(
+          Routes.groupChatScreen,
           arguments: {
-            "userData": MemberData(
-              userId: chat.userId,
-              name: chat.name,
-              profileImage: chat.image,
-              groupId: 0,
-            ),
-            "chatId":
-                (chat.chatId ?? chat.conversationId ?? chat.id)?.toString(),
+            "groupId": effectiveGroupId,
+            "groupName": chat.name ??
+                chat.groupName ??
+                appL10n.chatList_groupChatFallback,
+            "groupProfile": profileImg,
+            "groupImage": profileImg,
+            "groupCode": groupCode,
+            "isCreator": isCreator,
+            "isActive": isActive,
+            if (controller.isGroupDeactivated(chat))
+              "groupStatus": "deactivated",
           },
-          binding: BindingsBuilder(() {
-            Get.put(MessageController());
-          }),
         );
+        return;
+      }
+
+      if (chat.userId == null && chat.id == null) {
+        return;
+      }
+
+      if (Get.isRegistered<ChatListController>()) {
+        Get.find<ChatListController>().markChatAsRead(chat);
+      }
+
+      await Get.to(
+        () => ChatScreen(),
+        arguments: {
+          "userData": MemberData(
+            userId: chat.userId,
+            name: chat.name,
+            profileImage: chat.image,
+            groupId: 0,
+          ),
+          "chatId": (chat.chatId ?? chat.conversationId ?? chat.id)?.toString(),
+        },
+        binding: BindingsBuilder(() {
+          Get.put(MessageController());
+        }),
+      );
     }
 
     final bool isGroupChat = chat.isGroup == true;
@@ -1082,20 +1089,59 @@ class _AllChatsBody extends StatelessWidget {
         GestureDetector(
           onTap: onAvatarTap,
           child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            if (isGroup)
-              ClipOval(
-                child: SizedBox(
-                  width: 52.r,
-                  height: 52.r,
-                  child: hasValidImage && formattedUrl.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: formattedUrl,
-                          width: 52.r,
-                          height: 52.r,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
+            clipBehavior: Clip.none,
+            children: [
+              if (isGroup)
+                ClipOval(
+                  child: SizedBox(
+                    width: 52.r,
+                    height: 52.r,
+                    child: hasValidImage && formattedUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: formattedUrl,
+                            width: 52.r,
+                            height: 52.r,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF8B78FF),
+                                    Color(0xFF6A5AE0)
+                                  ],
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.groups_rounded,
+                                color: Colors.white,
+                                size: 26.sp,
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF8B78FF),
+                                    Color(0xFF6A5AE0)
+                                  ],
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.groups_rounded,
+                                color: Colors.white,
+                                size: 26.sp,
+                              ),
+                            ),
+                          )
+                        : Container(
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
@@ -1111,53 +1157,39 @@ class _AllChatsBody extends StatelessWidget {
                               size: 26.sp,
                             ),
                           ),
-                          errorWidget: (context, url, error) => Container(
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                  ),
+                )
+              else
+                ClipOval(
+                  child: SizedBox(
+                    width: 52.r,
+                    height: 52.r,
+                    child: hasValidImage && formattedUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: formattedUrl,
+                            width: 52.r,
+                            height: 52.r,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey.shade200,
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.person,
+                                color: Colors.grey.shade500,
+                                size: 26.sp,
                               ),
                             ),
-                            alignment: Alignment.center,
-                            child: Icon(
-                              Icons.groups_rounded,
-                              color: Colors.white,
-                              size: 26.sp,
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.grey.shade200,
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.person,
+                                color: Colors.grey.shade500,
+                                size: 26.sp,
+                              ),
                             ),
-                          ),
-                        )
-                      : Container(
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
-                            ),
-                          ),
-                          alignment: Alignment.center,
-                          child: Icon(
-                            Icons.groups_rounded,
-                            color: Colors.white,
-                            size: 26.sp,
-                          ),
-                        ),
-                ),
-              )
-            else
-              ClipOval(
-                child: SizedBox(
-                  width: 52.r,
-                  height: 52.r,
-                  child: hasValidImage && formattedUrl.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: formattedUrl,
-                          width: 52.r,
-                          height: 52.r,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
+                          )
+                        : Container(
                             color: Colors.grey.shade200,
                             alignment: Alignment.center,
                             child: Icon(
@@ -1166,46 +1198,27 @@ class _AllChatsBody extends StatelessWidget {
                               size: 26.sp,
                             ),
                           ),
-                          errorWidget: (context, url, error) => Container(
-                            color: Colors.grey.shade200,
-                            alignment: Alignment.center,
-                            child: Icon(
-                              Icons.person,
-                              color: Colors.grey.shade500,
-                              size: 26.sp,
-                            ),
-                          ),
-                        )
-                      : Container(
-                          color: Colors.grey.shade200,
-                          alignment: Alignment.center,
-                          child: Icon(
-                            Icons.person,
-                            color: Colors.grey.shade500,
-                            size: 26.sp,
-                          ),
-                        ),
+                  ),
                 ),
-              ),
-            if (statusColor != null)
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  width: 12.w,
-                  height: 12.w,
-                  decoration: BoxDecoration(
-                    color: statusColor,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 2,
+              if (statusColor != null)
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    width: 12.w,
+                    height: 12.w,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
-        ),
+            ],
+          ),
         ),
         SizedBox(width: 12.w),
         Expanded(
@@ -1414,7 +1427,8 @@ class _AllChatsBody extends StatelessWidget {
       items: [
         DropdownMenuItemData(
           icon: isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-          title: isPinned ? appL10n.chatList_unpinChat : appL10n.chatList_pinChat,
+          title:
+              isPinned ? appL10n.chatList_unpinChat : appL10n.chatList_pinChat,
           onTap: () {
             if (isPinned) {
               controller.unpinChat(chat);
@@ -1427,7 +1441,9 @@ class _AllChatsBody extends StatelessWidget {
           icon: isUnread
               ? Icons.mark_email_read_outlined
               : Icons.mark_email_unread_outlined,
-          title: isUnread ? appL10n.chatList_markAsRead : appL10n.chatList_markAsUnread,
+          title: isUnread
+              ? appL10n.chatList_markAsRead
+              : appL10n.chatList_markAsUnread,
           onTap: () {
             if (isUnread) {
               controller.markChatAsRead(chat);
@@ -1474,12 +1490,14 @@ class _AllChatsBody extends StatelessWidget {
     final difference = now.difference(local);
 
     if (difference.inMinutes < 1) return appL10n.common_justNow;
-    if (difference.inHours < 1) return appL10n.chatList_minutesShort(difference.inMinutes);
+    if (difference.inHours < 1)
+      return appL10n.chatList_minutesShort(difference.inMinutes);
     if (difference.inDays == 0) {
       return appTime(local);
     }
     if (difference.inDays == 1) return appL10n.common_yesterday;
-    if (difference.inDays < 7) return appL10n.chatList_daysShort(difference.inDays);
+    if (difference.inDays < 7)
+      return appL10n.chatList_daysShort(difference.inDays);
     return "${local.day}/${local.month}/${local.year}";
   }
 
@@ -2261,4 +2279,3 @@ class _GroupCardSkeleton extends StatelessWidget {
   }
 }
 */
-

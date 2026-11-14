@@ -969,6 +969,8 @@
   "intro_skip": "ਛੱਡੋ",
   "intro_walkieSubtitle": "ਸਿਗਨਲ ਨਹੀਂ? ਕੋਈ ਗੱਲ ਨਹੀਂ। ਕਿਤੇ ਵੀ ਜੁੜੇ ਰਹੋ।",
   "intro_walkieTitle": "ਵਾਕੀ-ਟਾਕੀ ਫੀਚਰ",
+  "login_dataSecure": "ਤੁਹਾਡਾ ਡੇਟਾ {percent} ਸੁਰੱਖਿਅਤ ਹੈ",
+  "login_enterMobileNumber": "ਮੋਬਾਈਲ ਨੰਬਰ ਦਰਜ ਕਰੋ",
   "media_cannotOpen": "ਖੋਲ੍ਹ ਨਹੀਂ ਸਕਦੇ",
   "media_documentNotFound": "ਡੌਕੂਮੈਂਟ ਨਹੀਂ ਮਿਲਿਆ",
   "media_invalidLink": "ਗਲਤ ਲਿੰਕ",

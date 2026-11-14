@@ -17,7 +17,9 @@
     "pt": "Sobre o FG Tracker",
     "ja": "FG Trackerについて",
     "zh": "关于 FG Tracker",
-    "or": "FG ଟ୍ରାକର୍ ବିଷୟରେ |"
+    "or": "FG ଟ୍ରାକର୍ ବିଷୟରେ |",
+    "ur": "ایف جی ٹریکر کے بارے میں",
+    "zh_Hant": "關於FG追蹤器"
   },
   "about_welcomeTitle": {
     "en": "Welcome to FG Tracker",
@@ -37,7 +39,9 @@
     "pt": "Bem-vindo ao FG Tracker",
     "ja": "FG Trackerへようこそ",
     "zh": "欢迎使用 FG Tracker",
-    "or": "FG ଟ୍ରାକରକୁ ସ୍ୱାଗତ |"
+    "or": "FG ଟ୍ରାକରକୁ ସ୍ୱାଗତ |",
+    "ur": "ایف جی ٹریکر میں خوش آمدید",
+    "zh_Hant": "歡迎來到 FG 追蹤器"
   },
   "about_intro": {
     "en": "FG Tracker is your go-to companion for staying connected and secure while traveling in a group. Whether you're out on a family road trip, a picnic with friends, or just commuting with colleagues — FG Tracker makes sure no one gets left behind.",
@@ -57,7 +61,9 @@
     "pt": "O FG Tracker é o seu companheiro ideal para se manter conectado e seguro ao viajar em grupo. Seja em uma viagem em família, um piquenique com amigos ou no trajeto com colegas, o FG Tracker garante que ninguém fique para trás.",
     "ja": "FG Trackerは、グループでの旅行や移動中に安全につながり続けるための頼もしいパートナーです。家族旅行や友達とのピクニック、同僚との通勤でも、誰一人取り残されることはありません。",
     "zh": "FG Tracker 是您在团队出行时保持联系与安全的首选伴侣。无论是家庭自驾游、朋友野餐还是同事同行，FG Tracker 都能确保没有人掉队。",
-    "or": "ଏକ ଗୋଷ୍ଠୀରେ ଭ୍ରମଣ କରିବା ସମୟରେ ସଂଯୁକ୍ତ ଏବଂ ସୁରକ୍ଷିତ ରହିବା ପାଇଁ FG ଟ୍ରାକର୍ ହେଉଛି ଆପଣଙ୍କର ସାଥୀ | ଆପଣ ଏକ ପାରିବାରିକ ସଡ଼କ ଯାତ୍ରା, ସାଙ୍ଗମାନଙ୍କ ସହିତ ପିକନିକ୍, କିମ୍ବା କେବଳ ସହକର୍ମୀମାନଙ୍କ ସହିତ ଯାତ୍ରା କରିବା - FG ଟ୍ରାକର୍ ନିଶ୍ଚିତ କରେ ଯେ କେହି ପଛରେ ନାହାଁନ୍ତି |"
+    "or": "ଏକ ଗୋଷ୍ଠୀରେ ଭ୍ରମଣ କରିବା ସମୟରେ ସଂଯୁକ୍ତ ଏବଂ ସୁରକ୍ଷିତ ରହିବା ପାଇଁ FG ଟ୍ରାକର୍ ହେଉଛି ଆପଣଙ୍କର ସାଥୀ | ଆପଣ ଏକ ପାରିବାରିକ ସଡ଼କ ଯାତ୍ରା, ସାଙ୍ଗମାନଙ୍କ ସହିତ ପିକନିକ୍, କିମ୍ବା କେବଳ ସହକର୍ମୀମାନଙ୍କ ସହିତ ଯାତ୍ରା କରିବା - FG ଟ୍ରାକର୍ ନିଶ୍ଚିତ କରେ ଯେ କେହି ପଛରେ ନାହାଁନ୍ତି |",
+    "ur": "گروپ میں سفر کے دوران منسلک اور محفوظ رہنے کے لیے ایف جی ٹریکر آپ کا ساتھی ہے۔ چاہے آپ فیملی روڈ ٹرپ پر نکلے ہوں، دوستوں کے ساتھ پکنک منا رہے ہوں، یا صرف ساتھیوں کے ساتھ سفر کر رہے ہوں — FG ٹریکر اس بات کو یقینی بناتا ہے کہ کوئی بھی پیچھے نہ رہے۔",
+    "zh_Hant": "FG Tracker 是您在團體旅行時保持聯繫和安全的首選伴侶。無論您是全家公路旅行、與朋友野餐，還是只是與同事通勤 - FG Tracker 都能確保沒有人落下。"
   },
   "about_whyChooseTitle": {
     "en": "🌟 Why Choose FG Tracker?",
@@ -77,7 +83,9 @@
     "pt": "🌟 Por que escolher o FG Tracker?",
     "ja": "🌟 FG Trackerを選ぶ理由",
     "zh": "🌟 为什么选择 FG Tracker？",
-    "or": "F କାହିଁକି FG ଟ୍ରାକର୍ ବାଛନ୍ତୁ?"
+    "or": "F କାହିଁକି FG ଟ୍ରାକର୍ ବାଛନ୍ତୁ?",
+    "ur": "🌟 FG ٹریکر کا انتخاب کیوں کریں؟",
+    "zh_Hant": "🌟 為什麼要選擇FG追蹤器？"
   },
   "about_whyRealTime": {
     "en": "Real-time location sharing with all group members.",
@@ -97,7 +105,9 @@
     "pt": "Compartilhamento de localização em tempo real com todos os membros.",
     "ja": "グループ全員とのリアルタイムな位置情報共有。",
     "zh": "与所有群组成员进行实时位置共享。",
-    "or": "ସମସ୍ତ ଗୋଷ୍ଠୀ ସଦସ୍ୟଙ୍କ ସହିତ ପ୍ରକୃତ ସମୟ ଅବସ୍ଥାନ ଅଂଶୀଦାର |"
+    "or": "ସମସ୍ତ ଗୋଷ୍ଠୀ ସଦସ୍ୟଙ୍କ ସହିତ ପ୍ରକୃତ ସମୟ ଅବସ୍ଥାନ ଅଂଶୀଦାର |",
+    "ur": "تمام گروپ ممبران کے ساتھ ریئل ٹائم لوکیشن شیئرنگ۔",
+    "zh_Hant": "與所有群組成員即時共享位置。"
   },
   "about_whyNoCalls": {
     "en": "No need to call or text—track live on the map.",
@@ -117,7 +127,9 @@
     "pt": "Sem necessidade de ligar ou enviar mensagens: acompanhe ao vivo no mapa.",
     "ja": "電話やメッセージは不要。地図上でリアルタイムに追跡できます。",
     "zh": "无需频繁通话或发短信，直接在地图上实时追踪。",
-    "or": "କଲ୍ କିମ୍ବା ପାଠ୍ୟର କ need ଣସି ଆବଶ୍ୟକତା ନାହିଁ - ମାନଚିତ୍ରରେ ଲାଇଭ୍ ଟ୍ରାକ୍ କରନ୍ତୁ |"
+    "or": "କଲ୍ କିମ୍ବା ପାଠ୍ୟର କ need ଣସି ଆବଶ୍ୟକତା ନାହିଁ - ମାନଚିତ୍ରରେ ଲାଇଭ୍ ଟ୍ରାକ୍ କରନ୍ତୁ |",
+    "ur": "کال کرنے یا ٹیکسٹ کرنے کی ضرورت نہیں — نقشے پر لائیو ٹریک کریں۔",
+    "zh_Hant": "無需打電話或發短信，即可在地圖上即時追蹤。"
   },
   "about_whyEasy": {
     "en": "Easy to use and lightweight app with privacy control.",
@@ -137,7 +149,9 @@
     "pt": "Fácil de usar, leve e com controle total de privacidade.",
     "ja": "使いやすく軽量で、プライバシー管理も万全。",
     "zh": "轻量易用，并具备完善的隐私控制。",
-    "or": "ଗୋପନୀୟତା ନିୟନ୍ତ୍ରଣ ସହିତ ବ୍ୟବହାର କରିବାକୁ ସହଜ ଏବଂ ହାଲୁକା ଆପ୍ |"
+    "or": "ଗୋପନୀୟତା ନିୟନ୍ତ୍ରଣ ସହିତ ବ୍ୟବହାର କରିବାକୁ ସହଜ ଏବଂ ହାଲୁକା ଆପ୍ |",
+    "ur": "پرائیویسی کنٹرول کے ساتھ استعمال میں آسان اور ہلکا پھلکا ایپ۔",
+    "zh_Hant": "易於使用且具有隱私控制的輕量級應用程式。"
   },
   "about_whyBuiltFor": {
     "en": "Built for families, friends, and small teams.",
@@ -157,7 +171,9 @@
     "pt": "Desenvolvido para famílias, amigos e pequenas equipes.",
     "ja": "家族、友人、少人数のチーム向けに設計されています。",
     "zh": "专为家庭、朋友和小型团队打造。",
-    "or": "ପରିବାର, ବନ୍ଧୁ ଏବଂ ଛୋଟ ଦଳ ପାଇଁ ନିର୍ମିତ |"
+    "or": "ପରିବାର, ବନ୍ଧୁ ଏବଂ ଛୋଟ ଦଳ ପାଇଁ ନିର୍ମିତ |",
+    "ur": "خاندانوں، دوستوں اور چھوٹی ٹیموں کے لیے بنایا گیا ہے۔",
+    "zh_Hant": "專為家人、朋友和小團隊打造。"
   },
   "about_howItWorksTitle": {
     "en": "⚙️ How It Works",
@@ -177,7 +193,9 @@
     "pt": "⚙️ Como funciona",
     "ja": "⚙️ 使い方",
     "zh": "⚙️ 使用说明",
-    "or": "⚙️ ଏହା କିପରି କାମ କରେ |"
+    "or": "⚙️ ଏହା କିପରି କାମ କରେ |",
+    "ur": "⚙️ یہ کیسے کام کرتا ہے۔",
+    "zh_Hant": "⚙️ 它是如何運作的"
   },
   "about_howItWorksIntro": {
     "en": "FG Tracker simplifies group travel coordination. Here's how:",
@@ -197,7 +215,9 @@
     "pt": "O FG Tracker simplifica a coordenação de viagens em grupo. Veja como:",
     "ja": "FG Trackerはグループでの移動や調整を快適にします。手順はこちら:",
     "zh": "FG Tracker 让团队出行协作变得简单轻松。操作如下：",
-    "or": "ଗୋଷ୍ଠୀ ଭ୍ରମଣ ସମନ୍ୱୟକୁ FG ଟ୍ରାକର୍ ସରଳ କରିଥାଏ | ଏଠାରେ କିପରି ଅଛି:"
+    "or": "ଗୋଷ୍ଠୀ ଭ୍ରମଣ ସମନ୍ୱୟକୁ FG ଟ୍ରାକର୍ ସରଳ କରିଥାଏ | ଏଠାରେ କିପରି ଅଛି:",
+    "ur": "FG ٹریکر گروپ ٹریول کوآرڈینیشن کو آسان بناتا ہے۔ یہ ہے طریقہ:",
+    "zh_Hant": "FG Tracker 簡化了團體旅遊協調。方法如下："
   },
   "about_howStep1": {
     "en": "Create a Group",
@@ -217,7 +237,9 @@
     "pt": "Crie um grupo",
     "ja": "グループを作成",
     "zh": "创建群组",
-    "or": "ଏକ ଗୋଷ୍ଠୀ ସୃଷ୍ଟି କରନ୍ତୁ |"
+    "or": "ଏକ ଗୋଷ୍ଠୀ ସୃଷ୍ଟି କରନ୍ତୁ |",
+    "ur": "ایک گروپ بنائیں",
+    "zh_Hant": "建立群組"
   },
   "about_howStep2": {
     "en": "Share the group code or QR code with your companions",
@@ -237,7 +259,9 @@
     "pt": "Compartilhe o código do grupo ou QR code com seus companheiros",
     "ja": "グループコードまたはQRコードを仲間に共有",
     "zh": "与同行人员分享群组代码或二维码",
-    "or": "ଆପଣଙ୍କର ସାଥୀମାନଙ୍କ ସହିତ ଗ୍ରୁପ୍ କୋଡ୍ କିମ୍ବା QR କୋଡ୍ ଅଂଶୀଦାର କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ସାଥୀମାନଙ୍କ ସହିତ ଗ୍ରୁପ୍ କୋଡ୍ କିମ୍ବା QR କୋଡ୍ ଅଂଶୀଦାର କରନ୍ତୁ |",
+    "ur": "گروپ کوڈ یا QR کوڈ اپنے ساتھیوں کے ساتھ شیئر کریں۔",
+    "zh_Hant": "與您的同伴分享群組代碼或二維碼"
   },
   "about_howStep3": {
     "en": "Each member joins using the shared code or QR",
@@ -257,7 +281,9 @@
     "pt": "Cada membro entra usando o código ou QR compartilhado",
     "ja": "各メンバーが共有コードまたはQRで参加",
     "zh": "每个成员使用分享的代码或二维码加入",
-    "or": "ପ୍ରତ୍ୟେକ ସଦସ୍ୟ ଅଂଶୀଦାର କୋଡ୍ କିମ୍ବା QR ବ୍ୟବହାର କରି ଯୋଗ ଦିଅନ୍ତି |"
+    "or": "ପ୍ରତ୍ୟେକ ସଦସ୍ୟ ଅଂଶୀଦାର କୋଡ୍ କିମ୍ବା QR ବ୍ୟବହାର କରି ଯୋଗ ଦିଅନ୍ତି |",
+    "ur": "ہر رکن مشترکہ کوڈ یا QR کا استعمال کرتے ہوئے شامل ہوتا ہے۔",
+    "zh_Hant": "每個成員使用共享代碼或 QR 加入"
   },
   "about_howStep4": {
     "en": "Track everyone’s live location on a shared map in real-time",
@@ -277,7 +303,9 @@
     "pt": "Acompanhe a localização ao vivo de todos em um mapa compartilhado em tempo real",
     "ja": "共有マップ上で全員の現在地をリアルタイムに確認",
     "zh": "在共享地图上实时查看每个人的当前位置",
-    "or": "ରିଅଲ୍-ଟାଇମ୍ ରେ ଏକ ଅଂଶୀଦାର ମାନଚିତ୍ରରେ ସମସ୍ତଙ୍କ ଲାଇଭ୍ ଅବସ୍ଥାନ ଟ୍ରାକ୍ କରନ୍ତୁ |"
+    "or": "ରିଅଲ୍-ଟାଇମ୍ ରେ ଏକ ଅଂଶୀଦାର ମାନଚିତ୍ରରେ ସମସ୍ତଙ୍କ ଲାଇଭ୍ ଅବସ୍ଥାନ ଟ୍ରାକ୍ କରନ୍ତୁ |",
+    "ur": "ریئل ٹائم میں مشترکہ نقشے پر ہر کسی کے لائیو مقام کو ٹریک کریں۔",
+    "zh_Hant": "在共享地圖上即時追蹤每個人的即時位置"
   },
   "about_howStep5": {
     "en": "Use the sharing feature to invite more people effortlessly",
@@ -297,7 +325,9 @@
     "pt": "Use o recurso de compartilhamento para convidar mais pessoas facilmente",
     "ja": "共有機能を使って手軽にメンバーを追加招待",
     "zh": "使用分享功能轻松邀请更多人加入",
-    "or": "ଅଧିକ ଲୋକଙ୍କୁ ଅଯଥା ନିମନ୍ତ୍ରଣ କରିବାକୁ ଅଂଶୀଦାର ବ feature ଶିଷ୍ଟ୍ୟ ବ୍ୟବହାର କରନ୍ତୁ |"
+    "or": "ଅଧିକ ଲୋକଙ୍କୁ ଅଯଥା ନିମନ୍ତ୍ରଣ କରିବାକୁ ଅଂଶୀଦାର ବ feature ଶିଷ୍ଟ୍ୟ ବ୍ୟବହାର କରନ୍ତୁ |",
+    "ur": "آسانی سے زیادہ لوگوں کو مدعو کرنے کے لیے اشتراک کی خصوصیت کا استعمال کریں۔",
+    "zh_Hant": "使用分享功能輕鬆邀請更多人"
   },
   "about_privacyTitle": {
     "en": "🔐 Privacy & Security",
@@ -317,7 +347,9 @@
     "pt": "🔐 Privacidade e Segurança",
     "ja": "🔐 プライバシーとセキュリティ",
     "zh": "🔐 隐私与安全",
-    "or": "🔐 ଗୋପନୀୟତା ଏବଂ ସୁରକ୍ଷା"
+    "or": "🔐 ଗୋପନୀୟତା ଏବଂ ସୁରକ୍ଷା",
+    "ur": "🔐 رازداری اور سلامتی",
+    "zh_Hant": "🔐 隱私與安全"
   },
   "about_privacyBody": {
     "en": "Your safety and privacy matter. FG Tracker does not share your location with anyone outside your group. All data is encrypted and only shared with the people you authorize.",
@@ -337,7 +369,9 @@
     "pt": "Sua segurança e privacidade são essenciais. O FG Tracker não compartilha sua localização com ninguém fora do seu grupo. Todos os dados são criptografados e visíveis apenas para pessoas autorizadas.",
     "ja": "安全性とプライバシーを最優先に保護します。FG Trackerはグループ外の誰とも位置情報を共有しません。すべてのデータは暗号化され、許可されたメンバーのみに共有されます。",
     "zh": "您的安全与隐私至关重要。FG Tracker 绝不会向群组以外的任何人共享您的位置。所有数据均经过加密，仅与您授权的人员共享。",
-    "or": "ତୁମର ସୁରକ୍ଷା ଏବଂ ଗୋପନୀୟତା ବିଷୟ | FG ଟ୍ରାକର୍ ଆପଣଙ୍କ ଗ୍ରୁପ୍ ବାହାରେ ଥିବା କାହା ସହିତ ଆପଣଙ୍କର ଅବସ୍ଥାନ ଅଂଶୀଦାର କରେ ନାହିଁ | ସମସ୍ତ ତଥ୍ୟ ଏନକ୍ରିପ୍ଟ ହୋଇଛି ଏବଂ କେବଳ ଆପଣ ଅନୁମତି ଦେଇଥିବା ଲୋକଙ୍କ ସହିତ ଅଂଶୀଦାର ହୋଇଛି |"
+    "or": "ତୁମର ସୁରକ୍ଷା ଏବଂ ଗୋପନୀୟତା ବିଷୟ | FG ଟ୍ରାକର୍ ଆପଣଙ୍କ ଗ୍ରୁପ୍ ବାହାରେ ଥିବା କାହା ସହିତ ଆପଣଙ୍କର ଅବସ୍ଥାନ ଅଂଶୀଦାର କରେ ନାହିଁ | ସମସ୍ତ ତଥ୍ୟ ଏନକ୍ରିପ୍ଟ ହୋଇଛି ଏବଂ କେବଳ ଆପଣ ଅନୁମତି ଦେଇଥିବା ଲୋକଙ୍କ ସହିତ ଅଂଶୀଦାର ହୋଇଛି |",
+    "ur": "آپ کی حفاظت اور رازداری اہم ہے۔ FG ٹریکر آپ کے مقام کا اشتراک آپ کے گروپ سے باہر کسی کے ساتھ نہیں کرتا ہے۔ تمام ڈیٹا کو انکرپٹ کیا گیا ہے اور صرف ان لوگوں کے ساتھ شیئر کیا گیا ہے جنہیں آپ اجازت دیتے ہیں۔",
+    "zh_Hant": "您的安全和隱私很重要。 FG Tracker 不會與團隊以外的任何人共用您的位置。所有資料均經過加密，並且僅與您授權的人員共用。"
   },
   "about_supportTitle": {
     "en": "📩 Support & Developer Info",
@@ -357,7 +391,9 @@
     "pt": "📩 Suporte e Informações do Desenvolvedor",
     "ja": "📩 サポート・開発者情報",
     "zh": "📩 支持与开发者信息",
-    "or": "📩 ସମର୍ଥନ ଏବଂ ବିକାଶକାରୀ ସୂଚନା"
+    "or": "📩 ସମର୍ଥନ ଏବଂ ବିକାଶକାରୀ ସୂଚନା",
+    "ur": "📩 سپورٹ اور ڈویلپر کی معلومات",
+    "zh_Hant": "📩 支援與開發者訊息"
   },
   "about_supportEmail": {
     "en": "Support Email",
@@ -377,7 +413,9 @@
     "pt": "E-mail de suporte",
     "ja": "サポートメール",
     "zh": "支持邮箱",
-    "or": "ଇମେଲ୍ ସମର୍ଥନ କରନ୍ତୁ |"
+    "or": "ଇମେଲ୍ ସମର୍ଥନ କରନ୍ତୁ |",
+    "ur": "سپورٹ ای میل",
+    "zh_Hant": "支援電子郵件"
   },
   "about_developerEmail": {
     "en": "Developer Email",
@@ -397,7 +435,9 @@
     "pt": "E-mail do desenvolvedor",
     "ja": "開発者メール",
     "zh": "开发者邮箱",
-    "or": "ବିକାଶକାରୀ ଇମେଲ୍ |"
+    "or": "ବିକାଶକାରୀ ଇମେଲ୍ |",
+    "ur": "ڈویلپر ای میل",
+    "zh_Hant": "開發者信箱"
   },
   "about_company": {
     "en": "Company",
@@ -417,7 +457,9 @@
     "pt": "Empresa",
     "ja": "企業情報",
     "zh": "公司",
-    "or": "କମ୍ପାନୀ"
+    "or": "କମ୍ପାନୀ",
+    "ur": "کمپنی",
+    "zh_Hant": "公司"
   },
   "about_address": {
     "en": "Address",
@@ -437,7 +479,9 @@
     "pt": "Endereço",
     "ja": "住所",
     "zh": "地址",
-    "or": "ଠିକଣା"
+    "or": "ଠିକଣା",
+    "ur": "پتہ",
+    "zh_Hant": "地址"
   },
   "about_website": {
     "en": "Website",
@@ -457,7 +501,9 @@
     "pt": "Site",
     "ja": "ウェブサイト",
     "zh": "官网",
-    "or": "ୱେବସାଇଟ୍"
+    "or": "ୱେବସାଇଟ୍",
+    "ur": "ویب سائٹ",
+    "zh_Hant": "網站"
   },
   "about_downloadTitle": {
     "en": "📱 Download App",
@@ -477,7 +523,9 @@
     "pt": "📱 Baixar Aplicativo",
     "ja": "📱 アプリをダウンロード",
     "zh": "📱 下载应用",
-    "or": "App ଆପ୍ ଡାଉନଲୋଡ୍ କରନ୍ତୁ |"
+    "or": "App ଆପ୍ ଡାଉନଲୋଡ୍ କରନ୍ତୁ |",
+    "ur": "📱 ایپ ڈاؤن لوڈ کریں۔",
+    "zh_Hant": "📱 下載應用程式"
   },
   "about_title": {
     "en": "About",
@@ -497,7 +545,9 @@
     "pt": "Sobre",
     "ja": "アプリについて",
     "zh": "关于",
-    "or": "ବିଷୟରେ"
+    "or": "ବିଷୟରେ",
+    "ur": "کے بارے میں",
+    "zh_Hant": "關於"
   },
   "about_aboutUs": {
     "en": "About Us",
@@ -517,7 +567,9 @@
     "pt": "Sobre nós",
     "ja": "会社概要",
     "zh": "关于我们",
-    "or": "ଆମ ବିଷୟରେ"
+    "or": "ଆମ ବିଷୟରେ",
+    "ur": "ہمارے بارے میں",
+    "zh_Hant": "關於我們"
   },
   "about_contactUs": {
     "en": "Contact Us",
@@ -537,7 +589,9 @@
     "pt": "Fale conosco",
     "ja": "お問い合わせ",
     "zh": "联系我们",
-    "or": "ଆମ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ |"
+    "or": "ଆମ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ |",
+    "ur": "ہم سے رابطہ کریں۔",
+    "zh_Hant": "聯絡我們"
   },
   "about_privacyPolicy": {
     "en": "Privacy Policy",
@@ -557,7 +611,9 @@
     "pt": "Política de Privacidade",
     "ja": "プライバシーポリシー",
     "zh": "隐私政策",
-    "or": "ଗୋପନୀୟତା ନୀତି"
+    "or": "ଗୋପନୀୟତା ନୀତି",
+    "ur": "رازداری کی پالیسی",
+    "zh_Hant": "隱私權政策"
   },
   "about_termsConditions": {
     "en": "Terms & Conditions",
@@ -577,7 +633,9 @@
     "pt": "Termos e Condições",
     "ja": "利用規約",
     "zh": "条款与条件",
-    "or": "ସର୍ତ୍ତାବଳୀ"
+    "or": "ସର୍ତ୍ତାବଳୀ",
+    "ur": "شرائط و ضوابط",
+    "zh_Hant": "條款及條件"
   },
   "home_joinGroup": {
     "en": "Join Group",
@@ -597,7 +655,9 @@
     "pt": "Entrar no grupo",
     "ja": "グループに参加",
     "zh": "加入群组",
-    "or": "ଗୋଷ୍ଠୀରେ ଯୋଗ ଦିଅନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀରେ ଯୋଗ ଦିଅନ୍ତୁ |",
+    "ur": "گروپ جوائن کریں۔",
+    "zh_Hant": "加入群組"
   },
   "home_joinGroupSubtitle": {
     "en": "Join existing group",
@@ -617,7 +677,9 @@
     "pt": "Entrar em grupo existente",
     "ja": "既存のグループに参加",
     "zh": "加入现有群组",
-    "or": "ବିଦ୍ୟମାନ ଗୋଷ୍ଠୀରେ ଯୋଗ ଦିଅନ୍ତୁ |"
+    "or": "ବିଦ୍ୟମାନ ଗୋଷ୍ଠୀରେ ଯୋଗ ଦିଅନ୍ତୁ |",
+    "ur": "موجودہ گروپ میں شامل ہوں۔",
+    "zh_Hant": "加入現有群組"
   },
   "home_createGroup": {
     "en": "Create Group",
@@ -637,7 +699,9 @@
     "pt": "Criar grupo",
     "ja": "グループ作成",
     "zh": "创建群组",
-    "or": "ଗୋଷ୍ଠୀ ସୃଷ୍ଟି କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ ସୃଷ୍ଟି କରନ୍ତୁ |",
+    "ur": "گروپ بنائیں",
+    "zh_Hant": "建立群組"
   },
   "home_createGroupSubtitle": {
     "en": "Create new group",
@@ -657,7 +721,9 @@
     "pt": "Criar novo grupo",
     "ja": "新しいグループを作成",
     "zh": "创建新群组",
-    "or": "ନୂତନ ଗୋଷ୍ଠୀ ସୃଷ୍ଟି କରନ୍ତୁ |"
+    "or": "ନୂତନ ଗୋଷ୍ଠୀ ସୃଷ୍ଟି କରନ୍ତୁ |",
+    "ur": "نیا گروپ بنائیں",
+    "zh_Hant": "建立新群組"
   },
   "home_upgradeToPremium": {
     "en": "Upgrade to Premium",
@@ -677,7 +743,9 @@
     "pt": "Assinar Premium",
     "ja": "プレミアムにアップグレード",
     "zh": "升级至高级版",
-    "or": "ପ୍ରିମିୟମକୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ |"
+    "or": "ପ୍ରିମିୟମକୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ |",
+    "ur": "پریمیم میں اپ گریڈ کریں۔",
+    "zh_Hant": "升級至高級版"
   },
   "home_upgradeSubtitle": {
     "en": "Unlock advanced features for your team",
@@ -697,7 +765,9 @@
     "pt": "Desbloqueie recursos avançados para sua equipe",
     "ja": "チーム向けの高機能・制限解除を利用",
     "zh": "为您的团队解锁高级功能",
-    "or": "ଆପଣଙ୍କ ଦଳ ପାଇଁ ଉନ୍ନତ ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ଅନଲକ୍ କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କ ଦଳ ପାଇଁ ଉନ୍ନତ ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ଅନଲକ୍ କରନ୍ତୁ |",
+    "ur": "اپنی ٹیم کے لیے جدید خصوصیات کو غیر مقفل کریں۔",
+    "zh_Hant": "為您的團隊解鎖進階功能"
   },
   "home_viewPlans": {
     "en": "View Plans",
@@ -717,7 +787,9 @@
     "pt": "Ver planos",
     "ja": "プランを見る",
     "zh": "查看套餐",
-    "or": "ଯୋଜନାଗୁଡିକ ଦେଖନ୍ତୁ |"
+    "or": "ଯୋଜନାଗୁଡିକ ଦେଖନ୍ତୁ |",
+    "ur": "منصوبے دیکھیں",
+    "zh_Hant": "查看計劃"
   },
   "home_quickActionsTitle": {
     "en": "Quick Actions",
@@ -737,7 +809,9 @@
     "pt": "Ações Rápidas",
     "ja": "クイック操作",
     "zh": "快捷操作",
-    "or": "ଦ୍ରୁତ କାର୍ଯ୍ୟ"
+    "or": "ଦ୍ରୁତ କାର୍ଯ୍ୟ",
+    "ur": "فوری اقدامات",
+    "zh_Hant": "快速行動"
   },
   "home_quickActionsSubtitle": {
     "en": "Everything you need, one tap away.",
@@ -757,7 +831,9 @@
     "pt": "Tudo o que você precisa a um toque.",
     "ja": "ワンタップで必要な機能へすぐアクセス。",
     "zh": "触手可及，一键直达所有功能。",
-    "or": "ଆପଣ ଆବଶ୍ୟକ କରୁଥିବା ସମସ୍ତ ଜିନିଷ, ଗୋଟିଏ ଟ୍ୟାପ୍ ଦୂରରେ |"
+    "or": "ଆପଣ ଆବଶ୍ୟକ କରୁଥିବା ସମସ୍ତ ଜିନିଷ, ଗୋଟିଏ ଟ୍ୟାପ୍ ଦୂରରେ |",
+    "ur": "ہر چیز جس کی آپ کو ضرورت ہے، ایک نل کے فاصلے پر۔",
+    "zh_Hant": "您需要的一切，一鍵搞定。"
   },
   "home_actionAllContacts": {
     "en": "All contacts",
@@ -777,7 +853,9 @@
     "pt": "Todos os contatos",
     "ja": "すべての連絡先",
     "zh": "所有联系人",
-    "or": "ସମସ୍ତ ସମ୍ପର୍କ |"
+    "or": "ସମସ୍ତ ସମ୍ପର୍କ |",
+    "ur": "تمام رابطے",
+    "zh_Hant": "所有聯絡人"
   },
   "home_actionAudioVideoCall": {
     "en": "Audio/Video Call",
@@ -797,7 +875,9 @@
     "pt": "Chamada de áudio/vídeo",
     "ja": "音声/ビデオ通話",
     "zh": "语音/视频通话",
-    "or": "ଅଡିଓ / ଭିଡିଓ କଲ୍ |"
+    "or": "ଅଡିଓ / ଭିଡିଓ କଲ୍ |",
+    "ur": "آڈیو/ویڈیو کال",
+    "zh_Hant": "音訊視訊通話"
   },
   "home_actionChatting": {
     "en": "Chatting",
@@ -817,7 +897,9 @@
     "pt": "Conversas",
     "ja": "チャット",
     "zh": "聊天",
-    "or": "ଚାଟିଂ"
+    "or": "ଚାଟିଂ",
+    "ur": "چیٹنگ",
+    "zh_Hant": "聊天"
   },
   "home_actionWalkieTalkie": {
     "en": "Walkie Talkie",
@@ -837,7 +919,9 @@
     "pt": "Walkie Talkie",
     "ja": "トランシーバー",
     "zh": "对讲机",
-    "or": "ୱାକି ଟକି |"
+    "or": "ୱାକି ଟକି |",
+    "ur": "واکی ٹاکی",
+    "zh_Hant": "對講機"
   },
   "home_actionTracking": {
     "en": "Tracking",
@@ -857,7 +941,9 @@
     "pt": "Rastreamento",
     "ja": "位置追跡",
     "zh": "实时追踪",
-    "or": "ଟ୍ରାକିଂ"
+    "or": "ଟ୍ରାକିଂ",
+    "ur": "ٹریکنگ",
+    "zh_Hant": "追蹤"
   },
   "home_actionSafeZone": {
     "en": "Safe Zone",
@@ -877,7 +963,9 @@
     "pt": "Zona Segura",
     "ja": "セーフゾーン",
     "zh": "安全区域",
-    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ |"
+    "or": "ସୁରକ୍ଷିତ ଜୋନ୍ |",
+    "ur": "سیف زون",
+    "zh_Hant": "安全區"
   },
   "home_walkieSubscribed": {
     "en": "Subscribed",
@@ -897,7 +985,9 @@
     "pt": "Assinado",
     "ja": "登録済み",
     "zh": "已订阅",
-    "or": "ସଦସ୍ୟତା"
+    "or": "ସଦସ୍ୟତା",
+    "ur": "سبسکرائب کیا",
+    "zh_Hant": "已訂閱"
   },
   "home_walkieRenew": {
     "en": "Renew",
@@ -917,7 +1007,9 @@
     "pt": "Renovar",
     "ja": "更新する",
     "zh": "续订",
-    "or": "ନବୀକରଣ କରନ୍ତୁ |"
+    "or": "ନବୀକରଣ କରନ୍ତୁ |",
+    "ur": "تجدید کریں۔",
+    "zh_Hant": "更新"
   },
   "home_walkieExpired": {
     "en": "Expired",
@@ -937,7 +1029,9 @@
     "pt": "Expirado",
     "ja": "期限切れ",
     "zh": "已过期",
-    "or": "ମିଆଦ ପୂର୍ଣ୍ଣ ହୋଇଛି"
+    "or": "ମିଆଦ ପୂର୍ଣ୍ଣ ହୋଇଛି",
+    "ur": "میعاد ختم",
+    "zh_Hant": "已到期"
   },
   "home_walkieOneHourFree": {
     "en": "1 hr free",
@@ -957,7 +1051,9 @@
     "pt": "1 h grátis",
     "ja": "1時間無料",
     "zh": "1小时免费",
-    "or": "1 ଘଣ୍ଟା ମାଗଣା |"
+    "or": "1 ଘଣ୍ଟା ମାଗଣା |",
+    "ur": "1 گھنٹہ مفت",
+    "zh_Hant": "1小時免費"
   },
   "forceUpdate_defaultTitle": {
     "en": "Update Required",
@@ -977,7 +1073,9 @@
     "pt": "Atualização Necessária",
     "ja": "アップデートが必要です",
     "zh": "需要更新",
-    "or": "ଅଦ୍ୟତନ ଆବଶ୍ୟକ |"
+    "or": "ଅଦ୍ୟତନ ଆବଶ୍ୟକ |",
+    "ur": "اپ ڈیٹ درکار ہے۔",
+    "zh_Hant": "需要更新"
   },
   "forceUpdate_defaultMessage": {
     "en": "A new version of FG Tracker is available. Please update to continue.",
@@ -997,7 +1095,9 @@
     "pt": "Uma nova versão do FG Tracker está disponível. Atualize para continuar.",
     "ja": "FG Trackerの最新バージョンが利用可能です。続行するには更新してください。",
     "zh": "FG Tracker 有新版本可用。请更新后继续使用。",
-    "or": "FG ଟ୍ରାକରର ଏକ ନୂତନ ସଂସ୍କରଣ ଉପଲବ୍ଧ | ଜାରି ରଖିବାକୁ ଦୟାକରି ଅଦ୍ୟତନ କରନ୍ତୁ |"
+    "or": "FG ଟ୍ରାକରର ଏକ ନୂତନ ସଂସ୍କରଣ ଉପଲବ୍ଧ | ଜାରି ରଖିବାକୁ ଦୟାକରି ଅଦ୍ୟତନ କରନ୍ତୁ |",
+    "ur": "FG ٹریکر کا ایک نیا ورژن دستیاب ہے۔ جاری رکھنے کے لیے براہ کرم اپ ڈیٹ کریں۔",
+    "zh_Hant": "新版本的 FG Tracker 現已推出。請更新以繼續。"
   },
   "forceUpdate_fallbackMessage": {
     "en": "A new version of FG Tracker is available with critical improvements. Please update to continue using the application.",
@@ -1017,7 +1117,9 @@
     "pt": "Uma nova versão do FG Tracker com melhorias importantes está disponível. Atualize para continuar.",
     "ja": "重要な改善が含まれた新バージョンが利用可能です。利用を続けるには更新してください。",
     "zh": "FG Tracker 包含重要优化的新版本已发布。请更新以继续使用该应用。",
-    "or": "ଜଟିଳ ଉନ୍ନତି ସହିତ FG ଟ୍ରାକରର ଏକ ନୂତନ ସଂସ୍କରଣ ଉପଲବ୍ଧ | ଅନୁପ୍ରୟୋଗ ବ୍ୟବହାର ଜାରି ରଖିବାକୁ ଦୟାକରି ଅଦ୍ୟତନ କରନ୍ତୁ |"
+    "or": "ଜଟିଳ ଉନ୍ନତି ସହିତ FG ଟ୍ରାକରର ଏକ ନୂତନ ସଂସ୍କରଣ ଉପଲବ୍ଧ | ଅନୁପ୍ରୟୋଗ ବ୍ୟବହାର ଜାରି ରଖିବାକୁ ଦୟାକରି ଅଦ୍ୟତନ କରନ୍ତୁ |",
+    "ur": "FG ٹریکر کا ایک نیا ورژن اہم اصلاحات کے ساتھ دستیاب ہے۔ ایپلیکیشن کا استعمال جاری رکھنے کے لیے براہ کرم اپ ڈیٹ کریں۔",
+    "zh_Hant": "新版本的 FG Tracker 現已推出，並進行了重大改進。請更新以繼續使用該應用程式。"
   },
   "forceUpdate_currentInstalled": {
     "en": "CURRENT INSTALLED",
@@ -1037,7 +1139,9 @@
     "pt": "VERSÃO INSTALADA",
     "ja": "現在のバージョン",
     "zh": "当前安装版本",
-    "or": "ବର୍ତ୍ତମାନ ସଂସ୍ଥାପିତ |"
+    "or": "ବର୍ତ୍ତମାନ ସଂସ୍ଥାପିତ |",
+    "ur": "موجودہ انسٹال",
+    "zh_Hant": "目前安裝"
   },
   "forceUpdate_requiredVersion": {
     "en": "REQUIRED VERSION",
@@ -1057,7 +1161,9 @@
     "pt": "VERSÃO NECESSÁRIA",
     "ja": "必要なバージョン",
     "zh": "要求版本",
-    "or": "ଆବଶ୍ୟକ ସଂସ୍କରଣ |"
+    "or": "ଆବଶ୍ୟକ ସଂସ୍କରଣ |",
+    "ur": "مطلوبہ ورژن",
+    "zh_Hant": "所需版本"
   },
   "forceUpdate_updateOnStore": {
     "en": "Update on {storeName}",
@@ -1082,7 +1188,9 @@
     "pt": "Atualizar na {storeName}",
     "ja": "{storeName}で更新",
     "zh": "在 {storeName} 上更新",
-    "or": "{storeName} ରେ ଅଦ୍ୟତନ କରନ୍ତୁ |"
+    "or": "{storeName} ରେ ଅଦ୍ୟତନ କରନ୍ତୁ |",
+    "ur": "{storeName} پر اپ ڈیٹ",
+    "zh_Hant": "{storeName} 更新"
   },
   "forceUpdate_footer": {
     "en": "Update is required to proceed with FG Tracker",
@@ -1102,7 +1210,9 @@
     "pt": "Atualização obrigatória para continuar no FG Tracker",
     "ja": "FG Trackerを利用するには更新が必要です",
     "zh": "必须更新才能继续使用 FG Tracker",
-    "or": "FG ଟ୍ରାକର୍ ସହିତ ଅଗ୍ରଗତି କରିବାକୁ ଅଦ୍ୟତନ ଆବଶ୍ୟକ |"
+    "or": "FG ଟ୍ରାକର୍ ସହିତ ଅଗ୍ରଗତି କରିବାକୁ ଅଦ୍ୟତନ ଆବଶ୍ୟକ |",
+    "ur": "FG ٹریکر کے ساتھ آگے بڑھنے کے لیے اپ ڈیٹ درکار ہے۔",
+    "zh_Hant": "需要更新才能繼續使用 FG Tracker"
   },
   "appUpdate_exitConfirmTitle": {
     "en": "Do you want to Exit?",
@@ -1122,7 +1232,9 @@
     "pt": "Deseja sair?",
     "ja": "終了しますか？",
     "zh": "确定要退出吗？",
-    "or": "ଆପଣ ବାହାରକୁ ଯିବାକୁ ଚାହୁଁଛନ୍ତି କି?"
+    "or": "ଆପଣ ବାହାରକୁ ଯିବାକୁ ଚାହୁଁଛନ୍ତି କି?",
+    "ur": "کیا آپ باہر نکلنا چاہتے ہیں؟",
+    "zh_Hant": "您想退出嗎？"
   },
   "appUpdate_updatingProgress": {
     "en": "Updating... {progress}%",
@@ -1147,7 +1259,9 @@
     "pt": "Atualizando... {progress}%",
     "ja": "更新中... {progress}%",
     "zh": "正在更新... {progress}%",
-    "or": "ଅଦ୍ୟତନ ... {progress}%"
+    "or": "ଅଦ୍ୟତନ ... {progress}%",
+    "ur": "اپ ڈیٹ ہو رہا ہے... {progress}%",
+    "zh_Hant": "正在更新...{progress}%"
   },
   "appUpdate_restartApp": {
     "en": "Restart App",
@@ -1167,7 +1281,9 @@
     "pt": "Reiniciar Aplicativo",
     "ja": "アプリを再起動",
     "zh": "重启应用",
-    "or": "ଆପ୍ ପୁନ Rest ଆରମ୍ଭ କରନ୍ତୁ |"
+    "or": "ଆପ୍ ପୁନ Rest ଆରମ୍ଭ କରନ୍ତୁ |",
+    "ur": "ایپ کو دوبارہ شروع کریں۔",
+    "zh_Hant": "重新啟動應用程式"
   },
   "appUpdate_updateApp": {
     "en": "Update App",
@@ -1187,7 +1303,9 @@
     "pt": "Atualizar App",
     "ja": "アプリを更新",
     "zh": "更新应用",
-    "or": "ଆପ୍ ଅପଡେଟ୍ କରନ୍ତୁ |"
+    "or": "ଆପ୍ ଅପଡେଟ୍ କରନ୍ତୁ |",
+    "ur": "ایپ کو اپ ڈیٹ کریں۔",
+    "zh_Hant": "更新應用程式"
   },
   "appUpdate_updateAvailable": {
     "en": "Update Available",
@@ -1207,7 +1325,9 @@
     "pt": "Atualização Disponível",
     "ja": "アップデートが利用可能です",
     "zh": "发现新版本",
-    "or": "ଅଦ୍ୟତନ ଉପଲବ୍ଧ |"
+    "or": "ଅଦ୍ୟତନ ଉପଲବ୍ଧ |",
+    "ur": "اپ ڈیٹ دستیاب ہے۔",
+    "zh_Hant": "可用更新"
   },
   "appUpdate_updateAvailableMessage": {
     "en": "A new update is available. Please update the app",
@@ -1227,7 +1347,9 @@
     "pt": "Uma nova atualização está disponível. Atualize o aplicativo",
     "ja": "新しい更新があります。アプリをアップデートしてください",
     "zh": "有可用更新，请及时更新应用",
-    "or": "ଏକ ନୂତନ ଅଦ୍ୟତନ ଉପଲବ୍ଧ | ଦୟାକରି ଆପ୍ ଅପଡେଟ୍ କରନ୍ତୁ |"
+    "or": "ଏକ ନୂତନ ଅଦ୍ୟତନ ଉପଲବ୍ଧ | ଦୟାକରି ଆପ୍ ଅପଡେଟ୍ କରନ୍ତୁ |",
+    "ur": "ایک نئی اپ ڈیٹ دستیاب ہے۔ براہ کرم ایپ کو اپ ڈیٹ کریں۔",
+    "zh_Hant": "有新的更新可用。請更新應用程式"
   },
   "appUpdate_noUpdateAvailable": {
     "en": "No Update Available",
@@ -1247,7 +1369,9 @@
     "pt": "Nenhuma atualização disponível",
     "ja": "最新の状態です",
     "zh": "暂无可用更新",
-    "or": "କ No ଣସି ଅଦ୍ୟତନ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "କ No ଣସି ଅଦ୍ୟତନ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "کوئی اپ ڈیٹ دستیاب نہیں ہے۔",
+    "zh_Hant": "無可用更新"
   },
   "appUpdate_updateUnavailable": {
     "en": "Update unavailable",
@@ -1267,7 +1391,9 @@
     "pt": "Atualização indisponível",
     "ja": "更新は現在利用できません",
     "zh": "更新不可用",
-    "or": "ଅଦ୍ୟତନ ଉପଲବ୍ଧ ନାହିଁ"
+    "or": "ଅଦ୍ୟତନ ଉପଲବ୍ଧ ନାହିଁ",
+    "ur": "اپ ڈیٹ دستیاب نہیں ہے۔",
+    "zh_Hant": "無法更新"
   },
   "appUpdate_checkError": {
     "en": "Error checking for update: {error}",
@@ -1292,7 +1418,9 @@
     "pt": "Erro ao verificar atualizações: {error}",
     "ja": "更新確認エラー: {error}",
     "zh": "检查更新失败：{error}",
-    "or": "ଅଦ୍ୟତନ ପାଇଁ ତ୍ରୁଟି ଯା ing ୍ଚ: {error}"
+    "or": "ଅଦ୍ୟତନ ପାଇଁ ତ୍ରୁଟି ଯା ing ୍ଚ: {error}",
+    "ur": "اپ ڈیٹ کی جانچ کرنے میں خرابی: {error}",
+    "zh_Hant": "檢查更新時發生錯誤：{error}"
   },
   "menu_editProfile": {
     "en": "Edit Profile",
@@ -1312,7 +1440,9 @@
     "pt": "Editar Perfil",
     "ja": "プロフィール編集",
     "zh": "编辑个人资料",
-    "or": "ପ୍ରୋଫାଇଲ୍ ସଂପାଦନ କରନ୍ତୁ |"
+    "or": "ପ୍ରୋଫାଇଲ୍ ସଂପାଦନ କରନ୍ତୁ |",
+    "ur": "پروفائل میں ترمیم کریں۔",
+    "zh_Hant": "編輯個人資料"
   },
   "menu_editProfileSubtitle": {
     "en": "Update your information",
@@ -1332,7 +1462,9 @@
     "pt": "Atualize suas informações",
     "ja": "個人情報を更新",
     "zh": "更新个人信息",
-    "or": "ଆପଣଙ୍କର ସୂଚନା ଅଦ୍ୟତନ କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ସୂଚନା ଅଦ୍ୟତନ କରନ୍ତୁ |",
+    "ur": "اپنی معلومات کو اپ ڈیٹ کریں۔",
+    "zh_Hant": "更新您的訊息"
   },
   "menu_contactUsSubtitle": {
     "en": "Know more about us",
@@ -1352,7 +1484,9 @@
     "pt": "Saiba mais sobre nós",
     "ja": "サポートとお問い合わせ",
     "zh": "了解更多关于我们",
-    "or": "ଆମ ବିଷୟରେ ଅଧିକ ଜାଣ |"
+    "or": "ଆମ ବିଷୟରେ ଅଧିକ ଜାଣ |",
+    "ur": "ہمارے بارے میں مزید جانیں۔",
+    "zh_Hant": "了解更多關於我們的信息"
   },
   "menu_logOut": {
     "en": "Log Out",
@@ -1372,7 +1506,9 @@
     "pt": "Sair",
     "ja": "ログアウト",
     "zh": "退出登录",
-    "or": "ଲଗ୍ ଆଉଟ୍ କରନ୍ତୁ |"
+    "or": "ଲଗ୍ ଆଉଟ୍ କରନ୍ତୁ |",
+    "ur": "لاگ آؤٹ کریں۔",
+    "zh_Hant": "退出"
   },
   "menu_logOutSubtitle": {
     "en": "Sign out from the app",
@@ -1392,7 +1528,9 @@
     "pt": "Desconectar do aplicativo",
     "ja": "アプリからサインアウト",
     "zh": "退出当前账号",
-    "or": "ଆପରୁ ସାଇନ୍ ଆଉଟ୍ କରନ୍ତୁ |"
+    "or": "ଆପରୁ ସାଇନ୍ ଆଉଟ୍ କରନ୍ତୁ |",
+    "ur": "ایپ سے سائن آؤٹ کریں۔",
+    "zh_Hant": "從應用程式退出"
   },
   "menu_logOutConfirmMessage": {
     "en": "Do you really want to logout?",
@@ -1412,7 +1550,9 @@
     "pt": "Tem certeza de que deseja sair?",
     "ja": "本当にログアウトしますか？",
     "zh": "您确定要退出登录吗？",
-    "or": "ଆପଣ ପ୍ରକୃତରେ ଲଗ୍ ଆଉଟ୍ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?"
+    "or": "ଆପଣ ପ୍ରକୃତରେ ଲଗ୍ ଆଉଟ୍ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?",
+    "ur": "کیا آپ واقعی لاگ آؤٹ کرنا چاہتے ہیں؟",
+    "zh_Hant": "您真的要退出嗎？"
   },
   "menu_followUsOn": {
     "en": "Follow us on",
@@ -1432,7 +1572,9 @@
     "pt": "Siga-nos em",
     "ja": "公式SNSをフォロー",
     "zh": "关注我们",
-    "or": "ଆମକୁ ଅନୁସରଣ କରନ୍ତୁ |"
+    "or": "ଆମକୁ ଅନୁସରଣ କରନ୍ତୁ |",
+    "ur": "ہمیں فالو کریں۔",
+    "zh_Hant": "關注我們"
   },
   "menu_profileImageUpdated": {
     "en": "Profile image updated successfully",
@@ -1452,7 +1594,9 @@
     "pt": "Foto de perfil atualizada com sucesso",
     "ja": "プロフィール画像が更新されました",
     "zh": "头像更新成功",
-    "or": "ପ୍ରୋଫାଇଲ୍ ପ୍ରତିଛବି ସଫଳତାର ସହିତ ଅଦ୍ୟତନ ହେଲା |"
+    "or": "ପ୍ରୋଫାଇଲ୍ ପ୍ରତିଛବି ସଫଳତାର ସହିତ ଅଦ୍ୟତନ ହେଲା |",
+    "ur": "پروفائل تصویر کامیابی کے ساتھ اپ ڈیٹ ہو گئی۔",
+    "zh_Hant": "個人資料圖片更新成功"
   },
   "menu_profileImageUpdateFailed": {
     "en": "Failed to update profile image",
@@ -1472,7 +1616,9 @@
     "pt": "Falha ao atualizar foto de perfil",
     "ja": "プロフィール画像の更新に失敗しました",
     "zh": "更新头像失败",
-    "or": "ପ୍ରୋଫାଇଲ୍ ପ୍ରତିଛବି ଅପଡେଟ୍ କରିବାରେ ବିଫଳ |"
+    "or": "ପ୍ରୋଫାଇଲ୍ ପ୍ରତିଛବି ଅପଡେଟ୍ କରିବାରେ ବିଫଳ |",
+    "ur": "پروفائل تصویر کو اپ ڈیٹ کرنے میں ناکام",
+    "zh_Hant": "更新個人資料圖片失敗"
   },
   "home_statGroups": {
     "en": "Groups",
@@ -1492,7 +1638,9 @@
     "pt": "Grupos",
     "ja": "グループ",
     "zh": "群组",
-    "or": "ଗୋଷ୍ଠୀଗୁଡିକ"
+    "or": "ଗୋଷ୍ଠୀଗୁଡିକ",
+    "ur": "گروپس",
+    "zh_Hant": "團體"
   },
   "home_statNow": {
     "en": "Now",
@@ -1512,7 +1660,9 @@
     "pt": "Agora",
     "ja": "現在",
     "zh": "现在",
-    "or": "ବର୍ତ୍ତମାନ"
+    "or": "ବର୍ତ୍ତମାନ",
+    "ur": "اب",
+    "zh_Hant": "現在"
   },
   "home_statMembers": {
     "en": "Members",
@@ -1532,7 +1682,9 @@
     "pt": "Membros",
     "ja": "メンバー",
     "zh": "成员",
-    "or": "ସଦସ୍ୟମାନେ |"
+    "or": "ସଦସ୍ୟମାନେ |",
+    "ur": "ممبران",
+    "zh_Hant": "會員"
   },
   "home_statTotal": {
     "en": "Total",
@@ -1552,7 +1704,9 @@
     "pt": "Total",
     "ja": "合計",
     "zh": "总计",
-    "or": "ସମୁଦାୟ"
+    "or": "ସମୁଦାୟ",
+    "ur": "کل",
+    "zh_Hant": "全部的"
   },
   "home_privateMode": {
     "en": "Private Mode",
@@ -1572,7 +1726,9 @@
     "pt": "Modo Privado",
     "ja": "プライベートモード",
     "zh": "隐身模式",
-    "or": "ବ୍ୟକ୍ତିଗତ ମୋଡ୍ |"
+    "or": "ବ୍ୟକ୍ତିଗତ ମୋଡ୍ |",
+    "ur": "پرائیویٹ موڈ",
+    "zh_Hant": "私人模式"
   },
   "home_activeSessionsCount": {
     "en": "{count, plural, =1{1 Active Session} other{{count} Active Sessions}}",
@@ -1597,7 +1753,9 @@
     "pt": "{count, plural, =1{1 sessão ativa} other{{count} sessões ativas}}",
     "ja": "{count}件のアクティブセッション",
     "zh": "{count} 个活跃会话",
-    "or": "{count, plural, =1{1 ସକ୍ରିୟ ଅଧିବେଶନ |} other{{count} ସକ୍ରିୟ ଅଧିବେଶନ |}}"
+    "or": "{count, plural, =1{1 ସକ୍ରିୟ ଅଧିବେଶନ |} other{{count} ସକ୍ରିୟ ଅଧିବେଶନ |}}",
+    "ur": "{count, plural, =1{1 فعال سیشن} other{{count} فعال سیشنز}}",
+    "zh_Hant": "{count, plural, =1{1 個活動會話} other{{count} 活躍會話}}"
   },
   "home_youAreInvisible": {
     "en": "You're Invisible",
@@ -1617,7 +1775,9 @@
     "pt": "Você está invisível",
     "ja": "非表示中（不可視）",
     "zh": "您当前处于隐身状态",
-    "or": "ତୁମେ ଅଦୃଶ୍ୟ |"
+    "or": "ତୁମେ ଅଦୃଶ୍ୟ |",
+    "ur": "آپ غیر مرئی ہیں۔",
+    "zh_Hant": "你是隱形的"
   },
   "home_youAreVisible": {
     "en": "You're Visible",
@@ -1637,7 +1797,9 @@
     "pt": "Você está visível",
     "ja": "表示中（可視）",
     "zh": "您当前对他人可见",
-    "or": "ତୁମେ ଦୃଶ୍ୟମାନ"
+    "or": "ତୁମେ ଦୃଶ୍ୟମାନ",
+    "ur": "آپ مرئی ہیں۔",
+    "zh_Hant": "你是可見的"
   },
   "home_privateModeOnHint": {
     "en": "When Private Mode is ON, others can't see your location.",
@@ -1657,7 +1819,9 @@
     "pt": "Com o Modo Privado ativado, outros não podem ver sua localização.",
     "ja": "プライベートモードがONの場合、他の人にはあなたの現在地は見えません。",
     "zh": "开启隐身模式后，其他人无法查看您的实时位置。",
-    "or": "ଯେତେବେଳେ ବ୍ୟକ୍ତିଗତ ମୋଡ୍ ଅନ୍ ଅଛି, ଅନ୍ୟମାନେ ଆପଣଙ୍କର ଅବସ୍ଥାନ ଦେଖିପାରିବେ ନାହିଁ |"
+    "or": "ଯେତେବେଳେ ବ୍ୟକ୍ତିଗତ ମୋଡ୍ ଅନ୍ ଅଛି, ଅନ୍ୟମାନେ ଆପଣଙ୍କର ଅବସ୍ଥାନ ଦେଖିପାରିବେ ନାହିଁ |",
+    "ur": "نجی موڈ آن ہونے پر، دوسرے آپ کا مقام نہیں دیکھ سکتے ہیں۔",
+    "zh_Hant": "當隱私模式開啟時，其他人無法看到您的位置。"
   },
   "home_privateModeOffHint": {
     "en": "When Private Mode is OFF, others can see your location.",
@@ -1677,7 +1841,9 @@
     "pt": "Com o Modo Privado desativado, outros podem ver sua localização.",
     "ja": "プライベートモードがOFFの場合、他の人にあなたの現在地が共有されます。",
     "zh": "关闭隐身模式后，授权成员可以查看您的实时位置。",
-    "or": "ଯେତେବେଳେ ପ୍ରାଇଭେଟ ମୋଡ୍ ବନ୍ଦ ଅଛି, ଅନ୍ୟମାନେ ଆପଣଙ୍କର ଅବସ୍ଥାନ ଦେଖିପାରିବେ |"
+    "or": "ଯେତେବେଳେ ପ୍ରାଇଭେଟ ମୋଡ୍ ବନ୍ଦ ଅଛି, ଅନ୍ୟମାନେ ଆପଣଙ୍କର ଅବସ୍ଥାନ ଦେଖିପାରିବେ |",
+    "ur": "نجی موڈ آف ہونے پر، دوسرے آپ کا مقام دیکھ سکتے ہیں۔",
+    "zh_Hant": "當私人模式關閉時，其他人可以看到您的位置。"
   },
   "home_activeSessions": {
     "en": "Active Sessions",
@@ -1697,7 +1863,9 @@
     "pt": "Sessões Ativas",
     "ja": "アクティブなセッション",
     "zh": "活跃会话",
-    "or": "ସକ୍ରିୟ ଅଧିବେଶନ |"
+    "or": "ସକ୍ରିୟ ଅଧିବେଶନ |",
+    "ur": "ایکٹو سیشنز",
+    "zh_Hant": "活躍會話"
   },
   "home_noActivePrivateSessions": {
     "en": "No active private sessions",
@@ -1717,7 +1885,9 @@
     "pt": "Nenhuma sessão privada ativa",
     "ja": "アクティブなプライベートセッションはありません",
     "zh": "暂无活跃的隐身会话",
-    "or": "କ active ଣସି ସକ୍ରିୟ ବ୍ୟକ୍ତିଗତ ଅଧିବେଶନ ନାହିଁ |"
+    "or": "କ active ଣସି ସକ୍ରିୟ ବ୍ୟକ୍ତିଗତ ଅଧିବେଶନ ନାହିଁ |",
+    "ur": "کوئی فعال نجی سیشن نہیں ہے۔",
+    "zh_Hant": "沒有活躍的私人會話"
   },
   "home_privateModeIsOn": {
     "en": "Private Mode is ON",
@@ -1737,7 +1907,9 @@
     "pt": "Modo Privado está ATIVADO",
     "ja": "プライベートモードはONです",
     "zh": "隐身模式已开启",
-    "or": "ବ୍ୟକ୍ତିଗତ ମୋଡ୍ ଅନ୍ ଅଛି |"
+    "or": "ବ୍ୟକ୍ତିଗତ ମୋଡ୍ ଅନ୍ ଅଛି |",
+    "ur": "پرائیویٹ موڈ آن ہے۔",
+    "zh_Hant": "私人模式已開啟"
   },
   "home_startedAt": {
     "en": "Started at {time}",
@@ -1762,7 +1934,9 @@
     "pt": "Iniciado às {time}",
     "ja": "{time}に開始",
     "zh": "开始于 {time}",
-    "or": "{time} ରେ ଆରମ୍ଭ ହୋଇଛି |"
+    "or": "{time} ରେ ଆରମ୍ଭ ହୋଇଛି |",
+    "ur": "{time} پر شروع ہوا۔",
+    "zh_Hant": "開始於 {time}"
   },
   "home_searchMembersHint": {
     "en": "Search members...",
@@ -1782,7 +1956,9 @@
     "pt": "Pesquisar membros...",
     "ja": "メンバーを検索...",
     "zh": "搜索成员...",
-    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଖୋଜ ..."
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଖୋଜ ...",
+    "ur": "اراکین کو تلاش کریں...",
+    "zh_Hant": "搜尋會員..."
   },
   "home_onlineNow": {
     "en": "Online Now",
@@ -1802,7 +1978,9 @@
     "pt": "Online agora",
     "ja": "現在オンライン",
     "zh": "当前在线",
-    "or": "ବର୍ତ୍ତମାନ ଅନଲାଇନ୍ |"
+    "or": "ବର୍ତ୍ତମାନ ଅନଲାଇନ୍ |",
+    "ur": "ابھی آن لائن",
+    "zh_Hant": "現已上線"
   },
   "home_showLess": {
     "en": "Show Less",
@@ -1822,7 +2000,9 @@
     "pt": "Mostrar menos",
     "ja": "閉じる",
     "zh": "收起",
-    "or": "କମ୍ ଦେଖାନ୍ତୁ |"
+    "or": "କମ୍ ଦେଖାନ୍ତୁ |",
+    "ur": "کم دکھائیں۔",
+    "zh_Hant": "顯示較少"
   },
   "home_noMembersOnline": {
     "en": "No members currently online",
@@ -1842,7 +2022,9 @@
     "pt": "Nenhum membro online no momento",
     "ja": "現在オンラインのメンバーはいません",
     "zh": "当前没有成员在线",
-    "or": "ବର୍ତ୍ତମାନ ଅନଲାଇନରେ କ members ଣସି ସଦସ୍ୟ ନାହାଁନ୍ତି |"
+    "or": "ବର୍ତ୍ତମାନ ଅନଲାଇନରେ କ members ଣସି ସଦସ୍ୟ ନାହାଁନ୍ତି |",
+    "ur": "فی الحال کوئی ممبر آن لائن نہیں ہے۔",
+    "zh_Hant": "目前沒有會員在線"
   },
   "home_recentlyOnline": {
     "en": "Recently Online",
@@ -1862,7 +2044,9 @@
     "pt": "Online recentemente",
     "ja": "最近オンライン",
     "zh": "最近在线",
-    "or": "ସମ୍ପ୍ରତି ଅନଲାଇନ୍ |"
+    "or": "ସମ୍ପ୍ରତି ଅନଲାଇନ୍ |",
+    "ur": "حال ہی میں آن لائن",
+    "zh_Hant": "最近在線"
   },
   "home_noRecentlyActiveMembers": {
     "en": "No recently active members",
@@ -1882,7 +2066,9 @@
     "pt": "Nenhum membro ativo recentemente",
     "ja": "最近アクティブなメンバーはいません",
     "zh": "最近没有活跃成员",
-    "or": "ସମ୍ପ୍ରତି ସକ୍ରିୟ ସଦସ୍ୟ ନାହିଁ |"
+    "or": "ସମ୍ପ୍ରତି ସକ୍ରିୟ ସଦସ୍ୟ ନାହିଁ |",
+    "ur": "کوئی حال ہی میں فعال ممبران نہیں ہیں۔",
+    "zh_Hant": "最近沒有活躍會員"
   },
   "home_lastSeen": {
     "en": "Last seen {time}",
@@ -1907,7 +2093,9 @@
     "pt": "Visto por último às {time}",
     "ja": "最終ログイン: {time}",
     "zh": "最后在线：{time}",
-    "or": "ଶେଷ ଦେଖାଯାଇଥିବା {time} |"
+    "or": "ଶେଷ ଦେଖାଯାଇଥିବା {time} |",
+    "ur": "آخری بار {time} دیکھا گیا۔",
+    "zh_Hant": "最後一次見到 {time}"
   },
   "home_peopleOnline": {
     "en": "People Online",
@@ -1927,7 +2115,9 @@
     "pt": "Pessoas Online",
     "ja": "オンライン中のユーザー",
     "zh": "在线用户",
-    "or": "ଲୋକମାନେ ଅନଲାଇନ୍ |"
+    "or": "ଲୋକମାନେ ଅନଲାଇନ୍ |",
+    "ur": "لوگ آن لائن",
+    "zh_Hant": "人們在線"
   },
   "home_peopleOnlineSubtitle": {
     "en": "These members are active in the app right now and available to connect.",
@@ -1947,7 +2137,9 @@
     "pt": "Estes membros estão ativos no app agora e disponíveis para contato.",
     "ja": "アプリを開いており、すぐに連絡を取ることができます。",
     "zh": "这些成员当前在应用中保持活跃，可随时发起联络。",
-    "or": "ଏହି ସଦସ୍ୟମାନେ ବର୍ତ୍ତମାନ ଆପରେ ସକ୍ରିୟ ଅଛନ୍ତି ଏବଂ ସଂଯୋଗ କରିବାକୁ ଉପଲବ୍ଧ |"
+    "or": "ଏହି ସଦସ୍ୟମାନେ ବର୍ତ୍ତମାନ ଆପରେ ସକ୍ରିୟ ଅଛନ୍ତି ଏବଂ ସଂଯୋଗ କରିବାକୁ ଉପଲବ୍ଧ |",
+    "ur": "یہ اراکین اس وقت ایپ میں فعال ہیں اور منسلک ہونے کے لیے دستیاب ہیں۔",
+    "zh_Hant": "這些成員現在在應用程式中處於活動狀態並且可以連線。"
   },
   "home_totalMembersCount": {
     "en": "{count, plural, =1{1 Total Member} other{{count} Total Members}}",
@@ -1972,7 +2164,9 @@
     "pt": "{count, plural, =1{1 membro no total} other{{count} membros no total}}",
     "ja": "合計 {count} 名のメンバー",
     "zh": "共 {count} 名成员",
-    "or": "{count, plural, =1{1 ମୋଟ ସଦସ୍ୟ |} other{{count} ସମୁଦାୟ ସଦସ୍ୟ |}}"
+    "or": "{count, plural, =1{1 ମୋଟ ସଦସ୍ୟ |} other{{count} ସମୁଦାୟ ସଦସ୍ୟ |}}",
+    "ur": "{count, plural, =1{کل 1 رکن} other{کل {count} اراکین}}",
+    "zh_Hant": "{count, plural, =1{共有 1 位會員} other{{count} 會員總數}}"
   },
   "home_totalMembers": {
     "en": "Total Members",
@@ -1992,7 +2186,9 @@
     "pt": "Total de Membros",
     "ja": "総メンバー数",
     "zh": "总成员数",
-    "or": "ସମୁଦାୟ ସଦସ୍ୟ"
+    "or": "ସମୁଦାୟ ସଦସ୍ୟ",
+    "ur": "کل ممبران",
+    "zh_Hant": "會員總數"
   },
   "home_active": {
     "en": "Active",
@@ -2012,7 +2208,9 @@
     "pt": "Ativo",
     "ja": "アクティブ",
     "zh": "活跃",
-    "or": "ସକ୍ରିୟ |"
+    "or": "ସକ୍ରିୟ |",
+    "ur": "فعال",
+    "zh_Hant": "積極的"
   },
   "home_inactive": {
     "en": "Inactive",
@@ -2032,7 +2230,9 @@
     "pt": "Inativo",
     "ja": "非アクティブ",
     "zh": "非活跃",
-    "or": "ନିଷ୍କ୍ରିୟ |"
+    "or": "ନିଷ୍କ୍ରିୟ |",
+    "ur": "غیر فعال",
+    "zh_Hant": "不活躍"
   },
   "home_newThisMonth": {
     "en": "New This Month",
@@ -2052,7 +2252,9 @@
     "pt": "Novos este mês",
     "ja": "今月の新規",
     "zh": "本月新增",
-    "or": "ଏହି ମାସରେ ନୂଆ |"
+    "or": "ଏହି ମାସରେ ନୂଆ |",
+    "ur": "اس مہینے میں نیا",
+    "zh_Hant": "本月新品"
   },
   "home_allMembers": {
     "en": "All Members",
@@ -2072,7 +2274,9 @@
     "pt": "Todos os Membros",
     "ja": "すべてのメンバー",
     "zh": "全部成员",
-    "or": "ସମସ୍ତ ସଦସ୍ୟ"
+    "or": "ସମସ୍ତ ସଦସ୍ୟ",
+    "ur": "تمام ممبران",
+    "zh_Hant": "所有會員"
   },
   "home_sortNameAsc": {
     "en": "Sort: Name (A-Z)",
@@ -2092,7 +2296,9 @@
     "pt": "Ordenar: Nome (A-Z)",
     "ja": "並び替え: 名前順 (A-Z)",
     "zh": "排序：姓名 (A-Z)",
-    "or": "ସର୍ଟ: ନାମ (A-Z)"
+    "or": "ସର୍ଟ: ନାମ (A-Z)",
+    "ur": "ترتیب دیں: نام (A-Z)",
+    "zh_Hant": "排序： 名稱 (A-Z)"
   },
   "home_sortNameDesc": {
     "en": "Sort: Name (Z-A)",
@@ -2112,7 +2318,9 @@
     "pt": "Ordenar: Nome (Z-A)",
     "ja": "並び替え: 名前逆順 (Z-A)",
     "zh": "排序：姓名 (Z-A)",
-    "or": "ସର୍ଟ: ନାମ (Z-A)"
+    "or": "ସର୍ଟ: ନାମ (Z-A)",
+    "ur": "ترتیب دیں: نام (Z-A)",
+    "zh_Hant": "排序： 名稱 (Z-A)"
   },
   "home_noMembersMatch": {
     "en": "No members match '{query}'",
@@ -2137,7 +2345,9 @@
     "pt": "Nenhum membro corresponde a '{query}'",
     "ja": "'{query}' に一致するメンバーはいません",
     "zh": "未找到匹配“{query}”的成员",
-    "or": "କ members ଣସି ସଦସ୍ୟ '{query}' ସହିତ ମେଳ ଖାଉ ନାହାଁନ୍ତି |"
+    "or": "କ members ଣସି ସଦସ୍ୟ '{query}' ସହିତ ମେଳ ଖାଉ ନାହାଁନ୍ତି |",
+    "ur": "کوئی ممبر '{query}' سے مماثل نہیں ہے",
+    "zh_Hant": " {query}"
   },
   "home_noMembersFound": {
     "en": "No members found",
@@ -2157,7 +2367,9 @@
     "pt": "Nenhum membro encontrado",
     "ja": "メンバーが見つかりません",
     "zh": "未找到成员",
-    "or": "କ members ଣସି ସଦସ୍ୟ ପାଇଲେ ନାହିଁ |"
+    "or": "କ members ଣସି ସଦସ୍ୟ ପାଇଲେ ନାହିଁ |",
+    "ur": "کوئی ممبر نہیں ملا",
+    "zh_Hant": "沒有找到會員"
   },
   "home_groupsCount": {
     "en": "{count, plural, =1{1 Group} other{{count} Groups}}",
@@ -2182,7 +2394,9 @@
     "pt": "{count, plural, =1{1 grupo} other{{count} grupos}}",
     "ja": "{count}個のグループ",
     "zh": "{count} 个群组",
-    "or": "{count, plural, =1{1 ଗୋଷ୍ଠୀ} other{{count} ଗୋଷ୍ଠୀ |}}"
+    "or": "{count, plural, =1{1 ଗୋଷ୍ଠୀ} other{{count} ଗୋଷ୍ଠୀ |}}",
+    "ur": "{count, plural, =1{1 گروپ} other{{count} گروپس}}",
+    "zh_Hant": "{count, plural, =1{1組} other{{count} 組}}"
   },
   "home_searchGroupsHint": {
     "en": "Search groups...",
@@ -2202,7 +2416,9 @@
     "pt": "Pesquisar grupos...",
     "ja": "グループを検索...",
     "zh": "搜索群组...",
-    "or": "ଗୋଷ୍ଠୀ ଖୋଜ ..."
+    "or": "ଗୋଷ୍ଠୀ ଖୋଜ ...",
+    "ur": "گروپس تلاش کریں...",
+    "zh_Hant": "搜尋組..."
   },
   "home_noGroupsFound": {
     "en": "No groups found",
@@ -2222,7 +2438,9 @@
     "pt": "Nenhum grupo encontrado",
     "ja": "グループが見つかりません",
     "zh": "未找到群组",
-    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |"
+    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی گروپ نہیں ملا",
+    "zh_Hant": "未找到群組"
   },
   "home_noGroupsAvailable": {
     "en": "No groups available",
@@ -2242,7 +2460,9 @@
     "pt": "Nenhum grupo disponível",
     "ja": "利用可能なグループはありません",
     "zh": "暂无群组",
-    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "کوئی گروپ دستیاب نہیں ہے۔",
+    "zh_Hant": "沒有可用的群組"
   },
   "home_unableToFetchGroups": {
     "en": "Unable to fetch groups",
@@ -2262,7 +2482,9 @@
     "pt": "Não foi possível carregar os grupos",
     "ja": "グループを取得できません",
     "zh": "获取群组列表失败",
-    "or": "ଗୋଷ୍ଠୀ ଆଣିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଗୋଷ୍ଠୀ ଆଣିବାକୁ ଅସମର୍ଥ |",
+    "ur": "گروپس لانے سے قاصر",
+    "zh_Hant": "無法取得群組"
   },
   "home_noNameGroup": {
     "en": "No Name Group",
@@ -2282,7 +2504,9 @@
     "pt": "Grupo sem nome",
     "ja": "名前なしグループ",
     "zh": "未命名群组",
-    "or": "କ Name ଣସି ନାମ ଗୋଷ୍ଠୀ ନାହିଁ |"
+    "or": "କ Name ଣସି ନାମ ଗୋଷ୍ଠୀ ନାହିଁ |",
+    "ur": "کوئی نام گروپ نہیں۔",
+    "zh_Hant": "無名組"
   },
   "home_helloName": {
     "en": "Hello {name}",
@@ -2307,7 +2531,9 @@
     "pt": "Olá {name}",
     "ja": "こんにちは、{name}さん",
     "zh": "您好，{name}",
-    "or": "ନମସ୍କାର {name}"
+    "or": "ନମସ୍କାର {name}",
+    "ur": "ہیلو {name}",
+    "zh_Hant": "你好{name}"
   },
   "home_goodToSeeYou": {
     "en": "It’s good to see you again 👋",
@@ -2327,7 +2553,9 @@
     "pt": "Bom ver você de novo 👋",
     "ja": "またお会いできて嬉しいです 👋",
     "zh": "很高兴再次见到您 👋",
-    "or": "ତୁମକୁ ପୁଣି ଦେଖିବା ଭଲ |"
+    "or": "ତୁମକୁ ପୁଣି ଦେଖିବା ଭଲ |",
+    "ur": "آپ کو دوبارہ دیکھ کر اچھا لگا 👋",
+    "zh_Hant": "很高興再次見到您 👋"
   },
   "home_unknownMember": {
     "en": "Unknown Member",
@@ -2347,7 +2575,9 @@
     "pt": "Membro Desconhecido",
     "ja": "不明なメンバー",
     "zh": "未知成员",
-    "or": "ଅଜ୍ଞାତ ସଦସ୍ୟ |"
+    "or": "ଅଜ୍ଞାତ ସଦସ୍ୟ |",
+    "ur": "نامعلوم ممبر",
+    "zh_Hant": "未知會員"
   },
   "group_memberFallbackName": {
     "en": "Member",
@@ -2367,7 +2597,9 @@
     "pt": "Membro",
     "ja": "メンバー",
     "zh": "成员",
-    "or": "ସଦସ୍ୟ"
+    "or": "ସଦସ୍ୟ",
+    "ur": "ممبر",
+    "zh_Hant": "成員"
   },
   "group_joinedRecently": {
     "en": "Recent",
@@ -2388,7 +2620,9 @@
     "pt": "Recente",
     "ja": "最近",
     "zh": "最近",
-    "or": "ସମ୍ପ୍ରତି"
+    "or": "ସମ୍ପ୍ରତି",
+    "ur": "حالیہ",
+    "zh_Hant": "最近的"
   },
   "group_invalidResponseFormat": {
     "en": "Invalid format",
@@ -2408,7 +2642,9 @@
     "pt": "Formato inválido",
     "ja": "無効な形式",
     "zh": "格式无效",
-    "or": "ଅବ val ଧ ଫର୍ମାଟ୍ |"
+    "or": "ଅବ val ଧ ଫର୍ମାଟ୍ |",
+    "ur": "غلط فارمیٹ",
+    "zh_Hant": "格式無效"
   },
   "group_unnamedTrip": {
     "en": "Unnamed Trip",
@@ -2428,7 +2664,9 @@
     "pt": "Viagem sem nome",
     "ja": "未設定の旅行",
     "zh": "未命名行程",
-    "or": "ନାମହୀନ ଯାତ୍ରା"
+    "or": "ନାମହୀନ ଯାତ୍ରା",
+    "ur": "بے نام سفر",
+    "zh_Hant": "無名旅行"
   },
   "group_teamCode": {
     "en": "Team Code",
@@ -2448,7 +2686,9 @@
     "pt": "Código da Equipe",
     "ja": "チームコード",
     "zh": "团队代码",
-    "or": "ଟିମ୍ କୋଡ୍ |"
+    "or": "ଟିମ୍ କୋଡ୍ |",
+    "ur": "ٹیم کوڈ",
+    "zh_Hant": "團隊程式碼"
   },
   "group_codeCopied": {
     "en": "Group code copied!",
@@ -2468,7 +2708,9 @@
     "pt": "Código do grupo copiado!",
     "ja": "グループコードをコピーしました！",
     "zh": "群组代码已复制！",
-    "or": "ଗୋଷ୍ଠୀ କୋଡ୍ କପି ହୋଇଛି!"
+    "or": "ଗୋଷ୍ଠୀ କୋଡ୍ କପି ହୋଇଛି!",
+    "ur": "گروپ کوڈ کاپی ہو گیا!",
+    "zh_Hant": "群組代碼已複製！"
   },
   "group_defaultName": {
     "en": "Group",
@@ -2489,7 +2731,9 @@
     "pt": "Grupo",
     "ja": "グループ",
     "zh": "群组",
-    "or": "ଗୋଷ୍ଠୀ"
+    "or": "ଗୋଷ୍ଠୀ",
+    "ur": "گروپ",
+    "zh_Hant": "團體"
   },
   "group_showQrCode": {
     "en": "Show QR Code",
@@ -2509,7 +2753,9 @@
     "pt": "Mostrar QR Code",
     "ja": "QRコードを表示",
     "zh": "显示二维码",
-    "or": "QR କୋଡ୍ ଦେଖାନ୍ତୁ |"
+    "or": "QR କୋଡ୍ ଦେଖାନ୍ତୁ |",
+    "ur": "کیو آر کوڈ دکھائیں۔",
+    "zh_Hant": "顯示二維碼"
   },
   "group_areYouSure": {
     "en": "Are you sure?",
@@ -2529,7 +2775,9 @@
     "pt": "Tem certeza?",
     "ja": "よろしいですか？",
     "zh": "确定吗？",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି?"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି?",
+    "ur": "کیا آپ کو یقین ہے؟",
+    "zh_Hant": "你確定嗎？"
   },
   "group_exitGroupConfirm": {
     "en": "Do you want to Exit this Group?",
@@ -2549,7 +2797,9 @@
     "pt": "Deseja sair deste grupo?",
     "ja": "このグループから退出しますか？",
     "zh": "确定要退出该群组吗？",
-    "or": "ଆପଣ ଏହି ଗୋଷ୍ଠୀରୁ ବାହାରକୁ ଯିବାକୁ ଚାହୁଁଛନ୍ତି କି?"
+    "or": "ଆପଣ ଏହି ଗୋଷ୍ଠୀରୁ ବାହାରକୁ ଯିବାକୁ ଚାହୁଁଛନ୍ତି କି?",
+    "ur": "کیا آپ اس گروپ سے باہر نکلنا چاہتے ہیں؟",
+    "zh_Hant": "您要退出該群組嗎？"
   },
   "group_exitGroup": {
     "en": "Exit Group",
@@ -2569,7 +2819,9 @@
     "pt": "Sair do Grupo",
     "ja": "グループを退出",
     "zh": "退出群组",
-    "or": "ଗୋଷ୍ଠୀ ଛାଡନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ ଛାଡନ୍ତୁ |",
+    "ur": "گروپ سے باہر نکلیں۔",
+    "zh_Hant": "退出組"
   },
   "group_created": {
     "en": "Created",
@@ -2590,7 +2842,9 @@
     "pt": "Criado",
     "ja": "作成済み",
     "zh": "已创建",
-    "or": "ସୃଷ୍ଟି ହୋଇଛି |"
+    "or": "ସୃଷ୍ଟି ହୋଇଛି |",
+    "ur": "بنایا",
+    "zh_Hant": "已創建"
   },
   "group_other": {
     "en": "Other",
@@ -2610,7 +2864,9 @@
     "pt": "Outro",
     "ja": "その他",
     "zh": "其他",
-    "or": "ଅନ୍ୟମାନେ |"
+    "or": "ଅନ୍ୟମାନେ |",
+    "ur": "دیگر",
+    "zh_Hant": "其他"
   },
   "permission_reasonLocation": {
     "en": "Location is needed for attendance, live tracking and safe zone alerts.",
@@ -2630,7 +2886,9 @@
     "pt": "A localização é necessária para presença, rastreamento ao vivo e alertas de zona segura.",
     "ja": "出欠確認、リアルタイム追跡、セーフゾーン通知に位置情報が必要です。",
     "zh": "考勤签到、实时位置追踪及安全区域警报需要位置权限。",
-    "or": "ଉପସ୍ଥାନ, ଲାଇଭ୍ ଟ୍ରାକିଂ ଏବଂ ସୁରକ୍ଷିତ ଜୋନ୍ ଆଲର୍ଟ ପାଇଁ ସ୍ଥାନ ଆବଶ୍ୟକ |"
+    "or": "ଉପସ୍ଥାନ, ଲାଇଭ୍ ଟ୍ରାକିଂ ଏବଂ ସୁରକ୍ଷିତ ଜୋନ୍ ଆଲର୍ଟ ପାଇଁ ସ୍ଥାନ ଆବଶ୍ୟକ |",
+    "ur": "حاضری، لائیو ٹریکنگ اور سیف زون الرٹس کے لیے مقام درکار ہے۔",
+    "zh_Hant": "出勤、即時追蹤和安全區警報需要位置。"
   },
   "permission_reasonLocationAlways": {
     "en": "Choose \"Allow all the time\" so live tracking and safe zone keep working when the app is in the background.",
@@ -2651,7 +2909,9 @@
     "pt": "Escolha \"Permitir o tempo todo\" para manter o rastreamento e a zona segura ativos em segundo plano.",
     "ja": "アプリがバックグラウンドにある時も追跡と安全ゾーンを継続するため、「常に許可」を選択してください。",
     "zh": "请选择“始终允许”，以便在后台运行时也能保持实时追踪和安全区域警报。",
-    "or": "\"ସବୁବେଳେ ଅନୁମତି ଦିଅନ୍ତୁ\" ବାଛନ୍ତୁ ତେଣୁ ଆପ୍ ପୃଷ୍ଠଭୂମିରେ ଥିବାବେଳେ ଲାଇଭ୍ ଟ୍ରାକିଂ ଏବଂ ସୁରକ୍ଷିତ ଜୋନ୍ କାର୍ଯ୍ୟ ଜାରି ରଖନ୍ତୁ |"
+    "or": "\"ସବୁବେଳେ ଅନୁମତି ଦିଅନ୍ତୁ\" ବାଛନ୍ତୁ ତେଣୁ ଆପ୍ ପୃଷ୍ଠଭୂମିରେ ଥିବାବେଳେ ଲାଇଭ୍ ଟ୍ରାକିଂ ଏବଂ ସୁରକ୍ଷିତ ଜୋନ୍ କାର୍ଯ୍ୟ ଜାରି ରଖନ୍ତୁ |",
+    "ur": "\"ہر وقت اجازت دیں\" کا انتخاب کریں تاکہ ایپ کے پس منظر میں ہونے پر لائیو ٹریکنگ اور محفوظ زون کام کرتے رہیں۔",
+    "zh_Hant": "選擇“始終允許”，以便當應用程式在背景時即時追蹤和安全區繼續工作。"
   },
   "permission_reasonPrecise": {
     "en": "Precise location is needed for accurate attendance, live tracking and safe zone alerts.",
@@ -2671,7 +2931,9 @@
     "pt": "A localização precisa é necessária para presença exata, rastreamento ao vivo e alertas.",
     "ja": "正確な出欠確認、位置追跡、通知のために高精度の位置情報が必要です。",
     "zh": "精准考勤、实时追踪和安全区域警报需要精确位置权限。",
-    "or": "ସଠିକ୍ ଉପସ୍ଥାନ, ଲାଇଭ୍ ଟ୍ରାକିଂ ଏବଂ ସୁରକ୍ଷିତ ଜୋନ୍ ଆଲର୍ଟ ପାଇଁ ସଠିକ୍ ସ୍ଥାନ ଆବଶ୍ୟକ |"
+    "or": "ସଠିକ୍ ଉପସ୍ଥାନ, ଲାଇଭ୍ ଟ୍ରାକିଂ ଏବଂ ସୁରକ୍ଷିତ ଜୋନ୍ ଆଲର୍ଟ ପାଇଁ ସଠିକ୍ ସ୍ଥାନ ଆବଶ୍ୟକ |",
+    "ur": "درست حاضری، لائیو ٹریکنگ اور سیف زون الرٹس کے لیے درست مقام کی ضرورت ہے۔",
+    "zh_Hant": "準確的出勤、即時追蹤和安全區域警報需要精確的位置。"
   },
   "permission_reasonNotification": {
     "en": "Notifications are needed to receive incoming calls, chat messages, attendance and safe-zone alerts.",
@@ -2691,7 +2953,9 @@
     "pt": "As notificações são necessárias para receber chamadas, mensagens e alertas.",
     "ja": "着信通話、チャット、出欠、安全ゾーンのアラートを受け取るために通知が必要です。",
     "zh": "接收来电、聊天消息、考勤和安全区域警报需要通知权限。",
-    "or": "ଆସୁଥିବା କଲ୍, ଚାଟ୍ ବାର୍ତ୍ତା, ଉପସ୍ଥାନ ଏବଂ ସୁରକ୍ଷିତ-ଜୋନ୍ ଆଲର୍ଟ ଗ୍ରହଣ କରିବାକୁ ବିଜ୍ଞପ୍ତିଗୁଡିକ ଆବଶ୍ୟକ |"
+    "or": "ଆସୁଥିବା କଲ୍, ଚାଟ୍ ବାର୍ତ୍ତା, ଉପସ୍ଥାନ ଏବଂ ସୁରକ୍ଷିତ-ଜୋନ୍ ଆଲର୍ଟ ଗ୍ରହଣ କରିବାକୁ ବିଜ୍ଞପ୍ତିଗୁଡିକ ଆବଶ୍ୟକ |",
+    "ur": "آنے والی کالز، چیٹ پیغامات، حاضری اور سیف زون الرٹس وصول کرنے کے لیے اطلاعات کی ضرورت ہوتی ہے۔",
+    "zh_Hant": "需要通知來接收來電、聊天訊息、出勤和安全區警報。"
   },
   "permission_allowLocation": {
     "en": "Allow Location",
@@ -2711,7 +2975,9 @@
     "pt": "Permitir Localização",
     "ja": "位置情報を許可",
     "zh": "允许位置信息",
-    "or": "ଅବସ୍ଥାନ ଅନୁମତି ଦିଅନ୍ତୁ |"
+    "or": "ଅବସ୍ଥାନ ଅନୁମତି ଦିଅନ୍ତୁ |",
+    "ur": "مقام کی اجازت دیں۔",
+    "zh_Hant": "允許位置"
   },
   "permission_allowAllTheTime": {
     "en": "Allow All The Time",
@@ -2731,7 +2997,9 @@
     "pt": "Permitir Sempre",
     "ja": "常に許可",
     "zh": "始终允许",
-    "or": "ସମସ୍ତ ସମୟକୁ ଅନୁମତି ଦିଅନ୍ତୁ |"
+    "or": "ସମସ୍ତ ସମୟକୁ ଅନୁମତି ଦିଅନ୍ତୁ |",
+    "ur": "ہر وقت کی اجازت دیں۔",
+    "zh_Hant": "允許所有時間"
   },
   "permission_turnOnLocation": {
     "en": "Turn On Location",
@@ -2751,7 +3019,9 @@
     "pt": "Ativar Localização",
     "ja": "位置情報をONにする",
     "zh": "开启位置信息",
-    "or": "ଅବସ୍ଥାନ ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |"
+    "or": "ଅବସ୍ଥାନ ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |",
+    "ur": "مقام کو آن کریں۔",
+    "zh_Hant": "打開位置"
   },
   "permission_turnOnPreciseLocation": {
     "en": "Turn On Precise Location",
@@ -2771,7 +3041,9 @@
     "pt": "Ativar Localização Precisa",
     "ja": "正確な位置情報をONにする",
     "zh": "开启精准位置",
-    "or": "ସଠିକ୍ ଅବସ୍ଥାନ ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |"
+    "or": "ସଠିକ୍ ଅବସ୍ଥାନ ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |",
+    "ur": "عین مطابق مقام کو آن کریں۔",
+    "zh_Hant": "開啟精確定位"
   },
   "permission_openSettings": {
     "en": "Open Settings",
@@ -2791,7 +3063,9 @@
     "pt": "Abrir Configurações",
     "ja": "設定を開く",
     "zh": "打开设置",
-    "or": "ସେଟିଂସମୂହ ଖୋଲନ୍ତୁ |"
+    "or": "ସେଟିଂସମୂହ ଖୋଲନ୍ତୁ |",
+    "ur": "ترتیبات کھولیں۔",
+    "zh_Hant": "開啟設定"
   },
   "permission_locationStatusDone": {
     "en": "Allowed all the time · Precise · GPS on",
@@ -2811,7 +3085,9 @@
     "pt": "Permitido sempre · Preciso · GPS ativo",
     "ja": "常に許可 · 高精度 · GPS利用中",
     "zh": "始终允许 · 精确位置 · GPS已开启",
-    "or": "ସବୁବେଳେ ଅନୁମତିପ୍ରାପ୍ତ · ସଠିକ୍ · ଜିପିଏସ୍ ଅନ୍ |"
+    "or": "ସବୁବେଳେ ଅନୁମତିପ୍ରାପ୍ତ · ସଠିକ୍ · ଜିପିଏସ୍ ଅନ୍ |",
+    "ur": "ہر وقت اجازت ہے · عین مطابق · GPS آن",
+    "zh_Hant": "始終允許 · 精確 · GPS 開啟"
   },
   "permission_locationStatusNotAllowed": {
     "en": "Location permission not allowed yet.",
@@ -2831,7 +3107,9 @@
     "pt": "Permissão de localização ainda não concedida.",
     "ja": "位置情報の権限がまだ許可されていません。",
     "zh": "尚未授予位置权限。",
-    "or": "ଅବସ୍ଥାନ ଅନୁମତି ଏପର୍ଯ୍ୟନ୍ତ ଅନୁମତିପ୍ରାପ୍ତ ନୁହେଁ |"
+    "or": "ଅବସ୍ଥାନ ଅନୁମତି ଏପର୍ଯ୍ୟନ୍ତ ଅନୁମତିପ୍ରାପ୍ତ ନୁହେଁ |",
+    "ur": "مقام کی اجازت ابھی تک نہیں دی گئی۔",
+    "zh_Hant": "尚未允許位置許可。"
   },
   "permission_locationStatusNeedAlways": {
     "en": "\"Allow all the time\" is required.",
@@ -2851,7 +3129,9 @@
     "pt": "\"Permitir sempre\" é obrigatório.",
     "ja": "「常に許可」の設定が必要です。",
     "zh": "需要选择“始终允许”。",
-    "or": "\"ସବୁବେଳେ ଅନୁମତି ଦିଅ\" ଆବଶ୍ୟକ |"
+    "or": "\"ସବୁବେଳେ ଅନୁମତି ଦିଅ\" ଆବଶ୍ୟକ |",
+    "ur": "\"ہر وقت اجازت دیں\" کی ضرورت ہے۔",
+    "zh_Hant": "需要「允許所有時間」。"
   },
   "permission_locationStatusGpsOff": {
     "en": "Device location (GPS) is turned off.",
@@ -2871,7 +3151,9 @@
     "pt": "A localização do dispositivo (GPS) está desativada.",
     "ja": "端末の位置情報 (GPS) がOFFです。",
     "zh": "设备定位 (GPS) 已关闭。",
-    "or": "ଉପକରଣ ଅବସ୍ଥାନ (GPS) ବନ୍ଦ ଅଛି |"
+    "or": "ଉପକରଣ ଅବସ୍ଥାନ (GPS) ବନ୍ଦ ଅଛି |",
+    "ur": "ڈیوائس لوکیشن (GPS) بند ہے۔",
+    "zh_Hant": "設備定位 (GPS) 已關閉。"
   },
   "permission_locationStatusApproximate": {
     "en": "Only approximate location is allowed. Precise is required.",
@@ -2891,7 +3173,9 @@
     "pt": "Apenas localização aproximada permitida. É necessária a precisa.",
     "ja": "おおよその位置情報のみ許可されています。正確な位置が必要です。",
     "zh": "仅允许了粗略位置，需要授予精确位置。",
-    "or": "କେବଳ ଆନୁମାନିକ ଅବସ୍ଥାନ ଅନୁମତିପ୍ରାପ୍ତ | ସଠିକତା ଆବଶ୍ୟକ |"
+    "or": "କେବଳ ଆନୁମାନିକ ଅବସ୍ଥାନ ଅନୁମତିପ୍ରାପ୍ତ | ସଠିକତା ଆବଶ୍ୟକ |",
+    "ur": "صرف تخمینی مقام کی اجازت ہے۔ قطعیت کی ضرورت ہے۔",
+    "zh_Hant": "僅允許大致位置。需要精確。"
   },
   "permission_locationStatusBlocked": {
     "en": "Location is blocked. Enable it from Settings.",
@@ -2911,7 +3195,9 @@
     "pt": "A localização está bloqueada. Ative nas Configurações.",
     "ja": "位置情報がブロックされています。設定から許可してください。",
     "zh": "位置权限已被阻止，请在设置中开启。",
-    "or": "ଅବସ୍ଥାନ ଅବରୋଧିତ ହୋଇଛି | ସେଟିଂସମୂହରୁ ଏହାକୁ ସକ୍ଷମ କରନ୍ତୁ |"
+    "or": "ଅବସ୍ଥାନ ଅବରୋଧିତ ହୋଇଛି | ସେଟିଂସମୂହରୁ ଏହାକୁ ସକ୍ଷମ କରନ୍ତୁ |",
+    "ur": "مقام مسدود ہے۔ اسے ترتیبات سے فعال کریں۔",
+    "zh_Hant": "位置被封鎖。從“設定”中啟用它。"
   },
   "permission_locationRequiredToContinue": {
     "en": "Location permission is required to continue.",
@@ -2931,7 +3217,9 @@
     "pt": "A permissão de localização é necessária para continuar.",
     "ja": "続行するには位置情報の権限が必要です。",
     "zh": "需要位置权限才能继续。",
-    "or": "ଜାରି ରଖିବାକୁ ଅବସ୍ଥାନ ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ଜାରି ରଖିବାକୁ ଅବସ୍ଥାନ ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "جاری رکھنے کے لیے مقام کی اجازت درکار ہے۔",
+    "zh_Hant": "需要位置許可才能繼續。"
   },
   "permission_selectAllowAllTheTime": {
     "en": "Please select \"Allow all the time\" to continue.",
@@ -2951,7 +3239,9 @@
     "pt": "Selecione \"Permitir sempre\" para continuar.",
     "ja": "続行するには「常に許可」を選択してください。",
     "zh": "请选择“始终允许”以继续。",
-    "or": "ଜାରି ରଖିବାକୁ ଦୟାକରି \"ସର୍ବଦା ଅନୁମତି ଦିଅନ୍ତୁ\" ଚୟନ କରନ୍ତୁ |"
+    "or": "ଜାରି ରଖିବାକୁ ଦୟାକରି \"ସର୍ବଦା ଅନୁମତି ଦିଅନ୍ତୁ\" ଚୟନ କରନ୍ତୁ |",
+    "ur": "جاری رکھنے کے لیے براہ کرم \"ہر وقت اجازت دیں\" کو منتخب کریں۔",
+    "zh_Hant": "請選擇“始終允許”以繼續。"
   },
   "permission_iosLocationServicesOff": {
     "en": "Location Services are turned off. Open Settings → Privacy & Security → Location Services and turn it on, then come back.",
@@ -2971,7 +3261,9 @@
     "pt": "Serviços de Localização estão desativados. Abra Ajustes → Privacidade e Segurança → Serviços de Localização e ative.",
     "ja": "位置情報サービスが無効です。設定 → プライバシーとセキュリティ → 位置情報サービスを開いてONにしてください。",
     "zh": "定位服务已关闭。请打开 设置 → 隐私与安全性 → 定位服务 并开启，然后返回。",
-    "or": "ଅବସ୍ଥାନ ସେବା ବନ୍ଦ ଅଛି | ସେଟିଂସମୂହ → ଗୋପନୀୟତା ଏବଂ ସୁରକ୍ଷା → ଅବସ୍ଥାନ ସେବା ଖୋଲ ଏବଂ ଏହାକୁ ଟର୍ନ୍ ଅନ୍ କର, ତାପରେ ଫେରି ଆସ |"
+    "or": "ଅବସ୍ଥାନ ସେବା ବନ୍ଦ ଅଛି | ସେଟିଂସମୂହ → ଗୋପନୀୟତା ଏବଂ ସୁରକ୍ଷା → ଅବସ୍ଥାନ ସେବା ଖୋଲ ଏବଂ ଏହାକୁ ଟର୍ନ୍ ଅନ୍ କର, ତାପରେ ଫେରି ଆସ |",
+    "ur": "مقام کی خدمات بند ہیں۔ سیٹنگز → پرائیویسی اور سیکیورٹی → لوکیشن سروسز کھولیں اور اسے آن کریں، پھر واپس آئیں۔",
+    "zh_Hant": "定位服務已關閉。開啟「設定」→「隱私與安全」→「位置服務」並將其打開，然後返回。"
   },
   "permission_preciseLocation": {
     "en": "Precise Location",
@@ -2991,7 +3283,9 @@
     "pt": "Localização Precisa",
     "ja": "正確な位置情報",
     "zh": "精确位置",
-    "or": "ସଠିକ୍ ଅବସ୍ଥାନ |"
+    "or": "ସଠିକ୍ ଅବସ୍ଥାନ |",
+    "ur": "عین مطابق مقام",
+    "zh_Hant": "精確定位"
   },
   "permission_settingsIosAlways": {
     "en": "Open Settings → Location and choose \"Always\".",
@@ -3011,7 +3305,9 @@
     "pt": "Abra Ajustes → Localização e escolha \"Sempre\".",
     "ja": "設定 → 位置情報を開き、「常に」を選択してください。",
     "zh": "打开 设置 → 位置，选择“始终”。",
-    "or": "ସେଟିଂସମୂହ → ଅବସ୍ଥାନ ଖୋଲନ୍ତୁ ଏବଂ \"ସର୍ବଦା\" ବାଛନ୍ତୁ |"
+    "or": "ସେଟିଂସମୂହ → ଅବସ୍ଥାନ ଖୋଲନ୍ତୁ ଏବଂ \"ସର୍ବଦା\" ବାଛନ୍ତୁ |",
+    "ur": "ترتیبات → مقام کھولیں اور \"ہمیشہ\" کو منتخب کریں۔",
+    "zh_Hant": "開啟“設定”→“位置”並選擇“始終”。"
   },
   "permission_settingsAndroidAlways": {
     "en": "Open Settings → Permissions → Location and choose \"Allow all the time\".",
@@ -3031,7 +3327,9 @@
     "pt": "Abra Configurações → Permissões → Localização e escolha \"Permitir sempre\".",
     "ja": "設定 → 権限 → 位置情報を開き、「常に許可」を選択してください。",
     "zh": "打开 设置 → 应用权限 → 位置信息，选择“始终允许”。",
-    "or": "ସେଟିଂସମୂହ → ଅନୁମତି → ଅବସ୍ଥାନ ଖୋଲନ୍ତୁ ଏବଂ \"ସର୍ବଦା ଅନୁମତି ଦିଅନ୍ତୁ\" ବାଛନ୍ତୁ |"
+    "or": "ସେଟିଂସମୂହ → ଅନୁମତି → ଅବସ୍ଥାନ ଖୋଲନ୍ତୁ ଏବଂ \"ସର୍ବଦା ଅନୁମତି ଦିଅନ୍ତୁ\" ବାଛନ୍ତୁ |",
+    "ur": "ترتیبات → اجازتیں → مقام کھولیں اور \"ہر وقت اجازت دیں\" کو منتخب کریں۔",
+    "zh_Hant": "開啟設定→權限→位置並選擇「始終允許」。"
   },
   "permission_settingsIosPrecise": {
     "en": "Open Settings → Location and turn on \"Precise Location\".",
@@ -3051,7 +3349,9 @@
     "pt": "Abra Ajustes → Localização e ative \"Localização Precisa\".",
     "ja": "設定 → 位置情報を開き、「正確な位置情報」をONにしてください。",
     "zh": "打开 设置 → 位置，开启“精确位置”。",
-    "or": "ସେଟିଂସମୂହ → ଅବସ୍ଥାନ ଖୋଲନ୍ତୁ ଏବଂ “ସଠିକ୍ ସ୍ଥାନ” ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |"
+    "or": "ସେଟିଂସମୂହ → ଅବସ୍ଥାନ ଖୋଲନ୍ତୁ ଏବଂ “ସଠିକ୍ ସ୍ଥାନ” ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |",
+    "ur": "سیٹنگز → لوکیشن کھولیں اور \"Precise Location\" کو آن کریں۔",
+    "zh_Hant": "開啟“設定”→“位置”，然後開啟“精確位置”。"
   },
   "permission_settingsAndroidPrecise": {
     "en": "Open Settings → Permissions → Location and turn on \"Use precise location\".",
@@ -3071,7 +3371,9 @@
     "pt": "Abra Configurações → Permissões → Localização e ative \"Usar localização precisa\".",
     "ja": "設定 → 権限 → 位置情報を開き、「正確な位置情報を使用」をONにしてください。",
     "zh": "打开 设置 → 应用权限 → 位置信息，开启“使用精确位置”。",
-    "or": "ସେଟିଂସମୂହ → ଅନୁମତି → ଅବସ୍ଥାନ ଖୋଲନ୍ତୁ ଏବଂ “ସଠିକ୍ ସ୍ଥାନ ବ୍ୟବହାର କରନ୍ତୁ” ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |"
+    "or": "ସେଟିଂସମୂହ → ଅନୁମତି → ଅବସ୍ଥାନ ଖୋଲନ୍ତୁ ଏବଂ “ସଠିକ୍ ସ୍ଥାନ ବ୍ୟବହାର କରନ୍ତୁ” ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |",
+    "ur": "سیٹنگز → پرمیشنز → لوکیشن کھولیں اور \"عینی مقام کا استعمال کریں\" کو آن کریں۔",
+    "zh_Hant": "開啟設定→權限→位置並開啟「使用精確位置」。"
   },
   "permission_settingsIosBlocked": {
     "en": "Location access is turned off for FG Tracker. Open Settings → Location and choose \"Always\".",
@@ -3091,7 +3393,9 @@
     "pt": "Acesso à localização desativado para FG Tracker. Abra Ajustes → Localização e escolha \"Sempre\".",
     "ja": "FG Trackerの位置情報アクセスがOFFです。設定 → 位置情報を開き、「常に」を選択してください。",
     "zh": "FG Tracker 的位置权限已关闭。请打开 设置 → 位置 并选择“始终”。",
-    "or": "FG ଟ୍ରାକର୍ ପାଇଁ ଅବସ୍ଥାନ ପ୍ରବେଶ ବନ୍ଦ ଅଛି | ସେଟିଂସମୂହ → ଅବସ୍ଥାନ ଖୋଲନ୍ତୁ ଏବଂ \"ସର୍ବଦା\" ବାଛନ୍ତୁ |"
+    "or": "FG ଟ୍ରାକର୍ ପାଇଁ ଅବସ୍ଥାନ ପ୍ରବେଶ ବନ୍ଦ ଅଛି | ସେଟିଂସମୂହ → ଅବସ୍ଥାନ ଖୋଲନ୍ତୁ ଏବଂ \"ସର୍ବଦା\" ବାଛନ୍ତୁ |",
+    "ur": "FG ٹریکر کے لیے مقام تک رسائی بند ہے۔ ترتیبات → مقام کھولیں اور \"ہمیشہ\" کو منتخب کریں۔",
+    "zh_Hant": "FG Tracker 的位置存取已關閉。開啟“設定”→“位置”並選擇“始終”。"
   },
   "permission_settingsAndroidBlocked": {
     "en": "Location access is blocked for FG Tracker. Open Settings → Permissions → Location and choose \"Allow all the time\".",
@@ -3111,7 +3415,9 @@
     "pt": "Acesso à localização bloqueado para FG Tracker. Abra Configurações → Permissões → Localização e escolha \"Permitir sempre\".",
     "ja": "FG Trackerの位置情報がブロックされています。設定 → 権限 → 位置情報で「常に許可」を選択してください。",
     "zh": "FG Tracker 的位置权限被拦截。请打开 设置 → 应用权限 → 位置信息 并选择“始终允许”。",
-    "or": "FG ଟ୍ରାକର୍ ପାଇଁ ଅବସ୍ଥାନ ପ୍ରବେଶ ଅବରୋଧିତ | ସେଟିଂସମୂହ → ଅନୁମତି → ଅବସ୍ଥାନ ଖୋଲନ୍ତୁ ଏବଂ \"ସର୍ବଦା ଅନୁମତି ଦିଅନ୍ତୁ\" ବାଛନ୍ତୁ |"
+    "or": "FG ଟ୍ରାକର୍ ପାଇଁ ଅବସ୍ଥାନ ପ୍ରବେଶ ଅବରୋଧିତ | ସେଟିଂସମୂହ → ଅନୁମତି → ଅବସ୍ଥାନ ଖୋଲନ୍ତୁ ଏବଂ \"ସର୍ବଦା ଅନୁମତି ଦିଅନ୍ତୁ\" ବାଛନ୍ତୁ |",
+    "ur": "FG ٹریکر کے لیے مقام تک رسائی مسدود ہے۔ ترتیبات → اجازتیں → مقام کھولیں اور \"ہر وقت اجازت دیں\" کو منتخب کریں۔",
+    "zh_Hant": "FG Tracker 的位置存取被封鎖。開啟設定→權限→位置並選擇「始終允許」。"
   },
   "permission_allowNotifications": {
     "en": "Allow Notifications",
@@ -3131,7 +3437,9 @@
     "pt": "Permitir Notificações",
     "ja": "通知を許可",
     "zh": "允许通知",
-    "or": "ବିଜ୍ଞପ୍ତିକୁ ଅନୁମତି ଦିଅନ୍ତୁ |"
+    "or": "ବିଜ୍ଞପ୍ତିକୁ ଅନୁମତି ଦିଅନ୍ତୁ |",
+    "ur": "اطلاعات کی اجازت دیں۔",
+    "zh_Hant": "允許通知"
   },
   "permission_notificationStatusDone": {
     "en": "Allowed",
@@ -3151,7 +3459,9 @@
     "pt": "Permitido",
     "ja": "許可済み",
     "zh": "已允许",
-    "or": "ଅନୁମୋଦିତ |"
+    "or": "ଅନୁମୋଦିତ |",
+    "ur": "اجازت ہے۔",
+    "zh_Hant": "允許"
   },
   "permission_notificationStatusNotAllowed": {
     "en": "Notification permission not allowed yet.",
@@ -3171,7 +3481,9 @@
     "pt": "Permissão de notificações ainda não concedida.",
     "ja": "通知権限がまだ許可されていません。",
     "zh": "尚未授予通知权限。",
-    "or": "ବିଜ୍ଞପ୍ତି ଅନୁମତି ଏପର୍ଯ୍ୟନ୍ତ ଅନୁମତିପ୍ରାପ୍ତ ନୁହେଁ |"
+    "or": "ବିଜ୍ଞପ୍ତି ଅନୁମତି ଏପର୍ଯ୍ୟନ୍ତ ଅନୁମତିପ୍ରାପ୍ତ ନୁହେଁ |",
+    "ur": "اطلاع کی اجازت ابھی تک نہیں دی گئی۔",
+    "zh_Hant": "尚未允許通知權限。"
   },
   "permission_notificationStatusBlocked": {
     "en": "Notifications are blocked. Enable them from Settings.",
@@ -3191,7 +3503,9 @@
     "pt": "Notificações bloqueadas. Ative nas Configurações.",
     "ja": "通知がブロックされています。設定から許可してください。",
     "zh": "通知已被拦截，请在系统设置中开启。",
-    "or": "ବିଜ୍ଞପ୍ତିଗୁଡିକ ଅବରୋଧିତ ହୋଇଛି | ସେଟିଂସମୂହରୁ ସେମାନଙ୍କୁ ସକ୍ଷମ କରନ୍ତୁ |"
+    "or": "ବିଜ୍ଞପ୍ତିଗୁଡିକ ଅବରୋଧିତ ହୋଇଛି | ସେଟିଂସମୂହରୁ ସେମାନଙ୍କୁ ସକ୍ଷମ କରନ୍ତୁ |",
+    "ur": "اطلاعات مسدود ہیں۔ انہیں ترتیبات سے فعال کریں۔",
+    "zh_Hant": "通知被阻止。從“設定”中啟用它們。"
   },
   "permission_notificationSettingsText": {
     "en": "Notifications are turned off for FG Tracker. Open Settings → Notifications and allow them.",
@@ -3211,7 +3525,9 @@
     "pt": "As notificações estão desativadas para FG Tracker. Abra Configurações → Notificações e permita-as.",
     "ja": "FG Trackerの通知がOFFです。設定 → 通知を開いて許可してください。",
     "zh": "FG Tracker 的通知已关闭。请打开 设置 → 通知 并允许通知。",
-    "or": "FG ଟ୍ରାକର୍ ପାଇଁ ବିଜ୍ଞପ୍ତିଗୁଡିକ ବନ୍ଦ ଅଛି | ସେଟିଂସମୂହ → ବିଜ୍ଞପ୍ତି ଖୋଲ ଏବଂ ସେମାନଙ୍କୁ ଅନୁମତି ଦିଅ |"
+    "or": "FG ଟ୍ରାକର୍ ପାଇଁ ବିଜ୍ଞପ୍ତିଗୁଡିକ ବନ୍ଦ ଅଛି | ସେଟିଂସମୂହ → ବିଜ୍ଞପ୍ତି ଖୋଲ ଏବଂ ସେମାନଙ୍କୁ ଅନୁମତି ଦିଅ |",
+    "ur": "FG ٹریکر کے لیے اطلاعات بند ہیں۔ ترتیبات → اطلاعات کھولیں اور انہیں اجازت دیں۔",
+    "zh_Hant": "FG Tracker 的通知已關閉。開啟設定 → 通知並允許它們。"
   },
   "permission_notificationRequiredToContinue": {
     "en": "Notification permission is required to continue.",
@@ -3231,7 +3547,9 @@
     "pt": "A permissão de notificações é necessária para continuar.",
     "ja": "続行するには通知権限が必要です。",
     "zh": "需要通知权限才能继续。",
-    "or": "ଜାରି ରଖିବାକୁ ବିଜ୍ଞପ୍ତି ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ଜାରି ରଖିବାକୁ ବିଜ୍ଞପ୍ତି ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "جاری رکھنے کے لیے اطلاع کی اجازت درکار ہے۔",
+    "zh_Hant": "需要通知許可才能繼續。"
   },
   "permission_required": {
     "en": "Permission Required",
@@ -3251,7 +3569,9 @@
     "pt": "Permissão Necessária",
     "ja": "権限が必要です",
     "zh": "需要权限",
-    "or": "ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "اجازت درکار ہے۔",
+    "zh_Hant": "需要許可"
   },
   "permission_location": {
     "en": "Location",
@@ -3271,7 +3591,9 @@
     "pt": "Localização",
     "ja": "位置情報",
     "zh": "位置信息",
-    "or": "ଅବସ୍ଥାନ"
+    "or": "ଅବସ୍ଥାନ",
+    "ur": "مقام",
+    "zh_Hant": "地點"
   },
   "permission_locationDescription": {
     "en": "Needed for attendance, live tracking and safe zone — including when the app is in the background.",
@@ -3291,7 +3613,9 @@
     "pt": "Necessário para presença, rastreamento ao vivo e zona segura, mesmo em segundo plano.",
     "ja": "出欠確認、位置追跡、セーフゾーン機能（バックグラウンド動作含む）に必要です。",
     "zh": "考勤签到、实时追踪及安全区域警报（包含后台运行）所必需。",
-    "or": "ଉପସ୍ଥାନ, ଲାଇଭ୍ ଟ୍ରାକିଂ ଏବଂ ସୁରକ୍ଷିତ ଜୋନ୍ ପାଇଁ ଆବଶ୍ୟକ - ଯେତେବେଳେ ଆପ୍ ପୃଷ୍ଠଭୂମିରେ ଥାଏ |"
+    "or": "ଉପସ୍ଥାନ, ଲାଇଭ୍ ଟ୍ରାକିଂ ଏବଂ ସୁରକ୍ଷିତ ଜୋନ୍ ପାଇଁ ଆବଶ୍ୟକ - ଯେତେବେଳେ ଆପ୍ ପୃଷ୍ଠଭୂମିରେ ଥାଏ |",
+    "ur": "حاضری، لائیو ٹریکنگ اور سیف زون کے لیے درکار ہے — بشمول جب ایپ پس منظر میں ہو۔",
+    "zh_Hant": "出勤、即時追蹤和安全區所需 - 包括當應用程式位於背景時。"
   },
   "permission_locationWhyExtra": {
     "en": "Please choose \"Allow all the time\" and keep Precise location on.",
@@ -3311,7 +3635,9 @@
     "pt": "Escolha \"Permitir sempre\" e mantenha a localização precisa ativada.",
     "ja": "「常に許可」を選択し、正確な位置情報を有効のままにしてください。",
     "zh": "请选择“始终允许”并保持“精确位置”开启。",
-    "or": "ଦୟାକରି \"ସବୁବେଳେ ଅନୁମତି ଦିଅନ୍ତୁ\" ବାଛନ୍ତୁ ଏବଂ ସଠିକ୍ ଅବସ୍ଥାନ ରଖନ୍ତୁ |"
+    "or": "ଦୟାକରି \"ସବୁବେଳେ ଅନୁମତି ଦିଅନ୍ତୁ\" ବାଛନ୍ତୁ ଏବଂ ସଠିକ୍ ଅବସ୍ଥାନ ରଖନ୍ତୁ |",
+    "ur": "براہ کرم \"ہر وقت اجازت دیں\" کا انتخاب کریں اور درست مقام کو آن رکھیں۔",
+    "zh_Hant": "請選擇“始終允許”並保持精確位置開啟。"
   },
   "permission_notifications": {
     "en": "Notifications",
@@ -3331,7 +3657,9 @@
     "pt": "Notificações",
     "ja": "通知",
     "zh": "通知",
-    "or": "ବିଜ୍ଞପ୍ତିଗୁଡିକ"
+    "or": "ବିଜ୍ଞପ୍ତିଗୁଡିକ",
+    "ur": "اطلاعات",
+    "zh_Hant": "通知"
   },
   "permission_notificationsDescription": {
     "en": "Needed to receive incoming calls, chat messages and attendance / safe-zone alerts.",
@@ -3351,7 +3679,9 @@
     "pt": "Necessário para receber chamadas, mensagens e alertas de segurança.",
     "ja": "着信通話、チャット、出欠や安全ゾーンのアラートを受け取るために必要です。",
     "zh": "接收来电呼叫、聊天消息及考勤/安全区域警报所必需。",
-    "or": "ଆସୁଥିବା କଲ୍, ଚାଟ୍ ବାର୍ତ୍ତା ଏବଂ ଉପସ୍ଥାନ / ସୁରକ୍ଷିତ-ଜୋନ୍ ଆଲର୍ଟ ଗ୍ରହଣ କରିବା ଆବଶ୍ୟକ |"
+    "or": "ଆସୁଥିବା କଲ୍, ଚାଟ୍ ବାର୍ତ୍ତା ଏବଂ ଉପସ୍ଥାନ / ସୁରକ୍ଷିତ-ଜୋନ୍ ଆଲର୍ଟ ଗ୍ରହଣ କରିବା ଆବଶ୍ୟକ |",
+    "ur": "آنے والی کالز، چیٹ کے پیغامات اور حاضری / محفوظ زون کے انتباہات موصول کرنے کی ضرورت ہے۔",
+    "zh_Hant": "需要接收來電、聊天訊息和出勤/安全區警報。"
   },
   "permission_notificationsWhyExtra": {
     "en": "Incoming calls cannot ring without this permission.",
@@ -3371,7 +3701,9 @@
     "pt": "Chamadas recebidas não tocarão sem esta permissão.",
     "ja": "この権限がないと着信音が鳴りません。",
     "zh": "未授予该权限时，来电将无法响铃提醒。",
-    "or": "ଏହି ଅନୁମତି ବିନା ଆସୁଥିବା କଲ୍ ରିଙ୍ଗ୍ ହୋଇପାରିବ ନାହିଁ |"
+    "or": "ଏହି ଅନୁମତି ବିନା ଆସୁଥିବା କଲ୍ ରିଙ୍ଗ୍ ହୋଇପାରିବ ନାହିଁ |",
+    "ur": "آنے والی کالیں اس اجازت کے بغیر نہیں بج سکتیں۔",
+    "zh_Hant": "如果沒有此權限，來電無法響鈴。"
   },
   "permission_camera": {
     "en": "Camera",
@@ -3391,7 +3723,9 @@
     "pt": "Câmera",
     "ja": "カメラ",
     "zh": "相机",
-    "or": "କ୍ୟାମେରା |"
+    "or": "କ୍ୟାମେରା |",
+    "ur": "کیمرہ",
+    "zh_Hant": "相機"
   },
   "permission_cameraDescription": {
     "en": "Used by the app features that capture photos or videos.",
@@ -3411,7 +3745,9 @@
     "pt": "Usado por recursos do app que capturam fotos ou vídeos.",
     "ja": "写真や動画を撮影する機能で使用します。",
     "zh": "供应用中拍摄照片或录制视频的功能使用。",
-    "or": "ଆପ୍ ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ଦ୍ୱାରା ବ୍ୟବହୃତ ହୁଏ ଯାହା ଫଟୋ କିମ୍ବା ଭିଡିଓ କ୍ୟାପଚର କରିଥାଏ |"
+    "or": "ଆପ୍ ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ଦ୍ୱାରା ବ୍ୟବହୃତ ହୁଏ ଯାହା ଫଟୋ କିମ୍ବା ଭିଡିଓ କ୍ୟାପଚର କରିଥାଏ |",
+    "ur": "تصاویر یا ویڈیوز کیپچر کرنے والی ایپ کی خصوصیات کے ذریعے استعمال کیا جاتا ہے۔",
+    "zh_Hant": "由捕捉照片或影片的應用程式功能使用。"
   },
   "permission_cameraWhy": {
     "en": "Allows you to capture photos and videos for supported profile, chat and other app features.",
@@ -3431,7 +3767,9 @@
     "pt": "Permite tirar fotos e gravar vídeos para perfil, chat e outros recursos.",
     "ja": "プロフィール、チャットなどで写真や動画を撮影・送信できます。",
     "zh": "允许您拍摄照片和录制视频，用于个人资料、聊天及其他应用功能。",
-    "or": "ସମର୍ଥିତ ପ୍ରୋଫାଇଲ୍, ଚାଟ୍ ଏବଂ ଅନ୍ୟାନ୍ୟ ଆପ୍ ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ପାଇଁ ଫଟୋ ଏବଂ ଭିଡିଓ କ୍ୟାପଚର କରିବାକୁ ଆପଣଙ୍କୁ ଅନୁମତି ଦିଏ |"
+    "or": "ସମର୍ଥିତ ପ୍ରୋଫାଇଲ୍, ଚାଟ୍ ଏବଂ ଅନ୍ୟାନ୍ୟ ଆପ୍ ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ପାଇଁ ଫଟୋ ଏବଂ ଭିଡିଓ କ୍ୟାପଚର କରିବାକୁ ଆପଣଙ୍କୁ ଅନୁମତି ଦିଏ |",
+    "ur": "آپ کو معاون پروفائل، چیٹ اور ایپ کی دیگر خصوصیات کے لیے تصاویر اور ویڈیوز کیپچر کرنے کی اجازت دیتا ہے۔",
+    "zh_Hant": "允許您拍攝支援的個人資料、聊天和其他應用程式功能的照片和影片。"
   },
   "permission_microphone": {
     "en": "Microphone / Audio",
@@ -3451,7 +3789,9 @@
     "pt": "Microfone / Áudio",
     "ja": "マイク / 音声",
     "zh": "麦克风 / 音频",
-    "or": "ମାଇକ୍ରୋଫୋନ୍ / ଅଡିଓ |"
+    "or": "ମାଇକ୍ରୋଫୋନ୍ / ଅଡିଓ |",
+    "ur": "مائکروفون / آڈیو",
+    "zh_Hant": "麥克風/音訊"
   },
   "permission_microphoneDescription": {
     "en": "Used by voice, walkie-talkie, and calling features where applicable.",
@@ -3471,7 +3811,9 @@
     "pt": "Usado por recursos de voz, walkie-talkie e chamadas.",
     "ja": "音声通話、トランシーバー、ボイスメッセージ機能で使用します。",
     "zh": "供语音聊天、对讲机和语音呼叫等功能使用。",
-    "or": "ଭଏସ୍, ୱାକି-ଟକି, ଏବଂ କଲିଂ ବ features ଶିଷ୍ଟ୍ୟ ଦ୍ୱାରା ପ୍ରଯୁଜ୍ୟ |"
+    "or": "ଭଏସ୍, ୱାକି-ଟକି, ଏବଂ କଲିଂ ବ features ଶିଷ୍ଟ୍ୟ ଦ୍ୱାରା ପ୍ରଯୁଜ୍ୟ |",
+    "ur": "جہاں قابل اطلاق ہو آواز، واکی ٹاکی اور کالنگ خصوصیات کے ذریعے استعمال کیا جاتا ہے۔",
+    "zh_Hant": "用於語音、對講機和通話功能（如果適用）。"
   },
   "permission_microphoneWhy": {
     "en": "Allows voice communication, walkie-talkie transmission and calls when you use these features.",
@@ -3491,7 +3833,9 @@
     "pt": "Permite comunicação por voz, transmissão de walkie-talkie e chamadas.",
     "ja": "音声通話、トランシーバー通信、音声録音などを可能にします。",
     "zh": "在您使用相关功能时支持语音交流、对讲传输和电话呼叫。",
-    "or": "ଯେତେବେଳେ ଆପଣ ଏହି ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ବ୍ୟବହାର କରନ୍ତି ଭଏସ୍ ଯୋଗାଯୋଗ, ୱାକି-ଟକି ଟ୍ରାନ୍ସମିସନ୍ ଏବଂ କଲ୍ କୁ ଅନୁମତି ଦିଏ |"
+    "or": "ଯେତେବେଳେ ଆପଣ ଏହି ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ବ୍ୟବହାର କରନ୍ତି ଭଏସ୍ ଯୋଗାଯୋଗ, ୱାକି-ଟକି ଟ୍ରାନ୍ସମିସନ୍ ଏବଂ କଲ୍ କୁ ଅନୁମତି ଦିଏ |",
+    "ur": "جب آپ یہ خصوصیات استعمال کرتے ہیں تو صوتی مواصلات، واکی ٹاکی ٹرانسمیشن اور کالز کی اجازت دیتا ہے۔",
+    "zh_Hant": "使用這些功能時允許語音通訊、對講機傳輸和通話。"
   },
   "permission_contacts": {
     "en": "Contacts",
@@ -3511,7 +3855,9 @@
     "pt": "Contatos",
     "ja": "連絡先",
     "zh": "通讯录",
-    "or": "ସମ୍ପର୍କଗୁଡିକ"
+    "or": "ସମ୍ପର୍କଗୁଡିକ",
+    "ur": "رابطے",
+    "zh_Hant": "聯絡方式"
   },
   "permission_contactsDescription": {
     "en": "Used to discover or select contacts for contact-related app features.",
@@ -3531,7 +3877,9 @@
     "pt": "Usado para encontrar ou selecionar contatos para os recursos do app.",
     "ja": "アプリ内で連絡先を検索・選択するために使用します。",
     "zh": "用于查找或选择联系人，以配合相关应用功能。",
-    "or": "ଯୋଗାଯୋଗ ସମ୍ବନ୍ଧୀୟ ଆପ୍ ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ପାଇଁ ସମ୍ପର୍କ ଆବିଷ୍କାର କିମ୍ବା ଚୟନ କରିବାକୁ ବ୍ୟବହୃତ ହୁଏ |"
+    "or": "ଯୋଗାଯୋଗ ସମ୍ବନ୍ଧୀୟ ଆପ୍ ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ପାଇଁ ସମ୍ପର୍କ ଆବିଷ୍କାର କିମ୍ବା ଚୟନ କରିବାକୁ ବ୍ୟବହୃତ ହୁଏ |",
+    "ur": "رابطے سے متعلق ایپ کی خصوصیات کے لیے رابطے دریافت کرنے یا منتخب کرنے کے لیے استعمال کیا جاتا ہے۔",
+    "zh_Hant": "用於發現或選擇聯絡人以獲得與聯絡人相關的應用程式功能。"
   },
   "permission_contactsWhy": {
     "en": "Helps you find and select contacts when using supported contact-related features.",
@@ -3551,7 +3899,9 @@
     "pt": "Ajuda a encontrar e selecionar contatos facilmente ao usar os recursos.",
     "ja": "連絡先関連の機能を利用する際に、メンバーをスムーズに検索・選択できます。",
     "zh": "帮助您在使用相关功能时快速查找并选择手机联系人。",
-    "or": "ସମର୍ଥିତ ସମ୍ପର୍କ ସମ୍ବନ୍ଧୀୟ ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ବ୍ୟବହାର କରିବାବେଳେ ଆପଣଙ୍କୁ ସମ୍ପର୍କ ଖୋଜିବା ଏବଂ ବାଛିବାରେ ସାହାଯ୍ୟ କରେ |"
+    "or": "ସମର୍ଥିତ ସମ୍ପର୍କ ସମ୍ବନ୍ଧୀୟ ବ features ଶିଷ୍ଟ୍ୟଗୁଡିକ ବ୍ୟବହାର କରିବାବେଳେ ଆପଣଙ୍କୁ ସମ୍ପର୍କ ଖୋଜିବା ଏବଂ ବାଛିବାରେ ସାହାଯ୍ୟ କରେ |",
+    "ur": "تعاون یافتہ رابطے سے متعلق خصوصیات کا استعمال کرتے وقت رابطے تلاش کرنے اور منتخب کرنے میں آپ کی مدد کرتا ہے۔",
+    "zh_Hant": "在使用受支援的聯絡人相關功能時協助您尋找並選擇聯絡人。"
   },
   "permission_allowNamed": {
     "en": "Allow {permission}",
@@ -3576,7 +3926,9 @@
     "pt": "Permitir {permission}",
     "ja": "{permission}を許可",
     "zh": "允许 {permission}",
-    "or": "{permission} କୁ ଅନୁମତି ଦିଅନ୍ତୁ |"
+    "or": "{permission} କୁ ଅନୁମତି ଦିଅନ୍ତୁ |",
+    "ur": "{permission} کی اجازت دیں۔",
+    "zh_Hant": "允許 {permission}"
   },
   "permission_notGrantedNamed": {
     "en": "{permission} permission was not granted. Please try again.",
@@ -3601,7 +3953,9 @@
     "pt": "A permissão {permission} não foi concedida. Tente novamente.",
     "ja": "{permission}の権限が許可されませんでした。もう一度お試しください。",
     "zh": "未授予 {permission} 权限，请重试。",
-    "or": "{permission} ଅନୁମତି ଦିଆଯାଇନଥିଲା | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "{permission} ଅନୁମତି ଦିଆଯାଇନଥିଲା | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "{permission} کی اجازت نہیں دی گئی۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "未授予 {permission} 權限。請再試一次。"
   },
   "permission_allowLocationFirst": {
     "en": "Please allow Location first.",
@@ -3621,7 +3975,9 @@
     "pt": "Permita a localização primeiro.",
     "ja": "まず位置情報を許可してください。",
     "zh": "请先允许位置权限。",
-    "or": "ଦୟାକରି ପ୍ରଥମେ ଅବସ୍ଥାନ ଅନୁମତି ଦିଅନ୍ତୁ |"
+    "or": "ଦୟାକରି ପ୍ରଥମେ ଅବସ୍ଥାନ ଅନୁମତି ଦିଅନ୍ତୁ |",
+    "ur": "براہ کرم پہلے مقام کی اجازت دیں۔",
+    "zh_Hant": "請先允許位置。"
   },
   "permission_unableToRequest": {
     "en": "Unable to request permission.",
@@ -3641,7 +3997,9 @@
     "pt": "Não foi possível solicitar a permissão.",
     "ja": "権限をリクエストできません。",
     "zh": "无法请求权限。",
-    "or": "ଅନୁମତି ମାଗିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଅନୁମତି ମାଗିବାକୁ ଅସମର୍ଥ |",
+    "ur": "اجازت کی درخواست کرنے سے قاصر۔",
+    "zh_Hant": "無法請求許可。"
   },
   "permission_locationAndNotificationRequired": {
     "en": "Location and Notification permissions are required to continue.",
@@ -3661,7 +4019,9 @@
     "pt": "Permissões de localização e notificações são necessárias para continuar.",
     "ja": "続行するには位置情報と通知の権限が必要です。",
     "zh": "需要位置和通知权限才能继续。",
-    "or": "ଜାରି ରଖିବାକୁ ଅବସ୍ଥାନ ଏବଂ ବିଜ୍ଞପ୍ତି ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ଜାରି ରଖିବାକୁ ଅବସ୍ଥାନ ଏବଂ ବିଜ୍ଞପ୍ତି ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "جاری رکھنے کے لیے مقام اور اطلاع کی اجازت درکار ہے۔",
+    "zh_Hant": "需要位置和通知權限才能繼續。"
   },
   "permission_cameraSettingsMessage": {
     "en": "Camera permission is needed to capture photos and videos. Please enable it from app settings.",
@@ -3681,7 +4041,9 @@
     "pt": "A permissão da câmera é necessária para fotos e vídeos. Ative nas configurações.",
     "ja": "写真や動画を撮影するにはカメラ権限が必要です。設定から有効にしてください。",
     "zh": "拍摄照片和视频需要相机权限，请在应用设置中开启。",
-    "or": "ଫଟୋ ଏବଂ ଭିଡିଓ କ୍ୟାପଚର କରିବାକୁ କ୍ୟାମେରା ଅନୁମତି ଆବଶ୍ୟକ | ଦୟାକରି ଏହାକୁ ଆପ୍ ସେଟିଂସମୂହରୁ ସକ୍ଷମ କରନ୍ତୁ |"
+    "or": "ଫଟୋ ଏବଂ ଭିଡିଓ କ୍ୟାପଚର କରିବାକୁ କ୍ୟାମେରା ଅନୁମତି ଆବଶ୍ୟକ | ଦୟାକରି ଏହାକୁ ଆପ୍ ସେଟିଂସମୂହରୁ ସକ୍ଷମ କରନ୍ତୁ |",
+    "ur": "تصاویر اور ویڈیوز کیپچر کرنے کے لیے کیمرے کی اجازت درکار ہے۔ براہ کرم اسے ایپ کی ترتیبات سے فعال کریں۔",
+    "zh_Hant": "拍攝照片和影片需要相機許可。請從應用程式設定中啟用它。"
   },
   "permission_microphoneSettingsMessage": {
     "en": "Microphone permission is needed for voice, walkie-talkie and calls. Please enable it from app settings.",
@@ -3701,7 +4063,9 @@
     "pt": "A permissão do microfone é necessária para voz, walkie-talkie e chamadas. Ative nas configurações.",
     "ja": "音声、トランシーバー、通話にはマイク権限が必要です。設定から有効にしてください。",
     "zh": "语音、对讲和通话功能需要麦克风权限，请在设置中开启。",
-    "or": "ଭଏସ୍, ୱାକି-ଟକି ଏବଂ କଲ୍ ପାଇଁ ମାଇକ୍ରୋଫୋନ୍ ଅନୁମତି ଆବଶ୍ୟକ | ଦୟାକରି ଏହାକୁ ଆପ୍ ସେଟିଂସମୂହରୁ ସକ୍ଷମ କରନ୍ତୁ |"
+    "or": "ଭଏସ୍, ୱାକି-ଟକି ଏବଂ କଲ୍ ପାଇଁ ମାଇକ୍ରୋଫୋନ୍ ଅନୁମତି ଆବଶ୍ୟକ | ଦୟାକରି ଏହାକୁ ଆପ୍ ସେଟିଂସମୂହରୁ ସକ୍ଷମ କରନ୍ତୁ |",
+    "ur": "آواز، واکی ٹاکی اور کالز کے لیے مائیکروفون کی اجازت درکار ہے۔ براہ کرم اسے ایپ کی ترتیبات سے فعال کریں۔",
+    "zh_Hant": "语音、对讲机和通话需要麦克风许可。請從應用程式設定中啟用它。"
   },
   "permission_contactsSettingsMessage": {
     "en": "Contacts permission is needed to find and select contacts. Please enable it from app settings.",
@@ -3721,7 +4085,9 @@
     "pt": "A permissão de contatos é necessária para buscar e selecionar contatos. Ative nas configurações.",
     "ja": "連絡先の検索と選択には連絡先権限が必要です。設定から有効にしてください。",
     "zh": "查找和选择联系人需要通讯录权限，请在设置中开启。",
-    "or": "ସମ୍ପର୍କ ଖୋଜିବା ଏବଂ ବାଛିବା ପାଇଁ ଯୋଗାଯୋଗ ଅନୁମତି ଆବଶ୍ୟକ | ଦୟାକରି ଏହାକୁ ଆପ୍ ସେଟିଂସମୂହରୁ ସକ୍ଷମ କରନ୍ତୁ |"
+    "or": "ସମ୍ପର୍କ ଖୋଜିବା ଏବଂ ବାଛିବା ପାଇଁ ଯୋଗାଯୋଗ ଅନୁମତି ଆବଶ୍ୟକ | ଦୟାକରି ଏହାକୁ ଆପ୍ ସେଟିଂସମୂହରୁ ସକ୍ଷମ କରନ୍ତୁ |",
+    "ur": "رابطوں کو تلاش کرنے اور منتخب کرنے کے لیے رابطوں کی اجازت درکار ہے۔ براہ کرم اسے ایپ کی ترتیبات سے فعال کریں۔",
+    "zh_Hant": "需要聯絡人權限才能尋找和選擇聯絡人。請從應用程式設定中啟用它。"
   },
   "permission_genericSettingsMessage": {
     "en": "This permission is needed. Please enable it from app settings.",
@@ -3741,7 +4107,9 @@
     "pt": "Esta permissão é necessária. Ative-a nas configurações do aplicativo.",
     "ja": "この権限が必要です。アプリ設定から有効にしてください。",
     "zh": "需要此权限，请在应用设置中开启。",
-    "or": "ଏହି ଅନୁମତି ଆବଶ୍ୟକ | ଦୟାକରି ଏହାକୁ ଆପ୍ ସେଟିଂସମୂହରୁ ସକ୍ଷମ କରନ୍ତୁ |"
+    "or": "ଏହି ଅନୁମତି ଆବଶ୍ୟକ | ଦୟାକରି ଏହାକୁ ଆପ୍ ସେଟିଂସମୂହରୁ ସକ୍ଷମ କରନ୍ତୁ |",
+    "ur": "یہ اجازت درکار ہے۔ براہ کرم اسے ایپ کی ترتیبات سے فعال کریں۔",
+    "zh_Hant": "需要此許可。請從應用程式設定中啟用它。"
   },
   "permission_appPermissionsTitle": {
     "en": "App Permissions",
@@ -3761,7 +4129,9 @@
     "pt": "Permissões do App",
     "ja": "アプリの権限",
     "zh": "应用权限",
-    "or": "ଆପ୍ ଅନୁମତିଗୁଡିକ |"
+    "or": "ଆପ୍ ଅନୁମତିଗୁଡିକ |",
+    "ur": "ایپ کی اجازتیں۔",
+    "zh_Hant": "應用程式權限"
   },
   "permission_appPermissionsSubtitle": {
     "en": "Review the permissions required.",
@@ -3781,7 +4151,9 @@
     "pt": "Revise as permissões necessárias.",
     "ja": "必要な権限を確認してください。",
     "zh": "查看应用所需的各项权限。",
-    "or": "ଆବଶ୍ୟକ ଅନୁମତିଗୁଡିକ ସମୀକ୍ଷା କରନ୍ତୁ |"
+    "or": "ଆବଶ୍ୟକ ଅନୁମତିଗୁଡିକ ସମୀକ୍ଷା କରନ୍ତୁ |",
+    "ur": "مطلوبہ اجازتوں کا جائزہ لیں۔",
+    "zh_Hant": "查看所需的權限。"
   },
   "permission_whyWeNeedThis": {
     "en": "Why we need this?",
@@ -3801,7 +4173,9 @@
     "pt": "Por que precisamos disso?",
     "ja": "必要な理由",
     "zh": "为什么需要此权限？",
-    "or": "ଆମେ ଏହା କାହିଁକି ଆବଶ୍ୟକ କରୁ?"
+    "or": "ଆମେ ଏହା କାହିଁକି ଆବଶ୍ୟକ କରୁ?",
+    "ur": "ہمیں اس کی ضرورت کیوں ہے؟",
+    "zh_Hant": "為什麼我們需要這個？"
   },
   "permission_badgeGranted": {
     "en": "Granted",
@@ -3821,7 +4195,9 @@
     "pt": "Concedida",
     "ja": "許可済み",
     "zh": "已授予",
-    "or": "ମଞ୍ଜୁର"
+    "or": "ମଞ୍ଜୁର",
+    "ur": "عطا کیا",
+    "zh_Hant": "的確"
   },
   "permission_badgeRequired": {
     "en": "Required",
@@ -3841,7 +4217,9 @@
     "pt": "Obrigatório",
     "ja": "必須",
     "zh": "必需",
-    "or": "ଆବଶ୍ୟକ"
+    "or": "ଆବଶ୍ୟକ",
+    "ur": "درکار ہے۔",
+    "zh_Hant": "必需的"
   },
   "permission_badgeRecommended": {
     "en": "Recommended",
@@ -3861,7 +4239,9 @@
     "pt": "Recomendado",
     "ja": "推奨",
     "zh": "推荐",
-    "or": "ପରାମର୍ଶିତ"
+    "or": "ପରାମର୍ଶିତ",
+    "ur": "تجویز کردہ",
+    "zh_Hant": "受到推崇的"
   },
   "permission_badgeOptional": {
     "en": "Optional",
@@ -3881,7 +4261,9 @@
     "pt": "Opcional",
     "ja": "任意",
     "zh": "可选",
-    "or": "ବ tion କଳ୍ପିକ"
+    "or": "ବ tion କଳ୍ପିକ",
+    "ur": "اختیاری",
+    "zh_Hant": "選修的"
   },
   "permission_skipAndContinue": {
     "en": "Skip & Continue",
@@ -3901,7 +4283,9 @@
     "pt": "Pular e Continuar",
     "ja": "スキップして続行",
     "zh": "跳过并继续",
-    "or": "ଛାଡିଦିଅ ଏବଂ ଜାରି ରଖ |"
+    "or": "ଛାଡିଦିଅ ଏବଂ ଜାରି ରଖ |",
+    "ur": "چھوڑیں اور جاری رکھیں",
+    "zh_Hant": "跳過並繼續"
   },
   "permission_locationAndNotificationsRequiredHint": {
     "en": "Location and Notifications are required to continue.",
@@ -3921,7 +4305,9 @@
     "pt": "Localização e Notificações são necessárias para continuar.",
     "ja": "続行するには位置情報と通知が必須です。",
     "zh": "必须授予位置和通知权限才能继续。",
-    "or": "ଜାରି ରଖିବାକୁ ଅବସ୍ଥାନ ଏବଂ ବିଜ୍ଞପ୍ତିଗୁଡିକ ଆବଶ୍ୟକ |"
+    "or": "ଜାରି ରଖିବାକୁ ଅବସ୍ଥାନ ଏବଂ ବିଜ୍ଞପ୍ତିଗୁଡିକ ଆବଶ୍ୟକ |",
+    "ur": "جاری رکھنے کے لیے مقام اور اطلاعات درکار ہیں۔",
+    "zh_Hant": "需要位置和通知才能繼續。"
   },
   "permission_gateTitle": {
     "en": "Permissions Required",
@@ -3941,7 +4327,9 @@
     "pt": "Permissões Obrigatórias",
     "ja": "必要な権限",
     "zh": "需要授权",
-    "or": "ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "اجازتیں درکار ہیں۔",
+    "zh_Hant": "所需權限"
   },
   "permission_gateSubtitle": {
     "en": "FG Tracker needs these permissions to receive calls and alerts and to run attendance, live tracking and safe zone.",
@@ -3961,7 +4349,9 @@
     "pt": "O FG Tracker precisa dessas permissões para chamadas, alertas e para operar presença, rastreamento ao vivo e zona segura.",
     "ja": "FG Trackerは、着信やアラートの受信、出欠管理、リアルタイム追跡、セーフゾーン機能の実行のためにこれらの権限を必要とします。",
     "zh": "FG Tracker 需要这些权限来接听电话、接收通知并运行考勤、实时追踪与安全区域功能。",
-    "or": "କଲ୍ ଏବଂ ଆଲର୍ଟ ଗ୍ରହଣ କରିବା ଏବଂ ଉପସ୍ଥାନ, ଲାଇଭ୍ ଟ୍ରାକିଂ ଏବଂ ସୁରକ୍ଷିତ ଜୋନ୍ ଚଳାଇବା ପାଇଁ FG ଟ୍ରାକର ଏହି ଅନୁମତିଗୁଡିକ ଆବଶ୍ୟକ କରେ |"
+    "or": "କଲ୍ ଏବଂ ଆଲର୍ଟ ଗ୍ରହଣ କରିବା ଏବଂ ଉପସ୍ଥାନ, ଲାଇଭ୍ ଟ୍ରାକିଂ ଏବଂ ସୁରକ୍ଷିତ ଜୋନ୍ ଚଳାଇବା ପାଇଁ FG ଟ୍ରାକର ଏହି ଅନୁମତିଗୁଡିକ ଆବଶ୍ୟକ କରେ |",
+    "ur": "FG ٹریکر کو کالز اور الرٹس وصول کرنے اور حاضری، لائیو ٹریکنگ اور محفوظ زون چلانے کے لیے ان اجازتوں کی ضرورت ہوتی ہے۔",
+    "zh_Hant": "FG Tracker 需要這些權限來接收呼叫和警報以及運行考勤、即時追蹤和安全區。"
   },
   "permission_pushNotifications": {
     "en": "Push Notifications",
@@ -3981,7 +4371,9 @@
     "pt": "Notificações Push",
     "ja": "プッシュ通知",
     "zh": "推送通知",
-    "or": "ପୁସ୍ ବିଜ୍ଞପ୍ତିଗୁଡିକ |"
+    "or": "ପୁସ୍ ବିଜ୍ଞପ୍ତିଗୁଡିକ |",
+    "ur": "پش اطلاعات",
+    "zh_Hant": "推播通知"
   },
   "permission_gateCheckFailed": {
     "en": "We could not check your permissions. Please try again.",
@@ -4001,7 +4393,9 @@
     "pt": "Não foi possível verificar suas permissões. Tente novamente.",
     "ja": "権限を確認できませんでした。もう一度お試しください。",
     "zh": "检查权限状态失败，请重试。",
-    "or": "ଆମେ ଆପଣଙ୍କର ଅନୁମତି ଯାଞ୍ଚ କରିପାରିଲୁ ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଆମେ ଆପଣଙ୍କର ଅନୁମତି ଯାଞ୍ଚ କରିପାରିଲୁ ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "ہم آپ کی اجازتوں کی جانچ نہیں کر سکے۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "我們無法檢查您的權限。請再試一次。"
   },
   "permission_logout": {
     "en": "Logout",
@@ -4021,7 +4415,9 @@
     "pt": "Sair",
     "ja": "ログアウト",
     "zh": "退出",
-    "or": "ଲଗଆଉଟ୍ |"
+    "or": "ଲଗଆଉଟ୍ |",
+    "ur": "لاگ آؤٹ",
+    "zh_Hant": "退出"
   },
   "intro_realTimeTrackingTitle": {
     "en": "Real-Time Tracking",
@@ -4041,7 +4437,9 @@
     "pt": "Rastreamento em Tempo Real",
     "ja": "リアルタイム位置追跡",
     "zh": "实时追踪",
-    "or": "ରିଅଲ୍ ଟାଇମ୍ ଟ୍ରାକିଂ |"
+    "or": "ରିଅଲ୍ ଟାଇମ୍ ଟ୍ରାକିଂ |",
+    "ur": "ریئل ٹائم ٹریکنگ",
+    "zh_Hant": "即時追蹤"
   },
   "intro_realTimeTrackingSubtitle": {
     "en": "View live locations of friends, family, or team members on the map instantly.",
@@ -4061,7 +4459,9 @@
     "pt": "Veja a localização ao vivo de amigos, família ou membros da equipe no mapa instantaneamente.",
     "ja": "地図上で友人、家族、チームメンバーの現在地を瞬時に確認できます。",
     "zh": "在地图上即时查看朋友、家人或团队成员的实时位置。",
-    "or": "ତୁରନ୍ତ ମାନଚିତ୍ରରେ ସାଙ୍ଗ, ପରିବାର, କିମ୍ବା ଦଳର ସଦସ୍ୟଙ୍କ ଲାଇଭ୍ ଅବସ୍ଥାନ ଦେଖନ୍ତୁ |"
+    "or": "ତୁରନ୍ତ ମାନଚିତ୍ରରେ ସାଙ୍ଗ, ପରିବାର, କିମ୍ବା ଦଳର ସଦସ୍ୟଙ୍କ ଲାଇଭ୍ ଅବସ୍ଥାନ ଦେଖନ୍ତୁ |",
+    "ur": "نقشے پر فوری طور پر دوستوں، خاندان، یا ٹیم کے اراکین کے لائیو مقامات دیکھیں۔",
+    "zh_Hant": "立即在地圖上查看朋友、家人或團隊成員的即時位置。"
   },
   "intro_walkieTitle": {
     "en": "Walkie-Talkie\nfeature",
@@ -4081,7 +4481,9 @@
     "pt": "Recurso de\nWalkie-Talkie",
     "ja": "トランシーバー\n機能",
     "zh": "对讲机\n功能",
-    "or": "ୱାକି-ଟକି |\nବ feature ଶିଷ୍ଟ୍ୟ"
+    "or": "ୱାକି-ଟକି |\nବ feature ଶିଷ୍ଟ୍ୟ",
+    "ur": "واکی ٹاکی\nخصوصیت",
+    "zh_Hant": "對講機\n特徵"
   },
   "intro_walkieSubtitle": {
     "en": "No signal. No problem. Stay\nconnected anywhere.",
@@ -4101,7 +4503,9 @@
     "pt": "Sem sinal? Sem problemas. Fique\nconectado em qualquer lugar.",
     "ja": "電波がなくても安心。どこでも\nつながり続けます。",
     "zh": "信号薄弱无须担心，随时随地\n保持联系。",
-    "or": "କ signal ଣସି ସଙ୍କେତ ନାହିଁ | କିଛି ଅସୁବିଧା ନାହିଁ | ରୁହ |\nଯେକ anywhere ଣସି ସ୍ଥାନରେ ସଂଯୁକ୍ତ |"
+    "or": "କ signal ଣସି ସଙ୍କେତ ନାହିଁ | କିଛି ଅସୁବିଧା ନାହିଁ | ରୁହ |\nଯେକ anywhere ଣସି ସ୍ଥାନରେ ସଂଯୁକ୍ତ |",
+    "ur": "کوئی سگنل نہیں۔ کوئی مسئلہ نہیں۔ ٹھہرو\nکہیں بھی جڑا ہوا ہے۔",
+    "zh_Hant": "無訊號。沒問題。住宿\n任何地方都可以連接。"
   },
   "intro_secureTitle": {
     "en": "Secure & Easy",
@@ -4121,7 +4525,9 @@
     "pt": "Seguro e Fácil",
     "ja": "安全＆シンプル",
     "zh": "安全便捷",
-    "or": "ସୁରକ୍ଷିତ ଏବଂ ସହଜ |"
+    "or": "ସୁରକ୍ଷିତ ଏବଂ ସହଜ |",
+    "ur": "محفوظ اور آسان",
+    "zh_Hant": "安全且簡單"
   },
   "intro_secureSubtitle": {
     "en": "Share your live location with\nselected contacts safely and\nprivately.",
@@ -4141,7 +4547,9 @@
     "pt": "Compartilhe sua localização ao vivo com\ncontatos selecionados com segurança e privacidade.",
     "ja": "選択した連絡先とのみ、現在地を\n安全かつプライベートに共有できます。",
     "zh": "安全私密地与指定联系人\n共享您的实时位置。",
-    "or": "ସହିତ ଆପଣଙ୍କର ଲାଇଭ୍ ଅବସ୍ଥାନ ଅଂଶୀଦାର କରନ୍ତୁ |\nସୁରକ୍ଷିତ ଭାବରେ ଯୋଗାଯୋଗଗୁଡିକ ଏବଂ\nବ୍ୟକ୍ତିଗତ ଭାବରେ |"
+    "or": "ସହିତ ଆପଣଙ୍କର ଲାଇଭ୍ ଅବସ୍ଥାନ ଅଂଶୀଦାର କରନ୍ତୁ |\nସୁରକ୍ଷିତ ଭାବରେ ଯୋଗାଯୋଗଗୁଡିକ ଏବଂ\nବ୍ୟକ୍ତିଗତ ଭାବରେ |",
+    "ur": "کے ساتھ اپنی لائیو لوکیشن شیئر کریں۔\nمنتخب رابطے محفوظ طریقے سے اور\nنجی طور پر",
+    "zh_Hant": "與以下人員分享您的即時位置\n安全地選擇聯絡人\n私下裡。"
   },
   "intro_skip": {
     "en": "Skip",
@@ -4161,7 +4569,9 @@
     "pt": "Pular",
     "ja": "スキップ",
     "zh": "跳过",
-    "or": "ଛାଡିଦିଅ |"
+    "or": "ଛାଡିଦିଅ |",
+    "ur": "چھوڑیں۔",
+    "zh_Hant": "跳過"
   },
   "notifications_clearedSuccess": {
     "en": "All notifications cleared successfully",
@@ -4181,7 +4591,9 @@
     "pt": "Todas as notificações foram limpas com sucesso",
     "ja": "すべての通知を消去しました",
     "zh": "已成功清除所有通知",
-    "or": "ସମସ୍ତ ବିଜ୍ଞପ୍ତି ସଫଳତାର ସହିତ ସଫା ହେଲା |"
+    "or": "ସମସ୍ତ ବିଜ୍ଞପ୍ତି ସଫଳତାର ସହିତ ସଫା ହେଲା |",
+    "ur": "تمام اطلاعات کامیابی سے صاف ہو گئیں۔",
+    "zh_Hant": "所有通知已成功清除"
   },
   "notifications_filterAll": {
     "en": "All",
@@ -4201,7 +4613,9 @@
     "pt": "Todas",
     "ja": "すべて",
     "zh": "全部",
-    "or": "ସମସ୍ତ"
+    "or": "ସମସ୍ତ",
+    "ur": "تمام",
+    "zh_Hant": "全部"
   },
   "notifications_filterUnread": {
     "en": "Unread",
@@ -4221,7 +4635,9 @@
     "pt": "Não lidas",
     "ja": "未読",
     "zh": "未读",
-    "or": "ପ read ା ନାହିଁ"
+    "or": "ପ read ା ନାହିଁ",
+    "ur": "ان پڑھ",
+    "zh_Hant": "未讀"
   },
   "notifications_filterChats": {
     "en": "Chats",
@@ -4241,7 +4657,9 @@
     "pt": "Conversas",
     "ja": "チャット",
     "zh": "聊天",
-    "or": "ଚାଟ୍"
+    "or": "ଚାଟ୍",
+    "ur": "چیٹس",
+    "zh_Hant": "聊天記錄"
   },
   "notifications_filterCalls": {
     "en": "Calls",
@@ -4261,7 +4679,9 @@
     "pt": "Chamadas",
     "ja": "通話",
     "zh": "通话",
-    "or": "କଲ୍"
+    "or": "କଲ୍",
+    "ur": "کالز",
+    "zh_Hant": "通話"
   },
   "notifications_title": {
     "en": "Notifications",
@@ -4281,7 +4701,9 @@
     "pt": "Notificações",
     "ja": "通知",
     "zh": "通知",
-    "or": "ବିଜ୍ଞପ୍ତିଗୁଡିକ"
+    "or": "ବିଜ୍ଞପ୍ତିଗୁଡିକ",
+    "ur": "اطلاعات",
+    "zh_Hant": "通知"
   },
   "notifications_clearAll": {
     "en": "Clear all notifications",
@@ -4301,7 +4723,9 @@
     "pt": "Limpar todas as notificações",
     "ja": "すべての通知を消去",
     "zh": "清除全部通知",
-    "or": "ସମସ୍ତ ବିଜ୍ଞପ୍ତିଗୁଡିକ ସଫା କରନ୍ତୁ |"
+    "or": "ସମସ୍ତ ବିଜ୍ଞପ୍ତିଗୁଡିକ ସଫା କରନ୍ତୁ |",
+    "ur": "تمام اطلاعات کو صاف کریں۔",
+    "zh_Hant": "清除所有通知"
   },
   "notifications_recentCalls": {
     "en": "Recent Calls",
@@ -4321,7 +4745,9 @@
     "pt": "Chamadas Recentes",
     "ja": "最近の通話履歴",
     "zh": "最近通话",
-    "or": "ସାମ୍ପ୍ରତିକ କଲ୍ |"
+    "or": "ସାମ୍ପ୍ରତିକ କଲ୍ |",
+    "ur": "حالیہ کالز",
+    "zh_Hant": "最近通話"
   },
   "notifications_loadingDetails": {
     "en": "Loading notification details",
@@ -4341,7 +4767,9 @@
     "pt": "Carregando detalhes da notificação",
     "ja": "通知の詳細を読み込み中",
     "zh": "正在加载通知详情",
-    "or": "ବିଜ୍ଞପ୍ତି ବିବରଣୀ ଲୋଡ୍ କରୁଛି |"
+    "or": "ବିଜ୍ଞପ୍ତି ବିବରଣୀ ଲୋଡ୍ କରୁଛି |",
+    "ur": "اطلاع کی تفصیلات لوڈ ہو رہی ہیں۔",
+    "zh_Hant": "正在加載通知詳細信息"
   },
   "notifications_emptyTitle": {
     "en": "No Notifications Yet",
@@ -4361,7 +4789,9 @@
     "pt": "Nenhuma Notificação Ainda",
     "ja": "通知はありません",
     "zh": "暂无通知",
-    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ No ଣସି ବିଜ୍ଞପ୍ତି ନାହିଁ |"
+    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ No ଣସି ବିଜ୍ଞପ୍ତି ନାହିଁ |",
+    "ur": "ابھی تک کوئی اطلاع نہیں ہے۔",
+    "zh_Hant": "還沒有通知"
   },
   "notifications_emptySubtitle": {
     "en": "You have no new alerts at the moment.",
@@ -4381,7 +4811,9 @@
     "pt": "Você não tem novos alertas no momento.",
     "ja": "現在、新しい通知やお知らせはありません。",
     "zh": "您当前没有任何新通知或提醒。",
-    "or": "ଏହି ସମୟରେ ଆପଣଙ୍କର କ new ଣସି ନୂତନ ଆଲର୍ଟ ନାହିଁ |"
+    "or": "ଏହି ସମୟରେ ଆପଣଙ୍କର କ new ଣସି ନୂତନ ଆଲର୍ଟ ନାହିଁ |",
+    "ur": "آپ کے پاس اس وقت کوئی نیا الرٹس نہیں ہیں۔",
+    "zh_Hant": "您目前沒有新的警報。"
   },
   "group_updateGroupTitle": {
     "en": "Update Group",
@@ -4401,7 +4833,9 @@
     "pt": "Atualizar Grupo",
     "ja": "グループ情報を更新",
     "zh": "更新群组",
-    "or": "ଗୋଷ୍ଠୀ ଅଦ୍ୟତନ କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ ଅଦ୍ୟତନ କରନ୍ତୁ |",
+    "ur": "گروپ کو اپ ڈیٹ کریں۔",
+    "zh_Hant": "更新群組"
   },
   "group_updateGroupConfirm": {
     "en": "Are you sure you want to update the group details?",
@@ -4421,7 +4855,9 @@
     "pt": "Tem certeza de que deseja atualizar os detalhes do grupo?",
     "ja": "グループの詳細を更新してもよろしいですか？",
     "zh": "确定要更新该群组资料吗？",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଗୋଷ୍ଠୀ ବିବରଣୀ ଅପଡେଟ୍ କରିବାକୁ ଚାହୁଁଛନ୍ତି?"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଗୋଷ୍ଠୀ ବିବରଣୀ ଅପଡେଟ୍ କରିବାକୁ ଚାହୁଁଛନ୍ତି?",
+    "ur": "کیا آپ واقعی گروپ کی تفصیلات کو اپ ڈیٹ کرنا چاہتے ہیں؟",
+    "zh_Hant": "您確定要更新群組詳細資訊嗎？"
   },
   "group_activatedSuccess": {
     "en": "Group activated successfully",
@@ -4441,7 +4877,9 @@
     "pt": "Grupo ativado com sucesso",
     "ja": "グループが有効化されました",
     "zh": "群组已成功激活",
-    "or": "ଗୋଷ୍ଠୀ ସଫଳତାର ସହିତ ସକ୍ରିୟ ହେଲା |"
+    "or": "ଗୋଷ୍ଠୀ ସଫଳତାର ସହିତ ସକ୍ରିୟ ହେଲା |",
+    "ur": "گروپ کامیابی سے فعال ہو گیا۔",
+    "zh_Hant": "群組啟動成功"
   },
   "group_deactivatedSuccess": {
     "en": "Group deactivated successfully",
@@ -4461,7 +4899,9 @@
     "pt": "Grupo desativado com sucesso",
     "ja": "グループが無効化されました",
     "zh": "群组已停用",
-    "or": "ଗୋଷ୍ଠୀ ସଫଳତାର ସହିତ ନିଷ୍କ୍ରିୟ ହୋଇଛି |"
+    "or": "ଗୋଷ୍ଠୀ ସଫଳତାର ସହିତ ନିଷ୍କ୍ରିୟ ହୋଇଛି |",
+    "ur": "گروپ کو کامیابی سے غیر فعال کر دیا گیا۔",
+    "zh_Hant": "群組停用成功"
   },
   "group_statusUpdateFailed": {
     "en": "Failed to update group status",
@@ -4481,7 +4921,9 @@
     "pt": "Falha ao atualizar status do grupo",
     "ja": "グループ状態の更新に失敗しました",
     "zh": "更新群组状态失败",
-    "or": "ଗୋଷ୍ଠୀ ସ୍ଥିତିକୁ ଅଦ୍ୟତନ କରିବାରେ ବିଫଳ |"
+    "or": "ଗୋଷ୍ଠୀ ସ୍ଥିତିକୁ ଅଦ୍ୟତନ କରିବାରେ ବିଫଳ |",
+    "ur": "گروپ اسٹیٹس کو اپ ڈیٹ کرنے میں ناکام",
+    "zh_Hant": "無法更新群組狀態"
   },
   "group_exitGroupNamedConfirm": {
     "en": "Are you sure you want to exit \"{groupName}\"? You'll need a group code to rejoin.",
@@ -4506,7 +4948,9 @@
     "pt": "Tem certeza de que deseja sair de \"{groupName}\"? Você precisará do código para entrar novamente.",
     "ja": "「{groupName}」から退出しますか？再参加にはグループコードが必要になります。",
     "zh": "确定要退出“{groupName}”吗？重新加入需要群组代码。",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ \"{groupName}\" ଛାଡିବାକୁ ଚାହୁଁଛନ୍ତି? ପୁନର୍ବାର ଯୋଗଦେବା ପାଇଁ ଆପଣଙ୍କୁ ଏକ ଗୋଷ୍ଠୀ କୋଡ୍ ଦରକାର |"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ \"{groupName}\" ଛାଡିବାକୁ ଚାହୁଁଛନ୍ତି? ପୁନର୍ବାର ଯୋଗଦେବା ପାଇଁ ଆପଣଙ୍କୁ ଏକ ଗୋଷ୍ଠୀ କୋଡ୍ ଦରକାର |",
+    "ur": "کیا آپ واقعی \"{groupName}\" سے باہر نکلنا چاہتے ہیں؟ آپ کو دوبارہ شامل ہونے کے لیے ایک گروپ کوڈ کی ضرورت ہوگی۔",
+    "zh_Hant": "您確定要退出「{groupName}」嗎？您需要一個群組代碼才能重新加入。"
   },
   "group_locationPermissionToJoin": {
     "en": "Location permission is required to join a group.",
@@ -4526,7 +4970,9 @@
     "pt": "Permissão de localização é necessária para entrar no grupo.",
     "ja": "グループに参加するには位置情報の権限が必要です。",
     "zh": "加入群组需要位置权限。",
-    "or": "ଏକ ଗୋଷ୍ଠୀରେ ଯୋଗଦେବା ପାଇଁ ଅବସ୍ଥାନ ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "ଏକ ଗୋଷ୍ଠୀରେ ଯୋଗଦେବା ପାଇଁ ଅବସ୍ଥାନ ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "گروپ میں شامل ہونے کے لیے مقام کی اجازت درکار ہے۔",
+    "zh_Hant": "加入群組需要位置權限。"
   },
   "group_enableLocationToJoin": {
     "en": "Please enable location services to join a group.",
@@ -4546,7 +4992,9 @@
     "pt": "Ative os serviços de localização para entrar no grupo.",
     "ja": "グループに参加するには位置情報サービスを有効にしてください。",
     "zh": "请开启定位服务以加入群组。",
-    "or": "ଏକ ଗୋଷ୍ଠୀରେ ଯୋଗଦେବା ପାଇଁ ଦୟାକରି ଅବସ୍ଥାନ ସେବା ସକ୍ଷମ କରନ୍ତୁ |"
+    "or": "ଏକ ଗୋଷ୍ଠୀରେ ଯୋଗଦେବା ପାଇଁ ଦୟାକରି ଅବସ୍ଥାନ ସେବା ସକ୍ଷମ କରନ୍ତୁ |",
+    "ur": "براہ کرم کسی گروپ میں شامل ہونے کے لیے لوکیشن سروسز کو فعال کریں۔",
+    "zh_Hant": "請啟用定位服務才能加入群組。"
   },
   "group_exitedSuccess": {
     "en": "Group Exit successfully",
@@ -4566,7 +5014,9 @@
     "pt": "Saída do grupo com sucesso",
     "ja": "グループから退出しました",
     "zh": "已成功退出群组",
-    "or": "ଗୋଷ୍ଠୀ ସଫଳତାର ସହିତ ପ୍ରସ୍ଥାନ କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ ସଫଳତାର ସହିତ ପ୍ରସ୍ଥାନ କରନ୍ତୁ |",
+    "ur": "گروپ سے نکلنا کامیابی کے ساتھ",
+    "zh_Hant": "群組退出成功"
   },
   "group_deletedSuccess": {
     "en": "Group deleted successfully",
@@ -4586,7 +5036,9 @@
     "pt": "Grupo excluído com sucesso",
     "ja": "グループを削除しました",
     "zh": "群组已成功解散",
-    "or": "ଗୋଷ୍ଠୀ ସଫଳତାର ସହିତ ବିଲୋପ ହେଲା |"
+    "or": "ଗୋଷ୍ଠୀ ସଫଳତାର ସହିତ ବିଲୋପ ହେଲା |",
+    "ur": "گروپ کامیابی کے ساتھ حذف ہو گیا۔",
+    "zh_Hant": "群組刪除成功"
   },
   "group_downloadChannelName": {
     "en": "Download Notifications",
@@ -4606,7 +5058,9 @@
     "pt": "Notificações de Download",
     "ja": "ダウンロード通知",
     "zh": "下载通知",
-    "or": "ବିଜ୍ଞପ୍ତିଗୁଡିକ ଡାଉନଲୋଡ୍ କରନ୍ତୁ |"
+    "or": "ବିଜ୍ଞପ୍ତିଗୁଡିକ ଡାଉନଲୋଡ୍ କରନ୍ତୁ |",
+    "ur": "اطلاعات ڈاؤن لوڈ کریں۔",
+    "zh_Hant": "下載通知"
   },
   "group_downloadChannelDescription": {
     "en": "Notifies when QR code is downloaded",
@@ -4626,7 +5080,9 @@
     "pt": "Notifica quando o QR code for baixado",
     "ja": "QRコードの保存完了時に通知します",
     "zh": "二维码下载完成后发送提醒",
-    "or": "ଯେତେବେଳେ QR କୋଡ୍ ଡାଉନଲୋଡ୍ ହୁଏ ତାହା ସୂଚିତ କରେ |"
+    "or": "ଯେତେବେଳେ QR କୋଡ୍ ଡାଉନଲୋଡ୍ ହୁଏ ତାହା ସୂଚିତ କରେ |",
+    "ur": "QR کوڈ ڈاؤن لوڈ ہونے پر مطلع کرتا ہے۔",
+    "zh_Hant": "下載二維碼時發出通知"
   },
   "group_qrSavedTitle": {
     "en": "QR Code Saved",
@@ -4646,7 +5102,9 @@
     "pt": "QR Code Salvo",
     "ja": "QRコードを保存しました",
     "zh": "二维码已保存",
-    "or": "QR କୋଡ୍ ସଞ୍ଚୟ ହୋଇଛି |"
+    "or": "QR କୋଡ୍ ସଞ୍ଚୟ ହୋଇଛି |",
+    "ur": "QR کوڈ محفوظ ہو گیا۔",
+    "zh_Hant": "QR 圖碼已儲存"
   },
   "group_qrSavedBody": {
     "en": "Tap to open your QR code",
@@ -4666,7 +5124,9 @@
     "pt": "Toque para abrir seu QR code",
     "ja": "タップしてQRコードを表示",
     "zh": "点击打开二维码",
-    "or": "ଆପଣଙ୍କର QR କୋଡ୍ ଖୋଲିବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର QR କୋଡ୍ ଖୋଲିବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ |",
+    "ur": "اپنا QR کوڈ کھولنے کے لیے تھپتھپائیں۔",
+    "zh_Hant": "點擊打開您的二維碼"
   },
   "group_noContactsFound": {
     "en": "No contacts found",
@@ -4686,7 +5146,9 @@
     "pt": "Nenhum contato encontrado",
     "ja": "連絡先が見つかりません",
     "zh": "未找到联系人",
-    "or": "କ contacts ଣସି ସମ୍ପର୍କ ମିଳିଲା ନାହିଁ |"
+    "or": "କ contacts ଣସି ସମ୍ପର୍କ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی رابطے نہیں ملے",
+    "zh_Hant": "未找到聯絡人"
   },
   "group_qrShareMessage": {
     "en": "📌 Group Code: {groupCode}\n\nJoin my group instantly using the QR code or the code above.\n\n📲 Download the app to stay connected:\n{appLink}",
@@ -4714,7 +5176,9 @@
     "pt": "📌 Código do grupo: {groupCode}\n\nEntre no meu grupo usando o QR code ou o código acima.\n\n📲 Baixe o app para ficar conectado:\n{appLink}",
     "ja": "📌 グループコード: {groupCode}\n\n上記コードまたはQRコードをスキャンしてグループに参加してください。\n\n📲 アプリダウンロードはこちら:\n{appLink}",
     "zh": "📌 群组代码：{groupCode}\n\n使用上述代码或扫描二维码即可快速加入群组。\n\n📲 下载应用保持联系：\n{appLink}",
-    "or": "📌 ଗୋଷ୍ଠୀ କୋଡ୍: {groupCode} |\n\nQR କୋଡ୍ କିମ୍ବା ଉପରୋକ୍ତ କୋଡ୍ ବ୍ୟବହାର କରି ତୁରନ୍ତ ମୋ ଗୋଷ୍ଠୀରେ ଯୋଗ ଦିଅ |\n\nସଂଯୁକ୍ତ ରହିବାକୁ ଆପ୍ ଡାଉନଲୋଡ୍ କରନ୍ତୁ:\n{appLink}"
+    "or": "📌 ଗୋଷ୍ଠୀ କୋଡ୍: {groupCode} |\n\nQR କୋଡ୍ କିମ୍ବା ଉପରୋକ୍ତ କୋଡ୍ ବ୍ୟବହାର କରି ତୁରନ୍ତ ମୋ ଗୋଷ୍ଠୀରେ ଯୋଗ ଦିଅ |\n\nସଂଯୁକ୍ତ ରହିବାକୁ ଆପ୍ ଡାଉନଲୋଡ୍ କରନ୍ତୁ:\n{appLink}",
+    "ur": "📌 گروپ کوڈ: {groupCode}\n\nQR کوڈ یا اوپر دیئے گئے کوڈ کا استعمال کرتے ہوئے فوری طور پر میرے گروپ میں شامل ہوں۔\n\n📲 جڑے رہنے کے لیے ایپ ڈاؤن لوڈ کریں:\n{appLink}",
+    "zh_Hant": "📌 團體代碼：{groupCode}\n\n使用二維碼或上面的程式碼立即加入我的群組。\n\n📲 下載應用程式以保持聯繫：\n{appLink}"
   },
   "group_deleteGroup": {
     "en": "Group Delete",
@@ -4734,7 +5198,9 @@
     "pt": "Excluir Grupo",
     "ja": "グループ削除",
     "zh": "解散群组",
-    "or": "ଗୋଷ୍ଠୀ ବିଲୋପ କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ ବିଲୋପ କରନ୍ତୁ |",
+    "ur": "گروپ ڈیلیٹ کریں۔",
+    "zh_Hant": "群組刪除"
   },
   "group_deleteGroupConfirm": {
     "en": "Do you want to Delete this Group?",
@@ -4754,7 +5220,9 @@
     "pt": "Deseja excluir este grupo?",
     "ja": "このグループを削除しますか？",
     "zh": "确定要解散该群组吗？",
-    "or": "ଆପଣ ଏହି ଗୋଷ୍ଠୀ ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?"
+    "or": "ଆପଣ ଏହି ଗୋଷ୍ଠୀ ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?",
+    "ur": "کیا آپ اس گروپ کو ڈیلیٹ کرنا چاہتے ہیں؟",
+    "zh_Hant": "您要刪除該群組嗎？"
   },
   "group_searchMemberHint": {
     "en": "Search member...",
@@ -4774,7 +5242,9 @@
     "pt": "Pesquisar membro...",
     "ja": "メンバーを検索...",
     "zh": "搜索成员...",
-    "or": "ସନ୍ଧାନ ସଦସ୍ୟ ..."
+    "or": "ସନ୍ଧାନ ସଦସ୍ୟ ...",
+    "ur": "ممبر تلاش کریں...",
+    "zh_Hant": "搜尋會員..."
   },
   "group_track": {
     "en": "Track",
@@ -4794,7 +5264,9 @@
     "pt": "Rastrear",
     "ja": "追跡",
     "zh": "追踪",
-    "or": "ଟ୍ରାକ୍ କରନ୍ତୁ |"
+    "or": "ଟ୍ରାକ୍ କରନ୍ତୁ |",
+    "ur": "ٹریک",
+    "zh_Hant": "追蹤"
   },
   "group_groupMessage": {
     "en": "Group Message",
@@ -4814,7 +5286,9 @@
     "pt": "Mensagem de Grupo",
     "ja": "グループメッセージ",
     "zh": "群组消息",
-    "or": "ଗୋଷ୍ଠୀ ବାର୍ତ୍ତା |"
+    "or": "ଗୋଷ୍ଠୀ ବାର୍ତ୍ତା |",
+    "ur": "گروپ میسج",
+    "zh_Hant": "群組留言"
   },
   "group_startConversation": {
     "en": "Feel Free to start a conversation",
@@ -4834,7 +5308,9 @@
     "pt": "Fique à vontade para iniciar uma conversa",
     "ja": "気軽にメッセージを送りましょう",
     "zh": "随时发送第一条消息开启畅聊",
-    "or": "ଏକ ବାର୍ତ୍ତାଳାପ ଆରମ୍ଭ କରିବାକୁ ମୁକ୍ତ ମନେ କର |"
+    "or": "ଏକ ବାର୍ତ୍ତାଳାପ ଆରମ୍ଭ କରିବାକୁ ମୁକ୍ତ ମନେ କର |",
+    "ur": "بات چیت شروع کرنے کے لئے آزاد محسوس کریں۔",
+    "zh_Hant": "隨意開始對話"
   },
   "group_addMember": {
     "en": "Add Member",
@@ -4854,7 +5330,9 @@
     "pt": "Adicionar Membro",
     "ja": "メンバーを追加",
     "zh": "添加成员",
-    "or": "ସଦସ୍ୟ ଯୋଡନ୍ତୁ |"
+    "or": "ସଦସ୍ୟ ଯୋଡନ୍ତୁ |",
+    "ur": "ممبر شامل کریں۔",
+    "zh_Hant": "新增會員"
   },
   "group_shareQrToInvite": {
     "en": "Share QR code to invite members",
@@ -4874,7 +5352,9 @@
     "pt": "Compartilhe o QR code para convidar membros",
     "ja": "QRコードを共有してメンバーを招待",
     "zh": "分享二维码邀请成员",
-    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଆମନ୍ତ୍ରଣ କରିବାକୁ QR କୋଡ୍ ଅଂଶୀଦାର କରନ୍ତୁ |"
+    "or": "ସଦସ୍ୟମାନଙ୍କୁ ଆମନ୍ତ୍ରଣ କରିବାକୁ QR କୋଡ୍ ଅଂଶୀଦାର କରନ୍ତୁ |",
+    "ur": "اراکین کو مدعو کرنے کے لیے QR کوڈ کا اشتراک کریں۔",
+    "zh_Hant": "分享二維碼邀請會員"
   },
   "group_unnamedMember": {
     "en": "Unnamed Member",
@@ -4894,7 +5374,9 @@
     "pt": "Membro Sem Nome",
     "ja": "名前なしメンバー",
     "zh": "未命名成员",
-    "or": "ନାମହୀନ ସଦସ୍ୟ |"
+    "or": "ନାମହୀନ ସଦସ୍ୟ |",
+    "ur": "بے نام ممبر",
+    "zh_Hant": "未命名會員"
   },
   "group_noNumber": {
     "en": "No number",
@@ -4914,7 +5396,9 @@
     "pt": "Sem número",
     "ja": "番号なし",
     "zh": "无号码",
-    "or": "ସଂଖ୍ୟା ନାହିଁ |"
+    "or": "ସଂଖ୍ୟା ନାହିଁ |",
+    "ur": "کوئی نمبر نہیں۔",
+    "zh_Hant": "沒有號碼"
   },
   "group_alignQr": {
     "en": "Align QR inside the frame",
@@ -4934,7 +5418,9 @@
     "pt": "Alinhe o QR dentro do quadro",
     "ja": "フレーム内にQRコードを合わせてください",
     "zh": "将二维码对准扫描框内",
-    "or": "ଫ୍ରେମ୍ ଭିତରେ QR ଆଲାଇନ୍ କରନ୍ତୁ |"
+    "or": "ଫ୍ରେମ୍ ଭିତରେ QR ଆଲାଇନ୍ କରନ୍ତୁ |",
+    "ur": "QR کو فریم کے اندر سیدھ کریں۔",
+    "zh_Hant": "將 QR 對齊到框架內"
   },
   "group_teamCodeLabel": {
     "en": "Team Code: ",
@@ -4954,7 +5440,9 @@
     "pt": "Código da Equipe: ",
     "ja": "チームコード: ",
     "zh": "团队代码：",
-    "or": "ଦଳ କୋଡ୍:"
+    "or": "ଦଳ କୋଡ୍:",
+    "ur": "ٹیم کوڈ:",
+    "zh_Hant": "團隊代碼："
   },
   "group_scanToJoin": {
     "en": "Scan this QR code to join the group",
@@ -4974,7 +5462,9 @@
     "pt": "Escaneie este QR code para entrar no grupo",
     "ja": "このQRコードをスキャンしてグループに参加",
     "zh": "扫描此二维码加入群组",
-    "or": "ଗୋଷ୍ଠୀରେ ଯୋଗଦେବା ପାଇଁ ଏହି QR କୋଡ୍ ସ୍କାନ୍ କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀରେ ଯୋଗଦେବା ପାଇଁ ଏହି QR କୋଡ୍ ସ୍କାନ୍ କରନ୍ତୁ |",
+    "ur": "گروپ میں شامل ہونے کے لیے اس QR کوڈ کو اسکین کریں۔",
+    "zh_Hant": "掃描此二維碼即可加入群組"
   },
   "group_noGroupCode": {
     "en": "No Group Code Available",
@@ -4994,7 +5484,9 @@
     "pt": "Nenhum código de grupo disponível",
     "ja": "グループコードがありません",
     "zh": "暂无可用群组代码",
-    "or": "କ Group ଣସି ଗୋଷ୍ଠୀ କୋଡ୍ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "କ Group ଣସି ଗୋଷ୍ଠୀ କୋଡ୍ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "کوئی گروپ کوڈ دستیاب نہیں ہے۔",
+    "zh_Hant": "沒有可用的團體代碼"
   },
   "group_shareQr": {
     "en": "Share QR",
@@ -5014,7 +5506,9 @@
     "pt": "Compartilhar QR",
     "ja": "QRを共有",
     "zh": "分享二维码",
-    "or": "QR ଅଂଶୀଦାର କରନ୍ତୁ |"
+    "or": "QR ଅଂଶୀଦାର କରନ୍ତୁ |",
+    "ur": "QR کا اشتراک کریں۔",
+    "zh_Hant": "分享二維碼"
   },
   "group_download": {
     "en": "Download",
@@ -5034,7 +5528,9 @@
     "pt": "Baixar",
     "ja": "ダウンロード",
     "zh": "下载",
-    "or": "ଡାଉନଲୋଡ୍ କରନ୍ତୁ |"
+    "or": "ଡାଉନଲୋଡ୍ କରନ୍ତୁ |",
+    "ur": "ڈاؤن لوڈ کریں۔",
+    "zh_Hant": "下載"
   },
   "group_sheetCreatedTitle": {
     "en": "Group created!",
@@ -5054,7 +5550,9 @@
     "pt": "Grupo criado!",
     "ja": "グループが作成されました！",
     "zh": "群组创建成功！",
-    "or": "ଗୋଷ୍ଠୀ ସୃଷ୍ଟି!"
+    "or": "ଗୋଷ୍ଠୀ ସୃଷ୍ଟି!",
+    "ur": "گروپ بنایا گیا!",
+    "zh_Hant": "群組已建立！"
   },
   "group_sheetJoinedTitle": {
     "en": "Joined successfully!",
@@ -5074,7 +5572,9 @@
     "pt": "Entrou com sucesso!",
     "ja": "グループに参加しました！",
     "zh": "加入成功！",
-    "or": "ସଫଳତାର ସହିତ ଯୋଗଦାନ!"
+    "or": "ସଫଳତାର ସହିତ ଯୋଗଦାନ!",
+    "ur": "کامیابی کے ساتھ شامل ہو گئے!",
+    "zh_Hant": "加入成功！"
   },
   "group_sheetLeftTitle": {
     "en": "You left the group",
@@ -5094,7 +5594,9 @@
     "pt": "Você saiu do grupo",
     "ja": "グループを退出しました",
     "zh": "您已退出该群组",
-    "or": "ଆପଣ ଗୋଷ୍ଠୀ ଛାଡିଛନ୍ତି |"
+    "or": "ଆପଣ ଗୋଷ୍ଠୀ ଛାଡିଛନ୍ତି |",
+    "ur": "آپ نے گروپ چھوڑ دیا۔",
+    "zh_Hant": "你離開了群組"
   },
   "group_goToGroups": {
     "en": "Go to Groups →",
@@ -5114,7 +5616,9 @@
     "pt": "Ir para Grupos →",
     "ja": "グループ一覧へ →",
     "zh": "前往群组 →",
-    "or": "ଗୋଷ୍ଠୀକୁ ଯାଆନ୍ତୁ →"
+    "or": "ଗୋଷ୍ଠୀକୁ ଯାଆନ୍ତୁ →",
+    "ur": "گروپس پر جائیں →",
+    "zh_Hant": "前往群組 →"
   },
   "group_openGroup": {
     "en": "Open Group →",
@@ -5134,7 +5638,9 @@
     "pt": "Abrir Grupo →",
     "ja": "グループを開く →",
     "zh": "进入群组 →",
-    "or": "ଗ୍ରୁପ୍ ଖୋଲନ୍ତୁ →"
+    "or": "ଗ୍ରୁପ୍ ଖୋଲନ୍ତୁ →",
+    "ur": "گروپ کھولیں →",
+    "zh_Hant": "公開組 →"
   },
   "group_sheetCreatedSubtitle": {
     "en": "Your group is ready. Share the code so members can join.",
@@ -5154,7 +5660,9 @@
     "pt": "Seu grupo está pronto. Compartilhe o código para que os membros entrem.",
     "ja": "グループの準備が整いました。コードを共有してメンバーを招待しましょう。",
     "zh": "群组已创建完毕。分享代码即可邀请成员加入。",
-    "or": "ତୁମର ଗୋଷ୍ଠୀ ପ୍ରସ୍ତୁତ | କୋଡ୍ ଅଂଶୀଦାର କରନ୍ତୁ ଯାହା ଦ୍ members ାରା ସଦସ୍ୟମାନେ ଯୋଗଦାନ କରିପାରିବେ |"
+    "or": "ତୁମର ଗୋଷ୍ଠୀ ପ୍ରସ୍ତୁତ | କୋଡ୍ ଅଂଶୀଦାର କରନ୍ତୁ ଯାହା ଦ୍ members ାରା ସଦସ୍ୟମାନେ ଯୋଗଦାନ କରିପାରିବେ |",
+    "ur": "آپ کا گروپ تیار ہے۔ کوڈ شیئر کریں تاکہ ممبران شامل ہو سکیں۔",
+    "zh_Hant": "你的小組已經準備好了。分享程式碼以便成員可以加入。"
   },
   "group_sheetCreatedSubtitleNamed": {
     "en": "{name}, your group is ready. Share the code so members can join.",
@@ -5179,7 +5687,9 @@
     "pt": "{name}, seu grupo está pronto. Compartilhe o código para que entrem.",
     "ja": "{name}さん、グループの準備ができました。コードを共有してメンバーを招待してください。",
     "zh": "{name}，您的群组已准备就绪。分享代码即可邀请成员加入。",
-    "or": "{name}, ଆପଣଙ୍କର ଗୋଷ୍ଠୀ ପ୍ରସ୍ତୁତ | କୋଡ୍ ଅଂଶୀଦାର କରନ୍ତୁ ଯାହା ଦ୍ members ାରା ସଦସ୍ୟମାନେ ଯୋଗଦାନ କରିପାରିବେ |"
+    "or": "{name}, ଆପଣଙ୍କର ଗୋଷ୍ଠୀ ପ୍ରସ୍ତୁତ | କୋଡ୍ ଅଂଶୀଦାର କରନ୍ତୁ ଯାହା ଦ୍ members ାରା ସଦସ୍ୟମାନେ ଯୋଗଦାନ କରିପାରିବେ |",
+    "ur": "{name}، آپ کا گروپ تیار ہے۔ کوڈ شیئر کریں تاکہ ممبران شامل ہو سکیں۔",
+    "zh_Hant": "{name}，您的小組已準備好。分享程式碼以便成員可以加入。"
   },
   "group_sheetJoinedSubtitle": {
     "en": "Welcome, you're now a member of this group.",
@@ -5199,7 +5709,9 @@
     "pt": "Bem-vindo, agora você é membro deste grupo.",
     "ja": "ようこそ！これであなたもこのグループのメンバーです。",
     "zh": "欢迎，您现在已成为该群组成员。",
-    "or": "ସ୍ Welcome ାଗତ, ଆପଣ ବର୍ତ୍ତମାନ ଏହି ଗୋଷ୍ଠୀର ଜଣେ ସଦସ୍ୟ ଅଟନ୍ତି |"
+    "or": "ସ୍ Welcome ାଗତ, ଆପଣ ବର୍ତ୍ତମାନ ଏହି ଗୋଷ୍ଠୀର ଜଣେ ସଦସ୍ୟ ଅଟନ୍ତି |",
+    "ur": "خوش آمدید، اب آپ اس گروپ کے رکن ہیں۔",
+    "zh_Hant": "歡迎，您現在已經是該群組的成員了。"
   },
   "group_sheetJoinedSubtitleNamed": {
     "en": "Welcome {name}, you're now a member of this group.",
@@ -5224,7 +5736,9 @@
     "pt": "Bem-vindo(a) {name}, agora você é membro deste grupo.",
     "ja": "{name}さん、ようこそ！このグループのメンバーになりました。",
     "zh": "欢迎 {name}，您现在已加入该群组。",
-    "or": "ସ୍ୱାଗତ {name}, ଆପଣ ବର୍ତ୍ତମାନ ଏହି ଗୋଷ୍ଠୀର ସଦସ୍ୟ ଅଟନ୍ତି |"
+    "or": "ସ୍ୱାଗତ {name}, ଆପଣ ବର୍ତ୍ତମାନ ଏହି ଗୋଷ୍ଠୀର ସଦସ୍ୟ ଅଟନ୍ତି |",
+    "ur": "خوش آمدید {name}، اب آپ اس گروپ کے رکن ہیں۔",
+    "zh_Hant": "歡迎{name}，您現在是該群組的成員。"
   },
   "group_sheetLeftSubtitle": {
     "en": "You're no longer a member of this group.",
@@ -5244,7 +5758,9 @@
     "pt": "Você não é mais membro deste grupo.",
     "ja": "このグループのメンバーではなくなりました。",
     "zh": "您已不再是该群组的成员。",
-    "or": "ଆପଣ ଆଉ ଏହି ଗୋଷ୍ଠୀର ସଦସ୍ୟ ନୁହଁନ୍ତି |"
+    "or": "ଆପଣ ଆଉ ଏହି ଗୋଷ୍ଠୀର ସଦସ୍ୟ ନୁହଁନ୍ତି |",
+    "ur": "اب آپ اس گروپ کے رکن نہیں ہیں۔",
+    "zh_Hant": "您不再是該群組的成員。"
   },
   "group_sheetLeftSubtitleNamed": {
     "en": "{name}, you're no longer a member of this group.",
@@ -5269,7 +5785,9 @@
     "pt": "{name}, você não é mais membro deste grupo.",
     "ja": "{name}さん、このグループから退出しました。",
     "zh": "{name}，您已退出该群组。",
-    "or": "{name}, ଆପଣ ଆଉ ଏହି ଗୋଷ୍ଠୀର ସଦସ୍ୟ ନୁହଁନ୍ତି |"
+    "or": "{name}, ଆପଣ ଆଉ ଏହି ଗୋଷ୍ଠୀର ସଦସ୍ୟ ନୁହଁନ୍ତି |",
+    "ur": "{name}، آپ اب اس گروپ کے رکن نہیں ہیں۔",
+    "zh_Hant": "{name}，您不再是該群組的成員。"
   },
   "group_createdJustNow": {
     "en": "Created just now",
@@ -5289,7 +5807,9 @@
     "pt": "Criado agora mesmo",
     "ja": "たった今作成",
     "zh": "刚刚创建",
-    "or": "ବର୍ତ୍ତମାନ ସୃଷ୍ଟି ହୋଇଛି |"
+    "or": "ବର୍ତ୍ତମାନ ସୃଷ୍ଟି ହୋଇଛି |",
+    "ur": "ابھی بنایا گیا۔",
+    "zh_Hant": "剛剛創建"
   },
   "group_joinedJustNow": {
     "en": "Joined just now",
@@ -5309,7 +5829,9 @@
     "pt": "Entrou agora mesmo",
     "ja": "たった今参加",
     "zh": "刚刚加入",
-    "or": "ବର୍ତ୍ତମାନ ଯୋଗଦାନ"
+    "or": "ବର୍ତ୍ତମାନ ଯୋଗଦାନ",
+    "ur": "ابھی جوائن ہوا۔",
+    "zh_Hant": "剛剛加入"
   },
   "group_leftJustNow": {
     "en": "Left just now",
@@ -5329,7 +5851,9 @@
     "pt": "Saiu agora mesmo",
     "ja": "たった今退出",
     "zh": "刚刚退出",
-    "or": "ବର୍ତ୍ତମାନ ବାମ"
+    "or": "ବର୍ତ୍ତମାନ ବାମ",
+    "ur": "ابھی چھوڑا ہے۔",
+    "zh_Hant": "剛離開"
   },
   "group_membersMeta": {
     "en": "{count, plural, =1{1 member · {when}} other{{count} members · {when}}}",
@@ -5357,7 +5881,9 @@
     "pt": "{count, plural, =1{1 membro · {when}} other{{count} membros · {when}}}",
     "ja": "{count}名のメンバー · {when}",
     "zh": "{count} 名成员 · {when}",
-    "or": "{count, plural, =1{1 ସଦସ୍ୟ · {when}} other{{count} ସଦସ୍ୟ · {when}}}"
+    "or": "{count, plural, =1{1 ସଦସ୍ୟ · {when}} other{{count} ସଦସ୍ୟ · {when}}}",
+    "ur": "{count, plural, =1{1 رکن · {when}} other{{count} اراکین · {when}}}",
+    "zh_Hant": "{count, plural, =1{1 名成員 · {when}} other{{count} 成員 · {when}}}"
   },
   "group_codeShareInfo": {
     "en": "Group code: {code} — share it so others can join",
@@ -5382,7 +5908,9 @@
     "pt": "Código do grupo: {code} — compartilhe para que outros entrem",
     "ja": "グループコード: {code} — 共有してメンバーを招待しましょう",
     "zh": "群组代码：{code} — 分享给他人即可加入",
-    "or": "ଗୋଷ୍ଠୀ କୋଡ୍: {code} - ଏହାକୁ ଅଂଶୀଦାର କରନ୍ତୁ ଯାହା ଦ୍ others ାରା ଅନ୍ୟମାନେ ଯୋଗଦାନ କରିପାରିବେ |"
+    "or": "ଗୋଷ୍ଠୀ କୋଡ୍: {code} - ଏହାକୁ ଅଂଶୀଦାର କରନ୍ତୁ ଯାହା ଦ୍ others ାରା ଅନ୍ୟମାନେ ଯୋଗଦାନ କରିପାରିବେ |",
+    "ur": "گروپ کوڈ: {code} — اس کا اشتراک کریں تاکہ دوسرے بھی شامل ہو سکیں",
+    "zh_Hant": "群組代碼：{code} — 分享以便其他人可以加入"
   },
   "group_shareCodeInfo": {
     "en": "Share the group code so others can join",
@@ -5402,7 +5930,9 @@
     "pt": "Compartilhe o código do grupo para que outros possam entrar",
     "ja": "グループコードを共有してメンバーを参加させましょう",
     "zh": "分享群组代码以便他人加入",
-    "or": "ଗୋଷ୍ଠୀ କୋଡ୍ ଅଂଶୀଦାର କରନ୍ତୁ ଯାହା ଦ୍ others ାରା ଅନ୍ୟମାନେ ଯୋଗଦାନ କରିପାରିବେ |"
+    "or": "ଗୋଷ୍ଠୀ କୋଡ୍ ଅଂଶୀଦାର କରନ୍ତୁ ଯାହା ଦ୍ others ାରା ଅନ୍ୟମାନେ ଯୋଗଦାନ କରିପାରିବେ |",
+    "ur": "گروپ کوڈ شیئر کریں تاکہ دوسرے بھی شامل ہو سکیں",
+    "zh_Hant": "分享群組代碼以便其他人可以加入"
   },
   "group_youAreAdmin": {
     "en": "You are the admin of this group",
@@ -5422,7 +5952,9 @@
     "pt": "Você é o administrador deste grupo",
     "ja": "あなたはこのグループの管理者です",
     "zh": "您是该群组的管理员",
-    "or": "ଆପଣ ଏହି ଗୋଷ୍ଠୀର ଆଡମିନି |"
+    "or": "ଆପଣ ଏହି ଗୋଷ୍ଠୀର ଆଡମିନି |",
+    "ur": "آپ اس گروپ کے ایڈمن ہیں۔",
+    "zh_Hant": "您是該群組的管理員"
   },
   "group_chatWithMembers": {
     "en": "Chat with members in the group",
@@ -5442,7 +5974,9 @@
     "pt": "Converse com os membros do grupo",
     "ja": "グループのメンバーとチャット",
     "zh": "与群组成员聊天",
-    "or": "ଗୋଷ୍ଠୀର ସଦସ୍ୟମାନଙ୍କ ସହିତ ଚାଟ୍ କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀର ସଦସ୍ୟମାନଙ୍କ ସହିତ ଚାଟ୍ କରନ୍ତୁ |",
+    "ur": "گروپ میں ممبران کے ساتھ چیٹ کریں۔",
+    "zh_Hant": "與群組中的成員聊天"
   },
   "group_noNewMessages": {
     "en": "You won't get new messages from this group",
@@ -5462,7 +5996,9 @@
     "pt": "Você não receberá novas mensagens deste grupo",
     "ja": "このグループからの新しいメッセージは届きません",
     "zh": "您将不会收到来自该群组的新消息",
-    "or": "ଆପଣ ଏହି ଗୋଷ୍ଠୀରୁ ନୂତନ ବାର୍ତ୍ତା ପାଇବେ ନାହିଁ |"
+    "or": "ଆପଣ ଏହି ଗୋଷ୍ଠୀରୁ ନୂତନ ବାର୍ତ୍ତା ପାଇବେ ନାହିଁ |",
+    "ur": "آپ کو اس گروپ سے نئے پیغامات نہیں ملیں گے۔",
+    "zh_Hant": "您不會收到該群組的新訊息"
   },
   "group_locationNoLongerShared": {
     "en": "Your location is no longer shared with this group",
@@ -5482,7 +6018,9 @@
     "pt": "Sua localização não é mais compartilhada com este grupo",
     "ja": "このグループとの位置情報共有は停止されました",
     "zh": "您的实时位置已停止与该群组共享",
-    "or": "ତୁମର ଅବସ୍ଥାନ ଆଉ ଏହି ଗୋଷ୍ଠୀ ସହିତ ଅଂଶୀଦାର ନୁହେଁ |"
+    "or": "ତୁମର ଅବସ୍ଥାନ ଆଉ ଏହି ଗୋଷ୍ଠୀ ସହିତ ଅଂଶୀଦାର ନୁହେଁ |",
+    "ur": "آپ کا مقام اب اس گروپ کے ساتھ شیئر نہیں کیا گیا ہے۔",
+    "zh_Hant": "您的位置不再與此群組共享"
   },
   "group_locationShared": {
     "en": "Your location is shared with this group",
@@ -5502,7 +6040,9 @@
     "pt": "Sua localização está compartilhada com este grupo",
     "ja": "現在地がこのグループに共有されています",
     "zh": "您的位置正在与该群组共享",
-    "or": "ଆପଣଙ୍କର ଅବସ୍ଥାନ ଏହି ଗୋଷ୍ଠୀ ସହିତ ଅଂଶୀଦାର ହୋଇଛି |"
+    "or": "ଆପଣଙ୍କର ଅବସ୍ଥାନ ଏହି ଗୋଷ୍ଠୀ ସହିତ ଅଂଶୀଦାର ହୋଇଛି |",
+    "ur": "آپ کا مقام اس گروپ کے ساتھ شیئر کیا گیا ہے۔",
+    "zh_Hant": "您的位置已與此群組共享"
   },
   "group_copyCode": {
     "en": "Copy code",
@@ -5522,7 +6062,9 @@
     "pt": "Copiar código",
     "ja": "コードをコピー",
     "zh": "复制代号",
-    "or": "କୋଡ୍ କପି କରନ୍ତୁ |"
+    "or": "କୋଡ୍ କପି କରନ୍ତୁ |",
+    "ur": "کوڈ کاپی کریں۔",
+    "zh_Hant": "複製程式碼"
   },
   "widget_lostConnection": {
     "en": "Lost Connection",
@@ -5542,7 +6084,9 @@
     "pt": "Conexão Perdida",
     "ja": "接続が切断されました",
     "zh": "网络连接断开",
-    "or": "ହଜିଯାଇଥିବା ସଂଯୋଗ |"
+    "or": "ହଜିଯାଇଥିବା ସଂଯୋଗ |",
+    "ur": "کنکشن کھو گیا۔",
+    "zh_Hant": "失去連接"
   },
   "widget_noInternetBody": {
     "en": "Whoops... no internet connection found. check you connection",
@@ -5562,7 +6106,9 @@
     "pt": "Ops... sem conexão com a internet. Verifique sua conexão",
     "ja": "おっと... インターネット接続がありません。接続を確認してください",
     "zh": "哎呀... 未检测到网络连接，请检查您的网络设置",
-    "or": "ହଉ ... କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ମିଳିଲା ନାହିଁ | ତୁମର ସଂଯୋଗ ଯାଞ୍ଚ କର |"
+    "or": "ହଉ ... କ internet ଣସି ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ମିଳିଲା ନାହିଁ | ତୁମର ସଂଯୋଗ ଯାଞ୍ଚ କର |",
+    "ur": "افوہ... کوئی انٹرنیٹ کنکشن نہیں ملا۔ اپنا کنکشن چیک کریں۔",
+    "zh_Hant": "哎呀...找不到網路連線。檢查你的連接"
   },
   "widget_somethingWentWrongTitle": {
     "en": "Something went wrong",
@@ -5582,7 +6128,9 @@
     "pt": "Algo deu errado",
     "ja": "問題が発生しました",
     "zh": "出错了",
-    "or": "କିଛି ଭୁଲ୍ ହୋଇଗଲା |"
+    "or": "କିଛି ଭୁଲ୍ ହୋଇଗଲା |",
+    "ur": "کچھ غلط ہو گیا۔",
+    "zh_Hant": "出了點問題"
   },
   "widget_refreshPage": {
     "en": "Refresh the page",
@@ -5602,7 +6150,9 @@
     "pt": "Atualizar a página",
     "ja": "ページを更新する",
     "zh": "刷新页面",
-    "or": "ପୃଷ୍ଠା ସତେଜ କରନ୍ତୁ |"
+    "or": "ପୃଷ୍ଠା ସତେଜ କରନ୍ତୁ |",
+    "ur": "صفحہ ریفریش کریں۔",
+    "zh_Hant": "重新整理頁面"
   },
   "widget_inviteDownloadLinks": {
     "en": "Download for Android: {playStoreLink}\n\nDownload for iOS: {appStoreLink}",
@@ -5630,7 +6180,9 @@
     "pt": "Baixar para Android: {playStoreLink}\n\nBaixar para iOS: {appStoreLink}",
     "ja": "Android版ダウンロード: {playStoreLink}\n\niOS版ダウンロード: {appStoreLink}",
     "zh": "Android 下载链接：{playStoreLink}\n\niOS 下载链接：{appStoreLink}",
-    "or": "ଆଣ୍ଡ୍ରଏଡ୍ ପାଇଁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ: {playStoreLink}\n\nIOS ପାଇଁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ: {appStoreLink}"
+    "or": "ଆଣ୍ଡ୍ରଏଡ୍ ପାଇଁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ: {playStoreLink}\n\nIOS ପାଇଁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ: {appStoreLink}",
+    "ur": "اینڈرائیڈ کے لیے ڈاؤن لوڈ کریں: {playStoreLink}\n\niOS کے لیے ڈاؤن لوڈ کریں: {appStoreLink}",
+    "zh_Hant": "Android 版下載：{playStoreLink}\n\niOS 下載：{appStoreLink}"
   },
   "widget_seen": {
     "en": "Seen",
@@ -5650,7 +6202,9 @@
     "pt": "Visto",
     "ja": "既読",
     "zh": "已读",
-    "or": "ଦେଖ |"
+    "or": "ଦେଖ |",
+    "ur": "دیکھا",
+    "zh_Hant": "見過"
   },
   "widget_seenCountOfTotal": {
     "en": "({count} of {total})",
@@ -5678,7 +6232,9 @@
     "pt": "({count} de {total})",
     "ja": "({count} / {total})",
     "zh": "({count}/{total})",
-    "or": "({total} ର {count})"
+    "or": "({total} ର {count})",
+    "ur": "({count} از {total})",
+    "zh_Hant": " {count} {total}"
   },
   "widget_seenCount": {
     "en": "({count})",
@@ -5703,7 +6259,9 @@
     "pt": "({count})",
     "ja": "({count})",
     "zh": "({count})",
-    "or": "({count})"
+    "or": "({count})",
+    "ur": "({count})",
+    "zh_Hant": "({count})"
   },
   "widget_notSeenYet": {
     "en": "Not seen yet",
@@ -5723,7 +6281,9 @@
     "pt": "Não visto ainda",
     "ja": "未読",
     "zh": "尚未查看",
-    "or": "ଏପର୍ଯ୍ୟନ୍ତ ଦେଖାଯାଇ ନାହିଁ |"
+    "or": "ଏପର୍ଯ୍ୟନ୍ତ ଦେଖାଯାଇ ନାହିଁ |",
+    "ur": "ابھی تک نہیں دیکھا",
+    "zh_Hant": "還沒見過"
   },
   "widget_pinnedMessage": {
     "en": "Pinned Message",
@@ -5743,7 +6303,9 @@
     "pt": "Mensagem Fixada",
     "ja": "固定メッセージ",
     "zh": "置顶消息",
-    "or": "ପିନ୍ ହୋଇଥିବା ବାର୍ତ୍ତା |"
+    "or": "ପିନ୍ ହୋଇଥିବା ବାର୍ତ୍ତା |",
+    "ur": "پن کردہ پیغام",
+    "zh_Hant": "置頂訊息"
   },
   "widget_manageGroups": {
     "en": "Manage your groups easily",
@@ -5763,7 +6325,9 @@
     "pt": "Gerencie seus grupos com facilidade",
     "ja": "グループを簡単に管理",
     "zh": "轻松管理您的群组",
-    "or": "ଆପଣଙ୍କର ଗୋଷ୍ଠୀକୁ ସହଜରେ ପରିଚାଳନା କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ଗୋଷ୍ଠୀକୁ ସହଜରେ ପରିଚାଳନା କରନ୍ତୁ |",
+    "ur": "اپنے گروپس کو آسانی سے منظم کریں۔",
+    "zh_Hant": "輕鬆管理您的群組"
   },
   "widget_live": {
     "en": "Live",
@@ -5784,7 +6348,9 @@
     "pt": "Ao Vivo",
     "ja": "ライブ",
     "zh": "实时",
-    "or": "ଲାଇଭ୍ |"
+    "or": "ଲାଇଭ୍ |",
+    "ur": "جیو",
+    "zh_Hant": "居住"
   },
   "widget_private": {
     "en": "Private",
@@ -5805,7 +6371,9 @@
     "pt": "Privado",
     "ja": "プライベート",
     "zh": "私密",
-    "or": "ବ୍ୟକ୍ତିଗତ"
+    "or": "ବ୍ୟକ୍ତିଗତ",
+    "ur": "نجی",
+    "zh_Hant": "私人的"
   },
   "widget_userFallback": {
     "en": "User",
@@ -5825,6 +6393,8 @@
     "pt": "Usuário",
     "ja": "ユーザー",
     "zh": "用户",
-    "or": "ଉପଯୋଗକର୍ତ୍ତା |"
+    "or": "ଉପଯୋଗକର୍ତ୍ତା |",
+    "ur": "صارف",
+    "zh_Hant": "使用者"
   }
 }
