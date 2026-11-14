@@ -566,8 +566,6 @@ class StatusOwnFooter extends StatelessWidget {
     controller.fetchCurrentStatusViewers();
 
     Get.bottomSheet(
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       Obx(() {
         final current = controller.currentStatus ?? status;
         final myId =
