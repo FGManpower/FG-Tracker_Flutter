@@ -1032,6 +1032,46 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         },
       );
 
+      // ==========================================
+      // WHATSAPP PARITY: MESSAGE REACTIONS
+      // ==========================================
+      socketService.listenMessageReactionUpdated(
+        scope: ChatSocketScope.private,
+        callback: (data) {
+          try {
+            final targetMsgId = MessageData.parseIntOrNull(data['messageId'] ?? data['id']);
+            if (targetMsgId == null) return;
+
+            final currentUid = Global.storageServices.get(PrefConst.userId)?.toString();
+            final eventUserId = data['userId']?.toString();
+            final rawReactions = data['reactions'];
+
+            bool found = false;
+            for (var msg in _messages) {
+              if (msg.id == targetMsgId) {
+                if (rawReactions is List) {
+                  msg.reactions = rawReactions
+                      .whereType<Map>()
+                      .map((r) => MessageReactionModel.fromJson(Map<String, dynamic>.from(r)))
+                      .toList();
+                }
+                if (currentUid != null && eventUserId == currentUid) {
+                  msg.userReaction = data['userReaction']?.toString();
+                }
+                found = true;
+                break;
+              }
+            }
+
+            if (found) {
+              updateMessageStream();
+            }
+          } catch (e) {
+            log("Private reaction event error: $e");
+          }
+        },
+      );
+
       socketService.listenMessageDeleted(
       scope: ChatSocketScope.private,
         callback: (data) {
@@ -2465,6 +2505,74 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     } finally {
       isUnblocking.value = false;
     }
+  }
+
+  // ==========================================
+  // WHATSAPP PARITY: MESSAGE REACTIONS
+  // ==========================================
+  void toggleReaction(MessageData message, String emoji) {
+    if (message.id == null) return;
+    final currentUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (currentUserId == null) return;
+
+    final targetPeerId = memberData.userId?.toString() ?? receiverId;
+
+    // Optimistic local update
+    final existingUserReaction = message.userReaction;
+    final isToggleOff = existingUserReaction == emoji;
+    message.userReaction = isToggleOff ? null : emoji;
+
+    final currentReactions = List<MessageReactionModel>.from(message.reactions ?? []);
+    if (isToggleOff) {
+      final existingIndex = currentReactions.indexWhere((r) => r.emoji == emoji);
+      if (existingIndex >= 0) {
+        final existing = currentReactions[existingIndex];
+        final newCount = (existing.count ?? 1) - 1;
+        if (newCount <= 0) {
+          currentReactions.removeAt(existingIndex);
+        } else {
+          existing.count = newCount;
+          existing.userIds?.remove(int.tryParse(currentUserId));
+        }
+      }
+    } else {
+      if (existingUserReaction != null) {
+        final prevIndex = currentReactions.indexWhere((r) => r.emoji == existingUserReaction);
+        if (prevIndex >= 0) {
+          final prev = currentReactions[prevIndex];
+          final newCount = (prev.count ?? 1) - 1;
+          if (newCount <= 0) {
+            currentReactions.removeAt(prevIndex);
+          } else {
+            prev.count = newCount;
+            prev.userIds?.remove(int.tryParse(currentUserId));
+          }
+        }
+      }
+      final newIndex = currentReactions.indexWhere((r) => r.emoji == emoji);
+      if (newIndex >= 0) {
+        currentReactions[newIndex].count = (currentReactions[newIndex].count ?? 0) + 1;
+        currentReactions[newIndex].userIds?.add(int.tryParse(currentUserId) ?? 0);
+      } else {
+        currentReactions.add(MessageReactionModel(
+          emoji: emoji,
+          count: 1,
+          userIds: [int.tryParse(currentUserId) ?? 0],
+        ));
+      }
+    }
+    message.reactions = currentReactions;
+    updateMessageStream();
+
+    // Emit over socket
+    socketService.sendReaction(
+      messageId: message.id!,
+      emoji: emoji,
+      userId: currentUserId,
+      chatType: "private",
+      chatId: privateChatId.value,
+      otherUserId: targetPeerId,
+    );
   }
 
   // ---------------------------------------------------------------------------

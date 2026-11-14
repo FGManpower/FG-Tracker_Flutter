@@ -123,8 +123,16 @@ class _StatusViewScreenState extends State<StatusViewScreen> {
             onLongPressStart: (_) => controller.pause(),
             onLongPressEnd: (_) => controller.resume(),
             onVerticalDragEnd: (details) {
-              if ((details.primaryVelocity ?? 0) > 400) {
+              final velocity = details.primaryVelocity ?? 0;
+              if (velocity > 400) {
                 controller.closeViewer();
+              } else if (velocity < -300 && widget.isOwnStatus) {
+                StatusOwnFooter.showViewersSheet(
+                  controller: controller,
+                  status: current,
+                  onOpenViewers: controller.pause,
+                  onCloseViewers: controller.resume,
+                );
               }
             },
             child: StatusBackground(

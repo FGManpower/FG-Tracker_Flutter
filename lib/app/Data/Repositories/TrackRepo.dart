@@ -18,7 +18,7 @@ class TrackRepo {
     required dynamic userLong,
     required dynamic radius,
   }) async {
-    int formattedRadius = 2000;
+    int formattedRadius = 1000;
     if (radius != null) {
       final String raw = radius.toString().trim().toLowerCase();
       final String clean = raw.replaceAll('km', '').replaceAll('m', '').trim();

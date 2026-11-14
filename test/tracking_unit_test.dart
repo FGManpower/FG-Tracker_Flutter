@@ -217,7 +217,7 @@ void main() {
       int getApiRadiusParam(String val) {
         final cleanVal = val.replaceAll('km', '').replaceAll('m', '').trim();
         final double? parsed = double.tryParse(cleanVal);
-        if (parsed == null || parsed <= 0) return 2000;
+        if (parsed == null || parsed <= 0) return 1000;
         if (val.contains('km') || parsed < 50) {
           return (parsed * 1000).round();
         } else {

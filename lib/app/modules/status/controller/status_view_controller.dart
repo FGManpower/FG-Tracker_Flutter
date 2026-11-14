@@ -749,6 +749,24 @@ class StatusViewController extends GetxController
     }
   }
 
+  Future<void> fetchCurrentStatusViewers() async {
+    final item = currentStatus;
+    if (item == null || item.id <= 0) return;
+
+    try {
+      final res = await StatusRepo.getMyStatuses();
+      if (res.status == true && res.data != null) {
+        final found = res.data!.firstWhereOrNull((s) => s.id == item.id);
+        if (found != null) {
+          statuses[currentIndex.value] = item.copyWith(
+            viewsCount: found.viewsCount,
+            viewers: found.viewers,
+          );
+        }
+      }
+    } catch (_) {}
+  }
+
   void showMenu(BuildContext context) {
     if (_menuOverlay != null) {
       _removeMenu();

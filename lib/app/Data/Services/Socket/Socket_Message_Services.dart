@@ -1542,6 +1542,73 @@ class SocketMessageService extends GetxService {
     );
   }
 
+  // ==========================================
+  // WHATSAPP PARITY: MESSAGE REACTIONS
+  // ==========================================
+  void sendReaction({
+    required int messageId,
+    required String emoji,
+    required String userId,
+    String? chatType,
+    dynamic chatId,
+    String? otherUserId,
+    Function(dynamic)? ack,
+  }) {
+    final payload = {
+      "messageId": messageId,
+      "emoji": emoji,
+      "userId": userId,
+      "chatType": chatType ?? (otherUserId != null ? "private" : "group"),
+      if (chatId != null) "chatId": chatId,
+      if (chatId != null && chatType == "group") "groupId": chatId,
+      if (otherUserId != null) "otherUserId": otherUserId,
+    };
+
+    if (chatType == "private" || otherUserId != null) {
+      if (isPrivateChatSocketConnected) {
+        try {
+          _privateChatSocket?.emitWithAck("send_message_reaction", payload, ack: (res) {
+            ack?.call(res);
+          });
+        } catch (_) {
+          _privateChatSocket?.emit("send_message_reaction", payload);
+        }
+        return;
+      }
+    }
+
+    if (isSocketConnected) {
+      try {
+        socket.emitWithAck("send_message_reaction", payload, ack: (res) {
+          ack?.call(res);
+        });
+      } catch (_) {
+        socket.emit("send_message_reaction", payload);
+      }
+    }
+  }
+
+  void listenMessageReactionUpdated({
+    required Function(Map<String, dynamic>) callback,
+    ChatSocketScope scope = ChatSocketScope.private,
+  }) {
+    final s = scope == ChatSocketScope.private ? _privateChatSocket : _socket;
+    if (s == null) return;
+    s.off("message_reaction_updated");
+    s.on("message_reaction_updated", (data) {
+      if (data is Map) {
+        callback(Map<String, dynamic>.from(data));
+      }
+    });
+  }
+
+  void stopListeningMessageReactionUpdated({
+    ChatSocketScope scope = ChatSocketScope.private,
+  }) {
+    final s = scope == ChatSocketScope.private ? _privateChatSocket : _socket;
+    s?.off("message_reaction_updated");
+  }
+
   /// Server ack for `send_message` (backend v2.3.0, item #9):
   /// `{status, ok, code, message}`. A rejected send (BLOCKED, INVALID_DATA,
   /// SEND_FAILED) used to fail silently; now the user is told. Success needs

@@ -489,7 +489,7 @@ class StatusOwnFooter extends StatelessWidget {
     required this.onCloseViewers,
   });
 
-  Map<String, int> _reactionSummary(List<StatusViewerModel> viewers) {
+  static Map<String, int> _reactionSummary(List<StatusViewerModel> viewers) {
     final map = <String, int>{};
     for (final v in viewers) {
       final emoji = v.reactionEmoji;
@@ -500,7 +500,7 @@ class StatusOwnFooter extends StatelessWidget {
     return map;
   }
 
-  String? _memberProfilePath(String? url) {
+  static String? _memberProfilePath(String? url) {
     if (url == null || url.trim().isEmpty) return null;
     if (!url.startsWith('http')) return url;
     final marker = '/uploads/';
@@ -509,7 +509,7 @@ class StatusOwnFooter extends StatelessWidget {
     return url;
   }
 
-  void _openChatWithViewer(StatusViewerModel viewer) {
+  static void _openChatWithViewer(StatusViewerModel viewer, StatusViewController controller) {
     if (viewer.viewerId <= 0) return;
 
     final myId = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
@@ -548,10 +548,26 @@ class StatusOwnFooter extends StatelessWidget {
   }
 
   void _showViewersBottomSheet() {
+    showViewersSheet(
+      controller: controller,
+      status: status,
+      onOpenViewers: onOpenViewers,
+      onCloseViewers: onCloseViewers,
+    );
+  }
+
+  static void showViewersSheet({
+    required StatusViewController controller,
+    required StatusItemModel status,
+    required VoidCallback onOpenViewers,
+    required VoidCallback onCloseViewers,
+  }) {
     onOpenViewers();
     controller.fetchCurrentStatusViewers();
 
     Get.bottomSheet(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       Obx(() {
         final current = controller.currentStatus ?? status;
         final myId =
@@ -790,7 +806,7 @@ class StatusOwnFooter extends StatelessWidget {
                   ],
                   if (!isMe)
                     GestureDetector(
-                      onTap: () => _openChatWithViewer(viewer),
+                      onTap: () => _openChatWithViewer(viewer, controller),
                       behavior: HitTestBehavior.opaque,
                       child: Container(
                         padding: EdgeInsets.all(8.r),

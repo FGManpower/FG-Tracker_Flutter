@@ -820,6 +820,49 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     // updated after re-opening the group.
     socketService.listenMemberRemoved(callback: _onMemberRemoved);
 
+    // ==========================================
+    // WHATSAPP PARITY: MESSAGE REACTIONS
+    // ==========================================
+    socketService.listenMessageReactionUpdated(
+      scope: ChatSocketScope.group,
+      callback: (data) {
+        try {
+          final eventGid = data['chatId'] ?? data['groupId'];
+          if (eventGid != null && _isOtherGroup(eventGid)) return;
+
+          final targetMsgId = MessageData.parseIntOrNull(data['messageId'] ?? data['id']);
+          if (targetMsgId == null) return;
+
+          final currentUid = Global.storageServices.get(PrefConst.userId)?.toString();
+          final eventUserId = data['userId']?.toString();
+          final rawReactions = data['reactions'];
+
+          bool found = false;
+          for (var msg in messages) {
+            if (msg.id == targetMsgId) {
+              if (rawReactions is List) {
+                msg.reactions = rawReactions
+                    .whereType<Map>()
+                    .map((r) => MessageReactionModel.fromJson(Map<String, dynamic>.from(r)))
+                    .toList();
+              }
+              if (currentUid != null && eventUserId == currentUid) {
+                msg.userReaction = data['userReaction']?.toString();
+              }
+              found = true;
+              break;
+            }
+          }
+
+          if (found) {
+            messages.refresh();
+          }
+        } catch (e) {
+          log("Error handling message_reaction_updated in group chat: $e");
+        }
+      },
+    );
+
     getGroupMessages();
 
     getGroupMembers();
@@ -2666,6 +2709,71 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       if (_messages.length == before && !_pager.hasMore) break;
     }
     return _messages.indexWhere((e) => e.id == messageId);
+  }
+
+  // ==========================================
+  // WHATSAPP PARITY: MESSAGE REACTIONS
+  // ==========================================
+  void toggleReaction(MessageData message, String emoji) {
+    if (message.id == null) return;
+    final currentUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (currentUserId == null) return;
+
+    // Optimistic local update
+    final existingUserReaction = message.userReaction;
+    final isToggleOff = existingUserReaction == emoji;
+    message.userReaction = isToggleOff ? null : emoji;
+
+    final currentReactions = List<MessageReactionModel>.from(message.reactions ?? []);
+    if (isToggleOff) {
+      final existingIndex = currentReactions.indexWhere((r) => r.emoji == emoji);
+      if (existingIndex >= 0) {
+        final existing = currentReactions[existingIndex];
+        final newCount = (existing.count ?? 1) - 1;
+        if (newCount <= 0) {
+          currentReactions.removeAt(existingIndex);
+        } else {
+          existing.count = newCount;
+          existing.userIds?.remove(int.tryParse(currentUserId));
+        }
+      }
+    } else {
+      if (existingUserReaction != null) {
+        final prevIndex = currentReactions.indexWhere((r) => r.emoji == existingUserReaction);
+        if (prevIndex >= 0) {
+          final prev = currentReactions[prevIndex];
+          final newCount = (prev.count ?? 1) - 1;
+          if (newCount <= 0) {
+            currentReactions.removeAt(prevIndex);
+          } else {
+            prev.count = newCount;
+            prev.userIds?.remove(int.tryParse(currentUserId));
+          }
+        }
+      }
+      final newIndex = currentReactions.indexWhere((r) => r.emoji == emoji);
+      if (newIndex >= 0) {
+        currentReactions[newIndex].count = (currentReactions[newIndex].count ?? 0) + 1;
+        currentReactions[newIndex].userIds?.add(int.tryParse(currentUserId) ?? 0);
+      } else {
+        currentReactions.add(MessageReactionModel(
+          emoji: emoji,
+          count: 1,
+          userIds: [int.tryParse(currentUserId) ?? 0],
+        ));
+      }
+    }
+    message.reactions = currentReactions;
+    messages.refresh();
+
+    // Emit over socket
+    socketService.sendReaction(
+      messageId: message.id!,
+      emoji: emoji,
+      userId: currentUserId,
+      chatType: "group",
+      chatId: groupId,
+    );
   }
 }
 

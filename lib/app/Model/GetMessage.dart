@@ -287,6 +287,8 @@ class MessageData {
   Map<String, dynamic>? systemMeta;
   dynamic duration;
   dynamic groupId;
+  List<MessageReactionModel>? reactions;
+  String? userReaction;
 
   /// Convenience alias for `timestamp` (the server timestamp when the message was created).
   dynamic get createdAt => timestamp;
@@ -336,6 +338,8 @@ class MessageData {
     this.callLogMeta,
     this.systemMeta,
     this.duration,
+    this.reactions,
+    this.userReaction,
   });
 
   bool get isStatusReply {
@@ -947,6 +951,17 @@ class MessageData {
     }
 
     duration = json['duration'] ?? nestedSource?['duration'];
+
+    userReaction = json['userReaction']?.toString() ?? nestedSource?['userReaction']?.toString();
+    final rawReactions = json['reactions'] ?? nestedSource?['reactions'];
+    if (rawReactions is List) {
+      reactions = rawReactions
+          .whereType<Map>()
+          .map((r) => MessageReactionModel.fromJson(Map<String, dynamic>.from(r)))
+          .toList();
+    } else {
+      reactions = [];
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -998,7 +1013,77 @@ class MessageData {
     if (locationMeta != null) data['locationMeta'] = locationMeta;
     if (contactMeta != null) data['contactMeta'] = contactMeta;
     if (duration != null) data['duration'] = duration;
+    if (reactions != null) {
+      data['reactions'] = reactions!.map((r) => r.toJson()).toList();
+    }
+    data['userReaction'] = userReaction;
 
     return data;
+  }
+}
+
+class MessageReactionModel {
+  String? emoji;
+  int? count;
+  List<int>? userIds;
+  List<ReactionUserModel>? users;
+
+  MessageReactionModel({
+    this.emoji,
+    this.count,
+    this.userIds,
+    this.users,
+  });
+
+  MessageReactionModel.fromJson(Map<String, dynamic> json) {
+    emoji = json['emoji']?.toString();
+    count = MessageData.parseIntOrNull(json['count']) ?? 0;
+    if (json['userIds'] is List) {
+      userIds = (json['userIds'] as List)
+          .map((e) => MessageData.parseIntOrNull(e))
+          .whereType<int>()
+          .toList();
+    } else {
+      userIds = [];
+    }
+    if (json['users'] is List) {
+      users = (json['users'] as List)
+          .whereType<Map>()
+          .map((u) => ReactionUserModel.fromJson(Map<String, dynamic>.from(u)))
+          .toList();
+    } else {
+      users = [];
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'emoji': emoji,
+      'count': count,
+      'userIds': userIds,
+      'users': users?.map((u) => u.toJson()).toList(),
+    };
+  }
+}
+
+class ReactionUserModel {
+  int? userId;
+  String? name;
+  String? profileImage;
+
+  ReactionUserModel({this.userId, this.name, this.profileImage});
+
+  ReactionUserModel.fromJson(Map<String, dynamic> json) {
+    userId = MessageData.parseIntOrNull(json['userId'] ?? json['UserId']);
+    name = (json['name'] ?? json['Name'])?.toString();
+    profileImage = (json['profileImage'] ?? json['ProfileImage'])?.toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': userId,
+      'name': name,
+      'profileImage': profileImage,
+    };
   }
 }

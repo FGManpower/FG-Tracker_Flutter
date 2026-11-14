@@ -34,7 +34,7 @@ import '../../../Model/MemberDataRes.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 class TrackController extends GetxController {
-  RxString selectedRadius = '2'.obs;
+  RxString selectedRadius = '1'.obs;
   TextEditingController customRadiusController = TextEditingController();
   TextEditingController searchController = TextEditingController();
   final RxString searchQuery = "".obs;
@@ -442,7 +442,8 @@ class TrackController extends GetxController {
 
       _knownUserCoordinates[userIdStr] = LatLng(data.lat, data.lng);
 
-      if (!isLoading.value &&
+      if (isWithinRadius &&
+          !isLoading.value &&
           fallbackName != null &&
           fallbackName.trim().isNotEmpty &&
           fallbackName.trim().toLowerCase() != 'member') {
@@ -670,12 +671,35 @@ class TrackController extends GetxController {
       }
     }
 
+    final double maxRadiusMeters =
+        getApiRadiusParam(selectedRadius.value).toDouble();
+
     final String myUserIdStr =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
-    final sortedUsers = radiusUsers
-        .where(
-            (u) => myUserIdStr.isEmpty || u.userId?.toString() != myUserIdStr)
-        .toList()
+    final sortedUsers = radiusUsers.where((u) {
+      if (myUserIdStr.isNotEmpty && u.userId?.toString() == myUserIdStr) {
+        return false;
+      }
+      if (userLat != 0.0 &&
+          userLng != 0.0 &&
+          u.latitude != null &&
+          u.longitude != null &&
+          u.latitude != 0.0 &&
+          u.longitude != 0.0) {
+        final double dist =
+            Geolocator.distanceBetween(userLat, userLng, u.latitude!, u.longitude!);
+        if (dist > maxRadiusMeters) return false;
+      } else if (u.distance != null) {
+        final dStr = u.distance.toString().trim().toLowerCase();
+        final cleaned = dStr.replaceAll(RegExp(r'[^\d.]'), '');
+        final val = double.tryParse(cleaned);
+        if (val != null) {
+          final meters = (dStr.contains('km') || val < 50) ? val * 1000 : val;
+          if (meters > maxRadiusMeters) return false;
+        }
+      }
+      return true;
+    }).toList()
       ..sort((a, b) {
         if (a.isOnline && !b.isOnline) return -1;
         if (!a.isOnline && b.isOnline) return 1;
@@ -1640,7 +1664,7 @@ class TrackController extends GetxController {
     final String cleanVal = val.replaceAll('km', '').replaceAll('m', '').trim();
     final double? parsed = double.tryParse(cleanVal);
     if (parsed == null || parsed <= 0) {
-      return 2000;
+      return 1000;
     }
 
     // 0.1km -> 100, 1km -> 1000, 2km -> 2000, 5km -> 5000
@@ -1663,9 +1687,32 @@ class TrackController extends GetxController {
         return;
       }
 
-      final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
-      final double long =
-          currentLong.value != 0.0 ? currentLong.value : 72.8777;
+      double lat = currentLat.value;
+      double long = currentLong.value;
+      if (lat == 0.0 || long == 0.0) {
+        final loc = LocationService.instance.currentPosition;
+        if (loc?.latitude != null && loc?.longitude != null) {
+          lat = loc!.latitude!;
+          long = loc.longitude!;
+          currentLat.value = lat;
+          currentLong.value = long;
+        } else {
+          final savedLat = Global.storageServices.getDouble('user_last_lat');
+          final savedLng = Global.storageServices.getDouble('user_last_lng');
+          if (savedLat != null &&
+              savedLng != null &&
+              savedLat != 0.0 &&
+              savedLng != 0.0) {
+            lat = savedLat;
+            long = savedLng;
+            currentLat.value = lat;
+            currentLong.value = long;
+          } else {
+            lat = 19.0760;
+            long = 72.8777;
+          }
+        }
+      }
 
       final int radiusParam = getApiRadiusParam(radius);
 
@@ -1732,6 +1779,14 @@ class TrackController extends GetxController {
             final double dist =
                 Geolocator.distanceBetween(lat, long, u.latitude!, u.longitude!);
             if (dist > maxRadiusMeters) return false;
+          } else if (u.distance != null) {
+            final dStr = u.distance.toString().trim().toLowerCase();
+            final cleaned = dStr.replaceAll(RegExp(r'[^\d.]'), '');
+            final val = double.tryParse(cleaned);
+            if (val != null) {
+              final meters = (dStr.contains('km') || val < 50) ? val * 1000 : val;
+              if (meters > maxRadiusMeters) return false;
+            }
           }
           return true;
         }).toList();
@@ -1747,7 +1802,12 @@ class TrackController extends GetxController {
         }
       }
       _refreshMembersAndMap();
-      fitAllMembers();
+      if (!isGroupMode.value) {
+        final double radiusKm = double.tryParse(selectedRadius.value) ?? 1.0;
+        _zoomForRadius(radiusKm);
+      } else {
+        fitAllMembers();
+      }
     } on SocketException {
       responseError.value =
           "No internet connection. Please check your network.";
@@ -1981,7 +2041,7 @@ class TrackController extends GetxController {
   Future<void> updateMapMarkersAndCircle() async {
     final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
     final double lng = currentLong.value != 0.0 ? currentLong.value : 72.8777;
-    final double radiusKm = double.tryParse(selectedRadius.value) ?? 2.0;
+    final double radiusKm = double.tryParse(selectedRadius.value) ?? 1.0;
     final double radiusMeters = radiusKm * 1000.0;
 
     // Update Radius Circle & Dashed Boundary Line
@@ -2176,7 +2236,7 @@ class TrackController extends GetxController {
 
   void onMapCreated(GoogleMapController controller) {
     mapController = controller;
-    final double radiusKm = double.tryParse(selectedRadius.value) ?? 2.0;
+    final double radiusKm = double.tryParse(selectedRadius.value) ?? 1.0;
     _zoomForRadius(radiusKm);
   }
 
@@ -2307,7 +2367,7 @@ class TrackController extends GetxController {
   void recenterMap({double? zoom}) {
     final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
     final double lng = currentLong.value != 0.0 ? currentLong.value : 72.8777;
-    final double radiusKm = double.tryParse(selectedRadius.value) ?? 2.0;
+    final double radiusKm = double.tryParse(selectedRadius.value) ?? 1.0;
     final double targetZoom = zoom ?? calculateZoomForRadius(radiusKm);
     mapController?.animateCamera(
       CameraUpdate.newCameraPosition(

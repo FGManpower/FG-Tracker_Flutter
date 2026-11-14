@@ -23,12 +23,15 @@ class MessageContextMenuAction {
 
 class MessageContextMenu {
   static const Color _purple = Color(0xFF5045B9);
+  static const List<String> quickReactions = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
   static Future<void> show({
     required BuildContext context,
     required BuildContext bubbleContext,
     required bool isSentByMe,
     required List<MessageContextMenuAction> actions,
+    ValueChanged<String>? onReactionSelected,
+    String? currentReaction,
   }) async {
     HapticFeedback.mediumImpact();
 
@@ -116,39 +119,93 @@ class MessageContextMenu {
                       : Alignment.topLeft,
                   child: FadeTransition(
                     opacity: animation,
-                    child: Container(
-                      width: menuWidth,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.16),
-                            blurRadius: 26,
-                            spreadRadius: 1,
-                            offset: const Offset(0, 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment:
+                          isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                      children: [
+                        if (onReactionSelected != null)
+                          Container(
+                            margin: EdgeInsets.only(bottom: 8.h),
+                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(28.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.16),
+                                  blurRadius: 20,
+                                  spreadRadius: 1,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                              border: Border.all(
+                                color: Colors.black.withValues(alpha: 0.06),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: quickReactions.map((emoji) {
+                                final isSelected = currentReaction == emoji;
+                                return GestureDetector(
+                                  onTap: () {
+                                    HapticFeedback.mediumImpact();
+                                    Navigator.of(dialogContext).pop();
+                                    onReactionSelected(emoji);
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? const Color(0xFFEDE7F6)
+                                          : Colors.transparent,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      emoji,
+                                      style: TextStyle(fontSize: 21.sp),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
                           ),
-                        ],
-                        border: Border.all(
-                          color: Colors.black.withValues(alpha: 0.06),
-                          width: 0.8,
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(18.r),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            for (int i = 0; i < actions.length; i++) ...[
-                              _buildActionTile(
-                                dialogContext: dialogContext,
-                                action: actions[i],
-                                isLast: i == actions.length - 1,
+                        Container(
+                          width: menuWidth,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.16),
+                                blurRadius: 26,
+                                spreadRadius: 1,
+                                offset: const Offset(0, 8),
                               ),
                             ],
-                          ],
+                            border: Border.all(
+                              color: Colors.black.withValues(alpha: 0.06),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(18.r),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                for (int i = 0; i < actions.length; i++) ...[
+                                  _buildActionTile(
+                                    dialogContext: dialogContext,
+                                    action: actions[i],
+                                    isLast: i == actions.length - 1,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
