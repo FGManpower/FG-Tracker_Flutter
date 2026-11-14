@@ -109,6 +109,11 @@ class GlobalAudioController extends GetxController {
         if (kDebugMode) AppLog.d('[VM] loaded duration=$dur');
       }
       loadingUrl.value = "";
+      if (playbackSpeed.value != 1.0) {
+        try {
+          await player.setSpeed(playbackSpeed.value);
+        } catch (_) {}
+      }
       unawaited(player.play());
     } on PlayerInterruptedException catch (e) {
       // Another voice note was tapped while this one was loading

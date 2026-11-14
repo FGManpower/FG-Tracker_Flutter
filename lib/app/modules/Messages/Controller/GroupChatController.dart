@@ -94,6 +94,10 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   final RxList<int> searchResultIds = <int>[].obs;
   final RxInt currentSearchIndex = (-1).obs;
   RxBool isCreator = true.obs;
+  RxBool isAdmin = false.obs;
+  RxBool onlyAdminsCanSend = false.obs;
+  bool get isCreatorOrAdmin => isCreator.value || isAdmin.value;
+  bool get canSendMessages => !onlyAdminsCanSend.value || isCreatorOrAdmin;
   final Rxn<MessageData> pinnedMessage = Rxn<MessageData>();
   final RxBool showPinnedBanner = true.obs;
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
@@ -586,6 +590,32 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         updateMessageStream();
       },
     );
+
+    socketService.socket?.on("group_settings_updated", (data) {
+      if (data is Map) {
+        final gId = data["groupId"] ?? data["id"];
+        if (gId?.toString() == groupId.toString()) {
+          if (data["onlyAdminsCanSend"] != null) {
+            onlyAdminsCanSend.value = data["onlyAdminsCanSend"] == true ||
+                data["onlyAdminsCanSend"] == 1 ||
+                data["onlyAdminsCanSend"]?.toString() == "true";
+          }
+        }
+      }
+    });
+
+    socketService.socket?.on("group_updated", (data) {
+      if (data is Map) {
+        final gId = data["groupId"] ?? data["id"];
+        if (gId?.toString() == groupId.toString()) {
+          if (data["onlyAdminsCanSend"] != null) {
+            onlyAdminsCanSend.value = data["onlyAdminsCanSend"] == true ||
+                data["onlyAdminsCanSend"] == 1 ||
+                data["onlyAdminsCanSend"]?.toString() == "true";
+          }
+        }
+      }
+    });
 
     socketService.listenMessageSent(
       scope: ChatSocketScope.group,
@@ -1920,14 +1950,24 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
         // Default
         isCreator.value = false;
+        isAdmin.value = false;
 
         // Check current logged-in user
         for (final member in groupMembers) {
           if (member.userId.toString() == currentUserId) {
             isCreator.value = member.isCreator == true;
+            isAdmin.value = member.isAdmin == true || member.role == 'admin' || member.role == 'creator';
             break;
           }
         }
+
+        // Fetch group settings (onlyAdminsCanSend)
+        try {
+          final profileRes = await MessageRepo.getGroupProfileDetails(groupId: groupId);
+          if (profileRes.status == true && profileRes.data?.group != null) {
+            onlyAdminsCanSend.value = profileRes.data!.group!.onlyAdminsCanSend == true;
+          }
+        } catch (_) {}
       }
     } catch (e) {
       log(

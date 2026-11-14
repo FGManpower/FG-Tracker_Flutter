@@ -58,6 +58,7 @@ class GroupDetailsInfo {
   String? groupCode;
   String? description;
   int? createdBy;
+  bool? onlyAdminsCanSend;
 
   GroupDetailsInfo({
     this.groupId,
@@ -66,6 +67,7 @@ class GroupDetailsInfo {
     this.groupCode,
     this.description,
     this.createdBy,
+    this.onlyAdminsCanSend,
   });
 
   factory GroupDetailsInfo.fromJson(Map<String, dynamic> json) {
@@ -76,6 +78,9 @@ class GroupDetailsInfo {
       groupCode: json['groupCode'] ?? json['code'],
       description: json['description'] ?? json['groupDesc'] ?? json['group_desc'],
       createdBy: json['createdBy'],
+      onlyAdminsCanSend: json['onlyAdminsCanSend'] == true ||
+          json['onlyAdminsCanSend'] == 1 ||
+          json['onlyAdminsCanSend']?.toString() == 'true',
     );
   }
 }
@@ -84,35 +89,51 @@ class MyStatus {
   bool? isMember;
   bool? isAdmin;
   bool? isCreator;
+  bool? canSendMessage;
+  bool? canSendMessages;
 
-  MyStatus({this.isMember, this.isAdmin, this.isCreator});
+  MyStatus({
+    this.isMember,
+    this.isAdmin,
+    this.isCreator,
+    this.canSendMessage,
+    this.canSendMessages,
+  });
 
   factory MyStatus.fromJson(Map<String, dynamic> json) {
     return MyStatus(
       isMember: json['isMember'],
       isAdmin: json['isAdmin'],
       isCreator: json['isCreator'],
+      canSendMessage: json['canSendMessage'] ?? json['canSendMessages'],
+      canSendMessages: json['canSendMessages'] ?? json['canSendMessage'],
     );
   }
 }
 
 class GroupPermissions {
   bool? canSendMessage;
+  bool? canSendMessages;
   bool? canEditGroup;
+  bool? canEditGroupSettings;
   bool? canAddMember;
   bool? canLeaveGroup;
 
   GroupPermissions({
     this.canSendMessage,
+    this.canSendMessages,
     this.canEditGroup,
+    this.canEditGroupSettings,
     this.canAddMember,
     this.canLeaveGroup,
   });
 
   factory GroupPermissions.fromJson(Map<String, dynamic> json) {
     return GroupPermissions(
-      canSendMessage: json['canSendMessage'],
+      canSendMessage: json['canSendMessage'] ?? json['canSendMessages'],
+      canSendMessages: json['canSendMessages'] ?? json['canSendMessage'],
       canEditGroup: json['canEditGroup'],
+      canEditGroupSettings: json['canEditGroupSettings'] ?? json['canEditGroup'],
       canAddMember: json['canAddMember'],
       canLeaveGroup: json['canLeaveGroup'],
     );

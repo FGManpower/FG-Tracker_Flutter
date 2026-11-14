@@ -221,6 +221,10 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                     text: context.l10n.chat_noLongerMember)
                 : controller.isGroupDeactivated
                 ? const DeactivatedGroupBanner()
+                : !controller.canSendMessages
+                ? const DeactivatedGroupBanner(
+                    text: "Only admins can send messages",
+                  )
                 : ChatInputArea(
               messageText: controller.messageText,
               imagePath: controller.imagePaths,

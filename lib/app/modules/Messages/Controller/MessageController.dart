@@ -581,11 +581,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         getPrivateMessageHistory(effectiveChatId).then((_) {
           if (!isClosed) {
-            socketService.markPrivateSeen(
-              chatId: effectiveChatId,
-              userId: currentUserId,
-              otherUserId: receiverId,
-            );
+            _scheduleMarkPrivateRead();
           }
         });
       }
@@ -625,11 +621,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             await getPrivateMessageHistory(chatId);
           }
 
-          socketService.markPrivateSeen(
-            chatId: chatId,
-            userId: currentUserId,
-            otherUserId: receiverId,
-          );
+          _scheduleMarkPrivateRead();
         },
       );
 

@@ -275,7 +275,7 @@ class ChatList extends StatelessWidget {
               );
 
               Widget itemWidget;
-              if (_isDeleted(msg)) {
+              if (msg.isSystemMessage || _isDeleted(msg)) {
                 itemWidget = bubble;
               } else {
                 final canTranslate = _swipeTranslatableText(msg).isNotEmpty;
@@ -953,7 +953,7 @@ class GroupChatList extends StatelessWidget {
               );
 
               Widget itemWidget;
-              if (_isDeleted(msg)) {
+              if (msg.isSystemMessage || _isDeleted(msg)) {
                 itemWidget = bubble;
               } else {
                 final canTranslate = _swipeTranslatableText(msg).isNotEmpty;

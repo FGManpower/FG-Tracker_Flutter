@@ -680,6 +680,55 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           if (data.permissions?.canEditGroup == true) ...[
             _divider(),
             _settingTile(
+              icon: Icons.campaign_outlined,
+              iconColor: _purple,
+              title: "Send Messages",
+              subtitle: data.group?.onlyAdminsCanSend == true
+                  ? "Only admins can send messages"
+                  : "All members can send messages",
+              trailing: Switch.adaptive(
+                value: data.group?.onlyAdminsCanSend == true,
+                activeColor: _purple,
+                onChanged: (val) async {
+                  final gId = data.group?.groupId.toString() ?? "";
+                  final success = await groupController.updateOnlyAdminsCanSend(
+                    groupId: gId,
+                    onlyAdminsCanSend: val,
+                  );
+                  if (success) {
+                    setState(() {
+                      data.group?.onlyAdminsCanSend = val;
+                    });
+                    chatController.onlyAdminsCanSend.value = val;
+                    _apiController.fetchProfileDetails(
+                      int.tryParse(gId) ?? 0,
+                      silent: true,
+                    );
+                  }
+                },
+              ),
+              onTap: () async {
+                final current = data.group?.onlyAdminsCanSend == true;
+                final val = !current;
+                final gId = data.group?.groupId.toString() ?? "";
+                final success = await groupController.updateOnlyAdminsCanSend(
+                  groupId: gId,
+                  onlyAdminsCanSend: val,
+                );
+                if (success) {
+                  setState(() {
+                    data.group?.onlyAdminsCanSend = val;
+                  });
+                  chatController.onlyAdminsCanSend.value = val;
+                  _apiController.fetchProfileDetails(
+                    int.tryParse(gId) ?? 0,
+                    silent: true,
+                  );
+                }
+              },
+            ),
+            _divider(),
+            _settingTile(
               icon: Icons.settings_outlined,
               iconColor: _purple,
               title: appL10n.groupInfo_groupSettings,

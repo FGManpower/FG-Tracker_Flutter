@@ -96,6 +96,43 @@ class GroupController extends GetxController {
     );
   }
 
+  Future<bool> updateOnlyAdminsCanSend({
+    required String groupId,
+    required bool onlyAdminsCanSend,
+  }) async {
+    try {
+      Loading().showloading();
+      final param = {
+        "groupId": groupId,
+        "onlyAdminsCanSend": onlyAdminsCanSend,
+      };
+
+      final result = await GroupRepo.updateGroup(param);
+      Loading().dismissloading();
+
+      if (result.status == true) {
+        if (Get.isRegistered<GroupMessageController>()) {
+          final chatController = Get.find<GroupMessageController>();
+          chatController.onlyAdminsCanSend.value = onlyAdminsCanSend;
+        }
+
+        Utils().fluttertoast(onlyAdminsCanSend
+            ? "Only admins can send messages now"
+            : "All participants can send messages now");
+
+        _refreshGroupProfile(groupId);
+        return true;
+      } else {
+        Utils().fluttertoast(result.message ?? "Failed to update group setting");
+        return false;
+      }
+    } catch (e) {
+      Loading().dismissloading();
+      Utils().fluttertoast("Failed to update group setting: $e");
+      return false;
+    }
+  }
+
   Future<void> _performUpdateGroupDetail({
     required String groupId,
   }) async {

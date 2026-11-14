@@ -105,6 +105,8 @@ class MemberData {
   String? mobileNo;
   String? profileImage;
   bool? isCreator;
+  bool? isAdmin;
+  String? role;
   bool? isOnline;
   String? lastSeen;
   int? chatId;
@@ -125,6 +127,8 @@ class MemberData {
     this.mobileNo,
     this.profileImage,
     this.isCreator,
+    this.isAdmin,
+    this.role,
     this.isOnline,
     this.lastSeen,
     this.locationSharing,
@@ -199,11 +203,15 @@ class MemberData {
     );
     final rawCreator = json['isCreator'] ??
         json['is_creator'] ??
-        json['isAdmin'] ??
-        json['is_admin'] ??
-        user?['isCreator'] ??
-        (json['role'] == 'admin');
+        user?['isCreator'];
     isCreator = _parseBool(rawCreator) ?? false;
+
+    role = (json['role'] ?? (isCreator == true ? 'creator' : 'member'))?.toString();
+    final rawAdmin = json['isAdmin'] ??
+        json['is_admin'] ??
+        user?['isAdmin'] ??
+        (role == 'admin' || role == 'creator');
+    isAdmin = _parseBool(rawAdmin) ?? (isCreator == true);
 
     final rawOnline = json['isOnline'] ??
         json['is_online'] ??

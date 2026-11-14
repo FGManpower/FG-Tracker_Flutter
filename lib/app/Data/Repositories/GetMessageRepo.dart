@@ -263,6 +263,23 @@ class MessageRepo {
     return ForwardListResponse.fromJson(response);
   }
 
+  static Future<Map<String, dynamic>?> getMessageInfo({
+    required int messageId,
+    String? chatType,
+  }) async {
+    try {
+      String endpoint = "/messages/$messageId/info";
+      if (chatType != null) {
+        endpoint += "?chatType=$chatType";
+      }
+      final response = await HttpUtil().get(endpoint);
+      if (response is Map<String, dynamic>) {
+        return response;
+      }
+    } catch (_) {}
+    return null;
+  }
+
   static Future<ForwardMessageResponse> forwardMessage({
     required int messageId,
     required String sourceType,
