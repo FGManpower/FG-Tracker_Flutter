@@ -471,7 +471,7 @@ class _BannerSliderState extends State<BannerSlider> {
               Container(
                 width: 40.w,
                 height: 4.h,
-                margin: EdgeInsets.bottom(14.h),
+                margin: EdgeInsets.only(bottom: 14.h),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(2.r),
@@ -534,7 +534,7 @@ class _BannerSliderState extends State<BannerSlider> {
               Container(
                 width: 40.w,
                 height: 4.h,
-                margin: EdgeInsets.bottom(14.h),
+                margin: EdgeInsets.only(bottom: 14.h),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(2.r),
