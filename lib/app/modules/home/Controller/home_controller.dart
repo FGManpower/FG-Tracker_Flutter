@@ -131,7 +131,7 @@ class HomeController extends GetxController {
       var result = await BannerRepo.getBanner();
       if (result.success == true) {
         isLoadingBanners(false);
-        bannerList.value = result.data!;
+        bannerList.value = (result.data ?? []).take(7).toList();
       } else {
         isLoadingBanners(false);
       }
