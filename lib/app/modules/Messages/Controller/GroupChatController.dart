@@ -1956,7 +1956,9 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         for (final member in groupMembers) {
           if (member.userId.toString() == currentUserId) {
             isCreator.value = member.isCreator == true;
-            isAdmin.value = member.isAdmin == true || member.role == 'admin' || member.role == 'creator';
+            isAdmin.value = member.isAdmin == true ||
+                member.role?.toString().toLowerCase() == 'admin' ||
+                member.role?.toString().toLowerCase() == 'creator';
             break;
           }
         }

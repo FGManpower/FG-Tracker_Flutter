@@ -92,7 +92,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
     }
 
     try {
-      final res = await GetMessageRepo.getMessageInfo(
+      final res = await MessageRepo.getMessageInfo(
         messageId: msgId,
         chatType: _isGroup ? "group" : "private",
       );

@@ -117,6 +117,12 @@ class LocationData {
   bool? locationSharing;
   dynamic mobileNo;
   dynamic role;
+  bool get isAdmin =>
+      isCreator == true ||
+      isCreator == 1 ||
+      isCreator?.toString() == '1' ||
+      role?.toString().toLowerCase() == 'admin' ||
+      role?.toString().toLowerCase() == 'creator';
   dynamic location;
   dynamic team;
   dynamic battery;
