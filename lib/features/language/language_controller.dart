@@ -34,9 +34,12 @@ class LanguageController extends GetxController {
 
   bool get hasSavedLanguage => savedCode.value != null;
 
-  /// The language currently applied to the app (English if none saved).
-  LanguageOption get current =>
-      languageForCode(savedCode.value) ?? kAppLanguages.first;
+  /// The language currently applied to the app (English if none saved or hidden).
+  LanguageOption get current {
+    final opt = languageForCode(savedCode.value);
+    if (opt != null && opt.hasCompiledL10n) return opt;
+    return kWorkingLanguages.first;
+  }
 
   /// Locale for GetMaterialApp: the saved language, or English. Never null,
   /// because a null locale makes Flutter follow the phone language.
@@ -51,7 +54,8 @@ class LanguageController extends GetxController {
     try {
       final prefs = await SharedPreferences.getInstance();
       final code = prefs.getString(prefKey);
-      savedCode.value = languageForCode(code)?.code;
+      final opt = languageForCode(code);
+      savedCode.value = (opt != null && opt.hasCompiledL10n) ? opt.code : null;
     } catch (_) {
       savedCode.value = null;
     }

@@ -969,6 +969,8 @@
   "intro_skip": "Überspringen",
   "intro_walkieSubtitle": "Kein Netz? Kein Problem. Bleiben Sie\nüberall verbunden.",
   "intro_walkieTitle": "Walkie-Talkie-\nFunktion",
+  "login_dataSecure": "Ihre Daten sind {percent} sicher",
+  "login_enterMobileNumber": "Mobilfunknummer eingeben",
   "media_cannotOpen": "Kann nicht geöffnet werden",
   "media_documentNotFound": "Dokument nicht gefunden",
   "media_invalidLink": "Ungültiger Link",

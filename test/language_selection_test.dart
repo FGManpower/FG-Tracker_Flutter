@@ -459,7 +459,7 @@ void main() {
       final list = tester.widget<ListView>(find.descendant(
           of: find.byKey(const Key('language-sheet')),
           matching: find.byType(ListView)));
-      expect(list.semanticChildCount, kAppLanguages.length);
+      expect(list.semanticChildCount, kWorkingLanguages.length);
       expect(sheetCards.where((c) => c.selected).single.option.code, 'en');
       expect(sheetCards.every((c) => c.marker == LanguageCardMarker.radio),
           isTrue);

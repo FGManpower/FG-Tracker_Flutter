@@ -969,6 +969,8 @@
   "intro_skip": "تخطي",
   "intro_walkieSubtitle": "لا توجد شبكة؟ لا مشكلة. ابقَ\nعلى اتصال في أي مكان.",
   "intro_walkieTitle": "ميزة\nاللاسلكي (Walkie-Talkie)",
+  "login_dataSecure": "بياناتك آمنة بنسبة {percent}",
+  "login_enterMobileNumber": "أدخل رقم الهاتف المحمول",
   "media_cannotOpen": "تعذر الفتح",
   "media_documentNotFound": "لم يتم العثور على المستند",
   "media_invalidLink": "رابط غير صالح",

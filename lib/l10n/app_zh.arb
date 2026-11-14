@@ -969,6 +969,8 @@
   "intro_skip": "跳过",
   "intro_walkieSubtitle": "信号薄弱无须担心，随时随地\n保持联系。",
   "intro_walkieTitle": "对讲机\n功能",
+  "login_dataSecure": "您的数据 {percent} 安全",
+  "login_enterMobileNumber": "输入手机号码",
   "media_cannotOpen": "无法打开",
   "media_documentNotFound": "未找到文档",
   "media_invalidLink": "无效链接",

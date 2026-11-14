@@ -969,6 +969,8 @@
   "intro_skip": "ଛାଡିଦିଅ |",
   "intro_walkieSubtitle": "କ signal ଣସି ସଙ୍କେତ ନାହିଁ | କିଛି ଅସୁବିଧା ନାହିଁ | ରୁହ |\nଯେକ anywhere ଣସି ସ୍ଥାନରେ ସଂଯୁକ୍ତ |",
   "intro_walkieTitle": "ୱାକି-ଟକି |\nବ feature ଶିଷ୍ଟ୍ୟ",
+  "login_dataSecure": "ଆପଣଙ୍କର ତଥ୍ୟ {percent} ସୁରକ୍ଷିତ",
+  "login_enterMobileNumber": "ମୋବାଇଲ୍ ନମ୍ବର ପ୍ରବେଶ କରନ୍ତୁ",
   "media_cannotOpen": "ଖୋଲିପାରିବ ନାହିଁ |",
   "media_documentNotFound": "ଡକ୍ୟୁମେଣ୍ଟ୍ ମିଳିଲା ନାହିଁ |",
   "media_invalidLink": "ଅବ val ଧ ଲିଙ୍କ୍ |",

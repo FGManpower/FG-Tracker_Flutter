@@ -38,6 +38,8 @@ const codes = [
   'pt',
   'ja',
   'zh',
+  'zh_Hant',
+  'ur',
 ];
 const fragmentsDir = 'tool/l10n/fragments';
 const lockPath = 'build/l10n_merge.lock';

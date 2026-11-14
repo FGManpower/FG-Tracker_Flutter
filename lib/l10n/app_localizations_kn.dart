@@ -3424,6 +3424,14 @@ class AppLocalizationsKn extends AppLocalizations {
   String get intro_walkieTitle => 'ವಾಕಿ-ಟಾಕಿ ವೈಶಿಷ್ಟ್ಯ';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'ನಿಮ್ಮ ಡೇಟಾ $percent ಸುರಕ್ಷಿತವಾಗಿದೆ';
+  }
+
+  @override
+  String get login_enterMobileNumber => 'ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ';
+
+  @override
   String get media_cannotOpen => 'ತೆರೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ';
 
   @override

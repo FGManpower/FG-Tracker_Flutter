@@ -13,9 +13,14 @@ String get appIntlLocale => appL10n.localeName;
 /// `DateFormat(pattern)` in the app language with digits 0–9.
 /// Example: `appDateFormat('d MMM yyyy').format(date)` → "12 नोव्हें 2026".
 DateFormat appDateFormat(String pattern, [AppLocalizations? l10n]) {
+  final loc = (l10n ?? appL10n).localeName;
   DateFormat f;
   try {
-    f = DateFormat(pattern, (l10n ?? appL10n).localeName);
+    if (DateFormat.localeExists(loc)) {
+      f = DateFormat(pattern, loc);
+    } else {
+      f = DateFormat(pattern, 'en');
+    }
   } catch (_) {
     // Date data for this locale not initialised yet → English.
     f = DateFormat(pattern, 'en');

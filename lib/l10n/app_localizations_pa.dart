@@ -3408,6 +3408,14 @@ class AppLocalizationsPa extends AppLocalizations {
   String get intro_walkieTitle => 'ਵਾਕੀ-ਟਾਕੀ ਫੀਚਰ';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'ਤੁਹਾਡਾ ਡੇਟਾ $percent ਸੁਰੱਖਿਅਤ ਹੈ';
+  }
+
+  @override
+  String get login_enterMobileNumber => 'ਮੋਬਾਈਲ ਨੰਬਰ ਦਰਜ ਕਰੋ';
+
+  @override
   String get media_cannotOpen => 'ਖੋਲ੍ਹ ਨਹੀਂ ਸਕਦੇ';
 
   @override

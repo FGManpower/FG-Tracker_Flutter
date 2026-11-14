@@ -3402,6 +3402,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get intro_walkieTitle => 'ميزة\nاللاسلكي (Walkie-Talkie)';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'بياناتك آمنة بنسبة $percent';
+  }
+
+  @override
+  String get login_enterMobileNumber => 'أدخل رقم الهاتف المحمول';
+
+  @override
   String get media_cannotOpen => 'تعذر الفتح';
 
   @override

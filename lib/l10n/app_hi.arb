@@ -969,6 +969,8 @@
   "intro_skip": "छोड़ें",
   "intro_walkieSubtitle": "कोई सिग्नल नहीं। कोई समस्या नहीं। कहीं भी\nजुड़े रहें।",
   "intro_walkieTitle": "वॉकी-टॉकी\nसुविधा",
+  "login_dataSecure": "आपका डेटा {percent} सुरक्षित है",
+  "login_enterMobileNumber": "मोबाइल नंबर दर्ज करें",
   "media_cannotOpen": "खोल नहीं सकते",
   "media_documentNotFound": "डॉक्यूमेंट नहीं मिला",
   "media_invalidLink": "अमान्य लिंक",

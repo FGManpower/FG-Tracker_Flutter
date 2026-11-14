@@ -3268,6 +3268,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get intro_walkieTitle => '对讲机\n功能';
 
   @override
+  String login_dataSecure(String percent) {
+    return '您的数据 $percent 安全';
+  }
+
+  @override
+  String get login_enterMobileNumber => '输入手机号码';
+
+  @override
   String get media_cannotOpen => '无法打开';
 
   @override
@@ -7212,4 +7220,7379 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get widget_userFallback => '用户';
+}
+
+/// The translations for Chinese, using the Han script (`zh_Hant`).
+class AppLocalizationsZhHant extends AppLocalizationsZh {
+  AppLocalizationsZhHant() : super('zh_Hant');
+
+  @override
+  String get about_aboutUs => '關於我們';
+
+  @override
+  String get about_address => '地址';
+
+  @override
+  String get about_appBarTitle => '關於FG追蹤器';
+
+  @override
+  String get about_company => '公司';
+
+  @override
+  String get about_contactUs => '聯絡我們';
+
+  @override
+  String get about_developerEmail => '開發者信箱';
+
+  @override
+  String get about_downloadTitle => '📱 下載應用程式';
+
+  @override
+  String get about_howItWorksIntro => 'FG Tracker 簡化了團體旅遊協調。方法如下：';
+
+  @override
+  String get about_howItWorksTitle => '⚙️ 它是如何運作的';
+
+  @override
+  String get about_howStep1 => '建立群組';
+
+  @override
+  String get about_howStep2 => '與您的同伴分享群組代碼或二維碼';
+
+  @override
+  String get about_howStep3 => '每個成員使用共享代碼或 QR 加入';
+
+  @override
+  String get about_howStep4 => '在共享地圖上即時追蹤每個人的即時位置';
+
+  @override
+  String get about_howStep5 => '使用分享功能輕鬆邀請更多人';
+
+  @override
+  String get about_intro =>
+      'FG Tracker 是您在團體旅行時保持聯繫和安全的首選伴侶。無論您是全家公路旅行、與朋友野餐，還是只是與同事通勤 - FG Tracker 都能確保沒有人落下。';
+
+  @override
+  String get about_privacyBody =>
+      '您的安全和隱私很重要。 FG Tracker 不會與團隊以外的任何人共用您的位置。所有資料均經過加密，並且僅與您授權的人員共用。';
+
+  @override
+  String get about_privacyPolicy => '隱私權政策';
+
+  @override
+  String get about_privacyTitle => '🔐 隱私與安全';
+
+  @override
+  String get about_supportEmail => '支援電子郵件';
+
+  @override
+  String get about_supportTitle => '📩 支援與開發者訊息';
+
+  @override
+  String get about_termsConditions => '條款及條件';
+
+  @override
+  String get about_title => '關於';
+
+  @override
+  String get about_website => '網站';
+
+  @override
+  String get about_welcomeTitle => '歡迎來到 FG 追蹤器';
+
+  @override
+  String get about_whyBuiltFor => '專為家人、朋友和小團隊打造。';
+
+  @override
+  String get about_whyChooseTitle => '🌟 為什麼要選擇FG追蹤器？';
+
+  @override
+  String get about_whyEasy => '易於使用且具有隱私控制的輕量級應用程式。';
+
+  @override
+  String get about_whyNoCalls => '無需打電話或發短信，即可在地圖上即時追蹤。';
+
+  @override
+  String get about_whyRealTime => '與所有群組成員即時共享位置。';
+
+  @override
+  String appUpdate_checkError(String error) {
+    return '檢查更新時發生錯誤：$error';
+  }
+
+  @override
+  String get appUpdate_exitConfirmTitle => '您想退出嗎？';
+
+  @override
+  String get appUpdate_noUpdateAvailable => '無可用更新';
+
+  @override
+  String get appUpdate_restartApp => '重新啟動應用程式';
+
+  @override
+  String get appUpdate_updateApp => '更新應用程式';
+
+  @override
+  String get appUpdate_updateAvailable => '可用更新';
+
+  @override
+  String get appUpdate_updateAvailableMessage => '有新的更新可用。請更新應用程式';
+
+  @override
+  String get appUpdate_updateUnavailable => '無法更新';
+
+  @override
+  String appUpdate_updatingProgress(int progress) {
+    return '正在更新...$progress%';
+  }
+
+  @override
+  String get attendance_addOption => '新增另一個選項';
+
+  @override
+  String get attendance_admin => '行政';
+
+  @override
+  String get attendance_allowChange => '允許改變響應';
+
+  @override
+  String get attendance_allowChangeSubtitle => '會員可以更改或刪除他們的回复';
+
+  @override
+  String get attendance_askCommunity => '詢問您的社區';
+
+  @override
+  String get attendance_cameraPermissionRequired => '需要相機許可才能標記出勤情況。';
+
+  @override
+  String get attendance_cameraStartFailed => '無法啟動相機。';
+
+  @override
+  String attendance_cameraStartFailedCode(String code) {
+    return '無法啟動相機 ($code)。';
+  }
+
+  @override
+  String get attendance_cameraStarting => '啟動相機...';
+
+  @override
+  String get attendance_captureFailedBlink => '無法捕捉。再次閃爍重試';
+
+  @override
+  String attendance_capturedAtVerified(String time) {
+    return '攝於 $time • 已驗證';
+  }
+
+  @override
+  String get attendance_capturedCheck => '捕獲 ✓';
+
+  @override
+  String get attendance_changeResponse => '變更回應';
+
+  @override
+  String get attendance_chooseFolder => '選擇一個資料夾，例如下載';
+
+  @override
+  String get attendance_closeAction => '出席人數密切';
+
+  @override
+  String get attendance_closeConfirmBody => '關閉後會員將無法回覆。';
+
+  @override
+  String get attendance_closeConfirmTitle => '密切出席？';
+
+  @override
+  String get attendance_closeEndOfDay => '當天結束時關閉';
+
+  @override
+  String attendance_closeEndOfDaySubtitle(String time) {
+    return '今天 $time 自動關閉';
+  }
+
+  @override
+  String get attendance_closeFailed => '無法關閉出席';
+
+  @override
+  String get attendance_closeFailedShort => '無法關閉';
+
+  @override
+  String attendance_closesAt(String dateTime) {
+    return '關閉 $dateTime';
+  }
+
+  @override
+  String get attendance_createFailed => '無法創建考勤';
+
+  @override
+  String get attendance_createSubtitle => '向該群組發送出席率調查';
+
+  @override
+  String get attendance_createTitle => '創建考勤';
+
+  @override
+  String get attendance_created => '考勤已創建';
+
+  @override
+  String get attendance_dateEnded => '所選日期已結束。選擇另一個日期或關閉自動關閉。';
+
+  @override
+  String get attendance_dateToday => '日期（今天）';
+
+  @override
+  String get attendance_dateTodaySemantics => '出席日期，今天';
+
+  @override
+  String get attendance_deleteFailed => '無法刪除考勤';
+
+  @override
+  String get attendance_deletedText => '此出席已被刪除';
+
+  @override
+  String get attendance_downloadReport => '下載報告';
+
+  @override
+  String get attendance_everyoneResponded => '大家都已經回覆了';
+
+  @override
+  String get attendance_faceDetectedBlink => '偵測到臉部 - 現在眨一下眼睛';
+
+  @override
+  String get attendance_failed => '考勤失敗';
+
+  @override
+  String attendance_filterNotRespondedCount(int count) {
+    return '未回覆 ($count)';
+  }
+
+  @override
+  String attendance_filterResponded(int count) {
+    return '已回覆 ($count)';
+  }
+
+  @override
+  String get attendance_fixErrors => '請在提交前修正突出顯示的錯誤';
+
+  @override
+  String get attendance_holdStill => '保持不動…';
+
+  @override
+  String get attendance_howToTakePhoto => '如何拍攝你的照片';
+
+  @override
+  String get attendance_invalidGroup => '無效組。請重新開始聊天。';
+
+  @override
+  String get attendance_keepFaceInCircle => '將臉保持在圓圈內';
+
+  @override
+  String get attendance_limitReached => '已達到限制';
+
+  @override
+  String get attendance_loadFailed => '無法加載考勤';
+
+  @override
+  String get attendance_loadMore => '加載更多';
+
+  @override
+  String get attendance_loadMoreFailed => '無法加載更多';
+
+  @override
+  String get attendance_loadVotersFailed => '無法加載選民';
+
+  @override
+  String get attendance_lookAtCamera => '看相機';
+
+  @override
+  String get attendance_lookStraight => '直視相機';
+
+  @override
+  String get attendance_markYourAttendance => '標記您的出席情況';
+
+  @override
+  String attendance_markedAs(String option) {
+    return '標記為 $option';
+  }
+
+  @override
+  String get attendance_markedSuccess => '考勤標記成功';
+
+  @override
+  String attendance_maxOptions(int count) {
+    return '您最多只能新增 $count 選項';
+  }
+
+  @override
+  String get attendance_members => '會員';
+
+  @override
+  String attendance_membersWithCount(int count) {
+    return '成員 ($count)';
+  }
+
+  @override
+  String attendance_minOptions(int count) {
+    return '至少需要 $count 選項';
+  }
+
+  @override
+  String get attendance_moveCloser => '再靠近一點';
+
+  @override
+  String get attendance_multipleFaces => '偵測到多張臉孔 — 只有您應該出現在畫面中';
+
+  @override
+  String get attendance_noCsvApp => '找不到可開啟 CSV 檔案的應用程式。請改用「儲存」或「共享」。';
+
+  @override
+  String get attendance_noFace => '未偵測到人臉';
+
+  @override
+  String get attendance_noFrontCamera => '該裝置上未找到前置鏡頭。';
+
+  @override
+  String get attendance_noLocation => '沒有可用的位置';
+
+  @override
+  String get attendance_noMembersMatch => '沒有符合您搜尋條件的成員';
+
+  @override
+  String get attendance_noResponses => '尚未回覆';
+
+  @override
+  String get attendance_notResponded => '未回覆';
+
+  @override
+  String get attendance_openEyes => '睜開眼睛看著相機';
+
+  @override
+  String get attendance_openMapFailed => '無法打開地圖';
+
+  @override
+  String get attendance_openSubtitle => '在 Excel、表格或其他應用程式中查看';
+
+  @override
+  String get attendance_optionHint => '輸入選項標籤';
+
+  @override
+  String get attendance_optionLabelRequired => '所有選項都必須有標籤';
+
+  @override
+  String attendance_optionNumber(int number) {
+    return '選項 $number';
+  }
+
+  @override
+  String attendance_optionPhotoRequired(int number) {
+    return '選項 $number • 📷 需要照片';
+  }
+
+  @override
+  String get attendance_optionsUnique => '選項必須是唯一的';
+
+  @override
+  String get attendance_photoCaptured => '拍攝的照片';
+
+  @override
+  String get attendance_photoCapturedTapRetake => '拍攝的照片 ✓（點擊即可重拍）';
+
+  @override
+  String get attendance_photoProof => '照片證明';
+
+  @override
+  String attendance_photoProofOf(String name) {
+    return '$name 的照片證明';
+  }
+
+  @override
+  String attendance_photoRequiredFor(String option) {
+    return '⚠ $option 需要照片';
+  }
+
+  @override
+  String get attendance_photoRules => '僅使用前置鏡頭。當您眨眼時，照片會自動拍攝，並且不允許從圖庫上傳。';
+
+  @override
+  String get attendance_photoSubtitle => '拍攝即時照片以驗證您的出席情況';
+
+  @override
+  String get attendance_photoTitle => '出席照片';
+
+  @override
+  String get attendance_photoVerified => '照片已驗證';
+
+  @override
+  String get attendance_questionHint => '您今天有空嗎？';
+
+  @override
+  String get attendance_questionLabel => '考勤問題';
+
+  @override
+  String get attendance_questionRequired => '需詢問出席狀況';
+
+  @override
+  String attendance_questionTooShort(int count) {
+    return '問題的長度必須至少為 $count 個字符';
+  }
+
+  @override
+  String get attendance_removeFailedShort => '無法刪除';
+
+  @override
+  String get attendance_removeResponseBody => '您參加本次投票的情況將被清除。';
+
+  @override
+  String get attendance_removeResponseTitle => '刪除您的回覆？';
+
+  @override
+  String get attendance_removeVoteFailed => '無法刪除投票';
+
+  @override
+  String get attendance_reportEmpty => '報告為空';
+
+  @override
+  String get attendance_reportFailed => '報告失敗';
+
+  @override
+  String get attendance_reportInvalid => '伺服器傳回無效報告。請再試一次。';
+
+  @override
+  String attendance_reportReady(String fileName) {
+    return '報告準備就緒 • $fileName';
+  }
+
+  @override
+  String get attendance_reportSaved => '報告已儲存';
+
+  @override
+  String get attendance_reportSubject => '考勤報告';
+
+  @override
+  String attendance_reportSubjectWithTitle(String title) {
+    return '出席報告 • $title';
+  }
+
+  @override
+  String attendance_respondedCount(int count) {
+    return '$count 已回复';
+  }
+
+  @override
+  String get attendance_retakePhoto => '重拍照片';
+
+  @override
+  String get attendance_saveInFiles => '儲存在「檔案」應用程式中';
+
+  @override
+  String get attendance_saveReportDialog => '保存考勤報告';
+
+  @override
+  String get attendance_saveToDevice => '儲存到設備';
+
+  @override
+  String get attendance_searchMember => '搜尋會員';
+
+  @override
+  String get attendance_selectPhotoOption => '選擇一個需要即時照片的選項';
+
+  @override
+  String get attendance_selectStatus => '請選擇您的狀態';
+
+  @override
+  String get attendance_sentToAllMembers => '發送給該群組的所有成員';
+
+  @override
+  String get attendance_sentToGroup => '出席率已寄至群組';
+
+  @override
+  String get attendance_shareSubtitle => '透過 WhatsApp、電子郵件發送...';
+
+  @override
+  String get attendance_statusCompleted => '完全的';
+
+  @override
+  String get attendance_statusOpen => '打開';
+
+  @override
+  String get attendance_stepBlink => '眨眼捕捉你的照片';
+
+  @override
+  String get attendance_stepEyeLevel => '將手機放在與視線齊平的位置';
+
+  @override
+  String get attendance_submit => '提交考勤';
+
+  @override
+  String get attendance_submitted => '已提交出席情況';
+
+  @override
+  String get attendance_title => '出席率';
+
+  @override
+  String get attendance_update => '更新考勤';
+
+  @override
+  String get attendance_validationError => '驗證錯誤';
+
+  @override
+  String get attendance_view => '看法';
+
+  @override
+  String get attendance_viewTitle => '查看出席狀況';
+
+  @override
+  String get attendance_voteFailed => '無法記錄投票';
+
+  @override
+  String attendance_withinKm(String km) {
+    return '$km 公里內';
+  }
+
+  @override
+  String attendance_withinMeters(int count) {
+    return '$count 公尺以內';
+  }
+
+  @override
+  String get call_accept => '接受';
+
+  @override
+  String get call_allContacts => '所有聯絡人';
+
+  @override
+  String get call_allowAccess => '允許訪問';
+
+  @override
+  String get call_answer => '回答';
+
+  @override
+  String get call_audioOutput => '音訊輸出';
+
+  @override
+  String get call_callFrom => '呼叫來源';
+
+  @override
+  String get call_callIdNotFound => '未找到呼叫 ID';
+
+  @override
+  String get call_callInformation => '通話訊息';
+
+  @override
+  String get call_callSummary => '通話摘要';
+
+  @override
+  String get call_caller => '呼叫者';
+
+  @override
+  String call_callerAndOthers(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$name 和 $count 其他',
+      one: '$name 和另外 1 名',
+      zero: '$name',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String call_callsDeleteFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '無法刪除 $count 通話。再試一次。',
+      one: '無法刪除 1 通通話。再試一次。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String call_callsDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 通話已刪除',
+      one: '1 通通話已刪除',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get call_camera => '相機';
+
+  @override
+  String get call_cameraMicRequired => '需要相機或麥克風權限';
+
+  @override
+  String get call_cameraOff => '相機關閉';
+
+  @override
+  String get call_cameraOn => '相機開啟';
+
+  @override
+  String get call_cameraUnavailable => '抱歉，目前無法存取相機。請稍後重試。';
+
+  @override
+  String get call_cannotReachCallServer => '無法連線到呼叫伺服器。請檢查您的網路。';
+
+  @override
+  String get call_chatFallback => '聊天';
+
+  @override
+  String get call_closeFullScreen => '關閉全螢幕';
+
+  @override
+  String get call_communicationUnavailable => '無法與該用戶通信';
+
+  @override
+  String get call_connectingProgress => '正在連線…';
+
+  @override
+  String get call_connectionTimeout => '連線逾時';
+
+  @override
+  String get call_contactInformation => '聯絡資訊';
+
+  @override
+  String get call_contactsAccessBannerMessage => '輕鬆尋找並致電您的團隊成員。';
+
+  @override
+  String get call_contactsAccessBannerTitle => '讓我們訪問您的聯絡人';
+
+  @override
+  String get call_contactsAccessMessage =>
+      '我們需要存取您的聯絡人，以顯示誰在使用 FG Tracker，並讓您致電給他們或傳送邀請。';
+
+  @override
+  String get call_contactsAccessTitle => '允許聯絡人訪問';
+
+  @override
+  String get call_decline => '衰退';
+
+  @override
+  String get call_deleteCallsMessage => '這些通話將從您的通話記錄中刪除。';
+
+  @override
+  String call_deleteCallsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '刪除 $count 呼叫？',
+      one: '刪除 1 通通話？',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get call_deleteHistoryMessage => '您確定要刪除此通話記錄嗎？';
+
+  @override
+  String get call_deleteHistoryTitle => '刪除通話記錄';
+
+  @override
+  String call_deleteSelectedMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '您確定要刪除這些 $count 選定的通話記錄項目嗎？',
+      one: '您確定要刪除此選定的通話記錄嗎？',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get call_deleteSelectedTitle => '刪除選取的通話';
+
+  @override
+  String call_deleteWithCount(int count) {
+    return '刪除 ($count)';
+  }
+
+  @override
+  String call_durHr(int hours) {
+    return '$hours 小時';
+  }
+
+  @override
+  String call_durHrMin(int hours, int minutes) {
+    return '$hours 小時 $minutes 分鐘';
+  }
+
+  @override
+  String call_durMin(int minutes) {
+    return '$minutes 分鐘';
+  }
+
+  @override
+  String call_durMinSec(int minutes, int seconds) {
+    return '$minutes 分 $seconds 秒';
+  }
+
+  @override
+  String call_durSec(int seconds) {
+    return '$seconds 秒';
+  }
+
+  @override
+  String call_durShortHr(int hours) {
+    return '${hours}h';
+  }
+
+  @override
+  String call_durShortHrMin(int hours, int minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String call_durShortMin(int minutes) {
+    return '$minutes米';
+  }
+
+  @override
+  String call_durShortMinSec(int minutes, int seconds) {
+    return '${minutes}m ${seconds}s';
+  }
+
+  @override
+  String call_durShortSec(int seconds) {
+    return '${seconds}s';
+  }
+
+  @override
+  String get call_duration => '期間';
+
+  @override
+  String call_durationValue(String duration) {
+    return '持續時間：$duration';
+  }
+
+  @override
+  String get call_earpiece => '聽筒';
+
+  @override
+  String get call_endCall => '結束通話';
+
+  @override
+  String get call_ended => '結束';
+
+  @override
+  String get call_enterNumber => '輸入號碼';
+
+  @override
+  String get call_enterPhoneNumber => '請輸入電話號碼';
+
+  @override
+  String get call_entryDeleteFailed => '刪除通話記錄失敗';
+
+  @override
+  String call_entryDeleteFailedError(String error) {
+    return ' $error';
+  }
+
+  @override
+  String get call_entryDeleted => '通話記錄已刪除';
+
+  @override
+  String get call_everyoneInCall => '每個人都已經在通話中';
+
+  @override
+  String get call_failedTitle => '呼叫失敗';
+
+  @override
+  String get call_groupBadge => '團體';
+
+  @override
+  String get call_groupCallComingSoon => '群組通話即將推出';
+
+  @override
+  String get call_groupCallInitFailed => '無法初始化組呼';
+
+  @override
+  String get call_groupCallStartFailed => '無法發起群組通話。請再試一次。';
+
+  @override
+  String get call_groupInformation => '集團資訊';
+
+  @override
+  String call_groupWithId(String id) {
+    return '組 $id';
+  }
+
+  @override
+  String get call_headphones => '耳機';
+
+  @override
+  String call_historyCancelled(String callType) {
+    return ' $callType';
+  }
+
+  @override
+  String get call_historyClearFailed => '清除通話記錄失敗';
+
+  @override
+  String call_historyClearFailedError(String error) {
+    return '清除通話記錄失敗：$error';
+  }
+
+  @override
+  String get call_historyCleared => '所有通話記錄已清除';
+
+  @override
+  String call_historyIncoming(String callType) {
+    return '傳入 $callType';
+  }
+
+  @override
+  String call_historyMissed(String callType) {
+    return '漏了 $callType';
+  }
+
+  @override
+  String call_historyOutgoing(String callType) {
+    return '傳出 $callType';
+  }
+
+  @override
+  String call_historyRejected(String callType) {
+    return '已拒絕 $callType';
+  }
+
+  @override
+  String get call_inCall => '通話中';
+
+  @override
+  String call_inCallWithGroup(String groupName) {
+    return '通話中 · $groupName';
+  }
+
+  @override
+  String call_inThisCall(int count) {
+    return '在這次通話中 ($count)';
+  }
+
+  @override
+  String get call_incomingAudio => '來電音訊呼叫';
+
+  @override
+  String get call_incomingCallChannelName => '來電';
+
+  @override
+  String get call_incomingGroupAudio => '傳入群組音訊呼叫';
+
+  @override
+  String get call_incomingGroupVideo => '傳入群組視訊通話';
+
+  @override
+  String get call_incomingVideo => '來電視訊通話';
+
+  @override
+  String get call_infoDescription => '描述';
+
+  @override
+  String get call_infoEmail => '電子郵件';
+
+  @override
+  String get call_infoGroupCode => '集團程式碼';
+
+  @override
+  String get call_infoGroupName => '群組名稱';
+
+  @override
+  String get call_infoMobile => '移動的';
+
+  @override
+  String get call_infoTotalMembers => '會員總數';
+
+  @override
+  String get call_invite => '邀請';
+
+  @override
+  String get call_inviteToApp => '邀請加入 FG Tracker';
+
+  @override
+  String get call_join => '加入';
+
+  @override
+  String get call_joinOnAnswer => '回復後即可加入';
+
+  @override
+  String get call_kindAudio => '音訊通話';
+
+  @override
+  String get call_kindCall => '稱呼';
+
+  @override
+  String get call_kindGroupAudio => '群組音訊通話';
+
+  @override
+  String get call_kindGroupCall => '群組通話';
+
+  @override
+  String call_kindGroupOther(String kind) {
+    return '$kind 群組呼叫';
+  }
+
+  @override
+  String get call_kindGroupVideo => '群組視訊通話';
+
+  @override
+  String call_kindOther(String kind) {
+    return '$kind 通話';
+  }
+
+  @override
+  String get call_kindVideo => '視訊通話';
+
+  @override
+  String get call_loadDetailFailed => '無法加載通話詳細信息';
+
+  @override
+  String get call_loadMore => '加載更多';
+
+  @override
+  String get call_loadRecentFailed => '無法加載最近通話';
+
+  @override
+  String get call_loginToCall => '請登入後撥打電話';
+
+  @override
+  String call_membersInCall(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '本次通話中有 $count 位成員',
+      one: '本次通話中有 1 位成員',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get call_message => '訊息';
+
+  @override
+  String get call_micActive => '麥克風處於活動狀態';
+
+  @override
+  String get call_missedCall => '未接來電';
+
+  @override
+  String get call_missedCallChannelName => '未接來電';
+
+  @override
+  String get call_missedCallNotification => '未接來電';
+
+  @override
+  String get call_more => '更多的';
+
+  @override
+  String get call_mute => '沉默的';
+
+  @override
+  String get call_muted => '靜音';
+
+  @override
+  String call_nameYou(String name) {
+    return '$name（你）';
+  }
+
+  @override
+  String get call_noActiveParticipants => '沒有活躍參與者';
+
+  @override
+  String get call_noContactsMatch => '沒有符合您搜尋條件的聯絡人';
+
+  @override
+  String get call_noGroupsFound => '未找到群組';
+
+  @override
+  String get call_noGroupsYet => '還沒有群組';
+
+  @override
+  String get call_noNameGroup => '未命名組';
+
+  @override
+  String get call_noRecentCalls => '最近沒有通話';
+
+  @override
+  String get call_noRecentMatch => '最近的通話沒有與您的搜尋相符';
+
+  @override
+  String get call_noRecentYet => '最近還沒有通話';
+
+  @override
+  String get call_noRegisteredContacts => '未找到已註冊的聯絡人';
+
+  @override
+  String get call_notInContacts => '此號碼不在您的通訊錄中';
+
+  @override
+  String call_notInThisCall(int count) {
+    return '不在本次通話中 ($count)';
+  }
+
+  @override
+  String get call_notReady => '呼叫未準備好';
+
+  @override
+  String get call_notificationPermissionRationale => '需要顯示來電。';
+
+  @override
+  String get call_notificationPermissionSettings => '在「設定」中啟用通知。';
+
+  @override
+  String get call_notificationPermissionTitle => '通知權限';
+
+  @override
+  String get call_notify => '通知';
+
+  @override
+  String get call_notifyFailed => '通知失敗';
+
+  @override
+  String get call_notifySent => '通知成功';
+
+  @override
+  String get call_ongoingChannelDescription => '保持通話和螢幕分享';
+
+  @override
+  String get call_ongoingChannelName => '正在進行的通話';
+
+  @override
+  String get call_otherAlreadySharing => '其他人已經在共享螢幕';
+
+  @override
+  String get call_otherStartingVideo => '對方正在開始視頻';
+
+  @override
+  String get call_participant => '參加者';
+
+  @override
+  String get call_participants => '參加者';
+
+  @override
+  String call_personIsSharing(String name) {
+    return '$name 正在共享';
+  }
+
+  @override
+  String call_personSharingScreen(String name) {
+    return '$name 正在分享螢幕';
+  }
+
+  @override
+  String get call_phone => '電話';
+
+  @override
+  String get call_pleaseWait => '請稍等';
+
+  @override
+  String get call_recentCalls => '最近通話';
+
+  @override
+  String get call_resetZoom => '重設變焦';
+
+  @override
+  String get call_returnToCall => '返回通話';
+
+  @override
+  String get call_screenBeingShared => '螢幕正在分享';
+
+  @override
+  String get call_screenShareChannelDescription => '活動螢幕分享會話通知';
+
+  @override
+  String get call_screenShareChannelName => '螢幕分享服務';
+
+  @override
+  String get call_screenSharePermissionDenied => '螢幕分享權限被拒絕';
+
+  @override
+  String get call_screenShareStartFailed => '無法啟動螢幕分享';
+
+  @override
+  String get call_screenShareStopped => '螢幕分享已停止';
+
+  @override
+  String get call_screenSharingTitle => '螢幕分享';
+
+  @override
+  String call_screenVisibleToName(String name) {
+    return '$name 可以看到您的螢幕';
+  }
+
+  @override
+  String get call_screenVisibleToOther => '其他人可以看到您的螢幕';
+
+  @override
+  String get call_searchHint => '搜尋聯絡人或群組';
+
+  @override
+  String get call_sectionLastWeek => '上個星期';
+
+  @override
+  String get call_sectionOlder => '年長的';
+
+  @override
+  String get call_sectionThisWeek => '本星期';
+
+  @override
+  String get call_selectAll => '選擇全部';
+
+  @override
+  String call_selectedCount(int count) {
+    return '$count 已選擇';
+  }
+
+  @override
+  String get call_selectedDeleteFailed => '無法刪除選取的通話';
+
+  @override
+  String call_selectedDeleteFailedError(String error) {
+    return '無法刪除選取的通話：$error';
+  }
+
+  @override
+  String get call_selectedDeleted => '選取的通話已刪除';
+
+  @override
+  String get call_selfCallWarning => '您無法撥打自己的號碼。';
+
+  @override
+  String get call_sessionConnectFailed => '無法連線至通話工作階段';
+
+  @override
+  String get call_shareScreen => '共享螢幕';
+
+  @override
+  String get call_shareScreenShort => '分享';
+
+  @override
+  String call_sharingInGroupTapReturn(String groupName) {
+    return '在 $groupName 中分享 • 點選即可返回通話';
+  }
+
+  @override
+  String get call_sharingYourScreen => '分享您的螢幕';
+
+  @override
+  String get call_someone => '有人';
+
+  @override
+  String get call_speaker => '揚聲器';
+
+  @override
+  String get call_started => '開始';
+
+  @override
+  String get call_startingScreenShare => '開始螢幕分享...';
+
+  @override
+  String get call_statusBusy => '忙碌的';
+
+  @override
+  String get call_statusCalling => '呼喚';
+
+  @override
+  String get call_statusCancelled => '取消';
+
+  @override
+  String get call_statusCompleted => '完全的';
+
+  @override
+  String get call_statusConnected => '已連接';
+
+  @override
+  String get call_statusConnecting => '正在連接';
+
+  @override
+  String get call_statusDeclined => '拒絕';
+
+  @override
+  String get call_statusJoined => '已加入';
+
+  @override
+  String get call_statusMissed => '錯過了';
+
+  @override
+  String get call_statusReconnecting => '重新連接';
+
+  @override
+  String get call_statusRinging => '鈴聲';
+
+  @override
+  String get call_statusVideoConnecting => '視訊連線';
+
+  @override
+  String get call_stop => '停止';
+
+  @override
+  String get call_stopSharing => '停止分享';
+
+  @override
+  String get call_subtitle => '音訊/視訊通話';
+
+  @override
+  String get call_swipeUpToAnswer => '向上滑動即可接聽';
+
+  @override
+  String get call_switch => '轉變';
+
+  @override
+  String get call_switchCameraFailed => '無法切換相機';
+
+  @override
+  String get call_switchToVideoToShare => '切換到視訊通話以分享您的螢幕';
+
+  @override
+  String get call_tabContacts => '聯絡方式';
+
+  @override
+  String get call_tabGroups => '團體';
+
+  @override
+  String get call_tabRecent => '最近的';
+
+  @override
+  String get call_tapNotifyToInvite => '點擊通知即可邀請';
+
+  @override
+  String get call_tapStartBroadcastHint => '如果出現系統提示，請點選開始廣播';
+
+  @override
+  String get call_title => '稱呼';
+
+  @override
+  String call_todayAt(String value) {
+    return '今天，$value';
+  }
+
+  @override
+  String get call_total => '全部的';
+
+  @override
+  String get call_turnOnVideo => '打開你的視頻';
+
+  @override
+  String get call_unableToCallContact => '無法呼叫此聯絡人';
+
+  @override
+  String get call_unableToMakeCall => '無法撥打電話';
+
+  @override
+  String get call_unableToOpenChat => '無法開啟此聯絡人的聊天';
+
+  @override
+  String get call_unableToShareScreen => '無法分享螢幕';
+
+  @override
+  String get call_unavailableTitle => '無法通話';
+
+  @override
+  String get call_unexpectedResponse => '來自伺服器的意外回應';
+
+  @override
+  String get call_unknown => '未知';
+
+  @override
+  String get call_unknownGroup => '未知組';
+
+  @override
+  String get call_unknownUser => '未知用戶';
+
+  @override
+  String get call_unmute => '取消靜音';
+
+  @override
+  String get call_unselectAll => '取消選擇全部';
+
+  @override
+  String get call_user => '使用者';
+
+  @override
+  String get call_userNotFound => '未找到用戶';
+
+  @override
+  String call_userWithId(String id) {
+    return '使用者 $id';
+  }
+
+  @override
+  String get call_video => '影片';
+
+  @override
+  String get call_waitingForBroadcast => '等待開始廣播';
+
+  @override
+  String get call_waitingForBroadcastMessage =>
+      '點擊系統對話方塊中的「開始直播」即可分享您的螢幕。共享僅在此之後才開始。';
+
+  @override
+  String get call_waitingForMedia => '正在等待媒體串流...';
+
+  @override
+  String get call_wired => '有線';
+
+  @override
+  String get call_yesDelete => '是的，刪除';
+
+  @override
+  String call_yesterdayAt(String value) {
+    return '昨天，$value';
+  }
+
+  @override
+  String get call_youAreSharing => '你正在分享';
+
+  @override
+  String get call_youAreSharingScreen => '您正在分享您的螢幕';
+
+  @override
+  String get call_zoomIn => '放大';
+
+  @override
+  String get call_zoomOut => '縮小';
+
+  @override
+  String get chatList_allChats => '所有聊天';
+
+  @override
+  String get chatList_allContacts => '所有聯絡人';
+
+  @override
+  String get chatList_allowAccess => '允許訪問';
+
+  @override
+  String get chatList_allowContactsBody =>
+      '我們需要存取您的聯絡人，以顯示誰在 FG Tracker 上，並讓您開始聊天或發送邀請。';
+
+  @override
+  String get chatList_allowContactsTitle => '允許聯絡人訪問';
+
+  @override
+  String get chatList_archiveChat => '存檔聊天';
+
+  @override
+  String get chatList_archived => '已存檔';
+
+  @override
+  String get chatList_archivedChatsSubtitle => '你的隱藏對話';
+
+  @override
+  String get chatList_archivedChatsTitle => '存檔的聊天記錄';
+
+  @override
+  String chatList_archivedCount(int count) {
+    return '已存檔 ($count)';
+  }
+
+  @override
+  String get chatList_block => '堵塞';
+
+  @override
+  String get chatList_blockFailed => '無法封鎖用戶';
+
+  @override
+  String chatList_blockName(String name) {
+    return '區塊 $name';
+  }
+
+  @override
+  String get chatList_blockUser => '封鎖用戶';
+
+  @override
+  String get chatList_blockUserConfirm => '您確定要封鎖該使用者嗎？';
+
+  @override
+  String get chatList_blocked => '被阻止';
+
+  @override
+  String get chatList_chatCleared => '聊天已清除';
+
+  @override
+  String get chatList_chooseContactToShare => '選擇要在聊天中共享的聯絡人。';
+
+  @override
+  String get chatList_clear => '清除';
+
+  @override
+  String get chatList_clearChat => '清除聊天';
+
+  @override
+  String get chatList_clearChatConfirm => '刪除與該用戶的所有訊息？';
+
+  @override
+  String get chatList_clearChatFailed => '無法清除聊天記錄';
+
+  @override
+  String get chatList_clearSearch => '清除搜尋';
+
+  @override
+  String get chatList_contactAndInfo => '聯絡方式和訊息';
+
+  @override
+  String get chatList_contactPermissionNeededMsg => '需要聯絡人權限才能在聊天中共享聯絡人。';
+
+  @override
+  String chatList_contactsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 聯絡人',
+      one: '1 個聯絡人',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatList_contactsLoadFailed(String error) {
+    return '無法載入聯絡人：$error';
+  }
+
+  @override
+  String get chatList_contactsPermissionNeeded => '需要聯絡人權限';
+
+  @override
+  String get chatList_contactsWillAppear => '您的聯絡人將在可用時顯示在此。';
+
+  @override
+  String chatList_daysShort(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 天',
+      one: '1天',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatList_deactivated => '已停用';
+
+  @override
+  String get chatList_defaultAbout => '嘿！我正在使用 FG 追蹤器';
+
+  @override
+  String get chatList_deleteChat => '刪除聊天記錄';
+
+  @override
+  String get chatList_deleteChatConfirm => '從您的聊天清單中刪除此對話嗎？';
+
+  @override
+  String get chatList_forwardFailed => '無法轉發訊息。';
+
+  @override
+  String get chatList_forwardListLoadFailed => '無法載入轉發列表。';
+
+  @override
+  String get chatList_forwardTo => '轉發至...';
+
+  @override
+  String get chatList_forwarded => '轉發';
+
+  @override
+  String get chatList_groupChatFallback => '群聊';
+
+  @override
+  String get chatList_groupDeactivatedBanner => '該群組已被管理員停用';
+
+  @override
+  String get chatList_groupFallback => '團體';
+
+  @override
+  String get chatList_howToAllow => '如何允許';
+
+  @override
+  String get chatList_howToAllowStep1 => '點選「允許存取」開啟設定';
+
+  @override
+  String get chatList_howToAllowStep2 => '點選“權限”';
+
+  @override
+  String get chatList_howToAllowStep3 => '選擇“聯絡人”';
+
+  @override
+  String get chatList_howToAllowStep4 => '選擇“允許”，然後返回應用程式';
+
+  @override
+  String get chatList_invite => '邀請';
+
+  @override
+  String get chatList_inviteChooseHow => '選擇您想要發送邀請的方式';
+
+  @override
+  String chatList_inviteMessage(
+      String name, String playStoreLink, String appStoreLink) {
+    return '嘿$name！加入我的 FG Tracker。\n\nAndroid 版下載：$playStoreLink\n\niOS 下載：$appStoreLink';
+  }
+
+  @override
+  String get chatList_inviteMoreApps => '更多應用';
+
+  @override
+  String chatList_inviteName(String name) {
+    return '邀請$name';
+  }
+
+  @override
+  String get chatList_inviteViaMessage => '訊息';
+
+  @override
+  String get chatList_locationHidden => '地點隱藏';
+
+  @override
+  String chatList_manyTyping(String name1, String name2, int count) {
+    return '$name1、$name2 +$count 正在輸入...';
+  }
+
+  @override
+  String get chatList_markAsRead => '標記為已讀';
+
+  @override
+  String get chatList_markAsUnread => '標記為未讀';
+
+  @override
+  String get chatList_mediaLinksDocs => '媒體、連結和文檔';
+
+  @override
+  String get chatList_memberFallback => '成員';
+
+  @override
+  String get chatList_messageDeleted => '此訊息已被刪除';
+
+  @override
+  String get chatList_messageForwarded => '訊息已轉發';
+
+  @override
+  String get chatList_messageIdMissing => '訊息 ID 遺失。';
+
+  @override
+  String chatList_minutesShort(int count) {
+    return '$count 分鐘';
+  }
+
+  @override
+  String get chatList_mute1Hour => '1小時';
+
+  @override
+  String get chatList_mute8Hours => '8小時';
+
+  @override
+  String get chatList_muteAlways => '直到我重新打開它';
+
+  @override
+  String get chatList_muteSubtitle => '選擇您想要暫停通知的時間。';
+
+  @override
+  String get chatList_muteTitle => '靜音通知';
+
+  @override
+  String get chatList_muteUntilTomorrow => '直到明天';
+
+  @override
+  String get chatList_newChat => '新聊天';
+
+  @override
+  String get chatList_newChatSectionContacts => '開始新聊天（聯絡人）';
+
+  @override
+  String get chatList_newChatSectionInvite => '邀請聊天（未註冊的聯絡人）';
+
+  @override
+  String get chatList_noArchivedChats => '沒有存檔的聊天記錄';
+
+  @override
+  String get chatList_noArchivedChatsSubtitle => '存檔的對話將顯示在此。';
+
+  @override
+  String get chatList_noChatsFound => '沒有找到聊天記錄';
+
+  @override
+  String get chatList_noChatsSubtitle => '您的私人聊天將顯示在這裡。';
+
+  @override
+  String get chatList_noContactsAvailable => '沒有可用的聯絡人';
+
+  @override
+  String get chatList_noContactsFound => '未找到聯絡人';
+
+  @override
+  String get chatList_noGroupsAvailable => '沒有可用的群組';
+
+  @override
+  String get chatList_noGroupsFound => '未找到群組';
+
+  @override
+  String get chatList_noMediaYet => '尚未分享任何媒體';
+
+  @override
+  String get chatList_noMessagesYet => '還沒有消息';
+
+  @override
+  String get chatList_noPeopleOrGroups => '未找到人員或團體';
+
+  @override
+  String chatList_noResultsFor(String query) {
+    return '未找到「$query」的結果';
+  }
+
+  @override
+  String chatList_noResultsForQuery(String query) {
+    return '沒有「$query」的結果';
+  }
+
+  @override
+  String get chatList_noTrackerContacts => '未找到活動的追蹤器聯絡人';
+
+  @override
+  String get chatList_offlineNotSaved => '你離線了。更改未儲存，請重試。';
+
+  @override
+  String chatList_oneTyping(String name) {
+    return '$name 正在輸入...';
+  }
+
+  @override
+  String get chatList_openSettings => '開啟設定';
+
+  @override
+  String get chatList_pinChat => '固定聊天';
+
+  @override
+  String get chatList_pinnedChats => '固定聊天';
+
+  @override
+  String get chatList_pleaseTryAgain => '請再試一次。';
+
+  @override
+  String get chatList_profileCall => '稱呼';
+
+  @override
+  String get chatList_profileMessage => '訊息';
+
+  @override
+  String get chatList_profileNotFound => '未找到個人資料詳細信息';
+
+  @override
+  String get chatList_profileVideoCall => '視訊通話';
+
+  @override
+  String get chatList_quickCommSubtitle => '立即與您的團隊聯繫';
+
+  @override
+  String get chatList_quickCommTitle => '快速溝通';
+
+  @override
+  String get chatList_quickGroups => '團體';
+
+  @override
+  String get chatList_quickGroupsSub => '團隊聊天';
+
+  @override
+  String get chatList_quickSafeZone => '安全區';
+
+  @override
+  String get chatList_quickSafeZoneSub => '安全與警報';
+
+  @override
+  String get chatList_quickTracking => '追蹤';
+
+  @override
+  String get chatList_quickTrackingSub => '居住地點';
+
+  @override
+  String get chatList_quickWalkie => '對講機';
+
+  @override
+  String get chatList_quickWalkieSub => '一鍵通';
+
+  @override
+  String get chatList_searchByNameOrNumber => '按姓名或號碼搜尋...';
+
+  @override
+  String get chatList_searchGroupsHint => '搜尋組...';
+
+  @override
+  String get chatList_searchHint => '搜尋聊天或訊息...';
+
+  @override
+  String get chatList_searchHintShort => '搜尋...';
+
+  @override
+  String get chatList_searchNameOrNumber => '搜尋姓名或號碼';
+
+  @override
+  String get chatList_searchResults => '搜尋結果';
+
+  @override
+  String get chatList_sectionGroups => '團體';
+
+  @override
+  String get chatList_sectionMyContacts => '我的聯絡人';
+
+  @override
+  String get chatList_sectionOtherContacts => '其他聯絡方式';
+
+  @override
+  String get chatList_sectionRecentChats => '最近的聊天記錄';
+
+  @override
+  String get chatList_selectDestination => '選擇目的地';
+
+  @override
+  String get chatList_selectDestinationMsg => '請至少選擇一個人或一組。';
+
+  @override
+  String chatList_selectedCount(int count) {
+    return '已選擇 $count';
+  }
+
+  @override
+  String get chatList_shareContactTitle => '分享聯絡方式';
+
+  @override
+  String chatList_shareMenuFailed(String error) {
+    return '無法開啟共享選單：$error';
+  }
+
+  @override
+  String get chatList_smsOpenFailed => '無法打開訊息應用程式';
+
+  @override
+  String get chatList_someone => '有人';
+
+  @override
+  String get chatList_startConversation => '開始對話';
+
+  @override
+  String get chatList_subtitle => '與您的團隊保持聯繫';
+
+  @override
+  String get chatList_telegramOpenFailed => '電報無法打開';
+
+  @override
+  String get chatList_title => '聊天';
+
+  @override
+  String get chatList_tryAnotherNameOrNumber => '嘗試其他姓名或電話號碼。';
+
+  @override
+  String get chatList_tryDifferentSearch => '嘗試使用不同的名稱或訊息進行搜尋。';
+
+  @override
+  String chatList_twoTyping(String name1, String name2) {
+    return '$name1、$name2 正在輸入...';
+  }
+
+  @override
+  String get chatList_typing => '打字...';
+
+  @override
+  String get chatList_unableToCallContact => '無法呼叫此聯絡人';
+
+  @override
+  String get chatList_unableToLoadContacts => '無法載入聯絡人';
+
+  @override
+  String get chatList_unarchiveChat => '取消存檔聊天';
+
+  @override
+  String get chatList_unblock => '解鎖';
+
+  @override
+  String get chatList_unblockFailed => '無法解鎖用戶';
+
+  @override
+  String chatList_unblockName(String name) {
+    return '解鎖 $name';
+  }
+
+  @override
+  String get chatList_unblockUser => '解除封鎖用戶';
+
+  @override
+  String get chatList_unblockUserConfirm => '您確定要取消封鎖該使用者嗎？';
+
+  @override
+  String get chatList_unknown => '未知';
+
+  @override
+  String get chatList_unknownUser => '未知用戶';
+
+  @override
+  String get chatList_unnamedContact => '未透露姓名的聯絡人';
+
+  @override
+  String get chatList_unpinChat => '取消固定聊天';
+
+  @override
+  String chatList_unreadMessages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 未讀訊息',
+      one: '1 條未讀訊息',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatList_updateFailed => '無法更新聊天。請再試一次。';
+
+  @override
+  String get chatList_userFallback => '使用者';
+
+  @override
+  String get chatList_userNotFound => '未找到用戶';
+
+  @override
+  String get chatList_viewArchived => '查看存檔的對話';
+
+  @override
+  String get chatList_whatsappOpenFailed => 'WhatsApp 無法開啟';
+
+  @override
+  String get chatList_yourContacts => '您的聯絡人';
+
+  @override
+  String get chat_addCaptionHint => '新增標題...';
+
+  @override
+  String get chat_audioUnavailable => '該音訊不再可用';
+
+  @override
+  String get chat_blockFailed => '無法封鎖用戶';
+
+  @override
+  String get chat_call => '稱呼';
+
+  @override
+  String get chat_cameraAccessNeeded => '需要使用相機權限才能在聊天中拍攝照片和影片。';
+
+  @override
+  String get chat_cameraModePhoto => '照片';
+
+  @override
+  String get chat_cameraModePortrait => '肖像';
+
+  @override
+  String get chat_cameraModeVideo => '影片';
+
+  @override
+  String get chat_cameraStartFailed => '無法啟動相機。';
+
+  @override
+  String get chat_cantMessageUser => '您無法向該用戶發送訊息';
+
+  @override
+  String get chat_chatActionsSubtitle => '管理您的聊天';
+
+  @override
+  String get chat_chatActionsTitle => '聊天操作';
+
+  @override
+  String get chat_clear => '清除';
+
+  @override
+  String get chat_clearChat => '清除聊天';
+
+  @override
+  String get chat_clearChatConfirm => '清除此聊天中的所有訊息嗎？';
+
+  @override
+  String get chat_clearGroupChatFailed => '清除群組聊天失敗';
+
+  @override
+  String get chat_contactBlockedYou => '此聯絡人已封鎖您';
+
+  @override
+  String get chat_contactUnavailable => '無法聯繫';
+
+  @override
+  String get chat_deleteForEveryone => '為所有人刪除';
+
+  @override
+  String get chat_deleteForEveryoneConfirm => '您確定要為所有人刪除此訊息嗎？';
+
+  @override
+  String get chat_deleteForMe => '幫我刪除';
+
+  @override
+  String get chat_deleteForMeConfirm => '您確定要為您刪除此訊息嗎？';
+
+  @override
+  String get chat_deleteMember => '刪除會員';
+
+  @override
+  String get chat_deleteMemberSubtitle => '從該群組中刪除成員';
+
+  @override
+  String get chat_documentAvailable => '文件可用';
+
+  @override
+  String get chat_documentDownloadFailed => '無法下載該文檔。';
+
+  @override
+  String get chat_documentOpenFailed => '無法開啟文檔。請再試一次。';
+
+  @override
+  String get chat_documentPreviewUnavailable => '此文件類型無法預覽。使用您安裝的應用程式開啟文件。';
+
+  @override
+  String get chat_documentUnavailable => '該文件不再可用';
+
+  @override
+  String get chat_downloadFailed => '下載失敗';
+
+  @override
+  String get chat_edited => '已編輯';
+
+  @override
+  String get chat_emptySubtitle => '打個招呼👋開始對話';
+
+  @override
+  String get chat_emptyTitle => '這裡還沒有消息';
+
+  @override
+  String get chat_fetchingLocation => '正在獲取位置...';
+
+  @override
+  String get chat_finishVoiceRecordingFirst => '先完成或取消錄音';
+
+  @override
+  String get chat_forwarded => '轉發';
+
+  @override
+  String chat_galleryCounter(int current, int total) {
+    return '$total 的 $current';
+  }
+
+  @override
+  String get chat_groupActionsSubtitle => '管理您的群組設置';
+
+  @override
+  String get chat_groupActionsTitle => '團體行動';
+
+  @override
+  String get chat_groupChatCleared => '群聊清除成功';
+
+  @override
+  String get chat_groupDeactivated => '該群組已被管理員停用';
+
+  @override
+  String get chat_imageFailed => '圖片失敗';
+
+  @override
+  String get chat_listen => '聽';
+
+  @override
+  String get chat_listenEnglish => '聽（英語）';
+
+  @override
+  String get chat_listenHindi => '聽（印地語）';
+
+  @override
+  String get chat_loadFailedSubtitle => '檢查您的連線並重試。';
+
+  @override
+  String get chat_loadFailedTitle => '無法載入訊息';
+
+  @override
+  String get chat_locationFetchFailed => '無法取得您的位置。請再試一次。';
+
+  @override
+  String get chat_locationPermissionNeeded => '需要位置權限才能共享您的位置。';
+
+  @override
+  String get chat_locationPermissionOff => '此應用程式的位置權限已關閉。在“設定”中啟用它以共享您的位置。';
+
+  @override
+  String get chat_locationServicesOff => '開啟定位服務以共享您的位置。';
+
+  @override
+  String get chat_locationUnavailable => '位置不可用';
+
+  @override
+  String get chat_mediaMissing => '媒體缺失';
+
+  @override
+  String get chat_mediaMissingToast => '媒體缺失。該文件不再可用。';
+
+  @override
+  String get chat_mediaUnavailable => '該媒體不再可用';
+
+  @override
+  String get chat_menuForward => '向前';
+
+  @override
+  String get chat_menuMessageInfo => '留言訊息';
+
+  @override
+  String get chat_menuPin => 'PIN 訊息';
+
+  @override
+  String get chat_menuReply => '回覆';
+
+  @override
+  String get chat_menuUnpin => '取消固定訊息';
+
+  @override
+  String get chat_messageCopied => '訊息已複製';
+
+  @override
+  String get chat_messageDeleted => '此訊息已被刪除';
+
+  @override
+  String get chat_messageNotAvailable => '訊息不可用';
+
+  @override
+  String get chat_messageNotSent => '訊息未發送。請再試一次。';
+
+  @override
+  String get chat_noCameraFound => '在此裝置上找不到相機。';
+
+  @override
+  String get chat_noLongerMember => '您不再是該群組的成員';
+
+  @override
+  String get chat_noMediaAvailable => '沒有可用的媒體';
+
+  @override
+  String get chat_offlineNotSent => '你離線了。訊息未發送。';
+
+  @override
+  String get chat_openDocument => '開啟文件';
+
+  @override
+  String get chat_openInGoogleMaps => '在 Google 地圖中開啟';
+
+  @override
+  String get chat_openSettings => '開啟設定';
+
+  @override
+  String chat_peopleCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 人',
+      one: '1人',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chat_photoUnavailable => '這張照片不再可用';
+
+  @override
+  String get chat_previewAttendancePoll => '出席率調查';
+
+  @override
+  String get chat_previewAudio => '聲音的';
+
+  @override
+  String get chat_previewContact => '接觸';
+
+  @override
+  String get chat_previewDocument => '文件';
+
+  @override
+  String get chat_previewLocation => '地點';
+
+  @override
+  String get chat_previewMessage => '訊息';
+
+  @override
+  String get chat_previewNewMessage => '新消息';
+
+  @override
+  String get chat_previewOwnDeleted => '你刪除了這則訊息';
+
+  @override
+  String get chat_previewPhoto => '照片';
+
+  @override
+  String chat_previewPhotosCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 照片',
+      one: '1 張照片',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chat_previewPoll => '輪詢';
+
+  @override
+  String get chat_previewSticker => '貼紙';
+
+  @override
+  String get chat_previewVideo => '影片';
+
+  @override
+  String chat_previewVideosCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 視頻',
+      one: '1 影片',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chat_previewVoiceMessage => '語音留言';
+
+  @override
+  String chat_previewVoiceMessageDuration(String duration) {
+    return '語音留言 ($duration)';
+  }
+
+  @override
+  String get chat_recordingFailed => '錄音失敗';
+
+  @override
+  String get chat_removeMember => '刪除會員';
+
+  @override
+  String get chat_removeMemberConfirm => '您確定要從群組中刪除該成員嗎？';
+
+  @override
+  String get chat_replyHint => '回覆訊息...';
+
+  @override
+  String get chat_searchMessages => '搜尋訊息';
+
+  @override
+  String get chat_searchMessagesHint => '搜尋訊息...';
+
+  @override
+  String get chat_searchMessagesSubtitle => '按關鍵字找訊息';
+
+  @override
+  String get chat_sendLocation => '發送位置';
+
+  @override
+  String get chat_shareLocation => '分享位置';
+
+  @override
+  String get chat_shareVideoFailed => '無法分享影片';
+
+  @override
+  String get chat_sharedFromApp => '分享自 FG Tracker';
+
+  @override
+  String get chat_sharedLocation => '共享位置';
+
+  @override
+  String get chat_showOriginal => '顯示原件';
+
+  @override
+  String get chat_someone => '有人';
+
+  @override
+  String get chat_statusLabel => '地位';
+
+  @override
+  String get chat_statusUnavailable => '此狀態更新不再可用';
+
+  @override
+  String get chat_stop => '停止';
+
+  @override
+  String get chat_stopEnglish => '停止（英語）';
+
+  @override
+  String get chat_stopHindi => '停止（印地語）';
+
+  @override
+  String get chat_takePhotoFailed => '拍照失敗';
+
+  @override
+  String get chat_translatedToEnglish => '翻譯成英文';
+
+  @override
+  String get chat_translatedToHindi => '翻譯成印地語';
+
+  @override
+  String get chat_translating => '翻譯...';
+
+  @override
+  String get chat_tryAgain => '再試一次';
+
+  @override
+  String get chat_typeMessageHint => '輸入訊息...';
+
+  @override
+  String get chat_typing => '打字...';
+
+  @override
+  String chat_typingMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 人們正在輸入...',
+      one: '1 人正在打字...',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chat_typingOne(String name) {
+    return '$name 正在輸入...';
+  }
+
+  @override
+  String chat_typingTwo(String name1, String name2) {
+    return '$name1、$name2 正在輸入...';
+  }
+
+  @override
+  String get chat_unableToOpen => '無法打開';
+
+  @override
+  String get chat_unableToOpenGoogleMaps => '無法開啟Google地圖';
+
+  @override
+  String get chat_unblock => '解鎖';
+
+  @override
+  String get chat_unblockContact => '取消阻止聯繫';
+
+  @override
+  String get chat_unblockContactConfirm => '您確定要取消封鎖此聯絡人嗎？';
+
+  @override
+  String get chat_unblockFailed => '無法解鎖用戶';
+
+  @override
+  String get chat_unknown => '未知';
+
+  @override
+  String get chat_unknownLocation => '未知地點';
+
+  @override
+  String get chat_unsupportedMessage => '此版本的應用程式不支援此訊息';
+
+  @override
+  String get chat_updateGroup => '更新群組';
+
+  @override
+  String get chat_updateGroupSubtitle => '更改當前組詳細信息';
+
+  @override
+  String chat_uploadFileFailed(String path) {
+    return '上傳$path失敗';
+  }
+
+  @override
+  String get chat_userBlocked => '用戶被成功封鎖';
+
+  @override
+  String get chat_userUnblocked => '用戶解封成功';
+
+  @override
+  String get chat_videoDownloaded => '影片下載成功';
+
+  @override
+  String get chat_videoThumbnailFailed => '生成影片縮圖失敗';
+
+  @override
+  String get chat_videoUnavailable => '該視頻不再可用';
+
+  @override
+  String get chat_videoUploadFailed => '影片上傳失敗';
+
+  @override
+  String get chat_voicePlayFailed => '無法播放語音留言';
+
+  @override
+  String get chat_voiceUploadFailed => '語音留言上傳失敗。請再試一次。';
+
+  @override
+  String get chat_youBlockedContact => '您封鎖了此聯絡人';
+
+  @override
+  String get common_add => '添加';
+
+  @override
+  String get common_allow => '允許';
+
+  @override
+  String get common_back => '後退';
+
+  @override
+  String get common_cancel => '取消';
+
+  @override
+  String get common_close => '關閉';
+
+  @override
+  String get common_comingSoon => '即將推出';
+
+  @override
+  String get common_confirm => '確認';
+
+  @override
+  String get common_continue => '繼續';
+
+  @override
+  String get common_copied => '已複製';
+
+  @override
+  String get common_copy => '複製';
+
+  @override
+  String common_daysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 天前',
+      one: '1 天前',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get common_delete => '刪除';
+
+  @override
+  String get common_dismiss => '解僱';
+
+  @override
+  String get common_done => '完畢';
+
+  @override
+  String get common_edit => '編輯';
+
+  @override
+  String get common_error => '錯誤';
+
+  @override
+  String get common_exit => '出口';
+
+  @override
+  String get common_gotIt => '知道了';
+
+  @override
+  String common_hoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 小時前',
+      one: '1 小時前',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get common_justNow => '現在';
+
+  @override
+  String common_lastSeen(String time) {
+    return '最後上線時間：$time';
+  }
+
+  @override
+  String get common_loading => '載入中…';
+
+  @override
+  String common_membersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 成員',
+      one: '1 名成員',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String common_minutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 分鐘前',
+      one: '1 分鐘前',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get common_next => '下一個';
+
+  @override
+  String get common_no => '不';
+
+  @override
+  String get common_noData => '沒有找到數據';
+
+  @override
+  String get common_noInternet => '沒有網路連線';
+
+  @override
+  String get common_notNow => '現在不要';
+
+  @override
+  String get common_offline => '離線';
+
+  @override
+  String get common_ok => '好的';
+
+  @override
+  String get common_online => '在線的';
+
+  @override
+  String get common_open => '打開';
+
+  @override
+  String get common_permissionDenied => '沒有權限';
+
+  @override
+  String get common_remove => '消除';
+
+  @override
+  String get common_retry => '重試';
+
+  @override
+  String get common_save => '儲存';
+
+  @override
+  String get common_search => '搜尋';
+
+  @override
+  String get common_send => '傳送';
+
+  @override
+  String get common_settings => '設定';
+
+  @override
+  String get common_share => '分享';
+
+  @override
+  String get common_somethingWentWrong => '出了點問題。請再試一次。';
+
+  @override
+  String get common_submit => '提交';
+
+  @override
+  String get common_success => '成功';
+
+  @override
+  String get common_today => '今天';
+
+  @override
+  String common_todayAt(String time) {
+    return '今天，$time';
+  }
+
+  @override
+  String get common_tryAgain => '再試一次';
+
+  @override
+  String get common_viewAll => '看全部';
+
+  @override
+  String get common_yes => '是的';
+
+  @override
+  String get common_yesterday => '昨天';
+
+  @override
+  String get common_you => '你';
+
+  @override
+  String get dialog_allowLocationAccess => '允許位置訪問';
+
+  @override
+  String get dialog_anErrorOccurred => '發生錯誤！';
+
+  @override
+  String get dialog_important => '重要的！';
+
+  @override
+  String get dialog_locationPermissionRequired => '需要位置許可';
+
+  @override
+  String get dialog_locationPurposeBody =>
+      '為了提高服務效率，我們的應用程式會要求存取您的位置的權限以進行保存。這使我們的工人能夠準確導航到您指定的工作地點。';
+
+  @override
+  String get dialog_locationSettingsAndroid =>
+      '如果沒有位置存取權限，我們將無法偵測您目前的位置。請點擊“設定”，然後點擊“權限”，然後允許位置存取。';
+
+  @override
+  String get dialog_locationSettingsIos =>
+      '此應用程式需要存取您的位置才能提供基於位置的服務。請前往“設定”並啟用位置權限。';
+
+  @override
+  String get dialog_loggedInElsewhere => '您已從其他裝置登入。';
+
+  @override
+  String get dialog_loggedInElsewhereLogInAgain => '您已從其他裝置登入。請重新登入。';
+
+  @override
+  String get dialog_logoutConfirm => '您想退出嗎？';
+
+  @override
+  String get dialog_selectAllowAllTheTime => '在下一個彈出視窗中，請選擇\n「一直允許」。';
+
+  @override
+  String get dialog_sessionExpiredTitle => '會話已過期';
+
+  @override
+  String get editProfile_fullNameLabel => '姓名';
+
+  @override
+  String get editProfile_personalInfo => '個人資訊';
+
+  @override
+  String get editProfile_phoneLabel => '電話號碼';
+
+  @override
+  String get editProfile_saveButton => '儲存變更';
+
+  @override
+  String get editProfile_tapPhotoHint => '點擊照片即可更改';
+
+  @override
+  String get editProfile_title => '編輯個人資料';
+
+  @override
+  String get forceUpdate_currentInstalled => '目前安裝';
+
+  @override
+  String get forceUpdate_defaultMessage => '新版本的 FG Tracker 現已推出。請更新以繼續。';
+
+  @override
+  String get forceUpdate_defaultTitle => '需要更新';
+
+  @override
+  String get forceUpdate_fallbackMessage =>
+      '新版本的 FG Tracker 現已推出，並進行了重大改進。請更新以繼續使用該應用程式。';
+
+  @override
+  String get forceUpdate_footer => '需要更新才能繼續使用 FG Tracker';
+
+  @override
+  String get forceUpdate_requiredVersion => '所需版本';
+
+  @override
+  String forceUpdate_updateOnStore(String storeName) {
+    return '$storeName 更新';
+  }
+
+  @override
+  String get groupDialog_audioCall => '音訊通話';
+
+  @override
+  String get groupDialog_audioCallSubtitle => '開始語音對話';
+
+  @override
+  String get groupDialog_call => '稱呼';
+
+  @override
+  String get groupDialog_chat => '聊天';
+
+  @override
+  String get groupDialog_codeEmpty => '群組代碼不能為空';
+
+  @override
+  String get groupDialog_codeLabel => '集團程式碼';
+
+  @override
+  String get groupDialog_createButton => '建立群組';
+
+  @override
+  String get groupDialog_createTitle => '建立新群組';
+
+  @override
+  String get groupDialog_descHint => '輸入組描述';
+
+  @override
+  String get groupDialog_descLabel => '組描述（可選）';
+
+  @override
+  String groupDialog_distance(String distance) {
+    return ' $distance';
+  }
+
+  @override
+  String get groupDialog_enterCodeManually => '手動輸入群組代碼';
+
+  @override
+  String get groupDialog_enterCodeTitle => '輸入團體代碼';
+
+  @override
+  String get groupDialog_fillDetails => '填寫以下詳細資訊';
+
+  @override
+  String get groupDialog_getDirections => '獲取路線';
+
+  @override
+  String get groupDialog_join => '加入群組';
+
+  @override
+  String groupDialog_lastSeen(String time) {
+    return '最後上線時間：$time';
+  }
+
+  @override
+  String get groupDialog_locationHidden => '地點隱藏';
+
+  @override
+  String get groupDialog_locationUnavailable => '位置不可用';
+
+  @override
+  String get groupDialog_member => '成員';
+
+  @override
+  String get groupDialog_memberInfo => '會員資訊';
+
+  @override
+  String get groupDialog_nameHint => '輸入群組名稱';
+
+  @override
+  String get groupDialog_nameLabel => '群組名稱';
+
+  @override
+  String get groupDialog_noQrInImage => '在所選影像中找不到 QR 程式碼。';
+
+  @override
+  String get groupDialog_noValidQr => '找不到有效的 QR 碼。';
+
+  @override
+  String groupDialog_qrDecodeError(String error) {
+    return ' $error';
+  }
+
+  @override
+  String get groupDialog_scanCamera => '從相機掃描';
+
+  @override
+  String get groupDialog_selectCallType => '選擇通話類型';
+
+  @override
+  String get groupDialog_update => '更新';
+
+  @override
+  String get groupDialog_updateTitle => '更新群組';
+
+  @override
+  String get groupDialog_uploadGallery => '從圖庫上傳';
+
+  @override
+  String get groupDialog_videoCall => '視訊通話';
+
+  @override
+  String get groupDialog_videoCallSubtitle => '開始視訊對話';
+
+  @override
+  String get groupDialog_yourLocation => '您目前的位置';
+
+  @override
+  String get groupInfo_active => '積極的';
+
+  @override
+  String get groupInfo_admin => '行政';
+
+  @override
+  String get groupInfo_allGroups => '所有團體';
+
+  @override
+  String get groupInfo_allGroupsSubtitle => '與您的團隊保持聯繫';
+
+  @override
+  String get groupInfo_areYouSure => '你確定嗎？';
+
+  @override
+  String get groupInfo_audioCall => '音訊通話';
+
+  @override
+  String get groupInfo_clearChatConfirm => '刪除該裝置上的所有訊息？';
+
+  @override
+  String get groupInfo_createdBy => '創建者';
+
+  @override
+  String get groupInfo_detailsNotFound => '未找到群組詳細信息';
+
+  @override
+  String get groupInfo_exitGroup => '退出組';
+
+  @override
+  String groupInfo_exitGroupConfirm(String groupName) {
+    return '您確定要退出「$groupName」嗎？';
+  }
+
+  @override
+  String get groupInfo_exitGroupQuestion => '您要退出該群組嗎？';
+
+  @override
+  String get groupInfo_group => '團體';
+
+  @override
+  String get groupInfo_groupAdmin => '群組管理員';
+
+  @override
+  String get groupInfo_groupCallFailed => '無法發起群組通話。請再試一次。';
+
+  @override
+  String get groupInfo_groupCodeCopied => '群組代碼已複製！';
+
+  @override
+  String get groupInfo_groupSettings => '群組設定';
+
+  @override
+  String get groupInfo_groupSettingsSubtitle => '編輯群組資訊、隱私等';
+
+  @override
+  String get groupInfo_inactive => '不活躍';
+
+  @override
+  String get groupInfo_inviteCopied => '邀請文字已複製';
+
+  @override
+  String groupInfo_inviteText(String groupName) {
+    return ' $groupName';
+  }
+
+  @override
+  String groupInfo_inviteTextWithCode(String groupName, String code) {
+    return '加入我在 FG Tracker 上的群組「$groupName」。代碼：$code';
+  }
+
+  @override
+  String get groupInfo_inviteViaLink => '透過連結邀請';
+
+  @override
+  String get groupInfo_mediaLinksDocs => '媒體、連結和文檔';
+
+  @override
+  String get groupInfo_member => '成員';
+
+  @override
+  String get groupInfo_members => '會員';
+
+  @override
+  String get groupInfo_messageAction => '訊息';
+
+  @override
+  String groupInfo_nameYou(String name) {
+    return '$name（你）';
+  }
+
+  @override
+  String groupInfo_noGroupFound(String query) {
+    return '未找到「$query」的群組';
+  }
+
+  @override
+  String get groupInfo_noGroupsYet => '您尚未加入或建立任何群組。\n現在就開始探索吧！';
+
+  @override
+  String get groupInfo_noMediaYet => '尚未分享任何媒體';
+
+  @override
+  String get groupInfo_removeFromGroup => '從群組中刪除';
+
+  @override
+  String groupInfo_removeMemberConfirm(String name) {
+    return '您確定要從群組中刪除 $name 嗎？';
+  }
+
+  @override
+  String get groupInfo_searchGroupsHint => '搜尋組...';
+
+  @override
+  String get groupInfo_showLess => '顯示較少';
+
+  @override
+  String get groupInfo_teamCode => '團隊程式碼';
+
+  @override
+  String groupInfo_totalCount(int count) {
+    return '$count 總計';
+  }
+
+  @override
+  String get groupInfo_unknownGroup => '未知組';
+
+  @override
+  String get groupInfo_unnamedGroup => '未命名團體';
+
+  @override
+  String get groupInfo_videoCall => '視訊通話';
+
+  @override
+  String get groupInfo_viewAllMembers => '看全部會員';
+
+  @override
+  String get group_activatedSuccess => '群組啟動成功';
+
+  @override
+  String get group_addMember => '新增會員';
+
+  @override
+  String get group_alignQr => '將 QR 對齊到框架內';
+
+  @override
+  String get group_areYouSure => '你確定嗎？';
+
+  @override
+  String get group_chatWithMembers => '與群組中的成員聊天';
+
+  @override
+  String get group_codeCopied => '群組代碼已複製！';
+
+  @override
+  String group_codeShareInfo(String code) {
+    return '群組代碼：$code — 分享以便其他人可以加入';
+  }
+
+  @override
+  String get group_copyCode => '複製程式碼';
+
+  @override
+  String get group_created => '已創建';
+
+  @override
+  String get group_createdJustNow => '剛剛創建';
+
+  @override
+  String get group_deactivatedSuccess => '群組停用成功';
+
+  @override
+  String get group_defaultName => '團體';
+
+  @override
+  String get group_deleteGroup => '群組刪除';
+
+  @override
+  String get group_deleteGroupConfirm => '您要刪除該群組嗎？';
+
+  @override
+  String get group_deletedSuccess => '群組刪除成功';
+
+  @override
+  String get group_download => '下載';
+
+  @override
+  String get group_downloadChannelDescription => '下載二維碼時發出通知';
+
+  @override
+  String get group_downloadChannelName => '下載通知';
+
+  @override
+  String get group_enableLocationToJoin => '請啟用定位服務才能加入群組。';
+
+  @override
+  String get group_exitGroup => '退出組';
+
+  @override
+  String get group_exitGroupConfirm => '您要退出該群組嗎？';
+
+  @override
+  String group_exitGroupNamedConfirm(String groupName) {
+    return '您確定要退出「$groupName」嗎？您需要一個群組代碼才能重新加入。';
+  }
+
+  @override
+  String get group_exitedSuccess => '群組退出成功';
+
+  @override
+  String get group_goToGroups => '前往群組 →';
+
+  @override
+  String get group_groupMessage => '群組留言';
+
+  @override
+  String get group_invalidResponseFormat => '格式無效';
+
+  @override
+  String get group_joinedJustNow => '剛剛加入';
+
+  @override
+  String get group_joinedRecently => '最近的';
+
+  @override
+  String get group_leftJustNow => '剛離開';
+
+  @override
+  String get group_locationNoLongerShared => '您的位置不再與此群組共享';
+
+  @override
+  String get group_locationPermissionToJoin => '加入群組需要位置權限。';
+
+  @override
+  String get group_locationShared => '您的位置已與此群組共享';
+
+  @override
+  String get group_memberFallbackName => '成員';
+
+  @override
+  String group_membersMeta(int count, String when) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 成員 · $when',
+      one: '1 名成員 · $when',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get group_noContactsFound => '未找到聯絡人';
+
+  @override
+  String get group_noGroupCode => '沒有可用的團體代碼';
+
+  @override
+  String get group_noNewMessages => '您不會收到該群組的新訊息';
+
+  @override
+  String get group_noNumber => '沒有號碼';
+
+  @override
+  String get group_openGroup => '公開組 →';
+
+  @override
+  String get group_other => '其他';
+
+  @override
+  String get group_qrSavedBody => '點擊打開您的二維碼';
+
+  @override
+  String get group_qrSavedTitle => 'QR 圖碼已儲存';
+
+  @override
+  String group_qrShareMessage(String groupCode, String appLink) {
+    return '📌 團體代碼：$groupCode\n\n使用二維碼或上面的程式碼立即加入我的群組。\n\n📲 下載應用程式以保持聯繫：\n$appLink';
+  }
+
+  @override
+  String get group_scanToJoin => '掃描此二維碼即可加入群組';
+
+  @override
+  String get group_searchMemberHint => '搜尋會員...';
+
+  @override
+  String get group_shareCodeInfo => '分享群組代碼以便其他人可以加入';
+
+  @override
+  String get group_shareQr => '分享二維碼';
+
+  @override
+  String get group_shareQrToInvite => '分享二維碼邀請會員';
+
+  @override
+  String get group_sheetCreatedSubtitle => '你的小組已經準備好了。分享程式碼以便成員可以加入。';
+
+  @override
+  String group_sheetCreatedSubtitleNamed(String name) {
+    return '$name，您的小組已準備好。分享程式碼以便成員可以加入。';
+  }
+
+  @override
+  String get group_sheetCreatedTitle => '群組已建立！';
+
+  @override
+  String get group_sheetJoinedSubtitle => '歡迎，您現在已經是該群組的成員了。';
+
+  @override
+  String group_sheetJoinedSubtitleNamed(String name) {
+    return '歡迎$name，您現在是該群組的成員。';
+  }
+
+  @override
+  String get group_sheetJoinedTitle => '加入成功！';
+
+  @override
+  String get group_sheetLeftSubtitle => '您不再是該群組的成員。';
+
+  @override
+  String group_sheetLeftSubtitleNamed(String name) {
+    return '$name，您不再是該群組的成員。';
+  }
+
+  @override
+  String get group_sheetLeftTitle => '你離開了群組';
+
+  @override
+  String get group_showQrCode => '顯示二維碼';
+
+  @override
+  String get group_startConversation => '隨意開始對話';
+
+  @override
+  String get group_statusUpdateFailed => '無法更新群組狀態';
+
+  @override
+  String get group_teamCode => '團隊程式碼';
+
+  @override
+  String get group_teamCodeLabel => '團隊代碼：';
+
+  @override
+  String get group_track => '追蹤';
+
+  @override
+  String get group_unnamedMember => '未命名會員';
+
+  @override
+  String get group_unnamedTrip => '無名旅行';
+
+  @override
+  String get group_updateGroupConfirm => '您確定要更新群組詳細資訊嗎？';
+
+  @override
+  String get group_updateGroupTitle => '更新群組';
+
+  @override
+  String get group_youAreAdmin => '您是該群組的管理員';
+
+  @override
+  String get home_actionAllContacts => '所有聯絡人';
+
+  @override
+  String get home_actionAudioVideoCall => '音訊視訊通話';
+
+  @override
+  String get home_actionChatting => '聊天';
+
+  @override
+  String get home_actionSafeZone => '安全區';
+
+  @override
+  String get home_actionTracking => '追蹤';
+
+  @override
+  String get home_actionWalkieTalkie => '對講機';
+
+  @override
+  String get home_active => '積極的';
+
+  @override
+  String get home_activeSessions => '活躍會話';
+
+  @override
+  String home_activeSessionsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 活躍會話',
+      one: '1 個活動會話',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get home_allMembers => '所有會員';
+
+  @override
+  String get home_createGroup => '建立群組';
+
+  @override
+  String get home_createGroupSubtitle => '建立新群組';
+
+  @override
+  String get home_goodToSeeYou => '很高興再次見到您 👋';
+
+  @override
+  String home_groupsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 組',
+      one: '1組',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String home_helloName(String name) {
+    return '你好$name';
+  }
+
+  @override
+  String get home_inactive => '不活躍';
+
+  @override
+  String get home_joinGroup => '加入群組';
+
+  @override
+  String get home_joinGroupSubtitle => '加入現有群組';
+
+  @override
+  String home_lastSeen(String time) {
+    return '最後一次見到 $time';
+  }
+
+  @override
+  String get home_newThisMonth => '本月新品';
+
+  @override
+  String get home_noActivePrivateSessions => '沒有活躍的私人會話';
+
+  @override
+  String get home_noGroupsAvailable => '沒有可用的群組';
+
+  @override
+  String get home_noGroupsFound => '未找到群組';
+
+  @override
+  String get home_noMembersFound => '沒有找到會員';
+
+  @override
+  String home_noMembersMatch(String query) {
+    return ' $query';
+  }
+
+  @override
+  String get home_noMembersOnline => '目前沒有會員在線';
+
+  @override
+  String get home_noNameGroup => '無名組';
+
+  @override
+  String get home_noRecentlyActiveMembers => '最近沒有活躍會員';
+
+  @override
+  String get home_onlineNow => '現已上線';
+
+  @override
+  String get home_peopleOnline => '人們在線';
+
+  @override
+  String get home_peopleOnlineSubtitle => '這些成員現在在應用程式中處於活動狀態並且可以連線。';
+
+  @override
+  String get home_privateMode => '私人模式';
+
+  @override
+  String get home_privateModeIsOn => '私人模式已開啟';
+
+  @override
+  String get home_privateModeOffHint => '當私人模式關閉時，其他人可以看到您的位置。';
+
+  @override
+  String get home_privateModeOnHint => '當隱私模式開啟時，其他人無法看到您的位置。';
+
+  @override
+  String get home_quickActionsSubtitle => '您需要的一切，一鍵搞定。';
+
+  @override
+  String get home_quickActionsTitle => '快速行動';
+
+  @override
+  String get home_recentlyOnline => '最近在線';
+
+  @override
+  String get home_searchGroupsHint => '搜尋組...';
+
+  @override
+  String get home_searchMembersHint => '搜尋會員...';
+
+  @override
+  String get home_showLess => '顯示較少';
+
+  @override
+  String get home_sortNameAsc => '排序： 名稱 (A-Z)';
+
+  @override
+  String get home_sortNameDesc => '排序： 名稱 (Z-A)';
+
+  @override
+  String home_startedAt(String time) {
+    return '開始於 $time';
+  }
+
+  @override
+  String get home_statGroups => '團體';
+
+  @override
+  String get home_statMembers => '會員';
+
+  @override
+  String get home_statNow => '現在';
+
+  @override
+  String get home_statTotal => '全部的';
+
+  @override
+  String get home_totalMembers => '會員總數';
+
+  @override
+  String home_totalMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 會員總數',
+      one: '共有 1 位會員',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get home_unableToFetchGroups => '無法取得群組';
+
+  @override
+  String get home_unknownMember => '未知會員';
+
+  @override
+  String get home_upgradeSubtitle => '為您的團隊解鎖進階功能';
+
+  @override
+  String get home_upgradeToPremium => '升級至高級版';
+
+  @override
+  String get home_viewPlans => '查看計劃';
+
+  @override
+  String get home_walkieExpired => '已到期';
+
+  @override
+  String get home_walkieOneHourFree => '1小時免費';
+
+  @override
+  String get home_walkieRenew => '更新';
+
+  @override
+  String get home_walkieSubscribed => '已訂閱';
+
+  @override
+  String get home_youAreInvisible => '你是隱形的';
+
+  @override
+  String get home_youAreVisible => '你是可見的';
+
+  @override
+  String get http_networkError => '發生錯誤。請再試一次！';
+
+  @override
+  String get http_sessionExpired => '會話已過期。請重新登入。';
+
+  @override
+  String get http_unexpectedError => '發生意外錯誤。請再試一次。';
+
+  @override
+  String get imagePicker_camera => '相機';
+
+  @override
+  String get imagePicker_cancel => '取消';
+
+  @override
+  String get imagePicker_cropTitle => '裁切影像';
+
+  @override
+  String get imagePicker_gallery => '畫廊';
+
+  @override
+  String get imagePicker_title => '選擇一個選項';
+
+  @override
+  String get intro_realTimeTrackingSubtitle => '立即在地圖上查看朋友、家人或團隊成員的即時位置。';
+
+  @override
+  String get intro_realTimeTrackingTitle => '即時追蹤';
+
+  @override
+  String get intro_secureSubtitle => '與以下人員分享您的即時位置\n安全地選擇聯絡人\n私下裡。';
+
+  @override
+  String get intro_secureTitle => '安全且簡單';
+
+  @override
+  String get intro_skip => '跳過';
+
+  @override
+  String get intro_walkieSubtitle => '無訊號。沒問題。住宿\n任何地方都可以連接。';
+
+  @override
+  String get intro_walkieTitle => '對講機\n特徵';
+
+  @override
+  String login_dataSecure(String percent) {
+    return '您的資料 $percent 安全';
+  }
+
+  @override
+  String get login_enterMobileNumber => '輸入手機號碼';
+
+  @override
+  String get media_cannotOpen => '打不開';
+
+  @override
+  String get media_documentNotFound => '未找到文檔';
+
+  @override
+  String get media_invalidLink => '連結無效';
+
+  @override
+  String get media_noDocuments => '沒有找到文件';
+
+  @override
+  String get media_noLinks => '沒有找到連結';
+
+  @override
+  String get media_noMedia => '未找到媒體';
+
+  @override
+  String get media_tabDocs => '文件';
+
+  @override
+  String media_tabDocsCount(int count) {
+    return '文檔 ($count)';
+  }
+
+  @override
+  String get media_tabLinks => '連結';
+
+  @override
+  String media_tabLinksCount(int count) {
+    return '連結 ($count)';
+  }
+
+  @override
+  String get media_tabMedia => '媒體';
+
+  @override
+  String media_tabMediaCount(int count) {
+    return '媒體 ($count)';
+  }
+
+  @override
+  String get media_title => '媒體、連結和文檔';
+
+  @override
+  String get media_videoNotFound => '找不到視頻';
+
+  @override
+  String get menu_contactUsSubtitle => '了解更多關於我們的信息';
+
+  @override
+  String get menu_editProfile => '編輯個人資料';
+
+  @override
+  String get menu_editProfileSubtitle => '更新您的訊息';
+
+  @override
+  String get menu_followUsOn => '關注我們';
+
+  @override
+  String get menu_logOut => '退出';
+
+  @override
+  String get menu_logOutConfirmMessage => '您真的要退出嗎？';
+
+  @override
+  String get menu_logOutSubtitle => '從應用程式退出';
+
+  @override
+  String get menu_profileImageUpdateFailed => '更新個人資料圖片失敗';
+
+  @override
+  String get menu_profileImageUpdated => '個人資料圖片更新成功';
+
+  @override
+  String get notif_accept => '接受';
+
+  @override
+  String get notif_channelHighImportanceDesc => '高重要性通知的預設管道';
+
+  @override
+  String get notif_channelHighImportanceName => '高重要性通知';
+
+  @override
+  String get notif_channelWalkieAudioDesc => '保持即時語音通訊和背景麥克風捕獲';
+
+  @override
+  String get notif_channelWalkieAudioName => '對講機現場音頻';
+
+  @override
+  String get notif_channelWalkieCallsDesc => '對講機來電';
+
+  @override
+  String get notif_channelWalkieCallsName => '對講機通話';
+
+  @override
+  String get notif_channelWalkieDesc => '群組對講通話和語音更新';
+
+  @override
+  String get notif_channelWalkieLiveDesc => '活動對講機頻道的通知';
+
+  @override
+  String get notif_channelWalkieLiveName => '對講機直播頻道';
+
+  @override
+  String get notif_channelWalkieName => '對講機';
+
+  @override
+  String notif_connectedIn(String group) {
+    return '連接至 $group • 即時音訊串流';
+  }
+
+  @override
+  String get notif_goToWalkie => '轉到對講機螢幕';
+
+  @override
+  String get notif_incomingWalkieTitle => '傳入對講機';
+
+  @override
+  String notif_isTalking(String name) {
+    return '$name 正在說話';
+  }
+
+  @override
+  String get notif_leave => '離開';
+
+  @override
+  String get notif_openWalkie => '打開對講機';
+
+  @override
+  String get notif_reject => '拒絕';
+
+  @override
+  String notif_stoppedTalking(String name) {
+    return '$name 停止說話';
+  }
+
+  @override
+  String get notif_walkieActiveConversation => '主動對講機通話';
+
+  @override
+  String get notif_walkieActiveTitle => '對講機活動';
+
+  @override
+  String notif_wantsToTalk(String name) {
+    return '$name 想說話';
+  }
+
+  @override
+  String get notifications_clearAll => '清除所有通知';
+
+  @override
+  String get notifications_clearedSuccess => '所有通知已成功清除';
+
+  @override
+  String get notifications_emptySubtitle => '您目前沒有新的警報。';
+
+  @override
+  String get notifications_emptyTitle => '還沒有通知';
+
+  @override
+  String get notifications_filterAll => '全部';
+
+  @override
+  String get notifications_filterCalls => '通話';
+
+  @override
+  String get notifications_filterChats => '聊天記錄';
+
+  @override
+  String get notifications_filterUnread => '未讀';
+
+  @override
+  String get notifications_loadingDetails => '正在加載通知詳細信息';
+
+  @override
+  String get notifications_recentCalls => '最近通話';
+
+  @override
+  String get notifications_title => '通知';
+
+  @override
+  String get otpCharges_chargedNotice =>
+      '從現在開始，您的號碼每次登入 OTP 都會收費。重新發送 OTP 是免費的（最多嘗試 3 次）。';
+
+  @override
+  String get otpCharges_chargesApplyTo => '收費適用於';
+
+  @override
+  String get otpCharges_eachOtpCosts => '每個 OTP 成本';
+
+  @override
+  String otpCharges_eachOtpCostsSpoken(String amount) {
+    return '每 OTP 成本 $amount';
+  }
+
+  @override
+  String otpCharges_eachOtpCostsSpokenGst(String amount, String percent) {
+    return ' $amount $percent';
+  }
+
+  @override
+  String get otpCharges_firstLoginFree => '您的首次登入是免費的。';
+
+  @override
+  String get otpCharges_freeBody => '發送至此號碼的登入 OTP 不收費。';
+
+  @override
+  String get otpCharges_freeTitle => '您的號碼的 OTP 是免費的';
+
+  @override
+  String otpCharges_gstTitle(String percent) {
+    return '商品及服務稅 ($percent%)';
+  }
+
+  @override
+  String otpCharges_includingGst(String percent) {
+    return '包括 $percent% 商品及服務稅';
+  }
+
+  @override
+  String otpCharges_includingTax(String percent) {
+    return '包括 $percent% 稅';
+  }
+
+  @override
+  String get otpCharges_noInternet => '沒有網路連線。檢查您的網路並重試。';
+
+  @override
+  String get otpCharges_otpCharge => '一次性密碼費用';
+
+  @override
+  String otpCharges_pay(String amount) {
+    return '支付$amount';
+  }
+
+  @override
+  String get otpCharges_paymentCancelled => '付款已取消。您取消了付款。沒有扣錢。';
+
+  @override
+  String get otpCharges_paymentFailed => '付款失敗。若已扣款，將在 5-7 個工作天內退還。';
+
+  @override
+  String otpCharges_paymentPausedButton(String amount) {
+    return '付款已暫停 ($amount)';
+  }
+
+  @override
+  String get otpCharges_paymentReceived => '付款已收到。您的 OTP 可能需要一些時間才能到達。';
+
+  @override
+  String get otpCharges_paymentStartFailed => '無法開始付款。請再試一次。';
+
+  @override
+  String get otpCharges_paymentsPaused => '管理員暫時暫停 OTP 付款。點擊下方了解詳情。';
+
+  @override
+  String get otpCharges_paymentsUnavailable => 'OTP 付款暫時無法使用。請稍後重試。';
+
+  @override
+  String get otpCharges_sessionExpired => '會話已過期。請重新開始。';
+
+  @override
+  String get otpCharges_title => '一次性密碼費用';
+
+  @override
+  String get otpCharges_totalPerOtp => '每個 OTP 總計';
+
+  @override
+  String get otpCharges_tryAgainMoment => '出了點問題。請稍後重試。';
+
+  @override
+  String get otpCharges_unknownBody =>
+      '印度號碼的登入 OTP 是免費的。對於其他國家/地區，準確的價格會在您登入付款之前顯示。';
+
+  @override
+  String get otpCharges_unknownTitle => 'OTP 費用取決於您所在的國家/地區';
+
+  @override
+  String get otpCharges_updateApp => '付款無法開始。請更新應用程式並重試。';
+
+  @override
+  String otpCharges_vatTitle(String percent) {
+    return '增值稅/稅 ($percent%)';
+  }
+
+  @override
+  String get otpCharges_verificationFailed => '付款驗證失敗。若已扣款，將在 5-7 個工作天內退還。';
+
+  @override
+  String get otpCharges_yourNumber => '您的號碼';
+
+  @override
+  String get package_noPackages => '目前沒有可用的軟體包。';
+
+  @override
+  String package_plansComingSoon(String title) {
+    return '$title 計畫即將推出';
+  }
+
+  @override
+  String get package_subtitle => '選擇一個模組以查看其計劃';
+
+  @override
+  String get package_title => '套餐及定價';
+
+  @override
+  String get package_viewPlans => '查看計劃';
+
+  @override
+  String get perm_alwaysLocationBody =>
+      '若要在背景即時追蹤您的群組，請在應用程式設定中將位置存取權限設定為「始終允許」。';
+
+  @override
+  String get perm_alwaysLocationTitle => '啟用“始終”位置權限';
+
+  @override
+  String get perm_chooseAllowAllTime => '請在即將出現的彈出視窗中選擇“始終允許”。';
+
+  @override
+  String get perm_collectsLocationBody =>
+      '該應用程式收集位置數據，以確保工作順利進行並提供高效的跟踪，即使應用程式關閉或未使用時也是如此。';
+
+  @override
+  String get perm_enableDeviceGpsBody => '請啟用您裝置的 GPS（Google 位置）。';
+
+  @override
+  String get perm_enableGpsTitle => '啟用 GPS';
+
+  @override
+  String get perm_exitBody => '您想退出應用程式嗎？';
+
+  @override
+  String get perm_exitTitle => '你確定嗎？';
+
+  @override
+  String get perm_gpsRequiredBody => '需要 GPS 來即時追蹤您的團隊。';
+
+  @override
+  String get perm_locationTitle => '位置許可';
+
+  @override
+  String get perm_trackingPermissionBody => 'FG 合作夥伴應用程式需要您的許可才能在您登入時追蹤位置。';
+
+  @override
+  String get permission_allowAllTheTime => '允許所有時間';
+
+  @override
+  String get permission_allowLocation => '允許位置';
+
+  @override
+  String get permission_allowLocationFirst => '請先允許位置。';
+
+  @override
+  String permission_allowNamed(String permission) {
+    return '允許 $permission';
+  }
+
+  @override
+  String get permission_allowNotifications => '允許通知';
+
+  @override
+  String get permission_appPermissionsSubtitle => '查看所需的權限。';
+
+  @override
+  String get permission_appPermissionsTitle => '應用程式權限';
+
+  @override
+  String get permission_badgeGranted => '的確';
+
+  @override
+  String get permission_badgeOptional => '選修的';
+
+  @override
+  String get permission_badgeRecommended => '受到推崇的';
+
+  @override
+  String get permission_badgeRequired => '必需的';
+
+  @override
+  String get permission_camera => '相機';
+
+  @override
+  String get permission_cameraDescription => '由捕捉照片或影片的應用程式功能使用。';
+
+  @override
+  String get permission_cameraSettingsMessage => '拍攝照片和影片需要相機許可。請從應用程式設定中啟用它。';
+
+  @override
+  String get permission_cameraWhy => '允許您拍攝支援的個人資料、聊天和其他應用程式功能的照片和影片。';
+
+  @override
+  String get permission_contacts => '聯絡方式';
+
+  @override
+  String get permission_contactsDescription => '用於發現或選擇聯絡人以獲得與聯絡人相關的應用程式功能。';
+
+  @override
+  String get permission_contactsSettingsMessage =>
+      '需要聯絡人權限才能尋找和選擇聯絡人。請從應用程式設定中啟用它。';
+
+  @override
+  String get permission_contactsWhy => '在使用受支援的聯絡人相關功能時協助您尋找並選擇聯絡人。';
+
+  @override
+  String get permission_gateCheckFailed => '我們無法檢查您的權限。請再試一次。';
+
+  @override
+  String get permission_gateSubtitle =>
+      'FG Tracker 需要這些權限來接收呼叫和警報以及運行考勤、即時追蹤和安全區。';
+
+  @override
+  String get permission_gateTitle => '所需權限';
+
+  @override
+  String get permission_genericSettingsMessage => '需要此許可。請從應用程式設定中啟用它。';
+
+  @override
+  String get permission_iosLocationServicesOff =>
+      '定位服務已關閉。開啟「設定」→「隱私與安全」→「位置服務」並將其打開，然後返回。';
+
+  @override
+  String get permission_location => '地點';
+
+  @override
+  String get permission_locationAndNotificationRequired => '需要位置和通知權限才能繼續。';
+
+  @override
+  String get permission_locationAndNotificationsRequiredHint => '需要位置和通知才能繼續。';
+
+  @override
+  String get permission_locationDescription => '出勤、即時追蹤和安全區所需 - 包括當應用程式位於背景時。';
+
+  @override
+  String get permission_locationRequiredToContinue => '需要位置許可才能繼續。';
+
+  @override
+  String get permission_locationStatusApproximate => '僅允許大致位置。需要精確。';
+
+  @override
+  String get permission_locationStatusBlocked => '位置被封鎖。從“設定”中啟用它。';
+
+  @override
+  String get permission_locationStatusDone => '始終允許 · 精確 · GPS 開啟';
+
+  @override
+  String get permission_locationStatusGpsOff => '設備定位 (GPS) 已關閉。';
+
+  @override
+  String get permission_locationStatusNeedAlways => '需要「允許所有時間」。';
+
+  @override
+  String get permission_locationStatusNotAllowed => '尚未允許位置許可。';
+
+  @override
+  String get permission_locationWhyExtra => '請選擇“始終允許”並保持精確位置開啟。';
+
+  @override
+  String get permission_logout => '退出';
+
+  @override
+  String get permission_microphone => '麥克風/音訊';
+
+  @override
+  String get permission_microphoneDescription => '用於語音、對講機和通話功能（如果適用）。';
+
+  @override
+  String get permission_microphoneSettingsMessage =>
+      '语音、对讲机和通话需要麦克风许可。請從應用程式設定中啟用它。';
+
+  @override
+  String get permission_microphoneWhy => '使用這些功能時允許語音通訊、對講機傳輸和通話。';
+
+  @override
+  String permission_notGrantedNamed(String permission) {
+    return '未授予 $permission 權限。請再試一次。';
+  }
+
+  @override
+  String get permission_notificationRequiredToContinue => '需要通知許可才能繼續。';
+
+  @override
+  String get permission_notificationSettingsText =>
+      'FG Tracker 的通知已關閉。開啟設定 → 通知並允許它們。';
+
+  @override
+  String get permission_notificationStatusBlocked => '通知被阻止。從“設定”中啟用它們。';
+
+  @override
+  String get permission_notificationStatusDone => '允許';
+
+  @override
+  String get permission_notificationStatusNotAllowed => '尚未允許通知權限。';
+
+  @override
+  String get permission_notifications => '通知';
+
+  @override
+  String get permission_notificationsDescription => '需要接收來電、聊天訊息和出勤/安全區警報。';
+
+  @override
+  String get permission_notificationsWhyExtra => '如果沒有此權限，來電無法響鈴。';
+
+  @override
+  String get permission_openSettings => '開啟設定';
+
+  @override
+  String get permission_preciseLocation => '精確定位';
+
+  @override
+  String get permission_pushNotifications => '推播通知';
+
+  @override
+  String get permission_reasonLocation => '出勤、即時追蹤和安全區警報需要位置。';
+
+  @override
+  String get permission_reasonLocationAlways =>
+      '選擇“始終允許”，以便當應用程式在背景時即時追蹤和安全區繼續工作。';
+
+  @override
+  String get permission_reasonNotification => '需要通知來接收來電、聊天訊息、出勤和安全區警報。';
+
+  @override
+  String get permission_reasonPrecise => '準確的出勤、即時追蹤和安全區域警報需要精確的位置。';
+
+  @override
+  String get permission_required => '需要許可';
+
+  @override
+  String get permission_selectAllowAllTheTime => '請選擇“始終允許”以繼續。';
+
+  @override
+  String get permission_settingsAndroidAlways => '開啟設定→權限→位置並選擇「始終允許」。';
+
+  @override
+  String get permission_settingsAndroidBlocked =>
+      'FG Tracker 的位置存取被封鎖。開啟設定→權限→位置並選擇「始終允許」。';
+
+  @override
+  String get permission_settingsAndroidPrecise => '開啟設定→權限→位置並開啟「使用精確位置」。';
+
+  @override
+  String get permission_settingsIosAlways => '開啟“設定”→“位置”並選擇“始終”。';
+
+  @override
+  String get permission_settingsIosBlocked =>
+      'FG Tracker 的位置存取已關閉。開啟“設定”→“位置”並選擇“始終”。';
+
+  @override
+  String get permission_settingsIosPrecise => '開啟“設定”→“位置”，然後開啟“精確位置”。';
+
+  @override
+  String get permission_skipAndContinue => '跳過並繼續';
+
+  @override
+  String get permission_turnOnLocation => '打開位置';
+
+  @override
+  String get permission_turnOnPreciseLocation => '開啟精確定位';
+
+  @override
+  String get permission_unableToRequest => '無法請求許可。';
+
+  @override
+  String get permission_whyWeNeedThis => '為什麼我們需要這個？';
+
+  @override
+  String get registration_contactNumberHint => '輸入聯絡電話';
+
+  @override
+  String get registration_contactNumberLabel => '聯絡電話';
+
+  @override
+  String get registration_doneButton => '完畢';
+
+  @override
+  String get registration_emailHint => '輸入電子郵件地址';
+
+  @override
+  String get registration_emailLabel => '電子郵件';
+
+  @override
+  String get registration_genderFemale => '女性';
+
+  @override
+  String get registration_genderLabel => '選擇性別';
+
+  @override
+  String get registration_genderMale => '男性';
+
+  @override
+  String get registration_genderOther => '其他';
+
+  @override
+  String get registration_selectGenderError => '請選擇您的性別';
+
+  @override
+  String get registration_userNameHint => '輸入使用者名稱';
+
+  @override
+  String get registration_userNameLabel => '使用者名稱';
+
+  @override
+  String get repo_allCallsCleared => '所有通話記錄已成功清除';
+
+  @override
+  String get repo_callDeleted => '通話記錄刪除成功';
+
+  @override
+  String get repo_invalidResponse => '回應格式無效';
+
+  @override
+  String get repo_loadLocationsFailed => '無法載入群組位置';
+
+  @override
+  String get repo_pkgConflict => '該計劃已啟動或付款正在進行中。';
+
+  @override
+  String get repo_pkgNotFound => '目前無法提供計劃。請稍後重試。';
+
+  @override
+  String get repo_pkgOffline => '沒有網路連線。檢查您的網路並重試。';
+
+  @override
+  String get repo_pkgSessionExpired => '您的會話已過期。請重新登入。';
+
+  @override
+  String get repo_pkgTimeout => '伺服器回應時間過長。請再試一次。';
+
+  @override
+  String get repo_selectedCallsDeleted => '所選通話已成功刪除';
+
+  @override
+  String get repo_unnamedGroup => '未命名團體';
+
+  @override
+  String safeRoute_activeDetails(String distance, String deviation) {
+    return '總距離：$distance • 允許偏差：$deviation';
+  }
+
+  @override
+  String get safeRoute_activeTitle => '主動安全路線';
+
+  @override
+  String get safeRoute_alertSettingsDesc => '管理安全路線警報、偏差限制和通知首選項。';
+
+  @override
+  String get safeRoute_alertSheetDesc => '當團隊成員偏離安全路線時即時警報';
+
+  @override
+  String get safeRoute_alertTitle => '安全路線警報';
+
+  @override
+  String get safeRoute_appBarSubtitle => '為您的團隊成員設定安全路線。';
+
+  @override
+  String get safeRoute_destination => '目的地';
+
+  @override
+  String get safeRoute_deviated => '偏離安全路線';
+
+  @override
+  String safeRoute_deviationAlertNote(String distance) {
+    return '如果會員偏離安全路線超過$distance，則會觸發警報。';
+  }
+
+  @override
+  String safeRoute_deviationAt(String place, String distance) {
+    return '$place（偏差：$distance）';
+  }
+
+  @override
+  String get safeRoute_deviationLimit => '偏差極限';
+
+  @override
+  String get safeRoute_deviationSubtitle => '設定允許偏離所選路線的程度。';
+
+  @override
+  String get safeRoute_distance => '距離';
+
+  @override
+  String safeRoute_distanceEta(String distance, int minutes) {
+    return '$distance 公里 • $minutes 分鐘';
+  }
+
+  @override
+  String get safeRoute_edit => '編輯安全路線';
+
+  @override
+  String get safeRoute_end => '結尾';
+
+  @override
+  String safeRoute_estTime(int minutes) {
+    return '預計。時間：$minutes 分鐘';
+  }
+
+  @override
+  String get safeRoute_featureDesc => '為您的團隊成員設定預定義路線。如果有人偏離安全路線，則會收到警報。';
+
+  @override
+  String safeRoute_groupWithCount(String group, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 成員',
+      one: '1 名會員',
+    );
+    return '$group ($_temp0)';
+  }
+
+  @override
+  String get safeRoute_helpDeviationBody => '設置成員可以遠離所選路線的允許距離。如果超出此限制，您將收到警報。';
+
+  @override
+  String get safeRoute_helpDeviationTitle => '什麼是偏差極限？';
+
+  @override
+  String get safeRoute_helpHowBody => '選擇成員，選擇起點和目的地位置，選擇最佳路線並設定偏差限制。';
+
+  @override
+  String get safeRoute_helpHowTitle => '如何打造安全路線？';
+
+  @override
+  String get safeRoute_helpTitle => '安全路線幫助';
+
+  @override
+  String get safeRoute_helpWhatBody => '設定起點和目的地，為您的團隊成員建立安全的旅行路線。';
+
+  @override
+  String get safeRoute_helpWhatTitle => '什麼是安全路線？';
+
+  @override
+  String safeRoute_memberDeviated(String name) {
+    return '$name 已偏離安全路線';
+  }
+
+  @override
+  String get safeRoute_recommended => '受到推崇的';
+
+  @override
+  String safeRoute_recommendedRoute(String name) {
+    return '$name（建議）';
+  }
+
+  @override
+  String safeRoute_routeFor(String name) {
+    return '路線 ($name)';
+  }
+
+  @override
+  String get safeRoute_saveActivate => '保存並啟動安全路線';
+
+  @override
+  String get safeRoute_saveActivateGroup => '保存並啟動團體安全路線';
+
+  @override
+  String get safeRoute_selectedRoute => '所選路線';
+
+  @override
+  String get safeRoute_setRoutesSubtitle => '為所有團體成員建立和管理安全路線。';
+
+  @override
+  String get safeRoute_start => '開始';
+
+  @override
+  String get safeRoute_startLocation => '起始位置';
+
+  @override
+  String safeRoute_stepDeviation(int step) {
+    return '$step。設定偏差限制';
+  }
+
+  @override
+  String safeRoute_stepPreviewApply(int step) {
+    return '$step。預覽並應用';
+  }
+
+  @override
+  String safeRoute_stepPreviewRoute(int step) {
+    return '$step。預覽路線';
+  }
+
+  @override
+  String safeRoute_stepSelectRoute(int step) {
+    return '$step。選擇路線';
+  }
+
+  @override
+  String safeRoute_stepSetRoutesForMembers(int step) {
+    return '$step。為會員設定路線';
+  }
+
+  @override
+  String safeRoute_stepStartDest(int step) {
+    return '$step。設定起點和目的地';
+  }
+
+  @override
+  String get safeRoute_subtitle => '路由保護';
+
+  @override
+  String get safeRoute_title => '安全路線';
+
+  @override
+  String safeZone_activeDetails(String radius, String center) {
+    return '半徑：$radius • 中心：$center';
+  }
+
+  @override
+  String get safeZone_activePreview => '活動（預覽）';
+
+  @override
+  String get safeZone_activeTitle => '主動安全區';
+
+  @override
+  String get safeZone_alertSettingsDesc => '管理安全區、警報距離和通知首選項';
+
+  @override
+  String get safeZone_alertSheetDesc => '團隊成員離開安全區時即時警報';
+
+  @override
+  String get safeZone_alertTitle => '安全區警報';
+
+  @override
+  String safeZone_allMonitored(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '所有 $count 成员都将受到监控\n在這個安全區內。',
+      one: '1 名成員將受到監控\n在這個安全區內。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get safeZone_appBarSubtitle => '定義一個安全區域。如果有人\n走出安全區。';
+
+  @override
+  String safeZone_appliedToGroup(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '此安全區將套用於所選群組中的所有 $count 成員。',
+      one: '此安全區將應用於所選群組中的 1 名成員。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get safeZone_edit => '編輯安全區';
+
+  @override
+  String get safeZone_exited => '退出安全區';
+
+  @override
+  String get safeZone_featureDesc => '為您的團隊定義一個安全的地理區域。如果有人走出安全區，您會立即收到警報。';
+
+  @override
+  String get safeZone_helpHowBody => '選擇一個成員，在地圖上選擇一個位置並設定半徑。';
+
+  @override
+  String get safeZone_helpHowTitle => '如何建立安全區？';
+
+  @override
+  String get safeZone_helpRadiusBody => '根據需要設定區域半徑（500 m、1 km、2 km 或 5 km）。';
+
+  @override
+  String get safeZone_helpRadiusTitle => '什麼是安全區半徑？';
+
+  @override
+  String get safeZone_helpTitle => '安全區幫助';
+
+  @override
+  String get safeZone_helpWhatBody => '在地圖上設定特定區域，如果成員走出安全區域，則會收到警報。';
+
+  @override
+  String get safeZone_helpWhatTitle => '什麼是安全區？';
+
+  @override
+  String safeZone_memberLeft(String name) {
+    return '$name 已離開安全區';
+  }
+
+  @override
+  String get safeZone_membersMonitored => '成員將在該安全區內受到監控。';
+
+  @override
+  String safeZone_nearOutsideZone(String place, String zone) {
+    return '$place 附近（$zone 以外）';
+  }
+
+  @override
+  String safeZone_outsideZone(String place, String zone) {
+    return '$place（$zone 之外）';
+  }
+
+  @override
+  String get safeZone_saveActivate => '保存並啟動安全區';
+
+  @override
+  String get safeZone_saveActivateGroup => '保存並啟動群組安全區';
+
+  @override
+  String get safeZone_searchLocation => '搜尋位置...';
+
+  @override
+  String get safeZone_statusLabel => '地位：';
+
+  @override
+  String safeZone_stepPreview(int step) {
+    return '$step。預覽安全區';
+  }
+
+  @override
+  String safeZone_stepRadius(int step) {
+    return '$step。設定安全區半徑';
+  }
+
+  @override
+  String safeZone_stepSelectLocation(int step) {
+    return '$step。在地圖上選擇位置';
+  }
+
+  @override
+  String get safeZone_subtitle => '區域保護';
+
+  @override
+  String get safeZone_title => '安全區';
+
+  @override
+  String safeZone_totalMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '共有 $count 名成員',
+      one: '共有 1 位會員',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get safety_active => '積極的';
+
+  @override
+  String get safety_alertSettings => '警報設定';
+
+  @override
+  String get safety_alerts => '警報';
+
+  @override
+  String get safety_alertsDesc => '需要立即關注';
+
+  @override
+  String get safety_bannerBody => '透過智慧安全功能監控和保護您的團隊。';
+
+  @override
+  String get safety_bannerTitle => '您的安全，我們的首要任務';
+
+  @override
+  String get safety_chooseFeature => '選擇安全功能';
+
+  @override
+  String get safety_comingSoonBody => '保護您團隊的智慧安全功能即將推出。';
+
+  @override
+  String get safety_contactSupport => '聯繫支援人員';
+
+  @override
+  String get safety_editAnytime => '您可以稍後隨時編輯或停用。';
+
+  @override
+  String get safety_mapCityPark => '城市公園';
+
+  @override
+  String get safety_mapMainRoad => '主幹道';
+
+  @override
+  String get safety_mapMarketLane => '市場巷';
+
+  @override
+  String get safety_mapRiver => '河';
+
+  @override
+  String get safety_mapStationRoad => '車站路';
+
+  @override
+  String get safety_needHelpBody => '請聯絡支援團隊以獲得任何與安全相關的協助。';
+
+  @override
+  String get safety_quickOverview => '快速概覽';
+
+  @override
+  String get safety_recentAlerts => '最近的警報';
+
+  @override
+  String get safety_recenter => '重新居中';
+
+  @override
+  String get safety_safeNow => '現在安全';
+
+  @override
+  String get safety_safeNowDesc => '成員位於安全區域/路線內';
+
+  @override
+  String safety_stepSelectGroup(int step) {
+    return '$step。選擇組';
+  }
+
+  @override
+  String safety_stepSelectMember(int step) {
+    return '$step。選擇會員';
+  }
+
+  @override
+  String get safety_tabIndividual => '個人';
+
+  @override
+  String get safety_tagline => '保持受到保護。保持聯繫。';
+
+  @override
+  String get safety_title => '安全';
+
+  @override
+  String get safety_viewAllMembers => '看全部會員';
+
+  @override
+  String get sheet_addGroupMember => '新增群組成員';
+
+  @override
+  String get sheet_admin => '行政';
+
+  @override
+  String get sheet_attachSubtitle => '與您的團隊分享文件和媒體';
+
+  @override
+  String get sheet_attachUpload => '附加/上傳';
+
+  @override
+  String get sheet_attendance => '出席率';
+
+  @override
+  String get sheet_callOptions => '買權';
+
+  @override
+  String get sheet_cantRemoveSelf => '您無法將自己從群組中刪除。';
+
+  @override
+  String get sheet_contact => '接觸';
+
+  @override
+  String get sheet_contactsNotOnApp => '您的聯絡人尚未使用 FG Tracker。';
+
+  @override
+  String get sheet_document => '文件';
+
+  @override
+  String get sheet_groupMembers => '團體成員';
+
+  @override
+  String get sheet_location => '地點';
+
+  @override
+  String get sheet_memberRemoved => '會員刪除成功';
+
+  @override
+  String get sheet_noMembers => '沒有找到會員';
+
+  @override
+  String get sheet_noRegisteredContacts => '沒有註冊聯絡人';
+
+  @override
+  String get sheet_noUserFound => '未找到用戶';
+
+  @override
+  String get sheet_normalAudioCall => '正常音訊通話';
+
+  @override
+  String get sheet_normalAudioCallSubtitle => '標準清晰的語音質量';
+
+  @override
+  String sheet_registeredContacts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 註冊聯絡人',
+      one: '1 註冊聯絡人',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sheet_removeMemberConfirm(String name) {
+    return '您確定要從群組中刪除 $name 嗎？';
+  }
+
+  @override
+  String get sheet_removeMemberTitle => '刪除會員';
+
+  @override
+  String get sheet_searchContacts => '搜尋聯絡人';
+
+  @override
+  String get sheet_walkieCall => '對講機通話';
+
+  @override
+  String get sheet_walkieCallSubtitle => '一鍵通通訊';
+
+  @override
+  String get sos_addDetailsMandatory => '新增詳細資訊（必填）';
+
+  @override
+  String get sos_addDetailsOptional => '新增詳細資訊（可選）';
+
+  @override
+  String get sos_addFamilyMember => '新增家庭成員';
+
+  @override
+  String get sos_addFamilyMemberRequired => '新增至少 1 名家庭成員以發送 SOS 警報';
+
+  @override
+  String get sos_addPhotoHint => '附上照片以幫助其他人更好地理解。';
+
+  @override
+  String get sos_addPhotoOptional => '新增照片（可選）';
+
+  @override
+  String get sos_alertSent => 'SOS 警報已發送！';
+
+  @override
+  String get sos_alertSentToNearby => '您的警報已發送給附近的人。';
+
+  @override
+  String get sos_alertWillBeSent => '警報將發送給附近的人';
+
+  @override
+  String get sos_alertWillBeSentFamily => '您的警報將發送給附近的人和您的家人。';
+
+  @override
+  String sos_availableUsers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 可用用戶',
+      one: '1 個可用用戶',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sos_detailsHint => '輸入任何其他詳細資訊...';
+
+  @override
+  String get sos_detailsMandatoryForOther => '選擇“其他”原因時，必須添加詳細信息';
+
+  @override
+  String get sos_howItWorks => '它是如何運作的';
+
+  @override
+  String get sos_howItWorksIntro => 'SOS 警報可協助您在緊急情況下通知附近的人和您的家人。';
+
+  @override
+  String get sos_howItWorksTitle => 'SOS 警報如何運作？';
+
+  @override
+  String get sos_liveTrackingStarted => '即時追蹤開始';
+
+  @override
+  String sos_locationSharedWithFamily(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '您的位置正在與 $count 家庭成員共享',
+      one: '您的位置正在與 1 位家庭成員共享',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sos_membersSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '選定 $count 成員',
+      one: '已選定 1 名成員',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sos_needHelp => '需要幫助嗎？';
+
+  @override
+  String get sos_needHelpBody => '向附近的人發送 SOS 警報。\n他們將收到通知並可以為您提供幫助。';
+
+  @override
+  String get sos_noMatchFound => '未找到匹配項';
+
+  @override
+  String get sos_noUsersFound => '未找到用戶';
+
+  @override
+  String get sos_notifyFamilyTitle => '通知您的家人（需要 1 至 5）';
+
+  @override
+  String get sos_notifyUpdates => '如有任何更新，我們將通知您';
+
+  @override
+  String get sos_okGotIt => '好的，明白了';
+
+  @override
+  String get sos_peopleWithinRadius => '半徑2公里以內的人';
+
+  @override
+  String get sos_privacyNote => '您的隱私很重要。仅在 SOS 警报有效期间才会共享您的位置。';
+
+  @override
+  String get sos_reasonAccident => '意外事故';
+
+  @override
+  String get sos_reasonMedical => '醫療的';
+
+  @override
+  String get sos_reasonOther => '其他';
+
+  @override
+  String get sos_reasonSafety => '安全';
+
+  @override
+  String get sos_reasonThreat => '威脅';
+
+  @override
+  String get sos_required => '必需的';
+
+  @override
+  String get sos_searchUsers => '搜尋用戶';
+
+  @override
+  String get sos_selectReason => '選擇原因';
+
+  @override
+  String get sos_sendSosAlert => '發送 SOS 警報';
+
+  @override
+  String get sos_stayCalm => '保持冷靜，幫助正在路上';
+
+  @override
+  String get sos_step1Body => '點擊 SOS 按鈕並向附近的人發送警報。';
+
+  @override
+  String get sos_step1Title => '1. 發送SOS警報';
+
+  @override
+  String get sos_step2Body => '附近的人將收到您的警報以及您的位置。';
+
+  @override
+  String get sos_step2Title => '2. 通知附近的人';
+
+  @override
+  String get sos_step3Body => '附近的人可以查看您的警報並為您提供協助。';
+
+  @override
+  String get sos_step3Title => '3.更快獲得協助';
+
+  @override
+  String get sos_step4Body => '您的家人將立即收到有關您的 SOS 的通知。';
+
+  @override
+  String get sos_step4Title => '4. 家人收到通知';
+
+  @override
+  String get sos_subtitle => '向附近的人發送警報';
+
+  @override
+  String get sos_title => 'SOS警報';
+
+  @override
+  String get sos_willBeNotified => '將被通知';
+
+  @override
+  String status_activeCount(int count) {
+    return '$count 活躍';
+  }
+
+  @override
+  String get status_addToMyStatus => '新增到我的狀態';
+
+  @override
+  String get status_allContacts => '所有聯絡人';
+
+  @override
+  String get status_cameraAccessFailed => '無法存取相機';
+
+  @override
+  String get status_captionHint => '新增標題...';
+
+  @override
+  String get status_changeMedia => '改變媒體';
+
+  @override
+  String status_dayAtTime(String day, String time) {
+    return '$day，$time';
+  }
+
+  @override
+  String get status_deleted => '狀態已刪除';
+
+  @override
+  String get status_deletedByOwner => '此狀態已被擁有者刪除';
+
+  @override
+  String get status_exceptContacts => '聯絡人除外';
+
+  @override
+  String get status_exceptSelected => '已選除外';
+
+  @override
+  String get status_flip => '翻動';
+
+  @override
+  String get status_gallery => '畫廊';
+
+  @override
+  String get status_modePhoto => '照片';
+
+  @override
+  String get status_modeText => '文字';
+
+  @override
+  String get status_modeVideo => '影片';
+
+  @override
+  String get status_myStatus => '我的狀態';
+
+  @override
+  String get status_new => '新的';
+
+  @override
+  String get status_noCamera => '沒有可用的相機';
+
+  @override
+  String get status_noLongerAvailable => '此狀態不再可用';
+
+  @override
+  String get status_noViewsYet => '還沒有瀏覽';
+
+  @override
+  String get status_onlyShareWith => '只分享給';
+
+  @override
+  String get status_pause => '暫停';
+
+  @override
+  String get status_pinchZoomHint => '捏合縮放照片';
+
+  @override
+  String get status_play => '玩';
+
+  @override
+  String get status_postStatus => '貼文狀態';
+
+  @override
+  String get status_previewStatus => '預覽狀態';
+
+  @override
+  String get status_privacy => '隱私';
+
+  @override
+  String get status_privacyTitle => '狀態隱私';
+
+  @override
+  String get status_publishFailed => '無法發布狀態';
+
+  @override
+  String get status_replyHint => '回覆狀態...';
+
+  @override
+  String get status_retake => '重拍';
+
+  @override
+  String get status_selectPhotoFirst => '請先拍攝或選擇一張照片';
+
+  @override
+  String get status_selectVideoFirst => '請先拍攝或選擇一個視頻';
+
+  @override
+  String get status_shareUpdatesHint => '與您的團隊分享最新動態';
+
+  @override
+  String get status_tapVideoHint => '點擊影片即可播放/暫停';
+
+  @override
+  String get status_textRequired => '文字狀態需要文字內容';
+
+  @override
+  String get status_title => '地位';
+
+  @override
+  String get status_typeHint => '輸入狀態...';
+
+  @override
+  String get status_uploadFailed => '上傳失敗';
+
+  @override
+  String get status_viewMyStatus => '查看我的狀態';
+
+  @override
+  String get status_viewed => '已查看';
+
+  @override
+  String status_viewedBy(int count) {
+    return '查看者：$count';
+  }
+
+  @override
+  String status_viewsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 觀看次數',
+      one: '1 視圖',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get status_whoCanSee => '誰能看見？';
+
+  @override
+  String get track_admin => '行政';
+
+  @override
+  String get track_applyRadius => '應用半徑';
+
+  @override
+  String get track_checkNetworkConnection => '請檢查您的網路連線並重試。';
+
+  @override
+  String get track_checkNetworkMembers => '請檢查您的網路並再次嘗試查看附近的成員。';
+
+  @override
+  String get track_currentLocation => '目前位置';
+
+  @override
+  String get track_custom => '風俗';
+
+  @override
+  String track_customWithValue(String radius) {
+    return '自訂 ($radius)';
+  }
+
+  @override
+  String track_distanceAway(String distance) {
+    return '$distance 遠';
+  }
+
+  @override
+  String get track_enable => '使能夠';
+
+  @override
+  String get track_enableGpsBody => '若要即時追蹤您的團隊，請開啟您的 GPS。';
+
+  @override
+  String get track_enableGpsTitle => '啟用 GPS';
+
+  @override
+  String get track_errorFailedLoadGroups => '載入組失敗';
+
+  @override
+  String get track_errorLoadGroups => '無法載入群組。請再試一次。';
+
+  @override
+  String get track_errorLoadMembers => '無法載入附近的成員。請再試一次。';
+
+  @override
+  String get track_errorNoInternet => '沒有網路連線。請檢查您的網路。';
+
+  @override
+  String get track_errorServer => '無法連接到伺服器。請再試一次。';
+
+  @override
+  String track_groupCode(String code) {
+    return '代碼：$code';
+  }
+
+  @override
+  String get track_groupMembers => '團體成員';
+
+  @override
+  String track_groupMembersAndCode(int count, String code) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 成員 • 代碼：$code',
+      one: '1 名成員 • 代碼：$code',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get track_groupTab => '團體';
+
+  @override
+  String track_groupsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 組',
+      one: '1組',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String track_groupsHeader(int count) {
+    return '團體 ($count)';
+  }
+
+  @override
+  String get track_helpGroupBody => '建立一個群組來追蹤多個成員。';
+
+  @override
+  String get track_helpGroupTitle => '如何新增群組？';
+
+  @override
+  String get track_helpLiveBody => '追蹤團隊在地圖上的即時位置。';
+
+  @override
+  String get track_helpLiveTitle => '什麼是即時追蹤？';
+
+  @override
+  String get track_helpRadiusBody => '設定區域以在地圖上尋找附近的成員。';
+
+  @override
+  String get track_helpRadiusTitle => '什麼是跟踪半徑？';
+
+  @override
+  String get track_helpTitle => '追蹤幫助';
+
+  @override
+  String track_lastSeen(String time) {
+    return '最後上線時間：$time';
+  }
+
+  @override
+  String track_liveCount(int count) {
+    return '$count 直播';
+  }
+
+  @override
+  String get track_liveMembers => '現場會員';
+
+  @override
+  String get track_liveTracking => '即時追蹤';
+
+  @override
+  String get track_locating => '正在定位...';
+
+  @override
+  String get track_locationHidden => '地點隱藏';
+
+  @override
+  String get track_locationUnavailable => '位置不可用';
+
+  @override
+  String get track_mapOfflineBody => '需要網路連線來載入即時地圖資料和即時會員位置。';
+
+  @override
+  String get track_mapUnavailableOffline => '地圖無法離線使用';
+
+  @override
+  String get track_member => '成員';
+
+  @override
+  String track_memberPausedSharing(String name) {
+    return '$name 已暫停位置共用。即時位置不可用。';
+  }
+
+  @override
+  String track_membersHeader(int count) {
+    return '會員 ($count)';
+  }
+
+  @override
+  String track_membersLive(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 會員直播',
+      one: '1 位會員直播',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get track_menuMembers => '會員';
+
+  @override
+  String get track_menuRefreshMap => '刷新地圖';
+
+  @override
+  String get track_menuTheme => '主題';
+
+  @override
+  String get track_nearbyYou => '在你附近';
+
+  @override
+  String get track_noActiveMembers => '沒有活躍會員';
+
+  @override
+  String track_noActiveMembersWithin(String radius) {
+    return '在 $radius 中找不到活躍成員';
+  }
+
+  @override
+  String get track_noDescription => '無描述';
+
+  @override
+  String get track_noGroupsFound => '未找到群組';
+
+  @override
+  String get track_noGroupsMatch => '沒有分組匹配';
+
+  @override
+  String track_noGroupsMatchQuery(String query) {
+    return '沒有組別匹配“$query”';
+  }
+
+  @override
+  String get track_noGroupsYet => '您尚未加入或建立任何群組。';
+
+  @override
+  String get track_noInternetTitle => '無網路連線';
+
+  @override
+  String get track_noMembersFound => '未找到會員';
+
+  @override
+  String get track_noMembersFoundPlain => '沒有找到會員';
+
+  @override
+  String get track_noMembersInGroup => '該群組中未找到任何成員';
+
+  @override
+  String track_noMembersMatch(String query) {
+    return ' $query';
+  }
+
+  @override
+  String track_noSearchMatches(String query) {
+    return '沒有符合的成員或群組';
+  }
+
+  @override
+  String track_noSearchResults(String query) {
+    return '未找到「$query」的成員或群組';
+  }
+
+  @override
+  String get track_notAvailable => '不適用';
+
+  @override
+  String get track_offlineBanner => '沒有網路連線。地圖和追蹤處於離線狀態。';
+
+  @override
+  String get track_private => '私人的';
+
+  @override
+  String get track_radius => '半徑';
+
+  @override
+  String get track_refresh => '重新整理';
+
+  @override
+  String get track_refreshing => '清爽...';
+
+  @override
+  String get track_retryConnection => '重試連接';
+
+  @override
+  String get track_searchHint => '搜尋成員或群組...';
+
+  @override
+  String get track_searchMembersHint => '搜尋會員...';
+
+  @override
+  String get track_selectedLocation => '選定地點';
+
+  @override
+  String get track_setRadiusSubtitle => '滑動選擇區域半徑';
+
+  @override
+  String get track_setRadiusTitle => '設定跟踪半徑';
+
+  @override
+  String get track_unableToLoadGroups => '無法載入群組';
+
+  @override
+  String get track_unableToLoadMembers => '無法載入會員';
+
+  @override
+  String get track_unnamedGroup => '未命名團體';
+
+  @override
+  String get track_unnamedMember => '未命名會員';
+
+  @override
+  String get track_yourGroups => '您的群組';
+
+  @override
+  String get track_yourLocationPaused => '您的即時位置共享已暫停且私密。';
+
+  @override
+  String get util_previewContact => '👤 聯絡方式';
+
+  @override
+  String get util_previewDocument => '📄 文檔';
+
+  @override
+  String get util_previewLocation => '📍地點';
+
+  @override
+  String get util_previewPhoto => '📷 照片';
+
+  @override
+  String get util_previewVideo => '🎥 視頻';
+
+  @override
+  String get util_previewVoice => '🎤 語音留言';
+
+  @override
+  String util_spokenEur(String amount) {
+    return '$amount 歐元';
+  }
+
+  @override
+  String util_spokenGbp(String amount) {
+    return '$amount 磅';
+  }
+
+  @override
+  String util_spokenRupees(int rupees) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rupees,
+      locale: localeName,
+      other: '$rupees 盧比',
+      one: '1盧比',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String util_spokenRupeesPaise(int rupees, int paise) {
+    return '$rupees 盧比 $paise 派薩';
+  }
+
+  @override
+  String util_spokenUsd(String amount) {
+    return '$amount 美元';
+  }
+
+  @override
+  String get util_unableToCallContact => '無法呼叫此聯絡人';
+
+  @override
+  String get util_unableToStartGroupCall => '無法發起群組通話';
+
+  @override
+  String get validation_emailEmpty => '電子郵件地址不能為空';
+
+  @override
+  String get validation_emailInvalid => '請輸入有效的電子郵件地址。';
+
+  @override
+  String validation_required(String field) {
+    return '$field 為必填項';
+  }
+
+  @override
+  String get voice_appLanguage => '應用語言';
+
+  @override
+  String get voice_audioChip => '聲音的';
+
+  @override
+  String get voice_captionReady => '字幕已準備好';
+
+  @override
+  String get voice_chooseSpeechLanguage => '選擇語音語言';
+
+  @override
+  String get voice_couldntPlay => '無法播放語音留言';
+
+  @override
+  String get voice_didntCatch => '沒聽清楚。輕按麥克風並大聲說話。';
+
+  @override
+  String get voice_language => '語言';
+
+  @override
+  String get voice_listenBack => '回聽';
+
+  @override
+  String get voice_listenBeforeSending => '在發送語音訊息之前先聽一下。';
+
+  @override
+  String get voice_listening => '正在聽…';
+
+  @override
+  String get voice_micPermissionNeeded => '使用語音需要麥克風許可。';
+
+  @override
+  String get voice_micUnavailable => '麥克風不可用。請檢查設定。';
+
+  @override
+  String get voice_noTextCaptured => '未捕獲任何文字 - 嘗試重新錄製。';
+
+  @override
+  String get voice_openSettings => '開啟設定';
+
+  @override
+  String get voice_permissionRequired => '需要許可';
+
+  @override
+  String get voice_reRecord => '重新錄製';
+
+  @override
+  String get voice_readyToSend => '準備發送';
+
+  @override
+  String get voice_recordVoice => '錄音';
+
+  @override
+  String get voice_recordVoiceSubtitle => '錄製並作為音訊訊息發送';
+
+  @override
+  String get voice_recordingYourVoice => '錄製你的聲音...';
+
+  @override
+  String get voice_replyReady => '回覆已準備好';
+
+  @override
+  String get voice_reviewTextHint => '聆聽上面的聲音，或在發送前編輯訊息框中的文字。';
+
+  @override
+  String get voice_sendMessage => '發送訊息';
+
+  @override
+  String get voice_sendVoiceMessage => '傳送語音訊息';
+
+  @override
+  String get voice_speakNowCaption => '現在說話 – 我們正在輸入您的標題';
+
+  @override
+  String get voice_speakNowMessage => '現在說話 – 您的話會出現在訊息框中';
+
+  @override
+  String get voice_speakNowReply => '現在說話 – 我們正在輸入您的回复';
+
+  @override
+  String get voice_speakPlaceholder => '說…您的文字將出現在此處';
+
+  @override
+  String get voice_speechPermissionNeeded => '需要語音辨識權限才能將語音轉換為文字。';
+
+  @override
+  String get voice_tapToStop => '點擊停止';
+
+  @override
+  String get voice_textReady => '文字準備好';
+
+  @override
+  String get voice_tooMuchNoise => '噪音太大 – 將手機拿近並清晰說話';
+
+  @override
+  String get voice_type => '類型';
+
+  @override
+  String get voice_voiceToText => '語音轉文字';
+
+  @override
+  String get voice_voiceToTextSubtitle => '說話並在訊息框中輸入內容';
+
+  @override
+  String get voice_willSendAudioMessage => '您的聲音將作為音訊訊息發送';
+
+  @override
+  String get voice_willSendAudioReply => '您的聲音將作為音頻回復發送';
+
+  @override
+  String get voice_willSendWithFile => '您的聲音將與文件一起作為音訊發送';
+
+  @override
+  String get voice_yourMessage => '您的留言';
+
+  @override
+  String get voice_yourVoiceMessage => '你的語音留言';
+
+  @override
+  String get walkiePlan_availableIndividualPlans => '個人計劃';
+
+  @override
+  String get walkiePlan_availablePerMonth => '/ 月';
+
+  @override
+  String get walkiePlan_availablePerSeat => '/ 座位';
+
+  @override
+  String get walkiePlan_availableSingleMember => '單一會員（個人瀏覽）';
+
+  @override
+  String get walkiePlan_availableSubtitle => '選擇一個計劃來啟動或升級您的訂閱';
+
+  @override
+  String get walkiePlan_availableTeamPlans => '團隊計劃';
+
+  @override
+  String walkiePlan_availableTeamSeats(int min, int max) {
+    return '$min-$max 席次 • 小組合作';
+  }
+
+  @override
+  String get walkiePlan_availableTitle => '可用計劃';
+
+  @override
+  String get walkiePlan_bottomBarAfterTrial => '免費試用後';
+
+  @override
+  String get walkiePlan_bottomBarChoosePlan => '選擇一個計劃';
+
+  @override
+  String get walkiePlan_bottomBarContinue => '繼續使用對講機';
+
+  @override
+  String walkiePlan_bottomBarPricePer(String price, String period) {
+    return '$price / $period';
+  }
+
+  @override
+  String walkiePlan_bottomBarPurchaseFor(String price) {
+    return '購買價格為 $price';
+  }
+
+  @override
+  String get walkiePlan_cardActive => '積極的';
+
+  @override
+  String walkiePlan_cardActiveSince(String date) {
+    return '自 $date 起活躍';
+  }
+
+  @override
+  String get walkiePlan_cardAssigned => '已分配';
+
+  @override
+  String walkiePlan_cardAssignedBy(String name) {
+    return '由 $name 分配';
+  }
+
+  @override
+  String get walkiePlan_cardAssignedToYou => '分配給您';
+
+  @override
+  String get walkiePlan_cardAvailable => '可用的';
+
+  @override
+  String get walkiePlan_cardManageMembers => '管理會員';
+
+  @override
+  String get walkiePlan_cardNoActiveIndividual => '沒有有效的個人訂閱';
+
+  @override
+  String get walkiePlan_cardNoActiveTeam => '沒有有效的團隊計劃或分配的席位';
+
+  @override
+  String get walkiePlan_cardOneSeatSelf => '1個座位（自備）';
+
+  @override
+  String get walkiePlan_cardPersonal => '個人的';
+
+  @override
+  String get walkiePlan_cardPurchased => '已購買';
+
+  @override
+  String get walkiePlan_cardPurchasedByYou => '由您購買';
+
+  @override
+  String get walkiePlan_cardPurchasedOn => '購買於';
+
+  @override
+  String get walkiePlan_cardSeatsMembers => '席位/會員';
+
+  @override
+  String get walkiePlan_cardSubscribedByYou => '您已訂閱';
+
+  @override
+  String get walkiePlan_cardTeamAdministrator => '團隊管理員';
+
+  @override
+  String get walkiePlan_cardValidUntil => '有效期限至';
+
+  @override
+  String get walkiePlan_cardView => '看法';
+
+  @override
+  String get walkiePlan_cardViewPlan => '查看計劃';
+
+  @override
+  String walkiePlan_couponDiscount(String value) {
+    return '$value 折扣';
+  }
+
+  @override
+  String get walkiePlan_couponExpired => '優惠券已過期';
+
+  @override
+  String walkiePlan_couponFlatOff(String amount) {
+    return '平 $amount 關閉';
+  }
+
+  @override
+  String get walkiePlan_couponMinOrderNotMet => '未達最低訂購量';
+
+  @override
+  String get walkiePlan_couponNotEligible => '不符合當前計劃的資格';
+
+  @override
+  String get walkiePlan_couponNotStarted => '優惠券優惠尚未激活';
+
+  @override
+  String walkiePlan_couponPercentOff(int percent) {
+    return '$percent% 折扣';
+  }
+
+  @override
+  String get walkiePlan_couponPlanNotApplicable => '不適用於此計劃';
+
+  @override
+  String walkiePlan_couponValidTill(String date) {
+    return '有效期限至 $date';
+  }
+
+  @override
+  String get walkiePlan_ctrlContinueToPayment => '繼續付款';
+
+  @override
+  String walkiePlan_ctrlContinueWith(String plan) {
+    return '繼續 $plan';
+  }
+
+  @override
+  String get walkiePlan_ctrlCouponApplied => '優惠券申請成功！';
+
+  @override
+  String walkiePlan_ctrlCouponAppliedSave(String amount) {
+    return '優惠券已應用！您儲存 $amount';
+  }
+
+  @override
+  String get walkiePlan_ctrlCouponFailed => '優惠券申請失敗';
+
+  @override
+  String get walkiePlan_ctrlCouponRemoved => '優惠券已移除';
+
+  @override
+  String walkiePlan_ctrlGatewayError(String code) {
+    return '無現金錯誤 ($code)';
+  }
+
+  @override
+  String get walkiePlan_ctrlGatewayInitFailed => '付款發起失敗。';
+
+  @override
+  String walkiePlan_ctrlGatewaySessionFailed(String error) {
+    return '建立支付會話失敗：$error';
+  }
+
+  @override
+  String walkiePlan_ctrlGatewayUnableToProcess(String error) {
+    return '無法處理付款：$error';
+  }
+
+  @override
+  String get walkiePlan_ctrlLoadingPlans => '正在加載計劃...';
+
+  @override
+  String get walkiePlan_ctrlUnableToLoadPlans => '無法載入計劃。請再試一次。';
+
+  @override
+  String get walkiePlan_detailsAllBanks => '所有印度銀行均受支持';
+
+  @override
+  String get walkiePlan_detailsApplied => '應用';
+
+  @override
+  String get walkiePlan_detailsApply => '申請';
+
+  @override
+  String get walkiePlan_detailsApplyCaps => '申請';
+
+  @override
+  String get walkiePlan_detailsAvailableCoupons => '可用優惠券';
+
+  @override
+  String get walkiePlan_detailsCard => '信用卡/金融卡';
+
+  @override
+  String get walkiePlan_detailsChooseTitle => '選擇一個計劃';
+
+  @override
+  String walkiePlan_detailsCodeLabel(String code) {
+    return '代碼：$code';
+  }
+
+  @override
+  String get walkiePlan_detailsCouponsOffers => '優惠券和優惠';
+
+  @override
+  String get walkiePlan_detailsEnterCouponHint => '輸入優惠券代碼';
+
+  @override
+  String get walkiePlan_detailsEnterValidCoupon => '請輸入有效的優惠券代碼';
+
+  @override
+  String get walkiePlan_detailsFeatGroupComm => '團體交流';
+
+  @override
+  String get walkiePlan_detailsFeatHqVoice => '高品質語音';
+
+  @override
+  String get walkiePlan_detailsFeatPrioritySupport => '優先支持';
+
+  @override
+  String get walkiePlan_detailsFeatUnlimitedRange => '無限範圍';
+
+  @override
+  String get walkiePlan_detailsFeatUnlimitedWalkie => '無限對講機';
+
+  @override
+  String get walkiePlan_detailsHavePromoCode => '有促銷代碼嗎？';
+
+  @override
+  String get walkiePlan_detailsIndividualSubtitle =>
+      '根據適合您團隊的計劃繼續使用 Walkie Talkie';
+
+  @override
+  String get walkiePlan_detailsLockedCaps => '鎖定';
+
+  @override
+  String walkiePlan_detailsMaxMembersReached(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已達到 $count 成員的最大限制',
+      one: '已達 1 位會員的最大限制',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkiePlan_detailsMemberPlural => '會員';
+
+  @override
+  String get walkiePlan_detailsMemberSingular => '成員';
+
+  @override
+  String walkiePlan_detailsMembersTimesRate(int count, String rate) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: ' $count $rate',
+      one: '1 位會員 × $rate',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String walkiePlan_detailsMinTeamSize(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: ' $count',
+      one: '最小團隊規模為 1 名成員',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkiePlan_detailsMoreMembersBody => '隨時新增或刪除成員。';
+
+  @override
+  String get walkiePlan_detailsMoreMembersTitle => '更多會員？';
+
+  @override
+  String get walkiePlan_detailsMostPopular => '最受歡迎';
+
+  @override
+  String get walkiePlan_detailsNetBanking => '網路銀行';
+
+  @override
+  String get walkiePlan_detailsNoCouponsBody => '目前該計劃沒有有效的優惠券。';
+
+  @override
+  String get walkiePlan_detailsNoCouponsTitle => '沒有可用優惠券';
+
+  @override
+  String get walkiePlan_detailsNoIndividualPlans => '目前沒有單獨的對講機計劃。請稍後再回來查看或重試。';
+
+  @override
+  String get walkiePlan_detailsNoPlansTitle => '沒有可用的計劃';
+
+  @override
+  String get walkiePlan_detailsNoTeamPlans => '目前沒有可用的團隊對講機計劃。請稍後再回來查看或重試。';
+
+  @override
+  String walkiePlan_detailsOriginalTotal(String amount) {
+    return '$amount 總計';
+  }
+
+  @override
+  String get walkiePlan_detailsPayActivate => '付款並啟動計劃';
+
+  @override
+  String get walkiePlan_detailsPerPerson => '/ 人';
+
+  @override
+  String get walkiePlan_detailsPillAllSizes => '各種尺寸';
+
+  @override
+  String get walkiePlan_detailsPillCommunication => '溝通';
+
+  @override
+  String get walkiePlan_detailsPillForTeams => '對於團隊';
+
+  @override
+  String get walkiePlan_detailsPillInstant => '立即的';
+
+  @override
+  String get walkiePlan_detailsPillPriority => '優先事項';
+
+  @override
+  String get walkiePlan_detailsPillReliable => '可靠的 ＆';
+
+  @override
+  String get walkiePlan_detailsPillSecure => '安全的';
+
+  @override
+  String get walkiePlan_detailsPillSupport => '支援';
+
+  @override
+  String get walkiePlan_detailsPillUnlimited => '無限';
+
+  @override
+  String get walkiePlan_detailsPillWalkieTalkie => '對講機';
+
+  @override
+  String get walkiePlan_detailsPlanActivated => '計劃啟動成功！';
+
+  @override
+  String get walkiePlan_detailsPlanActiveBody => '您的對講機計劃現已啟用。享受不間斷的即時語音通訊。';
+
+  @override
+  String get walkiePlan_detailsPlanSummary => '計劃概要';
+
+  @override
+  String walkiePlan_detailsPromoApplied(String code) {
+    return '已套用促銷 ($code)';
+  }
+
+  @override
+  String get walkiePlan_detailsRemoveCaps => '消除';
+
+  @override
+  String get walkiePlan_detailsSelectPaymentMethod => '選擇付款方式';
+
+  @override
+  String get walkiePlan_detailsSkeletonCouponNote => '所有計劃均有效 • 即將到期';
+
+  @override
+  String get walkiePlan_detailsStep1Subtitle => '選擇您要新增的團隊成員數量';
+
+  @override
+  String get walkiePlan_detailsStep1Title => '選擇會員人數';
+
+  @override
+  String get walkiePlan_detailsStep2Subtitle => '選擇適合您的計畫期限';
+
+  @override
+  String get walkiePlan_detailsStep2Title => '選擇計劃持續時間';
+
+  @override
+  String get walkiePlan_detailsSubtitleDefault => '即時對講機語音訪問';
+
+  @override
+  String get walkiePlan_detailsSubtitleGrowingTeams => '對成長中的團隊來說物超所值';
+
+  @override
+  String get walkiePlan_detailsSubtitleLongTerm => '最適合長期使用';
+
+  @override
+  String get walkiePlan_detailsSubtitleShortTerm => '非常適合短期使用';
+
+  @override
+  String get walkiePlan_detailsTabIndividual => '個人';
+
+  @override
+  String get walkiePlan_detailsTabMultipleMembers => '對於多名會員';
+
+  @override
+  String get walkiePlan_detailsTabPerPerson => '每人';
+
+  @override
+  String get walkiePlan_detailsTeamSubtitle =>
+      '新增團隊成員並讓每個人透過 Walkie Talkie 保持聯繫';
+
+  @override
+  String get walkiePlan_detailsUpiQr => 'UPI / 二維碼';
+
+  @override
+  String walkiePlan_detailsYouSaveWithCoupon(String amount) {
+    return '使用此優惠券您可以節省 $amount！';
+  }
+
+  @override
+  String get walkiePlan_durationFallback => '期間';
+
+  @override
+  String get walkiePlan_durationMonthly => '每月';
+
+  @override
+  String walkiePlan_durationMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 月',
+      one: '1個月',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkiePlan_durationQuarterly => '季刊';
+
+  @override
+  String get walkiePlan_durationYearly => '每年';
+
+  @override
+  String get walkiePlan_individualPlan => '個人計劃';
+
+  @override
+  String walkiePlan_intervalPlan(String interval) {
+    return '$interval 計劃';
+  }
+
+  @override
+  String get walkiePlan_monthlyPlan => '每月計劃';
+
+  @override
+  String get walkiePlan_noInternetCheckNetwork => '沒有網路連線。請檢查您的網路。';
+
+  @override
+  String get walkiePlan_order100Secure => '100% 安全';
+
+  @override
+  String get walkiePlan_order3ds2Secure => '3DS2 安全';
+
+  @override
+  String get walkiePlan_orderAgreePrefix => '繼續操作即表示您同意我們的';
+
+  @override
+  String get walkiePlan_orderAmountAfterDiscount => '折扣後金額';
+
+  @override
+  String get walkiePlan_orderCards => '牌';
+
+  @override
+  String get walkiePlan_orderChangeMethod => '變更方法';
+
+  @override
+  String get walkiePlan_orderCouldNotStart => '無法開始付款。請再試一次。';
+
+  @override
+  String get walkiePlan_orderCouponApplied => '優惠券申請成功！';
+
+  @override
+  String walkiePlan_orderCouponAppliedSaved(String amount) {
+    return '優惠券已應用！您儲存了 $amount';
+  }
+
+  @override
+  String get walkiePlan_orderCouponRemoved => '優惠券刪除成功';
+
+  @override
+  String get walkiePlan_orderCreateFailed => '建立付款訂單失敗。請再試一次。';
+
+  @override
+  String get walkiePlan_orderDiscount => '折扣';
+
+  @override
+  String walkiePlan_orderDiscountWithCode(String code) {
+    return '折扣 ($code)';
+  }
+
+  @override
+  String get walkiePlan_orderDomesticHint =>
+      '下一步從 GPay、PhonePe、卡、NetBanking 或錢包中進行選擇。';
+
+  @override
+  String get walkiePlan_orderEncryptedPayment => '加密支付';
+
+  @override
+  String get walkiePlan_orderEnterValidCoupon => '請輸入有效的優惠券代碼';
+
+  @override
+  String get walkiePlan_orderForMultipleMembers => '對於多名會員';
+
+  @override
+  String get walkiePlan_orderForSingleMember => '對於單一會員';
+
+  @override
+  String walkiePlan_orderGstTitle(String percent) {
+    return '商品及服務稅 ($percent%)';
+  }
+
+  @override
+  String get walkiePlan_orderIntlHint =>
+      '使用國際信用卡/金融卡（Visa、Mastercard、Amex）安全支付。';
+
+  @override
+  String get walkiePlan_orderIntlHintPaypal =>
+      '使用國際信用卡/金融卡（Visa、Mastercard、Amex）或 PayPal 安全付款。';
+
+  @override
+  String get walkiePlan_orderInvalidCoupon => '優惠券代碼無效或過期';
+
+  @override
+  String walkiePlan_orderMemberCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 成員',
+      one: '1 名會員',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkiePlan_orderMembersLabel => '會員';
+
+  @override
+  String walkiePlan_orderMembersTimesRate(int count, String rate) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: ' $count $rate',
+      one: '1 位會員 × $rate',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkiePlan_orderNetBanking => '網路銀行';
+
+  @override
+  String get walkiePlan_orderOnlineViaRazorpay => '透過 Razorpay 線上支付';
+
+  @override
+  String get walkiePlan_orderOpeningCheckout => '開啟 Razorpay 付款結帳...';
+
+  @override
+  String get walkiePlan_orderPaymentDetails => '付款詳情';
+
+  @override
+  String get walkiePlan_orderPaymentMethod => '付款方式';
+
+  @override
+  String get walkiePlan_orderPricePerMember => '每位會員價格';
+
+  @override
+  String walkiePlan_orderProceedToPay(String amount) {
+    return '繼續付款 • $amount';
+  }
+
+  @override
+  String get walkiePlan_orderProcessingPayment => '正在處理付款...';
+
+  @override
+  String get walkiePlan_orderRetryPay => '重試付款';
+
+  @override
+  String get walkiePlan_orderSecureBadge => '安全的';
+
+  @override
+  String get walkiePlan_orderSubtitle => '查看您的計劃詳細資訊並繼續付款';
+
+  @override
+  String get walkiePlan_orderSubtotal => '小計';
+
+  @override
+  String get walkiePlan_orderTaxExport => '稅（0% 出口）';
+
+  @override
+  String get walkiePlan_orderTermsConditions => '條款及條件';
+
+  @override
+  String get walkiePlan_orderTitle => '訂單摘要';
+
+  @override
+  String get walkiePlan_orderTotalAmount => '總金額';
+
+  @override
+  String get walkiePlan_orderTotalPayable => '應付總額';
+
+  @override
+  String get walkiePlan_orderUnableToLoad => '無法載入訂單摘要。';
+
+  @override
+  String get walkiePlan_orderUpiQr => '統一支付介面/二維碼';
+
+  @override
+  String walkiePlan_orderVatTitle(String percent) {
+    return '增值稅/稅 ($percent%)';
+  }
+
+  @override
+  String get walkiePlan_orderWallets => '錢包';
+
+  @override
+  String walkiePlan_orderYouSaved(String amount) {
+    return ' $amount';
+  }
+
+  @override
+  String get walkiePlan_payAnnualPlan => '年度計劃';
+
+  @override
+  String get walkiePlan_payBadgeCompleted => '完全的';
+
+  @override
+  String get walkiePlan_payBadgeInProgress => '進行中';
+
+  @override
+  String get walkiePlan_payBadgePending => '待辦的';
+
+  @override
+  String get walkiePlan_payCancelledByUser => '用戶取消付款。尚未從您的帳戶中扣除任何金額。';
+
+  @override
+  String get walkiePlan_payCouldNotBeProcessed => '付款無法處理';
+
+  @override
+  String get walkiePlan_payFailedContactSupport => '聯繫支援人員';
+
+  @override
+  String walkiePlan_payFailedOn(String time) {
+    return '$time 付款失敗';
+  }
+
+  @override
+  String get walkiePlan_payFailedSubtitleLong => '我們無法完成您的付款。\n請重試或使用其他付款方式。';
+
+  @override
+  String get walkiePlan_payFailedSubtitleShort => '我們無法完成您的付款';
+
+  @override
+  String get walkiePlan_payFailedSupportHelp =>
+      '需要付款方面的協助嗎？我們的團隊 24/7 全天候為您提供協助。';
+
+  @override
+  String get walkiePlan_payFailedTitle => '付款失敗';
+
+  @override
+  String get walkiePlan_payIndividualFeatures => '即時監控•即時警報';
+
+  @override
+  String walkiePlan_payInitiatedOn(String time) {
+    return '付款於 $time 開始';
+  }
+
+  @override
+  String get walkiePlan_payIntervalMonth => '月';
+
+  @override
+  String get walkiePlan_payIntervalPlan => '計劃';
+
+  @override
+  String get walkiePlan_payIntervalQuarter => '四分之一';
+
+  @override
+  String get walkiePlan_payIntervalYear => '年';
+
+  @override
+  String walkiePlan_payMethodCreditCard(String network) {
+    return '信用卡 ($network)';
+  }
+
+  @override
+  String walkiePlan_payMethodDebitCard(String network) {
+    return '金融卡 ($network)';
+  }
+
+  @override
+  String get walkiePlan_payMethodInternational => '國際卡/PayPal';
+
+  @override
+  String walkiePlan_payMethodNetBanking(String bank) {
+    return '網路銀行 ($bank)';
+  }
+
+  @override
+  String get walkiePlan_payMethodRazorpay => '支付寶支付';
+
+  @override
+  String get walkiePlan_payMethodRazorpayCheckout => 'Razorpay 結帳';
+
+  @override
+  String get walkiePlan_payMethodRazorpayUpiCard => 'Razorpay（UPI/卡）';
+
+  @override
+  String get walkiePlan_payMethodUpi => '銀聯支付';
+
+  @override
+  String walkiePlan_payMethodWallet(String wallet) {
+    return '錢包 ($wallet)';
+  }
+
+  @override
+  String get walkiePlan_payNetworkIssue => '支付時網路連線問題。請檢查您的網路並重試。';
+
+  @override
+  String get walkiePlan_payNotCompleted => '您的付款尚未完成。尚未從您的帳戶中扣除任何金額。';
+
+  @override
+  String get walkiePlan_payOtpCharge => '一次性密碼費用';
+
+  @override
+  String get walkiePlan_payOtpChargeDetails => 'OTP 收費詳情';
+
+  @override
+  String get walkiePlan_payOtpChargedPerLogin => '按每次登入收費。重新發送 OTP 是免費的';
+
+  @override
+  String get walkiePlan_payOtpCharges => '一次性密碼費用';
+
+  @override
+  String get walkiePlan_payPendingDoNotClose =>
+      '請不要關閉該應用程式。一旦付款被確認並且您的計劃被激活，我們將通知您。';
+
+  @override
+  String get walkiePlan_payPendingStillInProgress => '付款仍在進行中。確認後我們會更新。';
+
+  @override
+  String get walkiePlan_payPendingStillProcessing => '付款狀態仍在處理中。請稍等。';
+
+  @override
+  String get walkiePlan_payPendingSubtitleLong => '您的付款正在由付款提供者處理。\n這可能需要幾分鐘。';
+
+  @override
+  String get walkiePlan_payPendingSubtitleShort => '您的付款正在處理中';
+
+  @override
+  String get walkiePlan_payPendingTitle => '待付款';
+
+  @override
+  String get walkiePlan_payPlanDetails => '計劃詳情';
+
+  @override
+  String get walkiePlan_payRefreshStatus => '刷新狀態';
+
+  @override
+  String get walkiePlan_payStatusTitle => '付款狀態';
+
+  @override
+  String get walkiePlan_payStepActivate => '啟動計劃';
+
+  @override
+  String get walkiePlan_payStepActivateSub => '您的計劃將自動激活';
+
+  @override
+  String get walkiePlan_payStepInitiated => '付款已啟動';
+
+  @override
+  String get walkiePlan_payStepProcessing => '處理付款';
+
+  @override
+  String get walkiePlan_payStepProcessingSub => '正在確認您的付款';
+
+  @override
+  String get walkiePlan_payTeamFeatures => '多成員存取 • 即時警報';
+
+  @override
+  String get walkiePlan_payTotalPerOtp => '每個 OTP 總計';
+
+  @override
+  String get walkiePlan_payTryAgain => '再試一次';
+
+  @override
+  String get walkiePlan_payViewPlanDetails => '查看計劃詳情';
+
+  @override
+  String get walkiePlan_perMember => '每個成員';
+
+  @override
+  String get walkiePlan_planFallback => '計劃';
+
+  @override
+  String get walkiePlan_quarterlyPlan => '季度計劃';
+
+  @override
+  String get walkiePlan_razorpayCompleteInWindow => '請在 Razorpay 付款視窗中完成交易。';
+
+  @override
+  String get walkiePlan_razorpayCompletePayment => '完成付款';
+
+  @override
+  String get walkiePlan_razorpayConfirmingWithBank => '付款已開始。我們正在與銀行確認。';
+
+  @override
+  String get walkiePlan_razorpayConnecting => '正在連接到 Razorpay...';
+
+  @override
+  String get walkiePlan_razorpayCouldNotProcess => '無法處理付款。請再試一次。';
+
+  @override
+  String get walkiePlan_razorpayFailedTryAgain => '付款失敗。請再試一次。';
+
+  @override
+  String get walkiePlan_razorpayOneMonthActive => '1 個月活躍';
+
+  @override
+  String walkiePlan_razorpayPayAmountVia(String amount) {
+    return '透過 Razorpay 支付 $amount';
+  }
+
+  @override
+  String get walkiePlan_razorpayPaymentCancelled => '付款已取消';
+
+  @override
+  String get walkiePlan_razorpayPaymentIdCopied => '付款 ID 已複製到剪貼簿！';
+
+  @override
+  String get walkiePlan_razorpayPciCompliant => '100% 安全且符合 PCI-DSS';
+
+  @override
+  String get walkiePlan_razorpayPendingConfirmation => '付款正在等待確認。';
+
+  @override
+  String get walkiePlan_razorpayProcessing => '使用 Razorpay 處理...';
+
+  @override
+  String walkiePlan_razorpayReceiptAmount(String amount) {
+    return '金額：$amount';
+  }
+
+  @override
+  String get walkiePlan_razorpayReceiptCopied => '收據詳細資料已複製到剪貼簿！';
+
+  @override
+  String walkiePlan_razorpayReceiptDate(String date) {
+    return '日期：$date';
+  }
+
+  @override
+  String walkiePlan_razorpayReceiptMode(String mode) {
+    return '付款方式：$mode';
+  }
+
+  @override
+  String walkiePlan_razorpayReceiptOrderId(String id) {
+    return '訂單 ID：$id';
+  }
+
+  @override
+  String walkiePlan_razorpayReceiptPaymentId(String id) {
+    return '付款 ID：$id';
+  }
+
+  @override
+  String walkiePlan_razorpayReceiptPlan(String plan) {
+    return '計劃：$plan';
+  }
+
+  @override
+  String get walkiePlan_razorpayReceiptStatusCompleted => '狀態：已完成';
+
+  @override
+  String get walkiePlan_razorpayReceiptTitle => 'FG Tracker 付款收據';
+
+  @override
+  String get walkiePlan_razorpayRetryPayment => '重試付款';
+
+  @override
+  String get walkiePlan_razorpaySecureCheckout => '由 Razorpay 提供支援的安全結帳';
+
+  @override
+  String get walkiePlan_razorpaySslEncrypted => '交易採用端對端 256 位元 SSL 安全加密。';
+
+  @override
+  String get walkiePlan_razorpaySupportedModes => '支援的支付方式';
+
+  @override
+  String get walkiePlan_razorpayTotalPayableAmount => '應付總額';
+
+  @override
+  String walkiePlan_razorpayUnableToLaunch(String error) {
+    return '無法啟動支付網關：$error';
+  }
+
+  @override
+  String get walkiePlan_razorpayVerifyFailed => '付款驗證失敗。';
+
+  @override
+  String get walkiePlan_seatAssignedSeat => '指定座位';
+
+  @override
+  String get walkiePlan_seatAssignment => '座位分配';
+
+  @override
+  String get walkiePlan_seatTeamAccess => '團隊訪問';
+
+  @override
+  String get walkiePlan_seatTeamMember => '隊員';
+
+  @override
+  String get walkiePlan_secureEncryptedPayment => '安全加密的支付';
+
+  @override
+  String get walkiePlan_successAccessActivated => '訪問已激活';
+
+  @override
+  String get walkiePlan_successAccessActivatedDesc => '您的個人對講機存取現已啟用。';
+
+  @override
+  String get walkiePlan_successAmountPaid => '支付金額';
+
+  @override
+  String get walkiePlan_successAssignLaterNote =>
+      '您可以稍後隨時從「團隊設定」指派 Walkie 存取權限。';
+
+  @override
+  String get walkiePlan_successAssignMembers => '分配成員';
+
+  @override
+  String get walkiePlan_successAssignWalkieAccess => '分配對講機存取權限';
+
+  @override
+  String get walkiePlan_successChooseMembersDesc => '選擇哪些會員可以使用對講機。';
+
+  @override
+  String get walkiePlan_successContinueHome => '繼續首頁';
+
+  @override
+  String get walkiePlan_successDateTime => '日期和時間';
+
+  @override
+  String get walkiePlan_successDefaultPaymentMethod => 'Razorpay（UPI/卡）';
+
+  @override
+  String get walkiePlan_successIndividualActive => '您的個人計畫現已生效';
+
+  @override
+  String get walkiePlan_successIndividualActiveDesc => '您的個人計劃已啟動。回家並開始交談。';
+
+  @override
+  String get walkiePlan_successIndividualLinkedNote => '您的個人訂閱已啟用並直接連結到您的帳戶。';
+
+  @override
+  String get walkiePlan_successManageAccessNote =>
+      '您可以隨時從「團隊設定」管理或變更 Walkie 存取權限。';
+
+  @override
+  String get walkiePlan_successMaybeLater => '也許稍後';
+
+  @override
+  String get walkiePlan_successNoAccessUntilAssigned =>
+      '您的計劃已啟動。在您指派團隊成員之前，他們將沒有 Walkie 存取權限。';
+
+  @override
+  String get walkiePlan_successNotNow => '現在不要？';
+
+  @override
+  String get walkiePlan_successPaid => '有薪資的';
+
+  @override
+  String get walkiePlan_successPaymentId => '付款ID';
+
+  @override
+  String get walkiePlan_successPaymentIdCopied => '付款 ID 已複製到剪貼簿！';
+
+  @override
+  String get walkiePlan_successPaymentMode => '付款方式';
+
+  @override
+  String get walkiePlan_successPaymentReceipt => '付款收據';
+
+  @override
+  String get walkiePlan_successPushToTalkDesc => '一鍵通話並立即與您的團隊聯繫。';
+
+  @override
+  String get walkiePlan_successRazorpayVerified => '已驗證';
+
+  @override
+  String walkiePlan_successReceiptAmount(String amount) {
+    return '金額：$amount';
+  }
+
+  @override
+  String get walkiePlan_successReceiptCopied => '收據詳細資料已複製到剪貼簿！';
+
+  @override
+  String walkiePlan_successReceiptDate(String date) {
+    return '日期：$date';
+  }
+
+  @override
+  String get walkiePlan_successReceiptHeader => 'FG Tracker 付款收據';
+
+  @override
+  String walkiePlan_successReceiptOrderId(String id) {
+    return '訂單 ID：$id';
+  }
+
+  @override
+  String walkiePlan_successReceiptPaymentId(String id) {
+    return '付款 ID：$id';
+  }
+
+  @override
+  String walkiePlan_successReceiptPaymentMode(String mode) {
+    return '付款方式：$mode';
+  }
+
+  @override
+  String walkiePlan_successReceiptPlan(String plan) {
+    return '計劃：$plan';
+  }
+
+  @override
+  String get walkiePlan_successReceiptStatusCompleted => '狀態：已完成';
+
+  @override
+  String get walkiePlan_successSelectChannel => '選擇頻道';
+
+  @override
+  String get walkiePlan_successSelectChannelDesc => '加入任何群組或頻道以與會員聯繫。';
+
+  @override
+  String get walkiePlan_successSelectMembersDesc => '選擇將使用對講機的團隊成員。';
+
+  @override
+  String get walkiePlan_successSetUpTeam => '組建團隊';
+
+  @override
+  String get walkiePlan_successSetUpTeamDesc => '邀請成員、管理角色和權限。';
+
+  @override
+  String get walkiePlan_successShareReceipt => '分享收據';
+
+  @override
+  String get walkiePlan_successStartCommunicating => '開始溝通';
+
+  @override
+  String get walkiePlan_successStatus => '地位';
+
+  @override
+  String get walkiePlan_successSuccessful => '成功的';
+
+  @override
+  String get walkiePlan_successTeamActive => '您的團隊計劃現已生效';
+
+  @override
+  String get walkiePlan_successTeamReady => '您的團隊已準備好出發！';
+
+  @override
+  String get walkiePlan_successTitle => '購買成功！';
+
+  @override
+  String walkiePlan_successValidTill(String date) {
+    return '有效期限至 $date';
+  }
+
+  @override
+  String get walkiePlan_successVisitHome => '存取主螢幕';
+
+  @override
+  String get walkiePlan_successWhatsNext => '接下來是什麼？';
+
+  @override
+  String get walkiePlan_teamPlan => '團隊計劃';
+
+  @override
+  String walkiePlan_teamPlanWithDuration(String duration) {
+    return '團隊計劃 ($duration)';
+  }
+
+  @override
+  String get walkiePlan_trial7DaysPeriod => '7 天試用期';
+
+  @override
+  String get walkiePlan_trialActiveLabel => '試用活動中';
+
+  @override
+  String get walkiePlan_trialActiveSubscription => '活躍訂閱';
+
+  @override
+  String get walkiePlan_trialActiveSubscriptions => '活躍訂閱數';
+
+  @override
+  String get walkiePlan_trialAvailableToStart => '可以開始使用';
+
+  @override
+  String get walkiePlan_trialCheckConnectionRetry => '請檢查您的網路連接，然後重試。';
+
+  @override
+  String get walkiePlan_trialChoosePlanBelow => '選擇下面的計劃以開始使用 Walkie Talkie。';
+
+  @override
+  String get walkiePlan_trialChooseSubscription => '選擇訂閱以繼續使用 Walkie Talkie。';
+
+  @override
+  String get walkiePlan_trialCompleted => '試用完成';
+
+  @override
+  String walkiePlan_trialDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '剩 $count 天',
+      one: '還剩 1 天',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String walkiePlan_trialDurationFree(String duration) {
+    return '$duration 免費';
+  }
+
+  @override
+  String walkiePlan_trialEndedOn(String date) {
+    return '結束於 $date';
+  }
+
+  @override
+  String walkiePlan_trialEnjoyAllFeatures(String duration) {
+    return '$duration 免費享受 Walkie Talkie 的所有功能。\n無需付款。';
+  }
+
+  @override
+  String get walkiePlan_trialEnjoyDuringActive => '在有效試用期內享受 Walkie Talkie。';
+
+  @override
+  String get walkiePlan_trialErrAccessMissing => '缺少對講機存取資訊。';
+
+  @override
+  String get walkiePlan_trialErrFetchDetails => '無法取得對講機詳細資料。';
+
+  @override
+  String get walkiePlan_trialErrInvalidResponse => '從伺服器收到的回應無效。';
+
+  @override
+  String get walkiePlan_trialErrNoInternetRetry => '沒有網路連線。請檢查您的網路並重試。';
+
+  @override
+  String get walkiePlan_trialErrOverviewMissing => '對講機概述資料遺失。';
+
+  @override
+  String get walkiePlan_trialErrTimeout => '請求超時。請再試一次。';
+
+  @override
+  String get walkiePlan_trialErrUnableToLoad => '無法載入對講機詳細資料。請檢查您的連線。';
+
+  @override
+  String get walkiePlan_trialExpired => '試用期已過';
+
+  @override
+  String get walkiePlan_trialExpiredLabel => '試用期已過期';
+
+  @override
+  String get walkiePlan_trialExpiringSoon => '即將到期';
+
+  @override
+  String get walkiePlan_trialFeatClearAudio => '清晰的音訊';
+
+  @override
+  String get walkiePlan_trialFeatClearAudioDesc => '高品質語音';
+
+  @override
+  String get walkiePlan_trialFeatGroupComm => '團體交流';
+
+  @override
+  String get walkiePlan_trialFeatGroupCommDesc => '與您的團隊聯繫';
+
+  @override
+  String get walkiePlan_trialFeatPtt => '一鍵通';
+
+  @override
+  String get walkiePlan_trialFeatPttDesc => '即時語音通訊';
+
+  @override
+  String get walkiePlan_trialFeatUnlimited => '無限使用';
+
+  @override
+  String get walkiePlan_trialFeatUnlimitedDesc => '使用無任何限制';
+
+  @override
+  String get walkiePlan_trialFreeAvailable => '提供免費試用';
+
+  @override
+  String get walkiePlan_trialFreeTrialLabel => '免費試用';
+
+  @override
+  String get walkiePlan_trialFreeTrialRunning => '免費試運行';
+
+  @override
+  String get walkiePlan_trialFullAccess => '完全存取所有功能';
+
+  @override
+  String get walkiePlan_trialFullyConsumed => '您的免費試用已完全用完。';
+
+  @override
+  String get walkiePlan_trialHasEnded => '您的試用期已結束';
+
+  @override
+  String get walkiePlan_trialHeaderInstant => '即時與您的團隊溝通';
+
+  @override
+  String get walkiePlan_trialHeaderPlanStatus => '您的方案和訂閱狀態';
+
+  @override
+  String walkiePlan_trialHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 小時',
+      one: '1小時',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String walkiePlan_trialHoursLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '剩 $count 小時',
+      one: '還剩 1 小時',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String walkiePlan_trialHr(int count) {
+    return '$count 小時';
+  }
+
+  @override
+  String walkiePlan_trialHrMin(int hours, int minutes) {
+    return '$hours 小時 $minutes 分鐘';
+  }
+
+  @override
+  String get walkiePlan_trialIsActive => '您的試用正在進行中';
+
+  @override
+  String walkiePlan_trialMin(int count) {
+    return '$count 分鐘';
+  }
+
+  @override
+  String walkiePlan_trialMinSec(int minutes, int seconds) {
+    return '$minutes 分 $seconds 秒';
+  }
+
+  @override
+  String walkiePlan_trialMinsLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '剩 $count 分鐘',
+      one: '還剩 1 分鐘',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String walkiePlan_trialMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 分鐘',
+      one: '1分鐘',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkiePlan_trialNoActivePlan => '沒有積極的計劃';
+
+  @override
+  String get walkiePlan_trialNoCardRequired => '7 天內隨時使用 • 無信用卡';
+
+  @override
+  String get walkiePlan_trialNoInternetTitle => '無網路連線';
+
+  @override
+  String walkiePlan_trialNoPaymentNow(String price) {
+    return '現在不需要付款。試用後，如果您願意，可以選擇繼續付費方案（$price/人）。';
+  }
+
+  @override
+  String get walkiePlan_trialPeriodMonth => '月';
+
+  @override
+  String get walkiePlan_trialRetrying => '正在重試...';
+
+  @override
+  String walkiePlan_trialSec(int count) {
+    return '$count 秒';
+  }
+
+  @override
+  String walkiePlan_trialStartFreeTrial(String duration) {
+    return '開始 $duration 免費試用';
+  }
+
+  @override
+  String get walkiePlan_trialStartYourFreeTrial => '開始免費試用';
+
+  @override
+  String get walkiePlan_trialStatusCompleted => '完全的';
+
+  @override
+  String get walkiePlan_trialStatusExpired => '已到期';
+
+  @override
+  String get walkiePlan_trialSubscriptionActive => '訂閱活躍';
+
+  @override
+  String get walkiePlan_trialSubscriptionEndedMsg =>
+      '您的對講機訂閱已結束。更新計劃以繼續與您的團隊交談。';
+
+  @override
+  String get walkiePlan_trialSubscriptionExpired => '訂閱已過期';
+
+  @override
+  String get walkiePlan_trialTalkFree => '與您的小組自由交談。';
+
+  @override
+  String walkiePlan_trialTalkFreeTill(String date) {
+    return '與您的小組自由交談直至 $date。';
+  }
+
+  @override
+  String get walkiePlan_trialTeamAccessMsg => '您可以透過團隊計劃造訪 Walkie Talkie。';
+
+  @override
+  String walkiePlan_trialTimeLeft(String time) {
+    return '$time 左';
+  }
+
+  @override
+  String get walkiePlan_trialTimeRemaining => '剩餘試用時間';
+
+  @override
+  String get walkiePlan_trialTimeUsedUp => '試用時間已用完';
+
+  @override
+  String get walkiePlan_trialTryAgain => '再試一次';
+
+  @override
+  String get walkiePlan_trialUnableToLoadTitle => '無法載入對講機';
+
+  @override
+  String get walkiePlan_trialUsage => '試用使用';
+
+  @override
+  String get walkiePlan_trialUseAnytime7Days => '7天內隨時試用';
+
+  @override
+  String walkiePlan_trialUseWithin7Days(String duration) {
+    return '7 天內隨時使用您的 $duration 試用版。';
+  }
+
+  @override
+  String get walkiePlan_trialUsed => '試用';
+
+  @override
+  String get walkiePlan_trialValidityPeriod => '試用有效期限';
+
+  @override
+  String get walkiePlan_trialWalkieTalkieTitle => '對講機';
+
+  @override
+  String get walkiePlan_trialWhatYouCanDo => '試用期間您可以做什麼';
+
+  @override
+  String get walkiePlan_unableToConnect => '無法連接到伺服器。請再試一次。';
+
+  @override
+  String get walkiePlan_yearlyPlan => '年度計劃';
+
+  @override
+  String get walkie_aMember => '會員';
+
+  @override
+  String get walkie_accept => '接受';
+
+  @override
+  String get walkie_activeAccess => '主動訪問';
+
+  @override
+  String get walkie_activeBadge => '積極的';
+
+  @override
+  String walkie_activeInWalkie(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 在 Walkie 活躍',
+      one: '1 活躍於 Walkie',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkie_activeMember => '活躍會員';
+
+  @override
+  String get walkie_admin => '行政';
+
+  @override
+  String get walkie_adminMuted => '管理員 • 靜音';
+
+  @override
+  String get walkie_adminOnlyAction => '限管理員操作';
+
+  @override
+  String get walkie_adminOnlyActionMessage => '只有群組管理員可以向成員發送通知警報。';
+
+  @override
+  String walkie_alertSentMessage(String name) {
+    return '通知已發送至 $name。 10 秒後可重試。';
+  }
+
+  @override
+  String get walkie_alertSentTitle => '警報已發送';
+
+  @override
+  String get walkie_assignMembersToCommunicate => '指定成員在該群組中進行交流';
+
+  @override
+  String get walkie_assignedByYou => '由您分配';
+
+  @override
+  String walkie_assignedCount(int count) {
+    return '已分配 ($count)';
+  }
+
+  @override
+  String get walkie_assignedSeats => '指定座位';
+
+  @override
+  String get walkie_audioBluetooth => '藍牙';
+
+  @override
+  String get walkie_audioHeadset => '耳機';
+
+  @override
+  String get walkie_audioOutput => '音訊輸出';
+
+  @override
+  String get walkie_audioPhone => '電話';
+
+  @override
+  String get walkie_audioSpeaker => '揚聲器';
+
+  @override
+  String get walkie_audioWiredHeadphones => '有線耳機';
+
+  @override
+  String walkie_autoUnlockIn(int seconds) {
+    return '在 ${seconds}s 內自動解鎖';
+  }
+
+  @override
+  String get walkie_availableMembers => '可用會員';
+
+  @override
+  String walkie_canAssignUpTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '您最多可以在此群組中指派 $count 名成員',
+      one: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkie_cannotRemoveOtherAdminSeat => '無法刪除其他管理員分配的席位';
+
+  @override
+  String get walkie_cannotSpeak => '無法在此頻道上發言';
+
+  @override
+  String get walkie_channelBusy => '頻道繁忙';
+
+  @override
+  String get walkie_channelLocked => '頻道鎖定';
+
+  @override
+  String get walkie_channelSpeaking => '頻道講...';
+
+  @override
+  String walkie_channelSwitchErrorMessage(String group) {
+    return '無法將 $group 設定為活動發言頻道。';
+  }
+
+  @override
+  String get walkie_channelSwitchErrorTitle => '通道切換錯誤';
+
+  @override
+  String get walkie_channelUnlocked => '頻道已解鎖';
+
+  @override
+  String get walkie_chat => '聊天';
+
+  @override
+  String get walkie_checkNetworkTryAgain => '請檢查您的網路連線並重試。';
+
+  @override
+  String get walkie_chooseAPlan => '選擇一個計劃';
+
+  @override
+  String get walkie_connected => '已連接';
+
+  @override
+  String get walkie_connectedWaiting => '已連接至頻道 • 等待其他人加入';
+
+  @override
+  String get walkie_connectingChannel => '正在連接至頻道...';
+
+  @override
+  String get walkie_consumingTrial => '消費試用...';
+
+  @override
+  String get walkie_continueListenOnly => '繼續以僅監聽模式';
+
+  @override
+  String walkie_currentlyAssigned(int count) {
+    return '目前已分配 ($count)';
+  }
+
+  @override
+  String get walkie_defaultGroupName => '對講機組';
+
+  @override
+  String get walkie_description => '描述';
+
+  @override
+  String get walkie_disconnected => '已斷開連接';
+
+  @override
+  String get walkie_editAssignedMembers => '編輯分配的成員';
+
+  @override
+  String get walkie_enable => '使能夠';
+
+  @override
+  String walkie_errorWithDetails(String details) {
+    return '錯誤：$details';
+  }
+
+  @override
+  String get walkie_exitWalkie => '退出對講機';
+
+  @override
+  String get walkie_exitWalkieMessage => '您將中斷與此便攜式頻道的連線。您仍將是該群組的成員。';
+
+  @override
+  String get walkie_exitWalkieTitle => '退出對講機？';
+
+  @override
+  String get walkie_fairConnection => '公平連接';
+
+  @override
+  String walkie_fairConnectionMs(int ms) {
+    return '公平連結（${ms}ms）';
+  }
+
+  @override
+  String get walkie_featureAllDevices => '在所有設備上使用';
+
+  @override
+  String get walkie_featureEasyCoordination => '易組\n協調';
+
+  @override
+  String get walkie_featureHoldToTalk => '按住說話';
+
+  @override
+  String get walkie_featurePtt => '一鍵通\n溝通';
+
+  @override
+  String get walkie_featureQuickGroup => '快速組\n溝通';
+
+  @override
+  String get walkie_featureRealtime => '即時連線';
+
+  @override
+  String get walkie_featureSafeReliable => '安全可靠';
+
+  @override
+  String get walkie_featureStayConnected => '始終保持聯繫';
+
+  @override
+  String get walkie_featureTeamCommunication => '團隊溝通';
+
+  @override
+  String get walkie_featureUnlimited => '無限';
+
+  @override
+  String get walkie_fieldTeam => '現場團隊';
+
+  @override
+  String get walkie_freeTrialEnded => '免費試用結束';
+
+  @override
+  String get walkie_freeTrialEndedMessage =>
+      '您的 Walkie Talkie 1 小時免費試用期已結束。\n立即升級以繼續使用群組通訊\n與你的團隊。';
+
+  @override
+  String get walkie_freeTrialEndedTitle => '免費試用已結束';
+
+  @override
+  String get walkie_genericError => '對講機錯誤';
+
+  @override
+  String get walkie_getPlan => '獲取計劃';
+
+  @override
+  String walkie_goodConnectionMs(int ms) {
+    return '連接良好（${ms}ms）';
+  }
+
+  @override
+  String walkie_groupCode(String code) {
+    return '團體代碼：$code';
+  }
+
+  @override
+  String get walkie_groupCommunication => '團體交流';
+
+  @override
+  String get walkie_groupFallback => '團體';
+
+  @override
+  String get walkie_groupMembers => '團體成員';
+
+  @override
+  String get walkie_heroSubtitle => '使用一鍵通語音與您的團隊進行通信\n無需撥打電話。';
+
+  @override
+  String get walkie_heroTitle => '保持聯繫，即時通話';
+
+  @override
+  String get walkie_holdToTalk => '按住通話';
+
+  @override
+  String get walkie_holdToTalkSlideLock => '按住通話，向上滑動鎖定';
+
+  @override
+  String get walkie_inWalkieChannel => '在對講頻道中';
+
+  @override
+  String get walkie_individualActiveUpgrade =>
+      '個人計畫處於活動狀態（僅限自助訪問） • 升級到團隊計畫以指派成員。';
+
+  @override
+  String get walkie_individualLimitMessage =>
+      '您的个人计划仅允许 1 个会员席位。若要分配多個成員並連接整個團隊，請升級至團隊計畫。';
+
+  @override
+  String get walkie_individualPlan => '個人計劃';
+
+  @override
+  String walkie_individualSelectedCount(int count) {
+    return '$count/1（個人）';
+  }
+
+  @override
+  String get walkie_individualSelfOnlyUpgrade => '個人方案（僅限自行存取） • 升級至團隊以指派會員';
+
+  @override
+  String get walkie_individualSubscribedSelf => '個人方案•自行訂閱';
+
+  @override
+  String get walkie_info => '資訊';
+
+  @override
+  String walkie_isSpeaking(String name) {
+    return '$name 在講話...';
+  }
+
+  @override
+  String walkie_isTalking(String name) {
+    return '$name 在說話...';
+  }
+
+  @override
+  String walkie_joinedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 已加入',
+      one: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String walkie_lastSeen(String time) {
+    return '最後一次見到 $time';
+  }
+
+  @override
+  String get walkie_listenOnly => '只聽';
+
+  @override
+  String get walkie_listenOnlyTapPlan => '僅收聽 — 點擊查看計劃';
+
+  @override
+  String get walkie_listening => '聽力';
+
+  @override
+  String get walkie_listeningOnly => '只聽';
+
+  @override
+  String get walkie_live => '居住';
+
+  @override
+  String get walkie_lockTimeout => '鎖定逾時 — 麥克風已釋放';
+
+  @override
+  String get walkie_lockedTapMic => '鎖定 — 點擊麥克風即可停止';
+
+  @override
+  String get walkie_maybeLater => '也許稍後';
+
+  @override
+  String get walkie_member => '成員';
+
+  @override
+  String get walkie_membersInChannel => '頻道內的會員';
+
+  @override
+  String walkie_membersOnlineLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 會員線上',
+      one: '會員線上',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkie_membersUpdateFailed => '無法更新已指派的成員';
+
+  @override
+  String get walkie_membersUpdated => '分配的成員已成功更新';
+
+  @override
+  String get walkie_micAccessRequired => '需要使用麥克風才能講話。';
+
+  @override
+  String get walkie_micDisabledMessage =>
+      '設備設定中禁用了麥克風存取。若要在此群組中發言，請在「設定」中允許使用麥克風。\n\n您仍然可以聆聽其他成員的發言。';
+
+  @override
+  String get walkie_micPermissionRequired => '需要麥克風許可';
+
+  @override
+  String get walkie_micPermissionTitle => '麥克風權限';
+
+  @override
+  String get walkie_micRequiredMessage =>
+      '在此對講機組中講話需要麥克風許可。\n\n您仍然可以在不啟用麥克風的情況下收聽其他人的講話。';
+
+  @override
+  String get walkie_muteMe => '將我靜音';
+
+  @override
+  String get walkie_muted => '靜音';
+
+  @override
+  String get walkie_mutedInWalkie => '靜音 • 在 Walkie 中';
+
+  @override
+  String get walkie_mutedListeningOnly => '您已靜音 — 僅可聆聽';
+
+  @override
+  String walkie_nameSpeaking(String name) {
+    return '$name 講...';
+  }
+
+  @override
+  String get walkie_noActivePlan => '沒有積極的計劃';
+
+  @override
+  String get walkie_noAvailableMembers => '沒有可用的會員';
+
+  @override
+  String get walkie_noBluetoothDevice => '未連接藍牙音訊設備。請在設定中配對您的藍牙耳機。';
+
+  @override
+  String get walkie_noGroupsFound => '未找到群組';
+
+  @override
+  String get walkie_noMembersAssigned => '目前沒有分配成員';
+
+  @override
+  String get walkie_noMembersFound => '沒有找到會員';
+
+  @override
+  String get walkie_noMembersFoundTitle => '未找到會員';
+
+  @override
+  String get walkie_noMembersMatch => '沒有會員匹配';
+
+  @override
+  String walkie_noMembersMatchQuery(String query) {
+    return ' $query';
+  }
+
+  @override
+  String get walkie_noMembersToAssign => '沒有可供分配的群組成員。';
+
+  @override
+  String get walkie_noNameGroup => '無名組';
+
+  @override
+  String get walkie_noPlanSubscribeAssign => '沒有活動計畫 • 訂閱以分配會員';
+
+  @override
+  String get walkie_noSeatMessage =>
+      '您有一個有效的團隊計劃，但所有有效的語音席位目前已分配給其他團隊成員。\n\n您可以即時收聽群組對話，但要發言，您必須為自己分配座位或升級您的套餐。';
+
+  @override
+  String get walkie_noSeatTitle => '未分配語音席位';
+
+  @override
+  String get walkie_noSeatsRefreshing => '沒有可用的團隊座位。正在刷新會員清單...';
+
+  @override
+  String get walkie_noSubscriptionMessage =>
+      '您沒有有效的 Walkie Talkie 訂閱。訂閱計劃以分配成員並開始即時語音通訊。';
+
+  @override
+  String get walkie_noTeamSubscription => '未找到有效的團隊訂閱';
+
+  @override
+  String get walkie_noValidMembers => '沒有選擇分配有效的成員';
+
+  @override
+  String get walkie_noVoiceSeatListenOnly => '未分配語音席位 — 您處於僅聽模式';
+
+  @override
+  String get walkie_noWiredDevice => '未連接有線耳機或耳麥。請將它們插入您的設備。';
+
+  @override
+  String get walkie_notConnected => '未連接';
+
+  @override
+  String get walkie_notifLeave => '離開';
+
+  @override
+  String get walkie_notifOpenWalkie => '打開對講機';
+
+  @override
+  String walkie_notifStoppedTalking(String name) {
+    return '$name 停止說話';
+  }
+
+  @override
+  String walkie_notifTalking(String name) {
+    return '$name 正在說話';
+  }
+
+  @override
+  String walkie_notificationSettingFailed(String group) {
+    return '無法更新 $group 的通知設定。請再試一次。';
+  }
+
+  @override
+  String get walkie_notificationSettingTitle => '通知設定';
+
+  @override
+  String get walkie_onlyAdminCanAlert => '只有群組管理員可以發送警報';
+
+  @override
+  String get walkie_openWalkieTalkie => '打開對講機';
+
+  @override
+  String get walkie_otherTeam => '其他團隊';
+
+  @override
+  String get walkie_othersWontHear => '其他人不會聽到你的聲音';
+
+  @override
+  String get walkie_planRequiredTitle => '需要對講機計劃';
+
+  @override
+  String get walkie_planRequiredToTalk => '談話需要計劃';
+
+  @override
+  String get walkie_planStartsOnFirstAssign => '計劃在分配第一個成員時開始。';
+
+  @override
+  String get walkie_poorConnection => '網路連線不良 — 音訊可能滯後';
+
+  @override
+  String get walkie_preparingAudio => '正在準備音訊...';
+
+  @override
+  String get walkie_purchaseTeamPlanToAssign => '購買團隊計劃以向成員分配對講機存取權。';
+
+  @override
+  String get walkie_purchaseUpgradePlan => '購買/升級計劃';
+
+  @override
+  String get walkie_ready => '準備好';
+
+  @override
+  String get walkie_reconnecting => '正在重新連接...';
+
+  @override
+  String get walkie_reconnectingServer => '正在重新連接對講機伺服器...';
+
+  @override
+  String get walkie_releaseToStop => '鬆開即可停止';
+
+  @override
+  String get walkie_removeAll => '全部刪除';
+
+  @override
+  String get walkie_searchGroups => '搜尋群組';
+
+  @override
+  String get walkie_searchMembers => '搜尋會員...';
+
+  @override
+  String walkie_seatsFraction(int assigned, int total) {
+    return '$assigned/$total 座位';
+  }
+
+  @override
+  String walkie_seatsSummary(int total, int assigned, int available) {
+    return '$total 總席位數 • $assigned 已指派 • $available 可用';
+  }
+
+  @override
+  String walkie_seatsUsed(String assigned, String total) {
+    return '已使用 $assigned / $total 座位';
+  }
+
+  @override
+  String walkie_secondsShort(int seconds) {
+    return '${seconds}s';
+  }
+
+  @override
+  String get walkie_selectAtLeastOne => '請至少選擇一名成員進行分配';
+
+  @override
+  String get walkie_selectGroupFirst => '請先選擇群組';
+
+  @override
+  String get walkie_selectGroupToConnect => '選擇要連接的群組';
+
+  @override
+  String get walkie_selected => '已選擇';
+
+  @override
+  String get walkie_selfAccess => '自助訪問';
+
+  @override
+  String get walkie_selfPlan => '自我計劃';
+
+  @override
+  String get walkie_slideUpToLock => '向上滑動即可鎖定';
+
+  @override
+  String get walkie_someone => '有人';
+
+  @override
+  String get walkie_someoneSpeaking => '有人在說話…';
+
+  @override
+  String get walkie_speaking => '請講...';
+
+  @override
+  String walkie_startFreeTrial(String duration) {
+    return '開始 $duration 免費試用';
+  }
+
+  @override
+  String get walkie_strongConnection => '強連接';
+
+  @override
+  String walkie_strongConnectionMs(int ms) {
+    return '強連接（${ms}ms）';
+  }
+
+  @override
+  String get walkie_subscribeToStartTalk => '訂閱以開始語音通話並分配會員';
+
+  @override
+  String get walkie_subscribed => '已訂閱';
+
+  @override
+  String get walkie_talking => '說...';
+
+  @override
+  String get walkie_tapToUnlock => '點擊解鎖';
+
+  @override
+  String get walkie_teamAssignedElsewhere => '團隊計劃• 分配到其他地方';
+
+  @override
+  String get walkie_teamPlan => '團隊計劃';
+
+  @override
+  String get walkie_teamPlanRequired => '需要團隊計劃';
+
+  @override
+  String get walkie_teamPlanRequiredToAssign => '分配成員需要團隊計劃';
+
+  @override
+  String get walkie_teamPlanStatus => '團隊計劃狀態';
+
+  @override
+  String get walkie_teamSeatMember => '團隊席位成員';
+
+  @override
+  String get walkie_title => '對講機';
+
+  @override
+  String walkie_totalCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 總計',
+      one: '共 1 條',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walkie_trialActive1hr => '1 小時試用有效';
+
+  @override
+  String get walkie_trialEndedSubscribe => '免費試用已結束 - 請訂閱以繼續';
+
+  @override
+  String get walkie_unableToConnectReconnecting => '無法連線至頻道 — 正在重新連線……';
+
+  @override
+  String get walkie_unavailable => '不可用';
+
+  @override
+  String walkie_updateMembers(int assigned, int total) {
+    return '更新成員 ($assigned/$total)';
+  }
+
+  @override
+  String get walkie_updatingMembers => '正在更新成員...';
+
+  @override
+  String get walkie_upgradeAddSeats => '升級和添加座位';
+
+  @override
+  String get walkie_upgradeNow => '立即升級';
+
+  @override
+  String get walkie_upgradeTeamAssign => '升級至團隊計畫（分配成員）';
+
+  @override
+  String get walkie_upgradeToTeamPlan => '升級至團隊計劃';
+
+  @override
+  String walkie_userCancelled(String name) {
+    return '$name 已取消';
+  }
+
+  @override
+  String walkie_userJoined(String name) {
+    return '$name 加入';
+  }
+
+  @override
+  String walkie_userLeft(String name) {
+    return '$name 左';
+  }
+
+  @override
+  String walkie_validTill(String date) {
+    return '有效期限至 $date';
+  }
+
+  @override
+  String get walkie_viewPlan => '查看計劃';
+
+  @override
+  String get walkie_voiceNotPermitted => '不允許語音傳輸';
+
+  @override
+  String get walkie_weakSignal => '訊號弱';
+
+  @override
+  String walkie_weakSignalMs(int ms) {
+    return '弱訊號（${ms}ms）';
+  }
+
+  @override
+  String get walkie_youAreConnected => '您已連線';
+
+  @override
+  String get walkie_yourVoiceAccess => '您的語音訪問';
+
+  @override
+  String widget_inviteDownloadLinks(String playStoreLink, String appStoreLink) {
+    return 'Android 版下載：$playStoreLink\n\niOS 下載：$appStoreLink';
+  }
+
+  @override
+  String get widget_live => '居住';
+
+  @override
+  String get widget_lostConnection => '失去連接';
+
+  @override
+  String get widget_manageGroups => '輕鬆管理您的群組';
+
+  @override
+  String get widget_noInternetBody => '哎呀...找不到網路連線。檢查你的連接';
+
+  @override
+  String get widget_notSeenYet => '還沒見過';
+
+  @override
+  String get widget_pinnedMessage => '置頂訊息';
+
+  @override
+  String get widget_private => '私人的';
+
+  @override
+  String get widget_refreshPage => '重新整理頁面';
+
+  @override
+  String get widget_seen => '見過';
+
+  @override
+  String widget_seenCount(int count) {
+    return '($count)';
+  }
+
+  @override
+  String widget_seenCountOfTotal(int count, int total) {
+    return ' $count $total';
+  }
+
+  @override
+  String get widget_somethingWentWrongTitle => '出了點問題';
+
+  @override
+  String get widget_userFallback => '使用者';
 }

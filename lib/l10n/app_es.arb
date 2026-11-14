@@ -969,6 +969,8 @@
   "intro_skip": "Omitir",
   "intro_walkieSubtitle": "Sin señal, sin problema. Mantente\nconectado donde sea.",
   "intro_walkieTitle": "Función de\nwalkie-talkie",
+  "login_dataSecure": "Tus datos están {percent} seguros",
+  "login_enterMobileNumber": "Introduce el número de móvil",
   "media_cannotOpen": "No se puede abrir",
   "media_documentNotFound": "Documento no encontrado",
   "media_invalidLink": "Enlace no válido",

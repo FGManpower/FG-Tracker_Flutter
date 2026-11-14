@@ -3455,6 +3455,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get intro_walkieTitle => 'Fonction\ntalkie-walkie';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'Vos données sont $percent sécurisées';
+  }
+
+  @override
+  String get login_enterMobileNumber => 'Entrez le numéro de portable';
+
+  @override
   String get media_cannotOpen => 'Impossible d’ouvrir';
 
   @override

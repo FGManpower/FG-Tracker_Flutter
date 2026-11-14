@@ -969,6 +969,8 @@
   "intro_skip": "এড়িয়ে যান",
   "intro_walkieSubtitle": "সিগন্যাল নেই? সমস্যা নেই। যেকোনো জায়গায় যুক্ত থাকুন।",
   "intro_walkieTitle": "ওয়াকি-টকি ফিচার",
+  "login_dataSecure": "আপনার ডেটা {percent} সুরক্ষিত",
+  "login_enterMobileNumber": "মোবাইল নম্বর লিখুন",
   "media_cannotOpen": "খোলা যাচ্ছে না",
   "media_documentNotFound": "ডকুমেন্ট পাওয়া যায়নি",
   "media_invalidLink": "অবৈধ লিঙ্ক",

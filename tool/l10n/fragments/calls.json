@@ -18,7 +18,9 @@
     "pt": "Chamada",
     "ja": "通話",
     "zh": "通话",
-    "or": "କଲ୍ କରନ୍ତୁ |"
+    "or": "କଲ୍ କରନ୍ତୁ |",
+    "ur": "کال کریں۔",
+    "zh_Hant": "稱呼"
   },
   "call_subtitle": {
     "en": "Audio / Video Call",
@@ -38,7 +40,9 @@
     "pt": "Chamada de áudio / vídeo",
     "ja": "音声 / ビデオ通話",
     "zh": "音频 / 视频通话",
-    "or": "ଅଡିଓ / ଭିଡିଓ କଲ୍ |"
+    "or": "ଅଡିଓ / ଭିଡିଓ କଲ୍ |",
+    "ur": "آڈیو/ویڈیو کال",
+    "zh_Hant": "音訊/視訊通話"
   },
   "call_selectedCount": {
     "en": "{count} Selected",
@@ -63,7 +67,9 @@
     "pt": "{count} selecionados",
     "ja": "{count}件選択中",
     "zh": "已选择 {count} 项",
-    "or": "{count} ମନୋନୀତ |"
+    "or": "{count} ମନୋନୀତ |",
+    "ur": "{count} منتخب",
+    "zh_Hant": "{count} 已選擇"
   },
   "call_searchHint": {
     "en": "Search contacts or groups",
@@ -83,7 +89,9 @@
     "pt": "Pesquisar contatos ou grupos",
     "ja": "連絡先またはグループを検索",
     "zh": "搜索联系人或群组",
-    "or": "ସମ୍ପର୍କ କିମ୍ବା ଗୋଷ୍ଠୀ ଖୋଜ |"
+    "or": "ସମ୍ପର୍କ କିମ୍ବା ଗୋଷ୍ଠୀ ଖୋଜ |",
+    "ur": "رابطے یا گروپس تلاش کریں۔",
+    "zh_Hant": "搜尋聯絡人或群組"
   },
   "call_tabRecent": {
     "en": "Recent",
@@ -104,7 +112,9 @@
     "pt": "Recentes",
     "ja": "履歴",
     "zh": "最近",
-    "or": "ସମ୍ପ୍ରତି"
+    "or": "ସମ୍ପ୍ରତି",
+    "ur": "حالیہ",
+    "zh_Hant": "最近的"
   },
   "call_tabContacts": {
     "en": "Contacts",
@@ -124,7 +134,9 @@
     "pt": "Contatos",
     "ja": "連絡先",
     "zh": "联系人",
-    "or": "ସମ୍ପର୍କଗୁଡିକ"
+    "or": "ସମ୍ପର୍କଗୁଡିକ",
+    "ur": "رابطے",
+    "zh_Hant": "聯絡方式"
   },
   "call_tabGroups": {
     "en": "Groups",
@@ -144,7 +156,9 @@
     "pt": "Grupos",
     "ja": "グループ",
     "zh": "群组",
-    "or": "ଗୋଷ୍ଠୀଗୁଡିକ"
+    "or": "ଗୋଷ୍ଠୀଗୁଡିକ",
+    "ur": "گروپس",
+    "zh_Hant": "團體"
   },
   "call_enterNumber": {
     "en": "Enter number",
@@ -164,7 +178,9 @@
     "pt": "Digite o número",
     "ja": "番号を入力",
     "zh": "输入号码",
-    "or": "ସଂଖ୍ୟା ପ୍ରବେଶ କରନ୍ତୁ |"
+    "or": "ସଂଖ୍ୟା ପ୍ରବେଶ କରନ୍ତୁ |",
+    "ur": "نمبر درج کریں۔",
+    "zh_Hant": "輸入號碼"
   },
   "call_enterPhoneNumber": {
     "en": "Please enter a phone number",
@@ -184,7 +200,9 @@
     "pt": "Por favor, insira um número de telefone",
     "ja": "電話番号を入力してください",
     "zh": "请输入电话号码",
-    "or": "ଦୟାକରି ଏକ ଫୋନ୍ ନମ୍ବର ପ୍ରବେଶ କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ଏକ ଫୋନ୍ ନମ୍ବର ପ୍ରବେଶ କରନ୍ତୁ |",
+    "ur": "براہ کرم ایک فون نمبر درج کریں۔",
+    "zh_Hant": "請輸入電話號碼"
   },
   "call_loginToCall": {
     "en": "Please login to make a call",
@@ -204,7 +222,9 @@
     "pt": "Por favor, faça login para fazer uma chamada",
     "ja": "通話を発信するにはログインしてください",
     "zh": "请先登录后再拨打电话",
-    "or": "ଏକ କଲ କରିବାକୁ ଦୟାକରି ଲଗଇନ୍ କରନ୍ତୁ |"
+    "or": "ଏକ କଲ କରିବାକୁ ଦୟାକରି ଲଗଇନ୍ କରନ୍ତୁ |",
+    "ur": "براہ کرم کال کرنے کے لیے لاگ ان کریں۔",
+    "zh_Hant": "請登入後撥打電話"
   },
   "call_notInContacts": {
     "en": "This number is not in your contacts",
@@ -224,7 +244,9 @@
     "pt": "Este número não está em seus contatos",
     "ja": "この番号は連絡先に登録されていません",
     "zh": "此号码不在您的联系人中",
-    "or": "ଏହି ସଂଖ୍ୟା ଆପଣଙ୍କ ସମ୍ପର୍କରେ ନାହିଁ |"
+    "or": "ଏହି ସଂଖ୍ୟା ଆପଣଙ୍କ ସମ୍ପର୍କରେ ନାହିଁ |",
+    "ur": "یہ نمبر آپ کے رابطوں میں نہیں ہے۔",
+    "zh_Hant": "此號碼不在您的通訊錄中"
   },
   "call_user": {
     "en": "User",
@@ -245,7 +267,9 @@
     "pt": "Usuário",
     "ja": "ユーザー",
     "zh": "用户",
-    "or": "ଉପଯୋଗକର୍ତ୍ତା |"
+    "or": "ଉପଯୋଗକର୍ତ୍ତା |",
+    "ur": "صارف",
+    "zh_Hant": "使用者"
   },
   "call_userWithId": {
     "en": "User {id}",
@@ -270,7 +294,9 @@
     "pt": "Usuário {id}",
     "ja": "ユーザー {id}",
     "zh": "用户 {id}",
-    "or": "ଉପଯୋଗକର୍ତ୍ତା {id}"
+    "or": "ଉପଯୋଗକର୍ତ୍ତା {id}",
+    "ur": "صارف {id}",
+    "zh_Hant": "使用者 {id}"
   },
   "call_unknown": {
     "en": "Unknown",
@@ -291,7 +317,9 @@
     "pt": "Desconhecido",
     "ja": "不明",
     "zh": "未知",
-    "or": "ଅଜ୍ଞାତ"
+    "or": "ଅଜ୍ଞାତ",
+    "ur": "نامعلوم",
+    "zh_Hant": "未知"
   },
   "call_unknownUser": {
     "en": "Unknown User",
@@ -311,7 +339,9 @@
     "pt": "Usuário desconhecido",
     "ja": "不明なユーザー",
     "zh": "未知用户",
-    "or": "ଅଜ୍ଞାତ ବ୍ୟବହାରକାରୀ |"
+    "or": "ଅଜ୍ଞାତ ବ୍ୟବହାରକାରୀ |",
+    "ur": "نامعلوم صارف",
+    "zh_Hant": "未知用戶"
   },
   "call_unknownGroup": {
     "en": "Unknown Group",
@@ -331,7 +361,9 @@
     "pt": "Grupo desconhecido",
     "ja": "不明なグループ",
     "zh": "未知群组",
-    "or": "ଅଜ୍ଞାତ ଗୋଷ୍ଠୀ |"
+    "or": "ଅଜ୍ଞାତ ଗୋଷ୍ଠୀ |",
+    "ur": "نامعلوم گروپ",
+    "zh_Hant": "未知組"
   },
   "call_noNameGroup": {
     "en": "Unnamed group",
@@ -351,7 +383,9 @@
     "pt": "Grupo sem nome",
     "ja": "名称未設定のグループ",
     "zh": "未命名群组",
-    "or": "ନାମହୀନ ଗୋଷ୍ଠୀ |"
+    "or": "ନାମହୀନ ଗୋଷ୍ଠୀ |",
+    "ur": "بے نام گروپ",
+    "zh_Hant": "未命名組"
   },
   "call_groupWithId": {
     "en": "Group {id}",
@@ -376,7 +410,9 @@
     "pt": "Grupo {id}",
     "ja": "グループ {id}",
     "zh": "群组 {id}",
-    "or": "ଗୋଷ୍ଠୀ {id} |"
+    "or": "ଗୋଷ୍ଠୀ {id} |",
+    "ur": "گروپ {id}",
+    "zh_Hant": "組 {id}"
   },
   "call_groupBadge": {
     "en": "Group",
@@ -397,7 +433,9 @@
     "pt": "Grupo",
     "ja": "グループ",
     "zh": "群组",
-    "or": "ଗୋଷ୍ଠୀ"
+    "or": "ଗୋଷ୍ଠୀ",
+    "ur": "گروپ",
+    "zh_Hant": "團體"
   },
   "call_callIdNotFound": {
     "en": "Call ID not found",
@@ -417,7 +455,9 @@
     "pt": "ID da chamada não encontrado",
     "ja": "通話IDが見つかりません",
     "zh": "未找到通话ID",
-    "or": "କଲ୍ ID ମିଳିଲା ନାହିଁ |"
+    "or": "କଲ୍ ID ମିଳିଲା ନାହିଁ |",
+    "ur": "کال آئی ڈی نہیں ملی",
+    "zh_Hant": "未找到呼叫 ID"
   },
   "call_entryDeleted": {
     "en": "Call entry deleted",
@@ -437,7 +477,9 @@
     "pt": "Registro de chamada excluído",
     "ja": "通話履歴を削除しました",
     "zh": "通话记录已删除",
-    "or": "କଲ୍ ଏଣ୍ଟ୍ରି ଡିଲିଟ୍ ହୋଇଛି |"
+    "or": "କଲ୍ ଏଣ୍ଟ୍ରି ଡିଲିଟ୍ ହୋଇଛି |",
+    "ur": "کال انٹری کو حذف کر دیا گیا۔",
+    "zh_Hant": "通話記錄已刪除"
   },
   "call_entryDeleteFailed": {
     "en": "Failed to delete call entry",
@@ -457,7 +499,9 @@
     "pt": "Falha ao excluir registro de chamada",
     "ja": "通話履歴の削除に失敗しました",
     "zh": "删除通话记录失败",
-    "or": "କଲ୍ ଏଣ୍ଟ୍ରି ବିଲୋପ କରିବାରେ ବିଫଳ |"
+    "or": "କଲ୍ ଏଣ୍ଟ୍ରି ବିଲୋପ କରିବାରେ ବିଫଳ |",
+    "ur": "کال انٹری کو حذف کرنے میں ناکام",
+    "zh_Hant": "刪除通話記錄失敗"
   },
   "call_entryDeleteFailedError": {
     "en": "Failed to delete call entry: {error}",
@@ -482,7 +526,9 @@
     "pt": "Falha ao excluir registro de chamada: {error}",
     "ja": "通話履歴の削除に失敗しました: {error}",
     "zh": "删除通话记录失败：{error}",
-    "or": "କଲ୍ ଏଣ୍ଟ୍ରି ବିଲୋପ କରିବାରେ ବିଫଳ: {error}"
+    "or": "କଲ୍ ଏଣ୍ଟ୍ରି ବିଲୋପ କରିବାରେ ବିଫଳ: {error}",
+    "ur": "کال انٹری کو حذف کرنے میں ناکام: {error}",
+    "zh_Hant": " {error}"
   },
   "call_callsDeleted": {
     "en": "{count, plural, =1{1 call deleted} other{{count} calls deleted}}",
@@ -507,7 +553,9 @@
     "pt": "{count, plural, =1{1 chamada excluída} other{{count} chamadas excluídas}}",
     "ja": "{count, plural, =1{1件の通話を削除しました} other{{count}件の通話を削除しました}}",
     "zh": "{count, plural, =1{已删除 1 条通话记录} other{已删除 {count} 条通话记录}}",
-    "or": "{count, plural, =1{1 କଲ୍ ଡିଲିଟ୍ ହୋଇଛି |} other{{count} କଲ୍ ବିଲୋପ ହେଲା |}}"
+    "or": "{count, plural, =1{1 କଲ୍ ଡିଲିଟ୍ ହୋଇଛି |} other{{count} କଲ୍ ବିଲୋପ ହେଲା |}}",
+    "ur": "{count, plural, =1{1 کال حذف ہوگئی} other{{count} کالز حذف ہوگئیں}}",
+    "zh_Hant": "{count, plural, =1{1 通通話已刪除} other{{count} 通話已刪除}}"
   },
   "call_callsDeleteFailed": {
     "en": "{count, plural, =1{Couldn't delete 1 call. Try again.} other{Couldn't delete {count} calls. Try again.}}",
@@ -532,7 +580,9 @@
     "pt": "{count, plural, =1{Não foi possível excluir 1 chamada. Tente novamente.} other{Não foi possível excluir {count} chamadas. Tente novamente.}}",
     "ja": "{count, plural, =1{1件の通話を削除できませんでした。もう一度お試しください。} other{{count}件の通話を削除できませんでした。もう一度お試しください。}}",
     "zh": "{count, plural, =1{无法删除 1 条通话。请重试。} other{无法删除 {count} 条通话。请重试。}}",
-    "or": "{count, plural, =1{1 କଲ୍ ବିଲୋପ କରିପାରିଲା ନାହିଁ | ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |} other{{count} କଲ୍ ବିଲୋପ କରିପାରିଲା ନାହିଁ | ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |}}"
+    "or": "{count, plural, =1{1 କଲ୍ ବିଲୋପ କରିପାରିଲା ନାହିଁ | ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |} other{{count} କଲ୍ ବିଲୋପ କରିପାରିଲା ନାହିଁ | ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |}}",
+    "ur": "{count, plural, =1{1 کال حذف نہیں ہو سکی۔ دوبارہ کوشش کریں۔} other{{count} کالز حذف نہیں ہو سکیں۔ دوبارہ کوشش کریں۔}}",
+    "zh_Hant": "{count, plural, =1{無法刪除 1 通通話。再試一次。} other{無法刪除 {count} 通話。再試一次。}}"
   },
   "call_selectedDeleted": {
     "en": "Selected calls deleted",
@@ -552,7 +602,9 @@
     "pt": "Chamadas selecionadas excluídas",
     "ja": "選択した通話を削除しました",
     "zh": "已删除选中的通话",
-    "or": "ମନୋନୀତ କଲ୍ ଡିଲିଟ୍ ହୋଇଛି |"
+    "or": "ମନୋନୀତ କଲ୍ ଡିଲିଟ୍ ହୋଇଛି |",
+    "ur": "منتخب کالیں حذف کر دی گئیں۔",
+    "zh_Hant": "選取的通話已刪除"
   },
   "call_selectedDeleteFailed": {
     "en": "Failed to delete selected calls",
@@ -572,7 +624,9 @@
     "pt": "Falha ao excluir chamadas selecionadas",
     "ja": "選択した通話の削除に失敗しました",
     "zh": "删除选中的通话失败",
-    "or": "ମନୋନୀତ କଲ୍ ବିଲୋପ କରିବାରେ ବିଫଳ |"
+    "or": "ମନୋନୀତ କଲ୍ ବିଲୋପ କରିବାରେ ବିଫଳ |",
+    "ur": "منتخب کالوں کو حذف کرنے میں ناکام",
+    "zh_Hant": "無法刪除選取的通話"
   },
   "call_selectedDeleteFailedError": {
     "en": "Failed to delete selected calls: {error}",
@@ -597,7 +651,9 @@
     "pt": "Falha ao excluir chamadas selecionadas: {error}",
     "ja": "選択した通話の削除に失敗しました: {error}",
     "zh": "删除选中的通话失败：{error}",
-    "or": "ମନୋନୀତ କଲ୍ ବିଲୋପ କରିବାରେ ବିଫଳ: {error}"
+    "or": "ମନୋନୀତ କଲ୍ ବିଲୋପ କରିବାରେ ବିଫଳ: {error}",
+    "ur": "منتخب کالوں کو حذف کرنے میں ناکام: {error}",
+    "zh_Hant": "無法刪除選取的通話：{error}"
   },
   "call_historyCleared": {
     "en": "All call history cleared",
@@ -617,7 +673,9 @@
     "pt": "Todo o histórico de chamadas foi limpo",
     "ja": "すべての通話履歴を消去しました",
     "zh": "所有通话记录已清除",
-    "or": "ସମସ୍ତ କଲ୍ ଇତିହାସ ସଫା ହୋଇଛି |"
+    "or": "ସମସ୍ତ କଲ୍ ଇତିହାସ ସଫା ହୋଇଛି |",
+    "ur": "کال کی تمام سرگزشت صاف کر دی گئی۔",
+    "zh_Hant": "所有通話記錄已清除"
   },
   "call_historyClearFailed": {
     "en": "Failed to clear call history",
@@ -637,7 +695,9 @@
     "pt": "Falha ao limpar histórico de chamadas",
     "ja": "通話履歴の消去に失敗しました",
     "zh": "清除通话记录失败",
-    "or": "କଲ୍ ଇତିହାସ ସଫା କରିବାରେ ବିଫଳ |"
+    "or": "କଲ୍ ଇତିହାସ ସଫା କରିବାରେ ବିଫଳ |",
+    "ur": "کال کی سرگزشت صاف کرنے میں ناکام",
+    "zh_Hant": "清除通話記錄失敗"
   },
   "call_historyClearFailedError": {
     "en": "Failed to clear call history: {error}",
@@ -662,7 +722,9 @@
     "pt": "Falha ao limpar histórico de chamadas: {error}",
     "ja": "通話履歴の消去に失敗しました: {error}",
     "zh": "清除通话记录失败：{error}",
-    "or": "କଲ୍ ଇତିହାସ ସଫା କରିବାରେ ବିଫଳ: {error}"
+    "or": "କଲ୍ ଇତିହାସ ସଫା କରିବାରେ ବିଫଳ: {error}",
+    "ur": "کال کی سرگزشت صاف کرنے میں ناکام: {error}",
+    "zh_Hant": "清除通話記錄失敗：{error}"
   },
   "call_sectionThisWeek": {
     "en": "This Week",
@@ -682,7 +744,9 @@
     "pt": "Esta semana",
     "ja": "今週",
     "zh": "本周",
-    "or": "ଏହି ସପ୍ତାହ"
+    "or": "ଏହି ସପ୍ତାହ",
+    "ur": "اس ہفتے",
+    "zh_Hant": "本星期"
   },
   "call_sectionLastWeek": {
     "en": "Last Week",
@@ -702,7 +766,9 @@
     "pt": "Semana passada",
     "ja": "先週",
     "zh": "上周",
-    "or": "ଗତ ସପ୍ତାହ"
+    "or": "ଗତ ସପ୍ତାହ",
+    "ur": "گزشتہ ہفتے",
+    "zh_Hant": "上個星期"
   },
   "call_sectionOlder": {
     "en": "Older",
@@ -723,7 +789,9 @@
     "pt": "Mais antigos",
     "ja": "以前",
     "zh": "更早",
-    "or": "ପୁରାତନ"
+    "or": "ପୁରାତନ",
+    "ur": "پرانا",
+    "zh_Hant": "年長的"
   },
   "call_kindCall": {
     "en": "Call",
@@ -744,7 +812,9 @@
     "pt": "Chamada",
     "ja": "通話",
     "zh": "通话",
-    "or": "କଲ୍ କରନ୍ତୁ |"
+    "or": "କଲ୍ କରନ୍ତୁ |",
+    "ur": "کال کریں۔",
+    "zh_Hant": "稱呼"
   },
   "call_kindVideo": {
     "en": "Video Call",
@@ -764,7 +834,9 @@
     "pt": "Chamada de vídeo",
     "ja": "ビデオ通話",
     "zh": "视频通话",
-    "or": "ଭିଡିଓ କଲ୍ |"
+    "or": "ଭିଡିଓ କଲ୍ |",
+    "ur": "ویڈیو کال",
+    "zh_Hant": "視訊通話"
   },
   "call_kindAudio": {
     "en": "Audio Call",
@@ -784,7 +856,9 @@
     "pt": "Chamada de voz",
     "ja": "音声通話",
     "zh": "语音通话",
-    "or": "ଅଡିଓ କଲ୍ |"
+    "or": "ଅଡିଓ କଲ୍ |",
+    "ur": "آڈیو کال",
+    "zh_Hant": "音訊通話"
   },
   "call_kindGroupCall": {
     "en": "Group Call",
@@ -804,7 +878,9 @@
     "pt": "Chamada em grupo",
     "ja": "グループ通話",
     "zh": "群组通话",
-    "or": "ଗ୍ରୁପ୍ କଲ୍ |"
+    "or": "ଗ୍ରୁପ୍ କଲ୍ |",
+    "ur": "گروپ کال",
+    "zh_Hant": "群組通話"
   },
   "call_kindGroupVideo": {
     "en": "Group Video Call",
@@ -824,7 +900,9 @@
     "pt": "Chamada de vídeo em grupo",
     "ja": "グループビデオ通話",
     "zh": "群组视频通话",
-    "or": "ଗ୍ରୁପ୍ ଭିଡିଓ କଲ୍ |"
+    "or": "ଗ୍ରୁପ୍ ଭିଡିଓ କଲ୍ |",
+    "ur": "گروپ ویڈیو کال",
+    "zh_Hant": "群組視訊通話"
   },
   "call_kindGroupAudio": {
     "en": "Group Audio Call",
@@ -844,7 +922,9 @@
     "pt": "Chamada de voz em grupo",
     "ja": "グループ音声通話",
     "zh": "群组语音通话",
-    "or": "ଗ୍ରୁପ୍ ଅଡିଓ କଲ୍ |"
+    "or": "ଗ୍ରୁପ୍ ଅଡିଓ କଲ୍ |",
+    "ur": "گروپ آڈیو کال",
+    "zh_Hant": "群組音訊通話"
   },
   "call_kindOther": {
     "en": "{kind} Call",
@@ -870,7 +950,9 @@
     "pt": "Chamada {kind}",
     "ja": "{kind}通話",
     "zh": "{kind} 通话",
-    "or": "{kind} କଲ୍ |"
+    "or": "{kind} କଲ୍ |",
+    "ur": "{kind} کال",
+    "zh_Hant": "{kind} 通話"
   },
   "call_kindGroupOther": {
     "en": "Group {kind} Call",
@@ -896,7 +978,9 @@
     "pt": "Chamada em grupo {kind}",
     "ja": "グループ{kind}通話",
     "zh": "群组 {kind} 通话",
-    "or": "ଗୋଷ୍ଠୀ {kind} କଲ୍ |"
+    "or": "ଗୋଷ୍ଠୀ {kind} କଲ୍ |",
+    "ur": "گروپ {kind} کال",
+    "zh_Hant": "{kind} 群組呼叫"
   },
   "call_historyMissed": {
     "en": "Missed {callType}",
@@ -922,7 +1006,9 @@
     "pt": "{callType} perdida",
     "ja": "不在着信 {callType}",
     "zh": "未接 {callType}",
-    "or": "ହଜିଯାଇଛି {callType}"
+    "or": "ହଜିଯାଇଛି {callType}",
+    "ur": "{callType} چھوٹ گیا۔",
+    "zh_Hant": "漏了 {callType}"
   },
   "call_historyRejected": {
     "en": "Rejected {callType}",
@@ -948,7 +1034,9 @@
     "pt": "{callType} recusada",
     "ja": "拒否した {callType}",
     "zh": "已拒绝 {callType}",
-    "or": "ପ୍ରତ୍ୟାଖ୍ୟାନ {callType} |"
+    "or": "ପ୍ରତ୍ୟାଖ୍ୟାନ {callType} |",
+    "ur": "مسترد شدہ {callType}",
+    "zh_Hant": "已拒絕 {callType}"
   },
   "call_historyOutgoing": {
     "en": "Outgoing {callType}",
@@ -974,7 +1062,9 @@
     "pt": "{callType} efetuada",
     "ja": "発信 {callType}",
     "zh": "呼出 {callType}",
-    "or": "ଯାଉଥିବା {callType}"
+    "or": "ଯାଉଥିବା {callType}",
+    "ur": "آؤٹ گوئنگ {callType}",
+    "zh_Hant": "傳出 {callType}"
   },
   "call_historyIncoming": {
     "en": "Incoming {callType}",
@@ -1000,7 +1090,9 @@
     "pt": "{callType} recebida",
     "ja": "着信 {callType}",
     "zh": "呼入 {callType}",
-    "or": "ଆସୁଥିବା {callType}"
+    "or": "ଆସୁଥିବା {callType}",
+    "ur": "آنے والی {callType}",
+    "zh_Hant": "傳入 {callType}"
   },
   "call_selfCallWarning": {
     "en": "You cannot call your own number.",
@@ -1020,7 +1112,9 @@
     "pt": "Você não pode ligar para o seu próprio número.",
     "ja": "自分自身の番号には発信できません。",
     "zh": "您不能拨打自己的号码。",
-    "or": "ଆପଣ ନିଜ ନମ୍ବରକୁ କଲ କରିପାରିବେ ନାହିଁ |"
+    "or": "ଆପଣ ନିଜ ନମ୍ବରକୁ କଲ କରିପାରିବେ ନାହିଁ |",
+    "ur": "آپ اپنے نمبر پر کال نہیں کر سکتے۔",
+    "zh_Hant": "您無法撥打自己的號碼。"
   },
   "call_noGroupsYet": {
     "en": "No groups yet",
@@ -1040,7 +1134,9 @@
     "pt": "Nenhum grupo ainda",
     "ja": "グループがまだありません",
     "zh": "暂无群组",
-    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ groups ଣସି ଗୋଷ୍ଠୀ ନାହିଁ |"
+    "or": "ଏପର୍ଯ୍ୟନ୍ତ କ groups ଣସି ଗୋଷ୍ଠୀ ନାହିଁ |",
+    "ur": "ابھی تک کوئی گروپ نہیں۔",
+    "zh_Hant": "還沒有群組"
   },
   "call_noGroupsFound": {
     "en": "No groups found",
@@ -1060,7 +1156,9 @@
     "pt": "Nenhum grupo encontrado",
     "ja": "グループが見つかりません",
     "zh": "未找到群组",
-    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |"
+    "or": "କ groups ଣସି ଗୋଷ୍ଠୀ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی گروپ نہیں ملا",
+    "zh_Hant": "未找到群組"
   },
   "call_groupCallStartFailed": {
     "en": "Could not start group call. Please try again.",
@@ -1080,7 +1178,9 @@
     "pt": "Não foi possível iniciar a chamada em grupo. Tente novamente.",
     "ja": "グループ通話を開始できませんでした。もう一度お試しください。",
     "zh": "无法发起群组通话，请重试。",
-    "or": "ଗୋଷ୍ଠୀ କଲ୍ ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଗୋଷ୍ଠୀ କଲ୍ ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "گروپ کال شروع نہیں ہو سکی۔ براہ کرم دوبارہ کوشش کریں۔",
+    "zh_Hant": "無法發起群組通話。請再試一次。"
   },
   "call_contactsAccessTitle": {
     "en": "Allow contacts access",
@@ -1100,7 +1200,9 @@
     "pt": "Permitir acesso aos contatos",
     "ja": "連絡先へのアクセスを許可",
     "zh": "允许访问通讯录",
-    "or": "ଯୋଗାଯୋଗ ପ୍ରବେଶକୁ ଅନୁମତି ଦିଅନ୍ତୁ |"
+    "or": "ଯୋଗାଯୋଗ ପ୍ରବେଶକୁ ଅନୁମତି ଦିଅନ୍ତୁ |",
+    "ur": "رابطوں تک رسائی کی اجازت دیں۔",
+    "zh_Hant": "允許聯絡人訪問"
   },
   "call_contactsAccessMessage": {
     "en": "We need access to your contacts to show who is on FG Tracker and to let you call them or send an invite.",
@@ -1120,7 +1222,9 @@
     "pt": "Precisamos de acesso aos seus contatos para mostrar quem está no FG Tracker e permitir que você ligue ou envie um convite.",
     "ja": "FG Trackerを利用しているユーザーを表示し、通話や招待を行えるようにするために連絡先へのアクセスが必要です。",
     "zh": "我们需要访问您的通讯录以显示谁在使用 FG Tracker，并方便您向其呼叫或发送邀请。",
-    "or": "FG ଟ୍ରାକରରେ କିଏ ଅଛି ତାହା ଦେଖାଇବାକୁ ଏବଂ ଆପଣଙ୍କୁ ସେମାନଙ୍କୁ କଲ କରିବାକୁ କିମ୍ବା ଆମନ୍ତ୍ରଣ ପଠାଇବାକୁ ଆମକୁ ଆପଣଙ୍କର ସମ୍ପର୍କକୁ ପ୍ରବେଶ ଆବଶ୍ୟକ |"
+    "or": "FG ଟ୍ରାକରରେ କିଏ ଅଛି ତାହା ଦେଖାଇବାକୁ ଏବଂ ଆପଣଙ୍କୁ ସେମାନଙ୍କୁ କଲ କରିବାକୁ କିମ୍ବା ଆମନ୍ତ୍ରଣ ପଠାଇବାକୁ ଆମକୁ ଆପଣଙ୍କର ସମ୍ପର୍କକୁ ପ୍ରବେଶ ଆବଶ୍ୟକ |",
+    "ur": "ہمیں آپ کے رابطوں تک رسائی کی ضرورت ہے تاکہ یہ ظاہر کیا جا سکے کہ FG ٹریکر پر کون ہے اور آپ انہیں کال کرنے یا دعوت بھیجنے دیں۔",
+    "zh_Hant": "我們需要存取您的聯絡人，以顯示誰在使用 FG Tracker，並讓您致電給他們或傳送邀請。"
   },
   "call_allowAccess": {
     "en": "Allow Access",
@@ -1140,7 +1244,9 @@
     "pt": "Permitir acesso",
     "ja": "アクセスを許可",
     "zh": "允许访问",
-    "or": "ପ୍ରବେଶ ଅନୁମତି ଦିଅନ୍ତୁ |"
+    "or": "ପ୍ରବେଶ ଅନୁମତି ଦିଅନ୍ତୁ |",
+    "ur": "رسائی کی اجازت دیں۔",
+    "zh_Hant": "允許訪問"
   },
   "call_noContactsMatch": {
     "en": "No contacts match your search",
@@ -1160,7 +1266,9 @@
     "pt": "Nenhum contato corresponde à sua pesquisa",
     "ja": "検索に一致する連絡先がありません",
     "zh": "没有匹配的联系人",
-    "or": "କ search ଣସି ସମ୍ପର୍କ ଆପଣଙ୍କ ସନ୍ଧାନ ସହିତ ମେଳ ଖାଉ ନାହିଁ |"
+    "or": "କ search ଣସି ସମ୍ପର୍କ ଆପଣଙ୍କ ସନ୍ଧାନ ସହିତ ମେଳ ଖାଉ ନାହିଁ |",
+    "ur": "کوئی رابطہ آپ کی تلاش سے مماثل نہیں ہے۔",
+    "zh_Hant": "沒有符合您搜尋條件的聯絡人"
   },
   "call_noRegisteredContacts": {
     "en": "No registered contacts found",
@@ -1180,7 +1288,9 @@
     "pt": "Nenhum contato cadastrado encontrado",
     "ja": "登録済みの連絡先が見つかりません",
     "zh": "未找到已注册的联系人",
-    "or": "କ registered ଣସି ପଞ୍ଜୀକୃତ ସମ୍ପର୍କ ମିଳିଲା ନାହିଁ |"
+    "or": "କ registered ଣସି ପଞ୍ଜୀକୃତ ସମ୍ପର୍କ ମିଳିଲା ନାହିଁ |",
+    "ur": "کوئی رجسٹرڈ رابطے نہیں ملے",
+    "zh_Hant": "未找到已註冊的聯絡人"
   },
   "call_allContacts": {
     "en": "All Contacts",
@@ -1200,7 +1310,9 @@
     "pt": "Todos os contatos",
     "ja": "すべての連絡先",
     "zh": "所有联系人",
-    "or": "ସମସ୍ତ ସମ୍ପର୍କ"
+    "or": "ସମସ୍ତ ସମ୍ପର୍କ",
+    "ur": "تمام رابطے",
+    "zh_Hant": "所有聯絡人"
   },
   "call_inviteToApp": {
     "en": "Invite to FG Tracker",
@@ -1220,7 +1332,9 @@
     "pt": "Convidar para o FG Tracker",
     "ja": "FG Trackerに招待",
     "zh": "邀请加入 FG Tracker",
-    "or": "FG ଟ୍ରାକରକୁ ଆମନ୍ତ୍ରଣ କରନ୍ତୁ |"
+    "or": "FG ଟ୍ରାକରକୁ ଆମନ୍ତ୍ରଣ କରନ୍ତୁ |",
+    "ur": "FG ٹریکر کو مدعو کریں۔",
+    "zh_Hant": "邀請加入 FG Tracker"
   },
   "call_invite": {
     "en": "Invite",
@@ -1241,7 +1355,9 @@
     "pt": "Convidar",
     "ja": "招待",
     "zh": "邀请",
-    "or": "ଆମନ୍ତ୍ରଣ"
+    "or": "ଆମନ୍ତ୍ରଣ",
+    "ur": "دعوت دیں۔",
+    "zh_Hant": "邀請"
   },
   "call_contactsAccessBannerTitle": {
     "en": "Let us access your contacts",
@@ -1261,7 +1377,9 @@
     "pt": "Permita o acesso aos seus contatos",
     "ja": "連絡先へのアクセスを許可してください",
     "zh": "请允许我们访问您的通讯录",
-    "or": "ଆସନ୍ତୁ ଆପଣଙ୍କ ସମ୍ପର୍କକୁ ପ୍ରବେଶ କରିବା |"
+    "or": "ଆସନ୍ତୁ ଆପଣଙ୍କ ସମ୍ପର୍କକୁ ପ୍ରବେଶ କରିବା |",
+    "ur": "ہمیں آپ کے رابطوں تک رسائی حاصل کرنے دیں۔",
+    "zh_Hant": "讓我們訪問您的聯絡人"
   },
   "call_contactsAccessBannerMessage": {
     "en": "Find and call your team members easily.",
@@ -1281,7 +1399,9 @@
     "pt": "Encontre e ligue para os membros da sua equipe facilmente.",
     "ja": "チームメンバーを簡単に見つけて通話できます。",
     "zh": "轻松查找并致电您的团队成员。",
-    "or": "ତୁମ ଦଳର ସଦସ୍ୟମାନଙ୍କୁ ସହଜରେ ଖୋଜ ଏବଂ କଲ କର |"
+    "or": "ତୁମ ଦଳର ସଦସ୍ୟମାନଙ୍କୁ ସହଜରେ ଖୋଜ ଏବଂ କଲ କର |",
+    "ur": "اپنی ٹیم کے اراکین کو آسانی سے تلاش کریں اور کال کریں۔",
+    "zh_Hant": "輕鬆尋找並致電您的團隊成員。"
   },
   "call_deleteHistoryTitle": {
     "en": "Delete Call History",
@@ -1301,7 +1421,9 @@
     "pt": "Excluir histórico de chamadas",
     "ja": "通話履歴を削除",
     "zh": "删除通话记录",
-    "or": "କଲ୍ ଇତିହାସ ବିଲୋପ କରନ୍ତୁ |"
+    "or": "କଲ୍ ଇତିହାସ ବିଲୋପ କରନ୍ତୁ |",
+    "ur": "کال کی تاریخ کو حذف کریں۔",
+    "zh_Hant": "刪除通話記錄"
   },
   "call_deleteHistoryMessage": {
     "en": "Are you sure you want to delete this call history?",
@@ -1321,7 +1443,9 @@
     "pt": "Tem certeza de que deseja excluir este histórico de chamadas?",
     "ja": "この通話履歴を削除してもよろしいですか？",
     "zh": "确定要删除此通话记录吗？",
-    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି କଲ୍ ଇତିହାସ ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?"
+    "or": "ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି କଲ୍ ଇତିହାସ ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?",
+    "ur": "کیا آپ واقعی اس کال کی سرگزشت کو حذف کرنا چاہتے ہیں؟",
+    "zh_Hant": "您確定要刪除此通話記錄嗎？"
   },
   "call_yesDelete": {
     "en": "Yes, Delete",
@@ -1341,7 +1465,9 @@
     "pt": "Sim, excluir",
     "ja": "はい、削除します",
     "zh": "是，删除",
-    "or": "ହଁ, ଡିଲିଟ୍ କରନ୍ତୁ |"
+    "or": "ହଁ, ଡିଲିଟ୍ କରନ୍ତୁ |",
+    "ur": "ہاں، حذف کریں۔",
+    "zh_Hant": "是的，刪除"
   },
   "call_deleteSelectedTitle": {
     "en": "Delete Selected Calls",
@@ -1361,7 +1487,9 @@
     "pt": "Excluir chamadas selecionadas",
     "ja": "選択した通話を削除",
     "zh": "删除选中的通话",
-    "or": "ମନୋନୀତ କଲ୍ ବିଲୋପ କରନ୍ତୁ |"
+    "or": "ମନୋନୀତ କଲ୍ ବିଲୋପ କରନ୍ତୁ |",
+    "ur": "منتخب کالوں کو حذف کریں۔",
+    "zh_Hant": "刪除選取的通話"
   },
   "call_deleteSelectedMessage": {
     "en": "{count, plural, =1{Are you sure you want to delete this selected call history?} other{Are you sure you want to delete these {count} selected call history entries?}}",
@@ -1386,7 +1514,9 @@
     "pt": "{count, plural, =1{Tem certeza de que deseja excluir este histórico de chamada selecionado?} other{Tem certeza de que deseja excluir estas {count} entradas selecionadas do histórico?}}",
     "ja": "{count, plural, =1{選択したこの通話履歴を削除してもよろしいですか？} other{選択したこれら {count} 件の通話履歴を削除してもよろしいですか？}}",
     "zh": "{count, plural, =1{确定要删除此选定的通话记录吗？} other{确定要删除选中的这 {count} 条通话记录吗？}}",
-    "or": "{count, plural, =1{ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ମନୋନୀତ କଲ ଇତିହାସ ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?} other{ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି {count} ମନୋନୀତ କଲ ଇତିହାସ ପ୍ରବିଷ୍ଟଗୁଡିକ ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?}}"
+    "or": "{count, plural, =1{ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି ମନୋନୀତ କଲ ଇତିହାସ ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?} other{ଆପଣ ନିଶ୍ଚିତ କି ଆପଣ ଏହି {count} ମନୋନୀତ କଲ ଇତିହାସ ପ୍ରବିଷ୍ଟଗୁଡିକ ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?}}",
+    "ur": "{count, plural, =1{کیا آپ واقعی یہ منتخب کردہ کال ہسٹری حذف کرنا چاہتے ہیں؟} other{کیا آپ واقعی یہ {count} منتخب کردہ کال ہسٹری اندراجات حذف کرنا چاہتے ہیں؟}}",
+    "zh_Hant": "{count, plural, =1{您確定要刪除此選定的通話記錄嗎？} other{您確定要刪除這些 {count} 選定的通話記錄項目嗎？}}"
   },
   "call_deleteWithCount": {
     "en": "Delete ({count})",
@@ -1411,7 +1541,9 @@
     "pt": "Excluir ({count})",
     "ja": "削除 ({count})",
     "zh": "删除 ({count})",
-    "or": "ବିଲୋପ କରନ୍ତୁ ({count})"
+    "or": "ବିଲୋପ କରନ୍ତୁ ({count})",
+    "ur": "حذف کریں ({count})",
+    "zh_Hant": "刪除 ({count})"
   },
   "call_noRecentMatch": {
     "en": "No recent calls match your search",
@@ -1431,7 +1563,9 @@
     "pt": "Nenhuma chamada recente corresponde à sua pesquisa",
     "ja": "検索に一致する最近の通話はありません",
     "zh": "没有匹配的最近通话",
-    "or": "କ search ଣସି ସାମ୍ପ୍ରତିକ କଲ୍ ଆପଣଙ୍କ ସନ୍ଧାନ ସହିତ ମେଳ ଖାଉ ନାହିଁ |"
+    "or": "କ search ଣସି ସାମ୍ପ୍ରତିକ କଲ୍ ଆପଣଙ୍କ ସନ୍ଧାନ ସହିତ ମେଳ ଖାଉ ନାହିଁ |",
+    "ur": "کوئی حالیہ کال آپ کی تلاش سے مماثل نہیں ہے۔",
+    "zh_Hant": "最近的通話沒有與您的搜尋相符"
   },
   "call_noRecentYet": {
     "en": "No recent calls yet",
@@ -1451,7 +1585,9 @@
     "pt": "Nenhuma chamada recente ainda",
     "ja": "最近の通話履歴はありません",
     "zh": "暂无最近通话",
-    "or": "ବର୍ତ୍ତମାନ ପର୍ଯ୍ୟନ୍ତ କ calls ଣସି କଲ ନାହିଁ |"
+    "or": "ବର୍ତ୍ତମାନ ପର୍ଯ୍ୟନ୍ତ କ calls ଣସି କଲ ନାହିଁ |",
+    "ur": "ابھی تک کوئی حالیہ کالز نہیں ہیں۔",
+    "zh_Hant": "最近還沒有通話"
   },
   "call_unableToCallContact": {
     "en": "Unable to call this contact",
@@ -1471,7 +1607,9 @@
     "pt": "Não foi possível ligar para este contato",
     "ja": "この連絡先に通話を発信できません",
     "zh": "无法呼叫此联系人",
-    "or": "ଏହି ସମ୍ପର୍କକୁ କଲ୍ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଏହି ସମ୍ପର୍କକୁ କଲ୍ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "اس رابطہ کو کال کرنے سے قاصر ہے۔",
+    "zh_Hant": "無法呼叫此聯絡人"
   },
   "call_deleteCallsTitle": {
     "en": "{count, plural, =1{Delete 1 call?} other{Delete {count} calls?}}",
@@ -1496,7 +1634,9 @@
     "pt": "{count, plural, =1{Excluir 1 chamada?} other{Excluir {count} chamadas?}}",
     "ja": "{count, plural, =1{1件の通話を削除しますか？} other{{count}件の通話を削除しますか？}}",
     "zh": "{count, plural, =1{删除 1 条通话？} other{删除 {count} 条通话？}}",
-    "or": "{count, plural, =1{1 କଲ୍ ବିଲୋପ କରିବେ କି?} other{{count} କଲ୍ ବିଲୋପ କରନ୍ତୁ?}}"
+    "or": "{count, plural, =1{1 କଲ୍ ବିଲୋପ କରିବେ କି?} other{{count} କଲ୍ ବିଲୋପ କରନ୍ତୁ?}}",
+    "ur": "{count, plural, =1{1 کال حذف کریں؟} other{{count} کالز حذف کریں؟}}",
+    "zh_Hant": "{count, plural, =1{刪除 1 通通話？} other{刪除 {count} 呼叫？}}"
   },
   "call_deleteCallsMessage": {
     "en": "These calls will be removed from your call history.",
@@ -1516,7 +1656,9 @@
     "pt": "Essas chamadas serão removidas do seu histórico.",
     "ja": "これらの通話は履歴から削除されます。",
     "zh": "这些记录将从您的通话历史中移除。",
-    "or": "ଏହି କଲ୍ ଗୁଡିକ ଆପଣଙ୍କ କଲ ଇତିହାସରୁ ଅପସାରିତ ହେବ |"
+    "or": "ଏହି କଲ୍ ଗୁଡିକ ଆପଣଙ୍କ କଲ ଇତିହାସରୁ ଅପସାରିତ ହେବ |",
+    "ur": "یہ کالیں آپ کی کال کی سرگزشت سے ہٹا دی جائیں گی۔",
+    "zh_Hant": "這些通話將從您的通話記錄中刪除。"
   },
   "call_selectAll": {
     "en": "Select all",
@@ -1536,7 +1678,9 @@
     "pt": "Selecionar tudo",
     "ja": "すべて選択",
     "zh": "全选",
-    "or": "ସମସ୍ତ ଚୟନ କରନ୍ତୁ |"
+    "or": "ସମସ୍ତ ଚୟନ କରନ୍ତୁ |",
+    "ur": "سبھی کو منتخب کریں۔",
+    "zh_Hant": "選擇全部"
   },
   "call_unselectAll": {
     "en": "Unselect all",
@@ -1556,7 +1700,9 @@
     "pt": "Desmarcar tudo",
     "ja": "選択を解除",
     "zh": "取消全选",
-    "or": "ସମସ୍ତ ଚୟନ କରନ୍ତୁ |"
+    "or": "ସମସ୍ତ ଚୟନ କରନ୍ତୁ |",
+    "ur": "سبھی کو غیر منتخب کریں۔",
+    "zh_Hant": "取消選擇全部"
   },
   "call_otherStartingVideo": {
     "en": "The other person is starting video",
@@ -1576,7 +1722,9 @@
     "pt": "A outra pessoa está iniciando o vídeo",
     "ja": "相手がビデオを開始しています",
     "zh": "对方正在开启视频",
-    "or": "ଅନ୍ୟ ବ୍ୟକ୍ତି ଭିଡିଓ ଆରମ୍ଭ କରୁଛନ୍ତି |"
+    "or": "ଅନ୍ୟ ବ୍ୟକ୍ତି ଭିଡିଓ ଆରମ୍ଭ କରୁଛନ୍ତି |",
+    "ur": "دوسرا شخص ویڈیو شروع کر رہا ہے۔",
+    "zh_Hant": "對方正在開始視頻"
   },
   "call_notReady": {
     "en": "Call not ready",
@@ -1596,7 +1744,9 @@
     "pt": "Chamada não pronta",
     "ja": "通話の準備ができていません",
     "zh": "通话未就绪",
-    "or": "କଲ୍ ପ୍ରସ୍ତୁତ ନୁହେଁ |"
+    "or": "କଲ୍ ପ୍ରସ୍ତୁତ ନୁହେଁ |",
+    "ur": "کال تیار نہیں ہے۔",
+    "zh_Hant": "呼叫未準備好"
   },
   "call_failedTitle": {
     "en": "Call Failed",
@@ -1616,7 +1766,9 @@
     "pt": "Falha na chamada",
     "ja": "通話失敗",
     "zh": "通话失败",
-    "or": "କଲ୍ ବିଫଳ ହେଲା |"
+    "or": "କଲ୍ ବିଫଳ ହେଲା |",
+    "ur": "کال ناکام ہو گئی۔",
+    "zh_Hant": "呼叫失敗"
   },
   "call_unableToMakeCall": {
     "en": "Unable to make call",
@@ -1636,7 +1788,9 @@
     "pt": "Não foi possível fazer a chamada",
     "ja": "通話を発信できません",
     "zh": "无法拨打电话",
-    "or": "କଲ୍ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "କଲ୍ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "کال کرنے سے قاصر",
+    "zh_Hant": "無法撥打電話"
   },
   "call_unavailableTitle": {
     "en": "Call unavailable",
@@ -1656,7 +1810,9 @@
     "pt": "Chamada indisponível",
     "ja": "通話を利用できません",
     "zh": "通话不可用",
-    "or": "କଲ୍ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "କଲ୍ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "کال دستیاب نہیں ہے۔",
+    "zh_Hant": "無法通話"
   },
   "call_communicationUnavailable": {
     "en": "Communication is not available with this user",
@@ -1676,7 +1832,9 @@
     "pt": "A comunicação não está disponível com este usuário",
     "ja": "このユーザーとは通話できません",
     "zh": "无法与该用户通信",
-    "or": "ଏହି ଉପଭୋକ୍ତା ସହିତ ଯୋଗାଯୋଗ ଉପଲବ୍ଧ ନାହିଁ |"
+    "or": "ଏହି ଉପଭୋକ୍ତା ସହିତ ଯୋଗାଯୋଗ ଉପଲବ୍ଧ ନାହିଁ |",
+    "ur": "اس صارف کے ساتھ مواصلت دستیاب نہیں ہے۔",
+    "zh_Hant": "無法與該用戶通信"
   },
   "call_otherAlreadySharing": {
     "en": "The other person is already sharing the screen",
@@ -1696,7 +1854,9 @@
     "pt": "A outra pessoa já está compartilhando a tela",
     "ja": "相手が既に画面を共有しています",
     "zh": "对方已经在共享屏幕",
-    "or": "ଅନ୍ୟ ବ୍ୟକ୍ତି ସ୍କ୍ରିନ୍ ସେୟାର କରିସାରିଛନ୍ତି |"
+    "or": "ଅନ୍ୟ ବ୍ୟକ୍ତି ସ୍କ୍ରିନ୍ ସେୟାର କରିସାରିଛନ୍ତି |",
+    "ur": "دوسرا شخص پہلے ہی اسکرین کا اشتراک کر رہا ہے۔",
+    "zh_Hant": "其他人已經在共享螢幕"
   },
   "call_unableToShareScreen": {
     "en": "Unable to share screen",
@@ -1716,7 +1876,9 @@
     "pt": "Não foi possível compartilhar a tela",
     "ja": "画面を共有できません",
     "zh": "无法共享屏幕",
-    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "اسکرین کا اشتراک کرنے سے قاصر",
+    "zh_Hant": "無法分享螢幕"
   },
   "call_screenShareStopped": {
     "en": "Screen sharing stopped",
@@ -1736,7 +1898,9 @@
     "pt": "Compartilhamento de tela interrompido",
     "ja": "画面共有が停止しました",
     "zh": "屏幕共享已停止",
-    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ବନ୍ଦ ହୋଇଗଲା |"
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ବନ୍ଦ ହୋଇଗଲା |",
+    "ur": "اسکرین کا اشتراک روک دیا گیا۔",
+    "zh_Hant": "螢幕分享已停止"
   },
   "call_screenShareStartFailed": {
     "en": "Could not start screen sharing",
@@ -1756,7 +1920,9 @@
     "pt": "Não foi possível iniciar o compartilhamento de tela",
     "ja": "画面共有を開始できませんでした",
     "zh": "无法启动屏幕共享",
-    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ |"
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ଆରମ୍ଭ କରିପାରିଲା ନାହିଁ |",
+    "ur": "اسکرین کا اشتراک شروع نہیں کیا جا سکا",
+    "zh_Hant": "無法啟動螢幕分享"
   },
   "call_screenSharePermissionDenied": {
     "en": "Screen sharing permission denied",
@@ -1776,7 +1942,9 @@
     "pt": "Permissão de compartilhamento de tela negada",
     "ja": "画面共有の権限が拒否されました",
     "zh": "屏幕共享权限被拒绝",
-    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ଅନୁମତି ପ୍ରତ୍ୟାଖ୍ୟାନ |"
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ଅନୁମତି ପ୍ରତ୍ୟାଖ୍ୟାନ |",
+    "ur": "اسکرین شیئرنگ کی اجازت مسترد کر دی گئی۔",
+    "zh_Hant": "螢幕分享權限被拒絕"
   },
   "call_ongoingChannelName": {
     "en": "Ongoing call",
@@ -1797,7 +1965,9 @@
     "pt": "Chamada em andamento",
     "ja": "通話中",
     "zh": "正在通话",
-    "or": "ଚାଲୁଥିବା କଲ୍ |"
+    "or": "ଚାଲୁଥିବା କଲ୍ |",
+    "ur": "جاری کال",
+    "zh_Hant": "正在進行的通話"
   },
   "call_ongoingChannelDescription": {
     "en": "Keeps the call and screen sharing alive",
@@ -1817,7 +1987,9 @@
     "pt": "Mantém a chamada e o compartilhamento de tela ativos",
     "ja": "通話と画面共有を維持します",
     "zh": "保持通话和屏幕共享",
-    "or": "କଲ୍ ଏବଂ ସ୍କ୍ରିନ୍ ସେୟାରିଂକୁ ଜୀବନ୍ତ ରଖେ |"
+    "or": "କଲ୍ ଏବଂ ସ୍କ୍ରିନ୍ ସେୟାରିଂକୁ ଜୀବନ୍ତ ରଖେ |",
+    "ur": "کال اور اسکرین شیئرنگ کو زندہ رکھتا ہے۔",
+    "zh_Hant": "保持通話和螢幕分享"
   },
   "call_screenSharingTitle": {
     "en": "Screen sharing",
@@ -1837,7 +2009,9 @@
     "pt": "Compartilhamento de tela",
     "ja": "画面共有中",
     "zh": "屏幕共享",
-    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର |"
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର |",
+    "ur": "اسکرین شیئرنگ",
+    "zh_Hant": "螢幕分享"
   },
   "call_youAreSharingScreen": {
     "en": "You are sharing your screen",
@@ -1857,7 +2031,9 @@
     "pt": "Você está compartilhando sua tela",
     "ja": "画面を共有しています",
     "zh": "您正在共享屏幕",
-    "or": "ତୁମେ ତୁମର ସ୍କ୍ରିନ୍ ସେୟାର କରୁଛ |"
+    "or": "ତୁମେ ତୁମର ସ୍କ୍ରିନ୍ ସେୟାର କରୁଛ |",
+    "ur": "آپ اپنی اسکرین شیئر کر رہے ہیں۔",
+    "zh_Hant": "您正在分享您的螢幕"
   },
   "call_statusCalling": {
     "en": "Calling",
@@ -1878,7 +2054,9 @@
     "pt": "Chamando",
     "ja": "発信中",
     "zh": "正在呼叫",
-    "or": "କଲ୍ କରୁଛି |"
+    "or": "କଲ୍ କରୁଛି |",
+    "ur": "کال کرنا",
+    "zh_Hant": "呼喚"
   },
   "call_statusConnecting": {
     "en": "Connecting",
@@ -1899,7 +2077,9 @@
     "pt": "Conectando",
     "ja": "接続中",
     "zh": "正在连接",
-    "or": "ସଂଯୋଗ କରୁଛି |"
+    "or": "ସଂଯୋଗ କରୁଛି |",
+    "ur": "جڑ رہا ہے۔",
+    "zh_Hant": "正在連接"
   },
   "call_connectingProgress": {
     "en": "Connecting…",
@@ -1919,7 +2099,9 @@
     "pt": "Conectando…",
     "ja": "接続中…",
     "zh": "正在连接…",
-    "or": "ସଂଯୋଗ…"
+    "or": "ସଂଯୋଗ…",
+    "ur": "منسلک ہو رہا ہے…",
+    "zh_Hant": "正在連線…"
   },
   "call_statusConnected": {
     "en": "Connected",
@@ -1940,7 +2122,9 @@
     "pt": "Conectado",
     "ja": "接続完了",
     "zh": "已连接",
-    "or": "ସଂଯୋଗ ହୋଇଛି |"
+    "or": "ସଂଯୋଗ ହୋଇଛି |",
+    "ur": "جڑا ہوا",
+    "zh_Hant": "已連接"
   },
   "call_statusVideoConnecting": {
     "en": "Video connecting",
@@ -1961,7 +2145,9 @@
     "pt": "Conectando vídeo",
     "ja": "ビデオ接続中",
     "zh": "正在连接视频",
-    "or": "ଭିଡିଓ ସଂଯୋଗ"
+    "or": "ଭିଡିଓ ସଂଯୋଗ",
+    "ur": "ویڈیو کنیکٹنگ",
+    "zh_Hant": "視訊連線"
   },
   "call_statusReconnecting": {
     "en": "Reconnecting",
@@ -1982,7 +2168,9 @@
     "pt": "Reconectando",
     "ja": "再接続中",
     "zh": "正在重新连接",
-    "or": "ପୁନ on ସଂଯୋଗ କରୁଛି |"
+    "or": "ପୁନ on ସଂଯୋଗ କରୁଛି |",
+    "ur": "دوبارہ جڑ رہا ہے۔",
+    "zh_Hant": "重新連接"
   },
   "call_statusRinging": {
     "en": "Ringing",
@@ -2003,7 +2191,9 @@
     "pt": "Chamando",
     "ja": "呼び出し中",
     "zh": "响铃中",
-    "or": "ରିଙ୍ଗ୍"
+    "or": "ରିଙ୍ଗ୍",
+    "ur": "بج رہا ہے۔",
+    "zh_Hant": "鈴聲"
   },
   "call_statusBusy": {
     "en": "Busy",
@@ -2024,7 +2214,9 @@
     "pt": "Ocupado",
     "ja": "通話中",
     "zh": "占线",
-    "or": "ବ୍ୟସ୍ତ"
+    "or": "ବ୍ୟସ୍ତ",
+    "ur": "مصروف",
+    "zh_Hant": "忙碌的"
   },
   "call_statusCompleted": {
     "en": "Completed",
@@ -2045,7 +2237,9 @@
     "pt": "Concluída",
     "ja": "終了",
     "zh": "已完成",
-    "or": "ସମାପ୍ତ"
+    "or": "ସମାପ୍ତ",
+    "ur": "مکمل",
+    "zh_Hant": "完全的"
   },
   "call_statusDeclined": {
     "en": "Declined",
@@ -2066,7 +2260,9 @@
     "pt": "Recusada",
     "ja": "拒否",
     "zh": "已拒绝",
-    "or": "ପ୍ରତ୍ୟାଖ୍ୟାନ"
+    "or": "ପ୍ରତ୍ୟାଖ୍ୟାନ",
+    "ur": "انکار کر دیا",
+    "zh_Hant": "拒絕"
   },
   "call_statusCancelled": {
     "en": "Cancelled",
@@ -2087,7 +2283,9 @@
     "pt": "Cancelada",
     "ja": "キャンセル",
     "zh": "已取消",
-    "or": "ବାତିଲ"
+    "or": "ବାତିଲ",
+    "ur": "منسوخ",
+    "zh_Hant": "取消"
   },
   "call_statusJoined": {
     "en": "Joined",
@@ -2108,7 +2306,9 @@
     "pt": "Entrou",
     "ja": "参加しました",
     "zh": "已加入",
-    "or": "ଯୋଗଦାନ"
+    "or": "ଯୋଗଦାନ",
+    "ur": "شامل ہو گئے۔",
+    "zh_Hant": "已加入"
   },
   "call_statusMissed": {
     "en": "Missed",
@@ -2129,7 +2329,9 @@
     "pt": "Perdida",
     "ja": "不在着信",
     "zh": "未接",
-    "or": "ନିଖୋଜ |"
+    "or": "ନିଖୋଜ |",
+    "ur": "چھوٹ گیا۔",
+    "zh_Hant": "錯過了"
   },
   "call_missedCall": {
     "en": "Missed Call",
@@ -2149,7 +2351,9 @@
     "pt": "Chamada perdida",
     "ja": "不在着信",
     "zh": "未接来电",
-    "or": "ମିସ୍ କଲ୍"
+    "or": "ମିସ୍ କଲ୍",
+    "ur": "مسڈ کال",
+    "zh_Hant": "未接來電"
   },
   "call_missedCallNotification": {
     "en": "Missed call",
@@ -2170,7 +2374,9 @@
     "pt": "Chamada perdida",
     "ja": "不在着信",
     "zh": "未接来电",
-    "or": "ମିସ୍ କଲ୍"
+    "or": "ମିସ୍ କଲ୍",
+    "ur": "مسڈ کال",
+    "zh_Hant": "未接來電"
   },
   "call_screenBeingShared": {
     "en": "Screen is being shared",
@@ -2190,7 +2396,9 @@
     "pt": "A tela está sendo compartilhada",
     "ja": "画面が共有されています",
     "zh": "正在共享屏幕",
-    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ହେଉଛି |"
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ହେଉଛି |",
+    "ur": "اسکرین کا اشتراک کیا جا رہا ہے۔",
+    "zh_Hant": "螢幕正在分享"
   },
   "call_personSharingScreen": {
     "en": "{name} is sharing the screen",
@@ -2215,7 +2423,9 @@
     "pt": "{name} está compartilhando a tela",
     "ja": "{name}が画面を共有しています",
     "zh": "{name} 正在共享屏幕",
-    "or": "{name} ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରୁଛି |"
+    "or": "{name} ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରୁଛି |",
+    "ur": "{name} اسکرین کا اشتراک کر رہا ہے۔",
+    "zh_Hant": "{name} 正在分享螢幕"
   },
   "call_cameraOff": {
     "en": "Camera off",
@@ -2235,7 +2445,9 @@
     "pt": "Câmera desligada",
     "ja": "カメラオフ",
     "zh": "相机已关闭",
-    "or": "କ୍ୟାମେରା ବନ୍ଦ |"
+    "or": "କ୍ୟାମେରା ବନ୍ଦ |",
+    "ur": "کیمرہ بند",
+    "zh_Hant": "相機關閉"
   },
   "call_cameraOn": {
     "en": "Camera on",
@@ -2255,7 +2467,9 @@
     "pt": "Câmera ligada",
     "ja": "カメラオン",
     "zh": "相机已开启",
-    "or": "କ୍ୟାମେରା ଅନ୍"
+    "or": "କ୍ୟାମେରା ଅନ୍",
+    "ur": "کیمرہ آن",
+    "zh_Hant": "相機開啟"
   },
   "call_camera": {
     "en": "Camera",
@@ -2275,7 +2489,9 @@
     "pt": "Câmera",
     "ja": "カメラ",
     "zh": "相机",
-    "or": "କ୍ୟାମେରା |"
+    "or": "କ୍ୟାମେରା |",
+    "ur": "کیمرہ",
+    "zh_Hant": "相機"
   },
   "call_startingScreenShare": {
     "en": "Starting screen share…",
@@ -2295,7 +2511,9 @@
     "pt": "Iniciando compartilhamento de tela…",
     "ja": "画面共有を開始しています…",
     "zh": "正在启动屏幕共享…",
-    "or": "ସ୍କ୍ରିନ୍ ସେୟାର ଆରମ୍ଭ…"
+    "or": "ସ୍କ୍ରିନ୍ ସେୟାର ଆରମ୍ଭ…",
+    "ur": "اسکرین کا اشتراک شروع ہو رہا ہے…",
+    "zh_Hant": "開始螢幕分享..."
   },
   "call_screenVisibleToOther": {
     "en": "Your screen is visible to the other person",
@@ -2315,7 +2533,9 @@
     "pt": "Sua tela está visível para a outra pessoa",
     "ja": "相手に画面が表示されています",
     "zh": "对方可以看到您的屏幕",
-    "or": "ତୁମର ପରଦା ଅନ୍ୟ ଜଣକୁ ଦୃଶ୍ୟମାନ ହୁଏ |"
+    "or": "ତୁମର ପରଦା ଅନ୍ୟ ଜଣକୁ ଦୃଶ୍ୟମାନ ହୁଏ |",
+    "ur": "آپ کی سکرین دوسرے شخص کو دکھائی دے رہی ہے۔",
+    "zh_Hant": "其他人可以看到您的螢幕"
   },
   "call_screenVisibleToName": {
     "en": "Your screen is visible to {name}",
@@ -2340,7 +2560,9 @@
     "pt": "Sua tela está visível para {name}",
     "ja": "{name}に画面が表示されています",
     "zh": "{name} 可以看到您的屏幕",
-    "or": "ଆପଣଙ୍କର ପରଦା {name} କୁ ଦୃଶ୍ୟମାନ ହେଉଛି |"
+    "or": "ଆପଣଙ୍କର ପରଦା {name} କୁ ଦୃଶ୍ୟମାନ ହେଉଛି |",
+    "ur": "آپ کی سکرین {name} کو دکھائی دے رہی ہے۔",
+    "zh_Hant": "{name} 可以看到您的螢幕"
   },
   "call_tapStartBroadcastHint": {
     "en": "Tap Start Broadcast if the system prompt appears",
@@ -2361,7 +2583,9 @@
     "pt": "Toque em Iniciar transmissão se o aviso do sistema aparecer",
     "ja": "システムの確認メッセージが表示されたら「ブロードキャストを開始」をタップしてください",
     "zh": "如果出现系统提示，请点击“开始直播”",
-    "or": "ଯଦି ସିଷ୍ଟମ୍ ପ୍ରମ୍ପ୍ଟ ଦେଖାଯାଏ ତେବେ ଷ୍ଟାର୍ଟ ବ୍ରୋଡକାଷ୍ଟ ଟ୍ୟାପ୍ କରନ୍ତୁ |"
+    "or": "ଯଦି ସିଷ୍ଟମ୍ ପ୍ରମ୍ପ୍ଟ ଦେଖାଯାଏ ତେବେ ଷ୍ଟାର୍ଟ ବ୍ରୋଡକାଷ୍ଟ ଟ୍ୟାପ୍ କରନ୍ତୁ |",
+    "ur": "اگر سسٹم پرامپٹ ظاہر ہوتا ہے تو براڈکاسٹ شروع کریں پر ٹیپ کریں۔",
+    "zh_Hant": "如果出現系統提示，請點選開始廣播"
   },
   "call_stopSharing": {
     "en": "Stop sharing",
@@ -2381,7 +2605,9 @@
     "pt": "Parar compartilhamento",
     "ja": "共有を停止",
     "zh": "停止共享",
-    "or": "ଅଂଶୀଦାର ବନ୍ଦ କରନ୍ତୁ |"
+    "or": "ଅଂଶୀଦାର ବନ୍ଦ କରନ୍ତୁ |",
+    "ur": "شیئر کرنا بند کرو",
+    "zh_Hant": "停止分享"
   },
   "call_waitingForBroadcast": {
     "en": "Waiting for Start Broadcast",
@@ -2402,7 +2628,9 @@
     "pt": "Aguardando início da transmissão",
     "ja": "配信開始を待機中",
     "zh": "等待开始直播",
-    "or": "ଆରମ୍ଭ ପ୍ରସାରଣ ପାଇଁ ଅପେକ୍ଷା |"
+    "or": "ଆରମ୍ଭ ପ୍ରସାରଣ ପାଇଁ ଅପେକ୍ଷା |",
+    "ur": "نشریات شروع ہونے کا انتظار ہے۔",
+    "zh_Hant": "等待開始廣播"
   },
   "call_waitingForBroadcastMessage": {
     "en": "Tap “Start Broadcast” in the system dialog to share your screen. Sharing begins only after that.",
@@ -2423,7 +2651,9 @@
     "pt": "Toque em \"Iniciar transmissão\" na caixa de diálogo do sistema para compartilhar sua tela.",
     "ja": "画面を共有するには、システムダイアログで「ブロードキャストを開始」をタップしてください。",
     "zh": "请在系统弹窗中点击“开始直播”以共享屏幕。",
-    "or": "ଆପଣଙ୍କର ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରିବାକୁ ସିଷ୍ଟମ୍ ଡାୟଲଗ୍ ରେ “ଷ୍ଟାର୍ଟ ବ୍ରୋଡକାଷ୍ଟ” ଟ୍ୟାପ୍ କରନ୍ତୁ | ସେୟାର ପରେ ହିଁ ଆରମ୍ଭ ହୁଏ |"
+    "or": "ଆପଣଙ୍କର ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରିବାକୁ ସିଷ୍ଟମ୍ ଡାୟଲଗ୍ ରେ “ଷ୍ଟାର୍ଟ ବ୍ରୋଡକାଷ୍ଟ” ଟ୍ୟାପ୍ କରନ୍ତୁ | ସେୟାର ପରେ ହିଁ ଆରମ୍ଭ ହୁଏ |",
+    "ur": "اپنی اسکرین کا اشتراک کرنے کے لیے سسٹم ڈائیلاگ میں \"شروع کریں\" کو تھپتھپائیں۔ اس کے بعد ہی شیئرنگ شروع ہوتی ہے۔",
+    "zh_Hant": "點擊系統對話方塊中的「開始直播」即可分享您的螢幕。共享僅在此之後才開始。"
   },
   "call_callFrom": {
     "en": "Call From",
@@ -2444,7 +2674,9 @@
     "pt": "Chamada de",
     "ja": "着信:",
     "zh": "来电自",
-    "or": "ଠାରୁ କଲ୍ କରନ୍ତୁ |"
+    "or": "ଠାରୁ କଲ୍ କରନ୍ତୁ |",
+    "ur": "سے کال کریں۔",
+    "zh_Hant": "呼叫來源"
   },
   "call_stop": {
     "en": "Stop",
@@ -2465,7 +2697,9 @@
     "pt": "Parar",
     "ja": "停止",
     "zh": "停止",
-    "or": "ବନ୍ଦ କର |"
+    "or": "ବନ୍ଦ କର |",
+    "ur": "رک جاؤ",
+    "zh_Hant": "停止"
   },
   "call_shareScreenShort": {
     "en": "Share",
@@ -2486,7 +2720,9 @@
     "pt": "Compartilhar",
     "ja": "共有",
     "zh": "共享",
-    "or": "ଅଂଶୀଦାର କରନ୍ତୁ |"
+    "or": "ଅଂଶୀଦାର କରନ୍ତୁ |",
+    "ur": "شیئر کریں۔",
+    "zh_Hant": "分享"
   },
   "call_shareScreen": {
     "en": "Share screen",
@@ -2506,7 +2742,9 @@
     "pt": "Compartilhar tela",
     "ja": "画面共有",
     "zh": "共享屏幕",
-    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରନ୍ତୁ |"
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରନ୍ତୁ |",
+    "ur": "اسکرین شیئر کریں۔",
+    "zh_Hant": "共享螢幕"
   },
   "call_switchToVideoToShare": {
     "en": "Switch to video call to share your screen",
@@ -2526,7 +2764,9 @@
     "pt": "Mude para chamada de vídeo para compartilhar a tela",
     "ja": "画面を共有するにはビデオ通話に切り替えてください",
     "zh": "切换到视频通话以共享屏幕",
-    "or": "ଆପଣଙ୍କର ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରିବାକୁ ଭିଡିଓ କଲ୍ କୁ ସୁଇଚ୍ କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର କରିବାକୁ ଭିଡିଓ କଲ୍ କୁ ସୁଇଚ୍ କରନ୍ତୁ |",
+    "ur": "اپنی اسکرین کا اشتراک کرنے کے لیے ویڈیو کال پر سوئچ کریں۔",
+    "zh_Hant": "切換到視訊通話以分享您的螢幕"
   },
   "call_switch": {
     "en": "Switch",
@@ -2547,7 +2787,9 @@
     "pt": "Alternar",
     "ja": "切り替え",
     "zh": "切换",
-    "or": "ସୁଇଚ୍"
+    "or": "ସୁଇଚ୍",
+    "ur": "سوئچ کریں۔",
+    "zh_Hant": "轉變"
   },
   "call_decline": {
     "en": "Decline",
@@ -2568,7 +2810,9 @@
     "pt": "Recusar",
     "ja": "拒否",
     "zh": "拒绝",
-    "or": "ଅଗ୍ରାହ୍ୟ କରନ୍ତୁ |"
+    "or": "ଅଗ୍ରାହ୍ୟ କରନ୍ତୁ |",
+    "ur": "رد کرنا",
+    "zh_Hant": "衰退"
   },
   "call_accept": {
     "en": "Accept",
@@ -2589,7 +2833,9 @@
     "pt": "Aceitar",
     "ja": "応答",
     "zh": "接听",
-    "or": "ଗ୍ରହଣ କରନ୍ତୁ"
+    "or": "ଗ୍ରହଣ କରନ୍ତୁ",
+    "ur": "قبول کریں۔",
+    "zh_Hant": "接受"
   },
   "call_answer": {
     "en": "Answer",
@@ -2610,7 +2856,9 @@
     "pt": "Atender",
     "ja": "応答",
     "zh": "接听",
-    "or": "ଉତ୍ତର"
+    "or": "ଉତ୍ତର",
+    "ur": "جواب دیں۔",
+    "zh_Hant": "回答"
   },
   "call_mute": {
     "en": "Mute",
@@ -2631,7 +2879,9 @@
     "pt": "Mudo",
     "ja": "ミュート",
     "zh": "静音",
-    "or": "ମୂକ"
+    "or": "ମୂକ",
+    "ur": "خاموش",
+    "zh_Hant": "沉默的"
   },
   "call_unmute": {
     "en": "Unmute",
@@ -2652,7 +2902,9 @@
     "pt": "Ativar microfone",
     "ja": "ミュート解除",
     "zh": "取消静音",
-    "or": "ଅନ୍ମୁଟ୍ କରନ୍ତୁ |"
+    "or": "ଅନ୍ମୁଟ୍ କରନ୍ତୁ |",
+    "ur": "چالو کریں۔",
+    "zh_Hant": "取消靜音"
   },
   "call_muted": {
     "en": "Muted",
@@ -2673,7 +2925,9 @@
     "pt": "Mutado",
     "ja": "ミュート中",
     "zh": "已静音",
-    "or": "ନିରବ |"
+    "or": "ନିରବ |",
+    "ur": "خاموش",
+    "zh_Hant": "靜音"
   },
   "call_video": {
     "en": "Video",
@@ -2694,7 +2948,9 @@
     "pt": "Vídeo",
     "ja": "ビデオ",
     "zh": "视频",
-    "or": "ଭିଡିଓ"
+    "or": "ଭିଡିଓ",
+    "ur": "ویڈیو",
+    "zh_Hant": "影片"
   },
   "call_incomingVideo": {
     "en": "Incoming video call",
@@ -2714,7 +2970,9 @@
     "pt": "Chamada de vídeo recebida",
     "ja": "着信ビデオ通話",
     "zh": "视频来电",
-    "or": "ଆସୁଥିବା ଭିଡିଓ କଲ୍ |"
+    "or": "ଆସୁଥିବା ଭିଡିଓ କଲ୍ |",
+    "ur": "آنے والی ویڈیو کال",
+    "zh_Hant": "來電視訊通話"
   },
   "call_incomingAudio": {
     "en": "Incoming audio call",
@@ -2734,7 +2992,9 @@
     "pt": "Chamada de voz recebida",
     "ja": "着信音声通話",
     "zh": "语音来电",
-    "or": "ଆସୁଥିବା ଅଡିଓ କଲ୍ |"
+    "or": "ଆସୁଥିବା ଅଡିଓ କଲ୍ |",
+    "ur": "آنے والی آڈیو کال",
+    "zh_Hant": "來電音訊呼叫"
   },
   "call_incomingGroupVideo": {
     "en": "Incoming group video call",
@@ -2754,7 +3014,9 @@
     "pt": "Chamada de vídeo em grupo recebida",
     "ja": "着信グループビデオ通話",
     "zh": "群组视频来电",
-    "or": "ଆସୁଥିବା ଗୋଷ୍ଠୀ ଭିଡିଓ କଲ୍ |"
+    "or": "ଆସୁଥିବା ଗୋଷ୍ଠୀ ଭିଡିଓ କଲ୍ |",
+    "ur": "آنے والی گروپ ویڈیو کال",
+    "zh_Hant": "傳入群組視訊通話"
   },
   "call_incomingGroupAudio": {
     "en": "Incoming group audio call",
@@ -2774,7 +3036,9 @@
     "pt": "Chamada de voz em grupo recebida",
     "ja": "着信グループ音声通話",
     "zh": "群组语音来电",
-    "or": "ଆସୁଥିବା ଗ୍ରୁପ୍ ଅଡିଓ କଲ୍ |"
+    "or": "ଆସୁଥିବା ଗ୍ରୁପ୍ ଅଡିଓ କଲ୍ |",
+    "ur": "آنے والی گروپ آڈیو کال",
+    "zh_Hant": "傳入群組音訊呼叫"
   },
   "call_turnOnVideo": {
     "en": "Turn on your video",
@@ -2794,7 +3058,9 @@
     "pt": "Ative seu vídeo",
     "ja": "ビデオをオンにする",
     "zh": "开启视频",
-    "or": "ଆପଣଙ୍କର ଭିଡିଓ ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |"
+    "or": "ଆପଣଙ୍କର ଭିଡିଓ ଟର୍ନ୍ ଅନ୍ କରନ୍ତୁ |",
+    "ur": "اپنی ویڈیو آن کریں۔",
+    "zh_Hant": "打開你的視頻"
   },
   "call_swipeUpToAnswer": {
     "en": "Swipe up to answer",
@@ -2814,7 +3080,9 @@
     "pt": "Deslize para cima para atender",
     "ja": "上にスワイプして応答",
     "zh": "上滑接听",
-    "or": "ଉତ୍ତର ଦେବାକୁ ସ୍ୱାଇପ୍ କରନ୍ତୁ |"
+    "or": "ଉତ୍ତର ଦେବାକୁ ସ୍ୱାଇପ୍ କରନ୍ତୁ |",
+    "ur": "جواب دینے کے لیے اوپر سوائپ کریں۔",
+    "zh_Hant": "向上滑動即可接聽"
   },
   "call_pleaseWait": {
     "en": "Please wait",
@@ -2834,7 +3102,9 @@
     "pt": "Por favor, aguarde",
     "ja": "お待ちください",
     "zh": "请稍候",
-    "or": "ଦୟାକରି ଅପେକ୍ଷା କରନ୍ତୁ |"
+    "or": "ଦୟାକରି ଅପେକ୍ଷା କରନ୍ତୁ |",
+    "ur": "برائے مہربانی انتظار کریں۔",
+    "zh_Hant": "請稍等"
   },
   "call_callerAndOthers": {
     "en": "{count, plural, =0{{name}} =1{{name} and 1 other} other{{name} and {count} others}}",
@@ -2862,7 +3132,9 @@
     "pt": "{count, plural, =0{{name}} =1{{name} e mais 1} other{{name} e mais {count}}}",
     "ja": "{count, plural, =0{{name}} =1{{name} と他1名} other{{name} と他{count}名}}",
     "zh": "{count, plural, =0{{name}} =1{{name} 及另外 1 人} other{{name} 及另外 {count} 人}}",
-    "or": "{count, plural, =0{{name}} =1{{name} ଏବଂ ଅନ୍ୟ 1 |} other{{name} ଏବଂ {count} ଅନ୍ୟମାନେ |}}"
+    "or": "{count, plural, =0{{name}} =1{{name} ଏବଂ ଅନ୍ୟ 1 |} other{{name} ଏବଂ {count} ଅନ୍ୟମାନେ |}}",
+    "ur": "{count, plural, =0{{name}} =1{{name} اور 1 دیگر} other{{name} اور {count} دیگر}}",
+    "zh_Hant": "{count, plural, =0{{name}} =1{{name} 和另外 1 名} other{{name} 和 {count} 其他}}"
   },
   "call_membersInCall": {
     "en": "{count, plural, =1{1 member in this call} other{{count} members in this call}}",
@@ -2887,7 +3159,9 @@
     "pt": "{count, plural, =1{1 membro nesta chamada} other{{count} membros nesta chamada}}",
     "ja": "{count, plural, =1{1名がこの通話に参加中} other{{count}名がこの通話に参加中}}",
     "zh": "{count, plural, =1{1 位成员在此通话中} other{{count} 位成员在此通话中}}",
-    "or": "{count, plural, =1{ଏହି କଲ୍ ରେ 1 ସଦସ୍ୟ |} other{ଏହି କଲ୍ ରେ {count} ସଦସ୍ୟମାନେ |}}"
+    "or": "{count, plural, =1{ଏହି କଲ୍ ରେ 1 ସଦସ୍ୟ |} other{ଏହି କଲ୍ ରେ {count} ସଦସ୍ୟମାନେ |}}",
+    "ur": "{count, plural, =1{اس کال میں 1 رکن ہے} other{اس کال میں {count} اراکین ہیں}}",
+    "zh_Hant": "{count, plural, =1{本次通話中有 1 位成員} other{本次通話中有 {count} 位成員}}"
   },
   "call_joinOnAnswer": {
     "en": "You will join as soon as you answer",
@@ -2907,7 +3181,9 @@
     "pt": "Você entrará assim que atender",
     "ja": "応答するとすぐに参加します",
     "zh": "接听后立即加入",
-    "or": "ତୁମେ ଉତ୍ତର ଦେବା ମାତ୍ରେ ଯୋଗ ଦେବ |"
+    "or": "ତୁମେ ଉତ୍ତର ଦେବା ମାତ୍ରେ ଯୋଗ ଦେବ |",
+    "ur": "جیسے ہی آپ جواب دیں گے آپ شامل ہو جائیں گے۔",
+    "zh_Hant": "回復後即可加入"
   },
   "call_join": {
     "en": "Join",
@@ -2928,7 +3204,9 @@
     "pt": "Entrar",
     "ja": "参加",
     "zh": "加入",
-    "or": "ଯୋଗ ଦିଅନ୍ତୁ |"
+    "or": "ଯୋଗ ଦିଅନ୍ତୁ |",
+    "ur": "شمولیت",
+    "zh_Hant": "加入"
   },
   "call_waitingForMedia": {
     "en": "Waiting for media stream...",
@@ -2948,7 +3226,9 @@
     "pt": "Aguardando transmissão de mídia...",
     "ja": "メディアストリームを待機中...",
     "zh": "正在等待媒体流...",
-    "or": "ମିଡିଆ ଷ୍ଟ୍ରିମ୍ ପାଇଁ ଅପେକ୍ଷା ..."
+    "or": "ମିଡିଆ ଷ୍ଟ୍ରିମ୍ ପାଇଁ ଅପେକ୍ଷା ...",
+    "ur": "میڈیا سٹریم کا انتظار کر رہا ہے...",
+    "zh_Hant": "正在等待媒體串流..."
   },
   "call_zoomIn": {
     "en": "Zoom in",
@@ -2968,7 +3248,9 @@
     "pt": "Aproximar",
     "ja": "拡大",
     "zh": "放大",
-    "or": "ଜୁମ୍ ଇନ୍ କରନ୍ତୁ |"
+    "or": "ଜୁମ୍ ଇନ୍ କରନ୍ତୁ |",
+    "ur": "زوم ان کریں۔",
+    "zh_Hant": "放大"
   },
   "call_zoomOut": {
     "en": "Zoom out",
@@ -2988,7 +3270,9 @@
     "pt": "Afastar",
     "ja": "縮小",
     "zh": "缩小",
-    "or": "ଜୁମ୍ ଆଉଟ୍ କରନ୍ତୁ |"
+    "or": "ଜୁମ୍ ଆଉଟ୍ କରନ୍ତୁ |",
+    "ur": "زوم آؤٹ کریں۔",
+    "zh_Hant": "縮小"
   },
   "call_resetZoom": {
     "en": "Reset zoom",
@@ -3008,7 +3292,9 @@
     "pt": "Redefinir zoom",
     "ja": "ズームをリセット",
     "zh": "重置缩放",
-    "or": "ଜୁମ୍ ପୁନ Res ସେଟ୍ କରନ୍ତୁ |"
+    "or": "ଜୁମ୍ ପୁନ Res ସେଟ୍ କରନ୍ତୁ |",
+    "ur": "زوم کو دوبارہ ترتیب دیں۔",
+    "zh_Hant": "重設變焦"
   },
   "call_closeFullScreen": {
     "en": "Close full screen",
@@ -3028,7 +3314,9 @@
     "pt": "Sair da tela cheia",
     "ja": "全画面を閉じる",
     "zh": "退出全屏",
-    "or": "ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍ ବନ୍ଦ କରନ୍ତୁ |"
+    "or": "ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍ ବନ୍ଦ କରନ୍ତୁ |",
+    "ur": "پوری اسکرین بند کریں۔",
+    "zh_Hant": "關閉全螢幕"
   },
   "call_phone": {
     "en": "Phone",
@@ -3049,7 +3337,9 @@
     "pt": "Telefone",
     "ja": "電話",
     "zh": "电话",
-    "or": "ଫୋନ୍ |"
+    "or": "ଫୋନ୍ |",
+    "ur": "فون",
+    "zh_Hant": "電話"
   },
   "call_speaker": {
     "en": "Speaker",
@@ -3070,7 +3360,9 @@
     "pt": "Alto-falante",
     "ja": "スピーカー",
     "zh": "扬声器",
-    "or": "ବକ୍ତା"
+    "or": "ବକ୍ତା",
+    "ur": "سپیکر",
+    "zh_Hant": "揚聲器"
   },
   "call_earpiece": {
     "en": "Earpiece",
@@ -3091,7 +3383,9 @@
     "pt": "Auricular",
     "ja": "イヤピース",
     "zh": "听筒",
-    "or": "କାନଫୁଲ"
+    "or": "କାନଫୁଲ",
+    "ur": "ائیر پیس",
+    "zh_Hant": "聽筒"
   },
   "call_wired": {
     "en": "Wired",
@@ -3112,7 +3406,9 @@
     "pt": "Com fio",
     "ja": "有線",
     "zh": "有线",
-    "or": "ତାରଯୁକ୍ତ |"
+    "or": "ତାରଯୁକ୍ତ |",
+    "ur": "وائرڈ",
+    "zh_Hant": "有線"
   },
   "call_headphones": {
     "en": "Headphones",
@@ -3133,7 +3429,9 @@
     "pt": "Fones de ouvido",
     "ja": "ヘッドホン",
     "zh": "耳机",
-    "or": "ହେଡଫୋନ୍ |"
+    "or": "ହେଡଫୋନ୍ |",
+    "ur": "ہیڈ فون",
+    "zh_Hant": "耳機"
   },
   "call_audioOutput": {
     "en": "Audio Output",
@@ -3153,7 +3451,9 @@
     "pt": "Saída de áudio",
     "ja": "音声出力",
     "zh": "音频输出",
-    "or": "ଅଡିଓ ଆଉଟପୁଟ୍"
+    "or": "ଅଡିଓ ଆଉଟପୁଟ୍",
+    "ur": "آڈیو آؤٹ پٹ",
+    "zh_Hant": "音訊輸出"
   },
   "call_more": {
     "en": "More",
@@ -3174,7 +3474,9 @@
     "pt": "Mais",
     "ja": "その他",
     "zh": "更多",
-    "or": "ଅଧିକ"
+    "or": "ଅଧିକ",
+    "ur": "مزید",
+    "zh_Hant": "更多的"
   },
   "call_endCall": {
     "en": "End call",
@@ -3194,7 +3496,9 @@
     "pt": "Encerrar chamada",
     "ja": "通話を終了",
     "zh": "结束通话",
-    "or": "ଶେଷ କଲ୍ |"
+    "or": "ଶେଷ କଲ୍ |",
+    "ur": "کال ختم کریں۔",
+    "zh_Hant": "結束通話"
   },
   "call_inThisCall": {
     "en": "In this call ({count})",
@@ -3219,7 +3523,9 @@
     "pt": "Nesta chamada ({count})",
     "ja": "通話中 ({count})",
     "zh": "通话中 ({count})",
-    "or": "ଏହି କଲ୍ ରେ ({count})"
+    "or": "ଏହି କଲ୍ ରେ ({count})",
+    "ur": "اس کال میں ({count})",
+    "zh_Hant": "在這次通話中 ({count})"
   },
   "call_notInThisCall": {
     "en": "Not in this call ({count})",
@@ -3244,7 +3550,9 @@
     "pt": "Fora desta chamada ({count})",
     "ja": "通話外 ({count})",
     "zh": "未在通话中 ({count})",
-    "or": "ଏହି କଲ୍ ରେ ନୁହେଁ ({count})"
+    "or": "ଏହି କଲ୍ ରେ ନୁହେଁ ({count})",
+    "ur": "اس کال میں نہیں ({count})",
+    "zh_Hant": "不在本次通話中 ({count})"
   },
   "call_noActiveParticipants": {
     "en": "No active participants",
@@ -3264,7 +3572,9 @@
     "pt": "Nenhum participante ativo",
     "ja": "アクティブな参加者はいません",
     "zh": "无活跃参与者",
-    "or": "କ active ଣସି ସକ୍ରିୟ ଅଂଶଗ୍ରହଣକାରୀ ନାହିଁ |"
+    "or": "କ active ଣସି ସକ୍ରିୟ ଅଂଶଗ୍ରହଣକାରୀ ନାହିଁ |",
+    "ur": "کوئی فعال شرکاء نہیں ہیں۔",
+    "zh_Hant": "沒有活躍參與者"
   },
   "call_everyoneInCall": {
     "en": "Everyone is already in the call",
@@ -3284,7 +3594,9 @@
     "pt": "Todos já estão na chamada",
     "ja": "全員が既に参加しています",
     "zh": "所有人均已在通话中",
-    "or": "ସମସ୍ତେ କଲ୍ ରେ ଅଛନ୍ତି |"
+    "or": "ସମସ୍ତେ କଲ୍ ରେ ଅଛନ୍ତି |",
+    "ur": "ہر کوئی پہلے ہی کال میں ہے۔",
+    "zh_Hant": "每個人都已經在通話中"
   },
   "call_tapNotifyToInvite": {
     "en": "Tap notify to invite",
@@ -3304,7 +3616,9 @@
     "pt": "Toque em notificar para convidar",
     "ja": "通知をタップして招待",
     "zh": "点击通知以邀请",
-    "or": "ଆମନ୍ତ୍ରଣ କରିବାକୁ ବିଜ୍ଞପ୍ତି ଟ୍ୟାପ୍ କରନ୍ତୁ |"
+    "or": "ଆମନ୍ତ୍ରଣ କରିବାକୁ ବିଜ୍ଞପ୍ତି ଟ୍ୟାପ୍ କରନ୍ତୁ |",
+    "ur": "مدعو کرنے کے لیے مطلع پر تھپتھپائیں۔",
+    "zh_Hant": "點擊通知即可邀請"
   },
   "call_notify": {
     "en": "Notify",
@@ -3325,7 +3639,9 @@
     "pt": "Notificar",
     "ja": "通知",
     "zh": "通知",
-    "or": "ସୂଚିତ କର |"
+    "or": "ସୂଚିତ କର |",
+    "ur": "اطلاع دیں۔",
+    "zh_Hant": "通知"
   },
   "call_nameYou": {
     "en": "{name} (You)",
@@ -3350,7 +3666,9 @@
     "pt": "{name} (Você)",
     "ja": "{name}（あなた）",
     "zh": "{name}（您）",
-    "or": "{name} (ତୁମେ)"
+    "or": "{name} (ତୁମେ)",
+    "ur": "{name} (آپ)",
+    "zh_Hant": "{name}（你）"
   },
   "call_inCall": {
     "en": "In call",
@@ -3370,7 +3688,9 @@
     "pt": "Em chamada",
     "ja": "通話中",
     "zh": "通话中",
-    "or": "କଲ୍ ରେ |"
+    "or": "କଲ୍ ରେ |",
+    "ur": "کال میں",
+    "zh_Hant": "通話中"
   },
   "call_youAreSharing": {
     "en": "You're sharing",
@@ -3390,7 +3710,9 @@
     "pt": "Você está compartilhando",
     "ja": "共有中",
     "zh": "您正在共享",
-    "or": "ଆପଣ ଅଂଶୀଦାର କରୁଛନ୍ତି |"
+    "or": "ଆପଣ ଅଂଶୀଦାର କରୁଛନ୍ତି |",
+    "ur": "آپ شیئر کر رہے ہیں۔",
+    "zh_Hant": "你正在分享"
   },
   "call_personIsSharing": {
     "en": "{name} is sharing",
@@ -3415,7 +3737,9 @@
     "pt": "{name} está compartilhando",
     "ja": "{name}が共有中",
     "zh": "{name} 正在共享",
-    "or": "{name} ଅଂଶୀଦାର କରୁଛି |"
+    "or": "{name} ଅଂଶୀଦାର କରୁଛି |",
+    "ur": "{name} اشتراک کر رہا ہے۔",
+    "zh_Hant": "{name} 正在共享"
   },
   "call_groupCallInitFailed": {
     "en": "Unable to initialize group call",
@@ -3435,7 +3759,9 @@
     "pt": "Não foi possível inicializar a chamada em grupo",
     "ja": "グループ通話を初期化できませんでした",
     "zh": "无法初始化群组通话",
-    "or": "ଗୋଷ୍ଠୀ କଲ୍ ଆରମ୍ଭ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଗୋଷ୍ଠୀ କଲ୍ ଆରମ୍ଭ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "گروپ کال شروع کرنے سے قاصر",
+    "zh_Hant": "無法初始化組呼"
   },
   "call_sessionConnectFailed": {
     "en": "Failed to connect to the call session",
@@ -3455,7 +3781,9 @@
     "pt": "Falha ao conectar à sessão de chamada",
     "ja": "通話セッションへの接続に失敗しました",
     "zh": "连接通话会话失败",
-    "or": "କଲ୍ ଅଧିବେଶନ ସହିତ ସଂଯୋଗ କରିବାରେ ବିଫଳ |"
+    "or": "କଲ୍ ଅଧିବେଶନ ସହିତ ସଂଯୋଗ କରିବାରେ ବିଫଳ |",
+    "ur": "کال سیشن سے منسلک ہونے میں ناکام",
+    "zh_Hant": "無法連線至通話工作階段"
   },
   "call_cameraMicRequired": {
     "en": "Camera or Mic permissions are required",
@@ -3475,7 +3803,9 @@
     "pt": "Permissões de câmera ou microfone são necessárias",
     "ja": "カメラまたはマイクの権限が必要です",
     "zh": "需要相机或麦克风权限",
-    "or": "କ୍ୟାମେରା କିମ୍ବା ମାଇକ୍ ଅନୁମତି ଆବଶ୍ୟକ |"
+    "or": "କ୍ୟାମେରା କିମ୍ବା ମାଇକ୍ ଅନୁମତି ଆବଶ୍ୟକ |",
+    "ur": "کیمرہ یا مائیک کی اجازت درکار ہے۔",
+    "zh_Hant": "需要相機或麥克風權限"
   },
   "call_someone": {
     "en": "Someone",
@@ -3496,7 +3826,9 @@
     "pt": "Alguém",
     "ja": "誰か",
     "zh": "某人",
-    "or": "କେହି ଜଣେ"
+    "or": "କେହି ଜଣେ",
+    "ur": "کوئی",
+    "zh_Hant": "有人"
   },
   "call_switchCameraFailed": {
     "en": "Unable to switch camera",
@@ -3516,7 +3848,9 @@
     "pt": "Não foi possível alternar a câmera",
     "ja": "カメラを切り替えられませんでした",
     "zh": "无法切换相机",
-    "or": "କ୍ୟାମେରା ସୁଇଚ୍ କରିବାକୁ ଅସମର୍ଥ |"
+    "or": "କ୍ୟାମେରା ସୁଇଚ୍ କରିବାକୁ ଅସମର୍ଥ |",
+    "ur": "کیمرہ سوئچ کرنے سے قاصر",
+    "zh_Hant": "無法切換相機"
   },
   "call_notifyFailed": {
     "en": "Notify failed",
@@ -3536,7 +3870,9 @@
     "pt": "Falha ao notificar",
     "ja": "通知に失敗しました",
     "zh": "通知失败",
-    "or": "ବିଜ୍ଞପ୍ତି ବିଫଳ ହେଲା |"
+    "or": "ବିଜ୍ଞପ୍ତି ବିଫଳ ହେଲା |",
+    "ur": "اطلاع دینے میں ناکام",
+    "zh_Hant": "通知失敗"
   },
   "call_notifySent": {
     "en": "Notified successfully",
@@ -3556,7 +3892,9 @@
     "pt": "Notificado com sucesso",
     "ja": "正常に通知されました",
     "zh": "通知已发送",
-    "or": "ସଫଳତାର ସହିତ ସୂଚିତ |"
+    "or": "ସଫଳତାର ସହିତ ସୂଚିତ |",
+    "ur": "کامیابی سے مطلع کر دیا گیا۔",
+    "zh_Hant": "通知成功"
   },
   "call_cameraUnavailable": {
     "en": "Sorry, camera access is currently unavailable. Please try again later.",
@@ -3576,7 +3914,9 @@
     "pt": "O acesso à câmera está indisponível no momento. Tente novamente mais tarde.",
     "ja": "カメラへのアクセスは現在利用できません。後でもう一度お試しください。",
     "zh": "相机访问目前不可用，请稍后重试。",
-    "or": "ଦୁ Sorry ଖିତ, କ୍ୟାମେରା ପ୍ରବେଶ ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ନାହିଁ | ଦୟାକରି ପରେ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |"
+    "or": "ଦୁ Sorry ଖିତ, କ୍ୟାମେରା ପ୍ରବେଶ ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ନାହିଁ | ଦୟାକରି ପରେ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",
+    "ur": "معذرت، کیمرے تک رسائی فی الحال دستیاب نہیں ہے۔ براہ کرم بعد میں دوبارہ کوشش کریں۔",
+    "zh_Hant": "抱歉，目前無法存取相機。請稍後重試。"
   },
   "call_connectionTimeout": {
     "en": "Connection timed out",
@@ -3596,7 +3936,9 @@
     "pt": "Tempo limite de conexão esgotado",
     "ja": "接続がタイムアウトしました",
     "zh": "连接超时",
-    "or": "ସଂଯୋଗ ସମୟ ସମାପ୍ତ ହୋଇଛି |"
+    "or": "ସଂଯୋଗ ସମୟ ସମାପ୍ତ ହୋଇଛି |",
+    "ur": "کنکشن کا وقت ختم ہو گیا۔",
+    "zh_Hant": "連線逾時"
   },
   "call_unexpectedResponse": {
     "en": "Unexpected response from server",
@@ -3616,7 +3958,9 @@
     "pt": "Resposta inesperada do servidor",
     "ja": "サーバーからの予期しない応答です",
     "zh": "服务器返回异常响应",
-    "or": "ସର୍ଭରରୁ ଅପ୍ରତ୍ୟାଶିତ ପ୍ରତିକ୍ରିୟା |"
+    "or": "ସର୍ଭରରୁ ଅପ୍ରତ୍ୟାଶିତ ପ୍ରତିକ୍ରିୟା |",
+    "ur": "سرور سے غیر متوقع جواب",
+    "zh_Hant": "來自伺服器的意外回應"
   },
   "call_cannotReachCallServer": {
     "en": "Unable to connect to call server. Please check your network.",
@@ -3636,7 +3980,9 @@
     "pt": "Não foi possível conectar ao servidor de chamadas. Verifique sua rede.",
     "ja": "通話サーバーに接続できません。ネットワークを確認してください。",
     "zh": "无法连接到通话服务器，请检查网络。",
-    "or": "କଲ୍ ସର୍ଭରକୁ ସଂଯୋଗ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ |"
+    "or": "କଲ୍ ସର୍ଭରକୁ ସଂଯୋଗ କରିବାକୁ ଅସମର୍ଥ | ଦୟାକରି ଆପଣଙ୍କର ନେଟୱାର୍କ ଯାଞ୍ଚ କରନ୍ତୁ |",
+    "ur": "کال سرور سے رابطہ قائم کرنے سے قاصر۔ براہ کرم اپنا نیٹ ورک چیک کریں۔",
+    "zh_Hant": "無法連線到呼叫伺服器。請檢查您的網路。"
   },
   "call_screenShareChannelName": {
     "en": "Screen Sharing Service",
@@ -3657,7 +4003,9 @@
     "pt": "Serviço de compartilhamento de tela",
     "ja": "画面共有サービス",
     "zh": "屏幕共享服务",
-    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ସେବା |"
+    "or": "ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ସେବା |",
+    "ur": "اسکرین شیئرنگ سروس",
+    "zh_Hant": "螢幕分享服務"
   },
   "call_screenShareChannelDescription": {
     "en": "Active screen sharing session notification",
@@ -3677,7 +4025,9 @@
     "pt": "Notificação de sessão ativa de compartilhamento de tela",
     "ja": "アクティブな画面共有セッションの通知",
     "zh": "活跃屏幕共享会话通知",
-    "or": "ସକ୍ରିୟ ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ଅଧିବେଶନ ବିଜ୍ଞପ୍ତି |"
+    "or": "ସକ୍ରିୟ ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର ଅଧିବେଶନ ବିଜ୍ଞପ୍ତି |",
+    "ur": "فعال اسکرین شیئرنگ سیشن کی اطلاع",
+    "zh_Hant": "活動螢幕分享會話通知"
   },
   "call_inCallWithGroup": {
     "en": "In call · {groupName}",
@@ -3702,7 +4052,9 @@
     "pt": "Em chamada · {groupName}",
     "ja": "通話中 · {groupName}",
     "zh": "通话中 · {groupName}",
-    "or": "କଲ୍ ରେ · {groupName} |"
+    "or": "କଲ୍ ରେ · {groupName} |",
+    "ur": "کال میں · {groupName}",
+    "zh_Hant": "通話中 · {groupName}"
   },
   "call_micActive": {
     "en": "Microphone is active",
@@ -3722,7 +4074,9 @@
     "pt": "O microfone está ativo",
     "ja": "マイクがアクティブです",
     "zh": "麦克风处于活动状态",
-    "or": "ମାଇକ୍ରୋଫୋନ୍ ସକ୍ରିୟ ଅଛି |"
+    "or": "ମାଇକ୍ରୋଫୋନ୍ ସକ୍ରିୟ ଅଛି |",
+    "ur": "مائیکروفون فعال ہے۔",
+    "zh_Hant": "麥克風處於活動狀態"
   },
   "call_sharingYourScreen": {
     "en": "Sharing your screen",
@@ -3742,7 +4096,9 @@
     "pt": "Compartilhando sua tela",
     "ja": "画面を共有中",
     "zh": "正在共享您的屏幕",
-    "or": "ଆପଣଙ୍କର ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର |"
+    "or": "ଆପଣଙ୍କର ସ୍କ୍ରିନ୍ ଅଂଶୀଦାର |",
+    "ur": "آپ کی سکرین کا اشتراک کرنا",
+    "zh_Hant": "分享您的螢幕"
   },
   "call_sharingInGroupTapReturn": {
     "en": "Sharing in {groupName} • Tap to return to call",
@@ -3767,7 +4123,9 @@
     "pt": "Compartilhando em {groupName} • Toque para retornar",
     "ja": "{groupName}で共有中 • タップして通話に戻る",
     "zh": "在 {groupName} 中共享 • 点击返回通话",
-    "or": "{groupName} ରେ ଅଂଶୀଦାର • କଲ୍ କୁ ଫେରିବା ପାଇଁ ଟ୍ୟାପ୍ କରନ୍ତୁ |"
+    "or": "{groupName} ରେ ଅଂଶୀଦାର • କଲ୍ କୁ ଫେରିବା ପାଇଁ ଟ୍ୟାପ୍ କରନ୍ତୁ |",
+    "ur": "{groupName} میں اشتراک کرنا • کال پر واپس جانے کے لیے تھپتھپائیں۔",
+    "zh_Hant": "在 {groupName} 中分享 • 點選即可返回通話"
   },
   "call_returnToCall": {
     "en": "Return to Call",
@@ -3787,7 +4145,9 @@
     "pt": "Voltar à chamada",
     "ja": "通話に戻る",
     "zh": "返回通话",
-    "or": "କଲ୍ କୁ ଫେରନ୍ତୁ |"
+    "or": "କଲ୍ କୁ ଫେରନ୍ତୁ |",
+    "ur": "کال پر واپس جائیں۔",
+    "zh_Hant": "返回通話"
   },
   "call_groupCallComingSoon": {
     "en": "Group calling is coming soon",
@@ -3807,7 +4167,9 @@
     "pt": "Chamadas em grupo em breve",
     "ja": "グループ通話は近日公開予定です",
     "zh": "群组通话即将推出",
-    "or": "ଗ୍ରୁପ୍ କଲିଂ ଶୀଘ୍ର ଆସୁଛି |"
+    "or": "ଗ୍ରୁପ୍ କଲିଂ ଶୀଘ୍ର ଆସୁଛି |",
+    "ur": "گروپ کالنگ جلد آرہی ہے۔",
+    "zh_Hant": "群組通話即將推出"
   },
   "call_message": {
     "en": "Message",
@@ -3828,7 +4190,9 @@
     "pt": "Mensagem",
     "ja": "メッセージ",
     "zh": "消息",
-    "or": "ବାର୍ତ୍ତା |"
+    "or": "ବାର୍ତ୍ତା |",
+    "ur": "پیغام",
+    "zh_Hant": "訊息"
   },
   "call_callInformation": {
     "en": "Call Information",
@@ -3848,7 +4212,9 @@
     "pt": "Informações da chamada",
     "ja": "通話情報",
     "zh": "通话信息",
-    "or": "କଲ୍ ସୂଚନା"
+    "or": "କଲ୍ ସୂଚନା",
+    "ur": "کال کی معلومات",
+    "zh_Hant": "通話訊息"
   },
   "call_duration": {
     "en": "Duration",
@@ -3868,7 +4234,9 @@
     "pt": "Duração",
     "ja": "通話時間",
     "zh": "时长",
-    "or": "ଅବଧି"
+    "or": "ଅବଧି",
+    "ur": "دورانیہ",
+    "zh_Hant": "期間"
   },
   "call_durationValue": {
     "en": "Duration: {duration}",
@@ -3893,7 +4261,9 @@
     "pt": "Duração: {duration}",
     "ja": "通話時間: {duration}",
     "zh": "时长：{duration}",
-    "or": "ସମୟ: {duration}"
+    "or": "ସମୟ: {duration}",
+    "ur": "دورانیہ: {duration}",
+    "zh_Hant": "持續時間：{duration}"
   },
   "call_started": {
     "en": "Started",
@@ -3914,7 +4284,9 @@
     "pt": "Iniciada",
     "ja": "開始",
     "zh": "开始时间",
-    "or": "ଆରମ୍ଭ ହୋଇଛି"
+    "or": "ଆରମ୍ଭ ହୋଇଛି",
+    "ur": "شروع کر دیا۔",
+    "zh_Hant": "開始"
   },
   "call_ended": {
     "en": "Ended",
@@ -3935,7 +4307,9 @@
     "pt": "Encerrada",
     "ja": "終了",
     "zh": "结束时间",
-    "or": "ସମାପ୍ତ"
+    "or": "ସମାପ୍ତ",
+    "ur": "ختم ہوا۔",
+    "zh_Hant": "結束"
   },
   "call_durHrMin": {
     "en": "{hours} hr {minutes} min",
@@ -3963,7 +4337,9 @@
     "pt": "{hours} h {minutes} min",
     "ja": "{hours}時間{minutes}分",
     "zh": "{hours} 小时 {minutes} 分钟",
-    "or": "{hours} ଘଣ୍ଟା {minutes} ମିନିଟ୍ |"
+    "or": "{hours} ଘଣ୍ଟା {minutes} ମିନିଟ୍ |",
+    "ur": "{hours} گھنٹہ {minutes} منٹ",
+    "zh_Hant": "{hours} 小時 {minutes} 分鐘"
   },
   "call_durHr": {
     "en": "{hours} hr",
@@ -3988,7 +4364,9 @@
     "pt": "{hours} h",
     "ja": "{hours}時間",
     "zh": "{hours} 小时",
-    "or": "{hours} ଘଣ୍ଟା"
+    "or": "{hours} ଘଣ୍ଟା",
+    "ur": "{hours} گھنٹہ",
+    "zh_Hant": "{hours} 小時"
   },
   "call_durMinSec": {
     "en": "{minutes} min {seconds} sec",
@@ -4016,7 +4394,9 @@
     "pt": "{minutes} min {seconds} s",
     "ja": "{minutes}分{seconds}秒",
     "zh": "{minutes} 分钟 {seconds} 秒",
-    "or": "{minutes} ମିନିଟ୍ {seconds} ସେକେଣ୍ଡ୍ |"
+    "or": "{minutes} ମିନିଟ୍ {seconds} ସେକେଣ୍ଡ୍ |",
+    "ur": "{minutes} منٹ {seconds} سیکنڈ",
+    "zh_Hant": "{minutes} 分 {seconds} 秒"
   },
   "call_durMin": {
     "en": "{minutes} min",
@@ -4041,7 +4421,9 @@
     "pt": "{minutes} min",
     "ja": "{minutes}分",
     "zh": "{minutes} 分钟",
-    "or": "{minutes} ମିନିଟ୍"
+    "or": "{minutes} ମିନିଟ୍",
+    "ur": "{minutes} منٹ",
+    "zh_Hant": "{minutes} 分鐘"
   },
   "call_durSec": {
     "en": "{seconds} sec",
@@ -4066,7 +4448,9 @@
     "pt": "{seconds} s",
     "ja": "{seconds}秒",
     "zh": "{seconds} 秒",
-    "or": "{seconds} ସେକେଣ୍ଡ୍"
+    "or": "{seconds} ସେକେଣ୍ଡ୍",
+    "ur": "{seconds} سیکنڈ",
+    "zh_Hant": "{seconds} 秒"
   },
   "call_durShortHrMin": {
     "en": "{hours}h {minutes}m",
@@ -4095,7 +4479,9 @@
     "pt": "{hours}h {minutes}m",
     "ja": "{hours}h {minutes}m",
     "zh": "{hours}小时 {minutes}分",
-    "or": "{hours}h {minutes} ମି"
+    "or": "{hours}h {minutes} ମି",
+    "ur": "{hours}h {minutes}m",
+    "zh_Hant": "{hours}h {minutes}m"
   },
   "call_durShortHr": {
     "en": "{hours}h",
@@ -4120,7 +4506,9 @@
     "pt": "{hours}h",
     "ja": "{hours}h",
     "zh": "{hours}小时",
-    "or": "{hours} ଘ"
+    "or": "{hours} ଘ",
+    "ur": "{hours}h",
+    "zh_Hant": "{hours}h"
   },
   "call_durShortMinSec": {
     "en": "{minutes}m {seconds}s",
@@ -4148,7 +4536,9 @@
     "pt": "{minutes}m {seconds}s",
     "ja": "{minutes}m {seconds}s",
     "zh": "{minutes}分 {seconds}秒",
-    "or": "{minutes}m {seconds}s |"
+    "or": "{minutes}m {seconds}s |",
+    "ur": "{minutes}m {seconds}s",
+    "zh_Hant": "{minutes}m {seconds}s"
   },
   "call_durShortMin": {
     "en": "{minutes}m",
@@ -4173,7 +4563,9 @@
     "pt": "{minutes}m",
     "ja": "{minutes}m",
     "zh": "{minutes}分",
-    "or": "{minutes} ମି"
+    "or": "{minutes} ମି",
+    "ur": "{minutes}m",
+    "zh_Hant": "{minutes}米"
   },
   "call_durShortSec": {
     "en": "{seconds}s",
@@ -4198,7 +4590,9 @@
     "pt": "{seconds}s",
     "ja": "{seconds}s",
     "zh": "{seconds}秒",
-    "or": "{seconds}s |"
+    "or": "{seconds}s |",
+    "ur": "{seconds}s",
+    "zh_Hant": "{seconds}s"
   },
   "call_todayAt": {
     "en": "Today, {value}",
@@ -4224,7 +4618,9 @@
     "pt": "Hoje, {value}",
     "ja": "今日、{value}",
     "zh": "今天 {value}",
-    "or": "ଆଜି, {value} |"
+    "or": "ଆଜି, {value} |",
+    "ur": "آج، {value}",
+    "zh_Hant": "今天，{value}"
   },
   "call_yesterdayAt": {
     "en": "Yesterday, {value}",
@@ -4250,7 +4646,9 @@
     "pt": "Ontem, {value}",
     "ja": "昨日、{value}",
     "zh": "昨天 {value}",
-    "or": "ଗତକାଲି, {value} |"
+    "or": "ଗତକାଲି, {value} |",
+    "ur": "کل، {value}",
+    "zh_Hant": "昨天，{value}"
   },
   "call_callSummary": {
     "en": "Call Summary",
@@ -4270,7 +4668,9 @@
     "pt": "Resumo da chamada",
     "ja": "通話概要",
     "zh": "通话摘要",
-    "or": "ସାରାଂଶକୁ କଲ୍ କରନ୍ତୁ |"
+    "or": "ସାରାଂଶକୁ କଲ୍ କରନ୍ତୁ |",
+    "ur": "کال کا خلاصہ",
+    "zh_Hant": "通話摘要"
   },
   "call_total": {
     "en": "Total",
@@ -4290,7 +4690,9 @@
     "pt": "Total",
     "ja": "合計",
     "zh": "总计",
-    "or": "ସମୁଦାୟ"
+    "or": "ସମୁଦାୟ",
+    "ur": "کل",
+    "zh_Hant": "全部的"
   },
   "call_participants": {
     "en": "Participants",
@@ -4310,7 +4712,9 @@
     "pt": "Participantes",
     "ja": "参加者",
     "zh": "参与者",
-    "or": "ଅଂଶଗ୍ରହଣକାରୀ"
+    "or": "ଅଂଶଗ୍ରହଣକାରୀ",
+    "ur": "شرکاء",
+    "zh_Hant": "參加者"
   },
   "call_participant": {
     "en": "Participant",
@@ -4330,7 +4734,9 @@
     "pt": "Participante",
     "ja": "参加者",
     "zh": "参与者",
-    "or": "ଅଂଶଗ୍ରହଣକାରୀ"
+    "or": "ଅଂଶଗ୍ରହଣକାରୀ",
+    "ur": "حصہ لینے والا",
+    "zh_Hant": "參加者"
   },
   "call_caller": {
     "en": "Caller",
@@ -4351,7 +4757,9 @@
     "pt": "Autor da chamada",
     "ja": "発信者",
     "zh": "呼叫者",
-    "or": "କଲର୍"
+    "or": "କଲର୍",
+    "ur": "پکارنے والا",
+    "zh_Hant": "呼叫者"
   },
   "call_infoGroupName": {
     "en": "Group Name",
@@ -4371,7 +4779,9 @@
     "pt": "Nome do grupo",
     "ja": "グループ名",
     "zh": "群组名称",
-    "or": "ଗୋଷ୍ଠୀ ନାମ"
+    "or": "ଗୋଷ୍ଠୀ ନାମ",
+    "ur": "گروپ کا نام",
+    "zh_Hant": "群組名稱"
   },
   "call_infoGroupCode": {
     "en": "Group Code",
@@ -4391,7 +4801,9 @@
     "pt": "Código do grupo",
     "ja": "グループコード",
     "zh": "群组代码",
-    "or": "ଗୋଷ୍ଠୀ କୋଡ୍ |"
+    "or": "ଗୋଷ୍ଠୀ କୋଡ୍ |",
+    "ur": "گروپ کوڈ",
+    "zh_Hant": "集團程式碼"
   },
   "call_infoTotalMembers": {
     "en": "Total Members",
@@ -4411,7 +4823,9 @@
     "pt": "Total de membros",
     "ja": "総メンバー数",
     "zh": "总成员数",
-    "or": "ସମୁଦାୟ ସଦସ୍ୟ"
+    "or": "ସମୁଦାୟ ସଦସ୍ୟ",
+    "ur": "کل ممبران",
+    "zh_Hant": "會員總數"
   },
   "call_infoDescription": {
     "en": "Description",
@@ -4431,7 +4845,9 @@
     "pt": "Descrição",
     "ja": "説明",
     "zh": "描述",
-    "or": "ବର୍ଣ୍ଣନା"
+    "or": "ବର୍ଣ୍ଣନା",
+    "ur": "تفصیل",
+    "zh_Hant": "描述"
   },
   "call_infoMobile": {
     "en": "Mobile",
@@ -4451,7 +4867,9 @@
     "pt": "Celular",
     "ja": "携帯電話",
     "zh": "手机",
-    "or": "ମୋବାଇଲ୍ |"
+    "or": "ମୋବାଇଲ୍ |",
+    "ur": "موبائل",
+    "zh_Hant": "移動的"
   },
   "call_infoEmail": {
     "en": "Email",
@@ -4471,7 +4889,9 @@
     "pt": "E-mail",
     "ja": "メール",
     "zh": "电子邮件",
-    "or": "ଇମେଲ୍ କରନ୍ତୁ |"
+    "or": "ଇମେଲ୍ କରନ୍ତୁ |",
+    "ur": "ای میل",
+    "zh_Hant": "電子郵件"
   },
   "call_groupInformation": {
     "en": "Group Information",
@@ -4491,7 +4911,9 @@
     "pt": "Informações do grupo",
     "ja": "グループ情報",
     "zh": "群组信息",
-    "or": "ଗୋଷ୍ଠୀ ସୂଚନା"
+    "or": "ଗୋଷ୍ଠୀ ସୂଚନା",
+    "ur": "گروپ کی معلومات",
+    "zh_Hant": "集團資訊"
   },
   "call_contactInformation": {
     "en": "Contact Information",
@@ -4511,7 +4933,9 @@
     "pt": "Informações de contato",
     "ja": "連絡先情報",
     "zh": "联系人信息",
-    "or": "ଯୋଗାଯୋଗ ସୂଚନା"
+    "or": "ଯୋଗାଯୋଗ ସୂଚନା",
+    "ur": "رابطہ کی معلومات",
+    "zh_Hant": "聯絡資訊"
   },
   "call_recentCalls": {
     "en": "Recent Calls",
@@ -4531,7 +4955,9 @@
     "pt": "Chamadas recentes",
     "ja": "最近の通話",
     "zh": "最近通话",
-    "or": "ସାମ୍ପ୍ରତିକ କଲ୍ |"
+    "or": "ସାମ୍ପ୍ରତିକ କଲ୍ |",
+    "ur": "حالیہ کالز",
+    "zh_Hant": "最近通話"
   },
   "call_loadMore": {
     "en": "Load more",
@@ -4551,7 +4977,9 @@
     "pt": "Carregar mais",
     "ja": "もっと読み込む",
     "zh": "加载更多",
-    "or": "ଅଧିକ ଲୋଡ୍ କରନ୍ତୁ |"
+    "or": "ଅଧିକ ଲୋଡ୍ କରନ୍ତୁ |",
+    "ur": "مزید لوڈ کریں۔",
+    "zh_Hant": "加載更多"
   },
   "call_noRecentCalls": {
     "en": "No recent calls",
@@ -4571,7 +4999,9 @@
     "pt": "Sem chamadas recentes",
     "ja": "最近の通話はありません",
     "zh": "无最近通话",
-    "or": "ସାମ୍ପ୍ରତିକ କଲ୍ ନାହିଁ |"
+    "or": "ସାମ୍ପ୍ରତିକ କଲ୍ ନାହିଁ |",
+    "ur": "کوئی حالیہ کالز نہیں ہیں۔",
+    "zh_Hant": "最近沒有通話"
   },
   "call_loadDetailFailed": {
     "en": "Failed to load call detail",
@@ -4591,7 +5021,9 @@
     "pt": "Falha ao carregar detalhes da chamada",
     "ja": "通話詳細の読み込みに失敗しました",
     "zh": "加载通话详情失败",
-    "or": "କଲ୍ ବିବରଣୀ ଲୋଡ୍ କରିବାରେ ବିଫଳ |"
+    "or": "କଲ୍ ବିବରଣୀ ଲୋଡ୍ କରିବାରେ ବିଫଳ |",
+    "ur": "کال کی تفصیل لوڈ کرنے میں ناکام",
+    "zh_Hant": "無法加載通話詳細信息"
   },
   "call_loadRecentFailed": {
     "en": "Failed to load recent calls",
@@ -4611,7 +5043,9 @@
     "pt": "Falha ao carregar chamadas recentes",
     "ja": "最近の通話の読み込みに失敗しました",
     "zh": "加载最近通话失败",
-    "or": "ସାମ୍ପ୍ରତିକ କଲ୍ ଲୋଡ୍ କରିବାରେ ବିଫଳ |"
+    "or": "ସାମ୍ପ୍ରତିକ କଲ୍ ଲୋଡ୍ କରିବାରେ ବିଫଳ |",
+    "ur": "حالیہ کالز لوڈ کرنے میں ناکام",
+    "zh_Hant": "無法加載最近通話"
   },
   "call_userNotFound": {
     "en": "User not found",
@@ -4631,7 +5065,9 @@
     "pt": "Usuário não encontrado",
     "ja": "ユーザーが見つかりません",
     "zh": "未找到用户",
-    "or": "ଉପଯୋଗକର୍ତ୍ତା ମିଳିଲା ନାହିଁ |"
+    "or": "ଉପଯୋଗକର୍ତ୍ତା ମିଳିଲା ନାହିଁ |",
+    "ur": "صارف نہیں ملا",
+    "zh_Hant": "未找到用戶"
   },
   "call_unableToOpenChat": {
     "en": "Unable to open chat for this contact",
@@ -4651,7 +5087,9 @@
     "pt": "Não foi possível abrir a conversa com este contato",
     "ja": "この連絡先のチャットを開けません",
     "zh": "无法为此联系人打开聊天",
-    "or": "ଏହି ଯୋଗାଯୋଗ ପାଇଁ ଚାଟ୍ ଖୋଲିବାକୁ ଅସମର୍ଥ |"
+    "or": "ଏହି ଯୋଗାଯୋଗ ପାଇଁ ଚାଟ୍ ଖୋଲିବାକୁ ଅସମର୍ଥ |",
+    "ur": "اس رابطے کے لیے چیٹ کھولنے سے قاصر ہے۔",
+    "zh_Hant": "無法開啟此聯絡人的聊天"
   },
   "call_chatFallback": {
     "en": "Chat",
@@ -4672,7 +5110,9 @@
     "pt": "Chat",
     "ja": "チャット",
     "zh": "聊天",
-    "or": "ଚାଟ୍ କରନ୍ତୁ |"
+    "or": "ଚାଟ୍ କରନ୍ତୁ |",
+    "ur": "گپ شپ",
+    "zh_Hant": "聊天"
   },
   "call_historyCancelled": {
     "en": "Cancelled {callType}",
@@ -4698,7 +5138,9 @@
     "pt": "{callType} cancelada",
     "ja": "キャンセルされた {callType}",
     "zh": "已取消的 {callType}",
-    "or": "ବାତିଲ {callType}"
+    "or": "ବାତିଲ {callType}",
+    "ur": "منسوخ شدہ {callType}",
+    "zh_Hant": " {callType}"
   },
   "call_notificationPermissionTitle": {
     "en": "Notification permission",
@@ -4718,7 +5160,9 @@
     "pt": "Permissão de notificação",
     "ja": "通知の権限",
     "zh": "通知权限",
-    "or": "ବିଜ୍ଞପ୍ତି ଅନୁମତି |"
+    "or": "ବିଜ୍ଞପ୍ତି ଅନୁମତି |",
+    "ur": "اطلاع کی اجازت",
+    "zh_Hant": "通知權限"
   },
   "call_notificationPermissionRationale": {
     "en": "Needed to show incoming calls.",
@@ -4738,7 +5182,9 @@
     "pt": "Necessário para exibir chamadas recebidas.",
     "ja": "着信を表示するために必要です。",
     "zh": "用于显示来电。",
-    "or": "ଆସୁଥିବା କଲ୍ ଦେଖାଇବା ଆବଶ୍ୟକ |"
+    "or": "ଆସୁଥିବା କଲ୍ ଦେଖାଇବା ଆବଶ୍ୟକ |",
+    "ur": "آنے والی کالیں دکھانے کی ضرورت ہے۔",
+    "zh_Hant": "需要顯示來電。"
   },
   "call_notificationPermissionSettings": {
     "en": "Enable notifications in Settings.",
@@ -4758,7 +5204,9 @@
     "pt": "Ative as notificações nas Configurações.",
     "ja": "設定で通知を有効にしてください。",
     "zh": "在设置中启用通知。",
-    "or": "ସେଟିଂସମୂହରେ ବିଜ୍ଞପ୍ତିଗୁଡିକ ସକ୍ଷମ କରନ୍ତୁ |"
+    "or": "ସେଟିଂସମୂହରେ ବିଜ୍ଞପ୍ତିଗୁଡିକ ସକ୍ଷମ କରନ୍ତୁ |",
+    "ur": "ترتیبات میں اطلاعات کو فعال کریں۔",
+    "zh_Hant": "在「設定」中啟用通知。"
   },
   "call_incomingCallChannelName": {
     "en": "Incoming Call",
@@ -4779,7 +5227,9 @@
     "pt": "Chamada recebida",
     "ja": "着信通話",
     "zh": "来电",
-    "or": "ଆସୁଥିବା କଲ୍ |"
+    "or": "ଆସୁଥିବା କଲ୍ |",
+    "ur": "آنے والی کال",
+    "zh_Hant": "來電"
   },
   "call_missedCallChannelName": {
     "en": "Missed Call",
@@ -4800,6 +5250,8 @@
     "pt": "Chamada perdida",
     "ja": "不在着信",
     "zh": "未接来电",
-    "or": "ମିସ୍ କଲ୍"
+    "or": "ମିସ୍ କଲ୍",
+    "ur": "مسڈ کال",
+    "zh_Hant": "未接來電"
   }
 }

@@ -15,10 +15,24 @@ const Locale _english = Locale('en');
 /// PrefConst.appLanguage / LanguageController.prefKey.
 const String _appLanguagePrefKey = 'app_language';
 
+Locale _parseLocale(String code) {
+  if (code.contains('_')) {
+    final parts = code.split('_');
+    return Locale.fromSubtags(languageCode: parts[0], scriptCode: parts[1]);
+  }
+  return Locale(code);
+}
+
 AppLocalizations _lookup(String? code) {
-  if (code != null &&
-      AppLocalizations.supportedLocales.any((l) => l.languageCode == code)) {
-    return lookupAppLocalizations(Locale(code));
+  if (code != null) {
+    final loc = _parseLocale(code);
+    if (AppLocalizations.supportedLocales.any((l) =>
+        (loc.scriptCode != null &&
+            l.languageCode == loc.languageCode &&
+            l.scriptCode == loc.scriptCode) ||
+        (loc.scriptCode == null && l.languageCode == loc.languageCode))) {
+      return lookupAppLocalizations(loc);
+    }
   }
   return lookupAppLocalizations(_english);
 }

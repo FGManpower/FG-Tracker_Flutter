@@ -969,6 +969,8 @@
   "intro_skip": "ഒഴിവാക്കുക",
   "intro_walkieSubtitle": "സിഗ്നൽ ഇല്ലേ? പ്രശ്നമില്ല. എവിടെയും ബന്ധം നിലനിർത്തൂ.",
   "intro_walkieTitle": "വാക്കി-ടോക്കി ഫീച്ചർ",
+  "login_dataSecure": "നിങ്ങളുടെ ഡാറ്റ {percent} സുരക്ഷിതമാണ്",
+  "login_enterMobileNumber": "മൊബൈൽ നമ്പർ നൽകുക",
   "media_cannotOpen": "തുറക്കാനാകില്ല",
   "media_documentNotFound": "ഡോക്യുമെന്റ് കണ്ടെത്തിയില്ല",
   "media_invalidLink": "അസാധുവായ ലിങ്ക്",

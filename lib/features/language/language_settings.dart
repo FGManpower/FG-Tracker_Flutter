@@ -142,8 +142,8 @@ class _LanguageSheetState extends State<LanguageSheet> {
   }
 
   List<LanguageOption> get _visible => _query.trim().isEmpty
-      ? kAppLanguages
-      : kAppLanguages.where((o) => o.matches(_query)).toList(growable: false);
+      ? kWorkingLanguages
+      : kWorkingLanguages.where((o) => o.matches(_query)).toList(growable: false);
 
   Future<void> _pick(LanguageOption option) async {
     if (_busy) return;

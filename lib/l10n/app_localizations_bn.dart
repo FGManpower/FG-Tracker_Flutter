@@ -3399,6 +3399,14 @@ class AppLocalizationsBn extends AppLocalizations {
   String get intro_walkieTitle => 'ওয়াকি-টকি ফিচার';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'আপনার ডেটা $percent সুরক্ষিত';
+  }
+
+  @override
+  String get login_enterMobileNumber => 'মোবাইল নম্বর লিখুন';
+
+  @override
   String get media_cannotOpen => 'খোলা যাচ্ছে না';
 
   @override

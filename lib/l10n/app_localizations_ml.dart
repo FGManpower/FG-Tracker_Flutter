@@ -3440,6 +3440,14 @@ class AppLocalizationsMl extends AppLocalizations {
   String get intro_walkieTitle => 'വാക്കി-ടോക്കി ഫീച്ചർ';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'നിങ്ങളുടെ ഡാറ്റ $percent സുരക്ഷിതമാണ്';
+  }
+
+  @override
+  String get login_enterMobileNumber => 'മൊബൈൽ നമ്പർ നൽകുക';
+
+  @override
   String get media_cannotOpen => 'തുറക്കാനാകില്ല';
 
   @override

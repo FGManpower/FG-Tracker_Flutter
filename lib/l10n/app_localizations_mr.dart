@@ -3411,6 +3411,14 @@ class AppLocalizationsMr extends AppLocalizations {
   String get intro_walkieTitle => 'वॉकी-टॉकी फीचर';
 
   @override
+  String login_dataSecure(String percent) {
+    return 'तुमचा डेटा $percent सुरक्षित आहे';
+  }
+
+  @override
+  String get login_enterMobileNumber => 'मोबाइल नंबर टाका';
+
+  @override
   String get media_cannotOpen => 'उघडता येत नाही';
 
   @override

@@ -969,6 +969,8 @@
   "intro_skip": "スキップ",
   "intro_walkieSubtitle": "電波がなくても安心。どこでも\nつながり続けます。",
   "intro_walkieTitle": "トランシーバー\n機能",
+  "login_dataSecure": "あなたのデータは {percent} 安全です",
+  "login_enterMobileNumber": "携帯電話番号を入力",
   "media_cannotOpen": "開けません",
   "media_documentNotFound": "ドキュメントが見つかりません",
   "media_invalidLink": "無効なリンク",
