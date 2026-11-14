@@ -679,7 +679,7 @@ class StatusOwnFooter extends StatelessWidget {
                 Flexible(
                   child: visibleViewers.isEmpty
                       ? _buildEmptyState()
-                      : _buildViewersList(visibleViewers),
+                      : _buildViewersList(visibleViewers, controller),
                 ),
               ],
             ),
@@ -694,7 +694,7 @@ class StatusOwnFooter extends StatelessWidget {
     ).whenComplete(onCloseViewers);
   }
 
-  Widget _buildEmptyState() {
+  static Widget _buildEmptyState() {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 48.h),
       child: Column(
@@ -714,7 +714,10 @@ class StatusOwnFooter extends StatelessWidget {
     );
   }
 
-  Widget _buildViewersList(List<StatusViewerModel> viewers) {
+  static Widget _buildViewersList(
+    List<StatusViewerModel> viewers,
+    StatusViewController controller,
+  ) {
     final myId = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
 
     return ListView.builder(
@@ -744,7 +747,7 @@ class StatusOwnFooter extends StatelessWidget {
         return Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: isMe ? null : () => _openChatWithViewer(viewer),
+            onTap: isMe ? null : () => _openChatWithViewer(viewer, controller),
             splashColor: Colors.white.withValues(alpha: 0.05),
             highlightColor: Colors.white.withValues(alpha: 0.03),
             child: Padding(
