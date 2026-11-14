@@ -176,7 +176,6 @@ void main() {
   test('every key resolves through AppLocalizations in all 17 locales', () {
     // Spot-check the generated code: no locale falls back to the key name.
     for (final c in codes) {
-      final l = lookupAppLocalizations(Locale(c));
       final l = lookupAppLocalizations(parseLocale(c));
       expect(l.localeName, c);
       expect(l.common_cancel, isNot('common_cancel'));
@@ -190,7 +189,6 @@ void main() {
 
     for (final c in codes) {
       test(c, () {
-        final l = lookupAppLocalizations(Locale(c));
         final l = lookupAppLocalizations(parseLocale(c));
         final d = appDateFormat('d MMM yyyy', l).format(date);
         final t = appTime(date, l);
