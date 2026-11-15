@@ -32,6 +32,8 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../Controller/group_profile_details_controller.dart';
 import 'media_links_docs_screen.dart';
 import 'package:fgtracker/app/Model/group_profile_details_model.dart';
+import 'package:fgtracker/app/Model/user_profileList_res.dart';
+import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 
 class GroupProfileScreen extends StatefulWidget {
   const GroupProfileScreen({super.key});
@@ -750,6 +752,10 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   }
 
   Widget _buildMembersSection(GroupProfileData data) {
+    final bool canAdd = data.myStatus?.isAdmin == true ||
+        data.myStatus?.isCreator == true ||
+        (data.permissions?.canAddMember ?? false);
+
     final members = data.members ?? [];
     members.sort((a, b) {
       if (a.isMe == true) return -1;
@@ -788,6 +794,14 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           padding: EdgeInsets.symmetric(vertical: 6.h),
           child: Column(
             children: [
+              if (canAdd) ...[
+                _addMemberTile(context, data),
+                Divider(
+                    height: 1,
+                    color: Colors.grey.shade100,
+                    indent: 64.w,
+                    endIndent: 16.w),
+              ],
               for (int i = 0; i < visible.length; i++) ...[
                 _memberTile(context, visible[i], data),
                 if (i < visible.length - 1)
@@ -826,6 +840,90 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _addMemberTile(BuildContext context, GroupProfileData data) {
+    return InkWell(
+      onTap: () => _showAddMemberBottomSheet(data),
+      borderRadius: BorderRadius.circular(8.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        child: Row(
+          children: [
+            Container(
+              width: 44.r,
+              height: 44.r,
+              decoration: const BoxDecoration(
+                color: Color(0xFF2BB673),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.person_add_rounded,
+                color: Colors.white,
+                size: 22.sp,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Add Members",
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF2BB673),
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    "Add contacts to this group",
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.grey.shade400,
+              size: 22.sp,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddMemberBottomSheet(GroupProfileData data) {
+    final int? gId = data.group?.groupId;
+    if (gId == null) return;
+    final existingMemberIds = (data.members ?? [])
+        .map((m) => m.userId?.toString())
+        .where((id) => id != null && id.isNotEmpty)
+        .toSet();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return _AddGroupMemberSheet(
+          groupId: gId.toString(),
+          groupName: data.group?.groupName ?? "Group",
+          existingMemberIds: existingMemberIds,
+          myUserId: _myId,
+          onMemberAdded: () {
+            _apiController.fetchProfileDetails(gId);
+            chatController.getGroupMembers();
+          },
+        );
+      },
     );
   }
 
@@ -1263,6 +1361,376 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   color: Colors.grey.shade400, size: 20.sp),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _AddGroupMemberSheet extends StatefulWidget {
+  final String groupId;
+  final String groupName;
+  final Set<String?> existingMemberIds;
+  final String myUserId;
+  final VoidCallback onMemberAdded;
+
+  const _AddGroupMemberSheet({
+    required this.groupId,
+    required this.groupName,
+    required this.existingMemberIds,
+    required this.myUserId,
+    required this.onMemberAdded,
+  });
+
+  @override
+  State<_AddGroupMemberSheet> createState() => _AddGroupMemberSheetState();
+}
+
+class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
+  final TextEditingController _searchCtrl = TextEditingController();
+  final GroupController _groupCtrl = Get.find<GroupController>();
+
+  bool _loading = true;
+  String? _error;
+  List<UserListData> _allUsers = [];
+  List<UserListData> _filteredUsers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsers();
+  }
+
+  Future<void> _fetchUsers() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final res = await GroupRepo.getAllUserData();
+      if (res.status == true && res.userData != null) {
+        final available = res.userData!.where((u) {
+          final uId = u.userId?.toString();
+          if (uId == null || uId.isEmpty) return false;
+          if (uId == widget.myUserId) return false;
+          if (widget.existingMemberIds.contains(uId)) return false;
+          return true;
+        }).toList();
+
+        setState(() {
+          _allUsers = available;
+          _filteredUsers = available;
+          _loading = false;
+        });
+      } else {
+        setState(() {
+          _error = res.message ?? "Failed to load contacts";
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
+
+  void _onSearch(String query) {
+    final q = query.trim().toLowerCase();
+    setState(() {
+      if (q.isEmpty) {
+        _filteredUsers = _allUsers;
+      } else {
+        _filteredUsers = _allUsers.where((u) {
+          final name = (u.name ?? "").toLowerCase();
+          final phone = (u.mobileNo ?? "").toLowerCase();
+          return name.contains(q) || phone.contains(q);
+        }).toList();
+      }
+    });
+  }
+
+  void _confirmAdd(UserListData user) {
+    final userName = user.name ?? "Member";
+    CommonDialog.ConfirmationDialog(
+      title: "Add Member",
+      content: "Add $userName to ${widget.groupName}?",
+      confirm: "Add",
+      onConfirm: () {
+        Get.back(); // close confirmation dialog
+        _groupCtrl.addGroupMember(
+          context,
+          groupId: widget.groupId,
+          userId: user.userId.toString(),
+          onSuccess: (success) {
+            if (success) {
+              Navigator.pop(context); // close bottom sheet
+              widget.onMemberAdded();
+            }
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const Color purple = Color(0xFF5045B9);
+    final double sheetHeight = MediaQuery.of(context).size.height * 0.75;
+
+    return Container(
+      height: sheetHeight,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      child: Column(
+        children: [
+          // Drag handle
+          Container(
+            margin: EdgeInsets.only(top: 10.h, bottom: 6.h),
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          // Title row
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Add Members",
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        "Select a contact to add to group",
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  color: Colors.grey.shade600,
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+          // Search box
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+            child: Container(
+              height: 42.h,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(24.r),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 14.w),
+              child: Row(
+                children: [
+                  Icon(Icons.search_rounded,
+                      color: Colors.grey.shade500, size: 20.sp),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchCtrl,
+                      onChanged: _onSearch,
+                      style: TextStyle(fontSize: 14.sp),
+                      decoration: InputDecoration(
+                        hintText: "Search name or phone number...",
+                        hintStyle: TextStyle(
+                          fontSize: 13.sp,
+                          color: Colors.grey.shade400,
+                        ),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
+                  if (_searchCtrl.text.isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        _searchCtrl.clear();
+                        _onSearch("");
+                      },
+                      child: Icon(Icons.clear_rounded,
+                          color: Colors.grey.shade500, size: 18.sp),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          Divider(height: 12.h, color: Colors.grey.shade200),
+          // List
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator(color: purple))
+                : _error != null
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(_error!,
+                                style: TextStyle(
+                                    fontSize: 14.sp, color: Colors.red)),
+                            SizedBox(height: 8.h),
+                            ElevatedButton(
+                              onPressed: _fetchUsers,
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: purple),
+                              child: const Text("Retry",
+                                  style: TextStyle(color: Colors.white)),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _filteredUsers.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(24.w),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.person_off_outlined,
+                                      size: 48.sp,
+                                      color: Colors.grey.shade400),
+                                  SizedBox(height: 12.h),
+                                  Text(
+                                    _allUsers.isEmpty
+                                        ? "All available contacts are already in this group"
+                                        : "No matching contacts found",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
+                                      color: Colors.grey.shade600,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : ListView.separated(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 8.h),
+                            itemCount: _filteredUsers.length,
+                            separatorBuilder: (_, __) => Divider(
+                                height: 1,
+                                color: Colors.grey.shade100,
+                                indent: 56.w),
+                            itemBuilder: (context, index) {
+                              final u = _filteredUsers[index];
+                              final name = u.name ?? "Member";
+                              final phone = u.mobileNo ?? "";
+                              final rawImg = u.profileImage ?? "";
+                              final imgUrl = rawImg.isNotEmpty
+                                  ? (rawImg.startsWith("http://") ||
+                                          rawImg.startsWith("https://")
+                                      ? rawImg
+                                      : "${ConstRes.aImageBaseUrl}$rawImg")
+                                  : null;
+
+                              return InkWell(
+                                onTap: () => _confirmAdd(u),
+                                borderRadius: BorderRadius.circular(10.r),
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 10.h, horizontal: 4.w),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 22.r,
+                                        backgroundColor:
+                                            const Color(0xFFE8E4FF),
+                                        backgroundImage: imgUrl != null
+                                            ? NetworkImage(imgUrl)
+                                            : null,
+                                        child: imgUrl == null
+                                            ? Text(
+                                                name.isNotEmpty
+                                                    ? name[0].toUpperCase()
+                                                    : "?",
+                                                style: TextStyle(
+                                                  color: purple,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 15.sp,
+                                                ),
+                                              )
+                                            : null,
+                                      ),
+                                      SizedBox(width: 12.w),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              name,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 14.sp,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            if (phone.isNotEmpty) ...[
+                                              SizedBox(height: 2.h),
+                                              Text(
+                                                phone,
+                                                style: TextStyle(
+                                                  fontSize: 12.sp,
+                                                  color: Colors.grey.shade500,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 14.w, vertical: 6.h),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF2BB673),
+                                          borderRadius:
+                                              BorderRadius.circular(20.r),
+                                        ),
+                                        child: Text(
+                                          "Add",
+                                          style: TextStyle(
+                                            fontSize: 12.sp,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+          ),
+        ],
       ),
     );
   }

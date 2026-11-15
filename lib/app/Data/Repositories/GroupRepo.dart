@@ -107,6 +107,14 @@ class GroupRepo {
     return CommonResponse.fromJson(response);
   }
 
+  static Future<CommonResponse> addGroupMember(dynamic data) async {
+    var response = await HttpUtil().Authpost(
+      "/addGroupMember",
+      data: data,
+    );
+    return CommonResponse.fromJson(response);
+  }
+
   static Future<CommonResponse> deleteGroupsMember(dynamic data) async {
     var response = await HttpUtil().Authpost(
       "/deleteGroupMember",

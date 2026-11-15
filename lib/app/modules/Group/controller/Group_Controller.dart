@@ -316,6 +316,38 @@ class GroupController extends GetxController {
     }
   }
 
+  Future<void> addGroupMember(
+    BuildContext context, {
+    required String groupId,
+    required String userId,
+    required void Function(bool) onSuccess,
+  }) async {
+    try {
+      Loading().showloading();
+
+      final dynamic param = {
+        "groupId": groupId,
+        "userId": userId,
+      };
+
+      final result = await GroupRepo.addGroupMember(param);
+
+      Loading().dismissloading();
+
+      if (result.status == true) {
+        Utils().fluttertoast(result.message ?? "Member added successfully");
+        onSuccess(true);
+      } else {
+        CommonDialog.errorMessage(result.message);
+        onSuccess(false);
+      }
+    } catch (e) {
+      Loading().dismissloading();
+      CommonDialog.errorMessage(e.toString());
+      onSuccess(false);
+    }
+  }
+
   Future<void> promoteAdmin(
     BuildContext context, {
     required String groupId,
