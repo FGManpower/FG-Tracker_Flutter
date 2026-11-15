@@ -34,7 +34,11 @@ import 'media_links_docs_screen.dart';
 import 'package:fgtracker/app/Model/group_profile_details_model.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
+import 'package:fgtracker/app/Model/group_member_model.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 
 class GroupProfileScreen extends StatefulWidget {
   const GroupProfileScreen({super.key});
@@ -901,6 +905,10 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   }
 
   void _showAddMemberBottomSheet(GroupProfileData data) {
+    final bool canAdd = data.myStatus?.isAdmin == true ||
+        data.myStatus?.isCreator == true;
+    if (!canAdd) return;
+
     final int? gId = data.group?.groupId;
     if (gId == null) return;
     final existingMemberIds = (data.members ?? [])
@@ -1410,6 +1418,7 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
 
   bool _loading = true;
   String? _error;
+  bool _contactPermissionGranted = false;
   List<_CandidateMember> _allCandidates = [];
   List<_CandidateMember> _filteredCandidates = [];
 
@@ -1419,6 +1428,35 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
     _fetchUsers();
   }
 
+  Future<List<String>> _getDeviceContactsPlatformWise() async {
+    try {
+      // Platform-wise permission check using permission_handler (Android & iOS)
+      PermissionStatus status = await Permission.contacts.status;
+
+      if (!status.isGranted && !status.isLimited) {
+        status = await Permission.contacts.request();
+      }
+
+      if (status.isGranted || status.isLimited) {
+        _contactPermissionGranted = true;
+        final contactService = ContactService();
+        return await contactService.getMobileNumbers();
+      } else {
+        // Fallback request via FlutterContacts
+        final bool granted =
+            await FlutterContacts.requestPermission(readonly: true);
+        if (granted) {
+          _contactPermissionGranted = true;
+          final contactService = ContactService();
+          return await contactService.getMobileNumbers();
+        }
+      }
+    } catch (e) {
+      log("Contact permission error: $e");
+    }
+    return [];
+  }
+
   Future<void> _fetchUsers() async {
     setState(() {
       _loading = true;
@@ -1426,60 +1464,94 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
     });
 
     try {
-      final contactService = ContactService();
-      final contactNumbers = await contactService.getMobileNumbers();
-      final coMemberIds = await GroupRepo.getCoGroupMemberIds();
-      final res = await GroupRepo.getAllUserData();
+      // 1. Concurrently fetch contacts, all-group members, co-group IDs, and all users
+      final contactNumbersFuture = _getDeviceContactsPlatformWise();
+      final allGroupMembersFuture =
+          TrackRepo.getGroupMember(filter: 'all', limit: 200);
+      final coMemberIdsFuture = GroupRepo.getCoGroupMemberIds();
+      final allUsersFuture = GroupRepo.getAllUserData();
+
+      final results = await Future.wait([
+        contactNumbersFuture,
+        allGroupMembersFuture,
+        coMemberIdsFuture,
+        allUsersFuture,
+      ]);
+
+      final List<String> contactNumbers = results[0] as List<String>;
+      final GroupMemberModel allGroupModel = results[1] as GroupMemberModel;
+      final List<int> coMemberIds = results[2] as List<int>;
+      final UserProfileListRes allUsersRes = results[3] as UserProfileListRes;
 
       final Set<String> contactSet = contactNumbers.toSet();
       final Set<String> coMemberIdSet =
           coMemberIds.map((id) => id.toString()).toSet();
 
-      if (res.status == true && res.userData != null) {
-        final List<_CandidateMember> candidates = [];
+      final Map<String, UserListData> candidateUsersMap = {};
 
-        for (final u in res.userData!) {
-          final uId = u.userId?.toString();
-          if (uId == null || uId.isEmpty) continue;
-          if (uId == widget.myUserId) continue;
-          if (widget.existingMemberIds.contains(uId)) continue;
+      // 2. Extract co-members from allGroupMembers (covers all joined groups)
+      final allGroupMembers = allGroupModel.data?.allMemberList ?? [];
+      for (final m in allGroupMembers) {
+        final idStr = m.userId?.toString();
+        if (idStr != null && idStr.isNotEmpty && idStr != widget.myUserId) {
+          coMemberIdSet.add(idStr);
+          candidateUsersMap[idStr] = UserListData(
+            userId: m.userId,
+            name: m.name,
+            mobileNo: m.mobileNo,
+            profileImage: m.profileImage,
+          );
+        }
+      }
 
-          String mob = (u.mobileNo ?? '').replaceAll(RegExp(r'[^0-9]'), '');
-          if (mob.startsWith('91') && mob.length > 10) mob = mob.substring(2);
-          if (mob.length > 10) mob = mob.substring(mob.length - 10);
-
-          final bool isSaved = mob.isNotEmpty && contactSet.contains(mob);
-          final bool isInOther = coMemberIdSet.contains(uId);
-
-          // ONLY Saved Member OR Who are in other group!
-          if (isSaved || isInOther) {
-            candidates.add(_CandidateMember(
-              user: u,
-              isSavedContact: isSaved,
-              isInOtherGroup: isInOther,
-            ));
+      // 3. Merge users from getAllUserData
+      if (allUsersRes.status == true && allUsersRes.userData != null) {
+        for (final u in allUsersRes.userData!) {
+          final idStr = u.userId?.toString();
+          if (idStr != null && idStr.isNotEmpty && idStr != widget.myUserId) {
+            candidateUsersMap[idStr] = u;
           }
         }
-
-        candidates.sort((a, b) {
-          if (a.isSavedContact && !b.isSavedContact) return -1;
-          if (!a.isSavedContact && b.isSavedContact) return 1;
-          final nameA = (a.user.name ?? "").toLowerCase();
-          final nameB = (b.user.name ?? "").toLowerCase();
-          return nameA.compareTo(nameB);
-        });
-
-        setState(() {
-          _allCandidates = candidates;
-          _filteredCandidates = candidates;
-          _loading = false;
-        });
-      } else {
-        setState(() {
-          _error = res.message ?? "Failed to load contacts";
-          _loading = false;
-        });
       }
+
+      final List<_CandidateMember> candidates = [];
+
+      for (final u in candidateUsersMap.values) {
+        final uId = u.userId?.toString();
+        if (uId == null || uId.isEmpty) continue;
+        if (uId == widget.myUserId) continue;
+        if (widget.existingMemberIds.contains(uId)) continue;
+
+        String mob = (u.mobileNo ?? '').replaceAll(RegExp(r'[^0-9]'), '');
+        if (mob.startsWith('91') && mob.length > 10) mob = mob.substring(2);
+        if (mob.length > 10) mob = mob.substring(mob.length - 10);
+
+        final bool isSaved = mob.isNotEmpty && contactSet.contains(mob);
+        final bool isInOther = coMemberIdSet.contains(uId);
+
+        // ONLY Saved Member OR Who are in other group!
+        if (isSaved || isInOther) {
+          candidates.add(_CandidateMember(
+            user: u,
+            isSavedContact: isSaved,
+            isInOtherGroup: isInOther,
+          ));
+        }
+      }
+
+      candidates.sort((a, b) {
+        if (a.isSavedContact && !b.isSavedContact) return -1;
+        if (!a.isSavedContact && b.isSavedContact) return 1;
+        final nameA = (a.user.name ?? "").toLowerCase();
+        final nameB = (b.user.name ?? "").toLowerCase();
+        return nameA.compareTo(nameB);
+      });
+
+      setState(() {
+        _allCandidates = candidates;
+        _filteredCandidates = candidates;
+        _loading = false;
+      });
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -1632,6 +1704,49 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
             ),
           ),
           Divider(height: 12.h, color: Colors.grey.shade200),
+          if (!_contactPermissionGranted && !_loading && _error == null)
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF8E1),
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(color: const Color(0xFFFFE082)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.contacts_outlined,
+                      size: 18.sp, color: const Color(0xFFF57F17)),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      "Contacts permission is off. Showing members from your groups only.",
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: const Color(0xFF5D4037),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      await openAppSettings();
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 6.w),
+                      child: Text(
+                        "Enable",
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: purple,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           // List
           Expanded(
             child: _loading
