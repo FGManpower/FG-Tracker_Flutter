@@ -359,8 +359,9 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             incomingMessage.groupId;
 
         final bool isGroupMsg = eventGroupId != null ||
-            incomingMessage.chatType == 'group' ||
-            message["chatType"] == 'group';
+            incomingMessage.chatType?.toString().toLowerCase() == 'group' ||
+            message["chatType"]?.toString().toLowerCase() == 'group' ||
+            message["chat_type"]?.toString().toLowerCase() == 'group';
         if (!isGroupMsg) {
           AppLog.d("GROUP MESSAGE IGNORED => NOT A GROUP MESSAGE");
           return;

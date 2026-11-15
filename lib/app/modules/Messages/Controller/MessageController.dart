@@ -700,7 +700,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             MessageData.fromJson(Map<String, dynamic>.from(message));
 
             // Strictly ignore group messages in private chat screen!
-            if (messageData.groupId != null || messageData.chatType == 'group') {
+            if (messageData.groupId != null || messageData.chatType?.toString().toLowerCase() == 'group') {
               log("MESSAGE IGNORED IN PRIVATE CHAT SCREEN => IS GROUP MESSAGE (${messageData.groupId})");
               return;
             }
