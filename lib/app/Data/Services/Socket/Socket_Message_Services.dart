@@ -1041,6 +1041,19 @@ class SocketMessageService extends GetxService {
               ? Map<String, dynamic>.from(dataMap['data'])
               : dataMap);
 
+      // Strictly reject group messages in 1-on-1 private chat
+      final hasGroupId = inner["groupId"] != null ||
+          inner["group_id"] != null ||
+          dataMap["groupId"] != null ||
+          dataMap["group_id"] != null ||
+          inner["chatType"]?.toString().toLowerCase() == "group" ||
+          dataMap["chatType"]?.toString().toLowerCase() == "group";
+
+      if (hasGroupId) {
+        log("MESSAGE IGNORED IN PRIVATE CHAT => IS A GROUP MESSAGE");
+        return;
+      }
+
       final dataSenderId = (inner["senderId"] ??
               inner["sender_id"] ??
               inner["userId"] ??
@@ -1058,9 +1071,7 @@ class SocketMessageService extends GetxService {
 
       final isSameChat =
           (dataSenderId == senderId && dataReceiverId == receiverId) ||
-          (dataSenderId == receiverId && dataReceiverId == senderId) ||
-          (dataReceiverId == receiverId && (dataSenderId == null || dataSenderId == senderId)) ||
-          (dataSenderId == receiverId && (dataReceiverId == null || dataReceiverId == senderId));
+          (dataSenderId == receiverId && dataReceiverId == senderId);
 
       log("EXPECTED SENDER => $senderId");
       log("EXPECTED RECEIVER => $receiverId");
