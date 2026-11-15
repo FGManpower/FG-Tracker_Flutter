@@ -115,6 +115,22 @@ class GroupRepo {
     return CommonResponse.fromJson(response);
   }
 
+  static Future<List<int>> getCoGroupMemberIds() async {
+    try {
+      final response = await HttpUtil().get("/getCoGroupMembers");
+      if (response != null && response is Map) {
+        final list = response['data'] ?? response['userIds'];
+        if (list is List) {
+          return list
+              .map((e) => int.tryParse(e.toString()) ?? 0)
+              .where((id) => id > 0)
+              .toList();
+        }
+      }
+    } catch (_) {}
+    return [];
+  }
+
   static Future<CommonResponse> deleteGroupsMember(dynamic data) async {
     var response = await HttpUtil().Authpost(
       "/deleteGroupMember",

@@ -34,6 +34,7 @@ import 'media_links_docs_screen.dart';
 import 'package:fgtracker/app/Model/group_profile_details_model.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import 'package:fgtracker/app/Data/Services/contact_services.dart';
 
 class GroupProfileScreen extends StatefulWidget {
   const GroupProfileScreen({super.key});
@@ -753,8 +754,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
 
   Widget _buildMembersSection(GroupProfileData data) {
     final bool canAdd = data.myStatus?.isAdmin == true ||
-        data.myStatus?.isCreator == true ||
-        (data.permissions?.canAddMember ?? false);
+        data.myStatus?.isCreator == true;
 
     final members = data.members ?? [];
     members.sort((a, b) {
@@ -1366,6 +1366,25 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   }
 }
 
+class _CandidateMember {
+  final UserListData user;
+  final bool isSavedContact;
+  final bool isInOtherGroup;
+
+  _CandidateMember({
+    required this.user,
+    required this.isSavedContact,
+    required this.isInOtherGroup,
+  });
+
+  String get tag {
+    if (isSavedContact && isInOtherGroup) return "Saved Contact • Other Group";
+    if (isSavedContact) return "Saved Contact";
+    if (isInOtherGroup) return "In Other Group";
+    return "";
+  }
+}
+
 class _AddGroupMemberSheet extends StatefulWidget {
   final String groupId;
   final String groupName;
@@ -1391,8 +1410,8 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
 
   bool _loading = true;
   String? _error;
-  List<UserListData> _allUsers = [];
-  List<UserListData> _filteredUsers = [];
+  List<_CandidateMember> _allCandidates = [];
+  List<_CandidateMember> _filteredCandidates = [];
 
   @override
   void initState() {
@@ -1407,19 +1426,52 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
     });
 
     try {
+      final contactService = ContactService();
+      final contactNumbers = await contactService.getMobileNumbers();
+      final coMemberIds = await GroupRepo.getCoGroupMemberIds();
       final res = await GroupRepo.getAllUserData();
+
+      final Set<String> contactSet = contactNumbers.toSet();
+      final Set<String> coMemberIdSet =
+          coMemberIds.map((id) => id.toString()).toSet();
+
       if (res.status == true && res.userData != null) {
-        final available = res.userData!.where((u) {
+        final List<_CandidateMember> candidates = [];
+
+        for (final u in res.userData!) {
           final uId = u.userId?.toString();
-          if (uId == null || uId.isEmpty) return false;
-          if (uId == widget.myUserId) return false;
-          if (widget.existingMemberIds.contains(uId)) return false;
-          return true;
-        }).toList();
+          if (uId == null || uId.isEmpty) continue;
+          if (uId == widget.myUserId) continue;
+          if (widget.existingMemberIds.contains(uId)) continue;
+
+          String mob = (u.mobileNo ?? '').replaceAll(RegExp(r'[^0-9]'), '');
+          if (mob.startsWith('91') && mob.length > 10) mob = mob.substring(2);
+          if (mob.length > 10) mob = mob.substring(mob.length - 10);
+
+          final bool isSaved = mob.isNotEmpty && contactSet.contains(mob);
+          final bool isInOther = coMemberIdSet.contains(uId);
+
+          // ONLY Saved Member OR Who are in other group!
+          if (isSaved || isInOther) {
+            candidates.add(_CandidateMember(
+              user: u,
+              isSavedContact: isSaved,
+              isInOtherGroup: isInOther,
+            ));
+          }
+        }
+
+        candidates.sort((a, b) {
+          if (a.isSavedContact && !b.isSavedContact) return -1;
+          if (!a.isSavedContact && b.isSavedContact) return 1;
+          final nameA = (a.user.name ?? "").toLowerCase();
+          final nameB = (b.user.name ?? "").toLowerCase();
+          return nameA.compareTo(nameB);
+        });
 
         setState(() {
-          _allUsers = available;
-          _filteredUsers = available;
+          _allCandidates = candidates;
+          _filteredCandidates = candidates;
           _loading = false;
         });
       } else {
@@ -1440,11 +1492,11 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
     final q = query.trim().toLowerCase();
     setState(() {
       if (q.isEmpty) {
-        _filteredUsers = _allUsers;
+        _filteredCandidates = _allCandidates;
       } else {
-        _filteredUsers = _allUsers.where((u) {
-          final name = (u.name ?? "").toLowerCase();
-          final phone = (u.mobileNo ?? "").toLowerCase();
+        _filteredCandidates = _allCandidates.where((c) {
+          final name = (c.user.name ?? "").toLowerCase();
+          final phone = (c.user.mobileNo ?? "").toLowerCase();
           return name.contains(q) || phone.contains(q);
         }).toList();
       }
@@ -1603,26 +1655,35 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                           ],
                         ),
                       )
-                    : _filteredUsers.isEmpty
+                    : _filteredCandidates.isEmpty
                         ? Center(
                             child: Padding(
-                              padding: EdgeInsets.all(24.w),
+                              padding: EdgeInsets.symmetric(horizontal: 32.w),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.person_off_outlined,
+                                  Icon(Icons.people_outline_rounded,
                                       size: 48.sp,
                                       color: Colors.grey.shade400),
-                                  SizedBox(height: 12.h),
+                                  SizedBox(height: 10.h),
                                   Text(
-                                    _allUsers.isEmpty
-                                        ? "All available contacts are already in this group"
-                                        : "No matching contacts found",
+                                    _searchCtrl.text.isNotEmpty
+                                        ? "No matching contacts found"
+                                        : "No contacts or group members found to add",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 14.sp,
-                                      color: Colors.grey.shade600,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4.h),
+                                  Text(
+                                    "Only saved contacts and members from your other groups can be added.",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 12.sp,
+                                      color: Colors.grey.shade500,
                                     ),
                                   ),
                                 ],
@@ -1632,13 +1693,14 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                         : ListView.separated(
                             padding: EdgeInsets.symmetric(
                                 horizontal: 16.w, vertical: 8.h),
-                            itemCount: _filteredUsers.length,
+                            itemCount: _filteredCandidates.length,
                             separatorBuilder: (_, __) => Divider(
                                 height: 1,
                                 color: Colors.grey.shade100,
                                 indent: 56.w),
                             itemBuilder: (context, index) {
-                              final u = _filteredUsers[index];
+                              final candidate = _filteredCandidates[index];
+                              final u = candidate.user;
                               final name = u.name ?? "Member";
                               final phone = u.mobileNo ?? "";
                               final rawImg = u.profileImage ?? "";
@@ -1700,6 +1762,31 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                                                 style: TextStyle(
                                                   fontSize: 12.sp,
                                                   color: Colors.grey.shade500,
+                                                ),
+                                              ),
+                                            ],
+                                            if (candidate.tag.isNotEmpty) ...[
+                                              SizedBox(height: 3.h),
+                                              Container(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 6.w,
+                                                    vertical: 2.h),
+                                                decoration: BoxDecoration(
+                                                  color: candidate.isSavedContact
+                                                      ? const Color(0xFFE8F5E9)
+                                                      : const Color(0xFFEDE7F6),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4.r),
+                                                ),
+                                                child: Text(
+                                                  candidate.tag,
+                                                  style: TextStyle(
+                                                    fontSize: 10.sp,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: candidate.isSavedContact
+                                                        ? const Color(0xFF2E7D32)
+                                                        : const Color(0xFF5E35B1),
+                                                  ),
                                                 ),
                                               ),
                                             ],
