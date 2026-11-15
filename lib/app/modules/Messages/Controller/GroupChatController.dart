@@ -357,7 +357,16 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             message["message"]?["group_id"] ??
             message["data"]?["groupId"] ??
             incomingMessage.groupId;
-        if (eventGroupId != null && eventGroupId.toString() != groupId.toString()) {
+
+        final bool isGroupMsg = eventGroupId != null ||
+            incomingMessage.chatType == 'group' ||
+            message["chatType"] == 'group';
+        if (!isGroupMsg) {
+          AppLog.d("GROUP MESSAGE IGNORED => NOT A GROUP MESSAGE");
+          return;
+        }
+
+        if (eventGroupId?.toString() != groupId.toString()) {
           AppLog.d("GROUP MESSAGE IGNORED => DIFFERENT GROUP $eventGroupId vs $groupId");
           rtDecision('group listener', incomingMessage,
               'SKIPPED: different group ($eventGroupId vs $groupId)'); // TODO(rt-diagnostics)
