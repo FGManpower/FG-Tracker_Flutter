@@ -287,7 +287,6 @@ class MessageData {
   Map<String, dynamic>? systemMeta;
   dynamic duration;
   dynamic groupId;
-  String? chatType;
   List<MessageReactionModel>? reactions;
   String? userReaction;
 
@@ -304,7 +303,6 @@ class MessageData {
     this.id,
     this.clientMessageId,
     this.groupId,
-    this.chatType,
     this.senderId,
     this.receiverId,
     this.messageType,
@@ -587,11 +585,6 @@ class MessageData {
         json['group_id'] ??
         nestedSource?['groupId'] ??
         nestedSource?['group_id'];
-    chatType = (json['chatType'] ??
-            json['chat_type'] ??
-            nestedSource?['chatType'] ??
-            nestedSource?['chat_type'])
-        ?.toString();
     clientMessageId = (json['clientMessageId'] ??
             json['client_message_id'] ??
             nestedSource?['clientMessageId'] ??
@@ -976,7 +969,6 @@ class MessageData {
 
     data['id'] = id;
     if (groupId != null) data['groupId'] = groupId;
-    if (chatType != null) data['chatType'] = chatType;
     data['senderId'] = senderId;
     data['receiverId'] = receiverId;
     data['messageType'] = messageType;

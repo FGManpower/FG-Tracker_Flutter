@@ -1041,22 +1041,6 @@ class SocketMessageService extends GetxService {
               ? Map<String, dynamic>.from(dataMap['data'])
               : dataMap);
 
-      // Strictly ignore any group messages in private chat!
-      final bool isGroup = inner['chatType'] == 'group' ||
-          dataMap['chatType'] == 'group' ||
-          inner['isGroup'] == true ||
-          dataMap['isGroup'] == true ||
-          (inner['groupId'] != null && inner['groupId'].toString() != '0' && inner['groupId'].toString() != 'null') ||
-          (dataMap['groupId'] != null && dataMap['groupId'].toString() != '0' && dataMap['groupId'].toString() != 'null') ||
-          (inner['group_id'] != null && inner['group_id'].toString() != '0' && inner['group_id'].toString() != 'null') ||
-          (dataMap['group_id'] != null && dataMap['group_id'].toString() != '0' && dataMap['group_id'].toString() != 'null');
-
-      if (isGroup) {
-        log("MESSAGE IGNORED IN PRIVATE CHAT => IT IS A GROUP MESSAGE");
-        rtDecision("private listener", data, "SKIPPED: group message received on private socket");
-        return;
-      }
-
       final dataSenderId = (inner["senderId"] ??
               inner["sender_id"] ??
               inner["userId"] ??
@@ -1074,7 +1058,9 @@ class SocketMessageService extends GetxService {
 
       final isSameChat =
           (dataSenderId == senderId && dataReceiverId == receiverId) ||
-          (dataSenderId == receiverId && dataReceiverId == senderId);
+          (dataSenderId == receiverId && dataReceiverId == senderId) ||
+          (dataReceiverId == receiverId && (dataSenderId == null || dataSenderId == senderId)) ||
+          (dataSenderId == receiverId && (dataReceiverId == null || dataReceiverId == senderId));
 
       log("EXPECTED SENDER => $senderId");
       log("EXPECTED RECEIVER => $receiverId");

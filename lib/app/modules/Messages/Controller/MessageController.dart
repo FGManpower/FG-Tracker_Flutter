@@ -698,12 +698,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           try {
             final messageData =
             MessageData.fromJson(Map<String, dynamic>.from(message));
-
-            // Strictly ignore group messages in private chat screen!
-            if (messageData.groupId != null || messageData.chatType?.toString().toLowerCase() == 'group') {
-              log("MESSAGE IGNORED IN PRIVATE CHAT SCREEN => IS GROUP MESSAGE (${messageData.groupId})");
-              return;
-            }
             // Live messages often carry no sender name: the quote of a reply
             // to them (and the replySender we send) was then blank. In a
             // private chat the other person is known.
