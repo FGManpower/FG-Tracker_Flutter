@@ -435,9 +435,24 @@ class Sidemenu extends StatelessWidget {
             },
           ),
           _buildDivider(),
-          // Settings → Language (current language in its own script; opens
+          // Settings → Language ("Language" + "Change app language"; opens
           // the language sheet, applies instantly).
-          const LanguageSettingsRow(),
+          LanguageSettingsRow(
+            // Same sizes as _buildDrawerItem, so it matches the other items.
+            sizes: LanguageRowSizes(
+              tile: 44.w,
+              tileRadius: 14.r,
+              icon: 22.sp,
+              gap: 14.w,
+              title: 15.sp,
+              subtitleGap: 3.h,
+              subtitle: 12.sp,
+              chevron: 24.sp,
+              padV: 8.h,
+              padH: 8.w,
+              radius: 15.r,
+            ),
+          ),
           // _buildDivider(),
           // _buildDrawerItem(
           //   icon: Icons.receipt_long_rounded,
@@ -450,12 +465,12 @@ class Sidemenu extends StatelessWidget {
           // ),
           _buildDivider(),
           _buildDrawerItem(
-            icon: Icons.support_agent_rounded,
-            title: context.l10n.about_contactUs,
-            subtitle: context.l10n.menu_contactUsSubtitle,
+            icon: Icons.gavel_rounded,
+            title: context.l10n.legal_title,
+            subtitle: context.l10n.legal_menuSubtitle,
             onTap: () {
               Navigator.pop(context);
-              Get.toNamed(Routes.AboutUs);
+              Get.toNamed(Routes.Legal);
             },
           ),
           // _buildDivider(),
@@ -595,8 +610,6 @@ class Sidemenu extends StatelessWidget {
               SizedBox(width: 12.w),
               _buildCustomSocialIcon(
                   Assets.svg.instagram, AppText.instagramUrl),
-              SizedBox(width: 12.w),
-              _buildCustomSocialIcon(Assets.svg.twitter, AppText.twitterUrl),
               SizedBox(width: 12.w),
               _buildCustomSocialIcon(Assets.svg.youtube, AppText.youtubeUrl),
             ],

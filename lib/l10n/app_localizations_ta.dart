@@ -3512,6 +3512,60 @@ class AppLocalizationsTa extends AppLocalizations {
   String get menu_contactUsSubtitle => 'எங்களைப் பற்றி மேலும் அறிக';
 
   @override
+  String get legal_title => 'சட்டம்';
+
+  @override
+  String get legal_menuSubtitle => 'கொள்கைகள் மற்றும் ஒப்பந்தங்கள்';
+
+  @override
+  String get legal_draftNotice => 'இந்த ஆவணங்கள் வரைவுகள், மாறக்கூடும்.';
+
+  @override
+  String get legal_privacyTitle => 'தனியுரிமைக் கொள்கை';
+
+  @override
+  String get legal_privacySubtitle =>
+      'உங்கள் தரவை நாங்கள் எவ்வாறு சேகரித்துப் பயன்படுத்துகிறோம்';
+
+  @override
+  String get legal_termsTitle => 'விதிமுறைகள் & நிபந்தனைகள் (EULA)';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker பயன்பாட்டு விதிகள்';
+
+  @override
+  String get legal_enterpriseTitle => 'நிறுவன சேவை ஒப்பந்தம்';
+
+  @override
+  String get legal_enterpriseSubtitle => 'வணிக வாடிக்கையாளர்களுக்கு';
+
+  @override
+  String get legal_dpaTitle => 'தரவு செயலாக்க ஒப்பந்தம்';
+
+  @override
+  String get legal_dpaSubtitle =>
+      'வாடிக்கையாளர் தரவை நாங்கள் எவ்வாறு செயலாக்குகிறோம்';
+
+  @override
+  String get legal_retentionTitle => 'தரவு வைத்திருத்தல் & நீக்குதல் கொள்கை';
+
+  @override
+  String get legal_retentionSubtitle => 'தரவை எவ்வளவு காலம் வைத்திருக்கிறோம்';
+
+  @override
+  String get legal_securityTitle =>
+      'தரவுப் பாதுகாப்பு & தகவல் பாதுகாப்புக் கொள்கை';
+
+  @override
+  String get legal_securitySubtitle => 'தரவை நாங்கள் எவ்வாறு பாதுகாக்கிறோம்';
+
+  @override
+  String get legal_emptyDocument => 'இந்த ஆவணம் இன்னும் கிடைக்கவில்லை.';
+
+  @override
+  String get legal_loadError => 'இந்த ஆவணத்தைத் திறக்க முடியவில்லை.';
+
+  @override
   String get menu_editProfile => 'சுயவிவரத்தைத் திருத்து';
 
   @override

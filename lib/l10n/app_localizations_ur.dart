@@ -3480,6 +3480,59 @@ class AppLocalizationsUr extends AppLocalizations {
   String get menu_contactUsSubtitle => 'ہمارے بارے میں مزید جانیں۔';
 
   @override
+  String get legal_title => 'قانونی';
+
+  @override
+  String get legal_menuSubtitle => 'پالیسیاں اور معاہدے';
+
+  @override
+  String get legal_draftNotice =>
+      'یہ دستاویزات مسودے ہیں اور تبدیل ہو سکتی ہیں۔';
+
+  @override
+  String get legal_privacyTitle => 'رازداری کی پالیسی';
+
+  @override
+  String get legal_privacySubtitle =>
+      'ہم آپ کا ڈیٹا کیسے جمع اور استعمال کرتے ہیں';
+
+  @override
+  String get legal_termsTitle => 'شرائط و ضوابط (EULA)';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker کے استعمال کے اصول';
+
+  @override
+  String get legal_enterpriseTitle => 'انٹرپرائز سروس معاہدہ';
+
+  @override
+  String get legal_enterpriseSubtitle => 'کاروباری صارفین کے لیے';
+
+  @override
+  String get legal_dpaTitle => 'ڈیٹا پروسیسنگ معاہدہ';
+
+  @override
+  String get legal_dpaSubtitle => 'ہم صارفین کا ڈیٹا کیسے پروسیس کرتے ہیں';
+
+  @override
+  String get legal_retentionTitle => 'ڈیٹا برقرار رکھنے اور حذف کرنے کی پالیسی';
+
+  @override
+  String get legal_retentionSubtitle => 'ہم ڈیٹا کتنی دیر رکھتے ہیں';
+
+  @override
+  String get legal_securityTitle => 'ڈیٹا تحفظ اور معلوماتی سلامتی کی پالیسی';
+
+  @override
+  String get legal_securitySubtitle => 'ہم ڈیٹا کی حفاظت کیسے کرتے ہیں';
+
+  @override
+  String get legal_emptyDocument => 'یہ دستاویز ابھی دستیاب نہیں ہے۔';
+
+  @override
+  String get legal_loadError => 'یہ دستاویز نہیں کھل سکی۔';
+
+  @override
   String get menu_editProfile => 'پروفائل میں ترمیم کریں۔';
 
   @override

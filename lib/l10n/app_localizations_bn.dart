@@ -3458,6 +3458,58 @@ class AppLocalizationsBn extends AppLocalizations {
   String get menu_contactUsSubtitle => 'আমাদের সম্পর্কে আরও জানুন';
 
   @override
+  String get legal_title => 'আইনি';
+
+  @override
+  String get legal_menuSubtitle => 'নীতি ও চুক্তি';
+
+  @override
+  String get legal_draftNotice => 'এই নথিগুলি খসড়া এবং পরিবর্তন হতে পারে।';
+
+  @override
+  String get legal_privacyTitle => 'প্রাইভেসি পলিসি';
+
+  @override
+  String get legal_privacySubtitle =>
+      'আমরা কীভাবে আপনার ডেটা সংগ্রহ ও ব্যবহার করি';
+
+  @override
+  String get legal_termsTitle => 'শর্তাবলী (EULA)';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker ব্যবহারের নিয়ম';
+
+  @override
+  String get legal_enterpriseTitle => 'এন্টারপ্রাইজ পরিষেবা চুক্তি';
+
+  @override
+  String get legal_enterpriseSubtitle => 'ব্যবসায়িক গ্রাহকদের জন্য';
+
+  @override
+  String get legal_dpaTitle => 'ডেটা প্রক্রিয়াকরণ চুক্তি';
+
+  @override
+  String get legal_dpaSubtitle => 'আমরা কীভাবে গ্রাহকের ডেটা প্রক্রিয়া করি';
+
+  @override
+  String get legal_retentionTitle => 'ডেটা সংরক্ষণ ও মুছে ফেলার নীতি';
+
+  @override
+  String get legal_retentionSubtitle => 'আমরা কতদিন ডেটা রাখি';
+
+  @override
+  String get legal_securityTitle => 'ডেটা সুরক্ষা ও তথ্য নিরাপত্তা নীতি';
+
+  @override
+  String get legal_securitySubtitle => 'আমরা কীভাবে ডেটা সুরক্ষিত রাখি';
+
+  @override
+  String get legal_emptyDocument => 'এই নথিটি এখনও উপলব্ধ নয়।';
+
+  @override
+  String get legal_loadError => 'এই নথিটি খোলা যায়নি।';
+
+  @override
   String get menu_editProfile => 'প্রোফাইল এডিট করুন';
 
   @override

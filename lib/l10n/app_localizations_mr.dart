@@ -3470,6 +3470,58 @@ class AppLocalizationsMr extends AppLocalizations {
   String get menu_contactUsSubtitle => 'आमच्याबद्दल अधिक जाणून घ्या';
 
   @override
+  String get legal_title => 'कायदेशीर';
+
+  @override
+  String get legal_menuSubtitle => 'धोरणे आणि करार';
+
+  @override
+  String get legal_draftNotice => 'हे दस्तऐवज मसुदे आहेत आणि बदलू शकतात.';
+
+  @override
+  String get legal_privacyTitle => 'गोपनीयता धोरण';
+
+  @override
+  String get legal_privacySubtitle =>
+      'आम्ही तुमचा डेटा कसा गोळा करतो आणि वापरतो';
+
+  @override
+  String get legal_termsTitle => 'अटी व शर्ती (EULA)';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker वापरण्याचे नियम';
+
+  @override
+  String get legal_enterpriseTitle => 'एंटरप्राइझ सेवा करार';
+
+  @override
+  String get legal_enterpriseSubtitle => 'व्यावसायिक ग्राहकांसाठी';
+
+  @override
+  String get legal_dpaTitle => 'डेटा प्रक्रिया करार';
+
+  @override
+  String get legal_dpaSubtitle => 'आम्ही ग्राहक डेटावर प्रक्रिया कशी करतो';
+
+  @override
+  String get legal_retentionTitle => 'डेटा जतन आणि हटवण्याचे धोरण';
+
+  @override
+  String get legal_retentionSubtitle => 'आम्ही डेटा किती काळ ठेवतो';
+
+  @override
+  String get legal_securityTitle => 'डेटा संरक्षण आणि माहिती सुरक्षा धोरण';
+
+  @override
+  String get legal_securitySubtitle => 'आम्ही डेटाचे संरक्षण कसे करतो';
+
+  @override
+  String get legal_emptyDocument => 'हा दस्तऐवज अद्याप उपलब्ध नाही.';
+
+  @override
+  String get legal_loadError => 'हा दस्तऐवज उघडता आला नाही.';
+
+  @override
   String get menu_editProfile => 'प्रोफाइल संपादित करा';
 
   @override

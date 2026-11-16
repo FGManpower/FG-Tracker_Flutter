@@ -1,3 +1,4 @@
+import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -6,15 +7,42 @@ import 'language_options.dart';
 import 'language_theme.dart';
 import 'widgets/language_card.dart';
 
+/// Sizes of [LanguageSettingsRow]. The side menu passes its ScreenUtil values
+/// (15.sp title, 12.sp subtitle, 44.w tile …) so the row matches the other
+/// menu items exactly; the defaults are the same numbers unscaled.
+class LanguageRowSizes {
+  const LanguageRowSizes({
+    this.tile = 44,
+    this.tileRadius = 14,
+    this.icon = 22,
+    this.gap = 14,
+    this.title = 15,
+    this.subtitleGap = 3,
+    this.subtitle = 12,
+    this.chevron = 24,
+    this.padV = 8,
+    this.padH = 8,
+    this.radius = 15,
+  });
+
+  final double tile, tileRadius, icon, gap, title, subtitleGap, subtitle;
+  final double chevron, padV, padH, radius;
+}
+
 /// Side menu → Language item (one shared widget). Same look as the other
 /// side menu items: translate icon in a lavender tile, the word "Language"
-/// in the current language, the current language in its own script on the
-/// right, chevron. Tap → closes the drawer (when inside one) → opens
+/// in the current language with "Change app language" under it (no
+/// selected-language name), chevron. Tap → closes the drawer (when inside one) → opens
 /// [showLanguageSheet].
 class LanguageSettingsRow extends StatelessWidget {
-  const LanguageSettingsRow({super.key, this.controller});
+  const LanguageSettingsRow({
+    super.key,
+    this.controller,
+    this.sizes = const LanguageRowSizes(),
+  });
 
   final LanguageController? controller;
+  final LanguageRowSizes sizes;
 
   void _open(BuildContext context, LanguageController c) {
     final scaffold = Scaffold.maybeOf(context);
@@ -41,56 +69,61 @@ class LanguageSettingsRow extends StatelessWidget {
         excludeSemantics: true,
         child: InkWell(
           key: const Key('settings-language-row'),
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(sizes.radius),
           onTap: () => _open(context, c),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 56),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: LanguageColors.letterTile,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(Icons.translate_rounded,
-                        color: LanguageColors.primary, size: 22),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+                vertical: sizes.padV, horizontal: sizes.padH),
+            child: Row(
+              children: [
+                Container(
+                  width: sizes.tile,
+                  height: sizes.tile,
+                  decoration: BoxDecoration(
+                    color: LanguageColors.letterTile,
+                    borderRadius: BorderRadius.circular(sizes.tileRadius),
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      current.languageLabel,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E202B),
+                  child: Icon(Icons.translate_rounded,
+                      color: LanguageColors.primary, size: sizes.icon),
+                ),
+                SizedBox(width: sizes.gap),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        current.languageLabel,
+                        key: const Key('settings-language-title'),
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: sizes.title,
+                          fontFamily: FontFamily.interBold,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E202B),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 120),
-                    child: Text(
-                      current.nativeName,
-                      key: const Key('settings-language-current'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: LanguageColors.primary,
+                      SizedBox(height: sizes.subtitleGap),
+                      Text(
+                        current.menuSubtitle,
+                        key: const Key('settings-language-subtitle'),
+                        // Always one line, like the other menu subtitles.
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: sizes.subtitle,
+                          fontFamily: FontFamily.interRegular,
+                          color: Color(0xFF7A7F93),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                  const Icon(Icons.chevron_right_rounded,
-                      color: Color(0xFF7E69F7), size: 24),
-                ],
-              ),
+                ),
+                Icon(Icons.chevron_right_rounded,
+                    color: const Color(0xFF7E69F7), size: sizes.chevron),
+              ],
             ),
           ),
         ),
@@ -143,7 +176,9 @@ class _LanguageSheetState extends State<LanguageSheet> {
 
   List<LanguageOption> get _visible => _query.trim().isEmpty
       ? kWorkingLanguages
-      : kWorkingLanguages.where((o) => o.matches(_query)).toList(growable: false);
+      : kWorkingLanguages
+          .where((o) => o.matches(_query))
+          .toList(growable: false);
 
   Future<void> _pick(LanguageOption option) async {
     if (_busy) return;

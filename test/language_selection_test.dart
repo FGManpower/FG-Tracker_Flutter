@@ -396,11 +396,10 @@ void main() {
       scaffold.openDrawer();
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.translate_rounded), findsOneWidget);
-      expect(
-          tester
-              .widget<Text>(find.byKey(const Key('settings-language-current')))
-              .data,
-          'English');
+      expect(find.text('Language'), findsOneWidget);
+      expect(find.text('Change app language'), findsOneWidget);
+      // The selected language is not repeated on the row.
+      expect(find.text('English'), findsNothing);
 
       await tester.tap(find.byKey(const Key('settings-language-row')));
       await tester.pumpAndSettle();
@@ -418,16 +417,14 @@ void main() {
 
       scaffold.openDrawer();
       await tester.pumpAndSettle();
-      expect(
-          tester
-              .widget<Text>(find.byKey(const Key('settings-language-current')))
-              .data,
-          'हिन्दी');
+      expect(find.text('भाषा'), findsOneWidget);
+      expect(find.text('ऐप की भाषा बदलें'), findsOneWidget);
+      expect(find.text('हिन्दी'), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
     testWidgets(
-        'row shows current language; sheet ticks it and applies a new '
+        'row matches the menu (no language name); sheet ticks it and applies a new '
         'pick instantly on the same screen', (tester) async {
       await pumpApp(
         tester,
@@ -438,13 +435,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Language'), findsOneWidget);
-      expect(
-          find.byKey(const Key('settings-language-current')), findsOneWidget);
-      expect(
-          tester
-              .widget<Text>(find.byKey(const Key('settings-language-current')))
-              .data,
-          'English');
+      expect(find.byKey(const Key('settings-language-subtitle')),
+          findsOneWidget);
+      expect(find.text('Change app language'), findsOneWidget);
+      expect(find.byKey(const Key('settings-language-current')), findsNothing);
+      for (final k in ['settings-language-title', 'settings-language-subtitle']) {
+        expect(tester.widget<Text>(find.byKey(Key(k))).maxLines, 1, reason: k);
+      }
+      expect(find.text('English'), findsNothing);
 
       await tester.tap(find.byKey(const Key('settings-language-row')));
       await tester.pumpAndSettle();
@@ -471,11 +469,7 @@ void main() {
       expect((await prefs()).getString(LanguageController.prefKey), 'hi');
       expect(Get.locale, const Locale('hi'));
       expect(find.text('भाषा'), findsOneWidget);
-      expect(
-          tester
-              .widget<Text>(find.byKey(const Key('settings-language-current')))
-              .data,
-          'हिन्दी');
+      expect(find.text('हिन्दी'), findsNothing);
       // Same screen stays.
       expect(find.byKey(const Key('settings-language-row')), findsOneWidget);
 
@@ -538,6 +532,13 @@ void main() {
         expect(o.continueLabel, isNot(en.continueLabel), reason: o.code);
         expect(o.noResults, isNot(en.noResults), reason: o.code);
         expect(o.languageLabel, isNot(en.languageLabel), reason: o.code);
+      }
+      // Side menu row subtitle: translated for every language on the picker.
+      for (final o in kWorkingLanguages) {
+        expect(o.menuSubtitle.trim(), isNotEmpty, reason: o.code);
+        if (o.code != 'en') {
+          expect(o.menuSubtitle, isNot(en.menuSubtitle), reason: o.code);
+        }
       }
     });
   });

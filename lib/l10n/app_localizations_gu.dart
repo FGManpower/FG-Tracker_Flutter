@@ -3450,6 +3450,58 @@ class AppLocalizationsGu extends AppLocalizations {
   String get menu_contactUsSubtitle => 'અમારા વિશે વધુ જાણો';
 
   @override
+  String get legal_title => 'કાનૂની';
+
+  @override
+  String get legal_menuSubtitle => 'નીતિઓ અને કરારો';
+
+  @override
+  String get legal_draftNotice => 'આ દસ્તાવેજો ડ્રાફ્ટ છે અને બદલાઈ શકે છે.';
+
+  @override
+  String get legal_privacyTitle => 'પ્રાઇવસી પોલિસી';
+
+  @override
+  String get legal_privacySubtitle =>
+      'અમે તમારો ડેટા કેવી રીતે એકત્ર કરીએ અને વાપરીએ છીએ';
+
+  @override
+  String get legal_termsTitle => 'નિયમો અને શરતો (EULA)';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker વાપરવાના નિયમો';
+
+  @override
+  String get legal_enterpriseTitle => 'એન્ટરપ્રાઇઝ સેવા કરાર';
+
+  @override
+  String get legal_enterpriseSubtitle => 'વ્યવસાયિક ગ્રાહકો માટે';
+
+  @override
+  String get legal_dpaTitle => 'ડેટા પ્રોસેસિંગ કરાર';
+
+  @override
+  String get legal_dpaSubtitle => 'અમે ગ્રાહક ડેટા કેવી રીતે પ્રોસેસ કરીએ છીએ';
+
+  @override
+  String get legal_retentionTitle => 'ડેટા જાળવણી અને કાઢી નાખવાની નીતિ';
+
+  @override
+  String get legal_retentionSubtitle => 'અમે ડેટા કેટલો સમય રાખીએ છીએ';
+
+  @override
+  String get legal_securityTitle => 'ડેટા સંરક્ષણ અને માહિતી સુરક્ષા નીતિ';
+
+  @override
+  String get legal_securitySubtitle => 'અમે ડેટાનું રક્ષણ કેવી રીતે કરીએ છીએ';
+
+  @override
+  String get legal_emptyDocument => 'આ દસ્તાવેજ હજી ઉપલબ્ધ નથી.';
+
+  @override
+  String get legal_loadError => 'આ દસ્તાવેજ ખોલી શકાયો નહીં.';
+
+  @override
   String get menu_editProfile => 'પ્રોફાઇલ એડિટ કરો';
 
   @override

@@ -107,6 +107,7 @@ dependencies:
   google_mlkit_face_detection: ^0.15.0
   image: ^4.10.1
   firebase_remote_config: ^6.7.0
+  flutter_markdown_plus: ^1.0.12
 
 
 dependency_overrides:
@@ -142,6 +143,7 @@ flutter:
     - assets/svg/
     - assets/music/
     - assets/walkie_talkie/
+    - assets/legal/
     - shorebird.yaml
     - assets/map_theme/dark_map.json
     - lib/app/routes/

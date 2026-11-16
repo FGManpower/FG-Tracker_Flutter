@@ -89,10 +89,9 @@ class AppText {
   static String editProfile = "Edit Profile";
   static String aboutUs = "About Us";
   static String appName = "FG Tracker";
-  static String facebookUrl =  "https://www.facebook.com/people/FG-Manpower/100084001244570/";
-  static String instagramUrl =   "https://www.instagram.com/fgmanpower/";
-  static String twitterUrl =   "https://x.com/fgmanpower";
-  static String youtubeUrl =   "https://www.youtube.com/channel/UCSdOzFalDmiijEf2wVpMRWw";
+  static String facebookUrl = "https://www.facebook.com/people/FG-Tracker/61594760706918/";
+  static String instagramUrl = "https://www.instagram.com/fgtracker/";
+  static String youtubeUrl = "https://www.youtube.com/channel/UC_nUpY0OdPbJjZRdzFiZGhQ";
   static String logOut = "LogOut";
   static String submit = "Submit";
   static String createGroup = "Create Group";

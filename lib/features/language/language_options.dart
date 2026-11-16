@@ -17,6 +17,7 @@ class LanguageOption {
     required this.continueLabel,
     required this.noResults,
     required this.languageLabel,
+    this.menuSubtitle = "Change app language",
     this.aliases = const [],
   });
 
@@ -37,6 +38,9 @@ class LanguageOption {
 
   /// The word "Language" in this language (Settings row label).
   final String languageLabel;
+
+  /// Second line of the side menu Language row, in this language.
+  final String menuSubtitle;
 
   /// Extra spellings people may type in search (e.g. 'bangla'). Lower case.
   final List<String> aliases;
@@ -89,6 +93,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "Continue",
     noResults: "No language found",
     languageLabel: "Language",
+    menuSubtitle: "Change app language",
     aliases: ['english'],
   ),
   LanguageOption(
@@ -102,6 +107,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "आगे बढ़ें",
     noResults: "कोई भाषा नहीं मिली",
     languageLabel: "भाषा",
+    menuSubtitle: "ऐप की भाषा बदलें",
     aliases: ['hindi'],
   ),
   LanguageOption(
@@ -115,6 +121,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "पुढे जा",
     noResults: "कोणतीही भाषा आढळली नाही",
     languageLabel: "भाषा",
+    menuSubtitle: "ॲपची भाषा बदला",
     aliases: ['marathi'],
   ),
   LanguageOption(
@@ -128,6 +135,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "આગળ વધો",
     noResults: "કોઈ ભાષા મળી નથી",
     languageLabel: "ભાષા",
+    menuSubtitle: "ઍપની ભાષા બદલો",
     aliases: ['gujarati', 'gujrati'],
   ),
   LanguageOption(
@@ -141,6 +149,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "ಮುಂದುವರಿಯಿರಿ",
     noResults: "ಯಾವುದೇ ಭಾಷೆ ಕಂಡುಬಂದಿಲ್ಲ",
     languageLabel: "ಭಾಷೆ",
+    menuSubtitle: "ಆ್ಯಪ್ ಭಾಷೆ ಬದಲಾಯಿಸಿ",
     aliases: ['kannada', 'kanada'],
   ),
   LanguageOption(
@@ -154,6 +163,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "এগিয়ে যান",
     noResults: "কোনো ভাষা পাওয়া যায়নি",
     languageLabel: "ভাষা",
+    menuSubtitle: "অ্যাপের ভাষা পরিবর্তন করুন",
     aliases: ['bengali', 'bangla'],
   ),
   LanguageOption(
@@ -167,6 +177,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "തുടരുക",
     noResults: "ഭാഷയൊന്നും കണ്ടെത്തിയില്ല",
     languageLabel: "ഭാഷ",
+    menuSubtitle: "ആപ്പ് ഭാഷ മാറ്റുക",
     aliases: ['malayalam'],
   ),
   LanguageOption(
@@ -180,6 +191,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "தொடரவும்",
     noResults: "எந்த மொழியும் கிடைக்கவில்லை",
     languageLabel: "மொழி",
+    menuSubtitle: "ஆப் மொழியை மாற்றவும்",
     aliases: ['tamil'],
   ),
   LanguageOption(
@@ -193,6 +205,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "కొనసాగించండి",
     noResults: "ఏ భాషా దొరకలేదు",
     languageLabel: "భాష",
+    menuSubtitle: "యాప్ భాషను మార్చండి",
     aliases: ['telugu'],
   ),
   LanguageOption(
@@ -206,6 +219,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "ਅੱਗੇ ਵਧੋ",
     noResults: "ਕੋਈ ਭਾਸ਼ਾ ਨਹੀਂ ਮਿਲੀ",
     languageLabel: "ਭਾਸ਼ਾ",
+    menuSubtitle: "ਐਪ ਦੀ ਭਾਸ਼ਾ ਬਦਲੋ",
     aliases: ['punjabi', 'panjabi'],
   ),
   LanguageOption(
@@ -219,6 +233,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "ଆଗକୁ ବଢ଼ନ୍ତୁ",
     noResults: "କୌଣସି ଭାଷା ମିଳିଲା ନାହିଁ",
     languageLabel: "ଭାଷା",
+    menuSubtitle: "ଆପ୍‌ର ଭାଷା ବଦଳାନ୍ତୁ",
     aliases: ['odia', 'oriya', 'odisa', 'odisha'],
   ),
   LanguageOption(
@@ -232,6 +247,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "Continuar",
     noResults: "No se encontró ningún idioma",
     languageLabel: "Idioma",
+    menuSubtitle: "Cambiar el idioma de la app",
     aliases: ['spanish', 'espanol'],
   ),
   LanguageOption(
@@ -245,6 +261,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "Continuer",
     noResults: "Aucune langue trouvée",
     languageLabel: "Langue",
+    menuSubtitle: "Changer la langue de l'appli",
     aliases: ['french', 'francais'],
   ),
   LanguageOption(
@@ -258,6 +275,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "Weiter",
     noResults: "Keine Sprache gefunden",
     languageLabel: "Sprache",
+    menuSubtitle: "App-Sprache ändern",
     aliases: ['german', 'deutsch'],
   ),
   LanguageOption(
@@ -271,6 +289,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "متابعة",
     noResults: "لم يتم العثور على أي لغة",
     languageLabel: "اللغة",
+    menuSubtitle: "تغيير لغة التطبيق",
     aliases: ['arabic', 'arab', 'uae', 'dubai'],
   ),
   LanguageOption(
@@ -284,6 +303,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "Continuar",
     noResults: "Nenhum idioma encontrado",
     languageLabel: "Idioma",
+    menuSubtitle: "Alterar o idioma do app",
     aliases: ['portuguese', 'portugues'],
   ),
   LanguageOption(
@@ -297,6 +317,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "次へ",
     noResults: "言語が見つかりません",
     languageLabel: "言語",
+    menuSubtitle: "アプリの言語を変更",
     aliases: ['japanese', 'nihongo'],
   ),
   LanguageOption(
@@ -310,6 +331,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "继续",
     noResults: "未找到语言",
     languageLabel: "语言",
+    menuSubtitle: "更改应用语言",
     aliases: ['chinese', 'simplified', 'mandarin', 'zhongwen'],
   ),
   LanguageOption(
@@ -622,6 +644,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "繼續",
     noResults: "找不到語言",
     languageLabel: "語言",
+    menuSubtitle: "變更應用程式語言",
     aliases: ['chinese traditional', 'traditional', 'taiwan', 'hongkong'],
   ),
   LanguageOption(
@@ -1792,6 +1815,7 @@ const List<LanguageOption> kAppLanguages = [
     continueLabel: "جاری رکھیں",
     noResults: "کوئی زبان نہیں ملی",
     languageLabel: "زبان",
+    menuSubtitle: "ایپ کی زبان تبدیل کریں",
     aliases: ['urdu'],
   ),
   LanguageOption(

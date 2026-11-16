@@ -3461,6 +3461,57 @@ class AppLocalizationsAr extends AppLocalizations {
   String get menu_contactUsSubtitle => 'تعرف أكثر عنا';
 
   @override
+  String get legal_title => 'قانوني';
+
+  @override
+  String get legal_menuSubtitle => 'السياسات والاتفاقيات';
+
+  @override
+  String get legal_draftNotice => 'هذه المستندات مسودات وقد تتغير.';
+
+  @override
+  String get legal_privacyTitle => 'سياسة الخصوصية';
+
+  @override
+  String get legal_privacySubtitle => 'كيف نجمع بياناتك ونستخدمها';
+
+  @override
+  String get legal_termsTitle => 'الشروط والأحكام (EULA)';
+
+  @override
+  String get legal_termsSubtitle => 'قواعد استخدام FG Tracker';
+
+  @override
+  String get legal_enterpriseTitle => 'اتفاقية خدمة المؤسسات';
+
+  @override
+  String get legal_enterpriseSubtitle => 'لعملاء الأعمال';
+
+  @override
+  String get legal_dpaTitle => 'اتفاقية معالجة البيانات';
+
+  @override
+  String get legal_dpaSubtitle => 'كيف نعالج بيانات العملاء';
+
+  @override
+  String get legal_retentionTitle => 'سياسة الاحتفاظ بالبيانات وحذفها';
+
+  @override
+  String get legal_retentionSubtitle => 'مدة احتفاظنا بالبيانات';
+
+  @override
+  String get legal_securityTitle => 'سياسة حماية البيانات وأمن المعلومات';
+
+  @override
+  String get legal_securitySubtitle => 'كيف نحمي البيانات';
+
+  @override
+  String get legal_emptyDocument => 'هذا المستند غير متاح بعد.';
+
+  @override
+  String get legal_loadError => 'تعذّر فتح هذا المستند.';
+
+  @override
   String get menu_editProfile => 'تعديل الملف الشخصي';
 
   @override

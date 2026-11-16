@@ -6050,6 +6050,108 @@ abstract class AppLocalizations {
   /// **'Know more about us'**
   String get menu_contactUsSubtitle;
 
+  /// No description provided for @legal_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get legal_title;
+
+  /// No description provided for @legal_menuSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Policies and agreements'**
+  String get legal_menuSubtitle;
+
+  /// No description provided for @legal_draftNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'These documents are drafts and may change.'**
+  String get legal_draftNotice;
+
+  /// No description provided for @legal_privacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get legal_privacyTitle;
+
+  /// No description provided for @legal_privacySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How we collect and use your data'**
+  String get legal_privacySubtitle;
+
+  /// No description provided for @legal_termsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms & Conditions (EULA)'**
+  String get legal_termsTitle;
+
+  /// No description provided for @legal_termsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules for using FG Tracker'**
+  String get legal_termsSubtitle;
+
+  /// No description provided for @legal_enterpriseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enterprise Service Agreement'**
+  String get legal_enterpriseTitle;
+
+  /// No description provided for @legal_enterpriseSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'For business customers'**
+  String get legal_enterpriseSubtitle;
+
+  /// No description provided for @legal_dpaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Processing Agreement'**
+  String get legal_dpaTitle;
+
+  /// No description provided for @legal_dpaSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How we process customer data'**
+  String get legal_dpaSubtitle;
+
+  /// No description provided for @legal_retentionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Retention & Deletion Policy'**
+  String get legal_retentionTitle;
+
+  /// No description provided for @legal_retentionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How long we keep data'**
+  String get legal_retentionSubtitle;
+
+  /// No description provided for @legal_securityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Protection & Information Security Policy'**
+  String get legal_securityTitle;
+
+  /// No description provided for @legal_securitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How we protect data'**
+  String get legal_securitySubtitle;
+
+  /// No description provided for @legal_emptyDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'This document is not available yet.'**
+  String get legal_emptyDocument;
+
+  /// No description provided for @legal_loadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open this document.'**
+  String get legal_loadError;
+
   /// No description provided for @menu_editProfile.
   ///
   /// In en, this message translates to:

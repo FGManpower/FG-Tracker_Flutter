@@ -3338,6 +3338,57 @@ class AppLocalizationsJa extends AppLocalizations {
   String get menu_contactUsSubtitle => 'サポートとお問い合わせ';
 
   @override
+  String get legal_title => '法的情報';
+
+  @override
+  String get legal_menuSubtitle => 'ポリシーと契約';
+
+  @override
+  String get legal_draftNotice => 'これらの文書は草案であり、変更される場合があります。';
+
+  @override
+  String get legal_privacyTitle => 'プライバシーポリシー';
+
+  @override
+  String get legal_privacySubtitle => 'データの収集方法と利用方法';
+
+  @override
+  String get legal_termsTitle => '利用規約（EULA）';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker の利用ルール';
+
+  @override
+  String get legal_enterpriseTitle => '法人向けサービス契約';
+
+  @override
+  String get legal_enterpriseSubtitle => '法人のお客様向け';
+
+  @override
+  String get legal_dpaTitle => 'データ処理契約';
+
+  @override
+  String get legal_dpaSubtitle => 'お客様データの処理方法';
+
+  @override
+  String get legal_retentionTitle => 'データ保持・削除ポリシー';
+
+  @override
+  String get legal_retentionSubtitle => 'データの保持期間';
+
+  @override
+  String get legal_securityTitle => 'データ保護・情報セキュリティポリシー';
+
+  @override
+  String get legal_securitySubtitle => 'データの保護方法';
+
+  @override
+  String get legal_emptyDocument => 'この文書はまだ利用できません。';
+
+  @override
+  String get legal_loadError => 'この文書を開けませんでした。';
+
+  @override
   String get menu_editProfile => 'プロフィール編集';
 
   @override

@@ -3513,6 +3513,58 @@ class AppLocalizationsOr extends AppLocalizations {
   String get menu_contactUsSubtitle => 'ଆମ ବିଷୟରେ ଅଧିକ ଜାଣ |';
 
   @override
+  String get legal_title => 'ଆଇନଗତ';
+
+  @override
+  String get legal_menuSubtitle => 'ନୀତି ଓ ଚୁକ୍ତିନାମା';
+
+  @override
+  String get legal_draftNotice => 'ଏହି ଦସ୍ତାବିଜଗୁଡ଼ିକ ଡ୍ରାଫ୍ଟ ଏବଂ ବଦଳିପାରେ।';
+
+  @override
+  String get legal_privacyTitle => 'ଗୋପନୀୟତା ନୀତି';
+
+  @override
+  String get legal_privacySubtitle =>
+      'ଆମେ ଆପଣଙ୍କ ଡାଟା କିପରି ସଂଗ୍ରହ ଓ ବ୍ୟବହାର କରୁ';
+
+  @override
+  String get legal_termsTitle => 'ସର୍ତ୍ତାବଳୀ (EULA)';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker ବ୍ୟବହାରର ନିୟମ';
+
+  @override
+  String get legal_enterpriseTitle => 'ଏଣ୍ଟରପ୍ରାଇଜ୍ ସେବା ଚୁକ୍ତିନାମା';
+
+  @override
+  String get legal_enterpriseSubtitle => 'ବ୍ୟବସାୟିକ ଗ୍ରାହକଙ୍କ ପାଇଁ';
+
+  @override
+  String get legal_dpaTitle => 'ଡାଟା ପ୍ରକ୍ରିୟାକରଣ ଚୁକ୍ତିନାମା';
+
+  @override
+  String get legal_dpaSubtitle => 'ଆମେ ଗ୍ରାହକ ଡାଟା କିପରି ପ୍ରକ୍ରିୟାକରଣ କରୁ';
+
+  @override
+  String get legal_retentionTitle => 'ଡାଟା ସଂରକ୍ଷଣ ଓ ବିଲୋପ ନୀତି';
+
+  @override
+  String get legal_retentionSubtitle => 'ଆମେ କେତେ ଦିନ ଡାଟା ରଖୁ';
+
+  @override
+  String get legal_securityTitle => 'ଡାଟା ସୁରକ୍ଷା ଓ ସୂଚନା ନିରାପତ୍ତା ନୀତି';
+
+  @override
+  String get legal_securitySubtitle => 'ଆମେ ଡାଟାକୁ କିପରି ସୁରକ୍ଷିତ ରଖୁ';
+
+  @override
+  String get legal_emptyDocument => 'ଏହି ଦସ୍ତାବିଜ ଏବେ ଉପଲବ୍ଧ ନାହିଁ।';
+
+  @override
+  String get legal_loadError => 'ଏହି ଦସ୍ତାବିଜ ଖୋଲାଯାଇପାରିଲା ନାହିଁ।';
+
+  @override
   String get menu_editProfile => 'ପ୍ରୋଫାଇଲ୍ ସଂପାଦନ କରନ୍ତୁ |';
 
   @override

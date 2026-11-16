@@ -8,6 +8,8 @@ abstract class Routes {
   static const Register = _Paths.Register;
   static const Home_Screen = _Paths.Home_Screen;
   static const AboutUs = '/AboutUs';
+  static const Legal = _Paths.Legal;
+  static const LegalDocument = _Paths.LegalDocument;
   static const joinGroup = _Paths.joinGroup;
   static const Memberscreen = _Paths.Memberscreen;
   static const OTPScreen = _Paths.OTPScreen;
@@ -57,6 +59,8 @@ abstract class _Paths {
   static const Register = '/register';
   static const Home_Screen = '/Home_Screen';
   static const AboutUs = '/AboutUs';
+  static const Legal = '/legal';
+  static const LegalDocument = '/legal-document';
   static const joinGroup = '/JoinGroup';
   static const Memberscreen = '/MemberscreenScreen';
   static const OTPScreen = '/OTPScreen';

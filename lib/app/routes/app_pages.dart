@@ -19,6 +19,8 @@ import 'package:fgtracker/app/modules/auth/Views/Otp_Screen.dart';
 import 'package:fgtracker/app/modules/auth/Views/login_Page.dart';
 import 'package:fgtracker/app/modules/auth/Views/registration_screen.dart';
 import 'package:fgtracker/app/modules/home/Views/AboutUs.dart';
+import 'package:fgtracker/app/modules/Legal/Views/legal_document_screen.dart';
+import 'package:fgtracker/app/modules/Legal/Views/legal_screen.dart';
 import 'package:fgtracker/app/modules/home/Views/home_screen.dart';
 import 'package:fgtracker/app/modules/mediaStream/Bindings/call_binding.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
@@ -118,6 +120,18 @@ class AppPages {
       page: () => AboutUs(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: _Paths.Legal,
+      page: () => const LegalScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: _Paths.LegalDocument,
+      page: () => const LegalDocumentScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
     ),
     GetPage(
       name: _Paths.SearchMembers,

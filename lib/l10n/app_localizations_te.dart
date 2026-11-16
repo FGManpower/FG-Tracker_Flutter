@@ -3481,6 +3481,58 @@ class AppLocalizationsTe extends AppLocalizations {
   String get menu_contactUsSubtitle => 'మా గురించి మరింత తెలుసుకోండి';
 
   @override
+  String get legal_title => 'చట్టపరమైనవి';
+
+  @override
+  String get legal_menuSubtitle => 'విధానాలు మరియు ఒప్పందాలు';
+
+  @override
+  String get legal_draftNotice => 'ఈ పత్రాలు ముసాయిదాలు, మారవచ్చు.';
+
+  @override
+  String get legal_privacyTitle => 'ప్రైవసీ పాలసీ';
+
+  @override
+  String get legal_privacySubtitle =>
+      'మేము మీ డేటాను ఎలా సేకరించి ఉపయోగిస్తాము';
+
+  @override
+  String get legal_termsTitle => 'నిబంధనలు & షరతులు (EULA)';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker ఉపయోగ నియమాలు';
+
+  @override
+  String get legal_enterpriseTitle => 'ఎంటర్‌ప్రైజ్ సేవా ఒప్పందం';
+
+  @override
+  String get legal_enterpriseSubtitle => 'వ్యాపార కస్టమర్‌ల కోసం';
+
+  @override
+  String get legal_dpaTitle => 'డేటా ప్రాసెసింగ్ ఒప్పందం';
+
+  @override
+  String get legal_dpaSubtitle => 'కస్టమర్ డేటాను మేము ఎలా ప్రాసెస్ చేస్తాము';
+
+  @override
+  String get legal_retentionTitle => 'డేటా నిల్వ & తొలగింపు విధానం';
+
+  @override
+  String get legal_retentionSubtitle => 'మేము డేటాను ఎంతకాలం ఉంచుతాము';
+
+  @override
+  String get legal_securityTitle => 'డేటా రక్షణ & సమాచార భద్రతా విధానం';
+
+  @override
+  String get legal_securitySubtitle => 'మేము డేటాను ఎలా రక్షిస్తాము';
+
+  @override
+  String get legal_emptyDocument => 'ఈ పత్రం ఇంకా అందుబాటులో లేదు.';
+
+  @override
+  String get legal_loadError => 'ఈ పత్రాన్ని తెరవలేకపోయాము.';
+
+  @override
   String get menu_editProfile => 'ప్రొఫైల్ ఎడిట్ చేయండి';
 
   @override

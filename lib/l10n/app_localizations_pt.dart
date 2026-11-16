@@ -3506,6 +3506,59 @@ class AppLocalizationsPt extends AppLocalizations {
   String get menu_contactUsSubtitle => 'Saiba mais sobre nós';
 
   @override
+  String get legal_title => 'Informações legais';
+
+  @override
+  String get legal_menuSubtitle => 'Políticas e acordos';
+
+  @override
+  String get legal_draftNotice =>
+      'Estes documentos são rascunhos e podem mudar.';
+
+  @override
+  String get legal_privacyTitle => 'Política de Privacidade';
+
+  @override
+  String get legal_privacySubtitle => 'Como coletamos e usamos seus dados';
+
+  @override
+  String get legal_termsTitle => 'Termos e Condições (EULA)';
+
+  @override
+  String get legal_termsSubtitle => 'Regras de uso do FG Tracker';
+
+  @override
+  String get legal_enterpriseTitle => 'Contrato de Serviço Empresarial';
+
+  @override
+  String get legal_enterpriseSubtitle => 'Para clientes empresariais';
+
+  @override
+  String get legal_dpaTitle => 'Acordo de Processamento de Dados';
+
+  @override
+  String get legal_dpaSubtitle => 'Como processamos os dados dos clientes';
+
+  @override
+  String get legal_retentionTitle => 'Política de Retenção e Exclusão de Dados';
+
+  @override
+  String get legal_retentionSubtitle => 'Por quanto tempo mantemos os dados';
+
+  @override
+  String get legal_securityTitle =>
+      'Política de Proteção de Dados e Segurança da Informação';
+
+  @override
+  String get legal_securitySubtitle => 'Como protegemos os dados';
+
+  @override
+  String get legal_emptyDocument => 'Este documento ainda não está disponível.';
+
+  @override
+  String get legal_loadError => 'Não foi possível abrir este documento.';
+
+  @override
   String get menu_editProfile => 'Editar Perfil';
 
   @override

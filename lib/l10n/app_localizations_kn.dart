@@ -3483,6 +3483,58 @@ class AppLocalizationsKn extends AppLocalizations {
   String get menu_contactUsSubtitle => 'ನಮ್ಮ ಬಗ್ಗೆ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ';
 
   @override
+  String get legal_title => 'ಕಾನೂನು';
+
+  @override
+  String get legal_menuSubtitle => 'ನೀತಿಗಳು ಮತ್ತು ಒಪ್ಪಂದಗಳು';
+
+  @override
+  String get legal_draftNotice => 'ಈ ದಾಖಲೆಗಳು ಕರಡುಗಳಾಗಿದ್ದು ಬದಲಾಗಬಹುದು.';
+
+  @override
+  String get legal_privacyTitle => 'ಗೌಪ್ಯತಾ ನೀತಿ';
+
+  @override
+  String get legal_privacySubtitle =>
+      'ನಾವು ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಹೇಗೆ ಸಂಗ್ರಹಿಸುತ್ತೇವೆ ಮತ್ತು ಬಳಸುತ್ತೇವೆ';
+
+  @override
+  String get legal_termsTitle => 'ನಿಯಮಗಳು ಮತ್ತು ಷರತ್ತುಗಳು (EULA)';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker ಬಳಕೆಯ ನಿಯಮಗಳು';
+
+  @override
+  String get legal_enterpriseTitle => 'ಎಂಟರ್‌ಪ್ರೈಸ್ ಸೇವಾ ಒಪ್ಪಂದ';
+
+  @override
+  String get legal_enterpriseSubtitle => 'ವ್ಯಾಪಾರ ಗ್ರಾಹಕರಿಗಾಗಿ';
+
+  @override
+  String get legal_dpaTitle => 'ಡೇಟಾ ಸಂಸ್ಕರಣಾ ಒಪ್ಪಂದ';
+
+  @override
+  String get legal_dpaSubtitle => 'ನಾವು ಗ್ರಾಹಕರ ಡೇಟಾವನ್ನು ಹೇಗೆ ಸಂಸ್ಕರಿಸುತ್ತೇವೆ';
+
+  @override
+  String get legal_retentionTitle => 'ಡೇಟಾ ಧಾರಣ ಮತ್ತು ಅಳಿಸುವಿಕೆ ನೀತಿ';
+
+  @override
+  String get legal_retentionSubtitle => 'ನಾವು ಡೇಟಾವನ್ನು ಎಷ್ಟು ಕಾಲ ಇಡುತ್ತೇವೆ';
+
+  @override
+  String get legal_securityTitle => 'ಡೇಟಾ ರಕ್ಷಣೆ ಮತ್ತು ಮಾಹಿತಿ ಭದ್ರತಾ ನೀತಿ';
+
+  @override
+  String get legal_securitySubtitle => 'ನಾವು ಡೇಟಾವನ್ನು ಹೇಗೆ ರಕ್ಷಿಸುತ್ತೇವೆ';
+
+  @override
+  String get legal_emptyDocument => 'ಈ ದಾಖಲೆ ಇನ್ನೂ ಲಭ್ಯವಿಲ್ಲ.';
+
+  @override
+  String get legal_loadError => 'ಈ ದಾಖಲೆಯನ್ನು ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.';
+
+  @override
   String get menu_editProfile => 'ಪ್ರೊಫೈಲ್ ಎಡಿಟ್ ಮಾಡಿ';
 
   @override

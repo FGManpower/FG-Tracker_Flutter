@@ -3327,6 +3327,57 @@ class AppLocalizationsZh extends AppLocalizations {
   String get menu_contactUsSubtitle => '了解更多关于我们';
 
   @override
+  String get legal_title => '法律信息';
+
+  @override
+  String get legal_menuSubtitle => '政策与协议';
+
+  @override
+  String get legal_draftNotice => '这些文件为草稿，可能会有变动。';
+
+  @override
+  String get legal_privacyTitle => '隐私政策';
+
+  @override
+  String get legal_privacySubtitle => '我们如何收集和使用您的数据';
+
+  @override
+  String get legal_termsTitle => '条款与条件（EULA）';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker 使用规则';
+
+  @override
+  String get legal_enterpriseTitle => '企业服务协议';
+
+  @override
+  String get legal_enterpriseSubtitle => '面向企业客户';
+
+  @override
+  String get legal_dpaTitle => '数据处理协议';
+
+  @override
+  String get legal_dpaSubtitle => '我们如何处理客户数据';
+
+  @override
+  String get legal_retentionTitle => '数据保留与删除政策';
+
+  @override
+  String get legal_retentionSubtitle => '我们保留数据的时长';
+
+  @override
+  String get legal_securityTitle => '数据保护与信息安全政策';
+
+  @override
+  String get legal_securitySubtitle => '我们如何保护数据';
+
+  @override
+  String get legal_emptyDocument => '此文件暂不可用。';
+
+  @override
+  String get legal_loadError => '无法打开此文件。';
+
+  @override
   String get menu_editProfile => '编辑个人资料';
 
   @override
@@ -10568,6 +10619,57 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get menu_contactUsSubtitle => '了解更多關於我們的信息';
+
+  @override
+  String get legal_title => '法律資訊';
+
+  @override
+  String get legal_menuSubtitle => '政策與協議';
+
+  @override
+  String get legal_draftNotice => '這些文件為草稿，可能會有變動。';
+
+  @override
+  String get legal_privacyTitle => '隱私權政策';
+
+  @override
+  String get legal_privacySubtitle => '我們如何收集和使用您的資料';
+
+  @override
+  String get legal_termsTitle => '條款及條件（EULA）';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker 使用規則';
+
+  @override
+  String get legal_enterpriseTitle => '企業服務協議';
+
+  @override
+  String get legal_enterpriseSubtitle => '適用於企業客戶';
+
+  @override
+  String get legal_dpaTitle => '資料處理協議';
+
+  @override
+  String get legal_dpaSubtitle => '我們如何處理客戶資料';
+
+  @override
+  String get legal_retentionTitle => '資料保留與刪除政策';
+
+  @override
+  String get legal_retentionSubtitle => '我們保留資料的時間';
+
+  @override
+  String get legal_securityTitle => '資料保護與資訊安全政策';
+
+  @override
+  String get legal_securitySubtitle => '我們如何保護資料';
+
+  @override
+  String get legal_emptyDocument => '此文件暫時無法使用。';
+
+  @override
+  String get legal_loadError => '無法開啟此文件。';
 
   @override
   String get menu_editProfile => '編輯個人資料';
