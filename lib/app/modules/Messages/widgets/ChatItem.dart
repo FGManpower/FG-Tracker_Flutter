@@ -182,9 +182,43 @@ String formatSystemMessageText(MessageData message, String currentUserId) {
   final newName = meta['newName']?.toString();
 
   final isMeActor = actorId == currentUserId;
-  final isMeTarget = targetUserId == currentUserId;
+  final addedUserIdsRaw = meta['addedUserIds'];
+  final List<String> addedUserIds = addedUserIdsRaw is List
+      ? addedUserIdsRaw.map((e) => e.toString()).toList()
+      : [];
+  final isMeTarget = targetUserId == currentUserId || addedUserIds.contains(currentUserId);
 
   switch (action) {
+    case 'member_added':
+      if (isMeTarget && !isMeActor) {
+        return groupName != null
+            ? 'You were added to $groupName by $actorName'
+            : '$actorName added you';
+      }
+      if (isMeActor) {
+        if (targetName != 'Member' && targetName.isNotEmpty) {
+          return groupName != null
+              ? 'You added $targetName to $groupName'
+              : 'You added $targetName';
+        }
+        return defaultContent.isNotEmpty
+            ? defaultContent.replaceFirst(RegExp('^' + RegExp.escape(actorName) + '\\s+'), 'You ')
+            : 'You added members';
+      }
+      return defaultContent.isNotEmpty
+          ? defaultContent
+          : (groupName != null
+              ? '$actorName added $targetName to $groupName'
+              : '$actorName added $targetName');
+
+    case 'member_joined':
+      if (isMeActor || isMeTarget) {
+        return "You joined using this group's invite link";
+      }
+      return defaultContent.isNotEmpty
+          ? defaultContent
+          : "$targetName joined using this group's invite link";
+
     case 'member_left':
       if (isMeTarget || isMeActor) return 'You left';
       return '$targetName left';
@@ -251,6 +285,21 @@ String formatSystemMessageText(MessageData message, String currentUserId) {
     case 'group_description_changed':
       if (isMeActor) return 'You changed the group description';
       return '$actorName changed the group description';
+
+    case 'group_settings_changed':
+      final onlyAdmins = meta['onlyAdminsCanSend'] == true ||
+          meta['onlyAdminsCanSend'] == 1 ||
+          meta['onlyAdminsCanSend'] == 'true';
+      if (isMeActor) {
+        return onlyAdmins
+            ? "You changed this group's settings to allow only admins to send messages to this group"
+            : "You changed this group's settings to allow all participants to send messages to this group";
+      }
+      return defaultContent.isNotEmpty
+          ? defaultContent
+          : (onlyAdmins
+              ? "$actorName changed this group's settings to allow only admins to send messages to this group"
+              : "$actorName changed this group's settings to allow all participants to send messages to this group");
 
     default:
       return defaultContent;

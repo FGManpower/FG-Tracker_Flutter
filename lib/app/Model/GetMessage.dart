@@ -940,7 +940,8 @@ class MessageData {
     final rawSystemMeta = json['systemMeta'] ??
         json['system_meta'] ??
         nestedSource?['systemMeta'] ??
-        nestedSource?['system_meta'];
+        nestedSource?['system_meta'] ??
+        ((json['messageType'] == 'system' || nestedSource?['messageType'] == 'system') ? (json['caption'] ?? nestedSource?['caption']) : null);
     if (rawSystemMeta is Map) {
       systemMeta = Map<String, dynamic>.from(rawSystemMeta);
     } else if (rawSystemMeta is String) {
