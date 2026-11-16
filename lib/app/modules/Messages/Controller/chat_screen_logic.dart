@@ -156,15 +156,12 @@ class ChatScreenRules {
     return t.isEmpty || t == 'text' || t == 'text_message';
   }
 
-  /// Long-press options for a message. Attendance messages can never be
-  /// deleted from the chat (the poll is managed from its own card), so they
-  /// get no delete option for any user.
+  /// Long-press options for a message.
   static Set<MessageMenuOption> menuOptions({
     required dynamic messageType,
     required bool isSentByMe,
   }) {
     final text = isText(messageType);
-    final attendance = isAttendance(messageType);
     return {
       MessageMenuOption.reply,
       if (text) MessageMenuOption.copy,
@@ -172,8 +169,8 @@ class ChatScreenRules {
       if (isSentByMe && text) MessageMenuOption.edit,
       MessageMenuOption.pin,
       if (isSentByMe) MessageMenuOption.info,
-      if (isSentByMe && !attendance) MessageMenuOption.deleteForEveryone,
-      if (!attendance) MessageMenuOption.deleteForMe,
+      if (isSentByMe) MessageMenuOption.deleteForEveryone,
+      MessageMenuOption.deleteForMe,
     };
   }
 
