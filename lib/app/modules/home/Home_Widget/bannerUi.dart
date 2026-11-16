@@ -79,6 +79,10 @@ class _BannerSliderState extends State<BannerSlider> {
   File? _localBannerFile;
   bool _isLoadingLocal = true;
 
+  /// Width / height of one banner card (set in build from the real layout).
+  /// The crop after picking a photo is locked to this shape.
+  double _bannerAspect = 2.0;
+
   @override
   void initState() {
     super.initState();
@@ -266,6 +270,19 @@ class _BannerSliderState extends State<BannerSlider> {
 
   /// Renders the 8th Local Custom Banner (either user's image or upload prompt)
   Widget _buildLocalBannerSlide() {
+    return LayoutBuilder(builder: (context, constraints) {
+      // Remember the card's real shape (page width minus the 4.w margins,
+      // full height) so the crop after picking matches the banner exactly.
+      final cardWidth = constraints.maxWidth - 8.w;
+      if (cardWidth > 0 && constraints.maxHeight.isFinite &&
+          constraints.maxHeight > 0) {
+        _bannerAspect = cardWidth / constraints.maxHeight;
+      }
+      return _localBannerCard();
+    });
+  }
+
+  Widget _localBannerCard() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
@@ -459,126 +476,337 @@ class _BannerSliderState extends State<BannerSlider> {
     _stopAutoPlay();
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 16.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40.w,
-                height: 4.h,
-                margin: EdgeInsets.only(bottom: 14.h),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2.r),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 20.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
                 ),
-              ),
-              Text(
-                "Manage Custom Banner",
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 12.h),
-              ListTile(
-                leading: const Icon(Icons.photo_library_rounded,
-                    color: Color(0xFF6B4DFF)),
-                title: Text("Replace Banner", style: TextStyle(fontSize: 14.sp)),
-                subtitle: Text("Select a new photo from Gallery or Camera",
-                    style: TextStyle(fontSize: 11.sp)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _showPickerSheet();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete_outline_rounded,
-                    color: Colors.redAccent),
-                title: Text("Remove Banner",
-                    style: TextStyle(
-                        color: Colors.redAccent, fontSize: 14.sp)),
-                subtitle: Text("Revert back to default upload slot",
-                    style: TextStyle(fontSize: 11.sp)),
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  await LocalBannerService.deleteLocalBanner();
-                  if (mounted) {
-                    setState(() => _localBannerFile = null);
-                  }
-                  _startAutoPlay();
-                },
-              ),
-            ],
+                SizedBox(height: 16.h),
+                Text(
+                  "Manage Custom Banner",
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1E1B4B),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                // Current banner preview
+                if (_localBannerFile != null)
+                  AspectRatio(
+                    aspectRatio: _bannerAspect,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14.r),
+                      child: Image.file(_localBannerFile!, fit: BoxFit.cover),
+                    ),
+                  ),
+                SizedBox(height: 14.h),
+                _optionRow(
+                  key: const ValueKey('banner_replace'),
+                  icon: Icons.photo_library_rounded,
+                  color: const Color(0xFF6B4DFF),
+                  title: "Replace Banner",
+                  subtitle: "Pick a new photo from Gallery or Camera",
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showPickerSheet();
+                  },
+                ),
+                SizedBox(height: 10.h),
+                _optionRow(
+                  key: const ValueKey('banner_remove'),
+                  icon: Icons.delete_outline_rounded,
+                  color: Colors.redAccent,
+                  title: "Remove Banner",
+                  subtitle: "Go back to the default upload card",
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    await LocalBannerService.deleteLocalBanner();
+                    if (mounted) {
+                      setState(() => _localBannerFile = null);
+                    }
+                    _startAutoPlay();
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
     ).then((_) => _startAutoPlay());
   }
 
+  Widget _optionRow({
+    Key? key,
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      key: key,
+      color: color.withValues(alpha: 0.06),
+      borderRadius: BorderRadius.circular(14.r),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14.r),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+          child: Row(
+            children: [
+              Container(
+                width: 40.r,
+                height: 40.r,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(icon, color: color, size: 20.sp),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: color == Colors.redAccent
+                            ? Colors.redAccent
+                            : const Color(0xFF1E1B4B),
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded,
+                  color: Colors.grey.shade400, size: 22.sp),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Picks a photo, then opens the cropper locked to the banner's shape so
+  /// the saved image fills the banner without being cut unexpectedly.
+  Future<void> _pickBanner(ImageSource source) async {
+    final file = await LocalBannerService.pickAndSaveBanner(
+      source,
+      cropAspectRatio: _bannerAspect,
+    );
+    if (file != null && mounted) {
+      setState(() => _localBannerFile = file);
+    }
+    _startAutoPlay();
+  }
+
   /// Sheet to select Camera or Gallery source
   void _showPickerSheet() {
     _stopAutoPlay();
+    const purple = Color(0xFF6B4DFF);
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 20.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      width: 44.r,
+                      height: 44.r,
+                      decoration: BoxDecoration(
+                        color: purple.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
+                      child: Icon(Icons.add_photo_alternate_rounded,
+                          color: purple, size: 22.sp),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Select Banner Photo",
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1E1B4B),
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            "Shown only on your phone",
+                            style: TextStyle(
+                              fontSize: 11.5.sp,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                // Current banner (only when one is set, i.e. "Replace").
+                // With no banner yet, nothing is shown here.
+                if (_localBannerFile != null) ...[
+                  AspectRatio(
+                    aspectRatio: _bannerAspect,
+                    child: ClipRRect(
+                      key: const ValueKey('banner_current_preview'),
+                      borderRadius: BorderRadius.circular(14.r),
+                      child: Image.file(_localBannerFile!, fit: BoxFit.cover),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                ],
+                // Source options
+                Row(
+                  children: [
+                    Expanded(
+                      child: _sourceOption(
+                        key: const ValueKey('banner_pick_gallery'),
+                        icon: Icons.photo_library_rounded,
+                        title: "Gallery",
+                        subtitle: "Choose a photo",
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          _pickBanner(ImageSource.gallery);
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: _sourceOption(
+                        key: const ValueKey('banner_pick_camera'),
+                        icon: Icons.camera_alt_rounded,
+                        title: "Camera",
+                        subtitle: "Take a photo",
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          _pickBanner(ImageSource.camera);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 16.h),
+    ).then((_) => _startAutoPlay());
+  }
+
+  Widget _sourceOption({
+    Key? key,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    const purple = Color(0xFF6B4DFF);
+    return Material(
+      key: key,
+      color: const Color(0xFFF7F5FF),
+      borderRadius: BorderRadius.circular(16.r),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 8.w),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(color: purple.withValues(alpha: 0.18)),
+          ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 40.w,
-                height: 4.h,
-                margin: EdgeInsets.only(bottom: 14.h),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2.r),
+                width: 48.r,
+                height: 48.r,
+                decoration: const BoxDecoration(
+                  color: purple,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: Colors.white, size: 22.sp),
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E1B4B),
                 ),
               ),
+              SizedBox(height: 2.h),
               Text(
-                "Select Banner Photo",
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 12.h),
-              ListTile(
-                leading: const Icon(Icons.photo_library_outlined,
-                    color: Color(0xFF6B4DFF)),
-                title: Text("Choose from Gallery",
-                    style: TextStyle(fontSize: 14.sp)),
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  final file = await LocalBannerService.pickAndSaveBanner(
-                      ImageSource.gallery);
-                  if (file != null && mounted) {
-                    setState(() => _localBannerFile = file);
-                  }
-                  _startAutoPlay();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.camera_alt_outlined,
-                    color: Color(0xFF6B4DFF)),
-                title:
-                    Text("Take a Photo", style: TextStyle(fontSize: 14.sp)),
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  final file = await LocalBannerService.pickAndSaveBanner(
-                      ImageSource.camera);
-                  if (file != null && mounted) {
-                    setState(() => _localBannerFile = file);
-                  }
-                  _startAutoPlay();
-                },
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: Colors.grey.shade600,
+                ),
               ),
             ],
           ),
         ),
       ),
-    ).then((_) => _startAutoPlay());
+    );
   }
 }

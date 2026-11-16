@@ -447,7 +447,12 @@ void main() {
       await tester.tap(find.byKey(const Key('settings-language-row')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('language-sheet')), findsOneWidget);
-      expect(find.text('Choose your language'), findsOneWidget);
+      // Standard app bar (like reusableAppbar): back button + "Language".
+      final appBar = find.byKey(const Key('language-sheet-appbar'));
+      expect(appBar, findsOneWidget);
+      expect(find.descendant(of: appBar, matching: find.text('Language')),
+          findsOneWidget);
+      expect(find.byTooltip('Back'), findsOneWidget);
 
       expect(find.byKey(const Key('language-sheet-close')), findsOneWidget);
       expect(find.byKey(const Key('language-sheet-search')), findsOneWidget);
@@ -476,7 +481,11 @@ void main() {
       // Re-opening ticks the new language and shows its strings.
       await tester.tap(find.byKey(const Key('settings-language-row')));
       await tester.pumpAndSettle();
-      expect(find.text('अपनी भाषा चुनें'), findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byKey(const Key('language-sheet-appbar')),
+              matching: find.text('भाषा')),
+          findsOneWidget);
       expect(cards(tester).where((c) => c.selected).single.option.code, 'hi');
     });
 

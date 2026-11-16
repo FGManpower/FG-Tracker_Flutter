@@ -451,6 +451,10 @@ class Sidemenu extends StatelessWidget {
               padV: 8.h,
               padH: 8.w,
               radius: 15.r,
+              // Language screen app bar = reusableAppbar sizes.
+              appBarHeight: 50.h,
+              appBarTitle: 20.sp,
+              appBarIcon: 20.sp,
             ),
           ),
           // _buildDivider(),

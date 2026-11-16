@@ -1,5 +1,8 @@
+import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'language_controller.dart';
@@ -23,10 +26,17 @@ class LanguageRowSizes {
     this.padV = 8,
     this.padH = 8,
     this.radius = 15,
+    this.appBarHeight = 50,
+    this.appBarTitle = 20,
+    this.appBarIcon = 20,
   });
 
   final double tile, tileRadius, icon, gap, title, subtitleGap, subtitle;
   final double chevron, padV, padH, radius;
+
+  /// Language screen app bar, same as the app's `reusableAppbar`
+  /// (50.h toolbar, 20.sp title, 20.sp back icon).
+  final double appBarHeight, appBarTitle, appBarIcon;
 }
 
 /// Side menu → Language item (one shared widget). Same look as the other
@@ -51,10 +61,10 @@ class LanguageSettingsRow extends StatelessWidget {
       // row's context) is removed once it has closed.
       final host = scaffold.context;
       scaffold.closeDrawer();
-      showLanguageSheet(host, controller: c);
+      showLanguageSheet(host, controller: c, sizes: sizes);
       return;
     }
-    showLanguageSheet(context, controller: c);
+    showLanguageSheet(context, controller: c, sizes: sizes);
   }
 
   @override
@@ -132,18 +142,61 @@ class LanguageSettingsRow extends StatelessWidget {
   }
 }
 
-/// Opens the full-screen "Choose your language" screen. Picking a language saves
-/// it, closes the screen and applies it to the whole app instantly.
-Future<void> showLanguageSheet(BuildContext context,
-    {LanguageController? controller}) {
+/// Opens the full-screen language list (side menu → Language), with the same
+/// app bar as the other screens. Picking a language saves it, closes the
+/// screen and applies it to the whole app instantly.
+Future<void> showLanguageSheet(
+  BuildContext context, {
+  LanguageController? controller,
+  LanguageRowSizes sizes = const LanguageRowSizes(),
+}) {
   final c = controller ?? LanguageController.to;
   return Navigator.of(context).push<void>(
     MaterialPageRoute<void>(
-      builder: (_) => Scaffold(
+      builder: (context) => Scaffold(
         backgroundColor: Colors.white,
+        appBar: _languageAppBar(context, c.current.languageLabel, sizes),
         body: SafeArea(
-          child: LanguageSheet(controller: c, isFullScreen: true),
+          top: false,
+          child: LanguageSheet(
+            controller: c,
+            isFullScreen: true,
+            showHeader: false,
+          ),
         ),
+      ),
+    ),
+  );
+}
+
+/// Same look as `reusableAppbar` (lib/app/global_widget/common_widget.dart).
+AppBar _languageAppBar(
+    BuildContext context, String title, LanguageRowSizes sizes) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  return AppBar(
+    key: const Key('language-sheet-appbar'),
+    toolbarHeight: sizes.appBarHeight,
+    backgroundColor:
+        isDark ? ToggleThemeData.darkThemeBackground : AppColors.darkBlue,
+    scrolledUnderElevation: 0,
+    elevation: 0,
+    systemOverlayStyle: SystemUiOverlayStyle.light,
+    leading: IconButton(
+      key: const Key('language-sheet-close'),
+      tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+      icon: Icon(Icons.arrow_back_ios_new,
+          color: Colors.white, size: sizes.appBarIcon),
+      onPressed: () => Navigator.of(context).maybePop(),
+    ),
+    centerTitle: true,
+    title: Text(
+      title,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: sizes.appBarTitle,
+        fontWeight: FontWeight.w600,
       ),
     ),
   );
@@ -154,10 +207,15 @@ class LanguageSheet extends StatefulWidget {
     super.key,
     required this.controller,
     this.isFullScreen = true,
+    this.showHeader = true,
   });
 
   final LanguageController controller;
   final bool isFullScreen;
+
+  /// Title, subtitle and close button at the top. Off when the screen has
+  /// its own app bar.
+  final bool showHeader;
 
   @override
   State<LanguageSheet> createState() => _LanguageSheetState();
@@ -223,49 +281,51 @@ class _LanguageSheetState extends State<LanguageSheet> {
                   ),
                 ),
               ],
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            current.title,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              height: 1.3,
-                              fontWeight: FontWeight.w700,
-                              color: LanguageColors.text,
+              if (widget.showHeader)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              current.title,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                height: 1.3,
+                                fontWeight: FontWeight.w700,
+                                color: LanguageColors.text,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            current.subtitle,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              height: 1.35,
-                              color: LanguageColors.textSecondary,
+                            const SizedBox(height: 4),
+                            Text(
+                              current.subtitle,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                height: 1.35,
+                                color: LanguageColors.textSecondary,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      key: const Key('language-sheet-close'),
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: LanguageColors.textSecondary,
-                        size: 26,
+                      IconButton(
+                        key: const Key('language-sheet-close'),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: LanguageColors.textSecondary,
+                          size: 26,
+                        ),
+                        tooltip: 'Close',
+                        onPressed: () => Navigator.of(context).pop(),
                       ),
-                      tooltip: 'Close',
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+              if (!widget.showHeader) const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
                 child: SizedBox(

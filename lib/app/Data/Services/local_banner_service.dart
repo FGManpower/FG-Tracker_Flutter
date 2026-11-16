@@ -1,4 +1,8 @@
 import 'dart:io';
+import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/l10n/l10n.dart';
+import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,8 +28,15 @@ class LocalBannerService {
     return null;
   }
 
-  /// Pick an image from Camera or Gallery and save to sandboxed app documents
-  static Future<File?> pickAndSaveBanner(ImageSource source) async {
+  /// Pick an image from Camera or Gallery and save to sandboxed app documents.
+  ///
+  /// With [cropAspectRatio] (banner width / height) the cropper opens next,
+  /// locked to the banner shape, so the photo fits the banner exactly.
+  /// Cancelling the crop keeps the current banner (returns null).
+  static Future<File?> pickAndSaveBanner(
+    ImageSource source, {
+    double? cropAspectRatio,
+  }) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(
         source: source,
@@ -35,6 +46,13 @@ class LocalBannerService {
       );
 
       if (pickedFile == null) return null;
+
+      var sourcePath = pickedFile.path;
+      if (cropAspectRatio != null && cropAspectRatio > 0) {
+        final cropped = await cropToBanner(sourcePath, cropAspectRatio);
+        if (cropped == null) return null; // user cancelled the crop
+        sourcePath = cropped;
+      }
 
       final appDir = await getApplicationDocumentsDirectory();
       final targetPath =
@@ -49,11 +67,44 @@ class LocalBannerService {
       }
 
       // Copy picked file to permanent app documents path
-      final savedFile = await File(pickedFile.path).copy(targetPath);
+      final savedFile = await File(sourcePath).copy(targetPath);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_prefKey, savedFile.path);
 
       return savedFile;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Opens the cropper locked to the banner shape ([aspectRatio] = width /
+  /// height). Returns the cropped file path, or null when cancelled.
+  static Future<String?> cropToBanner(String path, double aspectRatio) async {
+    try {
+      final title = appL10n.imagePicker_cropTitle;
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: path,
+        aspectRatio: CropAspectRatio(ratioX: aspectRatio, ratioY: 1),
+        compressQuality: 90,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: title,
+            toolbarColor: AppColors.darkBlue,
+            toolbarWidgetColor: Colors.white,
+            statusBarLight: false,
+            activeControlsWidgetColor: const Color(0xFF6B4DFF),
+            lockAspectRatio: true,
+            hideBottomControls: false,
+          ),
+          IOSUiSettings(
+            title: title,
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+            aspectRatioPickerButtonHidden: true,
+          ),
+        ],
+      );
+      return cropped?.path;
     } catch (_) {
       return null;
     }
@@ -78,4 +129,3 @@ class LocalBannerService {
     return false;
   }
 }
-
