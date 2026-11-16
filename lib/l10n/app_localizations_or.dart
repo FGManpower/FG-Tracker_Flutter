@@ -106,6 +106,52 @@ class AppLocalizationsOr extends AppLocalizations {
       'ସମସ୍ତ ଗୋଷ୍ଠୀ ସଦସ୍ୟଙ୍କ ସହିତ ପ୍ରକୃତ ସମୟ ଅବସ୍ଥାନ ଅଂଶୀଦାର |';
 
   @override
+  String get account_deleteConfirm =>
+      'ଆପଣ ନିଶ୍ଚିତ କି ଆପଣଙ୍କ ଆକାଉଣ୍ଟ ସ୍ଥାୟୀ ଭାବେ ଡିଲିଟ୍ କରିବାକୁ ଚାହାଁନ୍ତି?';
+
+  @override
+  String get account_deleteDialogTitle => 'ଆକାଉଣ୍ଟ ଡିଲିଟ୍ କରିବେ?';
+
+  @override
+  String get account_deleteFailed =>
+      'ଆକାଉଣ୍ଟ ଡିଲିଟ୍ ହୋଇପାରିଲା ନାହିଁ। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।';
+
+  @override
+  String get account_deleteForever => 'ସ୍ଥାୟୀ ଭାବେ ଡିଲିଟ୍ କରନ୍ତୁ';
+
+  @override
+  String get account_deleteSubtitle => 'ଆକାଉଣ୍ଟ ଓ ଡାଟା ସ୍ଥାୟୀ ଭାବେ ମିଟାନ୍ତୁ';
+
+  @override
+  String get account_deleteTitle => 'ଆକାଉଣ୍ଟ ଡିଲିଟ୍ କରନ୍ତୁ';
+
+  @override
+  String get account_deleteWarning =>
+      'ଏହି କାର୍ଯ୍ୟ ତୁରନ୍ତ ହେବ ଏବଂ ଫେରାଯାଇପାରିବ ନାହିଁ। ଆପଣଙ୍କ ସମସ୍ତ ପ୍ରୋଫାଇଲ୍ ତଥ୍ୟ, ଲୋକେସନ୍ ଇତିହାସ, ଗୋଷ୍ଠୀ ସଦସ୍ୟତା ଓ ସକ୍ରିୟ ସେସନ୍ ସ୍ଥାୟୀ ଭାବେ ମିଟାଯିବ।';
+
+  @override
+  String get account_deletedToast => 'ଆକାଉଣ୍ଟ ସଫଳତାର ସହ ଡିଲିଟ୍ ହେଲା';
+
+  @override
+  String get account_reasonLabel => 'ଛାଡ଼ିବାର କାରଣ:';
+
+  @override
+  String get account_reasonNoLongerNeed =>
+      'ମୋତେ ଆଉ ଏହି ଆକାଉଣ୍ଟର ଆବଶ୍ୟକତା ନାହିଁ';
+
+  @override
+  String get account_reasonNotifications => 'ବହୁତ ଅଧିକ ବିଜ୍ଞପ୍ତି';
+
+  @override
+  String get account_reasonOther => 'ଅନ୍ୟ କାରଣ';
+
+  @override
+  String get account_reasonPrivacy => 'ଗୋପନୀୟତା ଚିନ୍ତା';
+
+  @override
+  String get account_reasonSwitching => 'ଅନ୍ୟ ଡିଭାଇସକୁ ଯାଉଛି';
+
+  @override
   String appUpdate_checkError(String error) {
     return 'ଅଦ୍ୟତନ ପାଇଁ ତ୍ରୁଟି ଯା ing ୍ଚ: $error';
   }
@@ -568,6 +614,47 @@ class AppLocalizationsOr extends AppLocalizations {
   String attendance_withinMeters(int count) {
     return '$count ମି';
   }
+
+  @override
+  String get banner_choosePhoto => 'ଫଟୋ ବାଛନ୍ତୁ';
+
+  @override
+  String get banner_customSubtitle =>
+      'ଆପଣଙ୍କ ଫଟୋ କିମ୍ବା କମ୍ପାନୀ ବ୍ୟାନର ଅପଲୋଡ୍ କରନ୍ତୁ। ଏହା କେବଳ ଆପଣଙ୍କ ଫୋନରେ ଦେଖାଯିବ!';
+
+  @override
+  String get banner_customTitle => 'କଷ୍ଟମ୍ ବ୍ୟାନର';
+
+  @override
+  String get banner_manageTitle => 'କଷ୍ଟମ୍ ବ୍ୟାନର ପରିଚାଳନା କରନ୍ତୁ';
+
+  @override
+  String get banner_myBanner => 'ମୋ ବ୍ୟାନର';
+
+  @override
+  String get banner_newBadge => 'ନୂଆ';
+
+  @override
+  String get banner_removeSubtitle => 'ଡିଫଲ୍ଟ ଅପଲୋଡ୍ କାର୍ଡକୁ ଫେରନ୍ତୁ';
+
+  @override
+  String get banner_removeTitle => 'ବ୍ୟାନର ହଟାନ୍ତୁ';
+
+  @override
+  String get banner_replaceSubtitle =>
+      'ଗ୍ୟାଲେରୀ କିମ୍ବା କ୍ୟାମେରାରୁ ନୂଆ ଫଟୋ ବାଛନ୍ତୁ';
+
+  @override
+  String get banner_replaceTitle => 'ବ୍ୟାନର ବଦଳାନ୍ତୁ';
+
+  @override
+  String get banner_selectPhotoSubtitle => 'କେବଳ ଆପଣଙ୍କ ଫୋନରେ ଦେଖାଯିବ';
+
+  @override
+  String get banner_selectPhotoTitle => 'ବ୍ୟାନର ଫଟୋ ବାଛନ୍ତୁ';
+
+  @override
+  String get banner_takePhoto => 'ଫଟୋ ଉଠାନ୍ତୁ';
 
   @override
   String get call_accept => 'ଗ୍ରହଣ କରନ୍ତୁ';
@@ -1925,6 +2012,216 @@ class AppLocalizationsOr extends AppLocalizations {
   String get chatList_yourContacts => 'ତୁମର ସମ୍ପର୍କ';
 
   @override
+  String chatSys_actorAdded(String actor, String target) {
+    return '$actor $target ଙ୍କୁ ଯୋଡିଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorAddedTo(String actor, String group, String target) {
+    return '$actor $target ଙ୍କୁ $group ରେ ଯୋଡିଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorAddedYou(String actor) {
+    return '$actor ଆପଣଙ୍କୁ ଯୋଡିଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorChangedDesc(String actor) {
+    return '$actor ଗ୍ରୁପ ବିବରଣୀ ବଦଳାଇଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorChangedIcon(String actor) {
+    return '$actor ଏହି ଗ୍ରୁପର ଆଇକନ ବଦଳାଇଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorDismissedAdmin(String actor, String target) {
+    return '$actor $target ଙ୍କୁ ଆଡମିନ ପଦରୁ ହଟାଇଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorDismissedAdminIn(
+      String actor, String group, String target) {
+    return '$actor $target ଙ୍କୁ $group ରେ ଆଡମିନ ପଦରୁ ହଟାଇଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorMadeAdmin(String actor, String target) {
+    return '$actor $target ଙ୍କୁ ଆଡମିନ କରିଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorMadeAdminIn(String actor, String group, String target) {
+    return '$actor $target ଙ୍କୁ $group ରେ ଆଡମିନ କରିଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorRemoved(String actor, String target) {
+    return '$actor $target ଙ୍କୁ ହଟାଇଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorRemovedFrom(String actor, String group, String target) {
+    return '$actor $target ଙ୍କୁ $group ରୁ ହଟାଇଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorRenamed(String actor) {
+    return '$actor ଗ୍ରୁପ ନାମ ବଦଳାଇଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorRenamedTo(String actor, String name) {
+    return '$actor ଗ୍ରୁପ ନାମ \"$name\" ରେ ବଦଳାଇଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_actorSetAdminsOnly(String actor) {
+    return '$actor ଗ୍ରୁପ ସେଟିଂ ବଦଳାଇଛନ୍ତି: ବର୍ତ୍ତମାନ କେବଳ ଆଡମିନ ଏହି ଗ୍ରୁପରେ ମେସେଜ ପଠାଇପାରିବେ';
+  }
+
+  @override
+  String chatSys_actorSetAllCanSend(String actor) {
+    return '$actor ଗ୍ରୁପ ସେଟିଂ ବଦଳାଇଛନ୍ତି: ବର୍ତ୍ତମାନ ସମସ୍ତ ସଦସ୍ୟ ଏହି ଗ୍ରୁପରେ ମେସେଜ ପଠାଇପାରିବେ';
+  }
+
+  @override
+  String get chatSys_callBack => 'ପୁଣି କଲ କରନ୍ତୁ';
+
+  @override
+  String get chatSys_delivered => 'ପହଞ୍ଚିଛି';
+
+  @override
+  String chatSys_joinedViaLink(String target) {
+    return '$target ଏହି ଗ୍ରୁପର ନିମନ୍ତ୍ରଣ ଲିଙ୍କ ମାଧ୍ୟମରେ ଯୋଗ ଦେଲେ';
+  }
+
+  @override
+  String chatSys_left(String target) {
+    return '$target ଗ୍ରୁପ ଛାଡିଲେ';
+  }
+
+  @override
+  String get chatSys_notDeliveredYet => 'ଏପର୍ଯ୍ୟନ୍ତ ପହଞ୍ଚିନାହିଁ';
+
+  @override
+  String get chatSys_unreadDivider => 'ପଢ଼ାଯାଇନଥିବା ମେସେଜ';
+
+  @override
+  String chatSys_unreadDividerCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countଟି ପଢ଼ାଯାଇନଥିବା ମେସେଜ',
+      one: '1ଟି ପଢ଼ାଯାଇନଥିବା ମେସେଜ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatSys_youAdded(String target) {
+    return 'ଆପଣ $target ଙ୍କୁ ଯୋଡିଛନ୍ତି';
+  }
+
+  @override
+  String get chatSys_youAddedMembers => 'ଆପଣ ସଦସ୍ୟମାନଙ୍କୁ ଯୋଡିଛନ୍ତି';
+
+  @override
+  String chatSys_youAddedTo(String group, String target) {
+    return 'ଆପଣ $target ଙ୍କୁ $group ରେ ଯୋଡିଛନ୍ତି';
+  }
+
+  @override
+  String get chatSys_youAreAdmin => 'ଆପଣ ବର୍ତ୍ତମାନ ଆଡମିନ';
+
+  @override
+  String chatSys_youAreAdminIn(String group) {
+    return 'ଆପଣ ବର୍ତ୍ତମାନ $group ରେ ଆଡମିନ';
+  }
+
+  @override
+  String get chatSys_youChangedDesc => 'ଆପଣ ଗ୍ରୁପ ବିବରଣୀ ବଦଳାଇଛନ୍ତି';
+
+  @override
+  String get chatSys_youChangedIcon => 'ଆପଣ ଏହି ଗ୍ରୁପର ଆଇକନ ବଦଳାଇଛନ୍ତି';
+
+  @override
+  String chatSys_youDismissedAdmin(String target) {
+    return 'ଆପଣ $target ଙ୍କୁ ଆଡମିନ ପଦରୁ ହଟାଇଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_youDismissedAdminIn(String group, String target) {
+    return 'ଆପଣ $target ଙ୍କୁ $group ରେ ଆଡମିନ ପଦରୁ ହଟାଇଛନ୍ତି';
+  }
+
+  @override
+  String get chatSys_youJoinedViaLink =>
+      'ଆପଣ ଏହି ଗ୍ରୁପର ନିମନ୍ତ୍ରଣ ଲିଙ୍କ ମାଧ୍ୟମରେ ଯୋଗ ଦେଲେ';
+
+  @override
+  String get chatSys_youLeft => 'ଆପଣ ଗ୍ରୁପ ଛାଡିଲେ';
+
+  @override
+  String chatSys_youMadeAdmin(String target) {
+    return 'ଆପଣ $target ଙ୍କୁ ଆଡମିନ କରିଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_youMadeAdminIn(String group, String target) {
+    return 'ଆପଣ $target ଙ୍କୁ $group ରେ ଆଡମିନ କରିଛନ୍ତି';
+  }
+
+  @override
+  String get chatSys_youNoLongerAdmin => 'ଆପଣ ଆଉ ଆଡମିନ ନୁହଁନ୍ତି';
+
+  @override
+  String chatSys_youNoLongerAdminIn(String group) {
+    return 'ଆପଣ ଆଉ $group ରେ ଆଡମିନ ନୁହଁନ୍ତି';
+  }
+
+  @override
+  String chatSys_youRemoved(String target) {
+    return 'ଆପଣ $target ଙ୍କୁ ହଟାଇଛନ୍ତି';
+  }
+
+  @override
+  String chatSys_youRemovedFrom(String group, String target) {
+    return 'ଆପଣ $target ଙ୍କୁ $group ରୁ ହଟାଇଛନ୍ତି';
+  }
+
+  @override
+  String get chatSys_youRenamed => 'ଆପଣ ଗ୍ରୁପ ନାମ ବଦଳାଇଛନ୍ତି';
+
+  @override
+  String chatSys_youRenamedTo(String name) {
+    return 'ଆପଣ ଗ୍ରୁପ ନାମ \"$name\" ରେ ବଦଳାଇଛନ୍ତି';
+  }
+
+  @override
+  String get chatSys_youSetAdminsOnly =>
+      'ଆପଣ ଗ୍ରୁପ ସେଟିଂ ବଦଳାଇଛନ୍ତି: ବର୍ତ୍ତମାନ କେବଳ ଆଡମିନ ଏହି ଗ୍ରୁପରେ ମେସେଜ ପଠାଇପାରିବେ';
+
+  @override
+  String get chatSys_youSetAllCanSend =>
+      'ଆପଣ ଗ୍ରୁପ ସେଟିଂ ବଦଳାଇଛନ୍ତି: ବର୍ତ୍ତମାନ ସମସ୍ତ ସଦସ୍ୟ ଏହି ଗ୍ରୁପରେ ମେସେଜ ପଠାଇପାରିବେ';
+
+  @override
+  String chatSys_youWereAddedTo(String actor, String group) {
+    return '$actor ଆପଣଙ୍କୁ $group ରେ ଯୋଡିଛନ୍ତି';
+  }
+
+  @override
+  String get chatSys_youWereRemoved => 'ଆପଣଙ୍କୁ ହଟାଯାଇଛି';
+
+  @override
+  String chatSys_youWereRemovedFrom(String group) {
+    return 'ଆପଣଙ୍କୁ $group ରୁ ହଟାଯାଇଛି';
+  }
+
+  @override
   String get chat_addCaptionHint => 'ଏକ କ୍ୟାପସନ୍ ଯୋଡନ୍ତୁ ...';
 
   @override
@@ -2684,6 +2981,111 @@ class AppLocalizationsOr extends AppLocalizations {
   String forceUpdate_updateOnStore(String storeName) {
     return '$storeName ରେ ଅଦ୍ୟତନ କରନ୍ତୁ |';
   }
+
+  @override
+  String groupAdmin_addMemberConfirm(String group, String name) {
+    return '$nameଙ୍କୁ $groupରେ ଯୋଡ଼ିବେ?';
+  }
+
+  @override
+  String get groupAdmin_addMembersSubtitle => 'ଏହି ଗୋଷ୍ଠୀରେ ଯୋଗାଯୋଗ ଯୋଡ଼ନ୍ତୁ';
+
+  @override
+  String get groupAdmin_addMembersTitle => 'ସଦସ୍ୟ ଯୋଡ଼ନ୍ତୁ';
+
+  @override
+  String get groupAdmin_allMembersCanSend => 'ସମସ୍ତ ସଦସ୍ୟ ବାର୍ତ୍ତା ପଠାଇପାରିବେ';
+
+  @override
+  String get groupAdmin_allParticipantsNowToast =>
+      'ବର୍ତ୍ତମାନ ସମସ୍ତ ସଦସ୍ୟ ବାର୍ତ୍ତା ପଠାଇପାରିବେ';
+
+  @override
+  String get groupAdmin_candidatesHint =>
+      'କେବଳ ସେଭ୍ ଯୋଗାଯୋଗ ଏବଂ ଆପଣଙ୍କ ଅନ୍ୟ ଗୋଷ୍ଠୀର ସଦସ୍ୟଙ୍କୁ ଯୋଡ଼ାଯାଇପାରିବ।';
+
+  @override
+  String get groupAdmin_contactsPermissionOff =>
+      'ଯୋଗାଯୋଗ ଅନୁମତି ବନ୍ଦ ଅଛି। କେବଳ ଆପଣଙ୍କ ଗୋଷ୍ଠୀର ସଦସ୍ୟ ଦେଖାଯାଉଛନ୍ତି।';
+
+  @override
+  String get groupAdmin_dismissAction => 'ହଟାନ୍ତୁ';
+
+  @override
+  String groupAdmin_dismissAdminConfirm(String name) {
+    return '$nameଙ୍କୁ ଗୋଷ୍ଠୀ ଆଡମିନ ପଦରୁ ହଟାଇବେ?';
+  }
+
+  @override
+  String get groupAdmin_dismissAdminTitle => 'ଆଡମିନ ପଦରୁ ହଟାନ୍ତୁ';
+
+  @override
+  String get groupAdmin_enable => 'ଚାଲୁ କରନ୍ତୁ';
+
+  @override
+  String get groupAdmin_loadFailedBody =>
+      'ଆପଣଙ୍କ ଇଣ୍ଟରନେଟ୍ ଯାଞ୍ଚ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।';
+
+  @override
+  String get groupAdmin_loadFailedTitle => 'ସଦସ୍ୟ ଲୋଡ୍ ହୋଇପାରିଲେ ନାହିଁ';
+
+  @override
+  String get groupAdmin_makeAdminAction => 'ଆଡମିନ କରନ୍ତୁ';
+
+  @override
+  String groupAdmin_makeAdminConfirm(String name) {
+    return '$nameଙ୍କୁ ଗୋଷ୍ଠୀ ଆଡମିନ କରିବେ?';
+  }
+
+  @override
+  String get groupAdmin_makeAdminTitle => 'ଗୋଷ୍ଠୀ ଆଡମିନ କରନ୍ତୁ';
+
+  @override
+  String get groupAdmin_memberAdded => 'ସଦସ୍ୟ ସଫଳତାର ସହ ଯୋଡ଼ାଗଲା';
+
+  @override
+  String get groupAdmin_menuDismissAdmin => 'ଆଡମିନ ପଦରୁ ହଟାନ୍ତୁ';
+
+  @override
+  String get groupAdmin_menuMakeAdmin => 'ଗୋଷ୍ଠୀ ଆଡମିନ କରନ୍ତୁ';
+
+  @override
+  String get groupAdmin_noCandidates =>
+      'ଯୋଡ଼ିବା ପାଇଁ କୌଣସି ଯୋଗାଯୋଗ କିମ୍ବା ଗୋଷ୍ଠୀ ସଦସ୍ୟ ମିଳିଲେ ନାହିଁ';
+
+  @override
+  String get groupAdmin_noMatchingContacts =>
+      'କୌଣସି ମେଳ ଖାଉଥିବା ଯୋଗାଯୋଗ ମିଳିଲା ନାହିଁ';
+
+  @override
+  String get groupAdmin_onlyAdminsCanSend => 'କେବଳ ଆଡମିନ ବାର୍ତ୍ତା ପଠାଇପାରିବେ';
+
+  @override
+  String get groupAdmin_onlyAdminsNowToast =>
+      'ବର୍ତ୍ତମାନ କେବଳ ଆଡମିନ ବାର୍ତ୍ତା ପଠାଇପାରିବେ';
+
+  @override
+  String get groupAdmin_searchHint => 'ନାମ କିମ୍ବା ଫୋନ୍ ନମ୍ବର ଖୋଜନ୍ତୁ...';
+
+  @override
+  String get groupAdmin_selectContactSubtitle =>
+      'ଗୋଷ୍ଠୀରେ ଯୋଡ଼ିବାକୁ ଏକ ଯୋଗାଯୋଗ ବାଛନ୍ତୁ';
+
+  @override
+  String get groupAdmin_sendMessagesTitle => 'ବାର୍ତ୍ତା ପଠାନ୍ତୁ';
+
+  @override
+  String get groupAdmin_tagContactAndGroup => 'ଯୋଗାଯୋଗ • ଗୋଷ୍ଠୀ';
+
+  @override
+  String get groupAdmin_tagSavedContact => 'ସେଭ୍ ଯୋଗାଯୋଗ';
+
+  @override
+  String get groupAdmin_tagYourGroups => 'ଆପଣଙ୍କ ଗୋଷ୍ଠୀ';
+
+  @override
+  String get groupAdmin_updateSettingFailed =>
+      'ଗୋଷ୍ଠୀ ସେଟିଂ ଅପଡେଟ୍ ହୋଇପାରିଲା ନାହିଁ';
 
   @override
   String get groupDialog_audioCall => 'ଅଡିଓ କଲ୍ |';
@@ -3454,6 +3856,58 @@ class AppLocalizationsOr extends AppLocalizations {
   String get intro_walkieTitle => 'ୱାକି-ଟକି |\nବ feature ଶିଷ୍ଟ୍ୟ';
 
   @override
+  String get legal_dpaSubtitle => 'ଆମେ ଗ୍ରାହକ ଡାଟା କିପରି ପ୍ରକ୍ରିୟାକରଣ କରୁ';
+
+  @override
+  String get legal_dpaTitle => 'ଡାଟା ପ୍ରକ୍ରିୟାକରଣ ଚୁକ୍ତିନାମା';
+
+  @override
+  String get legal_draftNotice => 'ଏହି ଦସ୍ତାବିଜଗୁଡ଼ିକ ଡ୍ରାଫ୍ଟ ଏବଂ ବଦଳିପାରେ।';
+
+  @override
+  String get legal_emptyDocument => 'ଏହି ଦସ୍ତାବିଜ ଏବେ ଉପଲବ୍ଧ ନାହିଁ।';
+
+  @override
+  String get legal_enterpriseSubtitle => 'ବ୍ୟବସାୟିକ ଗ୍ରାହକଙ୍କ ପାଇଁ';
+
+  @override
+  String get legal_enterpriseTitle => 'ଏଣ୍ଟରପ୍ରାଇଜ୍ ସେବା ଚୁକ୍ତିନାମା';
+
+  @override
+  String get legal_loadError => 'ଏହି ଦସ୍ତାବିଜ ଖୋଲାଯାଇପାରିଲା ନାହିଁ।';
+
+  @override
+  String get legal_menuSubtitle => 'ନୀତି ଓ ଚୁକ୍ତିନାମା';
+
+  @override
+  String get legal_privacySubtitle =>
+      'ଆମେ ଆପଣଙ୍କ ଡାଟା କିପରି ସଂଗ୍ରହ ଓ ବ୍ୟବହାର କରୁ';
+
+  @override
+  String get legal_privacyTitle => 'ଗୋପନୀୟତା ନୀତି';
+
+  @override
+  String get legal_retentionSubtitle => 'ଆମେ କେତେ ଦିନ ଡାଟା ରଖୁ';
+
+  @override
+  String get legal_retentionTitle => 'ଡାଟା ସଂରକ୍ଷଣ ଓ ବିଲୋପ ନୀତି';
+
+  @override
+  String get legal_securitySubtitle => 'ଆମେ ଡାଟାକୁ କିପରି ସୁରକ୍ଷିତ ରଖୁ';
+
+  @override
+  String get legal_securityTitle => 'ଡାଟା ସୁରକ୍ଷା ଓ ସୂଚନା ନିରାପତ୍ତା ନୀତି';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker ବ୍ୟବହାରର ନିୟମ';
+
+  @override
+  String get legal_termsTitle => 'ସର୍ତ୍ତାବଳୀ (EULA)';
+
+  @override
+  String get legal_title => 'ଆଇନଗତ';
+
+  @override
   String login_dataSecure(String percent) {
     return 'ଆପଣଙ୍କର ତଥ୍ୟ $percent ସୁରକ୍ଷିତ';
   }
@@ -3511,58 +3965,6 @@ class AppLocalizationsOr extends AppLocalizations {
 
   @override
   String get menu_contactUsSubtitle => 'ଆମ ବିଷୟରେ ଅଧିକ ଜାଣ |';
-
-  @override
-  String get legal_title => 'ଆଇନଗତ';
-
-  @override
-  String get legal_menuSubtitle => 'ନୀତି ଓ ଚୁକ୍ତିନାମା';
-
-  @override
-  String get legal_draftNotice => 'ଏହି ଦସ୍ତାବିଜଗୁଡ଼ିକ ଡ୍ରାଫ୍ଟ ଏବଂ ବଦଳିପାରେ।';
-
-  @override
-  String get legal_privacyTitle => 'ଗୋପନୀୟତା ନୀତି';
-
-  @override
-  String get legal_privacySubtitle =>
-      'ଆମେ ଆପଣଙ୍କ ଡାଟା କିପରି ସଂଗ୍ରହ ଓ ବ୍ୟବହାର କରୁ';
-
-  @override
-  String get legal_termsTitle => 'ସର୍ତ୍ତାବଳୀ (EULA)';
-
-  @override
-  String get legal_termsSubtitle => 'FG Tracker ବ୍ୟବହାରର ନିୟମ';
-
-  @override
-  String get legal_enterpriseTitle => 'ଏଣ୍ଟରପ୍ରାଇଜ୍ ସେବା ଚୁକ୍ତିନାମା';
-
-  @override
-  String get legal_enterpriseSubtitle => 'ବ୍ୟବସାୟିକ ଗ୍ରାହକଙ୍କ ପାଇଁ';
-
-  @override
-  String get legal_dpaTitle => 'ଡାଟା ପ୍ରକ୍ରିୟାକରଣ ଚୁକ୍ତିନାମା';
-
-  @override
-  String get legal_dpaSubtitle => 'ଆମେ ଗ୍ରାହକ ଡାଟା କିପରି ପ୍ରକ୍ରିୟାକରଣ କରୁ';
-
-  @override
-  String get legal_retentionTitle => 'ଡାଟା ସଂରକ୍ଷଣ ଓ ବିଲୋପ ନୀତି';
-
-  @override
-  String get legal_retentionSubtitle => 'ଆମେ କେତେ ଦିନ ଡାଟା ରଖୁ';
-
-  @override
-  String get legal_securityTitle => 'ଡାଟା ସୁରକ୍ଷା ଓ ସୂଚନା ନିରାପତ୍ତା ନୀତି';
-
-  @override
-  String get legal_securitySubtitle => 'ଆମେ ଡାଟାକୁ କିପରି ସୁରକ୍ଷିତ ରଖୁ';
-
-  @override
-  String get legal_emptyDocument => 'ଏହି ଦସ୍ତାବିଜ ଏବେ ଉପଲବ୍ଧ ନାହିଁ।';
-
-  @override
-  String get legal_loadError => 'ଏହି ଦସ୍ତାବିଜ ଖୋଲାଯାଇପାରିଲା ନାହିଁ।';
 
   @override
   String get menu_editProfile => 'ପ୍ରୋଫାଇଲ୍ ସଂପାଦନ କରନ୍ତୁ |';

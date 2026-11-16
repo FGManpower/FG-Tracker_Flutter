@@ -98,6 +98,49 @@ class AppLocalizationsZh extends AppLocalizations {
   String get about_whyRealTime => '与所有群组成员进行实时位置共享。';
 
   @override
+  String get account_deleteConfirm => '确定要永久删除你的账号吗？';
+
+  @override
+  String get account_deleteDialogTitle => '删除账号？';
+
+  @override
+  String get account_deleteFailed => '无法删除账号，请重试。';
+
+  @override
+  String get account_deleteForever => '永久删除';
+
+  @override
+  String get account_deleteSubtitle => '永久清除账号和数据';
+
+  @override
+  String get account_deleteTitle => '删除账号';
+
+  @override
+  String get account_deleteWarning =>
+      '此操作会立即生效且无法撤销。你的所有个人资料、位置记录、群组成员身份和活动会话都将被永久清除。';
+
+  @override
+  String get account_deletedToast => '账号已成功删除';
+
+  @override
+  String get account_reasonLabel => '离开原因：';
+
+  @override
+  String get account_reasonNoLongerNeed => '我不再需要这个账号';
+
+  @override
+  String get account_reasonNotifications => '通知太多';
+
+  @override
+  String get account_reasonOther => '其他原因';
+
+  @override
+  String get account_reasonPrivacy => '隐私顾虑';
+
+  @override
+  String get account_reasonSwitching => '换用其他设备';
+
+  @override
   String appUpdate_checkError(String error) {
     return '检查更新失败：$error';
   }
@@ -533,6 +576,45 @@ class AppLocalizationsZh extends AppLocalizations {
   String attendance_withinMeters(int count) {
     return '$count 米以内';
   }
+
+  @override
+  String get banner_choosePhoto => '选择照片';
+
+  @override
+  String get banner_customSubtitle => '上传你自己的照片或公司横幅，仅在你的手机上显示！';
+
+  @override
+  String get banner_customTitle => '自定义横幅';
+
+  @override
+  String get banner_manageTitle => '管理自定义横幅';
+
+  @override
+  String get banner_myBanner => '我的横幅';
+
+  @override
+  String get banner_newBadge => '新';
+
+  @override
+  String get banner_removeSubtitle => '恢复为默认上传卡片';
+
+  @override
+  String get banner_removeTitle => '移除横幅';
+
+  @override
+  String get banner_replaceSubtitle => '从相册或相机选择新照片';
+
+  @override
+  String get banner_replaceTitle => '更换横幅';
+
+  @override
+  String get banner_selectPhotoSubtitle => '仅在你的手机上显示';
+
+  @override
+  String get banner_selectPhotoTitle => '选择横幅照片';
+
+  @override
+  String get banner_takePhoto => '拍照';
 
   @override
   String get call_accept => '接听';
@@ -1834,6 +1916,212 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatList_yourContacts => '您的通讯录';
 
   @override
+  String chatSys_actorAdded(String actor, String target) {
+    return '$actor 添加了 $target';
+  }
+
+  @override
+  String chatSys_actorAddedTo(String actor, String group, String target) {
+    return '$actor 将 $target 添加到 $group';
+  }
+
+  @override
+  String chatSys_actorAddedYou(String actor) {
+    return '$actor 添加了你';
+  }
+
+  @override
+  String chatSys_actorChangedDesc(String actor) {
+    return '$actor 更改了群组简介';
+  }
+
+  @override
+  String chatSys_actorChangedIcon(String actor) {
+    return '$actor 更改了此群组的图标';
+  }
+
+  @override
+  String chatSys_actorDismissedAdmin(String actor, String target) {
+    return '$actor 取消了 $target 的管理员身份';
+  }
+
+  @override
+  String chatSys_actorDismissedAdminIn(
+      String actor, String group, String target) {
+    return '$actor 取消了 $target 在 $group 的管理员身份';
+  }
+
+  @override
+  String chatSys_actorMadeAdmin(String actor, String target) {
+    return '$actor 将 $target 设为管理员';
+  }
+
+  @override
+  String chatSys_actorMadeAdminIn(String actor, String group, String target) {
+    return '$actor 将 $target 设为 $group 的管理员';
+  }
+
+  @override
+  String chatSys_actorRemoved(String actor, String target) {
+    return '$actor 移除了 $target';
+  }
+
+  @override
+  String chatSys_actorRemovedFrom(String actor, String group, String target) {
+    return '$actor 将 $target 移出 $group';
+  }
+
+  @override
+  String chatSys_actorRenamed(String actor) {
+    return '$actor 更改了群组名称';
+  }
+
+  @override
+  String chatSys_actorRenamedTo(String actor, String name) {
+    return '$actor 将群组名称改为\"$name\"';
+  }
+
+  @override
+  String chatSys_actorSetAdminsOnly(String actor) {
+    return '$actor 更改了群组设置：仅管理员可在此群组发送消息';
+  }
+
+  @override
+  String chatSys_actorSetAllCanSend(String actor) {
+    return '$actor 更改了群组设置：所有成员均可在此群组发送消息';
+  }
+
+  @override
+  String get chatSys_callBack => '回拨';
+
+  @override
+  String get chatSys_delivered => '已送达';
+
+  @override
+  String chatSys_joinedViaLink(String target) {
+    return '$target 通过此群组的邀请链接加入';
+  }
+
+  @override
+  String chatSys_left(String target) {
+    return '$target 已退出';
+  }
+
+  @override
+  String get chatSys_notDeliveredYet => '尚未送达';
+
+  @override
+  String get chatSys_unreadDivider => '未读消息';
+
+  @override
+  String chatSys_unreadDividerCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 条未读消息',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatSys_youAdded(String target) {
+    return '你添加了 $target';
+  }
+
+  @override
+  String get chatSys_youAddedMembers => '你添加了成员';
+
+  @override
+  String chatSys_youAddedTo(String group, String target) {
+    return '你将 $target 添加到 $group';
+  }
+
+  @override
+  String get chatSys_youAreAdmin => '你现在是管理员';
+
+  @override
+  String chatSys_youAreAdminIn(String group) {
+    return '你现在是 $group 的管理员';
+  }
+
+  @override
+  String get chatSys_youChangedDesc => '你更改了群组简介';
+
+  @override
+  String get chatSys_youChangedIcon => '你更改了此群组的图标';
+
+  @override
+  String chatSys_youDismissedAdmin(String target) {
+    return '你取消了 $target 的管理员身份';
+  }
+
+  @override
+  String chatSys_youDismissedAdminIn(String group, String target) {
+    return '你取消了 $target 在 $group 的管理员身份';
+  }
+
+  @override
+  String get chatSys_youJoinedViaLink => '你通过此群组的邀请链接加入';
+
+  @override
+  String get chatSys_youLeft => '你已退出';
+
+  @override
+  String chatSys_youMadeAdmin(String target) {
+    return '你将 $target 设为管理员';
+  }
+
+  @override
+  String chatSys_youMadeAdminIn(String group, String target) {
+    return '你将 $target 设为 $group 的管理员';
+  }
+
+  @override
+  String get chatSys_youNoLongerAdmin => '你已不再是管理员';
+
+  @override
+  String chatSys_youNoLongerAdminIn(String group) {
+    return '你已不再是 $group 的管理员';
+  }
+
+  @override
+  String chatSys_youRemoved(String target) {
+    return '你移除了 $target';
+  }
+
+  @override
+  String chatSys_youRemovedFrom(String group, String target) {
+    return '你将 $target 移出 $group';
+  }
+
+  @override
+  String get chatSys_youRenamed => '你更改了群组名称';
+
+  @override
+  String chatSys_youRenamedTo(String name) {
+    return '你将群组名称改为\"$name\"';
+  }
+
+  @override
+  String get chatSys_youSetAdminsOnly => '你更改了群组设置：仅管理员可在此群组发送消息';
+
+  @override
+  String get chatSys_youSetAllCanSend => '你更改了群组设置：所有成员均可在此群组发送消息';
+
+  @override
+  String chatSys_youWereAddedTo(String actor, String group) {
+    return '$actor 将你添加到 $group';
+  }
+
+  @override
+  String get chatSys_youWereRemoved => '你已被移出群组';
+
+  @override
+  String chatSys_youWereRemovedFrom(String group) {
+    return '你已被移出 $group';
+  }
+
+  @override
   String get chat_addCaptionHint => '添加说明...';
 
   @override
@@ -2563,6 +2851,102 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String groupAdmin_addMemberConfirm(String group, String name) {
+    return '将 $name 添加到 $group？';
+  }
+
+  @override
+  String get groupAdmin_addMembersSubtitle => '将联系人添加到此群组';
+
+  @override
+  String get groupAdmin_addMembersTitle => '添加成员';
+
+  @override
+  String get groupAdmin_allMembersCanSend => '所有成员均可发送消息';
+
+  @override
+  String get groupAdmin_allParticipantsNowToast => '现在所有成员均可发送消息';
+
+  @override
+  String get groupAdmin_candidatesHint => '只能添加已存联系人和你其他群组中的成员。';
+
+  @override
+  String get groupAdmin_contactsPermissionOff => '通讯录权限已关闭，仅显示你所在群组的成员。';
+
+  @override
+  String get groupAdmin_dismissAction => '撤销';
+
+  @override
+  String groupAdmin_dismissAdminConfirm(String name) {
+    return '撤销 $name 的群组管理员身份？';
+  }
+
+  @override
+  String get groupAdmin_dismissAdminTitle => '撤销管理员';
+
+  @override
+  String get groupAdmin_enable => '开启';
+
+  @override
+  String get groupAdmin_loadFailedBody => '请检查网络后重试。';
+
+  @override
+  String get groupAdmin_loadFailedTitle => '无法加载成员';
+
+  @override
+  String get groupAdmin_makeAdminAction => '设为管理员';
+
+  @override
+  String groupAdmin_makeAdminConfirm(String name) {
+    return '将 $name 设为群组管理员？';
+  }
+
+  @override
+  String get groupAdmin_makeAdminTitle => '设为群组管理员';
+
+  @override
+  String get groupAdmin_memberAdded => '成员已成功添加';
+
+  @override
+  String get groupAdmin_menuDismissAdmin => '撤销管理员';
+
+  @override
+  String get groupAdmin_menuMakeAdmin => '设为群组管理员';
+
+  @override
+  String get groupAdmin_noCandidates => '没有可添加的联系人或群组成员';
+
+  @override
+  String get groupAdmin_noMatchingContacts => '未找到匹配的联系人';
+
+  @override
+  String get groupAdmin_onlyAdminsCanSend => '仅管理员可发送消息';
+
+  @override
+  String get groupAdmin_onlyAdminsNowToast => '现在仅管理员可发送消息';
+
+  @override
+  String get groupAdmin_searchHint => '搜索姓名或电话号码...';
+
+  @override
+  String get groupAdmin_selectContactSubtitle => '选择要添加到群组的联系人';
+
+  @override
+  String get groupAdmin_sendMessagesTitle => '发送消息';
+
+  @override
+  String get groupAdmin_tagContactAndGroup => '联系人 • 群组';
+
+  @override
+  String get groupAdmin_tagSavedContact => '已存联系人';
+
+  @override
+  String get groupAdmin_tagYourGroups => '你的群组';
+
+  @override
+  String get groupAdmin_updateSettingFailed => '无法更新群组设置';
+
+  @override
   String get groupDialog_audioCall => '语音通话';
 
   @override
@@ -3268,6 +3652,57 @@ class AppLocalizationsZh extends AppLocalizations {
   String get intro_walkieTitle => '对讲机\n功能';
 
   @override
+  String get legal_dpaSubtitle => '我们如何处理客户数据';
+
+  @override
+  String get legal_dpaTitle => '数据处理协议';
+
+  @override
+  String get legal_draftNotice => '这些文件为草稿，可能会有变动。';
+
+  @override
+  String get legal_emptyDocument => '此文件暂不可用。';
+
+  @override
+  String get legal_enterpriseSubtitle => '面向企业客户';
+
+  @override
+  String get legal_enterpriseTitle => '企业服务协议';
+
+  @override
+  String get legal_loadError => '无法打开此文件。';
+
+  @override
+  String get legal_menuSubtitle => '政策与协议';
+
+  @override
+  String get legal_privacySubtitle => '我们如何收集和使用您的数据';
+
+  @override
+  String get legal_privacyTitle => '隐私政策';
+
+  @override
+  String get legal_retentionSubtitle => '我们保留数据的时长';
+
+  @override
+  String get legal_retentionTitle => '数据保留与删除政策';
+
+  @override
+  String get legal_securitySubtitle => '我们如何保护数据';
+
+  @override
+  String get legal_securityTitle => '数据保护与信息安全政策';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker 使用规则';
+
+  @override
+  String get legal_termsTitle => '条款与条件（EULA）';
+
+  @override
+  String get legal_title => '法律信息';
+
+  @override
   String login_dataSecure(String percent) {
     return '您的数据 $percent 安全';
   }
@@ -3325,57 +3760,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get menu_contactUsSubtitle => '了解更多关于我们';
-
-  @override
-  String get legal_title => '法律信息';
-
-  @override
-  String get legal_menuSubtitle => '政策与协议';
-
-  @override
-  String get legal_draftNotice => '这些文件为草稿，可能会有变动。';
-
-  @override
-  String get legal_privacyTitle => '隐私政策';
-
-  @override
-  String get legal_privacySubtitle => '我们如何收集和使用您的数据';
-
-  @override
-  String get legal_termsTitle => '条款与条件（EULA）';
-
-  @override
-  String get legal_termsSubtitle => 'FG Tracker 使用规则';
-
-  @override
-  String get legal_enterpriseTitle => '企业服务协议';
-
-  @override
-  String get legal_enterpriseSubtitle => '面向企业客户';
-
-  @override
-  String get legal_dpaTitle => '数据处理协议';
-
-  @override
-  String get legal_dpaSubtitle => '我们如何处理客户数据';
-
-  @override
-  String get legal_retentionTitle => '数据保留与删除政策';
-
-  @override
-  String get legal_retentionSubtitle => '我们保留数据的时长';
-
-  @override
-  String get legal_securityTitle => '数据保护与信息安全政策';
-
-  @override
-  String get legal_securitySubtitle => '我们如何保护数据';
-
-  @override
-  String get legal_emptyDocument => '此文件暂不可用。';
-
-  @override
-  String get legal_loadError => '无法打开此文件。';
 
   @override
   String get menu_editProfile => '编辑个人资料';
@@ -7367,6 +7751,49 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get about_whyRealTime => '與所有群組成員即時共享位置。';
 
   @override
+  String get account_deleteConfirm => '確定要永久刪除你的帳號嗎？';
+
+  @override
+  String get account_deleteDialogTitle => '刪除帳號？';
+
+  @override
+  String get account_deleteFailed => '無法刪除帳號，請重試。';
+
+  @override
+  String get account_deleteForever => '永久刪除';
+
+  @override
+  String get account_deleteSubtitle => '永久清除帳號和資料';
+
+  @override
+  String get account_deleteTitle => '刪除帳號';
+
+  @override
+  String get account_deleteWarning =>
+      '此操作會立即生效且無法復原。你的所有個人資料、位置記錄、群組成員身分和使用中的工作階段都將被永久清除。';
+
+  @override
+  String get account_deletedToast => '帳號已成功刪除';
+
+  @override
+  String get account_reasonLabel => '離開原因：';
+
+  @override
+  String get account_reasonNoLongerNeed => '我不再需要這個帳號';
+
+  @override
+  String get account_reasonNotifications => '通知太多';
+
+  @override
+  String get account_reasonOther => '其他原因';
+
+  @override
+  String get account_reasonPrivacy => '隱私顧慮';
+
+  @override
+  String get account_reasonSwitching => '換用其他裝置';
+
+  @override
   String appUpdate_checkError(String error) {
     return '檢查更新時發生錯誤：$error';
   }
@@ -7802,6 +8229,45 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String attendance_withinMeters(int count) {
     return '$count 公尺以內';
   }
+
+  @override
+  String get banner_choosePhoto => '選擇照片';
+
+  @override
+  String get banner_customSubtitle => '上傳你自己的照片或公司橫幅，僅在你的手機上顯示！';
+
+  @override
+  String get banner_customTitle => '自訂橫幅';
+
+  @override
+  String get banner_manageTitle => '管理自訂橫幅';
+
+  @override
+  String get banner_myBanner => '我的橫幅';
+
+  @override
+  String get banner_newBadge => '新';
+
+  @override
+  String get banner_removeSubtitle => '恢復為預設上傳卡片';
+
+  @override
+  String get banner_removeTitle => '移除橫幅';
+
+  @override
+  String get banner_replaceSubtitle => '從相簿或相機選擇新照片';
+
+  @override
+  String get banner_replaceTitle => '更換橫幅';
+
+  @override
+  String get banner_selectPhotoSubtitle => '僅在你的手機上顯示';
+
+  @override
+  String get banner_selectPhotoTitle => '選擇橫幅照片';
+
+  @override
+  String get banner_takePhoto => '拍照';
 
   @override
   String get call_accept => '接受';
@@ -9104,6 +9570,212 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get chatList_yourContacts => '您的聯絡人';
 
   @override
+  String chatSys_actorAdded(String actor, String target) {
+    return '$actor 加入了 $target';
+  }
+
+  @override
+  String chatSys_actorAddedTo(String actor, String group, String target) {
+    return '$actor 將 $target 加入 $group';
+  }
+
+  @override
+  String chatSys_actorAddedYou(String actor) {
+    return '$actor 加入了你';
+  }
+
+  @override
+  String chatSys_actorChangedDesc(String actor) {
+    return '$actor 變更了群組簡介';
+  }
+
+  @override
+  String chatSys_actorChangedIcon(String actor) {
+    return '$actor 變更了此群組的圖示';
+  }
+
+  @override
+  String chatSys_actorDismissedAdmin(String actor, String target) {
+    return '$actor 取消了 $target 的管理員身分';
+  }
+
+  @override
+  String chatSys_actorDismissedAdminIn(
+      String actor, String group, String target) {
+    return '$actor 取消了 $target 在 $group 的管理員身分';
+  }
+
+  @override
+  String chatSys_actorMadeAdmin(String actor, String target) {
+    return '$actor 將 $target 設為管理員';
+  }
+
+  @override
+  String chatSys_actorMadeAdminIn(String actor, String group, String target) {
+    return '$actor 將 $target 設為 $group 的管理員';
+  }
+
+  @override
+  String chatSys_actorRemoved(String actor, String target) {
+    return '$actor 移除了 $target';
+  }
+
+  @override
+  String chatSys_actorRemovedFrom(String actor, String group, String target) {
+    return '$actor 將 $target 移出 $group';
+  }
+
+  @override
+  String chatSys_actorRenamed(String actor) {
+    return '$actor 變更了群組名稱';
+  }
+
+  @override
+  String chatSys_actorRenamedTo(String actor, String name) {
+    return '$actor 將群組名稱改為\"$name\"';
+  }
+
+  @override
+  String chatSys_actorSetAdminsOnly(String actor) {
+    return '$actor 變更了群組設定：僅管理員可在此群組傳送訊息';
+  }
+
+  @override
+  String chatSys_actorSetAllCanSend(String actor) {
+    return '$actor 變更了群組設定：所有成員均可在此群組傳送訊息';
+  }
+
+  @override
+  String get chatSys_callBack => '回撥';
+
+  @override
+  String get chatSys_delivered => '已送達';
+
+  @override
+  String chatSys_joinedViaLink(String target) {
+    return '$target 透過此群組的邀請連結加入';
+  }
+
+  @override
+  String chatSys_left(String target) {
+    return '$target 已退出';
+  }
+
+  @override
+  String get chatSys_notDeliveredYet => '尚未送達';
+
+  @override
+  String get chatSys_unreadDivider => '未讀訊息';
+
+  @override
+  String chatSys_unreadDividerCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 則未讀訊息',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatSys_youAdded(String target) {
+    return '你加入了 $target';
+  }
+
+  @override
+  String get chatSys_youAddedMembers => '你加入了成員';
+
+  @override
+  String chatSys_youAddedTo(String group, String target) {
+    return '你將 $target 加入 $group';
+  }
+
+  @override
+  String get chatSys_youAreAdmin => '你現在是管理員';
+
+  @override
+  String chatSys_youAreAdminIn(String group) {
+    return '你現在是 $group 的管理員';
+  }
+
+  @override
+  String get chatSys_youChangedDesc => '你變更了群組簡介';
+
+  @override
+  String get chatSys_youChangedIcon => '你變更了此群組的圖示';
+
+  @override
+  String chatSys_youDismissedAdmin(String target) {
+    return '你取消了 $target 的管理員身分';
+  }
+
+  @override
+  String chatSys_youDismissedAdminIn(String group, String target) {
+    return '你取消了 $target 在 $group 的管理員身分';
+  }
+
+  @override
+  String get chatSys_youJoinedViaLink => '你透過此群組的邀請連結加入';
+
+  @override
+  String get chatSys_youLeft => '你已退出';
+
+  @override
+  String chatSys_youMadeAdmin(String target) {
+    return '你將 $target 設為管理員';
+  }
+
+  @override
+  String chatSys_youMadeAdminIn(String group, String target) {
+    return '你將 $target 設為 $group 的管理員';
+  }
+
+  @override
+  String get chatSys_youNoLongerAdmin => '你已不再是管理員';
+
+  @override
+  String chatSys_youNoLongerAdminIn(String group) {
+    return '你已不再是 $group 的管理員';
+  }
+
+  @override
+  String chatSys_youRemoved(String target) {
+    return '你移除了 $target';
+  }
+
+  @override
+  String chatSys_youRemovedFrom(String group, String target) {
+    return '你將 $target 移出 $group';
+  }
+
+  @override
+  String get chatSys_youRenamed => '你變更了群組名稱';
+
+  @override
+  String chatSys_youRenamedTo(String name) {
+    return '你將群組名稱改為\"$name\"';
+  }
+
+  @override
+  String get chatSys_youSetAdminsOnly => '你變更了群組設定：僅管理員可在此群組傳送訊息';
+
+  @override
+  String get chatSys_youSetAllCanSend => '你變更了群組設定：所有成員均可在此群組傳送訊息';
+
+  @override
+  String chatSys_youWereAddedTo(String actor, String group) {
+    return '$actor 將你加入 $group';
+  }
+
+  @override
+  String get chatSys_youWereRemoved => '你已被移出群組';
+
+  @override
+  String chatSys_youWereRemovedFrom(String group) {
+    return '你已被移出 $group';
+  }
+
+  @override
   String get chat_addCaptionHint => '新增標題...';
 
   @override
@@ -9831,6 +10503,102 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String forceUpdate_updateOnStore(String storeName) {
     return '$storeName 更新';
   }
+
+  @override
+  String groupAdmin_addMemberConfirm(String group, String name) {
+    return '將 $name 新增到 $group？';
+  }
+
+  @override
+  String get groupAdmin_addMembersSubtitle => '將聯絡人新增到此群組';
+
+  @override
+  String get groupAdmin_addMembersTitle => '新增成員';
+
+  @override
+  String get groupAdmin_allMembersCanSend => '所有成員皆可傳送訊息';
+
+  @override
+  String get groupAdmin_allParticipantsNowToast => '現在所有成員皆可傳送訊息';
+
+  @override
+  String get groupAdmin_candidatesHint => '只能新增已存聯絡人和你其他群組中的成員。';
+
+  @override
+  String get groupAdmin_contactsPermissionOff => '通訊錄權限已關閉，僅顯示你所在群組的成員。';
+
+  @override
+  String get groupAdmin_dismissAction => '撤銷';
+
+  @override
+  String groupAdmin_dismissAdminConfirm(String name) {
+    return '撤銷 $name 的群組管理員身分？';
+  }
+
+  @override
+  String get groupAdmin_dismissAdminTitle => '撤銷管理員';
+
+  @override
+  String get groupAdmin_enable => '開啟';
+
+  @override
+  String get groupAdmin_loadFailedBody => '請檢查網路後重試。';
+
+  @override
+  String get groupAdmin_loadFailedTitle => '無法載入成員';
+
+  @override
+  String get groupAdmin_makeAdminAction => '設為管理員';
+
+  @override
+  String groupAdmin_makeAdminConfirm(String name) {
+    return '將 $name 設為群組管理員？';
+  }
+
+  @override
+  String get groupAdmin_makeAdminTitle => '設為群組管理員';
+
+  @override
+  String get groupAdmin_memberAdded => '成員已成功新增';
+
+  @override
+  String get groupAdmin_menuDismissAdmin => '撤銷管理員';
+
+  @override
+  String get groupAdmin_menuMakeAdmin => '設為群組管理員';
+
+  @override
+  String get groupAdmin_noCandidates => '沒有可新增的聯絡人或群組成員';
+
+  @override
+  String get groupAdmin_noMatchingContacts => '找不到相符的聯絡人';
+
+  @override
+  String get groupAdmin_onlyAdminsCanSend => '僅管理員可傳送訊息';
+
+  @override
+  String get groupAdmin_onlyAdminsNowToast => '現在僅管理員可傳送訊息';
+
+  @override
+  String get groupAdmin_searchHint => '搜尋姓名或電話號碼...';
+
+  @override
+  String get groupAdmin_selectContactSubtitle => '選擇要新增到群組的聯絡人';
+
+  @override
+  String get groupAdmin_sendMessagesTitle => '傳送訊息';
+
+  @override
+  String get groupAdmin_tagContactAndGroup => '聯絡人 • 群組';
+
+  @override
+  String get groupAdmin_tagSavedContact => '已存聯絡人';
+
+  @override
+  String get groupAdmin_tagYourGroups => '你的群組';
+
+  @override
+  String get groupAdmin_updateSettingFailed => '無法更新群組設定';
 
   @override
   String get groupDialog_audioCall => '音訊通話';
@@ -10562,6 +11330,57 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get intro_walkieTitle => '對講機\n特徵';
 
   @override
+  String get legal_dpaSubtitle => '我們如何處理客戶資料';
+
+  @override
+  String get legal_dpaTitle => '資料處理協議';
+
+  @override
+  String get legal_draftNotice => '這些文件為草稿，可能會有變動。';
+
+  @override
+  String get legal_emptyDocument => '此文件暫時無法使用。';
+
+  @override
+  String get legal_enterpriseSubtitle => '適用於企業客戶';
+
+  @override
+  String get legal_enterpriseTitle => '企業服務協議';
+
+  @override
+  String get legal_loadError => '無法開啟此文件。';
+
+  @override
+  String get legal_menuSubtitle => '政策與協議';
+
+  @override
+  String get legal_privacySubtitle => '我們如何收集和使用您的資料';
+
+  @override
+  String get legal_privacyTitle => '隱私權政策';
+
+  @override
+  String get legal_retentionSubtitle => '我們保留資料的時間';
+
+  @override
+  String get legal_retentionTitle => '資料保留與刪除政策';
+
+  @override
+  String get legal_securitySubtitle => '我們如何保護資料';
+
+  @override
+  String get legal_securityTitle => '資料保護與資訊安全政策';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker 使用規則';
+
+  @override
+  String get legal_termsTitle => '條款及條件（EULA）';
+
+  @override
+  String get legal_title => '法律資訊';
+
+  @override
   String login_dataSecure(String percent) {
     return '您的資料 $percent 安全';
   }
@@ -10619,57 +11438,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get menu_contactUsSubtitle => '了解更多關於我們的信息';
-
-  @override
-  String get legal_title => '法律資訊';
-
-  @override
-  String get legal_menuSubtitle => '政策與協議';
-
-  @override
-  String get legal_draftNotice => '這些文件為草稿，可能會有變動。';
-
-  @override
-  String get legal_privacyTitle => '隱私權政策';
-
-  @override
-  String get legal_privacySubtitle => '我們如何收集和使用您的資料';
-
-  @override
-  String get legal_termsTitle => '條款及條件（EULA）';
-
-  @override
-  String get legal_termsSubtitle => 'FG Tracker 使用規則';
-
-  @override
-  String get legal_enterpriseTitle => '企業服務協議';
-
-  @override
-  String get legal_enterpriseSubtitle => '適用於企業客戶';
-
-  @override
-  String get legal_dpaTitle => '資料處理協議';
-
-  @override
-  String get legal_dpaSubtitle => '我們如何處理客戶資料';
-
-  @override
-  String get legal_retentionTitle => '資料保留與刪除政策';
-
-  @override
-  String get legal_retentionSubtitle => '我們保留資料的時間';
-
-  @override
-  String get legal_securityTitle => '資料保護與資訊安全政策';
-
-  @override
-  String get legal_securitySubtitle => '我們如何保護資料';
-
-  @override
-  String get legal_emptyDocument => '此文件暫時無法使用。';
-
-  @override
-  String get legal_loadError => '無法開啟此文件。';
 
   @override
   String get menu_editProfile => '編輯個人資料';

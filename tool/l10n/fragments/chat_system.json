@@ -1,0 +1,1223 @@
+{
+  "chatSys_youWereAddedTo": {
+    "en": "You were added to {group} by {actor}",
+    "hi": "{actor} ने आपको {group} में जोड़ा",
+    "mr": "{actor} यांनी तुम्हाला {group} मध्ये जोडले",
+    "gu": "{actor} એ તમને {group} માં ઉમેર્યા",
+    "kn": "{actor} ನಿಮ್ಮನ್ನು {group} ಗೆ ಸೇರಿಸಿದರು",
+    "bn": "{actor} আপনাকে {group}-এ যুক্ত করেছেন",
+    "ml": "{actor} നിങ്ങളെ {group} എന്നതിലേക്ക് ചേർത്തു",
+    "ta": "{actor} உங்களை {group} இல் சேர்த்தார்",
+    "te": "{actor} మిమ్మల్ని {group}కి జోడించారు",
+    "pa": "{actor} ਨੇ ਤੁਹਾਨੂੰ {group} ਵਿੱਚ ਜੋੜਿਆ",
+    "or": "{actor} ଆପଣଙ୍କୁ {group} ରେ ଯୋଡିଛନ୍ତି",
+    "es": "{actor} te añadió a {group}",
+    "fr": "{actor} vous a ajouté à {group}",
+    "de": "{actor} hat dich zu {group} hinzugefügt",
+    "ar": "أضافك {actor} إلى {group}",
+    "pt": "{actor} adicionou você a {group}",
+    "ja": "{actor}があなたを{group}に追加しました",
+    "zh": "{actor} 将你添加到 {group}",
+    "zh_Hant": "{actor} 將你加入 {group}",
+    "ur": "{actor} نے آپ کو {group} میں شامل کیا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorAddedYou": {
+    "en": "{actor} added you",
+    "hi": "{actor} ने आपको जोड़ा",
+    "mr": "{actor} यांनी तुम्हाला जोडले",
+    "gu": "{actor} એ તમને ઉમેર્યા",
+    "kn": "{actor} ನಿಮ್ಮನ್ನು ಸೇರಿಸಿದರು",
+    "bn": "{actor} আপনাকে যুক্ত করেছেন",
+    "ml": "{actor} നിങ്ങളെ ചേർത്തു",
+    "ta": "{actor} உங்களைச் சேர்த்தார்",
+    "te": "{actor} మిమ్మల్ని జోడించారు",
+    "pa": "{actor} ਨੇ ਤੁਹਾਨੂੰ ਜੋੜਿਆ",
+    "or": "{actor} ଆପଣଙ୍କୁ ଯୋଡିଛନ୍ତି",
+    "es": "{actor} te añadió",
+    "fr": "{actor} vous a ajouté",
+    "de": "{actor} hat dich hinzugefügt",
+    "ar": "أضافك {actor}",
+    "pt": "{actor} adicionou você",
+    "ja": "{actor}があなたを追加しました",
+    "zh": "{actor} 添加了你",
+    "zh_Hant": "{actor} 加入了你",
+    "ur": "{actor} نے آپ کو شامل کیا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youAddedTo": {
+    "en": "You added {target} to {group}",
+    "hi": "आपने {target} को {group} में जोड़ा",
+    "mr": "तुम्ही {target} यांना {group} मध्ये जोडले",
+    "gu": "તમે {target} ને {group} માં ઉમેર્યા",
+    "kn": "ನೀವು {target} ಅವರನ್ನು {group} ಗೆ ಸೇರಿಸಿದ್ದೀರಿ",
+    "bn": "আপনি {target}-কে {group}-এ যুক্ত করেছেন",
+    "ml": "നിങ്ങൾ {target} എന്നയാളെ {group} എന്നതിലേക്ക് ചേർത്തു",
+    "ta": "நீங்கள் {target} ஐ {group} இல் சேர்த்தீர்கள்",
+    "te": "మీరు {target}ని {group}కి జోడించారు",
+    "pa": "ਤੁਸੀਂ {target} ਨੂੰ {group} ਵਿੱਚ ਜੋੜਿਆ",
+    "or": "ଆପଣ {target} ଙ୍କୁ {group} ରେ ଯୋଡିଛନ୍ତି",
+    "es": "Añadiste a {target} a {group}",
+    "fr": "Vous avez ajouté {target} à {group}",
+    "de": "Du hast {target} zu {group} hinzugefügt",
+    "ar": "أضفت {target} إلى {group}",
+    "pt": "Você adicionou {target} a {group}",
+    "ja": "あなたが{target}を{group}に追加しました",
+    "zh": "你将 {target} 添加到 {group}",
+    "zh_Hant": "你將 {target} 加入 {group}",
+    "ur": "آپ نے {target} کو {group} میں شامل کیا",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youAdded": {
+    "en": "You added {target}",
+    "hi": "आपने {target} को जोड़ा",
+    "mr": "तुम्ही {target} यांना जोडले",
+    "gu": "તમે {target} ને ઉમેર્યા",
+    "kn": "ನೀವು {target} ಅವರನ್ನು ಸೇರಿಸಿದ್ದೀರಿ",
+    "bn": "আপনি {target}-কে যুক্ত করেছেন",
+    "ml": "നിങ്ങൾ {target} എന്നയാളെ ചേർത്തു",
+    "ta": "நீங்கள் {target} ஐச் சேர்த்தீர்கள்",
+    "te": "మీరు {target}ని జోడించారు",
+    "pa": "ਤੁਸੀਂ {target} ਨੂੰ ਜੋੜਿਆ",
+    "or": "ଆପଣ {target} ଙ୍କୁ ଯୋଡିଛନ୍ତି",
+    "es": "Añadiste a {target}",
+    "fr": "Vous avez ajouté {target}",
+    "de": "Du hast {target} hinzugefügt",
+    "ar": "أضفت {target}",
+    "pt": "Você adicionou {target}",
+    "ja": "あなたが{target}を追加しました",
+    "zh": "你添加了 {target}",
+    "zh_Hant": "你加入了 {target}",
+    "ur": "آپ نے {target} کو شامل کیا",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youAddedMembers": {
+    "en": "You added members",
+    "hi": "आपने सदस्य जोड़े",
+    "mr": "तुम्ही सदस्य जोडले",
+    "gu": "તમે સભ્યો ઉમેર્યા",
+    "kn": "ನೀವು ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿದ್ದೀರಿ",
+    "bn": "আপনি সদস্যদের যুক্ত করেছেন",
+    "ml": "നിങ്ങൾ അംഗങ്ങളെ ചേർത്തു",
+    "ta": "நீங்கள் உறுப்பினர்களைச் சேர்த்தீர்கள்",
+    "te": "మీరు సభ్యులను జోడించారు",
+    "pa": "ਤੁਸੀਂ ਮੈਂਬਰ ਜੋੜੇ",
+    "or": "ଆପଣ ସଦସ୍ୟମାନଙ୍କୁ ଯୋଡିଛନ୍ତି",
+    "es": "Añadiste miembros",
+    "fr": "Vous avez ajouté des membres",
+    "de": "Du hast Mitglieder hinzugefügt",
+    "ar": "أضفت أعضاء",
+    "pt": "Você adicionou membros",
+    "ja": "あなたがメンバーを追加しました",
+    "zh": "你添加了成员",
+    "zh_Hant": "你加入了成員",
+    "ur": "آپ نے اراکین شامل کیے"
+  },
+  "chatSys_actorAddedTo": {
+    "en": "{actor} added {target} to {group}",
+    "hi": "{actor} ने {target} को {group} में जोड़ा",
+    "mr": "{actor} यांनी {target} यांना {group} मध्ये जोडले",
+    "gu": "{actor} એ {target} ને {group} માં ઉમેર્યા",
+    "kn": "{actor} ಅವರು {target} ಅವರನ್ನು {group} ಗೆ ಸೇರಿಸಿದರು",
+    "bn": "{actor} {target}-কে {group}-এ যুক্ত করেছেন",
+    "ml": "{actor} {target} എന്നയാളെ {group} എന്നതിലേക്ക് ചേർത്തു",
+    "ta": "{actor} {target} ஐ {group} இல் சேர்த்தார்",
+    "te": "{actor} {target}ని {group}కి జోడించారు",
+    "pa": "{actor} ਨੇ {target} ਨੂੰ {group} ਵਿੱਚ ਜੋੜਿਆ",
+    "or": "{actor} {target} ଙ୍କୁ {group} ରେ ଯୋଡିଛନ୍ତି",
+    "es": "{actor} añadió a {target} a {group}",
+    "fr": "{actor} a ajouté {target} à {group}",
+    "de": "{actor} hat {target} zu {group} hinzugefügt",
+    "ar": "أضاف {actor} {target} إلى {group}",
+    "pt": "{actor} adicionou {target} a {group}",
+    "ja": "{actor}が{target}を{group}に追加しました",
+    "zh": "{actor} 将 {target} 添加到 {group}",
+    "zh_Hant": "{actor} 將 {target} 加入 {group}",
+    "ur": "{actor} نے {target} کو {group} میں شامل کیا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorAdded": {
+    "en": "{actor} added {target}",
+    "hi": "{actor} ने {target} को जोड़ा",
+    "mr": "{actor} यांनी {target} यांना जोडले",
+    "gu": "{actor} એ {target} ને ઉમેર્યા",
+    "kn": "{actor} ಅವರು {target} ಅವರನ್ನು ಸೇರಿಸಿದರು",
+    "bn": "{actor} {target}-কে যুক্ত করেছেন",
+    "ml": "{actor} {target} എന്നയാളെ ചേർത്തു",
+    "ta": "{actor} {target} ஐச் சேர்த்தார்",
+    "te": "{actor} {target}ని జోడించారు",
+    "pa": "{actor} ਨੇ {target} ਨੂੰ ਜੋੜਿਆ",
+    "or": "{actor} {target} ଙ୍କୁ ଯୋଡିଛନ୍ତି",
+    "es": "{actor} añadió a {target}",
+    "fr": "{actor} a ajouté {target}",
+    "de": "{actor} hat {target} hinzugefügt",
+    "ar": "أضاف {actor} {target}",
+    "pt": "{actor} adicionou {target}",
+    "ja": "{actor}が{target}を追加しました",
+    "zh": "{actor} 添加了 {target}",
+    "zh_Hant": "{actor} 加入了 {target}",
+    "ur": "{actor} نے {target} کو شامل کیا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youJoinedViaLink": {
+    "en": "You joined using this group's invite link",
+    "hi": "आप इस ग्रुप के आमंत्रण लिंक से जुड़े",
+    "mr": "तुम्ही या ग्रुपच्या आमंत्रण लिंकने सामील झालात",
+    "gu": "તમે આ ગ્રુપની આમંત્રણ લિંકથી જોડાયા",
+    "kn": "ನೀವು ಈ ಗುಂಪಿನ ಆಹ್ವಾನ ಲಿಂಕ್ ಬಳಸಿ ಸೇರಿದ್ದೀರಿ",
+    "bn": "আপনি এই গ্রুপের আমন্ত্রণ লিঙ্ক দিয়ে যোগ দিয়েছেন",
+    "ml": "ഈ ഗ്രൂപ്പിന്റെ ക്ഷണ ലിങ്ക് വഴി നിങ്ങൾ ചേർന്നു",
+    "ta": "இந்தக் குழுவின் அழைப்பு இணைப்பு மூலம் நீங்கள் சேர்ந்தீர்கள்",
+    "te": "మీరు ఈ గ్రూప్ ఆహ్వాన లింక్ ద్వారా చేరారు",
+    "pa": "ਤੁਸੀਂ ਇਸ ਗਰੁੱਪ ਦੇ ਸੱਦਾ ਲਿੰਕ ਰਾਹੀਂ ਸ਼ਾਮਲ ਹੋਏ",
+    "or": "ଆପଣ ଏହି ଗ୍ରୁପର ନିମନ୍ତ୍ରଣ ଲିଙ୍କ ମାଧ୍ୟମରେ ଯୋଗ ଦେଲେ",
+    "es": "Te uniste con el enlace de invitación de este grupo",
+    "fr": "Vous avez rejoint via le lien d'invitation de ce groupe",
+    "de": "Du bist über den Einladungslink dieser Gruppe beigetreten",
+    "ar": "انضممت باستخدام رابط دعوة هذه المجموعة",
+    "pt": "Você entrou usando o link de convite deste grupo",
+    "ja": "このグループの招待リンクから参加しました",
+    "zh": "你通过此群组的邀请链接加入",
+    "zh_Hant": "你透過此群組的邀請連結加入",
+    "ur": "آپ اس گروپ کے دعوتی لنک سے شامل ہوئے"
+  },
+  "chatSys_joinedViaLink": {
+    "en": "{target} joined using this group's invite link",
+    "hi": "{target} इस ग्रुप के आमंत्रण लिंक से जुड़े",
+    "mr": "{target} या ग्रुपच्या आमंत्रण लिंकने सामील झाले",
+    "gu": "{target} આ ગ્રુપની આમંત્રણ લિંકથી જોડાયા",
+    "kn": "{target} ಈ ಗುಂಪಿನ ಆಹ್ವಾನ ಲಿಂಕ್ ಬಳಸಿ ಸೇರಿದರು",
+    "bn": "{target} এই গ্রুপের আমন্ত্রণ লিঙ্ক দিয়ে যোগ দিয়েছেন",
+    "ml": "ഈ ഗ്രൂപ്പിന്റെ ക്ഷണ ലിങ്ക് വഴി {target} ചേർന്നു",
+    "ta": "இந்தக் குழுவின் அழைப்பு இணைப்பு மூலம் {target} சேர்ந்தார்",
+    "te": "{target} ఈ గ్రూప్ ఆహ్వాన లింక్ ద్వారా చేరారు",
+    "pa": "{target} ਇਸ ਗਰੁੱਪ ਦੇ ਸੱਦਾ ਲਿੰਕ ਰਾਹੀਂ ਸ਼ਾਮਲ ਹੋਏ",
+    "or": "{target} ଏହି ଗ୍ରୁପର ନିମନ୍ତ୍ରଣ ଲିଙ୍କ ମାଧ୍ୟମରେ ଯୋଗ ଦେଲେ",
+    "es": "{target} se unió con el enlace de invitación de este grupo",
+    "fr": "{target} a rejoint via le lien d'invitation de ce groupe",
+    "de": "{target} ist über den Einladungslink dieser Gruppe beigetreten",
+    "ar": "انضم {target} باستخدام رابط دعوة هذه المجموعة",
+    "pt": "{target} entrou usando o link de convite deste grupo",
+    "ja": "{target}がこのグループの招待リンクから参加しました",
+    "zh": "{target} 通过此群组的邀请链接加入",
+    "zh_Hant": "{target} 透過此群組的邀請連結加入",
+    "ur": "{target} اس گروپ کے دعوتی لنک سے شامل ہوئے",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youLeft": {
+    "en": "You left",
+    "hi": "आपने ग्रुप छोड़ा",
+    "mr": "तुम्ही ग्रुप सोडला",
+    "gu": "તમે ગ્રુપ છોડ્યું",
+    "kn": "ನೀವು ಗುಂಪು ತೊರೆದಿದ್ದೀರಿ",
+    "bn": "আপনি গ্রুপ ছেড়েছেন",
+    "ml": "നിങ്ങൾ ഗ്രൂപ്പ് വിട്ടു",
+    "ta": "நீங்கள் வெளியேறினீர்கள்",
+    "te": "మీరు గ్రూప్ నుండి వెళ్లిపోయారు",
+    "pa": "ਤੁਸੀਂ ਗਰੁੱਪ ਛੱਡ ਦਿੱਤਾ",
+    "or": "ଆପଣ ଗ୍ରୁପ ଛାଡିଲେ",
+    "es": "Saliste",
+    "fr": "Vous êtes parti",
+    "de": "Du hast die Gruppe verlassen",
+    "ar": "غادرت",
+    "pt": "Você saiu",
+    "ja": "あなたが退出しました",
+    "zh": "你已退出",
+    "zh_Hant": "你已退出",
+    "ur": "آپ نے گروپ چھوڑ دیا"
+  },
+  "chatSys_left": {
+    "en": "{target} left",
+    "hi": "{target} ने ग्रुप छोड़ा",
+    "mr": "{target} यांनी ग्रुप सोडला",
+    "gu": "{target} એ ગ્રુપ છોડ્યું",
+    "kn": "{target} ಗುಂಪು ತೊರೆದರು",
+    "bn": "{target} গ্রুপ ছেড়েছেন",
+    "ml": "{target} ഗ്രൂപ്പ് വിട്ടു",
+    "ta": "{target} வெளியேறினார்",
+    "te": "{target} గ్రూప్ నుండి వెళ్లిపోయారు",
+    "pa": "{target} ਨੇ ਗਰੁੱਪ ਛੱਡ ਦਿੱਤਾ",
+    "or": "{target} ଗ୍ରୁପ ଛାଡିଲେ",
+    "es": "{target} salió",
+    "fr": "{target} est parti",
+    "de": "{target} hat die Gruppe verlassen",
+    "ar": "غادر {target}",
+    "pt": "{target} saiu",
+    "ja": "{target}が退出しました",
+    "zh": "{target} 已退出",
+    "zh_Hant": "{target} 已退出",
+    "ur": "{target} نے گروپ چھوڑ دیا",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youWereRemovedFrom": {
+    "en": "You were removed from {group}",
+    "hi": "आपको {group} से हटा दिया गया",
+    "mr": "तुम्हाला {group} मधून काढले गेले",
+    "gu": "તમને {group} માંથી દૂર કરવામાં આવ્યા",
+    "kn": "ನಿಮ್ಮನ್ನು {group} ನಿಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ",
+    "bn": "আপনাকে {group} থেকে সরানো হয়েছে",
+    "ml": "നിങ്ങളെ {group} എന്നതിൽ നിന്ന് നീക്കം ചെയ്തു",
+    "ta": "நீங்கள் {group} இலிருந்து நீக்கப்பட்டீர்கள்",
+    "te": "మిమ్మల్ని {group} నుండి తొలగించారు",
+    "pa": "ਤੁਹਾਨੂੰ {group} ਵਿੱਚੋਂ ਹਟਾ ਦਿੱਤਾ ਗਿਆ",
+    "or": "ଆପଣଙ୍କୁ {group} ରୁ ହଟାଯାଇଛି",
+    "es": "Te eliminaron de {group}",
+    "fr": "Vous avez été retiré de {group}",
+    "de": "Du wurdest aus {group} entfernt",
+    "ar": "تمت إزالتك من {group}",
+    "pt": "Você foi removido de {group}",
+    "ja": "{group}から削除されました",
+    "zh": "你已被移出 {group}",
+    "zh_Hant": "你已被移出 {group}",
+    "ur": "آپ کو {group} سے ہٹا دیا گیا",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youWereRemoved": {
+    "en": "You were removed",
+    "hi": "आपको हटा दिया गया",
+    "mr": "तुम्हाला काढले गेले",
+    "gu": "તમને દૂર કરવામાં આવ્યા",
+    "kn": "ನಿಮ್ಮನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ",
+    "bn": "আপনাকে সরানো হয়েছে",
+    "ml": "നിങ്ങളെ നീക്കം ചെയ്തു",
+    "ta": "நீங்கள் நீக்கப்பட்டீர்கள்",
+    "te": "మిమ్మల్ని తొలగించారు",
+    "pa": "ਤੁਹਾਨੂੰ ਹਟਾ ਦਿੱਤਾ ਗਿਆ",
+    "or": "ଆପଣଙ୍କୁ ହଟାଯାଇଛି",
+    "es": "Te eliminaron",
+    "fr": "Vous avez été retiré",
+    "de": "Du wurdest entfernt",
+    "ar": "تمت إزالتك",
+    "pt": "Você foi removido",
+    "ja": "削除されました",
+    "zh": "你已被移出群组",
+    "zh_Hant": "你已被移出群組",
+    "ur": "آپ کو ہٹا دیا گیا"
+  },
+  "chatSys_youRemovedFrom": {
+    "en": "You removed {target} from {group}",
+    "hi": "आपने {target} को {group} से हटाया",
+    "mr": "तुम्ही {target} यांना {group} मधून काढले",
+    "gu": "તમે {target} ને {group} માંથી દૂર કર્યા",
+    "kn": "ನೀವು {target} ಅವರನ್ನು {group} ನಿಂದ ತೆಗೆದುಹಾಕಿದ್ದೀರಿ",
+    "bn": "আপনি {target}-কে {group} থেকে সরিয়েছেন",
+    "ml": "നിങ്ങൾ {target} എന്നയാളെ {group} എന്നതിൽ നിന്ന് നീക്കം ചെയ്തു",
+    "ta": "நீங்கள் {target} ஐ {group} இலிருந்து நீக்கினீர்கள்",
+    "te": "మీరు {target}ని {group} నుండి తొలగించారు",
+    "pa": "ਤੁਸੀਂ {target} ਨੂੰ {group} ਵਿੱਚੋਂ ਹਟਾਇਆ",
+    "or": "ଆପଣ {target} ଙ୍କୁ {group} ରୁ ହଟାଇଛନ୍ତି",
+    "es": "Eliminaste a {target} de {group}",
+    "fr": "Vous avez retiré {target} de {group}",
+    "de": "Du hast {target} aus {group} entfernt",
+    "ar": "أزلت {target} من {group}",
+    "pt": "Você removeu {target} de {group}",
+    "ja": "あなたが{target}を{group}から削除しました",
+    "zh": "你将 {target} 移出 {group}",
+    "zh_Hant": "你將 {target} 移出 {group}",
+    "ur": "آپ نے {target} کو {group} سے ہٹایا",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youRemoved": {
+    "en": "You removed {target}",
+    "hi": "आपने {target} को हटाया",
+    "mr": "तुम्ही {target} यांना काढले",
+    "gu": "તમે {target} ને દૂર કર્યા",
+    "kn": "ನೀವು {target} ಅವರನ್ನು ತೆಗೆದುಹಾಕಿದ್ದೀರಿ",
+    "bn": "আপনি {target}-কে সরিয়েছেন",
+    "ml": "നിങ്ങൾ {target} എന്നയാളെ നീക്കം ചെയ്തു",
+    "ta": "நீங்கள் {target} ஐ நீக்கினீர்கள்",
+    "te": "మీరు {target}ని తొలగించారు",
+    "pa": "ਤੁਸੀਂ {target} ਨੂੰ ਹਟਾਇਆ",
+    "or": "ଆପଣ {target} ଙ୍କୁ ହଟାଇଛନ୍ତି",
+    "es": "Eliminaste a {target}",
+    "fr": "Vous avez retiré {target}",
+    "de": "Du hast {target} entfernt",
+    "ar": "أزلت {target}",
+    "pt": "Você removeu {target}",
+    "ja": "あなたが{target}を削除しました",
+    "zh": "你移除了 {target}",
+    "zh_Hant": "你移除了 {target}",
+    "ur": "آپ نے {target} کو ہٹایا",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorRemovedFrom": {
+    "en": "{actor} removed {target} from {group}",
+    "hi": "{actor} ने {target} को {group} से हटाया",
+    "mr": "{actor} यांनी {target} यांना {group} मधून काढले",
+    "gu": "{actor} એ {target} ને {group} માંથી દૂર કર્યા",
+    "kn": "{actor} ಅವರು {target} ಅವರನ್ನು {group} ನಿಂದ ತೆಗೆದುಹಾಕಿದರು",
+    "bn": "{actor} {target}-কে {group} থেকে সরিয়েছেন",
+    "ml": "{actor} {target} എന്നയാളെ {group} എന്നതിൽ നിന്ന് നീക്കം ചെയ്തു",
+    "ta": "{actor} {target} ஐ {group} இலிருந்து நீக்கினார்",
+    "te": "{actor} {target}ని {group} నుండి తొలగించారు",
+    "pa": "{actor} ਨੇ {target} ਨੂੰ {group} ਵਿੱਚੋਂ ਹਟਾਇਆ",
+    "or": "{actor} {target} ଙ୍କୁ {group} ରୁ ହଟାଇଛନ୍ତି",
+    "es": "{actor} eliminó a {target} de {group}",
+    "fr": "{actor} a retiré {target} de {group}",
+    "de": "{actor} hat {target} aus {group} entfernt",
+    "ar": "أزال {actor} {target} من {group}",
+    "pt": "{actor} removeu {target} de {group}",
+    "ja": "{actor}が{target}を{group}から削除しました",
+    "zh": "{actor} 将 {target} 移出 {group}",
+    "zh_Hant": "{actor} 將 {target} 移出 {group}",
+    "ur": "{actor} نے {target} کو {group} سے ہٹایا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorRemoved": {
+    "en": "{actor} removed {target}",
+    "hi": "{actor} ने {target} को हटाया",
+    "mr": "{actor} यांनी {target} यांना काढले",
+    "gu": "{actor} એ {target} ને દૂર કર્યા",
+    "kn": "{actor} ಅವರು {target} ಅವರನ್ನು ತೆಗೆದುಹಾಕಿದರು",
+    "bn": "{actor} {target}-কে সরিয়েছেন",
+    "ml": "{actor} {target} എന്നയാളെ നീക്കം ചെയ്തു",
+    "ta": "{actor} {target} ஐ நீக்கினார்",
+    "te": "{actor} {target}ని తొలగించారు",
+    "pa": "{actor} ਨੇ {target} ਨੂੰ ਹਟਾਇਆ",
+    "or": "{actor} {target} ଙ୍କୁ ହଟାଇଛନ୍ତି",
+    "es": "{actor} eliminó a {target}",
+    "fr": "{actor} a retiré {target}",
+    "de": "{actor} hat {target} entfernt",
+    "ar": "أزال {actor} {target}",
+    "pt": "{actor} removeu {target}",
+    "ja": "{actor}が{target}を削除しました",
+    "zh": "{actor} 移除了 {target}",
+    "zh_Hant": "{actor} 移除了 {target}",
+    "ur": "{actor} نے {target} کو ہٹایا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youAreAdminIn": {
+    "en": "You are now an admin in {group}",
+    "hi": "अब आप {group} में एडमिन हैं",
+    "mr": "आता तुम्ही {group} मध्ये अ‍ॅडमिन आहात",
+    "gu": "હવે તમે {group} માં એડમિન છો",
+    "kn": "ನೀವು ಈಗ {group} ನಲ್ಲಿ ಅಡ್ಮಿನ್ ಆಗಿದ್ದೀರಿ",
+    "bn": "আপনি এখন {group}-এ অ্যাডমিন",
+    "ml": "നിങ്ങൾ ഇപ്പോൾ {group} എന്നതിൽ അഡ്മിൻ ആണ്",
+    "ta": "நீங்கள் இப்போது {group} இல் நிர்வாகி",
+    "te": "మీరు ఇప్పుడు {group}లో అడ్మిన్",
+    "pa": "ਹੁਣ ਤੁਸੀਂ {group} ਵਿੱਚ ਐਡਮਿਨ ਹੋ",
+    "or": "ଆପଣ ବର୍ତ୍ତମାନ {group} ରେ ଆଡମିନ",
+    "es": "Ahora eres admin en {group}",
+    "fr": "Vous êtes maintenant admin de {group}",
+    "de": "Du bist jetzt Admin in {group}",
+    "ar": "أنت الآن مشرف في {group}",
+    "pt": "Agora você é admin em {group}",
+    "ja": "あなたは{group}の管理者になりました",
+    "zh": "你现在是 {group} 的管理员",
+    "zh_Hant": "你現在是 {group} 的管理員",
+    "ur": "اب آپ {group} میں ایڈمن ہیں",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youAreAdmin": {
+    "en": "You are now an admin",
+    "hi": "अब आप एडमिन हैं",
+    "mr": "आता तुम्ही अ‍ॅडमिन आहात",
+    "gu": "હવે તમે એડમિન છો",
+    "kn": "ನೀವು ಈಗ ಅಡ್ಮಿನ್ ಆಗಿದ್ದೀರಿ",
+    "bn": "আপনি এখন অ্যাডমিন",
+    "ml": "നിങ്ങൾ ഇപ്പോൾ അഡ്മിൻ ആണ്",
+    "ta": "நீங்கள் இப்போது நிர்வாகி",
+    "te": "మీరు ఇప్పుడు అడ్మిన్",
+    "pa": "ਹੁਣ ਤੁਸੀਂ ਐਡਮਿਨ ਹੋ",
+    "or": "ଆପଣ ବର୍ତ୍ତମାନ ଆଡମିନ",
+    "es": "Ahora eres admin",
+    "fr": "Vous êtes maintenant admin",
+    "de": "Du bist jetzt Admin",
+    "ar": "أنت الآن مشرف",
+    "pt": "Agora você é admin",
+    "ja": "あなたは管理者になりました",
+    "zh": "你现在是管理员",
+    "zh_Hant": "你現在是管理員",
+    "ur": "اب آپ ایڈمن ہیں"
+  },
+  "chatSys_youMadeAdminIn": {
+    "en": "You added {target} as an admin in {group}",
+    "hi": "आपने {target} को {group} में एडमिन बनाया",
+    "mr": "तुम्ही {target} यांना {group} मध्ये अ‍ॅडमिन केले",
+    "gu": "તમે {target} ને {group} માં એડમિન બનાવ્યા",
+    "kn": "ನೀವು {target} ಅವರನ್ನು {group} ನಲ್ಲಿ ಅಡ್ಮಿನ್ ಮಾಡಿದ್ದೀರಿ",
+    "bn": "আপনি {target}-কে {group}-এ অ্যাডমিন করেছেন",
+    "ml": "നിങ്ങൾ {target} എന്നയാളെ {group} എന്നതിൽ അഡ്മിൻ ആക്കി",
+    "ta": "நீங்கள் {target} ஐ {group} இல் நிர்வாகியாக்கினீர்கள்",
+    "te": "మీరు {target}ని {group}లో అడ్మిన్‌గా చేశారు",
+    "pa": "ਤੁਸੀਂ {target} ਨੂੰ {group} ਵਿੱਚ ਐਡਮਿਨ ਬਣਾਇਆ",
+    "or": "ଆପଣ {target} ଙ୍କୁ {group} ରେ ଆଡମିନ କରିଛନ୍ତି",
+    "es": "Hiciste admin a {target} en {group}",
+    "fr": "Vous avez nommé {target} admin de {group}",
+    "de": "Du hast {target} in {group} zum Admin gemacht",
+    "ar": "جعلت {target} مشرفًا في {group}",
+    "pt": "Você tornou {target} admin em {group}",
+    "ja": "あなたが{target}を{group}の管理者にしました",
+    "zh": "你将 {target} 设为 {group} 的管理员",
+    "zh_Hant": "你將 {target} 設為 {group} 的管理員",
+    "ur": "آپ نے {target} کو {group} میں ایڈمن بنایا",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youMadeAdmin": {
+    "en": "You added {target} as an admin",
+    "hi": "आपने {target} को एडमिन बनाया",
+    "mr": "तुम्ही {target} यांना अ‍ॅडमिन केले",
+    "gu": "તમે {target} ને એડમિન બનાવ્યા",
+    "kn": "ನೀವು {target} ಅವರನ್ನು ಅಡ್ಮಿನ್ ಮಾಡಿದ್ದೀರಿ",
+    "bn": "আপনি {target}-কে অ্যাডমিন করেছেন",
+    "ml": "നിങ്ങൾ {target} എന്നയാളെ അഡ്മിൻ ആക്കി",
+    "ta": "நீங்கள் {target} ஐ நிர்வாகியாக்கினீர்கள்",
+    "te": "మీరు {target}ని అడ్మిన్‌గా చేశారు",
+    "pa": "ਤੁਸੀਂ {target} ਨੂੰ ਐਡਮਿਨ ਬਣਾਇਆ",
+    "or": "ଆପଣ {target} ଙ୍କୁ ଆଡମିନ କରିଛନ୍ତି",
+    "es": "Hiciste admin a {target}",
+    "fr": "Vous avez nommé {target} admin",
+    "de": "Du hast {target} zum Admin gemacht",
+    "ar": "جعلت {target} مشرفًا",
+    "pt": "Você tornou {target} admin",
+    "ja": "あなたが{target}を管理者にしました",
+    "zh": "你将 {target} 设为管理员",
+    "zh_Hant": "你將 {target} 設為管理員",
+    "ur": "آپ نے {target} کو ایڈمن بنایا",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorMadeAdminIn": {
+    "en": "{actor} added {target} as an admin in {group}",
+    "hi": "{actor} ने {target} को {group} में एडमिन बनाया",
+    "mr": "{actor} यांनी {target} यांना {group} मध्ये अ‍ॅडमिन केले",
+    "gu": "{actor} એ {target} ને {group} માં એડમિન બનાવ્યા",
+    "kn": "{actor} ಅವರು {target} ಅವರನ್ನು {group} ನಲ್ಲಿ ಅಡ್ಮಿನ್ ಮಾಡಿದರು",
+    "bn": "{actor} {target}-কে {group}-এ অ্যাডমিন করেছেন",
+    "ml": "{actor} {target} എന്നയാളെ {group} എന്നതിൽ അഡ്മിൻ ആക്കി",
+    "ta": "{actor} {target} ஐ {group} இல் நிர்வாகியாக்கினார்",
+    "te": "{actor} {target}ని {group}లో అడ్మిన్‌గా చేశారు",
+    "pa": "{actor} ਨੇ {target} ਨੂੰ {group} ਵਿੱਚ ਐਡਮਿਨ ਬਣਾਇਆ",
+    "or": "{actor} {target} ଙ୍କୁ {group} ରେ ଆଡମିନ କରିଛନ୍ତି",
+    "es": "{actor} hizo admin a {target} en {group}",
+    "fr": "{actor} a nommé {target} admin de {group}",
+    "de": "{actor} hat {target} in {group} zum Admin gemacht",
+    "ar": "جعل {actor} {target} مشرفًا في {group}",
+    "pt": "{actor} tornou {target} admin em {group}",
+    "ja": "{actor}が{target}を{group}の管理者にしました",
+    "zh": "{actor} 将 {target} 设为 {group} 的管理员",
+    "zh_Hant": "{actor} 將 {target} 設為 {group} 的管理員",
+    "ur": "{actor} نے {target} کو {group} میں ایڈمن بنایا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorMadeAdmin": {
+    "en": "{actor} added {target} as an admin",
+    "hi": "{actor} ने {target} को एडमिन बनाया",
+    "mr": "{actor} यांनी {target} यांना अ‍ॅडमिन केले",
+    "gu": "{actor} એ {target} ને એડમિન બનાવ્યા",
+    "kn": "{actor} ಅವರು {target} ಅವರನ್ನು ಅಡ್ಮಿನ್ ಮಾಡಿದರು",
+    "bn": "{actor} {target}-কে অ্যাডমিন করেছেন",
+    "ml": "{actor} {target} എന്നയാളെ അഡ്മിൻ ആക്കി",
+    "ta": "{actor} {target} ஐ நிர்வாகியாக்கினார்",
+    "te": "{actor} {target}ని అడ్మిన్‌గా చేశారు",
+    "pa": "{actor} ਨੇ {target} ਨੂੰ ਐਡਮਿਨ ਬਣਾਇਆ",
+    "or": "{actor} {target} ଙ୍କୁ ଆଡମିନ କରିଛନ୍ତି",
+    "es": "{actor} hizo admin a {target}",
+    "fr": "{actor} a nommé {target} admin",
+    "de": "{actor} hat {target} zum Admin gemacht",
+    "ar": "جعل {actor} {target} مشرفًا",
+    "pt": "{actor} tornou {target} admin",
+    "ja": "{actor}が{target}を管理者にしました",
+    "zh": "{actor} 将 {target} 设为管理员",
+    "zh_Hant": "{actor} 將 {target} 設為管理員",
+    "ur": "{actor} نے {target} کو ایڈمن بنایا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youNoLongerAdminIn": {
+    "en": "You are no longer an admin in {group}",
+    "hi": "अब आप {group} में एडमिन नहीं हैं",
+    "mr": "तुम्ही आता {group} मध्ये अ‍ॅडमिन नाही",
+    "gu": "હવે તમે {group} માં એડમિન નથી",
+    "kn": "ನೀವು ಇನ್ನು {group} ನಲ್ಲಿ ಅಡ್ಮಿನ್ ಅಲ್ಲ",
+    "bn": "আপনি আর {group}-এ অ্যাডমিন নন",
+    "ml": "നിങ്ങൾ ഇനി {group} എന്നതിൽ അഡ്മിൻ അല്ല",
+    "ta": "நீங்கள் இனி {group} இல் நிர்வாகி அல்ல",
+    "te": "మీరు ఇకపై {group}లో అడ్మిన్ కాదు",
+    "pa": "ਹੁਣ ਤੁਸੀਂ {group} ਵਿੱਚ ਐਡਮਿਨ ਨਹੀਂ ਹੋ",
+    "or": "ଆପଣ ଆଉ {group} ରେ ଆଡମିନ ନୁହଁନ୍ତି",
+    "es": "Ya no eres admin en {group}",
+    "fr": "Vous n'êtes plus admin de {group}",
+    "de": "Du bist kein Admin mehr in {group}",
+    "ar": "لم تعد مشرفًا في {group}",
+    "pt": "Você não é mais admin em {group}",
+    "ja": "あなたは{group}の管理者ではなくなりました",
+    "zh": "你已不再是 {group} 的管理员",
+    "zh_Hant": "你已不再是 {group} 的管理員",
+    "ur": "اب آپ {group} میں ایڈمن نہیں ہیں",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youNoLongerAdmin": {
+    "en": "You are no longer an admin",
+    "hi": "अब आप एडमिन नहीं हैं",
+    "mr": "तुम्ही आता अ‍ॅडमिन नाही",
+    "gu": "હવે તમે એડમિન નથી",
+    "kn": "ನೀವು ಇನ್ನು ಅಡ್ಮಿನ್ ಅಲ್ಲ",
+    "bn": "আপনি আর অ্যাডমিন নন",
+    "ml": "നിങ്ങൾ ഇനി അഡ്മിൻ അല്ല",
+    "ta": "நீங்கள் இனி நிர்வாகி அல்ல",
+    "te": "మీరు ఇకపై అడ్మిన్ కాదు",
+    "pa": "ਹੁਣ ਤੁਸੀਂ ਐਡਮਿਨ ਨਹੀਂ ਹੋ",
+    "or": "ଆପଣ ଆଉ ଆଡମିନ ନୁହଁନ୍ତି",
+    "es": "Ya no eres admin",
+    "fr": "Vous n'êtes plus admin",
+    "de": "Du bist kein Admin mehr",
+    "ar": "لم تعد مشرفًا",
+    "pt": "Você não é mais admin",
+    "ja": "あなたは管理者ではなくなりました",
+    "zh": "你已不再是管理员",
+    "zh_Hant": "你已不再是管理員",
+    "ur": "اب آپ ایڈمن نہیں ہیں"
+  },
+  "chatSys_youDismissedAdminIn": {
+    "en": "You removed {target} as an admin in {group}",
+    "hi": "आपने {target} को {group} में एडमिन से हटाया",
+    "mr": "तुम्ही {target} यांना {group} मध्ये अ‍ॅडमिनपदावरून काढले",
+    "gu": "તમે {target} ને {group} માં એડમિન પદેથી દૂર કર્યા",
+    "kn": "ನೀವು {target} ಅವರನ್ನು {group} ನಲ್ಲಿ ಅಡ್ಮಿನ್ ಸ್ಥಾನದಿಂದ ತೆಗೆದುಹಾಕಿದ್ದೀರಿ",
+    "bn": "আপনি {target}-কে {group}-এ অ্যাডমিন পদ থেকে সরিয়েছেন",
+    "ml": "നിങ്ങൾ {target} എന്നയാളെ {group} എന്നതിൽ അഡ്മിൻ സ്ഥാനത്തുനിന്ന് നീക്കി",
+    "ta": "நீங்கள் {target} ஐ {group} இல் நிர்வாகி பதவியிலிருந்து நீக்கினீர்கள்",
+    "te": "మీరు {target}ని {group}లో అడ్మిన్ నుండి తొలగించారు",
+    "pa": "ਤੁਸੀਂ {target} ਨੂੰ {group} ਵਿੱਚ ਐਡਮਿਨ ਤੋਂ ਹਟਾਇਆ",
+    "or": "ଆପଣ {target} ଙ୍କୁ {group} ରେ ଆଡମିନ ପଦରୁ ହଟାଇଛନ୍ତି",
+    "es": "Quitaste a {target} como admin en {group}",
+    "fr": "Vous avez retiré {target} des admins de {group}",
+    "de": "Du hast {target} als Admin in {group} entfernt",
+    "ar": "أزلت {target} من الإشراف في {group}",
+    "pt": "Você removeu {target} como admin em {group}",
+    "ja": "あなたが{target}を{group}の管理者から外しました",
+    "zh": "你取消了 {target} 在 {group} 的管理员身份",
+    "zh_Hant": "你取消了 {target} 在 {group} 的管理員身分",
+    "ur": "آپ نے {target} کو {group} میں ایڈمن سے ہٹایا",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youDismissedAdmin": {
+    "en": "You removed {target} as an admin",
+    "hi": "आपने {target} को एडमिन से हटाया",
+    "mr": "तुम्ही {target} यांना अ‍ॅडमिनपदावरून काढले",
+    "gu": "તમે {target} ને એડમિન પદેથી દૂર કર્યા",
+    "kn": "ನೀವು {target} ಅವರನ್ನು ಅಡ್ಮಿನ್ ಸ್ಥಾನದಿಂದ ತೆಗೆದುಹಾಕಿದ್ದೀರಿ",
+    "bn": "আপনি {target}-কে অ্যাডমিন পদ থেকে সরিয়েছেন",
+    "ml": "നിങ്ങൾ {target} എന്നയാളെ അഡ്മിൻ സ്ഥാനത്തുനിന്ന് നീക്കി",
+    "ta": "நீங்கள் {target} ஐ நிர்வாகி பதவியிலிருந்து நீக்கினீர்கள்",
+    "te": "మీరు {target}ని అడ్మిన్ నుండి తొలగించారు",
+    "pa": "ਤੁਸੀਂ {target} ਨੂੰ ਐਡਮਿਨ ਤੋਂ ਹਟਾਇਆ",
+    "or": "ଆପଣ {target} ଙ୍କୁ ଆଡମିନ ପଦରୁ ହଟାଇଛନ୍ତି",
+    "es": "Quitaste a {target} como admin",
+    "fr": "Vous avez retiré {target} des admins",
+    "de": "Du hast {target} als Admin entfernt",
+    "ar": "أزلت {target} من الإشراف",
+    "pt": "Você removeu {target} como admin",
+    "ja": "あなたが{target}を管理者から外しました",
+    "zh": "你取消了 {target} 的管理员身份",
+    "zh_Hant": "你取消了 {target} 的管理員身分",
+    "ur": "آپ نے {target} کو ایڈمن سے ہٹایا",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorDismissedAdminIn": {
+    "en": "{actor} removed {target} as an admin in {group}",
+    "hi": "{actor} ने {target} को {group} में एडमिन से हटाया",
+    "mr": "{actor} यांनी {target} यांना {group} मध्ये अ‍ॅडमिनपदावरून काढले",
+    "gu": "{actor} એ {target} ને {group} માં એડમિન પદેથી દૂર કર્યા",
+    "kn": "{actor} ಅವರು {target} ಅವರನ್ನು {group} ನಲ್ಲಿ ಅಡ್ಮಿನ್ ಸ್ಥಾನದಿಂದ ತೆಗೆದುಹಾಕಿದರು",
+    "bn": "{actor} {target}-কে {group}-এ অ্যাডমিন পদ থেকে সরিয়েছেন",
+    "ml": "{actor} {target} എന്നയാളെ {group} എന്നതിൽ അഡ്മിൻ സ്ഥാനത്തുനിന്ന് നീക്കി",
+    "ta": "{actor} {target} ஐ {group} இல் நிர்வாகி பதவியிலிருந்து நீக்கினார்",
+    "te": "{actor} {target}ని {group}లో అడ్మిన్ నుండి తొలగించారు",
+    "pa": "{actor} ਨੇ {target} ਨੂੰ {group} ਵਿੱਚ ਐਡਮਿਨ ਤੋਂ ਹਟਾਇਆ",
+    "or": "{actor} {target} ଙ୍କୁ {group} ରେ ଆଡମିନ ପଦରୁ ହଟାଇଛନ୍ତି",
+    "es": "{actor} quitó a {target} como admin en {group}",
+    "fr": "{actor} a retiré {target} des admins de {group}",
+    "de": "{actor} hat {target} als Admin in {group} entfernt",
+    "ar": "أزال {actor} {target} من الإشراف في {group}",
+    "pt": "{actor} removeu {target} como admin em {group}",
+    "ja": "{actor}が{target}を{group}の管理者から外しました",
+    "zh": "{actor} 取消了 {target} 在 {group} 的管理员身份",
+    "zh_Hant": "{actor} 取消了 {target} 在 {group} 的管理員身分",
+    "ur": "{actor} نے {target} کو {group} میں ایڈمن سے ہٹایا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorDismissedAdmin": {
+    "en": "{actor} removed {target} as an admin",
+    "hi": "{actor} ने {target} को एडमिन से हटाया",
+    "mr": "{actor} यांनी {target} यांना अ‍ॅडमिनपदावरून काढले",
+    "gu": "{actor} એ {target} ને એડમિન પદેથી દૂર કર્યા",
+    "kn": "{actor} ಅವರು {target} ಅವರನ್ನು ಅಡ್ಮಿನ್ ಸ್ಥಾನದಿಂದ ತೆಗೆದುಹಾಕಿದರು",
+    "bn": "{actor} {target}-কে অ্যাডমিন পদ থেকে সরিয়েছেন",
+    "ml": "{actor} {target} എന്നയാളെ അഡ്മിൻ സ്ഥാനത്തുനിന്ന് നീക്കി",
+    "ta": "{actor} {target} ஐ நிர்வாகி பதவியிலிருந்து நீக்கினார்",
+    "te": "{actor} {target}ని అడ్మిన్ నుండి తొలగించారు",
+    "pa": "{actor} ਨੇ {target} ਨੂੰ ਐਡਮਿਨ ਤੋਂ ਹਟਾਇਆ",
+    "or": "{actor} {target} ଙ୍କୁ ଆଡମିନ ପଦରୁ ହଟାଇଛନ୍ତି",
+    "es": "{actor} quitó a {target} como admin",
+    "fr": "{actor} a retiré {target} des admins",
+    "de": "{actor} hat {target} als Admin entfernt",
+    "ar": "أزال {actor} {target} من الإشراف",
+    "pt": "{actor} removeu {target} como admin",
+    "ja": "{actor}が{target}を管理者から外しました",
+    "zh": "{actor} 取消了 {target} 的管理员身份",
+    "zh_Hant": "{actor} 取消了 {target} 的管理員身分",
+    "ur": "{actor} نے {target} کو ایڈمن سے ہٹایا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youRenamedTo": {
+    "en": "You changed the group name to \"{name}\"",
+    "hi": "आपने ग्रुप का नाम बदलकर \"{name}\" किया",
+    "mr": "तुम्ही ग्रुपचे नाव बदलून \"{name}\" केले",
+    "gu": "તમે ગ્રુપનું નામ બદલીને \"{name}\" કર્યું",
+    "kn": "ನೀವು ಗುಂಪಿನ ಹೆಸರನ್ನು \"{name}\" ಎಂದು ಬದಲಾಯಿಸಿದ್ದೀರಿ",
+    "bn": "আপনি গ্রুপের নাম বদলে \"{name}\" করেছেন",
+    "ml": "നിങ്ങൾ ഗ്രൂപ്പിന്റെ പേര് \"{name}\" എന്നാക്കി മാറ്റി",
+    "ta": "நீங்கள் குழுவின் பெயரை \"{name}\" என மாற்றினீர்கள்",
+    "te": "మీరు గ్రూప్ పేరును \"{name}\"గా మార్చారు",
+    "pa": "ਤੁਸੀਂ ਗਰੁੱਪ ਦਾ ਨਾਮ ਬਦਲ ਕੇ \"{name}\" ਕੀਤਾ",
+    "or": "ଆପଣ ଗ୍ରୁପ ନାମ \"{name}\" ରେ ବଦଳାଇଛନ୍ତି",
+    "es": "Cambiaste el nombre del grupo a \"{name}\"",
+    "fr": "Vous avez renommé le groupe en \"{name}\"",
+    "de": "Du hast den Gruppennamen in \"{name}\" geändert",
+    "ar": "غيّرت اسم المجموعة إلى \"{name}\"",
+    "pt": "Você mudou o nome do grupo para \"{name}\"",
+    "ja": "あなたがグループ名を\"{name}\"に変更しました",
+    "zh": "你将群组名称改为\"{name}\"",
+    "zh_Hant": "你將群組名稱改為\"{name}\"",
+    "ur": "آپ نے گروپ کا نام بدل کر \"{name}\" کر دیا",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youRenamed": {
+    "en": "You changed the group name",
+    "hi": "आपने ग्रुप का नाम बदला",
+    "mr": "तुम्ही ग्रुपचे नाव बदलले",
+    "gu": "તમે ગ્રુપનું નામ બદલ્યું",
+    "kn": "ನೀವು ಗುಂಪಿನ ಹೆಸರನ್ನು ಬದಲಾಯಿಸಿದ್ದೀರಿ",
+    "bn": "আপনি গ্রুপের নাম বদলেছেন",
+    "ml": "നിങ്ങൾ ഗ്രൂപ്പിന്റെ പേര് മാറ്റി",
+    "ta": "நீங்கள் குழுவின் பெயரை மாற்றினீர்கள்",
+    "te": "మీరు గ్రూప్ పేరును మార్చారు",
+    "pa": "ਤੁਸੀਂ ਗਰੁੱਪ ਦਾ ਨਾਮ ਬਦਲਿਆ",
+    "or": "ଆପଣ ଗ୍ରୁପ ନାମ ବଦଳାଇଛନ୍ତି",
+    "es": "Cambiaste el nombre del grupo",
+    "fr": "Vous avez renommé le groupe",
+    "de": "Du hast den Gruppennamen geändert",
+    "ar": "غيّرت اسم المجموعة",
+    "pt": "Você mudou o nome do grupo",
+    "ja": "あなたがグループ名を変更しました",
+    "zh": "你更改了群组名称",
+    "zh_Hant": "你變更了群組名稱",
+    "ur": "آپ نے گروپ کا نام بدل دیا"
+  },
+  "chatSys_actorRenamedTo": {
+    "en": "{actor} changed the group name to \"{name}\"",
+    "hi": "{actor} ने ग्रुप का नाम बदलकर \"{name}\" किया",
+    "mr": "{actor} यांनी ग्रुपचे नाव बदलून \"{name}\" केले",
+    "gu": "{actor} એ ગ્રુપનું નામ બદલીને \"{name}\" કર્યું",
+    "kn": "{actor} ಅವರು ಗುಂಪಿನ ಹೆಸರನ್ನು \"{name}\" ಎಂದು ಬದಲಾಯಿಸಿದರು",
+    "bn": "{actor} গ্রুপের নাম বদলে \"{name}\" করেছেন",
+    "ml": "{actor} ഗ്രൂപ്പിന്റെ പേര് \"{name}\" എന്നാക്കി മാറ്റി",
+    "ta": "{actor} குழுவின் பெயரை \"{name}\" என மாற்றினார்",
+    "te": "{actor} గ్రూప్ పేరును \"{name}\"గా మార్చారు",
+    "pa": "{actor} ਨੇ ਗਰੁੱਪ ਦਾ ਨਾਮ ਬਦਲ ਕੇ \"{name}\" ਕੀਤਾ",
+    "or": "{actor} ଗ୍ରୁପ ନାମ \"{name}\" ରେ ବଦଳାଇଛନ୍ତି",
+    "es": "{actor} cambió el nombre del grupo a \"{name}\"",
+    "fr": "{actor} a renommé le groupe en \"{name}\"",
+    "de": "{actor} hat den Gruppennamen in \"{name}\" geändert",
+    "ar": "غيّر {actor} اسم المجموعة إلى \"{name}\"",
+    "pt": "{actor} mudou o nome do grupo para \"{name}\"",
+    "ja": "{actor}がグループ名を\"{name}\"に変更しました",
+    "zh": "{actor} 将群组名称改为\"{name}\"",
+    "zh_Hant": "{actor} 將群組名稱改為\"{name}\"",
+    "ur": "{actor} نے گروپ کا نام بدل کر \"{name}\" کر دیا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorRenamed": {
+    "en": "{actor} changed the group name",
+    "hi": "{actor} ने ग्रुप का नाम बदला",
+    "mr": "{actor} यांनी ग्रुपचे नाव बदलले",
+    "gu": "{actor} એ ગ્રુપનું નામ બદલ્યું",
+    "kn": "{actor} ಅವರು ಗುಂಪಿನ ಹೆಸರನ್ನು ಬದಲಾಯಿಸಿದರು",
+    "bn": "{actor} গ্রুপের নাম বদলেছেন",
+    "ml": "{actor} ഗ്രൂപ്പിന്റെ പേര് മാറ്റി",
+    "ta": "{actor} குழுவின் பெயரை மாற்றினார்",
+    "te": "{actor} గ్రూప్ పేరును మార్చారు",
+    "pa": "{actor} ਨੇ ਗਰੁੱਪ ਦਾ ਨਾਮ ਬਦਲਿਆ",
+    "or": "{actor} ଗ୍ରୁପ ନାମ ବଦଳାଇଛନ୍ତି",
+    "es": "{actor} cambió el nombre del grupo",
+    "fr": "{actor} a renommé le groupe",
+    "de": "{actor} hat den Gruppennamen geändert",
+    "ar": "غيّر {actor} اسم المجموعة",
+    "pt": "{actor} mudou o nome do grupo",
+    "ja": "{actor}がグループ名を変更しました",
+    "zh": "{actor} 更改了群组名称",
+    "zh_Hant": "{actor} 變更了群組名稱",
+    "ur": "{actor} نے گروپ کا نام بدل دیا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youChangedIcon": {
+    "en": "You changed this group's icon",
+    "hi": "आपने इस ग्रुप का आइकन बदला",
+    "mr": "तुम्ही या ग्रुपचा आयकॉन बदलला",
+    "gu": "તમે આ ગ્રુપનું આઇકન બદલ્યું",
+    "kn": "ನೀವು ಈ ಗುಂಪಿನ ಐಕಾನ್ ಬದಲಾಯಿಸಿದ್ದೀರಿ",
+    "bn": "আপনি এই গ্রুপের আইকন বদলেছেন",
+    "ml": "നിങ്ങൾ ഈ ഗ്രൂപ്പിന്റെ ഐക്കൺ മാറ്റി",
+    "ta": "நீங்கள் இந்தக் குழுவின் ஐகானை மாற்றினீர்கள்",
+    "te": "మీరు ఈ గ్రూప్ ఐకాన్‌ను మార్చారు",
+    "pa": "ਤੁਸੀਂ ਇਸ ਗਰੁੱਪ ਦਾ ਆਈਕਨ ਬਦਲਿਆ",
+    "or": "ଆପଣ ଏହି ଗ୍ରୁପର ଆଇକନ ବଦଳାଇଛନ୍ତି",
+    "es": "Cambiaste el ícono de este grupo",
+    "fr": "Vous avez changé l'icône de ce groupe",
+    "de": "Du hast das Gruppenbild geändert",
+    "ar": "غيّرت أيقونة هذه المجموعة",
+    "pt": "Você mudou o ícone deste grupo",
+    "ja": "あなたがこのグループのアイコンを変更しました",
+    "zh": "你更改了此群组的图标",
+    "zh_Hant": "你變更了此群組的圖示",
+    "ur": "آپ نے اس گروپ کا آئیکن بدل دیا"
+  },
+  "chatSys_actorChangedIcon": {
+    "en": "{actor} changed this group's icon",
+    "hi": "{actor} ने इस ग्रुप का आइकन बदला",
+    "mr": "{actor} यांनी या ग्रुपचा आयकॉन बदलला",
+    "gu": "{actor} એ આ ગ્રુપનું આઇકન બદલ્યું",
+    "kn": "{actor} ಅವರು ಈ ಗುಂಪಿನ ಐಕಾನ್ ಬದಲಾಯಿಸಿದರು",
+    "bn": "{actor} এই গ্রুপের আইকন বদলেছেন",
+    "ml": "{actor} ഈ ഗ്രൂപ്പിന്റെ ഐക്കൺ മാറ്റി",
+    "ta": "{actor} இந்தக் குழுவின் ஐகானை மாற்றினார்",
+    "te": "{actor} ఈ గ్రూప్ ఐకాన్‌ను మార్చారు",
+    "pa": "{actor} ਨੇ ਇਸ ਗਰੁੱਪ ਦਾ ਆਈਕਨ ਬਦਲਿਆ",
+    "or": "{actor} ଏହି ଗ୍ରୁପର ଆଇକନ ବଦଳାଇଛନ୍ତି",
+    "es": "{actor} cambió el ícono de este grupo",
+    "fr": "{actor} a changé l'icône de ce groupe",
+    "de": "{actor} hat das Gruppenbild geändert",
+    "ar": "غيّر {actor} أيقونة هذه المجموعة",
+    "pt": "{actor} mudou o ícone deste grupo",
+    "ja": "{actor}がこのグループのアイコンを変更しました",
+    "zh": "{actor} 更改了此群组的图标",
+    "zh_Hant": "{actor} 變更了此群組的圖示",
+    "ur": "{actor} نے اس گروپ کا آئیکن بدل دیا",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youChangedDesc": {
+    "en": "You changed the group description",
+    "hi": "आपने ग्रुप का विवरण बदला",
+    "mr": "तुम्ही ग्रुपचे वर्णन बदलले",
+    "gu": "તમે ગ્રુપનું વર્ણન બદલ્યું",
+    "kn": "ನೀವು ಗುಂಪಿನ ವಿವರಣೆಯನ್ನು ಬದಲಾಯಿಸಿದ್ದೀರಿ",
+    "bn": "আপনি গ্রুপের বিবরণ বদলেছেন",
+    "ml": "നിങ്ങൾ ഗ്രൂപ്പിന്റെ വിവരണം മാറ്റി",
+    "ta": "நீங்கள் குழுவின் விளக்கத்தை மாற்றினீர்கள்",
+    "te": "మీరు గ్రూప్ వివరణను మార్చారు",
+    "pa": "ਤੁਸੀਂ ਗਰੁੱਪ ਦਾ ਵੇਰਵਾ ਬਦਲਿਆ",
+    "or": "ଆପଣ ଗ୍ରୁପ ବିବରଣୀ ବଦଳାଇଛନ୍ତି",
+    "es": "Cambiaste la descripción del grupo",
+    "fr": "Vous avez modifié la description du groupe",
+    "de": "Du hast die Gruppenbeschreibung geändert",
+    "ar": "غيّرت وصف المجموعة",
+    "pt": "Você mudou a descrição do grupo",
+    "ja": "あなたがグループの説明を変更しました",
+    "zh": "你更改了群组简介",
+    "zh_Hant": "你變更了群組簡介",
+    "ur": "آپ نے گروپ کی تفصیل بدل دی"
+  },
+  "chatSys_actorChangedDesc": {
+    "en": "{actor} changed the group description",
+    "hi": "{actor} ने ग्रुप का विवरण बदला",
+    "mr": "{actor} यांनी ग्रुपचे वर्णन बदलले",
+    "gu": "{actor} એ ગ્રુપનું વર્ણન બદલ્યું",
+    "kn": "{actor} ಅವರು ಗುಂಪಿನ ವಿವರಣೆಯನ್ನು ಬದಲಾಯಿಸಿದರು",
+    "bn": "{actor} গ্রুপের বিবরণ বদলেছেন",
+    "ml": "{actor} ഗ്രൂപ്പിന്റെ വിവരണം മാറ്റി",
+    "ta": "{actor} குழுவின் விளக்கத்தை மாற்றினார்",
+    "te": "{actor} గ్రూప్ వివరణను మార్చారు",
+    "pa": "{actor} ਨੇ ਗਰੁੱਪ ਦਾ ਵੇਰਵਾ ਬਦਲਿਆ",
+    "or": "{actor} ଗ୍ରୁପ ବିବରଣୀ ବଦଳାଇଛନ୍ତି",
+    "es": "{actor} cambió la descripción del grupo",
+    "fr": "{actor} a modifié la description du groupe",
+    "de": "{actor} hat die Gruppenbeschreibung geändert",
+    "ar": "غيّر {actor} وصف المجموعة",
+    "pt": "{actor} mudou a descrição do grupo",
+    "ja": "{actor}がグループの説明を変更しました",
+    "zh": "{actor} 更改了群组简介",
+    "zh_Hant": "{actor} 變更了群組簡介",
+    "ur": "{actor} نے گروپ کی تفصیل بدل دی",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youSetAdminsOnly": {
+    "en": "You changed this group's settings to allow only admins to send messages to this group",
+    "hi": "आपने ग्रुप सेटिंग बदली: अब केवल एडमिन इस ग्रुप में मैसेज भेज सकते हैं",
+    "mr": "तुम्ही ग्रुप सेटिंग बदलली: आता फक्त अ‍ॅडमिन या ग्रुपमध्ये मेसेज पाठवू शकतात",
+    "gu": "તમે ગ્રુપ સેટિંગ બદલી: હવે ફક્ત એડમિન આ ગ્રુપમાં મેસેજ મોકલી શકે છે",
+    "kn": "ನೀವು ಗುಂಪಿನ ಸೆಟ್ಟಿಂಗ್ ಬದಲಾಯಿಸಿದ್ದೀರಿ: ಈಗ ಅಡ್ಮಿನ್‌ಗಳು ಮಾತ್ರ ಈ ಗುಂಪಿಗೆ ಸಂದೇಶ ಕಳುಹಿಸಬಹುದು",
+    "bn": "আপনি গ্রুপ সেটিং বদলেছেন: এখন শুধু অ্যাডমিনরা এই গ্রুপে মেসেজ পাঠাতে পারবেন",
+    "ml": "നിങ്ങൾ ഗ്രൂപ്പ് ക്രമീകരണം മാറ്റി: ഇനി അഡ്മിൻമാർക്ക് മാത്രമേ ഈ ഗ്രൂപ്പിൽ സന്ദേശം അയക്കാൻ കഴിയൂ",
+    "ta": "நீங்கள் குழு அமைப்பை மாற்றினீர்கள்: இனி நிர்வாகிகள் மட்டுமே இந்தக் குழுவில் செய்தி அனுப்ப முடியும்",
+    "te": "మీరు గ్రూప్ సెట్టింగ్ మార్చారు: ఇప్పుడు అడ్మిన్‌లు మాత్రమే ఈ గ్రూప్‌కి సందేశాలు పంపగలరు",
+    "pa": "ਤੁਸੀਂ ਗਰੁੱਪ ਸੈਟਿੰਗ ਬਦਲੀ: ਹੁਣ ਸਿਰਫ਼ ਐਡਮਿਨ ਇਸ ਗਰੁੱਪ ਵਿੱਚ ਸੁਨੇਹੇ ਭੇਜ ਸਕਦੇ ਹਨ",
+    "or": "ଆପଣ ଗ୍ରୁପ ସେଟିଂ ବଦଳାଇଛନ୍ତି: ବର୍ତ୍ତମାନ କେବଳ ଆଡମିନ ଏହି ଗ୍ରୁପରେ ମେସେଜ ପଠାଇପାରିବେ",
+    "es": "Cambiaste la configuración para que solo los admins puedan enviar mensajes a este grupo",
+    "fr": "Vous avez modifié les paramètres : seuls les admins peuvent envoyer des messages dans ce groupe",
+    "de": "Du hast die Einstellungen geändert: Nur Admins können Nachrichten an diese Gruppe senden",
+    "ar": "غيّرت إعدادات المجموعة للسماح للمشرفين فقط بإرسال الرسائل إلى هذه المجموعة",
+    "pt": "Você alterou as configurações para que só admins possam enviar mensagens neste grupo",
+    "ja": "あなたがグループ設定を変更し、管理者のみがメッセージを送信できるようにしました",
+    "zh": "你更改了群组设置：仅管理员可在此群组发送消息",
+    "zh_Hant": "你變更了群組設定：僅管理員可在此群組傳送訊息",
+    "ur": "آپ نے گروپ کی سیٹنگ بدلی: اب صرف ایڈمن اس گروپ میں پیغام بھیج سکتے ہیں"
+  },
+  "chatSys_youSetAllCanSend": {
+    "en": "You changed this group's settings to allow all participants to send messages to this group",
+    "hi": "आपने ग्रुप सेटिंग बदली: अब सभी सदस्य इस ग्रुप में मैसेज भेज सकते हैं",
+    "mr": "तुम्ही ग्रुप सेटिंग बदलली: आता सर्व सदस्य या ग्रुपमध्ये मेसेज पाठवू शकतात",
+    "gu": "તમે ગ્રુપ સેટિંગ બદલી: હવે બધા સભ્યો આ ગ્રુપમાં મેસેજ મોકલી શકે છે",
+    "kn": "ನೀವು ಗುಂಪಿನ ಸೆಟ್ಟಿಂಗ್ ಬದಲಾಯಿಸಿದ್ದೀರಿ: ಈಗ ಎಲ್ಲಾ ಸದಸ್ಯರು ಈ ಗುಂಪಿಗೆ ಸಂದೇಶ ಕಳುಹಿಸಬಹುದು",
+    "bn": "আপনি গ্রুপ সেটিং বদলেছেন: এখন সব সদস্য এই গ্রুপে মেসেজ পাঠাতে পারবেন",
+    "ml": "നിങ്ങൾ ഗ്രൂപ്പ് ക്രമീകരണം മാറ്റി: ഇനി എല്ലാ അംഗങ്ങൾക്കും ഈ ഗ്രൂപ്പിൽ സന്ദേശം അയക്കാം",
+    "ta": "நீங்கள் குழு அமைப்பை மாற்றினீர்கள்: இனி அனைத்து உறுப்பினர்களும் இந்தக் குழுவில் செய்தி அனுப்பலாம்",
+    "te": "మీరు గ్రూప్ సెట్టింగ్ మార్చారు: ఇప్పుడు సభ్యులందరూ ఈ గ్రూప్‌కి సందేశాలు పంపగలరు",
+    "pa": "ਤੁਸੀਂ ਗਰੁੱਪ ਸੈਟਿੰਗ ਬਦਲੀ: ਹੁਣ ਸਾਰੇ ਮੈਂਬਰ ਇਸ ਗਰੁੱਪ ਵਿੱਚ ਸੁਨੇਹੇ ਭੇਜ ਸਕਦੇ ਹਨ",
+    "or": "ଆପଣ ଗ୍ରୁପ ସେଟିଂ ବଦଳାଇଛନ୍ତି: ବର୍ତ୍ତମାନ ସମସ୍ତ ସଦସ୍ୟ ଏହି ଗ୍ରୁପରେ ମେସେଜ ପଠାଇପାରିବେ",
+    "es": "Cambiaste la configuración para que todos los participantes puedan enviar mensajes a este grupo",
+    "fr": "Vous avez modifié les paramètres : tous les participants peuvent envoyer des messages dans ce groupe",
+    "de": "Du hast die Einstellungen geändert: Alle Teilnehmer können Nachrichten an diese Gruppe senden",
+    "ar": "غيّرت إعدادات المجموعة للسماح لجميع المشاركين بإرسال الرسائل إلى هذه المجموعة",
+    "pt": "Você alterou as configurações para que todos os participantes possam enviar mensagens neste grupo",
+    "ja": "あなたがグループ設定を変更し、全員がメッセージを送信できるようにしました",
+    "zh": "你更改了群组设置：所有成员均可在此群组发送消息",
+    "zh_Hant": "你變更了群組設定：所有成員均可在此群組傳送訊息",
+    "ur": "آپ نے گروپ کی سیٹنگ بدلی: اب تمام اراکین اس گروپ میں پیغام بھیج سکتے ہیں"
+  },
+  "chatSys_actorSetAdminsOnly": {
+    "en": "{actor} changed this group's settings to allow only admins to send messages to this group",
+    "hi": "{actor} ने ग्रुप सेटिंग बदली: अब केवल एडमिन इस ग्रुप में मैसेज भेज सकते हैं",
+    "mr": "{actor} यांनी ग्रुप सेटिंग बदलली: आता फक्त अ‍ॅडमिन या ग्रुपमध्ये मेसेज पाठवू शकतात",
+    "gu": "{actor} એ ગ્રુપ સેટિંગ બદલી: હવે ફક્ત એડમિન આ ગ્રુપમાં મેસેજ મોકલી શકે છે",
+    "kn": "{actor} ಅವರು ಗುಂಪಿನ ಸೆಟ್ಟಿಂಗ್ ಬದಲಾಯಿಸಿದರು: ಈಗ ಅಡ್ಮಿನ್‌ಗಳು ಮಾತ್ರ ಈ ಗುಂಪಿಗೆ ಸಂದೇಶ ಕಳುಹಿಸಬಹುದು",
+    "bn": "{actor} গ্রুপ সেটিং বদলেছেন: এখন শুধু অ্যাডমিনরা এই গ্রুপে মেসেজ পাঠাতে পারবেন",
+    "ml": "{actor} ഗ്രൂപ്പ് ക്രമീകരണം മാറ്റി: ഇനി അഡ്മിൻമാർക്ക് മാത്രമേ ഈ ഗ്രൂപ്പിൽ സന്ദേശം അയക്കാൻ കഴിയൂ",
+    "ta": "{actor} குழு அமைப்பை மாற்றினார்: இனி நிர்வாகிகள் மட்டுமே இந்தக் குழுவில் செய்தி அனுப்ப முடியும்",
+    "te": "{actor} గ్రూప్ సెట్టింగ్ మార్చారు: ఇప్పుడు అడ్మిన్‌లు మాత్రమే ఈ గ్రూప్‌కి సందేశాలు పంపగలరు",
+    "pa": "{actor} ਨੇ ਗਰੁੱਪ ਸੈਟਿੰਗ ਬਦਲੀ: ਹੁਣ ਸਿਰਫ਼ ਐਡਮਿਨ ਇਸ ਗਰੁੱਪ ਵਿੱਚ ਸੁਨੇਹੇ ਭੇਜ ਸਕਦੇ ਹਨ",
+    "or": "{actor} ଗ୍ରୁପ ସେଟିଂ ବଦଳାଇଛନ୍ତି: ବର୍ତ୍ତମାନ କେବଳ ଆଡମିନ ଏହି ଗ୍ରୁପରେ ମେସେଜ ପଠାଇପାରିବେ",
+    "es": "{actor} cambió la configuración para que solo los admins puedan enviar mensajes a este grupo",
+    "fr": "{actor} a modifié les paramètres : seuls les admins peuvent envoyer des messages dans ce groupe",
+    "de": "{actor} hat die Einstellungen geändert: Nur Admins können Nachrichten an diese Gruppe senden",
+    "ar": "غيّر {actor} إعدادات المجموعة للسماح للمشرفين فقط بإرسال الرسائل إلى هذه المجموعة",
+    "pt": "{actor} alterou as configurações para que só admins possam enviar mensagens neste grupo",
+    "ja": "{actor}がグループ設定を変更し、管理者のみがメッセージを送信できるようにしました",
+    "zh": "{actor} 更改了群组设置：仅管理员可在此群组发送消息",
+    "zh_Hant": "{actor} 變更了群組設定：僅管理員可在此群組傳送訊息",
+    "ur": "{actor} نے گروپ کی سیٹنگ بدلی: اب صرف ایڈمن اس گروپ میں پیغام بھیج سکتے ہیں",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorSetAllCanSend": {
+    "en": "{actor} changed this group's settings to allow all participants to send messages to this group",
+    "hi": "{actor} ने ग्रुप सेटिंग बदली: अब सभी सदस्य इस ग्रुप में मैसेज भेज सकते हैं",
+    "mr": "{actor} यांनी ग्रुप सेटिंग बदलली: आता सर्व सदस्य या ग्रुपमध्ये मेसेज पाठवू शकतात",
+    "gu": "{actor} એ ગ્રુપ સેટિંગ બદલી: હવે બધા સભ્યો આ ગ્રુપમાં મેસેજ મોકલી શકે છે",
+    "kn": "{actor} ಅವರು ಗುಂಪಿನ ಸೆಟ್ಟಿಂಗ್ ಬದಲಾಯಿಸಿದರು: ಈಗ ಎಲ್ಲಾ ಸದಸ್ಯರು ಈ ಗುಂಪಿಗೆ ಸಂದೇಶ ಕಳುಹಿಸಬಹುದು",
+    "bn": "{actor} গ্রুপ সেটিং বদলেছেন: এখন সব সদস্য এই গ্রুপে মেসেজ পাঠাতে পারবেন",
+    "ml": "{actor} ഗ്രൂപ്പ് ക്രമീകരണം മാറ്റി: ഇനി എല്ലാ അംഗങ്ങൾക്കും ഈ ഗ്രൂപ്പിൽ സന്ദേശം അയക്കാം",
+    "ta": "{actor} குழு அமைப்பை மாற்றினார்: இனி அனைத்து உறுப்பினர்களும் இந்தக் குழுவில் செய்தி அனுப்பலாம்",
+    "te": "{actor} గ్రూప్ సెట్టింగ్ మార్చారు: ఇప్పుడు సభ్యులందరూ ఈ గ్రూప్‌కి సందేశాలు పంపగలరు",
+    "pa": "{actor} ਨੇ ਗਰੁੱਪ ਸੈਟਿੰਗ ਬਦਲੀ: ਹੁਣ ਸਾਰੇ ਮੈਂਬਰ ਇਸ ਗਰੁੱਪ ਵਿੱਚ ਸੁਨੇਹੇ ਭੇਜ ਸਕਦੇ ਹਨ",
+    "or": "{actor} ଗ୍ରୁପ ସେଟିଂ ବଦଳାଇଛନ୍ତି: ବର୍ତ୍ତମାନ ସମସ୍ତ ସଦସ୍ୟ ଏହି ଗ୍ରୁପରେ ମେସେଜ ପଠାଇପାରିବେ",
+    "es": "{actor} cambió la configuración para que todos los participantes puedan enviar mensajes a este grupo",
+    "fr": "{actor} a modifié les paramètres : tous les participants peuvent envoyer des messages dans ce groupe",
+    "de": "{actor} hat die Einstellungen geändert: Alle Teilnehmer können Nachrichten an diese Gruppe senden",
+    "ar": "غيّر {actor} إعدادات المجموعة للسماح لجميع المشاركين بإرسال الرسائل إلى هذه المجموعة",
+    "pt": "{actor} alterou as configurações para que todos os participantes possam enviar mensagens neste grupo",
+    "ja": "{actor}がグループ設定を変更し、全員がメッセージを送信できるようにしました",
+    "zh": "{actor} 更改了群组设置：所有成员均可在此群组发送消息",
+    "zh_Hant": "{actor} 變更了群組設定：所有成員均可在此群組傳送訊息",
+    "ur": "{actor} نے گروپ کی سیٹنگ بدلی: اب تمام اراکین اس گروپ میں پیغام بھیج سکتے ہیں",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_unreadDivider": {
+    "en": "UNREAD MESSAGES",
+    "hi": "अपठित संदेश",
+    "mr": "न वाचलेले मेसेज",
+    "gu": "ન વાંચેલા મેસેજ",
+    "kn": "ಓದದ ಸಂದೇಶಗಳು",
+    "bn": "অপঠিত মেসেজ",
+    "ml": "വായിക്കാത്ത സന്ദേശങ്ങൾ",
+    "ta": "படிக்காத செய்திகள்",
+    "te": "చదవని సందేశాలు",
+    "pa": "ਅਣਪੜ੍ਹੇ ਸੁਨੇਹੇ",
+    "or": "ପଢ଼ାଯାଇନଥିବା ମେସେଜ",
+    "es": "MENSAJES NO LEÍDOS",
+    "fr": "MESSAGES NON LUS",
+    "de": "UNGELESENE NACHRICHTEN",
+    "ar": "رسائل غير مقروءة",
+    "pt": "MENSAGENS NÃO LIDAS",
+    "ja": "未読メッセージ",
+    "zh": "未读消息",
+    "zh_Hant": "未讀訊息",
+    "ur": "بغیر پڑھے پیغامات"
+  },
+  "chatSys_unreadDividerCount": {
+    "en": "{count, plural, =1{1 UNREAD MESSAGE} other{{count} UNREAD MESSAGES}}",
+    "hi": "{count, plural, =1{1 अपठित संदेश} other{{count} अपठित संदेश}}",
+    "mr": "{count, plural, =1{1 न वाचलेला मेसेज} other{{count} न वाचलेले मेसेज}}",
+    "gu": "{count, plural, =1{1 ન વાંચેલો મેસેજ} other{{count} ન વાંચેલા મેસેજ}}",
+    "kn": "{count, plural, =1{1 ಓದದ ಸಂದೇಶ} other{{count} ಓದದ ಸಂದೇಶಗಳು}}",
+    "bn": "{count, plural, =1{1টি অপঠিত মেসেজ} other{{count}টি অপঠিত মেসেজ}}",
+    "ml": "{count, plural, =1{വായിക്കാത്ത 1 സന്ദേശം} other{വായിക്കാത്ത {count} സന്ദേശങ്ങൾ}}",
+    "ta": "{count, plural, =1{1 படிக்காத செய்தி} other{{count} படிக்காத செய்திகள்}}",
+    "te": "{count, plural, =1{1 చదవని సందేశం} other{{count} చదవని సందేశాలు}}",
+    "pa": "{count, plural, =1{1 ਅਣਪੜ੍ਹਿਆ ਸੁਨੇਹਾ} other{{count} ਅਣਪੜ੍ਹੇ ਸੁਨੇਹੇ}}",
+    "or": "{count, plural, =1{1ଟି ପଢ଼ାଯାଇନଥିବା ମେସେଜ} other{{count}ଟି ପଢ଼ାଯାଇନଥିବା ମେସେଜ}}",
+    "es": "{count, plural, =1{1 MENSAJE NO LEÍDO} other{{count} MENSAJES NO LEÍDOS}}",
+    "fr": "{count, plural, =1{1 MESSAGE NON LU} other{{count} MESSAGES NON LUS}}",
+    "de": "{count, plural, =1{1 UNGELESENE NACHRICHT} other{{count} UNGELESENE NACHRICHTEN}}",
+    "ar": "{count, plural, =1{رسالة واحدة غير مقروءة} other{{count} رسائل غير مقروءة}}",
+    "pt": "{count, plural, =1{1 MENSAGEM NÃO LIDA} other{{count} MENSAGENS NÃO LIDAS}}",
+    "ja": "{count, plural, other{未読メッセージ {count} 件}}",
+    "zh": "{count, plural, other{{count} 条未读消息}}",
+    "zh_Hant": "{count, plural, other{{count} 則未讀訊息}}",
+    "ur": "{count, plural, =1{1 بغیر پڑھا پیغام} other{{count} بغیر پڑھے پیغامات}}",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatSys_callBack": {
+    "en": "Call back",
+    "hi": "वापस कॉल करें",
+    "mr": "परत कॉल करा",
+    "gu": "પાછો કૉલ કરો",
+    "kn": "ಮರಳಿ ಕರೆ ಮಾಡಿ",
+    "bn": "কল ব্যাক করুন",
+    "ml": "തിരികെ വിളിക്കുക",
+    "ta": "திரும்ப அழை",
+    "te": "తిరిగి కాల్ చేయండి",
+    "pa": "ਵਾਪਸ ਕਾਲ ਕਰੋ",
+    "or": "ପୁଣି କଲ କରନ୍ତୁ",
+    "es": "Devolver llamada",
+    "fr": "Rappeler",
+    "de": "Zurückrufen",
+    "ar": "معاودة الاتصال",
+    "pt": "Retornar ligação",
+    "ja": "かけ直す",
+    "zh": "回拨",
+    "zh_Hant": "回撥",
+    "ur": "واپس کال کریں"
+  },
+  "chatSys_delivered": {
+    "en": "Delivered",
+    "hi": "डिलीवर हुआ",
+    "mr": "पोहोचला",
+    "gu": "પહોંચ્યો",
+    "kn": "ತಲುಪಿದೆ",
+    "bn": "পৌঁছেছে",
+    "ml": "എത്തി",
+    "ta": "சென்றடைந்தது",
+    "te": "చేరింది",
+    "pa": "ਪਹੁੰਚ ਗਿਆ",
+    "or": "ପହଞ୍ଚିଛି",
+    "es": "Entregado",
+    "fr": "Distribué",
+    "de": "Zugestellt",
+    "ar": "تم التسليم",
+    "pt": "Entregue",
+    "ja": "配信済み",
+    "zh": "已送达",
+    "zh_Hant": "已送達",
+    "ur": "پہنچ گیا"
+  },
+  "chatSys_notDeliveredYet": {
+    "en": "Not delivered yet",
+    "hi": "अभी डिलीवर नहीं हुआ",
+    "mr": "अजून पोहोचला नाही",
+    "gu": "હજુ પહોંચ્યો નથી",
+    "kn": "ಇನ್ನೂ ತಲುಪಿಲ್ಲ",
+    "bn": "এখনও পৌঁছায়নি",
+    "ml": "ഇതുവരെ എത്തിയിട്ടില്ല",
+    "ta": "இன்னும் சென்றடையவில்லை",
+    "te": "ఇంకా చేరలేదు",
+    "pa": "ਅਜੇ ਨਹੀਂ ਪਹੁੰਚਿਆ",
+    "or": "ଏପର୍ଯ୍ୟନ୍ତ ପହଞ୍ଚିନାହିଁ",
+    "es": "Aún no entregado",
+    "fr": "Pas encore distribué",
+    "de": "Noch nicht zugestellt",
+    "ar": "لم يتم التسليم بعد",
+    "pt": "Ainda não entregue",
+    "ja": "未配信",
+    "zh": "尚未送达",
+    "zh_Hant": "尚未送達",
+    "ur": "ابھی نہیں پہنچا"
+  }
+}

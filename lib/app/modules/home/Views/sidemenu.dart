@@ -762,7 +762,7 @@ class Sidemenu extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Delete Account",
+                      context.l10n.account_deleteTitle,
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontFamily: FontFamily.interBold,
@@ -772,7 +772,7 @@ class Sidemenu extends StatelessWidget {
                     ),
                     SizedBox(height: 3.h),
                     Text(
-                      "Permanently erase account & data",
+                      context.l10n.account_deleteSubtitle,
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontFamily: FontFamily.interRegular,
@@ -826,7 +826,7 @@ class Sidemenu extends StatelessWidget {
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
-                      "Delete Account?",
+                      context.l10n.account_deleteDialogTitle,
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontFamily: FontFamily.interBold,
@@ -842,7 +842,7 @@ class Sidemenu extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Are you sure you want to permanently delete your account?",
+                    context.l10n.account_deleteConfirm,
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
@@ -851,7 +851,7 @@ class Sidemenu extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    "This action is immediate and cannot be undone. All your profile information, location history, group memberships, and active sessions will be permanently erased.",
+                    context.l10n.account_deleteWarning,
                     style: TextStyle(
                       fontSize: 12.5.sp,
                       color: const Color(0xFF6B7280),
@@ -860,7 +860,7 @@ class Sidemenu extends StatelessWidget {
                   ),
                   SizedBox(height: 14.h),
                   Text(
-                    "Reason for leaving:",
+                    context.l10n.account_reasonLabel,
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
@@ -883,26 +883,26 @@ class Sidemenu extends StatelessWidget {
                           fontSize: 12.5.sp,
                           color: const Color(0xFF1F2937),
                         ),
-                        items: const [
+                        items: [
                           DropdownMenuItem(
                             value: "I no longer need this account",
-                            child: Text("I no longer need this account"),
+                            child: Text(context.l10n.account_reasonNoLongerNeed),
                           ),
                           DropdownMenuItem(
                             value: "Privacy concerns",
-                            child: Text("Privacy concerns"),
+                            child: Text(context.l10n.account_reasonPrivacy),
                           ),
                           DropdownMenuItem(
                             value: "Too many notifications / battery",
-                            child: Text("Too many notifications"),
+                            child: Text(context.l10n.account_reasonNotifications),
                           ),
                           DropdownMenuItem(
                             value: "Switching to another app or device",
-                            child: Text("Switching to another device"),
+                            child: Text(context.l10n.account_reasonSwitching),
                           ),
                           DropdownMenuItem(
                             value: "Other reason",
-                            child: Text("Other reason"),
+                            child: Text(context.l10n.account_reasonOther),
                           ),
                         ],
                         onChanged: (val) {
@@ -922,7 +922,7 @@ class Sidemenu extends StatelessWidget {
                 TextButton(
                   onPressed: () => Navigator.pop(dialogCtx),
                   child: Text(
-                    "Cancel",
+                    context.l10n.common_cancel,
                     style: TextStyle(
                       fontSize: 14.sp,
                       color: const Color(0xFF6B7280),
@@ -948,7 +948,7 @@ class Sidemenu extends StatelessWidget {
                     );
                   },
                   child: Text(
-                    "Delete Forever",
+                    context.l10n.account_deleteForever,
                     style: TextStyle(
                       fontSize: 13.5.sp,
                       fontWeight: FontWeight.bold,

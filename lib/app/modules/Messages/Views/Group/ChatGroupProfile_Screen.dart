@@ -707,10 +707,10 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             _settingTile(
               icon: Icons.campaign_outlined,
               iconColor: _purple,
-              title: "Send Messages",
+              title: appL10n.groupAdmin_sendMessagesTitle,
               subtitle: data.group?.onlyAdminsCanSend == true
-                  ? "Only admins can send messages"
-                  : "All members can send messages",
+                  ? appL10n.groupAdmin_onlyAdminsCanSend
+                  : appL10n.groupAdmin_allMembersCanSend,
               trailing: Switch.adaptive(
                 value: data.group?.onlyAdminsCanSend == true,
                 activeColor: _purple,
@@ -892,7 +892,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Add Members",
+                    context.l10n.groupAdmin_addMembersTitle,
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w700,
@@ -901,7 +901,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    "Add contacts to this group",
+                    context.l10n.groupAdmin_addMembersSubtitle,
                     style: TextStyle(
                       fontSize: 11.sp,
                       color: Colors.grey.shade600,
@@ -1125,9 +1125,9 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                       callerProfile: m.profileImage);
                 } else if (value == "make_admin") {
                   CommonDialog.ConfirmationDialog(
-                    title: "Make Group Admin",
-                    content: "Make $name a group admin?",
-                    confirm: "Make Admin",
+                    title: appL10n.groupAdmin_makeAdminTitle,
+                    content: appL10n.groupAdmin_makeAdminConfirm(name),
+                    confirm: appL10n.groupAdmin_makeAdminAction,
                     onConfirm: () {
                       Get.back();
                       groupController.promoteAdmin(
@@ -1145,9 +1145,9 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   );
                 } else if (value == "dismiss_admin") {
                   CommonDialog.ConfirmationDialog(
-                    title: "Dismiss as Admin",
-                    content: "Dismiss $name as group admin?",
-                    confirm: "Dismiss",
+                    title: appL10n.groupAdmin_dismissAdminTitle,
+                    content: appL10n.groupAdmin_dismissAdminConfirm(name),
+                    confirm: appL10n.groupAdmin_dismissAction,
                     onConfirm: () {
                       Get.back();
                       groupController.demoteAdmin(
@@ -1198,11 +1198,11 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   PopupMenuItem(
                       value: "video", child: Text(appL10n.groupInfo_videoCall)),
                 if (canPromote)
-                  const PopupMenuItem(
-                      value: "make_admin", child: Text("Make group admin")),
+                  PopupMenuItem(
+                      value: "make_admin", child: Text(appL10n.groupAdmin_menuMakeAdmin)),
                 if (canDemote)
-                  const PopupMenuItem(
-                      value: "dismiss_admin", child: Text("Dismiss as admin")),
+                  PopupMenuItem(
+                      value: "dismiss_admin", child: Text(appL10n.groupAdmin_menuDismissAdmin)),
                 if (canRemove)
                   PopupMenuItem(
                       value: "remove",
@@ -1414,9 +1414,9 @@ class _CandidateMember {
 
   /// Compact label shown next to the Add button.
   String get shortTag {
-    if (isSavedContact && isInOtherGroup) return "Contact • Group";
-    if (isSavedContact) return "Saved contact";
-    if (isInOtherGroup) return "Your groups";
+    if (isSavedContact && isInOtherGroup) return appL10n.groupAdmin_tagContactAndGroup;
+    if (isSavedContact) return appL10n.groupAdmin_tagSavedContact;
+    if (isInOtherGroup) return appL10n.groupAdmin_tagYourGroups;
     return "";
   }
 }
@@ -1604,11 +1604,11 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
   }
 
   void _confirmAdd(UserListData user) {
-    final userName = user.name ?? "Member";
+    final userName = user.name ?? appL10n.groupInfo_member;
     CommonDialog.ConfirmationDialog(
-      title: "Add Member",
-      content: "Add $userName to ${widget.groupName}?",
-      confirm: "Add",
+      title: appL10n.group_addMember,
+      content: appL10n.groupAdmin_addMemberConfirm(widget.groupName, userName),
+      confirm: appL10n.common_add,
       onConfirm: () {
         Get.back(); // close confirmation dialog
         _groupCtrl.addGroupMember(
@@ -1659,7 +1659,7 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Add Members",
+                        context.l10n.groupAdmin_addMembersTitle,
                         style: TextStyle(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w700,
@@ -1668,7 +1668,7 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        "Select a contact to add to group",
+                        context.l10n.groupAdmin_selectContactSubtitle,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: Colors.grey.shade600,
@@ -1707,7 +1707,7 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                       onChanged: _onSearch,
                       style: TextStyle(fontSize: 14.sp),
                       decoration: InputDecoration(
-                        hintText: "Search name or phone number...",
+                        hintText: context.l10n.groupAdmin_searchHint,
                         hintStyle: TextStyle(
                           fontSize: 13.sp,
                           color: Colors.grey.shade400,
@@ -1748,7 +1748,7 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      "Contacts permission is off. Showing members from your groups only.",
+                      context.l10n.groupAdmin_contactsPermissionOff,
                       style: TextStyle(
                         fontSize: 11.sp,
                         color: const Color(0xFF5D4037),
@@ -1763,7 +1763,7 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                     child: Padding(
                       padding: EdgeInsets.only(left: 6.w),
                       child: Text(
-                        "Enable",
+                        context.l10n.groupAdmin_enable,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: purple,
@@ -1799,7 +1799,7 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                               ),
                               SizedBox(height: 12.h),
                               Text(
-                                "Couldn't load members",
+                                context.l10n.groupAdmin_loadFailedTitle,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 14.sp,
@@ -1809,7 +1809,7 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                               ),
                               SizedBox(height: 4.h),
                               Text(
-                                "Check your internet and try again.",
+                                context.l10n.groupAdmin_loadFailedBody,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 12.sp,
@@ -1823,7 +1823,7 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                                 icon: Icon(Icons.refresh_rounded,
                                     size: 18.sp, color: Colors.white),
                                 label: Text(
-                                  "Retry",
+                                  context.l10n.common_retry,
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 13.sp,
@@ -1857,8 +1857,8 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                                   SizedBox(height: 10.h),
                                   Text(
                                     _searchCtrl.text.isNotEmpty
-                                        ? "No matching contacts found"
-                                        : "No contacts or group members found to add",
+                                        ? context.l10n.groupAdmin_noMatchingContacts
+                                        : context.l10n.groupAdmin_noCandidates,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 14.sp,
@@ -1868,7 +1868,7 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                                   ),
                                   SizedBox(height: 4.h),
                                   Text(
-                                    "Only saved contacts and members from your other groups can be added.",
+                                    context.l10n.groupAdmin_candidatesHint,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 12.sp,
@@ -2043,7 +2043,7 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                           size: 14.sp, color: Colors.white),
                       SizedBox(width: 4.w),
                       Text(
-                        "Add",
+                        context.l10n.common_add,
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w700,

@@ -28,7 +28,7 @@ Record a side-by-side video of every Fail. Write the device (Android / iOS) in N
 | CL-01 | B sends A one message while A is on the chat list | B's row jumps to the top; preview and time update | ✔ chat_list_controller_qa · ✘ BUG-RT-01, BUG-CL-01 | Not run | Not run | |
 | CL-02 | B sends 5 messages quickly | Badge = 5, preview = last message | ✔ unread dedupe tests | Not run | Not run | |
 | CL-03 | A opens B's chat and comes back | Badge gone | ✔ | Not run | Not run | |
-| CL-04 | C writes in QA-Group | Group row on top, "C: message", badge +1 | ✔ (logic) · server room to confirm | Not run | Not run | |
+| CL-04 | C writes in QA-Group | Group row on `top, "C: message", badge +1 | ✔ (logic) · server room to confirm | Not run | Not run | |
 | CL-05 | New user D, who never chatted with A, sends a message | New row appears on top | ✔ | Not run | Not run | |
 | CL-06 | B sends a photo, video, voice note, document, location, contact, poll / attendance | The right preview label each time | ✔ message_preview tests | Not run | Not run | |
 | CL-07 | B types | "typing…" on B's row, clears when B stops | ✔ logic · ✘ BUG-RT-05 (row does not redraw) | Not run | Not run | |
@@ -134,7 +134,7 @@ Record a side-by-side video of every Fail. Write the device (Android / iOS) in N
 | ID | Steps | Expected | Auto | Android | iOS | Notes |
 |---|---|---|---|---|---|---|
 | RS-01 | A has B's chat open; B opens the app | "Online" within 2 s | ✘ BUG-RT-06 | Not run | Not run | |
-| RS-02 | B closes the app / puts it in the background / kills it / turns on airplane mode (test each) | "Last seen …" | ✘ BUG-RT-06 | Not run | Not run | |
+| RS-02 | B closes the app / puts it in the background / kills it / turns on airplane mode (test each) | "Last seen …" | ✘ BUG-RT-06 | Not run | Not run | |issue
 | RS-03 | A opens B's chat from B's profile (not from the list) while B is offline | "Last seen …", not blank | ✘ BUG-RT-07 | Not run | Not run | |
 | RS-04 | B types (private) | "typing…" in the top bar, clears ≤ 4 s after B stops | ✔ RT-06, typing tests | Not run | Not run | |
 | RS-05 | B and C type in the group | "B, C are typing…" | ✔ | Not run | Not run | |

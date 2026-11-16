@@ -107,6 +107,51 @@ class AppLocalizationsKn extends AppLocalizations {
       'ಗುಂಪಿನ ಎಲ್ಲಾ ಸದಸ್ಯರೊಂದಿಗೆ ರಿಯಲ್-ಟೈಮ್ ಲೊಕೇಶನ್ ಹಂಚಿಕೆ.';
 
   @override
+  String get account_deleteConfirm =>
+      'ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಲು ನೀವು ಖಚಿತವಾಗಿ ಬಯಸುವಿರಾ?';
+
+  @override
+  String get account_deleteDialogTitle => 'ಖಾತೆ ಅಳಿಸಬೇಕೇ?';
+
+  @override
+  String get account_deleteFailed =>
+      'ಖಾತೆ ಅಳಿಸಲು ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get account_deleteForever => 'ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಿ';
+
+  @override
+  String get account_deleteSubtitle => 'ಖಾತೆ ಮತ್ತು ಡೇಟಾವನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಿ';
+
+  @override
+  String get account_deleteTitle => 'ಖಾತೆ ಅಳಿಸಿ';
+
+  @override
+  String get account_deleteWarning =>
+      'ಈ ಕ್ರಿಯೆ ತಕ್ಷಣ ನಡೆಯುತ್ತದೆ ಮತ್ತು ಹಿಂಪಡೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಎಲ್ಲಾ ಪ್ರೊಫೈಲ್ ಮಾಹಿತಿ, ಸ್ಥಳ ಇತಿಹಾಸ, ಗ್ರೂಪ್ ಸದಸ್ಯತ್ವ ಮತ್ತು ಸಕ್ರಿಯ ಸೆಷನ್‌ಗಳು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಲ್ಪಡುತ್ತವೆ.';
+
+  @override
+  String get account_deletedToast => 'ಖಾತೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಅಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get account_reasonLabel => 'ತೊರೆಯಲು ಕಾರಣ:';
+
+  @override
+  String get account_reasonNoLongerNeed => 'ನನಗೆ ಈ ಖಾತೆ ಇನ್ನು ಬೇಕಿಲ್ಲ';
+
+  @override
+  String get account_reasonNotifications => 'ತುಂಬಾ ಅಧಿಸೂಚನೆಗಳು';
+
+  @override
+  String get account_reasonOther => 'ಇತರ ಕಾರಣ';
+
+  @override
+  String get account_reasonPrivacy => 'ಗೌಪ್ಯತೆಯ ಕಾಳಜಿ';
+
+  @override
+  String get account_reasonSwitching => 'ಬೇರೆ ಸಾಧನಕ್ಕೆ ಬದಲಾಯಿಸುತ್ತಿದ್ದೇನೆ';
+
+  @override
   String appUpdate_checkError(String error) {
     return 'ಅಪ್‌ಡೇಟ್ ಪರಿಶೀಲಿಸುವಲ್ಲಿ ದೋಷ: $error';
   }
@@ -563,6 +608,47 @@ class AppLocalizationsKn extends AppLocalizations {
   String attendance_withinMeters(int count) {
     return '$count ಮೀ. ಒಳಗೆ';
   }
+
+  @override
+  String get banner_choosePhoto => 'ಫೋಟೋ ಆಯ್ಕೆಮಾಡಿ';
+
+  @override
+  String get banner_customSubtitle =>
+      'ನಿಮ್ಮ ಫೋಟೋ ಅಥವಾ ಕಂಪನಿ ಬ್ಯಾನರ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ. ಇದು ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ಮಾತ್ರ ಕಾಣುತ್ತದೆ!';
+
+  @override
+  String get banner_customTitle => 'ಕಸ್ಟಮ್ ಬ್ಯಾನರ್';
+
+  @override
+  String get banner_manageTitle => 'ಕಸ್ಟಮ್ ಬ್ಯಾನರ್ ನಿರ್ವಹಿಸಿ';
+
+  @override
+  String get banner_myBanner => 'ನನ್ನ ಬ್ಯಾನರ್';
+
+  @override
+  String get banner_newBadge => 'ಹೊಸ';
+
+  @override
+  String get banner_removeSubtitle => 'ಡೀಫಾಲ್ಟ್ ಅಪ್‌ಲೋಡ್ ಕಾರ್ಡ್‌ಗೆ ಹಿಂತಿರುಗಿ';
+
+  @override
+  String get banner_removeTitle => 'ಬ್ಯಾನರ್ ತೆಗೆದುಹಾಕಿ';
+
+  @override
+  String get banner_replaceSubtitle =>
+      'ಗ್ಯಾಲರಿ ಅಥವಾ ಕ್ಯಾಮೆರಾದಿಂದ ಹೊಸ ಫೋಟೋ ಆಯ್ಕೆಮಾಡಿ';
+
+  @override
+  String get banner_replaceTitle => 'ಬ್ಯಾನರ್ ಬದಲಿಸಿ';
+
+  @override
+  String get banner_selectPhotoSubtitle => 'ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ಮಾತ್ರ ಕಾಣುತ್ತದೆ';
+
+  @override
+  String get banner_selectPhotoTitle => 'ಬ್ಯಾನರ್ ಫೋಟೋ ಆಯ್ಕೆಮಾಡಿ';
+
+  @override
+  String get banner_takePhoto => 'ಫೋಟೋ ತೆಗೆಯಿರಿ';
 
   @override
   String get call_accept => 'ಸ್ವೀಕರಿಸಿ';
@@ -1910,6 +1996,216 @@ class AppLocalizationsKn extends AppLocalizations {
   String get chatList_yourContacts => 'ನಿಮ್ಮ ಸಂಪರ್ಕಗಳು';
 
   @override
+  String chatSys_actorAdded(String actor, String target) {
+    return '$actor ಅವರು $target ಅವರನ್ನು ಸೇರಿಸಿದರು';
+  }
+
+  @override
+  String chatSys_actorAddedTo(String actor, String group, String target) {
+    return '$actor ಅವರು $target ಅವರನ್ನು $group ಗೆ ಸೇರಿಸಿದರು';
+  }
+
+  @override
+  String chatSys_actorAddedYou(String actor) {
+    return '$actor ನಿಮ್ಮನ್ನು ಸೇರಿಸಿದರು';
+  }
+
+  @override
+  String chatSys_actorChangedDesc(String actor) {
+    return '$actor ಅವರು ಗುಂಪಿನ ವಿವರಣೆಯನ್ನು ಬದಲಾಯಿಸಿದರು';
+  }
+
+  @override
+  String chatSys_actorChangedIcon(String actor) {
+    return '$actor ಅವರು ಈ ಗುಂಪಿನ ಐಕಾನ್ ಬದಲಾಯಿಸಿದರು';
+  }
+
+  @override
+  String chatSys_actorDismissedAdmin(String actor, String target) {
+    return '$actor ಅವರು $target ಅವರನ್ನು ಅಡ್ಮಿನ್ ಸ್ಥಾನದಿಂದ ತೆಗೆದುಹಾಕಿದರು';
+  }
+
+  @override
+  String chatSys_actorDismissedAdminIn(
+      String actor, String group, String target) {
+    return '$actor ಅವರು $target ಅವರನ್ನು $group ನಲ್ಲಿ ಅಡ್ಮಿನ್ ಸ್ಥಾನದಿಂದ ತೆಗೆದುಹಾಕಿದರು';
+  }
+
+  @override
+  String chatSys_actorMadeAdmin(String actor, String target) {
+    return '$actor ಅವರು $target ಅವರನ್ನು ಅಡ್ಮಿನ್ ಮಾಡಿದರು';
+  }
+
+  @override
+  String chatSys_actorMadeAdminIn(String actor, String group, String target) {
+    return '$actor ಅವರು $target ಅವರನ್ನು $group ನಲ್ಲಿ ಅಡ್ಮಿನ್ ಮಾಡಿದರು';
+  }
+
+  @override
+  String chatSys_actorRemoved(String actor, String target) {
+    return '$actor ಅವರು $target ಅವರನ್ನು ತೆಗೆದುಹಾಕಿದರು';
+  }
+
+  @override
+  String chatSys_actorRemovedFrom(String actor, String group, String target) {
+    return '$actor ಅವರು $target ಅವರನ್ನು $group ನಿಂದ ತೆಗೆದುಹಾಕಿದರು';
+  }
+
+  @override
+  String chatSys_actorRenamed(String actor) {
+    return '$actor ಅವರು ಗುಂಪಿನ ಹೆಸರನ್ನು ಬದಲಾಯಿಸಿದರು';
+  }
+
+  @override
+  String chatSys_actorRenamedTo(String actor, String name) {
+    return '$actor ಅವರು ಗುಂಪಿನ ಹೆಸರನ್ನು \"$name\" ಎಂದು ಬದಲಾಯಿಸಿದರು';
+  }
+
+  @override
+  String chatSys_actorSetAdminsOnly(String actor) {
+    return '$actor ಅವರು ಗುಂಪಿನ ಸೆಟ್ಟಿಂಗ್ ಬದಲಾಯಿಸಿದರು: ಈಗ ಅಡ್ಮಿನ್‌ಗಳು ಮಾತ್ರ ಈ ಗುಂಪಿಗೆ ಸಂದೇಶ ಕಳುಹಿಸಬಹುದು';
+  }
+
+  @override
+  String chatSys_actorSetAllCanSend(String actor) {
+    return '$actor ಅವರು ಗುಂಪಿನ ಸೆಟ್ಟಿಂಗ್ ಬದಲಾಯಿಸಿದರು: ಈಗ ಎಲ್ಲಾ ಸದಸ್ಯರು ಈ ಗುಂಪಿಗೆ ಸಂದೇಶ ಕಳುಹಿಸಬಹುದು';
+  }
+
+  @override
+  String get chatSys_callBack => 'ಮರಳಿ ಕರೆ ಮಾಡಿ';
+
+  @override
+  String get chatSys_delivered => 'ತಲುಪಿದೆ';
+
+  @override
+  String chatSys_joinedViaLink(String target) {
+    return '$target ಈ ಗುಂಪಿನ ಆಹ್ವಾನ ಲಿಂಕ್ ಬಳಸಿ ಸೇರಿದರು';
+  }
+
+  @override
+  String chatSys_left(String target) {
+    return '$target ಗುಂಪು ತೊರೆದರು';
+  }
+
+  @override
+  String get chatSys_notDeliveredYet => 'ಇನ್ನೂ ತಲುಪಿಲ್ಲ';
+
+  @override
+  String get chatSys_unreadDivider => 'ಓದದ ಸಂದೇಶಗಳು';
+
+  @override
+  String chatSys_unreadDividerCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ಓದದ ಸಂದೇಶಗಳು',
+      one: '1 ಓದದ ಸಂದೇಶ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatSys_youAdded(String target) {
+    return 'ನೀವು $target ಅವರನ್ನು ಸೇರಿಸಿದ್ದೀರಿ';
+  }
+
+  @override
+  String get chatSys_youAddedMembers => 'ನೀವು ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿದ್ದೀರಿ';
+
+  @override
+  String chatSys_youAddedTo(String group, String target) {
+    return 'ನೀವು $target ಅವರನ್ನು $group ಗೆ ಸೇರಿಸಿದ್ದೀರಿ';
+  }
+
+  @override
+  String get chatSys_youAreAdmin => 'ನೀವು ಈಗ ಅಡ್ಮಿನ್ ಆಗಿದ್ದೀರಿ';
+
+  @override
+  String chatSys_youAreAdminIn(String group) {
+    return 'ನೀವು ಈಗ $group ನಲ್ಲಿ ಅಡ್ಮಿನ್ ಆಗಿದ್ದೀರಿ';
+  }
+
+  @override
+  String get chatSys_youChangedDesc => 'ನೀವು ಗುಂಪಿನ ವಿವರಣೆಯನ್ನು ಬದಲಾಯಿಸಿದ್ದೀರಿ';
+
+  @override
+  String get chatSys_youChangedIcon => 'ನೀವು ಈ ಗುಂಪಿನ ಐಕಾನ್ ಬದಲಾಯಿಸಿದ್ದೀರಿ';
+
+  @override
+  String chatSys_youDismissedAdmin(String target) {
+    return 'ನೀವು $target ಅವರನ್ನು ಅಡ್ಮಿನ್ ಸ್ಥಾನದಿಂದ ತೆಗೆದುಹಾಕಿದ್ದೀರಿ';
+  }
+
+  @override
+  String chatSys_youDismissedAdminIn(String group, String target) {
+    return 'ನೀವು $target ಅವರನ್ನು $group ನಲ್ಲಿ ಅಡ್ಮಿನ್ ಸ್ಥಾನದಿಂದ ತೆಗೆದುಹಾಕಿದ್ದೀರಿ';
+  }
+
+  @override
+  String get chatSys_youJoinedViaLink =>
+      'ನೀವು ಈ ಗುಂಪಿನ ಆಹ್ವಾನ ಲಿಂಕ್ ಬಳಸಿ ಸೇರಿದ್ದೀರಿ';
+
+  @override
+  String get chatSys_youLeft => 'ನೀವು ಗುಂಪು ತೊರೆದಿದ್ದೀರಿ';
+
+  @override
+  String chatSys_youMadeAdmin(String target) {
+    return 'ನೀವು $target ಅವರನ್ನು ಅಡ್ಮಿನ್ ಮಾಡಿದ್ದೀರಿ';
+  }
+
+  @override
+  String chatSys_youMadeAdminIn(String group, String target) {
+    return 'ನೀವು $target ಅವರನ್ನು $group ನಲ್ಲಿ ಅಡ್ಮಿನ್ ಮಾಡಿದ್ದೀರಿ';
+  }
+
+  @override
+  String get chatSys_youNoLongerAdmin => 'ನೀವು ಇನ್ನು ಅಡ್ಮಿನ್ ಅಲ್ಲ';
+
+  @override
+  String chatSys_youNoLongerAdminIn(String group) {
+    return 'ನೀವು ಇನ್ನು $group ನಲ್ಲಿ ಅಡ್ಮಿನ್ ಅಲ್ಲ';
+  }
+
+  @override
+  String chatSys_youRemoved(String target) {
+    return 'ನೀವು $target ಅವರನ್ನು ತೆಗೆದುಹಾಕಿದ್ದೀರಿ';
+  }
+
+  @override
+  String chatSys_youRemovedFrom(String group, String target) {
+    return 'ನೀವು $target ಅವರನ್ನು $group ನಿಂದ ತೆಗೆದುಹಾಕಿದ್ದೀರಿ';
+  }
+
+  @override
+  String get chatSys_youRenamed => 'ನೀವು ಗುಂಪಿನ ಹೆಸರನ್ನು ಬದಲಾಯಿಸಿದ್ದೀರಿ';
+
+  @override
+  String chatSys_youRenamedTo(String name) {
+    return 'ನೀವು ಗುಂಪಿನ ಹೆಸರನ್ನು \"$name\" ಎಂದು ಬದಲಾಯಿಸಿದ್ದೀರಿ';
+  }
+
+  @override
+  String get chatSys_youSetAdminsOnly =>
+      'ನೀವು ಗುಂಪಿನ ಸೆಟ್ಟಿಂಗ್ ಬದಲಾಯಿಸಿದ್ದೀರಿ: ಈಗ ಅಡ್ಮಿನ್‌ಗಳು ಮಾತ್ರ ಈ ಗುಂಪಿಗೆ ಸಂದೇಶ ಕಳುಹಿಸಬಹುದು';
+
+  @override
+  String get chatSys_youSetAllCanSend =>
+      'ನೀವು ಗುಂಪಿನ ಸೆಟ್ಟಿಂಗ್ ಬದಲಾಯಿಸಿದ್ದೀರಿ: ಈಗ ಎಲ್ಲಾ ಸದಸ್ಯರು ಈ ಗುಂಪಿಗೆ ಸಂದೇಶ ಕಳುಹಿಸಬಹುದು';
+
+  @override
+  String chatSys_youWereAddedTo(String actor, String group) {
+    return '$actor ನಿಮ್ಮನ್ನು $group ಗೆ ಸೇರಿಸಿದರು';
+  }
+
+  @override
+  String get chatSys_youWereRemoved => 'ನಿಮ್ಮನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ';
+
+  @override
+  String chatSys_youWereRemovedFrom(String group) {
+    return 'ನಿಮ್ಮನ್ನು $group ನಿಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ';
+  }
+
+  @override
   String get chat_addCaptionHint => 'ಕ್ಯಾಪ್ಶನ್ ಸೇರಿಸಿ...';
 
   @override
@@ -2665,6 +2961,112 @@ class AppLocalizationsKn extends AppLocalizations {
   String forceUpdate_updateOnStore(String storeName) {
     return '$storeName ನಲ್ಲಿ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ';
   }
+
+  @override
+  String groupAdmin_addMemberConfirm(String group, String name) {
+    return '$name ಅವರನ್ನು $group ಗೆ ಸೇರಿಸಬೇಕೇ?';
+  }
+
+  @override
+  String get groupAdmin_addMembersSubtitle => 'ಈ ಗ್ರೂಪ್‌ಗೆ ಸಂಪರ್ಕಗಳನ್ನು ಸೇರಿಸಿ';
+
+  @override
+  String get groupAdmin_addMembersTitle => 'ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ';
+
+  @override
+  String get groupAdmin_allMembersCanSend => 'ಎಲ್ಲಾ ಸದಸ್ಯರು ಸಂದೇಶ ಕಳುಹಿಸಬಹುದು';
+
+  @override
+  String get groupAdmin_allParticipantsNowToast =>
+      'ಈಗ ಎಲ್ಲಾ ಸದಸ್ಯರು ಸಂದೇಶ ಕಳುಹಿಸಬಹುದು';
+
+  @override
+  String get groupAdmin_candidatesHint =>
+      'ಉಳಿಸಿದ ಸಂಪರ್ಕಗಳು ಮತ್ತು ನಿಮ್ಮ ಇತರ ಗ್ರೂಪ್‌ಗಳ ಸದಸ್ಯರನ್ನು ಮಾತ್ರ ಸೇರಿಸಬಹುದು.';
+
+  @override
+  String get groupAdmin_contactsPermissionOff =>
+      'ಸಂಪರ್ಕ ಅನುಮತಿ ಆಫ್ ಆಗಿದೆ. ನಿಮ್ಮ ಗ್ರೂಪ್‌ಗಳ ಸದಸ್ಯರನ್ನು ಮಾತ್ರ ತೋರಿಸಲಾಗುತ್ತಿದೆ.';
+
+  @override
+  String get groupAdmin_dismissAction => 'ತೆಗೆದುಹಾಕಿ';
+
+  @override
+  String groupAdmin_dismissAdminConfirm(String name) {
+    return '$name ಅವರನ್ನು ಗ್ರೂಪ್ ಅಡ್ಮಿನ್ ಸ್ಥಾನದಿಂದ ತೆಗೆದುಹಾಕಬೇಕೇ?';
+  }
+
+  @override
+  String get groupAdmin_dismissAdminTitle => 'ಅಡ್ಮಿನ್ ಸ್ಥಾನದಿಂದ ತೆಗೆದುಹಾಕಿ';
+
+  @override
+  String get groupAdmin_enable => 'ಸಕ್ರಿಯಗೊಳಿಸಿ';
+
+  @override
+  String get groupAdmin_loadFailedBody =>
+      'ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get groupAdmin_loadFailedTitle => 'ಸದಸ್ಯರನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ';
+
+  @override
+  String get groupAdmin_makeAdminAction => 'ಅಡ್ಮಿನ್ ಮಾಡಿ';
+
+  @override
+  String groupAdmin_makeAdminConfirm(String name) {
+    return '$name ಅವರನ್ನು ಗ್ರೂಪ್ ಅಡ್ಮಿನ್ ಮಾಡಬೇಕೇ?';
+  }
+
+  @override
+  String get groupAdmin_makeAdminTitle => 'ಗ್ರೂಪ್ ಅಡ್ಮಿನ್ ಮಾಡಿ';
+
+  @override
+  String get groupAdmin_memberAdded => 'ಸದಸ್ಯರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸೇರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get groupAdmin_menuDismissAdmin => 'ಅಡ್ಮಿನ್ ಸ್ಥಾನದಿಂದ ತೆಗೆದುಹಾಕಿ';
+
+  @override
+  String get groupAdmin_menuMakeAdmin => 'ಗ್ರೂಪ್ ಅಡ್ಮಿನ್ ಮಾಡಿ';
+
+  @override
+  String get groupAdmin_noCandidates =>
+      'ಸೇರಿಸಲು ಯಾವುದೇ ಸಂಪರ್ಕ ಅಥವಾ ಗ್ರೂಪ್ ಸದಸ್ಯರು ಕಂಡುಬಂದಿಲ್ಲ';
+
+  @override
+  String get groupAdmin_noMatchingContacts =>
+      'ಹೊಂದುವ ಯಾವುದೇ ಸಂಪರ್ಕ ಕಂಡುಬಂದಿಲ್ಲ';
+
+  @override
+  String get groupAdmin_onlyAdminsCanSend =>
+      'ಅಡ್ಮಿನ್‌ಗಳು ಮಾತ್ರ ಸಂದೇಶ ಕಳುಹಿಸಬಹುದು';
+
+  @override
+  String get groupAdmin_onlyAdminsNowToast =>
+      'ಈಗ ಅಡ್ಮಿನ್‌ಗಳು ಮಾತ್ರ ಸಂದೇಶ ಕಳುಹಿಸಬಹುದು';
+
+  @override
+  String get groupAdmin_searchHint => 'ಹೆಸರು ಅಥವಾ ಫೋನ್ ಸಂಖ್ಯೆ ಹುಡುಕಿ...';
+
+  @override
+  String get groupAdmin_selectContactSubtitle =>
+      'ಗ್ರೂಪ್‌ಗೆ ಸೇರಿಸಲು ಸಂಪರ್ಕ ಆಯ್ಕೆಮಾಡಿ';
+
+  @override
+  String get groupAdmin_sendMessagesTitle => 'ಸಂದೇಶ ಕಳುಹಿಸಿ';
+
+  @override
+  String get groupAdmin_tagContactAndGroup => 'ಸಂಪರ್ಕ • ಗ್ರೂಪ್';
+
+  @override
+  String get groupAdmin_tagSavedContact => 'ಉಳಿಸಿದ ಸಂಪರ್ಕ';
+
+  @override
+  String get groupAdmin_tagYourGroups => 'ನಿಮ್ಮ ಗ್ರೂಪ್‌ಗಳು';
+
+  @override
+  String get groupAdmin_updateSettingFailed =>
+      'ಗ್ರೂಪ್ ಸೆಟ್ಟಿಂಗ್ ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ';
 
   @override
   String get groupDialog_audioCall => 'ಆಡಿಯೋ ಕರೆ';
@@ -3424,6 +3826,58 @@ class AppLocalizationsKn extends AppLocalizations {
   String get intro_walkieTitle => 'ವಾಕಿ-ಟಾಕಿ ವೈಶಿಷ್ಟ್ಯ';
 
   @override
+  String get legal_dpaSubtitle => 'ನಾವು ಗ್ರಾಹಕರ ಡೇಟಾವನ್ನು ಹೇಗೆ ಸಂಸ್ಕರಿಸುತ್ತೇವೆ';
+
+  @override
+  String get legal_dpaTitle => 'ಡೇಟಾ ಸಂಸ್ಕರಣಾ ಒಪ್ಪಂದ';
+
+  @override
+  String get legal_draftNotice => 'ಈ ದಾಖಲೆಗಳು ಕರಡುಗಳಾಗಿದ್ದು ಬದಲಾಗಬಹುದು.';
+
+  @override
+  String get legal_emptyDocument => 'ಈ ದಾಖಲೆ ಇನ್ನೂ ಲಭ್ಯವಿಲ್ಲ.';
+
+  @override
+  String get legal_enterpriseSubtitle => 'ವ್ಯಾಪಾರ ಗ್ರಾಹಕರಿಗಾಗಿ';
+
+  @override
+  String get legal_enterpriseTitle => 'ಎಂಟರ್‌ಪ್ರೈಸ್ ಸೇವಾ ಒಪ್ಪಂದ';
+
+  @override
+  String get legal_loadError => 'ಈ ದಾಖಲೆಯನ್ನು ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.';
+
+  @override
+  String get legal_menuSubtitle => 'ನೀತಿಗಳು ಮತ್ತು ಒಪ್ಪಂದಗಳು';
+
+  @override
+  String get legal_privacySubtitle =>
+      'ನಾವು ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಹೇಗೆ ಸಂಗ್ರಹಿಸುತ್ತೇವೆ ಮತ್ತು ಬಳಸುತ್ತೇವೆ';
+
+  @override
+  String get legal_privacyTitle => 'ಗೌಪ್ಯತಾ ನೀತಿ';
+
+  @override
+  String get legal_retentionSubtitle => 'ನಾವು ಡೇಟಾವನ್ನು ಎಷ್ಟು ಕಾಲ ಇಡುತ್ತೇವೆ';
+
+  @override
+  String get legal_retentionTitle => 'ಡೇಟಾ ಧಾರಣ ಮತ್ತು ಅಳಿಸುವಿಕೆ ನೀತಿ';
+
+  @override
+  String get legal_securitySubtitle => 'ನಾವು ಡೇಟಾವನ್ನು ಹೇಗೆ ರಕ್ಷಿಸುತ್ತೇವೆ';
+
+  @override
+  String get legal_securityTitle => 'ಡೇಟಾ ರಕ್ಷಣೆ ಮತ್ತು ಮಾಹಿತಿ ಭದ್ರತಾ ನೀತಿ';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker ಬಳಕೆಯ ನಿಯಮಗಳು';
+
+  @override
+  String get legal_termsTitle => 'ನಿಯಮಗಳು ಮತ್ತು ಷರತ್ತುಗಳು (EULA)';
+
+  @override
+  String get legal_title => 'ಕಾನೂನು';
+
+  @override
   String login_dataSecure(String percent) {
     return 'ನಿಮ್ಮ ಡೇಟಾ $percent ಸುರಕ್ಷಿತವಾಗಿದೆ';
   }
@@ -3481,58 +3935,6 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get menu_contactUsSubtitle => 'ನಮ್ಮ ಬಗ್ಗೆ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ';
-
-  @override
-  String get legal_title => 'ಕಾನೂನು';
-
-  @override
-  String get legal_menuSubtitle => 'ನೀತಿಗಳು ಮತ್ತು ಒಪ್ಪಂದಗಳು';
-
-  @override
-  String get legal_draftNotice => 'ಈ ದಾಖಲೆಗಳು ಕರಡುಗಳಾಗಿದ್ದು ಬದಲಾಗಬಹುದು.';
-
-  @override
-  String get legal_privacyTitle => 'ಗೌಪ್ಯತಾ ನೀತಿ';
-
-  @override
-  String get legal_privacySubtitle =>
-      'ನಾವು ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಹೇಗೆ ಸಂಗ್ರಹಿಸುತ್ತೇವೆ ಮತ್ತು ಬಳಸುತ್ತೇವೆ';
-
-  @override
-  String get legal_termsTitle => 'ನಿಯಮಗಳು ಮತ್ತು ಷರತ್ತುಗಳು (EULA)';
-
-  @override
-  String get legal_termsSubtitle => 'FG Tracker ಬಳಕೆಯ ನಿಯಮಗಳು';
-
-  @override
-  String get legal_enterpriseTitle => 'ಎಂಟರ್‌ಪ್ರೈಸ್ ಸೇವಾ ಒಪ್ಪಂದ';
-
-  @override
-  String get legal_enterpriseSubtitle => 'ವ್ಯಾಪಾರ ಗ್ರಾಹಕರಿಗಾಗಿ';
-
-  @override
-  String get legal_dpaTitle => 'ಡೇಟಾ ಸಂಸ್ಕರಣಾ ಒಪ್ಪಂದ';
-
-  @override
-  String get legal_dpaSubtitle => 'ನಾವು ಗ್ರಾಹಕರ ಡೇಟಾವನ್ನು ಹೇಗೆ ಸಂಸ್ಕರಿಸುತ್ತೇವೆ';
-
-  @override
-  String get legal_retentionTitle => 'ಡೇಟಾ ಧಾರಣ ಮತ್ತು ಅಳಿಸುವಿಕೆ ನೀತಿ';
-
-  @override
-  String get legal_retentionSubtitle => 'ನಾವು ಡೇಟಾವನ್ನು ಎಷ್ಟು ಕಾಲ ಇಡುತ್ತೇವೆ';
-
-  @override
-  String get legal_securityTitle => 'ಡೇಟಾ ರಕ್ಷಣೆ ಮತ್ತು ಮಾಹಿತಿ ಭದ್ರತಾ ನೀತಿ';
-
-  @override
-  String get legal_securitySubtitle => 'ನಾವು ಡೇಟಾವನ್ನು ಹೇಗೆ ರಕ್ಷಿಸುತ್ತೇವೆ';
-
-  @override
-  String get legal_emptyDocument => 'ಈ ದಾಖಲೆ ಇನ್ನೂ ಲಭ್ಯವಿಲ್ಲ.';
-
-  @override
-  String get legal_loadError => 'ಈ ದಾಖಲೆಯನ್ನು ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.';
 
   @override
   String get menu_editProfile => 'ಪ್ರೊಫೈಲ್ ಎಡಿಟ್ ಮಾಡಿ';

@@ -29,6 +29,20 @@
   "about_whyEasy": "Easy to use and lightweight app with privacy control.",
   "about_whyNoCalls": "No need to call or text—track live on the map.",
   "about_whyRealTime": "Real-time location sharing with all group members.",
+  "account_deleteConfirm": "Are you sure you want to permanently delete your account?",
+  "account_deleteDialogTitle": "Delete Account?",
+  "account_deleteFailed": "Failed to delete account. Please try again.",
+  "account_deleteForever": "Delete Forever",
+  "account_deleteSubtitle": "Permanently erase account & data",
+  "account_deleteTitle": "Delete Account",
+  "account_deleteWarning": "This action is immediate and cannot be undone. All your profile information, location history, group memberships, and active sessions will be permanently erased.",
+  "account_deletedToast": "Account deleted successfully",
+  "account_reasonLabel": "Reason for leaving:",
+  "account_reasonNoLongerNeed": "I no longer need this account",
+  "account_reasonNotifications": "Too many notifications",
+  "account_reasonOther": "Other reason",
+  "account_reasonPrivacy": "Privacy concerns",
+  "account_reasonSwitching": "Switching to another device",
   "appUpdate_checkError": "Error checking for update: {error}",
   "@appUpdate_checkError": {
     "placeholders": {
@@ -320,6 +334,19 @@
       }
     }
   },
+  "banner_choosePhoto": "Choose a photo",
+  "banner_customSubtitle": "Upload your own photo or company banner. Displays only on your phone!",
+  "banner_customTitle": "Custom Banner",
+  "banner_manageTitle": "Manage Custom Banner",
+  "banner_myBanner": "My Banner",
+  "banner_newBadge": "NEW",
+  "banner_removeSubtitle": "Go back to the default upload card",
+  "banner_removeTitle": "Remove Banner",
+  "banner_replaceSubtitle": "Pick a new photo from Gallery or Camera",
+  "banner_replaceTitle": "Replace Banner",
+  "banner_selectPhotoSubtitle": "Shown only on your phone",
+  "banner_selectPhotoTitle": "Select Banner Photo",
+  "banner_takePhoto": "Take a photo",
   "call_accept": "Accept",
   "@call_accept": {
     "description": "Button: accept an incoming call"
@@ -1333,6 +1360,323 @@
   "chatList_viewArchived": "View archived conversations",
   "chatList_whatsappOpenFailed": "WhatsApp could not be opened",
   "chatList_yourContacts": "Your contacts",
+  "chatSys_actorAdded": "{actor} added {target}",
+  "@chatSys_actorAdded": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorAddedTo": "{actor} added {target} to {group}",
+  "@chatSys_actorAddedTo": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorAddedYou": "{actor} added you",
+  "@chatSys_actorAddedYou": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorChangedDesc": "{actor} changed the group description",
+  "@chatSys_actorChangedDesc": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorChangedIcon": "{actor} changed this group's icon",
+  "@chatSys_actorChangedIcon": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorDismissedAdmin": "{actor} removed {target} as an admin",
+  "@chatSys_actorDismissedAdmin": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorDismissedAdminIn": "{actor} removed {target} as an admin in {group}",
+  "@chatSys_actorDismissedAdminIn": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorMadeAdmin": "{actor} added {target} as an admin",
+  "@chatSys_actorMadeAdmin": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorMadeAdminIn": "{actor} added {target} as an admin in {group}",
+  "@chatSys_actorMadeAdminIn": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorRemoved": "{actor} removed {target}",
+  "@chatSys_actorRemoved": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorRemovedFrom": "{actor} removed {target} from {group}",
+  "@chatSys_actorRemovedFrom": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorRenamed": "{actor} changed the group name",
+  "@chatSys_actorRenamed": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorRenamedTo": "{actor} changed the group name to \"{name}\"",
+  "@chatSys_actorRenamedTo": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorSetAdminsOnly": "{actor} changed this group's settings to allow only admins to send messages to this group",
+  "@chatSys_actorSetAdminsOnly": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_actorSetAllCanSend": "{actor} changed this group's settings to allow all participants to send messages to this group",
+  "@chatSys_actorSetAllCanSend": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_callBack": "Call back",
+  "chatSys_delivered": "Delivered",
+  "chatSys_joinedViaLink": "{target} joined using this group's invite link",
+  "@chatSys_joinedViaLink": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_left": "{target} left",
+  "@chatSys_left": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_notDeliveredYet": "Not delivered yet",
+  "chatSys_unreadDivider": "UNREAD MESSAGES",
+  "chatSys_unreadDividerCount": "{count, plural, =1{1 UNREAD MESSAGE} other{{count} UNREAD MESSAGES}}",
+  "@chatSys_unreadDividerCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatSys_youAdded": "You added {target}",
+  "@chatSys_youAdded": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youAddedMembers": "You added members",
+  "chatSys_youAddedTo": "You added {target} to {group}",
+  "@chatSys_youAddedTo": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youAreAdmin": "You are now an admin",
+  "chatSys_youAreAdminIn": "You are now an admin in {group}",
+  "@chatSys_youAreAdminIn": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youChangedDesc": "You changed the group description",
+  "chatSys_youChangedIcon": "You changed this group's icon",
+  "chatSys_youDismissedAdmin": "You removed {target} as an admin",
+  "@chatSys_youDismissedAdmin": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youDismissedAdminIn": "You removed {target} as an admin in {group}",
+  "@chatSys_youDismissedAdminIn": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youJoinedViaLink": "You joined using this group's invite link",
+  "chatSys_youLeft": "You left",
+  "chatSys_youMadeAdmin": "You added {target} as an admin",
+  "@chatSys_youMadeAdmin": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youMadeAdminIn": "You added {target} as an admin in {group}",
+  "@chatSys_youMadeAdminIn": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youNoLongerAdmin": "You are no longer an admin",
+  "chatSys_youNoLongerAdminIn": "You are no longer an admin in {group}",
+  "@chatSys_youNoLongerAdminIn": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youRemoved": "You removed {target}",
+  "@chatSys_youRemoved": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youRemovedFrom": "You removed {target} from {group}",
+  "@chatSys_youRemovedFrom": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youRenamed": "You changed the group name",
+  "chatSys_youRenamedTo": "You changed the group name to \"{name}\"",
+  "@chatSys_youRenamedTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youSetAdminsOnly": "You changed this group's settings to allow only admins to send messages to this group",
+  "chatSys_youSetAllCanSend": "You changed this group's settings to allow all participants to send messages to this group",
+  "chatSys_youWereAddedTo": "You were added to {group} by {actor}",
+  "@chatSys_youWereAddedTo": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSys_youWereRemoved": "You were removed",
+  "chatSys_youWereRemovedFrom": "You were removed from {group}",
+  "@chatSys_youWereRemovedFrom": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
   "chat_addCaptionHint": "Add a caption...",
   "chat_audioUnavailable": "This audio is no longer available",
   "chat_blockFailed": "Unable to block user",
@@ -1699,6 +2043,60 @@
       }
     }
   },
+  "groupAdmin_addMemberConfirm": "Add {name} to {group}?",
+  "@groupAdmin_addMemberConfirm": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupAdmin_addMembersSubtitle": "Add contacts to this group",
+  "groupAdmin_addMembersTitle": "Add Members",
+  "groupAdmin_allMembersCanSend": "All members can send messages",
+  "groupAdmin_allParticipantsNowToast": "All participants can send messages now",
+  "groupAdmin_candidatesHint": "Only saved contacts and members from your other groups can be added.",
+  "groupAdmin_contactsPermissionOff": "Contacts permission is off. Showing members from your groups only.",
+  "groupAdmin_dismissAction": "Dismiss",
+  "groupAdmin_dismissAdminConfirm": "Dismiss {name} as group admin?",
+  "@groupAdmin_dismissAdminConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupAdmin_dismissAdminTitle": "Dismiss as Admin",
+  "groupAdmin_enable": "Enable",
+  "groupAdmin_loadFailedBody": "Check your internet and try again.",
+  "groupAdmin_loadFailedTitle": "Couldn't load members",
+  "groupAdmin_makeAdminAction": "Make Admin",
+  "groupAdmin_makeAdminConfirm": "Make {name} a group admin?",
+  "@groupAdmin_makeAdminConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupAdmin_makeAdminTitle": "Make Group Admin",
+  "groupAdmin_memberAdded": "Member added successfully",
+  "groupAdmin_menuDismissAdmin": "Dismiss as admin",
+  "groupAdmin_menuMakeAdmin": "Make group admin",
+  "groupAdmin_noCandidates": "No contacts or group members found to add",
+  "groupAdmin_noMatchingContacts": "No matching contacts found",
+  "groupAdmin_onlyAdminsCanSend": "Only admins can send messages",
+  "groupAdmin_onlyAdminsNowToast": "Only admins can send messages now",
+  "groupAdmin_searchHint": "Search name or phone number...",
+  "groupAdmin_selectContactSubtitle": "Select a contact to add to group",
+  "groupAdmin_sendMessagesTitle": "Send Messages",
+  "groupAdmin_tagContactAndGroup": "Contact • Group",
+  "groupAdmin_tagSavedContact": "Saved contact",
+  "groupAdmin_tagYourGroups": "Your groups",
+  "groupAdmin_updateSettingFailed": "Failed to update group setting",
   "groupDialog_audioCall": "Audio Call",
   "groupDialog_audioCallSubtitle": "Start voice conversation",
   "groupDialog_call": "Call",
@@ -2131,6 +2529,23 @@
   "intro_skip": "Skip",
   "intro_walkieSubtitle": "No signal. No problem. Stay\nconnected anywhere.",
   "intro_walkieTitle": "Walkie-Talkie\nfeature",
+  "legal_dpaSubtitle": "How we process customer data",
+  "legal_dpaTitle": "Data Processing Agreement",
+  "legal_draftNotice": "These documents are drafts and may change.",
+  "legal_emptyDocument": "This document is not available yet.",
+  "legal_enterpriseSubtitle": "For business customers",
+  "legal_enterpriseTitle": "Enterprise Service Agreement",
+  "legal_loadError": "Couldn't open this document.",
+  "legal_menuSubtitle": "Policies and agreements",
+  "legal_privacySubtitle": "How we collect and use your data",
+  "legal_privacyTitle": "Privacy Policy",
+  "legal_retentionSubtitle": "How long we keep data",
+  "legal_retentionTitle": "Data Retention & Deletion Policy",
+  "legal_securitySubtitle": "How we protect data",
+  "legal_securityTitle": "Data Protection & Information Security Policy",
+  "legal_termsSubtitle": "Rules for using FG Tracker",
+  "legal_termsTitle": "Terms & Conditions (EULA)",
+  "legal_title": "Legal",
   "login_dataSecure": "Your data is {percent} secure",
   "@login_dataSecure": {
     "placeholders": {
@@ -2176,23 +2591,6 @@
   "media_title": "Media, links, and docs",
   "media_videoNotFound": "Video not found",
   "menu_contactUsSubtitle": "Know more about us",
-  "legal_title": "Legal",
-  "legal_menuSubtitle": "Policies and agreements",
-  "legal_draftNotice": "These documents are drafts and may change.",
-  "legal_privacyTitle": "Privacy Policy",
-  "legal_privacySubtitle": "How we collect and use your data",
-  "legal_termsTitle": "Terms & Conditions (EULA)",
-  "legal_termsSubtitle": "Rules for using FG Tracker",
-  "legal_enterpriseTitle": "Enterprise Service Agreement",
-  "legal_enterpriseSubtitle": "For business customers",
-  "legal_dpaTitle": "Data Processing Agreement",
-  "legal_dpaSubtitle": "How we process customer data",
-  "legal_retentionTitle": "Data Retention & Deletion Policy",
-  "legal_retentionSubtitle": "How long we keep data",
-  "legal_securityTitle": "Data Protection & Information Security Policy",
-  "legal_securitySubtitle": "How we protect data",
-  "legal_emptyDocument": "This document is not available yet.",
-  "legal_loadError": "Couldn't open this document.",
   "menu_editProfile": "Edit Profile",
   "menu_editProfileSubtitle": "Update your information",
   "menu_followUsOn": "Follow us on",

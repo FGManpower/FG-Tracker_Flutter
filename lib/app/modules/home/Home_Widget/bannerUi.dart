@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/local_banner_service.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -331,7 +332,7 @@ class _BannerSliderState extends State<BannerSlider> {
                 Icon(Icons.person_pin_rounded, color: Colors.white, size: 13.sp),
                 SizedBox(width: 4.w),
                 Text(
-                  "My Banner",
+                  context.l10n.banner_myBanner,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 10.sp,
@@ -419,7 +420,7 @@ class _BannerSliderState extends State<BannerSlider> {
                     Row(
                       children: [
                         Text(
-                          "Custom Banner",
+                          context.l10n.banner_customTitle,
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
@@ -435,7 +436,7 @@ class _BannerSliderState extends State<BannerSlider> {
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
-                            "NEW",
+                            context.l10n.banner_newBadge,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 8.sp,
@@ -447,7 +448,7 @@ class _BannerSliderState extends State<BannerSlider> {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      "Upload your own photo or company banner. Displays only on your phone!",
+                      context.l10n.banner_customSubtitle,
                       style: TextStyle(
                         fontSize: 10.5.sp,
                         color: Colors.grey.shade600,
@@ -502,7 +503,7 @@ class _BannerSliderState extends State<BannerSlider> {
                 ),
                 SizedBox(height: 16.h),
                 Text(
-                  "Manage Custom Banner",
+                  context.l10n.banner_manageTitle,
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
@@ -524,8 +525,8 @@ class _BannerSliderState extends State<BannerSlider> {
                   key: const ValueKey('banner_replace'),
                   icon: Icons.photo_library_rounded,
                   color: const Color(0xFF6B4DFF),
-                  title: "Replace Banner",
-                  subtitle: "Pick a new photo from Gallery or Camera",
+                  title: context.l10n.banner_replaceTitle,
+                  subtitle: context.l10n.banner_replaceSubtitle,
                   onTap: () {
                     Navigator.pop(ctx);
                     _showPickerSheet();
@@ -536,8 +537,8 @@ class _BannerSliderState extends State<BannerSlider> {
                   key: const ValueKey('banner_remove'),
                   icon: Icons.delete_outline_rounded,
                   color: Colors.redAccent,
-                  title: "Remove Banner",
-                  subtitle: "Go back to the default upload card",
+                  title: context.l10n.banner_removeTitle,
+                  subtitle: context.l10n.banner_removeSubtitle,
                   onTap: () async {
                     Navigator.pop(ctx);
                     await LocalBannerService.deleteLocalBanner();
@@ -681,7 +682,7 @@ class _BannerSliderState extends State<BannerSlider> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Select Banner Photo",
+                            context.l10n.banner_selectPhotoTitle,
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.bold,
@@ -690,7 +691,7 @@ class _BannerSliderState extends State<BannerSlider> {
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            "Shown only on your phone",
+                            context.l10n.banner_selectPhotoSubtitle,
                             style: TextStyle(
                               fontSize: 11.5.sp,
                               color: Colors.grey.shade600,
@@ -722,8 +723,8 @@ class _BannerSliderState extends State<BannerSlider> {
                       child: _sourceOption(
                         key: const ValueKey('banner_pick_gallery'),
                         icon: Icons.photo_library_rounded,
-                        title: "Gallery",
-                        subtitle: "Choose a photo",
+                        title: context.l10n.imagePicker_gallery,
+                        subtitle: context.l10n.banner_choosePhoto,
                         onTap: () {
                           Navigator.pop(ctx);
                           _pickBanner(ImageSource.gallery);
@@ -735,8 +736,8 @@ class _BannerSliderState extends State<BannerSlider> {
                       child: _sourceOption(
                         key: const ValueKey('banner_pick_camera'),
                         icon: Icons.camera_alt_rounded,
-                        title: "Camera",
-                        subtitle: "Take a photo",
+                        title: context.l10n.imagePicker_camera,
+                        subtitle: context.l10n.banner_takePhoto,
                         onTap: () {
                           Navigator.pop(ctx);
                           _pickBanner(ImageSource.camera);

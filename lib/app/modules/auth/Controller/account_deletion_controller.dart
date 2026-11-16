@@ -1,4 +1,5 @@
 ﻿import 'dart:developer';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:get/get.dart';
 import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../Core/values/Utils.dart';
@@ -24,11 +25,11 @@ class AccountDeletionController extends GetxController {
           Utils().fluttertoast(
             result.message != null && result.message!.toString().trim().isNotEmpty
                 ? result.message.toString()
-                : 'Account deleted successfully',
+                : appL10n.account_deletedToast,
           );
           await LogoutUser().logout();
         } else {
-          CommonDialog.errorMessage(result.message ?? 'Failed to delete account. Please try again.');
+          CommonDialog.errorMessage(result.message ?? appL10n.account_deleteFailed);
         }
       } catch (e) {
         log('deleteUserAccount API error: ');
@@ -38,7 +39,7 @@ class AccountDeletionController extends GetxController {
             errMsg.toLowerCase().contains('already deleted')) {
           await LogoutUser().logout();
         } else {
-          CommonDialog.errorMessage('Failed to delete account: ');
+          CommonDialog.errorMessage(appL10n.account_deleteFailed);
         }
       }
     } finally {
