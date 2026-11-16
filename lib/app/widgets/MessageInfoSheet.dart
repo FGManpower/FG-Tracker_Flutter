@@ -563,7 +563,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
                       icon: Icons.done_all,
                       iconColor: Colors.grey.shade600,
                       title: appL10n.chatSys_delivered,
-                      count: _deliveredToList.length,
+                      count: _isGroup ? _deliveredToList.length : privateDeliveredCount,
                       total: _isGroup ? totalRecipients : null,
                     ),
 
