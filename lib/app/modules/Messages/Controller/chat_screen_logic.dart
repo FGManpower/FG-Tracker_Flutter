@@ -91,7 +91,9 @@ class ChatScreenRules {
             }
           }
         }
-        if (m.isDeletedForEveryone == true && existingMsg.isDeletedForEveryone != true) {
+        final isIncomingDeleted =
+            m.isDeleted == true || m.content?.toString() == 'This message was deleted';
+        if (isIncomingDeleted && existingMsg.isDeleted != true) {
           markDeletedForEveryone(existingMsg);
           statusUpdated = true;
         }

@@ -298,6 +298,8 @@ class MessageData {
       messageType?.toString().toLowerCase().trim() == 'system';
   bool get isCallLogMessage =>
       messageType?.toString().toLowerCase().trim() == 'call_log';
+  bool get isDeletedForEveryone =>
+      isDeleted || content?.toString() == 'This message was deleted';
 
   MessageData({
     this.id,
