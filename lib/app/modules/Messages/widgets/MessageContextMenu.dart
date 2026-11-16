@@ -47,6 +47,8 @@ class MessageContextMenu {
     const double menuWidth = 224.0;
     const double margin = 12.0;
 
+    bool isActionExecuting = false;
+
     await showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -150,6 +152,8 @@ class MessageContextMenu {
                                 final isSelected = currentReaction == emoji;
                                 return GestureDetector(
                                   onTap: () {
+                                    if (isActionExecuting) return;
+                                    isActionExecuting = true;
                                     HapticFeedback.mediumImpact();
                                     Navigator.of(dialogContext).pop();
                                     onReactionSelected(emoji);
@@ -199,6 +203,13 @@ class MessageContextMenu {
                                     dialogContext: dialogContext,
                                     action: actions[i],
                                     isLast: i == actions.length - 1,
+                                    onTrigger: () {
+                                      if (isActionExecuting) return;
+                                      isActionExecuting = true;
+                                      HapticFeedback.lightImpact();
+                                      Navigator.of(dialogContext).pop();
+                                      action.onTap();
+                                    },
                                   ),
                                 ],
                               ],
@@ -221,17 +232,14 @@ class MessageContextMenu {
     required BuildContext dialogContext,
     required MessageContextMenuAction action,
     required bool isLast,
+    required VoidCallback onTrigger,
   }) {
     final Color itemColor = action.isDestructive
         ? const Color(0xFFE53935)
         : (action.iconColor ?? _purple);
 
     return InkWell(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        Navigator.of(dialogContext).pop();
-        action.onTap();
-      },
+      onTap: onTrigger,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 11.h),
         decoration: BoxDecoration(

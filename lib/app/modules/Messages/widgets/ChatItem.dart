@@ -1734,14 +1734,10 @@ class ChatBubble extends StatelessWidget {
           iconColor: _purple,
           onTap: () {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              showModalBottomSheet(
+              MessageInfoSheet.show(
                 context: context,
-                backgroundColor: Colors.transparent,
-                isScrollControlled: true,
-                builder: (_) => MessageInfoSheet(
-                  message: message,
-                  memberData: controller.memberData,
-                ),
+                message: message,
+                memberData: controller.memberData,
               );
             });
           },
@@ -3340,14 +3336,10 @@ class GroupChatBubble extends StatelessWidget {
           iconColor: _purple,
           onTap: () {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              showModalBottomSheet(
+              MessageInfoSheet.show(
                 context: context,
-                backgroundColor: Colors.transparent,
-                isScrollControlled: true,
-                builder: (_) => MessageInfoSheet(
-                  message: message,
-                  groupController: controller,
-                ),
+                message: message,
+                groupController: controller,
               );
             });
           },

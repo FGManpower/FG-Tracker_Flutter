@@ -2,11 +2,13 @@ import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 import '../Core/constant/const_res.dart';
 import '../Core/util/DateTime_Format.dart';
 import '../Core/util/profile_navigation.dart';
 import '../Data/Repositories/GetMessageRepo.dart';
+import '../Data/Services/Socket/Socket_Message_Services.dart';
 import '../Model/GetMessage.dart';
 import '../Model/MemberDataRes.dart';
 import '../modules/Messages/Controller/GroupChatController.dart';
@@ -26,6 +28,35 @@ class MessageInfoSheet extends StatefulWidget {
     this.memberData,
   });
 
+  /// Single entrypoint that guarantees only 1 Message Info dialog / sheet
+  /// is ever open at a time (preventing overlapping dialogs).
+  static bool _isOpen = false;
+
+  static Future<void> show({
+    required BuildContext context,
+    required MessageData message,
+    GroupMessageController? groupController,
+    MemberData? memberData,
+  }) async {
+    if (_isOpen) return;
+    _isOpen = true;
+    try {
+      await showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        useRootNavigator: true,
+        builder: (_) => MessageInfoSheet(
+          message: message,
+          groupController: groupController,
+          memberData: memberData,
+        ),
+      );
+    } finally {
+      _isOpen = false;
+    }
+  }
+
   @override
   State<MessageInfoSheet> createState() => _MessageInfoSheetState();
 }
@@ -44,7 +75,14 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
   void initState() {
     super.initState();
     _initLocalData();
+    _setupRealtimeListeners();
     _fetchLiveInfo();
+  }
+
+  @override
+  void dispose() {
+    _removeRealtimeListeners();
+    super.dispose();
   }
 
   void _initLocalData() {
@@ -67,11 +105,11 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
                 'profileImage': m.profileImage,
                 'mobileNo': m.mobileNo,
                 'chatId': m.chatId,
-                'readAt': widget.message.timestamp,
+                'readAt': null, // Populated by server live fetch or real-time event
               })
           .toList();
 
-      // In WhatsApp, Delivered section only contains members who have NOT yet seen the message
+      // In WhatsApp parity, Delivered section only contains members who have NOT yet seen the message
       _deliveredToList = activeOthers
           .where((m) =>
               !seenIds.contains(m.userId?.toString()) &&
@@ -82,16 +120,263 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
                 'profileImage': m.profileImage,
                 'mobileNo': m.mobileNo,
                 'chatId': m.chatId,
-                'deliveredAt': widget.message.timestamp,
+                'deliveredAt': null, // Populated by server live fetch or real-time event
               })
           .toList();
+    } else {
+      // 1-to-1 Private Chat Local Initialization
+      final isSeenLocally = ChatScreenRules.seenCount(
+            widget.message,
+            currentUserId: _currentUserId,
+            isGroup: false,
+          ) >
+          0;
+      final isDeliveredLocally = widget.message.isDelivered || isSeenLocally;
+
+      if (widget.memberData != null) {
+        final m = widget.memberData!;
+        final userDetail = {
+          'userId': m.userId,
+          'name': m.name,
+          'profileImage': m.profileImage,
+          'mobileNo': m.mobileNo,
+          'chatId': m.chatId,
+        };
+
+        if (isSeenLocally) {
+          _readByList = [
+            {...userDetail, 'readAt': null}
+          ];
+        }
+        if (isDeliveredLocally) {
+          _deliveredToList = [
+            {...userDetail, 'deliveredAt': null}
+          ];
+        }
+      }
     }
+  }
+
+  void _setupRealtimeListeners() {
+    try {
+      final sm = SocketMessageService.instance;
+      if (_isGroup) {
+        sm.socket.on("messages_seen_update", _handleGroupSeenUpdate);
+        sm.socket.on("group_message_seen", _handleGroupSeenUpdate);
+        sm.socket.on("group_messages_delivered", _handleGroupDeliveredUpdate);
+        sm.socket.on("messages_delivered", _handleGroupDeliveredUpdate);
+      } else {
+        sm.privateChatSocket.on("messages_seen_update", _handlePrivateSeenUpdate);
+        sm.privateChatSocket.on("messages_delivered", _handlePrivateDeliveredUpdate);
+      }
+    } catch (_) {}
+  }
+
+  void _removeRealtimeListeners() {
+    try {
+      final sm = SocketMessageService.instance;
+      if (_isGroup) {
+        sm.socket.off("messages_seen_update", _handleGroupSeenUpdate);
+        sm.socket.off("group_message_seen", _handleGroupSeenUpdate);
+        sm.socket.off("group_messages_delivered", _handleGroupDeliveredUpdate);
+        sm.socket.off("messages_delivered", _handleGroupDeliveredUpdate);
+      } else {
+        sm.privateChatSocket.off("messages_seen_update", _handlePrivateSeenUpdate);
+        sm.privateChatSocket.off("messages_delivered", _handlePrivateDeliveredUpdate);
+      }
+    } catch (_) {}
+  }
+
+  void _handlePrivateSeenUpdate(dynamic data) {
+    if (!mounted || data == null) return;
+    try {
+      final map = data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{};
+      final ids = (map['messageIds'] is List
+              ? (map['messageIds'] as List)
+              : [map['messageId'], map['id']])
+          .whereType<dynamic>()
+          .map((e) => e.toString())
+          .toSet();
+
+      final currentMsgId = widget.message.id?.toString();
+      if (currentMsgId != null && ids.contains(currentMsgId)) {
+        final seenAt = map['seenAt']?.toString() ?? DateTime.now().toIso8601String();
+        setState(() {
+          _infoData ??= {};
+          _infoData!['isSeen'] = true;
+          _infoData!['seenAt'] = seenAt;
+          widget.message.seenCount = 1;
+          if (_readByList.isEmpty && widget.memberData != null) {
+            _readByList = [
+              {
+                'userId': widget.memberData!.userId,
+                'name': widget.memberData!.name,
+                'profileImage': widget.memberData!.profileImage,
+                'mobileNo': widget.memberData!.mobileNo,
+                'chatId': widget.memberData!.chatId,
+                'readAt': seenAt,
+              }
+            ];
+          } else if (_readByList.isNotEmpty && _readByList.first is Map) {
+            (_readByList.first as Map)['readAt'] = seenAt;
+          }
+        });
+      }
+    } catch (_) {}
+  }
+
+  void _handlePrivateDeliveredUpdate(dynamic data) {
+    if (!mounted || data == null) return;
+    try {
+      final map = data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{};
+      final ids = (map['messageIds'] is List
+              ? (map['messageIds'] as List)
+              : [map['messageId'], map['id']])
+          .whereType<dynamic>()
+          .map((e) => e.toString())
+          .toSet();
+
+      final currentMsgId = widget.message.id?.toString();
+      if (currentMsgId != null && ids.contains(currentMsgId)) {
+        final delAt = map['deliveredAt']?.toString() ?? DateTime.now().toIso8601String();
+        setState(() {
+          _infoData ??= {};
+          _infoData!['isDelivered'] = true;
+          _infoData!['deliveredAt'] = delAt;
+          widget.message.isDelivered = true;
+          if (_deliveredToList.isEmpty && widget.memberData != null) {
+            _deliveredToList = [
+              {
+                'userId': widget.memberData!.userId,
+                'name': widget.memberData!.name,
+                'profileImage': widget.memberData!.profileImage,
+                'mobileNo': widget.memberData!.mobileNo,
+                'chatId': widget.memberData!.chatId,
+                'deliveredAt': delAt,
+              }
+            ];
+          } else if (_deliveredToList.isNotEmpty && _deliveredToList.first is Map) {
+            (_deliveredToList.first as Map)['deliveredAt'] = delAt;
+          }
+        });
+      }
+    } catch (_) {}
+  }
+
+  void _handleGroupSeenUpdate(dynamic data) {
+    if (!mounted || data == null) return;
+    try {
+      final map = data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{};
+      final ids = (map['messageIds'] is List
+              ? (map['messageIds'] as List)
+              : [map['messageId'], map['id']])
+          .whereType<dynamic>()
+          .map((e) => e.toString())
+          .toSet();
+
+      final currentMsgId = widget.message.id?.toString();
+      if (currentMsgId == null || !ids.contains(currentMsgId)) return;
+
+      final readerId = (map['userId'] ?? map['readerId'] ?? map['reader_id'])?.toString();
+      if (readerId == null || readerId == _currentUserId) return;
+
+      final seenAt = map['seenAt']?.toString() ?? DateTime.now().toIso8601String();
+      final members = widget.groupController?.groupMembers ?? [];
+      final member = members.firstWhereOrNull((m) => m.userId?.toString() == readerId);
+
+      final displayName = map['readerName'] ?? member?.name ?? "Member";
+      final displayImage = map['readerImage'] ?? member?.profileImage ?? "";
+      final phone = member?.mobileNo ?? "";
+      final cId = member?.chatId;
+
+      setState(() {
+        // WhatsApp Mutual Exclusivity: Remove from deliveredTo when seen
+        _deliveredToList.removeWhere(
+            (m) => (m is Map ? m['userId'] : m?.userId)?.toString() == readerId);
+
+        // Add or update in readBy
+        final existingIdx = _readByList.indexWhere(
+            (m) => (m is Map ? m['userId'] : m?.userId)?.toString() == readerId);
+        final entry = {
+          'userId': readerId,
+          'name': displayName,
+          'profileImage': displayImage,
+          'mobileNo': phone,
+          'chatId': cId,
+          'readAt': seenAt,
+        };
+        if (existingIdx >= 0) {
+          _readByList[existingIdx] = entry;
+        } else {
+          _readByList.insert(0, entry);
+        }
+
+        _infoData ??= {};
+        _infoData!['readCount'] = _readByList.length;
+        _infoData!['deliveredCount'] = _deliveredToList.length;
+      });
+    } catch (_) {}
+  }
+
+  void _handleGroupDeliveredUpdate(dynamic data) {
+    if (!mounted || data == null) return;
+    try {
+      final map = data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{};
+      final ids = (map['messageIds'] is List
+              ? (map['messageIds'] as List)
+              : [map['messageId'], map['id']])
+          .whereType<dynamic>()
+          .map((e) => e.toString())
+          .toSet();
+
+      final currentMsgId = widget.message.id?.toString();
+      if (currentMsgId == null || !ids.contains(currentMsgId)) return;
+
+      final recipientId =
+          (map['userId'] ?? map['recipientId'] ?? map['recipient_id'])?.toString();
+      if (recipientId == null || recipientId == _currentUserId) return;
+
+      // If already in readBy, WhatsApp mutual exclusivity: do not add to delivered
+      final isAlreadyRead = _readByList.any(
+          (m) => (m is Map ? m['userId'] : m?.userId)?.toString() == recipientId);
+      if (isAlreadyRead) return;
+
+      final delAt = map['deliveredAt']?.toString() ?? DateTime.now().toIso8601String();
+      final members = widget.groupController?.groupMembers ?? [];
+      final member = members.firstWhereOrNull((m) => m.userId?.toString() == recipientId);
+
+      final displayName = map['name'] ?? member?.name ?? "Member";
+      final displayImage = map['profileImage'] ?? member?.profileImage ?? "";
+      final phone = member?.mobileNo ?? "";
+      final cId = member?.chatId;
+
+      setState(() {
+        final existingIdx = _deliveredToList.indexWhere(
+            (m) => (m is Map ? m['userId'] : m?.userId)?.toString() == recipientId);
+        final entry = {
+          'userId': recipientId,
+          'name': displayName,
+          'profileImage': displayImage,
+          'mobileNo': phone,
+          'chatId': cId,
+          'deliveredAt': delAt,
+        };
+        if (existingIdx >= 0) {
+          _deliveredToList[existingIdx] = entry;
+        } else {
+          _deliveredToList.insert(0, entry);
+        }
+
+        _infoData ??= {};
+        _infoData!['deliveredCount'] = _deliveredToList.length;
+      });
+    } catch (_) {}
   }
 
   Future<void> _fetchLiveInfo() async {
     final msgId = widget.message.id;
     if (msgId == null) {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
       return;
     }
 
@@ -109,14 +394,20 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
             _readByList = List<dynamic>.from(data['readBy']);
           }
           if (data['deliveredTo'] is List) {
-            final readIds = _readByList
-                .map((m) => (m is Map ? m['userId'] : m?.userId)?.toString())
-                .whereType<String>()
-                .toSet();
-            // WhatsApp Parity: Exclude anyone who already read the message from deliveredTo
-            _deliveredToList = List<dynamic>.from(data['deliveredTo'])
-                .where((m) => !readIds.contains((m is Map ? m['userId'] : m?.userId)?.toString()))
-                .toList();
+            if (_isGroup) {
+              final readIds = _readByList
+                  .map((m) => (m is Map ? m['userId'] : m?.userId)?.toString())
+                  .whereType<String>()
+                  .toSet();
+              // WhatsApp Parity: Exclude anyone who already read the message from deliveredTo in group
+              _deliveredToList = List<dynamic>.from(data['deliveredTo'])
+                  .where((m) =>
+                      !readIds.contains((m is Map ? m['userId'] : m?.userId)?.toString()))
+                  .toList();
+            } else {
+              // 1-to-1 Private Chat Parity: Keep delivery time even when read
+              _deliveredToList = List<dynamic>.from(data['deliveredTo']);
+            }
           }
           _isLoading = false;
         });
@@ -160,6 +451,21 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
                     m.userId?.toString() != widget.message.senderId?.toString())
                 .length)
         : 1;
+
+    final privateReadCount = (_infoData?['isSeen'] == true ||
+            (_infoData?['readBy'] is List && (_infoData!['readBy'] as List).isNotEmpty) ||
+            _readByList.isNotEmpty ||
+            ChatScreenRules.seenCount(widget.message, currentUserId: _currentUserId, isGroup: false) > 0)
+        ? 1
+        : 0;
+
+    final privateDeliveredCount = (_infoData?['isDelivered'] == true ||
+            (_infoData?['deliveredTo'] is List && (_infoData!['deliveredTo'] as List).isNotEmpty) ||
+            _deliveredToList.isNotEmpty ||
+            widget.message.isDelivered == true ||
+            privateReadCount > 0)
+        ? 1
+        : 0;
 
     return SafeArea(
       child: Container(
@@ -238,7 +544,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
                       icon: Icons.done_all,
                       iconColor: Colors.blue,
                       title: appL10n.widget_seen,
-                      count: _readByList.length,
+                      count: _isGroup ? _readByList.length : privateReadCount,
                       total: _isGroup ? totalRecipients : null,
                     ),
 
@@ -257,7 +563,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
                       icon: Icons.done_all,
                       iconColor: Colors.grey.shade600,
                       title: "Delivered",
-                      count: _deliveredToList.length,
+                      count: _isGroup ? _deliveredToList.length : privateDeliveredCount,
                       total: _isGroup ? totalRecipients : null,
                     ),
 
@@ -447,10 +753,10 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
     final displayName = (name != null && name.isNotEmpty) ? name : appL10n.chat_unknown;
     final image = (member is Map ? member['profileImage'] : member.profileImage)?.toString() ?? "";
     final timestamp = member is Map
-        ? (isSeen ? member['readAt'] ?? member['seenAt'] : member['deliveredAt'])
-        : widget.message.timestamp;
+        ? (isSeen ? (member['readAt'] ?? member['seenAt']) : member['deliveredAt'])
+        : null;
 
-    final formattedTime = _formatTimestamp(timestamp);
+    final formattedTime = timestamp != null ? _formatTimestamp(timestamp) : (isSeen ? "Seen" : "Delivered");
 
     return ListTile(
       onTap: () {
@@ -499,19 +805,25 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
 
   Widget _buildPrivateReadTile() {
     final isSeen = _infoData?['isSeen'] == true ||
+        _readByList.isNotEmpty ||
         ChatScreenRules.seenCount(
           widget.message,
           currentUserId: _currentUserId,
           isGroup: false,
-        ) > 0;
-
-    final seenTime = _formatTimestamp(
-      _infoData?['seenAt'] ?? widget.message.timestamp,
-    );
+        ) >
+        0;
 
     if (!isSeen) {
       return _buildEmptyTile(appL10n.widget_notSeenYet);
     }
+
+    final rawSeenAt = _infoData?['seenAt'] ??
+        (_readByList.isNotEmpty && _readByList.first is Map
+            ? (_readByList.first['readAt'] ?? _readByList.first['seenAt'])
+            : null);
+    final seenTime = rawSeenAt != null
+        ? _formatTimestamp(rawSeenAt)
+        : (_isLoading ? "Loading..." : "Seen");
 
     final name = widget.memberData?.name?.toString().trim().isNotEmpty == true
         ? widget.memberData!.name.toString()
@@ -542,25 +854,32 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
         seenTime,
         style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
       ),
-      trailing: Icon(
+      trailing: const Icon(
         Icons.done_all,
         color: Colors.blue,
-        size: 18.sp,
+        size: 18,
       ),
     );
   }
 
   Widget _buildPrivateDeliveredTile() {
     final isDelivered = _infoData?['isDelivered'] == true ||
-        widget.message.isDelivered == true;
-
-    final deliveredTime = _formatTimestamp(
-      _infoData?['deliveredAt'] ?? widget.message.timestamp,
-    );
+        _deliveredToList.isNotEmpty ||
+        widget.message.isDelivered == true ||
+        _infoData?['isSeen'] == true ||
+        _readByList.isNotEmpty;
 
     if (!isDelivered) {
       return _buildEmptyTile("Not delivered yet");
     }
+
+    final rawDeliveredAt = _infoData?['deliveredAt'] ??
+        (_deliveredToList.isNotEmpty && _deliveredToList.first is Map
+            ? _deliveredToList.first['deliveredAt']
+            : null);
+    final deliveredTime = rawDeliveredAt != null
+        ? _formatTimestamp(rawDeliveredAt)
+        : (_isLoading ? "Loading..." : "Delivered");
 
     final name = widget.memberData?.name?.toString().trim().isNotEmpty == true
         ? widget.memberData!.name.toString()
@@ -594,7 +913,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
       trailing: Icon(
         Icons.done_all,
         color: Colors.grey.shade600,
-        size: 18.sp,
+        size: 18,
       ),
     );
   }
