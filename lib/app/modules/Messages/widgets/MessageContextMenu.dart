@@ -203,12 +203,10 @@ class MessageContextMenu {
                                     dialogContext: dialogContext,
                                     action: actions[i],
                                     isLast: i == actions.length - 1,
-                                    onTrigger: () {
-                                      if (isActionExecuting) return;
+                                    canExecute: () {
+                                      if (isActionExecuting) return false;
                                       isActionExecuting = true;
-                                      HapticFeedback.lightImpact();
-                                      Navigator.of(dialogContext).pop();
-                                      action.onTap();
+                                      return true;
                                     },
                                   ),
                                 ],
@@ -232,14 +230,19 @@ class MessageContextMenu {
     required BuildContext dialogContext,
     required MessageContextMenuAction action,
     required bool isLast,
-    required VoidCallback onTrigger,
+    required bool Function() canExecute,
   }) {
     final Color itemColor = action.isDestructive
         ? const Color(0xFFE53935)
         : (action.iconColor ?? _purple);
 
     return InkWell(
-      onTap: onTrigger,
+      onTap: () {
+        if (!canExecute()) return;
+        HapticFeedback.lightImpact();
+        Navigator.of(dialogContext).pop();
+        action.onTap();
+      },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 11.h),
         decoration: BoxDecoration(
