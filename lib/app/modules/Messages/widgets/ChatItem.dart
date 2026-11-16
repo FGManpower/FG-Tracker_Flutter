@@ -176,8 +176,14 @@ String formatSystemMessageText(MessageData message, String currentUserId) {
           meta['demotedUserId'] ??
           meta['removedUserId'])
       ?.toString();
-  final actorName = meta['actorName']?.toString() ?? 'Admin';
-  final targetName = meta['targetName']?.toString() ?? 'Member';
+  final l = appL10n;
+  // 'Admin' / 'Member' are the old English fallbacks (logic ids); only the
+  // displayed text is translated. Names from the server are shown as sent.
+  final rawTarget = meta['targetName']?.toString();
+  final hasTargetName =
+      rawTarget != null && rawTarget.isNotEmpty && rawTarget != 'Member';
+  final actorName = meta['actorName']?.toString() ?? l.groupInfo_admin;
+  final targetName = hasTargetName ? rawTarget : l.groupInfo_member;
   final groupName = meta['groupName']?.toString();
   final newName = meta['newName']?.toString();
 
@@ -192,99 +198,103 @@ String formatSystemMessageText(MessageData message, String currentUserId) {
     case 'member_added':
       if (isMeTarget && !isMeActor) {
         return groupName != null
-            ? 'You were added to $groupName by $actorName'
-            : '$actorName added you';
+            ? l.chatSys_youWereAddedTo(actorName, groupName)
+            : l.chatSys_actorAddedYou(actorName);
       }
       if (isMeActor) {
-        if (targetName != 'Member' && targetName.isNotEmpty) {
+        if (hasTargetName) {
           return groupName != null
-              ? 'You added $targetName to $groupName'
-              : 'You added $targetName';
+              ? l.chatSys_youAddedTo(groupName, targetName)
+              : l.chatSys_youAdded(targetName);
         }
-        return defaultContent.isNotEmpty
-            ? defaultContent.replaceFirst(RegExp('^' + RegExp.escape(actorName) + '\\s+'), 'You ')
-            : 'You added members';
+        // The server text ("<actor> added A, B") can only be rewritten to
+        // "You added A, B" in English; other languages use the short form.
+        if (defaultContent.isNotEmpty && l.localeName.startsWith('en')) {
+          return defaultContent.replaceFirst(
+              RegExp('^' + RegExp.escape(actorName) + '\s+'), 'You ');
+        }
+        return l.chatSys_youAddedMembers;
       }
       return defaultContent.isNotEmpty
           ? defaultContent
           : (groupName != null
-              ? '$actorName added $targetName to $groupName'
-              : '$actorName added $targetName');
+              ? l.chatSys_actorAddedTo(actorName, groupName, targetName)
+              : l.chatSys_actorAdded(actorName, targetName));
 
     case 'member_joined':
       if (isMeActor || isMeTarget) {
-        return "You joined using this group's invite link";
+        return l.chatSys_youJoinedViaLink;
       }
       return defaultContent.isNotEmpty
           ? defaultContent
-          : "$targetName joined using this group's invite link";
+          : l.chatSys_joinedViaLink(targetName);
 
     case 'member_left':
-      if (isMeTarget || isMeActor) return 'You left';
-      return '$targetName left';
+      if (isMeTarget || isMeActor) return l.chatSys_youLeft;
+      return l.chatSys_left(targetName);
 
     case 'member_removed':
       if (isMeTarget) {
         return groupName != null
-            ? 'You were removed from $groupName'
-            : 'You were removed';
+            ? l.chatSys_youWereRemovedFrom(groupName)
+            : l.chatSys_youWereRemoved;
       }
       if (isMeActor) {
         return groupName != null
-            ? 'You removed $targetName from $groupName'
-            : 'You removed $targetName';
+            ? l.chatSys_youRemovedFrom(groupName, targetName)
+            : l.chatSys_youRemoved(targetName);
       }
       return groupName != null
-          ? '$actorName removed $targetName from $groupName'
-          : '$actorName removed $targetName';
+          ? l.chatSys_actorRemovedFrom(actorName, groupName, targetName)
+          : l.chatSys_actorRemoved(actorName, targetName);
 
     case 'admin_promoted':
       if (isMeTarget) {
         return groupName != null
-            ? 'You are now an admin in $groupName'
-            : 'You are now an admin';
+            ? l.chatSys_youAreAdminIn(groupName)
+            : l.chatSys_youAreAdmin;
       }
       if (isMeActor) {
         return groupName != null
-            ? 'You added $targetName as an admin in $groupName'
-            : 'You added $targetName as an admin';
+            ? l.chatSys_youMadeAdminIn(groupName, targetName)
+            : l.chatSys_youMadeAdmin(targetName);
       }
       return groupName != null
-          ? '$actorName added $targetName as an admin in $groupName'
-          : '$actorName added $targetName as an admin';
+          ? l.chatSys_actorMadeAdminIn(actorName, groupName, targetName)
+          : l.chatSys_actorMadeAdmin(actorName, targetName);
 
     case 'admin_demoted':
       if (isMeTarget) {
         return groupName != null
-            ? 'You are no longer an admin in $groupName'
-            : 'You are no longer an admin';
+            ? l.chatSys_youNoLongerAdminIn(groupName)
+            : l.chatSys_youNoLongerAdmin;
       }
       if (isMeActor) {
         return groupName != null
-            ? 'You removed $targetName as an admin in $groupName'
-            : 'You removed $targetName as an admin';
+            ? l.chatSys_youDismissedAdminIn(groupName, targetName)
+            : l.chatSys_youDismissedAdmin(targetName);
       }
       return groupName != null
-          ? '$actorName removed $targetName as an admin in $groupName'
-          : '$actorName removed $targetName as an admin';
+          ? l.chatSys_actorDismissedAdminIn(actorName, groupName, targetName)
+          : l.chatSys_actorDismissedAdmin(actorName, targetName);
 
     case 'group_name_changed':
       if (isMeActor) {
         return newName != null && newName.isNotEmpty
-            ? 'You changed the group name to "$newName"'
-            : 'You changed the group name';
+            ? l.chatSys_youRenamedTo(newName)
+            : l.chatSys_youRenamed;
       }
       return newName != null && newName.isNotEmpty
-          ? '$actorName changed the group name to "$newName"'
-          : '$actorName changed the group name';
+          ? l.chatSys_actorRenamedTo(actorName, newName)
+          : l.chatSys_actorRenamed(actorName);
 
     case 'group_icon_changed':
-      if (isMeActor) return "You changed this group's icon";
-      return "$actorName changed this group's icon";
+      if (isMeActor) return l.chatSys_youChangedIcon;
+      return l.chatSys_actorChangedIcon(actorName);
 
     case 'group_description_changed':
-      if (isMeActor) return 'You changed the group description';
-      return '$actorName changed the group description';
+      if (isMeActor) return l.chatSys_youChangedDesc;
+      return l.chatSys_actorChangedDesc(actorName);
 
     case 'group_settings_changed':
       final onlyAdmins = meta['onlyAdminsCanSend'] == true ||
@@ -292,14 +302,14 @@ String formatSystemMessageText(MessageData message, String currentUserId) {
           meta['onlyAdminsCanSend'] == 'true';
       if (isMeActor) {
         return onlyAdmins
-            ? "You changed this group's settings to allow only admins to send messages to this group"
-            : "You changed this group's settings to allow all participants to send messages to this group";
+            ? l.chatSys_youSetAdminsOnly
+            : l.chatSys_youSetAllCanSend;
       }
       return defaultContent.isNotEmpty
           ? defaultContent
           : (onlyAdmins
-              ? "$actorName changed this group's settings to allow only admins to send messages to this group"
-              : "$actorName changed this group's settings to allow all participants to send messages to this group");
+              ? l.chatSys_actorSetAdminsOnly(actorName)
+              : l.chatSys_actorSetAllCanSend(actorName));
 
     default:
       return defaultContent;
@@ -439,7 +449,7 @@ Widget _buildCallLogTile({
                       ),
                       SizedBox(width: 4.w),
                       Text(
-                        "Call back",
+                        context.l10n.chatSys_callBack,
                         style: TextStyle(
                           fontSize: 10.5.sp,
                           fontWeight: FontWeight.w600,

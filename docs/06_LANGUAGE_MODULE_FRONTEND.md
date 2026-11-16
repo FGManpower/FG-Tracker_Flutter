@@ -1,8 +1,8 @@
 # FG Tracker Language Module: Flutter (Frontend) Implementation Guide
 
-> **Document version:** `L-1.1.2` (Part 1 and Part 2 done: whole app in 10 languages; one "last seen" format; menu row + screen restyled) · **Date:** 2026-11-16 · **Branch:** `multi-language`
+> **Document version:** `L-1.2.0` (whole app in 20 languages; new features translated: Legal, Group admin + Add Members, group system messages, Message Info, Custom Banner, Delete Account) · **Date:** 2026-11-16 · **Branch:** `46Solution` (language work started on `multi-language`)
 > **Backend:** none. No backend changes; the language is stored only on the phone.
-> **Scope:** language selection after OTP, side menu → Language, whole-app translation (10 languages), platform strings.
+> **Scope:** language selection after OTP, side menu → Language, whole-app translation (20 languages), platform strings.
 > **Owner:** Flutter team. **Readers:** Flutter developers, QA.
 
 A new user picks the app language on the Language screen, which opens right before Registration. Anyone can change it any time from the side menu. The choice is saved on the phone and applied at once, without a restart. With nothing saved, the app is in **English**; it never follows the phone language. Three rules always hold:
@@ -75,14 +75,14 @@ This is the only maintained language doc. It includes the audit summary (§4.6),
   - `load()` reads `app_language` into `savedCode` (`RxnString`);
   - exposes `to`, `hasSavedLanguage`, `current` (`LanguageOption`; the saved one, else English = `kAppLanguages.first`), `appLocale` (`current.locale`, **never null**);
   - `setLanguage(code)` → saves the pref → `savedCode.value = code` → `Get.locale = option.locale; Get.appUpdate();` → `firebaseNotificationServices.refreshChannelNames()` (Android channel names in the new language).
-  - `load()` also calls `initializeDateFormatting()` so month / day names exist for all 10 languages.
+  - `load()` also calls `initializeDateFormatting()` so month / day names exist for all 20 languages.
   - **Not `Get.updateLocale`:** that runs a reassemble, clears the image cache and failed in widget tests. `Get.appUpdate()` rebuilds only the root `GetMaterialApp`; the switch is still instant.
   - `showBeforeRegistration(openRegistration)` (stores the original Register call in `_pendingRegistration`, opens the Language screen), `finishLanguageStep(route)`, `routeName = '/language-select'`, `fallbackRoute = '/splash'` (used only if the Language screen is reached with no pending Registration step). `routeAfterOtp` was removed in L-1.0.3.
   - The phone language is not read anywhere (the old `deviceLocale` / `suggested` were removed in L-1.0.2).
 - **`GetMaterialApp`** (`main.dart`):
   - `locale: LanguageController.to.appLocale` (saved language or `Locale('en')`; never null, because null makes Flutter follow the phone);
   - `fallbackLocale: const Locale('en')`;
-  - `supportedLocales`: the 10 from `kAppLanguages`, plus `Locale('en','US')`, `Locale('hi','IN')`, `Locale('ur','PK')` kept from before (§7, #6). They no longer change anything because `locale` is always set;
+  - `supportedLocales`: the locales from `kAppLanguages` (languages without compiled ARB files map to `en`, see `LanguageOption.locale`), plus `Locale('en','US')`, `Locale('hi','IN')`, `Locale('ur','PK')` kept from before (§7, #6). They no longer change anything because `locale` is always set;
   - `localizationsDelegates`: `AppLocalizations.delegate`, `GlobalMaterialLocalizations`, `GlobalWidgetsLocalizations`, `GlobalCupertinoLocalizations`.
 - **Accessors** (`lib/l10n/l10n.dart`): `context.l10n` reads `AppLocalizations` from the tree (widgets); `appL10n` uses `Get.locale` (controllers, models, toasts); `sharedL10n` is English while Login / OTP is the current route, else `appL10n` (shared dialogs, toasts, http errors); `loadAppL10nFromPrefs()` reads `app_language` from prefs (background isolate: FCM handler, CallKit, walkie notifications). All fall back to English.
 - **Places that clear prefs and keep `app_language`:**
@@ -96,13 +96,13 @@ This is the only maintained language doc. It includes the audit summary (§4.6),
 ### 0.2 Key files
 | Area | Files |
 |---|---|
-| Language config (codes, names, picker strings, aliases) | `lib/features/language/language_options.dart` (`LanguageOption`, `kAppLanguages`, `kAppLanguageCodes`, `languageForCode`, `languageFor`) |
+| Language config (codes, names, picker strings, aliases) | `lib/features/language/language_options.dart` (`LanguageOption`, `kAppLanguages` (full catalogue, 140 entries), `kWorkingLanguages` (the 20 with compiled ARB files, `_compiledL10nCodes`; this is what the pickers show), `languageForCode`, `languageFor`) |
 | Controller | `lib/features/language/language_controller.dart` (`LanguageController`) |
 | Language screen | `lib/features/language/language_screen.dart` (`LanguageScreen`), `lib/features/language/widgets/language_card.dart` (`LanguageCard`) |
 | Side menu item + sheet | `lib/features/language/language_settings.dart` (`LanguageSettingsRow`, `showLanguageSheet`, `LanguageSheet`); used in `lib/app/modules/home/Views/sidemenu.dart` |
 | Colours | `lib/features/language/language_theme.dart` (`LanguageColors`, `kLanguageAnim`) |
 | gen-l10n config | `l10n.yaml`, `pubspec.yaml` (`flutter: generate: true`) |
-| ARB files | `lib/l10n/app_en.arb` (template) + `app_hi`, `app_mr`, `app_gu`, `app_kn`, `app_bn`, `app_ml`, `app_ta`, `app_te`, `app_pa` `.arb` |
+| ARB files | `lib/l10n/app_en.arb` (template) + `app_hi`, `app_mr`, `app_gu`, `app_kn`, `app_bn`, `app_ml`, `app_ta`, `app_te`, `app_pa`, `app_or`, `app_es`, `app_fr`, `app_de`, `app_ar`, `app_pt`, `app_ja`, `app_zh`, `app_zh_Hant`, `app_ur` `.arb` (20) |
 | Generated | `lib/l10n/app_localizations.dart` + `app_localizations_<code>.dart` (from `flutter gen-l10n` / `flutter pub get`; never edit by hand) |
 | Accessors | `lib/l10n/l10n.dart` (`context.l10n`, `appL10n`, `sharedL10n`, `englishL10n`, `loadAppL10nFromPrefs`) |
 | App setup | `lib/main.dart` |
@@ -113,10 +113,10 @@ This is the only maintained language doc. It includes the audit summary (§4.6),
 | Storage | `lib/app/Core/values/storage_services.dart`, `lib/app/Core/constant/pref_res.dart` |
 | iOS strings | `ios/Runner/Info.plist` (`CFBundleLocalizations`), `ios/Runner/<code>.lproj/InfoPlist.strings` × 10, registered in `ios/Runner.xcodeproj/project.pbxproj` |
 | Android strings | None needed: `app_name` is the brand; notification channel names are created in Dart and translated (`firebaseNotificationServices.refreshChannelNames()`) |
-| String fragments (source of the ARB files) | `tool/l10n/fragments/*.json` (one per area) → `dart run tool/l10n/merge_arb.dart` writes `lib/l10n/app_<code>.arb` and runs gen-l10n |
+| String fragments (source of the ARB files) | `tool/l10n/fragments/*.json` (one per area, 13 files: `calls`, `chat_list`, `chat_screen`, `chat_system`, `common`, `common_ui`, `group_account`, `home`, `legal`, `registration`, `track_misc`, `walkie_core`, `walkie_plans`) → `dart run tool/l10n/merge_arb.dart` writes `lib/l10n/app_<code>.arb` and runs gen-l10n. **The fragments are the source of truth:** a key added only to the ARB files is deleted by the next merge (§5.1) |
 | Formatting | `lib/l10n/formatters.dart` (`appDateFormat`, `appTime`, `appDayLabel`, `appRelativeTime`, `appNumber`, `appCurrency`) |
 | Overflow-safe label | `lib/app/global_widget/auto_fit_text.dart` (`AutoFitText`) |
-| String audit tool | `tool/l10n/audit_strings.dart` (writes `build/l10n_audit/`, not committed) |
+| String audit tool | `tool/l10n/audit_strings.dart` is **no longer in the repo**. Until it is restored, use the grep check in §4.7 |
 | Tests | `test/language_selection_test.dart`, `test/registration_l10n_test.dart`, `test/l10n_completeness_test.dart`, `test/auto_fit_text_test.dart`, `test/screenshots/language_screens_screenshot_test.dart` |
 
 ### 0.3 Global rules (apply everywhere)
@@ -169,7 +169,7 @@ This is the only maintained language doc. It includes the audit summary (§4.6),
 ### 1.5 States
 | State | What shows | Test key |
 |---|---|---|
-| Default | 10 cards in fixed order, English selected | `language-grid`, `language-card-<code>` |
+| Default | 20 cards in fixed order, English selected | `language-grid`, `language-card-<code>` |
 | Selected | Filled card, border, check badge; texts previewed | `language-title`, `language-subtitle` |
 | Search, no match | Centred "No language found" in the previewed language | `language-no-match`, `language-search-clear` |
 | Saving | Spinner in the button, taps ignored | `language-continue-loader` |
@@ -217,10 +217,13 @@ This is the only maintained language doc. It includes the audit summary (§4.6),
 | 15 | `ar` | Arabic | العربية | عر | Global (UAE / Dubai / Middle East) |
 | 16 | `pt` | Portuguese | Português | Pt | Global (Brazil / Portugal) |
 | 17 | `ja` | Japanese | 日本語 | 日 | Global (East Asia) |
-| 18 | `zh` | Chinese | 中文 | 中 | Global (East Asia) |
+| 18 | `zh` | Chinese (Simplified) | 中文 (简体) | 中 | Global (East Asia) |
+| 19 | `zh_Hant` | Chinese (Traditional) | 中文 (繁體) | 繁 | Global (Taiwan / Hong Kong) |
+| 20 | `ur` | Urdu | اردو | اردو | South Asia (Pakistan / India) |
 
+- These 20 are `kWorkingLanguages` (codes in `_compiledL10nCodes`); the pickers show them in this order. `kAppLanguages` also lists ~120 more catalogue languages that have no ARB file; they are not shown and would fall back to English.
 - Picker strings per language: `kAppLanguages` in `language_options.dart`.
-- Material and Cupertino (`flutter_localizations`) support all 10.
+- Material and Cupertino (`flutter_localizations`) support all 20.
 - The list follows the product prompt. Tamil, Telugu and Punjabi are assumed; final confirmation is open (§7, #1).
 
 ---
@@ -228,26 +231,31 @@ This is the only maintained language doc. It includes the audit summary (§4.6),
 ## 4. Translation coverage
 
 ### 4.1 Coverage table
-Keys = ARB keys owned by the area (prefixes in brackets). ✅ = every user-facing text in the area is a key, translated in that language. Total: **2,134 keys × 10 languages** (21,340 strings); `test/l10n_completeness_test.dart` checks all of them.
+Keys = ARB keys owned by the area (prefixes in brackets). ✅ = every user-facing text in the area is a key, translated in **all 20 languages** (en, hi, mr, gu, kn, bn, ml, ta, te, pa, or, es, fr, de, ar, pt, ja, zh, zh_Hant, ur). Total: **2,259 keys × 20 languages** (45,180 strings); `test/l10n_completeness_test.dart` checks all of them. Key counts per row are from L-1.1.0 unless marked *new*.
 
-| Module | Keys | en | hi | mr | gu | kn | bn | ml | ta | te | pa | Status |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Language screen + side menu sheet | picker strings in `language_options.dart` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Registration, Edit Profile, validators, photo picker | 26 (`registration_`, `editProfile_`, `validation_`, `imagePicker_`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 1. Permissions (setup, gate) | 70 (`permission_`) + 11 (`perm_`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 2. Home, side menu, About, Intro, live status | 61 `home_`, 9 `menu_`, 29 `about_`, 7 `intro_`, 14 `widget_` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 3. Chat list, archived, new chat, forward, user profile | 149 (`chatList_`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 3. Private / group chat, bubbles, long-press menu, Group Info, media | 139 `chat_`, 41 `groupInfo_`, 14 `media_` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 3. Status | 45 (`status_`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 4–5. Attendance + Poll (create, vote, view, close, chat cards) | 122 (`attendance_`; poll previews in `chat_`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 6. Walkie-Talkie (screen, group select, invites, notifications) | 207 (`walkie_`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 6. Walkie plans, order summary, payment, purchase success, trial | 395 (`walkiePlan_`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 7. Tracking, Safe Zone, Safe Route, Safety dashboard, SOS | 78 `track_`, 33 `safeZone_`, 44 `safeRoute_`, 27 `safety_`, 49 `sos_` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 8. Packages, OTP charges | 5 `package_`, 31 `otpCharges_` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 9. Groups (list, create, join, QR, members, success sheets) | 68 `group_`, 34 `groupDialog_` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 10. Notifications screen, calls (incoming, calling, group, CallKit), force / app update | 11 `notifications_`, 226 `call_`, 7 `forceUpdate_`, 9 `appUpdate_` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 11. Common: dialogs, toasts, sheets, http errors, local notifications, date / time labels | 48 `common_`, 12 `dialog_`, 24 `sheet_`, 3 `http_`, 22 `notif_`, 13 `util_`, 11 `repo_` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Voice input | 40 (`voice_`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Module | Keys | All 20 languages | Status |
+|---|---|---|---|
+| Language screen + side menu sheet | picker strings in `language_options.dart` | ✅ | ✅ |
+| Registration, Edit Profile, validators, photo picker | 26 (`registration_`, `editProfile_`, `validation_`, `imagePicker_`) | ✅ | ✅ |
+| 1. Permissions (setup, gate) | 70 (`permission_`) + 11 (`perm_`) | ✅ | ✅ |
+| 2. Home, side menu, About, Intro, live status | 61 `home_`, 9 `menu_`, 29 `about_`, 7 `intro_`, 14 `widget_` | ✅ | ✅ |
+| 2a. *New:* Legal (side menu → Legal, document list, contact rows, draft notice, viewer errors) | 17 (`legal_`, fragment `legal.json`) | ✅ | ✅ (back-filled into fragments in L-1.2.0) |
+| 2b. *New:* Home Custom Banner (card, "My Banner" chip, manage sheet, photo source sheet) | 13 (`banner_`) + reused `imagePicker_gallery` / `imagePicker_camera` | ✅ | ✅ L-1.2.0 |
+| 2c. *New:* Side menu → Delete Account (row, confirm dialog, reasons, result toasts) | 14 (`account_`) + reused `common_cancel` | ✅ | ✅ L-1.2.0 |
+| 3. Chat list, archived, new chat, forward, user profile | 149 (`chatList_`) | ✅ | ✅ |
+| 3. Private / group chat, bubbles, long-press menu, Group Info, media | 139 `chat_`, 41 `groupInfo_`, 14 `media_` | ✅ | ✅ |
+| 3a. *New:* Group admin (Send Messages setting, Make / Dismiss admin, toasts) + Add Members sheet (search, tags, permission banner, empty / error states) | 30 (`groupAdmin_`) + reused `group_addMember`, `groupInfo_member`, `common_add`, `common_retry` | ✅ | ✅ L-1.2.0 |
+| 3b. *New:* Group system messages (added / joined / left / removed / admin / name / icon / description / settings), unread divider, call-log "Call back", Message Info "Delivered" | 46 (`chatSys_`) + reused `groupInfo_admin` / `groupInfo_member` fallbacks | ✅ | ✅ L-1.2.0 |
+| 3. Status | 45 (`status_`) | ✅ | ✅ |
+| 4–5. Attendance + Poll (create, vote, view, close, chat cards) | 122 (`attendance_`; poll previews in `chat_`) | ✅ | ✅ |
+| 6. Walkie-Talkie (screen, group select, invites, notifications) | 207 (`walkie_`) | ✅ | ✅ |
+| 6. Walkie plans, order summary, payment, purchase success, trial | 395 (`walkiePlan_`) | ✅ | ✅ |
+| 7. Tracking, Safe Zone, Safe Route, Safety dashboard, SOS | 78 `track_`, 33 `safeZone_`, 44 `safeRoute_`, 27 `safety_`, 49 `sos_` | ✅ | ✅ |
+| 8. Packages, OTP charges | 5 `package_`, 31 `otpCharges_` | ✅ | ✅ |
+| 9. Groups (list, create, join, QR, members, success sheets, exit-group sheet) | 68 `group_`, 34 `groupDialog_` | ✅ | ✅ |
+| 10. Notifications screen, calls (incoming, calling, group, CallKit), force / app update | 11 `notifications_`, 226 `call_`, 7 `forceUpdate_`, 9 `appUpdate_` | ✅ | ✅ |
+| 11. Common: dialogs, toasts, sheets, http errors, local notifications, date / time labels | 48 `common_`, 12 `dialog_`, 24 `sheet_`, 3 `http_`, 22 `notif_`, 13 `util_`, 11 `repo_` | ✅ | ✅ |
+| Voice input | 40 (`voice_`) | ✅ | ✅ |
 
 Three keys are the same as English on purpose: `otpCharges_gstTitle`, `walkiePlan_orderGstTitle` ("GST") and `walkiePlan_orderUpiQr` ("UPI / QR") — standard terms kept in English in Indian apps. They are listed with reasons in the completeness test.
 
@@ -258,6 +266,13 @@ Three keys are the same as English on purpose: `otpCharges_gstTitle`, `walkiePla
 - **What the user types** stays as typed.
 - **Logic ids** (the English text stays the internal value; only the label is translated through a display helper): "This message was deleted", "Location unavailable" / "Current Location" / "Locating...", call types and statuses ("Incoming", "Missed", "Calling", "Connected", …), plan titles / durations ("Team Plan (Monthly)", "Monthly"), "Bluetooth" / "Headset", "User" / "Someone" / "Member" fallbacks sent in socket payloads, camera modes (PORTRAIT / PHOTO / VIDEO), mute options, popup-menu values.
 - **Sent to servers / gateways:** Razorpay / Cashfree checkout name, description and notes ("FG MANPOWER LLP", "Walkie-Talkie Subscription", "International OTP Verification Fee"), the attendance poll defaults "Present" / "Absent" / "Will you be available today?" and title "Attendance • 12 Nov" (§7, #13).
+- **New features (L-1.2.0), kept as-is on purpose:**
+  - **Delete Account reasons** are sent to the server as `reason`; the dropdown `value`s stay English ids ("I no longer need this account", "Privacy concerns", "Too many notifications / battery", "Switching to another app or device", "Other reason"). Only the visible labels are translated (`account_reason*`).
+  - **Group system messages** are built from `systemMeta` in `formatSystemMessageText` (`ChatItem.dart`) and translated. When another member did the action and the server sent `content` (member added / joined / settings changed), that server text is shown as sent (API data). For "You added …" with no `targetName`, English still rewrites the server text to "You added A, B"; other languages show `chatSys_youAddedMembers` ("You added members") because the server text cannot be rewritten safely.
+  - The `'Admin'` / `'Member'` fallbacks in system messages and `"Unknown User"` checks in `chat_list_controller.dart` are logic ids; only the displayed fallback is translated (`groupInfo_admin`, `groupInfo_member`).
+  - **Call-log tile** text (`message.content`, e.g. "Missed voice call") comes from the server; only "Call back" is translated.
+  - Delete-account server `message` and add-member / group-setting server `message` are shown as sent; the app's own fallbacks are translated.
+  - "FG Manpower LLP" in the side menu footer is the company name (brand).
 - **Brands, codes, units:** FG Tracker, WhatsApp, Telegram, Google Play / App Store, PayPal, UPI app names, GST, OTP, GPS, SOS, km / m, support e-mail and phone, company address.
 - **Shimmer placeholders** (drawn as grey skeleton blocks, never readable): "Loading member name", "Group Name Placeholder", dummy dates and so on.
 
@@ -270,13 +285,13 @@ Three keys are the same as English on purpose: `otpCharges_gstTitle`, `walkiePla
 - Server push title / body: as sent.
 
 ### 4.4 Platform strings
-- **iOS:** `ios/Runner/<code>.lproj/InfoPlist.strings` for all 10 languages (11 `NS*UsageDescription` texts + precise-location text), `CFBundleLocalizations` in `Info.plist`, and the `InfoPlist.strings` variant group registered in `project.pbxproj` (`knownRegions` + Resources build phase). Not built on this Windows machine — check the first iOS build (§7, #11).
+- **iOS:** `ios/Runner/<code>.lproj/InfoPlist.strings` for the first 10 languages only (en, hi, mr, gu, kn, bn, ml, ta, te, pa; 11 `NS*UsageDescription` texts + precise-location text), `CFBundleLocalizations` in `Info.plist`, and the `InfoPlist.strings` variant group registered in `project.pbxproj` (`knownRegions` + Resources build phase). Not built on this Windows machine — check the first iOS build (§7, #11).
 - **Android:** `app_name` stays "FG Tracker" (brand); no other user-facing strings in `res/values/strings.xml`, so no `values-<code>` folders.
 - **OS permission pop-ups and the app name follow the phone language,** not the app language. That is how iOS and Android work; our own explanation texts before the pop-up are translated.
 
 ### 4.5 Dates, times, numbers, currency
 - `lib/l10n/formatters.dart`: `appDateFormat(pattern)` (month / day names in the app language), `appTime`, `appDayLabel` (Today / Yesterday / date), `appRelativeTime` (Just now / 5 min ago / 2 hours ago / Yesterday / 3 days ago / date), `appNumber` (12,34,567), `appCurrency` (₹1,499).
-- **Digits always 0–9** (`useNativeDigits = false`), even for Marathi / Bengali; money uses Indian grouping (`en_IN`). Tested for all 10 languages.
+- **Digits always 0–9** (`useNativeDigits = false`), even for Marathi / Bengali; money uses Indian grouping (`en_IN`). Tested for all 20 languages.
 - `LanguageController.load()` calls `initializeDateFormatting()`; if date data is missing, `appDateFormat` falls back to English instead of crashing.
 - Formats used for parsing or sent to the API were not changed.
 
@@ -291,7 +306,7 @@ Three keys are the same as English on purpose: `otpCharges_gstTitle`, `walkiePla
 
 - `formatLastSeen(context, serverTime, {now})` in widgets; `formatLastSeenWith(appL10n, serverTime, {now})` where there is no `BuildContext` (controllers). Both return **null** for no time, so each screen keeps its own fallback.
 - Server strings are parsed with the existing `Tracking.parseDateTime(raw)` (ISO with / without `Z`, epoch seconds / ms), then shown in **phone-local time**. A time slightly in the future counts as now.
-- `Last seen:` and `Today` are ARB keys **`common_lastSeen`** / **`common_todayAt`** (`{time}`, all 10 languages, in `tool/l10n/fragments/common.json`). Month and AM/PM come from intl in the app language; 12-hour clock, 2-digit hour / day, **AM/PM in capitals**, **digits 0–9**.
+- `Last seen:` and `Today` are ARB keys **`common_lastSeen`** / **`common_todayAt`** (`{time}`, all 20 languages, in `tool/l10n/fragments/common.json`). Month and AM/PM come from intl in the app language; 12-hour clock, 2-digit hour / day, **AM/PM in capitals**, **digits 0–9**.
 - **Not changed:** "Online", "Active", "In Walkie Channel", "Speaking…", "Muted", "typing…", and each screen's text when there is no last-seen value (Offline / empty). No model, API, socket, layout or style change: only the expression that builds the text.
 - The older module keys (`groupDialog_lastSeen`, `track_lastSeen`, `home_lastSeen`, `walkie_lastSeen`) are still used for the fallbacks (unparseable server text).
 
@@ -324,15 +339,35 @@ Checked, **no last-seen text**: chat list rows, group chat app bar, Attendance, 
 ### 4.7 Audit summary
 Run `dart run tool/l10n/audit_strings.dart` (writes `build/l10n_audit/`, not committed). It parses every Dart file reachable from `lib/main.dart` and lists every string by where it is used. Before Part 2: 382 reachable files, about 2,670 user-facing texts, 60 screens, 57 dialogs, 46 bottom sheets, 121 toast sites, 13 local-notification sites, 59 API sinks. After Part 2 every remaining literal was reviewed; what is left is in §4.2 (Login / OTP, frozen files, API data, logic ids, payloads, brands, placeholders).
 
+**L-1.2.0 re-audit (2026-11-16).** The audit tool is no longer in the repo, so the check was done on every `lib/` file changed since the last translation commit (`b0371059`, 48 files) with a literal scan:
+```
+git diff --name-only b0371059 HEAD -- lib | grep -v l10n/ | xargs grep -nE \
+  "Text\(\s*['\"][A-Za-z]|(title|label|message|hintText|subtitle|content|confirm|tooltip):\s*['\"][A-Za-z]|fluttertoast\(\s*['\"]"
+```
+Found and fixed (103 new keys):
+
+| Feature | File(s) | Hard-coded English found | Now |
+|---|---|---|---|
+| Custom Banner | `home/Home_Widget/bannerUi.dart` | 15 (card, NEW badge, manage sheet, photo source sheet) | `banner_*`, `imagePicker_gallery/camera` |
+| Delete Account | `home/Views/sidemenu.dart`, `auth/Controller/account_deletion_controller.dart` | 16 (row, dialog, 5 reasons, Cancel, Delete Forever, 3 toasts) | `account_*`, `common_cancel` |
+| Group admin + Add Members | `Messages/Views/Group/ChatGroupProfile_Screen.dart`, `Group/controller/Group_Controller.dart`, `Messages/Views/Group/GroupChatScreen.dart` | 33 | `groupAdmin_*`, `group_addMember`, `common_add`, `common_retry` |
+| Group system messages | `Messages/widgets/ChatItem.dart` (`formatSystemMessageText`) | 41 sentences | `chatSys_*` |
+| Unread divider / Call back / Message Info | `Messages/widgets/ChatList.dart`, `ChatItem.dart`, `widgets/MessageInfoSheet.dart` | 5 | `chatSys_unreadDivider*`, `chatSys_callBack`, `chatSys_delivered`, `chatSys_notDeliveredYet` |
+| Language screen close tooltip | `features/language/language_settings.dart` | 1 | `common_close` |
+| Legal | `Legal/**` | 0 (already used `legal_*`), but the 17 keys existed **only in the ARB files**, not in the fragments | back-filled to `tool/l10n/fragments/legal.json` |
+| Exit-group sheet | `Group/widgets/group_membership_sheet.dart` | 0 (already translated) | — |
+
+Checked and left as-is: `TrackingController.dart` / `Tracking.dart` error and location strings (logic ids, translated by the existing display helper), `"This message was deleted"` comparisons (logic id), `TrackRepo` / socket "session expired" messages (shown on Login → English, §4.2), `StatusViewScreen` default `'My Status'` (overridden by callers).
+
 ---
 
 ## 5. How-to
 
 ### 5.1 Add or change a string
-1. Add the key to the fragment of its area in `tool/l10n/fragments/` (e.g. `walkie_core.json`), with all 10 languages:
-   `"walkie_holdToTalk": { "en": "Hold to talk", "hi": "…", …, "pa": "…" }`. Placeholders / plurals: `"en": "{count, plural, =1{1 member} other{{count} members}}"` plus `"placeholders": {"count": {"type": "int"}}`.
+1. Add the key to the fragment of its area in `tool/l10n/fragments/` (e.g. `walkie_core.json`), with **all 20 languages** (`codes` in `merge_arb.dart`):
+   `"walkie_holdToTalk": { "en": "Hold to talk", "hi": "…", …, "zh_Hant": "…", "ur": "…" }`. Placeholders / plurals: `"en": "{count, plural, =1{1 member} other{{count} members}}"` plus `"placeholders": {"count": {"type": "int"}}`. With several placeholders, list them in the `placeholders` map in the order you want the Dart method parameters (gen-l10n follows that order).
    (`walkie_plans.json` and `track_misc.json` are generated from scratch sources by their builders; for a quick change editing the fragment is fine.)
-2. Run `dart run tool/l10n/merge_arb.dart`. It fails on a duplicate key, a missing or empty language or a missing placeholder, writes the 10 ARB files and runs `flutter gen-l10n`. Never edit `lib/l10n/app_*.arb` or the generated files by hand.
+2. Run `dart run tool/l10n/merge_arb.dart`. It fails on a duplicate key, a missing or empty language or a missing placeholder, writes the 20 ARB files and runs `flutter gen-l10n`. **Never edit `lib/l10n/app_*.arb` or the generated files by hand:** the merge rewrites the ARB files from the fragments only, so a key added straight to an ARB file is silently deleted on the next merge (this happened to the 17 `legal_*` keys; fixed in L-1.2.0). Before a merge, `dart run tool/l10n/merge_arb.dart --no-gen` + `git diff --stat lib/l10n` should show no deleted keys.
 3. Use it: `context.l10n.key` in widgets; `appL10n.key` in controllers / models / toasts; `sharedL10n.key` in widgets that also show on Login / OTP; `await loadAppL10nFromPrefs()` in background isolates.
 4. If the text is also compared (`==`, `contains`, `switch`), keep the English id for the logic and translate only the label.
 5. Short label in a button / chip / row? Use `AutoFitText` (inside `Flexible` in a `Row`).
@@ -349,8 +384,8 @@ Run `dart run tool/l10n/audit_strings.dart` (writes `build/l10n_audit/`, not com
 ---
 
 ## 6. Testing
-- **`test/l10n_completeness_test.dart`** (16 tests): the 10 ARB files exist; every key is in all 10 files and not empty; nothing left in English except the 3 allowed keys; placeholders match English; keys resolve in all 10 locales; dates / times keep digits 0–9 in all 10 languages; money uses Indian grouping.
-- **`test/language_selection_test.dart`** (23 tests): Language screen (10 cards in fixed order, **English always pre-selected**, nothing saved → app English even with the phone in Hindi, live preview, search, screen reader label, text scale 1.3 → 1 column, small phone, tablet, Back blocked); Continue (loader, one navigation, Registration with the same arguments, Back → OTP); routing after OTP (new user → Language screen; **new user with a saved language → Language screen with English pre-selected**; existing user → Home with no Language screen); side menu item (closes the drawer, opens the sheet, a pick applies instantly); config.
+- **`test/l10n_completeness_test.dart`**: the 20 ARB files exist; the picker shows exactly the 20 compiled codes; every key is in all 20 files and not empty; nothing left in English except the allowed keys (each with a reason); placeholders match English; keys resolve in all 20 locales; dates / times keep digits 0–9; money uses Indian grouping.
+- **`test/language_selection_test.dart`** (23 tests): Language screen (cards in fixed order, **English always pre-selected**, nothing saved → app English even with the phone in Hindi, live preview, search, screen reader label, text scale 1.3 → 1 column, small phone, tablet, Back blocked); Continue (loader, one navigation, Registration with the same arguments, Back → OTP); routing after OTP (new user → Language screen; **new user with a saved language → Language screen with English pre-selected**; existing user → Home with no Language screen); side menu item (closes the drawer, opens the sheet, a pick applies instantly); config.
 - **`test/registration_l10n_test.dart`** (3 tests): मराठी → पुढे जा → the real Registration screen in Marathi (labels, hints, gender, Done, validation); typed text unchanged; English unchanged; every locale has its own texts.
 - **`test/last_seen_formatter_test.dart`** (12 tests, fixed "now"): today, yesterday shows the date, older date, last year, null, future time = now, UTC → local, UTC → IST (runs when the machine is on IST), Hindi texts / month / no Devanagari digits, all 10 languages.
 - **`test/auto_fit_text_test.dart`** (5 tests): fitting text keeps its size; long text shrinks without overflow; `Row` + `Flexible`; safe in a popup menu and an AlertDialog; `maxLines: 2`.
@@ -370,7 +405,7 @@ Run `dart run tool/l10n/audit_strings.dart` (writes `build/l10n_audit/`, not com
 | L-01 | New user | Fresh install → Login → **new** number → OTP | Language screen opens right after OTP (before Registration). Login and OTP in English | | |
 | L-02 | English default | Phone in हिन्दी → fresh install → new number → OTP | **English selected**; order English, हिन्दी, मराठी, … | | |
 | L-03 | English default | Phone in हिन्दी, existing user who never chose → open app | Whole app in English; ☰ Language item shows English | | |
-| L-04 | Layout | Pixel 7 / iPhone 15 | All 10 cards visible, Continue at the bottom, nothing under notch / gesture bar | | |
+| L-04 | Layout | Pixel 7 / iPhone 15 | Cards scroll smoothly (20 languages), Continue at the bottom, nothing under notch / gesture bar | | |
 | L-05 | Live preview | Tap each card | Title, subtitle, search hint, button switch with a short fade; one card selected | | |
 | L-06 | Search | `bangla` / `मराठी` / `ta` / `xyz` | বাংলা / मराठी / தமிழ் / "No language found" (× clears) | | |
 | L-07 | Continue | Select मराठी → tap पुढे जा twice quickly | Spinner; one navigation | | |
@@ -381,7 +416,7 @@ Run `dart run tool/l10n/audit_strings.dart` (writes `build/l10n_audit/`, not com
 | L-12 | Side menu | Home → ☰ → Language | Drawer closes, sheet opens, current language ticked | | |
 | L-13 | Apply instantly | In the sheet pick मराठी | Home redraws in Marathi at once; no restart, no logout | | |
 | L-14 | Every screen in मराठी | With मराठी, open: Home, ☰, chat list, archived, private chat (long-press menu), group chat + Group Info, Status, Attendance (create / vote / view / close), Poll card, Walkie-Talkie (group select, screen, plans, order summary), Tracking, Safe Zone, Safe Route, Safety, SOS, Packages, OTP charges, Groups (create / join / QR / members / success sheets), Notifications, calls (incoming, calling, group), Permission setup, voice input | All app texts in Marathi; names, messages, prices and server texts as before; no English left except §4.2 | | |
-| L-15 | All 10 languages | Repeat L-14 quickly (Home, chat, walkie, tracking) in each language | Same; no boxes / clipped letters | | |
+| L-15 | All 20 languages | Repeat L-14 quickly (Home, chat, walkie, tracking) in each language | Same; no boxes / clipped letters | | |
 | L-16 | Overflow | In ta, ml, kn, mr: Home stat cards + quick actions, call controls (1:1 and group), walkie header pills + Talk button, plan / order screens, attendance card buttons, chat list quick cards, popup menus | No yellow-black overflow stripes; long labels shrink slightly, other text unchanged | | |
 | L-17 | Dates / numbers | Chat times, "Yesterday", "5 min ago", call history, plan "Valid till", prices | Words in the language, **digits 0–9**, ₹ with Indian grouping | | |
 | L-18 | Local notifications | Choose தமிழ் → walkie talk / missed call / app-written alerts with the app in background and killed | Texts in Tamil; channel names in Android settings in Tamil | | |
@@ -392,6 +427,19 @@ Run `dart run tool/l10n/audit_strings.dart` (writes `build/l10n_audit/`, not com
 | L-23 | API data | In हिन्दी open Home, chat list, packages | Names, group names, package names, server messages unchanged | | |
 | L-24 | iOS permissions | iOS in हिन्दी, app in मराठी → trigger location / camera permission | The OS pop-up text is in **Hindi** (phone language, by design); our explanation screen is in Marathi | | |
 | L-25 | Screen reader | TalkBack / VoiceOver on Language cards and ☰ item | "Hindi, हिन्दी, selected"; "Language, English" | | |
+
+**New features (L-1.2.0).** Run in हिन्दी, then one long-text language (தமிழ் or മലയാളം), then العربية (right-to-left) and 中文 (繁體).
+
+| ID | Area | Steps | Expected | Android | iOS |
+|---|---|---|---|---|---|
+| L-26 | Legal | ☰ → Legal → open each document → contact rows | Title, subtitles, draft notice, "not available" / error text in the language; document body, phone, e-mail, address as before | | |
+| L-27 | Custom Banner | Home → banner carousel → Custom Banner card → pick a photo → tap it again (manage sheet) → Replace / Remove | "Custom Banner", NEW badge, subtitle, "My Banner" chip, both sheets, Gallery / Camera in the language; NEW badge and chip not clipped | | |
+| L-28 | Delete Account | ☰ → Delete Account → open the reason list → Cancel. (On a test account only: Delete Forever) | Row, dialog title, text, reasons, Cancel / Delete Forever in the language. Server receives the English reason (check the request log). Success / failure toast in the language unless the server sends its own message | | |
+| L-29 | Group admin | As group admin: Group Info → Send Messages switch on / off; long-press-menu on a member → Make group admin → confirm → Dismiss as admin | Setting title / subtitle, toasts "Only admins can send messages now" / "All participants …", menu items and both confirm dialogs (with the member's name) in the language. Non-admin chat input shows the translated "Only admins can send messages" banner | | |
+| L-30 | Add Members | Group Info → Add Members → search → with contacts permission off → airplane mode → Retry | Header, subtitle, search hint, tags (Saved contact / Your groups / Contact • Group), permission banner + Enable, empty and error states, Retry, Add button and confirm "Add <name> to <group>?" in the language; no overflow on the Add button / tags | | |
+| L-31 | Group system messages | In a group: add a member, remove one, make / dismiss admin, rename, change icon / description, toggle Send Messages, leave; check on your phone and on the other member's phone | Your own actions ("You …") and messages built from metadata in the language; names / group name unchanged; other members' server texts as sent (§4.2) | | |
+| L-32 | Unread / call / info | Open a chat with unread messages; a call-log bubble; long-press your message → Info | "N UNREAD MESSAGES" (plural correct for 1), "Call back", "Seen" / "Delivered" / "Not delivered yet" in the language | | |
+| L-33 | Language switch while open | With Group Info / Add Members sheet open, switch language from ☰ (or reopen) | Texts follow the new language after the screen rebuilds; no crash | | |
 
 **Last seen (§4.5.1).** Setup: two phones; user B goes offline (close the app or turn off data). For "earlier day / year", use a member who was last online before today / last year, or set phone A's date forward a day. Phone A in IST.
 
@@ -419,7 +467,7 @@ Run `dart run tool/l10n/audit_strings.dart` (writes `build/l10n_audit/`, not com
 
 | # | Item | Owner | Status |
 |---|---|---|---|
-| 1 | Final list of 10 languages (Tamil, Telugu, Punjabi assumed from the prompt) | Product | **Open** |
+| 1 | Final list of languages (now 20 working languages, §3) | Product | **Open** |
 | 2 | Native-speaker review of every language (2,134 keys; short labels and tone) | Product | **Open** |
 | 3 | When the Language screen shows: only for new users, right before Registration, every time, **English pre-selected** (user decisions 2026-11-11) | User | **Closed** |
 | 4 | App killed on the Language screen → Login again → OTP → Language screen → Registration | — | **Closed** |
@@ -438,6 +486,11 @@ Run `dart run tool/l10n/audit_strings.dart` (writes `build/l10n_audit/`, not com
 | 17 | Status list 'User' fallback is translated when loaded, so an open list keeps the old language until it reloads | Flutter | **Open** (minor) |
 | 18 | Last seen on the group map member list (`GroupTrackController.dart`, frozen) still shows English time-ago (§4.5.1, #12) | User | **Open** — approve a one-expression change in the frozen file? |
 | 19 | Last-seen device QA LS-01…LS-15, incl. the longer text in the Member screen's right column on a small phone | QA | **Open** |
+| 20 | Native-speaker review of the 103 keys added in L-1.2.0 (`banner_`, `account_`, `groupAdmin_`, `chatSys_`) in all 19 non-English languages; machine-assisted, not yet reviewed | Product | **Open** |
+| 21 | `tool/l10n/audit_strings.dart` is missing from the repo (the doc and §4.7 relied on it). Restore it or keep using the grep check | Flutter | **Open** |
+| 22 | Group system messages from other members use the server's English `content` when present (§4.2). Build them from `systemMeta` for every language instead? Changes what users see for server-made texts | Product | **Open** (decide) |
+| 23 | Device QA L-26…L-33 (new features) | QA | **Open** |
+| 24 | iOS `InfoPlist.strings` exist only for 10 languages; or, es, fr, de, ar, pt, ja, zh, zh_Hant, ur have none (iOS permission texts fall back to English / Base). Add the 10 `.lproj` folders and register them in `project.pbxproj` (needs a Mac build to verify) | Flutter (iOS) | **Open** |
 
 ### 7.1 Detailed questions
 **#12 Frozen files.** `GroupTrackController.dart` holds the group map's error dialogs, map-theme sheet and member-list labels. Translating them is a text-only change but touches a frozen file. Approve?
@@ -454,6 +507,7 @@ None.
 ## 9. Change log
 | Version | Date | Change |
 |---|---|---|
+| L-1.2.0 | 2026-11-16 | **New features translated into all 20 languages** (§4.7 re-audit): Custom Banner (`banner_` × 13), Delete Account (`account_` × 14; reasons stay English ids for the server), Group admin + Add Members (`groupAdmin_` × 30), group system messages / unread divider / Call back / Message Info (`chatSys_` × 46). New fragments `chat_system.json`, `group_account.json`. **Legal keys back-filled:** the 17 `legal_*` keys were only in the ARB files and would have been deleted by the next merge; now in `legal.json`. Total 2,259 keys × 20. Doc corrected from "10 languages" to the 20 working languages (§3, §4.1, §5), audit tool noted as missing (§7, #21). Manual cases L-26…L-33. |
 | L-1.1.2 | 2026-11-16 | **Side menu Language row and screen match the rest of the app** (§2): row = "Language" + "Change app language" (new `LanguageOption.menuSubtitle`, translated for the 20 app languages), one line each, selected-language name removed, ScreenUtil sizes via `LanguageRowSizes`. Language screen from the menu gets the standard app bar (`reusableAppbar` look, title "Language"); in-body header hidden (`showHeader: false`). Tests updated in `test/language_selection_test.dart` (42 pass). |
 | L-1.1.1 | 2026-11-12 | **One "last seen" format everywhere** (§4.5.1): new `last_seen_formatter.dart` (`formatLastSeen` / `formatLastSeenWith`), keys `common_lastSeen` + `common_todayAt` × 10; 11 places switched (only the text expression), the frozen group-map list left for approval (#18). Tests: `last_seen_formatter_test.dart` (12). Manual cases LS-01…LS-15. |
 | L-1.1.0 | 2026-11-11 | **Part 2 done: whole app in 10 languages.** 2,134 keys × 10 (fragments in `tool/l10n/fragments/`, merged by `tool/l10n/merge_arb.dart`). All modules translated (§4.1): Permissions, Home / side menu / About / Intro, chat list / chat / group chat / Group Info / Status, Attendance + Poll, Walkie-Talkie + plans / payment, Tracking / Safe Zone / Safe Route / Safety / SOS, Packages / OTP charges, Groups, Notifications, calls + CallKit, force / app update, common dialogs / toasts / sheets / http errors / local notifications / voice input. New: `sharedL10n` (English on Login / OTP), `loadAppL10nFromPrefs` (background isolates), `formatters.dart` (dates in the language, digits 0–9, ₹ Indian grouping), translated Android channel names + `refreshChannelNames()` on language change, native walkie notification texts from Dart, iOS `InfoPlist.strings` × 10 + `CFBundleLocalizations`. Logic values keep English ids. **Overflow:** `AutoFitText` + about 140 layout fixes for long translations. **Language screen always pre-selects English.** Tests: `l10n_completeness_test.dart`, `auto_fit_text_test.dart`. Branch `multi-language`. |
@@ -477,4 +531,5 @@ None.
 | Tests (new) | `test/language_selection_test.dart`, `test/registration_l10n_test.dart`, `test/l10n_completeness_test.dart`, `test/auto_fit_text_test.dart`, `test/screenshots/language_screens_screenshot_test.dart` |
 | Last seen (L-1.1.1) | New `lib/app/Core/util/last_seen_formatter.dart`, `test/last_seen_formatter_test.dart`; `tool/l10n/fragments/common.json` (+2 keys) → ARB × 10 + generated; text expression only in `MessageController.dart`, `UserProfileScreen.dart`, `ChatGroupProfile_Screen.dart`, `DialogBox.dart`, `BottomSheetUi.dart`, `group_info_bottom_sheet.dart`, `Tracking_screen.dart`, `Search_Members.dart`, `online_member.dart`, `total_member.dart`, `MemberScreen.dart` |
 | Side menu row + screen (L-1.1.2) | `lib/features/language/language_settings.dart` (`LanguageRowSizes`, row layout, app bar, `showHeader`), `lib/features/language/language_options.dart` (`menuSubtitle` × 20), `lib/app/modules/home/Views/sidemenu.dart` (passes the sizes), `test/language_selection_test.dart` |
+| New features translated (L-1.2.0) | `tool/l10n/fragments/chat_system.json`, `group_account.json`, `legal.json` (new) → ARB × 20 + generated; text only in `home/Home_Widget/bannerUi.dart`, `home/Views/sidemenu.dart` (Delete Account), `auth/Controller/account_deletion_controller.dart`, `Messages/Views/Group/ChatGroupProfile_Screen.dart`, `Messages/Views/Group/GroupChatScreen.dart`, `Group/controller/Group_Controller.dart`, `Messages/widgets/ChatItem.dart`, `Messages/widgets/ChatList.dart`, `widgets/MessageInfoSheet.dart`, `features/language/language_settings.dart` (tooltip) |
 | Docs | `docs/06_LANGUAGE_MODULE_FRONTEND.md` (this guide), `docs/README.md` |

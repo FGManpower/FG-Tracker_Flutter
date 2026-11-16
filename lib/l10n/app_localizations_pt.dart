@@ -107,6 +107,51 @@ class AppLocalizationsPt extends AppLocalizations {
       'Compartilhamento de localização em tempo real com todos os membros.';
 
   @override
+  String get account_deleteConfirm =>
+      'Tem certeza de que deseja excluir sua conta permanentemente?';
+
+  @override
+  String get account_deleteDialogTitle => 'Excluir conta?';
+
+  @override
+  String get account_deleteFailed =>
+      'Não foi possível excluir a conta. Tente novamente.';
+
+  @override
+  String get account_deleteForever => 'Excluir para sempre';
+
+  @override
+  String get account_deleteSubtitle => 'Apagar conta e dados permanentemente';
+
+  @override
+  String get account_deleteTitle => 'Excluir conta';
+
+  @override
+  String get account_deleteWarning =>
+      'Esta ação é imediata e não pode ser desfeita. Todas as informações do seu perfil, histórico de localização, participações em grupos e sessões ativas serão apagados permanentemente.';
+
+  @override
+  String get account_deletedToast => 'Conta excluída com sucesso';
+
+  @override
+  String get account_reasonLabel => 'Motivo da saída:';
+
+  @override
+  String get account_reasonNoLongerNeed => 'Não preciso mais desta conta';
+
+  @override
+  String get account_reasonNotifications => 'Notificações demais';
+
+  @override
+  String get account_reasonOther => 'Outro motivo';
+
+  @override
+  String get account_reasonPrivacy => 'Privacidade';
+
+  @override
+  String get account_reasonSwitching => 'Vou trocar de aparelho';
+
+  @override
   String appUpdate_checkError(String error) {
     return 'Erro ao verificar atualizações: $error';
   }
@@ -568,6 +613,47 @@ class AppLocalizationsPt extends AppLocalizations {
   String attendance_withinMeters(int count) {
     return 'A menos de $count m';
   }
+
+  @override
+  String get banner_choosePhoto => 'Escolher foto';
+
+  @override
+  String get banner_customSubtitle =>
+      'Envie sua foto ou o banner da sua empresa. Aparece só no seu celular!';
+
+  @override
+  String get banner_customTitle => 'Banner personalizado';
+
+  @override
+  String get banner_manageTitle => 'Gerenciar banner personalizado';
+
+  @override
+  String get banner_myBanner => 'Meu banner';
+
+  @override
+  String get banner_newBadge => 'NOVO';
+
+  @override
+  String get banner_removeSubtitle => 'Voltar ao cartão de envio padrão';
+
+  @override
+  String get banner_removeTitle => 'Remover banner';
+
+  @override
+  String get banner_replaceSubtitle =>
+      'Escolha uma nova foto da galeria ou da câmera';
+
+  @override
+  String get banner_replaceTitle => 'Trocar banner';
+
+  @override
+  String get banner_selectPhotoSubtitle => 'Aparece só no seu celular';
+
+  @override
+  String get banner_selectPhotoTitle => 'Selecionar foto do banner';
+
+  @override
+  String get banner_takePhoto => 'Tirar foto';
 
   @override
   String get call_accept => 'Aceitar';
@@ -1929,6 +2015,216 @@ class AppLocalizationsPt extends AppLocalizations {
   String get chatList_yourContacts => 'Seus contatos';
 
   @override
+  String chatSys_actorAdded(String actor, String target) {
+    return '$actor adicionou $target';
+  }
+
+  @override
+  String chatSys_actorAddedTo(String actor, String group, String target) {
+    return '$actor adicionou $target a $group';
+  }
+
+  @override
+  String chatSys_actorAddedYou(String actor) {
+    return '$actor adicionou você';
+  }
+
+  @override
+  String chatSys_actorChangedDesc(String actor) {
+    return '$actor mudou a descrição do grupo';
+  }
+
+  @override
+  String chatSys_actorChangedIcon(String actor) {
+    return '$actor mudou o ícone deste grupo';
+  }
+
+  @override
+  String chatSys_actorDismissedAdmin(String actor, String target) {
+    return '$actor removeu $target como admin';
+  }
+
+  @override
+  String chatSys_actorDismissedAdminIn(
+      String actor, String group, String target) {
+    return '$actor removeu $target como admin em $group';
+  }
+
+  @override
+  String chatSys_actorMadeAdmin(String actor, String target) {
+    return '$actor tornou $target admin';
+  }
+
+  @override
+  String chatSys_actorMadeAdminIn(String actor, String group, String target) {
+    return '$actor tornou $target admin em $group';
+  }
+
+  @override
+  String chatSys_actorRemoved(String actor, String target) {
+    return '$actor removeu $target';
+  }
+
+  @override
+  String chatSys_actorRemovedFrom(String actor, String group, String target) {
+    return '$actor removeu $target de $group';
+  }
+
+  @override
+  String chatSys_actorRenamed(String actor) {
+    return '$actor mudou o nome do grupo';
+  }
+
+  @override
+  String chatSys_actorRenamedTo(String actor, String name) {
+    return '$actor mudou o nome do grupo para \"$name\"';
+  }
+
+  @override
+  String chatSys_actorSetAdminsOnly(String actor) {
+    return '$actor alterou as configurações para que só admins possam enviar mensagens neste grupo';
+  }
+
+  @override
+  String chatSys_actorSetAllCanSend(String actor) {
+    return '$actor alterou as configurações para que todos os participantes possam enviar mensagens neste grupo';
+  }
+
+  @override
+  String get chatSys_callBack => 'Retornar ligação';
+
+  @override
+  String get chatSys_delivered => 'Entregue';
+
+  @override
+  String chatSys_joinedViaLink(String target) {
+    return '$target entrou usando o link de convite deste grupo';
+  }
+
+  @override
+  String chatSys_left(String target) {
+    return '$target saiu';
+  }
+
+  @override
+  String get chatSys_notDeliveredYet => 'Ainda não entregue';
+
+  @override
+  String get chatSys_unreadDivider => 'MENSAGENS NÃO LIDAS';
+
+  @override
+  String chatSys_unreadDividerCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count MENSAGENS NÃO LIDAS',
+      one: '1 MENSAGEM NÃO LIDA',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatSys_youAdded(String target) {
+    return 'Você adicionou $target';
+  }
+
+  @override
+  String get chatSys_youAddedMembers => 'Você adicionou membros';
+
+  @override
+  String chatSys_youAddedTo(String group, String target) {
+    return 'Você adicionou $target a $group';
+  }
+
+  @override
+  String get chatSys_youAreAdmin => 'Agora você é admin';
+
+  @override
+  String chatSys_youAreAdminIn(String group) {
+    return 'Agora você é admin em $group';
+  }
+
+  @override
+  String get chatSys_youChangedDesc => 'Você mudou a descrição do grupo';
+
+  @override
+  String get chatSys_youChangedIcon => 'Você mudou o ícone deste grupo';
+
+  @override
+  String chatSys_youDismissedAdmin(String target) {
+    return 'Você removeu $target como admin';
+  }
+
+  @override
+  String chatSys_youDismissedAdminIn(String group, String target) {
+    return 'Você removeu $target como admin em $group';
+  }
+
+  @override
+  String get chatSys_youJoinedViaLink =>
+      'Você entrou usando o link de convite deste grupo';
+
+  @override
+  String get chatSys_youLeft => 'Você saiu';
+
+  @override
+  String chatSys_youMadeAdmin(String target) {
+    return 'Você tornou $target admin';
+  }
+
+  @override
+  String chatSys_youMadeAdminIn(String group, String target) {
+    return 'Você tornou $target admin em $group';
+  }
+
+  @override
+  String get chatSys_youNoLongerAdmin => 'Você não é mais admin';
+
+  @override
+  String chatSys_youNoLongerAdminIn(String group) {
+    return 'Você não é mais admin em $group';
+  }
+
+  @override
+  String chatSys_youRemoved(String target) {
+    return 'Você removeu $target';
+  }
+
+  @override
+  String chatSys_youRemovedFrom(String group, String target) {
+    return 'Você removeu $target de $group';
+  }
+
+  @override
+  String get chatSys_youRenamed => 'Você mudou o nome do grupo';
+
+  @override
+  String chatSys_youRenamedTo(String name) {
+    return 'Você mudou o nome do grupo para \"$name\"';
+  }
+
+  @override
+  String get chatSys_youSetAdminsOnly =>
+      'Você alterou as configurações para que só admins possam enviar mensagens neste grupo';
+
+  @override
+  String get chatSys_youSetAllCanSend =>
+      'Você alterou as configurações para que todos os participantes possam enviar mensagens neste grupo';
+
+  @override
+  String chatSys_youWereAddedTo(String actor, String group) {
+    return '$actor adicionou você a $group';
+  }
+
+  @override
+  String get chatSys_youWereRemoved => 'Você foi removido';
+
+  @override
+  String chatSys_youWereRemovedFrom(String group) {
+    return 'Você foi removido de $group';
+  }
+
+  @override
   String get chat_addCaptionHint => 'Adicionar uma legenda...';
 
   @override
@@ -2690,6 +2986,112 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String groupAdmin_addMemberConfirm(String group, String name) {
+    return 'Adicionar $name a $group?';
+  }
+
+  @override
+  String get groupAdmin_addMembersSubtitle => 'Adicione contatos a este grupo';
+
+  @override
+  String get groupAdmin_addMembersTitle => 'Adicionar membros';
+
+  @override
+  String get groupAdmin_allMembersCanSend =>
+      'Todos os membros podem enviar mensagens';
+
+  @override
+  String get groupAdmin_allParticipantsNowToast =>
+      'Agora todos os participantes podem enviar mensagens';
+
+  @override
+  String get groupAdmin_candidatesHint =>
+      'Só é possível adicionar contatos salvos e membros dos seus outros grupos.';
+
+  @override
+  String get groupAdmin_contactsPermissionOff =>
+      'A permissão de contatos está desativada. Mostrando apenas membros dos seus grupos.';
+
+  @override
+  String get groupAdmin_dismissAction => 'Remover';
+
+  @override
+  String groupAdmin_dismissAdminConfirm(String name) {
+    return 'Remover $name como admin do grupo?';
+  }
+
+  @override
+  String get groupAdmin_dismissAdminTitle => 'Remover como admin';
+
+  @override
+  String get groupAdmin_enable => 'Ativar';
+
+  @override
+  String get groupAdmin_loadFailedBody =>
+      'Verifique sua internet e tente novamente.';
+
+  @override
+  String get groupAdmin_loadFailedTitle =>
+      'Não foi possível carregar os membros';
+
+  @override
+  String get groupAdmin_makeAdminAction => 'Tornar admin';
+
+  @override
+  String groupAdmin_makeAdminConfirm(String name) {
+    return 'Tornar $name admin do grupo?';
+  }
+
+  @override
+  String get groupAdmin_makeAdminTitle => 'Tornar admin do grupo';
+
+  @override
+  String get groupAdmin_memberAdded => 'Membro adicionado com sucesso';
+
+  @override
+  String get groupAdmin_menuDismissAdmin => 'Remover como admin';
+
+  @override
+  String get groupAdmin_menuMakeAdmin => 'Tornar admin do grupo';
+
+  @override
+  String get groupAdmin_noCandidates =>
+      'Nenhum contato ou membro de grupo para adicionar';
+
+  @override
+  String get groupAdmin_noMatchingContacts => 'Nenhum contato encontrado';
+
+  @override
+  String get groupAdmin_onlyAdminsCanSend => 'Só admins podem enviar mensagens';
+
+  @override
+  String get groupAdmin_onlyAdminsNowToast =>
+      'Agora só admins podem enviar mensagens';
+
+  @override
+  String get groupAdmin_searchHint => 'Buscar nome ou telefone...';
+
+  @override
+  String get groupAdmin_selectContactSubtitle =>
+      'Selecione um contato para adicionar ao grupo';
+
+  @override
+  String get groupAdmin_sendMessagesTitle => 'Enviar mensagens';
+
+  @override
+  String get groupAdmin_tagContactAndGroup => 'Contato • Grupo';
+
+  @override
+  String get groupAdmin_tagSavedContact => 'Contato salvo';
+
+  @override
+  String get groupAdmin_tagYourGroups => 'Seus grupos';
+
+  @override
+  String get groupAdmin_updateSettingFailed =>
+      'Não foi possível atualizar a configuração do grupo';
+
+  @override
   String get groupDialog_audioCall => 'Chamada de voz';
 
   @override
@@ -3447,6 +3849,59 @@ class AppLocalizationsPt extends AppLocalizations {
   String get intro_walkieTitle => 'Recurso de\nWalkie-Talkie';
 
   @override
+  String get legal_dpaSubtitle => 'Como processamos os dados dos clientes';
+
+  @override
+  String get legal_dpaTitle => 'Acordo de Processamento de Dados';
+
+  @override
+  String get legal_draftNotice =>
+      'Estes documentos são rascunhos e podem mudar.';
+
+  @override
+  String get legal_emptyDocument => 'Este documento ainda não está disponível.';
+
+  @override
+  String get legal_enterpriseSubtitle => 'Para clientes empresariais';
+
+  @override
+  String get legal_enterpriseTitle => 'Contrato de Serviço Empresarial';
+
+  @override
+  String get legal_loadError => 'Não foi possível abrir este documento.';
+
+  @override
+  String get legal_menuSubtitle => 'Políticas e acordos';
+
+  @override
+  String get legal_privacySubtitle => 'Como coletamos e usamos seus dados';
+
+  @override
+  String get legal_privacyTitle => 'Política de Privacidade';
+
+  @override
+  String get legal_retentionSubtitle => 'Por quanto tempo mantemos os dados';
+
+  @override
+  String get legal_retentionTitle => 'Política de Retenção e Exclusão de Dados';
+
+  @override
+  String get legal_securitySubtitle => 'Como protegemos os dados';
+
+  @override
+  String get legal_securityTitle =>
+      'Política de Proteção de Dados e Segurança da Informação';
+
+  @override
+  String get legal_termsSubtitle => 'Regras de uso do FG Tracker';
+
+  @override
+  String get legal_termsTitle => 'Termos e Condições (EULA)';
+
+  @override
+  String get legal_title => 'Informações legais';
+
+  @override
   String login_dataSecure(String percent) {
     return 'Seus dados estão $percent seguros';
   }
@@ -3504,59 +3959,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get menu_contactUsSubtitle => 'Saiba mais sobre nós';
-
-  @override
-  String get legal_title => 'Informações legais';
-
-  @override
-  String get legal_menuSubtitle => 'Políticas e acordos';
-
-  @override
-  String get legal_draftNotice =>
-      'Estes documentos são rascunhos e podem mudar.';
-
-  @override
-  String get legal_privacyTitle => 'Política de Privacidade';
-
-  @override
-  String get legal_privacySubtitle => 'Como coletamos e usamos seus dados';
-
-  @override
-  String get legal_termsTitle => 'Termos e Condições (EULA)';
-
-  @override
-  String get legal_termsSubtitle => 'Regras de uso do FG Tracker';
-
-  @override
-  String get legal_enterpriseTitle => 'Contrato de Serviço Empresarial';
-
-  @override
-  String get legal_enterpriseSubtitle => 'Para clientes empresariais';
-
-  @override
-  String get legal_dpaTitle => 'Acordo de Processamento de Dados';
-
-  @override
-  String get legal_dpaSubtitle => 'Como processamos os dados dos clientes';
-
-  @override
-  String get legal_retentionTitle => 'Política de Retenção e Exclusão de Dados';
-
-  @override
-  String get legal_retentionSubtitle => 'Por quanto tempo mantemos os dados';
-
-  @override
-  String get legal_securityTitle =>
-      'Política de Proteção de Dados e Segurança da Informação';
-
-  @override
-  String get legal_securitySubtitle => 'Como protegemos os dados';
-
-  @override
-  String get legal_emptyDocument => 'Este documento ainda não está disponível.';
-
-  @override
-  String get legal_loadError => 'Não foi possível abrir este documento.';
 
   @override
   String get menu_editProfile => 'Editar Perfil';

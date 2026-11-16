@@ -117,18 +117,18 @@ class GroupController extends GetxController {
         }
 
         Utils().fluttertoast(onlyAdminsCanSend
-            ? "Only admins can send messages now"
-            : "All participants can send messages now");
+            ? appL10n.groupAdmin_onlyAdminsNowToast
+            : appL10n.groupAdmin_allParticipantsNowToast);
 
         _refreshGroupProfile(groupId);
         return true;
       } else {
-        Utils().fluttertoast(result.message ?? "Failed to update group setting");
+        Utils().fluttertoast(result.message ?? appL10n.groupAdmin_updateSettingFailed);
         return false;
       }
     } catch (e) {
       Loading().dismissloading();
-      Utils().fluttertoast("Failed to update group setting: $e");
+      Utils().fluttertoast(appL10n.groupAdmin_updateSettingFailed);
       return false;
     }
   }
@@ -336,7 +336,7 @@ class GroupController extends GetxController {
       Loading().dismissloading();
 
       if (result.status == true) {
-        Utils().fluttertoast(result.message ?? "Member added successfully");
+        Utils().fluttertoast(result.message ?? appL10n.groupAdmin_memberAdded);
         onSuccess(true);
       } else {
         CommonDialog.errorMessage(result.message);

@@ -64,8 +64,8 @@ Widget _translateSwipeBackground() => Container(
 
 Widget _buildUnreadDivider(int? unreadCount) {
   final label = (unreadCount != null && unreadCount > 0)
-      ? "$unreadCount UNREAD MESSAGES"
-      : "UNREAD MESSAGES";
+      ? appL10n.chatSys_unreadDividerCount(unreadCount)
+      : appL10n.chatSys_unreadDivider;
   return Container(
     margin: EdgeInsets.symmetric(vertical: 8.h),
     child: Row(

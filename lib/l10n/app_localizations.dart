@@ -307,6 +307,90 @@ abstract class AppLocalizations {
   /// **'Real-time location sharing with all group members.'**
   String get about_whyRealTime;
 
+  /// No description provided for @account_deleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to permanently delete your account?'**
+  String get account_deleteConfirm;
+
+  /// No description provided for @account_deleteDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account?'**
+  String get account_deleteDialogTitle;
+
+  /// No description provided for @account_deleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete account. Please try again.'**
+  String get account_deleteFailed;
+
+  /// No description provided for @account_deleteForever.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Forever'**
+  String get account_deleteForever;
+
+  /// No description provided for @account_deleteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently erase account & data'**
+  String get account_deleteSubtitle;
+
+  /// No description provided for @account_deleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get account_deleteTitle;
+
+  /// No description provided for @account_deleteWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This action is immediate and cannot be undone. All your profile information, location history, group memberships, and active sessions will be permanently erased.'**
+  String get account_deleteWarning;
+
+  /// No description provided for @account_deletedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted successfully'**
+  String get account_deletedToast;
+
+  /// No description provided for @account_reasonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason for leaving:'**
+  String get account_reasonLabel;
+
+  /// No description provided for @account_reasonNoLongerNeed.
+  ///
+  /// In en, this message translates to:
+  /// **'I no longer need this account'**
+  String get account_reasonNoLongerNeed;
+
+  /// No description provided for @account_reasonNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many notifications'**
+  String get account_reasonNotifications;
+
+  /// No description provided for @account_reasonOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other reason'**
+  String get account_reasonOther;
+
+  /// No description provided for @account_reasonPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy concerns'**
+  String get account_reasonPrivacy;
+
+  /// No description provided for @account_reasonSwitching.
+  ///
+  /// In en, this message translates to:
+  /// **'Switching to another device'**
+  String get account_reasonSwitching;
+
   /// No description provided for @appUpdate_checkError.
   ///
   /// In en, this message translates to:
@@ -1092,6 +1176,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Within {count} m'**
   String attendance_withinMeters(int count);
+
+  /// No description provided for @banner_choosePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a photo'**
+  String get banner_choosePhoto;
+
+  /// No description provided for @banner_customSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload your own photo or company banner. Displays only on your phone!'**
+  String get banner_customSubtitle;
+
+  /// No description provided for @banner_customTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Banner'**
+  String get banner_customTitle;
+
+  /// No description provided for @banner_manageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Custom Banner'**
+  String get banner_manageTitle;
+
+  /// No description provided for @banner_myBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'My Banner'**
+  String get banner_myBanner;
+
+  /// No description provided for @banner_newBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW'**
+  String get banner_newBadge;
+
+  /// No description provided for @banner_removeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back to the default upload card'**
+  String get banner_removeSubtitle;
+
+  /// No description provided for @banner_removeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Banner'**
+  String get banner_removeTitle;
+
+  /// No description provided for @banner_replaceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a new photo from Gallery or Camera'**
+  String get banner_replaceSubtitle;
+
+  /// No description provided for @banner_replaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace Banner'**
+  String get banner_replaceTitle;
+
+  /// No description provided for @banner_selectPhotoSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown only on your phone'**
+  String get banner_selectPhotoSubtitle;
+
+  /// No description provided for @banner_selectPhotoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Banner Photo'**
+  String get banner_selectPhotoTitle;
+
+  /// No description provided for @banner_takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get banner_takePhoto;
 
   /// Button: accept an incoming call
   ///
@@ -3344,6 +3506,283 @@ abstract class AppLocalizations {
   /// **'Your contacts'**
   String get chatList_yourContacts;
 
+  /// No description provided for @chatSys_actorAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} added {target}'**
+  String chatSys_actorAdded(String actor, String target);
+
+  /// No description provided for @chatSys_actorAddedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} added {target} to {group}'**
+  String chatSys_actorAddedTo(String actor, String group, String target);
+
+  /// No description provided for @chatSys_actorAddedYou.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} added you'**
+  String chatSys_actorAddedYou(String actor);
+
+  /// No description provided for @chatSys_actorChangedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} changed the group description'**
+  String chatSys_actorChangedDesc(String actor);
+
+  /// No description provided for @chatSys_actorChangedIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} changed this group\'s icon'**
+  String chatSys_actorChangedIcon(String actor);
+
+  /// No description provided for @chatSys_actorDismissedAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} removed {target} as an admin'**
+  String chatSys_actorDismissedAdmin(String actor, String target);
+
+  /// No description provided for @chatSys_actorDismissedAdminIn.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} removed {target} as an admin in {group}'**
+  String chatSys_actorDismissedAdminIn(
+      String actor, String group, String target);
+
+  /// No description provided for @chatSys_actorMadeAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} added {target} as an admin'**
+  String chatSys_actorMadeAdmin(String actor, String target);
+
+  /// No description provided for @chatSys_actorMadeAdminIn.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} added {target} as an admin in {group}'**
+  String chatSys_actorMadeAdminIn(String actor, String group, String target);
+
+  /// No description provided for @chatSys_actorRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} removed {target}'**
+  String chatSys_actorRemoved(String actor, String target);
+
+  /// No description provided for @chatSys_actorRemovedFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} removed {target} from {group}'**
+  String chatSys_actorRemovedFrom(String actor, String group, String target);
+
+  /// No description provided for @chatSys_actorRenamed.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} changed the group name'**
+  String chatSys_actorRenamed(String actor);
+
+  /// No description provided for @chatSys_actorRenamedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} changed the group name to \"{name}\"'**
+  String chatSys_actorRenamedTo(String actor, String name);
+
+  /// No description provided for @chatSys_actorSetAdminsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} changed this group\'s settings to allow only admins to send messages to this group'**
+  String chatSys_actorSetAdminsOnly(String actor);
+
+  /// No description provided for @chatSys_actorSetAllCanSend.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} changed this group\'s settings to allow all participants to send messages to this group'**
+  String chatSys_actorSetAllCanSend(String actor);
+
+  /// No description provided for @chatSys_callBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Call back'**
+  String get chatSys_callBack;
+
+  /// No description provided for @chatSys_delivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get chatSys_delivered;
+
+  /// No description provided for @chatSys_joinedViaLink.
+  ///
+  /// In en, this message translates to:
+  /// **'{target} joined using this group\'s invite link'**
+  String chatSys_joinedViaLink(String target);
+
+  /// No description provided for @chatSys_left.
+  ///
+  /// In en, this message translates to:
+  /// **'{target} left'**
+  String chatSys_left(String target);
+
+  /// No description provided for @chatSys_notDeliveredYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not delivered yet'**
+  String get chatSys_notDeliveredYet;
+
+  /// No description provided for @chatSys_unreadDivider.
+  ///
+  /// In en, this message translates to:
+  /// **'UNREAD MESSAGES'**
+  String get chatSys_unreadDivider;
+
+  /// No description provided for @chatSys_unreadDividerCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 UNREAD MESSAGE} other{{count} UNREAD MESSAGES}}'**
+  String chatSys_unreadDividerCount(int count);
+
+  /// No description provided for @chatSys_youAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'You added {target}'**
+  String chatSys_youAdded(String target);
+
+  /// No description provided for @chatSys_youAddedMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'You added members'**
+  String get chatSys_youAddedMembers;
+
+  /// No description provided for @chatSys_youAddedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'You added {target} to {group}'**
+  String chatSys_youAddedTo(String group, String target);
+
+  /// No description provided for @chatSys_youAreAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'You are now an admin'**
+  String get chatSys_youAreAdmin;
+
+  /// No description provided for @chatSys_youAreAdminIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You are now an admin in {group}'**
+  String chatSys_youAreAdminIn(String group);
+
+  /// No description provided for @chatSys_youChangedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You changed the group description'**
+  String get chatSys_youChangedDesc;
+
+  /// No description provided for @chatSys_youChangedIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'You changed this group\'s icon'**
+  String get chatSys_youChangedIcon;
+
+  /// No description provided for @chatSys_youDismissedAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'You removed {target} as an admin'**
+  String chatSys_youDismissedAdmin(String target);
+
+  /// No description provided for @chatSys_youDismissedAdminIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You removed {target} as an admin in {group}'**
+  String chatSys_youDismissedAdminIn(String group, String target);
+
+  /// No description provided for @chatSys_youJoinedViaLink.
+  ///
+  /// In en, this message translates to:
+  /// **'You joined using this group\'s invite link'**
+  String get chatSys_youJoinedViaLink;
+
+  /// No description provided for @chatSys_youLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'You left'**
+  String get chatSys_youLeft;
+
+  /// No description provided for @chatSys_youMadeAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'You added {target} as an admin'**
+  String chatSys_youMadeAdmin(String target);
+
+  /// No description provided for @chatSys_youMadeAdminIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You added {target} as an admin in {group}'**
+  String chatSys_youMadeAdminIn(String group, String target);
+
+  /// No description provided for @chatSys_youNoLongerAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'You are no longer an admin'**
+  String get chatSys_youNoLongerAdmin;
+
+  /// No description provided for @chatSys_youNoLongerAdminIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You are no longer an admin in {group}'**
+  String chatSys_youNoLongerAdminIn(String group);
+
+  /// No description provided for @chatSys_youRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'You removed {target}'**
+  String chatSys_youRemoved(String target);
+
+  /// No description provided for @chatSys_youRemovedFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'You removed {target} from {group}'**
+  String chatSys_youRemovedFrom(String group, String target);
+
+  /// No description provided for @chatSys_youRenamed.
+  ///
+  /// In en, this message translates to:
+  /// **'You changed the group name'**
+  String get chatSys_youRenamed;
+
+  /// No description provided for @chatSys_youRenamedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'You changed the group name to \"{name}\"'**
+  String chatSys_youRenamedTo(String name);
+
+  /// No description provided for @chatSys_youSetAdminsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'You changed this group\'s settings to allow only admins to send messages to this group'**
+  String get chatSys_youSetAdminsOnly;
+
+  /// No description provided for @chatSys_youSetAllCanSend.
+  ///
+  /// In en, this message translates to:
+  /// **'You changed this group\'s settings to allow all participants to send messages to this group'**
+  String get chatSys_youSetAllCanSend;
+
+  /// No description provided for @chatSys_youWereAddedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'You were added to {group} by {actor}'**
+  String chatSys_youWereAddedTo(String actor, String group);
+
+  /// No description provided for @chatSys_youWereRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'You were removed'**
+  String get chatSys_youWereRemoved;
+
+  /// No description provided for @chatSys_youWereRemovedFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'You were removed from {group}'**
+  String chatSys_youWereRemovedFrom(String group);
+
   /// No description provided for @chat_addCaptionHint.
   ///
   /// In en, this message translates to:
@@ -4633,6 +5072,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update on {storeName}'**
   String forceUpdate_updateOnStore(String storeName);
+
+  /// No description provided for @groupAdmin_addMemberConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {name} to {group}?'**
+  String groupAdmin_addMemberConfirm(String group, String name);
+
+  /// No description provided for @groupAdmin_addMembersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add contacts to this group'**
+  String get groupAdmin_addMembersSubtitle;
+
+  /// No description provided for @groupAdmin_addMembersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Members'**
+  String get groupAdmin_addMembersTitle;
+
+  /// No description provided for @groupAdmin_allMembersCanSend.
+  ///
+  /// In en, this message translates to:
+  /// **'All members can send messages'**
+  String get groupAdmin_allMembersCanSend;
+
+  /// No description provided for @groupAdmin_allParticipantsNowToast.
+  ///
+  /// In en, this message translates to:
+  /// **'All participants can send messages now'**
+  String get groupAdmin_allParticipantsNowToast;
+
+  /// No description provided for @groupAdmin_candidatesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only saved contacts and members from your other groups can be added.'**
+  String get groupAdmin_candidatesHint;
+
+  /// No description provided for @groupAdmin_contactsPermissionOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts permission is off. Showing members from your groups only.'**
+  String get groupAdmin_contactsPermissionOff;
+
+  /// No description provided for @groupAdmin_dismissAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get groupAdmin_dismissAction;
+
+  /// No description provided for @groupAdmin_dismissAdminConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss {name} as group admin?'**
+  String groupAdmin_dismissAdminConfirm(String name);
+
+  /// No description provided for @groupAdmin_dismissAdminTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss as Admin'**
+  String get groupAdmin_dismissAdminTitle;
+
+  /// No description provided for @groupAdmin_enable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable'**
+  String get groupAdmin_enable;
+
+  /// No description provided for @groupAdmin_loadFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet and try again.'**
+  String get groupAdmin_loadFailedBody;
+
+  /// No description provided for @groupAdmin_loadFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load members'**
+  String get groupAdmin_loadFailedTitle;
+
+  /// No description provided for @groupAdmin_makeAdminAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Make Admin'**
+  String get groupAdmin_makeAdminAction;
+
+  /// No description provided for @groupAdmin_makeAdminConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Make {name} a group admin?'**
+  String groupAdmin_makeAdminConfirm(String name);
+
+  /// No description provided for @groupAdmin_makeAdminTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Make Group Admin'**
+  String get groupAdmin_makeAdminTitle;
+
+  /// No description provided for @groupAdmin_memberAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Member added successfully'**
+  String get groupAdmin_memberAdded;
+
+  /// No description provided for @groupAdmin_menuDismissAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss as admin'**
+  String get groupAdmin_menuDismissAdmin;
+
+  /// No description provided for @groupAdmin_menuMakeAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Make group admin'**
+  String get groupAdmin_menuMakeAdmin;
+
+  /// No description provided for @groupAdmin_noCandidates.
+  ///
+  /// In en, this message translates to:
+  /// **'No contacts or group members found to add'**
+  String get groupAdmin_noCandidates;
+
+  /// No description provided for @groupAdmin_noMatchingContacts.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching contacts found'**
+  String get groupAdmin_noMatchingContacts;
+
+  /// No description provided for @groupAdmin_onlyAdminsCanSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Only admins can send messages'**
+  String get groupAdmin_onlyAdminsCanSend;
+
+  /// No description provided for @groupAdmin_onlyAdminsNowToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Only admins can send messages now'**
+  String get groupAdmin_onlyAdminsNowToast;
+
+  /// No description provided for @groupAdmin_searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search name or phone number...'**
+  String get groupAdmin_searchHint;
+
+  /// No description provided for @groupAdmin_selectContactSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a contact to add to group'**
+  String get groupAdmin_selectContactSubtitle;
+
+  /// No description provided for @groupAdmin_sendMessagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Messages'**
+  String get groupAdmin_sendMessagesTitle;
+
+  /// No description provided for @groupAdmin_tagContactAndGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact • Group'**
+  String get groupAdmin_tagContactAndGroup;
+
+  /// No description provided for @groupAdmin_tagSavedContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved contact'**
+  String get groupAdmin_tagSavedContact;
+
+  /// No description provided for @groupAdmin_tagYourGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'Your groups'**
+  String get groupAdmin_tagYourGroups;
+
+  /// No description provided for @groupAdmin_updateSettingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update group setting'**
+  String get groupAdmin_updateSettingFailed;
 
   /// No description provided for @groupDialog_audioCall.
   ///
@@ -5948,6 +6567,108 @@ abstract class AppLocalizations {
   /// **'Walkie-Talkie\nfeature'**
   String get intro_walkieTitle;
 
+  /// No description provided for @legal_dpaSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How we process customer data'**
+  String get legal_dpaSubtitle;
+
+  /// No description provided for @legal_dpaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Processing Agreement'**
+  String get legal_dpaTitle;
+
+  /// No description provided for @legal_draftNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'These documents are drafts and may change.'**
+  String get legal_draftNotice;
+
+  /// No description provided for @legal_emptyDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'This document is not available yet.'**
+  String get legal_emptyDocument;
+
+  /// No description provided for @legal_enterpriseSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'For business customers'**
+  String get legal_enterpriseSubtitle;
+
+  /// No description provided for @legal_enterpriseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enterprise Service Agreement'**
+  String get legal_enterpriseTitle;
+
+  /// No description provided for @legal_loadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open this document.'**
+  String get legal_loadError;
+
+  /// No description provided for @legal_menuSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Policies and agreements'**
+  String get legal_menuSubtitle;
+
+  /// No description provided for @legal_privacySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How we collect and use your data'**
+  String get legal_privacySubtitle;
+
+  /// No description provided for @legal_privacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get legal_privacyTitle;
+
+  /// No description provided for @legal_retentionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How long we keep data'**
+  String get legal_retentionSubtitle;
+
+  /// No description provided for @legal_retentionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Retention & Deletion Policy'**
+  String get legal_retentionTitle;
+
+  /// No description provided for @legal_securitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How we protect data'**
+  String get legal_securitySubtitle;
+
+  /// No description provided for @legal_securityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Protection & Information Security Policy'**
+  String get legal_securityTitle;
+
+  /// No description provided for @legal_termsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules for using FG Tracker'**
+  String get legal_termsSubtitle;
+
+  /// No description provided for @legal_termsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms & Conditions (EULA)'**
+  String get legal_termsTitle;
+
+  /// No description provided for @legal_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get legal_title;
+
   /// No description provided for @login_dataSecure.
   ///
   /// In en, this message translates to:
@@ -6049,108 +6770,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Know more about us'**
   String get menu_contactUsSubtitle;
-
-  /// No description provided for @legal_title.
-  ///
-  /// In en, this message translates to:
-  /// **'Legal'**
-  String get legal_title;
-
-  /// No description provided for @legal_menuSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Policies and agreements'**
-  String get legal_menuSubtitle;
-
-  /// No description provided for @legal_draftNotice.
-  ///
-  /// In en, this message translates to:
-  /// **'These documents are drafts and may change.'**
-  String get legal_draftNotice;
-
-  /// No description provided for @legal_privacyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Privacy Policy'**
-  String get legal_privacyTitle;
-
-  /// No description provided for @legal_privacySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'How we collect and use your data'**
-  String get legal_privacySubtitle;
-
-  /// No description provided for @legal_termsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Terms & Conditions (EULA)'**
-  String get legal_termsTitle;
-
-  /// No description provided for @legal_termsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Rules for using FG Tracker'**
-  String get legal_termsSubtitle;
-
-  /// No description provided for @legal_enterpriseTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Enterprise Service Agreement'**
-  String get legal_enterpriseTitle;
-
-  /// No description provided for @legal_enterpriseSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'For business customers'**
-  String get legal_enterpriseSubtitle;
-
-  /// No description provided for @legal_dpaTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Data Processing Agreement'**
-  String get legal_dpaTitle;
-
-  /// No description provided for @legal_dpaSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'How we process customer data'**
-  String get legal_dpaSubtitle;
-
-  /// No description provided for @legal_retentionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Data Retention & Deletion Policy'**
-  String get legal_retentionTitle;
-
-  /// No description provided for @legal_retentionSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'How long we keep data'**
-  String get legal_retentionSubtitle;
-
-  /// No description provided for @legal_securityTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Data Protection & Information Security Policy'**
-  String get legal_securityTitle;
-
-  /// No description provided for @legal_securitySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'How we protect data'**
-  String get legal_securitySubtitle;
-
-  /// No description provided for @legal_emptyDocument.
-  ///
-  /// In en, this message translates to:
-  /// **'This document is not available yet.'**
-  String get legal_emptyDocument;
-
-  /// No description provided for @legal_loadError.
-  ///
-  /// In en, this message translates to:
-  /// **'Couldn\'t open this document.'**
-  String get legal_loadError;
 
   /// No description provided for @menu_editProfile.
   ///

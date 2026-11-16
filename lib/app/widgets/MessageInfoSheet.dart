@@ -256,14 +256,14 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
                     _buildSectionTitle(
                       icon: Icons.done_all,
                       iconColor: Colors.grey.shade600,
-                      title: "Delivered",
+                      title: appL10n.chatSys_delivered,
                       count: _deliveredToList.length,
                       total: _isGroup ? totalRecipients : null,
                     ),
 
                     if (_isGroup)
                       ...(_deliveredToList.isEmpty
-                          ? [_buildEmptyTile("Not delivered yet")]
+                          ? [_buildEmptyTile(appL10n.chatSys_notDeliveredYet)]
                           : _deliveredToList.map((m) => _buildMemberTile(m, isSeen: false)))
                     else
                       _buildPrivateDeliveredTile(),
@@ -559,7 +559,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
     );
 
     if (!isDelivered) {
-      return _buildEmptyTile("Not delivered yet");
+      return _buildEmptyTile(appL10n.chatSys_notDeliveredYet);
     }
 
     final name = widget.memberData?.name?.toString().trim().isNotEmpty == true

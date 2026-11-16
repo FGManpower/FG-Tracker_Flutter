@@ -98,6 +98,49 @@ class AppLocalizationsJa extends AppLocalizations {
   String get about_whyRealTime => 'グループ全員とのリアルタイムな位置情報共有。';
 
   @override
+  String get account_deleteConfirm => 'アカウントを完全に削除してもよろしいですか？';
+
+  @override
+  String get account_deleteDialogTitle => 'アカウントを削除しますか？';
+
+  @override
+  String get account_deleteFailed => 'アカウントを削除できませんでした。もう一度お試しください。';
+
+  @override
+  String get account_deleteForever => '完全に削除';
+
+  @override
+  String get account_deleteSubtitle => 'アカウントとデータを完全に消去';
+
+  @override
+  String get account_deleteTitle => 'アカウントを削除';
+
+  @override
+  String get account_deleteWarning =>
+      'この操作はすぐに実行され、元に戻せません。プロフィール情報、位置情報の履歴、グループのメンバーシップ、アクティブなセッションはすべて完全に消去されます。';
+
+  @override
+  String get account_deletedToast => 'アカウントを削除しました';
+
+  @override
+  String get account_reasonLabel => '退会の理由：';
+
+  @override
+  String get account_reasonNoLongerNeed => 'このアカウントはもう必要ない';
+
+  @override
+  String get account_reasonNotifications => '通知が多すぎる';
+
+  @override
+  String get account_reasonOther => 'その他の理由';
+
+  @override
+  String get account_reasonPrivacy => 'プライバシーが心配';
+
+  @override
+  String get account_reasonSwitching => '別の端末に乗り換える';
+
+  @override
   String appUpdate_checkError(String error) {
     return '更新確認エラー: $error';
   }
@@ -535,6 +578,45 @@ class AppLocalizationsJa extends AppLocalizations {
   String attendance_withinMeters(int count) {
     return '${count}m以内';
   }
+
+  @override
+  String get banner_choosePhoto => '写真を選ぶ';
+
+  @override
+  String get banner_customSubtitle => '自分の写真や会社のバナーをアップロード。あなたのスマホにだけ表示されます！';
+
+  @override
+  String get banner_customTitle => 'カスタムバナー';
+
+  @override
+  String get banner_manageTitle => 'カスタムバナーの管理';
+
+  @override
+  String get banner_myBanner => 'マイバナー';
+
+  @override
+  String get banner_newBadge => '新着';
+
+  @override
+  String get banner_removeSubtitle => '標準のアップロードカードに戻す';
+
+  @override
+  String get banner_removeTitle => 'バナーを削除';
+
+  @override
+  String get banner_replaceSubtitle => 'ギャラリーまたはカメラから新しい写真を選択';
+
+  @override
+  String get banner_replaceTitle => 'バナーを変更';
+
+  @override
+  String get banner_selectPhotoSubtitle => 'あなたのスマホにのみ表示';
+
+  @override
+  String get banner_selectPhotoTitle => 'バナー写真を選択';
+
+  @override
+  String get banner_takePhoto => '写真を撮る';
 
   @override
   String get call_accept => '応答';
@@ -1839,6 +1921,213 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatList_yourContacts => '連絡先';
 
   @override
+  String chatSys_actorAdded(String actor, String target) {
+    return '$actorが$targetを追加しました';
+  }
+
+  @override
+  String chatSys_actorAddedTo(String actor, String group, String target) {
+    return '$actorが$targetを$groupに追加しました';
+  }
+
+  @override
+  String chatSys_actorAddedYou(String actor) {
+    return '$actorがあなたを追加しました';
+  }
+
+  @override
+  String chatSys_actorChangedDesc(String actor) {
+    return '$actorがグループの説明を変更しました';
+  }
+
+  @override
+  String chatSys_actorChangedIcon(String actor) {
+    return '$actorがこのグループのアイコンを変更しました';
+  }
+
+  @override
+  String chatSys_actorDismissedAdmin(String actor, String target) {
+    return '$actorが$targetを管理者から外しました';
+  }
+
+  @override
+  String chatSys_actorDismissedAdminIn(
+      String actor, String group, String target) {
+    return '$actorが$targetを$groupの管理者から外しました';
+  }
+
+  @override
+  String chatSys_actorMadeAdmin(String actor, String target) {
+    return '$actorが$targetを管理者にしました';
+  }
+
+  @override
+  String chatSys_actorMadeAdminIn(String actor, String group, String target) {
+    return '$actorが$targetを$groupの管理者にしました';
+  }
+
+  @override
+  String chatSys_actorRemoved(String actor, String target) {
+    return '$actorが$targetを削除しました';
+  }
+
+  @override
+  String chatSys_actorRemovedFrom(String actor, String group, String target) {
+    return '$actorが$targetを$groupから削除しました';
+  }
+
+  @override
+  String chatSys_actorRenamed(String actor) {
+    return '$actorがグループ名を変更しました';
+  }
+
+  @override
+  String chatSys_actorRenamedTo(String actor, String name) {
+    return '$actorがグループ名を\"$name\"に変更しました';
+  }
+
+  @override
+  String chatSys_actorSetAdminsOnly(String actor) {
+    return '$actorがグループ設定を変更し、管理者のみがメッセージを送信できるようにしました';
+  }
+
+  @override
+  String chatSys_actorSetAllCanSend(String actor) {
+    return '$actorがグループ設定を変更し、全員がメッセージを送信できるようにしました';
+  }
+
+  @override
+  String get chatSys_callBack => 'かけ直す';
+
+  @override
+  String get chatSys_delivered => '配信済み';
+
+  @override
+  String chatSys_joinedViaLink(String target) {
+    return '$targetがこのグループの招待リンクから参加しました';
+  }
+
+  @override
+  String chatSys_left(String target) {
+    return '$targetが退出しました';
+  }
+
+  @override
+  String get chatSys_notDeliveredYet => '未配信';
+
+  @override
+  String get chatSys_unreadDivider => '未読メッセージ';
+
+  @override
+  String chatSys_unreadDividerCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '未読メッセージ $count 件',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatSys_youAdded(String target) {
+    return 'あなたが$targetを追加しました';
+  }
+
+  @override
+  String get chatSys_youAddedMembers => 'あなたがメンバーを追加しました';
+
+  @override
+  String chatSys_youAddedTo(String group, String target) {
+    return 'あなたが$targetを$groupに追加しました';
+  }
+
+  @override
+  String get chatSys_youAreAdmin => 'あなたは管理者になりました';
+
+  @override
+  String chatSys_youAreAdminIn(String group) {
+    return 'あなたは$groupの管理者になりました';
+  }
+
+  @override
+  String get chatSys_youChangedDesc => 'あなたがグループの説明を変更しました';
+
+  @override
+  String get chatSys_youChangedIcon => 'あなたがこのグループのアイコンを変更しました';
+
+  @override
+  String chatSys_youDismissedAdmin(String target) {
+    return 'あなたが$targetを管理者から外しました';
+  }
+
+  @override
+  String chatSys_youDismissedAdminIn(String group, String target) {
+    return 'あなたが$targetを$groupの管理者から外しました';
+  }
+
+  @override
+  String get chatSys_youJoinedViaLink => 'このグループの招待リンクから参加しました';
+
+  @override
+  String get chatSys_youLeft => 'あなたが退出しました';
+
+  @override
+  String chatSys_youMadeAdmin(String target) {
+    return 'あなたが$targetを管理者にしました';
+  }
+
+  @override
+  String chatSys_youMadeAdminIn(String group, String target) {
+    return 'あなたが$targetを$groupの管理者にしました';
+  }
+
+  @override
+  String get chatSys_youNoLongerAdmin => 'あなたは管理者ではなくなりました';
+
+  @override
+  String chatSys_youNoLongerAdminIn(String group) {
+    return 'あなたは$groupの管理者ではなくなりました';
+  }
+
+  @override
+  String chatSys_youRemoved(String target) {
+    return 'あなたが$targetを削除しました';
+  }
+
+  @override
+  String chatSys_youRemovedFrom(String group, String target) {
+    return 'あなたが$targetを$groupから削除しました';
+  }
+
+  @override
+  String get chatSys_youRenamed => 'あなたがグループ名を変更しました';
+
+  @override
+  String chatSys_youRenamedTo(String name) {
+    return 'あなたがグループ名を\"$name\"に変更しました';
+  }
+
+  @override
+  String get chatSys_youSetAdminsOnly =>
+      'あなたがグループ設定を変更し、管理者のみがメッセージを送信できるようにしました';
+
+  @override
+  String get chatSys_youSetAllCanSend => 'あなたがグループ設定を変更し、全員がメッセージを送信できるようにしました';
+
+  @override
+  String chatSys_youWereAddedTo(String actor, String group) {
+    return '$actorがあなたを$groupに追加しました';
+  }
+
+  @override
+  String get chatSys_youWereRemoved => '削除されました';
+
+  @override
+  String chatSys_youWereRemovedFrom(String group) {
+    return '$groupから削除されました';
+  }
+
+  @override
   String get chat_addCaptionHint => 'キャプションを追加...';
 
   @override
@@ -2572,6 +2861,103 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String groupAdmin_addMemberConfirm(String group, String name) {
+    return '$nameさんを$groupに追加しますか？';
+  }
+
+  @override
+  String get groupAdmin_addMembersSubtitle => 'このグループに連絡先を追加';
+
+  @override
+  String get groupAdmin_addMembersTitle => 'メンバーを追加';
+
+  @override
+  String get groupAdmin_allMembersCanSend => '全メンバーがメッセージを送信できます';
+
+  @override
+  String get groupAdmin_allParticipantsNowToast => '全参加者がメッセージを送信できるようになりました';
+
+  @override
+  String get groupAdmin_candidatesHint => '追加できるのは保存済みの連絡先と、他の参加グループのメンバーのみです。';
+
+  @override
+  String get groupAdmin_contactsPermissionOff =>
+      '連絡先の権限がオフです。参加中のグループのメンバーのみ表示しています。';
+
+  @override
+  String get groupAdmin_dismissAction => '外す';
+
+  @override
+  String groupAdmin_dismissAdminConfirm(String name) {
+    return '$nameさんをグループ管理者から外しますか？';
+  }
+
+  @override
+  String get groupAdmin_dismissAdminTitle => '管理者から外す';
+
+  @override
+  String get groupAdmin_enable => '有効にする';
+
+  @override
+  String get groupAdmin_loadFailedBody => 'インターネット接続を確認して、もう一度お試しください。';
+
+  @override
+  String get groupAdmin_loadFailedTitle => 'メンバーを読み込めませんでした';
+
+  @override
+  String get groupAdmin_makeAdminAction => '管理者にする';
+
+  @override
+  String groupAdmin_makeAdminConfirm(String name) {
+    return '$nameさんをグループ管理者にしますか？';
+  }
+
+  @override
+  String get groupAdmin_makeAdminTitle => 'グループ管理者にする';
+
+  @override
+  String get groupAdmin_memberAdded => 'メンバーを追加しました';
+
+  @override
+  String get groupAdmin_menuDismissAdmin => '管理者から外す';
+
+  @override
+  String get groupAdmin_menuMakeAdmin => 'グループ管理者にする';
+
+  @override
+  String get groupAdmin_noCandidates => '追加できる連絡先やグループメンバーがいません';
+
+  @override
+  String get groupAdmin_noMatchingContacts => '一致する連絡先が見つかりません';
+
+  @override
+  String get groupAdmin_onlyAdminsCanSend => '管理者のみメッセージを送信できます';
+
+  @override
+  String get groupAdmin_onlyAdminsNowToast => '管理者のみメッセージを送信できるようになりました';
+
+  @override
+  String get groupAdmin_searchHint => '名前または電話番号で検索...';
+
+  @override
+  String get groupAdmin_selectContactSubtitle => 'グループに追加する連絡先を選択';
+
+  @override
+  String get groupAdmin_sendMessagesTitle => 'メッセージの送信';
+
+  @override
+  String get groupAdmin_tagContactAndGroup => '連絡先 • グループ';
+
+  @override
+  String get groupAdmin_tagSavedContact => '保存済みの連絡先';
+
+  @override
+  String get groupAdmin_tagYourGroups => '参加中のグループ';
+
+  @override
+  String get groupAdmin_updateSettingFailed => 'グループ設定を更新できませんでした';
+
+  @override
   String get groupDialog_audioCall => '音声通話';
 
   @override
@@ -3279,6 +3665,57 @@ class AppLocalizationsJa extends AppLocalizations {
   String get intro_walkieTitle => 'トランシーバー\n機能';
 
   @override
+  String get legal_dpaSubtitle => 'お客様データの処理方法';
+
+  @override
+  String get legal_dpaTitle => 'データ処理契約';
+
+  @override
+  String get legal_draftNotice => 'これらの文書は草案であり、変更される場合があります。';
+
+  @override
+  String get legal_emptyDocument => 'この文書はまだ利用できません。';
+
+  @override
+  String get legal_enterpriseSubtitle => '法人のお客様向け';
+
+  @override
+  String get legal_enterpriseTitle => '法人向けサービス契約';
+
+  @override
+  String get legal_loadError => 'この文書を開けませんでした。';
+
+  @override
+  String get legal_menuSubtitle => 'ポリシーと契約';
+
+  @override
+  String get legal_privacySubtitle => 'データの収集方法と利用方法';
+
+  @override
+  String get legal_privacyTitle => 'プライバシーポリシー';
+
+  @override
+  String get legal_retentionSubtitle => 'データの保持期間';
+
+  @override
+  String get legal_retentionTitle => 'データ保持・削除ポリシー';
+
+  @override
+  String get legal_securitySubtitle => 'データの保護方法';
+
+  @override
+  String get legal_securityTitle => 'データ保護・情報セキュリティポリシー';
+
+  @override
+  String get legal_termsSubtitle => 'FG Tracker の利用ルール';
+
+  @override
+  String get legal_termsTitle => '利用規約（EULA）';
+
+  @override
+  String get legal_title => '法的情報';
+
+  @override
   String login_dataSecure(String percent) {
     return 'あなたのデータは $percent 安全です';
   }
@@ -3336,57 +3773,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get menu_contactUsSubtitle => 'サポートとお問い合わせ';
-
-  @override
-  String get legal_title => '法的情報';
-
-  @override
-  String get legal_menuSubtitle => 'ポリシーと契約';
-
-  @override
-  String get legal_draftNotice => 'これらの文書は草案であり、変更される場合があります。';
-
-  @override
-  String get legal_privacyTitle => 'プライバシーポリシー';
-
-  @override
-  String get legal_privacySubtitle => 'データの収集方法と利用方法';
-
-  @override
-  String get legal_termsTitle => '利用規約（EULA）';
-
-  @override
-  String get legal_termsSubtitle => 'FG Tracker の利用ルール';
-
-  @override
-  String get legal_enterpriseTitle => '法人向けサービス契約';
-
-  @override
-  String get legal_enterpriseSubtitle => '法人のお客様向け';
-
-  @override
-  String get legal_dpaTitle => 'データ処理契約';
-
-  @override
-  String get legal_dpaSubtitle => 'お客様データの処理方法';
-
-  @override
-  String get legal_retentionTitle => 'データ保持・削除ポリシー';
-
-  @override
-  String get legal_retentionSubtitle => 'データの保持期間';
-
-  @override
-  String get legal_securityTitle => 'データ保護・情報セキュリティポリシー';
-
-  @override
-  String get legal_securitySubtitle => 'データの保護方法';
-
-  @override
-  String get legal_emptyDocument => 'この文書はまだ利用できません。';
-
-  @override
-  String get legal_loadError => 'この文書を開けませんでした。';
 
   @override
   String get menu_editProfile => 'プロフィール編集';

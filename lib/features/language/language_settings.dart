@@ -319,7 +319,7 @@ class _LanguageSheetState extends State<LanguageSheet> {
                           color: LanguageColors.textSecondary,
                           size: 26,
                         ),
-                        tooltip: 'Close',
+                        tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ],
