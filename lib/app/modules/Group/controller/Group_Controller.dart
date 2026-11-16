@@ -159,6 +159,7 @@ class GroupController extends GetxController {
           chatController.groupName.value = groupName.text.trim();
           // Keep description in sync so Group Profile shows it right away
           chatController.groupDesc.value = groupDesc.text.trim();
+          chatController.getGroupMessages();
         }
 
         Get.back();

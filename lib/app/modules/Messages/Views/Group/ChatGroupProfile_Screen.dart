@@ -947,6 +947,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           onMemberAdded: () {
             _apiController.fetchProfileDetails(gId);
             chatController.getGroupMembers();
+            chatController.getGroupMessages();
           },
         );
       },
@@ -1178,6 +1179,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                             _apiController
                                 .fetchProfileDetails(data.group!.groupId!);
                             chatController.getGroupMembers();
+                            chatController.getGroupMessages();
                           }
                         },
                       );
