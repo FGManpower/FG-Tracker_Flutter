@@ -1,5 +1,6 @@
 ﻿import 'dart:developer';
 import 'package:get/get.dart';
+import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../Core/values/Utils.dart';
 import '../../../Core/values/loading.dart';
 import '../../../Core/values/logoutuser.dart';
@@ -19,19 +20,30 @@ class AccountDeletionController extends GetxController {
           feedback: feedback,
         );
 
-        if (result.message != null && result.message!.toString().trim().isNotEmpty) {
-          Utils().fluttertoast(result.message.toString());
+        if (result.status == true) {
+          Utils().fluttertoast(
+            result.message != null && result.message!.toString().trim().isNotEmpty
+                ? result.message.toString()
+                : 'Account deleted successfully',
+          );
+          await LogoutUser().logout();
         } else {
-          Utils().fluttertoast('Account deleted successfully');
+          CommonDialog.errorMessage(result.message ?? 'Failed to delete account. Please try again.');
         }
       } catch (e) {
         log('deleteUserAccount API error: ');
-        Utils().fluttertoast('Account deletion processed');
+        final errMsg = e.toString();
+        if (errMsg.contains('401') ||
+            errMsg.toLowerCase().contains('unauthorized') ||
+            errMsg.toLowerCase().contains('already deleted')) {
+          await LogoutUser().logout();
+        } else {
+          CommonDialog.errorMessage('Failed to delete account: ');
+        }
       }
     } finally {
       Loading().dismissloading();
       isDeleting.value = false;
-      await LogoutUser().logout();
     }
   }
 }
