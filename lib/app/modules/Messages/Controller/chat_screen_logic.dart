@@ -56,25 +56,66 @@ class ChatScreenRules {
     List<MessageData> existing,
     List<MessageData> incoming,
   ) {
-    final known = <String>{
+    final existingMap = <String, MessageData>{
       for (final m in existing)
-        if (_idKey(m) != null) _idKey(m)!,
+        if (_idKey(m) != null) _idKey(m)!: m,
     };
+    final known = existingMap.keys.toSet();
     final added = <MessageData>[];
+    bool statusUpdated = false;
+
     for (final m in incoming) {
       final key = _idKey(m);
-      if (key != null && !known.add(key)) continue;
+      if (key != null && existingMap.containsKey(key)) {
+        final existingMsg = existingMap[key]!;
+        if (m.isDelivered == true && !existingMsg.isDelivered) {
+          existingMsg.isDelivered = true;
+          statusUpdated = true;
+        }
+        if (m.seenCount != null) {
+          final inCount = int.tryParse(m.seenCount.toString()) ?? 0;
+          final exCount = int.tryParse(existingMsg.seenCount?.toString() ?? '') ?? 0;
+          if (inCount > exCount) {
+            existingMsg.seenCount = inCount;
+            statusUpdated = true;
+          }
+        }
+        if (m.seenBy is List && (m.seenBy as List).isNotEmpty) {
+          if (existingMsg.seenBy is! List) existingMsg.seenBy = [];
+          final exList = (existingMsg.seenBy as List);
+          for (final s in (m.seenBy as List)) {
+            final sId = (s is Map ? (s['userId'] ?? s['user_id'] ?? s['id']) : s)?.toString();
+            if (sId != null && !exList.any((e) => (e is Map ? (e['userId'] ?? e['user_id'] ?? e['id']) : e)?.toString() == sId)) {
+              exList.add(s);
+              statusUpdated = true;
+            }
+          }
+        }
+        final isIncomingDeleted =
+            m.isDeleted == true || m.content?.toString() == 'This message was deleted';
+        if (isIncomingDeleted && existingMsg.isDeleted != true) {
+          markDeletedForEveryone(existingMsg);
+          statusUpdated = true;
+        }
+        if (m.isEdited == true && existingMsg.isEdited != true) {
+          existingMsg.isEdited = true;
+          existingMsg.content = m.content;
+          statusUpdated = true;
+        }
+        continue;
+      }
+      if (key != null) known.add(key);
       added.add(m);
     }
     if (added.isEmpty) {
-      return MergeResult(existing, 0, 0);
+      return MergeResult(existing, 0, 0, updated: statusUpdated);
     }
 
     final firstBefore = existing.isEmpty ? null : existing.first;
     final merged = sortOldestFirst([...existing, ...added]);
     final prepended =
         firstBefore == null ? 0 : merged.indexOf(firstBefore).clamp(0, merged.length);
-    return MergeResult(merged, added.length, prepended);
+    return MergeResult(merged, added.length, prepended, updated: statusUpdated);
   }
 
   static int? _realId(MessageData m) {
@@ -357,7 +398,10 @@ class MergeResult {
   /// How many of them now sit before the previously first message.
   final int prepended;
 
-  const MergeResult(this.messages, this.added, this.prepended);
+  /// Whether any already-loaded message had its tick/seen/deleted status updated.
+  final bool updated;
+
+  const MergeResult(this.messages, this.added, this.prepended, {this.updated = false});
 }
 
 enum MessageMenuOption {

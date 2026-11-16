@@ -689,6 +689,30 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       },
     );
 
+    socketService.listenGroupMessagesDelivered(
+      callback: (data) {
+        final evGid = int.tryParse((data['groupId'] ?? data['group_id'] ?? '').toString());
+        if (evGid != null && evGid != groupId) return;
+        final rawIds = data['messageIds'] ?? data['message_ids'];
+        final messageIds = (rawIds is List)
+            ? rawIds.map((id) => int.tryParse(id.toString())).whereType<int>().toSet()
+            : (data['messageId'] != null
+                ? {int.tryParse(data['messageId'].toString())}.whereType<int>().toSet()
+                : <int>{});
+
+        bool updated = false;
+        for (final msg in _messages) {
+          if (messageIds.isEmpty || (msg.id != null && messageIds.contains(msg.id))) {
+            if (!msg.isDelivered) {
+              msg.isDelivered = true;
+              updated = true;
+            }
+          }
+        }
+        if (updated) updateMessageStream();
+      },
+    );
+
     socketService.listenGroupUpdated(
       callback: (data) {
         final evGid = int.tryParse((data['groupId'] ?? data['group_id'] ?? data['id'] ?? '').toString());
@@ -2731,6 +2755,24 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         }
         if (appendedFromOthers > 0) _scheduleMarkGroupSeen();
       }
+
+      // Reconcile delivery / read receipts on existing recent messages (e.g. after network change)
+      try {
+        final recentResult = await MessageRepo.groupMessageHistory(
+          groupId: groupId,
+          page: 1,
+          limit: ChatScreenRules.pageSize,
+        );
+        if (recentResult.status == true && recentResult.messageData != null) {
+          final recentMerge = ChatScreenRules.merge(_messages, recentResult.messageData!);
+          if (recentMerge.updated || recentMerge.added > 0) {
+            _messages
+              ..clear()
+              ..addAll(recentMerge.messages);
+            updateMessageStream();
+          }
+        }
+      } catch (_) {}
     } catch (e) {
       log("Sync newer group messages error: $e");
     } finally {

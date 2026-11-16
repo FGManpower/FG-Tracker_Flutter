@@ -1952,6 +1952,19 @@ class SocketMessageService extends GetxService {
     _socket?.on("messages_seen_update", handler);
   }
 
+  /// Listens for group message delivery receipts on /chat (double grey tick ✓✓ update).
+  void listenGroupMessagesDelivered({
+    required Function(Map<String, dynamic>) callback,
+  }) {
+    void handler(dynamic data) {
+      if (data is Map) callback(Map<String, dynamic>.from(data));
+    }
+    _socket?.off("group_messages_delivered");
+    _socket?.on("group_messages_delivered", handler);
+    _socket?.off("messages_delivered");
+    _socket?.on("messages_delivered", handler);
+  }
+
   /// Listens for real-time group info updates (groupName, groupProfile, groupDesc).
   void listenGroupUpdated({
     required Function(Map<String, dynamic>) callback,
