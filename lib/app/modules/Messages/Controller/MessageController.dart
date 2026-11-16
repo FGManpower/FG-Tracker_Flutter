@@ -2801,6 +2801,24 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         }
         _scheduleMarkPrivateRead();
       }
+
+      // Reconcile delivery / read receipts on existing recent messages (e.g. after network change)
+      try {
+        final recentResult = await MessageRepo.privateChatHistory(
+          chatId: privateChatId.value,
+          page: 1,
+          limit: ChatScreenRules.pageSize,
+        );
+        if (recentResult.status == true && recentResult.messageData != null) {
+          final recentMerge = ChatScreenRules.merge(_messages, recentResult.messageData!.reversed.toList());
+          if (recentMerge.updated || recentMerge.added > 0) {
+            _messages
+              ..clear()
+              ..addAll(recentMerge.messages);
+            updateMessageStream();
+          }
+        }
+      } catch (_) {}
     } catch (e) {
       log("Sync newer private messages error: $e");
     } finally {
