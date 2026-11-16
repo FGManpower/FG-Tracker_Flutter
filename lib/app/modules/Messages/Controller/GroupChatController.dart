@@ -633,7 +633,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
                   msg.clientMessageId == clientMsgId) ||
               (msg.id == serverId)) {
             msg.id = serverId;
-            msg.isDelivered = true;
+            // Retain single tick on initial server save; double tick triggers on delivery
             updated = true;
             break;
           }
@@ -644,7 +644,6 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             final msg = _messages[i];
             if (msg.id == null && msg.senderId?.toString() == myId) {
               msg.id = serverId;
-              msg.isDelivered = true;
               updated = true;
               break;
             }

@@ -71,7 +71,11 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
               })
           .toList();
 
+      // In WhatsApp, Delivered section only contains members who have NOT yet seen the message
       _deliveredToList = activeOthers
+          .where((m) =>
+              !seenIds.contains(m.userId?.toString()) &&
+              widget.message.isDelivered)
           .map((m) => {
                 'userId': m.userId,
                 'name': m.name,
@@ -105,7 +109,14 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
             _readByList = List<dynamic>.from(data['readBy']);
           }
           if (data['deliveredTo'] is List) {
-            _deliveredToList = List<dynamic>.from(data['deliveredTo']);
+            final readIds = _readByList
+                .map((m) => (m is Map ? m['userId'] : m?.userId)?.toString())
+                .whereType<String>()
+                .toSet();
+            // WhatsApp Parity: Exclude anyone who already read the message from deliveredTo
+            _deliveredToList = List<dynamic>.from(data['deliveredTo'])
+                .where((m) => !readIds.contains((m is Map ? m['userId'] : m?.userId)?.toString()))
+                .toList();
           }
           _isLoading = false;
         });
@@ -541,8 +552,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet> {
 
   Widget _buildPrivateDeliveredTile() {
     final isDelivered = _infoData?['isDelivered'] == true ||
-        widget.message.isDelivered == true ||
-        widget.message.timestamp != null;
+        widget.message.isDelivered == true;
 
     final deliveredTime = _formatTimestamp(
       _infoData?['deliveredAt'] ?? widget.message.timestamp,
