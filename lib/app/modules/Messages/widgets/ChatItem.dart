@@ -352,7 +352,12 @@ Widget _buildCallLogTile({
   required VoidCallback onCallBack,
 }) {
   final content = message.content?.toString() ?? 'Voice call';
-  final isMissed = content.toLowerCase().contains('missed');
+  final isMissed = content.toLowerCase().contains('missed') ||
+      content.toLowerCase().contains('declined') ||
+      message.callLogMeta?['callStatus'] == 'missed' ||
+      message.callLogMeta?['callStatus'] == 'rejected' ||
+      message.callLogMeta?['callStatus'] == 'busy';
+
   final isVideo = content.toLowerCase().contains('video') ||
       message.callLogMeta?['isVideo'] == true ||
       message.callLogMeta?['callType'] == 'video';
@@ -371,99 +376,78 @@ Widget _buildCallLogTile({
     } catch (_) {}
   }
 
-  return Container(
-    margin: EdgeInsets.symmetric(vertical: 4.h),
-    child: Row(
-      mainAxisAlignment: isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-      children: [
-        Container(
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-          decoration: BoxDecoration(
-            color: isSentByMe ? const Color(0xFFDCD6F5) : Colors.white,
-            borderRadius: BorderRadius.circular(14.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
+  return Center(
+    child: Container(
+      margin: EdgeInsets.symmetric(vertical: 6.h, horizontal: 20.w),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F0F4),
+        borderRadius: BorderRadius.circular(10.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 36.r,
-                height: 36.r,
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(iconData, color: iconColor, size: 20.sp),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(iconData, color: iconColor, size: 16.sp),
+          SizedBox(width: 6.w),
+          Flexible(
+            child: Text(
+              content,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11.5.sp,
+                fontWeight: FontWeight.w600,
+                color: isMissed ? const Color(0xFFE53935) : Colors.grey.shade800,
               ),
-              SizedBox(width: 10.w),
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      content,
-                      style: TextStyle(
-                        fontSize: 12.5.sp,
-                        fontWeight: FontWeight.w600,
-                        color: isMissed ? const Color(0xFFE53935) : Colors.black87,
-                      ),
+            ),
+          ),
+          if (timeStr.isNotEmpty) ...[
+            SizedBox(width: 6.w),
+            Text(
+              timeStr,
+              style: TextStyle(
+                fontSize: 10.sp,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
+          SizedBox(width: 8.w),
+          InkWell(
+            onTap: onCallBack,
+            borderRadius: BorderRadius.circular(6.r),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isVideo ? Icons.videocam_rounded : Icons.call_rounded,
+                    size: 12.sp,
+                    color: const Color(0xFF5045B9),
+                  ),
+                  SizedBox(width: 3.w),
+                  Text(
+                    context.l10n.chatSys_callBack,
+                    style: TextStyle(
+                      fontSize: 10.5.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF5045B9),
                     ),
-                    if (timeStr.isNotEmpty) ...[
-                      SizedBox(height: 2.h),
-                      Text(
-                        timeStr,
-                        style: TextStyle(
-                          fontSize: 10.5.sp,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              SizedBox(width: 8.w),
-              InkWell(
-                onTap: onCallBack,
-                borderRadius: BorderRadius.circular(8.r),
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF5045B9).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8.r),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isVideo ? Icons.videocam_rounded : Icons.call_rounded,
-                        size: 13.sp,
-                        color: const Color(0xFF5045B9),
-                      ),
-                      SizedBox(width: 4.w),
-                      Text(
-                        context.l10n.chatSys_callBack,
-                        style: TextStyle(
-                          fontSize: 10.5.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF5045B9),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }
