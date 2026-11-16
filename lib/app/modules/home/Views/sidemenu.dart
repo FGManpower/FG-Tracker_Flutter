@@ -1,4 +1,4 @@
-import 'dart:developer';
+﻿import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart' as dio;
@@ -19,6 +19,7 @@ import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Model/CommonRes.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/app/modules/auth/Controller/logout_controller.dart';
+import 'package:fgtracker/app/modules/auth/Controller/account_deletion_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -435,7 +436,7 @@ class Sidemenu extends StatelessWidget {
             },
           ),
           _buildDivider(),
-          // Settings → Language ("Language" + "Change app language"; opens
+          // Settings â†’ Language ("Language" + "Change app language"; opens
           // the language sheet, applies instantly).
           LanguageSettingsRow(
             // Same sizes as _buildDrawerItem, so it matches the other items.
@@ -528,6 +529,8 @@ class Sidemenu extends StatelessWidget {
               );
             },
           ),
+          _buildDivider(),
+          _buildDeleteAccountItem(context),
         ],
       ),
     );
@@ -720,6 +723,243 @@ class Sidemenu extends StatelessWidget {
               const ColorFilter.mode(Color(0xFF5D47F1), BlendMode.srcIn),
         ),
       ),
+    );
+  }
+
+  Widget _buildDeleteAccountItem(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(15.r),
+        border: Border.all(color: const Color(0xFFFECACA), width: 1.0),
+      ),
+      child: InkWell(
+        onTap: () {
+          _showDeleteAccountDialog(context);
+        },
+        borderRadius: BorderRadius.circular(15.r),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
+          child: Row(
+            children: [
+              Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEE2E2),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: Icon(
+                  Icons.delete_forever_rounded,
+                  color: const Color(0xFFDC2626),
+                  size: 22.sp,
+                ),
+              ),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Delete Account",
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontFamily: FontFamily.interBold,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFFDC2626),
+                      ),
+                    ),
+                    SizedBox(height: 3.h),
+                    Text(
+                      "Permanently erase account & data",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontFamily: FontFamily.interRegular,
+                        color: const Color(0xFFB91C1C),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: const Color(0xFFDC2626),
+                size: 24.sp,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) {
+        String selectedReason = "I no longer need this account";
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
+              contentPadding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 10.h),
+              title: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFEE2E2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.warning_amber_rounded,
+                      color: const Color(0xFFDC2626),
+                      size: 24.sp,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      "Delete Account?",
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontFamily: FontFamily.interBold,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFFDC2626),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Are you sure you want to permanently delete your account?",
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1E202B),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    "This action is immediate and cannot be undone. All your profile information, location history, group memberships, and active sessions will be permanently erased.",
+                    style: TextStyle(
+                      fontSize: 12.5.sp,
+                      color: const Color(0xFF6B7280),
+                      height: 1.4,
+                    ),
+                  ),
+                  SizedBox(height: 14.h),
+                  Text(
+                    "Reason for leaving:",
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF374151),
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedReason,
+                        style: TextStyle(
+                          fontSize: 12.5.sp,
+                          color: const Color(0xFF1F2937),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: "I no longer need this account",
+                            child: Text("I no longer need this account"),
+                          ),
+                          DropdownMenuItem(
+                            value: "Privacy concerns",
+                            child: Text("Privacy concerns"),
+                          ),
+                          DropdownMenuItem(
+                            value: "Too many notifications / battery",
+                            child: Text("Too many notifications"),
+                          ),
+                          DropdownMenuItem(
+                            value: "Switching to another app or device",
+                            child: Text("Switching to another device"),
+                          ),
+                          DropdownMenuItem(
+                            value: "Other reason",
+                            child: Text("Other reason"),
+                          ),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() {
+                              selectedReason = val;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actionsPadding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogCtx),
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: const Color(0xFF6B7280),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFDC2626),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(dialogCtx);
+                    Navigator.pop(context);
+                    await AccountDeletionController().deleteUserAccount(
+                      reason: selectedReason,
+                    );
+                  },
+                  child: Text(
+                    "Delete Forever",
+                    style: TextStyle(
+                      fontSize: 13.5.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

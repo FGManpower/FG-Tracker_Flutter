@@ -24,6 +24,15 @@ class AuthRepo {
     var response = await HttpUtil().get(Urls.logOut);
     return CommonResponse.fromJson(response);
   }
+
+  static Future<CommonResponse> deleteAccount({String? reason, String? feedback}) async {
+    final Map<String, dynamic> body = {
+      if (reason != null && reason.trim().isNotEmpty) 'reason': reason.trim(),
+      if (feedback != null && feedback.trim().isNotEmpty) 'feedback': feedback.trim(),
+    };
+    var response = await HttpUtil().Authpost(Urls.deleteAccount, data: body);
+    return CommonResponse.fromJson(response);
+  }
   static Future<VeriefyOtpResponse> ResendOtp(dynamic param) async {
     var response = await HttpUtil().post(Urls.resendOtp, data: param);
     return VeriefyOtpResponse.fromJson(response);
