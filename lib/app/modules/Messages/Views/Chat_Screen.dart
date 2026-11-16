@@ -463,6 +463,9 @@ class ChatScreen extends GetView<MessageController> {
             SizedBox(width: 8.w),
             Expanded(
               child: GestureDetector(
+                // The whole area (photo, name, status and the gaps) opens
+                // the profile, not only the text.
+                behavior: HitTestBehavior.opaque,
                 onTap: () {
                   // Same as group: leave no emoji panel / keyboard behind
                   // the profile page.

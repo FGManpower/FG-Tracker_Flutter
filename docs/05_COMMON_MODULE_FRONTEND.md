@@ -1,8 +1,8 @@
 # Frontend Guide: Common Module (App Load, Screen Priority, Auth & Core Systems)
 
-> **Document Version:** `v2.4.0`  
+> **Document Version:** `v2.5.0`  
 > **Target Framework:** Flutter (Dart)  
-> **Scope:** App Bootstrap & Screen Priority Hierarchy, Pre-Navigation Permission Evaluation, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing, "Last seen" format across all modules (§7), Real-time Location Tracking & Socket Synchronization Architecture (§8)
+> **Scope:** App Bootstrap & Screen Priority Hierarchy, Pre-Navigation Permission Evaluation, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing, "Last seen" format across all modules (§7), Real-time Location Tracking & Socket Synchronization Architecture (§8), Side Menu: Legal / Language / Social Links (§9), Custom Banner + Crop (§5.1.1)
 
 ---
 
@@ -472,6 +472,20 @@ Displays in-app alert notifications with read/unread statuses:
 - Render using `carousel_slider`.
 - When tapping banner with `action_type: "deep_link"`, parse `action_url` (e.g. `fgtracker://walkie/channels`) to navigate to the target screen.
 
+### 5.1.1 Custom (local) banner — v2.5.0
+The last slide of the Home carousel is the user's own banner. It is stored **only on the phone** (`LocalBannerService`, pref `local_custom_banner_path`, file in app documents); nothing is uploaded. Files: `lib/app/modules/home/Home_Widget/bannerUi.dart`, `lib/app/Data/Services/local_banner_service.dart`.
+
+| State | What the user sees | Tap |
+|---|---|---|
+| No banner yet | "Custom Banner · NEW" upload card | Opens **Select Banner Photo** |
+| Banner set | The photo, "My Banner" badge, ✏ button | Opens **Manage Custom Banner** |
+
+- **Select Banner Photo sheet:** white, top radius 24, handle; header (icon, title, "Shown only on your phone"); **only when a banner is already set** (Replace), the current banner in the banner shape (key `banner_current_preview`) — with no banner there is no preview box; two cards side by side: **Gallery** and **Camera**. Keys `banner_pick_gallery`, `banner_pick_camera`.
+- **Crop:** after a photo is picked (gallery **or** camera), `image_cropper` opens **locked to the banner's aspect ratio** (`LocalBannerService.cropToBanner`). Android: dark-blue toolbar, title "Crop Image" (`imagePicker_cropTitle`), ratio locked. iOS: ratio lock on, ratio picker hidden. Cancelling the crop keeps the current banner.
+- **Banner shape:** `_bannerAspect` = card width (page width − 2 × 4.w margin) ÷ card height (160.h), measured with a `LayoutBuilder` on the real slide; default 2.0.
+- **Manage Custom Banner sheet:** white, current banner preview, **Replace Banner** (opens Select Banner Photo) and **Remove Banner** (deletes the file and the pref, shows the upload card again). Keys `banner_replace`, `banner_remove`.
+- Sheet texts are English only (not in the ARB files yet).
+
 ### 5.2 One-to-One Screen Sharing (Calling Socket Signaling)
 
 Screen sharing is initiated and controlled over the calling socket connection:
@@ -502,6 +516,7 @@ Screen sharing is initiated and controlled over the calling socket connection:
 ### 6.2 Change Log
 | Version | Date | Description |
 |---|---|---|
+| v2.5.0 | 2026-11-16 | §9 Side menu: **Legal** replaces Contact Us (6 documents open the fgtracker.fgmanpower.com pages, Contact Us card with phone, email, address, website); Language row matches the menu; Twitter removed and Facebook / Instagram / YouTube links updated. §5.1.1 Custom banner: new Select Banner Photo and Manage sheets (white), crop locked to the banner shape after Gallery or Camera. |
 | v2.4.0 | 2026-11-13 | §8 Tracking Screen & Socket Synchronization Architecture: Live Tracking (radius boundary filtering) & Group Tracking ("Location Hidden" ghost mode); fixed `join-group` on Node.js /location socket; single moving user packet extraction for `group-location-update`; 5-min inactivity threshold for Online vs Last-seen; unit tests added under `test/tracking_unit_test.dart`. |
 | v2.3.1 | 2026-11-12 | §7.7 Private Mode add-on: audit P1–P5, what the string API does to every last-seen place (crash risk in Group Members, false "Offline" / "Just now"), backend request for ISO `lastSeenAt` / `privateModeStartedAt`, interim rule. D2 answered (strings, not ISO). Test cases LS-17–LS-25. **Audit only — no code changed yet.** |
 | v2.3.0 | 2026-11-12 | §7 "Last seen" in one format across the app: target format, audit of all 13 places (branch `multi-language`), findings, open decisions, build plan and manual test cases. **Audit only — no code changed yet.** |
@@ -696,3 +711,57 @@ The test suite validates tracking models, distance geofencing, and socket proces
    - Verifies radius unit parsing (`"0.5"`, `"1"`, `"2"`, `"5"`, `"500m"`, `"2km"`).
 5. **Socket Event Packet Unwrapping Tests**:
    - Validates extraction of `updatedUser` from `group-location-update` events, ensuring static member arrays in `data` do not falsely mark everyone active.
+
+---
+
+## 9. Side menu: Legal, Language, social links (v2.5.0, 2026-11-16)
+
+### 9.1 Legal (replaces "Contact Us")
+- **Menu item:** "Legal" / "Policies and agreements", gavel icon, same position as the old "Contact Us" (`sidemenu.dart`). Opens `Routes.Legal` (`/legal`) → `LegalScreen`.
+- **Config:** `lib/app/modules/Legal/legal_documents.dart`, one list (`legalDocuments`) with id, title, subtitle, bundled `.md` path and **`websiteUrl`**. Change a link here; no UI change needed.
+- **Tap = website.** Every row opens its page on **https://fgtracker.fgmanpower.com** in the browser (`url_launcher`, external; only `https`, `tel`, `mailto` are allowed; a failed launch shows a snackbar).
+
+| Row (en) | Opens |
+|---|---|
+| Privacy Policy | `/privacy-policy/` |
+| Terms & Conditions (EULA) | `/terms/` |
+| Enterprise Service Agreement | `/enterprise-service-agreement/` |
+| Data Processing Agreement | `/data-processing-agreement/` |
+| Data Retention & Deletion Policy | `/data-retention-policy/` |
+| Data Protection & Information Security Policy | `/information-security-policy/` |
+
+- **Contact Us card** (below the documents, values copied from the website footer, `legalContacts`):
+
+| Row | Value | Tap |
+|---|---|---|
+| Phone | +91 80975 55785 | `tel:+918097555785` |
+| Email | fgtracker@fgmanpower.com | `mailto:` |
+| Address | Office No. 723/724, Ajmera Sikova, LBS Marg, Damodar Park, Ghatkopar West, Mumbai, Maharashtra 400086 | Google Maps search |
+| Website | fgtracker.fgmanpower.com | website |
+
+- **Draft notice:** `showLegalDraftNotice = false` (the website has the final v1.0 documents, effective 16 Nov 2026).
+- **Strings:** `legal_*` keys in all 20 ARB files (titles, subtitles, menu label). Document text is English and lives on the website.
+- **Tests:** `test/legal_screen_test.dart` (config order, website links, contacts, every tap opens the right link, failed launch message, large font / dark mode / hi-mr-ar, document screen).
+- **Open items:**
+  1. Row titles still use the old names; the website uses "Global Privacy Policy", "Terms and EULA", "… and …". Change `legal_*Title` in the 20 ARB files if wanted.
+  2. Unused since taps go to the website: `LegalDocumentScreen` + route `/legal-document`, package `flutter_markdown_plus`, the 6 empty `assets/legal/*.md` files and keys `legal_draftNotice` / `legal_emptyDocument`. Remove after sign-off.
+  3. The old `AboutUs.dart` (Contact Us screen) still links to `www.fgmanpower.co.in`; it is no longer reachable from the menu.
+
+### 9.2 Language row
+Same look and size as the other menu items: "Language" + "Change app language", one line each. Details in the Language guide (`06_LANGUAGE_MODULE_FRONTEND.md` §2).
+
+### 9.3 Social links (menu footer)
+- Facebook, Instagram, YouTube (`AppText.facebookUrl` / `instagramUrl` / `youtubeUrl`). **Twitter / X removed** (icon and `twitterUrl`).
+
+| Network | URL |
+|---|---|
+| Facebook | https://www.facebook.com/people/FG-Tracker/61594760706918/ |
+| Instagram | https://www.instagram.com/fgtracker/ |
+| YouTube | https://www.youtube.com/channel/UC_nUpY0OdPbJjZRdzFiZGhQ |
+
+### 9.4 Changed files (v2.5.0)
+| Area | Files |
+|---|---|
+| Legal | `lib/app/modules/Legal/*` (new), `lib/app/routes/app_routes.dart`, `app_pages.dart`, `sidemenu.dart`, `lib/l10n/*.arb` + generated, `pubspec.yaml` (assets, `flutter_markdown_plus`), `assets/legal/*` (new, unused), `test/legal_screen_test.dart` (new) |
+| Social links | `lib/app/Core/theme/AppText.dart`, `sidemenu.dart` |
+| Custom banner (§5.1.1) | `lib/app/modules/home/Home_Widget/bannerUi.dart`, `lib/app/Data/Services/local_banner_service.dart` |

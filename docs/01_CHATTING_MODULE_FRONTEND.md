@@ -1,6 +1,6 @@
 # FG Tracker Chat Module: Flutter (Frontend) Implementation Guide
 
-> **Document version:** `F-1.1.6` · **Date:** 2026-11-13 · **Branch:** `46Solution`
+> **Document version:** `F-1.1.7` · **Date:** 2026-11-16 · **Branch:** `46Solution`
 > **Pairs with:** backend `FLUTTER_CHAT_INTEGRATION_GUIDE.md` **v2.8.0**
 > **Scope:** chat module only (private chat, group chat, chat notifications, forwarding, long-press options, chat list, group membership: create / join / add / remove / exit and their success sheets).
 > **Owner:** Flutter team. **Readers:** Flutter + Node.js developers.
@@ -190,6 +190,7 @@ This is the **frontend half** of the chat contract. The backend guide says what 
 - **Back / swipe:** closes the emoji panel first; the iOS swipe-back works.
 - **Swipes:** right = reply; **left on a received text or caption = translate** (Hindi ↔ English). **Listen** (text-to-speech) is under received messages.
 - **Search** in chat searches loaded messages only.
+- **App bar tap target (F-1.1.7):** the whole area between Back and the call buttons (photo, name, status line **and the gaps between them**) opens the profile. The `GestureDetector` uses `HitTestBehavior.opaque`; before, only the text and photo reacted. Same in group chat (§2.1). Files: `Chat_Screen.dart`, `GroupChatScreen.dart`.
 
 ---
 
@@ -332,6 +333,14 @@ class GroupChatController extends GetxController {
 
 ### 2.10 Group info, mentions, clear
 - **Group info:** `GET /chat/profile-details?groupId=` (media, links, docs, members).
+- **Group info app bar (F-1.1.7, `ChatGroupProfile_Screen.dart`):** Back and Edit (✏, group creator only) are the same white rounded 44×44 buttons (`_roundBtn`), centred in a 64.h bar, and the whole square is tappable. Edit used to shrink to the icon's size inside the app bar actions.
+- **Add Members sheet (admin / creator, `_AddGroupMemberSheet`):**
+  - **Who is listed:** saved phone contacts and members of your other groups, minus people already in this group and yourself. Saved contacts come first, then A–Z. Data: device contacts + `getGroupMember(filter: all)` + `getCoGroupMemberIds` + `getAllUserData`, loaded together.
+  - **Loading (F-1.1.7):** a `Skeletonizer` list with the same rows (8 rows) instead of a spinner. Key `add_member_skeleton`.
+  - **Row (F-1.1.7):** photo (or first letter), name and phone on the left; on the right a small "Saved contact" / "Your groups" / "Contact • Group" label (`_CandidateMember.shortTag`) above a filled purple **Add** button. Two lines per row. The whole row is tappable → confirm dialog → `GroupController.addGroupMember`.
+  - **Error (F-1.1.7):** icon, "Couldn't load members", "Check your internet and try again." and a rounded **Retry** button (key `add_member_retry`) instead of the raw exception text.
+  - **No contacts permission:** a yellow note "Showing members from your groups only" with **Enable** (opens app settings).
+  - The sheet's texts are English only; they are not in the ARB files yet (open item).
 - **Clear chat:** `POST /clearGroupChat`. On success the profile's media is emptied immediately and refetched.
 - **@mentions:** client-side list from `groupMembers`; no server payload.
 
@@ -707,6 +716,7 @@ Remove them all in one cleanup commit after QA, by searching for `TODO(` plus th
 ## 9. Change log
 | Version | Date | Change |
 |---|---|---|
+| F-1.1.7 | 2026-11-16 | **UI polish (no API or socket change):** whole app bar area opens the profile in private and group chat (§1.7); Group info Back / Edit buttons are the same 44×44 white squares (§2.10); Add Members sheet gets a skeleton while loading, two-line rows with the "Saved contact" label next to a filled **Add** button, and a friendly error with Retry (§2.10). Files: `Chat_Screen.dart`, `GroupChatScreen.dart`, `ChatGroupProfile_Screen.dart`. |
 | F-1.1.6 | 2026-11-13 | **Group Admin Promotion/Demotion, Real-Time Logs, Call Log Unread Permanence & Divider Fixes:**<br>1. **Group Admin Management:** Added `promoteAdmin` (`POST /promoteAdmin`) and `demoteAdmin` (`POST /demoteAdmin`) in `GroupRepo.dart` & `Group_Controller.dart`. In `ChatGroupProfile_Screen.dart`, integrated context-aware popup menu options ("Make group admin" for admins/creator, "Dismiss as admin" for creator, and "Remove from group") complete with native confirmation dialogs and reactive member refreshes.<br>2. **Real-Time Group Activity Logs:** Backend `updateGroups` captures pre-update state (`oldName`, `oldProfile`, `oldDesc`) so system messages fire reliably for name, icon, and description edits; socket broadcasts deliver to all members in real-time, rendered as centered gray pills (`_buildSystemMessageTile`).<br>3. **Call Log Unread Badge on Restart:** Backend seeds `private_message_status` on call log creation (caller = 'seen', receiver = 'delivered') and `markSeen` self-heals by upserting missing records as 'seen', preventing unread badge from reappearing after app restart.<br>4. **Unread Section Divider Guard:** In `ChatList.dart` (private and group chat), added strict `(controller.unreadCount.value > 0)` check to guarantee unread dividers never display when all messages are read. |
 | F-1.1.5 | 2026-11-10 | **Anti-Shuffling & Status Popup UX Stability Fixes:**<br>1. **Chat List Stability:** Fixed bug where opening a chat and tapping back caused the chat list to reorder/shuffle. Updated `ChatListRules.isNewMessage` to reject identical message updates caused by read receipts (`mark-read`, `mark_seen`) or backend `updatedAt` touches; updated `syncLastMessageFromChat` to retain `lastMessageData` and true message `createdAt`; updated `ChatListRules.compare` with deterministic tie-breakers (`chatKey(a).compareTo(chatKey(b))`) and prioritized message creation timestamps over conversation `updatedAt`.<br>2. **Status Section Popup:** Replaced non-modal `OverlayEntry` in `StatusSection._showMyStatusPopup` with a modal `showGeneralDialog` (`barrierDismissible: true`). Tapping anywhere outside or pressing system back immediately dismisses the popup and restores full touch responsiveness without gesture arena conflicts. |
 | F-1.1.4 | 2026-11-08 | Added v2.5.0 Frontend Guide parity: UI Flow & Architecture diagrams, WhatsApp-Style Management Operations reference matrix, screen lifecycle controller pattern with critical exit/leave guidelines (no accidental clear_chat on back), and verified REST history endpoints with multi-param alias support. |

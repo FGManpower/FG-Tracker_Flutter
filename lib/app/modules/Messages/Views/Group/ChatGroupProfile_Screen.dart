@@ -167,32 +167,39 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
         backgroundColor: _bg,
         elevation: 0,
         scrolledUnderElevation: 0,
+        toolbarHeight: 64.h,
         leadingWidth: 64.w,
         leading: Padding(
-          padding: EdgeInsets.only(left: 16.w, top: 8.h, bottom: 8.h),
-          child: _roundBtn(
-            icon: Icons.arrow_back_rounded,
-            onTap: () => Get.back(),
+          padding: EdgeInsets.only(left: 16.w),
+          child: Center(
+            child: _roundBtn(
+              icon: Icons.arrow_back_rounded,
+              onTap: () => Get.back(),
+            ),
           ),
         ),
         actions: [
           if (chatController.isCreator.value)
             Padding(
-              padding: EdgeInsets.only(right: 16.w, top: 8.h, bottom: 8.h),
-              child: _roundBtn(
-                icon: Icons.edit_rounded,
-                onTap: () {
-                  final currentGroup = _profileData?.group;
-                  groupController.groupName.text = currentGroup?.groupName ??
-                      chatController.groupName.toString();
-                  DialogBox().showUpdateGroupBottomSheet(
-                    context: context,
-                    controller: groupController,
-                    groupId: chatController.groupId.toString(),
-                    currentImage:
-                        currentGroup?.groupProfile ?? chatController.groupImage,
-                  );
-                },
+              padding: EdgeInsets.only(right: 16.w),
+              child: Center(
+                child: _roundBtn(
+                  key: const ValueKey('group_profile_edit_button'),
+                  icon: Icons.edit_rounded,
+                  onTap: () {
+                    final currentGroup = _profileData?.group;
+                    groupController.groupName.text =
+                        currentGroup?.groupName ??
+                            chatController.groupName.toString();
+                    DialogBox().showUpdateGroupBottomSheet(
+                      context: context,
+                      controller: groupController,
+                      groupId: chatController.groupId.toString(),
+                      currentImage: currentGroup?.groupProfile ??
+                          chatController.groupImage,
+                    );
+                  },
+                ),
               ),
             ),
         ],
@@ -236,10 +243,21 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
-  Widget _roundBtn({required IconData icon, required VoidCallback onTap}) {
+  /// White rounded square (back / edit). Fixed 44×44 so the edit button is
+  /// the same size as back, and the whole square is tappable.
+  Widget _roundBtn({
+    Key? key,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
+      key: key,
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
+        width: 44.w,
+        height: 44.w,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12.r),
@@ -1391,6 +1409,14 @@ class _CandidateMember {
     if (isInOtherGroup) return "In Other Group";
     return "";
   }
+
+  /// Compact label shown next to the Add button.
+  String get shortTag {
+    if (isSavedContact && isInOtherGroup) return "Contact • Group";
+    if (isSavedContact) return "Saved contact";
+    if (isInOtherGroup) return "Your groups";
+    return "";
+  }
 }
 
 class _AddGroupMemberSheet extends StatefulWidget {
@@ -1750,24 +1776,70 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
           // List
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator(color: purple))
+                ? _buildSkeletonList(purple)
                 : _error != null
                     ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(_error!,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 32.w),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 64.w,
+                                height: 64.w,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFDECEC),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.cloud_off_rounded,
+                                    size: 30.sp,
+                                    color: const Color(0xFFD9534F)),
+                              ),
+                              SizedBox(height: 12.h),
+                              Text(
+                                "Couldn't load members",
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
-                                    fontSize: 14.sp, color: Colors.red)),
-                            SizedBox(height: 8.h),
-                            ElevatedButton(
-                              onPressed: _fetchUsers,
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: purple),
-                              child: const Text("Retry",
-                                  style: TextStyle(color: Colors.white)),
-                            ),
-                          ],
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                "Check your internet and try again.",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              SizedBox(height: 14.h),
+                              ElevatedButton.icon(
+                                key: const ValueKey('add_member_retry'),
+                                onPressed: _fetchUsers,
+                                icon: Icon(Icons.refresh_rounded,
+                                    size: 18.sp, color: Colors.white),
+                                label: Text(
+                                  "Retry",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: purple,
+                                  elevation: 0,
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 20.w, vertical: 10.h),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(24.r),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       )
                     : _filteredCandidates.isEmpty
@@ -1813,126 +1885,176 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
                                 height: 1,
                                 color: Colors.grey.shade100,
                                 indent: 56.w),
-                            itemBuilder: (context, index) {
-                              final candidate = _filteredCandidates[index];
-                              final u = candidate.user;
-                              final name = u.name ?? "Member";
-                              final phone = u.mobileNo ?? "";
-                              final rawImg = u.profileImage ?? "";
-                              final imgUrl = rawImg.isNotEmpty
-                                  ? (rawImg.startsWith("http://") ||
-                                          rawImg.startsWith("https://")
-                                      ? rawImg
-                                      : "${ConstRes.aImageBaseUrl}$rawImg")
-                                  : null;
-
-                              return InkWell(
-                                onTap: () => _confirmAdd(u),
-                                borderRadius: BorderRadius.circular(10.r),
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 10.h, horizontal: 4.w),
-                                  child: Row(
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 22.r,
-                                        backgroundColor:
-                                            const Color(0xFFE8E4FF),
-                                        backgroundImage: imgUrl != null
-                                            ? NetworkImage(imgUrl)
-                                            : null,
-                                        child: imgUrl == null
-                                            ? Text(
-                                                name.isNotEmpty
-                                                    ? name[0].toUpperCase()
-                                                    : "?",
-                                                style: TextStyle(
-                                                  color: purple,
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 15.sp,
-                                                ),
-                                              )
-                                            : null,
-                                      ),
-                                      SizedBox(width: 12.w),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              name,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                fontSize: 14.sp,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.black87,
-                                              ),
-                                            ),
-                                            if (phone.isNotEmpty) ...[
-                                              SizedBox(height: 2.h),
-                                              Text(
-                                                phone,
-                                                style: TextStyle(
-                                                  fontSize: 12.sp,
-                                                  color: Colors.grey.shade500,
-                                                ),
-                                              ),
-                                            ],
-                                            if (candidate.tag.isNotEmpty) ...[
-                                              SizedBox(height: 3.h),
-                                              Container(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 6.w,
-                                                    vertical: 2.h),
-                                                decoration: BoxDecoration(
-                                                  color: candidate.isSavedContact
-                                                      ? const Color(0xFFE8F5E9)
-                                                      : const Color(0xFFEDE7F6),
-                                                  borderRadius:
-                                                      BorderRadius.circular(4.r),
-                                                ),
-                                                child: Text(
-                                                  candidate.tag,
-                                                  style: TextStyle(
-                                                    fontSize: 10.sp,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: candidate.isSavedContact
-                                                        ? const Color(0xFF2E7D32)
-                                                        : const Color(0xFF5E35B1),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 14.w, vertical: 6.h),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF2BB673),
-                                          borderRadius:
-                                              BorderRadius.circular(20.r),
-                                        ),
-                                        child: Text(
-                                          "Add",
-                                          style: TextStyle(
-                                            fontSize: 12.sp,
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
+                            itemBuilder: (context, index) => _candidateTile(
+                              _filteredCandidates[index],
+                              purple,
+                              onTap: () =>
+                                  _confirmAdd(_filteredCandidates[index].user),
+                            ),
                           ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Shimmer while contacts / group members load: same rows as the real list.
+  Widget _buildSkeletonList(Color purple) {
+    final placeholder = _CandidateMember(
+      user: UserListData(
+        name: 'Loading member name',
+        mobileNo: '+91 98765 43210',
+      ),
+      isSavedContact: true,
+      isInOtherGroup: false,
+    );
+    return Skeletonizer(
+      key: const ValueKey('add_member_skeleton'),
+      enabled: true,
+      child: ListView.separated(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        itemCount: 8,
+        separatorBuilder: (_, __) =>
+            Divider(height: 1, color: Colors.grey.shade100, indent: 56.w),
+        itemBuilder: (_, __) => _candidateTile(placeholder, purple),
+      ),
+    );
+  }
+
+  /// One person who can be added: photo, name, phone + where they come from
+  /// (saved contact / other group) and an "Add" button. The whole row is
+  /// tappable.
+  Widget _candidateTile(
+    _CandidateMember candidate,
+    Color purple, {
+    VoidCallback? onTap,
+  }) {
+    final u = candidate.user;
+    final name = (u.name ?? '').trim().isEmpty ? "Member" : u.name!.trim();
+    final phone = u.mobileNo ?? "";
+    final rawImg = u.profileImage ?? "";
+    final imgUrl = rawImg.isNotEmpty
+        ? (rawImg.startsWith("http://") || rawImg.startsWith("https://")
+            ? rawImg
+            : "${ConstRes.aImageBaseUrl}$rawImg")
+        : null;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 4.w),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 22.r,
+              backgroundColor: const Color(0xFFEDE9FE),
+              backgroundImage: imgUrl != null ? NetworkImage(imgUrl) : null,
+              child: imgUrl == null
+                  ? Text(
+                      name[0].toUpperCase(),
+                      style: TextStyle(
+                        color: purple,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16.sp,
+                      ),
+                    )
+                  : null,
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1E202B),
+                    ),
+                  ),
+                  if (phone.isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      phone,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            SizedBox(width: 8.w),
+            // Right side: where the person comes from, then the Add button.
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (candidate.tag.isNotEmpty) ...[
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        candidate.isSavedContact
+                            ? Icons.contacts_rounded
+                            : Icons.groups_rounded,
+                        size: 11.sp,
+                        color: candidate.isSavedContact
+                            ? const Color(0xFF2E7D32)
+                            : const Color(0xFF5E35B1),
+                      ),
+                      SizedBox(width: 3.w),
+                      Text(
+                        candidate.shortTag,
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w600,
+                          color: candidate.isSavedContact
+                              ? const Color(0xFF2E7D32)
+                              : const Color(0xFF5E35B1),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 5.h),
+                ],
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: purple,
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.person_add_alt_1_rounded,
+                          size: 14.sp, color: Colors.white),
+                      SizedBox(width: 4.w),
+                      Text(
+                        "Add",
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

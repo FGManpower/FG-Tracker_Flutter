@@ -485,6 +485,9 @@ class GroupChatScreen extends GetView<GroupMessageController> {
             SizedBox(width: 8.w),
             Expanded(
               child: GestureDetector(
+                // The whole area (photo, name, members and the gaps) opens
+                // the group profile, not only the text.
+                behavior: HitTestBehavior.opaque,
                 onTap: () {
                   // Leave no emoji panel / keyboard behind the profile page.
                   _dismissKeyboard(context);

@@ -1,6 +1,6 @@
 # FG Tracker Language Module: Flutter (Frontend) Implementation Guide
 
-> **Document version:** `L-1.1.1` (Part 1 and Part 2 done: whole app in 10 languages; one "last seen" format) · **Date:** 2026-11-12 · **Branch:** `multi-language`
+> **Document version:** `L-1.1.2` (Part 1 and Part 2 done: whole app in 10 languages; one "last seen" format; menu row + screen restyled) · **Date:** 2026-11-16 · **Branch:** `multi-language`
 > **Backend:** none. No backend changes; the language is stored only on the phone.
 > **Scope:** language selection after OTP, side menu → Language, whole-app translation (10 languages), platform strings.
 > **Owner:** Flutter team. **Readers:** Flutter developers, QA.
@@ -178,9 +178,20 @@ This is the only maintained language doc. It includes the audit summary (§4.6),
 
 ## 2. Side menu → Language
 - **Item:** `LanguageSettingsRow` in `sidemenu.dart` (`_buildMenuItems`), right after Edit Profile. The side menu is the app's settings; there is no separate Settings screen, so this one shared widget is both the "menu item" and the "Settings row".
-- **Look** (same as the other side menu items): 44×44 `#EDE9FE` tile with `Icons.translate_rounded` in `#5D47F1`; the word "Language" in the current language (`languageLabel`, e.g. भाषा), bold 15; the current `nativeName` on the right in purple (max 120 wide, e.g. मराठी); chevron `#7E69F7`. Keys `settings-language-row`, `settings-language-current`.
+- **Look** (L-1.1.2: identical to the other side menu items, `_buildDrawerItem`):
+  - 44×44 `#EDE9FE` tile with `Icons.translate_rounded` in `#5D47F1`.
+  - **Line 1:** the word "Language" in the current language (`languageLabel`, e.g. भाषा), Inter Bold 15, one line.
+  - **Line 2:** "Change app language" in the current language (`LanguageOption.menuSubtitle`, e.g. ऐप की भाषा बदलें), Inter Regular 12, `#7A7F93`, **always one line** (ellipsis).
+  - Chevron `#7E69F7`.
+  - The selected language's name is **no longer repeated** on the row (it showed "Language … मराठी").
+  - Keys `settings-language-row`, `settings-language-title`, `settings-language-subtitle` (`settings-language-current` was removed).
+- **Sizes:** `LanguageRowSizes` (`language_settings.dart`). The side menu passes its ScreenUtil values (44.w tile, 22.sp icon, 15.sp / 12.sp text, 24.sp chevron, 8.h / 8.w padding, 15.r radius), so the row scales exactly like the items around it. The defaults are the same numbers unscaled (tests have no ScreenUtil).
 - **Tap:** `_open` closes the drawer (`ScaffoldState.closeDrawer`) and opens the sheet from the Scaffold's context. Outside a drawer it just opens the sheet.
-- **Sheet:** `showLanguageSheet()` → `LanguageSheet` (`showModalBottomSheet`, `isScrollControlled`, `useSafeArea`): top radius 30, handle, title / subtitle in the current language, 62-high radio cards, max height 88 % of the screen, max width 520. The current language is ticked. Key `language-sheet`.
+- **Screen:** `showLanguageSheet()` pushes a full-screen `MaterialPageRoute` → `LanguageSheet(showHeader: false)`:
+  - **App bar (L-1.1.2):** the app's standard look (`reusableAppbar`). Dark blue `AppColors.darkBlue` (dark mode `ToggleThemeData.darkThemeBackground`), 50.h high, back arrow `arrow_back_ios_new` 20.sp, centred title "Language" in the current language, 20.sp w600 white, one line. Keys `language-sheet-appbar`, back button `language-sheet-close`.
+  - The old in-body title / subtitle / ✕ header is hidden on this screen (`showHeader: false`).
+  - Below: search box and the radio cards (64 high), max width 520. The current language is ticked. Key `language-sheet`.
+  - The Language screen after OTP (§1) is unchanged.
 - **Apply:** a tap saves, closes the sheet, then `setLanguage(code)`. The whole app redraws in place. No restart, no logout; the same screen stays.
 
 ---
@@ -443,6 +454,7 @@ None.
 ## 9. Change log
 | Version | Date | Change |
 |---|---|---|
+| L-1.1.2 | 2026-11-16 | **Side menu Language row and screen match the rest of the app** (§2): row = "Language" + "Change app language" (new `LanguageOption.menuSubtitle`, translated for the 20 app languages), one line each, selected-language name removed, ScreenUtil sizes via `LanguageRowSizes`. Language screen from the menu gets the standard app bar (`reusableAppbar` look, title "Language"); in-body header hidden (`showHeader: false`). Tests updated in `test/language_selection_test.dart` (42 pass). |
 | L-1.1.1 | 2026-11-12 | **One "last seen" format everywhere** (§4.5.1): new `last_seen_formatter.dart` (`formatLastSeen` / `formatLastSeenWith`), keys `common_lastSeen` + `common_todayAt` × 10; 11 places switched (only the text expression), the frozen group-map list left for approval (#18). Tests: `last_seen_formatter_test.dart` (12). Manual cases LS-01…LS-15. |
 | L-1.1.0 | 2026-11-11 | **Part 2 done: whole app in 10 languages.** 2,134 keys × 10 (fragments in `tool/l10n/fragments/`, merged by `tool/l10n/merge_arb.dart`). All modules translated (§4.1): Permissions, Home / side menu / About / Intro, chat list / chat / group chat / Group Info / Status, Attendance + Poll, Walkie-Talkie + plans / payment, Tracking / Safe Zone / Safe Route / Safety / SOS, Packages / OTP charges, Groups, Notifications, calls + CallKit, force / app update, common dialogs / toasts / sheets / http errors / local notifications / voice input. New: `sharedL10n` (English on Login / OTP), `loadAppL10nFromPrefs` (background isolates), `formatters.dart` (dates in the language, digits 0–9, ₹ Indian grouping), translated Android channel names + `refreshChannelNames()` on language change, native walkie notification texts from Dart, iOS `InfoPlist.strings` × 10 + `CFBundleLocalizations`. Logic values keep English ids. **Overflow:** `AutoFitText` + about 140 layout fixes for long translations. **Language screen always pre-selects English.** Tests: `l10n_completeness_test.dart`, `auto_fit_text_test.dart`. Branch `multi-language`. |
 | L-1.0.3 | 2026-11-11 | Language screen only before Registration (user-approved change to frozen `OtpController.dart`); existing users go OTP → Home / Permissions as in the original code. `routeAfterOtp` replaced by `showBeforeRegistration`. |
@@ -464,4 +476,5 @@ None.
 | Native | `packages/walkie_custom_notification` (Dart `show()` args, Kotlin `WalkieNotificationTexts`, layout id for LIVE), `ios/Runner/Info.plist`, `ios/Runner/<code>.lproj/InfoPlist.strings` × 10, `ios/Runner.xcodeproj/project.pbxproj` |
 | Tests (new) | `test/language_selection_test.dart`, `test/registration_l10n_test.dart`, `test/l10n_completeness_test.dart`, `test/auto_fit_text_test.dart`, `test/screenshots/language_screens_screenshot_test.dart` |
 | Last seen (L-1.1.1) | New `lib/app/Core/util/last_seen_formatter.dart`, `test/last_seen_formatter_test.dart`; `tool/l10n/fragments/common.json` (+2 keys) → ARB × 10 + generated; text expression only in `MessageController.dart`, `UserProfileScreen.dart`, `ChatGroupProfile_Screen.dart`, `DialogBox.dart`, `BottomSheetUi.dart`, `group_info_bottom_sheet.dart`, `Tracking_screen.dart`, `Search_Members.dart`, `online_member.dart`, `total_member.dart`, `MemberScreen.dart` |
+| Side menu row + screen (L-1.1.2) | `lib/features/language/language_settings.dart` (`LanguageRowSizes`, row layout, app bar, `showHeader`), `lib/features/language/language_options.dart` (`menuSubtitle` × 20), `lib/app/modules/home/Views/sidemenu.dart` (passes the sizes), `test/language_selection_test.dart` |
 | Docs | `docs/06_LANGUAGE_MODULE_FRONTEND.md` (this guide), `docs/README.md` |
