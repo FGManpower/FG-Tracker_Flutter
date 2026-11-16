@@ -946,6 +946,13 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       return;
     }
 
+    // Initialize sockets first so active socket connections exist before attaching listeners
+    socketService.ensureChatSocket(ConstRes.socketUrl, userId: userId);
+    socketService.initPrivateChatListSocket(
+      ConstRes.socketUrl,
+      userId: userId,
+    );
+
     socketService.listenPrivateChatListUpdated(
       callback: (data) {
         _handlePrivateChatUpdated(data);
@@ -986,15 +993,6 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     socketService.listenChatListReconnect(_resyncWithServer);
     socketService.listenGroupUpdated(callback: _handleGroupUpdated);
     socketService.listenGroupExit(callback: _handleGroupExitEvent);
-
-    // Group list updates, group typing and group "read" travel on /chat,
-    // which otherwise only exists after a group chat was opened.
-    socketService.ensureChatSocket(ConstRes.socketUrl, userId: userId);
-
-    socketService.initPrivateChatListSocket(
-      ConstRes.socketUrl,
-      userId: userId,
-    );
   }
 
   void _handleFullChatListSocket(dynamic data) {

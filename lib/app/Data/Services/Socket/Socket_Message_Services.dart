@@ -1293,6 +1293,12 @@ class SocketMessageService extends GetxService {
       _privateChatListSocket?.off("chat_list_updated");
       _privateChatListSocket?.off("conversation_updated");
       _privateChatListSocket?.off("receive_message");
+      _privateChatListSocket?.off("group_chat_list_updated");
+      _privateChatListSocket?.off("group_chat_updated");
+      _privateChatListSocket?.off("update_group_chat_list");
+      _privateChatListSocket?.off("chat_list");
+      _privateChatListSocket?.off("common_chat_list");
+      _privateChatListSocket?.off("unified_chat_list");
 
       if (_privateChatListUpdatedCallback != null) {
         _privateChatListSocket?.on("chat_list_updated", (data) {
@@ -1302,6 +1308,24 @@ class SocketMessageService extends GetxService {
           _privateChatListUpdatedCallback?.call(data);
         });
         _privateChatListSocket?.on("receive_message", (data) {
+          _privateChatListUpdatedCallback?.call(data);
+        });
+        _privateChatListSocket?.on("group_chat_list_updated", (data) {
+          _privateChatListUpdatedCallback?.call(data);
+        });
+        _privateChatListSocket?.on("group_chat_updated", (data) {
+          _privateChatListUpdatedCallback?.call(data);
+        });
+        _privateChatListSocket?.on("update_group_chat_list", (data) {
+          _privateChatListUpdatedCallback?.call(data);
+        });
+        _privateChatListSocket?.on("chat_list", (data) {
+          _privateChatListUpdatedCallback?.call(data);
+        });
+        _privateChatListSocket?.on("common_chat_list", (data) {
+          _privateChatListUpdatedCallback?.call(data);
+        });
+        _privateChatListSocket?.on("unified_chat_list", (data) {
           _privateChatListUpdatedCallback?.call(data);
         });
       }
