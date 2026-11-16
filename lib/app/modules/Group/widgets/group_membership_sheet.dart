@@ -388,6 +388,33 @@ class _GroupMembershipSheetState extends State<GroupMembershipSheet>
               const SizedBox(height: 16),
               ..._buildInfoRows(),
               const SizedBox(height: 24),
+              // Left / removed: no "open" action, only Done.
+              if (_left)
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton(
+                    key: const ValueKey('group_sheet_left_done'),
+                    onPressed: _close,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: GroupMembershipSheet._purple,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Text(
+                      appL10n.common_done,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              if (!_left) ...[
               SizedBox(
                 width: double.infinity,
                 height: 54,
@@ -402,7 +429,7 @@ class _GroupMembershipSheetState extends State<GroupMembershipSheet>
                     ),
                   ),
                   child: Text(
-                    _left ? appL10n.group_goToGroups : appL10n.group_openGroup,
+                    appL10n.group_openGroup,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -427,6 +454,7 @@ class _GroupMembershipSheetState extends State<GroupMembershipSheet>
                   ),
                 ),
               ),
+              ],
             ],
           ),
         ),
