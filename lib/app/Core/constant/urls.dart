@@ -6,6 +6,7 @@ class Urls {
   static const String sendOtp = '${ConstRes.aBaseUrl}send-otp';
   static const String verifyOtp = '${ConstRes.aBaseUrl}verify-otp';
   static const String logOut = '${ConstRes.aBaseUrl}logOut';
+  static const String deleteAccount = '${ConstRes.aBaseUrl}delete-account';
   static const String resendOtp = '${ConstRes.aBaseUrl}resendOtp';
 
   // v2: send-otp returns nextStep / otpCharge for non-India numbers
