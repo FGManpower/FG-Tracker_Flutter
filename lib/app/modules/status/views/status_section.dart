@@ -20,6 +20,14 @@ class StatusSection extends StatefulWidget {
 class _StatusSectionState extends State<StatusSection> {
   final GlobalKey _myStatusKey = GlobalKey();
 
+  @override
+  void initState() {
+    super.initState();
+    // The feed controller is permanent: after logging in with another
+    // account it must load that account's statuses (doc 07).
+    controller.ensureLoadedForCurrentUser();
+  }
+
   StatusFeedController get controller =>
       Get.isRegistered<StatusFeedController>()
           ? Get.find<StatusFeedController>()

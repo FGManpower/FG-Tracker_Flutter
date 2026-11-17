@@ -25,6 +25,7 @@ import '../../../Core/values/Utils.dart';
 import '../../../Core/values/global.dart';
 import '../../../Data/Services/call_service.dart';
 import '../../call/widget/call_widget.dart';
+import '../widgets/chat_history_widgets.dart' show ChatRefreshFailedBar;
 
 class NewChatScreen extends StatefulWidget {
   final bool fromQuickAction;
@@ -234,6 +235,17 @@ class _NewChatScreenState extends State<NewChatScreen>
                     : _buildSearchBar(),
               );
             }),
+            // Saved contacts stay when the refresh fails (doc 07).
+            Obx(() => controller.refreshFailed.value
+                ? Padding(
+                    padding: EdgeInsets.symmetric(vertical: 6.h),
+                    child: ChatRefreshFailedBar(
+                      visible: true,
+                      onRetry: () =>
+                          controller.getRegisteredContacts(forceRefresh: true),
+                    ),
+                  )
+                : const SizedBox.shrink()),
             Expanded(
               child: Obx(() {
                 if (_isGated) {

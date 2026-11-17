@@ -21,6 +21,7 @@ import 'package:fgtracker/l10n/l10n.dart';
 
 import '../../../Model/MemberDataRes.dart';
 import '../../mediaStream/Views/contact_profile_screen.dart';
+import '../../Messages/widgets/chat_history_widgets.dart' show ChatRefreshFailedBar;
 
 class CallRecentCallsTab extends StatefulWidget {
   const CallRecentCallsTab({super.key});
@@ -749,6 +750,16 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
             ),
           ),
           _buildFixedBottomClearButton(isDialOpen),
+          // Cached calls stay when the refresh fails (doc 07).
+          Positioned(
+            top: 6.h,
+            left: 0,
+            right: 0,
+            child: ChatRefreshFailedBar(
+              visible: controller.recentRefreshFailed.value,
+              onRetry: controller.refreshRecentCalls,
+            ),
+          ),
         ],
       );
     });

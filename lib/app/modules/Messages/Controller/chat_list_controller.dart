@@ -14,6 +14,10 @@ import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'chat_list_logic.dart';
+import 'chat_list_cache_codec.dart';
+import 'package:fgtracker/app/Data/Services/app_cache.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/chat_screen_logic.dart'
+    show ChatScreenRules;
 import 'package:flutter/foundation.dart' show kDebugMode; // TODO(cl-diagnostics)
 import 'package:fgtracker/app/Core/util/arc_log.dart'; // TODO(arc-diagnostics)
 
@@ -62,6 +66,81 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   RxBool isLoading = false.obs;
   RxBool isRefreshing = false.obs;
   RxList<PrivateChatModel> archivedChats = <PrivateChatModel>[].obs;
+
+  // ---- App cache (doc 07): last list shown at once, then the API ----
+
+  /// The last page-1 load failed or timed out: "Couldn't refresh · Retry".
+  final RxBool refreshFailed = false.obs;
+
+  /// Saving starts only after the cache was read: an early socket event
+  /// must never overwrite the 50 saved rows with a 1-row list.
+  bool _cacheReadDone = false;
+  AppCachePerf? _perf;
+
+  /// Shows the saved lists (main + Archived) at once. Rows that the API or
+  /// a socket event already put on screen win; cached rows are only added
+  /// (R3). Listeners are registered before this and never wait for it (R1).
+  Future<void> _showCachedChatList() async {
+    try {
+      final main = await AppCache.readAs(
+          AppCache.chatList, ChatListCacheCodec.decode);
+      final archived = await AppCache.readAs(
+          AppCache.chatArchived, ChatListCacheCodec.decode);
+      if (isClosed) return;
+      if (archived.isNotEmpty) {
+        final merged = AppCache.mergeCachedIntoLive<PrivateChatModel>(
+          live: archivedChats,
+          cached: archived,
+          keyOf: _getChatKey,
+        );
+        archivedChats.assignAll(ChatListRules.sort(merged));
+      }
+      if (main.isNotEmpty) {
+        final merged = AppCache.mergeCachedIntoLive<PrivateChatModel>(
+          live: privateChats,
+          cached: main.where(
+              (c) => !archivedChats.any((a) => _isSameChat(a, c))).toList(),
+          keyOf: _getChatKey,
+          // A socket row that arrived first is newer; an older live row
+          // loses only if the cached copy has a newer last message.
+          isNewer: (cached, live) => ChatListRules.isNewMessage(live, cached),
+        );
+        privateChats.assignAll(_sortPinnedChats(merged));
+        _syncChattingNotificationMarker();
+      }
+      _perf?.mark('cache shown',
+          extra: '${main.length} rows, ${archived.length} archived');
+    } catch (_) {
+      // Cache problems never break the list: it waits for the API.
+    } finally {
+      _cacheReadDone = true;
+    }
+  }
+
+  /// Write-through (R2), debounced 1 s from a snapshot.
+  void _scheduleChatListCacheSave() {
+    if (!_cacheReadDone || isClosed) return;
+    AppCache.scheduleWrite(
+      AppCache.chatList,
+      () => [
+        for (final c in privateChats.take(AppCache.chatList.maxItems))
+          if (c.isArchived != true) ChatListCacheCodec.encode(c),
+      ],
+    );
+  }
+
+  void _scheduleArchivedCacheSave() {
+    if (!_cacheReadDone || isClosed) return;
+    AppCache.scheduleWrite(
+      AppCache.chatArchived,
+      () => [
+        for (final c in archivedChats.take(AppCache.chatArchived.maxItems))
+          ChatListCacheCodec.encode(c),
+      ],
+      // Unarchiving the last chat must not leave a ghost Archived row.
+      allowEmpty: true,
+    );
+  }
 
   RxInt unreadTotalCount = 0.obs;
   RxSet<String> manuallyUnreadChatKeys = <String>{}.obs;
@@ -187,7 +266,15 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     // screen, so it must not clear the badge here.
     WidgetsBinding.instance.addObserver(this);
     _loadManuallyUnreadKeys();
+    // Sockets first and independent of the cache (R1).
     _initializePrivateChatListSocket();
+    // Cached rows at once, in parallel with the API (doc 07).
+    _perf = AppCachePerf('chat_list')..mark('open');
+    _showCachedChatList();
+    ever<List<PrivateChatModel>>(
+        privateChats, (_) => _scheduleChatListCacheSave());
+    ever<List<PrivateChatModel>>(
+        archivedChats, (_) => _scheduleArchivedCacheSave());
     getPrivateChats();
     loadArchivedChats();
   }
@@ -717,7 +804,11 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         search: search ?? (searchQuery.value.trim().isNotEmpty ? searchQuery.value.trim() : null),
         type: "all",
         includeArchived: false,
-      );
+      ).timeout(ChatScreenRules.historyTimeout); // never an endless loader
+      if (requestedPage == 1) {
+        refreshFailed.value = false;
+        _perf?.mark('API done', extra: '${response.data?.length ?? 0} rows');
+      }
       arcLog('main LOAD', // TODO(arc-diagnostics)
           'GET /chat-list?page=$requestedPage&includeArchived=false => '
           'rows=${response.data?.length ?? 0} '
@@ -867,7 +958,15 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
       privateChats.refresh();
       _syncChattingNotificationMarker();
-    } catch (e, stackTrace) {
+      if (requestedPage == 1) {
+        _perf?.markAfterFrame('rendered', extra: '${privateChats.length} rows');
+      }
+    } catch (e) {
+      // Was swallowed silently (a failure looked like "no chats"). The
+      // cached / current rows stay; the screen shows "Couldn't refresh ·
+      // Retry" (doc 07).
+      _cl('main LOAD failed: $e');
+      if (currentPage.value == 1) refreshFailed.value = true;
     } finally {
       isLoading.value = false;
       isRefreshing.value = false;
@@ -1045,6 +1144,20 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
             uniqueMap[key] = _mergePrivateChat(uniqueMap[key]!, chat);
           }
         }
+        // A full server list is the truth, except for rows with an action
+        // still pending here (pin / mute / mark read …): keep our optimistic
+        // row, and never bring back a chat whose delete is pending (doc 07).
+        _pendingActions.forEach((key, pending) {
+          if (pending.action == 'delete') {
+            uniqueMap.remove(key);
+            return;
+          }
+          final local =
+              privateChats.firstWhereOrNull((c) => _getChatKey(c) == key);
+          if (local != null && uniqueMap.containsKey(key)) {
+            uniqueMap[key] = local;
+          }
+        });
         privateChats.assignAll(_sortPinnedChats(uniqueMap.values.toList()));
         privateChats.refresh();
         _syncChattingNotificationMarker();
@@ -1073,6 +1186,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     privateChats.removeWhere(
       (chat) => chat.id == chatId,
     );
+    // An archived chat removed elsewhere must go too (no ghost row, R5).
+    archivedChats.removeWhere((chat) => chat.id == chatId);
 
     privateChats.refresh();
   }
@@ -1094,12 +1209,15 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       return;
     }
 
-    final index = privateChats.indexWhere(
-      (chat) =>
-          chat.id == conversationId ||
-          chat.chatId == conversationId ||
-          chat.conversationId == conversationId,
-    );
+    bool matches(PrivateChatModel chat) =>
+        chat.id == conversationId ||
+        chat.chatId == conversationId ||
+        chat.conversationId == conversationId;
+
+    // An archived chat cleared elsewhere must go too (no ghost row, R5).
+    archivedChats.removeWhere(matches);
+
+    final index = privateChats.indexWhere(matches);
 
     if (index == -1) {
       return;
@@ -1503,6 +1621,20 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
   @visibleForTesting
   void debugHandleChatUpdated(dynamic data) => _handlePrivateChatUpdated(data);
+
+  /// Completes when the cache read started in onInit has finished.
+  @visibleForTesting
+  Future<void> debugShowCachedChatList() => _showCachedChatList();
+
+  @visibleForTesting
+  void debugHandleChatRemoved(dynamic data) => _handlePrivateChatRemoved(data);
+
+  @visibleForTesting
+  void debugHandleChatCleared(Map<String, dynamic> data) =>
+      _handlePrivateChatCleared(data);
+
+  @visibleForTesting
+  void debugHandleFullChatList(dynamic data) => _handleFullChatListSocket(data);
 
   @visibleForTesting
   void debugHandlePrivateTyping(dynamic data, {bool typing = true}) =>
@@ -2324,16 +2456,15 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   void _handleArchivedPrivateChats(dynamic data) {
     try {
       if (data is! Map) {
-        arcLog('archived RESPONSE', 'not a Map => archivedChats.clear()'); // TODO(arc-diagnostics)
-        archivedChats.clear();
+        // A bad payload never wipes Archive (R8, doc 07): keep what is shown.
+        arcLog('archived RESPONSE', 'not a Map => ignored'); // TODO(arc-diagnostics)
         return;
       }
 
       final rawData = data["data"];
 
       if (rawData is! List) {
-        arcLog('archived RESPONSE', 'data is not a List => archivedChats.clear()'); // TODO(arc-diagnostics)
-        archivedChats.clear();
+        arcLog('archived RESPONSE', 'data is not a List => ignored'); // TODO(arc-diagnostics)
         return;
       }
 
@@ -2385,8 +2516,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
       archivedChats.refresh();
     } catch (e) {
-      arcLog('archived RESPONSE', 'parse error $e => archivedChats.clear()'); // TODO(arc-diagnostics)
-      archivedChats.clear();
+      arcLog('archived RESPONSE', 'parse error $e => ignored'); // TODO(arc-diagnostics)
     }
   }
 

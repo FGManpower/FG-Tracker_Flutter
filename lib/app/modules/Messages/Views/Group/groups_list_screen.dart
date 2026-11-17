@@ -23,6 +23,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../Core/constant/const_res.dart';
 import '../../../../Core/util/profile_navigation.dart';
+import '../../widgets/chat_history_widgets.dart' show ChatRefreshFailedBar;
 
 class GroupsListScreen extends StatefulWidget {
   const GroupsListScreen({super.key});
@@ -111,9 +112,13 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                     messgae: groupController.responseError.value.toString(),
                   );
                 }
-                final bool isLoading = groupController.groupDataLoading.value;
+                // Skeleton only when there is nothing to show yet: cached /
+                // earlier groups stay visible during a refresh (doc 07).
+                final bool isLoading = groupController.groupDataLoading.value &&
+                    groupController.groupData.isEmpty;
                 final List<GroupsResData> data =
                 isLoading ? [] : _filteredGroups();
+                final bool refreshFailed = groupController.refreshFailed.value;
 
                 if (!isLoading && data.isEmpty) {
                   return Center(
@@ -131,7 +136,7 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                   );
                 }
 
-                return RefreshIndicator(
+                final list = RefreshIndicator(
                   color: const Color(0xff5045B9),
                   onRefresh: () async {
                     await groupController.getGroupData();
@@ -149,6 +154,19 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                       return _buildGroupCard(context, group, isLoading);
                     },
                   ),
+                );
+                if (!refreshFailed) return list;
+                return Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 6.h),
+                      child: ChatRefreshFailedBar(
+                        visible: true,
+                        onRetry: groupController.getGroupData,
+                      ),
+                    ),
+                    Expanded(child: list),
+                  ],
                 );
               }),
             ),

@@ -132,7 +132,9 @@ class QuickActionsSection extends StatelessWidget {
                     : null;
                 final subtitle = _walkieSubtitleLabel(
                     context, homeController?.walkieSubtitle ?? "1 hr free");
-                final isSubscribed = homeController?.isWalkieSubscribed ?? false;
+                // Display only (badge / colour); the tap below checks live access.
+                final isSubscribed =
+                    homeController?.isWalkieSubscribedForDisplay ?? false;
                 final isSubscriptionExpired =
                     homeController?.isWalkieSubscriptionExpired ?? false;
                 final isTrialExpired =
@@ -157,9 +159,15 @@ class QuickActionsSection extends StatelessWidget {
                   onTap: () async {
                     // Subscribed or active trial access → channel list;
                     // Otherwise (expired subscription, expired trial, or unstarted trial) → trial / plans screen.
-                    final canUse = homeController?.canUseWalkie ?? false;
+                    // Access from the LIVE /initialize answer only (doc 07):
+                    // not answered yet → wait for it; still none → the
+                    // trial / plans screen, which checks with the server.
+                    final live =
+                        await homeController?.ensureLiveWalkieAccess() ?? false;
+                    final canUse =
+                        live && (homeController?.canUseWalkie ?? false);
                     final subscribed =
-                        homeController?.isWalkieSubscribed ?? false;
+                        live && (homeController?.isWalkieSubscribed ?? false);
                     await Get.toNamed((subscribed || canUse)
                         ? Routes.WalkieGroupSelect
                         : Routes.walkieTalkieTrialDetails);

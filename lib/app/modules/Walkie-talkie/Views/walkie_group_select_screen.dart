@@ -32,6 +32,7 @@ import 'package:fgtracker/app/Model/walkie_channel_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_channel_controller.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import '../../Messages/widgets/chat_history_widgets.dart' show ChatRefreshFailedBar;
 class AssignedMemberItem {
   final String id;
   final String name;
@@ -685,7 +686,22 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           ),
                         );
                 }
-                return _buildGroupList(data: channels, isLoading: false);
+                final list = _buildGroupList(data: channels, isLoading: false);
+                if (!walkieChannelController.refreshFailed.value) return list;
+                // Cached channels stay when the refresh fails (doc 07).
+                return Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 6.h),
+                      child: ChatRefreshFailedBar(
+                        visible: true,
+                        onRetry: () => walkieChannelController.fetchChannels(
+                            showLoading: false),
+                      ),
+                    ),
+                    Expanded(child: list),
+                  ],
+                );
               }),
             ),
           ],
@@ -914,7 +930,10 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     );
   }
 
-  Future<bool> _canAccessWalkie() async {
+  /// true = may open, false = no plan (upgrade prompt), null = the server
+  /// could not be asked (offline / error). Fails CLOSED: an error used to
+  /// return true and opened the paid feature without a plan (doc 07, fix 1).
+  Future<bool?> _canAccessWalkie() async {
     if (!hasNoPlan.value) return true;
     try {
       final overview = await WalkieTalkieTrialService().getOverview();
@@ -933,7 +952,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
       }
       return false;
     } catch (_) {
-      return true;
+      return null;
     }
   }
 
@@ -1082,6 +1101,11 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
       return InkWell(
         onTap: () async {
           final canAccess = await _canAccessWalkie();
+          if (canAccess == null) {
+            // Access could not be checked: never open, never upsell.
+            Utils().fluttertoast(appL10n.chat_loadFailedSubtitle);
+            return;
+          }
           if (!canAccess) {
             if (mounted) {
               _showUpgradePrompt(context: context, isNoPlan: true);
@@ -1235,6 +1259,11 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     ? null
                     : () async {
                         final canAccess = await _canAccessWalkie();
+                        if (canAccess == null) {
+                          // Could not be checked: never open, never upsell.
+                          Utils().fluttertoast(appL10n.chat_loadFailedSubtitle);
+                          return;
+                        }
                         if (!canAccess) {
                           if (mounted) {
                             _showUpgradePrompt(

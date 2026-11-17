@@ -17,6 +17,7 @@ import 'package:fgtracker/app/modules/call/Views/call_recent_calls_tab.dart';
 import '../../call/Controller/call_controller.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import '../../Messages/widgets/chat_history_widgets.dart' show ChatRefreshFailedBar;
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
 
@@ -101,7 +102,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
           SizedBox(height: 16.h),
           Expanded(
             child: Obx(() {
-              if (controller.isLoading.value) {
+              // Skeleton only when there is nothing to show yet: cached /
+              // earlier notifications stay visible while refreshing (doc 07).
+              if (controller.isLoading.value &&
+                  controller.filteredNotifications.isEmpty) {
                 return const _NotificationSkeletonList();
               }
 
@@ -129,7 +133,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 );
               }
 
-              return RefreshIndicator(
+              final list = RefreshIndicator(
                 color: primaryPurple,
                 onRefresh: controller.refreshNotifications,
                 child: ListView.separated(
@@ -147,12 +151,26 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   },
                 ),
               );
+              if (!controller.refreshFailed.value) return list;
+              return Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 6.h),
+                    child: ChatRefreshFailedBar(
+                      visible: true,
+                      onRetry: controller.refreshNotifications,
+                    ),
+                  ),
+                  Expanded(child: list),
+                ],
+              );
             }),
           ),
         ],
       ),
       bottomNavigationBar: Obx(() {
-        if (controller.isLoading.value ||
+        if ((controller.isLoading.value &&
+                controller.filteredNotifications.isEmpty) ||
             (controller.responseError.value.isNotEmpty &&
                 controller.filteredNotifications.isEmpty)) {
           return const SizedBox.shrink();

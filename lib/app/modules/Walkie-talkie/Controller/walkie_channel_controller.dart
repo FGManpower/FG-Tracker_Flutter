@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_channel_repo.dart';
+import 'package:fgtracker/app/Data/Services/app_cache.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Model/walkie_channel_model.dart';
 import 'package:fgtracker/l10n/l10n.dart';
@@ -35,9 +36,59 @@ class WalkieChannelController extends GetxController {
 
   StreamSubscription? _socketSub;
 
+  // ---- App cache (doc 07): the channel list shown at once ----
+
+  /// "Couldn't refresh · Retry" over the channels already on screen.
+  final RxBool refreshFailed = false.obs;
+  bool _cacheReadDone = false;
+  AppCachePerf? _perf;
+
+  /// Saved WITHOUT live state: who is speaking / online now is never
+  /// cached (it would show a stale "speaking" row); sockets fill it in.
+  static Map<String, dynamic> _cacheJson(WalkieChannelItem c) => c.toJson()
+    ..['isChannelSpeaking'] = false
+    ..['activeSpeakerId'] = null
+    ..['activeSpeakerName'] = null
+    ..['activeSpeakerImage'] = null
+    ..['isOnline'] = false;
+
+  Future<void> _showCachedChannels() async {
+    try {
+      final cached = await AppCache.readAs(
+          AppCache.walkieChannels, (m) => WalkieChannelItem.fromJson(m));
+      if (isClosed || cached.isEmpty) return;
+      // The API answer (or a socket update) that is already here wins (R3).
+      if (channels.isEmpty) {
+        channels.assignAll(cached);
+        _perf?.mark('cache shown', extra: '${cached.length} channels');
+        // The API failed before the cache was read: channels are on screen
+        // now, so a small retry bar instead of the full error.
+        if (errorMessage.value.isNotEmpty) {
+          errorMessage.value = '';
+          refreshFailed.value = true;
+        }
+      }
+    } catch (_) {
+    } finally {
+      _cacheReadDone = true;
+    }
+  }
+
+  void _scheduleChannelsSave() {
+    if (!_cacheReadDone || isClosed) return;
+    AppCache.scheduleWrite(
+      AppCache.walkieChannels,
+      () => [for (final c in channels) _cacheJson(c)],
+    );
+  }
+
   @override
   void onInit() {
     super.onInit();
+    _perf = AppCachePerf('walkie_channels')..mark('open');
+    // Socket listeners are set up as before and never wait for the cache.
+    _showCachedChannels();
+    ever<List<WalkieChannelItem>>(channels, (_) => _scheduleChannelsSave());
     fetchChannels();
     _setupSocketListeners();
   }
@@ -312,11 +363,13 @@ class WalkieChannelController extends GetxController {
   }
 
   Future<void> fetchChannels({bool showLoading = true}) async {
-    if (showLoading) isLoading.value = true;
+    // Skeleton only when nothing (cached) is shown yet.
+    if (showLoading) isLoading.value = channels.isEmpty;
     errorMessage.value = '';
 
     try {
-      final res = await WalkieChannelRepo.getWalkieChannels();
+      final res = await WalkieChannelRepo.getWalkieChannels()
+          .timeout(const Duration(seconds: 10)); // never an endless loader
       final loadedChannels = res.data?.channels ?? [];
 
       activeChannelId.value = res.data?.activeChannelId;
@@ -358,9 +411,18 @@ class WalkieChannelController extends GetxController {
       }
 
       channels.assignAll(loadedChannels);
+      refreshFailed.value = false;
+      _perf?.mark('API done', extra: '${loadedChannels.length} channels');
+      _perf?.markAfterFrame('rendered');
       subscribeChannelUpdates();
     } catch (e) {
-      errorMessage.value = e.toString();
+      // Channels on screen (cached) stay with a retry bar; an empty screen
+      // gets the error as before.
+      if (channels.isNotEmpty) {
+        refreshFailed.value = true;
+      } else {
+        errorMessage.value = e.toString();
+      }
       AppLog.d("❌ [WalkieChannelController] fetchChannels error: $e");
     } finally {
       if (showLoading) isLoading.value = false;

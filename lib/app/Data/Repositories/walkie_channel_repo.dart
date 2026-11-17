@@ -28,6 +28,11 @@ class WalkieChannelRepo {
       AppLog.d("⚠️ [WalkieChannelRepo] walkie/channels failed or unavailable ($e). Falling back to get-all-group.");
       try {
         final GroupRes groupRes = await GroupRepo.getGroupData();
+        // A failed fallback is a failure, not "0 channels": an empty
+        // success here wiped the channels on screen (doc 07, R8).
+        if (groupRes.status != true) {
+          throw Exception(groupRes.message ?? 'get-all-group failed');
+        }
         final rawGroups = groupRes.data?.groupData ?? [];
 
         final channels = rawGroups.map((g) {

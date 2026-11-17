@@ -125,6 +125,49 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     return cached.reversed.toList();
   }
 
+  // ---- "Couldn't refresh · Retry" bar rules (F-1.2.8) ----
+  // The bar used to appear ~10 s after opening a chat whose history request
+  // was slow (timeout) or failed once, although the socket kept the chat
+  // live; a late failure could also show it after another load had already
+  // succeeded. Now:
+  //  1. once a history load succeeded, a later failure never shows it;
+  //  2. with messages on screen, the first failure retries quietly (2 s);
+  //     the bar shows only if that retry fails too;
+  //  3. an empty chat still gets the full error view at once.
+  int _quietRetries = 0;
+  bool _inQuietRetry = false;
+
+  void _onHistoryFailed() {
+    if (isClosed || _leftChat) return;
+    if (_historyLoaded) return; // fresh data already: never a late bar
+    if (_messages.isEmpty) {
+      historyLoadFailed.value = true;
+      return;
+    }
+    if (_quietRetries < 1) {
+      _quietRetries++;
+      Timer(const Duration(seconds: 2), _retryHistoryQuietly);
+      return;
+    }
+    historyLoadFailed.value = true;
+  }
+
+  Future<void> _retryHistoryQuietly() async {
+    if (isClosed || _leftChat || _historyLoaded || _historyRequestInFlight) {
+      return;
+    }
+    _inQuietRetry = true;
+    try {
+      if (privateChatId.value.isNotEmpty) {
+        await getPrivateMessageHistory(privateChatId.value);
+      } else if (_privatePeerId != null) {
+        await getPrivateMessageHistoryByPeer(_privatePeerId!);
+      }
+    } finally {
+      _inQuietRetry = false;
+    }
+  }
+
   /// Logs "list rendered" after the frame that shows the API result.
   void _markRenderedAfterFrame() {
     final perf = _perf;
@@ -773,7 +816,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             log("[CHAT-PERF] ERROR: PRIVATE CHAT ID NOT FOUND after ${stopwatch.elapsedMilliseconds} ms");
             if (!_historyLoaded) {
               isLoadingInitialMessages.value = false;
-              historyLoadFailed.value = true;
+              _onHistoryFailed();
             }
             return;
           }
@@ -2024,6 +2067,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           hasNextPage: result.pagination?.hasNextPage,
         );
         _historyLoaded = true;
+        _quietRetries = 0;
+        historyLoadFailed.value = false;
         for (final m in _messages) {
           rtModel('private history', m); // TODO(rt-diagnostics)
         }
@@ -2035,13 +2080,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         _markRenderedAfterFrame();
       } else {
         _pager.fail();
-        // Empty chat → full Retry state; cached messages → small bar.
-        historyLoadFailed.value = true;
+        // Empty chat → full Retry state; cached messages → small bar
+        // (after one quiet retry, see _onHistoryFailed).
+        _onHistoryFailed();
       }
     } catch (e) {
       log("History by peer error: $e");
       _pager.fail();
-      historyLoadFailed.value = true;
+      _onHistoryFailed();
     } finally {
       isLoadingInitialMessages.value = false;
       _historyRequestInFlight = false;
@@ -2139,6 +2185,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           hasNextPage: result.pagination?.hasNextPage,
         );
         _historyLoaded = true;
+        _quietRetries = 0;
+        historyLoadFailed.value = false;
         for (final m in _messages) {
           rtModel('private history', m); // TODO(rt-diagnostics)
         }
@@ -2213,9 +2261,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         log("HISTORY DEBUG => ${result.message}");
 
         _pager.fail();
-        // Empty chat → full Retry state; cached messages → small bar.
-        historyLoadFailed.value = true;
-        CommonDialog.errorMessage(result.message);
+        // Empty chat → full Retry state; cached messages → small bar
+        // (after one quiet retry, see _onHistoryFailed).
+        if (!_inQuietRetry) CommonDialog.errorMessage(result.message);
+        _onHistoryFailed();
       }
     } catch (e, stackTrace) {
       log("========== HISTORY DEBUG ERROR: EXCEPTION ==========");
@@ -2225,7 +2274,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       // Show "Couldn't load messages / Retry" (or, over cached messages,
       // the "Couldn't refresh · Retry" bar) instead of a false
       // "No messages here yet" or an endless spinner (incl. the 10 s timeout).
-      historyLoadFailed.value = true;
+      _onHistoryFailed();
     } finally {
       _historyRequestInFlight = false;
       isLoadingInitialMessages.value = false;
@@ -2784,6 +2833,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   /// "Retry" on the load-error state.
   Future<void> retryLoadHistory() async {
     historyLoadFailed.value = false;
+    _quietRetries = 1; // the user asked: a failure shows the bar at once
     if (privateChatId.value.isNotEmpty) {
       await getPrivateMessageHistory(privateChatId.value);
       return;

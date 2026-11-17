@@ -10,6 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
 import '../../../Data/Repositories/attendance_repo.dart';
+import '../../../Data/Services/app_cache.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart'
     show SocketMessageService;
 import '../models/attendance_poll_model.dart';
@@ -155,9 +156,33 @@ class AttendanceController extends GetxController {
   }
 
   @override
+  void onInit() {
+    super.onInit();
+    AppCache.addLogoutListener(resetForLogout);
+  }
+
+  @override
   void onClose() {
+    AppCache.removeLogoutListener(resetForLogout);
     _fallbackTimer?.cancel();
     super.onClose();
+  }
+
+  /// Logout: this controller is permanent (survives `Get.deleteAll`), so the
+  /// previous user's polls, votes and selfie / location data leave memory
+  /// here; the next account starts empty and loads its own (doc 07).
+  void resetForLogout() {
+    _fallbackTimer?.cancel();
+    _fallbackTimer = null;
+    polls.clear();
+    deletedPolls.clear();
+    _loading.clear();
+    _loaded.clear();
+    _watchers.clear();
+    _lastLiveAt.clear();
+    _pendingMutations.clear();
+    _socketProvenPolls.clear();
+    _socketProven = false;
   }
 
   /// Forces the next [ensureLoaded] per poll to refetch. Called when a chat

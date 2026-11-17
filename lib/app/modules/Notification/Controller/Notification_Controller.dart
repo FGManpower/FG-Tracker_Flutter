@@ -1,9 +1,11 @@
 import 'dart:developer';
 
+import 'package:flutter/widgets.dart' show AppLifecycleListener;
 import 'package:get/get.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 
 import '../../../Core/values/global.dart';
+import '../../../Data/Services/app_cache.dart';
 import '../../../Data/Repositories/Notification_Repo.dart';
 import '../../../Model/notification_model.dart';
 
@@ -22,10 +24,58 @@ class NotificationController extends GetxController {
 
   final RxString selectedFilter = "all".obs;
 
+  // ---- App cache (doc 07): the list shown at once ----
+
+  /// "Couldn't refresh · Retry" over the notifications already shown.
+  final RxBool refreshFailed = false.obs;
+  bool _cacheReadDone = false;
+  AppCachePerf? _perf;
+  AppLifecycleListener? _lifecycle;
+
   @override
   void onInit() {
     super.onInit();
-    refreshNotifications();
+    _perf = AppCachePerf('notifications')..mark('open');
+    ever<List<NotificationModel>>(
+        notifications, (_) => _scheduleNotificationsSave());
+    // Gap fill (R4): there is no notification socket; refresh on resume.
+    _lifecycle = AppLifecycleListener(onResume: refreshNotifications);
+    _showCachedNotifications().then((_) => refreshNotifications());
+  }
+
+  @override
+  void onClose() {
+    _lifecycle?.dispose();
+    super.onClose();
+  }
+
+  Future<void> _showCachedNotifications() async {
+    try {
+      final cached = await AppCache.readAs(
+          AppCache.notifications, (m) => NotificationModel.fromJson(m));
+      // An API answer that is already here wins (R3).
+      if (!isClosed && cached.isNotEmpty && notifications.isEmpty) {
+        notifications.assignAll(cached);
+        applyFilter();
+        _perf?.mark('cache shown', extra: '${cached.length} items');
+      }
+    } catch (_) {
+    } finally {
+      _cacheReadDone = true;
+    }
+  }
+
+  /// Write-through: new list, read flags, "clear all" (saved empty).
+  void _scheduleNotificationsSave() {
+    if (!_cacheReadDone || isClosed) return;
+    AppCache.scheduleWrite(
+      AppCache.notifications,
+      () => [
+        for (final n in notifications.take(AppCache.notifications.maxItems))
+          n.toJson()
+      ],
+      allowEmpty: true,
+    );
   }
 
   Future<void> refreshNotifications() async {
@@ -34,8 +84,8 @@ class NotificationController extends GetxController {
 
     responseError.value = "";
 
-    notifications.clear();
-    filteredNotifications.clear();
+    // The list is no longer cleared first: what is shown (cached or
+    // earlier) stays until the server answers (doc 07).
 
     selectedFilter.value = "all";
 
@@ -50,9 +100,19 @@ class NotificationController extends GetxController {
       isLoading.value = true;
       responseError.value = "";
 
-      final result = await NotificationRepo.getNotifications();
+      final result = await NotificationRepo.getNotificationsOrNull()
+          .timeout(const Duration(seconds: 10)); // never an endless loader
+
+      if (result == null) {
+        // Failed answer: keep what is shown; never "no notifications".
+        if (notifications.isNotEmpty) refreshFailed.value = true;
+        return;
+      }
 
       notifications.value = result;
+      refreshFailed.value = false;
+      _perf?.mark('API done', extra: '${result.length} items');
+      _perf?.markAfterFrame('rendered');
 
       applyFilter();
     } catch (e, stackTrace) {
@@ -61,10 +121,12 @@ class NotificationController extends GetxController {
         stackTrace: stackTrace,
       );
 
-      notifications.clear();
-      filteredNotifications.clear();
-
-      responseError.value = _getErrorMessage(e);
+      if (notifications.isNotEmpty) {
+        refreshFailed.value = true; // cached list stays (offline / timeout)
+      } else {
+        filteredNotifications.clear();
+        responseError.value = _getErrorMessage(e);
+      }
     } finally {
       isLoading.value = false;
     }

@@ -121,12 +121,48 @@ class ChatMessageCache {
   // Box handling
   // ---------------------------------------------------------------------
 
-  static Future<List<int>> _cipherKey() async {
-    final existing = await keyStore.read();
-    if (existing != null) return existing;
-    final key = Hive.generateSecureKey();
-    await keyStore.write(key);
-    return key;
+  /// The logged-in user every cache box belongs to (null = nobody).
+  static String? activeUserId() => currentUserId();
+
+  /// One key read / creation at a time, shared with [AppCache]: two caches
+  /// creating a key at once would leave one box with a key that is lost.
+  static Future<List<int>>? _keyFuture;
+
+  static Future<List<int>> _cipherKey() {
+    return _keyFuture ??= () async {
+      final existing = await keyStore.read();
+      if (existing != null) return existing;
+      final key = Hive.generateSecureKey();
+      await keyStore.write(key);
+      return key;
+    }()
+        .catchError((Object e) {
+      _keyFuture = null; // retry next time
+      throw e;
+    });
+  }
+
+  // ---- Shared with AppCache (same key, Hive init and registry) ----
+
+  /// Initialises Hive once for every cache.
+  static Future<void> ensureHive() async {
+    if (_hiveReady) return;
+    await initHive();
+    _hiveReady = true;
+  }
+
+  /// The AES key used by every encrypted cache box.
+  static Future<List<int>> sharedCipherKey() => _cipherKey();
+
+  /// Adds [name] to the registry, so the logout [clearAll] deletes it.
+  static Future<void> registerBox(String name) => _registerBox(name);
+
+  static final List<Future<void> Function()> _beforeClearAll = [];
+
+  /// Runs before [clearAll] deletes the boxes (other caches close their
+  /// boxes and drop pending writes). The logout call itself is unchanged.
+  static void addBeforeClearAllHook(Future<void> Function() hook) {
+    if (!_beforeClearAll.contains(hook)) _beforeClearAll.add(hook);
   }
 
   /// The current user's box, opened (and checked) on first use.
@@ -381,6 +417,13 @@ class ChatMessageCache {
   static Future<void> clearAll() async {
     try {
       await _serial(() async {
+        for (final hook in List.of(_beforeClearAll)) {
+          try {
+            await hook();
+          } catch (e) {
+            _log('before-clear hook failed: $e');
+          }
+        }
         if (!_hiveReady) {
           await initHive();
           _hiveReady = true;
@@ -395,6 +438,7 @@ class ChatMessageCache {
         await registry.close();
         await Hive.deleteBoxFromDisk(_registryBoxName);
         await keyStore.delete();
+        _keyFuture = null;
       }).timeout(const Duration(seconds: 3)); // logout never waits longer
     } catch (e) {
       _log('clearAll failed: $e');
@@ -409,6 +453,7 @@ class ChatMessageCache {
     _box = null;
     _boxUser = null;
     _hiveReady = false;
+    _keyFuture = null;
   }
 }
 

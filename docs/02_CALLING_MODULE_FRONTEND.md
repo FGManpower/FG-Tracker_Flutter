@@ -1,6 +1,6 @@
 # Calling Module — Flutter Frontend Architecture & Implementation Guide
 
-**Document Version:** `v1.1.0` · **Last updated:** 2026-11-07 · **Branch:** `46Solution`  
+**Document Version:** `v1.2.0` · **Last updated:** 2026-11-17 · **Branch:** `46Solution`  
 **Target Audience:** Flutter Frontend Developers  
 **Covers:** Single & Group Audio/Video Calls, WebRTC PeerConnection, CallKit/CallKeep, Audio Routing, Proximity Sensor, PIP Floating Bubble, Call History & Call History Details Screen, Recent Calls Multi-select Delete  
 **Status:** In Production / Stable  
@@ -181,8 +181,15 @@ The 3-dot menu in the Call screen header (Recent tab) is removed. Its only optio
 
 ---
 
+### 5.9 Cache: Recent calls (v1.2.0)
+- The first page of Recent calls is kept on the device (encrypted app cache, area `call_history`, 50 calls). It is shown at once on the next open **on the same local day**; after midnight it is dropped, because the server's "Today / Yesterday" sections would be wrong.
+- The first API page then **replaces** the cached rows (server order; calls deleted on another phone disappear). There is a 10 s timeout; on failure the rows stay with "Couldn't refresh · Retry".
+- Delete, multi-delete and "clear all" are saved, so no ghost calls come back after a restart. New: a silent page-1 refresh on app resume.
+- Details and rules: [07_APP_CACHE_FRONTEND.md](07_APP_CACHE_FRONTEND.md).
+
 ## 6. Change log
 | Version | Date | Change |
 |---|---|---|
+| v1.2.0 | 2026-11-17 | §5.9 Recent calls cache (guide 07): today's first page shown at once, replaced by the API, retry bar, resume refresh, deletes saved. |
 | v1.1.0 | 2026-11-07 | Recent Calls multi-select delete (§5.3): header 3-dot menu removed; long-press a row to select; top bar ✕ · n selected · Select all / Unselect all; red Delete (n) button at the bottom; confirm dialog; optimistic bulk delete via `CallRepo.deleteMultipleCallHistory` with restore + snackbar on failure. §5.1 corrected (no Clear All in the UI). |
 | v1.0.0 | — | First version: single and group calls, signaling, CallKit, screen sharing, audio routing, proximity lock, call history and details screens. |

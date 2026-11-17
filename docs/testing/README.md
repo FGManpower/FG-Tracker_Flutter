@@ -5,6 +5,7 @@ QA, unit, manual and penetration testing for FG Tracker, one folder per module. 
 | Module | Folder | Unit / widget | Pentest | Manual | Last updated |
 |---|---|---|---|---|---|
 | Chatting | [chatting/](chatting/README.md) | Done (800 pass project-wide; chat: 5 fail, all logged) | Client review done; server cases to run | Checklist ready, not run | 2026-11-16 |
+| App cache | [app_cache/](app_cache/README.md) | Done (59 new pass; 0 new failures project-wide) | Code review + automated done; device steps not run | Checklist ready, not run | 2026-11-17 |
 
 ## Folder layout per module
 

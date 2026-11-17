@@ -5,6 +5,7 @@ import 'package:fgtracker/app/Data/Repositories/InitializeRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/Profile_Repo.dart';
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/banner_Repo.dart';
+import 'package:fgtracker/app/Data/Services/app_cache.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/app/Model/group_count_detail.dart';
@@ -44,13 +45,30 @@ class HomeController extends GetxController {
   static const String _prefWalkieIsTrialExpired = 'cached_walkie_is_trial_expired';
   static const String _prefWalkieCanUse = 'cached_walkie_can_use';
 
+  /// ACCESS decisions: live server value only (doc 07 "never cache"). The
+  /// old fallback to a cached `cached_walkie_can_use` let a phone that had
+  /// a plan once open the channel list while `/initialize` had not answered
+  /// (e.g. offline / plan just expired). No answer yet = no access.
   bool get canUseWalkie =>
-      initializeModel.value?.data?.walkie?.access?.canUseWalkie ??
-      (Global.storageServices.getBoolSync(_prefWalkieCanUse) ?? false);
+      initializeModel.value?.data?.walkie?.access?.canUseWalkie ?? false;
 
   bool get isWalkieSubscribed =>
+      initializeModel.value?.data?.walkie?.isSubscribed ?? false;
+
+  /// Display only (premium badge on the card): may use the last value.
+  bool get isWalkieSubscribedForDisplay =>
       initializeModel.value?.data?.walkie?.isSubscribed ??
       (Global.storageServices.getBoolSync(_prefWalkieIsSubscribed) ?? false);
+
+  /// Before an access decision: makes sure the live `/initialize` answer is
+  /// here (waits for it, max 10 s). Returns false when it is not.
+  Future<bool> ensureLiveWalkieAccess() async {
+    if (initializeModel.value?.data?.walkie != null) return true;
+    try {
+      await fetchInitializeData().timeout(const Duration(seconds: 10));
+    } catch (_) {}
+    return initializeModel.value?.data?.walkie != null;
+  }
 
   bool get isWalkieSubscriptionExpired =>
       initializeModel.value?.data?.walkie?.isSubscriptionExpired ??
@@ -125,18 +143,37 @@ class HomeController extends GetxController {
   }
 
   Future<void> fetchBanners() async {
+    final perf = AppCachePerf('banners')..mark('open');
     try {
-      isLoadingBanners.value = true;
+      // Saved banners first (doc 07): no skeleton on a cold start.
+      if (bannerList.isEmpty) {
+        final cached = await AppCache.readAs(
+            AppCache.banners, (m) => BannerData.fromJson(m));
+        if (cached.isNotEmpty && bannerList.isEmpty) {
+          bannerList.assignAll(cached);
+          perf.mark('cache shown', extra: '${cached.length} banners');
+        }
+      }
+      isLoadingBanners.value = bannerList.isEmpty;
 
-      var result = await BannerRepo.getBanner();
+      var result = await BannerRepo.getBanner()
+          .timeout(const Duration(seconds: 10));
       if (result.success == true) {
         isLoadingBanners(false);
-        bannerList.value = (result.data ?? []).take(7).toList();
+        final list = (result.data ?? []).take(7).toList();
+        bannerList.value = list;
+        perf.mark('API done', extra: '${list.length} banners');
+        if (list.isEmpty) {
+          unawaited(AppCache.clearArea(AppCache.banners)); // server: none
+        } else {
+          unawaited(AppCache.write(
+              AppCache.banners, [for (final b in list) b.toJson()]));
+        }
       } else {
-        isLoadingBanners(false);
+        isLoadingBanners(false); // cached banners (if any) stay
       }
     } catch (e) {
-      isLoadingBanners(false);
+      isLoadingBanners(false); // cached banners (if any) stay
     }
   }
 
@@ -154,7 +191,8 @@ class HomeController extends GetxController {
           Global.storageServices.setBool(_prefWalkieIsSubscribed, w.isSubscribed);
           Global.storageServices.setBool(_prefWalkieIsSubExpired, w.isSubscriptionExpired);
           Global.storageServices.setBool(_prefWalkieIsTrialExpired, w.isTrialExpired);
-          Global.storageServices.setBool(_prefWalkieCanUse, w.access?.canUseWalkie ?? false);
+          // Access is never cached any more; drop the old key.
+          Global.storageServices.remove(_prefWalkieCanUse);
         }
 
         if (result.data?.notificationMarkers != null) {

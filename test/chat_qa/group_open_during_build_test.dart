@@ -17,9 +17,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// T-07 (Run 2): `HttpOverrides.global = null` removed flutter_test's HTTP
+/// mock, and the controller opened below calls the API, whose host is the
+/// PRODUCTION constant (ConstRes.aBaseUrl). Only loopback is allowed now;
+/// every other host goes to a dead proxy (connection refused).
+class _LoopbackOnlyHttp extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) =>
+      super.createHttpClient(context)
+        ..findProxy = (uri) =>
+            (uri.host == '127.0.0.1' || uri.host == 'localhost')
+                ? 'DIRECT'
+                : 'PROXY 127.0.0.1:9';
+}
+
 void main() {
   setUp(() async {
-    HttpOverrides.global = null;
+    HttpOverrides.global = _LoopbackOnlyHttp();
     Get.reset();
     SharedPreferences.setMockInitialValues({
       PrefConst.userId: '1',
@@ -33,6 +47,7 @@ void main() {
   tearDown(() {
     SocketMessageService.instance.disconnectAll();
     Get.reset();
+    HttpOverrides.global = null;
   });
 
   testWidgets(

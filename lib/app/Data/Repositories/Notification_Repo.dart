@@ -14,6 +14,21 @@ class NotificationRepo {
     return [];
   }
 
+  /// Same request as [getNotifications], but a failed answer
+  /// (`status` not true) is `null` instead of `[]`, so a failure never
+  /// looks like "no notifications" and never wipes the cached list (doc 07).
+  static Future<List<NotificationModel>?> getNotificationsOrNull() async {
+    var response = await HttpUtil().get("/getNotifications");
+
+    if (response is Map && response["status"] == true) {
+      return (response["notifications"] as List? ?? const [])
+          .map((e) => NotificationModel.fromJson(e))
+          .toList();
+    }
+
+    return null;
+  }
+
   static Future<int> getUnreadCount() async {
     var response = await HttpUtil().get("/getUnreadCount");
 

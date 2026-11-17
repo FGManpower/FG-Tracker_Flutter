@@ -245,6 +245,53 @@ class StatusItemModel {
     return DateTime.now().toUtc().isAfter(expiresAt!.toUtc());
   }
 
+  /// For the on-device cache (doc 07): the reverse of [fromJson]. Viewer
+  /// lists are left out unless asked for (who saw my status is personal
+  /// and is fetched live); [viewsCount] is kept.
+  Map<String, dynamic> toJson({bool includeViewers = false}) => {
+        'id': id,
+        'userId': userId,
+        'type': type,
+        'content': content,
+        'mediaUrl': mediaUrl,
+        'thumbnailUrl': thumbnailUrl,
+        'backgroundColor': backgroundColor,
+        'fontStyle': fontStyle,
+        'durationSeconds': durationSeconds,
+        'privacyType': privacyType,
+        'isViewed': isViewed,
+        'viewsCount': viewsCount,
+        'myReaction': myReaction,
+        'expiresAt': expiresAt?.toUtc().toIso8601String(),
+        'createdAt': createdAt.toUtc().toIso8601String(),
+        'isDeleted': isDeleted,
+        'viewers': includeViewers
+            ? [
+                for (final v in viewers)
+                  {
+                    'viewerId': v.viewerId,
+                    'name': v.name,
+                    'profileImage': v.profileImage,
+                    'reactionEmoji': v.reactionEmoji,
+                    'viewedAt': v.viewedAt?.toUtc().toIso8601String(),
+                    'chatId': v.chatId,
+                  }
+              ]
+            : const [],
+        if (creator != null) 'creator': creator!.toJson(),
+      };
+
+  /// Still worth showing from the cache: not deleted, not past
+  /// [expiresAt], and (when the server sent no expiry) younger than 24 h.
+  bool get isShowableFromCache {
+    if (isExpired) return false;
+    if (expiresAt == null &&
+        DateTime.now().difference(createdAt) > const Duration(hours: 24)) {
+      return false;
+    }
+    return true;
+  }
+
   bool get isVideo {
     final lowerType = type.toLowerCase();
     final lowerUrl = (mediaUrl ?? '').toLowerCase();
@@ -457,6 +504,11 @@ class StatusCreatorUser {
       profilePic: _resolveProfileUrl(rawPic),
     );
   }
+
+  /// For the on-device cache (doc 07). URLs are already absolute, which
+  /// [fromJson] keeps as they are.
+  Map<String, dynamic> toJson() =>
+      {'id': id, 'name': name, 'profilePic': profilePic};
 }
 
 class ContactStatusGroupModel {
@@ -494,4 +546,12 @@ class ContactStatusGroupModel {
 
   Color get ringColor =>
       isAllViewed ? const Color(0xFF9CA3AF) : const Color(0xFF22C55E);
+
+  /// For the on-device cache (doc 07); no viewer lists.
+  Map<String, dynamic> toJson() => {
+        'user': user.toJson(),
+        'isAllViewed': isAllViewed,
+        'latestTimestamp': latestTimestamp.toUtc().toIso8601String(),
+        'statuses': [for (final s in statuses) s.toJson()],
+      };
 }

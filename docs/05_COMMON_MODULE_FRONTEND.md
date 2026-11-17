@@ -1,6 +1,6 @@
 # Frontend Guide: Common Module (App Load, Screen Priority, Auth & Core Systems)
 
-> **Document Version:** `v2.5.0`  
+> **Document Version:** `v2.5.3`  
 > **Target Framework:** Flutter (Dart)  
 > **Scope:** App Bootstrap & Screen Priority Hierarchy, Pre-Navigation Permission Evaluation, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing, "Last seen" format across all modules (§7), Real-time Location Tracking & Socket Synchronization Architecture (§8), Side Menu: Legal / Language / Social Links (§9), Custom Banner + Crop + permissions (§5.1.1), One back button & app bar style (§10)
 
@@ -526,6 +526,17 @@ Screen sharing is initiated and controlled over the calling socket connection:
 
 ---
 
+### 5.9 Cache: Home banners, Notification Center, All Groups (v2.5.3)
+- The encrypted app cache (guide [07](07_APP_CACHE_FRONTEND.md)) shows the last banners (`banners`, 7), notifications (`notifications`, 100) and groups (`groups`, 200) at once, then refreshes from the server (10 s timeout).
+- **Notifications:**
+  - the list is no longer cleared before each refresh;
+  - a failed answer keeps the list with "Couldn't refresh · Retry";
+  - the list refreshes on app resume;
+  - unread count: the server value wins.
+- **All Groups:** an error no longer replaces the list (retry bar); the skeleton shows only when the list is empty. The cached `isCreator` / `isActive` flags are display only; every action is checked by the server.
+- **Not cached:** `/initialize` (payment / walkie access, Razorpay key), red dots, home counts (these already use their own prefs cache, unchanged).
+- **Logout:** unchanged. The existing `ChatMessageCache.clearAll()` call deletes the app cache too.
+
 ## 6. International Payment Architecture & Changelog
 
 ### 6.1 Architecture Summary
@@ -537,6 +548,7 @@ Screen sharing is initiated and controlled over the calling socket connection:
 ### 6.2 Change Log
 | Version | Date | Description |
 |---|---|---|
+| v2.5.3 | 2026-11-17 | App cache (guide 07) for Home banners, the Notification Center and All Groups: shown at once, 10 s timeout, "Couldn't refresh · Retry" (not for banners), skeleton only when empty. Notifications are no longer cleared before each refresh; a failed answer (`getNotificationsOrNull` → `null`) never looks like "no notifications"; resume refresh added. All Groups: an error no longer replaces the list. `AppCache.warmUp()` in `main.dart`. Logout unchanged (the existing chat-cache `clearAll` deletes the app cache too). |
 | v2.5.2 | 2026-11-17 | §5.1.1 Custom banner asks for camera (Android + iOS) and photos (iOS) before opening; blocked → Settings dialog, auto-continues after Settings. §9.3 "Follow us" uses real brand icons in brand colours. §9.3.1 side menu: divider + more space between Log out and Delete Account. §10 one back button app-wide: shared `AppBackButton` (white circle, purple `arrow_back_rounded`) and app bars that don't change on scroll (`AppBarStyle`); every back keeps its old action. |
 | v2.5.1 | 2026-11-17 | §5.1.1 Custom banner: after taking a photo the crop screen opens next; Home no longer shows in between. Home's resume permission / location check waits until the photo flow ends (`LocalBannerService.pickInProgress`), and a spinner covers the native camera → cropper gap. Files: `local_banner_service.dart`, `bannerUi.dart`, `home_screen.dart`. |
 | v2.5.0 | 2026-11-16 | §9 Side menu: **Legal** replaces Contact Us (6 documents open the fgtracker.fgmanpower.com pages, Contact Us card with phone, email, address, website); Language row matches the menu; Twitter removed and Facebook / Instagram / YouTube links updated. §5.1.1 Custom banner: new Select Banner Photo and Manage sheets (white), crop locked to the banner shape after Gallery or Camera. |

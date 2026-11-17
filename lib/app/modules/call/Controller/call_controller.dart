@@ -3,6 +3,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
+import 'package:fgtracker/app/Data/Services/app_cache.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/CommonRes.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
@@ -86,10 +87,30 @@ class CallController extends GetxController {
 
     ever(_groupController.groupData, (_) => _scheduleRebuild());
     ever(allUserProfileData, (_) => _scheduleRebuild());
+    // Gap fill (R4): calls made while the app was in the background.
+    _lifecycle = AppLifecycleListener(onResume: _refreshOnResume);
+  }
+
+  AppLifecycleListener? _lifecycle;
+
+  /// Silent page-1 reload on resume (no skeleton, no list wipe). Skipped
+  /// while selecting / deleting or after older pages were loaded.
+  void _refreshOnResume() {
+    if (isClosed ||
+        recentCallLoading.value ||
+        recentCallLoadingMore.value ||
+        isDeletingMultiple.value ||
+        isSelectionMode.value ||
+        pagination.value != 1) {
+      return;
+    }
+    _showingCachedCalls = _recentRaw.isNotEmpty; // page 1 replaces it
+    getRecentCall();
   }
 
   @override
   void onClose() {
+    _lifecycle?.dispose();
     searchController.dispose();
     dialTextController.dispose();
     dialFocusNode.dispose();
@@ -399,6 +420,61 @@ class CallController extends GetxController {
     filteredUsers.value = allUserProfileData;
   }
 
+  // ---- App cache (doc 07): today's first page of calls shown at once ----
+
+  /// "Couldn't refresh · Retry" over the calls already on screen.
+  final RxBool recentRefreshFailed = false.obs;
+  bool _callCacheReadDone = false;
+
+  /// The rows on screen came from the cache: the first API page replaces
+  /// them (server order, calls deleted on another phone gone).
+  bool _showingCachedCalls = false;
+
+  static String _localDay() {
+    final n = DateTime.now();
+    return '${n.year}-${n.month}-${n.day}';
+  }
+
+  /// Cached calls are kept only for the local day they were saved on: the
+  /// server's "Today" / "Yesterday" sections would be wrong after midnight.
+  Future<void> _showCachedRecentCalls(AppCachePerf perf) async {
+    try {
+      final maps = await AppCache.read(AppCache.callHistory);
+      if (maps.isEmpty || _recentRaw.isNotEmpty) return;
+      if (maps.first['d'] != _localDay()) {
+        await AppCache.clearArea(AppCache.callHistory);
+        return;
+      }
+      for (final m in maps) {
+        final c = m['c'];
+        if (c is! Map) continue;
+        _addBucket(m['s']?.toString() ?? 'older',
+            [CallingDetail.fromJson(Map<String, dynamic>.from(c))]);
+      }
+      if (_recentRaw.isEmpty) return;
+      _showingCachedCalls = true;
+      _rebuildRecentDisplay();
+      perf.mark('cache shown', extra: '${_recentRaw.length} calls');
+    } catch (_) {
+    } finally {
+      _callCacheReadDone = true;
+    }
+  }
+
+  /// Write-through (R2/R5): every list change, delete and "clear all".
+  void _scheduleRecentCacheSave() {
+    if (!_callCacheReadDone) return;
+    final day = _localDay();
+    AppCache.scheduleWrite(
+      AppCache.callHistory,
+      () => [
+        for (final e in _recentRaw.take(AppCache.callHistory.maxItems))
+          {'d': day, 's': e.section, 'c': e.call.toJson()},
+      ],
+      allowEmpty: true, // "clear all" / last call deleted must stick
+    );
+  }
+
   Future<void> getRecentCall() async {
     if (recentCallLoading.value || recentCallLoadingMore.value) return;
 
@@ -406,11 +482,16 @@ class CallController extends GetxController {
     recentCallResponseError.value = "";
 
     final stopwatch = Stopwatch()..start();
+    final perf = AppCachePerf('call_history')..mark('open');
+    final isFirstPage = pagination.value == 1;
+    if (isFirstPage && !_callCacheReadDone) {
+      await _showCachedRecentCalls(perf);
+    }
 
     try {
       final result = await CallRepo.getRecentCall(
         page: pagination.value.toString(),
-      );
+      ).timeout(const Duration(seconds: 10)); // never an endless loader
 
       AppLog.d(
         "⏱️ Recent Calls API Time: ${stopwatch.elapsedMilliseconds} ms",
@@ -418,6 +499,12 @@ class CallController extends GetxController {
 
       if (result.status == true) {
         final data = result.data;
+        recentRefreshFailed.value = false;
+        perf.mark('API done');
+        if (_showingCachedCalls) {
+          _recentRaw.clear(); // server page 1 replaces the cached first paint
+          _showingCachedCalls = false;
+        }
 
         if (data != null) {
           if (data.allSections.isNotEmpty) {
@@ -453,16 +540,28 @@ class CallController extends GetxController {
           }
         } else {
           hasMoreRecentCalls.value = false;
+          _rebuildRecentDisplay();
         }
+        perf.markAfterFrame('rendered');
       } else {
-        recentCallResponseError.value =
-            result.message ?? appL10n.common_somethingWentWrong;
+        _onRecentLoadFailed(
+            result.message ?? appL10n.common_somethingWentWrong);
       }
     } catch (e) {
-      recentCallResponseError.value = e.toString();
+      _onRecentLoadFailed(e.toString());
     } finally {
       stopwatch.stop();
       recentCallLoading.value = false;
+    }
+  }
+
+  /// Calls on screen stay with a small retry bar; only an empty screen gets
+  /// the full error view (as before).
+  void _onRecentLoadFailed(String message) {
+    if (recentCallList.isNotEmpty) {
+      recentRefreshFailed.value = true;
+    } else {
+      recentCallResponseError.value = message;
     }
   }
 
@@ -572,6 +671,7 @@ class CallController extends GetxController {
 
   void _rebuildRecentDisplay() {
     recentCallList.value = _recentRaw.map(_buildRow).toList();
+    _scheduleRecentCacheSave();
     _pruneSelection();
   }
 
@@ -1148,6 +1248,8 @@ class CallController extends GetxController {
 
         if (_recentRaw.isNotEmpty) {
           _rebuildRecentDisplay();
+        } else {
+          _scheduleRecentCacheSave(); // last call removed: save the empty list
         }
 
         Utils().fluttertoast(response.message?.isNotEmpty == true
@@ -1332,6 +1434,8 @@ class CallController extends GetxController {
 
         if (_recentRaw.isNotEmpty) {
           _rebuildRecentDisplay();
+        } else {
+          _scheduleRecentCacheSave(); // last call removed: save the empty list
         }
 
         selectedCallIds.clear();
@@ -1370,6 +1474,7 @@ class CallController extends GetxController {
       if (response.status == true) {
         _recentRaw.clear();
         recentCallList.clear();
+        _scheduleRecentCacheSave(); // no ghost calls after a restart (R5)
         selectedCallIds.clear();
         isSelectionMode.value = false;
         hasMoreRecentCalls.value = false;

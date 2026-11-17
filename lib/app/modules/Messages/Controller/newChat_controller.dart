@@ -6,9 +6,11 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import 'package:fgtracker/app/Data/Services/app_cache.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:get/get.dart';
 
 class _ContactEntry {
@@ -29,6 +31,11 @@ class NewChatController extends GetxController {
   static List<UserListData>? _cachedMatched;
   static List<UserListData>? _cachedOther;
   static DateTime? _cachedAt;
+
+  /// Whose contacts the session cache holds. It is static, so it survives
+  /// logout (`Get.deleteAll`): another account on the same phone used to see
+  /// the first account's list. Now it is dropped when the user changes.
+  static String? _cachedFor;
   static const Duration _cacheTtl = Duration(minutes: 5);
   static const int _previewCount = 20;
 
@@ -37,6 +44,33 @@ class NewChatController extends GetxController {
     _cachedMatched = null;
     _cachedOther = null;
     _cachedAt = null;
+    _cachedFor = null;
+  }
+
+  @visibleForTesting
+  static void debugSeedSessionCache(
+      List<UserListData> matched, String forUser) {
+    _cachedMatched = matched;
+    _cachedOther = const [];
+    _cachedAt = DateTime.now();
+    _cachedFor = forUser;
+  }
+
+  /// "Couldn't refresh · Retry" over saved contacts (doc 07).
+  final RxBool refreshFailed = false.obs;
+
+  /// The registered FG users of this phonebook, saved on the device
+  /// (AppCache `fg_contacts`): shown at once on the first open after a
+  /// restart, while `/getAllUser` runs.
+  Future<List<UserListData>> _readSavedMatched() =>
+      AppCache.readAs(AppCache.fgContacts, (m) => UserListData.fromJson(m));
+
+  void _saveMatched(List<UserListData> matched) {
+    if (matched.isEmpty) return; // never wipe a saved list with nothing
+    unawaited(AppCache.write(
+      AppCache.fgContacts,
+      [for (final u in matched) u.toJson()],
+    ));
   }
 
   static final RegExp _nonDigit = RegExp(r'[^0-9]');
@@ -140,25 +174,42 @@ class NewChatController extends GetxController {
   Future<void> getRegisteredContacts({bool forceRefresh = false}) async {
     if (_isFetching) return;
 
-    final bool hasCache = _cachedMatched != null && _cachedOther != null;
+    // Account switch on the same phone: never show the previous user's list.
+    if (_cachedFor != null && _cachedFor != _ownUserId()) clearCache();
+
+    final perf = AppCachePerf('new_chat_contacts')..mark('open');
+    bool hasCache = _cachedMatched != null && _cachedOther != null;
 
     if (hasCache) {
       _applyLists(_cachedMatched!, _cachedOther!);
       responseError.value = "";
+      perf.mark('cache shown', extra: 'session, ${_cachedMatched!.length} users');
 
       final bool fresh = _cachedAt != null &&
           DateTime.now().difference(_cachedAt!) < _cacheTtl;
       if (fresh && !forceRefresh) return;
-    } else {
-      contactLoading.value = true;
     }
 
-    responseError.value = "";
     _isFetching = true;
+    refreshFailed.value = false;
+    responseError.value = "";
+
+    // First open after a restart: the saved FG users at once (doc 07).
+    if (!hasCache) {
+      final saved = await _readSavedMatched();
+      if (saved.isNotEmpty && !isClosed) {
+        _applyLists(saved, otherUsers);
+        hasCache = true;
+        perf.mark('cache shown', extra: '${saved.length} users');
+      }
+    }
+    if (!hasCache) contactLoading.value = true;
+
     final sw = Stopwatch()..start();
 
     try {
-      final usersFuture = GroupRepo.getAllUserData();
+      final usersFuture =
+          GroupRepo.getAllUserData().timeout(const Duration(seconds: 10));
       usersFuture.ignore();
       final chatMapFuture = _loadPrivateChatIdMap();
 
@@ -237,16 +288,26 @@ class NewChatController extends GetxController {
         _cachedMatched = List<UserListData>.from(matched);
         _cachedOther = List<UserListData>.from(unmatched);
         _cachedAt = DateTime.now();
+        _cachedFor = me;
 
         _applyLists(matched, unmatched);
+        _saveMatched(matched);
+        perf.mark('API done', extra: '${matched.length} users');
+        perf.markAfterFrame('rendered');
         log("TIMING matching done: ${sw.elapsedMilliseconds} ms");
 
         unawaited(chatMapFuture.then(_patchChatIds));
       } else if (!hasCache) {
         responseError.value = result.message ?? appL10n.common_somethingWentWrong;
+      } else {
+        refreshFailed.value = true; // saved list stays on screen
       }
     } catch (e) {
-      if (!hasCache) responseError.value = e.toString();
+      if (!hasCache) {
+        responseError.value = e.toString();
+      } else {
+        refreshFailed.value = true; // saved list stays; offline / timeout
+      }
       log("CONTACT LOAD ERROR => $e");
     } finally {
       _isFetching = false;
@@ -280,6 +341,7 @@ class NewChatController extends GetxController {
 
     matchedUsers.assignAll(updated);
     _cachedMatched = List<UserListData>.from(updated);
+    _saveMatched(updated);
     _runFilter(searchQuery.value);
   }
 

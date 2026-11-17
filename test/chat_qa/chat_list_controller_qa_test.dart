@@ -524,10 +524,10 @@ void main() {
       c.debugHandleArchivedChats({'data': [groupPayload()]});
       c.debugHandleArchivedChats({'status': false, 'message': 'server error'});
       expect(archivedOrder(), ['group_77']);
-    },
-        skip: 'BUG-CL-03: archived_private_chats without a data list clears '
-            'the whole Archive (chat_list_controller.dart:2267-2279), '
-            'contradicts "merge, never replace" (doc §6.1)');
+    }); // BUG-CL-03 fixed in code (Run 2, 2026-11-17): a malformed reply is
+    // now ignored. The fix is in the UNCOMMITTED working tree
+    // (chat_list_controller.dart, chat-list cache work); re-check after it
+    // is committed.
 
     test('pending unarchive is not undone by an archived list push', () {
       c.debugHandleChatUpdated(privatePayload(archived: true));

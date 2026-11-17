@@ -2,7 +2,10 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
+import 'dart:async';
+
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import 'package:fgtracker/app/Data/Services/app_cache.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -23,6 +26,60 @@ class GroupController extends GetxController {
   RxBool groupDataLoading = false.obs;
   var groupData = <GroupsResData>[].obs;
   var responseError = "".obs;
+
+  // ---- App cache (doc 07): last groups list shown at once ----
+
+  /// The last refresh failed / timed out while groups are shown:
+  /// "Couldn't refresh · Retry" instead of replacing the list with an error.
+  final RxBool refreshFailed = false.obs;
+  bool _cacheReadDone = false;
+  AppCachePerf? _perf;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _perf = AppCachePerf('groups')..mark('open');
+    _showCachedGroups();
+    ever<List<GroupsResData>>(groupData, (_) => _scheduleGroupsCacheSave());
+  }
+
+  /// Display only: `isCreator` / `isActive` from the cache never allow an
+  /// action by themselves; every action is checked by the server.
+  Future<void> _showCachedGroups() async {
+    try {
+      final cached = await AppCache.readAs(
+          AppCache.groups, (m) => GroupsResData.fromJson(m));
+      if (isClosed || cached.isEmpty) return;
+      // An API / socket result that is already here wins (R3).
+      final merged = AppCache.mergeCachedIntoLive<GroupsResData>(
+        live: groupData,
+        cached: cached,
+        keyOf: (g) => g.id?.toString(),
+      );
+      if (groupData.isEmpty) {
+        groupData.assignAll(merged);
+        // The API failed before the cache was read: groups are on screen
+        // now, so a small retry bar instead of the full error view.
+        if (responseError.value.isNotEmpty) {
+          responseError.value = '';
+          refreshFailed.value = true;
+        }
+      }
+      _perf?.mark('cache shown', extra: '${cached.length} groups');
+    } catch (_) {
+    } finally {
+      _cacheReadDone = true;
+    }
+  }
+
+  void _scheduleGroupsCacheSave() {
+    if (!_cacheReadDone || isClosed) return;
+    AppCache.scheduleWrite(
+      AppCache.groups,
+      () => [for (final g in groupData) g.toJson()],
+    );
+  }
+
   final Rxn<XFile> selectedGroupImage = Rxn<XFile>();
   final ImagePicker _imagePicker = ImagePicker();
 
@@ -216,18 +273,36 @@ class GroupController extends GetxController {
   Future<void> getGroupData({String? type}) async {
     try {
       groupDataLoading.value = true;
-      var result = await GroupRepo.getGroupData();
+      var result = await GroupRepo.getGroupData()
+          .timeout(const Duration(seconds: 10)); // never an endless loader
       if (result.status == true) {
-        groupData.value = result.data!.groupData!;
+        final list = result.data?.groupData ?? <GroupsResData>[];
+        groupData.value = list;
         responseError.value = "";
+        refreshFailed.value = false;
         groupDataLoading.value = false;
+        _perf?.mark('API done', extra: '${list.length} groups');
+        _perf?.markAfterFrame('rendered');
+        // The server confirms "no groups" (e.g. the last one was left):
+        // drop the saved copy, so it never comes back as a ghost (R5).
+        if (list.isEmpty) unawaited(AppCache.clearArea(AppCache.groups));
       } else {
         groupDataLoading.value = false;
-        responseError.value = result.message.toString();
+        _onGroupLoadFailed(result.message.toString());
       }
     } catch (e) {
-      responseError.value = e.toString();
       groupDataLoading.value = false;
+      _onGroupLoadFailed(e.toString());
+    }
+  }
+
+  /// Groups on screen (cached or earlier) stay, with a small retry bar;
+  /// only an empty screen gets the full error view (as before).
+  void _onGroupLoadFailed(String message) {
+    if (groupData.isNotEmpty) {
+      refreshFailed.value = true;
+    } else {
+      responseError.value = message;
     }
   }
 

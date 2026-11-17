@@ -112,6 +112,44 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     _perf?.mark('cache shown', extra: '${cached.length} msgs');
   }
 
+  // ---- "Couldn't refresh · Retry" bar rules (F-1.2.8), as in the private
+  // chat: no bar after a successful load; one quiet retry first while
+  // messages are shown; an empty chat gets the full error at once.
+  int _quietRetries = 0;
+  bool _inQuietRetry = false;
+
+  /// How many history loads failed while open (tests).
+  @visibleForTesting
+  int debugHistoryFailures = 0;
+
+  void _onHistoryFailed() {
+    debugHistoryFailures++;
+    if (isClosed || _cacheFrozen) return;
+    if (_historyLoaded) return; // fresh data already: never a late bar
+    if (_messages.isEmpty) {
+      historyLoadFailed.value = true;
+      return;
+    }
+    if (_quietRetries < 1) {
+      _quietRetries++;
+      Timer(const Duration(seconds: 2), _retryHistoryQuietly);
+      return;
+    }
+    historyLoadFailed.value = true;
+  }
+
+  Future<void> _retryHistoryQuietly() async {
+    if (isClosed || _cacheFrozen || _historyLoaded || _historyRequestInFlight) {
+      return;
+    }
+    _inQuietRetry = true;
+    try {
+      await getGroupMessages();
+    } finally {
+      _inQuietRetry = false;
+    }
+  }
+
   void _clearCachedCopy() {
     _cacheSaveTimer?.cancel();
     ChatMessageCache.clear(ChatMessageCache.groupKey(groupId));
@@ -750,7 +788,13 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       // fetch any messages sent while we were disconnected.
       onReconnect: () {
         AttendanceController.instance.syncPolls(_visibleAttendancePollIds());
-        syncNewerMessages();
+        // History never loaded (it failed / timed out): load it now, which
+        // also hides the "Couldn't refresh" bar. Otherwise only the gap.
+        if (_historyLoaded) {
+          syncNewerMessages();
+        } else {
+          getGroupMessages();
+        }
       },
     );
 
@@ -1904,6 +1948,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         groupCurrentPage.value = 1;
         hasMoreOlderMessages.value = _pager.hasMore;
         _historyLoaded = true;
+        _quietRetries = 0;
+        historyLoadFailed.value = false;
         for (final m in _messages) {
           rtModel('group history', m); // TODO(rt-diagnostics)
         }
@@ -1959,18 +2005,18 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
           scrollToBottom(instant: true); // Instantly jumps to the latest message
         }
       } else {
-        CommonDialog.errorMessage(result.message);
+        if (!_inQuietRetry) CommonDialog.errorMessage(result.message);
         _pager.fail();
         // Keep whatever is shown: an empty chat gets the full Retry state,
-        // cached messages the small "Couldn't refresh · Retry" bar.
-        historyLoadFailed.value = true;
+        // cached messages the small bar (after one quiet retry).
+        _onHistoryFailed();
         updateMessageStream();
       }
     } catch (e) {
       // Includes the 10 s timeout: never an endless spinner.
       log("GROUP HISTORY ERROR => $e");
       _pager.fail();
-      historyLoadFailed.value = true;
+      _onHistoryFailed();
       updateMessageStream();
     } finally {
       _historyRequestInFlight = false;
@@ -1979,7 +2025,10 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   }
 
   /// "Retry" on the load-error state.
-  Future<void> retryLoadHistory() => getGroupMessages();
+  Future<void> retryLoadHistory() {
+    _quietRetries = 1; // the user asked: a failure shows the bar at once
+    return getGroupMessages();
+  }
 
   Future getGroupMembers() async {
     try {

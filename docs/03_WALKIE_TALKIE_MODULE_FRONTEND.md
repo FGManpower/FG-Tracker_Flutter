@@ -1,6 +1,6 @@
 # Walkie-Talkie (PTT) Module — Flutter Frontend Architecture & Implementation Guide
 
-**Document Version:** `v1.8.0` · **Last updated:** 2026-11-10 · **Branch:** `46Solution`  
+**Document Version:** `v1.9.0` · **Last updated:** 2026-11-17 · **Branch:** `46Solution`  
 **Target Audience:** Flutter Frontend Developers  
 **Covers:** Push-to-Talk (PTT) UI, Audio Stream & WebRTC, Active Channel Switcher, Notification Toggles, Group Info Sheet with Bell Indicators, Razorpay Plan Purchase & Seat Assignment, International Payments & PayPal  
 **Status:** In Production / Stable  
@@ -281,9 +281,18 @@ The Walkie-Talkie Quick Action tile on the Home Dashboard (`quick_actions_sectio
 
 ---
 
+### 6.9 Cache and access (v1.9.0)
+- **Channel list cache:** encrypted app cache, area `walkie_channels`. Live state (speaking, speaker, online) is **never** saved; sockets fill it in. Shown at once, refreshed with a 10 s timeout, "Couldn't refresh · Retry" on failure. When the `walkie/channels` fallback (`get-all-group`) fails, it now throws instead of returning "0 channels", which wiped the list.
+- **Access is never cached (fix):**
+  - The Home walkie card used `cached_walkie_can_use` from SharedPreferences when `/initialize` had not answered. `canUseWalkie` / `isWalkieSubscribed` now come from the live answer only; the tap waits for `/initialize` (≤ 10 s), else opens the trial / plans screen.
+  - The old key is removed. The subtitle and colours still use the last value, for display only.
+- **Fail-closed (fix):** `_canAccessWalkie()` returned `true` on any error. It now returns "unknown": the channel does not open and the toast says "Check your connection and try again." (no upgrade prompt).
+- Details: [07_APP_CACHE_FRONTEND.md](07_APP_CACHE_FRONTEND.md) §7.
+
 ## 7. Change log
 | Version | Date | Change |
 |---|---|---|
+| v1.9.0 | 2026-11-17 | §6.9 Channel list cache (no live state); walkie access from the live `/initialize` only (cached `can_use` fallback removed); `_canAccessWalkie()` fails closed; failed channel fallback no longer wipes the list. |
 | v1.8.0 | 2026-11-10 | Resolved Quick Action Walkie-Talkie state machine bug: properly handles expired trial ("Expired" in Red) and expired subscription ("Renew" in Amber); eliminated "1 hr free" fallback for expired users; updated Node.js backend `/api/initialize` to serialize expired trial and subscription records; added zero-flicker client-side persistence in `HomeController`. |
 | Version | Date | Change |
 |---|---|---|

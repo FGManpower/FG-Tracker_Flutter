@@ -156,6 +156,63 @@ void main() {
           GroupTick.sent);
     });
 
+    // ---- Run 2 (2026-11-17) additions ----
+
+    test('member ids in any shape (map / int / string / _id) give the same '
+        'recipients, sender excluded, no duplicates', () {
+      final m = _msg(readBy: [{'userId': '2'}]);
+      final s = MessageReceipts.summarize(m, memberIds: [
+        {'userId': 1}, // sender (me), as a map
+        2,
+        '2',
+        {'_id': 3},
+        {'user': {'id': '4'}},
+        null,
+        'null',
+      ]);
+      expect(s.recipients, ['2', '3', '4']);
+      expect(s.read.keys, ['2']);
+      expect(s.remaining, ['3', '4']);
+    });
+
+    test('a member who left keeps "delivered" but is not counted in '
+        'remaining (guide §11.1)', () {
+      final m = _msg(deliveredTo: [{'userId': 9, 'deliveredAt': 'D9'}]);
+      final s = MessageReceipts.summarize(m, memberIds: members);
+      expect(s.delivered['9'], 'D9');
+      expect(s.recipients.contains('9'), isFalse);
+      expect(s.remaining, ['2', '3', '4']);
+    });
+
+    test('a late joiner who already has a receipt IS a recipient', () {
+      final m = _msg(deliveredTo: [{'userId': 4}]);
+      final s = MessageReceipts.summarize(m,
+          memberIds: members, joinedAfter: {'4'});
+      expect(s.recipients, ['2', '3', '4']);
+      expect(s.delivered.keys, ['4']);
+    });
+
+    test('a left member\'s read never turns the bubble blue for the members '
+        'still in the group', () {
+      final m = _msg(readBy: [{'userId': 9}, {'userId': 2}]);
+      expect(MessageReceipts.groupTick(m, memberIds: [1, 2, 3]), GroupTick.sent);
+      MessageReceipts.applyRead(m, 3);
+      expect(MessageReceipts.groupTick(m, memberIds: [1, 2, 3]), GroupTick.read);
+    });
+
+    test('the same receipt applied twice (two event names) changes once', () {
+      final m = _msg();
+      final u = ReceiptUpdate.parse(
+          {'groupId': 7, 'userId': 2, 'messageIds': [1], 'readAt': 'R'},
+          isRead: true)!;
+      var changes = 0;
+      for (var i = 0; i < 2; i++) {
+        if (MessageReceipts.applyRead(m, u.userId, at: u.at)) changes++;
+      }
+      expect(changes, 1);
+      expect(m.readBy, hasLength(1));
+    });
+
     test('tick falls back to the server-saved flag until per-member lists '
         'exist', () {
       final legacy = _msg(isDelivered: true);
