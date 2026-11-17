@@ -51,3 +51,7 @@ Screens: **S1** Chat list · **S2** Archived · **S3** New chat · **S4** All Gr
 | Walkie channels | | | | |
 | Notifications | | | | |
 | Banners | | | | |
+
+## Run 2 (C-1.0.1)
+
+MC-03 ("Couldn't refresh · Retry" on cached screens) for the chat list now follows MB-05 / MB-10 / MB-11 in `docs/testing/chatting/manual_testing/manual_checklist.md` §9 (bar only after the quiet retry, never on background loads, search has its own state). Not run yet.

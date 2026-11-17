@@ -319,3 +319,38 @@ Manual results only (the Auto column is not counted here).
 | **Total** | **159** | **1** | **0** | **0** | **9** | **149** |
 
 Counted per case on Android (iOS: every case Not run — no iPhone / Mac).
+
+## 9. Run 3 (F-1.2.9): "Couldn't refresh · Retry" — phone + E2E
+
+Status: **not run** (needs Android + iOS phones, a staging account and the bots). Build: debug, `flutter run` (full, not hot restart); watch `[REFRESH-BAR]` / `[HTTP-GET]`.
+
+| ID | Step | Expected | Android | iOS |
+|---|---|---|---|---|
+| MB-01 | Cold start → home → chat list, wait 1 min | No bar | | |
+| MB-02 | Open 5 private chats one after another | No bar | | |
+| MB-03 | Open 3 groups incl. one with 1000+ messages | No bar | | |
+| MB-04 | New chat with someone you never messaged | No error, no bar; sending works | | |
+| MB-05 | Airplane on, on the chat list | Bar within ~12 s; rows stay. Airplane off → bar hides by itself (or Retry) | | |
+| MB-06 | Same inside a private chat and a group | Same | | |
+| MB-07 | Second phone sends while the bar shows | Message appears at once | | |
+| MB-08 | Background 10 min → resume (list and chat) | No bar | | |
+| MB-09 | Switch Wi-Fi ↔ mobile data | No bar | | |
+| MB-10 | Search with network off, clear it with network back | Search shows its own error; no main bar | | |
+| MB-11 | Scroll to page 2 with network off; network back, scroll | No bar; page 2 loads | | |
+| MB-12 | Log out → log in as another account | No bar, no old rows | | |
+| MB-13 | Slow network (iOS Network Link Conditioner "3G"; Android emulator throttle) | No stuck bar, no endless loader | | |
+
+E2E (`integration_test/chat_refresh_bar_e2e_test.dart`, 3 runs each; 1 fail of 3 = flaky):
+
+| ID | Android emu run 1/2/3 | Android phone | iOS sim | iPhone |
+|---|---|---|---|---|
+| E2E-RB-01 cold start → list, 30 s, no bar | | | | |
+| E2E-RB-02 cached private chat, 30 s | | | | |
+| E2E-RB-03 big group, 30 s | | | | |
+| E2E-RB-04 new chat to a bot (manual) | | | | |
+| E2E-RB-05 airplane on → bar ≤ ~12 s | | | | |
+| E2E-RB-06 airplane off → bar hides by itself | | | | |
+| E2E-RB-07 slow network ~12 s (manual) | | | | |
+| E2E-RB-08 background 10 min → resume | | | | |
+| E2E-RB-09 Wi-Fi ↔ data (manual) | | | | |
+| E2E-RB-10 logout → account B (manual) | | | | |

@@ -18,7 +18,8 @@ import '../../../Core/constant/const_res.dart';
 import '../../../Core/util/message_preview_builder.dart';
 import '../Controller/chat_list_logic.dart';
 import '../widgets/chat_list_row_widgets.dart';
-import '../widgets/chat_history_widgets.dart' show ChatRefreshFailedBar;
+import '../widgets/chat_history_widgets.dart'
+    show ChatHistoryErrorState, ChatRefreshFailedBar;
 import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../routes/app_pages.dart';
 import '../../home/Controller/total_group_controller.dart';
@@ -525,13 +526,18 @@ class _AllChatsBody extends StatelessWidget {
                   children: [
                     // Cached rows stay on screen when the refresh fails
                     // (doc 07); never an endless loader.
+                    // The bar only over rows (never while searching); an
+                    // empty list gets the full error view below.
                     Obx(
-                      () => controller.refreshFailed.value
+                      () => controller.refreshFailed.value &&
+                              !controller.isSearching.value &&
+                              controller.displayedChats.isNotEmpty
                           ? Padding(
                               padding: EdgeInsets.only(top: 8.h, bottom: 4.h),
                               child: ChatRefreshFailedBar(
                                 visible: true,
-                                onRetry: controller.refreshChats,
+                                onRetry: () => controller.refreshChats(
+                                    trigger: 'retry-tap'),
                               ),
                             )
                           : const SizedBox.shrink(),
@@ -567,6 +573,21 @@ class _AllChatsBody extends StatelessWidget {
                       }
 
                       if (controller.displayedChats.isEmpty) {
+                        // A failed load / search is never "no chats".
+                        if (controller.isSearching.value &&
+                            controller.searchFailed.value) {
+                          return ChatHistoryErrorState(
+                            onRetry: () => controller
+                                .onSearchChanged(controller.searchQuery.value),
+                          );
+                        }
+                        if (!controller.isSearching.value &&
+                            controller.refreshFailed.value) {
+                          return ChatHistoryErrorState(
+                            onRetry: () =>
+                                controller.refreshChats(trigger: 'retry-tap'),
+                          );
+                        }
                         return controller.isSearching.value
                             ? _emptySearchResults()
                             : _emptyChats();

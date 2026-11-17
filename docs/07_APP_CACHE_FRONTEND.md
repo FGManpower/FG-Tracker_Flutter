@@ -1,6 +1,6 @@
 # FG Tracker App Cache (Hive): Flutter (Frontend) Guide
 
-> **Document version:** `C-1.0.0` · **Date:** 2026-11-17 · **Branch:** `46Solution`
+> **Document version:** `C-1.0.1` · **Date:** 2026-11-17 · **Branch:** `46Solution`
 > **Scope:** the on-device cache behind the app's list screens, outside the chat screen. The chat screen keeps its own cache; see guide 01 §12.
 > **Readers:** Flutter developers and QA.
 > **Testing:** [docs/testing/app_cache/](testing/app_cache/README.md)
@@ -57,7 +57,7 @@ The rule: **open a screen, show the last known data at once, then refresh from t
 1. **Open:** read the area (async, never blocks the UI). If there is data, show it; the skeleton only shows when there is nothing.
 2. **API in parallel:** the call is exactly as before, plus a **10 s timeout**. It does not wait for the cache or the socket.
 3. **Merge:** by id, newer wins (`AppCache.mergeCachedIntoLive`, `ChatListRules.isNewMessage` for the chat list). Then update the UI and save.
-4. **Failure / timeout:** the cached rows stay and **"Couldn't refresh · Retry"** (`ChatRefreshFailedBar`) appears; never an endless loader. With nothing on screen, the old full error view shows as before.
+4. **Failure / timeout:** the cached rows stay; never an endless loader. With nothing on screen, the old full error view shows as before. **"Couldn't refresh · Retry"** (`ChatRefreshFailedBar`) shows only when the server really could not be reached on a foreground load, after one quiet retry. On the chat list and chat screens the exact rules are `RefreshBarState` (guide 01 §12.2.1, C-1.0.1).
 5. **Save:** `AppCache.scheduleWrite` 1 s after a change, from a snapshot taken at the time of the change.
 
 `[APP-CACHE]` debug logs (silent in release) show the timings: `<screen> open / cache shown / API done / rendered`. Today's time to first content equals **API done / rendered**; with the cache it is **cache shown**.
@@ -123,7 +123,8 @@ The rule: **open a screen, show the last known data at once, then refresh from t
    - set `_cacheReadDone = true` in `finally`.
 4. Write-through: `ever(list, (_) => AppCache.scheduleWrite(area, () => [...toJson()]))`, only after `_cacheReadDone`.
 5. API: add `.timeout(const Duration(seconds: 10))`.
-   - On failure with data shown, set `refreshFailed = true` and show `ChatRefreshFailedBar`.
+   - Count a failure only if the server was not reached (`RefreshBarState.isStaleDataFailure`: timeout, connection error, 5xx, `status:false`); a 4xx or a parse error is not "Couldn't refresh".
+   - Retry once quietly; show the bar only after the second foreground failure; never from a background load; clear it on any later success. Reuse `RefreshBarState` where the screen has the same shape.
    - With nothing shown, show the old error view.
 6. A server-confirmed empty list → `AppCache.clearArea(area)`, or save with `allowEmpty: true`.
 7. Live / permission fields: strip them before saving (see walkie `_cacheJson`).
@@ -137,4 +138,5 @@ The rule: **open a screen, show the last known data at once, then refresh from t
 
 | Version | Date | Change |
 |---|---|---|
+| C-1.0.1 | 2026-11-18 | Chat list "Couldn't refresh" now follows `RefreshBarState` (guide 01 §12.2.1): only network / 5xx failures count, background loads never raise it, `/chat/sync` and the socket full list clear it, search has its own state, paging rolls back, `status:false` no longer empties the list. §4 step 4 and §8 step 5 updated. |
 | C-1.0.0 | 2026-11-17 | First version: `AppCache` with 10 areas, socket rules R1–R8, logout via the existing call, fixes 1 / 2a / 2b / 3 and the four list-wipe fixes (§7). Tests: `test/app_cache/` (59, all pass). |

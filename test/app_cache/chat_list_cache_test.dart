@@ -103,12 +103,14 @@ void main() {
     expect(c.displayedChats.map((r) => r.userId), containsAll([1, 2]));
   });
 
-  test('CL-03 offline: cached rows stay + "Couldn\'t refresh" flag',
-      () async {
+  test('CL-03 failed refresh: cached rows stay, no endless loader '
+      '(a 4xx is not "Couldn\'t refresh"; offline is RB-L03)', () async {
     await AppCache.write(AppCache.chatList, [cached(row())]);
     final c = await open();
-    await c.getPrivateChats(); // no server → fails
-    expect(c.refreshFailed.value, isTrue);
+    // flutter_test answers every request with 400: a real answer, not
+    // "server not reached" (F-1.2.9), so no bar.
+    await c.refreshChats(trigger: 'retry-tap');
+    expect(c.refreshFailed.value, isFalse);
     expect(c.displayedChats, hasLength(1));
     expect(c.isLoading.value, isFalse); // never an endless loader
   });

@@ -121,3 +121,26 @@ Two of the new ones are **regressions** in code that passed in Run 1: BUG-CS-19 
 | T-06 | `test/last_seen_formatter_test.dart` | Ran only on an IST machine | New zone-independent test builds the UTC instant from the machine's own zone; the IST example stays as an extra | Fixed (passes on any zone) |
 | T-07 (new) | `test/chat_qa/group_open_during_build_test.dart` | Set `HttpOverrides.global = null` (removes flutter_test's HTTP mock) and opens `GroupMessageController`, whose `initializeGroupChat()` calls the API host — the **production** constant `ConstRes.aBaseUrl`. Proven by GUARD-01 in `group_mark_seen_test.dart` (host `89.116.23.2` requested). Whether a request finished inside `testWidgets` was not proven | Guard added: only loopback allowed, every other host goes to a dead proxy | Fixed |
 | T-08 (new, tooling) | Working tree | After `flutter pub get` in this session the 20 generated `lib/l10n/app_localizations*.dart` files (tracked in git) were missing from disk → 78 analyzer errors. Cause not proven (pub get or a parallel process) | Regenerated with `flutter gen-l10n` from the ARB files → back to the session-start state (same `M` files) | Watch: run `flutter gen-l10n` after `pub get` if it happens again |
+
+## Run 3 (2026-11-18): false "Couldn't refresh · Retry" (F-1.2.9)
+
+Root cause found in Part 0 (code + new `[REFRESH-BAR]` / `[HTTP-GET]` logs), fixed in F-1.2.9. **Status `Fixed (test)`** = the new test passes, and a mutation that puts the old behaviour back makes it fail; phone check pending (MB-01…MB-13).
+
+| ID | Area | Bug | Root cause (file) | Status | Proof |
+|---|---|---|---|---|---|
+| BUG-CL-10 | Chat list | Bar after a valid answer when the processing threw | One try/catch around API + filter / merge / sort / cache write (`chat_list_controller.dart` `getPrivateChats`) | Fixed (test) | RB-L07 (mutation M1L) |
+| BUG-CL-11 | Chat list | Bar from background loads (resume / reconnect / socket refetch) over a live list | No "loaded once" / foreground rule | Fixed (test) | RB-L10 (M5) |
+| BUG-CL-12 | Chat list | Once shown, the bar stuck | Only a page-1 full load cleared it; `/chat/sync` and socket `private_chats` did not | Fixed (test) | RB-L08 (M3a), RB-L09 (M3b) |
+| BUG-CL-13 | Chat list | Slow first load at cold start discarded | `Future.timeout(10 s)` threw the late answer away (request not cancelled) | Fixed (test) | RB-L05 (M4) |
+| BUG-CL-14 | Chat list | A failed search raised the main bar; search sent `page=currentPage` | Same function + flag as the list | Fixed (test) | RB-L11 (M7) |
+| BUG-CL-15 | Chat list | `nextPage()` failure left `currentPage` ahead | No rollback | Fixed (test) | RB-L15 (M8) |
+| BUG-CL-16 | Chat list | `status:false` emptied the list in memory | Treated as success with 0 rows | Fixed (code) | `ServerAnswerFailure` |
+| BUG-CS-24 | Private | New chat (no chatId) showed "Couldn't load messages" after 10 s, then the bar | Join timer ignored `_historyLoaded` (`MessageController._startJoinTimeout`) | Fixed (test) | RB-C03, RB-C04 (M2) |
+| BUG-CS-25 | Private | Bar set while loaded never cleared | Only a full reload cleared it | Fixed (test) | RB-C07 |
+| BUG-CS-26 | Private + group | Instant bar when the API failed before the cache read | `_messages` still empty → no quiet retry | Fixed (test) | RB-C06 (M9c / M9p), RB-L12 (M9l) |
+| BUG-CS-27 | Private | Second failure of the same attempt showed the bar at once | "joined" without chatId + API failure shared the counter | Fixed (logic test) | refresh_bar_state "same attempt counts once" |
+| BUG-CS-28 | Private | 404 for a peer with no conversation = error | Handled as a failure | Fixed (test) | RB-C09 (M10) — **backend contract still to confirm** |
+| BUG-CS-29 | Private + group | A processing bug showed "Couldn't refresh" | One catch for API + processing | Fixed (test) | RB-C10 (M1G), RB-C18 (M6c) |
+| BUG-CS-30 | Group | Late answers of the slow group endpoint discarded | `Future.timeout` | Fixed (test) | RB-C11 (M4c) |
+| BUG-CS-31 | Group | **F-1.2.8 regression:** second parallel first-page load on the first `/chat` connect, pager reset mid-load | `onReconnect` is bound to `"connect"` (fires on the first connect); no in-flight guard | Fixed (test) | RB-C12 (M1) |
+| TS-R3-01 | Tests | 3 test files no longer compiled | Env commit `fdf3c92a` made `ConstRes.socketUrl` const | Fixed | `SocketMessageService.debugSocketUrlOverride` |

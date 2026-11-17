@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:fgtracker/app/Core/util/http/http_util.dart' show HttpGetException;
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:fgtracker/app/Model/GetMessage.dart';
 
 /// Pure chat-screen rules shared by the private and group chat screens:
@@ -9,9 +13,23 @@ class ChatScreenRules {
   /// Messages per history request.
   static const int pageSize = 20;
 
-  /// First history page on open: after this the screen keeps what it shows
-  /// (cached messages) and offers Retry instead of spinning forever.
-  static const Duration historyTimeout = Duration(seconds: 10);
+  /// First history page on open: after this the load COUNTS as failed for
+  /// the "Couldn't refresh" bar (a soft timeout: the request itself is kept,
+  /// and a late answer is still applied). Tests shorten it.
+  static Duration historyTimeout = const Duration(seconds: 10);
+
+  /// Waits for [request] as long as it takes, but calls [onSoftTimeout]
+  /// once if it is still running after [historyTimeout] (or [timeout]).
+  /// Unlike `Future.timeout`, the answer is never thrown away: a late
+  /// success still reaches the caller (doc 01 §12.2.1).
+  static Future<T> softTimeout<T>(
+    Future<T> request, {
+    required void Function() onSoftTimeout,
+    Duration? timeout,
+  }) {
+    final timer = Timer(timeout ?? historyTimeout, onSoftTimeout);
+    return request.whenComplete(timer.cancel);
+  }
 
   /// How many older pages a reply-jump may load while looking for the
   /// original message before giving up with "Message not available".
@@ -467,5 +485,128 @@ class HistoryPager {
     _lastLoadedPage = 0;
     _hasMore = true;
     _loading = false;
+  }
+}
+
+/// The server answered, but said the request failed (`status: false`). The
+/// data on screen may be stale, like a 5xx; it is never "0 rows".
+class ServerAnswerFailure implements Exception {
+  ServerAnswerFailure(this.message);
+  final String? message;
+  @override
+  String toString() => message ?? 'status:false';
+}
+
+/// What a screen does after a failed load (see [RefreshBarState]).
+enum RefreshBarAction {
+  /// Nothing visible (background load, a bug / 4xx, already counted).
+  none,
+
+  /// Retry the same foreground load quietly after [RefreshBarState.quietRetryDelay].
+  quietRetry,
+
+  /// Data on screen + really stale: show "Couldn't refresh · Retry".
+  showBar,
+
+  /// Nothing on screen: the full "Couldn't load" view (as before).
+  fullError,
+}
+
+/// When the "Couldn't refresh · Retry" bar shows (chat list, private chat,
+/// group chat; doc 01 §12.2.1, doc 07 §4). Plain Dart, unit tested.
+///
+/// * It shows only when data is on screen, the latest FOREGROUND load
+///   failed twice (the first failure is retried quietly) and no sync has
+///   succeeded since. A user Retry / pull that fails shows it at once.
+/// * Only "the server could not be reached" counts: timeout, connection
+///   error, 5xx, `status:false` ([isStaleDataFailure]). A 4xx or a parse /
+///   processing error is a bug or a real answer, never "Couldn't refresh".
+/// * Background loads (reconnect, resume, socket refetch) never raise it.
+/// * Any success (full load, incremental sync, gap fill, socket full list)
+///   clears it.
+/// * Each load attempt counts once (two reports of the same attempt, e.g.
+///   socket "joined" without chatId + the API failure, are one failure).
+/// * An empty screen gets [RefreshBarAction.fullError] at once, as before.
+class RefreshBarState {
+  RefreshBarState({this.onChanged});
+
+  /// Called when [visible] changes (reason for the log).
+  final void Function(bool visible, String reason)? onChanged;
+
+  /// Pause before the automatic retry after a first failure (tests shorten it).
+  static Duration quietRetryDelay = const Duration(seconds: 2);
+
+  bool _visible = false;
+  bool _loadedOnce = false;
+  int _failures = 0;
+  int _attempt = 0;
+  final Set<int> _countedAttempts = {};
+
+  /// The flag the screen shows (bar over data / full error when empty).
+  bool get visible => _visible;
+
+  /// A load or sync has succeeded since the screen opened (or the reset).
+  bool get loadedOnce => _loadedOnce;
+
+  /// Number of the next load attempt (pass it to [failure]).
+  int startAttempt() => ++_attempt;
+
+  /// Offline, timed out, server down or `status:false`.
+  static bool isStaleDataFailure(Object error) {
+    if (error is TimeoutException) return true;
+    if (error is ServerAnswerFailure) return true;
+    if (error is HttpGetException) return error.isNetworkOrServer;
+    return false;
+  }
+
+  void _set(bool v, String reason) {
+    if (_visible == v) return;
+    _visible = v;
+    onChanged?.call(v, reason);
+  }
+
+  /// A full load, an incremental sync, a gap fill or a socket full list
+  /// succeeded: the data is fresh, the bar goes.
+  void success(String reason) {
+    _loadedOnce = true;
+    _failures = 0;
+    _set(false, reason);
+  }
+
+  /// The user tapped Retry / pulled: hide while it runs.
+  void retrying() => _set(false, 'retry');
+
+  RefreshBarAction failure({
+    required Object error,
+    required bool foreground,
+    required bool hasData,
+    bool userRetry = false,
+    int? attempt,
+  }) {
+    if (attempt != null && !_countedAttempts.add(attempt)) {
+      return RefreshBarAction.none; // this attempt was already counted
+    }
+    if (!hasData) {
+      _set(true, 'empty screen, load failed');
+      return RefreshBarAction.fullError;
+    }
+    if (!isStaleDataFailure(error)) return RefreshBarAction.none;
+    if (userRetry) {
+      _set(true, 'user retry failed');
+      return RefreshBarAction.showBar;
+    }
+    if (!foreground || _loadedOnce) return RefreshBarAction.none;
+    _failures++;
+    if (_failures == 1) return RefreshBarAction.quietRetry;
+    _set(true, 'foreground load failed twice');
+    return RefreshBarAction.showBar;
+  }
+
+  /// Logout / account switch / Back.
+  void reset() {
+    _loadedOnce = false;
+    _failures = 0;
+    _countedAttempts.clear();
+    _set(false, 'reset');
   }
 }

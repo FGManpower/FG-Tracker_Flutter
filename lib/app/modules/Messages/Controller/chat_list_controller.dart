@@ -15,9 +15,10 @@ import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'chat_list_logic.dart';
 import 'chat_list_cache_codec.dart';
+import 'package:fgtracker/app/Core/util/refresh_bar_log.dart';
 import 'package:fgtracker/app/Data/Services/app_cache.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/chat_screen_logic.dart'
-    show ChatScreenRules;
+    show ChatScreenRules, RefreshBarAction, RefreshBarState, ServerAnswerFailure;
 import 'package:flutter/foundation.dart' show kDebugMode; // TODO(cl-diagnostics)
 import 'package:fgtracker/app/Core/util/arc_log.dart'; // TODO(arc-diagnostics)
 
@@ -69,8 +70,63 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
   // ---- App cache (doc 07): last list shown at once, then the API ----
 
-  /// The last page-1 load failed or timed out: "Couldn't refresh · Retry".
+  /// "Couldn't refresh · Retry" over the rows, or the full error when the
+  /// list is empty. Rules: [RefreshBarState] (F-1.2.9, doc 01 §12.2.1).
   final RxBool refreshFailed = false.obs;
+
+  late final RefreshBarState _bar = RefreshBarState(onChanged: (v, reason) {
+    refreshFailed.value = v;
+    refreshBarLog('chat_list', 'main', reason,
+        'FLAG refreshFailed -> $v (rows=${privateChats.length})');
+  });
+
+  /// A search request failed: the search shows its own error, never the
+  /// main bar (L5).
+  final RxBool searchFailed = false.obs;
+
+  /// One page-1 load at a time (open, pull, resync, socket refetch).
+  bool _page1InFlight = false;
+
+  /// Completes when the cache read of onInit has finished (no instant
+  /// error before the cached rows had a chance to show).
+  final Completer<void> _cacheRead = Completer<void>();
+
+  /// Loads the user is waiting for; everything else is background (it may
+  /// clear the bar, never raise it).
+  static const _foregroundTriggers = {'open', 'pull', 'retry-tap', 'quiet-retry'};
+
+  Future<void> _onListLoadFailed(
+    Object error, {
+    required int page,
+    required bool isSearch,
+    required String trigger,
+    required int attempt,
+  }) async {
+    if (isClosed) return;
+    if (isSearch) {
+      searchFailed.value = true;
+      return;
+    }
+    if (page != 1) return; // paging: the caller rolls the page back (L6)
+    if (privateChats.isEmpty && !_cacheRead.isCompleted) {
+      await _cacheRead.future
+          .timeout(const Duration(seconds: 3), onTimeout: () {});
+      if (isClosed) return;
+    }
+    final action = _bar.failure(
+      error: error,
+      foreground: _foregroundTriggers.contains(trigger),
+      hasData: privateChats.isNotEmpty || archivedChats.isNotEmpty,
+      userRetry: trigger == 'pull' || trigger == 'retry-tap',
+      attempt: attempt,
+    );
+    if (action == RefreshBarAction.quietRetry) {
+      Timer(RefreshBarState.quietRetryDelay, () {
+        if (isClosed || _bar.loadedOnce || _page1InFlight) return;
+        getPrivateChats(refresh: true, trigger: 'quiet-retry');
+      });
+    }
+  }
 
   /// Saving starts only after the cache was read: an early socket event
   /// must never overwrite the 50 saved rows with a 1-row list.
@@ -114,6 +170,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       // Cache problems never break the list: it waits for the API.
     } finally {
       _cacheReadDone = true;
+      if (!_cacheRead.isCompleted) _cacheRead.complete();
     }
   }
 
@@ -275,7 +332,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         privateChats, (_) => _scheduleChatListCacheSave());
     ever<List<PrivateChatModel>>(
         archivedChats, (_) => _scheduleArchivedCacheSave());
-    getPrivateChats();
+    getPrivateChats(trigger: 'open');
     loadArchivedChats();
   }
 
@@ -775,10 +832,25 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  Future<void> getPrivateChats({
+  /// Loads one page of the list. [trigger] says who asked: `open`, `pull`,
+  /// `retry-tap`, `quiet-retry` (foreground) or a background one
+  /// (`socket-refetch`, `resync-*`, `next-page`, `search`, …), which decides
+  /// whether a failure may show "Couldn't refresh" (RefreshBarState).
+  /// Returns true when the server answered and the page was applied.
+  Future<bool> getPrivateChats({
     bool refresh = false,
     String? search,
+    String trigger = 'other',
   }) async {
+    final searchTerm = search ??
+        (searchQuery.value.trim().isNotEmpty ? searchQuery.value.trim() : null);
+    final isSearch = searchTerm != null && searchTerm.isNotEmpty;
+    final isPage1 = refresh || currentPage.value == 1;
+    if (!isSearch && isPage1 && _page1InFlight) return false;
+    final attempt = _bar.startAttempt();
+    var softTimedOut = false;
+    var apiOk = false;
+    var requestedPage = 1;
     try {
       if (refresh) {
         isRefreshing.value = true;
@@ -787,7 +859,9 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         isLoading.value = true;
       }
 
-      final requestedPage = currentPage.value;
+      // A search always asks for page 1 (L5); the list keeps its page.
+      requestedPage = isSearch ? 1 : currentPage.value;
+      if (!isSearch && requestedPage == 1) _page1InFlight = true;
 
       // -------------------------------------------------------------------
       // Existing Private Chat API (Commented out):
@@ -798,15 +872,40 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       // -------------------------------------------------------------------
 
       // NEW Unified Chat List API (WhatsApp Behavior):
-      final response = await MessageRepo.getChatList(
-        page: requestedPage,
-        limit: 20,
-        search: search ?? (searchQuery.value.trim().isNotEmpty ? searchQuery.value.trim() : null),
-        type: "all",
-        includeArchived: false,
-      ).timeout(ChatScreenRules.historyTimeout); // never an endless loader
-      if (requestedPage == 1) {
-        refreshFailed.value = false;
+      // Soft timeout: after historyTimeout the loader stops and the load
+      // counts as failed for the bar, but a late answer is still applied.
+      final pageForTimeout = requestedPage;
+      final response = await ChatScreenRules.softTimeout(
+        MessageRepo.getChatList(
+          page: requestedPage,
+          limit: 20,
+          search: searchTerm,
+          type: "all",
+          includeArchived: false,
+        ),
+        onSoftTimeout: () {
+          softTimedOut = true;
+          isLoading.value = false;
+          isRefreshing.value = false;
+          _onListLoadFailed(TimeoutException('chat list'),
+              page: pageForTimeout,
+              isSearch: isSearch,
+              trigger: trigger,
+              attempt: attempt);
+        },
+      );
+      // status:false is a failed answer, never "0 chats" (it used to empty
+      // the list in memory).
+      if (response.status == false) {
+        throw ServerAnswerFailure(response.message);
+      }
+      apiOk = true;
+      if (isClosed) return false;
+      debugAfterApi?.call(); // tests: a processing bug right after the answer
+      if (isSearch) {
+        searchFailed.value = false;
+      } else if (requestedPage == 1) {
+        _bar.success('chat list page 1');
         _perf?.mark('API done', extra: '${response.data?.length ?? 0} rows');
       }
       arcLog('main LOAD', // TODO(arc-diagnostics)
@@ -851,12 +950,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         unreadTotalCount.value = chatsUnreadSum;
       }
 
-      final activeSearch = search ??
-          (searchQuery.value.trim().isNotEmpty
-              ? searchQuery.value.trim()
-              : null);
-
-      if (activeSearch != null && activeSearch.isNotEmpty) {
+      if (isSearch) {
         // When searching, merge any found chats from server into privateChats
         // without discarding the existing master chat list.
         for (final apiChat in chats) {
@@ -874,7 +968,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
           }
         }
         privateChats.assignAll(_sortPinnedChats(privateChats));
-        return;
+        return true;
       }
 
       final existingChats = List<PrivateChatModel>.from(privateChats);
@@ -961,15 +1055,27 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       if (requestedPage == 1) {
         _perf?.markAfterFrame('rendered', extra: '${privateChats.length} rows');
       }
-    } catch (e) {
-      // Was swallowed silently (a failure looked like "no chats"). The
-      // cached / current rows stay; the screen shows "Couldn't refresh ·
-      // Retry" (doc 07).
+      return true;
+    } catch (e, st) {
       _cl('main LOAD failed: $e');
-      if (currentPage.value == 1) refreshFailed.value = true;
+      if (isClosed) return false;
+      if (apiOk) {
+        // The server answered: a bug in the processing (filter / merge /
+        // sort), never "Couldn't refresh" (L1). Logged with its stack.
+        if (kDebugMode) debugPrint('[CL] main LOAD processing error: $e\n$st');
+        return false;
+      }
+      // After a soft timeout the late failure is a second failure.
+      await _onListLoadFailed(e,
+          page: requestedPage,
+          isSearch: isSearch,
+          trigger: trigger,
+          attempt: softTimedOut ? _bar.startAttempt() : attempt);
+      return false;
     } finally {
       isLoading.value = false;
       isRefreshing.value = false;
+      if (!isSearch && requestedPage == 1) _page1InFlight = false;
     }
   }
 
@@ -1003,7 +1109,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
       final q = value.trim();
-      getPrivateChats(refresh: false, search: q.isNotEmpty ? q : null);
+      getPrivateChats(
+          refresh: false, search: q.isNotEmpty ? q : null, trigger: 'search');
     });
   }
 
@@ -1011,11 +1118,14 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     _searchDebounce?.cancel();
     searchController.clear();
     searchQuery.value = "";
-    getPrivateChats(refresh: false);
+    getPrivateChats(refresh: false, trigger: 'search');
   }
 
-  Future<void> refreshChats() async {
-    await getPrivateChats(refresh: true);
+  /// Pull to refresh, or `retry-tap` from the bar / error view: a failure
+  /// shows the bar at once; success hides it.
+  Future<void> refreshChats({String trigger = 'pull'}) async {
+    _bar.retrying();
+    await getPrivateChats(refresh: true, trigger: trigger);
   }
 
   Future<void> nextPage() async {
@@ -1025,7 +1135,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
     currentPage.value++;
 
-    await getPrivateChats();
+    // A failed page never leaves currentPage ahead (L6).
+    if (!await getPrivateChats(trigger: 'next-page')) currentPage.value--;
   }
 
   Future<void> previousPage() async {
@@ -1035,7 +1146,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
     currentPage.value--;
 
-    await getPrivateChats();
+    if (!await getPrivateChats(trigger: 'prev-page')) currentPage.value++;
   }
 
   void _initializePrivateChatListSocket() {
@@ -1161,6 +1272,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         privateChats.assignAll(_sortPinnedChats(uniqueMap.values.toList()));
         privateChats.refresh();
         _syncChattingNotificationMarker();
+        _bar.success('socket full list'); // fresh again: the bar goes
       }
     } catch (_) {}
   }
@@ -1492,10 +1604,11 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
   void _scheduleServerRefetch({
     Duration delay = const Duration(milliseconds: 600),
+    String trigger = 'socket-refetch',
   }) {
     _refetchDebounce?.cancel();
     _refetchDebounce = Timer(delay, () {
-      getPrivateChats(refresh: true);
+      getPrivateChats(refresh: true, trigger: trigger);
     });
   }
 
@@ -1518,7 +1631,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     if (last != null) {
       _syncIncremental(last);
     } else {
-      _scheduleServerRefetch(delay: const Duration(milliseconds: 300));
+      _scheduleServerRefetch(
+          delay: const Duration(milliseconds: 300), trigger: 'resync-first');
     }
     loadArchivedChats();
   }
@@ -1535,10 +1649,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
           }
         }
         _lastServerSync = DateTime.now();
+        _bar.success('incremental sync'); // fresh again: the bar goes
         return;
       }
     } catch (_) {}
-    _scheduleServerRefetch(delay: const Duration(milliseconds: 300));
+    _scheduleServerRefetch(
+        delay: const Duration(milliseconds: 300), trigger: 'resync-fallback');
   }
 
   @override
@@ -1616,6 +1732,21 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       _typing.start(key, typist, name: _str(m['userName'] ?? m['senderName']));
     } else {
       _typing.stop(key, typist);
+    }
+  }
+
+  /// Tests: runs right after a successful API answer (simulate a bug).
+  @visibleForTesting
+  void Function()? debugAfterApi;
+
+  /// Tests: the resync of resume / reconnect / screen open, unthrottled.
+  @visibleForTesting
+  void debugResyncNow() {
+    final last = _lastServerSync;
+    if (last != null) {
+      _syncIncremental(last);
+    } else {
+      getPrivateChats(refresh: true, trigger: 'resync-first');
     }
   }
 

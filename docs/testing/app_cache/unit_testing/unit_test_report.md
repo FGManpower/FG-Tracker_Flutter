@@ -67,3 +67,8 @@ Target ≥ 80 %: met. (Generated with `flutter test --coverage`; the tracked `co
 ## Limits
 - No device in this run. Time to first content and the manual cases are in [manual_testing/manual_checklist.md](../manual_testing/manual_checklist.md).
 - Unit tests run without a server, which is also the offline case. API success paths (server data merged over the cache) are covered by the existing merge tests and by the phone checks.
+
+## Run 2 (2026-11-18): "Couldn't refresh" rules (C-1.0.1 / F-1.2.9)
+
+- The chat list now uses `RefreshBarState`; its tests are in `test/chat_qa/chat_list_refresh_bar_test.dart` (18, pass) — see the chatting report §R3.
+- `CL-03` updated: a 4xx (flutter_test's HTTP mock answers 400) is a real answer, not "Couldn't refresh" → no bar; the offline bar is RB-L03. `test/app_cache/` 59 → still 59, all pass.

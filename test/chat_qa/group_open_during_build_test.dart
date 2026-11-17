@@ -5,7 +5,6 @@
 // screens' Rx values (translation visibility, chat list unread) right then.
 import 'dart:io';
 
-import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/storage_services.dart';
@@ -41,13 +40,14 @@ void main() {
     });
     Global.storageServices = await StorageServices().init();
     // Nothing listens here; the socket must not reach a real server.
-    ConstRes.socketUrl = 'http://127.0.0.1:9';
+    SocketMessageService.debugSocketUrlOverride = 'http://127.0.0.1:9';
   });
 
   tearDown(() {
     SocketMessageService.instance.disconnectAll();
     Get.reset();
     HttpOverrides.global = null;
+    SocketMessageService.debugSocketUrlOverride = null;
   });
 
   testWidgets(

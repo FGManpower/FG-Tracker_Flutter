@@ -440,3 +440,46 @@ When a bug is fixed:
 1. Remove its `skip:`.
 2. Run the test, and if there is an "evidence" test (RT-01b, RT-08b, RT-15b), update it as well.
 3. Set the bug to `Fixed` in [../bug_tracker.md](../bug_tracker.md) and update this report.
+
+## R3 Run 3 (2026-11-18): false "Couldn't refresh · Retry" (F-1.2.9)
+
+### R3.1 Commands
+```
+flutter test test/chat_qa/refresh_bar_state_test.dart test/chat_qa/chat_list_refresh_bar_test.dart test/chat_qa/chat_refresh_bar_test.dart test/chat_qa/refresh_bar_widget_test.dart
+flutter test                      # whole project
+flutter analyze
+```
+Fake API: `test/chat_qa/fakes/fake_chat_api_server.dart` (local `HttpServer`; Dio's base URL is pointed at it, a fresh adapter per test; every other host goes to a dead proxy). Timeouts shortened in tests (`historyTimeout` 400 ms, quiet retry 150 ms).
+
+### R3.2 Results
+| File | Tests | Result |
+|---|---|---|
+| `refresh_bar_state_test.dart` (new) | 14 | Pass |
+| `chat_list_refresh_bar_test.dart` (new) | 18 (RB-L01 … L18) | Pass |
+| `chat_refresh_bar_test.dart` (RB-01 … 03 + RB-C new) | 31 (3 + 28) | Pass (3 runs in a row) |
+| `refresh_bar_widget_test.dart` (new) | 8 | Pass |
+| Whole project | 1056 pass / 45 skipped / 32 fail → after the CL-03 update 31 fail | **No new failure.** The 31 are the known ones (27 `permission_setup_flow_test`, chat list / language / RT). CL-03 (app cache) was updated: a 400 from flutter_test's HTTP mock is a real answer, not "Couldn't refresh" |
+| `flutter analyze` | 868 → 868 (no new; 3 `assignment_to_const` errors gone) | Clean for the touched files |
+
+### R3.3 Proof against the old code (mutation checks)
+The new tests use new hooks, so they cannot compile against the old files. Each old behaviour was put back **one at a time** and the guarding tests were run; each failed:
+
+| Mutation (old behaviour back) | Failing tests |
+|---|---|
+| M1 no in-flight guard on group load / `/chat` connect | RB-C12 |
+| M2 join timer ignores a loaded chat | RB-C03, RB-C04, RB-C09 |
+| M3a `/chat/sync` never clears · M3b socket list never clears | RB-L08 · RB-L09 |
+| M4 / M4c hard timeout (late answer thrown away) | RB-L05 · RB-C11 [group, private] |
+| M5 background / after-load failures raise | RB-L10 |
+| M6 / M6c a 4xx raises | RB-L18 · RB-C18 [group, private] |
+| M1L / M1G processing exception raises | RB-L07 · RB-C10 [group] |
+| M7 search raises the main bar | RB-L11 |
+| M8 no page rollback | RB-L15 |
+| M9l / M9c / M9p no wait for the cache read | RB-L12 · RB-C06 [group] · RB-C06 [private] |
+| M10 404 by peer = error | RB-C09 |
+| M11 / M11c no quiet retry | RB-L03 · RB-C13 [group, private] |
+
+### R3.4 Not covered automatically
+- `chatlist_screen` full-screen widget states (many dependencies: status strip, sockets); its states are covered through the controller (RB-L04 full error, RB-L11 search) and `GroupChatList` widget tests.
+- Real socket events for RB-C05 / RB-C17: covered by the logic table (same attempt) and the same code path (`updateMessageStream` → cache).
+- E2E: `integration_test/chat_refresh_bar_e2e_test.dart` written, **not run** (no device / emulator / staging account here).

@@ -101,7 +101,7 @@ void main() {
     Global.storageServices = await StorageServices().init();
     server = FakeSocketIoServer();
     await server.start();
-    ConstRes.socketUrl = server.url;
+    SocketMessageService.debugSocketUrlOverride = server.url;
 
     dir = await Directory.systemTemp.createTemp('group_seen_test');
     ChatMessageCache.keyStore = MemoryKeyStore();
@@ -125,6 +125,7 @@ void main() {
     } catch (_) {}
     Get.reset();
     HttpOverrides.global = null;
+    SocketMessageService.debugSocketUrlOverride = null;
   });
 
   Future<GroupMessageController> openGroup() async {

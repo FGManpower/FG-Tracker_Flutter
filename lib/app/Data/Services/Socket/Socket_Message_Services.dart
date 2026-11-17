@@ -70,6 +70,11 @@ class BlockStatusEvent {
 
 class SocketMessageService extends GetxService {
   static SocketMessageService get instance => Get.put(SocketMessageService());
+
+  /// Tests only: connect to a local fake Socket.IO server instead of the
+  /// (const) server URL, which a test can no longer change.
+  @visibleForTesting
+  static String? debugSocketUrlOverride;
   Timer? _privateJoinDebugTimer;
   IO.Socket? _socket;
   EventHandler<dynamic>? _privateMessageHandler;
@@ -285,7 +290,7 @@ class SocketMessageService extends GetxService {
     log("CREATING NEW SOCKET: $socketUrl/chat");
 
     _socket = IO.io(
-      "$socketUrl/chat",
+      "${debugSocketUrlOverride ?? socketUrl}/chat",
       {
         "transports": ["websocket"],
         "autoConnect": true,
@@ -1040,7 +1045,7 @@ class SocketMessageService extends GetxService {
     _privateChatId = null;
 
     _privateChatSocket = IO.io(
-      "$socketUrl/privateChat",
+      "${debugSocketUrlOverride ?? socketUrl}/privateChat",
       {
         "transports": ["websocket"],
         "autoConnect": true,
@@ -1469,7 +1474,7 @@ class SocketMessageService extends GetxService {
     _privateChatListSocket?.dispose();
 
     _privateChatListSocket = IO.io(
-      "$socketUrl/privateChat",
+      "${debugSocketUrlOverride ?? socketUrl}/privateChat",
       {
         "transports": ["websocket"],
         "autoConnect": true,

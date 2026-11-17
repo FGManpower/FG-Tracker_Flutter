@@ -13,6 +13,7 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
+import 'package:fgtracker/app/Core/util/http/http_util.dart' show HttpGetException;
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
@@ -30,6 +31,7 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 import '../../../routes/app_pages.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_message_cache.dart';
+import '../../../Core/util/refresh_bar_log.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import '../../../Data/Services/active_chat_tracker.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -99,6 +101,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   /// Shows the cached copy at once (no spinner); the API result is merged
   /// into it later by id, in whichever order the two arrive.
   Future<void> _showCachedMessages(String peerId) async {
+    try {
+      await _showCachedMessagesNow(peerId);
+    } finally {
+      if (!_cacheRead.isCompleted) _cacheRead.complete();
+    }
+  }
+
+  Future<void> _showCachedMessagesNow(String peerId) async {
     final cached =
         await ChatMessageCache.load(ChatMessageCache.privateKey(peerId));
     if (isClosed || _leftChat || cached.isEmpty) return;
@@ -134,37 +144,68 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   //  2. with messages on screen, the first failure retries quietly (2 s);
   //     the bar shows only if that retry fails too;
   //  3. an empty chat still gets the full error view at once.
-  int _quietRetries = 0;
-  bool _inQuietRetry = false;
+  //  (F-1.2.9) The rules now live in RefreshBarState, shared with the group
+  //  chat and the chat list: only "server not reached" counts, each attempt
+  //  counts once, background loads never raise it, any success clears it.
+  late final RefreshBarState _bar = RefreshBarState(onChanged: (v, reason) {
+    historyLoadFailed.value = v;
+    refreshBarLog('chat_private', 'private_${_privatePeerId ?? '?'}', reason,
+        'FLAG historyLoadFailed -> $v (msgs=${_messages.length})');
+  });
 
-  void _onHistoryFailed() {
+  /// Completes when the cache read of onInit has finished (S3).
+  final Completer<void> _cacheRead = Completer<void>();
+
+  /// The latest history attempt (join timeout / "joined" without chatId
+  /// report against it, so one attempt counts once, S4).
+  int _lastAttempt = 0;
+
+  /// The first socket "joined" belongs to opening the chat (foreground);
+  /// later ones are reconnects (background).
+  bool _joinedOnce = false;
+
+  @visibleForTesting
+  int debugHistoryFailures = 0;
+  @visibleForTesting
+  int debugHistoryRequests = 0;
+
+  /// Tests: runs right after a successful history answer.
+  @visibleForTesting
+  void Function()? debugAfterApi;
+
+  Future<void> _onHistoryFailed(
+    Object error, {
+    required int attempt,
+    bool background = false,
+    bool userRetry = false,
+  }) async {
+    debugHistoryFailures++;
     if (isClosed || _leftChat) return;
-    if (_historyLoaded) return; // fresh data already: never a late bar
-    if (_messages.isEmpty) {
-      historyLoadFailed.value = true;
-      return;
+    if (_messages.isEmpty && !_cacheRead.isCompleted) {
+      await _cacheRead.future
+          .timeout(const Duration(seconds: 3), onTimeout: () {});
+      if (isClosed || _leftChat) return;
     }
-    if (_quietRetries < 1) {
-      _quietRetries++;
-      Timer(const Duration(seconds: 2), _retryHistoryQuietly);
-      return;
+    final action = _bar.failure(
+      error: error,
+      foreground: !background,
+      hasData: _messages.isNotEmpty,
+      userRetry: userRetry,
+      attempt: attempt,
+    );
+    if (action == RefreshBarAction.quietRetry) {
+      Timer(RefreshBarState.quietRetryDelay, _retryHistoryQuietly);
     }
-    historyLoadFailed.value = true;
   }
 
-  Future<void> _retryHistoryQuietly() async {
-    if (isClosed || _leftChat || _historyLoaded || _historyRequestInFlight) {
-      return;
-    }
-    _inQuietRetry = true;
-    try {
-      if (privateChatId.value.isNotEmpty) {
-        await getPrivateMessageHistory(privateChatId.value);
-      } else if (_privatePeerId != null) {
-        await getPrivateMessageHistoryByPeer(_privatePeerId!);
-      }
-    } finally {
-      _inQuietRetry = false;
+  void _retryHistoryQuietly() {
+    if (isClosed || _leftChat || _bar.loadedOnce) return;
+    // A soft-timed-out request is still running: its late answer decides.
+    if (_historyRequestInFlight) return;
+    if (privateChatId.value.isNotEmpty) {
+      getPrivateMessageHistory(privateChatId.value, quiet: true);
+    } else if (_privatePeerId != null) {
+      getPrivateMessageHistoryByPeer(_privatePeerId!, quiet: true);
     }
   }
 
@@ -814,9 +855,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
           if (chatId == null || chatId.isEmpty) {
             log("[CHAT-PERF] ERROR: PRIVATE CHAT ID NOT FOUND after ${stopwatch.elapsedMilliseconds} ms");
-            if (!_historyLoaded) {
+            // Not an extra failure: reported against the same attempt as
+            // the load, so it counts once (S4). A running load decides.
+            if (!_historyLoaded && !_historyRequestInFlight) {
               isLoadingInitialMessages.value = false;
-              _onHistoryFailed();
+              _onHistoryFailed(StateError('joined without chatId'),
+                  attempt: _lastAttempt);
             }
             return;
           }
@@ -829,12 +873,15 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
           // "joined" also fires after every socket reconnect: then only
           // fetch what was missed while offline.
+          final reconnect = _joinedOnce;
+          _joinedOnce = true;
           if (_historyLoaded) {
-            await syncNewerMessages();
+            await syncNewerMessages(); // clears the bar when it succeeds
             // A block / unblock may have happened while offline.
             _scheduleBlockStatusRefresh();
           } else if (!_historyRequestInFlight) {
-            await getPrivateMessageHistory(chatId);
+            // A re-join is a background load: it may clear the bar only.
+            await getPrivateMessageHistory(chatId, background: reconnect);
           }
 
           _scheduleMarkPrivateRead();
@@ -2007,21 +2054,42 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   /// Direct history fetch by peer user ID (no chatId needed upfront).
   /// Resolves conversationId and loads messages immediately.
-  Future<void> getPrivateMessageHistoryByPeer(String peerUserId) async {
+  Future<void> getPrivateMessageHistoryByPeer(
+    String peerUserId, {
+    bool userRetry = false,
+    bool quiet = false,
+  }) async {
+    if (_historyRequestInFlight) return; // one first-page load at a time
     _historyRequestInFlight = true;
-    historyLoadFailed.value = false;
+    debugHistoryRequests++;
     if (_messages.isEmpty) isLoadingInitialMessages.value = true;
+    final attempt = _lastAttempt = _bar.startAttempt();
+    var softTimedOut = false;
+    var apiOk = false;
 
     try {
       _pager.reset();
       privateCurrentPage.value = 1;
       hasMoreOlderMessages.value = true;
 
-      final result = await MessageRepo.privateChatHistoryByPeer(
-        peerUserId: peerUserId,
-        page: 1,
-        limit: ChatScreenRules.pageSize,
-      ).timeout(ChatScreenRules.historyTimeout);
+      // Soft timeout: counts as a failure for the bar after
+      // historyTimeout, but a late answer is still applied.
+      final result = await ChatScreenRules.softTimeout(
+        MessageRepo.privateChatHistoryByPeer(
+          peerUserId: peerUserId,
+          page: 1,
+          limit: ChatScreenRules.pageSize,
+        ),
+        onSoftTimeout: () {
+          softTimedOut = true;
+          isLoadingInitialMessages.value = false;
+          _onHistoryFailed(TimeoutException('history by peer'),
+              attempt: attempt, userRetry: userRetry);
+        },
+      );
+      apiOk = true;
+      if (isClosed || _leftChat) return; // late answer after Back
+      debugAfterApi?.call(); // tests: a processing bug right after the answer
       _perf?.mark('API done');
 
       if (result.status == true) {
@@ -2066,9 +2134,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           receivedCount: messages.length,
           hasNextPage: result.pagination?.hasNextPage,
         );
+        // Also a new chat (no conversation / chatId yet): loaded, empty,
+        // never an error (S1).
         _historyLoaded = true;
-        _quietRetries = 0;
-        historyLoadFailed.value = false;
+        _bar.success('history loaded (by peer)');
         for (final m in _messages) {
           rtModel('private history', m); // TODO(rt-diagnostics)
         }
@@ -2081,28 +2150,54 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       } else {
         _pager.fail();
         // Empty chat → full Retry state; cached messages → small bar
-        // (after one quiet retry, see _onHistoryFailed).
-        _onHistoryFailed();
+        // (after one quiet retry).
+        _onHistoryFailed(ServerAnswerFailure(result.message),
+            attempt: attempt, userRetry: userRetry);
       }
-    } catch (e) {
+    } catch (e, st) {
       log("History by peer error: $e");
-      _pager.fail();
-      _onHistoryFailed();
+      if (isClosed || _leftChat) return;
+      if (apiOk) {
+        // The server answered: a bug in the processing, never "Couldn't
+        // refresh" (S6). Logged with its stack.
+        log("History by peer PROCESSING ERROR: $e\n$st");
+      } else if (e is HttpGetException && e.statusCode == 404) {
+        // No conversation with this person yet: a new, empty chat (S5).
+        _historyLoaded = true;
+        _bar.success('new chat (404, no conversation yet)');
+      } else {
+        _pager.fail();
+        // After a soft timeout the late failure is a second failure.
+        _onHistoryFailed(e,
+            attempt: softTimedOut ? (_lastAttempt = _bar.startAttempt()) : attempt,
+            userRetry: userRetry);
+      }
     } finally {
       isLoadingInitialMessages.value = false;
       _historyRequestInFlight = false;
     }
   }
 
-  Future<void> getPrivateMessageHistory(String chatId) async {
+  /// [background] = a socket re-join: it may clear the bar, never raise
+  /// it. [userRetry] = Retry tapped. [quiet] = the automatic retry.
+  Future<void> getPrivateMessageHistory(
+    String chatId, {
+    bool background = false,
+    bool userRetry = false,
+    bool quiet = false,
+  }) async {
+    if (_historyRequestInFlight) return; // one first-page load at a time
     final apiStopwatch = Stopwatch()..start();
+    final attempt = _lastAttempt = _bar.startAttempt();
+    var softTimedOut = false;
+    var apiOk = false;
+    debugHistoryRequests++;
 
     log("========== HISTORY DEBUG 1: METHOD START ==========");
     log("HISTORY DEBUG => chatId: $chatId");
     log("HISTORY DEBUG => controller closed: $isClosed");
 
     _historyRequestInFlight = true;
-    historyLoadFailed.value = false;
     if (_messages.isEmpty) isLoadingInitialMessages.value = true;
 
     try {
@@ -2113,11 +2208,24 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       log("========== HISTORY DEBUG 2: BEFORE API CALL ==========");
       log("HISTORY DEBUG => page: 1, limit: ${ChatScreenRules.pageSize}");
 
-      final result = await MessageRepo.privateChatHistory(
-        chatId: chatId,
-        page: 1,
-        limit: ChatScreenRules.pageSize,
-      ).timeout(ChatScreenRules.historyTimeout);
+      // Soft timeout: counts as a failure for the bar after
+      // historyTimeout, but a late answer is still applied.
+      final result = await ChatScreenRules.softTimeout(
+        MessageRepo.privateChatHistory(
+          chatId: chatId,
+          page: 1,
+          limit: ChatScreenRules.pageSize,
+        ),
+        onSoftTimeout: () {
+          softTimedOut = true;
+          isLoadingInitialMessages.value = false;
+          _onHistoryFailed(TimeoutException('private history'),
+              attempt: attempt, background: background, userRetry: userRetry);
+        },
+      );
+      apiOk = true;
+      if (isClosed || _leftChat) return; // late answer after Back
+      debugAfterApi?.call(); // tests: a processing bug right after the answer
       _perf?.mark('API done');
 
       log("========== HISTORY DEBUG 3: API RESPONSE RECEIVED ==========");
@@ -2185,8 +2293,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           hasNextPage: result.pagination?.hasNextPage,
         );
         _historyLoaded = true;
-        _quietRetries = 0;
-        historyLoadFailed.value = false;
+        _bar.success('history loaded');
         for (final m in _messages) {
           rtModel('private history', m); // TODO(rt-diagnostics)
         }
@@ -2262,19 +2369,29 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         _pager.fail();
         // Empty chat → full Retry state; cached messages → small bar
-        // (after one quiet retry, see _onHistoryFailed).
-        if (!_inQuietRetry) CommonDialog.errorMessage(result.message);
-        _onHistoryFailed();
+        // (after one quiet retry).
+        if (!quiet && !background) CommonDialog.errorMessage(result.message);
+        _onHistoryFailed(ServerAnswerFailure(result.message),
+            attempt: attempt, background: background, userRetry: userRetry);
       }
     } catch (e, stackTrace) {
       log("========== HISTORY DEBUG ERROR: EXCEPTION ==========");
       log("HISTORY DEBUG => $e");
       log("HISTORY DEBUG STACKTRACE => $stackTrace");
-      _pager.fail();
-      // Show "Couldn't load messages / Retry" (or, over cached messages,
-      // the "Couldn't refresh · Retry" bar) instead of a false
-      // "No messages here yet" or an endless spinner (incl. the 10 s timeout).
-      _onHistoryFailed();
+      if (isClosed || _leftChat) return;
+      if (apiOk) {
+        // The server answered: a processing bug, never "Couldn't refresh"
+        // (S6). Logged above with its stack.
+      } else {
+        _pager.fail();
+        // "Couldn't load messages / Retry" when empty, the bar over
+        // messages (after the quiet retry); after a soft timeout the late
+        // failure counts as a second failure.
+        _onHistoryFailed(e,
+            attempt: softTimedOut ? (_lastAttempt = _bar.startAttempt()) : attempt,
+            background: background,
+            userRetry: userRetry);
+      }
     } finally {
       _historyRequestInFlight = false;
       isLoadingInitialMessages.value = false;
@@ -2823,23 +2940,30 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   /// carries it. If it never comes, stop the skeleton and offer Retry.
   void _startJoinTimeout() {
     _joinTimeout?.cancel();
-    _joinTimeout = Timer(const Duration(seconds: 10), () {
-      if (isClosed || privateChatId.value.isNotEmpty) return;
+    _joinTimeout = Timer(ChatScreenRules.historyTimeout, () {
+      if (isClosed || _leftChat || privateChatId.value.isNotEmpty) return;
+      // The history already answered (a new chat has no chatId yet) or is
+      // still running: not an error (S1).
+      if (_historyLoaded || _historyRequestInFlight) return;
       isLoadingInitialMessages.value = false;
-      if (_messages.isEmpty) historyLoadFailed.value = true;
+      // Same attempt as the failed load: counted once (S4).
+      _onHistoryFailed(TimeoutException('socket join'), attempt: _lastAttempt);
     });
   }
 
   /// "Retry" on the load-error state.
   Future<void> retryLoadHistory() async {
-    historyLoadFailed.value = false;
-    _quietRetries = 1; // the user asked: a failure shows the bar at once
+    _bar.retrying(); // a failure of this user retry shows the bar at once
     if (privateChatId.value.isNotEmpty) {
-      await getPrivateMessageHistory(privateChatId.value);
+      await getPrivateMessageHistory(privateChatId.value, userRetry: true);
       return;
     }
     isLoadingInitialMessages.value = true;
     _startJoinTimeout();
+    if (_privatePeerId != null) {
+      unawaited(
+          getPrivateMessageHistoryByPeer(_privatePeerId!, userRetry: true));
+    }
     final me = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
     // If the socket is down it reconnects by itself and joins on connect.
     socketService.joinPrivateChat(
@@ -3035,6 +3159,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         }
         _scheduleMarkPrivateRead();
       }
+
+      // Newer messages fetched: the chat is fresh again (bar goes).
+      if (!isClosed && !_leftChat) _bar.success('gap fill');
 
       // Reconcile delivery / read receipts on existing recent messages (e.g. after network change)
       try {

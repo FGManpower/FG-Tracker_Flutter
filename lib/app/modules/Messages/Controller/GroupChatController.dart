@@ -31,6 +31,7 @@ import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import '../../../Data/Services/active_chat_tracker.dart';
 import '../../../Data/Services/chat_message_cache.dart';
+import '../../../Core/util/refresh_bar_log.dart';
 import '../../Attendance/controller/attendance_controller.dart';
 
 import 'chat_list_controller.dart';
@@ -99,6 +100,14 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   /// Shows the cached copy at once (no spinner); the API result is merged
   /// into it later by id, in whichever order the two arrive.
   Future<void> _showCachedMessages() async {
+    try {
+      await _showCachedMessagesNow();
+    } finally {
+      if (!_cacheRead.isCompleted) _cacheRead.complete();
+    }
+  }
+
+  Future<void> _showCachedMessagesNow() async {
     final cached =
         await ChatMessageCache.load(ChatMessageCache.groupKey(groupId));
     if (isClosed || _cacheFrozen || cached.isEmpty) return;
@@ -112,41 +121,72 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     _perf?.mark('cache shown', extra: '${cached.length} msgs');
   }
 
-  // ---- "Couldn't refresh · Retry" bar rules (F-1.2.8), as in the private
-  // chat: no bar after a successful load; one quiet retry first while
-  // messages are shown; an empty chat gets the full error at once.
-  int _quietRetries = 0;
-  bool _inQuietRetry = false;
+  // ---- "Couldn't refresh · Retry" (F-1.2.9): rules in RefreshBarState,
+  // shared with the private chat and the chat list (doc 01 §12.2.1).
+  late final RefreshBarState _bar = RefreshBarState(onChanged: (v, reason) {
+    historyLoadFailed.value = v;
+    refreshBarLog('chat_group', 'group_$groupId', reason,
+        'FLAG historyLoadFailed -> $v (msgs=${_messages.length})');
+  });
 
-  /// How many history loads failed while open (tests).
+  /// Completes when the cache read of onInit has finished: a load that
+  /// fails before it never shows an instant bar / error (S3).
+  final Completer<void> _cacheRead = Completer<void>();
+
+  /// History loads that failed / were sent while open (tests).
   @visibleForTesting
   int debugHistoryFailures = 0;
+  @visibleForTesting
+  int debugHistoryRequests = 0;
 
-  void _onHistoryFailed() {
+  /// Tests: runs right after a successful history answer.
+  @visibleForTesting
+  void Function()? debugAfterApi;
+
+  /// Same handler as the `/chat` (re)connect (tests).
+  @visibleForTesting
+  void debugOnSocketConnect() => _onSocketConnect();
+
+  Future<void> _onHistoryFailed(
+    Object error, {
+    required int attempt,
+    required bool background,
+    required bool userRetry,
+  }) async {
     debugHistoryFailures++;
     if (isClosed || _cacheFrozen) return;
-    if (_historyLoaded) return; // fresh data already: never a late bar
-    if (_messages.isEmpty) {
-      historyLoadFailed.value = true;
-      return;
+    if (_messages.isEmpty && !_cacheRead.isCompleted) {
+      await _cacheRead.future
+          .timeout(const Duration(seconds: 3), onTimeout: () {});
+      if (isClosed || _cacheFrozen) return;
     }
-    if (_quietRetries < 1) {
-      _quietRetries++;
-      Timer(const Duration(seconds: 2), _retryHistoryQuietly);
-      return;
+    final action = _bar.failure(
+      error: error,
+      foreground: !background,
+      hasData: _messages.isNotEmpty,
+      userRetry: userRetry,
+      attempt: attempt,
+    );
+    if (action == RefreshBarAction.quietRetry) {
+      Timer(RefreshBarState.quietRetryDelay, _retryHistoryQuietly);
     }
-    historyLoadFailed.value = true;
   }
 
-  Future<void> _retryHistoryQuietly() async {
-    if (isClosed || _cacheFrozen || _historyLoaded || _historyRequestInFlight) {
-      return;
-    }
-    _inQuietRetry = true;
-    try {
-      await getGroupMessages();
-    } finally {
-      _inQuietRetry = false;
+  void _retryHistoryQuietly() {
+    if (isClosed || _cacheFrozen || _bar.loadedOnce) return;
+    // A soft-timed-out request is still running: its late answer decides.
+    if (_historyRequestInFlight) return;
+    getGroupMessages(quiet: true);
+  }
+
+  /// Every `/chat` connect (also the first one). History not loaded yet:
+  /// load it once (never a second parallel first page, S8); else the gap.
+  void _onSocketConnect() {
+    AttendanceController.instance.syncPolls(_visibleAttendancePollIds());
+    if (_historyLoaded) {
+      syncNewerMessages();
+    } else if (!_historyRequestInFlight) {
+      getGroupMessages(background: true);
     }
   }
 
@@ -786,16 +826,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       onEvent: _onAttendanceEvent,
       // Runs on every (re)connect of the /chat socket: re-sync polls and
       // fetch any messages sent while we were disconnected.
-      onReconnect: () {
-        AttendanceController.instance.syncPolls(_visibleAttendancePollIds());
-        // History never loaded (it failed / timed out): load it now, which
-        // also hides the "Couldn't refresh" bar. Otherwise only the gap.
-        if (_historyLoaded) {
-          syncNewerMessages();
-        } else {
-          getGroupMessages();
-        }
-      },
+      onReconnect: _onSocketConnect,
     );
 
     socketService.listenGroupTyping(
@@ -1916,22 +1947,67 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     }
   }
 
-  Future<void> getGroupMessages() async {
+  /// First page of history. [background] = socket (re)connect: it may
+  /// clear the bar but never raise it. [userRetry] = Retry tapped.
+  /// [quiet] = the automatic retry after a first failure.
+  Future<void> getGroupMessages({
+    bool background = false,
+    bool userRetry = false,
+    bool quiet = false,
+  }) async {
+    // One first-page load at a time (S8: the first /chat connect used to
+    // start a second one in parallel and reset the pager mid-load).
+    if (_historyRequestInFlight) return;
     if (_messages.isEmpty) isLoading.value = true;
-    historyLoadFailed.value = false;
     _historyRequestInFlight = true;
+    debugHistoryRequests++;
     _pager.reset();
     hasMoreOlderMessages.value = true;
+    final attempt = _bar.startAttempt();
+    var softTimedOut = false;
 
     try {
-      final result = await MessageRepo.groupMessageHistory(
-        groupId: groupId,
-        page: 1,
-        limit: ChatScreenRules.pageSize,
-      ).timeout(ChatScreenRules.historyTimeout);
+      final GetMessage result;
+      try {
+        // Soft timeout: after historyTimeout the load counts as failed for
+        // the bar and the loader stops, but the request is kept; a late
+        // answer is still applied below.
+        result = await ChatScreenRules.softTimeout(
+          MessageRepo.groupMessageHistory(
+            groupId: groupId,
+            page: 1,
+            limit: ChatScreenRules.pageSize,
+          ),
+          onSoftTimeout: () {
+            softTimedOut = true;
+            isLoading.value = false;
+            _onHistoryFailed(TimeoutException('group history'),
+                attempt: attempt, background: background, userRetry: userRetry);
+          },
+        );
+        if (result.status != true) throw ServerAnswerFailure(result.message);
+      } catch (e) {
+        log("GROUP HISTORY ERROR => $e");
+        if (isClosed || _cacheFrozen) return; // left the chat: change nothing
+        _pager.fail();
+        if (e is ServerAnswerFailure && !quiet && !background) {
+          CommonDialog.errorMessage(e.message);
+        }
+        // After a soft timeout the late failure is a second failure.
+        _onHistoryFailed(e,
+            attempt: softTimedOut ? _bar.startAttempt() : attempt,
+            background: background,
+            userRetry: userRetry);
+        updateMessageStream();
+        return;
+      }
+      if (isClosed || _cacheFrozen) return; // late answer after Back
       _perf?.mark('API done');
 
-      if (result.status == true) {
+      // Processing: a bug here is logged and never shown as "Couldn't
+      // refresh" (the server answered).
+      try {
+        debugAfterApi?.call(); // tests: a processing bug right after the answer
         final messages = result.messageData ?? [];
 
         // Merge, don't replace: socket messages that arrived before this
@@ -1948,8 +2024,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         groupCurrentPage.value = 1;
         hasMoreOlderMessages.value = _pager.hasMore;
         _historyLoaded = true;
-        _quietRetries = 0;
-        historyLoadFailed.value = false;
+        _bar.success('history loaded');
         for (final m in _messages) {
           rtModel('group history', m); // TODO(rt-diagnostics)
         }
@@ -2004,30 +2079,20 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         } else {
           scrollToBottom(instant: true); // Instantly jumps to the latest message
         }
-      } else {
-        if (!_inQuietRetry) CommonDialog.errorMessage(result.message);
-        _pager.fail();
-        // Keep whatever is shown: an empty chat gets the full Retry state,
-        // cached messages the small bar (after one quiet retry).
-        _onHistoryFailed();
+      } catch (e, st) {
+        log("GROUP HISTORY PROCESSING ERROR => $e\n$st");
         updateMessageStream();
       }
-    } catch (e) {
-      // Includes the 10 s timeout: never an endless spinner.
-      log("GROUP HISTORY ERROR => $e");
-      _pager.fail();
-      _onHistoryFailed();
-      updateMessageStream();
     } finally {
       _historyRequestInFlight = false;
       isLoading.value = false;
     }
   }
 
-  /// "Retry" on the load-error state.
+  /// "Retry" on the load-error state: a failure shows the bar at once.
   Future<void> retryLoadHistory() {
-    _quietRetries = 1; // the user asked: a failure shows the bar at once
-    return getGroupMessages();
+    _bar.retrying();
+    return getGroupMessages(userRetry: true);
   }
 
   Future getGroupMembers() async {
@@ -2907,6 +2972,9 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
           _scheduleMarkGroupSeen();
         }
       }
+
+      // Newer messages fetched: the chat is fresh again (bar goes).
+      if (!isClosed && !_cacheFrozen) _bar.success('gap fill');
 
       // Reconcile delivery / read receipts on existing recent messages (e.g. after network change)
       try {

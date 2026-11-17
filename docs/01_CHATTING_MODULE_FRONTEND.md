@@ -1,6 +1,6 @@
 # FG Tracker Chat Module: Flutter (Frontend) Implementation Guide
 
-> **Document version:** `F-1.2.8` · **Date:** 2026-11-17 · **Branch:** `46Solution`
+> **Document version:** `F-1.2.9` · **Date:** 2026-11-17 · **Branch:** `46Solution`
 > **Pairs with:** backend `FLUTTER_CHAT_INTEGRATION_GUIDE.md` **v2.8.0**
 > **Scope:** chat module only (private chat, group chat, chat notifications, forwarding, long-press options, chat list, group membership: create / join / add / remove / exit and their success sheets).
 > **Owner:** Flutter team. **Readers:** Flutter + Node.js developers.
@@ -119,10 +119,10 @@ This is the **frontend half** of the chat contract. The backend guide says what 
   - Times out after **10 s** (`ChatScreenRules.historyTimeout`).
 - **`GET /private-chat/:chatId/messages?page=N&limit=20`**, newest first.
 - First load **merges** with what is already shown, whether cached or received over the socket (dedupe by id, oldest-first order). An empty or failed response never removes cached messages.
-- **API failed or timed out:**
+- **API failed or timed out** (rules in §12.2.1, F-1.2.9):
   - nothing on screen → "Couldn't load messages" + Retry (as before);
-  - cached messages on screen → they stay, and a small **"Couldn't refresh · Retry"** bar appears at the top (`ChatRefreshFailedBar`).
-  - The loader is always turned off in `finally`.
+  - cached messages on screen → they stay; only if the server really could not be reached twice (one quiet retry first) does a small **"Couldn't refresh · Retry"** bar appear **above** the messages (`ChatRefreshFailedBar`). Any later sync hides it by itself.
+  - After 10 s the loader stops (soft timeout); a late answer is still applied.
 - Older messages load at the top of the list:
   - **`before=<oldest message id shown>&limit=20`** (backend v2.8.0);
   - one request at a time;
@@ -789,6 +789,7 @@ Remove them all in one cleanup commit after QA, by searching for `TODO(` plus th
 ## 9. Change log
 | Version | Date | Change |
 |---|---|---|
+| F-1.2.9 | 2026-11-18 | **False "Couldn't refresh · Retry" fixed for real (§12.2.1, §1.2; BUG-CL-10…16, BUG-CS-24…31).** Part 0 root causes: the chat list had none of the F-1.2.8 rules and one try/catch around API + processing; only a full page-1 load cleared its flag (sync / socket list never did); search raised the main bar; the group `/chat` connect handler (fires on the FIRST connect) started a second parallel first-page load (F-1.2.8 regression); the join timer ignored a loaded new chat; socket "joined" without chatId + the API failure counted twice; a failure before the cache read showed an instant bar; `Future.timeout` threw late answers away. Fix: one shared `RefreshBarState` + soft timeout + in-flight guards + `HttpGetException` (same message, plus the real Dio type / status) + bar above the list. Tests: 68 new (refresh_bar_state, chat_list_refresh_bar, chat_refresh_bar RB-C, refresh_bar_widget), every rule proven by a mutation check. E2E file `integration_test/chat_refresh_bar_e2e_test.dart` (not run: no device). Also: 3 tests broken by the env commit (const `socketUrl`) compile again via `SocketMessageService.debugSocketUrlOverride`. |
 | F-1.2.8 | 2026-11-17 | **Fix: "Couldn't refresh · Retry" appeared inside an open chat after ~10 s** although the chat worked (§12.2.1). Cause: the history request now has a 10 s timeout; one slow or failed request showed the bar, and a late failure could show it even after another load had succeeded. Now: no bar once a load succeeded; with messages on screen the first failure retries quietly after 2 s and the bar shows only if that fails too; an empty chat still gets the full error at once; a group reconnect loads the history if it never loaded (the bar then hides). Files: `MessageController.dart`, `GroupChatController.dart`. Test `test/chat_qa/chat_refresh_bar_test.dart` (3, fails with the old behaviour). |
 | F-1.2.7 | 2026-11-17 | **App cache for the chat list, Archived, New chat and the Status strip (guide 07, §13 here):** last list shown at once, API refresh merged by id (10 s timeout, "Couldn't refresh · Retry"). Chat-list socket fixes: `private_chat_removed` / `_cleared` also remove Archived rows; a bad `archived_private_chats` payload no longer clears Archive; the full-list event keeps rows with a pending action and never re-adds a pending delete; a failed load is no longer swallowed. New-chat static contact cache tied to the user (account switch). Status: expired items never shown from the cache; the permanent controller is emptied on logout. Chat screen cache (§12) unchanged. |
 | F-1.2.6 | 2026-11-17 | **Chat screen look, WhatsApp style (UI only, private + group; no API, socket or logic change):** my bubbles light lavender with a purple outline, received white, all corners rounded (no tail); no avatars beside received bubbles (private: app bar opens the profile; group: tap the sender name); group sender names in a fixed colour per sender (`senderNameColor`); name shown only on the first message of a run by the same person (run ends at another sender, a system / call-log line or a new day; was: within 60 s); speaker icon inside received text bubbles before the time (`ChatInlineListenButton`, same `playAudio`), the "Listen" row under the bubble now only for captions / documents (`ChatMessageActionRow.showListen`); system lines ("X added Y") white pill with names bold; date chip white; deleted message lighter grey. **Images no longer squashed:** `memCacheHeight` removed (width + height forced every photo into a 600×600 / 150×150 square); a single photo is shown in its own shape (`ChatImageAspectBox`, ratio 0.55–1.4, remembered per URL) instead of a fixed 220×200 box. Files: `ChatItem.dart`, `ChatList.dart`, `chat_translation_widgets.dart`. Tests: chat suites, no new failures. |
@@ -1049,12 +1050,31 @@ Private and group chat screens open at once with the messages shown last time, t
 4. **Save.** Every `updateMessageStream()` schedules a save 1 s later from a snapshot. That covers history, receive, sent, edited, deleted, delivered / seen, reactions and pin / unpin.
 5. **Failure.** Empty list → "Couldn't load messages" + Retry. Cached messages on screen → `ChatRefreshFailedBar` ("Couldn't refresh · Retry"), which calls `retryLoadHistory`.
 
-### 12.2.1 When the "Couldn't refresh · Retry" bar shows (F-1.2.8)
+### 12.2.1 When the "Couldn't refresh · Retry" bar shows (F-1.2.9, replaces F-1.2.8)
+Same rules on the chat list, the private chat and the group chat:
+
+- **Shows only when** data is on screen, the latest **foreground** load (open, pull, Retry) failed **twice** (the first failure is retried quietly after 2 s) and no sync has succeeded since. A user Retry / pull that fails shows it at once.
+- **Only "server not reached" counts:** timeout, connection error, 5xx, `status:false`. A 4xx (incl. 401 → existing force logout) or a parse / processing exception is never "Couldn't refresh" (logged with its stack; an empty screen still gets the full error view).
+- **Background loads never raise it** (socket reconnect, resume, socket refetch, `/chat` connect): they can only clear it.
+- **Any success clears it:** full load, incremental `/chat/sync`, `syncNewerMessages` (re-join / reconnect gap fill), the socket full list `private_chats`.
+- **Soft timeout (10 s, `ChatScreenRules.historyTimeout`):** the load counts as failed and the loader stops, but the request is kept; a late answer is applied (merge by id) and clears the bar.
+- **One first-page load at a time** (in-flight guard everywhere, incl. group `/chat` connect, which fires on the FIRST connect too).
+- **Each attempt counts once** (socket "joined" without chatId / the join timer and the API failure of the same attempt).
+- **A failure before the cache read finished** waits for the read (no instant error over messages that are about to show).
+- **New chat:** a by-peer answer without `chatId`, or a 404, is an empty chat ("No messages here yet"), never an error; the join timer does nothing once history answered.
+- **Search** has its own error state and always asks for page 1; a failed `nextPage()` rolls `currentPage` back.
+- **Back:** a late answer after Back changes nothing and never overwrites the cache.
+- One shared helper, `RefreshBarState` (`chat_screen_logic.dart`), used by the chat list, private chat and group chat. Debug log: `[REFRESH-BAR] … FLAG … -> true/false (reason)` and `[HTTP-GET] <path> failed after <ms>: dio=<type> status=<code>`.
+
+<details><summary>Old F-1.2.8 text (superseded)</summary>
+
 - Never once a history load (or the first page after a reconnect) has succeeded: a later or late failure is silent (log only).
 - With messages on screen, the first failure is retried quietly after 2 s. The bar shows only if that retry fails too.
 - An empty chat gets the full "Couldn't load messages" view at once, as before.
 - Tapping **Retry**: a failure shows the bar again at once (no extra quiet retry).
 - The bar hides when a later load succeeds. Private chat: the quiet retry or the socket re-join. Group chat: the quiet retry or the `/chat` reconnect, which now loads the history if it never loaded.
+
+</details>
 
 ### 12.3 Rules
 - Merge by message id only. An empty or partial response never replaces the list, and an empty list is never saved over an existing copy.

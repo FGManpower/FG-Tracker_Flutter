@@ -67,3 +67,10 @@ Testing-only folder. The feature guide is [`docs/01_CHATTING_MODULE_FRONTEND.md`
 3. When a bug is fixed, turn its skipped test back on and set it to `Fixed in code — phone check pending` (or `Fixed (test + phone)` after the phone case passes) in `bug_tracker.md`.
 4. New finding → add it to `bug_tracker.md` (app) or `pentesting/pentest_report.md` (security). Don't put testing notes into the module guide.
 5. `flutter test --coverage` rewrites the tracked `coverage/lcov.info`: restore it with `git checkout -- coverage/lcov.info`.
+
+## Run 3 (2026-11-18): false "Couldn't refresh · Retry"
+
+- Root causes and fixes: [bug_tracker.md](bug_tracker.md) BUG-CL-10…16, BUG-CS-24…31 (all fixed in F-1.2.9).
+- Tests: [unit_testing/unit_test_report.md](unit_testing/unit_test_report.md) §R3 — 68 new tests, all pass; every rule proven by a mutation check; no new failure project-wide.
+- Phone + E2E: [manual_testing/manual_checklist.md](manual_testing/manual_checklist.md) §9 — **not run yet** (needs devices / staging).
+- Security: [pentesting/pentest_report.md](pentesting/pentest_report.md) §G — no new risk.

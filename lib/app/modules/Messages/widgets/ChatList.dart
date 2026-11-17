@@ -139,6 +139,25 @@ Widget _buildSecurityEncryptionBanner({bool isGroup = false}) {
   );
 }
 
+/// "Couldn't refresh · Retry" ABOVE the messages (F-1.2.9): it used to
+/// float over the list and cover the top message.
+Widget _withRefreshBar({
+  required bool failed,
+  required VoidCallback onRetry,
+  required Widget child,
+}) {
+  if (!failed) return child;
+  return Column(
+    children: [
+      Padding(
+        padding: EdgeInsets.only(top: 6.h, bottom: 4.h),
+        child: ChatRefreshFailedBar(visible: true, onRetry: onRetry),
+      ),
+      Expanded(child: child),
+    ],
+  );
+}
+
 class ChatList extends StatelessWidget {
   final MessageController controller;
 
@@ -175,15 +194,15 @@ class ChatList extends StatelessWidget {
             return _buildEmptyState();
           }
 
-          return Stack(
-            children: [
-              _buildList(messages),
-              ChatHistoryTopLoader(visible: loadingOlder),
-              ChatRefreshFailedBar(
-                visible: loadFailed,
-                onRetry: controller.retryLoadHistory,
-              ),
-            ],
+          return _withRefreshBar(
+            failed: loadFailed,
+            onRetry: controller.retryLoadHistory,
+            child: Stack(
+              children: [
+                _buildList(messages),
+                ChatHistoryTopLoader(visible: loadingOlder),
+              ],
+            ),
           );
         },
       );
@@ -867,7 +886,10 @@ class GroupChatList extends StatelessWidget {
             );
           }
 
-          return Stack(children: [ScrollablePositionedList.builder(
+          return _withRefreshBar(
+              failed: loadFailed,
+              onRetry: controller.retryLoadHistory,
+              child: Stack(children: [ScrollablePositionedList.builder(
             key: ValueKey("group_chat_list_${controller.groupId}"),
             itemScrollController: controller.itemScrollController,
             itemPositionsListener: controller.itemPositionsListener,
@@ -1058,11 +1080,7 @@ class GroupChatList extends StatelessWidget {
 
               return itemWidget;
             },
-          ), ChatHistoryTopLoader(visible: loadingOlder),
-          ChatRefreshFailedBar(
-            visible: loadFailed,
-            onRetry: controller.retryLoadHistory,
-          )]);
+          ), ChatHistoryTopLoader(visible: loadingOlder)]));
         },
       );
     });

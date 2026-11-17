@@ -173,6 +173,7 @@ class HttpUtil {
     String path, {
     Map<String, dynamic>? data,
   }) async {
+    final watch = Stopwatch()..start();
     try {
       api.sendRequest.options.headers["authorization"] =
           "Bearer ${Global.storageServices.getaccesstoken()!}";
@@ -181,10 +182,21 @@ class HttpUtil {
       var response = await api.sendRequest.get(path, queryParameters: data);
       return response.data;
     } catch (e) {
-      if (e is DioException) {
-        throw ApiErrorHandler.handleDioError(e);
+      // Which error it really was (timeout / connection / 4xx / 5xx / other)
+      // was lost in the translated string. Debug only; no token, no body.
+      if (kDebugMode) {
+        final q = path.indexOf('?');
+        debugPrint('[HTTP-GET] ${q == -1 ? path : path.substring(0, q)} '
+            'failed after ${watch.elapsedMilliseconds}ms: '
+            '${e is DioException ? 'dio=${e.type.name} status=${e.response?.statusCode}' : 'error=${e.runtimeType}'}');
       }
-      throw sharedL10n.http_unexpectedError;
+      // Same message as before (toString), plus what kind of failure it was,
+      // so a screen can tell "offline / server down" from a 4xx.
+      if (e is DioException) {
+        throw HttpGetException(ApiErrorHandler.handleDioError(e),
+            dioType: e.type, statusCode: e.response?.statusCode);
+      }
+      throw HttpGetException(sharedL10n.http_unexpectedError);
     }
   }
 
@@ -242,4 +254,36 @@ class HttpUtil {
       throw sharedL10n.http_unexpectedError;
     }
   }
+}
+
+/// Thrown by [HttpUtil.get]. [toString] is the same translated message that
+/// was thrown before (so every existing `e.toString()` shows the same text);
+/// [dioType] / [statusCode] tell what really failed.
+class HttpGetException implements Exception {
+  HttpGetException(this.message, {this.dioType, this.statusCode});
+
+  final String message;
+  final DioExceptionType? dioType;
+  final int? statusCode;
+
+  /// Offline, timed out or the server is down (5xx): the data on screen may
+  /// be stale. A 4xx (not found, forbidden, session) is not.
+  bool get isNetworkOrServer {
+    switch (dioType) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.connectionError:
+        return true;
+      case DioExceptionType.badResponse:
+        return (statusCode ?? 0) >= 500;
+      case DioExceptionType.unknown:
+        return statusCode == null; // e.g. SocketException / HandshakeException
+      default:
+        return false;
+    }
+  }
+
+  @override
+  String toString() => message;
 }
