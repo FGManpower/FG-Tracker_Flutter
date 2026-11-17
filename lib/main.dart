@@ -8,6 +8,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
+import 'package:fgtracker/app/Data/Services/chat_message_cache.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
@@ -248,6 +249,9 @@ Future<void> main() async {
 
   await Firebase.initializeApp();
   await Global.init();
+  // Chat screen cache: open it now (background) so the first chat after a
+  // cold start shows its saved messages at once (doc 01 §12).
+  unawaited(ChatMessageCache.warmUp());
   // App language saved on this phone ("app_language"); applied by
   // GetMaterialApp below and changed via Get.updateLocale.
   await Get.put(LanguageController(), permanent: true).load();

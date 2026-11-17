@@ -2378,6 +2378,9 @@ class AppLocalizationsMl extends AppLocalizations {
   String get chat_loadFailedTitle => 'സന്ദേശങ്ങൾ ലോഡ് ചെയ്യാനായില്ല';
 
   @override
+  String get chat_refreshFailed => 'പുതുക്കാനായില്ല';
+
+  @override
   String get chat_locationFetchFailed =>
       'നിങ്ങളുടെ ലൊക്കേഷൻ ലഭിച്ചില്ല. വീണ്ടും ശ്രമിക്കുക.';
 
@@ -3981,6 +3984,17 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get menu_profileImageUpdated => 'പ്രൊഫൈൽ ചിത്രം അപ്‌ഡേറ്റ് ചെയ്തു';
+
+  @override
+  String get msgInfo_deliveredTo => 'ലഭിച്ചവർ';
+
+  @override
+  String get msgInfo_readBy => 'വായിച്ചവർ';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count ബാക്കി';
+  }
 
   @override
   String get notif_accept => 'സ്വീകരിക്കുക';

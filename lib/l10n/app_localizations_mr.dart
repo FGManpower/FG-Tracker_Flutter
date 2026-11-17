@@ -2351,6 +2351,9 @@ class AppLocalizationsMr extends AppLocalizations {
   String get chat_loadFailedTitle => 'मेसेज लोड होऊ शकले नाहीत';
 
   @override
+  String get chat_refreshFailed => 'रिफ्रेश करता आले नाही';
+
+  @override
   String get chat_locationFetchFailed =>
       'तुमचे लोकेशन मिळू शकले नाही. कृपया पुन्हा प्रयत्न करा.';
 
@@ -3947,6 +3950,17 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get menu_profileImageUpdated => 'प्रोफाइल फोटो अपडेट झाला';
+
+  @override
+  String get msgInfo_deliveredTo => 'कोणाला मिळाले';
+
+  @override
+  String get msgInfo_readBy => 'कोणी वाचले';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count बाकी';
+  }
 
   @override
   String get notif_accept => 'स्वीकारा';

@@ -2380,6 +2380,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get chat_loadFailedTitle => 'மெசேஜ்களை ஏற்ற முடியவில்லை';
 
   @override
+  String get chat_refreshFailed => 'புதுப்பிக்க முடியவில்லை';
+
+  @override
   String get chat_locationFetchFailed =>
       'உங்கள் லொகேஷனைப் பெற முடியவில்லை. மீண்டும் முயலவும்.';
 
@@ -3998,6 +4001,17 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get menu_profileImageUpdated => 'சுயவிவரப் படம் புதுப்பிக்கப்பட்டது';
+
+  @override
+  String get msgInfo_deliveredTo => 'பெற்றவர்கள்';
+
+  @override
+  String get msgInfo_readBy => 'படித்தவர்கள்';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count மீதம்';
+  }
 
   @override
   String get notif_accept => 'ஏற்கவும்';

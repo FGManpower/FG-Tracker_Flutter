@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/Core/util/currency_format.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
@@ -411,36 +412,10 @@ class _WalkieTalkiePaymentFailedScreenState
       backgroundColor: _bgSoft,
       elevation: 0,
       scrolledUnderElevation: 0,
-      leadingWidth: 56.w,
-      leading: Padding(
-        padding: EdgeInsets.only(left: 16.w),
-        child: Center(
-          child: InkWell(
-            onTap: _isOtp ? _backToOtpCharges : () => Get.back(),
-            borderRadius: BorderRadius.circular(10.r),
-            child: Container(
-              height: 38.w,
-              width: 38.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(color: _cardBorder),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 15,
-                color: _textDark,
-              ),
-            ),
-          ),
-        ),
+      surfaceTintColor: AppBarStyle.surfaceTintColor,
+      leadingWidth: AppBarStyle.leadingWidth,
+      leading: AppBarStyle.leading(
+        onTap: _isOtp ? _backToOtpCharges : () => Get.back(),
       ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

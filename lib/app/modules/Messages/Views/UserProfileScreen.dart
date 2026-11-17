@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
@@ -209,14 +210,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leadingWidth: 64.w,
-        leading: Padding(
-          padding: EdgeInsets.only(left: 16.w, top: 8.h, bottom: 8.h),
-          child: _roundBtn(
-            icon: Icons.arrow_back_rounded,
-            onTap: () => Get.back(),
-          ),
-        ),
+        surfaceTintColor: AppBarStyle.surfaceTintColor,
+        leadingWidth: AppBarStyle.leadingWidth,
+        leading: AppBarStyle.leading(onTap: () => Get.back()),
       ),
       body: SafeArea(
         child: Obx(() {
@@ -260,6 +256,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _roundBtn({required IconData icon, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,

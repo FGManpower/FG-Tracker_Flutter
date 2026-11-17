@@ -17,6 +17,8 @@ import 'package:socket_io_common/src/util/event_emitter.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:fgtracker/app/Core/util/rt_attachment_log.dart'; // TODO(rt-diagnostics)
+import 'package:fgtracker/app/modules/Messages/Controller/message_receipts.dart';
+import 'package:fgtracker/app/Data/Services/chat_message_cache.dart';
 void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
   if (kDebugMode) {
     developer.log(message, error: error, stackTrace: stackTrace, name: name ?? 'SocketMessageService');
@@ -27,11 +29,173 @@ void log(String message, {Object? error, StackTrace? stackTrace, String? name}) 
 /// Which chat socket a chat-screen listener belongs to.
 enum ChatSocketScope { private, group }
 
+/// TEMPORARY receipt diagnostics (Message Info / seen / delivered). Debug
+/// builds only. Remove all `[SEEN-DBG]` lines before the final commit.
+void seenDbg(String message) {
+  if (kDebugMode) debugPrint('[SEEN-DBG] $message');
+}
+
+/// Remembers keys for [window]; [seen] is true for a key already seen inside
+/// the window. Used to apply an event once when the server sends the same
+/// thing under several event names or to several rooms.
+class _RecentKeys {
+  _RecentKeys(this.window);
+  final Duration window;
+  static const int max = 300;
+  final Map<String, DateTime> _at = {};
+
+  bool seen(String key) {
+    final now = DateTime.now();
+    final last = _at[key];
+    if (last != null && now.difference(last) < window) return true;
+    _at.remove(key);
+    _at[key] = now;
+    if (_at.length > max) _at.remove(_at.keys.first);
+    return false;
+  }
+}
+
+/// A block / unblock between two users ([blockerId] blocked [blockedId]).
+/// Comes from a backend block event or from a `BLOCKED` send ack.
+class BlockStatusEvent {
+  const BlockStatusEvent({
+    required this.blockerId,
+    required this.blockedId,
+    required this.isBlocked,
+  });
+  final String blockerId;
+  final String blockedId;
+  final bool isBlocked;
+}
+
 class SocketMessageService extends GetxService {
   static SocketMessageService get instance => Get.put(SocketMessageService());
   Timer? _privateJoinDebugTimer;
   IO.Socket? _socket;
   EventHandler<dynamic>? _privateMessageHandler;
+
+  // ---- Group receipts (read / delivered), one app-level listener ----
+
+  final StreamController<ReceiptUpdate> _groupReceiptCtrl =
+      StreamController<ReceiptUpdate>.broadcast();
+
+  /// Every group read / delivered update, once (duplicates from several
+  /// event names or rooms are dropped). Screens subscribe and cancel on
+  /// dispose; the socket listener itself is registered once per socket.
+  Stream<ReceiptUpdate> get groupReceipts => _groupReceiptCtrl.stream;
+
+  /// Tests: feed a receipt payload as if it came from the socket.
+  @visibleForTesting
+  void debugReceiveGroupReceipt(dynamic data, {required bool isRead}) =>
+      _onGroupReceipt(data, isRead: isRead);
+
+  final StreamController<void> _chatConnectedCtrl =
+      StreamController<void>.broadcast();
+
+  /// Fires on every connect / reconnect of the /chat socket.
+  Stream<void> get chatConnected => _chatConnectedCtrl.stream;
+
+  final _RecentKeys _recentReceipts = _RecentKeys(const Duration(seconds: 3));
+  final _RecentKeys _recentGroupMessages =
+      _RecentKeys(const Duration(seconds: 30));
+  final _RecentKeys _recentTyping =
+      _RecentKeys(const Duration(milliseconds: 600));
+
+  /// Group message ids this app already reported as delivered.
+  final Set<String> _deliveredEmitted = <String>{};
+
+  void _onGroupSeenEvent(dynamic data) => _onGroupReceipt(data, isRead: true);
+  void _onGroupDeliveredEvent(dynamic data) =>
+      _onGroupReceipt(data, isRead: false);
+
+  void _onGroupReceipt(dynamic data, {required bool isRead}) {
+    final update = ReceiptUpdate.parse(data, isRead: isRead);
+    seenDbg('IN ${isRead ? 'seen' : 'delivered'} => $data');
+    if (update == null) return;
+    if (_recentReceipts.seen(update.key)) {
+      seenDbg('IN duplicate dropped (${update.key})');
+      return;
+    }
+    if (!_groupReceiptCtrl.isClosed) _groupReceiptCtrl.add(update);
+  }
+
+  /// Registers the receipt listeners on [s] once (by reference, so calling
+  /// it again never stacks a second handler).
+  void _registerGroupReceipts(IO.Socket? s) {
+    if (s == null) return;
+    for (final ev in ReceiptEvents.allGroupSeen) {
+      s.off(ev, _onGroupSeenEvent);
+      s.on(ev, _onGroupSeenEvent);
+    }
+    for (final ev in ReceiptEvents.allGroupDelivered) {
+      s.off(ev, _onGroupDeliveredEvent);
+      s.on(ev, _onGroupDeliveredEvent);
+    }
+    // Any group message reaching this phone on /chat (any screen) counts as
+    // delivered.
+    for (final ev in const ["receive_group_message", "receive_message"]) {
+      s.off(ev, _onAnyGroupMessage);
+      s.on(ev, _onAnyGroupMessage);
+    }
+  }
+
+  void _onAnyGroupMessage(dynamic data) {
+    if (data is! Map) return;
+    final gid = data['groupId'] ?? data['group_id'];
+    if (gid == null) return;
+    _deliverIfFromOther(groupId: gid, message: data);
+  }
+
+  /// Chat-list payloads carry the group's last message: report it delivered
+  /// when it is from someone else (covers groups whose room is not joined).
+  void _deliverFromListPayload(dynamic data) {
+    if (data is! Map) return;
+    final gid = data['groupId'] ?? data['group_id'];
+    final type = data['chatType']?.toString().toLowerCase();
+    if (gid == null || (type != null && type != 'group')) return;
+    final last = data['lastMessage'] ?? data['lastMessageData'] ?? data['message'];
+    if (last is Map) _deliverIfFromOther(groupId: gid, message: last);
+  }
+
+  void _deliverIfFromOther({required dynamic groupId, required Map message}) {
+    final me = Global.storageServices.get(PrefConst.userId)?.toString();
+    final sender = normalizeReceiptId(
+        message['senderId'] ?? message['sender_id'] ?? message['userId']);
+    final id = normalizeReceiptId(message['id'] ?? message['messageId']);
+    final gid = int.tryParse(groupId.toString());
+    if (id == null || gid == null || sender == null || me == null) return;
+    if (sender == normalizeReceiptId(me)) return;
+    markGroupDelivered(groupId: gid, userId: me, messageIds: [id]);
+  }
+
+  /// Reports group messages as delivered to this phone. Ids already reported
+  /// in this session are skipped, so it is safe to call often.
+  void markGroupDelivered({
+    required int groupId,
+    required String userId,
+    required Iterable<String> messageIds,
+  }) {
+    final fresh = messageIds
+        .map(normalizeReceiptId)
+        .whereType<String>()
+        .where((id) => !_deliveredEmitted.contains(id))
+        .toList();
+    if (fresh.isEmpty) return;
+    final s = _socket;
+    if (s == null) return;
+    _deliveredEmitted.addAll(fresh);
+    final uidInt = int.tryParse(userId);
+    final payload = {
+      "groupId": groupId,
+      "group_id": groupId,
+      "userId": uidInt ?? userId,
+      "user_id": uidInt ?? userId,
+      "messageIds": fresh.map((id) => int.tryParse(id) ?? id).toList(),
+      "deliveredAt": DateTime.now().toUtc().toIso8601String(),
+    };
+    seenDbg('EMIT ${ReceiptEvents.markDelivered} => $payload');
+    s.emit(ReceiptEvents.markDelivered, payload);
+  }
 
   /// Chat currently open on the /chat socket; rejoined on every reconnect.
   String? _activeUserId;
@@ -139,6 +303,11 @@ class SocketMessageService extends GetxService {
       },
     );
     _registerGroupStatus(_socket);
+    _registerBlockStatus(_socket);
+    _registerGroupMemberChanges(_socket);
+    // App-level, once per socket: group read / delivered receipts and the
+    // "delivered" report for any group message reaching this phone.
+    _registerGroupReceipts(_socket);
 
     // Realtime debug: every attendance / chat-list event reaching /chat.
     _socket?.onAny((event, data) {
@@ -182,6 +351,8 @@ class SocketMessageService extends GetxService {
       rtLog(
         "[RT_DEBUG] /chat connected: group=$activeGroupId poll=$_subscribedPollId",
       );
+      // Screens re-fetch receipts / Message Info after a reconnect.
+      if (!_chatConnectedCtrl.isClosed) _chatConnectedCtrl.add(null);
     });
 
     // The chat list may have registered before this socket existed.
@@ -312,7 +483,8 @@ class SocketMessageService extends GetxService {
     final msg = {
       'senderId': senderIdInt ?? senderId,
       'userId': senderIdInt ?? senderId,
-      'receiverId': senderIdInt ?? senderId,
+      // Group message: there is no single receiver (was the sender's own id).
+      'receiverId': null,
       'groupId': gidInt,
       'group_id': gidInt,
       'content': content,
@@ -330,19 +502,30 @@ class SocketMessageService extends GetxService {
     );
   }
 
+  /// Group read receipt. [messageIds] = the messages being marked read (from
+  /// other members); omitted when not known yet (e.g. before history loads).
   void markSeen(
     String userId,
-    int groupId,
-  ) {
+    int groupId, {
+    Iterable<String>? messageIds,
+  }) {
     final uidInt = int.tryParse(userId.toString());
     final gidInt = int.tryParse(groupId.toString()) ?? groupId;
+    final ids = messageIds
+        ?.map(normalizeReceiptId)
+        .whereType<String>()
+        .map((id) => int.tryParse(id) ?? id)
+        .toList();
     final payload = {
       "userId": uidInt ?? userId,
       "groupId": gidInt,
       "user_id": uidInt ?? userId,
       "group_id": gidInt,
+      if (ids != null && ids.isNotEmpty) "messageIds": ids,
+      "readAt": DateTime.now().toUtc().toIso8601String(),
     };
-    _socket?.emit("mark_seen", payload);
+    seenDbg('EMIT ${ReceiptEvents.markSeen} (group) => $payload');
+    _socket?.emit(ReceiptEvents.markSeen, payload);
   }
 
   void RecievedMessage({
@@ -370,23 +553,6 @@ class SocketMessageService extends GetxService {
     );
   }
 
-  void listenSeenUpdate({
-    required int groupId,
-    required Function(dynamic) callback,
-  }) {
-    _socket?.off("messages_seen_update");
-
-    _socket?.on(
-      "messages_seen_update",
-      (data) {
-        final dataGroupId = int.tryParse(data["groupId"].toString());
-
-        if (dataGroupId == groupId) {
-          callback(data);
-        }
-      },
-    );
-  }
 
   void joinGroupChat({
     required int groupId,
@@ -445,7 +611,8 @@ class SocketMessageService extends GetxService {
     final payload = <String, dynamic>{
       "senderId": senderIdInt ?? senderId,
       "userId": senderIdInt ?? senderId,
-      "receiverId": senderIdInt ?? senderId,
+      // Group message: there is no single receiver (was the sender's own id).
+      "receiverId": null,
       "groupId": gidInt,
       "group_id": gidInt,
       "messageType": messageType,
@@ -468,28 +635,52 @@ class SocketMessageService extends GetxService {
     socket.emitWithAck("send_message", payload, ack: _onSendAck);
   }
 
+  static const List<String> _groupReceiveEvents = [
+    "receive_group_message",
+    "receive_message",
+    "group_forward_message",
+    "forward_message",
+    "receive_forward_message",
+    "message_forwarded",
+    "forwarded_message",
+  ];
+
+  /// The open group screen's message handler, kept by reference so it can
+  /// be replaced / removed without touching other listeners on the event.
+  EventHandler<dynamic>? _groupScreenReceiveHandler;
+
+  /// Dedupe key for an incoming group message: the server sends the same
+  /// message under several event names and to several rooms.
+  static String? _groupMessageKey(dynamic data) {
+    if (data is! Map) return null;
+    final inner = data['message'] is Map ? data['message'] as Map : data;
+    final id = normalizeReceiptId(inner['id'] ?? inner['messageId'] ?? data['id']);
+    if (id != null) return 'id:$id';
+    final client = (inner['clientMessageId'] ?? data['clientMessageId'])?.toString();
+    if (client != null && client.isNotEmpty) return 'c:$client';
+    return null;
+  }
+
   void receiveGroupMessage({
     required Function(dynamic) callback,
   }) {
-    final events = [
-      "receive_group_message",
-      "receive_message",
-      "group_forward_message",
-      "forward_message",
-      "receive_forward_message",
-      "message_forwarded",
-      "forwarded_message",
-    ];
+    final s = socket;
+    final old = _groupScreenReceiveHandler;
+    if (old != null) {
+      for (final event in _groupReceiveEvents) {
+        s.off(event, old);
+      }
+    }
+    void handler(dynamic data) {
+      final key = _groupMessageKey(data);
+      if (key != null && _recentGroupMessages.seen(key)) return;
+      rtSocketRaw('group receive', data); // TODO(rt-diagnostics)
+      callback(data);
+    }
 
-    for (final event in events) {
-      socket.off(event);
-      socket.on(
-        event,
-        (data) {
-          rtSocketRaw('group "$event"', data); // TODO(rt-diagnostics)
-          callback(data);
-        },
-      );
+    _groupScreenReceiveHandler = handler;
+    for (final event in _groupReceiveEvents) {
+      s.on(event, handler);
     }
   }
 
@@ -564,10 +755,12 @@ class SocketMessageService extends GetxService {
     // own group typing listener on the same /chat socket.
     _removeGroupScreenTypingHandlers(s);
     _groupScreenTypingHandler = (data) {
+      if (_isRepeatedTyping('screen', true, data)) return;
       log("RECEIVED group_typing => $data");
       onTyping(data);
     };
     _groupScreenStopTypingHandler = (data) {
+      if (_isRepeatedTyping('screen', false, data)) return;
       log("RECEIVED group_stop_typing => $data");
       onStopTyping(data);
     };
@@ -577,6 +770,15 @@ class SocketMessageService extends GetxService {
 
   EventHandler<dynamic>? _groupScreenTypingHandler;
   EventHandler<dynamic>? _groupScreenStopTypingHandler;
+
+  /// The server repeats one typing change (several event names / rooms);
+  /// each consumer handles it once per short window.
+  bool _isRepeatedTyping(String consumer, bool typing, dynamic data) {
+    if (data is! Map) return false;
+    final gid = data['groupId'] ?? data['group_id'] ?? data['chatId'];
+    final uid = data['userId'] ?? data['senderId'] ?? data['user_id'];
+    return _recentTyping.seen('$consumer|$typing|$gid|$uid');
+  }
 
   void _removeGroupScreenTypingHandlers(IO.Socket? s) {
     if (s == null) return;
@@ -666,9 +868,14 @@ class SocketMessageService extends GetxService {
     if (_listGroupStopTypingHandler != null) {
       s.off("group_stop_typing", _listGroupStopTypingHandler);
     }
-    _listGroupTypingHandler = (data) => _chatListGroupTyping?.call(data);
-    _listGroupStopTypingHandler =
-        (data) => _chatListGroupStopTyping?.call(data);
+    _listGroupTypingHandler = (data) {
+      if (_isRepeatedTyping('list', true, data)) return;
+      _chatListGroupTyping?.call(data);
+    };
+    _listGroupStopTypingHandler = (data) {
+      if (_isRepeatedTyping('list', false, data)) return;
+      _chatListGroupStopTyping?.call(data);
+    };
     s.on("group_typing", _listGroupTypingHandler!);
     s.on("group_stop_typing", _listGroupStopTypingHandler!);
   }
@@ -845,6 +1052,7 @@ class SocketMessageService extends GetxService {
       },
     );
     _registerGroupStatus(_privateChatSocket);
+    _registerBlockStatus(_privateChatSocket);
 
 
 
@@ -989,7 +1197,11 @@ class SocketMessageService extends GetxService {
       if (replySender != null) "replySender": replySender,
     };
 
-    _privateChatSocket!.emitWithAck("send_message", payload, ack: _onSendAck);
+    _privateChatSocket!.emitWithAck(
+      "send_message",
+      payload,
+      ack: (res) => _onSendAck(res, receiverId: receiverId),
+    );
   }
 
   void receivePrivateMessage({
@@ -1269,10 +1481,16 @@ class SocketMessageService extends GetxService {
       },
     );
     _registerGroupStatus(_privateChatListSocket);
+    _registerBlockStatus(_privateChatListSocket);
 
     _privateChatListSocket?.onAny((event, data) {
       if (event.contains("chat_list") || event == "conversation_updated") {
         rtLog("[RT_DEBUG] /privateChat <= $event");
+      }
+      if (event.contains("chat_list") ||
+          event == "conversation_updated" ||
+          event == "private_chat_updated") {
+        _publishTouchedChats(data);
       }
     });
 
@@ -1348,6 +1566,7 @@ class SocketMessageService extends GetxService {
           "private_chat_cleared",
               (data) {
             if (data is Map) {
+              _dropClearedPrivateChatCache(data);
               _privateChatClearedListCallback?.call(
                 Map<String, dynamic>.from(data),
               );
@@ -1409,6 +1628,8 @@ class SocketMessageService extends GetxService {
     for (final ev in events) {
       s.off(ev);
       s.on(ev, (data) {
+        // A group's newest message from someone else reached this phone.
+        _deliverFromListPayload(data);
         _privateChatListUpdatedCallback?.call(data);
       });
     }
@@ -1649,12 +1870,28 @@ class SocketMessageService extends GetxService {
   /// SEND_FAILED) used to fail silently; now the user is told. Success needs
   /// nothing here: the message still arrives via the normal receive event
   /// (deduped by id). Older servers never call the ack: nothing happens.
-  void _onSendAck(dynamic res) {
+  ///
+  /// A private send rejected with `BLOCKED` means [receiverId] has blocked
+  /// me: it is published on [blockStatusEvents] so the open chat swaps the
+  /// input bar for the "blocked" banner right away (not only after reopening).
+  void _onSendAck(dynamic res, {String? receiverId}) {
     final data = res is List && res.isNotEmpty ? res.first : res;
     if (data is! Map) return;
     final ok = data['ok'] ?? data['status'];
     if (ok != false) return;
     final code = data['code']?.toString() ?? '';
+    final me = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (code == 'BLOCKED' &&
+        receiverId != null &&
+        receiverId.isNotEmpty &&
+        me != null &&
+        me.isNotEmpty) {
+      _blockStatusController.add(BlockStatusEvent(
+        blockerId: receiverId,
+        blockedId: me,
+        isBlocked: true,
+      ));
+    }
     final serverText = data['message'] is String ? data['message'] as String : '';
     final text = serverText.trim().isNotEmpty
         ? serverText.trim()
@@ -1737,21 +1974,21 @@ class SocketMessageService extends GetxService {
   void releaseGroupChatEvents(Object owner) {
     if (!identical(_groupChatOwner, owner)) return;
     _groupChatOwner = null;
+    // Message events: remove only this screen's handler. The app-level
+    // "delivered" and receipt listeners on the same events stay.
+    final receive = _groupScreenReceiveHandler;
+    if (receive != null) {
+      for (final event in _groupReceiveEvents) {
+        _socket?.off(event, receive);
+      }
+      _groupScreenReceiveHandler = null;
+    }
     for (final event in const [
-      "receive_group_message",
-      "receive_message",
-      "group_forward_message",
-      "forward_message",
-      "receive_forward_message",
-      "message_forwarded",
-      "forwarded_message",
       "messageEdited",
       "message_edited",
       "message_deleted",
       "message_pinned",
       "message_unpinned",
-      "messages_seen_update",
-      "group_message_seen",
       "message_sent",
       "group_message_sent",
       "group_updated",
@@ -1939,31 +2176,10 @@ class SocketMessageService extends GetxService {
     _listenScoped("group_message_sent", scope, handler);
   }
 
-  /// Listens for group message read receipts on /chat (double blue tick ✓✓ update).
-  void listenGroupMessageSeen({
-    required Function(Map<String, dynamic>) callback,
-  }) {
-    void handler(dynamic data) {
-      if (data is Map) callback(Map<String, dynamic>.from(data));
-    }
-    _socket?.off("group_message_seen");
-    _socket?.on("group_message_seen", handler);
-    _socket?.off("messages_seen_update");
-    _socket?.on("messages_seen_update", handler);
-  }
-
-  /// Listens for group message delivery receipts on /chat (double grey tick ✓✓ update).
-  void listenGroupMessagesDelivered({
-    required Function(Map<String, dynamic>) callback,
-  }) {
-    void handler(dynamic data) {
-      if (data is Map) callback(Map<String, dynamic>.from(data));
-    }
-    _socket?.off("group_messages_delivered");
-    _socket?.on("group_messages_delivered", handler);
-    _socket?.off("messages_delivered");
-    _socket?.on("messages_delivered", handler);
-  }
+  // Group read / delivered receipts: see [groupReceipts] (one app-level
+  // listener per socket, registered in init). The old per-screen
+  // listenGroupMessageSeen / listenGroupMessagesDelivered / listenSeenUpdate
+  // replaced each other's handlers with off(event) and were removed.
 
   /// Listens for real-time group info updates (groupName, groupProfile, groupDesc).
   void listenGroupUpdated({
@@ -2004,6 +2220,180 @@ class SocketMessageService extends GetxService {
     if (s == null) return;
     s.off("group_status_updated", _onGroupStatusUpdated);
     s.on("group_status_updated", _onGroupStatusUpdated);
+  }
+
+  // ---- Block / unblock in real time ----
+
+  final StreamController<BlockStatusEvent> _blockStatusController =
+      StreamController<BlockStatusEvent>.broadcast();
+
+  /// Block / unblock changes for private chats, from the backend block
+  /// events (any socket) or a `BLOCKED` send ack. The same change may arrive
+  /// more than once (several sockets); applying it is idempotent.
+  Stream<BlockStatusEvent> get blockStatusEvents =>
+      _blockStatusController.stream;
+
+  /// Event names the backend may use for a block change (open item #25 in
+  /// docs/01_CHATTING_MODULE_FRONTEND.md asks for `user_blocked` /
+  /// `user_unblocked`); the others are accepted so either naming works.
+  static const List<String> _blockEventNames = [
+    "user_blocked",
+    "user_unblocked",
+    "block_status_changed",
+    "block_status_updated",
+    "blockStatusChanged",
+  ];
+
+  late final Map<String, void Function(dynamic)> _blockHandlers = {
+    for (final e in _blockEventNames) e: (dynamic d) => _onBlockEvent(e, d),
+  };
+
+  /// App-level, once per socket (like group status): the change may be
+  /// pushed to the user's room on any namespace.
+  void _registerBlockStatus(IO.Socket? s) {
+    if (s == null) return;
+    _blockHandlers.forEach((event, handler) {
+      s.off(event, handler);
+      s.on(event, handler);
+    });
+  }
+
+  final StreamController<String> _chatTouchedController =
+      StreamController<String>.broadcast();
+
+  /// Private chat ids named in a chat-list event (`chat_list_updated`,
+  /// `conversation_updated`, `private_chat_updated`). The server may send
+  /// one after a block / unblock (with `isBlocked`); the open chat then
+  /// re-reads its `blockStatus` instead of waiting for the periodic check.
+  Stream<String> get privateChatTouched => _chatTouchedController.stream;
+
+  void _publishTouchedChats(dynamic data) {
+    final ids = <String>{};
+    void scan(dynamic v, int depth) {
+      if (depth > 3 || v == null) return;
+      if (v is List) {
+        for (final e in v.take(100)) {
+          scan(e, depth + 1);
+        }
+        return;
+      }
+      if (v is! Map) return;
+      for (final k in const [
+        'chatId', 'chat_id', 'conversationId', 'conversation_id',
+      ]) {
+        final id = v[k]?.toString().trim();
+        if (id != null && id.isNotEmpty && id != 'null') ids.add(id);
+      }
+      for (final k in const ['chat', 'data', 'chats', 'conversation']) {
+        if (v[k] is Map || v[k] is List) scan(v[k], depth + 1);
+      }
+    }
+
+    try {
+      scan(data, 0);
+    } catch (_) {}
+    for (final id in ids) {
+      _chatTouchedController.add(id);
+    }
+  }
+
+  // ---- Group member left / removed (any group, app level) ----
+
+  final StreamController<int> _groupMemberChangesController =
+      StreamController<int>.broadcast();
+
+  /// Group id of every `member_left` / `member_removed` / `group_left` /
+  /// `user_removed_from_group` on `/chat`. The open group chat uses it to
+  /// fetch the "X left" system message from the server when it isn't
+  /// pushed live (seen for archived groups).
+  Stream<int> get groupMemberChanges => _groupMemberChangesController.stream;
+
+  static const Set<String> _groupMemberChangeEvents = {
+    "member_left",
+    "member_removed",
+    "group_left",
+    "user_removed_from_group",
+  };
+
+  void _onGroupMemberAny(String event, dynamic data) {
+    if (!_groupMemberChangeEvents.contains(event)) return;
+    final m = data is List && data.isNotEmpty ? data.first : data;
+    if (m is! Map) return;
+    final gid = int.tryParse(
+        (m['groupId'] ?? m['group_id'] ?? m['chatId'])?.toString() ?? '');
+    if (gid != null) _groupMemberChangesController.add(gid);
+  }
+
+  /// `onAny`, not `on(event)`: other code calls `off(event)` without a
+  /// handler for these events (removes every handler); an any-listener is
+  /// not affected, so this keeps working.
+  void _registerGroupMemberChanges(IO.Socket? s) {
+    if (s == null) return;
+    s.offAny(_onGroupMemberAny);
+    s.onAny(_onGroupMemberAny);
+  }
+
+  /// Payload: `{blockerId, blockedUserId, isBlocked?}` (aliases accepted).
+  void _onBlockEvent(String event, dynamic raw) {
+    final data = raw is List && raw.isNotEmpty ? raw.first : raw;
+    if (data is! Map) return;
+    String? pick(List<String> keys) {
+      for (final k in keys) {
+        final v = data[k];
+        if (v != null && v.toString().trim().isNotEmpty) {
+          return v.toString().trim();
+        }
+      }
+      return null;
+    }
+
+    final blocker = pick(const [
+      'blockerId', 'blocker_id', 'blockedBy', 'blocked_by', 'userId', 'user_id',
+    ]);
+    final blocked = pick(const [
+      'blockedUserId', 'blocked_user_id', 'blockedId', 'blocked_id',
+      'targetUserId', 'target_user_id',
+    ]);
+
+    bool? isBlocked;
+    if (event == 'user_blocked') {
+      isBlocked = true;
+    } else if (event == 'user_unblocked') {
+      isBlocked = false;
+    } else {
+      final v = data['isBlocked'] ?? data['is_blocked'] ?? data['blocked'];
+      final action = data['action']?.toString().toLowerCase();
+      if (v is bool) {
+        isBlocked = v;
+      } else if (v != null) {
+        final t = v.toString().toLowerCase();
+        if (t == 'true' || t == '1') isBlocked = true;
+        if (t == 'false' || t == '0') isBlocked = false;
+      } else if (action == 'block' || action == 'blocked') {
+        isBlocked = true;
+      } else if (action == 'unblock' || action == 'unblocked') {
+        isBlocked = false;
+      }
+    }
+
+    log("BLOCK EVENT => $event blocker=$blocker blocked=$blocked isBlocked=$isBlocked");
+    if (blocker == null || blocked == null || isBlocked == null) return;
+    _blockStatusController.add(BlockStatusEvent(
+      blockerId: blocker,
+      blockedId: blocked,
+      isBlocked: isBlocked,
+    ));
+  }
+
+  /// A private chat was cleared (from the chat list, or on another device):
+  /// drop its saved copy so reopening it does not show the old messages.
+  /// Cache only; the chat list callback itself is unchanged.
+  void _dropClearedPrivateChatCache(Map data) {
+    final chatId = data['conversationId'] ??
+        data['conversation_id'] ??
+        data['chatId'] ??
+        data['chat_id'];
+    ChatMessageCache.clearPrivateByChatId(chatId);
   }
 
   /// Listens for group chat cleared event (clear chat history strictly for calling user).
@@ -2341,6 +2731,7 @@ class SocketMessageService extends GetxService {
       "private_chat_cleared",
       (data) {
         if (data is Map) {
+          _dropClearedPrivateChatCache(data);
           _privateChatClearedListCallback?.call(
             Map<String, dynamic>.from(data),
           );
@@ -2453,6 +2844,9 @@ class SocketMessageService extends GetxService {
       _socket?.dispose();
       _socket = null;
     } catch (_) {}
+    // Next user starts with a clean receipt state.
+    _deliveredEmitted.clear();
+    _groupScreenReceiveHandler = null;
     try {
       disconnectPrivateChatSocket();
     } catch (_) {}

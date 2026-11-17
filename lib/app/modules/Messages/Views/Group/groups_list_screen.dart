@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/modules/Group/Views/QrScreen.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
@@ -160,35 +161,17 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       backgroundColor: const Color(0xFFF6F5FB),
-      surfaceTintColor: const Color(0xFFF6F5FB),
+      // Same bar while the list scrolls (M3 tinted / elevated it before,
+      // and the back button looked broken).
+      surfaceTintColor: AppBarStyle.surfaceTintColor,
+      scrolledUnderElevation: AppBarStyle.scrolledUnderElevation,
       elevation: 0,
       automaticallyImplyLeading: false,
       toolbarHeight: 75.h,
-      titleSpacing: 20.w,
+      titleSpacing: 16.w,
       title: Row(
         children: [
-          GestureDetector(
-            onTap: () => Get.back(),
-            child: Container(
-              padding: EdgeInsets.all(9.r),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.arrow_back,
-                color: const Color(0xff5045B9),
-                size: 20.sp,
-              ),
-            ),
-          ),
+          AppBackButton(onTap: () => Get.back()),
           SizedBox(width: 14.w),
           Flexible(
             child: Column(

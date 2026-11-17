@@ -32,6 +32,7 @@ ContactStatusGroupModel grp(int id, String name, {required bool allViewed}) =>
 Widget app() => ScreenUtilInit(
       designSize: const Size(375, 812),
       builder: (_, __) => GetMaterialApp(
+        locale: const Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const Scaffold(body: SafeArea(child: StatusSection())),
@@ -42,7 +43,12 @@ void main() {
   late FakeFeed feed;
 
   setUp(() {
+    // T-04 (Run 2): start every test from a clean GetX state with a fixed
+    // language, so nothing left by an earlier test (permanent services,
+    // locale, popup route) changes what this one finds.
+    Get.reset();
     Get.testMode = true;
+    Get.locale = const Locale('en');
     Get.put(StatusSocketService(), permanent: true);
     feed = Get.put<StatusFeedController>(FakeFeed(), permanent: true)
         as FakeFeed;

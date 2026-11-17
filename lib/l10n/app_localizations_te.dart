@@ -2359,6 +2359,9 @@ class AppLocalizationsTe extends AppLocalizations {
   String get chat_loadFailedTitle => 'మెసేజ్‌లు లోడ్ కాలేదు';
 
   @override
+  String get chat_refreshFailed => 'రిఫ్రెష్ చేయలేకపోయాం';
+
+  @override
   String get chat_locationFetchFailed =>
       'మీ లొకేషన్ పొందలేకపోయాం. దయచేసి మళ్లీ ప్రయత్నించండి.';
 
@@ -3961,6 +3964,17 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get menu_profileImageUpdated => 'ప్రొఫైల్ ఫోటో అప్‌డేట్ అయింది';
+
+  @override
+  String get msgInfo_deliveredTo => 'అందుకున్నవారు';
+
+  @override
+  String get msgInfo_readBy => 'చదివినవారు';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count మిగిలారు';
+  }
 
   @override
   String get notif_accept => 'అంగీకరించు';

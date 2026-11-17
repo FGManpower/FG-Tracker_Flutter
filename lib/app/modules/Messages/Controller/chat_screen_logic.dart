@@ -9,6 +9,10 @@ class ChatScreenRules {
   /// Messages per history request.
   static const int pageSize = 20;
 
+  /// First history page on open: after this the screen keeps what it shows
+  /// (cached messages) and offers Retry instead of spinning forever.
+  static const Duration historyTimeout = Duration(seconds: 10);
+
   /// How many older pages a reply-jump may load while looking for the
   /// original message before giving up with "Message not available".
   static const int maxReplyJumpPages = 10;
@@ -52,6 +56,9 @@ class ChatScreenRules {
   ///
   /// Returns the merged list and how many messages were added before the
   /// previously first message (used to keep the scroll position).
+  ///
+  /// The returned list is never [existing] itself, so a caller may clear
+  /// [existing] and refill it from the result.
   static MergeResult merge(
     List<MessageData> existing,
     List<MessageData> incoming,
@@ -108,7 +115,9 @@ class ChatScreenRules {
       added.add(m);
     }
     if (added.isEmpty) {
-      return MergeResult(existing, 0, 0, updated: statusUpdated);
+      // Always a new list: callers do `_messages..clear()..addAll(merged)`,
+      // so returning `existing` itself emptied the chat (BUG-CS-18).
+      return MergeResult(List.of(existing), 0, 0, updated: statusUpdated);
     }
 
     final firstBefore = existing.isEmpty ? null : existing.first;

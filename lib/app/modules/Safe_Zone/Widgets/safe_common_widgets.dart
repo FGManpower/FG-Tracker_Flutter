@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -37,29 +38,13 @@ class SafeAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: SafeColors.bg,
       elevation: 0,
       scrolledUnderElevation: 0,
+      surfaceTintColor: AppBarStyle.surfaceTintColor,
       centerTitle: false,
-      leadingWidth: 56.w,
+      leadingWidth: AppBarStyle.leadingWidth,
 
       leading: Padding(
         padding: EdgeInsets.only(left: 16.w),
-        child: GestureDetector(
-          onTap: () => Get.back(),
-          child: Container(
-            margin: EdgeInsets.symmetric(vertical: 6.h),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: SafeColors.border,
-              ),
-            ),
-            child: Icon(
-              Icons.arrow_back_ios_new,
-              color: Colors.black,
-              size: 16.sp,
-            ),
-          ),
-        ),
+        child: Center(child: AppBackButton(onTap: () => Get.back())),
       ),
 
       title: Column(

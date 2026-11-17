@@ -1,4 +1,5 @@
 import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
@@ -386,12 +387,12 @@ class GroupChatScreen extends GetView<GroupMessageController> {
   Widget _buildSearchAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
+      surfaceTintColor: AppBarStyle.surfaceTintColor,
+      scrolledUnderElevation: AppBarStyle.scrolledUnderElevation,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: () => controller.stopSearch(),
-      ),
+      leadingWidth: AppBarStyle.leadingWidth,
+      // Back here closes search (unchanged), same button as everywhere.
+      leading: AppBarStyle.leading(onTap: () => controller.stopSearch()),
       title: TextField(
         autofocus: true,
         // Keyboard and emoji panel never show together.
@@ -470,18 +471,16 @@ class GroupChatScreen extends GetView<GroupMessageController> {
     return AppBar(
       elevation: 0,
       backgroundColor: const Color(0xFFF5F3FB),
-      surfaceTintColor: const Color(0xFFF5F3FB),
+      surfaceTintColor: AppBarStyle.surfaceTintColor,
+      scrolledUnderElevation: AppBarStyle.scrolledUnderElevation,
       automaticallyImplyLeading: false,
       toolbarHeight: 64.h,
       titleSpacing: 0,
       title: Padding(
-        padding: EdgeInsets.only(left: 12.w, right: 8.w),
+        padding: EdgeInsets.only(left: 16.w, right: 8.w),
         child: Row(
           children: [
-            _roundIconBtn(
-              icon: Icons.arrow_back_rounded,
-              onTap: () => Navigator.pop(context),
-            ),
+            AppBackButton(onTap: () => Navigator.pop(context)),
             SizedBox(width: 8.w),
             Expanded(
               child: GestureDetector(

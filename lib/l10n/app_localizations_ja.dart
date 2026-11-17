@@ -2272,6 +2272,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chat_loadFailedTitle => 'メッセージを読み込めませんでした';
 
   @override
+  String get chat_refreshFailed => '更新できませんでした';
+
+  @override
   String get chat_locationFetchFailed => '現在地を取得できませんでした。もう一度お試しください。';
 
   @override
@@ -3797,6 +3800,17 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get menu_profileImageUpdated => 'プロフィール画像が更新されました';
+
+  @override
+  String get msgInfo_deliveredTo => '配信済み';
+
+  @override
+  String get msgInfo_readBy => '既読';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '残り$count人';
+  }
 
   @override
   String get notif_accept => '応答';

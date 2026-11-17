@@ -7,6 +7,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   awesome_notifications
   emoji_picker_flutter
   file_selector_linux
+  flutter_secure_storage_linux
   flutter_sound
   flutter_timezone
   flutter_webrtc

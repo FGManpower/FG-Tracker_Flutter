@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'dart:async';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'dart:convert';
@@ -551,11 +552,10 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      surfaceTintColor: Colors.white,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back_rounded, color: _accent, size: 22.sp),
-        onPressed: () => Navigator.pop(context),
-      ),
+      surfaceTintColor: AppBarStyle.surfaceTintColor,
+      scrolledUnderElevation: AppBarStyle.scrolledUnderElevation,
+      leadingWidth: AppBarStyle.leadingWidth,
+      leading: AppBarStyle.leading(onTap: () => Navigator.pop(context)),
       titleSpacing: 0,
       title: Row(
         children: [

@@ -106,6 +106,46 @@ File: `test/chat_qa/realtime_socket_qa_test.dart`.
 
 These are in the manual checklist.
 
+### Block in real time + local chat copy (F-1.1.8, run 2026-11-17)
+
+File: `test/chat_qa/block_realtime_test.dart` (same fake Socket.IO server). Pure Dart, no platform channel (the toast channel is mocked), so the result holds for Android and iOS. Result: **14 / 14 pass.**
+
+| ID | What is checked | Result |
+|---|---|---|
+| BLK-01 | `user_blocked {blockerId, blockedUserId}` → "peer blocked me" event | Pass |
+| BLK-02 | `user_unblocked` → unblocked | Pass |
+| BLK-03 | Alias events (`block_status_changed` / `block_status_updated`) with `action` or `isBlocked`, aliased id keys | Pass |
+| BLK-04 | Payload without ids or state, or not a map → ignored | Pass |
+| BLK-05 | Chat-list event (`chat_list_updated`, nested `data` / `chat`) names the chat ids → open chat re-checks at once | Pass |
+| BLK-06 | Send ack `{ok:false, code:"BLOCKED"}` → "peer blocked me" | Pass |
+| BLK-07 | Other rejected sends (`SEND_FAILED`) do not report a block | Pass |
+| CACHE-01 | Save / load keeps text, voice `audioUrl`, `clientMessageId`, order | Pass |
+| CACHE-02 | Only the newest 50; unsent messages (no id) skipped | Pass |
+| CACHE-03 | Saving an empty list never wipes the copy | Pass |
+| CACHE-04 | Clear chat removes the copy | Pass |
+| CACHE-05 | Only the 20 most recent chats kept (prefs size on Android / iOS) | Pass |
+| CACHE-06 | Another account on the same phone never sees the copy | Pass |
+| CACHE-07 | Corrupt stored value → empty, no crash | Pass |
+
+Not automated (manual RS-11a…d): the 4 s check timing, resume / background on a device, banner UI.
+
+### "X left" in archived groups (F-1.2.1, run 2026-11-17)
+
+File: `test/chat_qa/group_member_left_test.dart` (fake Socket.IO server, `/chat`). Result: **3 / 3 pass.**
+
+| ID | What is checked | Result |
+|---|---|---|
+| GML-01 | `member_left`, `member_removed` (`group_id` as string), `group_left` → group id on `groupMemberChanges` | Pass |
+| GML-02 | Other events, payload without group id, non-map payload → ignored | Pass |
+| GML-03 | Still works after `listenGroupExit` / `listenMemberRemoved` call `off(event)` without a handler | Pass |
+
+Not automated (manual RS-12): the actual fetch of the system message from the server and its bubble.
+
+Side effects seen in the same run of the older files (not caused by this change: it only adds a separate stream):
+- **RT-01b** (evidence test) now hears 6 of 9 list events, not 2. The behaviour got better (BUG-RT-01 partly fixed elsewhere), so the evidence expectation needs updating.
+- **RT-18** failed once and passed once: flaky.
+- **T-01, T-03**: same old failures as §4.
+
 ## 3. Coverage (line coverage, from `coverage/lcov.info`)
 
 | Scope | Lines hit / total | % |

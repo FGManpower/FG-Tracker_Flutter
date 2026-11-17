@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -96,10 +97,7 @@ class ChatListScreen extends StatelessWidget {
       automaticallyImplyLeading: false,
       title: Row(
         children: [
-          _circleIcon(
-            Icons.arrow_back,
-            () => Get.back(),
-          ),
+          AppBackButton(onTap: () => Get.back()),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
@@ -141,10 +139,7 @@ class ChatListScreen extends StatelessWidget {
       automaticallyImplyLeading: false,
       title: Row(
         children: [
-          _circleIcon(
-            Icons.arrow_back,
-            () => controller.closeSearch(),
-          ),
+          AppBackButton(onTap: () => controller.closeSearch()),
           SizedBox(width: 12.w),
           Expanded(
             child: TextField(

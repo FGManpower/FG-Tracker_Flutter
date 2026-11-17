@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Model/status_model.dart';
@@ -341,14 +342,7 @@ class StatusTopBar extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 12.w),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: controller.closeViewer,
-            child: Icon(
-              Icons.arrow_back_rounded,
-              color: Colors.white,
-              size: 24.sp,
-            ),
-          ),
+          AppBackButton(onTap: controller.closeViewer),
           SizedBox(width: 10.w),
           Container(
             width: 40.w,

@@ -2,7 +2,7 @@
 
 > **Document Version:** `v2.5.0`  
 > **Target Framework:** Flutter (Dart)  
-> **Scope:** App Bootstrap & Screen Priority Hierarchy, Pre-Navigation Permission Evaluation, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing, "Last seen" format across all modules (§7), Real-time Location Tracking & Socket Synchronization Architecture (§8), Side Menu: Legal / Language / Social Links (§9), Custom Banner + Crop (§5.1.1)
+> **Scope:** App Bootstrap & Screen Priority Hierarchy, Pre-Navigation Permission Evaluation, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing, "Last seen" format across all modules (§7), Real-time Location Tracking & Socket Synchronization Architecture (§8), Side Menu: Legal / Language / Social Links (§9), Custom Banner + Crop + permissions (§5.1.1), One back button & app bar style (§10)
 
 ---
 
@@ -482,6 +482,27 @@ The last slide of the Home carousel is the user's own banner. It is stored **onl
 
 - **Select Banner Photo sheet:** white, top radius 24, handle; header (icon, title, "Shown only on your phone"); **only when a banner is already set** (Replace), the current banner in the banner shape (key `banner_current_preview`) — with no banner there is no preview box; two cards side by side: **Gallery** and **Camera**. Keys `banner_pick_gallery`, `banner_pick_camera`.
 - **Crop:** after a photo is picked (gallery **or** camera), `image_cropper` opens **locked to the banner's aspect ratio** (`LocalBannerService.cropToBanner`). Android: dark-blue toolbar, title "Crop Image" (`imagePicker_cropTitle`), ratio locked. iOS: ratio lock on, ratio picker hidden. Cancelling the crop keeps the current banner.
+- **Camera → crop without Home in between (v2.5.1):** camera / gallery and the cropper are separate native screens (Android: camera app + `UCropActivity`; iOS: picker + TOCropViewController). Between them the app resumes on Home while the photo is resized. Before, Home's resume handler also ran `PermissionGuard.checkAndRequestAllPermissions(autoFetchLocation: true)` at that moment, so Home showed for a while before the crop screen. Now:
+  - `LocalBannerService.pickInProgress` (`ValueNotifier<bool>`) is true from opening the camera / gallery until the cropped photo is saved or cancelled.
+  - `HomeScreen.didChangeAppLifecycleState` skips the permission / location check while it is true and runs it **once** when it turns false (`_onBannerPickChanged`), so the check still happens.
+  - `_pickBanner` shows a dim full-screen spinner (`DialogRoute`, not dismissible, back blocked) for the whole flow and removes exactly that route at the end (`removeRoute`), so the gap shows a loader, not Home.
+  - Same Dart code on Android and iOS. Not unit-testable (native camera / cropper screens): check on both phones: Home ▸ banner ▸ Camera ▸ take photo ▸ ✓ → crop screen opens next (only the spinner in between) ▸ crop ✓ → banner updated. Also: cancel in the camera, cancel in the cropper (spinner goes, old banner kept), and the Gallery path.
+- **Camera / photo permission (v2.5.2):** before, a missing camera permission made the Camera card do nothing (Android declares `CAMERA`, so the camera intent fails with `camera_access_denied`, and the error was swallowed). Now `_pickBanner` asks first (`_sourceAllowed`):
+
+  | Source | Android | iOS |
+  |---|---|---|
+  | Camera | `Permission.camera` (runtime popup) | `Permission.camera` (`NSCameraUsageDescription`, Podfile `PERMISSION_CAMERA=1`) |
+  | Gallery | **No permission**: image_picker opens the system Photo Picker (the user picks the photo). `READ_MEDIA_IMAGES` is deliberately not in the manifest (Google Play photo/video policy) | `Permission.photos` (`NSPhotoLibraryUsageDescription`, `PERMISSION_PHOTOS=1`); "Limited" counts as allowed |
+
+  - Granted → spinner, picker / camera, crop (as above).
+  - Refused, system can ask again (Android first refusal) → dialog "Camera" / "Gallery" with `permission_cameraWhy` / `permission_genericSettingsMessage`, **Not now** / **Allow** (keys `banner_camera_ask_again_dialog`, `banner_gallery_ask_again_dialog`, `banner_permission_allow`); Allow shows the system popup again (after 350 ms, so the dialog is fully closed). If that is refused again, or the phone shows no popup at all (some Android skins such as MIUI block repeat requests and return "denied" at once), the Settings dialog follows; the same Allow dialog is never shown twice in a row. A "request already running" error (another screen asking at the same time) is retried once, then Settings; it is never treated as granted. Never silent. Tests: `test/banner_camera_permission_test.dart` (BCP-01…07).
+  - Access refused inside the picker after our check (`camera_access_denied` / `photo_access_denied`, kept in `LocalBannerService.lastAccessDenied`) → the Settings dialog below.
+  - Blocked (Android "Don't allow" twice / "Don't ask again", iOS after the first refusal, parental controls) → dialog: title "Camera" / "Gallery", the same message, **Cancel** / **Open Settings** (keys `banner_camera_permission_dialog`, `banner_gallery_permission_dialog`, `banner_open_settings`). Back from Settings with access allowed → the camera / gallery opens by itself (one-shot `AppLifecycleListener`).
+  - `pickInProgress` stays true during the system popup, **our dialogs, and the trip to Settings** (cleared when the dialog closes, or on return from Settings). Before, it was cleared right after "Don't allow", Home's resume permission / location check started at once and covered or replaced our message, so nothing seemed to happen after "Don't allow". Flag kept on while in Settings (`_inSettings`), so on return only one thing runs: the camera / gallery if now allowed, else Home's check.
+  - **Dialog look** (both dialogs, `_showPermissionDialog` in `bannerUi.dart`), same style as the app's confirmation dialog (`CommonDialog.ConfirmationDialog`): white card (radius 20, no M3 tint), round light-purple circle with the icon on top (camera / gallery for "ask again", settings gear for "Open Settings"), centred bold title, centred grey message, two pills side by side: grey outlined **cancel** and filled purple `#6B4DFF` **confirm** (same purple as the banner sheets). Back or tap outside = cancel.
+  - Existing strings only (all languages): `permission_camera`, `imagePicker_gallery`, `permission_cameraWhy`, `permission_cameraSettingsMessage`, `permission_genericSettingsMessage`, `permission_openSettings`, `common_cancel`, `common_notNow`, `common_allow`.
+  - Code: `LocalBannerService.ensureCameraPermission` / `ensureGalleryPermission` / `isCameraGranted` / `isGalleryGranted` / `openSettings`, enum `BannerCameraAccess`.
+  - Manual check on both phones (full restart, no hot reload): first tap (popup) → **Don't allow** → a dialog must appear (Android: Not now / Allow; iOS: Cancel / Open Settings), nothing else on top; Android: Allow → popup again → Don't allow → Settings dialog; Settings → enable → back → camera / gallery opens; Settings → leave off → back → nothing opens, Home normal; iOS Photos "Limited" → gallery works; turn Camera off in Settings while the app is open → tap Camera → Settings dialog.
 - **Banner shape:** `_bannerAspect` = card width (page width − 2 × 4.w margin) ÷ card height (160.h), measured with a `LayoutBuilder` on the real slide; default 2.0.
 - **Manage Custom Banner sheet:** white, current banner preview, **Replace Banner** (opens Select Banner Photo) and **Remove Banner** (deletes the file and the pref, shows the upload card again). Keys `banner_replace`, `banner_remove`.
 - Sheet texts are English only (not in the ARB files yet).
@@ -516,6 +537,8 @@ Screen sharing is initiated and controlled over the calling socket connection:
 ### 6.2 Change Log
 | Version | Date | Description |
 |---|---|---|
+| v2.5.2 | 2026-11-17 | §5.1.1 Custom banner asks for camera (Android + iOS) and photos (iOS) before opening; blocked → Settings dialog, auto-continues after Settings. §9.3 "Follow us" uses real brand icons in brand colours. §9.3.1 side menu: divider + more space between Log out and Delete Account. §10 one back button app-wide: shared `AppBackButton` (white circle, purple `arrow_back_rounded`) and app bars that don't change on scroll (`AppBarStyle`); every back keeps its old action. |
+| v2.5.1 | 2026-11-17 | §5.1.1 Custom banner: after taking a photo the crop screen opens next; Home no longer shows in between. Home's resume permission / location check waits until the photo flow ends (`LocalBannerService.pickInProgress`), and a spinner covers the native camera → cropper gap. Files: `local_banner_service.dart`, `bannerUi.dart`, `home_screen.dart`. |
 | v2.5.0 | 2026-11-16 | §9 Side menu: **Legal** replaces Contact Us (6 documents open the fgtracker.fgmanpower.com pages, Contact Us card with phone, email, address, website); Language row matches the menu; Twitter removed and Facebook / Instagram / YouTube links updated. §5.1.1 Custom banner: new Select Banner Photo and Manage sheets (white), crop locked to the banner shape after Gallery or Camera. |
 | v2.4.0 | 2026-11-13 | §8 Tracking Screen & Socket Synchronization Architecture: Live Tracking (radius boundary filtering) & Group Tracking ("Location Hidden" ghost mode); fixed `join-group` on Node.js /location socket; single moving user packet extraction for `group-location-update`; 5-min inactivity threshold for Online vs Last-seen; unit tests added under `test/tracking_unit_test.dart`. |
 | v2.3.1 | 2026-11-12 | §7.7 Private Mode add-on: audit P1–P5, what the string API does to every last-seen place (crash risk in Group Members, false "Offline" / "Just now"), backend request for ISO `lastSeenAt` / `privateModeStartedAt`, interim rule. D2 answered (strings, not ISO). Test cases LS-17–LS-25. **Audit only — no code changed yet.** |
@@ -752,6 +775,7 @@ Same look and size as the other menu items: "Language" + "Change app language", 
 
 ### 9.3 Social links (menu footer)
 - Facebook, Instagram, YouTube (`AppText.facebookUrl` / `instagramUrl` / `youtubeUrl`). **Twitter / X removed** (icon and `twitterUrl`).
+- **Real brand icons (v2.5.2):** "Follow us on" shows the official logos (Font Awesome brands, `font_awesome_flutter` 11, type `FaIconData`) in white on 40×40 rounded tiles in the brand colours, instead of the old generic SVGs tinted purple: Facebook `facebookF` on `#1877F2`; Instagram `instagram` on the Instagram gradient (`#FEDA75` → `#FA7E1E` → `#D62976` → `#962FBF` → `#4F5BD5`); YouTube `youtube` on `#FF0000`. Keys `menu_social_facebook` / `_instagram` / `_youtube`; screen reader label = network name. Tap still opens the URL outside the app (unchanged). Helper `_buildSocialIcon` in `sidemenu.dart`.
 
 | Network | URL |
 |---|---|
@@ -759,9 +783,25 @@ Same look and size as the other menu items: "Language" + "Change app language", 
 | Instagram | https://www.instagram.com/fgtracker/ |
 | YouTube | https://www.youtube.com/channel/UC_nUpY0OdPbJjZRdzFiZGhQ |
 
+### 9.3.1 Log out ↔ Delete Account spacing (v2.5.2)
+- Delete Account (red card) is set apart from Log out to avoid a mis-tap on the destructive action: 14 h gap, a visible divider (`#E2DCF3`, 1 px, key `menu_delete_account_divider`), then 18 h gap. Before: the faint shared divider (`#F0ECFC`) directly above the card.
+- Only spacing / divider changed in `sidemenu.dart`; Log out and Delete Account actions and dialogs are unchanged.
+
 ### 9.4 Changed files (v2.5.0)
 | Area | Files |
 |---|---|
 | Legal | `lib/app/modules/Legal/*` (new), `lib/app/routes/app_routes.dart`, `app_pages.dart`, `sidemenu.dart`, `lib/l10n/*.arb` + generated, `pubspec.yaml` (assets, `flutter_markdown_plus`), `assets/legal/*` (new, unused), `test/legal_screen_test.dart` (new) |
 | Social links | `lib/app/Core/theme/AppText.dart`, `sidemenu.dart` |
 | Custom banner (§5.1.1) | `lib/app/modules/home/Home_Widget/bannerUi.dart`, `lib/app/Data/Services/local_banner_service.dart` |
+
+## 10. One back button & app bar style (v2.5.2, 2026-11-17)
+
+**Rule:** every screen's Back uses the shared `AppBackButton` (`lib/app/global_widget/app_back_button.dart`). Do not draw a new back icon.
+
+- **Look:** white **circle** 40×40, light purple shadow, purple (`#5045B9`) `Icons.arrow_back_rounded` 20 sp; the whole circle is tappable; semantics label = the platform "Back" tooltip. Optional `color` changes only the arrow.
+- **Action:** `onTap` is always the screen's **old** back action (e.g. `Get.back()`, `Navigator.pop`, close search, exit dialog in Walkie, `_backToOtpCharges` on payment failed). No back behaviour changed in this pass. Without `onTap` it calls `Navigator.maybePop` (same as Flutter's implicit back).
+- **App bars:** `AppBarStyle.leading(onTap: …)` + `leadingWidth: AppBarStyle.leadingWidth` (16 px gap). Bars holding it use `scrolledUnderElevation: AppBarStyle.scrolledUnderElevation` (0) and `surfaceTintColor: AppBarStyle.surfaceTintColor` (transparent), so Material 3 no longer tints / lifts the bar while the page scrolls (that made the back button look broken on All Groups). Bars that had a deliberate shadow keep it with the same value while scrolling.
+- **Exceptions:** QR scanner keeps its round "glass" button over the camera (same `arrow_back_rounded` glyph, matches the flash button). Other buttons next to Back (Edit, call, search, flash) keep their own style.
+- **Shared helpers changed once** (callers untouched): `reusableAppbar` and `BackpressIcon` (`common_widget.dart`), `customAppBar` (`widgets/cutom_appbar.dart`), `PackageBackButton`, Safe Zone common widgets, `TrackLAppBar`, safety coming-soon `_buildBackButton`.
+- **Screens:** Groups (All Groups, Group chat + search, Group Info, Members, Media/Links/Docs, QR scan), Chats (list + search, Archive, private chat + search, Forward, New chat, User profile, Document viewer, Video player, image viewer, Notifications), Status viewer, Home Live Status lists, Tracking, Attendance, Call, Contact profile, Intro, Legal, OTP charges, Package pricing, Safe Zone, SOS, Language settings, Registration, all Walkie-talkie screens incl. payment.
+- **Check on Android + iOS:** each screen's Back looks the same and does what it did before; on long lists (All Groups, Members, Chats) scroll up and down: the bar and the Back circle don't change.

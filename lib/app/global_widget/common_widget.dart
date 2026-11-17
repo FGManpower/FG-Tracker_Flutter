@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
@@ -405,13 +406,10 @@ AppBar reusableAppbar(
         ? ToggleThemeData.darkThemeBackground
         : color,
     scrolledUnderElevation: 0,
-    leading: InkWell(
+    surfaceTintColor: AppBarStyle.surfaceTintColor,
+    leadingWidth: AppBarStyle.leadingWidth,
+    leading: AppBarStyle.leading(
       onTap: ontap ?? () => Navigator.pop(ContextUtility.navigator!.context),
-      child: Icon(
-        Icons.arrow_back_ios_new,
-        color: Colors.white,
-        size: 20.sp,
-      ),
     ),
     centerTitle: true,
     title: Text(
@@ -591,24 +589,11 @@ void FullImageView(BuildContext context, {String? title, img}) {
 
 Widget BackpressIcon(BuildContext context,
     {Color color = ToggleThemeData.darkPurple}) {
-  return GestureDetector(
+  // [color] kept for callers; the shared back button has one look app-wide.
+  return AppBackButton(
     onTap: () async {
       Navigator.pop(context);
     },
-    child: Container(
-      decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: color, width: 2.w)),
-      height: 40.h,
-      width: 40.w,
-      child: Center(
-        child: Icon(
-          Icons.arrow_back_outlined,
-          color: color,
-          size: 25.sp,
-        ),
-      ),
-    ),
   );
 }
 

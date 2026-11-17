@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
@@ -918,9 +919,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       ),
       child: Row(
         children: [
-          headerButton(
-            icon: Icons.arrow_back_rounded,
-            iconColor: textDark,
+          AppBackButton(
             onTap: () {
               showExitDialog(
                 onTap: () => _handleExitNavigation(),

@@ -2346,6 +2346,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get chat_loadFailedTitle => 'मैसेज लोड नहीं हो सके';
 
   @override
+  String get chat_refreshFailed => 'रीफ़्रेश नहीं हो सका';
+
+  @override
   String get chat_locationFetchFailed =>
       'आपकी लोकेशन नहीं मिल सकी। कृपया फिर से कोशिश करें।';
 
@@ -3944,6 +3947,17 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get menu_profileImageUpdated =>
       'प्रोफ़ाइल फ़ोटो सफलतापूर्वक अपडेट की गई';
+
+  @override
+  String get msgInfo_deliveredTo => 'किसे मिला';
+
+  @override
+  String get msgInfo_readBy => 'किसने पढ़ा';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count बाकी';
+  }
 
   @override
   String get notif_accept => 'स्वीकारें';

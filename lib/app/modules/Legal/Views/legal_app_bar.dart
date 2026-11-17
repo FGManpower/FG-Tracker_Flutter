@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:flutter/material.dart';
@@ -16,10 +17,10 @@ AppBar legalAppBar(BuildContext context, String title) {
     scrolledUnderElevation: 0,
     elevation: 0,
     systemOverlayStyle: SystemUiOverlayStyle.light,
-    leading: IconButton(
-      tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-      icon: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
-      onPressed: () => Navigator.of(context).maybePop(),
+    surfaceTintColor: AppBarStyle.surfaceTintColor,
+    leadingWidth: AppBarStyle.leadingWidth,
+    leading: AppBarStyle.leading(
+      onTap: () => Navigator.of(context).maybePop(),
     ),
     centerTitle: true,
     title: Text(

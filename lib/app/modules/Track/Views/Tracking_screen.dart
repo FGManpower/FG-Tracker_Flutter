@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackingController.dart';
 import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:flutter/foundation.dart';
@@ -584,8 +585,7 @@ class TrackingScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _iconButton(
-          icon: Icons.arrow_back_rounded,
+        AppBackButton(
           onTap: () {
             if (_sheetController.isAttached && _sheetExtent.value > 0.45) {
               _animateSheetTo(0.38);

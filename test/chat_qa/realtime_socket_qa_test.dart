@@ -8,6 +8,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/storage_services.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Message_Services.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/message_receipts.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,13 +89,14 @@ void main() {
 
         expect(heard.toSet(), {...listUpdateEvents, ...fullListEvents});
       },
-      skip: 'BUG-RT-01: only chat_list_updated / conversation_updated are '
-          'heard; the other 7 list events are dropped on /privateChat '
-          '(listeners attach before initPrivateChatListSocket creates the socket)',
+      skip: 'BUG-RT-01 (Run 2: 6 of 9 heard): private_chat_list_updated, '
+          'common_chat_list_updated and unified_chat_list_updated are still '
+          'dropped on /privateChat (listeners attach before '
+          'initPrivateChatListSocket creates the socket)',
     );
 
-    test('RT-01b evidence: with the real app order only 2 of 9 events arrive',
-        () async {
+    test('RT-01b evidence: with the real app order 6 of 9 events arrive '
+        '(Run 1: 2 of 9)', () async {
       final heard = <String>[];
       svc.listenPrivateChatListUpdated(
           callback: (d) => heard.add((d as Map)['ev'] as String));
@@ -106,7 +108,17 @@ void main() {
       }
       await settle();
       // Records the current (buggy) behaviour so a fix shows up as a change.
-      expect(heard.toSet(), {'chat_list_updated', 'conversation_updated'});
+      // Run 2 (2026-11-17, F-1.2.5): 6 of 9. Still lost:
+      // private_chat_list_updated, common_chat_list_updated,
+      // unified_chat_list_updated.
+      expect(heard.toSet(), {
+        'chat_list_updated',
+        'conversation_updated',
+        'group_chat_list_updated',
+        'chat_list',
+        'common_chat_list',
+        'unified_chat_list',
+      });
     });
 
     test('RT-02 listeners registered AFTER the socket exists hear all 9 events',
@@ -230,24 +242,144 @@ void main() {
     });
   });
 
-  group('Group seen', () {
+  group('Group seen / delivered (app-level receipts)', () {
     test(
-      'RT-09 listenSeenUpdate keeps working after listenGroupMessageSeen',
+      'RT-09 every subscriber gets a group seen update once '
+      '(BUG-RT-03 fixed: no listener replaces another)',
       () async {
         await chatSocketUp();
-        final first = <dynamic>[];
-        final second = <dynamic>[];
-        svc.listenSeenUpdate(groupId: 7, callback: first.add);
-        svc.listenGroupMessageSeen(callback: second.add);
-        server.emit('/chat', 'messages_seen_update',
-            {'groupId': 7, 'messageIds': [1], 'seenBy': peer});
+        final first = <ReceiptUpdate>[];
+        final second = <ReceiptUpdate>[];
+        final a = svc.groupReceipts.listen(first.add);
+        final b = svc.groupReceipts.listen(second.add);
+        server.emit('/chat', ReceiptEvents.groupSeen, {
+          'groupId': 7,
+          'userId': peer,
+          'messageIds': [1],
+          'readAt': '2026-11-17T10:00:00Z',
+        });
         await settle();
-        expect(first, hasLength(1), reason: 'first handler was removed');
+        expect(first, hasLength(1));
         expect(second, hasLength(1));
+        expect(first.single.isRead, isTrue);
+        expect(first.single.userId, peer);
+        expect(first.single.messageIds, {'1'});
+        await a.cancel();
+        await b.cancel();
       },
-      skip: 'BUG-RT-03: listenGroupMessageSeen calls '
-          'off("messages_seen_update") and drops the listenSeenUpdate handler',
     );
+
+    test('RT-09b the same seen update under several event names is applied '
+        'once', () async {
+      await chatSocketUp();
+      final got = <ReceiptUpdate>[];
+      final sub = svc.groupReceipts.listen(got.add);
+      final payload = {'groupId': 7, 'userId': peer, 'messageIds': [5]};
+      for (final ev in ReceiptEvents.allGroupSeen) {
+        server.emit('/chat', ev, payload);
+      }
+      await settle();
+      expect(got, hasLength(1));
+      await sub.cancel();
+    });
+
+    test('RT-09c delivered update reaches subscribers', () async {
+      await chatSocketUp();
+      final got = <ReceiptUpdate>[];
+      final sub = svc.groupReceipts.listen(got.add);
+      server.emit('/chat', ReceiptEvents.groupDelivered, {
+        'groupId': 7,
+        'userId': peer,
+        'messageIds': [9],
+        'deliveredAt': '2026-11-17T10:00:00Z',
+      });
+      await settle();
+      expect(got.single.isRead, isFalse);
+      expect(got.single.at, '2026-11-17T10:00:00Z');
+      await sub.cancel();
+    });
+
+    test('RT-09d mark_seen carries messageIds + readAt (old fields kept)',
+        () async {
+      await chatSocketUp();
+      svc.markSeen(me, 7, messageIds: ['11', '12']);
+      await settle();
+      final sent = server.receivedNamed('mark_seen', nsp: '/chat').last.data
+          as Map;
+      expect(sent['groupId'], 7);
+      expect(sent['group_id'], 7);
+      expect(sent['userId'], int.parse(me));
+      expect(sent['messageIds'], [11, 12]);
+      expect(sent['readAt'], isNotNull);
+    });
+
+    test('RT-09e a group message from someone else is reported delivered '
+        'once, even if it arrives under several event names', () async {
+      await chatSocketUp();
+      final msg = {'id': 77, 'groupId': 7, 'senderId': peer, 'content': 'hi'};
+      server.emit('/chat', 'receive_group_message', msg);
+      server.emit('/chat', 'receive_message', msg);
+      await settle();
+      final sent = server.receivedNamed('mark_delivered', nsp: '/chat');
+      expect(sent, hasLength(1));
+      final data = sent.single.data as Map;
+      expect(data['groupId'], 7);
+      expect(data['messageIds'], [77]);
+      expect(data['deliveredAt'], isNotNull);
+    });
+
+    test('RT-09f my own group message is not reported delivered', () async {
+      await chatSocketUp();
+      server.emit('/chat', 'receive_group_message',
+          {'id': 78, 'groupId': 7, 'senderId': me});
+      await settle();
+      expect(server.receivedNamed('mark_delivered', nsp: '/chat'), isEmpty);
+    });
+  });
+
+  group('Listener leaks (group screen)', () {
+    test('RT-12 open/close the group 10 times: 1 message is handled once',
+        () async {
+      await chatSocketUp();
+      var handled = 0;
+      for (var i = 0; i < 10; i++) {
+        final owner = Object();
+        svc.claimGroupChatEvents(owner);
+        svc.receiveGroupMessage(callback: (_) => handled++);
+        if (i < 9) svc.releaseGroupChatEvents(owner);
+      }
+      // The server sends one message under several names / rooms.
+      final msg = {'id': 501, 'groupId': 7, 'senderId': peer, 'content': 'x'};
+      server.emit('/chat', 'receive_group_message', msg);
+      server.emit('/chat', 'receive_message', msg);
+      server.emit('/chat', 'receive_message', msg);
+      await settle();
+      expect(handled, 1);
+    });
+
+    test('RT-13 closing the group screen keeps the app-level delivered '
+        'listener', () async {
+      await chatSocketUp();
+      final owner = Object();
+      svc.claimGroupChatEvents(owner);
+      svc.receiveGroupMessage(callback: (_) {});
+      svc.releaseGroupChatEvents(owner);
+      server.emit('/chat', 'receive_group_message',
+          {'id': 601, 'groupId': 7, 'senderId': peer});
+      await settle();
+      expect(server.receivedNamed('mark_delivered', nsp: '/chat'), hasLength(1));
+    });
+
+    test('RT-14 a repeated group typing event is handled once', () async {
+      await chatSocketUp();
+      var typing = 0;
+      svc.listenGroupTyping(onTyping: (_) => typing++, onStopTyping: (_) {});
+      for (var i = 0; i < 5; i++) {
+        server.emit('/chat', 'group_typing', {'groupId': 7, 'userId': peer});
+      }
+      await settle();
+      expect(typing, 1);
+    });
   });
 
   group('Private chat screen', () {

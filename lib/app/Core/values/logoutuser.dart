@@ -14,6 +14,7 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/status_socket_service.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
+import 'package:fgtracker/app/Data/Services/chat_message_cache.dart';
 import 'package:fgtracker/app/Model/group_count_detail.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -120,6 +121,7 @@ class LogoutUser {
     } catch (e) {
       log('[LogoutUser] Error clearing storage: $e');
     }
+    await ChatMessageCache.clearAll(); // chat screen cache: Hive boxes + AES key (never throws)
 
     // 2. Reset Http authorization headers
     try {

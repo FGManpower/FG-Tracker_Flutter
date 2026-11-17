@@ -2361,6 +2361,9 @@ class AppLocalizationsKn extends AppLocalizations {
   String get chat_loadFailedTitle => 'ಸಂದೇಶಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ';
 
   @override
+  String get chat_refreshFailed => 'ರಿಫ್ರೆಶ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ';
+
+  @override
   String get chat_locationFetchFailed =>
       'ನಿಮ್ಮ ಲೊಕೇಶನ್ ಪಡೆಯಲಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
@@ -3961,6 +3964,17 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get menu_profileImageUpdated => 'ಪ್ರೊಫೈಲ್ ಚಿತ್ರ ಅಪ್‌ಡೇಟ್ ಆಗಿದೆ';
+
+  @override
+  String get msgInfo_deliveredTo => 'ತಲುಪಿದವರು';
+
+  @override
+  String get msgInfo_readBy => 'ಓದಿದವರು';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count ಬಾಕಿ';
+  }
 
   @override
   String get notif_accept => 'ಸ್ವೀಕರಿಸಿ';

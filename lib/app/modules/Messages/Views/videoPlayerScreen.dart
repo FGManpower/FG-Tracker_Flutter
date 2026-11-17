@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/modules/Messages/Controller/VideoController.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -75,11 +76,7 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                           padding: EdgeInsets.symmetric(horizontal: 18.w),
                           child: Row(
                             children: [
-                              _buildTopButton(
-                                icon: Icons.arrow_back_ios_new_rounded,
-                                onTap: Get.back,
-                                size: 18,
-                              ),
+                              AppBackButton(onTap: Get.back),
                               const Spacer(),
                               _buildTopButton(
                                 icon: Icons.share_outlined,

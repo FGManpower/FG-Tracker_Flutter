@@ -44,7 +44,17 @@ void main() {
       final r = ChatScreenRules.merge([], [m(1), m(1), m(2)]);
       expect(ids(r.messages), [1, 2]);
       expect(r.added, 2);
-    });
+    },
+        // Passed in Run 1 (2026-11-16). Regression from commit 271d63a3.
+        skip: 'BUG-CS-19: merge() fills `known` but never checks it, so a '
+            'message repeated inside the same page is added twice '
+            '(chat_screen_logic.dart:113-115)');
+
+    test('a duplicate inside a page next to messages already on screen '
+        'shows once', () {
+      final r = ChatScreenRules.merge([m(1)], [m(2), m(2), m(3)]);
+      expect(ids(r.messages), [1, 2, 3]);
+    }, skip: 'BUG-CS-19: same root cause (chat_screen_logic.dart:113-115)');
 
     test('first load into an empty chat reports nothing prepended', () {
       final r = ChatScreenRules.merge([], [m(3), m(1), m(2)]);
@@ -86,9 +96,42 @@ void main() {
       final fresh = m(4, seenCount: 1, delivered: true);
       final r = ChatScreenRules.merge([loaded], [fresh]);
       expect(int.tryParse('${r.messages.single.seenCount}'), 1);
+      expect(r.updated, isTrue);
+    }); // BUG-CS-01 fixed in code (Run 2): merge() upgrades ticks / seen.
+
+    test('a re-read page upgrades delivered, delete and first edit', () {
+      final a = m(1, content: 'old');
+      final b = m(2);
+      final c = m(3);
+      final freshA = m(1, content: 'new')..isEdited = true;
+      final freshB = m(2, delivered: true);
+      final freshC = m(3)..isDeleted = true;
+      final r = ChatScreenRules.merge([a, b, c], [freshA, freshB, freshC]);
+      expect(r.messages[0].content, 'new');
+      expect(r.messages[0].isEdited, isTrue);
+      expect(r.messages[1].isDelivered, isTrue);
+      expect(r.messages[2].isDeleted, isTrue);
+    });
+
+    test('a SECOND edit made while offline is applied on the re-read', () {
+      final loaded = m(1, content: 'v2')..isEdited = true;
+      final fresh = m(1, content: 'v3')..isEdited = true;
+      final r = ChatScreenRules.merge([loaded], [fresh]);
+      expect(r.messages.single.content, 'v3');
     },
-        skip: 'BUG-CS-01: merge() always keeps the loaded copy, so ticks missed '
-            'while offline stay grey after the reconnect re-read');
+        skip: 'BUG-CS-22: merge() copies the text only when the loaded copy is '
+            'not edited yet (chat_screen_logic.dart:107), so a later edit '
+            'missed while offline keeps the old text until reopen');
+
+    test('a message whose text is literally "This message was deleted" is '
+        'not turned into a deleted message by a re-read', () {
+      final loaded = m(1, content: 'This message was deleted');
+      final fresh = m(1, content: 'This message was deleted');
+      final r = ChatScreenRules.merge([loaded], [fresh]);
+      expect(r.messages.single.isDeleted, isNot(true));
+    },
+        skip: 'BUG-CS-21: merge() treats the English placeholder text as a '
+            'delete flag (chat_screen_logic.dart:101-102, commit 0ccd9c47)');
 
     test('temp bubble and its server copy (same clientMessageId) show once', () {
       final temp = m(null, clientId: 'c_1', at: '2026-01-01T00:10:00Z');
@@ -227,7 +270,12 @@ void main() {
       expect(o, contains(MessageMenuOption.info));
       expect(menu('Attendance', mine: false)
           .contains(MessageMenuOption.deleteForMe), isFalse);
-    });
+    },
+        // Passed in Run 1. Commit e761f45a (2026-11-16) removed the attendance
+        // rule from menuOptions; guide §5.1 still says "not attendance".
+        skip: 'BUG-CS-20 (needs decision): attendance cards show Delete for '
+            'me / Delete for everyone again (chat_screen_logic.dart:210-225) '
+            'while guide §5.1 says no delete');
 
     test('Pin is offered for every type (label decides Pin/Unpin)', () {
       for (final t in ['text', 'image', 'attendance', 'location']) {
