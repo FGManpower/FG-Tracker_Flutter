@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/modules/call/Views/call_contacts_tab.dart';
 import 'package:fgtracker/app/modules/call/Views/call_groups_tab.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
@@ -139,29 +140,7 @@ class _CallScreenState extends State<CallScreen>
       padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 4.h),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: _handleBack,
-            child: Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 16.sp,
-                color: const Color(0xFF4818F0),
-              ),
-            ),
-          ),
+          AppBackButton(onTap: _handleBack),
           SizedBox(width: 14.w),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

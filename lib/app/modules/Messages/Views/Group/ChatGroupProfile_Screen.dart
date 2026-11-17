@@ -1,4 +1,5 @@
 import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
 import 'dart:developer';
 
@@ -162,22 +163,19 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // This screen has no text field of its own; its sheets (Add Members,
+      // edit group) handle the keyboard themselves. Without this, the whole
+      // Group Info page re-laid out on every keyboard frame behind the sheet.
+      resizeToAvoidBottomInset: false,
       backgroundColor: _bg,
       appBar: AppBar(
         backgroundColor: _bg,
         elevation: 0,
-        scrolledUnderElevation: 0,
+        scrolledUnderElevation: AppBarStyle.scrolledUnderElevation,
+        surfaceTintColor: AppBarStyle.surfaceTintColor,
         toolbarHeight: 64.h,
-        leadingWidth: 64.w,
-        leading: Padding(
-          padding: EdgeInsets.only(left: 16.w),
-          child: Center(
-            child: _roundBtn(
-              icon: Icons.arrow_back_rounded,
-              onTap: () => Get.back(),
-            ),
-          ),
-        ),
+        leadingWidth: AppBarStyle.leadingWidth,
+        leading: AppBarStyle.leading(onTap: () => Get.back()),
         actions: [
           if (chatController.isCreator.value)
             Padding(
@@ -243,8 +241,8 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
-  /// White rounded square (back / edit). Fixed 44×44 so the edit button is
-  /// the same size as back, and the whole square is tappable.
+  /// White rounded square (edit). Fixed 44×44 and the whole square is
+  /// tappable.
   Widget _roundBtn({
     Key? key,
     required IconData icon,
@@ -1421,6 +1419,31 @@ class _CandidateMember {
   }
 }
 
+/// Lifts a bottom sheet above the keyboard without rebuilding it: only this
+/// widget depends on the keyboard inset; [child] is the same instance on
+/// every keyboard frame, so it is laid out again, not rebuilt. Height is
+/// [maxHeight], shrunk when the keyboard leaves less room (the list inside
+/// is `Expanded`, so it gets shorter and stays scrollable above the keys).
+class _KeyboardAwareSheet extends StatelessWidget {
+  const _KeyboardAwareSheet({required this.maxHeight, required this.child});
+
+  final double maxHeight;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final inset = MediaQuery.viewInsetsOf(context).bottom;
+    final room = MediaQuery.sizeOf(context).height -
+        MediaQuery.paddingOf(context).top -
+        inset;
+    final height = room < maxHeight ? room : maxHeight;
+    return Padding(
+      padding: EdgeInsets.only(bottom: inset),
+      child: SizedBox(height: height < 0 ? 0 : height, child: child),
+    );
+  }
+}
+
 class _AddGroupMemberSheet extends StatefulWidget {
   final String groupId;
   final String groupName;
@@ -1629,10 +1652,20 @@ class _AddGroupMemberSheetState extends State<_AddGroupMemberSheet> {
   @override
   Widget build(BuildContext context) {
     const Color purple = Color(0xFF5045B9);
-    final double sheetHeight = MediaQuery.of(context).size.height * 0.75;
+    // sizeOf, not of(): of() also listens to the keyboard inset, which
+    // changes every frame while the keyboard opens / closes and rebuilt the
+    // whole sheet each frame (search typing lagged). The keyboard is
+    // handled by _KeyboardAwareSheet, which only re-lays out this child.
+    final double sheetHeight = MediaQuery.sizeOf(context).height * 0.75;
 
+    return _KeyboardAwareSheet(
+      maxHeight: sheetHeight,
+      child: _buildSheetBody(context, purple),
+    );
+  }
+
+  Widget _buildSheetBody(BuildContext context, Color purple) {
     return Container(
-      height: sheetHeight,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),

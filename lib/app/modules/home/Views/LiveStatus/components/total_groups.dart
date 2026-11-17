@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/colorPool.dart';
 import 'package:fgtracker/app/Model/GroupChatListModel.dart';
@@ -24,35 +25,10 @@ class totalGroup extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leadingWidth: 60.w,
-        leading: Padding(
-          padding: EdgeInsets.only(left: 16.w),
-          child: InkWell(
-            onTap: () => Get.back(),
-            borderRadius: BorderRadius.circular(12.r),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14.r),
-                border: Border.all(
-                  color: Colors.grey.withOpacity(0.12),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.arrow_back_rounded,
-                size: 20.sp,
-                color: Colors.black87,
-              ),
-            ),
-          ),
-        ),
+        scrolledUnderElevation: AppBarStyle.scrolledUnderElevation,
+        surfaceTintColor: AppBarStyle.surfaceTintColor,
+        leadingWidth: AppBarStyle.leadingWidth,
+        leading: AppBarStyle.leading(onTap: () => Get.back()),
         title: Obx(
           () => Column(
             crossAxisAlignment: CrossAxisAlignment.start,

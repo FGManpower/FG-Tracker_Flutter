@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/modules/Safe_Zone/views/safe_route_view.dart';
 import 'package:fgtracker/app/modules/Safe_Zone/views/safe_zone_view.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
@@ -117,25 +118,10 @@ class SafetyDashboardView extends StatelessWidget {
       backgroundColor: const Color(0xFFF9F9FB),
       elevation: 0,
       scrolledUnderElevation: 0,
+      surfaceTintColor: AppBarStyle.surfaceTintColor,
       leadingWidth: 70.w,
       leading: Center(
-        child: InkWell(
-          onTap: () => Get.back(),
-          child: Container(
-            width: 40.w,
-            height: 40.w,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-              boxShadow: _cardShadow,
-            ),
-            child: Icon(
-              Icons.arrow_back_ios_new,
-              color: _primaryColor,
-              size: 18.sp,
-            ),
-          ),
-        ),
+        child: AppBackButton(onTap: () => Get.back()),
       ),
       title: Transform.translate(
         offset: Offset(-32.w, 0),

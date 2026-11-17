@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/util/profile_navigation.dart';
@@ -196,20 +197,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                     children: [
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: GestureDetector(
-                          onTap: () => Get.back(),
-                          child: Container(
-                            width: 36.w,
-                            height: 36.w,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10.r),
-                              boxShadow: _softShadow,
-                            ),
-                            child: Icon(Icons.arrow_back_ios_new_rounded,
-                                size: 15.sp, color: _purple),
-                          ),
-                        ),
+                        child: AppBackButton(onTap: () => Get.back()),
                       ),
                       Obx(() => _buildHeader(controller.detail.value)),
                     ],

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
@@ -1038,29 +1039,7 @@ class _NewChatScreenState extends State<NewChatScreen>
       automaticallyImplyLeading: false,
       title: Row(
         children: [
-          GestureDetector(
-              onTap: () => Get.back(),
-              child: Container(
-                width: 40.w,
-                height: 42.w,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.arrow_back,
-                    size: 20.sp,
-                  ),
-                ),
-              )),
+          AppBackButton(onTap: () => Get.back()),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(

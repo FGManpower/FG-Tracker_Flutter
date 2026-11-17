@@ -3994,6 +3994,17 @@ class AppLocalizationsOr extends AppLocalizations {
       'ପ୍ରୋଫାଇଲ୍ ପ୍ରତିଛବି ସଫଳତାର ସହିତ ଅଦ୍ୟତନ ହେଲା |';
 
   @override
+  String get msgInfo_deliveredTo => 'କାହାକୁ ମିଳିଛି';
+
+  @override
+  String get msgInfo_readBy => 'କିଏ ପଢ଼ିଛନ୍ତି';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count ବାକି';
+  }
+
+  @override
   String get notif_accept => 'ଗ୍ରହଣ କରନ୍ତୁ';
 
   @override

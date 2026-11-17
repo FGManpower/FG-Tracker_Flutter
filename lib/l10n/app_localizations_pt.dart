@@ -3987,6 +3987,17 @@ class AppLocalizationsPt extends AppLocalizations {
       'Foto de perfil atualizada com sucesso';
 
   @override
+  String get msgInfo_deliveredTo => 'Entregue a';
+
+  @override
+  String get msgInfo_readBy => 'Lida por';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count restante(s)';
+  }
+
+  @override
   String get notif_accept => 'Aceitar';
 
   @override

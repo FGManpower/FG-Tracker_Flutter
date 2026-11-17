@@ -621,15 +621,286 @@ class _BannerSliderState extends State<BannerSlider> {
 
   /// Picks a photo, then opens the cropper locked to the banner's shape so
   /// the saved image fills the banner without being cut unexpectedly.
+  ///
+  /// Camera / gallery and the cropper are separate native screens; between
+  /// them the app is back on Home for a moment (photo resize). A loader
+  /// covers that gap so Home doesn't flash before the crop screen.
   Future<void> _pickBanner(ImageSource source) async {
-    final file = await LocalBannerService.pickAndSaveBanner(
-      source,
-      cropAspectRatio: _bannerAspect,
-    );
-    if (file != null && mounted) {
-      setState(() => _localBannerFile = file);
+    // Camera: permission on Android (CAMERA is in the manifest) and iOS.
+    // Gallery: Photos permission on iOS; Android's system Photo Picker
+    // needs none (see LocalBannerService.ensureGalleryPermission).
+    if (!await _sourceAllowed(source)) {
+      _startAutoPlay();
+      return;
+    }
+    final loader = _showPhotoLoader();
+    try {
+      final file = await LocalBannerService.pickAndSaveBanner(
+        source,
+        cropAspectRatio: _bannerAspect,
+      );
+      if (file != null && mounted) {
+        setState(() => _localBannerFile = file);
+      }
+    } finally {
+      _hidePhotoLoader(loader);
+    }
+    // The system refused the camera / photos inside the picker (e.g. turned
+    // off in Settings after our check): tell the user instead of nothing.
+    final refused = LocalBannerService.lastAccessDenied;
+    if (refused != null) {
+      LocalBannerService.lastAccessDenied = null;
+      try {
+        if (mounted) await _showSettingsDialog(refused, _accessMessage(refused));
+      } finally {
+        if (!_inSettings) LocalBannerService.pickInProgress.value = false;
+      }
     }
     _startAutoPlay();
+  }
+
+  String _accessMessage(ImageSource source) => source == ImageSource.camera
+      ? context.l10n.permission_cameraSettingsMessage
+      : context.l10n.permission_genericSettingsMessage;
+
+  /// Asks for camera / photos. Granted → true. After "Don't allow" there is
+  /// always a dialog (never silence):
+  /// - can still ask (Android first refusal) → "Not now" / "Allow", and
+  ///   Allow shows the system popup again;
+  /// - blocked (Android "don't ask again" / second refusal, iOS after one
+  ///   refusal, parental controls) → "Cancel" / "Open Settings"; coming back
+  ///   with access allowed opens the camera / gallery by itself.
+  Future<bool> _sourceAllowed(ImageSource source) async {
+    final isCamera = source == ImageSource.camera;
+    // The system popup and our dialogs pause / resume the app: Home's resume
+    // permission check stays off until they are done (else it covered them).
+    LocalBannerService.pickInProgress.value = true;
+    var granted = false;
+    var retry = false; // true after the user tapped "Allow" in our dialog
+    try {
+      while (true) {
+        final access = isCamera
+            ? await LocalBannerService.ensureCameraPermission(retry: retry)
+            : await LocalBannerService.ensureGalleryPermission(retry: retry);
+        if (access == BannerCameraAccess.granted) {
+          granted = true;
+          return true; // flag stays on; pickAndSaveBanner clears it
+        }
+        if (!mounted) return false;
+        if (access == BannerCameraAccess.blocked) {
+          await _showSettingsDialog(source, _accessMessage(source));
+          return false;
+        }
+        // Denied but the system can ask again. "Allow" → system popup once
+        // more; refused again (or no popup shown) → Settings dialog.
+        if (!await _showAskAgainDialog(source)) return false;
+        retry = true;
+      }
+    } finally {
+      if (!granted && !_inSettings) {
+        LocalBannerService.pickInProgress.value = false;
+      }
+    }
+  }
+
+  /// "Camera is needed" with Not now / Allow. True = ask the system again.
+  Future<bool> _showAskAgainDialog(ImageSource source) async {
+    final isCamera = source == ImageSource.camera;
+    final again = await _showPermissionDialog(
+      key: ValueKey(isCamera
+          ? 'banner_camera_ask_again_dialog'
+          : 'banner_gallery_ask_again_dialog'),
+      icon: isCamera ? Icons.camera_alt_rounded : Icons.photo_library_rounded,
+      title: isCamera
+          ? context.l10n.permission_camera
+          : context.l10n.imagePicker_gallery,
+      message: isCamera
+          ? context.l10n.permission_cameraWhy
+          : context.l10n.permission_genericSettingsMessage,
+      cancel: context.l10n.common_notNow,
+      confirm: context.l10n.common_allow,
+      confirmKey: const ValueKey('banner_permission_allow'),
+    );
+    return again && mounted;
+  }
+
+  /// Same look as the app's confirmation dialog (CommonDialog
+  /// .ConfirmationDialog): white card, round icon on top, centred title and
+  /// text, grey outlined "cancel" pill and filled purple "confirm" pill.
+  /// Returns true when confirm is tapped. Back / outside tap = cancel.
+  Future<bool> _showPermissionDialog({
+    required Key key,
+    required IconData icon,
+    required String title,
+    required String message,
+    required String cancel,
+    required String confirm,
+    required Key confirmKey,
+  }) async {
+    const purple = Color(0xFF6B4DFF);
+    final result = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (ctx) => Dialog(
+        key: key,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        insetPadding: EdgeInsets.symmetric(horizontal: 32.w),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 20.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64.w,
+                height: 64.w,
+                decoration: BoxDecoration(
+                  color: purple.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: purple, size: 32.sp),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13.5.sp,
+                  height: 1.4,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+              SizedBox(height: 24.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.grey.shade700,
+                        side: BorderSide(color: Colors.grey.shade300, width: 1.5),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        shape: const StadiumBorder(),
+                      ),
+                      child: Text(
+                        cancel,
+                        style: TextStyle(
+                            fontSize: 14.sp, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: ElevatedButton(
+                      key: confirmKey,
+                      onPressed: () => Navigator.pop(ctx, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: purple,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        shape: const StadiumBorder(),
+                      ),
+                      child: Text(
+                        confirm,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 14.sp, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    return result == true;
+  }
+
+  Future<void> _showSettingsDialog(ImageSource source, String message) async {
+    final isCamera = source == ImageSource.camera;
+    final openSettings = await _showPermissionDialog(
+      key: ValueKey(isCamera
+          ? 'banner_camera_permission_dialog'
+          : 'banner_gallery_permission_dialog'),
+      icon: Icons.settings_rounded,
+      title: isCamera
+          ? context.l10n.permission_camera
+          : context.l10n.imagePicker_gallery,
+      message: message,
+      cancel: context.l10n.common_cancel,
+      confirm: context.l10n.permission_openSettings,
+      confirmKey: const ValueKey('banner_open_settings'),
+    );
+    if (!openSettings || !mounted) return;
+
+    // Back from Settings: if access is now allowed, continue. The flag
+    // stays on until then, so Home's resume check doesn't run alongside.
+    _inSettings = true;
+    LocalBannerService.pickInProgress.value = true;
+    late final AppLifecycleListener listener;
+    listener = AppLifecycleListener(onResume: () async {
+      listener.dispose();
+      _inSettings = false;
+      final ok = mounted &&
+          (isCamera
+              ? await LocalBannerService.isCameraGranted()
+              : await LocalBannerService.isGalleryGranted());
+      if (ok && mounted) {
+        _stopAutoPlay();
+        _pickBanner(source); // sets the flag again right away
+      } else {
+        LocalBannerService.pickInProgress.value = false; // runs Home's check
+      }
+    });
+    if (!await LocalBannerService.openSettings()) {
+      // Settings could not open: undo, nothing will resume.
+      listener.dispose();
+      _inSettings = false;
+      LocalBannerService.pickInProgress.value = false;
+    }
+  }
+
+  /// True while the user is in app Settings from our dialog.
+  bool _inSettings = false;
+
+  Route<void>? _showPhotoLoader() {
+    if (!mounted) return null;
+    final route = DialogRoute<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black54,
+      builder: (_) => const PopScope(
+        canPop: false,
+        child: Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      ),
+    );
+    Navigator.of(context, rootNavigator: true).push(route);
+    return route;
+  }
+
+  /// Removes exactly this loader, even if another route opened on top.
+  void _hidePhotoLoader(Route<void>? route) {
+    if (route == null || !route.isActive) return;
+    route.navigator?.removeRoute(route);
   }
 
   /// Sheet to select Camera or Gallery source

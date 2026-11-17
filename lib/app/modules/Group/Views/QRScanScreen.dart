@@ -28,7 +28,7 @@ class QRScanScreen extends StatelessWidget {
           Positioned(
             top: 40,
             left: 20,
-            child: glassButton(Icons.arrow_back_ios_new, () => Get.back()),
+            child: glassButton(Icons.arrow_back_rounded, () => Get.back()),
           ),
           Positioned(
             top: 40,

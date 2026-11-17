@@ -3936,6 +3936,17 @@ class AppLocalizationsBn extends AppLocalizations {
   String get menu_profileImageUpdated => 'প্রোফাইল ছবি আপডেট হয়েছে';
 
   @override
+  String get msgInfo_deliveredTo => 'যাদের কাছে পৌঁছেছে';
+
+  @override
+  String get msgInfo_readBy => 'যারা পড়েছেন';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count জন বাকি';
+  }
+
+  @override
   String get notif_accept => 'গ্রহণ করুন';
 
   @override

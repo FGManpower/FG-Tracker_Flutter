@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'dart:math' as math;
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/features/safety/coming_soon/painters/map_painter.dart';
@@ -203,35 +204,7 @@ class _SafetyComingSoonMapScreenState extends State<SafetyComingSoonMapScreen>
     return Semantics(
       button: true,
       label: context.l10n.common_back,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => Navigator.maybePop(context),
-          borderRadius: BorderRadius.circular(13.r),
-          child: Container(
-            width: 42.w,
-            height: 42.w,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(13.r),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color.fromRGBO(16, 16, 64, 0.10),
-                  blurRadius: 12.r,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 18.sp,
-                color: const Color(0xFF704AFA),
-              ),
-            ),
-          ),
-        ),
-      ),
+      child: AppBackButton(onTap: () => Navigator.maybePop(context)),
     );
   }
 

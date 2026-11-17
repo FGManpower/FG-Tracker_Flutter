@@ -250,6 +250,12 @@ class MessageData {
   dynamic timestamp;
   dynamic seenCount;
   dynamic seenBy;
+
+  /// Group receipts per member (backend contract): `[{userId, readAt}]` and
+  /// `[{userId, deliveredAt}]`. Plain ids are accepted too. Use
+  /// `MessageReceipts` to read or update them.
+  List<dynamic>? readBy;
+  List<dynamic>? deliveredTo;
   dynamic isEdited;
   dynamic editedAt;
   dynamic edited;
@@ -650,6 +656,11 @@ class MessageData {
         nestedSource?['createdAt'];
     seenCount = json['seenCount'] ?? json['seen_count'];
     seenBy = json['seenBy'] ?? json['seen_by'];
+    final rawReadBy = json['readBy'] ?? json['read_by'];
+    readBy = rawReadBy is List ? List<dynamic>.from(rawReadBy) : null;
+    final rawDeliveredTo = json['deliveredTo'] ?? json['delivered_to'];
+    deliveredTo =
+        rawDeliveredTo is List ? List<dynamic>.from(rawDeliveredTo) : null;
     edited = json['edited'] ?? json['isEdited'] ?? json['is_edited'];
     isEdited = json['isEdited'] ?? json['is_edited'] ?? json['edited'];
     editedAt = json['editedAt'] ?? json['edited_at'];
@@ -979,6 +990,8 @@ class MessageData {
     data['timestamp'] = timestamp;
     data['seenCount'] = seenCount;
     data['seenBy'] = seenBy;
+    if (readBy != null) data['readBy'] = readBy;
+    if (deliveredTo != null) data['deliveredTo'] = deliveredTo;
     data['edited'] = edited;
     data['senderName'] = senderName;
     data['senderImage'] = senderImage;
@@ -1020,6 +1033,9 @@ class MessageData {
       data['reactions'] = reactions!.map((r) => r.toJson()).toList();
     }
     data['userReaction'] = userReaction;
+    // Needed for a lossless round trip (PrivateChatCache).
+    if (audioUrl != null) data['audioUrl'] = audioUrl;
+    if (clientMessageId != null) data['clientMessageId'] = clientMessageId;
 
     return data;
   }

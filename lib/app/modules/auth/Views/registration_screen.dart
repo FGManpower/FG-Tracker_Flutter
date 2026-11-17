@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'dart:io';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
@@ -249,21 +250,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                       Positioned(
                         top: 4.h,
                         left: 0,
-                        child: GestureDetector(
-                          onTap: () => Get.back(),
-                          child: Container(
-                            padding: EdgeInsets.all(8.w),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.25),
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                            child: Icon(
-                              Icons.arrow_back_ios_new,
-                              color: Colors.white,
-                              size: 18.sp,
-                            ),
-                          ),
-                        ),
+                        child: AppBackButton(onTap: () => Get.back()),
                       ),
                     ],
                   ),
@@ -529,22 +516,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                   EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   child: Row(
                     children: [
-                      GestureDetector(
-                        onTap: () => Get.back(),
-                        child: Container(
-                          width: 42.w,
-                          height: 42.w,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.22),
-                            borderRadius: BorderRadius.circular(13.r),
-                          ),
-                          child: Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: Colors.white,
-                            size: 18.sp,
-                          ),
-                        ),
-                      ),
+                      AppBackButton(onTap: () => Get.back()),
                       Expanded(
                         child: Center(
                           child: AutoFitText(

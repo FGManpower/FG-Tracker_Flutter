@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -18,23 +19,10 @@ class SosScreen extends GetView<SosController> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFFAFAFA),
         scrolledUnderElevation: 0,
+        surfaceTintColor: AppBarStyle.surfaceTintColor,
         elevation: 0,
-        leading: Padding(
-          padding: EdgeInsets.only(left: 12.w),
-          child: Container(
-            margin: EdgeInsets.all(6.r),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-            ),
-            child: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.black87, size: 20.sp),
-              padding: EdgeInsets.zero,
-              onPressed: () => Get.back(),
-            ),
-          ),
-        ),
+        leadingWidth: AppBarStyle.leadingWidth,
+        leading: AppBarStyle.leading(onTap: () => Get.back()),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

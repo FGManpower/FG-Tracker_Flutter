@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -26,22 +27,8 @@ class SearchMembers extends GetView<SearchMemberController> {
           elevation: 4,
           titleSpacing: 0,
           toolbarHeight: 70.h,
-          leading: IconButton(
-            onPressed: () => Get.back(),
-            padding: EdgeInsets.zero,
-            icon: Container(
-              height: 33.w,
-              width: 33.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: ToggleThemeData.white, width: 2.w),
-              ),
-              child: Center(
-                child: Icon(Icons.arrow_back_outlined,
-                    color: AppColors.white, size: 24.sp),
-              ),
-            ),
-          ),
+          leadingWidth: AppBarStyle.leadingWidth,
+          leading: AppBarStyle.leading(onTap: () => Get.back()),
           title: Padding(
             padding: EdgeInsets.only(right: 10.w),
             child: Container(

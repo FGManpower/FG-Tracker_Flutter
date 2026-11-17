@@ -93,6 +93,11 @@ Record a side-by-side video of every Fail. Write the device (Android / iOS) in N
 | CS-08 | Group: B and C write | Sender name on each bubble | — | Not run | Not run | |
 | CS-09 | Attendance / poll card: B and C vote | Votes update live; admin can close it | ✔ attendance parsing | Not run | Not run | |
 | CS-10 | Open the same chat 10 times, then B sends 1 message | Shows once | ✔ RT-10 | Not run | Not run | |
+| CS-11 | **BUG-CS-18.** Group with 60+ messages, scroll up 2 pages. Open Group info → add a member → back | All messages still shown; the "X added Y" line appears once | ✔ group_chat_blank_messages | Not run | Not run | Was: list went empty until reopen |
+| CS-12 | **BUG-CS-18.** Same group: remove a member, then back | All messages still shown | ✔ group_chat_blank_messages | Not run | Not run | |
+| CS-13 | **BUG-CS-18.** Edit group name, then icon, then description | List never goes empty; new name / icon show | ✔ group_chat_blank_messages | Not run | Not run | |
+| CS-14 | **BUG-CS-18.** Group open: background 30 s while B and C read and send, then resume. Repeat with Wi-Fi off 30 s → on | List stays full; ticks and new messages update | ✔ group_chat_blank_messages | Not run | Not run | iOS: also lock the screen 1 min |
+| CS-15 | **BUG-CS-18.** Private chat: open, background 30 s, resume; Wi-Fi off → on | List stays full | ✔ group_chat_blank_messages (private case) | Not run | Not run | Same fix covers private |
 
 ### 2a. Hold-press (long-press) menu on a message
 
@@ -143,7 +148,14 @@ Record a side-by-side video of every Fail. Write the device (Android / iOS) in N
 | RS-08 | Watch ✓✓ for 10 s after sending | Never drops back to ✓ | ✘ BUG-RT-08 | Not run | Not run | |
 | RS-09 | B offline, A sends, B comes online | ✓ → ✓✓ when B connects | — server | Not run | Not run | |
 | RS-10 | Group: B reads, then C reads | Blue only when everyone has read | ✘ BUG-RT-03, BUG-CS-05, BUG-CS-13 | Not run | Not run | |
-| RS-11 | B blocks A / A leaves or is removed from the group | Input disabled, notice shown live | — | Not run | Not run | |
+| RS-11 | B blocks A / A leaves or is removed from the group | Input disabled, notice shown live | ✔ BLK-01…07 (block) | Not run | Not run | |
+| RS-11a | A has B's chat open (foreground); B blocks A from B's chat | A sees "contact blocked you" within ~4 s without sending (instant once backend #25 ships). Then B unblocks → A's banner goes within ~4 s | ✔ BLK-01…05 | Not run | Not run | Run on Android **and** iOS; full app restart first (no hot reload) |
+| RS-11b | Blocked A sends one message | Banner replaces the input bar on the first rejected send; draft not resent | ✔ BLK-06, BLK-07 | Not run | Not run | |
+| RS-11c | A blocked, app to background ≥ 30 s, back to foreground | Banner correct right after resume (no 4 s wait); no checks run while in background | — | Not run | Not run | iOS: also pull Control Centre down (app `inactive`): checks pause, resume after |
+| RS-11d | After the block, A and B both reopen the chat | Old messages still shown on both phones (last 50; server copy once #26 ships) | ✔ CACHE-01…07 | Not run | Not run | Reinstall / logout → copy is gone (expected) |
+| RS-12 | A **archived** group G and has G's chat open; member C leaves G | "C left" grey system message appears within ~3 s, without reopening | ✔ GML-01…03 | Not run | Not run | Repeat with C **removed** by admin, and with G not archived (must still show once, no duplicate) |
+| RS-13 | Chats ▸ Archive ▸ tap an archived **group** (row, and photo ▸ "Message") | Group chat opens with all messages; can read and send; back returns to Archive; group still archived | — | Not run | Not run | Also a deactivated archived group (banner shown), and an archived **private** chat (still opens as before) |
+| RS-14 | Group Info ▸ Add Members ▸ tap search, type fast, delete, open / close keyboard several times | Keyboard opens / closes smoothly, no lag while typing; list stays above the keyboard and scrolls to the last contact | — | Not run | Not run | Test on a low-end Android phone too; landscape: sheet shrinks, no overflow stripes |
 
 ---
 
@@ -196,7 +208,7 @@ Full list: [../pentesting/pentest_report.md](../pentesting/pentest_report.md)
 | Area | Total | Pass | Slow | Fail | Blocked | Not run |
 |---|---:|---:|---:|---:|---:|---:|
 | Chat list + hold-press + status | 41 | | | | | 41 |
-| Chat screen + hold-press + translate | 33 | | | | | 33 |
+| Chat screen + hold-press + translate | 38 | | | | | 38 |
 | Real-time status | 11 | | | | | 11 |
 | Connection | 12 | | | | | 12 |
 | Look and feel | 5 | | | | | 5 |

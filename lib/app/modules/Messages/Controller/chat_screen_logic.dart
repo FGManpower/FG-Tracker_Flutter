@@ -52,6 +52,9 @@ class ChatScreenRules {
   ///
   /// Returns the merged list and how many messages were added before the
   /// previously first message (used to keep the scroll position).
+  ///
+  /// The returned list is never [existing] itself, so a caller may clear
+  /// [existing] and refill it from the result.
   static MergeResult merge(
     List<MessageData> existing,
     List<MessageData> incoming,
@@ -108,7 +111,9 @@ class ChatScreenRules {
       added.add(m);
     }
     if (added.isEmpty) {
-      return MergeResult(existing, 0, 0, updated: statusUpdated);
+      // Always a new list: callers do `_messages..clear()..addAll(merged)`,
+      // so returning `existing` itself emptied the chat (BUG-CS-18).
+      return MergeResult(List.of(existing), 0, 0, updated: statusUpdated);
     }
 
     final firstBefore = existing.isEmpty ? null : existing.first;

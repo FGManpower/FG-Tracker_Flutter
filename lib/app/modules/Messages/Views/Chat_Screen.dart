@@ -1,4 +1,5 @@
 import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
@@ -393,11 +394,10 @@ class ChatScreen extends GetView<MessageController> {
     return AppBar(
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.white,
+      scrolledUnderElevation: AppBarStyle.scrolledUnderElevation,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: () => controller.stopSearch(),
-      ),
+      leadingWidth: AppBarStyle.leadingWidth,
+      leading: AppBarStyle.leading(onTap: () => controller.stopSearch()),
       title: TextField(
         autofocus: true,
         decoration: InputDecoration(
@@ -443,6 +443,7 @@ class ChatScreen extends GetView<MessageController> {
       elevation: 0,
       backgroundColor: _scaffoldBg,
       surfaceTintColor: _scaffoldBg,
+      scrolledUnderElevation: AppBarStyle.scrolledUnderElevation,
       automaticallyImplyLeading: false,
       toolbarHeight: 64.h,
       titleSpacing: 0,
@@ -450,8 +451,7 @@ class ChatScreen extends GetView<MessageController> {
         padding: EdgeInsets.only(left: 12.w, right: 8.w),
         child: Row(
           children: [
-            _roundIconBtn(
-              icon: Icons.arrow_back_rounded,
+            AppBackButton(
               onTap: () {
                 controller.handleBackPressed(
                   context,

@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
@@ -63,37 +64,13 @@ class _GhostMemberState extends State<GhostMember> {
         child: AppBar(
           automaticallyImplyLeading: false,
           elevation: 0,
+          scrolledUnderElevation: AppBarStyle.scrolledUnderElevation,
+          surfaceTintColor: AppBarStyle.surfaceTintColor,
           backgroundColor: const Color(0xFFF8F9FE),
           titleSpacing: 16.w,
           title: Row(
             children: [
-              InkWell(
-                onTap: () => Get.back(),
-                borderRadius: BorderRadius.circular(14.r),
-                child: Container(
-                  width: 40.w,
-                  height: 40.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14.r),
-                    border: Border.all(
-                      color: Colors.grey.withValues(alpha: 0.12),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.arrow_back_rounded,
-                    size: 20.sp,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
+              AppBackButton(onTap: () => Get.back()),
               SizedBox(width: 12.w),
               Container(
                 width: 42.w,

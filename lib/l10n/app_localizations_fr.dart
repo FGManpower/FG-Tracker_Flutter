@@ -4003,6 +4003,17 @@ class AppLocalizationsFr extends AppLocalizations {
       'Photo de profil mise à jour avec succès';
 
   @override
+  String get msgInfo_deliveredTo => 'Distribué à';
+
+  @override
+  String get msgInfo_readBy => 'Lu par';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count restant(s)';
+  }
+
+  @override
   String get notif_accept => 'Accepter';
 
   @override

@@ -4011,6 +4011,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get menu_profileImageUpdated => 'Profilbild erfolgreich aktualisiert';
 
   @override
+  String get msgInfo_deliveredTo => 'Zugestellt an';
+
+  @override
+  String get msgInfo_readBy => 'Gelesen von';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count ausstehend';
+  }
+
+  @override
   String get notif_accept => 'Annehmen';
 
   @override

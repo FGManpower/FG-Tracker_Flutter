@@ -1,6 +1,6 @@
 # FG Tracker Chat Module: Flutter (Frontend) Implementation Guide
 
-> **Document version:** `F-1.1.7` · **Date:** 2026-11-16 · **Branch:** `46Solution`
+> **Document version:** `F-1.2.2` · **Date:** 2026-11-17 · **Branch:** `46Solution`
 > **Pairs with:** backend `FLUTTER_CHAT_INTEGRATION_GUIDE.md` **v2.8.0**
 > **Scope:** chat module only (private chat, group chat, chat notifications, forwarding, long-press options, chat list, group membership: create / join / add / remove / exit and their success sheets).
 > **Owner:** Flutter team. **Readers:** Flutter + Node.js developers.
@@ -184,6 +184,17 @@ This is the **frontend half** of the chat contract. The backend guide says what 
   - Emits `clear_private_chat {chatId}`.
   - `private_chat_cleared` clears the open chat **only if the id matches** (or this screen asked for it).
 - **Block:** `POST /blockUser`, `POST /unblockUser`. Block state comes from the history response (`blockStatus`).
+- **Block in real time (F-1.1.8):** the open private chat swaps the input bar for the "blocked" banner without reopening the chat. Sources, all published on `SocketMessageService.blockStatusEvents`:
+  - **`BLOCKED` send ack:** the contact blocked me → banner shows on the first rejected send (before, only a toast; the next sends failed silently until the chat was reopened).
+  - **Backend events** on `/chat`, `/privateChat` and the chat-list socket: `user_blocked` / `user_unblocked` (also accepted: `block_status_changed`, `block_status_updated`, `blockStatusChanged` with `isBlocked` or `action`). Payload `{blockerId, blockedUserId}` (aliases `blockedBy`, `userId`, `blockedId`, `targetUserId`). **Needs backend support, item #25.**
+  - **Resume and socket reconnect:** `blockStatus` is re-read from history (`page=1&limit=1`).
+  - **Chat-list events:** a `chat_list_updated` / `conversation_updated` / `private_chat_updated` that names the open `chatId` triggers the same read at once (`SocketMessageService.privateChatTouched`).
+  - **4 s check while the chat is open** (app in foreground only, one request at a time): the same `limit=1` read, so the person who gets blocked sees the banner within ~4 s without sending anything. Stop-gap until #25; remove it once `user_blocked` is pushed. The back / exit path (`onRoutePopped`) is not changed; the timers stop in `onClose` and skip once the chat is left.
+  - Every event is applied at once and then confirmed with that same history read (debounced 400 ms), so duplicate events and two-sided blocks end in the server's state.
+- **Old messages stay after a block (F-1.1.8):** the server may return an empty history for a blocked pair. The app keeps the newest 50 messages of each private chat on the device (`PrivateChatCache`, key = my id + peer id, saved 1 s after each change from a snapshot, so leaving the chat never loses the last change). Only the **20 most recently used chats** are kept (older copies are deleted), because SharedPreferences is loaded into memory at app start on both platforms. If a block is in place, the server sends no messages and nothing is on screen, the saved copy is shown. Cleared by Clear chat and by logout (all prefs). Fix on the server: #26.
+- **Android and iOS:** all of the above is Dart only (socket events, timers, SharedPreferences: XML file on Android, NSUserDefaults on iOS); no native code or platform channel. Platform behaviour:
+  - Background: iOS suspends the app and both platforms drop the socket; the 4 s check skips while not `resumed` (this includes iOS `inactive`: Control Centre, incoming-call banner). On resume and on socket reconnect the block status is re-read at once.
+  - The same code path and the same tests (`test/chat_qa/block_realtime_test.dart`, 14 tests) cover both platforms; device checks are RS-11a…d in `docs/testing/chatting/manual_testing/manual_checklist.md`.
 
 ### 1.7 Screen behaviour
 - **Keyboard:** `adjustResize`, input above the keyboard. The emoji panel matches the last keyboard height (max 40% of the screen).
@@ -204,6 +215,12 @@ This is the **frontend half** of the chat contract. The backend guide says what 
   - `mark_seen {userId, groupId}`;
   - `GET /getMembers?groupId=` (members, admin flag);
   - history.
+- **Open order (F-1.2.2):**
+  - `GroupMessageController` is `lazyPut`, so it is created while `GroupChatScreen` is **building**.
+  - `onInit` sets only its own fields (group id, name, image).
+  - The steps that change other screens' Rx values run **right after that frame** (`_runAfterBuild`): translation visibility reset, chat-list manual unread, sockets / history / receipts (`initializeGroupChat`).
+  - Before, they ran mid-build. When another chat was already on screen, its `Obx` was marked dirty during the build → red screen **"setState() or markNeedsBuild() called during build … Obx … GroupChatScreen"**. This was seen sometimes when opening a group from a notification.
+  - Test: `test/chat_qa/group_open_during_build_test.dart`. It reproduces the error with the old order.
 
 ### 2.2 History, paging, sync
 - **`GET /api/getGroupMessageHistory`** (aliases: `/api/messages`, `/api/group-messages`, `/api/group/:groupId/messages`, `/api/chats/:chatId/messages`).
@@ -300,6 +317,10 @@ class GroupChatController extends GetxController {
   - while `removedFromGroup`: the input bar is replaced by "ℹ️ You're no longer a member of this group" and every send is blocked (same guard as deactivated groups);
   - history stays readable and the group stays in the chat list.
 - **Member added:** the backend sends `group_updated` / `group_info_updated` (no dedicated event). Open chats pick up the new member when members are refetched.
+- **"X left" message in the open chat, archived groups too (F-1.2.1):** the server stores the "X left / X was removed" system message but doesn't push it live to every member (seen for **archived** groups: the chat only showed it after reopening). Now any `member_left` / `member_removed` / `group_left` / `user_removed_from_group` for the open group makes the chat fetch newer messages (`syncNewerMessages`, `after=<newest id>`) at 0.8 s and again at 3 s. The merge dedupes by id, so a message that did arrive live is not shown twice.
+  - App-level stream `SocketMessageService.groupMemberChanges` (group id), registered with **`onAny`** on `/chat`: other code calls `off(event)` without a handler for these events, which removes every `on()` handler but not an any-listener.
+  - Additive only: `_onMemberRemoved`, `listenMemberRemoved`, `listenGroupExit` and the chat-list exit handling are unchanged. Not run once I am the one removed (`removedFromGroup`).
+  - Same Dart code on Android and iOS. Tests: `test/chat_qa/group_member_left_test.dart` (GML-01…03). Server fix: #27.
 
 ### 2.8 Deactivated groups (backend v2.5.0)
 - **Read from** `/chat-list` rows (`groupStatus`, `isDeactivated`, also inside `group`) and the open arguments (`groupStatus`, `isDeactivated`, `isActive:"false"`).
@@ -340,6 +361,10 @@ class GroupChatController extends GetxController {
   - **Row (F-1.1.7):** photo (or first letter), name and phone on the left; on the right a small "Saved contact" / "Your groups" / "Contact • Group" label (`_CandidateMember.shortTag`) above a filled purple **Add** button. Two lines per row. The whole row is tappable → confirm dialog → `GroupController.addGroupMember`.
   - **Error (F-1.1.7):** icon, "Couldn't load members", "Check your internet and try again." and a rounded **Retry** button (key `add_member_retry`) instead of the raw exception text.
   - **No contacts permission:** a yellow note "Showing members from your groups only" with **Enable** (opens app settings).
+  - **Keyboard (F-1.2.3):** typing in search no longer lags, and the list stays above the keyboard.
+    - Cause: the sheet read `MediaQuery.of(context).size`, which also depends on the keyboard inset, so the whole sheet (header, search, list) was rebuilt on **every frame** of the keyboard animation. The fixed 75% height also left the lower rows under the keyboard. Behind it, the Group Info page re-laid out every frame too.
+    - Now: height from `MediaQuery.sizeOf` (75%); the small `_KeyboardAwareSheet` wrapper is the only widget that reads `viewInsetsOf`, adds bottom padding = keyboard height and shrinks the sheet when room is short; its child is the same instance each frame, so it is only laid out again. The list is `Expanded`, so it gets shorter and stays scrollable. Group Info's `Scaffold` has `resizeToAvoidBottomInset: false` (that page has no text field; its sheets handle the keyboard).
+    - Search, filter, add and confirm logic unchanged. Same on Android and iOS.
   - The sheet's texts are English only; they are not in the ARB files yet (open item).
 - **Clear chat:** `POST /clearGroupChat`. On success the profile's media is emptied immediately and refetched.
 - **@mentions:** client-side list from `groupMembers`; no server payload.
@@ -569,6 +594,7 @@ The group chat screen itself has no exit option (the menu item is commented out 
 - The open chat pushes its real last message to its list row after a **delete**, a **clear**, and on **close**.
 - `syncLastMessageFromChat`: retains `row.lastMessageData` (message `createdAt`, `id`, `content`, `senderId`) and syncs `row.time` and `row.timestamp` with the message's `createdAt`, preventing conversation `updatedAt` from corrupting sorting.
 - On close: unread for that chat → 0 locally; `mark_private_chat_read` / `mark_seen` are sent.
+- **Archived group opens on tap (F-1.2.3):** `ArchivedChatsScreen._openChat` only opened private chats; a group row has no `userId`, so a tap did nothing (also "Message" in the group quick profile). Group rows (`isGroup` / `chatType: "group"`) now go to `_openArchivedGroup`, which opens `Routes.groupChatScreen` with the **same arguments as the main Chats list** (`groupId`, name, image, `groupCode` / `isCreator` / `isActive` from `GroupController`, `groupStatus: "deactivated"` when deactivated) and marks it read. The group stays archived. Private rows unchanged.
 
 ### 6.4 Status & Stories Section (WhatsApp-Style Updates)
 - Rendered via `StatusSection` inside `ChatListScreen` (Updates / Status tab).
@@ -605,6 +631,9 @@ The group chat screen itself has no exit option (the menu item is commented out 
 | 20 | Navigation after create / leave / Open Group (§2.11) | Flutter | **Done** (F-1.1.1, "finish where you started"): create / join stay on Home or Walkie Group Select; Open Group opens the chat on top of the current screen; exit → nearest Chat List / All Group List / Walkie Group Select / Home, nothing new opened. Device QA pending (Android + iOS) |
 | 23 | The group chat screen has no "Exit group" option (commented out in `message_Widgets.dart`); exit from the chat side is only via Group Info | Product decision | **Open** — re-enable only if product wants it (UI change) |
 | 24 | After exit, does `/chat-list` still return the left group? The app only calls `refreshChats()` (no local remove), so the row disappears only if the server drops it | Backend confirm | **Open** |
+| 25 | Real-time block: emit `user_blocked` / `user_unblocked` to **both** users' personal rooms on `POST /blockUser` / `POST /unblockUser` | Backend | **Open** — Flutter already listens (F-1.1.8, §1.6); until then the blocked side updates via chat-list events, the 4 s check, the first `BLOCKED` ack, resume or reconnect |
+| 27 | Send the "X left / removed" system message live to all members, also those who archived the group | Backend | **Open** — Flutter fetches it on `member_left` / `member_removed` meanwhile (F-1.2.1, §2.7) |
+| 26 | Block must not hide history: `GET /private-chat/:chatId/messages` and `/private-chat/peer/:id/messages` keep returning the old messages (with `blockStatus`) for a blocked pair | Backend | **Open** — Flutter shows a local copy of the last 50 messages meanwhile (F-1.1.8) |
 | 21 | Join with a code you already belong to: does `/joinGroup` return `status: false`? (`true` would show the "Joined" sheet) | Backend confirm | **Open** |
 | 22 | Clean-ups found in the recheck (not scheduled): `GroupController.exitGroup` sends the pref key `"userId"` instead of the id (dead code, `confirmAndExitGroup` unused); `handleJoinGroup` is empty; camera QR join refreshes the list twice; `Routes.GroupsList` registered twice in `app_pages.dart`; `DialogBox.showCreateGroupBottomSheet` unused; `CreatedGroupUi` / `NewlyGroupUi` (Home cards L2 / L3) are not rendered anywhere (2026-11-07 recheck) (delete group now follows the §2.11 rule, F-1.1.2) | Flutter | **Open** (list only, no change) |
 
@@ -674,6 +703,24 @@ GET /getGroupMessageHistory?groupId=12&after=<newestId>&limit=50
 - The app shows "You're no longer a member" when `GET /getMembers?groupId=` returns a non-empty list without the caller. Does it always return **every** member, including the caller, with no paging or limit?
 - Are `user_removed_from_group` and `group_left` emitted on the `/chat` namespace (that's where the app listens)?
 
+**#25 Real-time block / unblock.**
+- Today a blocked user only learns about the block when a send is rejected (`BLOCKED`) or the chat is reopened.
+- **Needed:** after `POST /blockUser` / `POST /unblockUser` succeeds, emit to the personal rooms of **both** users (any of `/chat`, `/privateChat` or the chat-list namespace; the app listens on all three):
+  ```json
+  // event: "user_blocked" | "user_unblocked"
+  { "blockerId": 42, "blockedUserId": 9, "chatId": 77, "timestamp": "2026-11-17T10:00:00Z" }
+  ```
+- Also keep `isBlocked` / `blockedByMe` correct per user in `chat_list_updated` and `GET /private-chat/:chatId/messages` (`blockStatus`).
+
+**#26 Block must not hide history.**
+- After a block, reopening the chat shows no old messages on either side: the history endpoints seem to return an empty list for a blocked pair.
+- **Needed:** like WhatsApp, a block only stops **new** messages. `GET /private-chat/:chatId/messages` and `GET /private-chat/peer/:peerUserId/messages` must return the existing messages (normal paging, `before` / `after`) plus `blockStatus` for both users.
+- Please confirm what the endpoints return today for a blocked pair (empty list, `status:false`, or 403?).
+
+**#27 "X left" system message to every member, archived too.**
+- When a member leaves or is removed, the "X left" system message reaches normal groups live, but members who **archived** the group only see it after reopening the chat.
+- **Needed:** emit the system message (`receive_group_message`, `messageType: "system"`) to the group room `group_{groupId}` for **all** members, whatever their archive / mute state. Archive must only affect the chat list, never message delivery.
+
 **Still waiting for answers (not covered in v2.8.0):** #10 (forward double storage), #11 (`/forward/list` fields + paging), #12 (relative media URLs).
 
 #### Answers received (backend v2.8.0, 2026-11-06)
@@ -716,6 +763,12 @@ Remove them all in one cleanup commit after QA, by searching for `TODO(` plus th
 ## 9. Change log
 | Version | Date | Change |
 |---|---|---|
+| F-1.2.3 | 2026-11-17 | **Archived group opens; Add Members keyboard smooth:** (1) tapping an archived group (row or quick-profile "Message") now opens the group chat, same arguments as the main list (§6.3); private rows unchanged. (2) Add Members search: no rebuild of the whole sheet on each keyboard frame (`MediaQuery.sizeOf` + `_KeyboardAwareSheet`), list stays above the keyboard, Group Info page no longer re-lays out behind it (§2.10). Logic unchanged. Files: `ArchivedChatsScreen.dart`, `ChatGroupProfile_Screen.dart`. No automated test (screens need live controllers): manual RS-13, RS-14. |
+| F-1.2.2 | 2026-11-17 | **Crash fix: opening a group (often from a notification) showed the red "setState() or markNeedsBuild() called during build" screen (§2.1).** `GroupMessageController.onInit` now defers the steps that touch other screens' Rx values (translation reset, chat-list unread, `initializeGroupChat`) until after the current frame (`_runAfterBuild`). No other behaviour change. Regression test `test/chat_qa/group_open_during_build_test.dart` (fails with the old order). |
+| F-1.2.1 | 2026-11-17 | **"X left" shows live in archived groups (§2.7, #27):** the open group chat fetches newer messages when `member_left` / `member_removed` / `group_left` / `user_removed_from_group` arrives for it (0.8 s and 3 s). New app-level `groupMemberChanges` stream on `/chat` via `onAny` (survives the existing `off(event)` calls). Additive only: no existing function changed. Same code on Android and iOS. Files: `Socket_Message_Services.dart` (`groupMemberChanges`, `_registerGroupMemberChanges`), `GroupChatController.dart` (`_listenMemberChangeMessages`, cancel in `onClose`). Tests `group_member_left_test.dart` (3 pass). Backend item #27. |
+| F-1.2.0 | 2026-11-17 | **Message Info & seen / delivered (§11):** WhatsApp-style group Info (Read by / Delivered to with time, "N remaining", live); one app-level receipt listener (`groupReceipts`) and one aggregation for bubble + Info (`message_receipts.dart`); group `mark_seen` sends `messageIds` + `readAt`; new group `mark_delivered` (any screen, bulk after load); duplicate group messages / typing handled once (fixes the ×7 / ×20–30 handling); group `receiverId: null`. Backend contract in §11.6 (backend fixing). BUG-RT-03, BUG-CS-13, BUG-CS-16 fixed in code; BUG-05 open until MI-03 / MI-04 pass on phones. Temporary `[SEEN-DBG]` logs. |
+| F-1.1.9 | 2026-11-17 | **Group chat messages no longer go blank (BUG-CS-18, §10):** `ChatScreenRules.merge` returned the caller's own list when a page held nothing new, and `_messages..clear()..addAll(...)` then emptied the chat. That happened after add / remove member, group rename / icon, app resume and socket reconnect. It now always returns a copy. Files: `chat_screen_logic.dart`, tests `group_chat_blank_messages_test.dart` (new), `chat_screen_logic_test.dart`. |
+| F-1.1.8 | 2026-11-17 | **Real-time block (§1.6, #25):** a `BLOCKED` send ack now switches the open chat to the "blocked" banner at once (was: toast, then silent failures until the chat was reopened). Listens to `user_blocked` / `user_unblocked` (+ aliases) on all chat sockets; re-reads `blockStatus` on resume, reconnect, chat-list events for the open chat and every 4 s while it is open (so the blocked person sees it live). Old messages no longer vanish after a block: local copy of the last 50 messages per chat shown when the server returns an empty history for a blocked pair. Files: `Socket_Message_Services.dart` (`BlockStatusEvent`, `blockStatusEvents`, `_registerBlockStatus`, `_onSendAck`), `MessageController.dart` (`_onBlockStatusEvent`, `_refreshBlockStatus`, `_startBlockPolling`, `_historyOrCache`), new `private_chat_cache.dart` (last 50 messages, 20 most recent chats), `GetMessage.dart` (`toJson` keeps `audioUrl`, `clientMessageId`). Same Dart code on Android and iOS; tests `test/chat_qa/block_realtime_test.dart` (14 pass). Back / exit path (`onRoutePopped`) unchanged. Backend items #25, #26 opened. |
 | F-1.1.7 | 2026-11-16 | **UI polish (no API or socket change):** whole app bar area opens the profile in private and group chat (§1.7); Group info Back / Edit buttons are the same 44×44 white squares (§2.10); Add Members sheet gets a skeleton while loading, two-line rows with the "Saved contact" label next to a filled **Add** button, and a friendly error with Retry (§2.10); the "left" sheet after exit / removal shows only **Done** (no Open Group / Go to Groups, §2.11). Files: `Chat_Screen.dart`, `GroupChatScreen.dart`, `ChatGroupProfile_Screen.dart`, `group_membership_sheet.dart`. |
 | F-1.1.6 | 2026-11-13 | **Group Admin Promotion/Demotion, Real-Time Logs, Call Log Unread Permanence & Divider Fixes:**<br>1. **Group Admin Management:** Added `promoteAdmin` (`POST /promoteAdmin`) and `demoteAdmin` (`POST /demoteAdmin`) in `GroupRepo.dart` & `Group_Controller.dart`. In `ChatGroupProfile_Screen.dart`, integrated context-aware popup menu options ("Make group admin" for admins/creator, "Dismiss as admin" for creator, and "Remove from group") complete with native confirmation dialogs and reactive member refreshes.<br>2. **Real-Time Group Activity Logs:** Backend `updateGroups` captures pre-update state (`oldName`, `oldProfile`, `oldDesc`) so system messages fire reliably for name, icon, and description edits; socket broadcasts deliver to all members in real-time, rendered as centered gray pills (`_buildSystemMessageTile`).<br>3. **Call Log Unread Badge on Restart:** Backend seeds `private_message_status` on call log creation (caller = 'seen', receiver = 'delivered') and `markSeen` self-heals by upserting missing records as 'seen', preventing unread badge from reappearing after app restart.<br>4. **Unread Section Divider Guard:** In `ChatList.dart` (private and group chat), added strict `(controller.unreadCount.value > 0)` check to guarantee unread dividers never display when all messages are read. |
 | F-1.1.5 | 2026-11-10 | **Anti-Shuffling & Status Popup UX Stability Fixes:**<br>1. **Chat List Stability:** Fixed bug where opening a chat and tapping back caused the chat list to reorder/shuffle. Updated `ChatListRules.isNewMessage` to reject identical message updates caused by read receipts (`mark-read`, `mark_seen`) or backend `updatedAt` touches; updated `syncLastMessageFromChat` to retain `lastMessageData` and true message `createdAt`; updated `ChatListRules.compare` with deterministic tie-breakers (`chatKey(a).compareTo(chatKey(b))`) and prioritized message creation timestamps over conversation `updatedAt`.<br>2. **Status Section Popup:** Replaced non-modal `OverlayEntry` in `StatusSection._showMyStatusPopup` with a modal `showGeneralDialog` (`barrierDismissible: true`). Tapping anywhere outside or pressing system back immediately dismisses the popup and restores full touch responsiveness without gesture arena conflicts. |
@@ -734,3 +787,207 @@ Remove them all in one cleanup commit after QA, by searching for `TODO(` plus th
 | F-1.0.2 | 2026-11-06 | Paired with backend v2.8.0. Answers to #1–#6, #8, #9, #13 recorded in §7.1; #5 and #13 closed. New items: #15 (private push payload has no `memberData`), #16 (foreground notification suppression, not built), #17 (forward target key). Token: no refresh endpoint (§0.1). §3.1.1 and §2.7 describe the current gaps. |
 | F-1.0.1 | 2026-11-06 | Backend questions moved into §7.1; old chat working notes moved to `docs/archive/chat/` (§7.2). This guide is now the only maintained frontend chat doc. |
 | F-1.0.0 | 2026-11-06 | First version: private chat, group chat, notifications, forwarding, long-press options, chat list. Includes reply previews, missing-media card, typing bubbles, history merge / paging / resync, safe parsing, attendance (no delete; per-poll fallback refresh), seen-by rules, keyboard / emoji / back rules, offline send guard, chat-to-chat navigation, notification routing fixes, socket listener scoping, token re-read on reconnect, send ack, delete-for-me isolation, chat-list archive / count / typing / delete fixes, deactivated groups, live member removal, forward recent-chats fix. |
+
+---
+
+## 10. Group chat: messages go blank (BUG-CS-18)
+
+**Status:** root cause found, reproduced by a test and **fixed in F-1.1.9** (§10.4). Phone check still to do. Investigated 2026-11-17 on branch `46Solution`. Bug tracker: [testing/chatting/bug_tracker.md](testing/chatting/bug_tracker.md) → BUG-CS-18.
+
+### 10.1 Symptom
+In an open group chat the message list suddenly becomes empty. Going back and opening the group again shows every message, because nothing was deleted on the server: only the screen's list was wiped.
+
+### 10.2 Root cause
+1. `ChatScreenRules.merge(existing, incoming)` returns the **same list object** it was given when the incoming page adds nothing new (`chat_screen_logic.dart:110-111`: `return MergeResult(existing, 0, 0, …)`).
+2. Three group paths then run `_messages..clear()..addAll(merged.messages)`. Here `merged.messages` **is** `_messages`, so `clear()` empties both and `addAll` adds nothing. The empty list is then pushed to the screen.
+   - `GroupChatController.dart:1792-1795`, `getGroupMessages()`: **no guard**. Wipes every time page 1 holds nothing new.
+   - `GroupChatController.dart:2752-2756`, `syncNewerMessages()` "Reconcile" block: guard `updated || added > 0`. Wipes when only ticks, seen counts, edits or deletes changed (`updated == true`, `added == 0`).
+   - `GroupChatController.dart:2621` (`loadOlderGroupMessages`) and `2677` / `2714` (sync loops) are guarded by `added > 0`, so they are **safe**.
+3. Once the list is empty it does not recover. `_onScrollForOlderMessages` returns when `_messages.isEmpty` (`GroupChatController.dart:2513`), and `loadOlderGroupMessages` also returns (`2567`). Only a new socket message adds rows back, and then only that one message shows.
+
+**Proof:** `test/group_chat_blank_messages_test.dart` copies the exact controller statements and runs them with the real `ChatScreenRules.merge`:
+```
+case: getGroupMessages() again after add/remove member, rename, icon
+  Expected: an object with length of <60>
+    Actual: []
+case: resume / reconnect reconcile … when only ticks changed
+  Expected: an object with length of <30>
+    Actual: []
+```
+The two failing cases are kept with `skip: 'BUG-CS-18 …'` until the fix. The guarded older-page path passes.
+
+### 10.3 Every condition checked
+
+| Condition | Can it blank the list? | Path (file:line) |
+|---|---|---|
+| Add member | **Yes**, when the "X added Y" message has already arrived by socket (or there is none), so page 1 holds nothing new | `ChatGroupProfile_Screen.dart:950` `onMemberAdded` → `getGroupMessages()` → `GroupChatController.dart:1792-1795` |
+| Remove member | **Yes**, same way | `ChatGroupProfile_Screen.dart:1182` → `getGroupMessages()` |
+| Group name / icon / description edit | **Yes**, same way | `Group_Controller.dart:162` → `getGroupMessages()` |
+| Promote / demote admin | No. It only reloads members | `ChatGroupProfile_Screen.dart:1140`, `1160` (`getGroupMembers` only) |
+| App background → resume | **Yes**, if any loaded message's ticks or seen count changed meanwhile (very common in groups) | `GroupChatController.dart:2462` → `syncNewerMessages()` → `2752-2756` |
+| Socket reconnect / internet off → on | **Yes**, same way | attendance `onReconnect` `GroupChatController.dart:680` → `syncNewerMessages()` → `2752-2756` |
+| "Randomly while open" | **Yes**: a reconnect after a short network drop runs the same reconcile with no visible sign | same as above |
+| Scrolling up (older pages) | No, guarded by `added > 0` (`2621`). A blank seen while scrolling is the list wiped earlier by resume / reconnect; scrolling then cannot reload it (`2513`) | `GroupChatController.dart:2566-2634` |
+| Fast scroll back down | No, nothing changes the list. Jump index is clamped by `scrollable_positioned_list` 0.3.8 | `GroupChatController.dart:1934-1970` |
+| New socket message while scrolling | No, it is appended | `GroupChatController.dart:456` |
+| Edited / deleted message | No, updated in place. But an edit or delete made while offline sets `updated` and triggers the reconcile wipe on reconnect | `chat_screen_logic.dart:95-104` |
+| Media / poll / attendance cards | No parsing failure found. Bad rows become an "unsupported message" placeholder, not an empty list | `GetMessage.dart` (tolerant parsing, §0.3) |
+| 1000+ messages | Not a separate cause. The wipe removes all of them the same way | — |
+| Controller reset | No. The controller is not recreated. `handleBackPressed` (`GroupChatController.dart:2011-2015`, clears without updating the stream) is dead code for groups (no caller) | — |
+| `group_chat_cleared` event without `userId` | Possible separate risk: it clears the list for everyone if the server ever omits `userId`. Not seen in the reported cases. **Ask backend** | `GroupChatController.dart:662-670` |
+| Private chat (same pattern) | Latent: unguarded `clear()+addAll(merged)` when the history page holds nothing new compared to messages already on screen | `MessageController.dart:1928-1935` (by peer), `2040-2047` (by chatId) |
+| Empty **bubbles** (rows shown but no text) | Not explained by this bug, which empties the whole list. No cause found yet. **Need a screenshot + `[RT]` log of one case** | — |
+
+### 10.4 Fix (F-1.1.9, 2026-11-17)
+- **Change:** `ChatScreenRules.merge` returns `List.of(existing)` when nothing is added, so the result is **never the caller's own list** (`chat_screen_logic.dart`, `merge`). Every caller that does `_messages..clear()..addAll(merged.messages)` is now safe, in group and private chat alike. No controller, socket or UI code changed.
+- **Not done (not needed):** the extra `List.of(...)` at the 4 call sites (`GroupChatController.dart:1792-1795`, `2752-2756`; `MessageController.dart:1928-1935`, `2040-2047`). With the fix above they can no longer alias, and those two files are being edited by other sessions.
+- **Tests:** `test/group_chat_blank_messages_test.dart`, 11 tests, all pass:
+  - `merge()` never returns its input: nothing new, empty page, ticks only, new messages.
+  - Group: page 1 again after add / remove member, rename or icon (60 stay 60); new "X added Y" message is added; resume / reconnect reconcile with ticks only (30 stay 30, ticks applied); reconnect after an offline edit or delete; older page of duplicates; 1200 messages.
+  - Private: a history page that holds only messages already on screen.
+  - `test/chat_screen_logic_test.dart`: the old assertion that `merge()` returns the same list (it encoded this bug) now checks for a copy.
+- **Still to check on a phone:** add a member, rename the group, background 30 s and resume, internet off and on, scroll up 3 pages and then resume. The list must never go empty.
+- **Still open:** empty **bubbles** (row shown, no text) and `group_chat_cleared` without `userId` (§10.3). Neither is fixed by this change.
+
+### 10.5 Android and iOS
+| Check | Android | iOS |
+|---|---|---|
+| Fix code | Same Dart code on both. `chat_screen_logic.dart` has no platform code (no `Platform`, `dart:io` or channels) | Same |
+| Unit tests (11, `group_chat_blank_messages_test.dart`) | Pass (platform-independent) | Pass (platform-independent) |
+| Build | `flutter build apk --debug` OK, 2026-11-17 | **Not built.** Needs a Mac with Xcode; this PC is Windows |
+| Phone check | **Not run yet.** Use manual checklist `CS-11`…`CS-15` ([testing/chatting/manual_testing/manual_checklist.md](testing/chatting/manual_testing/manual_checklist.md)) | **Not run yet.** Same steps; also lock the screen for 1 min (CS-14) |
+
+Nothing in the fix depends on the platform. The iOS-only paths are app resume and socket reconnect: iOS suspends sockets in the background, so CS-14 is the main iOS case. Both paths go through the same `merge()` that is now fixed.
+
+---
+
+## 11. Message Info & Seen / Delivered Status (Private + Group)
+
+> Added F-1.2.0 (2026-11-17). The frontend part is built; the backend team is fixing the group part (§11.6). The results in §11.8 are **not run on phones yet**.
+
+### 11.1 Expected behaviour (WhatsApp style)
+- **Delivered** = the message reached that member's phone (socket on any screen, or fetched later). Opening the chat is not needed.
+- **Read** = the member opened the group in the foreground and the message was loaded. Opening a chat marks all its unread messages read in one batch.
+- Group messages store status **per member** (`readBy[{userId, readAt}]`, `deliveredTo[{userId, deliveredAt}]`), never one flag for the whole group.
+- Status only moves forward (sent → delivered → read). A late "delivered" never overwrites "read".
+- **Group Message Info** (my messages only):
+  - **Read by:** photo, name and read time on the right, newest first. **"N remaining"** under it.
+  - **Delivered to:** members who received it but have not read it, with the delivered time. **"N remaining"** under it (not received yet).
+  - The sender is never listed. Members who left keep what they reached before leaving, but are not counted in "remaining".
+- **Group bubble:**
+  - one grey ✓ when sent;
+  - grey ✓✓ when delivered to **all** current members;
+  - blue ✓✓ when read by **all**.
+- **Live:**
+  - With Info open, B moves to "Read by" within about 1–2 s. The bubble updates too.
+  - After background → resume, or after a reconnect, Info re-reads the API.
+- **Time format:** "Today, 10:42 AM" / "Yesterday, …" / "17 Nov 2026, …" (same as Last seen). All labels come from l10n.
+
+### 11.2 Private vs group flow
+
+| Step | Private (worked before) | Group (now) |
+|---|---|---|
+| Read emit | `/privateChat` `mark_seen {chatId, userId, otherUserId}` + `mark_private_chat_read` | `/chat` `mark_seen {groupId, userId, group_id, user_id, messageIds[], readAt}`. Sent on open (no ids yet), after history loads (all loaded messages from others), for new messages while the group is open (400 ms debounce), on resume and on close |
+| Delivered emit | `mark_delivered {messageIds, userId, otherUserId}` | `/chat` `mark_delivered {groupId, userId, messageIds[], deliveredAt}`. **App-level, on any screen.** Each id is sent once per session. Sent for: every group message from someone else reaching `/chat` (`receive_group_message` / `receive_message`); the group's last message in chat-list events; in bulk after the group history or resume sync loads |
+| Backend save | per receiver | per member (`readBy`, `deliveredTo`). **Backend, §11.6** |
+| Broadcast to sender | `messages_seen_update`, `messages_delivered` on `/privateChat` | `group_messages_seen` / `group_messages_delivered` `{groupId, userId, messageIds[], readAt / deliveredAt}`. The old `messages_seen_update`, `group_message_seen`, `messages_delivered` are still accepted |
+| App listens | private chat screen | **One app-level listener** per socket (`SocketMessageService.groupReceipts` stream). The group screen and Message Info subscribe to it and cancel on close |
+| Info API | `GET /messages/:id/info?chatType=private` | `GET /messages/:id/info?chatType=group` → `readBy[]`, `deliveredTo[]` with `userId`, `name`, `profileImage`, time |
+
+Event names live in one place: `ReceiptEvents` in `lib/app/modules/Messages/Controller/message_receipts.dart`. If the backend uses other names, change only that class.
+
+### 11.3 Root cause (device logs, 2026-11-17)
+- **Backend:**
+  - The sender never receives a seen event for group messages.
+  - `seenBy` is always `[]`.
+  - Delivery is one `isDelivered` flag; there is no per-member `deliveredTo`.
+  - Result: the Info API had no readers, so Info showed "Not seen yet" even after reopening.
+- **App:**
+  1. **Duplicate handling:** one group message was handled about 7×, and `group_stop_typing` 20–30×. The server sends the same thing under several event names and to several rooms, and nothing deduped it.
+  2. **Seen listeners:**
+     - Two group "seen" listeners replaced each other with `off(event)` (BUG-RT-03).
+     - My own `mark_seen` echo was counted.
+     - Ids were a mix of int, string and map (BUG-CS-13), so the bubble never turned blue.
+  3. **Emits:** group `mark_seen` had no `messageIds`, and the app never sent "delivered" for groups.
+  4. **Message Info:**
+     - It listened directly on the socket and needed ids that never came.
+     - It filled "Delivered" with every member when the API had nothing (BUG-CS-16).
+  5. **Group send:** `send_message` sent `receiverId` = the sender's own id.
+- **Why private worked:** there is only one receiver. The chat id, the REST read and the private `messages_seen_update` with ids were enough.
+
+### 11.4 What changed in the app (F-1.2.0)
+| File | Change |
+|---|---|
+| `Controller/message_receipts.dart` (new) | **One aggregation shared by the bubble and Message Info.** Contains:<br>• `ReceiptEvents`: the event names.<br>• `normalizeReceiptId`: int / String / `{userId}` / `{_id}` / populated object → string.<br>• `ReceiptUpdate.parse`, with a dedupe key.<br>• `MessageReceipts`: `readMap`, `deliveredMap`, forward-only `applyRead` / `applyDelivered`, `summarize` / `summarizeMaps`, `groupTick`. |
+| `Socket_Message_Services.dart` | • Receipt listeners registered once per `/chat` socket (by reference) → `groupReceipts` stream; new `chatConnected` stream.<br>• `markSeen(..., messageIds)` now also sends `readAt`; new `markGroupDelivered`.<br>• Group receive handler kept by reference and deduped by message id (30 s). Group typing deduped (600 ms) for both the screen and the list.<br>• `releaseGroupChatEvents` removes only the screen's handler.<br>• Removed the old `listenSeenUpdate`, `listenGroupMessageSeen`, `listenGroupMessagesDelivered`.<br>• Group sends now use `receiverId: null`.<br>• Temporary `[SEEN-DBG]` logs, debug builds only. |
+| `Model/GetMessage.dart` | Parses `readBy` (`read_by`) and `deliveredTo` (`delivered_to`) |
+| `GroupChatController.dart` | • Subscribes to `groupReceipts` and cancels on close.<br>• Ignores my own echo; updates per member, forward-only.<br>• Sends bulk delivered + read after history and sync.<br>• `mark_seen` carries the ids of messages from others not yet reported. |
+| `widgets/ChatItem.dart` | Group tick = `MessageReceipts.groupTick`. The old `_areAllMembersSeen` is removed. |
+| `widgets/MessageInfoSheet.dart` | Group only (**private unchanged**):<br>• WhatsApp layout: Read by / Delivered to cards, time on the right, "N remaining".<br>• State built from the local receipts + the Info API (forward-only merge).<br>• Live updates from `groupReceipts`. An event with no ids → re-read the API (500 ms debounce).<br>• Re-read on resume and reconnect. Subscriptions are cancelled on dispose. |
+| l10n | `msgInfo_readBy`, `msgInfo_deliveredTo`, `msgInfo_remainingCount` × 20 languages (`tool/l10n/fragments/message_info.json`) |
+
+### 11.5 Temporary diagnostics
+`[SEEN-DBG]` lines, debug builds only. They log:
+- every receipt emit payload;
+- every seen / delivered event received;
+- duplicates dropped;
+- updates applied;
+- the Info API request and response.
+
+**Remove them before the final commit** (search for `SEEN-DBG` and `seenDbg(`).
+
+### 11.6 Backend fix (to send to the backend team)
+**Problem (from device logs):**
+- For group messages the sender never gets a seen event.
+- `seenBy` stays `[]`.
+- Delivery is a single `isDelivered` flag.
+- Result: Message Info shows "Not seen yet" for everyone, and the group bubble never turns blue.
+
+**Contract the app now uses:**
+1. **Client → server** on `/chat`:
+   - `mark_seen {groupId, userId, messageIds[], readAt}`. The `group_id` / `user_id` copies are kept. `messageIds` may be missing on the very first emit when a group opens; treat that as "all messages in this group up to now".
+   - `mark_delivered {groupId, userId, messageIds[], deliveredAt}`.
+2. **Save per member** on each group message: `readBy[{userId, readAt}]`, `deliveredTo[{userId, deliveredAt}]`.
+   - Forward-only.
+   - Ignore the sender.
+   - A read also counts as delivered.
+3. **Broadcast** after saving, to the **sender's personal room and the group room**:
+   - `group_messages_seen {groupId, userId, messageIds[], readAt}`
+   - `group_messages_delivered {groupId, userId, messageIds[], deliveredAt}`
+   - Send each one once, under one event name. Today the same thing arrives under several names and rooms.
+4. **Info API** `GET /messages/:id/info?chatType=group` → `data.readBy[]` and `data.deliveredTo[]`, each `{userId, name, profileImage, readAt | deliveredAt}` (ISO UTC).
+5. **History** `GET /getGroupMessageHistory` → include `readBy` / `deliveredTo` on my messages, so ticks are right after a restart.
+6. **On connect:** mark that user's pending group messages as delivered and broadcast it. The app only knows the messages it loads.
+7. **Send one copy of each group message** (one event name, one room). The app now dedupes, but every copy still costs work.
+
+### 11.7 Automated tests
+| File | What it checks | Result 2026-11-17 |
+|---|---|---|
+| `test/chat_qa/message_receipts_test.dart` (new) | • id normalisation<br>• forward-only status, duplicate readers<br>• aggregation: sender, late joiners, left members<br>• tick rule<br>• payload parsing and dedupe key | 19 pass |
+| `test/chat_qa/realtime_socket_qa_test.dart` | • RT-09…RT-09f: receipts stream, dedupe across event names, `mark_seen` ids, delivered sent once and never for my own message<br>• RT-12: open / close the group 10× → 1 message handled once<br>• RT-13<br>• RT-14: typing handled once | Pass. RT-01b fails: it is a stale evidence test and fails on HEAD too |
+| `test/chat_qa/chat_screen_widgets_qa_test.dart` | • Info: "N remaining"; no fake "Delivered" (BUG-CS-16 fixed)<br>• **Live Remaining → Delivered → Read**; duplicate / other message / own echo ignored<br>• Bubble: blue with `{userId}` maps (BUG-CS-13 fixed); ✓ until delivered to all | 12 pass |
+
+### 11.8 Manual results MI-01 … MI-13
+Real-device results only. **Not run yet**: the backend contract is not deployed.
+
+| ID | Case | Android | iOS | Delay | Notes |
+|---|---|---|---|---|---|
+| MI-01 | Private regression: A sends, B reads → Info shows the read time, blue ticks | Not run | Not run | | |
+| MI-02 | Group: A sends; B and C are not in the group → Delivered to B, C; Read by 0 | Not run | Not run | | needs backend |
+| MI-03 | B opens the group → B moves to "Read by" live on A's open Info; bubble grey | Not run | Not run | | needs backend |
+| MI-04 | C opens the group → C moves to "Read by"; bubble blue | Not run | Not run | | needs backend |
+| MI-05 | C offline → "2 remaining"; C comes online → "Delivered to" live | Not run | Not run | | needs backend §11.6-6 |
+| MI-06 | Close / reopen Info → B still in "Read by" | Not run | Not run | | needs backend |
+| MI-07 | Kill / restart A → Info still right | Not run | Not run | | needs backend §11.6-5 |
+| MI-08 | Late joiner D → not listed | Not run | Not run | | the member list has no join time; relies on the API |
+| MI-09 | Resume after 1 min / 10+ min | Not run | Not run | | |
+| MI-10 | Open / close Info 10×, then B reads → applied once | Not run | Not run | | automated: RT-12 + live widget test |
+| MI-11 | Common chat: MI-02 … MI-04 | Not run | Not run | | |
+| MI-12 | Types: photo, voice, document, poll, attendance | Not run | Not run | | |
+| MI-13 | Hindi / Marathi: labels, time format, no overflow | Not run | Not run | | |
+
+**BUG-05 (group seen)** stays open until MI-03 and MI-04 pass on real phones.
+
+**Known limits:**
+- The app has no join time per member, so filtering out late joiners relies on the Info API.
+- Until the backend fix, "remaining" counts every current member.

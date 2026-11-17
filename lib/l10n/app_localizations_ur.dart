@@ -3959,6 +3959,17 @@ class AppLocalizationsUr extends AppLocalizations {
       'پروفائل تصویر کامیابی کے ساتھ اپ ڈیٹ ہو گئی۔';
 
   @override
+  String get msgInfo_deliveredTo => 'کسے ملا';
+
+  @override
+  String get msgInfo_readBy => 'کس نے پڑھا';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count باقی';
+  }
+
+  @override
   String get notif_accept => 'قبول کریں';
 
   @override

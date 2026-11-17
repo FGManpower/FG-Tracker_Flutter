@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -18,28 +19,8 @@ AppBar buildTrackAppBar(
     backgroundColor: ToggleThemeData.darkPurple,
     elevation: 4,
     centerTitle: false,
-    leading: IconButton(
-      onPressed: () => Navigator.pop(context),
-      padding: EdgeInsets.zero,
-      icon: Container(
-        height: 33.w,
-        width: 33.w,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: ToggleThemeData.white,
-            width: 2.w,
-          ),
-        ),
-        child: Center(
-          child: Icon(
-            Icons.arrow_back_outlined,
-            color: ToggleThemeData.white,
-            size: 24.sp,
-          ),
-        ),
-      ),
-    ),
+    leadingWidth: AppBarStyle.leadingWidth,
+    leading: AppBarStyle.leading(onTap: () => Navigator.pop(context)),
     title: reausabletext(
       groupName,
       fontsize: 20,

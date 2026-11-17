@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/OtpCharges/Controller/otp_charges_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -70,23 +71,7 @@ class OtpChargesView extends GetView<OtpChargesController> {
           label: appL10n.common_back,
           button: true,
           excludeSemantics: true,
-          child: GestureDetector(
-            onTap: controller.onBack,
-            child: Container(
-              width: 44.r,
-              height: 44.r,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14.r),
-                boxShadow: const [
-                  BoxShadow(
-                      color: _shadow, offset: Offset(0, 1), blurRadius: 6),
-                ],
-              ),
-              child: Icon(Icons.chevron_left_rounded,
-                  size: 24.sp, color: AppColors.darkText),
-            ),
-          ),
+          child: AppBackButton(onTap: controller.onBack),
         ),
         SizedBox(width: 12.w),
         Expanded(

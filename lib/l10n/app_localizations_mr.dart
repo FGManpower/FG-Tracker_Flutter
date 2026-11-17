@@ -3949,6 +3949,17 @@ class AppLocalizationsMr extends AppLocalizations {
   String get menu_profileImageUpdated => 'प्रोफाइल फोटो अपडेट झाला';
 
   @override
+  String get msgInfo_deliveredTo => 'कोणाला मिळाले';
+
+  @override
+  String get msgInfo_readBy => 'कोणी वाचले';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count बाकी';
+  }
+
+  @override
   String get notif_accept => 'स्वीकारा';
 
   @override

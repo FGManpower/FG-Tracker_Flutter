@@ -3944,6 +3944,17 @@ class AppLocalizationsPa extends AppLocalizations {
   String get menu_profileImageUpdated => 'ਪ੍ਰੋਫਾਈਲ ਫੋਟੋ ਅੱਪਡੇਟ ਹੋ ਗਈ';
 
   @override
+  String get msgInfo_deliveredTo => 'ਕਿਸ ਨੂੰ ਮਿਲਿਆ';
+
+  @override
+  String get msgInfo_readBy => 'ਕਿਸ ਨੇ ਪੜ੍ਹਿਆ';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count ਬਾਕੀ';
+  }
+
+  @override
   String get notif_accept => 'ਸਵੀਕਾਰ ਕਰੋ';
 
   @override

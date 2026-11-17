@@ -1,4 +1,5 @@
 import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,9 +29,15 @@ class MediaLinksDocsScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 1,
+          // Keep the same thin shadow while scrolling (no M3 tint change).
+          scrolledUnderElevation: 1,
+          surfaceTintColor: AppBarStyle.surfaceTintColor,
           shadowColor: _purple.withOpacity(0.1),
           centerTitle: false,
           iconTheme: const IconThemeData(color: _purple),
+          automaticallyImplyLeading: false,
+          leadingWidth: AppBarStyle.leadingWidth,
+          leading: AppBarStyle.leading(),
           title: Text(
             context.l10n.media_title,
             style: TextStyle(

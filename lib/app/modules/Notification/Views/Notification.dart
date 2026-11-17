@@ -1,4 +1,5 @@
 import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -77,14 +78,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           padding: EdgeInsets.only(left: 8.w),
           child: Row(
             children: [
-              IconButton(
-                icon: Icon(
-                  Icons.arrow_back,
-                  color: primaryPurple,
-                  size: 24.sp,
-                ),
-                onPressed: () => Navigator.pop(context),
-              ),
+              AppBackButton(onTap: () => Navigator.pop(context)),
               SizedBox(width: 4.w),
               Text(
                 context.l10n.notifications_title,
@@ -528,14 +522,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     padding: EdgeInsets.only(left: 8.w),
                     child: Row(
                       children: [
-                        IconButton(
-                          icon: Icon(
-                            Icons.arrow_back,
-                            color: primaryPurple,
-                            size: 24.sp,
-                          ),
-                          onPressed: () => Get.back(),
-                        ),
+                        AppBackButton(onTap: () => Get.back()),
                         SizedBox(width: 4.w),
                         Text(
                           appL10n.notifications_recentCalls,

@@ -3983,6 +3983,17 @@ class AppLocalizationsMl extends AppLocalizations {
   String get menu_profileImageUpdated => 'പ്രൊഫൈൽ ചിത്രം അപ്‌ഡേറ്റ് ചെയ്തു';
 
   @override
+  String get msgInfo_deliveredTo => 'ലഭിച്ചവർ';
+
+  @override
+  String get msgInfo_readBy => 'വായിച്ചവർ';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count ബാക്കി';
+  }
+
+  @override
   String get notif_accept => 'സ്വീകരിക്കുക';
 
   @override

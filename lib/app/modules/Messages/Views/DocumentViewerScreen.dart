@@ -1,4 +1,5 @@
 import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/DocumentViewerController.dart';
 import 'package:flutter/material.dart';
@@ -24,15 +25,12 @@ class DocumentViewerScreen extends GetView<DocumentViewerController> {
       appBar: AppBar(
         backgroundColor: AppColors.darkBlue,
         elevation: 0,
-        leading: InkWell(
-            onTap: () {
-              Navigator.pop(context);
-            },
-            child: Icon(
-              Icons.arrow_back_ios,
-              size: 20.sp,
-              color: Colors.white,
-            )),
+        scrolledUnderElevation: AppBarStyle.scrolledUnderElevation,
+        surfaceTintColor: AppBarStyle.surfaceTintColor,
+        leadingWidth: AppBarStyle.leadingWidth,
+        leading: AppBarStyle.leading(onTap: () {
+          Navigator.pop(context);
+        }),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

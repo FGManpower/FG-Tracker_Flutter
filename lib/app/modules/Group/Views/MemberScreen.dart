@@ -10,6 +10,7 @@ import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Group/controller/search_controller.dart';
@@ -42,30 +43,13 @@ class MemberscreenScreen extends GetView<MemberController> {
         appBar: AppBar(
           elevation: 0,
           shadowColor: Colors.transparent,
-          scrolledUnderElevation: 0,
+          scrolledUnderElevation: AppBarStyle.scrolledUnderElevation,
+          surfaceTintColor: AppBarStyle.surfaceTintColor,
           backgroundColor: ToggleThemeData.white,
           automaticallyImplyLeading: false,
           centerTitle: false,
-          leading: IconButton(
-            onPressed: () => Navigator.pop(context),
-            padding: EdgeInsets.zero,
-            icon: Container(
-              height: 33.w,
-              width: 33.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border:
-                    Border.all(color: ToggleThemeData.darkPurple, width: 2.w),
-              ),
-              child: Center(
-                child: Icon(
-                  Icons.arrow_back_outlined,
-                  color: ToggleThemeData.darkPurple,
-                  size: 24.sp,
-                ),
-              ),
-            ),
-          ),
+          leadingWidth: AppBarStyle.leadingWidth,
+          leading: AppBarStyle.leading(onTap: () => Navigator.pop(context)),
           title: controller.isSearching.value
               ? Container(
                   height: 40.h,

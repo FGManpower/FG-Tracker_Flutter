@@ -4000,6 +4000,17 @@ class AppLocalizationsTa extends AppLocalizations {
   String get menu_profileImageUpdated => 'சுயவிவரப் படம் புதுப்பிக்கப்பட்டது';
 
   @override
+  String get msgInfo_deliveredTo => 'பெற்றவர்கள்';
+
+  @override
+  String get msgInfo_readBy => 'படித்தவர்கள்';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count மீதம்';
+  }
+
+  @override
   String get notif_accept => 'ஏற்கவும்';
 
   @override

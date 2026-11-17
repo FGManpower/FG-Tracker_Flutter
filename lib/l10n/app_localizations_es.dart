@@ -3995,6 +3995,17 @@ class AppLocalizationsEs extends AppLocalizations {
       'Imagen de perfil actualizada con éxito';
 
   @override
+  String get msgInfo_deliveredTo => 'Entregado a';
+
+  @override
+  String get msgInfo_readBy => 'Leído por';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return 'Quedan $count';
+  }
+
+  @override
   String get notif_accept => 'Aceptar';
 
   @override

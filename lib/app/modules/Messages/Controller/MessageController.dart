@@ -29,6 +29,7 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../../../routes/app_pages.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+import 'private_chat_cache.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import '../../../Data/Services/active_chat_tracker.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -69,6 +70,34 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     _messageStreamController.add(
       List.unmodifiable(_messages),
     );
+    _scheduleCacheSave();
+  }
+
+  // ---- Local copy of the chat (survives a block, see PrivateChatCache) ----
+  Timer? _cacheSaveTimer;
+
+  void _scheduleCacheSave() {
+    final peer = _privatePeerId;
+    if (peer == null || isClosed) return; // private chats only
+    // Snapshot now: leaving the chat clears [_messages] before the timer
+    // fires, and that must not lose the last second of changes.
+    final snapshot = List<MessageData>.from(_messages);
+    _cacheSaveTimer?.cancel();
+    _cacheSaveTimer = Timer(const Duration(seconds: 1), () {
+      PrivateChatCache.save(peer, snapshot);
+    });
+  }
+
+  /// History is newest first. When a block is in place and the server sends
+  /// no messages (a block must not erase the chat), show the saved copy.
+  List<MessageData> _historyOrCache(List<MessageData> fromServer) {
+    if (fromServer.isNotEmpty || _messages.isNotEmpty || !isBlocked.value) {
+      return fromServer;
+    }
+    final cached = PrivateChatCache.load(_privatePeerId);
+    if (cached.isEmpty) return fromServer;
+    log("BLOCKED CHAT => server sent no history, showing ${cached.length} saved messages");
+    return cached.reversed.toList();
   }
 
   List<MessageData> get messageData => _messages;
@@ -235,12 +264,108 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     firstUnreadMessageId.value = null;
   }
 
+  // ---- Block / unblock in real time ----
+  StreamSubscription<BlockStatusEvent>? _blockSub;
+  Timer? _blockRefreshTimer;
+
+  /// Applies a block change for this pair at once, then confirms it with the
+  /// server (the same change can arrive on several sockets, and an unblock
+  /// by one side doesn't clear a block by the other).
+  void _onBlockStatusEvent(BlockStatusEvent e) {
+    if (isClosed) return;
+    final me = Global.storageServices.get(PrefConst.userId)?.toString();
+    final peer = memberData.userId?.toString();
+    if (me == null || peer == null) return;
+
+    if (e.blockerId == peer && e.blockedId == me) {
+      // The contact blocked / unblocked me.
+      isBlocked.value = e.isBlocked || blockedByMe.value;
+    } else if (e.blockerId == me && e.blockedId == peer) {
+      // I blocked / unblocked them (e.g. from another device).
+      blockedByMe.value = e.isBlocked;
+      if (e.isBlocked) isBlocked.value = true;
+    } else {
+      return;
+    }
+    log("BLOCK STATE => isBlocked=${isBlocked.value} blockedByMe=${blockedByMe.value}");
+    _scheduleBlockStatusRefresh();
+  }
+
+  /// Re-reads `blockStatus` from the history API (one message), debounced.
+  void _scheduleBlockStatusRefresh() {
+    if (isClosed || _privatePeerId == null) return; // private chats only
+    _blockRefreshTimer?.cancel();
+    _blockRefreshTimer = Timer(const Duration(milliseconds: 400), () {
+      if (!isClosed) _refreshBlockStatus();
+    });
+  }
+
+  bool _blockRefreshInFlight = false;
+
+  Future<void> _refreshBlockStatus() async {
+    final chatId = privateChatId.value;
+    if (chatId.isEmpty || !_historyLoaded || _blockRefreshInFlight) return;
+    _blockRefreshInFlight = true;
+    try {
+      final result = await MessageRepo.privateChatHistory(
+        chatId: chatId,
+        page: 1,
+        limit: 1,
+      );
+      if (isClosed || result.status != true) return;
+      final status = result.blockStatus;
+      isBlocked.value = status?.isBlocked == true;
+      blockedByMe.value = status?.blockedByMe == true;
+      log("BLOCK STATE (server) => isBlocked=${isBlocked.value} blockedByMe=${blockedByMe.value}");
+    } catch (e) {
+      log("Block status refresh error: $e");
+    } finally {
+      _blockRefreshInFlight = false;
+    }
+  }
+
+  /// While the chat is open and the app in front, re-check the block every
+  /// 4 s, so the person who gets blocked sees it without sending first.
+  /// Stop-gap until the backend pushes `user_blocked` (#25): one tiny
+  /// request (`limit=1`); skipped in the background.
+  Timer? _blockPollTimer;
+  StreamSubscription<String>? _chatTouchedSub;
+
+  void _startBlockPolling() {
+    _blockPollTimer?.cancel();
+    _blockPollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (isClosed || _leftChat) return;
+      if (!ActiveChatTracker.isAppInForeground) return;
+      _refreshBlockStatus();
+    });
+    // A chat-list event naming this chat (sent after a block / unblock
+    // too) → re-check now instead of waiting for the next tick.
+    _chatTouchedSub?.cancel();
+    _chatTouchedSub = socketService.privateChatTouched.listen((chatId) {
+      if (!isClosed && !_leftChat && chatId == privateChatId.value) {
+        _scheduleBlockStatusRefresh();
+      }
+    });
+  }
+
+  /// Stops block tracking. The local copy is not touched here: the pending
+  /// save already holds its own snapshot (see [_scheduleCacheSave]).
+  void _stopBlockTracking() {
+    _blockSub?.cancel();
+    _blockSub = null;
+    _chatTouchedSub?.cancel();
+    _chatTouchedSub = null;
+    _blockRefreshTimer?.cancel();
+    _blockPollTimer?.cancel();
+  }
+
   @override
   void onClose() {
     // Everything shown in this chat has been read: send it once more (covers
     // a pending debounce) and clear the list badge locally.
     _markReadTimer?.cancel();
     _joinTimeout?.cancel();
+    _stopBlockTracking();
     final peerId = _privatePeerId;
     if (peerId != null) {
       if (ActiveChatTracker.isAppInForeground) _emitPrivateRead();
@@ -308,6 +433,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       if (_markReadPending) _emitPrivateRead();
       // Messages may have arrived while the app was in the background.
       syncNewerMessages();
+      // So may a block / unblock.
+      _scheduleBlockStatusRefresh();
       final picker = ImagePicker();
       try {
         final LostDataResponse response = await picker.retrieveLostData();
@@ -547,6 +674,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       String? passedChatId = arguments?['chatId']?.toString();
       _privatePeerId = receiverId;
 
+      // Real-time block / unblock (backend event or a BLOCKED send ack).
+      _blockSub?.cancel();
+      _blockSub = socketService.blockStatusEvents.listen(_onBlockStatusEvent);
+      _startBlockPolling();
+
       // Auto-resolve chatId from ChatListController if caller didn't supply it
       if ((passedChatId == null ||
               passedChatId.isEmpty ||
@@ -617,6 +749,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           // fetch what was missed while offline.
           if (_historyLoaded) {
             await syncNewerMessages();
+            // A block / unblock may have happened while offline.
+            _scheduleBlockStatusRefresh();
           } else if (!_historyRequestInFlight) {
             await getPrivateMessageHistory(chatId);
           }
@@ -1829,12 +1963,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         memberData.lastSeen = result.lastSeen ?? memberData.lastSeen;
         isPeerOnline.value = memberData.isOnline ?? false;
 
-        final messages = result.messageData ?? [];
         final blockStatus = result.blockStatus;
         if (blockStatus != null) {
           isBlocked.value = blockStatus.isBlocked == true;
           blockedByMe.value = blockStatus.blockedByMe == true;
         }
+        final messages = _historyOrCache(result.messageData ?? []);
 
         final merged = ChatScreenRules.merge(
           _messages,
@@ -1950,7 +2084,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         // response must survive, and duplicates are dropped by id.
         final merged = ChatScreenRules.merge(
           _messages,
-          messages.reversed.toList(),
+          _historyOrCache(messages).reversed.toList(),
         );
         _messages
           ..clear()
@@ -2426,6 +2560,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     );
 
     messageData.clear();
+    _cacheSaveTimer?.cancel();
+    PrivateChatCache.clear(_privatePeerId);
     updateMessageStream();
 
     log("CHAT MESSAGES CLEARED FROM UI");

@@ -28,7 +28,9 @@ void main() {
       final loaded = [msg(1), msg(2)];
       final r = ChatScreenRules.merge(loaded, [msg(1), msg(2)]);
       expect(r.added, 0);
-      expect(identical(r.messages, loaded), isTrue);
+      expect(ids(r.messages), [1, 2]);
+      // A copy, never the input list (BUG-CS-18: clear() would empty both).
+      expect(identical(r.messages, loaded), isFalse);
     });
 
     test('socket message that arrived before history survives first load', () {

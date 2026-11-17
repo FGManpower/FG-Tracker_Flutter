@@ -3963,6 +3963,17 @@ class AppLocalizationsKn extends AppLocalizations {
   String get menu_profileImageUpdated => 'ಪ್ರೊಫೈಲ್ ಚಿತ್ರ ಅಪ್‌ಡೇಟ್ ಆಗಿದೆ';
 
   @override
+  String get msgInfo_deliveredTo => 'ತಲುಪಿದವರು';
+
+  @override
+  String get msgInfo_readBy => 'ಓದಿದವರು';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count ಬಾಕಿ';
+  }
+
+  @override
   String get notif_accept => 'ಸ್ವೀಕರಿಸಿ';
 
   @override

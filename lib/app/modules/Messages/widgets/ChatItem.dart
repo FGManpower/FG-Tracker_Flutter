@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/util/media_url.dart';
 import 'package:fgtracker/app/Core/util/message_preview_builder.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/chat_screen_logic.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/message_receipts.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/missing_media_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
@@ -2388,16 +2390,18 @@ class GroupChatBubble extends StatelessWidget {
         ),
         if (isSentByMe) ...[
           SizedBox(width: 3.w),
-          Icon(
-            (_seenAtLeastOnce(message) ||
-                    message.isDelivered ||
-                    (message.seenBy is List &&
-                        (message.seenBy as List).isNotEmpty))
-                ? Icons.done_all
-                : Icons.done,
-            size: 14.sp,
-            color: _areAllMembersSeen(message) ? _purple : Colors.grey.shade500,
-          ),
+          // Same aggregation as Message Info (MessageReceipts.groupTick).
+          Builder(builder: (_) {
+            final tick = MessageReceipts.groupTick(
+              message,
+              memberIds: controller.groupMembers.map((m) => m.userId),
+            );
+            return Icon(
+              tick == GroupTick.sent ? Icons.done : Icons.done_all,
+              size: 14.sp,
+              color: tick == GroupTick.read ? _purple : Colors.grey.shade500,
+            );
+          }),
         ],
       ],
     );
@@ -3234,23 +3238,9 @@ class GroupChatBubble extends StatelessWidget {
     return null;
   }
 
-  bool _areAllMembersSeen(MessageData message) {
-    if (message.seenBy is! List) return false;
-
-    final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
-
-    final recipientIds = controller.groupMembers
-        .where((member) => member.userId.toString() != currentUserId)
-        .map((member) => member.userId.toString())
-        .toSet();
-
-    if (recipientIds.isEmpty) return false;
-
-    final seenIds = (message.seenBy as List).map((id) => id.toString()).toSet();
-
-    return recipientIds.every((userId) => seenIds.contains(userId));
-  }
+  // Group "all read" lives in MessageReceipts.groupTick (shared with Message
+  // Info). The old _areAllMembersSeen compared map entries with toString()
+  // and never matched (BUG-CS-13).
 
   void _showMessageMenu(BuildContext bubbleContext, bool isSentByMe) {
     if (_isDeletedMessage) return;
@@ -3754,10 +3744,7 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
                 ),
                 child: Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
+                    AppBackButton(onTap: () => Navigator.of(context).pop()),
                     SizedBox(width: 8.w),
                     Text(
                       context.l10n.chat_galleryCounter(

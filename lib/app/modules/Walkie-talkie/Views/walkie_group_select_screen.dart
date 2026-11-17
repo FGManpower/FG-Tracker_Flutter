@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/global_widget/crown_icon.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/BottomSheet/bottom_actions_bar.dart';
@@ -698,15 +699,12 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
       backgroundColor: const Color(0xFFF8F7FF),
       elevation: 0,
       scrolledUnderElevation: 0,
+      surfaceTintColor: AppBarStyle.surfaceTintColor,
       toolbarHeight: 70.h,
       automaticallyImplyLeading: false,
       title: Row(
         children: [
-          _circleIcon(
-            icon: Icons.arrow_back,
-            color: const Color(0xFF6B4DFF),
-            onTap: () => Get.back(),
-          ),
+          AppBackButton(onTap: () => Get.back()),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(

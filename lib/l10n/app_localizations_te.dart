@@ -3963,6 +3963,17 @@ class AppLocalizationsTe extends AppLocalizations {
   String get menu_profileImageUpdated => 'ప్రొఫైల్ ఫోటో అప్‌డేట్ అయింది';
 
   @override
+  String get msgInfo_deliveredTo => 'అందుకున్నవారు';
+
+  @override
+  String get msgInfo_readBy => 'చదివినవారు';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count మిగిలారు';
+  }
+
+  @override
   String get notif_accept => 'అంగీకరించు';
 
   @override

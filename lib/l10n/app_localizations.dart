@@ -6819,6 +6819,24 @@ abstract class AppLocalizations {
   /// **'Profile image updated successfully'**
   String get menu_profileImageUpdated;
 
+  /// Group Message Info: section of members who received but did not read
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered to'**
+  String get msgInfo_deliveredTo;
+
+  /// Group Message Info: section of members who read the message
+  ///
+  /// In en, this message translates to:
+  /// **'Read by'**
+  String get msgInfo_readBy;
+
+  /// Group Message Info (WhatsApp style): members not yet in this section
+  ///
+  /// In en, this message translates to:
+  /// **'{count} remaining'**
+  String msgInfo_remainingCount(int count);
+
   /// Notification action button
   ///
   /// In en, this message translates to:

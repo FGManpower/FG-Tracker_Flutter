@@ -2599,6 +2599,23 @@
   "menu_logOutSubtitle": "Sign out from the app",
   "menu_profileImageUpdateFailed": "Failed to update profile image",
   "menu_profileImageUpdated": "Profile image updated successfully",
+  "msgInfo_deliveredTo": "Delivered to",
+  "@msgInfo_deliveredTo": {
+    "description": "Group Message Info: section of members who received but did not read"
+  },
+  "msgInfo_readBy": "Read by",
+  "@msgInfo_readBy": {
+    "description": "Group Message Info: section of members who read the message"
+  },
+  "msgInfo_remainingCount": "{count} remaining",
+  "@msgInfo_remainingCount": {
+    "description": "Group Message Info (WhatsApp style): members not yet in this section",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notif_accept": "Accept",
   "@notif_accept": {
     "description": "Notification action button"

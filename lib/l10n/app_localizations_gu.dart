@@ -3926,6 +3926,17 @@ class AppLocalizationsGu extends AppLocalizations {
   String get menu_profileImageUpdated => 'પ્રોફાઇલ ફોટો અપડેટ થઈ ગયો';
 
   @override
+  String get msgInfo_deliveredTo => 'કોને મળ્યું';
+
+  @override
+  String get msgInfo_readBy => 'કોણે વાંચ્યું';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count બાકી';
+  }
+
+  @override
   String get notif_accept => 'સ્વીકારો';
 
   @override

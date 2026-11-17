@@ -10,6 +10,7 @@ import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatItem.dart';
 import 'package:fgtracker/app/widgets/MessageInfoSheet.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Message_Services.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -157,14 +158,18 @@ void main() {
         message: MessageData(id: 1, senderId: me, messageType: 'text',
             content: 'hello', seenBy: [{'userId': 2}, '3', 3, 1]),
       ));
-      // Y = 4 members - sender (me) = 3, X = {2,3} = 2.
-      expect(find.text(en.widget_seenCountOfTotal(2, 3)), findsOneWidget);
-      expect(find.text('User 2'), findsWidgets);
-      expect(find.text('User 3'), findsWidgets);
-      expect(find.text(en.widget_notSeenYet), findsNothing);
+      // Recipients = 4 members - sender (me) = 3; read = {2,3} once each,
+      // so both cards say 1 remaining (member 4 has not received it).
+      expect(find.byKey(const ValueKey('msg_info_read_2')), findsOneWidget);
+      expect(find.byKey(const ValueKey('msg_info_read_3')), findsOneWidget);
+      expect(find.byKey(const ValueKey('msg_info_read_1')), findsNothing);
+      expect(find.text('User 2'), findsOneWidget);
+      expect(find.text('User 3'), findsOneWidget);
+      expect(find.text(en.msgInfo_remainingCount(1)), findsNWidgets(2));
     });
 
-    testWidgets('nobody has seen: "(0 of N)" and "Not seen yet"', (t) async {
+    testWidgets('nobody has read or received it: both cards say "2 remaining"',
+        (t) async {
       ignoreListTileInkAssert();
       final c = _group([me, '2', '3']);
       await _pumpSheet(t, MessageInfoSheet(
@@ -172,8 +177,11 @@ void main() {
         message: MessageData(id: 1, senderId: me, messageType: 'text',
             content: 'hello', seenBy: []),
       ));
-      expect(find.text(en.widget_seenCountOfTotal(0, 2)), findsOneWidget);
-      expect(find.text(en.widget_notSeenYet), findsOneWidget);
+      // WhatsApp style: "Read by" + "Delivered to", each with "N remaining".
+      expect(find.text(en.msgInfo_readBy), findsOneWidget);
+      expect(find.text(en.msgInfo_deliveredTo), findsOneWidget);
+      expect(find.text(en.msgInfo_remainingCount(2)), findsNWidgets(2));
+      expect(find.byKey(const ValueKey('msg_info_read_2')), findsNothing);
     });
 
     testWidgets('undelivered group message is not listed as delivered to all',
@@ -185,11 +193,55 @@ void main() {
         message: MessageData(id: 1, senderId: me, messageType: 'text',
             content: 'hello', seenBy: [], isDelivered: false),
       ));
-      expect(find.text('Not delivered yet'), findsOneWidget);
-    },
-        // BUG-CS-16: MessageInfoSheet.dart:74 fills "Delivered" with every
-        // other member when the info API gives nothing ("(2 of 2)").
-        skip: true);
+      // BUG-CS-16 fixed: no per-member data = nobody under "Delivered to".
+      expect(find.byKey(const ValueKey('msg_info_delivered_2')), findsNothing);
+      expect(find.byKey(const ValueKey('msg_info_delivered_3')), findsNothing);
+    });
+
+    testWidgets('live: a member moves Remaining -> Delivered -> Read without '
+        'reopening, and a duplicate event changes nothing', (t) async {
+      ignoreListTileInkAssert();
+      final c = _group([me, '2', '3']);
+      c.groupId = 7;
+      final svc = SocketMessageService.instance;
+      await _pumpSheet(t, MessageInfoSheet(
+        groupController: c,
+        message: MessageData(id: 41, senderId: me, messageType: 'text',
+            content: 'hello', seenBy: []),
+      ));
+      expect(find.text(en.msgInfo_remainingCount(2)), findsNWidgets(2));
+
+      svc.debugReceiveGroupReceipt({
+        'groupId': 7,
+        'userId': '2',
+        'messageIds': [41],
+        'deliveredAt': '2026-11-17T10:00:00Z',
+      }, isRead: false);
+      await t.pump();
+      expect(find.byKey(const ValueKey('msg_info_delivered_2')), findsOneWidget);
+      expect(find.text(en.msgInfo_remainingCount(1)), findsOneWidget);
+
+      final read = {
+        'groupId': 7,
+        'userId': '2',
+        'messageIds': [41],
+        'readAt': '2026-11-17T10:01:00Z',
+      };
+      svc.debugReceiveGroupReceipt(read, isRead: true);
+      svc.debugReceiveGroupReceipt(read, isRead: true); // duplicate
+      await t.pump();
+      expect(find.byKey(const ValueKey('msg_info_read_2')), findsOneWidget);
+      expect(find.byKey(const ValueKey('msg_info_delivered_2')), findsNothing);
+
+      // Another message's receipt and my own echo are ignored.
+      svc.debugReceiveGroupReceipt(
+          {'groupId': 7, 'userId': '3', 'messageIds': [99]}, isRead: true);
+      svc.debugReceiveGroupReceipt(
+          {'groupId': 7, 'userId': me, 'messageIds': [41]}, isRead: true);
+      await t.pump();
+      expect(find.byKey(const ValueKey('msg_info_read_3')), findsNothing);
+      expect(find.byKey(const ValueKey('msg_info_read_$me')), findsNothing);
+    });
 
     testWidgets('sheet labels follow the app language (Hindi)', (t) async {
       ignoreListTileInkAssert();
@@ -255,9 +307,12 @@ void main() {
       expect(i.color, isNot(purple));
     });
 
-    testWidgets('seen by some members only: double grey tick', (t) async {
+    // WhatsApp rule (Message Info spec): grey ✓✓ only when delivered to
+    // ALL members; member 3 has not received it yet -> one ✓.
+    testWidgets('seen by some members only, not delivered to all: single '
+        'grey tick', (t) async {
       final i = await tickOf(t, mine(seenBy: ['2']), [me, '2', '3']);
-      expect(i.icon, Icons.done_all);
+      expect(i.icon, Icons.done);
       expect(i.color, isNot(purple));
     });
 
@@ -272,9 +327,6 @@ void main() {
       final i = await tickOf(
           t, mine(seenBy: [{'userId': 2}, {'userId': '3'}]), [me, '2', '3']);
       expect(i.color, purple);
-    },
-        // BUG-CS-13: ChatItem.dart:3211 _areAllMembersSeen uses entry.toString(),
-        // so {userId} map entries never match -> blue tick never shown.
-        skip: true);
+    }); // BUG-CS-13 fixed: ids are normalised (MessageReceipts).
   });
 }

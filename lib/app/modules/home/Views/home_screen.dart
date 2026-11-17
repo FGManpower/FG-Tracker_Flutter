@@ -28,6 +28,7 @@ import 'package:get/get.dart';
 import 'package:upgrader/upgrader.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+import 'package:fgtracker/app/Data/Services/local_banner_service.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -55,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
 
     WidgetsBinding.instance.addObserver(this);
+    LocalBannerService.pickInProgress.addListener(_onBannerPickChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
@@ -91,6 +93,16 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      // Back from the banner camera / gallery: the cropper opens next. A
+      // permission + location check now delayed it (Home showed first);
+      // it runs once the photo flow ends (_onBannerPickChanged).
+      if (LocalBannerService.pickInProgress.value) return;
+      _checkLocationPermission();
+    }
+  }
+
+  void _onBannerPickChanged() {
+    if (!LocalBannerService.pickInProgress.value && mounted) {
       _checkLocationPermission();
     }
   }
@@ -106,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    LocalBannerService.pickInProgress.removeListener(_onBannerPickChanged);
     super.dispose();
   }
 

@@ -3935,6 +3935,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get menu_profileImageUpdated => 'تم تحديث صورة الملف الشخصي بنجاح';
 
   @override
+  String get msgInfo_deliveredTo => 'تم التسليم إلى';
+
+  @override
+  String get msgInfo_readBy => 'قرأها';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return 'متبقٍ $count';
+  }
+
+  @override
   String get notif_accept => 'قبول';
 
   @override

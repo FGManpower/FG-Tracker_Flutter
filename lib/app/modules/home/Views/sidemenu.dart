@@ -31,6 +31,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide FormData, MultipartFile;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -529,7 +530,19 @@ class Sidemenu extends StatelessWidget {
               );
             },
           ),
-          _buildDivider(),
+          // Clear gap + visible line so Delete Account sits apart from
+          // Log out (avoids a mis-tap on the destructive action).
+          SizedBox(height: 14.h),
+          Padding(
+            key: const ValueKey('menu_delete_account_divider'),
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            child: const Divider(
+              color: Color(0xFFE2DCF3),
+              height: 1,
+              thickness: 1,
+            ),
+          ),
+          SizedBox(height: 18.h),
           _buildDeleteAccountItem(context),
         ],
       ),
@@ -613,12 +626,40 @@ class Sidemenu extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildCustomSocialIcon(Assets.svg.facebook, AppText.facebookUrl),
+              // Real brand logos in their official colours.
+              _buildSocialIcon(
+                key: const ValueKey('menu_social_facebook'),
+                icon: FontAwesomeIcons.facebookF,
+                label: 'Facebook',
+                color: const Color(0xFF1877F2),
+                url: AppText.facebookUrl,
+              ),
               SizedBox(width: 12.w),
-              _buildCustomSocialIcon(
-                  Assets.svg.instagram, AppText.instagramUrl),
+              _buildSocialIcon(
+                key: const ValueKey('menu_social_instagram'),
+                icon: FontAwesomeIcons.instagram,
+                label: 'Instagram',
+                gradient: const LinearGradient(
+                  begin: Alignment.bottomLeft,
+                  end: Alignment.topRight,
+                  colors: [
+                    Color(0xFFFEDA75),
+                    Color(0xFFFA7E1E),
+                    Color(0xFFD62976),
+                    Color(0xFF962FBF),
+                    Color(0xFF4F5BD5),
+                  ],
+                ),
+                url: AppText.instagramUrl,
+              ),
               SizedBox(width: 12.w),
-              _buildCustomSocialIcon(Assets.svg.youtube, AppText.youtubeUrl),
+              _buildSocialIcon(
+                key: const ValueKey('menu_social_youtube'),
+                icon: FontAwesomeIcons.youtube,
+                label: 'YouTube',
+                color: const Color(0xFFFF0000),
+                url: AppText.youtubeUrl,
+              ),
             ],
           ),
           SizedBox(height: 12.h),
@@ -694,33 +735,43 @@ class Sidemenu extends StatelessWidget {
     );
   }
 
-  Widget _buildCustomSocialIcon(String iconPath, String url) {
-    return InkWell(
-      onTap: () async {
-        try {
-          final Uri uri = Uri.parse(url);
-          if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-            AppLog.d('Could not launch $url');
+  /// Brand tile: official logo (Font Awesome brands) in white on the
+  /// brand's own colour or gradient. Tap opens the page outside the app
+  /// (unchanged).
+  Widget _buildSocialIcon({
+    Key? key,
+    required FaIconData icon,
+    required String label,
+    required String url,
+    Color? color,
+    Gradient? gradient,
+  }) {
+    return Semantics(
+      key: key,
+      button: true,
+      label: label,
+      child: InkWell(
+        onTap: () async {
+          try {
+            final Uri uri = Uri.parse(url);
+            if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+              AppLog.d('Could not launch $url');
+            }
+          } catch (e) {
+            log(e.toString());
           }
-        } catch (e) {
-          log(e.toString());
-        }
-      },
-      borderRadius: BorderRadius.circular(12.r),
-      child: Container(
-        width: 40.w,
-        height: 40.w,
-        padding: EdgeInsets.all(10.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEDE9FE),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: SvgPicture.asset(
-          iconPath,
-          width: 18.w,
-          height: 18.w,
-          colorFilter:
-              const ColorFilter.mode(Color(0xFF5D47F1), BlendMode.srcIn),
+        },
+        borderRadius: BorderRadius.circular(12.r),
+        child: Container(
+          width: 40.w,
+          height: 40.w,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: gradient == null ? color : null,
+            gradient: gradient,
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: FaIcon(icon, color: Colors.white, size: 19.sp),
         ),
       ),
     );

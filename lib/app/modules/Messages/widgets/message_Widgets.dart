@@ -1,4 +1,5 @@
 import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
@@ -61,10 +62,8 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               SizedBox(
                 width: 10.w,
               ),
-              reausableIcon(
-                icon: Icons.arrow_back_ios,
-                size: 25,
-                ontap: () {
+              AppBackButton(
+                onTap: () {
                   Navigator.pop(context);
                 },
               ),

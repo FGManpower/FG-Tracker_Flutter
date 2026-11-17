@@ -1,3 +1,5 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -181,12 +183,16 @@ AppBar _languageAppBar(
     scrolledUnderElevation: 0,
     elevation: 0,
     systemOverlayStyle: SystemUiOverlayStyle.light,
-    leading: IconButton(
-      key: const Key('language-sheet-close'),
-      tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-      icon: Icon(Icons.arrow_back_ios_new,
-          color: Colors.white, size: sizes.appBarIcon),
-      onPressed: () => Navigator.of(context).maybePop(),
+    surfaceTintColor: AppBarStyle.surfaceTintColor,
+    leadingWidth: AppBarStyle.leadingWidth,
+    leading: Padding(
+      padding: EdgeInsets.only(left: 16.w),
+      child: Center(
+        child: AppBackButton(
+          key: const Key('language-sheet-close'),
+          onTap: () => Navigator.of(context).maybePop(),
+        ),
+      ),
     ),
     centerTitle: true,
     title: Text(

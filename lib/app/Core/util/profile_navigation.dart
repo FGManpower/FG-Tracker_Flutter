@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -477,10 +478,9 @@ void showFullScreenPhoto({required String name, required String imageUrl}) {
         systemOverlayStyle: SystemUiOverlayStyle.light,
         automaticallyImplyLeading: false,
         titleSpacing: 0,
-        leading: IconButton(
-          onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
-        ),
+        surfaceTintColor: AppBarStyle.surfaceTintColor,
+        leadingWidth: AppBarStyle.leadingWidth,
+        leading: AppBarStyle.leading(onTap: () => Get.back()),
         title: Text(
           name,
           maxLines: 1,

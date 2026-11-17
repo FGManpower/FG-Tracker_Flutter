@@ -3935,6 +3935,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menu_profileImageUpdated => 'Profile image updated successfully';
 
   @override
+  String get msgInfo_deliveredTo => 'Delivered to';
+
+  @override
+  String get msgInfo_readBy => 'Read by';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count remaining';
+  }
+
+  @override
   String get notif_accept => 'Accept';
 
   @override

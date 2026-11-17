@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -41,20 +42,17 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
             backgroundColor: ToggleThemeData.darkPurple,
             elevation: 2,
             titleSpacing: 0,
-            leading: IconButton(
-              onPressed: () {
-                if (_isSearching) {
-                  setState(() => _isSearching = false);
-                  controller.clearSearch();
-                } else {
-                  Get.back();
-                }
-              },
-              icon: const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-              ),
-            ),
+            scrolledUnderElevation: 2,
+            surfaceTintColor: AppBarStyle.surfaceTintColor,
+            leadingWidth: AppBarStyle.leadingWidth,
+            leading: AppBarStyle.leading(onTap: () {
+              if (_isSearching) {
+                setState(() => _isSearching = false);
+                controller.clearSearch();
+              } else {
+                Get.back();
+              }
+            }),
             title: _isSearching ? _buildSearchField() : _buildAppBarTitle(),
             actions: [
               if (!_isSearching)

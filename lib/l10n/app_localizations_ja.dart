@@ -3799,6 +3799,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get menu_profileImageUpdated => 'プロフィール画像が更新されました';
 
   @override
+  String get msgInfo_deliveredTo => '配信済み';
+
+  @override
+  String get msgInfo_readBy => '既読';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '残り$count人';
+  }
+
+  @override
   String get notif_accept => '応答';
 
   @override

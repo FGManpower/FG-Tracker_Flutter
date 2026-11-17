@@ -3786,6 +3786,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get menu_profileImageUpdated => '头像更新成功';
 
   @override
+  String get msgInfo_deliveredTo => '已送达';
+
+  @override
+  String get msgInfo_readBy => '已读';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '还剩 $count 人';
+  }
+
+  @override
   String get notif_accept => '接听';
 
   @override
@@ -11462,6 +11473,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get menu_profileImageUpdated => '個人資料圖片更新成功';
+
+  @override
+  String get msgInfo_deliveredTo => '已送達';
+
+  @override
+  String get msgInfo_readBy => '已讀';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '還剩 $count 人';
+  }
 
   @override
   String get notif_accept => '接受';

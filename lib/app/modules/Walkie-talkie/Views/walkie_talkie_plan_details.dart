@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/Model/walkie_plan_model.dart';
@@ -188,29 +189,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Squircle Back Button
-                  GestureDetector(
-                    onTap: () => Get.back(),
-                    child: Container(
-                      width: 38.w.clamp(34.0, 42.0),
-                      height: 38.w.clamp(34.0, 42.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.arrow_back,
-                        size: 19.sp.clamp(16.0, 21.0),
-                        color: _primaryPurple,
-                      ),
-                    ),
-                  ),
+                  AppBackButton(onTap: () => Get.back()),
 
                   SizedBox(height: isSmallScreen ? 6.h : 10.h),
 

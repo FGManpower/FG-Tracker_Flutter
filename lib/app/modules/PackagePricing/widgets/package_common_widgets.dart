@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Model/package_pricing_model.dart';
@@ -107,23 +108,8 @@ class PackageBackButton extends StatelessWidget {
       label: context.l10n.common_back,
       button: true,
       excludeSemantics: true,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 44.r,
-          height: 44.r,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14.r),
-            boxShadow: const [
-              BoxShadow(
-                  color: PackageUi.shadow, offset: Offset(0, 1), blurRadius: 6),
-            ],
-          ),
-          child: Icon(Icons.chevron_left_rounded,
-              size: 24.sp, color: PackageUi.text),
-        ),
-      ),
+      // Same back button as everywhere in the app.
+      child: AppBackButton(onTap: onTap),
     );
   }
 }

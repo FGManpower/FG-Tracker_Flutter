@@ -3946,6 +3946,17 @@ class AppLocalizationsHi extends AppLocalizations {
       'प्रोफ़ाइल फ़ोटो सफलतापूर्वक अपडेट की गई';
 
   @override
+  String get msgInfo_deliveredTo => 'किसे मिला';
+
+  @override
+  String get msgInfo_readBy => 'किसने पढ़ा';
+
+  @override
+  String msgInfo_remainingCount(int count) {
+    return '$count बाकी';
+  }
+
+  @override
   String get notif_accept => 'स्वीकारें';
 
   @override
