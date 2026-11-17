@@ -29,7 +29,7 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../../../routes/app_pages.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
-import 'private_chat_cache.dart';
+import '../../../Data/Services/chat_message_cache.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import '../../../Data/Services/active_chat_tracker.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -73,19 +73,44 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     _scheduleCacheSave();
   }
 
-  // ---- Local copy of the chat (survives a block, see PrivateChatCache) ----
+  // ---- Local copy of the chat (Hive, see ChatMessageCache) ----
   Timer? _cacheSaveTimer;
+
+  /// What the cache held when the chat opened (oldest first).
+  List<MessageData> _cachedCopy = const [];
+  ChatOpenPerf? _perf;
 
   void _scheduleCacheSave() {
     final peer = _privatePeerId;
-    if (peer == null || isClosed) return; // private chats only
+    // Private chats only. After Back the list is emptied, and a late API
+    // response must not overwrite the 50 saved messages with a partial list.
+    if (peer == null || isClosed || _leftChat) return;
     // Snapshot now: leaving the chat clears [_messages] before the timer
     // fires, and that must not lose the last second of changes.
     final snapshot = List<MessageData>.from(_messages);
+    final chatId = privateChatId.value;
     _cacheSaveTimer?.cancel();
     _cacheSaveTimer = Timer(const Duration(seconds: 1), () {
-      PrivateChatCache.save(peer, snapshot);
+      ChatMessageCache.save(ChatMessageCache.privateKey(peer), snapshot,
+          chatId: chatId);
     });
+  }
+
+  /// Shows the cached copy at once (no spinner); the API result is merged
+  /// into it later by id, in whichever order the two arrive.
+  Future<void> _showCachedMessages(String peerId) async {
+    final cached =
+        await ChatMessageCache.load(ChatMessageCache.privateKey(peerId));
+    if (isClosed || _leftChat || cached.isEmpty) return;
+    _cachedCopy = cached;
+    final hadMessages = _messages.isNotEmpty;
+    final merged = ChatScreenRules.merge(_messages, cached);
+    _messages
+      ..clear()
+      ..addAll(merged.messages);
+    updateMessageStream();
+    if (!hadMessages) scrollToBottom(instant: true);
+    _perf?.mark('cache shown', extra: '${cached.length} msgs');
   }
 
   /// History is newest first. When a block is in place and the server sends
@@ -94,10 +119,19 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     if (fromServer.isNotEmpty || _messages.isNotEmpty || !isBlocked.value) {
       return fromServer;
     }
-    final cached = PrivateChatCache.load(_privatePeerId);
+    final cached = _cachedCopy;
     if (cached.isEmpty) return fromServer;
     log("BLOCKED CHAT => server sent no history, showing ${cached.length} saved messages");
     return cached.reversed.toList();
+  }
+
+  /// Logs "list rendered" after the frame that shows the API result.
+  void _markRenderedAfterFrame() {
+    final perf = _perf;
+    if (perf == null) return;
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => perf.mark('list rendered', extra: '${_messages.length} msgs'),
+    );
   }
 
   List<MessageData> get messageData => _messages;
@@ -697,6 +731,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       }
 
       ActiveChatTracker.openPrivate(peerUserId: receiverId, chatId: passedChatId);
+
+      // Cached messages first (async, never blocks the UI); the API below
+      // runs at the same time and does not wait for it or for the socket.
+      _perf = ChatOpenPerf('private_$receiverId')..mark('open');
+      _showCachedMessages(receiverId);
 
       isLoadingInitialMessages.value = true;
       final hasPassedChatId = passedChatId != null &&
@@ -1939,7 +1978,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         peerUserId: peerUserId,
         page: 1,
         limit: ChatScreenRules.pageSize,
-      );
+      ).timeout(ChatScreenRules.historyTimeout);
+      _perf?.mark('API done');
 
       if (result.status == true) {
         final resolved = result.chatId?.toString() ??
@@ -1991,14 +2031,17 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (_messages.isNotEmpty) {
           scrollToBottom(instant: true);
         }
+        updateMessageStream();
+        _markRenderedAfterFrame();
       } else {
         _pager.fail();
-        if (_messages.isEmpty) historyLoadFailed.value = true;
+        // Empty chat → full Retry state; cached messages → small bar.
+        historyLoadFailed.value = true;
       }
     } catch (e) {
       log("History by peer error: $e");
       _pager.fail();
-      if (_messages.isEmpty) historyLoadFailed.value = true;
+      historyLoadFailed.value = true;
     } finally {
       isLoadingInitialMessages.value = false;
       _historyRequestInFlight = false;
@@ -2028,7 +2071,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         chatId: chatId,
         page: 1,
         limit: ChatScreenRules.pageSize,
-      );
+      ).timeout(ChatScreenRules.historyTimeout);
+      _perf?.mark('API done');
 
       log("========== HISTORY DEBUG 3: API RESPONSE RECEIVED ==========");
       log("HISTORY DEBUG => elapsed: ${apiStopwatch.elapsedMilliseconds} ms");
@@ -2125,6 +2169,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         log("========== HISTORY DEBUG 6: BEFORE STREAM UPDATE ==========");
 
         updateMessageStream();
+        _markRenderedAfterFrame();
 
         log("HISTORY DEBUG => stream update completed");
         log("HISTORY DEBUG => stream message count: ${_messages.length}");
@@ -2168,7 +2213,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         log("HISTORY DEBUG => ${result.message}");
 
         _pager.fail();
-        if (_messages.isEmpty) historyLoadFailed.value = true;
+        // Empty chat → full Retry state; cached messages → small bar.
+        historyLoadFailed.value = true;
         CommonDialog.errorMessage(result.message);
       }
     } catch (e, stackTrace) {
@@ -2176,9 +2222,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       log("HISTORY DEBUG => $e");
       log("HISTORY DEBUG STACKTRACE => $stackTrace");
       _pager.fail();
-      // Show "Couldn't load messages / Retry" instead of a false
-      // "No messages here yet".
-      if (_messages.isEmpty) historyLoadFailed.value = true;
+      // Show "Couldn't load messages / Retry" (or, over cached messages,
+      // the "Couldn't refresh · Retry" bar) instead of a false
+      // "No messages here yet" or an endless spinner (incl. the 10 s timeout).
+      historyLoadFailed.value = true;
     } finally {
       _historyRequestInFlight = false;
       isLoadingInitialMessages.value = false;
@@ -2561,7 +2608,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     messageData.clear();
     _cacheSaveTimer?.cancel();
-    PrivateChatCache.clear(_privatePeerId);
+    _cachedCopy = const [];
+    ChatMessageCache.clear(ChatMessageCache.privateKey(_privatePeerId));
     updateMessageStream();
 
     log("CHAT MESSAGES CLEARED FROM UI");

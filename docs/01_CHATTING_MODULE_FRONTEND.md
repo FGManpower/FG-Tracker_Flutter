@@ -1,6 +1,6 @@
 # FG Tracker Chat Module: Flutter (Frontend) Implementation Guide
 
-> **Document version:** `F-1.2.2` · **Date:** 2026-11-17 · **Branch:** `46Solution`
+> **Document version:** `F-1.2.6` · **Date:** 2026-11-17 · **Branch:** `46Solution`
 > **Pairs with:** backend `FLUTTER_CHAT_INTEGRATION_GUIDE.md` **v2.8.0**
 > **Scope:** chat module only (private chat, group chat, chat notifications, forwarding, long-press options, chat list, group membership: create / join / add / remove / exit and their success sheets).
 > **Owner:** Flutter team. **Readers:** Flutter + Node.js developers.
@@ -77,6 +77,7 @@ This is the **frontend half** of the chat contract. The backend guide says what 
 | Group chat | `Messages/Controller/GroupChatController.dart`, `Messages/Views/Group/GroupChatScreen.dart` |
 | Message bubbles / list | `Messages/widgets/ChatItem.dart`, `ChatList.dart`, `ChatInputArea.dart`, `MessageContextMenu.dart` |
 | Shared chat rules | `Messages/Controller/chat_screen_logic.dart` (merge, paging, menu, seen-by, edit/delete) |
+| Chat screen cache (Hive) | `Data/Services/chat_message_cache.dart` (`ChatMessageCache`, `ChatOpenPerf`), `Messages/widgets/chat_history_widgets.dart` (`ChatRefreshFailedBar`) — §12 |
 | Chat list | `Messages/Controller/chat_list_controller.dart`, `chat_list_logic.dart`, `Views/chatlist_screen.dart`, `Views/ArchivedChatsScreen.dart` |
 | Message model | `Model/GetMessage.dart` (`MessageData`), `Model/PrivateChatModel.dart` (list row) |
 | Previews (list, reply, pin) | `Core/util/message_preview_builder.dart` |
@@ -112,8 +113,16 @@ This is the **frontend half** of the chat contract. The backend guide says what 
   - a different chat closes the current one, then opens the new one.
 
 ### 1.2 History and paging
+- **Cached copy first (F-1.2.4, §12):**
+  - On open the last 50 messages saved on the device (`private_<peerId>`) are shown at once, with no skeleton.
+  - The API request below starts at the same time. It doesn't wait for the cache or the socket.
+  - Times out after **10 s** (`ChatScreenRules.historyTimeout`).
 - **`GET /private-chat/:chatId/messages?page=N&limit=20`**, newest first.
-- First load **merges** with messages already received over the socket (dedupe by id, oldest-first order).
+- First load **merges** with what is already shown, whether cached or received over the socket (dedupe by id, oldest-first order). An empty or failed response never removes cached messages.
+- **API failed or timed out:**
+  - nothing on screen → "Couldn't load messages" + Retry (as before);
+  - cached messages on screen → they stay, and a small **"Couldn't refresh · Retry"** bar appears at the top (`ChatRefreshFailedBar`).
+  - The loader is always turned off in `finally`.
 - Older messages load at the top of the list:
   - **`before=<oldest message id shown>&limit=20`** (backend v2.8.0);
   - one request at a time;
@@ -191,8 +200,15 @@ This is the **frontend half** of the chat contract. The backend guide says what 
   - **Chat-list events:** a `chat_list_updated` / `conversation_updated` / `private_chat_updated` that names the open `chatId` triggers the same read at once (`SocketMessageService.privateChatTouched`).
   - **4 s check while the chat is open** (app in foreground only, one request at a time): the same `limit=1` read, so the person who gets blocked sees the banner within ~4 s without sending anything. Stop-gap until #25; remove it once `user_blocked` is pushed. The back / exit path (`onRoutePopped`) is not changed; the timers stop in `onClose` and skip once the chat is left.
   - Every event is applied at once and then confirmed with that same history read (debounced 400 ms), so duplicate events and two-sided blocks end in the server's state.
-- **Old messages stay after a block (F-1.1.8):** the server may return an empty history for a blocked pair. The app keeps the newest 50 messages of each private chat on the device (`PrivateChatCache`, key = my id + peer id, saved 1 s after each change from a snapshot, so leaving the chat never loses the last change). Only the **20 most recently used chats** are kept (older copies are deleted), because SharedPreferences is loaded into memory at app start on both platforms. If a block is in place, the server sends no messages and nothing is on screen, the saved copy is shown. Cleared by Clear chat and by logout (all prefs). Fix on the server: #26.
-- **Android and iOS:** all of the above is Dart only (socket events, timers, SharedPreferences: XML file on Android, NSUserDefaults on iOS); no native code or platform channel. Platform behaviour:
+- **Old messages stay after a block (F-1.1.8, moved to Hive in F-1.2.4):**
+  - The server may return an empty history for a blocked pair.
+  - The device keeps the newest 50 messages of each chat in the encrypted Hive chat cache (§12): `ChatMessageCache`, box per user, key `private_<peerId>`. It is saved 1 s after each change from a snapshot, so leaving the chat never loses the last change.
+  - The **30 most recently used chats** are kept.
+  - Those messages are already on screen when the chat opens. If a block is in place and the server sends no messages, the copy read at open (`_historyOrCache`) is used.
+  - Cleared by Clear chat and by logout.
+  - The old SharedPreferences copy (`private_chat_cache_*`, `PrivateChatCache`) was imported once and deleted; `private_chat_cache.dart` is gone.
+  - Fix on the server: #26.
+- **Android and iOS:** the block logic is Dart only (socket events, timers); no new native code or platform channel. The chat cache uses Hive files (app documents folder) and the AES key in `flutter_secure_storage` (Android Keystore / iOS Keychain, `first_unlock_this_device`). Platform behaviour:
   - Background: iOS suspends the app and both platforms drop the socket; the 4 s check skips while not `resumed` (this includes iOS `inactive`: Control Centre, incoming-call banner). On resume and on socket reconnect the block status is re-read at once.
   - The same code path and the same tests (`test/chat_qa/block_realtime_test.dart`, 14 tests) cover both platforms; device checks are RS-11a…d in `docs/testing/chatting/manual_testing/manual_checklist.md`.
 
@@ -229,6 +245,12 @@ This is the **frontend half** of the chat contract. The backend guide says what 
   - Cursor Pagination: `before=<messageId>` (older messages) or `after=<messageId>` (newer messages).
   - Page Pagination: `page=1`, `limit=30` (max: 100).
 - Same merge / paging / resume rules as §1.2.
+- **Cached copy first (F-1.2.4, §12):**
+  - `onInit` starts reading `group_<groupId>` from the Hive cache straight away. The file read completes after the build, so no Rx changes happen mid-build (§2.1).
+  - `getGroupMessages` runs at the same time, with a 10 s timeout.
+  - Failure over cached messages → "Couldn't refresh · Retry" bar.
+  - `group_updated` / member added / removed events never touch the message list or the cache. Member changes only fetch newer messages (`after=`), which are merged.
+  - Clear chat (`clearGroupChat`, `group_chat_cleared`) clears the cached copy too.
 - **Reconnect** (`connect` on `/chat`) → re-sync attendance polls + fetch newer messages.
 
 ### 2.2.1 Screen Lifecycle: Correct "Back" & "Exit" Implementation (v2.5.0)
@@ -294,6 +316,10 @@ class GroupChatController extends GetxController {
 
 ### 2.5 Seen ticks and "Seen by"
 - **Emits** `mark_seen {userId, groupId}`, debounced, foreground only.
+  - **Once per trigger (F-1.2.5):** on open, only `SocketMessageService.init` sends it (immediately when connected, otherwise from the connect handler). The controller no longer sends a second identical one.
+  - After history loads it is sent again with `messageIds`.
+  - Later sends (new message, resume, close) only go out when there are **new** ids from others; on close with nothing new, nothing is sent.
+  - Before this change, one open + close sent 3–4 `mark_seen`.
 - **Listens** `messages_seen_update` / `group_message_seen {groupId, userId|seenBy, messageIds?}`.
 - **Never recorded:**
   - my own read echo;
@@ -763,6 +789,9 @@ Remove them all in one cleanup commit after QA, by searching for `TODO(` plus th
 ## 9. Change log
 | Version | Date | Change |
 |---|---|---|
+| F-1.2.6 | 2026-11-17 | **Chat screen look, WhatsApp style (UI only, private + group; no API, socket or logic change):** my bubbles light lavender with a purple outline, received white, all corners rounded (no tail); no avatars beside received bubbles (private: app bar opens the profile; group: tap the sender name); group sender names in a fixed colour per sender (`senderNameColor`); name shown only on the first message of a run by the same person (run ends at another sender, a system / call-log line or a new day; was: within 60 s); speaker icon inside received text bubbles before the time (`ChatInlineListenButton`, same `playAudio`), the "Listen" row under the bubble now only for captions / documents (`ChatMessageActionRow.showListen`); system lines ("X added Y") white pill with names bold; date chip white; deleted message lighter grey. **Images no longer squashed:** `memCacheHeight` removed (width + height forced every photo into a 600×600 / 150×150 square); a single photo is shown in its own shape (`ChatImageAspectBox`, ratio 0.55–1.4, remembered per URL) instead of a fixed 220×200 box. Files: `ChatItem.dart`, `ChatList.dart`, `chat_translation_widgets.dart`. Tests: chat suites, no new failures. |
+| F-1.2.5 | 2026-11-17 | **Device check of the cache + fewer `mark_seen` (§12.4.1, §2.5):** log from the CPH2381 confirmed the cache works (group 252: cache shown at 124 ms, API ~2 s). Cache / perf logs switched to `debugPrint` (they were in DevTools only) and the box is opened at app start (`ChatMessageCache.warmUp()` in `main.dart`). Group `mark_seen`: removed the second identical emit on open (`initializeGroupChat`; `init()` already sends it) and nothing is sent when there are no new ids (close). Release logs already off (`main.dart` silences `debugPrint` in release; Dio logger and `[ARC]` / `[CL]` / `[SEEN-DBG]` are debug only). Repeated seen / chat-list events come from the server (several event names × two namespaces) → backend items below. |
+| F-1.2.4 | 2026-11-17 | **Chat screen Hive cache (§12, §1.2, §1.6, §2.2):** private and group chats open instantly from an encrypted on-device copy (last 50 messages per chat, 30 chats LRU, `cacheVersion`); the API refreshes in the background (10 s timeout) and is merged by id; "Couldn't refresh · Retry" bar instead of a spinner when it fails. Socket changes are saved via `updateMessageStream`. `PrivateChatCache` (SharedPreferences) migrated and removed. Logout wipes the boxes + key (one call in `LogoutUser.clearSessionAndSockets`, approved). `private_chat_cleared` on the list socket also drops that chat's copy (list callback unchanged). Chat list and contacts untouched. Packages `hive_ce`, `hive_ce_flutter`, `flutter_secure_storage`. New string `chat_refreshFailed` (20 locales). `[CHAT-PERF]` timings (debug only). Tests `test/chat_qa/chat_message_cache_test.dart` (19); old CACHE-01…07 moved there from `block_realtime_test.dart`. |
 | F-1.2.3 | 2026-11-17 | **Archived group opens; Add Members keyboard smooth:** (1) tapping an archived group (row or quick-profile "Message") now opens the group chat, same arguments as the main list (§6.3); private rows unchanged. (2) Add Members search: no rebuild of the whole sheet on each keyboard frame (`MediaQuery.sizeOf` + `_KeyboardAwareSheet`), list stays above the keyboard, Group Info page no longer re-lays out behind it (§2.10). Logic unchanged. Files: `ArchivedChatsScreen.dart`, `ChatGroupProfile_Screen.dart`. No automated test (screens need live controllers): manual RS-13, RS-14. |
 | F-1.2.2 | 2026-11-17 | **Crash fix: opening a group (often from a notification) showed the red "setState() or markNeedsBuild() called during build" screen (§2.1).** `GroupMessageController.onInit` now defers the steps that touch other screens' Rx values (translation reset, chat-list unread, `initializeGroupChat`) until after the current frame (`_runAfterBuild`). No other behaviour change. Regression test `test/chat_qa/group_open_during_build_test.dart` (fails with the old order). |
 | F-1.2.1 | 2026-11-17 | **"X left" shows live in archived groups (§2.7, #27):** the open group chat fetches newer messages when `member_left` / `member_removed` / `group_left` / `user_removed_from_group` arrives for it (0.8 s and 3 s). New app-level `groupMemberChanges` stream on `/chat` via `onAny` (survives the existing `off(event)` calls). Additive only: no existing function changed. Same code on Android and iOS. Files: `Socket_Message_Services.dart` (`groupMemberChanges`, `_registerGroupMemberChanges`), `GroupChatController.dart` (`_listenMemberChangeMessages`, cancel in `onClose`). Tests `group_member_left_test.dart` (3 pass). Backend item #27. |
@@ -991,3 +1020,74 @@ Real-device results only. **Not run yet**: the backend contract is not deployed.
 **Known limits:**
 - The app has no join time per member, so filtering out late joiners relies on the Info API.
 - Until the backend fix, "remaining" counts every current member.
+
+---
+
+## 12. Chat Screen Hive Cache (F-1.2.4)
+
+Private and group chat screens open at once with the messages shown last time, then refresh from the API. **Only the chat screens use it.** The chat list and contacts are not cached and were not changed.
+
+### 12.1 Storage
+| Item | Value |
+|---|---|
+| Packages | `hive_ce`, `hive_ce_flutter`, `flutter_secure_storage` |
+| Box | `chat_cache_<myUserId>`, `Box<String>`, **AES-256** (`HiveAesCipher`). One box per account, so a second account on the phone never sees the first one's chats. |
+| Key | 32 random bytes, `flutter_secure_storage` key `fg_chat_cache_aes_key`. Android Keystore; iOS Keychain `first_unlock_this_device`. If the key is lost, the box is deleted and started again. |
+| Entry key | `private_<peerId>` / `group_<groupId>` |
+| Entry value | `{"v": cacheVersion, "chatId"?: "…", "m": [MessageData.toJson …]}`. The newest **50** messages that have a server id, oldest first. |
+| LRU | `__lru` index; the **30** most recently saved chats are kept and the oldest beyond 30 are deleted. |
+| Version | `ChatMessageCache.cacheVersion` (now 1) is in the box (`__version`) and in every entry. If either doesn't match, the data is cleared instead of being parsed. **Bump it whenever `MessageData.toJson` changes shape.** |
+| Registry | Plain box `chat_cache_registry` lists the user box names, so logout can delete every box. It holds no message content. |
+| Old cache | Once per box: the user's `private_chat_cache_<me>_<peer>` SharedPreferences copies are imported, then **all** `private_chat_cache_*` keys are deleted. |
+
+### 12.2 Flow
+1. **Open.** `MessageController._initializeChat` (private) / `GroupMessageController.onInit` (group) call `_showCachedMessages()`. It is an async read and never blocks the UI.
+2. **Cache shown.** The cached messages are merged into `_messages` (`ChatScreenRules.merge`), then the stream updates and the list scrolls to the bottom. The skeleton only shows while the list is empty, so a chat with a cache never shows a spinner.
+3. **API.** It runs in parallel and doesn't wait for the cache or the socket. 10 s timeout. The result is merged by id, in whichever order the two arrive.
+4. **Save.** Every `updateMessageStream()` schedules a save 1 s later from a snapshot. That covers history, receive, sent, edited, deleted, delivered / seen, reactions and pin / unpin.
+5. **Failure.** Empty list → "Couldn't load messages" + Retry. Cached messages on screen → `ChatRefreshFailedBar` ("Couldn't refresh · Retry"), which calls `retryLoadHistory`.
+
+### 12.3 Rules
+- Merge by message id only. An empty or partial response never replaces the list, and an empty list is never saved over an existing copy.
+- Paging (`before=`) adds older messages and never resets the list. Only the newest 50 are saved, so older pages are not kept.
+- Pending messages (no id) are not saved. They stay on screen and are replaced by the server copy (`clientMessageId`) without duplicates.
+- After Back (`onRoutePopped` / group `handleBackPressed`) saving stops. A late API response can't overwrite the 50 saved messages with a part of them. The save already scheduled keeps its snapshot.
+- `group_updated` and member added / removed never touch the message list or the cache.
+- Clear: private `private_chat_cleared` (open chat, or the chat-list socket by `chatId`), group `clearGroupChat` / `group_chat_cleared`.
+- Logout: `ChatMessageCache.clearAll()` deletes every box, the registry and the key. It has a 3 s cap and never throws.
+- Every cache call has its own try/catch. If the cache fails, the chat works as before: it waits for the API.
+
+### 12.4 Known limits
+- A chat cleared **from the chat list on another device while the app was closed**, or a conversation deleted from the list, may show its cached messages until the next `private_chat_cleared` / clear event. Server-side clear state is not in the history response yet.
+- Group clear from the chat list (not from the open group) does not drop the group copy, because the chat list was out of scope.
+
+### 12.4.1 Warm-up and debug logs
+- `main()` calls `unawaited(ChatMessageCache.warmUp())` after `Global.init()`. When someone is logged in, the box opens in the background, so the first chat after a cold start doesn't wait for Hive / the Keystore.
+- Debug builds print `[CHAT-CACHE] ready (N entries)`, `load group_252: 50 msgs` or `no copy (first open)`, `saved group_252: 50 msgs`, and any `… failed: <error>`. These go through `debugPrint`, so they show in `flutter run` / logcat.
+- **After adding the packages, use a full rebuild (stop + `flutter run`), not hot restart.** Hot restart doesn't register the new native plugin (`flutter_secure_storage`), so the cache fails (`MissingPluginException` in `[CHAT-CACHE] … failed`) and the chat works as before, without the cache.
+
+### 12.5 Measuring open time (`[CHAT-PERF]`, debug builds only)
+`ChatOpenPerf` logs each step once, measured from controller `onInit` (Android Studio / `flutter logs`, filter `CHAT-PERF`):
+
+```
+[CHAT-PERF] group_77 open: 0 ms
+[CHAT-PERF] group_77 cache shown: 18 ms (50 msgs)
+[CHAT-PERF] group_77 API done: 640 ms
+[CHAT-PERF] group_77 list rendered: 660 ms (60 msgs)
+```
+
+**Checklist (do it on Android and on iOS):**
+1. Use a debug or profile build with logs on. The test group needs **1000+ messages**, plus one private chat.
+2. **Before** (build from the commit before F-1.2.4, or after logout, which empties the cache): kill the app, start it cold, open the group. Note the time until messages are visible. The old build has the existing `[CHAT-PERF]` / `HISTORY DEBUG` elapsed logs; otherwise use a screen recording at 60 fps.
+3. **After:** open the group once (it fills the cache), kill the app, start it cold, open the group. Note `cache shown`, `API done` and `list rendered`.
+4. Repeat steps 2–3 five times and record the median, for the group and for the private chat.
+5. Airplane mode: open a cached chat. The messages show, then after ≤ 10 s the "Couldn't refresh · Retry" bar appears and never spins. Turn the network back on and tap Retry: the bar goes away.
+6. Send, edit, delete, react and pin, then kill the app and reopen: everything shows from the cache before the API returns.
+7. Clear chat, then reopen: empty. Log out and in as another account: none of the first account's chats show.
+
+| Device | Chat | Before: messages visible (ms) | After: cache shown (ms) | After: API done (ms) | After: list rendered (ms) |
+|---|---|---|---|---|---|
+| Android … | group 1000+ | | | | |
+| Android … | private | | | | |
+| iOS … | group 1000+ | | | | |
+| iOS … | private | | | | |

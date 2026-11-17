@@ -54,6 +54,16 @@ void main() {
       expect(f(utc), expected);
     });
 
+    // T-06 (Run 2): used to run only on an IST machine. The UTC instant is
+    // now built from the machine's own zone, so the same check (a UTC time
+    // that falls just after local midnight shows as "Today") runs anywhere.
+    // In India this is exactly 19:10 UTC on 10 Nov.
+    test('UTC just after local midnight shows "Today" (any time zone)', () {
+      final utc = DateTime(2026, 11, 11, 0, 40).toUtc();
+      expect(utc.isUtc, isTrue);
+      expect(f(utc), 'Last seen: Today, 12:40 AM');
+    });
+
     test('UTC → IST: 19:10 UTC on 10 Nov is 12:40 AM on 11 Nov in India',
         () {
       expect(f(DateTime.utc(2026, 11, 10, 19, 10)),
@@ -61,7 +71,7 @@ void main() {
     },
         skip: DateTime(2026, 11, 11).timeZoneOffset !=
                 const Duration(hours: 5, minutes: 30)
-            ? 'Runs only when the test machine is set to IST (UTC+05:30)'
+            ? 'IST-only example; the zone-independent test above covers it'
             : false);
   });
 

@@ -30,6 +30,7 @@ import '../../../Model/GetMessage.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import '../../../Data/Services/active_chat_tracker.dart';
+import '../../../Data/Services/chat_message_cache.dart';
 import '../../Attendance/controller/attendance_controller.dart';
 
 import 'chat_list_controller.dart';
@@ -72,6 +73,48 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     _messageStreamController.add(
       List.unmodifiable(_messages),
     );
+    _scheduleCacheSave();
+  }
+
+  // ---- Local copy of the chat (Hive, see ChatMessageCache) ----
+  Timer? _cacheSaveTimer;
+  ChatOpenPerf? _perf;
+
+  /// Set on Back: the list is emptied then, and a late API response must
+  /// not overwrite the 50 saved messages with a partial list.
+  bool _cacheFrozen = false;
+
+  void _scheduleCacheSave() {
+    if (isClosed || _cacheFrozen) return;
+    final key = ChatMessageCache.groupKey(groupId);
+    if (key == null) return;
+    // Snapshot now: Back clears [_messages] before the timer fires.
+    final snapshot = List<MessageData>.from(_messages);
+    _cacheSaveTimer?.cancel();
+    _cacheSaveTimer = Timer(const Duration(seconds: 1), () {
+      ChatMessageCache.save(key, snapshot);
+    });
+  }
+
+  /// Shows the cached copy at once (no spinner); the API result is merged
+  /// into it later by id, in whichever order the two arrive.
+  Future<void> _showCachedMessages() async {
+    final cached =
+        await ChatMessageCache.load(ChatMessageCache.groupKey(groupId));
+    if (isClosed || _cacheFrozen || cached.isEmpty) return;
+    final hadMessages = _messages.isNotEmpty;
+    final merged = ChatScreenRules.merge(_messages, cached);
+    _messages
+      ..clear()
+      ..addAll(merged.messages);
+    updateMessageStream();
+    if (!hadMessages) scrollToBottom(instant: true);
+    _perf?.mark('cache shown', extra: '${cached.length} msgs');
+  }
+
+  void _clearCachedCopy() {
+    _cacheSaveTimer?.cancel();
+    ChatMessageCache.clear(ChatMessageCache.groupKey(groupId));
   }
 
   RxList<String> videoPaths = <String>[].obs;
@@ -223,6 +266,11 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     groupImage = arguments?["groupImage"] ?? arguments?["groupProfile"] ?? "";
     _deactivatedOnOpen = _readDeactivatedFromArguments();
 
+    // Cached messages first (async file read; it completes after this
+    // build, so no Rx change happens mid-build). The API runs in parallel.
+    _perf = ChatOpenPerf('group_$groupId')..mark('open');
+    _showCachedMessages();
+
     WidgetsBinding.instance.addObserver(this);
     // The binding is lazyPut, so this controller is created while
     // GroupChatScreen is being BUILT. Changing other screens' Rx values now
@@ -326,7 +374,9 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       userId: currentUserId,
     );
 
-    socketService.markSeen(currentUserId, groupId);
+    // No mark_seen here: socketService.init() above already sends it (at
+    // once when connected, else from the connect handler). Sending it here
+    // too emitted the same mark_seen twice on every open.
     ActiveChatTracker.openGroup(groupId);
 
     // Read / delivered receipts: one app-level socket listener; this screen
@@ -688,6 +738,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         final uId = data['userId']?.toString();
         if (uId != null && uId != myUserId) return;
         _messages.clear();
+        _clearCachedCopy();
         updateMessageStream();
       },
     );
@@ -1833,7 +1884,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         groupId: groupId,
         page: 1,
         limit: ChatScreenRules.pageSize,
-      );
+      ).timeout(ChatScreenRules.historyTimeout);
+      _perf?.mark('API done');
 
       if (result.status == true) {
         final messages = result.messageData ?? [];
@@ -1883,6 +1935,12 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         unreadCount.value = result.unreadCount ?? 0;
 
         updateMessageStream();
+        final perf = _perf;
+        if (perf != null) {
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => perf.mark('list rendered', extra: '${_messages.length} msgs'),
+          );
+        }
 
         final unreadIdx = firstUnreadMessageId.value != null
             ? _messages.indexWhere((m) => m.id == firstUnreadMessageId.value)
@@ -1903,14 +1961,16 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       } else {
         CommonDialog.errorMessage(result.message);
         _pager.fail();
-        // Keep whatever is shown; only an empty chat gets the Retry state.
-        if (_messages.isEmpty) historyLoadFailed.value = true;
+        // Keep whatever is shown: an empty chat gets the full Retry state,
+        // cached messages the small "Couldn't refresh · Retry" bar.
+        historyLoadFailed.value = true;
         updateMessageStream();
       }
     } catch (e) {
+      // Includes the 10 s timeout: never an endless spinner.
       log("GROUP HISTORY ERROR => $e");
       _pager.fail();
-      if (_messages.isEmpty) historyLoadFailed.value = true;
+      historyLoadFailed.value = true;
       updateMessageStream();
     } finally {
       _historyRequestInFlight = false;
@@ -2063,6 +2123,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     // socketService.disconnectSocket();
     _syncChatListPreview();
 
+    _cacheFrozen = true; // the pending save keeps its own snapshot
     _messages.clear();
 
     messageText.value = "";
@@ -2369,6 +2430,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
       if (response['status'] == true) {
         _messages.clear();
+        _clearCachedCopy();
 
         pinnedMessage.value = null;
         showPinnedBanner.value = false;
@@ -2457,9 +2519,12 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       if (id > newest) newest = id;
     }
     _lastSeenEmittedId = newest;
-    socketService.markSeen(userId, groupId, messageIds: fresh);
     unreadCount.value = 0;
     firstUnreadMessageId.value = null;
+    // Nothing new since the last mark_seen (e.g. on close): the server
+    // already has it, so don't send the same mark_seen again.
+    if (fresh.isEmpty) return;
+    socketService.markSeen(userId, groupId, messageIds: fresh);
   }
 
   /// Reports the loaded messages from others as delivered to this phone

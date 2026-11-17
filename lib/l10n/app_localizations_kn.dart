@@ -2361,6 +2361,9 @@ class AppLocalizationsKn extends AppLocalizations {
   String get chat_loadFailedTitle => 'ಸಂದೇಶಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ';
 
   @override
+  String get chat_refreshFailed => 'ರಿಫ್ರೆಶ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ';
+
+  @override
   String get chat_locationFetchFailed =>
       'ನಿಮ್ಮ ಲೊಕೇಶನ್ ಪಡೆಯಲಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 

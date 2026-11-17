@@ -2378,6 +2378,9 @@ class AppLocalizationsMl extends AppLocalizations {
   String get chat_loadFailedTitle => 'സന്ദേശങ്ങൾ ലോഡ് ചെയ്യാനായില്ല';
 
   @override
+  String get chat_refreshFailed => 'പുതുക്കാനായില്ല';
+
+  @override
   String get chat_locationFetchFailed =>
       'നിങ്ങളുടെ ലൊക്കേഷൻ ലഭിച്ചില്ല. വീണ്ടും ശ്രമിക്കുക.';
 

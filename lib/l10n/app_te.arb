@@ -655,6 +655,7 @@
   "chat_listenHindi": "వినండి (హిందీ)",
   "chat_loadFailedSubtitle": "మీ కనెక్షన్ చెక్ చేసి మళ్లీ ప్రయత్నించండి.",
   "chat_loadFailedTitle": "మెసేజ్‌లు లోడ్ కాలేదు",
+  "chat_refreshFailed": "రిఫ్రెష్ చేయలేకపోయాం",
   "chat_locationFetchFailed": "మీ లొకేషన్ పొందలేకపోయాం. దయచేసి మళ్లీ ప్రయత్నించండి.",
   "chat_locationPermissionNeeded": "లొకేషన్ షేర్ చేయడానికి లొకేషన్ అనుమతి అవసరం.",
   "chat_locationPermissionOff": "ఈ యాప్‌కు లొకేషన్ అనుమతి ఆఫ్‌లో ఉంది. లొకేషన్ షేర్ చేయడానికి సెట్టింగ్స్‌లో ఆన్ చేయండి.",

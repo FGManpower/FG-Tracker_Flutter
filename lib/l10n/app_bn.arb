@@ -655,6 +655,7 @@
   "chat_listenHindi": "শুনুন (হিন্দি)",
   "chat_loadFailedSubtitle": "আপনার কানেকশন দেখে আবার চেষ্টা করুন।",
   "chat_loadFailedTitle": "মেসেজ লোড করা যায়নি",
+  "chat_refreshFailed": "রিফ্রেশ করা যায়নি",
   "chat_locationFetchFailed": "আপনার লোকেশন পাওয়া যায়নি। আবার চেষ্টা করুন।",
   "chat_locationPermissionNeeded": "লোকেশন শেয়ার করতে লোকেশন পারমিশন দরকার।",
   "chat_locationPermissionOff": "এই অ্যাপের লোকেশন পারমিশন বন্ধ আছে। লোকেশন শেয়ার করতে সেটিংসে গিয়ে চালু করুন।",

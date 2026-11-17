@@ -655,6 +655,7 @@
   "chat_listenHindi": "ಆಲಿಸಿ (ಹಿಂದಿ)",
   "chat_loadFailedSubtitle": "ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
   "chat_loadFailedTitle": "ಸಂದೇಶಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ",
+  "chat_refreshFailed": "ರಿಫ್ರೆಶ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ",
   "chat_locationFetchFailed": "ನಿಮ್ಮ ಲೊಕೇಶನ್ ಪಡೆಯಲಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
   "chat_locationPermissionNeeded": "ಲೊಕೇಶನ್ ಹಂಚಿಕೊಳ್ಳಲು ಲೊಕೇಶನ್ ಅನುಮತಿ ಬೇಕು.",
   "chat_locationPermissionOff": "ಈ ಆ್ಯಪ್‌ಗೆ ಲೊಕೇಶನ್ ಅನುಮತಿ ಆಫ್ ಆಗಿದೆ. ಲೊಕೇಶನ್ ಹಂಚಿಕೊಳ್ಳಲು ಸೆಟ್ಟಿಂಗ್ಸ್‌ನಲ್ಲಿ ಆನ್ ಮಾಡಿ.",

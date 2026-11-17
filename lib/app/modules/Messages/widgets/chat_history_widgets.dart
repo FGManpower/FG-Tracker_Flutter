@@ -40,6 +40,51 @@ class ChatHistoryTopLoader extends StatelessWidget {
   }
 }
 
+/// Small bar over cached messages when the API refresh failed or timed out
+/// ("Couldn't refresh · Retry"). The cached messages stay on screen.
+class ChatRefreshFailedBar extends StatelessWidget {
+  final bool visible;
+  final VoidCallback onRetry;
+
+  const ChatRefreshFailedBar({
+    super.key,
+    required this.visible,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!visible) return const SizedBox.shrink();
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Material(
+        key: const ValueKey('chat_refresh_failed_bar'),
+        color: const Color(0xFF3C3C43),
+        borderRadius: BorderRadius.circular(18.r),
+        elevation: 2,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18.r),
+          onTap: onRetry,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.cloud_off_rounded, size: 15.sp, color: Colors.white70),
+                SizedBox(width: 6.w),
+                Text(
+                  '${context.l10n.chat_refreshFailed} · ${context.l10n.common_retry}',
+                  style: TextStyle(fontSize: 12.5.sp, color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Shown instead of "No messages here yet" when the history could not be
 /// loaded, so a network/API failure is never mistaken for an empty chat.
 class ChatHistoryErrorState extends StatelessWidget {

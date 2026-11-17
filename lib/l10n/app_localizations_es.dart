@@ -2385,6 +2385,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get chat_loadFailedTitle => 'No se pudieron cargar los mensajes';
 
   @override
+  String get chat_refreshFailed => 'No se pudo actualizar';
+
+  @override
   String get chat_locationFetchFailed =>
       'No se pudo obtener tu ubicación. Inténtalo de nuevo.';
 

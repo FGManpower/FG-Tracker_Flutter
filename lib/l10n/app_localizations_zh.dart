@@ -2265,6 +2265,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chat_loadFailedTitle => '无法加载消息';
 
   @override
+  String get chat_refreshFailed => '无法刷新';
+
+  @override
   String get chat_locationFetchFailed => '无法获取您的位置，请重试。';
 
   @override
@@ -9928,6 +9931,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get chat_loadFailedTitle => '無法載入訊息';
+
+  @override
+  String get chat_refreshFailed => '無法重新整理';
 
   @override
   String get chat_locationFetchFailed => '無法取得您的位置。請再試一次。';

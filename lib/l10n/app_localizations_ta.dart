@@ -2380,6 +2380,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get chat_loadFailedTitle => 'மெசேஜ்களை ஏற்ற முடியவில்லை';
 
   @override
+  String get chat_refreshFailed => 'புதுப்பிக்க முடியவில்லை';
+
+  @override
   String get chat_locationFetchFailed =>
       'உங்கள் லொகேஷனைப் பெற முடியவில்லை. மீண்டும் முயலவும்.';
 

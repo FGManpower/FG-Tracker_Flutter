@@ -2387,6 +2387,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get chat_loadFailedTitle => 'Impossible de charger les messages';
 
   @override
+  String get chat_refreshFailed => 'Actualisation impossible';
+
+  @override
   String get chat_locationFetchFailed =>
       'Impossible d’obtenir votre position. Veuillez réessayer.';
 

@@ -655,6 +655,7 @@
   "chat_listenHindi": "கேளுங்கள் (இந்தி)",
   "chat_loadFailedSubtitle": "இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.",
   "chat_loadFailedTitle": "மெசேஜ்களை ஏற்ற முடியவில்லை",
+  "chat_refreshFailed": "புதுப்பிக்க முடியவில்லை",
   "chat_locationFetchFailed": "உங்கள் லொகேஷனைப் பெற முடியவில்லை. மீண்டும் முயலவும்.",
   "chat_locationPermissionNeeded": "லொகேஷனைப் பகிர லொகேஷன் அனுமதி தேவை.",
   "chat_locationPermissionOff": "இந்த ஆப்பிற்கு லொகேஷன் அனுமதி முடக்கப்பட்டுள்ளது. லொகேஷனைப் பகிர அமைப்புகளில் இயக்கவும்.",

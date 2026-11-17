@@ -655,6 +655,7 @@
   "chat_listenHindi": "استماع (الهندية)",
   "chat_loadFailedSubtitle": "تحقق من اتصالك وحاول مرة أخرى.",
   "chat_loadFailedTitle": "تعذر تحميل الرسائل",
+  "chat_refreshFailed": "تعذّر التحديث",
   "chat_locationFetchFailed": "تعذر الحصول على موقعك. يرجى المحاولة مرة أخرى.",
   "chat_locationPermissionNeeded": "مطلوب إذن الموقع لمشاركة موقعك.",
   "chat_locationPermissionOff": "إذن الموقع مغلق لهذا التطبيق. يرجى تفعيله في الإعدادات لمشاركة موقعك.",

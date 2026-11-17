@@ -655,6 +655,7 @@
   "chat_listenHindi": "Écouter (Hindi)",
   "chat_loadFailedSubtitle": "Vérifiez votre connexion et réessayez.",
   "chat_loadFailedTitle": "Impossible de charger les messages",
+  "chat_refreshFailed": "Actualisation impossible",
   "chat_locationFetchFailed": "Impossible d’obtenir votre position. Veuillez réessayer.",
   "chat_locationPermissionNeeded": "L'autorisation de localisation est nécessaire pour partager votre position.",
   "chat_locationPermissionOff": "L'autorisation de localisation est désactivée pour cette application. Activez-la dans les Paramètres pour partager votre position.",

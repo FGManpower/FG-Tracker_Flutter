@@ -1752,6 +1752,7 @@
   "chat_listenHindi": "Listen (Hindi)",
   "chat_loadFailedSubtitle": "Check your connection and try again.",
   "chat_loadFailedTitle": "Couldn't load messages",
+  "chat_refreshFailed": "Couldn't refresh",
   "chat_locationFetchFailed": "Couldn't get your location. Please try again.",
   "chat_locationPermissionNeeded": "Location permission is needed to share your location.",
   "chat_locationPermissionOff": "Location permission is turned off for this app. Enable it in Settings to share your location.",

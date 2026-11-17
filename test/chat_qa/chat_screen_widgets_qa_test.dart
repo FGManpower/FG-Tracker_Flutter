@@ -127,10 +127,7 @@ void main() {
         memberData: MemberData(userId: 2, name: 'Asha'),
       ));
       expect(find.text('Not delivered yet'), findsOneWidget);
-    },
-        // BUG-CS-15: MessageInfoSheet.dart:545 treats any message with a
-        // timestamp as delivered, while the bubble shows a single grey tick.
-        skip: true);
+    }); // BUG-CS-15 fixed in code (passes in Run 2, 2026-11-17).
   });
 
   group('Message Info - Seen-by row tap feedback', () {
@@ -328,5 +325,71 @@ void main() {
           t, mine(seenBy: [{'userId': 2}, {'userId': '3'}]), [me, '2', '3']);
       expect(i.color, purple);
     }); // BUG-CS-13 fixed: ids are normalised (MessageReceipts).
+  });
+
+  // Run 2 (A5): the bubble tick and Message Info must always tell the same
+  // story (guide §11.1: one aggregation for both). For each receipt state the
+  // tick is read from the real GroupChatBubble and compared with what the
+  // real MessageInfoSheet lists for every recipient.
+  group('Bubble tick matches Message Info (group)', () {
+    const members = [me, '2', '3'];
+
+    MessageData state({List<String> read = const [], List<String> got = const []}) {
+      final msg = MessageData(id: 51, senderId: me, messageType: 'text',
+          content: 'hi', timestamp: '2026-11-17T10:00:00Z', seenBy: []);
+      msg.readBy = [for (final r in read) {'userId': r, 'readAt': '2026-11-17T10:05:00Z'}];
+      msg.deliveredTo = [
+        for (final d in got) {'userId': d, 'deliveredAt': '2026-11-17T10:01:00Z'}
+      ];
+      return msg;
+    }
+
+    Future<String> bubbleTick(WidgetTester t, MessageData msg) async {
+      final c = _group(members);
+      await t.pumpWidget(_app(Builder(
+        builder: (ctx) => GroupChatBubble(
+            message: msg, controller: c, context: ctx, isGroup: true, groupId: 1),
+      )));
+      final icon = t
+          .widgetList<Icon>(find.byWidgetPredicate((w) =>
+              w is Icon && (w.icon == Icons.done || w.icon == Icons.done_all)))
+          .single;
+      await t.pumpWidget(const SizedBox());
+      await t.pump(const Duration(seconds: 10));
+      if (icon.icon == Icons.done) return 'sent';
+      return icon.color == purple ? 'read' : 'delivered';
+    }
+
+    Future<String> infoTick(WidgetTester t, MessageData msg) async {
+      final c = _group(members);
+      await _pumpSheet(t, MessageInfoSheet(groupController: c, message: msg));
+      final recipients = members.where((id) => id != me);
+      bool listed(String kind, String id) =>
+          find.byKey(ValueKey('msg_info_${kind}_$id')).evaluate().isNotEmpty;
+      final allRead = recipients.every((id) => listed('read', id));
+      final allGot = recipients
+          .every((id) => listed('read', id) || listed('delivered', id));
+      await t.pumpWidget(const SizedBox());
+      await t.pump(const Duration(seconds: 1));
+      return allRead ? 'read' : (allGot ? 'delivered' : 'sent');
+    }
+
+    final cases = <String, MessageData Function()>{
+      'nobody': () => state(),
+      'delivered to one of two': () => state(got: ['2']),
+      'delivered to all': () => state(got: ['2', '3']),
+      'read by one, delivered to the other': () => state(read: ['2'], got: ['3']),
+      'read by one only': () => state(read: ['2']),
+      'read by all': () => state(read: ['2', '3']),
+    };
+
+    for (final e in cases.entries) {
+      testWidgets('${e.key}: same status in the bubble and in Info', (t) async {
+        ignoreListTileInkAssert();
+        final fromBubble = await bubbleTick(t, e.value());
+        final fromInfo = await infoTick(t, e.value());
+        expect(fromBubble, fromInfo, reason: e.key);
+      });
+    }
   });
 }

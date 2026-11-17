@@ -18,6 +18,7 @@ import 'package:socket_io_common/src/util/event_emitter.dart';
 import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:fgtracker/app/Core/util/rt_attachment_log.dart'; // TODO(rt-diagnostics)
 import 'package:fgtracker/app/modules/Messages/Controller/message_receipts.dart';
+import 'package:fgtracker/app/Data/Services/chat_message_cache.dart';
 void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
   if (kDebugMode) {
     developer.log(message, error: error, stackTrace: stackTrace, name: name ?? 'SocketMessageService');
@@ -1565,6 +1566,7 @@ class SocketMessageService extends GetxService {
           "private_chat_cleared",
               (data) {
             if (data is Map) {
+              _dropClearedPrivateChatCache(data);
               _privateChatClearedListCallback?.call(
                 Map<String, dynamic>.from(data),
               );
@@ -2383,6 +2385,17 @@ class SocketMessageService extends GetxService {
     ));
   }
 
+  /// A private chat was cleared (from the chat list, or on another device):
+  /// drop its saved copy so reopening it does not show the old messages.
+  /// Cache only; the chat list callback itself is unchanged.
+  void _dropClearedPrivateChatCache(Map data) {
+    final chatId = data['conversationId'] ??
+        data['conversation_id'] ??
+        data['chatId'] ??
+        data['chat_id'];
+    ChatMessageCache.clearPrivateByChatId(chatId);
+  }
+
   /// Listens for group chat cleared event (clear chat history strictly for calling user).
   void listenGroupChatCleared({
     required Function(Map<String, dynamic>) callback,
@@ -2718,6 +2731,7 @@ class SocketMessageService extends GetxService {
       "private_chat_cleared",
       (data) {
         if (data is Map) {
+          _dropClearedPrivateChatCache(data);
           _privateChatClearedListCallback?.call(
             Map<String, dynamic>.from(data),
           );

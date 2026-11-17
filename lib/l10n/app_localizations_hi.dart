@@ -2346,6 +2346,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get chat_loadFailedTitle => 'मैसेज लोड नहीं हो सके';
 
   @override
+  String get chat_refreshFailed => 'रीफ़्रेश नहीं हो सका';
+
+  @override
   String get chat_locationFetchFailed =>
       'आपकी लोकेशन नहीं मिल सकी। कृपया फिर से कोशिश करें।';
 

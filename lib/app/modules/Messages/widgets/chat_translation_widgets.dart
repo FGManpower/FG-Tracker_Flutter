@@ -167,11 +167,16 @@ class ChatMessageActionRow extends StatelessWidget {
   final String originalText;
   final bool isSentByMe;
 
+  /// False when the bubble already shows [ChatInlineListenButton] (plain
+  /// text): the row then only appears for the "Translating…" progress.
+  final bool showListen;
+
   const ChatMessageActionRow({
     super.key,
     required this.messageId,
     required this.originalText,
     required this.isSentByMe,
+    this.showListen = true,
   });
 
   @override
@@ -183,9 +188,7 @@ class ChatMessageActionRow extends StatelessWidget {
     final targetLang = isHindiMessage ? 'en' : 'hi';
     final cacheKey = '${messageId}_$targetLang';
 
-    return Padding(
-      padding: EdgeInsets.only(top: 4.h, bottom: 2.h),
-      child: Obx(() {
+    return Obx(() {
         final isTranslating =
             translationService.isTranslating[messageId] == true;
         final isTranslatedShowing =
@@ -196,6 +199,8 @@ class ChatMessageActionRow extends StatelessWidget {
         if (isTranslatedShowing && hasTranslation) {
           return const SizedBox.shrink();
         }
+        // Nothing to show: no empty gap under the bubble.
+        if (!showListen && !isTranslating) return const SizedBox.shrink();
 
         final audioId = '${messageId}_orig';
         final isPlaying =
@@ -203,7 +208,9 @@ class ChatMessageActionRow extends StatelessWidget {
         final isAudioLoading = translationService.isAudioLoading.value &&
             translationService.currentlyPlayingId.value == audioId;
 
-        return Row(
+        return Padding(
+          padding: EdgeInsets.only(top: 4.h, bottom: 2.h),
+          child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment:
               isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -231,7 +238,7 @@ class ChatMessageActionRow extends StatelessWidget {
               SizedBox(width: 16.w),
             ],
             // Listen Button
-            GestureDetector(
+            if (showListen) GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () {
                 translationService.playAudio(
@@ -274,8 +281,64 @@ class ChatMessageActionRow extends StatelessWidget {
               ),
             ),
           ],
+        ),
         );
-      }),
-    );
+      });
+  }
+}
+
+/// Small speaker icon inside a received text bubble, between the text and
+/// the time (UI, F-1.2.6). Same action as the "Listen" button of
+/// [ChatMessageActionRow]: plays / stops the original text.
+class ChatInlineListenButton extends StatelessWidget {
+  final String messageId;
+  final String originalText;
+
+  const ChatInlineListenButton({
+    super.key,
+    required this.messageId,
+    required this.originalText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (originalText.trim().isEmpty) return const SizedBox.shrink();
+    final translationService = ChatTranslationService.instance;
+    final isHindiMessage = RegExp(r'[ऀ-ॿ]').hasMatch(originalText);
+    final audioId = '${messageId}_orig';
+
+    return Obx(() {
+      final isPlaying = translationService.currentlyPlayingId.value == audioId;
+      final isAudioLoading =
+          translationService.isAudioLoading.value && isPlaying;
+      return Semantics(
+        button: true,
+        label: isPlaying ? context.l10n.chat_stop : context.l10n.chat_listen,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => translationService.playAudio(
+            audioId,
+            originalText,
+            lang: isHindiMessage ? 'hi' : 'en',
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
+            child: isAudioLoading
+                ? SizedBox(
+                    width: 13.w,
+                    height: 13.w,
+                    child: const CupertinoActivityIndicator(radius: 6),
+                  )
+                : Icon(
+                    isPlaying
+                        ? Icons.stop_circle_rounded
+                        : Icons.volume_up_outlined,
+                    size: 14.sp,
+                    color: const Color(0xFF7B6CF6),
+                  ),
+          ),
+        ),
+      );
+    });
   }
 }

@@ -655,6 +655,7 @@
   "chat_listenHindi": "收听（印地语）",
   "chat_loadFailedSubtitle": "请检查网络连接并重试。",
   "chat_loadFailedTitle": "无法加载消息",
+  "chat_refreshFailed": "无法刷新",
   "chat_locationFetchFailed": "无法获取您的位置，请重试。",
   "chat_locationPermissionNeeded": "共享位置需要位置权限。",
   "chat_locationPermissionOff": "此应用的位置权限已关闭。请在设置中启用它以共享您的位置。",

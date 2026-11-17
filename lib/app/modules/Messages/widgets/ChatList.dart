@@ -179,6 +179,10 @@ class ChatList extends StatelessWidget {
             children: [
               _buildList(messages),
               ChatHistoryTopLoader(visible: loadingOlder),
+              ChatRefreshFailedBar(
+                visible: loadFailed,
+                onRetry: controller.retryLoadHistory,
+              ),
             ],
           );
         },
@@ -331,7 +335,7 @@ class ChatList extends StatelessWidget {
                           vertical: 5.h,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(16.r),
                           boxShadow: [
                             BoxShadow(
@@ -346,7 +350,7 @@ class ChatList extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11.sp,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                            color: Colors.grey.shade700,
                           ),
                         ),
                       ),
@@ -881,19 +885,26 @@ class GroupChatList extends StatelessWidget {
               final nextMsg =
                   index < messages.length - 1 ? messages[index + 1] : null;
 
-              // WhatsApp Consecutive Clustering for Group Chat
+              // WhatsApp Consecutive Clustering for Group Chat: the name
+              // shows only on the first message of a run by the same person.
+              // A run ends at another sender, a system / call-log line or a
+              // new day (F-1.2.6; was: only within 60 s).
               bool isSameSenderAsPrev = false;
               if (prevMsg != null &&
                   prevMsg.senderId != null &&
-                  msg.senderId != null) {
+                  msg.senderId != null &&
+                  !prevMsg.isSystemMessage &&
+                  !prevMsg.isCallLogMessage) {
                 if (prevMsg.senderId.toString() == msg.senderId.toString()) {
                   final t1 =
                       DateTime.tryParse(prevMsg.timestamp?.toString() ?? '');
                   final t2 = DateTime.tryParse(msg.timestamp?.toString() ?? '');
-                  if (t1 != null &&
-                      t2 != null &&
-                      t2.difference(t1).abs().inSeconds <= 60) {
-                    isSameSenderAsPrev = true;
+                  if (t1 != null && t2 != null) {
+                    final d1 = t1.toLocal();
+                    final d2 = t2.toLocal();
+                    isSameSenderAsPrev = d1.year == d2.year &&
+                        d1.month == d2.month &&
+                        d1.day == d2.day;
                   }
                 }
               }
@@ -1010,7 +1021,7 @@ class GroupChatList extends StatelessWidget {
                           vertical: 5.h,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(16.r),
                           boxShadow: [
                             BoxShadow(
@@ -1025,7 +1036,7 @@ class GroupChatList extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11.sp,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                            color: Colors.grey.shade700,
                           ),
                         ),
                       ),
@@ -1047,7 +1058,11 @@ class GroupChatList extends StatelessWidget {
 
               return itemWidget;
             },
-          ), ChatHistoryTopLoader(visible: loadingOlder)]);
+          ), ChatHistoryTopLoader(visible: loadingOlder),
+          ChatRefreshFailedBar(
+            visible: loadFailed,
+            onRetry: controller.retryLoadHistory,
+          )]);
         },
       );
     });

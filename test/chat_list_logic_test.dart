@@ -83,7 +83,10 @@ void main() {
       expect(ChatListRules.isNewMessage(cur, upd), isFalse);
     });
 
-    test('no ids: falls back to a strictly newer time', () {
+    // T-02 (Run 2): anti-shuffle rule (F-1.1.5). Without ids, the same text
+    // is the same message even with a newer time (read / seen / updatedAt
+    // bumps must not reorder the list); a different text is a new message.
+    test('no ids: same text is not new, even with a newer time', () {
       final cur = chat(userId: 1, time: '2026-11-01T10:00:00Z');
       expect(
         ChatListRules.isNewMessage(cur, chat(userId: 1, time: '2026-11-01T10:00:00Z')),
@@ -91,7 +94,21 @@ void main() {
       );
       expect(
         ChatListRules.isNewMessage(cur, chat(userId: 1, time: '2026-11-01T10:00:01Z')),
+        isFalse,
+      );
+    });
+
+    test('no ids: a different text is new unless more than 5 s older', () {
+      final cur = chat(userId: 1, time: '2026-11-01T10:00:00Z');
+      expect(
+        ChatListRules.isNewMessage(
+            cur, chat(userId: 1, time: '2026-11-01T10:00:01Z', message: 'next')),
         isTrue,
+      );
+      expect(
+        ChatListRules.isNewMessage(
+            cur, chat(userId: 1, time: '2026-11-01T09:59:50Z', message: 'old')),
+        isFalse,
       );
     });
 

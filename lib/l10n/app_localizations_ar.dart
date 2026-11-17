@@ -2337,6 +2337,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get chat_loadFailedTitle => 'تعذر تحميل الرسائل';
 
   @override
+  String get chat_refreshFailed => 'تعذّر التحديث';
+
+  @override
   String get chat_locationFetchFailed =>
       'تعذر الحصول على موقعك. يرجى المحاولة مرة أخرى.';
 

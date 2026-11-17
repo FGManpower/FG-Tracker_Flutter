@@ -655,6 +655,7 @@
   "chat_listenHindi": "سنو (ہندی)",
   "chat_loadFailedSubtitle": "اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
   "chat_loadFailedTitle": "پیغامات لوڈ نہیں ہو سکے۔",
+  "chat_refreshFailed": "ریفریش نہیں ہو سکا",
   "chat_locationFetchFailed": "آپ کا مقام حاصل نہیں ہو سکا۔ براہ کرم دوبارہ کوشش کریں۔",
   "chat_locationPermissionNeeded": "آپ کے مقام کا اشتراک کرنے کے لیے مقام کی اجازت درکار ہے۔",
   "chat_locationPermissionOff": "اس ایپ کے لیے مقام کی اجازت بند ہے۔ اپنے مقام کا اشتراک کرنے کے لیے اسے ترتیبات میں فعال کریں۔",

@@ -47,6 +47,132 @@ import 'package:fgtracker/app/Core/util/app_log.dart';
 /// Text bubbles shrink-wrap via IntrinsicWidth. The attendance card has
 /// full-width bars and buttons (infinite intrinsic width), which crashes
 /// IntrinsicWidth, so it fills the bubble's max width instead.
+// ---- Bubble look (UI only, F-1.2.6) ----
+// Received: white. Mine: light lavender with a purple outline. All corners
+// rounded, no avatars, group sender names in a colour per sender.
+const Color _kMyBubbleBg = Color(0xFFF8F6FF);
+const Color _kMyBubbleBorder = Color(0xFF7B6CF6);
+
+BorderRadius _bubbleRadius() => BorderRadius.circular(14.r);
+
+Border? _bubbleBorder({required bool isSentByMe, required bool isAttendance}) =>
+    (isSentByMe && !isAttendance)
+        ? Border.all(color: _kMyBubbleBorder, width: 1.2)
+        : null;
+
+const List<Color> _kSenderNameColors = [
+  Color(0xFFE8710A), // orange
+  Color(0xFF1E9E5A), // green
+  Color(0xFF5045B9), // purple
+  Color(0xFFD63384), // pink
+  Color(0xFF0B7FC1), // blue
+  Color(0xFFB8860B), // dark gold
+  Color(0xFF8E44AD), // violet
+  Color(0xFF00897B), // teal
+];
+
+/// Same sender → same colour, in every group and every session.
+Color senderNameColor(Object? senderId) {
+  final key = senderId?.toString() ?? '';
+  if (key.isEmpty) return _kSenderNameColors[2];
+  var hash = 0;
+  for (final c in key.codeUnits) {
+    hash = (hash * 31 + c) & 0x7fffffff;
+  }
+  return _kSenderNameColors[hash % _kSenderNameColors.length];
+}
+
+/// WhatsApp-style single photo: shown in its own shape (portrait taller,
+/// landscape wider) instead of a fixed 220×200 box. Very tall / very wide
+/// photos are clamped and cropped like WhatsApp. The shape is read once per
+/// URL and remembered, so scrolling back never makes the list jump.
+class ChatImageAspectBox extends StatefulWidget {
+  final String imageUrl;
+  final double width;
+
+  /// Builds the tile for the computed height.
+  final Widget Function(double height) builder;
+
+  const ChatImageAspectBox({
+    super.key,
+    required this.imageUrl,
+    required this.width,
+    required this.builder,
+  });
+
+  /// height / width, per image URL.
+  static final Map<String, double> _ratios = {};
+
+  /// Tallest portrait and widest landscape shown in full.
+  static const double maxRatio = 1.4;
+  static const double minRatio = 0.55;
+
+  @override
+  State<ChatImageAspectBox> createState() => _ChatImageAspectBoxState();
+}
+
+class _ChatImageAspectBoxState extends State<ChatImageAspectBox> {
+  ImageStream? _stream;
+  ImageStreamListener? _listener;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  @override
+  void didUpdateWidget(covariant ChatImageAspectBox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageUrl != widget.imageUrl) {
+      _stop();
+      _resolve();
+    }
+  }
+
+  void _resolve() {
+    final url = widget.imageUrl;
+    if (url.isEmpty || ChatImageAspectBox._ratios.containsKey(url)) return;
+    _listener = ImageStreamListener(
+      (info, _) {
+        final w = info.image.width;
+        final h = info.image.height;
+        if (w > 0 && h > 0) {
+          ChatImageAspectBox._ratios[url] = h / w;
+          if (mounted) setState(() {});
+        }
+        _stop();
+      },
+      onError: (_, __) => _stop(),
+    );
+    _stream = CachedNetworkImageProvider(url, maxWidth: 600)
+        .resolve(ImageConfiguration.empty)
+      ..addListener(_listener!);
+  }
+
+  void _stop() {
+    if (_stream != null && _listener != null) {
+      _stream!.removeListener(_listener!);
+    }
+    _stream = null;
+    _listener = null;
+  }
+
+  @override
+  void dispose() {
+    _stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Square while the size is unknown (first load), like WhatsApp.
+    final ratio = (ChatImageAspectBox._ratios[widget.imageUrl] ?? 1.0)
+        .clamp(ChatImageAspectBox.minRatio, ChatImageAspectBox.maxRatio);
+    return widget.builder(widget.width * ratio);
+  }
+}
+
 Widget _bubbleWidth({required bool isAttendance, required Widget child}) {
   if (isAttendance) {
     return SizedBox(width: double.infinity, child: child);
@@ -318,30 +444,76 @@ String formatSystemMessageText(MessageData message, String currentUserId) {
   }
 }
 
-Widget _buildSystemMessageTile(String content) {
+/// People named in a system message ("sarita added prashant"), shown bold.
+List<String> _systemMessageNames(MessageData message) {
+  final meta = message.systemMeta;
+  if (meta == null) return const [];
+  final names = <String>{};
+  for (final key in const ['actorName', 'targetName']) {
+    final v = meta[key]?.toString().trim() ?? '';
+    if (v.isNotEmpty) names.add(v);
+  }
+  final added = meta['addedNames'] ?? meta['addedUserNames'];
+  if (added is List) {
+    for (final n in added) {
+      final v = n?.toString().trim() ?? '';
+      if (v.isNotEmpty) names.add(v);
+    }
+  }
+  // Longest first, so "Asha Rani" wins over "Asha".
+  return names.toList()..sort((a, b) => b.length.compareTo(a.length));
+}
+
+Widget _buildSystemMessageTile(String content,
+    {List<String> boldNames = const []}) {
+  final normal = TextStyle(
+    fontSize: 11.5.sp,
+    color: Colors.grey.shade700,
+    fontWeight: FontWeight.w500,
+  );
+  final bold = normal.copyWith(
+    color: const Color(0xFF1B1B1B),
+    fontWeight: FontWeight.w700,
+  );
+
+  // Split the text around the names (UI only; the text itself is unchanged).
+  final spans = <TextSpan>[];
+  var rest = content;
+  while (rest.isNotEmpty && boldNames.isNotEmpty) {
+    var at = -1;
+    var name = '';
+    for (final n in boldNames) {
+      final i = rest.indexOf(n);
+      if (i != -1 && (at == -1 || i < at)) {
+        at = i;
+        name = n;
+      }
+    }
+    if (at == -1) break;
+    if (at > 0) spans.add(TextSpan(text: rest.substring(0, at)));
+    spans.add(TextSpan(text: name, style: bold));
+    rest = rest.substring(at + name.length);
+  }
+  if (rest.isNotEmpty) spans.add(TextSpan(text: rest));
+
   return Center(
     child: Container(
       margin: EdgeInsets.symmetric(vertical: 6.h, horizontal: 24.w),
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F0F4),
-        borderRadius: BorderRadius.circular(10.r),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 3,
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
             offset: const Offset(0, 1),
           ),
         ],
       ),
-      child: Text(
-        content,
+      child: Text.rich(
+        TextSpan(style: normal, children: spans),
         textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 11.5.sp,
-          color: Colors.grey.shade700,
-          fontWeight: FontWeight.w500,
-        ),
       ),
     ),
   );
@@ -471,7 +643,7 @@ class ChatBubble extends StatelessWidget {
   });
 
   static const Color _purple = Color(0xFF5045B9);
-  static const Color _myBubbleBg = Color(0xFFDCD6F5);
+  static const Color _myBubbleBg = _kMyBubbleBg;
   static const Color _otherBubbleBg = Colors.white;
 
   bool get _isDeletedMessage =>
@@ -488,6 +660,7 @@ class ChatBubble extends StatelessWidget {
     if (message.isSystemMessage) {
       return _buildSystemMessageTile(
         formatSystemMessageText(message, currentUserId),
+        boldNames: _systemMessageNames(message),
       );
     }
 
@@ -522,73 +695,17 @@ class ChatBubble extends StatelessWidget {
     final bgColor = isSentByMe ? _myBubbleBg : _otherBubbleBg;
     final textColor = Colors.black87;
 
-    final borderRadius = isSentByMe
-        ? BorderRadius.only(
-      topLeft: Radius.circular(16.r),
-      topRight: Radius.circular(16.r),
-      bottomLeft: Radius.circular(16.r),
-      bottomRight: Radius.circular(4.r),
-    )
-        : BorderRadius.only(
-      topLeft: Radius.circular(4.r),
-      topRight: Radius.circular(16.r),
-      bottomLeft: Radius.circular(16.r),
-      bottomRight: Radius.circular(16.r),
-    );
+    final borderRadius = _bubbleRadius();
 
+    // No avatar next to received bubbles (UI, F-1.2.6): the app bar
+    // already shows and opens the contact's profile.
     return Container(
-      margin: EdgeInsets.symmetric(vertical: isDense ? 2.h : 6.h),
+      margin: EdgeInsets.symmetric(vertical: isDense ? 2.h : 5.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
         isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          if (!isSentByMe)
-            Padding(
-              padding: EdgeInsets.only(right: 8.w, top: 4.h),
-              child: showAvatar
-                  ? Builder(builder: (context) {
-                String? avatarUrl;
-                try {
-                  avatarUrl = controller.memberData.profileImage;
-                } catch (_) {}
-                return GestureDetector(
-                  onTap: () {
-                    try {
-                      final m = controller.memberData;
-                      openUserProfile(
-                        userId: m.userId,
-                        name: m.name,
-                        profileImage: m.profileImage,
-                        mobileNo: m.mobileNo,
-                        chatId: int.tryParse(
-                                controller.privateChatId.value.toString()) ??
-                            m.chatId,
-                      );
-                    } catch (_) {}
-                  },
-                  child: CircleAvatar(
-                  radius: 16.r,
-                  backgroundColor: const Color(0xFFECEAFD),
-                  backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
-                      ? NetworkImage(
-                    avatarUrl.startsWith('http')
-                        ? avatarUrl
-                        : "${ConstRes.aImageBaseUrl}$avatarUrl",
-                  )
-                      : null,
-                  child: (avatarUrl == null || avatarUrl.isEmpty)
-                      ? Icon(
-                    Icons.person_rounded,
-                    size: 16.sp,
-                    color: const Color(0xFF4818F0),
-                  )
-                      : null,
-                  ),
-                );
-              })
-                  : SizedBox(width: 32.r, height: 32.r),
-            ),
           Flexible(
             child: Builder(
               builder: (bubbleContext) {
@@ -632,6 +749,10 @@ class ChatBubble extends StatelessWidget {
                             borderRadius: isAttendance
                                 ? BorderRadius.circular(20.r)
                                 : borderRadius,
+                            border: _bubbleBorder(
+                              isSentByMe: isSentByMe,
+                              isAttendance: isAttendance,
+                            ),
                             boxShadow: isAttendance
                                 ? []
                                 : [
@@ -721,6 +842,8 @@ class ChatBubble extends StatelessWidget {
                           messageId: _getMessageTranslationId(message),
                           originalText: _getTranslatableText(message),
                           isSentByMe: isSentByMe,
+                          // Plain text has the speaker inside the bubble.
+                          showListen: !_isPlainTextMessage(message),
                         ),
                     ],
                   );
@@ -741,7 +864,7 @@ class ChatBubble extends StatelessWidget {
         Icon(
           Icons.block_rounded,
           size: 14.sp,
-          color: Colors.grey.shade900,
+          color: Colors.grey.shade600,
         ),
         SizedBox(width: 6.w),
         Flexible(
@@ -750,7 +873,7 @@ class ChatBubble extends StatelessWidget {
             style: TextStyle(
               fontSize: 13.sp,
               fontStyle: FontStyle.italic,
-              color: Colors.grey.shade900,
+              color: Colors.grey.shade600,
               height: 1.35,
             ),
           ),
@@ -900,7 +1023,16 @@ class ChatBubble extends StatelessWidget {
             isSentByMe,
           ),
         ),
-        SizedBox(width: 14.w),
+        // Speaker inside received text bubbles, before the time (UI, F-1.2.6).
+        if (!isSentByMe) ...[
+          SizedBox(width: 6.w),
+          ChatInlineListenButton(
+            messageId: _getMessageTranslationId(message),
+            originalText: _getTranslatableText(message),
+          ),
+          SizedBox(width: 6.w),
+        ] else
+          SizedBox(width: 14.w),
         _buildTimeRow(isSentByMe),
       ],
     );
@@ -1041,7 +1173,6 @@ class ChatBubble extends StatelessWidget {
                   imageUrl: getMediaUrl(imageList[index]),
                   fit: BoxFit.cover,
                   memCacheWidth: 600,
-                  memCacheHeight: 600,
                   placeholder: (context, url) => Container(
                     color: Colors.grey.shade200,
                     alignment: Alignment.center,
@@ -1110,13 +1241,18 @@ class ChatBubble extends StatelessWidget {
             if (mediaCount == 1)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12.r),
-                child: SizedBox(
-                  width: 220.w,
-                  height: 200.h,
-                  child: imageList.isNotEmpty
-                      ? buildImageTile(0, 220.w, 200.h)
-                      : buildVideoTile(videos.first, 0),
-                ),
+                // One photo: its own shape, like WhatsApp (F-1.2.6).
+                child: imageList.isNotEmpty
+                    ? ChatImageAspectBox(
+                        imageUrl: getMediaUrl(imageList.first),
+                        width: 220.w,
+                        builder: (h) => buildImageTile(0, 220.w, h),
+                      )
+                    : SizedBox(
+                        width: 220.w,
+                        height: 200.h,
+                        child: buildVideoTile(videos.first, 0),
+                      ),
               )
             else
               Builder(
@@ -1590,7 +1726,6 @@ class ChatBubble extends StatelessWidget {
             imageUrl: mediaUrl,
             fit: BoxFit.cover,
             memCacheWidth: 600,
-            memCacheHeight: 600,
             errorWidget: (_, __, ___) =>
                 Container(color: Colors.grey.shade300),
           ),
@@ -1943,7 +2078,7 @@ class GroupChatBubble extends StatelessWidget {
   });
 
   static const Color _purple = Color(0xFF5045B9);
-  static const Color _myBubbleBg = Color(0xFFDCD6F5);
+  static const Color _myBubbleBg = _kMyBubbleBg;
   static const Color _otherBubbleBg = Colors.white;
 
   bool get _isDeletedMessage =>
@@ -2004,6 +2139,7 @@ class GroupChatBubble extends StatelessWidget {
     if (message.isSystemMessage) {
       return _buildSystemMessageTile(
         formatSystemMessageText(message, currentUserId),
+        boldNames: _systemMessageNames(message),
       );
     }
 
@@ -2032,57 +2168,17 @@ class GroupChatBubble extends StatelessWidget {
 
     final textColor = Colors.black87;
 
-    final borderRadius = isSentByMe
-        ? BorderRadius.only(
-      topLeft: Radius.circular(16.r),
-      topRight: Radius.circular(16.r),
-      bottomLeft: Radius.circular(16.r),
-      bottomRight: Radius.circular(4.r),
-    )
-        : BorderRadius.only(
-      topLeft: Radius.circular(4.r),
-      topRight: Radius.circular(16.r),
-      bottomLeft: Radius.circular(16.r),
-      bottomRight: Radius.circular(16.r),
-    );
+    final borderRadius = _bubbleRadius();
 
+    // No avatar next to received bubbles (UI, F-1.2.6). The sender's name
+    // in the bubble still opens their info.
     return Container(
-      margin: EdgeInsets.symmetric(vertical: isDense ? 2.h : 6.h),
+      margin: EdgeInsets.symmetric(vertical: isDense ? 2.h : 5.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
         isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          if (isGroup && !isSentByMe)
-            Padding(
-              padding: EdgeInsets.only(
-                right: 8.w,
-                top: 4.h,
-              ),
-              child: showAvatar
-                  ? GestureDetector(
-                onTap: () => _openSenderInfo(asPopup: true),
-                child: CircleAvatar(
-                  radius: 18.r,
-                  backgroundColor: Colors.grey.shade200,
-                  backgroundImage: message.senderImage != null &&
-                      message.senderImage!.isNotEmpty
-                      ? NetworkImage(
-                    "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                  )
-                      : null,
-                  child: (message.senderImage == null ||
-                      message.senderImage!.isEmpty)
-                      ? Icon(
-                    Icons.person,
-                    size: 18.sp,
-                    color: Colors.grey.shade500,
-                  )
-                      : null,
-                ),
-              )
-                  : SizedBox(width: 36.r, height: 36.r),
-            ),
           Flexible(
             child: Builder(
               builder: (bubbleContext) {
@@ -2130,6 +2226,10 @@ class GroupChatBubble extends StatelessWidget {
                             borderRadius: isAttendance
                                 ? BorderRadius.circular(20.r)
                                 : borderRadius,
+                            border: _bubbleBorder(
+                              isSentByMe: isSentByMe,
+                              isAttendance: isAttendance,
+                            ),
                             boxShadow: isAttendance
                                 ? []
                                 : [
@@ -2162,7 +2262,8 @@ class GroupChatBubble extends StatelessWidget {
                                         style: TextStyle(
                                           fontSize: 12.sp,
                                           fontWeight: FontWeight.w700,
-                                          color: _purple,
+                                          color: senderNameColor(
+                                              message.senderId),
                                         ),
                                       ),
                                     ),
@@ -2239,6 +2340,8 @@ class GroupChatBubble extends StatelessWidget {
                           messageId: _getMessageTranslationId(message),
                           originalText: _getTranslatableText(message),
                           isSentByMe: isSentByMe,
+                          // Plain text has the speaker inside the bubble.
+                          showListen: !_isPlainTextMessage(message),
                         ),
                     ],
                   );
@@ -2259,7 +2362,7 @@ class GroupChatBubble extends StatelessWidget {
         Icon(
           Icons.block_rounded,
           size: 14.sp,
-          color: Colors.grey.shade900,
+          color: Colors.grey.shade600,
         ),
         SizedBox(width: 6.w),
         Flexible(
@@ -2268,7 +2371,7 @@ class GroupChatBubble extends StatelessWidget {
             style: TextStyle(
               fontSize: 13.sp,
               fontStyle: FontStyle.italic,
-              color: Colors.grey.shade900,
+              color: Colors.grey.shade600,
               height: 1.35,
             ),
           ),
@@ -2418,7 +2521,16 @@ class GroupChatBubble extends StatelessWidget {
         Expanded(
           child: _buildTextContent(message, textColor, isSentByMe),
         ),
-        SizedBox(width: 14.w),
+        // Speaker inside received text bubbles, before the time (UI, F-1.2.6).
+        if (!isSentByMe) ...[
+          SizedBox(width: 6.w),
+          ChatInlineListenButton(
+            messageId: _getMessageTranslationId(message),
+            originalText: _getTranslatableText(message),
+          ),
+          SizedBox(width: 6.w),
+        ] else
+          SizedBox(width: 14.w),
         _buildTimeRow(isSentByMe),
       ],
     );
@@ -2672,7 +2784,6 @@ class GroupChatBubble extends StatelessWidget {
             imageUrl: mediaUrl,
             fit: BoxFit.cover,
             memCacheWidth: 600,
-            memCacheHeight: 600,
             errorWidget: (_, __, ___) =>
                 Container(color: Colors.grey.shade300),
           ),
@@ -2811,7 +2922,6 @@ class GroupChatBubble extends StatelessWidget {
                   imageUrl: getMediaUrl(imageList[index]),
                   fit: BoxFit.cover,
                   memCacheWidth: 600,
-                  memCacheHeight: 600,
                   placeholder: (context, url) => Container(
                     color: Colors.grey.shade200,
                     alignment: Alignment.center,
@@ -2881,10 +2991,11 @@ class GroupChatBubble extends StatelessWidget {
             if (!hasMixedMedia && totalImages == 1)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12.r),
-                child: buildImageTile(
-                  0,
-                  220.w,
-                  200.h,
+                // One photo: its own shape, like WhatsApp (F-1.2.6).
+                child: ChatImageAspectBox(
+                  imageUrl: getMediaUrl(imageList.first),
+                  width: 220.w,
+                  builder: (h) => buildImageTile(0, 220.w, h),
                 ),
               )
             else if (!hasMixedMedia && totalImages > 1)
@@ -3822,7 +3933,6 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
                                     imageUrl: thumbUrl,
                                     fit: BoxFit.cover,
                                     memCacheWidth: 150,
-                                    memCacheHeight: 150,
                                     placeholder: (_, __) => Container(
                                       color: Colors.grey.shade900,
                                     ),

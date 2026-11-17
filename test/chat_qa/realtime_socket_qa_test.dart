@@ -89,13 +89,14 @@ void main() {
 
         expect(heard.toSet(), {...listUpdateEvents, ...fullListEvents});
       },
-      skip: 'BUG-RT-01: only chat_list_updated / conversation_updated are '
-          'heard; the other 7 list events are dropped on /privateChat '
-          '(listeners attach before initPrivateChatListSocket creates the socket)',
+      skip: 'BUG-RT-01 (Run 2: 6 of 9 heard): private_chat_list_updated, '
+          'common_chat_list_updated and unified_chat_list_updated are still '
+          'dropped on /privateChat (listeners attach before '
+          'initPrivateChatListSocket creates the socket)',
     );
 
-    test('RT-01b evidence: with the real app order only 2 of 9 events arrive',
-        () async {
+    test('RT-01b evidence: with the real app order 6 of 9 events arrive '
+        '(Run 1: 2 of 9)', () async {
       final heard = <String>[];
       svc.listenPrivateChatListUpdated(
           callback: (d) => heard.add((d as Map)['ev'] as String));
@@ -107,7 +108,17 @@ void main() {
       }
       await settle();
       // Records the current (buggy) behaviour so a fix shows up as a change.
-      expect(heard.toSet(), {'chat_list_updated', 'conversation_updated'});
+      // Run 2 (2026-11-17, F-1.2.5): 6 of 9. Still lost:
+      // private_chat_list_updated, common_chat_list_updated,
+      // unified_chat_list_updated.
+      expect(heard.toSet(), {
+        'chat_list_updated',
+        'conversation_updated',
+        'group_chat_list_updated',
+        'chat_list',
+        'common_chat_list',
+        'unified_chat_list',
+      });
     });
 
     test('RT-02 listeners registered AFTER the socket exists hear all 9 events',

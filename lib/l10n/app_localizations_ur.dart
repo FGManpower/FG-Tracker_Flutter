@@ -2349,6 +2349,9 @@ class AppLocalizationsUr extends AppLocalizations {
   String get chat_loadFailedTitle => 'پیغامات لوڈ نہیں ہو سکے۔';
 
   @override
+  String get chat_refreshFailed => 'ریفریش نہیں ہو سکا';
+
+  @override
   String get chat_locationFetchFailed =>
       'آپ کا مقام حاصل نہیں ہو سکا۔ براہ کرم دوبارہ کوشش کریں۔';
 

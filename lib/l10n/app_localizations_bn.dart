@@ -2346,6 +2346,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get chat_loadFailedTitle => 'মেসেজ লোড করা যায়নি';
 
   @override
+  String get chat_refreshFailed => 'রিফ্রেশ করা যায়নি';
+
+  @override
   String get chat_locationFetchFailed =>
       'আপনার লোকেশন পাওয়া যায়নি। আবার চেষ্টা করুন।';
 

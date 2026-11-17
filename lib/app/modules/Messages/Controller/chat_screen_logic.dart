@@ -9,6 +9,10 @@ class ChatScreenRules {
   /// Messages per history request.
   static const int pageSize = 20;
 
+  /// First history page on open: after this the screen keeps what it shows
+  /// (cached messages) and offers Retry instead of spinning forever.
+  static const Duration historyTimeout = Duration(seconds: 10);
+
   /// How many older pages a reply-jump may load while looking for the
   /// original message before giving up with "Message not available".
   static const int maxReplyJumpPages = 10;

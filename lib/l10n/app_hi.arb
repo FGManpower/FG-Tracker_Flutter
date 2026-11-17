@@ -655,6 +655,7 @@
   "chat_listenHindi": "सुनें (हिंदी)",
   "chat_loadFailedSubtitle": "अपना कनेक्शन जाँचें और फिर से कोशिश करें।",
   "chat_loadFailedTitle": "मैसेज लोड नहीं हो सके",
+  "chat_refreshFailed": "रीफ़्रेश नहीं हो सका",
   "chat_locationFetchFailed": "आपकी लोकेशन नहीं मिल सकी। कृपया फिर से कोशिश करें।",
   "chat_locationPermissionNeeded": "लोकेशन शेयर करने के लिए लोकेशन परमिशन ज़रूरी है।",
   "chat_locationPermissionOff": "इस ऐप के लिए लोकेशन परमिशन बंद है। लोकेशन शेयर करने के लिए इसे सेटिंग्स में चालू करें।",

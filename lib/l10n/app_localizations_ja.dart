@@ -2272,6 +2272,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chat_loadFailedTitle => 'メッセージを読み込めませんでした';
 
   @override
+  String get chat_refreshFailed => '更新できませんでした';
+
+  @override
   String get chat_locationFetchFailed => '現在地を取得できませんでした。もう一度お試しください。';
 
   @override

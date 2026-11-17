@@ -4065,6 +4065,12 @@ abstract class AppLocalizations {
   /// **'Couldn\'t load messages'**
   String get chat_loadFailedTitle;
 
+  /// No description provided for @chat_refreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t refresh'**
+  String get chat_refreshFailed;
+
   /// No description provided for @chat_locationFetchFailed.
   ///
   /// In en, this message translates to:

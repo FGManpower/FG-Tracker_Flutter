@@ -9,7 +9,6 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/storage_services.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Message_Services.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
-import 'package:fgtracker/app/modules/Messages/Controller/private_chat_cache.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
@@ -156,66 +155,6 @@ void main() {
     });
   });
 
-  group('PrivateChatCache (old messages survive a block)', () {
-    setUp(() async => prefs());
-
-    test('CACHE-01 round trip keeps text, audio and ids, oldest first',
-        () async {
-      await PrivateChatCache.save(peer, [
-        msg(1, content: 'first'),
-        msg(2, audioUrl: 'uploads/a.m4a'),
-      ]);
-      final back = PrivateChatCache.load(peer);
-      expect(back.map((m) => m.id), [1, 2]);
-      expect(back.first.content, 'first');
-      expect(back.last.audioUrl, 'uploads/a.m4a');
-      expect(back.last.clientMessageId, 'c_2');
-    });
-
-    test('CACHE-02 keeps only the newest 50, skips unsent (no id)', () async {
-      await PrivateChatCache.save(peer, [
-        for (var i = 1; i <= 60; i++) msg(i),
-        msg(null),
-      ]);
-      final back = PrivateChatCache.load(peer);
-      expect(back, hasLength(PrivateChatCache.maxMessages));
-      expect(back.first.id, 11);
-      expect(back.last.id, 60);
-    });
-
-    test('CACHE-03 an empty list never wipes a saved copy', () async {
-      await PrivateChatCache.save(peer, [msg(1)]);
-      await PrivateChatCache.save(peer, []);
-      expect(PrivateChatCache.load(peer), hasLength(1));
-    });
-
-    test('CACHE-04 clear removes it (Clear chat)', () async {
-      await PrivateChatCache.save(peer, [msg(1)]);
-      await PrivateChatCache.clear(peer);
-      expect(PrivateChatCache.load(peer), isEmpty);
-    });
-
-    test('CACHE-05 only the 20 most recent chats are kept', () async {
-      for (var p = 1; p <= PrivateChatCache.maxChats + 5; p++) {
-        await PrivateChatCache.save('$p', [msg(p)]);
-      }
-      expect(PrivateChatCache.load('1'), isEmpty);
-      expect(PrivateChatCache.load('5'), isEmpty);
-      expect(PrivateChatCache.load('6'), hasLength(1));
-      expect(PrivateChatCache.load('${PrivateChatCache.maxChats + 5}'),
-          hasLength(1));
-    });
-
-    test('CACHE-06 another account on the phone never sees the copy',
-        () async {
-      await PrivateChatCache.save(peer, [msg(1)]);
-      await Global.storageServices.setString(PrefConst.userId, '999');
-      expect(PrivateChatCache.load(peer), isEmpty);
-    });
-
-    test('CACHE-07 a corrupt value loads as empty, never throws', () async {
-      await prefs({'private_chat_cache_${me}_$peer': '{not json'});
-      expect(PrivateChatCache.load(peer), isEmpty);
-    });
-  });
+  // The local chat copy tests (CACHE-01 … 07) moved to
+  // test/chat_qa/chat_message_cache_test.dart with the Hive cache (F-1.2.4).
 }

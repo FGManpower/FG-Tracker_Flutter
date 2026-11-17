@@ -2377,6 +2377,9 @@ class AppLocalizationsOr extends AppLocalizations {
   String get chat_loadFailedTitle => 'ବାର୍ତ୍ତା ଲୋଡ୍ ହୋଇପାରିଲା ନାହିଁ |';
 
   @override
+  String get chat_refreshFailed => 'ରିଫ୍ରେସ୍ କରିହେଲା ନାହିଁ';
+
+  @override
   String get chat_locationFetchFailed =>
       'ତୁମର ଅବସ୍ଥାନ ପାଇପାରିଲା ନାହିଁ | ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |';
 

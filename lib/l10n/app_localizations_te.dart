@@ -2359,6 +2359,9 @@ class AppLocalizationsTe extends AppLocalizations {
   String get chat_loadFailedTitle => 'మెసేజ్‌లు లోడ్ కాలేదు';
 
   @override
+  String get chat_refreshFailed => 'రిఫ్రెష్ చేయలేకపోయాం';
+
+  @override
   String get chat_locationFetchFailed =>
       'మీ లొకేషన్ పొందలేకపోయాం. దయచేసి మళ్లీ ప్రయత్నించండి.';
 
