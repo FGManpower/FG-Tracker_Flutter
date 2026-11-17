@@ -242,7 +242,7 @@ class _FloatingCallBubbleState extends State<_FloatingCallBubble> {
                         ? profileImage
                         : '${ConstRes.aImageBaseUrl}$profileImage',
                   )
-                : const AssetImage(MyAppTheme.ProfilenotFoundImg) as ImageProvider,
+                : CachedNetworkImageProvider(MyAppTheme.ProfilenotFoundImg) as ImageProvider,
           ),
           SizedBox(width: 8.w),
           Expanded(
