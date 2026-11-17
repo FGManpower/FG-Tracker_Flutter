@@ -78,10 +78,6 @@ class IncomingCallController extends GetxController {
   }
 
   void acceptCall() {
-    if (offer == null) {
-      Get.snackbar(appL10n.call_pleaseWait, appL10n.call_connectingProgress);
-      return;
-    }
     FlutterRingtonePlayer().stop();
     CallStateTracker.isIncomingCallScreenOpen = false;
 

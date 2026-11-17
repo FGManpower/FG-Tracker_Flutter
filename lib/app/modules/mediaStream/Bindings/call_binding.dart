@@ -13,6 +13,7 @@ class StreamBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<CallingController>(
       () => CallingController(),
+      fenix: true,
     );
   }
 }

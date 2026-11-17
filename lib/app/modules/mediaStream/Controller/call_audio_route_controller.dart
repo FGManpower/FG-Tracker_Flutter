@@ -753,7 +753,9 @@ class CallAudioRouteController extends GetxController
 
   Future<bool> _setCommunicationDevice(CallAudioRoute route) async {
     final AndroidAudioManager am = AndroidAudioManager();
+    final bool speaker = route == CallAudioRoute.speaker;
 
+    bool ok = false;
     try {
       final List<AndroidAudioDeviceInfo> devices =
           await am.getAvailableCommunicationDevices();
@@ -766,29 +768,44 @@ class CallAudioRouteController extends GetxController
         }
       }
 
-      if (target == null) {
+      if (target != null) {
+        ok = await am.setCommunicationDevice(target);
+        _log(
+          'setCommunicationDevice(${target.type.name}#${target.id}) '
+          'route=${route.name} ok=$ok',
+        );
+      } else {
         if (route == CallAudioRoute.earpiece) {
           await am.clearCommunicationDevice();
           _log('no earpiece device, cleared to platform default');
-          return false;
+        } else {
+          _log('no ${route.name} device in comm devices, falling back to legacy');
         }
-        _log('no ${route.name} device in comm devices, nothing to set');
-        return false;
       }
-
-      final bool ok = await am.setCommunicationDevice(target);
-      _log(
-        'setCommunicationDevice(${target.type.name}#${target.id}) '
-        'route=${route.name} ok=$ok',
-      );
-      return ok;
     } catch (error) {
       _log('comm-device path unavailable (${error.runtimeType}), legacy route');
-      try {
-        await Helper.setSpeakerphoneOn(route == CallAudioRoute.speaker);
-      } catch (_) {}
-      return true;
     }
+
+    // ALWAYS ensure WebRTC native layer and Android audio manager stay 100% in sync
+    try {
+      await am.setSpeakerphoneOn(speaker);
+    } catch (_) {}
+    try {
+      await Helper.setSpeakerphoneOn(speaker);
+    } catch (_) {}
+    try {
+      if (speaker) {
+        await Helper.selectAudioOutput('speaker');
+      } else if (route == CallAudioRoute.bluetooth) {
+        await Helper.selectAudioOutput('bluetooth');
+      } else if (route == CallAudioRoute.headset) {
+        await Helper.selectAudioOutput('wired-headset');
+      } else {
+        await Helper.selectAudioOutput('earpiece');
+      }
+    } catch (_) {}
+
+    return ok || true;
   }
 
   CallAudioRoute? _routeOfDevice(AndroidAudioDeviceType type) {

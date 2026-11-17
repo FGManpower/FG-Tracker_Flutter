@@ -31,9 +31,15 @@ class CallingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      child: GetBuilder<CallingController>(builder: (c) => _screen(context, c)),
+    return GetBuilder<CallingController>(
+      builder: (c) => PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          c.minimizeCall();
+        },
+        child: _screen(context, c),
+      ),
     );
   }
 
@@ -147,7 +153,7 @@ class CallingScreen extends StatelessWidget {
 
           return Column(
             children: [
-              if (isVideo && !hideChrome) IgnorePointer(child: _topInfo(c)),
+              if (!hideChrome) _topBar(context, c, isVideo),
               _shareBanner(c),
               if (!isVideo && !remoteScreen)
                 Expanded(child: AudiocallScreen(controller: c))
@@ -159,6 +165,72 @@ class CallingScreen extends StatelessWidget {
         }),
       ),
     );
+  }
+
+  Widget _topBar(BuildContext context, CallingController c, bool isVideo) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          GestureDetector(
+            onTap: () => c.minimizeCall(),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.45),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white24, width: 1),
+              ),
+              child: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Colors.white,
+                size: 26.sp,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "${c.args["callerName"] ?? ""}",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontFamily: FontFamily.interBold,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Obx(() => Text(
+                  c.callTimer != null || c.callDurationRx.value > 0
+                      ? _formatCallDuration(c.callDurationRx.value)
+                      : c.callStatus.value,
+                  style: TextStyle(
+                    color: c.callStatus.value == "Reconnecting..."
+                        ? const Color(0xFFFFB020)
+                        : Colors.white70,
+                    fontSize: 12.sp,
+                    fontFamily: FontFamily.interMedium,
+                  ),
+                )),
+              ],
+            ),
+          ),
+          SizedBox(width: 42.w),
+        ],
+      ),
+    );
+  }
+
+  String _formatCallDuration(int totalSeconds) {
+    final int minutes = totalSeconds ~/ 60;
+    final int seconds = totalSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   bool _chromeHidden(

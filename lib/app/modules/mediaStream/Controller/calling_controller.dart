@@ -24,8 +24,12 @@ import '../../../Data/Services/IncommingCallKit/call_session.dart'
     show CallSessionState;
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
 import '../Widget/audio_route_sheet.dart';
+import '../Services/in_app_call_overlay_service.dart';
 
 class CallingController extends GetxController with WidgetsBindingObserver {
+  static CallingController get instance => Get.find<CallingController>();
+  final RxBool isMinimized = false.obs;
+
   static const String _camTag = 'a=x-cam-on:';
 
   RTCPeerConnection? _screenPc;
@@ -606,6 +610,18 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     Get.offAllNamed(Routes.Home_Screen);
   }
 
+  void minimizeCall() {
+    if (_hasExitedScreen || _isCleaningUp) return;
+    isMinimized.value = true;
+    InAppCallOverlayService.instance.showOverlay(this);
+    final NavigatorState? nav = Get.key.currentState;
+    if (nav != null && nav.canPop()) {
+      nav.pop();
+    } else {
+      Get.offAllNamed(Routes.Home_Screen);
+    }
+  }
+
   void toggleVideoViews() {
     if (!isVideoCall.value) return;
     if (!isVideoOn || !isRemoteVideoOn) {
@@ -945,6 +961,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     final String sessionId = _sessionId;
 
     try {
+      InAppCallOverlayService.instance.hideOverlay();
+      isMinimized.value = false;
       _clearTimers();
       _controlsTimer?.cancel();
       _peerDisconnectTimer?.cancel();
@@ -993,6 +1011,48 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       return CallSessionState.sessionId!;
     }
     return callId != null ? callId.toString() : "";
+  }
+
+  Future<void> _startCallForegroundService() async {
+    if (defaultTargetPlatform != TargetPlatform.android) return;
+    try {
+      if (!FlutterForegroundTask.isInitialized) {
+        FlutterForegroundTask.init(
+          androidNotificationOptions: AndroidNotificationOptions(
+            channelId: 'fgtracker_call_service',
+            channelName: appL10n.call_ongoingChannelName,
+            channelDescription: appL10n.call_ongoingChannelDescription,
+            channelImportance: NotificationChannelImportance.LOW,
+            priority: NotificationPriority.LOW,
+          ),
+          iosNotificationOptions: const IOSNotificationOptions(
+            showNotification: false,
+            playSound: false,
+          ),
+          foregroundTaskOptions: ForegroundTaskOptions(
+            eventAction: ForegroundTaskEventAction.repeat(5000),
+            autoRunOnBoot: false,
+            allowWakeLock: true,
+            allowWifiLock: true,
+          ),
+        );
+      }
+
+      if (await FlutterForegroundTask.isRunningService) return;
+
+      final ServiceRequestResult result = await FlutterForegroundTask.startService(
+        serviceId: 9910,
+        notificationTitle: isVideoCall.value ? "FG Tracker Video Call" : "FG Tracker Voice Call",
+        notificationText: "Call in progress...",
+        serviceTypes: const <ForegroundServiceTypes>[
+          ForegroundServiceTypes.microphone,
+          ForegroundServiceTypes.phoneCall,
+        ],
+      );
+      log("[Call] foreground call service started: $result");
+    } catch (e) {
+      log("[Call] startCallForegroundService error: $e");
+    }
   }
 
   Future<void> _stopForegroundCallService() async {
@@ -2102,6 +2162,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         _cancelPeerDisconnectTimer();
         missedCallTimer?.cancel();
         missedCallTimer = null;
+        unawaited(_startCallForegroundService());
         return;
       }
 
@@ -2127,6 +2188,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
         _everConnected = true;
         _cancelPeerDisconnectTimer();
+        unawaited(_startCallForegroundService());
         unawaited(audioRouteController.reapplyCurrentRoute());
         return;
       }
