@@ -68,12 +68,35 @@ class Urls {
   static String replyStatus(int id) => "status/$id/reply";
   static String deleteStatus(int id) => "status/$id";
 
-  ///------------------------ Params ------------------------///
-  static const String rtcUserName = 'fgtracker';
-  static const String rtcCredential = 'FGM_Tracker@2025';
-  static const List rtcUrl = [
+  ///------------------------ WebRTC TURN / STUN Configuration ------------------------///
+  // AWS Production LiveKit TURN Credentials (Mumbai ap-south-1)
+  static const String _awsRtcUserName = 'API_fgtracker_sfu_2026';
+  static const String _awsRtcCredential =
+      'SEC_livekit_prod_7f8a9b2c3d4e5f6a7b8c9d0e1f2a3b4c';
+  static const List<String> _awsRtcUrl = [
+    'stun:sfu.fgtracker.fgmanpower.co.in:3478',
+    'turn:sfu.fgtracker.fgmanpower.co.in:3478?transport=udp',
+    'turn:sfu.fgtracker.fgmanpower.co.in:3478?transport=tcp',
+  ];
+
+  // Hostinger VPS Coturn Credentials (Testing / Staging)
+  static const String _vpsRtcUserName = 'fgtracker';
+  static const String _vpsRtcCredential = 'FGM_Tracker@2025';
+  static const List<String> _vpsRtcUrl = [
     'turn:89.116.23.2:3478?transport=udp',
     'turn:89.116.23.2:3478?transport=tcp',
     'turns:89.116.23.2:443?transport=tcp',
   ];
+
+  /// Active WebRTC Credentials (selected by ConstRes.isProduction)
+  static const String rtcUserName =
+      ConstRes.isProduction ? _awsRtcUserName : _vpsRtcUserName;
+  static const String rtcCredential =
+      ConstRes.isProduction ? _awsRtcCredential : _vpsRtcCredential;
+  static const List rtcUrl =
+      ConstRes.isProduction ? _awsRtcUrl : _vpsRtcUrl;
+
+  ///------------------------ LiveKit SFU Endpoints ------------------------///
+  static const String livekitToken = '${ConstRes.aBaseUrl}calls/livekit-token';
+  static const String livekitWsUrl = 'wss://sfu.fgtracker.fgmanpower.co.in';
 }

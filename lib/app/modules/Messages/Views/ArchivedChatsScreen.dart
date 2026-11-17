@@ -17,12 +17,13 @@ import '../widgets/custom_dropdown_menu.dart';
 import '../widgets/custom_dropdown_menu.dart' as CustomDropdownMenu;
 import 'Chat_Screen.dart';
 import '../../../routes/app_pages.dart';
+import '../../../Core/constant/const_res.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 
 class ArchivedChatsScreen extends StatelessWidget {
   const ArchivedChatsScreen({super.key});
 
-  static const String _imageBaseUrl = 'http://fgtracker.in:3000';
+  static String get _imageBaseUrl => ConstRes.aImageBaseUrl;
 
   @override
   Widget build(BuildContext context) {

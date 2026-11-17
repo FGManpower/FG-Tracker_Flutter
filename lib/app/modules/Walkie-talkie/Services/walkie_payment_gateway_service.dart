@@ -76,7 +76,7 @@ class WalkiePaymentGatewayService {
         'customer_phone': formattedPhone,
       },
       'order_meta': {
-        'return_url': 'https://fgtracker.in/payment/status?order_id=$orderId',
+        'return_url': '${ConstRes.DeepLink_Url}/payment/status?order_id=$orderId',
         'notify_url': '${ConstRes.aBaseUrl}walkie/payment/webhook',
       },
       'order_note': '$planTitle ($durationName) - $memberCount member(s)',

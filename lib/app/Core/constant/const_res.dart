@@ -6,19 +6,32 @@ class ConstRes {
   static const String appVersion = '2.0.3';
   static const int appBuildNumber = 203;
 
-  ///------------------------ Backend urls and key ------------------------///
+  ///------------------------ Environment Switch ------------------------///
+  /// Set [isProduction] = true to connect to AWS Cloud Production (Mumbai ap-south-1).
+  /// Set [isProduction] = false to connect to the existing Hostinger VPS for Testing.
+  /// Can also be toggled at compile-time via:
+  ///   flutter run --dart-define=IS_PROD=true
+  ///   flutter run --dart-define=IS_PROD=false
+  static const bool isProduction =
+      bool.fromEnvironment('IS_PROD', defaultValue: true);
 
-  // static const String development = 'http://10.57.204.163:4000/'; // Development
-  // Active hostinger server IP (89.116.23.2) is used directly because fgtracker.in DNS
-  // contains an obsolete round-robin A-record (2.57.91.91) which drops packets and causes timeouts.
-  static const String production = 'http://89.116.23.2:3000/'; //Prod
-  // static const String production = 'http://fgtracker.in:3000/'; //Prod (Has dead 2.57.91.91 DNS round-robin)
+  ///------------------------ Server Endpoints By Environment ------------------------///
+  // AWS Production (Mumbai ap-south-1 - HTTPS & WSS via ALB)
+  static const String _awsServerUrl = 'https://api.fgtracker.fgmanpower.co.in/';
+  static const String _awsSocketUrl = 'https://api.fgtracker.fgmanpower.co.in';
+  static const String _awsDeepLinkUrl = 'https://fgtracker.fgmanpower.co.in';
+
+  // Hostinger VPS Server (Testing / Staging - HTTP & WS)
+  static const String _vpsServerUrl = 'http://89.116.23.2:3000/';
+  static const String _vpsSocketUrl = 'http://89.116.23.2:3000';
+  static const String _vpsDeepLinkUrl = 'https://fgtracker.in';
+
+  ///------------------------ Active Backend URLs & Keys ------------------------///
+  static const String production = isProduction ? _awsServerUrl : _vpsServerUrl;
   static const String aBaseUrl = '${production}api/';
   static const String aImageBaseUrl = production;
-  static String socketUrl = "http://89.116.23.2:3000"; //pro
-  // static String socketUrl = "http://fgtracker.in:3000"; //pro
-  // static const String socketUrl = "http://10.57.204.163:4000"; //dev
-  static String DeepLink_Url = "https://fgtracker.in";
+  static const String socketUrl = isProduction ? _awsSocketUrl : _vpsSocketUrl;
+  static const String DeepLink_Url = isProduction ? _awsDeepLinkUrl : _vpsDeepLinkUrl;
   static String gMapApiKey = "AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q";
 
   ///------------------------ Payment Gateway Credentials ------------------------///
