@@ -21,7 +21,10 @@ import '../Controller/calling_controller.dart';
 class CallingScreen extends StatelessWidget {
   CallingScreen({super.key});
 
-  final controller = Get.put(CallingController());
+  CallingController get controller =>
+      Get.isRegistered<CallingController>()
+          ? Get.find<CallingController>()
+          : Get.put(CallingController(), permanent: true);
 
   static const Color _danger = Color(0xFFFF3B30);
   static const Color _warn = Color(0xFFFFB020);
@@ -31,16 +34,15 @@ class CallingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<CallingController>(
-      builder: (c) => PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, result) {
-          if (didPop) return;
-          c.minimizeCall();
-        },
-        child: _screen(context, c),
-      ),
-    );
+    final c = controller;
+    return Obx(() => PopScope(
+      canPop: c.isMinimized.value,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        c.minimizeCall();
+      },
+      child: _screen(context, c),
+    ));
   }
 
   Widget _screen(BuildContext context, CallingController c) {
@@ -191,36 +193,39 @@ class CallingScreen extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "${c.args["callerName"] ?? ""}",
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontFamily: FontFamily.interBold,
+          if (isVideo)
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "${c.args["callerName"] ?? ""}",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontFamily: FontFamily.interBold,
+                    ),
                   ),
-                ),
-                SizedBox(height: 2.h),
-                Obx(() => Text(
-                  c.callTimer != null || c.callDurationRx.value > 0
-                      ? _formatCallDuration(c.callDurationRx.value)
-                      : c.callStatus.value,
-                  style: TextStyle(
-                    color: c.callStatus.value == "Reconnecting..."
-                        ? const Color(0xFFFFB020)
-                        : Colors.white70,
-                    fontSize: 12.sp,
-                    fontFamily: FontFamily.interMedium,
-                  ),
-                )),
-              ],
-            ),
-          ),
+                  SizedBox(height: 2.h),
+                  Obx(() => Text(
+                    c.callTimer != null || c.callDurationRx.value > 0
+                        ? _formatCallDuration(c.callDurationRx.value)
+                        : c.callStatus.value,
+                    style: TextStyle(
+                      color: c.callStatus.value == "Reconnecting..."
+                          ? const Color(0xFFFFB020)
+                          : Colors.white70,
+                      fontSize: 12.sp,
+                      fontFamily: FontFamily.interMedium,
+                    ),
+                  )),
+                ],
+              ),
+            )
+          else
+            const Spacer(),
           SizedBox(width: 42.w),
         ],
       ),

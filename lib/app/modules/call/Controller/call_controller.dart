@@ -717,8 +717,12 @@ class CallController extends GetxController {
     final String targetGroupId =
     (call.groupId ?? contact?.groupId ?? '').trim();
 
+    final bool isExplicitPrivate = call.isGroup == false ||
+        (call.type ?? '').toLowerCase() == 'private' ||
+        (entry.call.type ?? '').toLowerCase() == 'private';
+
     GroupsResData? matchedGroup;
-    if (targetGroupId.isNotEmpty) {
+    if (!isExplicitPrivate && targetGroupId.isNotEmpty && targetGroupId != "0") {
       final int? gId = int.tryParse(targetGroupId);
       matchedGroup = _groupController.groupData.firstWhereOrNull(
             (g) =>
@@ -726,20 +730,13 @@ class CallController extends GetxController {
       );
     }
 
-    if (matchedGroup == null && callerId.isNotEmpty) {
-      final int? cId = int.tryParse(callerId);
-      matchedGroup = _groupController.groupData.firstWhereOrNull(
-            (g) => (g.id != null && g.id == cId) || g.id?.toString() == callerId,
-      );
-    }
-
-    final bool isGroupCall = call.isGroup == true ||
-        contact?.isGroup == true ||
-        matchedGroup != null ||
-        (targetGroupId.isNotEmpty && targetGroupId != "0") ||
-        (call.groupName != null && call.groupName!.trim().isNotEmpty) ||
-        (contact?.groupName != null && contact!.groupName!.trim().isNotEmpty) ||
-        (call.type ?? '').toLowerCase().contains('group');
+    final bool isGroupCall = !isExplicitPrivate &&
+        (call.isGroup == true ||
+            contact?.isGroup == true ||
+            (targetGroupId.isNotEmpty && targetGroupId != "0" && matchedGroup != null) ||
+            (call.groupName != null && call.groupName!.trim().isNotEmpty) ||
+            (contact?.groupName != null && contact!.groupName!.trim().isNotEmpty) ||
+            (call.type ?? '').toLowerCase().contains('group'));
 
     String resolvedGroupId = '';
     String memberCount = '0';

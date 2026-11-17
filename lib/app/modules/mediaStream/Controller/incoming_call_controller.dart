@@ -57,8 +57,9 @@ class IncomingCallController extends GetxController {
   void _listenForSocketOffer() {
     socket?.off("newCall");
     socket?.on("newCall", (data) {
-      final incomingRemoteId = data["remoteUserId"].toString();
-      if (incomingRemoteId != call.callerId) return;
+      final incomingRemoteId =
+          (data["callerId"] ?? data["remoteUserId"])?.toString() ?? "";
+      if (incomingRemoteId.isNotEmpty && incomingRemoteId != call.callerId) return;
 
       offer = data["sdpOffer"];
       gotSDP = true;
@@ -66,12 +67,25 @@ class IncomingCallController extends GetxController {
     });
   }
 
+  @override
+  void onClose() {
+    FlutterRingtonePlayer().stop();
+    CallStateTracker.isIncomingCallScreenOpen = false;
+    socket?.off("callEnded");
+    socket?.off("missedCall");
+    socket?.off("newCall");
+    super.onClose();
+  }
+
   void rejectCall() {
     FlutterRingtonePlayer().stop();
+    socket?.off("callEnded");
+    socket?.off("missedCall");
+    socket?.off("newCall");
     final myId = Global.storageServices.get(PrefConst.userId).toString();
     socket?.emit("rejectCall", {
-      "callId":call.callId,
-      "remoteUserId":myId ,
+      "callId": call.callId,
+      "remoteUserId": myId,
     });
     CallStateTracker.isIncomingCallScreenOpen = false;
     Get.back();
@@ -80,6 +94,9 @@ class IncomingCallController extends GetxController {
   void acceptCall() {
     FlutterRingtonePlayer().stop();
     CallStateTracker.isIncomingCallScreenOpen = false;
+    socket?.off("callEnded");
+    socket?.off("missedCall");
+    socket?.off("newCall");
 
     Get.offNamed(
       Routes.callScreen,

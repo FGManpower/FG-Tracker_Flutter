@@ -11,10 +11,12 @@ import '../Controller/incoming_call_controller.dart';
 class StreamBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<CallingController>(
-      () => CallingController(),
-      fenix: true,
-    );
+    if (!Get.isRegistered<CallingController>()) {
+      Get.put<CallingController>(
+        CallingController(),
+        permanent: true,
+      );
+    }
   }
 }
 

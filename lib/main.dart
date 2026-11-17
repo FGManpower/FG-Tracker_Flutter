@@ -196,7 +196,15 @@ void _setupCallKit() {
 
   callKit.onEndCall = (callId, extra, uuid) async {
     if (Get.isRegistered<CallingController>()) {
-      await Get.find<CallingController>().endCall(type: 'callkit');
+      final ctrl = Get.find<CallingController>();
+      if (ctrl.callDurationRx.value == 0 &&
+          ctrl.callTimer == null &&
+          ctrl.args != null &&
+          ctrl.args["fromCallKit"] == true) {
+        log("[CallKit] onEndCall suppressed during connection phase");
+        return;
+      }
+      await ctrl.endCall(type: 'callkit');
     }
   };
 

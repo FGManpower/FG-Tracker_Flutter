@@ -998,6 +998,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
       await WakelockPlus.disable();
       await ProximityScreenLock.setActive(false);
+
+      if (Get.isRegistered<CallingController>()) {
+        Get.delete<CallingController>(force: true);
+      }
     } catch (e, stackTrace) {
       log("[Call] General cleanup error: $e", stackTrace: stackTrace);
     } finally {
@@ -3185,6 +3189,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   @override
   void onClose() {
+    if (isMinimized.value) {
+      log("[Call] onClose ignored because call is minimized in overlay");
+      return;
+    }
     _isCleaningUp = true;
 
     WidgetsBinding.instance.removeObserver(this);
