@@ -42,11 +42,12 @@ class DraggableVideoPip extends StatelessWidget {
         final double boundedMaxTop =
         maxTop < minTop ? minTop : maxTop;
 
+        // Default: top-right, under the name / timer bar.
         final Offset currentPosition =
             controller.pipPosition ??
                 Offset(
-                  20.w,
-                  boundedMaxTop,
+                  boundedMaxLeft,
+                  safeTop + 76.h,
                 );
 
         final Offset safePosition = Offset(

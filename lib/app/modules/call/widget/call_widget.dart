@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
@@ -47,7 +48,7 @@ class CallActionChip extends StatelessWidget {
 }
 
 class AudioBackground extends StatelessWidget {
-  const AudioBackground();
+  const AudioBackground({super.key});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -56,16 +57,26 @@ class AudioBackground extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFFE9E6FF),
-            Color(0xFFF4F2FF),
-            Color(0xFFEDE9FF),
+            Color(0xFFE4DEFF),
+            Color(0xFFF5F3FF),
+            Color(0xFFEAE4FF),
           ],
+          stops: [0.0, 0.55, 1.0],
         ),
       ),
     );
   }
 }
 
+/// One round button of the in-call control bar (mute, speaker, camera …).
+///
+/// * [active]: the toggle is ON (muted, speaker, camera off, sharing). The
+///   button is filled (white on video, purple on audio) so the state is
+///   clear at a glance, like WhatsApp.
+/// * [videoInactive]: the action is not available right now (call not
+///   connected yet, upgrade in progress). The button is faded and taps are
+///   ignored by the caller.
+/// * [iconColor]: optional override of the idle icon colour.
 Widget ctrl({
   required IconData icon,
   required String label,
@@ -75,42 +86,293 @@ Widget ctrl({
   bool videoInactive = false,
   Color? iconColor,
 }) {
-  final Color baseIcon =
-      iconColor ?? (isVideo ? Colors.white : AppColors.primaryPurple);
-  final Color bg = isVideo
-      ? Colors.white.withOpacity(active ? 0.28 : 0.14)
-      : Colors.white.withOpacity(active ? 0.95 : 0.85);
-
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 46.r,
-          height: 46.r,
-          decoration: BoxDecoration(
-            color: videoInactive?Colors.grey:bg,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: baseIcon, size: 22.sp),
-        ),
-      ),
-      SizedBox(height: 6.h),
-      ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 58.w),
-        child: AutoFitText(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 11.sp,
-            color: isVideo ? Colors.white : AppColors.darkText,
-            fontFamily: FontFamily.interMedium,
-          ),
-        ),
-      ),
-    ],
+  return _CallControlButton(
+    icon: icon,
+    label: label,
+    isVideo: isVideo,
+    onTap: onTap,
+    active: active,
+    disabled: videoInactive,
+    iconColor: iconColor,
   );
+}
+
+class _CallControlButton extends StatelessWidget {
+  const _CallControlButton({
+    required this.icon,
+    required this.label,
+    required this.isVideo,
+    required this.onTap,
+    required this.active,
+    required this.disabled,
+    this.iconColor,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isVideo;
+  final VoidCallback onTap;
+  final bool active;
+  final bool disabled;
+  final Color? iconColor;
+
+  static const Color _videoActiveIcon = Color(0xFF1B1530);
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bg;
+    final Color fg;
+    if (isVideo) {
+      bg = active ? Colors.white : Colors.white.withOpacity(0.16);
+      fg = active ? _videoActiveIcon : (iconColor ?? Colors.white);
+    } else {
+      bg = active ? AppColors.primaryPurple : Colors.white;
+      fg = active ? Colors.white : (iconColor ?? AppColors.primaryPurple);
+    }
+
+    return Semantics(
+      button: true,
+      enabled: !disabled,
+      toggled: active,
+      label: label,
+      excludeSemantics: true,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 180),
+        opacity: disabled ? 0.4 : 1,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              width: 52.r,
+              height: 52.r,
+              decoration: BoxDecoration(
+                color: bg,
+                shape: BoxShape.circle,
+                border: isVideo && !active
+                    ? Border.all(color: Colors.white.withOpacity(0.18))
+                    : null,
+                boxShadow: isVideo
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: AppColors.primaryPurple
+                              .withOpacity(active ? 0.35 : 0.12),
+                          blurRadius: active ? 14 : 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+              ),
+              child: Material(
+                type: MaterialType.transparency,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: onTap,
+                  splashColor: (isVideo ? Colors.white : AppColors.primaryPurple)
+                      .withOpacity(0.20),
+                  child: Center(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 150),
+                      child: Icon(
+                        icon,
+                        key: ValueKey<int>(icon.codePoint),
+                        color: fg,
+                        size: 24.r,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 7.h),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 62.w),
+              child: AutoFitText(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: isVideo
+                      ? Colors.white.withOpacity(0.92)
+                      : AppColors.darkText.withOpacity(0.85),
+                  fontFamily: FontFamily.interMedium,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Red hang-up button of the in-call control bar. [size] 52 sits in a row
+/// with the other controls; 68 is the big stand-alone button.
+Widget endCallButton({
+  required String label,
+  required bool isVideo,
+  required VoidCallback onTap,
+  double size = 64,
+}) {
+  const Color red = Color(0xFFFF3B30);
+  return Semantics(
+    button: true,
+    label: label,
+    excludeSemantics: true,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: size.r,
+          height: size.r,
+          decoration: BoxDecoration(
+            color: red,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: red.withOpacity(0.45),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              key: const ValueKey<String>('call_end_button'),
+              onTap: onTap,
+              splashColor: Colors.white24,
+              child: Center(
+                child: Icon(Icons.call_end_rounded,
+                    color: Colors.white, size: (size * 0.46).r),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 7.h),
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 70.w),
+          child: AutoFitText(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11.sp,
+              color: isVideo
+                  ? Colors.white.withOpacity(0.92)
+                  : AppColors.darkText.withOpacity(0.85),
+              fontFamily: FontFamily.interMedium,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Round profile picture of the other person on the call screens. Falls
+/// back to the first letter of [name] on a colour picked from the name
+/// when there is no picture or it fails to load.
+class CallAvatar extends StatelessWidget {
+  const CallAvatar({
+    super.key,
+    required this.name,
+    required this.image,
+    required this.size,
+    this.ringColor,
+  });
+
+  final String name;
+
+  /// Full URL, server path, or null / empty / "false".
+  final Object? image;
+  final double size;
+
+  /// Optional outline (green on the incoming audio screen, white on dark).
+  final Color? ringColor;
+
+  static const List<Color> _palette = <Color>[
+    Color(0xFF7B58FF),
+    Color(0xFFFF7A45),
+    Color(0xFF14B8A6),
+    Color(0xFF3B82F6),
+    Color(0xFFEC4899),
+    Color(0xFF22A06B),
+    Color(0xFFF59E0B),
+  ];
+
+  static String? resolveUrl(Object? raw) {
+    if (raw == null) return null;
+    final String path = raw.toString().trim();
+    if (path.isEmpty || path == 'null' || path == 'false') return null;
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    return ConstRes.aImageBaseUrl + path;
+  }
+
+  Widget _initial() {
+    final String n = name.trim();
+    final Color bg = n.isEmpty
+        ? _palette.first
+        : _palette[n.codeUnits.fold<int>(0, (a, b) => a + b) % _palette.length];
+    return Container(
+      color: bg,
+      alignment: Alignment.center,
+      child: n.isEmpty
+          ? Icon(Icons.person_rounded, color: Colors.white, size: size * 0.5)
+          : Text(
+              n.characters.first.toUpperCase(),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: size * 0.40,
+                fontFamily: FontFamily.interSemiBold,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final String? url = resolveUrl(image);
+    final Widget pic = url == null
+        ? _initial()
+        : Image.network(
+            url,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _initial(),
+          );
+    return Container(
+      width: size,
+      height: size,
+      padding: ringColor == null ? null : EdgeInsets.all(size * 0.035),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: ringColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipOval(child: SizedBox.expand(child: pic)),
+    );
+  }
+}
+
+/// "05:07" or "1:05:07" for a call duration in seconds (the controller's
+/// own formatter has no hours).
+String formatCallDuration(int totalSeconds) {
+  final int h = totalSeconds ~/ 3600;
+  final String m = ((totalSeconds % 3600) ~/ 60).toString().padLeft(2, '0');
+  final String s = (totalSeconds % 60).toString().padLeft(2, '0');
+  return h > 0 ? '$h:$m:$s' : '$m:$s';
 }
 
 

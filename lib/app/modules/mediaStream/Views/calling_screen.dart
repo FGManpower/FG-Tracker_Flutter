@@ -1,9 +1,6 @@
 import 'dart:ui';
 
-import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
-import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/AudioCall_screen.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
@@ -33,6 +30,9 @@ class CallingScreen extends StatelessWidget {
   static const Color _cameraOffBg = Color(0xFF12131F);
   static const Color _pipOffBg = Color(0xFF1A1A2E);
   static const Color _panelBg = Color(0xFF1E1F2B);
+  static const Color _purpleTop = Color(0xFF6E4BFF);
+  static const Color _purpleBottom = Color(0xFF4626D6);
+  static const Color _good = Color(0xFF34C759);
 
   @override
   Widget build(BuildContext context) {
@@ -72,12 +72,16 @@ class CallingScreen extends StatelessWidget {
         children: [
           if (isVideo) _mainVideoLayer(c) else _audioLayer(c),
           _remoteScreenLayer(context, c),
-          if (isVideo) ...[_topGradient(), _bottomGradient()],
+          if (isVideo) ...[
+            _topGradient(),
+            _bottomGradient(),
+            _videoRingingAvatar(c),
+          ],
           _chrome(context, c, isVideo),
           _waitingOverlay(c),
           _pip(c, isVideo),
           _cameraPermissionChip(c),
-          _statusPills(c),
+          _statusPills(c, isVideo),
           _waitingCallBanner(c),
         ],
       ),
@@ -86,41 +90,63 @@ class CallingScreen extends StatelessWidget {
 
   /// Other side's state and link quality (doc 02 §7): "X muted",
   /// "Video paused", "Poor connection", "On hold".
-  Widget _statusPills(CallingController c) {
+  Widget _statusPills(CallingController c, bool isVideo) {
     return Obx(() {
       final String name = c.args["callerName"]?.toString() ?? '';
-      final List<String> pills = <String>[
-        if (c.isOnHold.value) appL10n.call_onHold,
+      final List<(String, IconData)> pills = <(String, IconData)>[
+        if (c.isOnHold.value) (appL10n.call_onHold, Icons.pause_rounded),
         if (c.remoteMicMuted.value)
-          appL10n.call_remoteMuted(name.isEmpty ? appL10n.call_someone : name),
-        if (c.remoteVideoPaused.value) appL10n.call_videoPaused,
-        if (c.isPoorConnection.value) appL10n.call_poorConnection,
+          (
+            appL10n.call_remoteMuted(name.isEmpty ? appL10n.call_someone : name),
+            Icons.mic_off_rounded,
+          ),
+        if (c.remoteVideoPaused.value)
+          (appL10n.call_videoPaused, Icons.videocam_off_rounded),
+        if (c.isPoorConnection.value)
+          (appL10n.call_poorConnection, Icons.network_check_rounded),
       ];
       if (pills.isEmpty) return const SizedBox.shrink();
+      final double topInset = MediaQuery.of(Get.context!).padding.top;
+      // Under the top bar, so it never covers the name and timer.
       return Positioned(
-        left: 0,
-        right: 0,
-        top: MediaQuery.of(Get.context!).padding.top + 96.h,
+        left: 16.w,
+        right: 16.w,
+        top: topInset + (isVideo ? 84.h : 72.h),
         child: Center(
           child: Wrap(
             spacing: 6.w,
             runSpacing: 6.h,
             alignment: WrapAlignment.center,
             children: [
-              for (final String p in pills)
+              for (final (String text, IconData icon) in pills)
                 Container(
-                  key: ValueKey<String>('call_pill_$p'),
+                  key: ValueKey<String>('call_pill_$text'),
                   padding:
                       EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
-                    color: p == appL10n.call_poorConnection
-                        ? _warn.withValues(alpha: 0.85)
-                        : Colors.black.withValues(alpha: 0.55),
+                    color: text == appL10n.call_poorConnection
+                        ? _warn.withValues(alpha: 0.92)
+                        : Colors.black.withValues(alpha: 0.60),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
-                  child: Text(
-                    p,
-                    style: TextStyle(color: Colors.white, fontSize: 12.sp),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, color: Colors.white, size: 14.r),
+                      SizedBox(width: 5.w),
+                      Flexible(
+                        child: Text(
+                          text,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.sp,
+                            fontFamily: FontFamily.interMedium,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
             ],
@@ -277,14 +303,57 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
+  /// Light lavender while calling / ringing, brand purple once connected.
   Widget _audioLayer(CallingController c) {
     return Positioned.fill(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: c.showControlsTemporarily,
-        child: const AudioBackground(),
+        child: Obx(() {
+          final bool connected = isCallConnected(c);
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 450),
+            child: connected
+                ? const DecoratedBox(
+                    key: ValueKey<String>('audio_bg_connected'),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [_purpleTop, _purpleBottom],
+                      ),
+                    ),
+                    child: SizedBox.expand(),
+                  )
+                : const AudioBackground(
+                    key: ValueKey<String>('audio_bg_ringing'),
+                  ),
+          );
+        }),
       ),
     );
+  }
+
+  /// Video call before it connects: the other person's avatar in the
+  /// middle of your own camera (mock "Video · 1 Outgoing").
+  Widget _videoRingingAvatar(CallingController c) {
+    return Obx(() {
+      if (isCallConnected(c) || c.isRemoteScreenSharing.value) {
+        return const SizedBox.shrink();
+      }
+      return Positioned.fill(
+        child: IgnorePointer(
+          child: Center(
+            child: CallPulseAvatar(
+              name: _peerName(c),
+              image: c.args['profileImage'],
+              onDark: true,
+              avatarSize: 104,
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Widget _topGradient() {
@@ -338,16 +407,17 @@ class CallingScreen extends StatelessWidget {
         child: Obx(() {
           final bool remoteScreen = c.isRemoteScreenSharing.value;
           final bool hideChrome = _chromeHidden(c, isVideo, remoteScreen);
+          final bool connected = isCallConnected(c);
 
           return Column(
             children: [
-              if (!hideChrome) _topBar(context, c, isVideo),
+              if (!hideChrome) _topBar(context, c, isVideo, connected),
               _shareBanner(c),
               if (!isVideo && !remoteScreen)
                 Expanded(child: AudiocallScreen(controller: c))
               else
                 const Spacer(),
-              if (!hideChrome) _controlsBar(context, c, isVideo),
+              if (!hideChrome) _controlsBar(context, c, isVideo, connected),
             ],
           );
         }),
@@ -355,92 +425,207 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
-  Widget _topBar(BuildContext context, CallingController c, bool isVideo) {
+  /// Audio: ⌄ · "Audio Call" pill · signal dots.
+  /// Video: ⌄ · name + status / timer · Share screen (once connected).
+  Widget _topBar(
+    BuildContext context,
+    CallingController c,
+    bool isVideo,
+    bool connected,
+  ) {
+    final bool onDark = isVideo || connected;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          GestureDetector(
+          _topBarButton(
+            key: const ValueKey<String>('call_minimize'),
+            icon: Icons.keyboard_arrow_down_rounded,
+            label: MaterialLocalizations.of(context).backButtonTooltip,
+            onDark: onDark,
             onTap: () => c.minimizeCall(),
-            behavior: HitTestBehavior.opaque,
-            child: Container(
-              padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.45),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white24, width: 1),
-              ),
-              child: Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: Colors.white,
-                size: 26.sp,
-              ),
-            ),
           ),
-          if (isVideo)
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "${c.args["callerName"] ?? ""}",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontFamily: FontFamily.interBold,
-                    ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Obx(() => Text(
-                    c.callTimer != null || c.callDurationRx.value > 0
-                        ? _formatCallDuration(c.callDurationRx.value)
-                        : c.callStatus.value,
-                    style: TextStyle(
-                      color: c.callStatus.value == "Reconnecting..."
-                          ? const Color(0xFFFFB020)
-                          : Colors.white70,
-                      fontSize: 12.sp,
-                      fontFamily: FontFamily.interMedium,
-                    ),
-                  )),
-                ],
-              ),
+          Expanded(
+            child: isVideo
+                ? _videoTitle(c)
+                : Center(child: _callKindPill(onDark: connected)),
+          ),
+          if (isVideo && connected)
+            _shareTopButton(context, c)
+          else if (!isVideo && connected)
+            SizedBox(
+              width: 44.r,
+              child: Center(child: _signalDots(c)),
             )
           else
-            const Spacer(),
-          if (isVideo && c.isVideoOn)
-            GestureDetector(
-              onTap: c.switchCamera,
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.45),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white24, width: 1),
-                ),
-                child: Icon(
-                  Icons.cameraswitch_rounded,
-                  color: Colors.white,
-                  size: 22.sp,
-                ),
-              ),
-            )
-          else
-            SizedBox(width: 42.w),
+            SizedBox(width: 44.r),
         ],
       ),
     );
   }
 
-  String _formatCallDuration(int totalSeconds) {
-    final int minutes = totalSeconds ~/ 60;
-    final int seconds = totalSeconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  Widget _videoTitle(CallingController c) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          _peerName(c),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 17.sp,
+            fontFamily: FontFamily.interBold,
+            shadows: const [Shadow(color: Colors.black54, blurRadius: 8)],
+          ),
+        ),
+        SizedBox(height: 2.h),
+        Obx(() {
+          final bool reconnecting =
+              c.callStatus.value.toLowerCase().startsWith('reconnecting');
+          final bool running = isCallConnected(c);
+          return Text(
+            running && !reconnecting
+                ? formatCallDuration(c.callDurationRx.value)
+                : '${callStatusLabel(appL10n, c.callStatus.value)}…',
+            key: const ValueKey<String>('call_status_text'),
+            style: TextStyle(
+              color: reconnecting ? _warn : Colors.white.withOpacity(0.85),
+              fontSize: 12.sp,
+              fontFamily: FontFamily.interMedium,
+              fontFeatures: const [FontFeature.tabularFigures()],
+              shadows: const [Shadow(color: Colors.black54, blurRadius: 6)],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  /// Small "📞 Audio Call" label in the middle of the audio top bar.
+  Widget _callKindPill({required bool onDark}) {
+    final Color fg = onDark ? Colors.white : AppColors.primaryPurple;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: onDark
+            ? Colors.white.withOpacity(0.14)
+            : Colors.white.withOpacity(0.70),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.call_rounded, color: fg, size: 13.r),
+          SizedBox(width: 6.w),
+          Flexible(
+            child: Text(
+              callKindLabel(appL10n, 'audio'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: fg,
+                fontSize: 12.sp,
+                fontFamily: FontFamily.interMedium,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Three dots: green while the link is good, amber + one dot dimmed
+  /// when the quality monitor reports a poor connection.
+  Widget _signalDots(CallingController c) {
+    return Obx(() {
+      final bool poor = c.isPoorConnection.value;
+      final Color on = poor ? _warn : _good;
+      return Semantics(
+        label: poor ? appL10n.call_poorConnection : null,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (int i = 0; i < 3; i++)
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 1.5.w),
+                width: 6.r,
+                height: 6.r,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: (poor && i == 2) ? Colors.white30 : on,
+                ),
+              ),
+          ],
+        ),
+      );
+    });
+  }
+
+  /// Screen share in the video top bar (where the mock has its extra icon).
+  Widget _shareTopButton(BuildContext context, CallingController c) {
+    return Obx(() {
+      final bool busy = _busy(c);
+      final bool waiting = c.isScreenShareWaiting.value;
+      final bool sharing = c.isScreenSharing.value;
+      return Opacity(
+        opacity: busy ? 0.4 : 1,
+        child: _topBarButton(
+          key: const ValueKey<String>('call_share_top'),
+          icon: waiting
+              ? Icons.close_rounded
+              : sharing
+                  ? Icons.stop_screen_share_rounded
+                  : Icons.screen_share_rounded,
+          label: waiting
+              ? appL10n.common_cancel
+              : (sharing ? appL10n.call_stop : appL10n.call_shareScreen),
+          onDark: true,
+          active: sharing || waiting,
+          onTap: () => _onShareTap(context, c, isVideo: true),
+        ),
+      );
+    });
+  }
+
+  Widget _topBarButton({
+    required Key key,
+    required IconData icon,
+    required String label,
+    required bool onDark,
+    required VoidCallback onTap,
+    bool active = false,
+  }) {
+    final Color bg = active
+        ? Colors.white
+        : (onDark
+            ? Colors.black.withOpacity(0.28)
+            : Colors.white.withOpacity(0.85));
+    final Color fg = active
+        ? const Color(0xFF1B1530)
+        : (onDark ? Colors.white : AppColors.primaryPurple);
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        color: bg,
+        shape: CircleBorder(
+          side: BorderSide(color: onDark ? Colors.white24 : Colors.white),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: key,
+          onTap: onTap,
+          child: SizedBox(
+            width: 44.r,
+            height: 44.r,
+            child: Icon(icon, color: fg, size: 24.r),
+          ),
+        ),
+      ),
+    );
   }
 
   bool _chromeHidden(
@@ -456,14 +641,15 @@ class CallingScreen extends StatelessWidget {
     BuildContext context,
     CallingController c,
     bool isVideo,
+    bool connected,
   ) {
     return RepaintBoundary(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 22.h),
+        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 20.h),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: c.showControlsTemporarily,
-          child: _bottomControls(context, c, isVideo),
+          child: _bottomControls(context, c, isVideo, connected),
         ),
       ),
     );
@@ -474,8 +660,12 @@ class CallingScreen extends StatelessWidget {
       final bool waiting = c.isScreenShareWaiting.value;
       final bool remoteScreen = c.isRemoteScreenSharing.value;
       final bool chromeVisible = c.areControlsVisible.value;
-      final bool hidden =
-          !isVideo || waiting || (remoteScreen && !chromeVisible);
+      // Before the call connects only your own camera is shown (full
+      // screen); the small window appears once the other side joins.
+      final bool hidden = !isVideo ||
+          !isCallConnected(c) ||
+          waiting ||
+          (remoteScreen && !chromeVisible);
       if (hidden) return const SizedBox.shrink();
       return Positioned.fill(
         child: DraggableVideoPip(
@@ -819,250 +1009,157 @@ class CallingScreen extends StatelessWidget {
     return (c.args["callerName"] ?? "").toString().trim();
   }
 
-  Widget _topInfo(CallingController c) {
-    final bool isOutgoing = c.args["callType"] == "outGoing";
-
-    return Column(
-      children: [
-        Text(
-          isOutgoing ? "" : appL10n.call_callFrom,
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 14.sp,
-            fontFamily: FontFamily.interMedium,
-          ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          "${c.args["callerName"] ?? ""}",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 26.sp,
-            fontFamily: FontFamily.interSemiBold,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        SizedBox(height: 6.h),
-        Obx(() {
-          final String dur = c.formattedDuration;
-          return Text(
-            dur == "00:00"
-                ? "${callStatusLabel(appL10n, c.callStatus.value)}..."
-                : dur,
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 14.sp,
-              fontFamily: FontFamily.interMedium,
-              fontWeight: FontWeight.w600,
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
+  /// Small draggable window: your camera (or theirs after a swap). Tap to
+  /// swap the two views.
   Widget _videoPip(CallingController c) {
     final bool showingRemote =
         c.isLocalVideoMain && (c.isVideoOn || !c.isRemoteVideoOn);
     final bool hasVideo = showingRemote ? c.isRemoteVideoOn : c.isVideoOn;
 
-    return SizedBox(
-      width: 110.w,
-      height: 150.h,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                c.toggleVideoViews();
-                c.showControlsTemporarily();
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14.r),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.85),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: hasVideo
-                    ? RTCVideoView(
-                        showingRemote ? c.remoteRenderer : c.localRenderer,
-                        key: ValueKey<String>(
-                          showingRemote
-                              ? 'pip_remote_${c.remoteRenderer.textureId}'
-                              : 'pip_local_${c.localRenderer.textureId}',
-                        ),
-                        mirror: !showingRemote && c.isFrontCamera,
-                        objectFit:
-                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                      )
-                    : Container(
-                        key: const ValueKey<String>('pip_video_off'),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFF252B38),
-                              Color(0xFF11151E),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        alignment: Alignment.center,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(3.r),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.25),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: CircleAvatar(
-                                radius: 25.sp,
-                                backgroundColor: const Color(0xFF343B49),
-                                backgroundImage: NetworkImage(
-                                  Utility.isNotNullEmptyOrFalse(
-                                          c.args["profileImage"])
-                                      ? ConstRes.aImageBaseUrl +
-                                          c.args["profileImage"]
-                                      : MyAppTheme.notFoundImg,
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 8.h),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 9.w,
-                                vertical: 4.h,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.35),
-                                borderRadius: BorderRadius.circular(20.r),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.videocam_off_rounded,
-                                    color: Colors.white70,
-                                    size: 13.sp,
-                                  ),
-                                  SizedBox(width: 4.w),
-                                  Text(
-                                    appL10n.call_cameraOff,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9.sp,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-              ),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        c.toggleVideoViews();
+        c.showControlsTemporarily();
+      },
+      child: Container(
+        width: 104.w,
+        height: 148.h,
+        decoration: BoxDecoration(
+          color: _pipOffBg,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: Colors.white.withOpacity(0.55), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.35),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
             ),
-          ),
-          if (c.isVideoOn) _switchCameraButton(c),
-        ],
-      ),
-    );
-  }
-
-  Widget _switchCameraButton(CallingController c) {
-    return Positioned(
-      top: 0,
-      right: 0,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: c.switchCamera,
-        child: Container(
-          width: 44.r,
-          height: 44.r,
-          alignment: Alignment.topRight,
-          padding: EdgeInsets.only(top: 6.h, right: 6.w),
-          color: Colors.transparent,
-          child: Container(
-            padding: EdgeInsets.all(7.r),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.92),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.18),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Icon(
-              Icons.cameraswitch_rounded,
-              size: 17.sp,
-              color: AppColors.primaryPurple,
-            ),
-          ),
+          ],
         ),
+        clipBehavior: Clip.antiAlias,
+        child: hasVideo
+            ? RTCVideoView(
+                showingRemote ? c.remoteRenderer : c.localRenderer,
+                key: ValueKey<String>(
+                  showingRemote
+                      ? 'pip_remote_${c.remoteRenderer.textureId}'
+                      : 'pip_local_${c.localRenderer.textureId}',
+                ),
+                mirror: !showingRemote && c.isFrontCamera,
+                objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+              )
+            : Column(
+                key: const ValueKey<String>('pip_video_off'),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (showingRemote)
+                    CallAvatar(
+                      name: _peerName(c),
+                      image: c.args["profileImage"],
+                      size: 48.r,
+                    )
+                  else
+                    Icon(Icons.videocam_off_rounded,
+                        color: Colors.white70, size: 26.r),
+                  SizedBox(height: 8.h),
+                  Text(
+                    appL10n.call_cameraOff,
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 10.sp,
+                      fontFamily: FontFamily.interMedium,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
 
+  /// Bottom controls, following the mock:
+  /// * Audio calling (light): white card with Speaker, Video, Mute, End.
+  /// * Audio connected (purple): Speaker, Mute, Video, Share, then a big
+  ///   End call button.
+  /// * Video ringing: dark bar with Switch, Camera, Mute, End.
+  /// * Video connected: dark bar with Speaker, Camera, Mute, Switch, End
+  ///   (screen share is in the top bar).
   Widget _bottomControls(
     BuildContext context,
     CallingController c,
     bool isVideo,
+    bool connected,
   ) {
+    if (!isVideo && connected) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _speakerControl(context, c, true),
+              _micControl(c, true),
+              _upgradeControl(c, true),
+              _shareControl(context, c, true),
+            ],
+          ),
+          SizedBox(height: 28.h),
+          _endControl(c, true, size: 68),
+          SizedBox(height: 8.h),
+        ],
+      );
+    }
+
+    final List<Widget> buttons = isVideo
+        ? (connected
+            ? <Widget>[
+                _speakerControl(context, c, true),
+                _cameraControl(c, true),
+                _micControl(c, true),
+                _flipControl(c),
+                _endControl(c, true, size: 52),
+              ]
+            : <Widget>[
+                _flipControl(c),
+                _cameraControl(c, true),
+                _micControl(c, true),
+                _endControl(c, true, size: 52),
+              ])
+        : <Widget>[
+            _speakerControl(context, c, false),
+            _upgradeControl(c, false),
+            _micControl(c, false),
+            _endControl(c, false, size: 52),
+          ];
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(28.r),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 14.h),
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 14.h),
           decoration: BoxDecoration(
             color: isVideo
-                ? Colors.white.withOpacity(0.14)
-                : Colors.white.withOpacity(0.72),
+                ? Colors.black.withOpacity(0.42)
+                : Colors.white.withOpacity(0.82),
             borderRadius: BorderRadius.circular(28.r),
             border: Border.all(
-              color: Colors.white.withOpacity(isVideo ? 0.22 : 0.9),
+              color: isVideo ? Colors.white.withOpacity(0.10) : Colors.white,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                color: (isVideo ? Colors.black : AppColors.primaryPurple)
+                    .withOpacity(0.10),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _shareControl(context, c, isVideo),
-              _speakerControl(context, c, isVideo),
-              _endControl(c, isVideo),
-              _micControl(c, isVideo),
-              if (isVideo)
-                _cameraControl(c, isVideo)
-              else
-                _upgradeControl(c, isVideo),
-            ],
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: buttons,
           ),
         ),
       ),
@@ -1077,17 +1174,41 @@ class CallingScreen extends StatelessWidget {
     return c.callStatus.toString() == "busy" || c.callDurationRx.value == 0;
   }
 
+  /// Same behaviour for the bottom Share button (audio) and the top-bar
+  /// share button (video).
+  void _onShareTap(
+    BuildContext context,
+    CallingController c, {
+    required bool isVideo,
+  }) {
+    if (_blocked(c) || _busy(c)) return;
+    if (c.isScreenShareWaiting.value) {
+      c.cancelScreenShare();
+      c.showControlsTemporarily();
+      return;
+    }
+    if (c.isScreenSharing.value) {
+      c.stopScreenShare();
+      c.showControlsTemporarily();
+      return;
+    }
+    if (isVideo) {
+      c.startScreenShare();
+      c.showControlsTemporarily();
+      return;
+    }
+    _askSwitchToVideoThenShare(context, c);
+  }
+
   Widget _shareControl(
     BuildContext context,
     CallingController c,
-    bool isVideo,
+    bool onDark,
   ) {
     return Obx(() {
-      final bool busy = _busy(c);
-      final bool blocked = _blocked(c);
       final bool waiting = c.isScreenShareWaiting.value;
       final bool sharing = c.isScreenSharing.value;
-
+      final bool isVideo = c.is_video || c.isVideoCall.value;
       return ctrl(
         icon: waiting
             ? Icons.close_rounded
@@ -1098,32 +1219,9 @@ class CallingScreen extends StatelessWidget {
             ? appL10n.common_cancel
             : (sharing ? appL10n.call_stop : appL10n.call_shareScreenShort),
         active: sharing || waiting,
-        isVideo: isVideo,
-        iconColor: blocked ? Colors.white : null,
-        videoInactive: blocked || busy,
-        onTap: () {
-          if (blocked || busy) return;
-
-          if (waiting) {
-            c.cancelScreenShare();
-            c.showControlsTemporarily();
-            return;
-          }
-
-          if (sharing) {
-            c.stopScreenShare();
-            c.showControlsTemporarily();
-            return;
-          }
-
-          if (isVideo) {
-            c.startScreenShare();
-            c.showControlsTemporarily();
-            return;
-          }
-
-          _askSwitchToVideoThenShare(context, c);
-        },
+        isVideo: onDark,
+        videoInactive: _blocked(c) || _busy(c),
+        onTap: () => _onShareTap(context, c, isVideo: isVideo),
       );
     });
   }
@@ -1161,7 +1259,7 @@ class CallingScreen extends StatelessWidget {
   Widget _speakerControl(
     BuildContext context,
     CallingController c,
-    bool isVideo,
+    bool onDark,
   ) {
     return Obx(() {
       final CallAudioRoute route = c.audioRouteController.currentRoute.value;
@@ -1170,7 +1268,7 @@ class CallingScreen extends StatelessWidget {
         icon: c.audioRouteController.currentAudioRouteIcon,
         label: c.audioRouteController.currentAudioRouteLabel,
         active: route != CallAudioRoute.earpiece,
-        isVideo: isVideo,
+        isVideo: onDark,
         onTap: () async {
           await c.toggleSpeaker(context);
           c.showControlsTemporarily();
@@ -1179,59 +1277,27 @@ class CallingScreen extends StatelessWidget {
     });
   }
 
-  Widget _endControl(CallingController c, bool isVideo) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GestureDetector(
-          onTap: () async {
-            if (c.callDurationRx.value > 0 ||
-                c.args["callType"] != "outGoing") {
-              await c.endCall();
-            } else {
-              await c.missedCall();
-            }
-          },
-          child: Container(
-            width: 58.r,
-            height: 58.r,
-            decoration: BoxDecoration(
-              color: _danger,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: _danger.withOpacity(0.40),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Icon(
-              Icons.call_end_rounded,
-              color: Colors.white,
-              size: 28.sp,
-            ),
-          ),
-        ),
-        SizedBox(height: 6.h),
-        Text(
-          appL10n.call_decline,
-          style: TextStyle(
-            fontSize: 11.sp,
-            color: isVideo ? Colors.white : AppColors.darkText,
-            fontFamily: FontFamily.interMedium,
-          ),
-        ),
-      ],
+  Widget _endControl(CallingController c, bool onDark, {double size = 64}) {
+    return endCallButton(
+      label: appL10n.call_endCall,
+      isVideo: onDark,
+      size: size,
+      onTap: () async {
+        if (c.callDurationRx.value > 0 || c.args["callType"] != "outGoing") {
+          await c.endCall();
+        } else {
+          await c.missedCall();
+        }
+      },
     );
   }
 
-  Widget _micControl(CallingController c, bool isVideo) {
+  Widget _micControl(CallingController c, bool onDark) {
     return ctrl(
       icon: c.isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
-      label: appL10n.call_mute,
+      label: c.isAudioOn ? appL10n.call_mute : appL10n.call_unmute,
       active: !c.isAudioOn,
-      isVideo: isVideo,
+      isVideo: onDark,
       onTap: () {
         c.toggleMic();
         c.showControlsTemporarily();
@@ -1239,12 +1305,13 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
-  Widget _cameraControl(CallingController c, bool isVideo) {
+  /// Camera on / off. Filled white while the camera is ON, as in the mock.
+  Widget _cameraControl(CallingController c, bool onDark) {
     return ctrl(
       icon: c.isVideoOn ? Icons.videocam_rounded : Icons.videocam_off_rounded,
       label: c.isVideoOn ? appL10n.call_camera : appL10n.call_cameraOff,
-      active: !c.isVideoOn,
-      isVideo: isVideo,
+      active: c.isVideoOn,
+      isVideo: onDark,
       onTap: () {
         c.toggleCamera();
         c.showControlsTemporarily();
@@ -1252,7 +1319,21 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
-  Widget _upgradeControl(CallingController c, bool isVideo) {
+  Widget _flipControl(CallingController c) {
+    return ctrl(
+      icon: Icons.cameraswitch_rounded,
+      label: appL10n.call_switch,
+      isVideo: true,
+      videoInactive: !c.isVideoOn,
+      onTap: () {
+        if (!c.isVideoOn) return;
+        c.switchCamera();
+        c.showControlsTemporarily();
+      },
+    );
+  }
+
+  Widget _upgradeControl(CallingController c, bool onDark) {
     return Obx(() {
       final bool busy = _busy(c);
       final bool blocked = _blocked(c);
@@ -1260,8 +1341,7 @@ class CallingScreen extends StatelessWidget {
       return ctrl(
         icon: busy ? Icons.hourglass_top_rounded : Icons.videocam_rounded,
         label: busy ? appL10n.call_statusConnecting : appL10n.call_video,
-        isVideo: isVideo,
-        iconColor: blocked ? Colors.white : AppColors.primaryPurple,
+        isVideo: onDark,
         videoInactive: blocked || busy,
         onTap: () {
           if (blocked || busy) return;

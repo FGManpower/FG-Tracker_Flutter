@@ -1,6 +1,6 @@
 # Calling Module — Flutter Frontend Architecture & Implementation Guide
 
-**Document Version:** `v1.4.0` · **Last updated:** 2026-11-18 · **Branch:** `46Solution`  
+**Document Version:** `v1.4.1` · **Last updated:** 2026-11-18 · **Branch:** `46Solution`  
 **Target Audience:** Flutter Frontend Developers & Backend Integrators  
 **Covers:** 1-on-1 Audio/Video Calls (reliability, permissions, busy / call waiting, reconnect, CallKit, PiP), WebRTC PeerConnection, AWS SFU & Coturn STUN/TURN, Sockets & REST APIs, CallKit, Audio Routing, Proximity Sensor, In-App PIP Overlay, Screen Sharing, Recent Calls Cache & Multi-Delete  
 **Status:** Phases 1–3 done in code (uncommitted), unit-tested; **phone checks and backend items pending** (§5.3, §8, `testing/calling/`)  
@@ -167,6 +167,7 @@ If video or calling appears sluggish or delayed during testing, the runtime logs
 
 | Version | Date | Change |
 |---|---|---|
+| v1.4.1 | 2026-11-18 | §8.5 added: ready-to-send brief for the backend team (B-01 … B-16, questions, what to send back, suggested order). Docs only. |
 | v1.4.0 | 2026-11-18 | Phase 3 (uncommitted): §7 added (busy / call waiting, ICE restart + rejoin, TURN service + TLS 443 fallback, quality badge, other side's state, end screen + tones, missed-call Call back, iOS CallKit outgoing + mute/hold + VoIP token upload, Android PiP); §8 backend handover (B-01 … B-16). Out-of-date parts fixed (C19): header status, §0.1 (TURN 443 not live; credential name removed), event tables (directions, fields, reasons, `acceptCallFromCallKit`, `rejoinCall`). Late end events of another call are ignored (BUG-CALL-37/38). |
 | v1.3.3 | 2026-11-18 | Phase 2 (permissions), uncommitted: §6 added. One permission policy for every call entry point; explainer / Settings / voice-instead sheets; accept without mic ends cleanly with `reason: permission_denied`; video accept without camera joins as voice with "Camera off · Allow"; Bluetooth permission on Android 12+; Calls-tab banner "Incoming calls may not ring"; one-time mic primer; no ghost call after the app is killed. 12 new strings in all 20 locales. |
 | v1.3.2 | 2026-11-18 | Phase 1 (reliability), uncommitted: fresh controller per call, current socket + wait-for-connect, own socket handlers only, reject to the caller, system End always ends, stale ringing check, one ring timeout (45 s caller = CallKit), ongoing-call service from call start (mic + camera, Hang up), no location prompt during a call, "You're already on a call". New: `Services/call_platform.dart`, `call_socket_handlers.dart`, `call_entry.dart`, `call_foreground_service.dart`, `IncommingCallKit/call_kit_handlers.dart`. Details: `testing/calling/bug_tracker.md`. |
@@ -640,3 +641,178 @@ The app entitlement says `aps-environment=development` for every build. Confirm 
 - **Signaling E2E:** `scripts/call_qa/call_bot.js` plays the other user (answer, reject, busy, timeout, drop and reconnect, call the app); `integration_test/call_signaling_e2e_test.dart` drives the app side. See `scripts/call_qa/README.md`. Needs a staging URL and two test accounts.
 - **Security cases:** S-CALL-01 … in `docs/testing/calling/pentesting/pentest_report.md` (impersonation, spoofed `endCall` / `rejectCall`, reason allowlist).
 - **Phones:** `docs/testing/calling/manual_testing/manual_checklist.md`.
+
+### 8.5 Ready-to-send brief for the backend team (copy as is)
+
+Copy everything inside the box and send it to the backend developer. It also works as a prompt for their AI coding assistant. It holds no passwords, keys or TURN credentials; never add them.
+
+````text
+FG Tracker – 1:1 audio/video calling: backend changes needed (from app v1.4.0)
+
+WHO THIS IS FOR
+The developer of the Node.js signaling server (Socket.IO namespace /callSignaling),
+the REST API (/api/...), coturn (TURN) and push (FCM for Android, PushKit VoIP for iOS).
+
+CONTEXT
+The Flutter app's 1:1 calls were reworked to behave like WhatsApp / IMO: busy and
+call waiting, recovery after a Wi-Fi <-> 4G switch, TURN fallback on port 443,
+end reasons (declined / busy / no answer / connection lost), iOS CallKit, and
+Android picture-in-picture. Some of this only works fully when the server helps.
+
+GROUND RULES
+1. Backward compatible: apps already in the store must keep working.
+   Do not rename or remove any existing socket event or field. Only add.
+2. Do not break group calls (LiveKit), screen share (/screen-share),
+   walkie-talkie, chat, or call history.
+3. Never log tokens, TURN credentials, or full SDP. Never put secrets in docs,
+   tickets or chat.
+4. Every new event / field below is already handled by the app. Where the
+   server does nothing yet, the app falls back to today's behaviour.
+
+WORK ITEMS (in priority order)
+
+[B-01] CRITICAL – Authenticate the /callSignaling socket
+  Today: the app connects with query { callerId } only. If the server trusts it,
+  anyone who knows a user id can receive that user's calls and end them.
+  Do: verify the same JWT the REST API uses during the Socket.IO handshake
+  (accept auth.token or query.token). Take the user id from the token, not from
+  callerId. Reject missing / invalid tokens. Allow a transition period where
+  callerId is still sent alongside the token.
+  Done when: a socket without a valid token cannot connect; a socket with user A's
+  token cannot act as user B.
+
+[B-02] CRITICAL – Sender checks on every call event
+  Events: endCall, rejectCall, missCall, answerCall, acceptCallFromCallKit,
+  IceCandidate, upgradeToVideo, upgradeToVideoAnswer, CallingStatus, rejoinCall.
+  Do: the sender must be the caller or callee of callId, and remoteUserId must be
+  the other party of that call. Drop anything else (optionally reply callError).
+  Done when: user C cannot end, reject or inject ICE into a call between A and B.
+
+[B-03] HIGH – One server-owned ring timeout (45 s)
+  Do: start a 45 s timer at makeCall. On expiry mark the call "missed", send
+  missedCall { callId, sessionId } to BOTH sides, plus the end push
+  (FCM screen_name: "missedCall" / VoIP signal_type: "endCall").
+  An answerCall / acceptCallFromCallKit after expiry must get
+  callError { callId, code: "call_expired", message } and must not connect.
+  Keep accepting the caller's own missCall + endCall at 45 s (old apps send them).
+
+[B-04] HIGH – Busy and call waiting
+  When the callee is already in a call, still deliver newCall (the app shows a
+  "waiting call" banner). The callee app then emits:
+    CallingStatus { callId, remoteUserId, callingStatus: "busy" }
+  Relay to the caller as:  callStatus { callId, status: "busy" }
+  If the callee declines the waiting call, the app emits:
+    rejectCall { callId, remoteUserId: <callerId>, reason: "busy" }
+  Relay callRejected to the caller WITH the reason field.
+
+[B-05] MEDIUM – Keep and validate end reasons
+  rejectCall.reason allowed: declined | busy | permission_denied
+  endCall.reason allowed:    connection_lost | permission_denied
+  Ignore any other value. Forward reason on callRejected / callEnded.
+  Store it in call history: rejected+busy -> "busy"; ended+connection_lost ->
+  "failed"; rejected+permission_denied -> "missed".
+
+[B-06] HIGH – Rejoin after a socket reconnect
+  When a socket drops during a connected call, do NOT end the call at once:
+  keep it for a 30 s grace period. When the same user reconnects, the app emits:
+    rejoinCall { callId, sessionId, remoteUserId }
+  Bind the new socket to the call and answer:
+    callStatus { callId, status: "connected" }   if the call is still on
+    callEnded  { callId, sessionId }             if it ended meanwhile
+  End the call only when the grace period runs out.
+
+[B-07] HIGH – Relay upgradeToVideo / upgradeToVideoAnswer UNCHANGED (verify)
+  Forward every field to remoteUserId as received, including the new ones:
+    iceRestart: true (with sdpOffer)  – network-change recovery
+    mediaState: { micMuted, cameraOn, videoPaused } (without sdpOffer)
+    cameraState, needKeyframe (existing)
+  If the server whitelists fields, add iceRestart and mediaState.
+
+[B-08] LOW (optional) – Dedicated mediaState event
+  mediaState { callId, remoteUserId, mediaState: {...} } -> relay as "mediaState"
+  to remoteUserId. The app already listens. Until then B-07 carries it.
+
+[B-09] HIGH – TURN: short-lived credentials + TLS on 443
+  1. New endpoint GET /api/calls/turn-credentials (Bearer token) -> 200:
+     { "urls": ["turn:<host>:3478?transport=udp",
+                "turn:<host>:3478?transport=tcp",
+                "turns:<host>:443?transport=tcp"],
+       "username": "<expiry-unix>:<userId>",
+       "credential": "<base64 HMAC-SHA1>",
+       "ttl": 3600 }
+     (coturn use-auth-secret / static-auth-secret; TTL 1–24 h.
+      The same object inside "data" is also accepted.)
+  2. A coturn TLS listener on port 443 with a real certificate. LiveKit already
+     uses 443 on the SFU host, so use a separate hostname / IP
+     (e.g. turn.<domain>) or LiveKit's built-in TURN/TLS.
+     Tell the app team the final URL.
+  3. After the app release that uses the endpoint, rotate the current static TURN
+     credential (it is compiled into every installed app). Check screen share,
+     group calls and walkie-talkie first – they use the same credential.
+
+[B-10] HIGH – iOS VoIP token update endpoint
+  POST /api/update-voip-token (Bearer)  body: { "voipToken": "<hex>", "platform": "ios" }
+  -> 200 { "status": true }
+  Store per user + device, replacing the previous one; delete on logout /
+  force-logout. Login (Voip_Device in OTP verify) stays as it is.
+  Without this, iPhones whose token changed stop ringing when the app is killed.
+
+[B-11] MEDIUM – Confirm push payloads
+  iOS VoIP (incoming): id or sessionId, callId, callerId, callerName (or
+    nameCaller), avatar, isVideo, optional callerPhone.
+  End push: signal_type: "endCall" with the same ids.
+  Android FCM data: screen_name: "incomingCall", callData = JSON
+    { callId, callerId, callerName, callerProfileImage, isVideo, session_id,
+      sdpOfferCompressed? }; end pushes: screen_name "callEnded" | "missedCall".
+  All pushes: Android data-only + high priority; iOS VoIP type.
+
+[B-12] MEDIUM – Document GET /api/getCallDetail?callId=
+  The app reads callDetail.status to clear stale ringing calls. It treats these
+  as over: missed, rejected, declined, ended, cancelled, canceled, disconnected.
+  Send the full list of status values. Keep the response under 500 ms
+  (app timeout 4 s).
+
+[B-13] HIGH – Native decline API over HTTPS
+  Android CallDeclineReceiver.kt and iOS AppDelegate.swift call
+  GET http://fgtracker.in:3000/api/callRejected?callId= (Bearer) – cleartext
+  HTTP and a different host from the production API. Give the correct HTTPS URL
+  on the production host; accept an optional reason=declined parameter.
+
+[B-14] LOW – Id types
+  remoteUserId arrives as a string in most events and as a number in
+  CallingStatus. Accept both everywhere.
+
+[B-15] MEDIUM – Ids on end events
+  callEnded, callRejected and missedCall must always include callId AND
+  sessionId. The app ignores end events that name a different call (protects
+  against late events from an earlier call).
+
+[B-16] MEDIUM – APNs environment
+  Tell us which APNs gateway (sandbox / production) the server uses for
+  TestFlight and App Store VoIP pushes. The app will set
+  aps-environment=production for Release builds.
+
+PLEASE ANSWER THESE QUESTIONS
+1. Does /callSignaling verify a token today?
+2. Does rejectCall route by remoteUserId or by callId?
+3. Does the server have its own ring timeout today? What value?
+4. Is any field whitelisting applied to upgradeToVideo / upgradeToVideoAnswer?
+5. Which hostname and port will TLS TURN use?
+6. What is the HTTPS URL for the native decline API (B-13)?
+7. Which APNs environment is used for TestFlight / App Store (B-16)?
+
+WHAT TO SEND BACK
+- For each B-xx: Done / Not needed / Planned (date), plus anything that differs
+  from this spec (event names, fields, status codes).
+- A staging Socket.IO URL + API base URL and two test accounts, so the app team
+  can run the signaling end-to-end test (scripts/call_qa/call_bot.js and
+  integration_test/call_signaling_e2e_test.dart).
+- Credentials go through a private channel only, never in tickets or docs.
+
+SUGGESTED ORDER
+Sprint 1: B-01, B-02, B-13 (security), B-07 check, B-15, B-14.
+Sprint 2: B-03, B-04, B-05, B-06, B-10, B-12 docs, B-11 confirm, B-16.
+Sprint 3: B-09 (TURN endpoint + 443), then rotate the old TURN credential; B-08.
+
+Full reference: docs/02_CALLING_MODULE_FRONTEND.md §8 (FG Tracker Flutter repo).
+````

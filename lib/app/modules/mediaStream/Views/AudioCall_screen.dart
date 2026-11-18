@@ -1,320 +1,263 @@
 import 'dart:math' as math;
 
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:fgtracker/l10n/l10n.dart';
-import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 
-import '../../../Core/constant/const_res.dart';
-import '../../../Core/theme/appTheme.dart';
-import '../../../Core/values/utility.dart';
-
-class AudiocallScreen extends StatefulWidget {
-  const AudiocallScreen({
-    super.key,
-    required this.controller,
-  });
+/// Centre of the 1:1 audio call screen: avatar, name, status / timer.
+///
+/// * Calling / ringing (light background): pulsing rings + voice wave.
+/// * Connected (purple background): still avatar, white text, timer.
+class AudiocallScreen extends StatelessWidget {
+  const AudiocallScreen({super.key, required this.controller});
 
   final CallingController controller;
 
   @override
-  State<AudiocallScreen> createState() => _AudiocallScreenState();
+  Widget build(BuildContext context) {
+    final CallingController c = controller;
+    return Obx(() {
+      final bool connected = isCallConnected(c);
+      final String status = c.callStatus.value;
+      final bool reconnecting =
+          status.toLowerCase().startsWith('reconnecting');
+      final String name = (c.args["callerName"] ?? "").toString();
+
+      final Color nameColor = connected ? Colors.white : AppColors.darkText;
+      final Color statusColor = reconnecting
+          ? const Color(0xFFFFB020)
+          : (connected
+              ? Colors.white.withOpacity(0.80)
+              : AppColors.primaryPurple);
+
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
+        child: Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: SizedBox(
+              width: 300.w,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CallPulseAvatar(
+                    name: name,
+                    image: c.args['profileImage'],
+                    animate: !connected,
+                    onDark: connected,
+                  ),
+                  SizedBox(height: 18.h),
+                  Text(
+                    name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: nameColor,
+                      fontSize: 28.sp,
+                      fontFamily: FontFamily.interSemiBold,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    connected && !reconnecting
+                        ? formatCallDuration(c.callDurationRx.value)
+                        : '${callStatusLabel(context.l10n, status)}…',
+                    key: const ValueKey<String>('call_status_text'),
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: 15.sp,
+                      fontFamily: FontFamily.interMedium,
+                      fontWeight: FontWeight.w600,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  SizedBox(height: 28.h),
+                  SizedBox(
+                    height: 48.h,
+                    child: connected
+                        ? null
+                        : const _VoiceWave(color: AppColors.primaryPurple),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+  }
 }
 
-class _AudiocallScreenState extends State<AudiocallScreen>
+/// True once the call is connected (the timer runs).
+bool isCallConnected(CallingController c) =>
+    c.callTimer != null || c.callDurationRx.value > 0;
+
+/// Avatar with soft halo rings. The rings pulse while [animate] (calling /
+/// ringing) and stand still once connected.
+class CallPulseAvatar extends StatefulWidget {
+  const CallPulseAvatar({
+    super.key,
+    required this.name,
+    required this.image,
+    this.animate = true,
+    this.onDark = false,
+    this.avatarSize = 124,
+    this.accent,
+  });
+
+  final String name;
+  final Object? image;
+  final bool animate;
+
+  /// Rings in white (purple / video background) instead of purple.
+  final bool onDark;
+  final double avatarSize;
+
+  /// Colour of the rings and the avatar outline (green on incoming audio).
+  final Color? accent;
+
+  @override
+  State<CallPulseAvatar> createState() => _CallPulseAvatarState();
+}
+
+class _CallPulseAvatarState extends State<CallPulseAvatar>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _animationController;
-
-  static const Color primaryPurple = Color(0xFF7B58FF);
-  static const Color darkText = Color(0xFF0F0B4C);
-
-  CallingController get controller => widget.controller;
+  late final AnimationController _anim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2200),
+  );
 
   @override
   void initState() {
     super.initState();
+    if (widget.animate) _anim.repeat();
+  }
 
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat();
+  @override
+  void didUpdateWidget(CallPulseAvatar old) {
+    super.didUpdateWidget(old);
+    if (widget.animate && !_anim.isAnimating) {
+      _anim.repeat();
+    } else if (!widget.animate && _anim.isAnimating) {
+      _anim.stop();
+      _anim.value = 0.5;
+    }
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _anim.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isOutgoing = controller.args["callType"] == "outGoing";
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24.w),
-      child: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          final double progress = _animationController.value;
-
-          return Column(
-            children: [
-              SizedBox(height: 10.h),
-              Text(
-                isOutgoing ? "" : context.l10n.call_callFrom,
-                style: TextStyle(
-                  color: primaryPurple.withOpacity(0.85),
-                  fontSize: 14.sp,
-                  fontFamily: FontFamily.interMedium,
-                ),
-              ),
-              SizedBox(height: 6.h),
-              Text(
-                "${controller.args["callerName"] ?? ""}",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: darkText,
-                  fontSize: 28.sp,
-                  fontFamily: FontFamily.interSemiBold,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                controller.formattedDuration == "00:00"
-                    ? "${callStatusLabel(context.l10n, controller.callStatus.value)}..."
-                    : controller.formattedDuration,
-                style: TextStyle(
-                  color: AppColors.primaryPurple.withOpacity(0.9),
-                  fontSize: 14.sp,
-                  fontFamily: FontFamily.interMedium,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 30.h),
-              _AnimatedAvatar(
-                imageUrl:
-                    controller.args['profileImage'] ?? MyAppTheme.notFoundImg,
-                progress: progress,
-              ),
-              SizedBox(height: 35.h),
-              _AnimatedAudioWave(
-                progress: progress,
-              ),
-              SizedBox(height: 28.h),
-              const Spacer(),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _AnimatedAvatar extends StatelessWidget {
-  final String imageUrl;
-  final double progress;
-
-  const _AnimatedAvatar({
-    required this.imageUrl,
-    required this.progress,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final double outerProgress = progress;
-    final double middleProgress = (progress + 0.25) % 1.0;
-    final double innerProgress = (progress + 0.5) % 1.0;
+    final double avatar = widget.avatarSize.r;
+    final double box = avatar * 2.0;
+    final Color ring =
+        widget.accent ?? (widget.onDark ? Colors.white : AppColors.primaryPurple);
 
     return SizedBox(
-      width: 270.r,
-      height: 270.r,
+      width: box,
+      height: box,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          _PulseRing(
-            baseSize: 250.r,
-            progress: outerProgress,
-            opacity: 0.14,
-            color: const Color(0xFF7B58FF),
-          ),
-          _PulseRing(
-            baseSize: 205.r,
-            progress: middleProgress,
-            opacity: 0.20,
-            color: const Color(0xFF8F72FF),
-          ),
-          _PulseRing(
-            baseSize: 160.r,
-            progress: innerProgress,
-            opacity: 0.28,
-            color: const Color(0xFFB1A0FF),
-          ),
-          Container(
-            width: 128.r,
-            height: 128.r,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF7B58FF).withOpacity(0.30),
-                  blurRadius: 24,
-                  spreadRadius: 5,
-                ),
-              ],
-            ),
-            padding: EdgeInsets.all(4.r),
-            child: ClipOval(
-              child: Image.network(
-                ConstRes.aImageBaseUrl + imageUrl,
-                width: 120.r,
-                height: 120.r,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) {
-                  return Container(
-                    color: const Color(0xFFF0EDFF),
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.person,
-                      size: 58.sp,
-                      color: const Color(0xFF7B58FF),
-                    ),
-                  );
-                },
-              ),
+          RepaintBoundary(
+            child: AnimatedBuilder(
+              animation: _anim,
+              builder: (context, _) {
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    for (int i = 0; i < 3; i++)
+                      _ring(avatar, box, ring, (_anim.value + i / 3) % 1.0),
+                  ],
+                );
+              },
             ),
           ),
-          Positioned(
-            bottom: 4.r,
-            right: 36.r,
-            child: Container(
-              width: 30.r,
-              height: 30.r,
-              decoration: BoxDecoration(
-                color: const Color(0xFF7B58FF),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white,
-                  width: 3,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF7B58FF).withOpacity(0.35),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.phone_in_talk_rounded,
-                color: Colors.white,
-                size: 15.sp,
-              ),
-            ),
+          CallAvatar(
+            name: widget.name,
+            image: widget.image,
+            size: avatar,
+            ringColor: widget.accent ?? Colors.white,
           ),
         ],
       ),
     );
   }
-}
 
-class _PulseRing extends StatelessWidget {
-  final double baseSize;
-  final double progress;
-  final double opacity;
-  final Color color;
-
-  const _PulseRing({
-    required this.baseSize,
-    required this.progress,
-    required this.opacity,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final double scale = 0.88 + (progress * 0.16);
-
-    final double ringOpacity = opacity * (1.0 - (progress * 0.45));
-
-    return Transform.scale(
-      scale: scale,
-      child: Container(
-        width: baseSize,
-        height: baseSize,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color.withOpacity(
-            ringOpacity.clamp(0.0, 1.0),
-          ),
-          border: Border.all(
-            color: color.withOpacity(
-              (ringOpacity + 0.10).clamp(0.0, 1.0),
-            ),
-            width: 1.5,
-          ),
-        ),
+  Widget _ring(double avatar, double box, Color color, double t) {
+    // Each ring grows from the avatar to the box edge and fades out.
+    final double size = avatar + (box - avatar) * t;
+    final double opacity = (1 - t) * (widget.onDark ? 0.22 : 0.20);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withOpacity(opacity * 0.6),
+        border: Border.all(color: color.withOpacity(opacity), width: 1.2),
       ),
     );
   }
 }
 
-class _AnimatedAudioWave extends StatelessWidget {
-  final double progress;
+/// Decorative voice wave shown while the call is ringing.
+class _VoiceWave extends StatefulWidget {
+  const _VoiceWave({required this.color});
 
-  const _AnimatedAudioWave({
-    required this.progress,
-  });
+  final Color color;
+
+  @override
+  State<_VoiceWave> createState() => _VoiceWaveState();
+}
+
+class _VoiceWaveState extends State<_VoiceWave>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _anim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  )..repeat();
+
+  static const List<double> _base = [10, 18, 28, 38, 46, 38, 28, 18, 10];
+
+  @override
+  void dispose() {
+    _anim.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    const List<double> baseHeights = [
-      10,
-      20,
-      32,
-      45,
-      60,
-      45,
-      32,
-      20,
-      10,
-    ];
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: List.generate(
-        baseHeights.length,
-        (index) {
-          final double phase = progress * math.pi * 2 + index * 0.55;
-
-          final double wave = (math.sin(phase) + 1) / 2;
-
-          final double height = baseHeights[index] * (0.65 + wave * 0.55);
-
-          final double opacity = 0.55 + wave * 0.45;
-
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 80),
-            margin: EdgeInsets.symmetric(
-              horizontal: 3.5.w,
-            ),
-            width: 4.5.w,
-            height: height.h,
-            decoration: BoxDecoration(
-              color: const Color(0xFF7B58FF).withOpacity(opacity),
-              borderRadius: BorderRadius.circular(8.r),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF7B58FF).withOpacity(0.25),
-                  blurRadius: 5,
-                  spreadRadius: 1,
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _anim,
+        builder: (context, _) {
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: List.generate(_base.length, (i) {
+              final double wave =
+                  (math.sin(_anim.value * math.pi * 2 + i * 0.6) + 1) / 2;
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: 3.w),
+                width: 4.w,
+                height: (_base[i] * (0.55 + wave * 0.45)).h,
+                decoration: BoxDecoration(
+                  color: widget.color.withOpacity(0.45 + wave * 0.45),
+                  borderRadius: BorderRadius.circular(4.r),
                 ),
-              ],
-            ),
+              );
+            }),
           );
         },
       ),

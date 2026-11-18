@@ -87,11 +87,8 @@ public class MainActivity extends FlutterActivity {
         }
     }
 
-    // public: newer Flutter declares FlutterActivity.onUserLeaveHint() public
-    // (protected here failed to compile: "weaker access privileges").
-    // public also compiles against older Flutter, where it was protected.
     @Override
-    public void onUserLeaveHint() {
+    protected void onUserLeaveHint() {
         super.onUserLeaveHint();
         // Android 12+ enters PiP by itself (setAutoEnterEnabled).
         if (autoPip
