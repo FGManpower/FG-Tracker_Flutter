@@ -233,7 +233,8 @@ class ChatScreenRules {
     return {
       MessageMenuOption.reply,
       if (text) MessageMenuOption.copy,
-      MessageMenuOption.forward,
+      // Attendance cards are tied to their group's poll: never forwarded.
+      if (!isAttendance(messageType)) MessageMenuOption.forward,
       if (isSentByMe && text) MessageMenuOption.edit,
       MessageMenuOption.pin,
       if (isSentByMe) MessageMenuOption.info,

@@ -1821,6 +1821,8 @@ class ChatBubble extends StatelessWidget {
             Utils().fluttertoast(appL10n.chat_messageCopied);
           },
         ),
+      // Hidden for attendance cards (ChatScreenRules.menuOptions).
+      if (options.contains(MessageMenuOption.forward))
       MessageContextMenuAction(
         icon: Icons.forward_rounded,
         title: appL10n.chat_menuForward,
@@ -3387,6 +3389,8 @@ class GroupChatBubble extends StatelessWidget {
             Utils().fluttertoast(appL10n.chat_messageCopied);
           },
         ),
+      // Hidden for attendance cards (ChatScreenRules.menuOptions).
+      if (options.contains(MessageMenuOption.forward))
       MessageContextMenuAction(
         icon: Icons.forward_rounded,
         title: appL10n.chat_menuForward,

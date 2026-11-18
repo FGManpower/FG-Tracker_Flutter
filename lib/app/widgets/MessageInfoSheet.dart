@@ -3,6 +3,7 @@ import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'package:fgtracker/app/modules/Messages/Controller/message_receipts.dart';
 
 import '../Core/constant/const_res.dart';
@@ -709,6 +710,10 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
         preview = appL10n.util_previewContact;
         break;
 
+      case "attendance":
+        preview = _attendanceTitle();
+        break;
+
       default:
         preview = widget.message.content?.toString() ?? "";
     }
@@ -781,9 +786,25 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
       case "contact":
         return Icons.person_outline;
 
+      case "attendance":
+        return Icons.event_available_outlined;
+
       default:
         return Icons.message_outlined;
     }
+  }
+
+  /// Attendance content is JSON like {"attendancePollId":1,"title":"…"}.
+  /// Show its title, never the raw JSON.
+  String _attendanceTitle() {
+    try {
+      final decoded = jsonDecode(widget.message.content?.toString() ?? "");
+      if (decoded is Map) {
+        final title = decoded["title"]?.toString().trim() ?? "";
+        if (title.isNotEmpty) return title;
+      }
+    } catch (_) {}
+    return appL10n.chat_previewAttendancePoll;
   }
 
   Widget _buildSectionTitle({

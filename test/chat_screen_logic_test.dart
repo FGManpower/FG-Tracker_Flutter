@@ -100,6 +100,17 @@ void main() {
         skip: 'BUG-CS-20 (needs decision): attendance cards show delete '
             'options again (chat_screen_logic.dart:210-225)');
 
+    test('attendance cards have no Forward option for anyone', () {
+      for (final type in ['attendance', 'attendance_poll', 'ATTENDANCE']) {
+        for (final mine in [true, false]) {
+          final o = ChatScreenRules.menuOptions(messageType: type, isSentByMe: mine);
+          expect(o, isNot(contains(MessageMenuOption.forward)),
+              reason: '$type, mine=$mine');
+          expect(o, contains(MessageMenuOption.reply));
+        }
+      }
+    });
+
     test('other types keep their options', () {
       final mineText = ChatScreenRules.menuOptions(messageType: 'text', isSentByMe: true);
       expect(mineText, containsAll([
