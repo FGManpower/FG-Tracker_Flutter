@@ -105,16 +105,16 @@ By utilizing the Site or our mobile app, you express your acceptance of this pol
 
 12. Contacting Us
 
-For any inquiries regarding this Privacy Policy, the practices of this site, or your interactions with this site, please reach out to us at: support@fgmanpower.co.in'''
+For any inquiries regarding this Privacy Policy, the practices of this site, or your interactions with this site, please reach out to us at: fgtracker@fgmanpower.com or +91 93727 23727'''
   ;
 
   static const String termsAndConditions = '''
   1. CONTRACTUAL RELATIONSHIP 
 These Terms of Use (“Terms”) govern the access or use by you, an individual, from within India of applications, websites, content, products, and services (the “Services”) made available 
 
-FG Manpower LLP 
+FG Manpower LLP
 
-Office No.723/724, Seventh Floor,Ajmera Sikova, Nityanand Nagar, Ghatkopar West, Mumbai, Maharashtra 400086 
+Ghatkopar West, Mumbai, Maharashtra 400086, India
 
  (“ FG Manpower”).
 
@@ -261,17 +261,17 @@ For the purposes of Consumer Protection Act, 2019 and rules and regulations ther
 
 FG Manpower LLP 
 
-Plot no. 1857 ,Near lucky kanta Ghatkopar Mankhurd Link road , Near Chheda Nagar, Govandi West, Mumbai – 43 
+Ghatkopar West, Mumbai, Maharashtra 400086, India
 
-E-mail: 
+E-mail: fgtracker@fgmanpower.com
 
-Phone: +91 8097555781/82/83/84/85
+Phone: +91 93727 23727
 
 Timings: 10 AM – 5 PM, Monday-Friday, excluding public holidays. 
 
 Notice.
 
- FG Manpower may give notice by means of a general notice on the Services, electronic mail to your email address in your Account, or by written communication sent to your address as set forth in your Account. You may give notice to FG Manpower by written communication to FG Manpower’s address at Office No.723/724, Seventh Floor,Ajmera Sikova, Nityanand Nagar, Ghatkopar West, Mumbai, Maharashtra 400086
+ FG Manpower may give notice by means of a general notice on the Services, electronic mail to your email address in your Account, or by written communication sent to your address as set forth in your Account. You may give notice to FG Manpower by written communication to FG Manpower’s address at Ghatkopar West, Mumbai, Maharashtra 400086, India
 
 General. 
 

@@ -94,25 +94,6 @@ class _VoiceToTextListeningViewState extends State<VoiceToTextListeningView>
             ],
           ),
 
-          SizedBox(height: 8.h),
-
-          // 2. Hint
-          Obx(() {
-            final isWarning = widget.controller.isTooNoisy.value ||
-                widget.controller.didntCatchThat.value;
-            return Text(
-              widget.controller.hintMessage.value,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isWarning
-                    ? AppColors.darkRed
-                    : AppColors.primarySecondaryElementText,
-                fontSize: 13.sp,
-                fontWeight: isWarning ? FontWeight.w600 : FontWeight.w400,
-              ),
-            );
-          }),
-
           SizedBox(height: 12.h),
 
           // 3. 22 Animated Waveform Bars (#704AFA / #B2ACFD)
@@ -126,77 +107,77 @@ class _VoiceToTextListeningViewState extends State<VoiceToTextListeningView>
           SizedBox(height: 12.h),
 
           // 4. Live transcription preview — words appear here as user speaks
-          Obx(() {
-            final text = widget.controller.recognizedWords.value.trim();
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: double.infinity,
-              constraints: BoxConstraints(minHeight: 46.h),
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF7F6FF),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(4.r),
-                  topRight: Radius.circular(14.r),
-                  bottomLeft: Radius.circular(14.r),
-                  bottomRight: Radius.circular(14.r),
-                ),
-                border: Border.all(
-                  color: const Color(0xFFD6D2FA),
-                  width: 1,
-                ),
-              ),
-              child: text.isNotEmpty
-                  ? Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            text,
-                            style: TextStyle(
-                              color: AppColors.darkText,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w500,
-                              height: 1.45,
-                            ),
-                          ),
-                        ),
-                        // Blinking cursor indicator
-                        FadeTransition(
-                          opacity: _blinkController,
-                          child: Container(
-                            width: 2.w,
-                            height: 18.h,
-                            margin: EdgeInsets.only(left: 3.w, top: 2.h),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryDarkblue,
-                              borderRadius: BorderRadius.circular(2.r),
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        Icon(
-                          Icons.mic_rounded,
-                          color: AppColors.primaryDarkblue.withValues(alpha: 0.45),
-                          size: 16.sp,
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          context.l10n.voice_speakPlaceholder,
-                          style: TextStyle(
-                            color: AppColors.primarySecondaryElementText,
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w400,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ],
-                    ),
-            );
-          }),
+          // Obx(() {
+          //   final text = widget.controller.recognizedWords.value.trim();
+          //   return AnimatedContainer(
+          //     duration: const Duration(milliseconds: 200),
+          //     width: double.infinity,
+          //     constraints: BoxConstraints(minHeight: 46.h),
+          //     padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+          //     decoration: BoxDecoration(
+          //       color: const Color(0xFFF7F6FF),
+          //       borderRadius: BorderRadius.only(
+          //         topLeft: Radius.circular(4.r),
+          //         topRight: Radius.circular(14.r),
+          //         bottomLeft: Radius.circular(14.r),
+          //         bottomRight: Radius.circular(14.r),
+          //       ),
+          //       border: Border.all(
+          //         color: const Color(0xFFD6D2FA),
+          //         width: 1,
+          //       ),
+          //     ),
+          //     child: text.isNotEmpty
+          //         ? Row(
+          //             crossAxisAlignment: CrossAxisAlignment.start,
+          //             children: [
+          //               Expanded(
+          //                 child: Text(
+          //                   text,
+          //                   style: TextStyle(
+          //                     color: AppColors.darkText,
+          //                     fontSize: 14.sp,
+          //                     fontWeight: FontWeight.w500,
+          //                     height: 1.45,
+          //                   ),
+          //                 ),
+          //               ),
+          //               // Blinking cursor indicator
+          //               FadeTransition(
+          //                 opacity: _blinkController,
+          //                 child: Container(
+          //                   width: 2.w,
+          //                   height: 18.h,
+          //                   margin: EdgeInsets.only(left: 3.w, top: 2.h),
+          //                   decoration: BoxDecoration(
+          //                     color: AppColors.primaryDarkblue,
+          //                     borderRadius: BorderRadius.circular(2.r),
+          //                   ),
+          //                 ),
+          //               ),
+          //             ],
+          //           )
+          //         : Row(
+          //             children: [
+          //               Icon(
+          //                 Icons.mic_rounded,
+          //                 color: AppColors.primaryDarkblue.withValues(alpha: 0.45),
+          //                 size: 16.sp,
+          //               ),
+          //               SizedBox(width: 8.w),
+          //               Text(
+          //                 context.l10n.voice_speakPlaceholder,
+          //                 style: TextStyle(
+          //                   color: AppColors.primarySecondaryElementText,
+          //                   fontSize: 13.sp,
+          //                   fontWeight: FontWeight.w400,
+          //                   fontStyle: FontStyle.italic,
+          //                 ),
+          //               ),
+          //             ],
+          //           ),
+          //   );
+          // }),
 
           SizedBox(height: 16.h),
 

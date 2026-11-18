@@ -109,16 +109,15 @@ class LegalContact {
 }
 
 const String _legalOfficeAddress =
-    'Office No. 723/724, Ajmera Sikova, LBS Marg, Damodar Park, '
-    'Ghatkopar West, Mumbai, Maharashtra 400086';
+    'Ghatkopar West, Mumbai, Maharashtra 400086, India';
 
 /// Contact details shown under the documents, in this order.
 final List<LegalContact> legalContacts = [
   LegalContact(
     id: 'phone',
     label: (l) => l.call_phone,
-    value: '+91 80975 55785',
-    uri: 'tel:+918097555785',
+    value: '+91 93727 23727',
+    uri: 'tel:+919372723727',
   ),
   LegalContact(
     id: 'email',

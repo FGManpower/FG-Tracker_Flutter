@@ -153,61 +153,6 @@ class VoiceToTextReviewView extends StatelessWidget {
             );
           }),
 
-          // ── SECTION 2: Transcribed Text ──────────────────────────────────────
-          _SectionLabel(
-            icon: Icons.chat_bubble_outline_rounded,
-            label: context.l10n.voice_yourMessage,
-            color: AppColors.primaryDarkblue,
-          ),
-          SizedBox(height: 6.h),
-          Obx(() {
-            final text = controller.recognizedWords.value.trim();
-            return Container(
-              width: double.infinity,
-              constraints: BoxConstraints(minHeight: 60.h),
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF7F6FF),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(4.r),
-                  topRight: Radius.circular(16.r),
-                  bottomLeft: Radius.circular(16.r),
-                  bottomRight: Radius.circular(16.r),
-                ),
-                border: Border.all(
-                  color: const Color(0xFFD6D2FA),
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                text.isNotEmpty ? text : context.l10n.voice_noTextCaptured,
-                style: TextStyle(
-                  color: text.isNotEmpty
-                      ? AppColors.darkText
-                      : AppColors.primarySecondaryElementText,
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w500,
-                  height: 1.5,
-                ),
-              ),
-            );
-          }),
-
-          SizedBox(height: 6.h),
-
-          // Hint
-          Text(
-            context.l10n.voice_reviewTextHint,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.primarySecondaryElementText,
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-
-          SizedBox(height: 12.h),
-
           // ── Action Buttons Row: Re-record | Delete ───────────────────────────
           Row(
             children: [

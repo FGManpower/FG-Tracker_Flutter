@@ -53,11 +53,11 @@ class About extends StatelessWidget {
 
             SizedBox(height: 20.h),
             _sectionTitle(l10n.about_supportTitle),
-            _infoRow(l10n.about_supportEmail, "fgmanpower786@gmail.com"),
+            _infoRow(l10n.about_supportEmail, "fgtracker@fgmanpower.com"),
             _infoRow(l10n.about_developerEmail, "developer.46solution@gmail.com"),
             _infoRow(l10n.about_company, "FG Manpower LLP"),
             _infoRow(l10n.about_address,
-                "A3 Sri Sai Leela H Soc, Saki Vihar Rd, Sakinaka, Kurla West, Mumbai, Maharashtra 400072, India"),
+                "Ghatkopar West, Mumbai, Maharashtra 400086, India"),
             _infoRow(l10n.about_website, "https://fgmanpower.in/"),
             SizedBox(height: 20.h),
             _sectionTitle(l10n.about_downloadTitle),

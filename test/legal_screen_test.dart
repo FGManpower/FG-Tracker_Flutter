@@ -208,7 +208,7 @@ void main() {
       ]);
       final byId = {for (final c in legalContacts) c.id: c};
       expect(byId.keys, ['phone', 'email', 'address', 'website']);
-      expect(byId['phone']!.uri, 'tel:+918097555785');
+      expect(byId['phone']!.uri, 'tel:+919372723727');
       expect(byId['email']!.uri, 'mailto:fgtracker@fgmanpower.com');
       expect(Uri.parse(byId['address']!.uri).queryParameters['query'],
           byId['address']!.value);

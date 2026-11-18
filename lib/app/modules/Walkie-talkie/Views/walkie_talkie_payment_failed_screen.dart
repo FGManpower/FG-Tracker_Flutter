@@ -247,7 +247,7 @@ class _WalkieTalkiePaymentFailedScreenState
                         SizedBox(width: 8.w),
                         Expanded(
                           child: Text(
-                            "support@fgtracker.in",
+                            "fgtracker@fgmanpower.com",
                             style: TextStyle(
                               fontSize: 11.5.sp,
                               fontFamily: FontFamily.interMedium,
@@ -266,7 +266,7 @@ class _WalkieTalkiePaymentFailedScreenState
                         SizedBox(width: 8.w),
                         Expanded(
                           child: Text(
-                            "+91 98765 43210",
+                            "+91 93727 23727",
                             style: TextStyle(
                               fontSize: 11.5.sp,
                               fontFamily: FontFamily.interMedium,

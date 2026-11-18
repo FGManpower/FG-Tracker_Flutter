@@ -769,9 +769,9 @@ The test suite validates tracking models, distance geofencing, and socket proces
 
 | Row | Value | Tap |
 |---|---|---|
-| Phone | +91 80975 55785 | `tel:+918097555785` |
+| Phone | +91 93727 23727 | `tel:+919372723727` |
 | Email | fgtracker@fgmanpower.com | `mailto:` |
-| Address | Office No. 723/724, Ajmera Sikova, LBS Marg, Damodar Park, Ghatkopar West, Mumbai, Maharashtra 400086 | Google Maps search |
+| Address | Ghatkopar West, Mumbai, Maharashtra 400086, India | Google Maps search |
 | Website | fgtracker.fgmanpower.com | website |
 
 - **Draft notice:** `showLegalDraftNotice = false` (the website has the final v1.0 documents, effective 16 Nov 2026).
