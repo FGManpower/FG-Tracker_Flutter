@@ -548,6 +548,7 @@ Screen sharing is initiated and controlled over the calling socket connection:
 ### 6.2 Change Log
 | Version | Date | Description |
 |---|---|---|
+| v2.5.4 | 2026-11-18 | §11 Company contact details: phone **+91 93727 23727**, email **fgtracker@fgmanpower.com**, address **Ghatkopar West, Mumbai, Maharashtra 400086, India** (from the website footer) now used on Legal, About, Privacy / Terms text and the Walkie payment-failed screen. Home › Online members: bottom info card commented out. |
 | v2.5.3 | 2026-11-17 | App cache (guide 07) for Home banners, the Notification Center and All Groups: shown at once, 10 s timeout, "Couldn't refresh · Retry" (not for banners), skeleton only when empty. Notifications are no longer cleared before each refresh; a failed answer (`getNotificationsOrNull` → `null`) never looks like "no notifications"; resume refresh added. All Groups: an error no longer replaces the list. `AppCache.warmUp()` in `main.dart`. Logout unchanged (the existing chat-cache `clearAll` deletes the app cache too). |
 | v2.5.2 | 2026-11-17 | §5.1.1 Custom banner asks for camera (Android + iOS) and photos (iOS) before opening; blocked → Settings dialog, auto-continues after Settings. §9.3 "Follow us" uses real brand icons in brand colours. §9.3.1 side menu: divider + more space between Log out and Delete Account. §10 one back button app-wide: shared `AppBackButton` (white circle, purple `arrow_back_rounded`) and app bars that don't change on scroll (`AppBarStyle`); every back keeps its old action. |
 | v2.5.1 | 2026-11-17 | §5.1.1 Custom banner: after taking a photo the crop screen opens next; Home no longer shows in between. Home's resume permission / location check waits until the photo flow ends (`LocalBannerService.pickInProgress`), and a spinner covers the native camera → cropper gap. Files: `local_banner_service.dart`, `bannerUi.dart`, `home_screen.dart`. |
@@ -817,3 +818,27 @@ Same look and size as the other menu items: "Language" + "Change app language", 
 - **Shared helpers changed once** (callers untouched): `reusableAppbar` and `BackpressIcon` (`common_widget.dart`), `customAppBar` (`widgets/cutom_appbar.dart`), `PackageBackButton`, Safe Zone common widgets, `TrackLAppBar`, safety coming-soon `_buildBackButton`.
 - **Screens:** Groups (All Groups, Group chat + search, Group Info, Members, Media/Links/Docs, QR scan), Chats (list + search, Archive, private chat + search, Forward, New chat, User profile, Document viewer, Video player, image viewer, Notifications), Status viewer, Home Live Status lists, Tracking, Attendance, Call, Contact profile, Intro, Legal, OTP charges, Package pricing, Safe Zone, SOS, Language settings, Registration, all Walkie-talkie screens incl. payment.
 - **Check on Android + iOS:** each screen's Back looks the same and does what it did before; on long lists (All Groups, Members, Chats) scroll up and down: the bar and the Back circle don't change.
+
+---
+
+## 11. Company contact details: one set everywhere (v2.5.4, 2026-11-18)
+
+**Source of truth:** the footer of https://fgtracker.fgmanpower.com/legal/. When the website changes, update every row below.
+
+| Detail | Value |
+|---|---|
+| Phone | +91 93727 23727 (`tel:+919372723727`) |
+| Email | fgtracker@fgmanpower.com |
+| Address | Ghatkopar West, Mumbai, Maharashtra 400086, India (no company name in the address line) |
+
+| Where | File |
+|---|---|
+| Legal › Contact Us card | `lib/app/modules/Legal/legal_documents.dart` (`legalContacts`, test `test/legal_screen_test.dart`) |
+| About (support email, address) | `lib/app/modules/home/Views/About.dart` |
+| Privacy Policy / Terms text (contact, office, grievance officer, notice) | `lib/app/modules/auth/Auth_Widget/policy_texts.dart` |
+| Walkie payment-failed screen (support email + phone) | `lib/app/modules/Walkie-talkie/Views/walkie_talkie_payment_failed_screen.dart` |
+
+**Not changed on purpose:** `walkie_payment_gateway_service.dart` keeps `support@fgtracker.in` as the payment-form fallback email for a customer without one (never shown as our contact). Website links (`fgmanpower.co.in`, `fgmanpower.in`) are unchanged.
+
+### 11.1 Home › Online members: bottom info card hidden
+`home/Views/LiveStatus/components/online_member.dart`: the call to `_buildBottomInfoCard()` is commented out (method kept, marked `// ignore: unused_element`). Remove the `//` to show it again.

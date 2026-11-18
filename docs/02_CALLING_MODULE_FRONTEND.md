@@ -167,6 +167,7 @@ If video or calling appears sluggish or delayed during testing, the runtime logs
 
 | Version | Date | Change |
 |---|---|---|
+| v1.4.3 | 2026-11-18 | §9 added: the Calls → Contacts tab now builds its list exactly like All Contacts (shared `ContactMatcher`): phonebook × `/getAllUser`, phonebook names and numbers, phonebook order. The group-members paging (`getGroupMember`) is no longer used here. |
 | v1.4.2 | 2026-11-18 | §8.6 added: backend answers to Q1–Q7. App: `/callSignaling` handshake sends the login token in `auth` (B-01); native decline (Android `CallDeclineReceiver.kt`, iOS `AppDelegate.swift`) moved from `http://fgtracker.in:3000` to the HTTPS production host and sends `reason=declined` (B-13). New test `call_backend_contract_v1_test.dart` (5). |
 | v1.4.1 | 2026-11-18 | §8.5 added: ready-to-send brief for the backend team (B-01 … B-16, questions, what to send back, suggested order). Docs only. |
 | v1.4.0 | 2026-11-18 | Phase 3 (uncommitted): §7 added (busy / call waiting, ICE restart + rejoin, TURN service + TLS 443 fallback, quality badge, other side's state, end screen + tones, missed-call Call back, iOS CallKit outgoing + mute/hold + VoIP token upload, Android PiP); §8 backend handover (B-01 … B-16). Out-of-date parts fixed (C19): header status, §0.1 (TURN 443 not live; credential name removed), event tables (directions, fields, reasons, `acceptCallFromCallKit`, `rejoinCall`). Late end events of another call are ignored (BUG-CALL-37/38). |
@@ -863,3 +864,26 @@ The backend team answered the seven questions of §8.3 / §8.5. The app was chan
 **Tests:** `test/call_qa/call_backend_contract_v1_test.dart` (5 cases: token in `auth`, never in the URL, old handshake without a token, Android and iOS decline host). All 74 calling tests pass.
 
 **To check on phones:** (1) calls still connect after the token change (a stale token would now be refused instead of ignored); (2) Decline from the notification / lock screen with the app killed reaches the caller on Android and iOS.
+
+---
+
+## 9. Contacts tab: same list as All Contacts (v1.4.3, 2026-11-18)
+
+**Rule:** Calls → Contacts and Home → All Contacts (New chat) always show the same people, with the same names, numbers and order. Both build the list through one shared file, `lib/app/Data/Services/contact_matcher.dart` (`ContactMatcher`).
+
+| Step | What happens |
+|---|---|
+| Phonebook | `ContactService.getContacts()`, read fresh on every load. One entry per 10-digit number (digits only, `91` prefix dropped, last 10 kept). A contact without a name uses its number as the name. |
+| Users | `GroupRepo.getAllUserData()` (`/getAllUser`, 10 s timeout), started at the same time as the phonebook read. |
+| Match | A phonebook number that belongs to an FG user → **All Contacts** list (phonebook name + phonebook number, server id / photo / online / chat id). Every other number → **Invite to App**. The logged-in user and their own number are left out. |
+| Order | Phonebook order (no re-sorting). |
+| Chat ids | From the user record, then filled from the private chat list (`ContactMatcher.loadPrivateChatIdMap`). |
+
+**Calls tab specifics (`call/Controller/contact_controller.dart`):**
+- Permission screen, pull-to-refresh, silent refresh on tab open / app resume (10 s throttle), search and the dial pad work as before.
+- The whole list arrives in one call; the tab still shows 20 rows at a time and adds 20 more on scroll (client-side only).
+- A failed silent refresh keeps the list on screen; the error screen shows only when there is nothing to show.
+- Other screens still read `allUserProfileData`, `inviteUsers`, `phoneContactNameMap` and `chatIdFor` from this controller (dial pad, Forward, profile navigation).
+- No longer used here: `TrackRepo.getGroupMember` paging and the 9-digit partial number match.
+
+**Check on a phone:** open All Contacts and Calls → Contacts one after the other; the two lists and the Invite lists must be identical (same names, numbers, order). Search a name and a number in both.

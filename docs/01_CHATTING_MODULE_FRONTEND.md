@@ -525,6 +525,16 @@ The group chat screen itself has no exit option (the menu item is commented out 
 - **My contacts:** private users whose number is in the phone contacts. Groups are shown as sent.
 - **Search:** name or number; an empty query shows everything.
 
+### 4.1.1 Forward screen look (F-1.3.0, 2026-11-18, UI only)
+File: `Messages/Views/ForwardMessageScreen.dart`. Controller, API and socket are unchanged.
+- **App bar:** same look as the Calls screen header: background `#F6F7FB`, the shared `AppBackButton` (`AppBarStyle.leading`), title "Forward to…" left-aligned (`#1E1B4B`, Inter Bold 19), purple "N selected" under it once something is picked. No search icon in the app bar.
+- **Search:** one always-visible rounded field under the app bar ("Search name or number"), with a clear (×) button. Scrolling the list hides the keyboard.
+- **Back (app bar or phone):** if a search is typed, the first Back clears it; the next Back leaves the screen.
+- **Selected strip:** small avatars with an × badge and first name, above the search; tap one to unselect.
+- **Rows:** coloured initial avatars (photo when there is one; groups show the group icon), bold name, number or "Group" under it, round check on the right. A selected row gets a light purple background.
+- **Sections:** Recent chats, Groups, My contacts, Other contacts (same data and order as before).
+- **Send:** round purple floating button bottom-right, only while something is selected; shows a spinner while forwarding.
+
 ### 4.2 Sending a forward
 - **REST:** `POST /forward/message`.
   ```json
@@ -544,7 +554,7 @@ The group chat screen itself has no exit option (the menu item is commented out 
 |---|---|---|
 | Reply | All (not deleted) | Sets the reply bar |
 | Copy | Text messages | Clipboard |
-| Forward | All | Forward screen (§4) |
+| Forward | All, **not attendance** (`attendance` / `attendance_poll`) | Forward screen (§4) |
 | Edit | **My** text messages | `editMessage` |
 | Pin / Unpin message | All | `pin_message` / `unpin_message` |
 | Message Info | **My** messages | "Seen" sheet (§2.5) |
@@ -789,6 +799,7 @@ Remove them all in one cleanup commit after QA, by searching for `TODO(` plus th
 ## 9. Change log
 | Version | Date | Change |
 |---|---|---|
+| F-1.3.0 | 2026-11-18 | **Forward screen new look (§4.1.1, UI only):** Calls-style app bar with the shared back button, one search field in the body (no app-bar search icon), Back clears an active search first, selected strip, coloured initial avatars, selected-row highlight, floating send button. **Attendance cards can't be forwarded (§5.1):** `ChatScreenRules.menuOptions` leaves out Forward for `attendance` / `attendance_poll`; both long-press menus (private + group) read it. Test: `test/chat_screen_logic_test.dart` "attendance cards have no Forward option". **Voice to text:** the "Speak now…" hint and warnings under "Listening…" (`features/voice_input/widgets/listening_view.dart`) and the "Your message" box + hint on the review card (`text_review_view.dart`) are removed. |
 | F-1.2.9 | 2026-11-18 | **False "Couldn't refresh · Retry" fixed for real (§12.2.1, §1.2; BUG-CL-10…16, BUG-CS-24…31).** Part 0 root causes: the chat list had none of the F-1.2.8 rules and one try/catch around API + processing; only a full page-1 load cleared its flag (sync / socket list never did); search raised the main bar; the group `/chat` connect handler (fires on the FIRST connect) started a second parallel first-page load (F-1.2.8 regression); the join timer ignored a loaded new chat; socket "joined" without chatId + the API failure counted twice; a failure before the cache read showed an instant bar; `Future.timeout` threw late answers away. Fix: one shared `RefreshBarState` + soft timeout + in-flight guards + `HttpGetException` (same message, plus the real Dio type / status) + bar above the list. Tests: 68 new (refresh_bar_state, chat_list_refresh_bar, chat_refresh_bar RB-C, refresh_bar_widget), every rule proven by a mutation check. E2E file `integration_test/chat_refresh_bar_e2e_test.dart` (not run: no device). Also: 3 tests broken by the env commit (const `socketUrl`) compile again via `SocketMessageService.debugSocketUrlOverride`. |
 | F-1.2.8 | 2026-11-17 | **Fix: "Couldn't refresh · Retry" appeared inside an open chat after ~10 s** although the chat worked (§12.2.1). Cause: the history request now has a 10 s timeout; one slow or failed request showed the bar, and a late failure could show it even after another load had succeeded. Now: no bar once a load succeeded; with messages on screen the first failure retries quietly after 2 s and the bar shows only if that fails too; an empty chat still gets the full error at once; a group reconnect loads the history if it never loaded (the bar then hides). Files: `MessageController.dart`, `GroupChatController.dart`. Test `test/chat_qa/chat_refresh_bar_test.dart` (3, fails with the old behaviour). |
 | F-1.2.7 | 2026-11-17 | **App cache for the chat list, Archived, New chat and the Status strip (guide 07, §13 here):** last list shown at once, API refresh merged by id (10 s timeout, "Couldn't refresh · Retry"). Chat-list socket fixes: `private_chat_removed` / `_cleared` also remove Archived rows; a bad `archived_private_chats` payload no longer clears Archive; the full-list event keeps rows with a pending action and never re-adds a pending delete; a failed load is no longer swallowed. New-chat static contact cache tied to the user (account switch). Status: expired items never shown from the cache; the permanent controller is emptied on logout. Chat screen cache (§12) unchanged. |
