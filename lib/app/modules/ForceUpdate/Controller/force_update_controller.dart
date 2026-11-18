@@ -16,17 +16,19 @@ class ForceUpdateController extends GetxController {
   String get targetStoreVersion {
     final vLatest = platformData.latestVersion.trim();
     final vMin = platformData.minVersion.trim();
-    if (vLatest.isNotEmpty && vMin.isNotEmpty) {
-      return AppVersionService.compareVersions(vLatest, vMin) >= 0 ? vLatest : vMin;
-    }
     if (vLatest.isNotEmpty) return vLatest;
     if (vMin.isNotEmpty) return vMin;
-    return '2.0.3';
+    return '2.0.5';
   }
 
   @override
   void onInit() {
     super.onInit();
+    final realInstalled = AppVersionService.instance.currentInstalledVersion.value;
+    if (realInstalled.trim().isNotEmpty) {
+      installedVersion.value = realInstalled.trim();
+    }
+
     final args = Get.arguments;
     if (args is AppVersionData) {
       versionData = args;
@@ -35,14 +37,14 @@ class ForceUpdateController extends GetxController {
     } else {
       versionData = AppVersionData(
         android: PlatformVersionData(
-          minVersion: '2.0.3',
-          latestVersion: '2.0.3',
+          minVersion: '2.0.0',
+          latestVersion: '2.0.5',
           forceUpdate: true,
           storeUrl: 'https://play.google.com/store/apps/details?id=com.fgtracker',
         ),
         ios: PlatformVersionData(
-          minVersion: '2.0.3',
-          latestVersion: '2.0.3',
+          minVersion: '2.0.0',
+          latestVersion: '2.0.5',
           forceUpdate: true,
           storeUrl: 'https://apps.apple.com/app/fg-tracker/id6738914614',
         ),

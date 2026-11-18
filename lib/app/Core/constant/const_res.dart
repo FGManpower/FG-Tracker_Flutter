@@ -3,8 +3,8 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class ConstRes {
   ///------------------------ App Version ------------------------///
-  static const String appVersion = '2.0.3';
-  static const int appBuildNumber = 203;
+  static const String appVersion = '2.0.5';
+  static const int appBuildNumber = 205;
 
   ///------------------------ Environment Switch ------------------------///
   /// Set [isProduction] = true to connect to AWS Cloud Production (Mumbai ap-south-1).
