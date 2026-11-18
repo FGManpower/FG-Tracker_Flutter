@@ -44,7 +44,11 @@ class CallPlatform {
     if (Get.isRegistered<CallAudioRouteController>()) {
       return Get.find<CallAudioRouteController>();
     }
-    return Get.put(CallAudioRouteController());
+    // permanent: the call outlives its route when minimized. Without it,
+    // GetX deleted this controller when /callScreen closed, which stopped
+    // the call's audio routing and broke Speaker after the user came back.
+    // CallingController.onClose deletes it (force) when the call ends.
+    return Get.put(CallAudioRouteController(), permanent: true);
   }
 
   void playRingback(String asset) {

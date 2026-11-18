@@ -95,8 +95,15 @@ class AudiocallScreen extends StatelessWidget {
 }
 
 /// True once the call is connected (the timer runs).
-bool isCallConnected(CallingController c) =>
-    c.callTimer != null || c.callDurationRx.value > 0;
+///
+/// Reads [CallingController.callDurationRx] FIRST and always, so every
+/// `Obx` that calls this subscribes to it. (Checking `callTimer` first
+/// short-circuited the read once connected, and GetX threw "improper use
+/// of GetX" on every rebuild.)
+bool isCallConnected(CallingController c) {
+  final int seconds = c.callDurationRx.value;
+  return seconds > 0 || c.callTimer != null;
+}
 
 /// Avatar with soft halo rings. The rings pulse while [animate] (calling /
 /// ringing) and stand still once connected.

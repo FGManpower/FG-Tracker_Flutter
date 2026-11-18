@@ -416,11 +416,16 @@ class CallingScreen extends StatelessWidget {
           final bool hideChrome =
               _chromeHidden(c, isVideo, remoteScreen, connected);
 
+          final bool sharing = c.isScreenSharing.value;
+
           return Column(
             children: [
               if (!hideChrome) _topBar(context, c, isVideo, connected),
-              _shareBanner(c),
-              if (!isVideo && !remoteScreen)
+              // While I share my screen: a card in the middle with Stop
+              // sharing (stays visible when the controls fade out).
+              if (sharing)
+                Expanded(child: Center(child: _sharingCard(c)))
+              else if (!isVideo && !remoteScreen)
                 Expanded(child: AudiocallScreen(controller: c))
               else
                 const Spacer(),
@@ -716,20 +721,24 @@ class CallingScreen extends StatelessWidget {
                     objectFit:
                         RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
                   ),
-                if (chromeVisible)
-                  Positioned(
-                    top: MediaQuery.of(context).padding.top + 10.h,
-                    left: 16.w,
-                    right: 16.w,
-                    child: IgnorePointer(
-                      child: Center(
-                        child: _glassPill(
-                          icon: Icons.screen_share_rounded,
-                          text: _remoteShareText(c),
-                        ),
+                // "X is sharing their screen": always visible, below the
+                // top bar while it shows, at the top edge when it fades.
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 200),
+                  top: MediaQuery.of(context).padding.top +
+                      (chromeVisible ? 76.h : 12.h),
+                  left: 16.w,
+                  right: 16.w,
+                  child: IgnorePointer(
+                    child: Center(
+                      child: _glassPill(
+                        icon: Icons.screen_share_rounded,
+                        text: _remoteShareText(c),
+                        live: true,
                       ),
                     ),
                   ),
+                ),
               ],
             ),
           ),
@@ -780,7 +789,11 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
-  Widget _glassPill({required IconData icon, required String text}) {
+  Widget _glassPill({
+    required IconData icon,
+    required String text,
+    bool live = false,
+  }) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
       decoration: BoxDecoration(
@@ -791,9 +804,14 @@ class CallingScreen extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (live) ...[
+            const _PulseDot(color: _danger),
+            SizedBox(width: 8.w),
+          ],
           Icon(icon, size: 14.sp, color: Colors.white),
           SizedBox(width: 6.w),
-          Text(
+          Flexible(
+            child: Text(
             text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -802,21 +820,24 @@ class CallingScreen extends StatelessWidget {
               fontSize: 12.sp,
               fontFamily: FontFamily.interMedium,
             ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _shareBanner(CallingController c) {
+  /// Shown in the middle of the call screen while I share my screen
+  /// (WhatsApp style): what is happening, who sees it, and a big red
+  /// Stop sharing button. Built inside the chrome `Obx`, which already
+  /// reads `isScreenSharing`; this one reads `isScreenShareLive`.
+  Widget _sharingCard(CallingController c) {
     return Obx(() {
-      final bool sharing = c.isScreenSharing.value;
       final bool live = c.isScreenShareLive.value;
-      if (!sharing) return const SizedBox.shrink();
-
       final String name = _peerName(c);
-      final String title =
-          live ? appL10n.call_youAreSharingScreen : appL10n.call_startingScreenShare;
+      final String title = live
+          ? appL10n.call_youAreSharingScreen
+          : appL10n.call_startingScreenShare;
       final String subtitle = live
           ? (name.isEmpty
               ? appL10n.call_screenVisibleToOther
@@ -824,85 +845,89 @@ class CallingScreen extends StatelessWidget {
           : appL10n.call_tapStartBroadcastHint;
 
       return Padding(
-        padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 0),
+        key: const ValueKey<String>('call_sharing_card'),
+        padding: EdgeInsets.symmetric(horizontal: 28.w),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(24.r),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
             child: Container(
-              padding: EdgeInsets.fromLTRB(14.w, 11.h, 10.w, 11.h),
+              width: double.infinity,
+              padding: EdgeInsets.fromLTRB(22.w, 26.h, 22.w, 22.h),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.55),
-                borderRadius: BorderRadius.circular(16.r),
+                color: CallColors.videoGlass,
+                borderRadius: BorderRadius.circular(24.r),
                 border: Border.all(color: Colors.white.withOpacity(0.10)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.30),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
               ),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _PulseDot(color: live ? _danger : _warn),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13.sp,
-                            fontFamily: FontFamily.interSemiBold,
-                            fontWeight: FontWeight.w700,
-                          ),
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 72.r,
+                        height: 72.r,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.12),
+                          shape: BoxShape.circle,
                         ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          subtitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.72),
-                            fontSize: 11.sp,
-                            fontFamily: FontFamily.interMedium,
-                          ),
+                        child: Icon(
+                          Icons.screen_share_rounded,
+                          color: Colors.white,
+                          size: 34.r,
                         ),
-                      ],
+                      ),
+                      Positioned(
+                        right: 2.r,
+                        top: 2.r,
+                        child: _PulseDot(color: live ? _danger : _warn),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 17.sp,
+                      fontFamily: FontFamily.interSemiBold,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  SizedBox(width: 8.w),
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      c.stopScreenShare();
-                      c.showControlsTemporarily();
-                    },
-                    child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
-                      decoration: BoxDecoration(
-                        color: _danger,
-                        borderRadius: BorderRadius.circular(10.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _danger.withOpacity(0.40),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                  SizedBox(height: 6.h),
+                  Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.75),
+                      fontSize: 13.sp,
+                      fontFamily: FontFamily.interMedium,
+                      height: 1.35,
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48.h,
+                    child: ElevatedButton.icon(
+                      key: const ValueKey<String>('call_stop_sharing'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _danger,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: const StadiumBorder(),
                       ),
-                      child: Text(
+                      onPressed: () {
+                        c.stopScreenShare();
+                        c.showControlsTemporarily();
+                      },
+                      icon: Icon(Icons.stop_screen_share_rounded, size: 20.r),
+                      label: Text(
                         appL10n.call_stopSharing,
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12.sp,
+                          fontSize: 14.sp,
                           fontFamily: FontFamily.interSemiBold,
                           fontWeight: FontWeight.w700,
                         ),
