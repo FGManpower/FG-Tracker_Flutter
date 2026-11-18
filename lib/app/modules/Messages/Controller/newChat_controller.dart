@@ -4,21 +4,14 @@ import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Services/app_cache.dart';
+import 'package:fgtracker/app/Data/Services/contact_matcher.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:get/get.dart';
-
-class _ContactEntry {
-  final String name;
-  final String phone;
-  final String norm;
-  const _ContactEntry(this.name, this.phone, this.norm);
-}
 
 class NewChatController extends GetxController {
   final bool autoLoad;
@@ -73,8 +66,6 @@ class NewChatController extends GetxController {
     ));
   }
 
-  static final RegExp _nonDigit = RegExp(r'[^0-9]');
-
   var allUsers = <UserListData>[].obs;
 
   var matchedUsers = <UserListData>[].obs;
@@ -118,57 +109,10 @@ class NewChatController extends GetxController {
     }
   }
 
-  Future<Map<int, int>> _loadPrivateChatIdMap() async {
-    final Map<int, int> map = {};
-
-    try {
-      final res = await MessageRepo.getChatList(
-        page: 1,
-        limit: 100,
-        type: "private",
-        includeArchived: true,
-      );
-
-      for (final item in res.data ?? <dynamic>[]) {
-        if (item.isGroup == true) continue;
-
-        final int? uid = item.userId;
-        final int? cid = item.chatId ?? item.conversationId ?? item.id;
-
-        if (uid != null && cid != null) {
-          map[uid] = cid;
-        }
-      }
-    } catch (e) {
-      log("CHAT ID MAP ERROR => $e");
-    }
-
-    return map;
-  }
-
   void _applyLists(List<UserListData> matched, List<UserListData> other) {
     matchedUsers.assignAll(matched);
     otherUsers.assignAll(other);
     _runFilter(searchQuery.value);
-  }
-
-  List<_ContactEntry> _buildEntries(List<Contact> deviceContacts) {
-    final List<_ContactEntry> entries = [];
-    final Set<String> seen = {};
-
-    for (final contact in deviceContacts) {
-      final String name = contact.displayName.trim();
-      for (final phone in contact.phones) {
-        final String norm = _normalizePhone(phone.number);
-        if (norm.length != 10 || !seen.add(norm)) continue;
-        entries.add(_ContactEntry(
-          name.isNotEmpty ? name : phone.number,
-          phone.number,
-          norm,
-        ));
-      }
-    }
-    return entries;
   }
 
   Future<void> getRegisteredContacts({bool forceRefresh = false}) async {
@@ -211,13 +155,14 @@ class NewChatController extends GetxController {
       final usersFuture =
           GroupRepo.getAllUserData().timeout(const Duration(seconds: 10));
       usersFuture.ignore();
-      final chatMapFuture = _loadPrivateChatIdMap();
+      final chatMapFuture = ContactMatcher.loadPrivateChatIdMap();
 
       final List<Contact> deviceContacts = await _contactService.getContacts();
       log("TIMING contacts read: ${sw.elapsedMilliseconds} ms "
           "(${deviceContacts.length} contacts)");
 
-      final List<_ContactEntry> entries = _buildEntries(deviceContacts);
+      final List<PhonebookEntry> entries =
+          ContactMatcher.buildEntries(deviceContacts);
 
       // ---------- Phase 1: pehle 20 turant ----------
       if (!hasCache) {
@@ -236,53 +181,10 @@ class NewChatController extends GetxController {
         final List<UserListData> users = result.userData ?? [];
         final String? me = _ownUserId();
 
-        final Map<String, UserListData> registeredMap = {};
-        String? myNorm; // apna number (phonebook se bhi hatane ke liye)
-
-        for (final user in users) {
-          final String norm = _normalizePhone(user.mobileNo ?? '');
-
-          // Apna account: list mein mat daalo, number yaad rakho
-          if (me != null && user.userId?.toString() == me) {
-            if (norm.isNotEmpty) myNorm = norm;
-            continue;
-          }
-
-          if (norm.isNotEmpty) {
-            registeredMap[norm] = user;
-          }
-        }
-
-        final List<UserListData> matched = [];
-        final List<UserListData> unmatched = [];
-
-        for (final e in entries) {
-          // Phonebook mein saved apna number bhi skip
-          if (myNorm != null && e.norm == myNorm) continue;
-
-          final registeredUser = registeredMap[e.norm];
-          if (registeredUser != null) {
-            matched.add(UserListData(
-              userId: registeredUser.userId,
-              name: e.name,
-              mobileNo: e.phone,
-              profileImage: registeredUser.profileImage,
-              isOnline: registeredUser.isOnline,
-              chatId: registeredUser.privateChatId ??
-                  registeredUser.chatId ??
-                  registeredUser.conversationId,
-              conversationId: registeredUser.conversationId,
-              privateChatId: registeredUser.privateChatId,
-            ));
-          } else {
-            unmatched.add(UserListData(
-              userId: null,
-              name: e.name,
-              mobileNo: e.phone,
-              profileImage: null,
-            ));
-          }
-        }
+        final match =
+            ContactMatcher.match(entries, users, ownUserId: me);
+        final List<UserListData> matched = match.matched;
+        final List<UserListData> unmatched = match.unmatched;
 
         allUsers.assignAll(users);
         _cachedMatched = List<UserListData>.from(matched);
@@ -317,27 +219,9 @@ class NewChatController extends GetxController {
   }
 
   void _patchChatIds(Map<int, int> map) {
-    if (isClosed || map.isEmpty || matchedUsers.isEmpty) return;
-
-    bool changed = false;
-    final List<UserListData> updated = matchedUsers.map((u) {
-      if (u.chatId != null || u.userId == null) return u;
-      final int? cid = map[u.userId!];
-      if (cid == null) return u;
-      changed = true;
-      return UserListData(
-        userId: u.userId,
-        name: u.name,
-        mobileNo: u.mobileNo,
-        profileImage: u.profileImage,
-        isOnline: u.isOnline,
-        chatId: cid,
-        conversationId: u.conversationId,
-        privateChatId: u.privateChatId,
-      );
-    }).toList();
-
-    if (!changed) return;
+    if (isClosed) return;
+    final updated = ContactMatcher.patchChatIds(matchedUsers, map);
+    if (updated == null) return;
 
     matchedUsers.assignAll(updated);
     _cachedMatched = List<UserListData>.from(updated);
@@ -374,16 +258,5 @@ class NewChatController extends GetxController {
 
     filteredMatchedUsers.assignAll(matchedUsers.where(match).toList());
     filteredOtherUsers.assignAll(otherUsers.where(match).toList());
-  }
-
-  String _normalizePhone(String phone) {
-    String digits = phone.replaceAll(_nonDigit, '');
-    if (digits.startsWith('91') && digits.length > 10) {
-      digits = digits.substring(2);
-    }
-    if (digits.length > 10) {
-      digits = digits.substring(digits.length - 10);
-    }
-    return digits;
   }
 }

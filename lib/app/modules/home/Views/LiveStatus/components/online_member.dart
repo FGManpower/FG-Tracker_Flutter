@@ -262,18 +262,19 @@ class _OnlineMemberState extends State<OnlineMember> {
                 ),
               ),
             ),
-            SafeArea(
-              top: false,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  16.w,
-                  8.h,
-                  16.w,
-                  10.h,
-                ),
-                child: _buildBottomInfoCard(),
-              ),
-            ),
+            // Bottom info text — hidden for now.
+            // SafeArea(
+            //   top: false,
+            //   child: Padding(
+            //     padding: EdgeInsets.fromLTRB(
+            //       16.w,
+            //       8.h,
+            //       16.w,
+            //       10.h,
+            //     ),
+            //     child: _buildBottomInfoCard(),
+            //   ),
+            // ),
           ],
         );
       }),
@@ -711,6 +712,8 @@ class _OnlineMemberState extends State<OnlineMember> {
     );
   }
 
+  // Not shown right now (call commented out in build); kept to switch back on.
+  // ignore: unused_element
   Widget _buildBottomInfoCard() {
     return Container(
       padding: EdgeInsets.all(16.r),
