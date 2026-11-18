@@ -1,195 +1,171 @@
 # Calling Module — Flutter Frontend Architecture & Implementation Guide
 
-**Document Version:** `v1.2.0` · **Last updated:** 2026-11-17 · **Branch:** `46Solution`  
-**Target Audience:** Flutter Frontend Developers  
-**Covers:** Single & Group Audio/Video Calls, WebRTC PeerConnection, CallKit/CallKeep, Audio Routing, Proximity Sensor, PIP Floating Bubble, Call History & Call History Details Screen, Recent Calls Multi-select Delete  
+**Document Version:** `v1.3.0` · **Last updated:** 2026-11-18 · **Branch:** `46Solution`  
+**Target Audience:** Flutter Frontend Developers & Backend Integrators  
+**Covers:** 1-on-1 Audio/Video Calls, WebRTC PeerConnection, AWS SFU & Coturn STUN/TURN, Sockets & REST APIs, CallKit, Audio Routing, Proximity Sensor, In-App PIP Overlay, Screen Sharing, Recent Calls Cache & Multi-Delete  
 **Status:** In Production / Stable  
 
 ---
 
-## 0. Architecture & File Registry
+## 0. AWS Infrastructure & Server Confirmation
+
+### 0.1 AWS Deployment Status (Verified Live)
+* **Server Host:** `sfu.fgtracker.fgmanpower.co.in` (Resolves to AWS EC2 Mumbai `ap-south-1` IP `35.154.126.x`).
+* **Active Services on AWS:**
+  1. **Socket.io Signaling Server:** Node.js application hosting `/callSignaling`, `/screen-share`, `/groupCall`.
+  2. **Coturn STUN/TURN Server:** Port `3478` (UDP/TCP) and TLS port `443` for NAT traversal and relayed media fallback.
+  3. **LiveKit SFU Gateway:** `wss://sfu.fgtracker.fgmanpower.co.in` for multi-party group calls.
+* **Environment Selection (`lib/app/Core/constant/urls.dart`):**
+  - Controlled by `ConstRes.isProduction`.
+  - Production uses `API_fgtracker_sfu_2026` credentials pointing directly to `sfu.fgtracker.fgmanpower.co.in:3478`.
+
+### 0.2 Understanding Data Processing Latency & Slowness
+If video or calling appears sluggish or delayed during testing, the runtime logs reveal the exact technical causes:
+1. **Network Bandwidth Estimation (BWE):** Mobile networks/emulators frequently drop into low BWE (e.g. `Current BWE 148000 ~ 190119 bps` ≈ 150-190 kbps). When BWE drops below video bitrate thresholds, Google WebRTC enters `bandwidth limited state` and stops active probing.
+2. **Playout Delay Buffering:** When packet jitter occurs on bandwidth-limited connections, the WebRTC receive pipeline automatically adapts receiver playout delays (e.g. `Actual delay value set to 744 ms`), introducing ~0.75s of visible latency to prevent frame stuttering.
+3. **High Resolution Target:** Default video stream requests `1280x720 @ 30fps` with `1.8 Mbps` target bitrate, and Screen Sharing requests `2.5 Mbps`. On constrained mobile connections, this forces WebRTC into aggressive downscaling and temporal frame drops.
+
+---
+
+## 1. Architecture & File Registry
 
 | Layer | File Path | Core Responsibility |
 |---|---|---|
-| **Repositories** | `lib/app/Data/Repositories/call_repo.dart` | Communicates with `/recentCallHistory`, `/getCallDetail`, `/updateCallingStatus` |
-| **Single Signaling** | `lib/app/Data/Services/Socket/Socket_SignallingService.dart` | Connects to `/callSignaling` namespace; handles `makeCall`, `answerCall`, ICE exchange |
-| **Group Signaling** | `lib/app/Data/Services/Socket/Socket_Group_Calling.dart` | Connects to `/groupCall` namespace; coordinates multi-peer mesh WebRTC |
-| **CallKit Service** | `lib/app/Data/Services/IncommingCallKit/callkit_service.dart`<br>`lib/app/Data/Services/IncommingCallKit/call_session.dart` | Integrates iOS CallKit & Android Telecom framework; lock screen ring UI |
-| **Audio Routing** | `lib/app/modules/mediaStream/Controller/call_audio_route_controller.dart` | Controls hardware output: Speaker, Earpiece, Bluetooth SCO |
-| **Single Call State** | `lib/app/modules/mediaStream/Controller/calling_controller.dart` | WebRTC lifecycle, camera flip, proximity screen lock, timer |
-| **Group Call State** | `lib/app/modules/mediaStream/Controller/group_calling_controller.dart` | Mesh peer connections, screen sharing track swap, roster state |
-| **Call History State**| `lib/app/modules/call/Controller/call_controller.dart` | Pagination, filter chips (All/Missed/Incoming/Outgoing), dial pad, multi-delete |
-| **Call Details State**| `lib/app/modules/mediaStream/Controller/contact_profile_controller.dart` | Fetches session audit via `CallRepo.getCallHistoryDetail(callId)` |
-| **Screens & Views** | `lib/app/modules/call/Views/call_screen.dart`<br>`lib/app/modules/mediaStream/Views/calling_screen.dart`<br>`lib/app/modules/mediaStream/Views/AudioCall_screen.dart`<br>`lib/app/modules/mediaStream/Views/Group/group_calling_screen.dart`<br>`lib/app/modules/mediaStream/Views/contact_profile_screen.dart` | Visual presentation layers |
+| **Repositories** | `lib/app/Data/Repositories/call_repo.dart` | Communicates with `/api/history`, `/api/getCallDetail`, `/api/calling-status` |
+| **Single Signaling** | `lib/app/Data/Services/Socket/Socket_SignallingService.dart` | Socket.io client for `/callSignaling` namespace |
+| **Screen Share Signaling**| `lib/app/modules/mediaStream/Controller/calling_controller.dart` | Direct socket handlers for `/screen-share` namespace |
+| **Group Signaling** | `lib/app/Data/Services/Socket/Socket_Group_Calling.dart` | Socket.io client for `/groupCall` namespace |
+| **CallKit Service** | `lib/app/Data/Services/IncommingCallKit/callkit_service.dart`<br>`lib/app/Data/Services/IncommingCallKit/call_session.dart` | Integrates iOS CallKit & Android Telecom framework |
+| **Audio Routing** | `lib/app/modules/mediaStream/Controller/call_audio_route_controller.dart` | Manages hardware output: Speaker, Earpiece, Bluetooth, Wired Headset |
+| **Overlay Service** | `lib/app/modules/mediaStream/Services/in_app_call_overlay_service.dart` | Floating movable PiP bubble across the entire app |
+| **1-on-1 Call Controller**| `lib/app/modules/mediaStream/Controller/calling_controller.dart` | WebRTC lifecycle, camera switch, proximity screen lock, timer |
+| **Group Call Controller**| `lib/app/modules/mediaStream/Controller/group_calling_controller.dart` | Mesh / SFU peer connections, group video layout |
+| **Screens & Views** | `lib/app/modules/call/Views/call_screen.dart`<br>`lib/app/modules/mediaStream/Views/calling_screen.dart`<br>`lib/app/modules/mediaStream/Views/AudioCall_screen.dart` | Visual UI presentation layers |
 
 ---
 
-## 1. Single 1-on-1 Call Flow (`CallingController`)
+## 2. 1-on-1 Calling: Socket Events & REST APIs
 
-### 1.1 Outgoing Call Setup
-1. Launch `Routes.callScreen` with arguments:
-   ```dart
-   Get.toNamed(Routes.callScreen, arguments: {
-     'callerId': selfUserId,
-     'remoteUserId': targetUserId,
-     'callId': generatedCallId,
-     'is_video': isVideo,
-     'callType': 'Outgoing',
-     'callerName': targetUserName,
-     'profileImage': targetUserProfile,
-   });
-   ```
-2. Initialize WebRTC:
-   - Request audio & video tracks via `navigator.mediaDevices.getUserMedia()`.
-   - Create `RTCPeerConnection` with STUN/TURN servers.
-   - Attach tracks: `localStream!.getTracks().forEach((t) => peer!.addTrack(t, localStream!))`.
-   - Create SDP offer and set local description.
-   - Emit `makeCall` on `/callSignaling` socket.
-3. Start ringtone: `FlutterRingtonePlayer.play(fromAsset: "assets/ringtone/outgoing.mp3", looping: true)`.
-4. Start 45s missed call timeout: If unanswered, trigger `updateCallingStatus(callingStatus: 'missed')`.
+### 2.1 Complete Socket Event Specification (`/callSignaling` & `/screen-share`)
 
-### 1.2 Incoming Call Setup & CallKit
-1. Incoming call captured in background via FCM or in foreground via `newCall` socket event.
-2. `CallKitService.showCallkit()` displays system ring UI.
-3. User Taps **Accept**:
-   - `CallKitService.onAcceptCall` executes.
-   - Navigates to `Routes.callScreen` with compressed offer from extra data.
-   - `CallingController` sets remote description `peer.setRemoteDescription(offer)`.
-   - Generates SDP answer and emits `answerCall`.
-   - Renders remote media in `remoteRenderer`.
-4. User Taps **Decline**:
-   - `CallKitService.onDeclineCall` emits `callRejected` and invokes `updateCallingStatus(callingStatus: 'rejected')`.
+#### Outgoing & Signaling Core
+| Event Name | Direction | Payload Schema | Purpose & Flow |
+|---|---|---|---|
+| `makeCall` | Client ➔ Server | `{ remoteUserId, sdpOffer, is_video, callerId }` | Emitted by caller after creating SDP offer and local description. |
+| `newCall` | Server ➔ Client | `{ callId, callerId, callerName, profileImage, is_video, sdpOffer }` | Pushed to receiver socket (or backed by VoIP/FCM push). |
+| `CallingStatus` | Bidirectional | `{ callId, remoteUserId, callingStatus }` | Status synchronization: `"Ringing"`, `"Connected"`, `"busy"`. |
+| `answerCall` | Client ➔ Server | `{ callId, callerId, sdpAnswer }` | Emitted by receiver after generating SDP answer. |
+| `callAnswered` | Server ➔ Client | `{ callId, sdpAnswer }` | Caller receives answer and sets remote description. |
+| `IceCandidate` | Bidirectional | `{ remoteUserId, iceCandidate: { id, label, candidate } }` | ICE trickling for NAT candidate exchange. |
+| `rejectCall` / `callRejected` | Bidirectional | `{ callId, remoteUserId, reason }` | Call rejected or declined by recipient. |
+| `endCall` / `callEnded` | Bidirectional | `{ callId, remoteUserId }` | User hangs up an active or connecting call. |
+| `missCall` / `missedCall` | Client ➔ Server | `{ callId, remoteUserId }` | Fired when 45s ringing timeout expires without answer. |
+
+#### Media State & Upgrades
+| Event Name | Direction | Payload Schema | Purpose & Flow |
+|---|---|---|---|
+| `upgradeToVideo` | Client ➔ Server | `{ callId, remoteUserId, callerId, cameraState }` | Notifies remote peer to enable or disable remote camera view. |
+| `upgradeToVideoAnswer` | Bidirectional | `{ callId, remoteUserId, accepted }` | Peer accepts or declines video upgrade in audio call. |
+| `cameraState` | Server ➔ Client | `{ cameraState: bool, userId }` | Syncs remote peer's camera muted/unmuted state. |
+
+#### 1-on-1 Screen Sharing (`/screen-share` Namespace)
+| Event Name | Direction | Payload Schema | Purpose & Flow |
+|---|---|---|---|
+| `start_screen_share` | Client ➔ Server | `{ callId, targetUserId }` | Initiates secondary WebRTC peer connection for screen capture. |
+| `screen_share_offer` | Client ➔ Server | `{ callId, targetUserId, sdpOffer }` | Sends screen stream SDP offer (2.5 Mbps, 15 fps screencast). |
+| `screen_share_answer` | Client ➔ Server | `{ callId, targetUserId, sdpAnswer }` | Remote peer answers screen sharing offer. |
+| `screen_share_ice` | Bidirectional | `{ callId, targetUserId, candidate }` | ICE candidate exchange for screen sharing stream. |
+| `stop_screen_share` | Bidirectional | `{ callId, targetUserId }` | Terminates screen stream and restores standard camera PiP. |
 
 ---
 
-## 2. Group Calling Architecture (`GroupCallingController`)
+### 2.2 REST APIs for 1-on-1 Calling
 
-### 2.1 Multi-Peer Mesh Rendering
-- Maintains independent `RTCPeerConnection` for each peer in `_peers` map.
-- Up to 4 active video streams are rendered in a responsive grid layout. If participant count exceeds 4, remaining members are displayed in an audio-only speaking pill at the top of the screen.
-- Dynamic roster updates are processed via `group_call_participants_update`.
+#### 1. Recent Call History
+* **Endpoint:** `GET /api/history`
+* **Headers:** `Authorization: Bearer <token>`
+* **Query Parameters:** `page=1&limit=20&filter=all|missed|incoming|outgoing`
+* **Response:**
+  ```json
+  {
+    "status": true,
+    "message": "Call history fetched successfully",
+    "data": {
+      "today": [{ "id": "call_2", "callType": "private", "type": "video", "direction": "outgoing", "status": "completed", "duration": 120 }],
+      "yesterday": [],
+      "older": []
+    }
+  }
+  ```
 
-### 2.2 Picture-in-Picture (PIP) Floating Bubble
-- Allows users to minimize active group calls and continue using the app.
-- Managed by `group_call_pip_bubble.dart`.
-- Uses draggable overlay widget containing remote video stream or active speaker avatar, mute toggle, and hangup button.
+#### 2. Call Session Audit Details
+* **Endpoint:** `GET /api/getCallDetail?callId=<callId>`
+* **Headers:** `Authorization: Bearer <token>`
+* **Response:** Returns caller/receiver profile, call duration, start time, termination reason, and participant records.
 
----
+#### 3. Update Calling Status
+* **Endpoint:** `POST /api/calling-status`
+* **Headers:** `Authorization: Bearer <token>`
+* **Body:** `{ "callId": 2, "callingStatus": "missed" | "rejected" | "ended", "duration": 45 }`
 
-## 3. Screen Sharing Subsystem
-
-1. Triggered via screen sharing icon in bottom controls.
-2. Captures screen via `navigator.mediaDevices.getDisplayMedia({'video': true, 'audio': false})`.
-3. In 1-on-1: Negotiates secondary high-bitrate peer connection `_screenPc` or replaces camera video track.
-4. In Group Call: Emits `group_call_screen_share_started` socket event. Peers attach stream to dedicated full-screen renderer (`fullScreenShareUserId.value = sharingUserId`).
-5. Termination: Emits `group_call_screen_share_stopped` and restores camera track.
-
----
-
-## 4. Hardware Management (Audio Routing & Proximity Lock)
-
-### 4.1 Audio Routing (`CallAudioRouteController`)
-- Supports dynamic switching between `Speaker`, `Earpiece`, and `Bluetooth`.
-- Defaults:
-  - Audio call defaults to `Earpiece` (or connected Bluetooth headset).
-  - Video call and Group call default to `Speaker`.
-- Bottom sheet `audio_route_sheet.dart` displays selectable routes.
-
-### 4.2 Proximity Screen Lock
-- For 1-on-1 and Group audio calls, `ProximityScreenLock.setActive(true)` activates proximity sensor.
-- When the phone is held against the ear, screen automatically blanks and touch is disabled to prevent accidental button presses.
-- Auto-restores screen when phone is pulled away.
+#### 4. LiveKit SFU Token Generation (Group Calls)
+* **Endpoint:** `POST /api/calls/livekit-token`
+* **Headers:** `Authorization: Bearer <token>`
+* **Body:** `{ "roomName": "call_room_2", "participantName": "Vikas" }`
+* **Response:** `{ "status": true, "token": "jwt_livekit_token", "wsUrl": "wss://sfu.fgtracker.fgmanpower.co.in" }`
 
 ---
 
-## 5. Call History & Call History Details Screen
+## 3. Hardware Controls & Feature Implementation
 
-### 5.1 Call History Screen (`call_screen.dart`)
-- **Tabs:**
-  - `Recent Calls`: Paginated list via `CallRepo.getRecentCall()`. Filter chips: `All`, `Missed`, `Incoming`, `Outgoing`.
-  - `Contacts`: Organization contacts with one-tap dial buttons.
-  - `Groups`: Team circles with instant group call initiation.
-- **Dial Pad Modal (`call_dial_pad.dart`):** Numeric keypad with instant T9 live contact search.
-- **Multi-Selection Deletion:** Long-press a row to select calls, then delete them together. See [5.3](#53-recent-calls--multi-select-delete).
+### 3.1 Mic On / Off (Mute Toggle)
+* **Function:** `CallingController.toggleMic()`
+* **Mechanism:**
+  ```dart
+  isAudioOn = !isAudioOn;
+  localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
+  update();
+  ```
+* **UI Rebuild:** Bound through `GetBuilder<CallingController>` in `CallingScreen` so the button icon instantly switches between `Icons.mic_rounded` and `Icons.mic_off_rounded`.
 
-### 5.2 Call History Details Screen (`contact_profile_screen.dart`)
-- Triggered by tapping the Info icon `(i)` on any recent call tile.
-- Loads audit metrics via `CallRepo.getCallHistoryDetail(callId)`.
-- **Displays:**
-  - Full contact avatar, name, phone, and online badge.
-  - Session metadata: Call Type (Audio/Video), Direction, Status (`ended`, `missed`, `rejected`).
-  - Formatted duration (`Xm Ys` or `0s`).
-  - Exact start and end timestamps.
-  - Group Call Breakdown: Shows list of all invited group members, who joined, join/leave timestamps.
-  - Quick action buttons: Return Call, Video Call, Open Chat, Delete Record.
+### 3.2 Speaker / Earpiece Audio Switching
+* **Function:** `CallingController.toggleSpeaker(BuildContext context)`
+* **Intelligent Fast Switching:**
+  - **Single Tap Toggle:** When no external audio device (Bluetooth headset or wired headphones) is connected, tapping the audio button instantly toggles between **Speaker** (`CallAudioRoute.speaker`) and **Earpiece** (`CallAudioRoute.earpiece`) without opening any modal dialog.
+  - **Device Picker Sheet:** If Bluetooth or a wired headset is plugged in, `showAudioRoutePicker(context)` opens the native route picker sheet.
+  - **Video Call Parity:** `CallAudioRouteController.availableRoutes` allows `earpiece` in both audio and video calls, enabling private listening during video calls.
 
-### 5.3 Recent Calls — Multi-select Delete
-The 3-dot menu in the Call screen header (Recent tab) is removed. Its only option was "Delete Call". Selection now starts with a long-press on a row.
+### 3.3 Camera Switch (Front / Back)
+* **Dual Trigger Architecture:**
+  1. **Top Bar Button:** Located on the top right of `CallingScreen._topBar` whenever video is active.
+  2. **PiP Badge Button:** Located on the floating camera preview tile.
+* **Mechanism:**
+  ```dart
+  final MediaStreamTrack track = tracks.first;
+  await Helper.switchCamera(track);
+  isFrontCamera = !isFrontCamera;
+  update();
+  ```
+  Switching `tracks.first` guarantees that secondary screen sharing tracks are not mistakenly flipped.
 
-**Flow**
-1. **Normal mode (unchanged):**
-   - Tap a row → call history details.
-   - Tap the avatar → quick profile.
-   - Tap the call icon → call back.
-   - Swipe left → delete one call.
-2. **Long-press a row** → selection mode starts with that row selected (light haptic).
-3. **In selection mode:**
-   - Tap a row or its avatar → select / unselect it.
-   - Selected rows get a `#EEEDFD` background and a filled `#704AFA` check circle on the avatar. Unselected rows show an empty circle.
-   - The call icon is hidden; its space is kept so the layout doesn't move.
-   - Swipe is off.
-4. **Top bar** replaces the header: `✕` · `<n> selected` · `Select all` / `Unselect all`.
-   - Select all picks only the rows visible under the current search / filter.
-5. **Bottom button:** a red **Delete (n)** button, shown when at least 1 call is selected.
-6. **Exit selection mode** with `✕`, Android back, Unselect all, unselecting the last row, switching tab, or opening the Call screen again.
-
-**Delete**
-- **Confirm dialog:** "Delete n call(s)?" / "These calls will be removed from your call history." / Cancel · Delete (red).
-- **API:** `CallRepo.deleteMultipleCallHistory(callIds)` (bulk; see backend doc §3.4).
-- **Optimistic:** rows disappear at once.
-  - **Success:** snackbar "n call(s) deleted", and selection mode ends.
-  - **Failure** (for example, no internet): the bulk call is all-or-nothing, so every row comes back in its old place, still selected. Snackbar: "Couldn't delete n call(s). Try again."
-- **While deleting:**
-  - The Delete button shows a loader and can't be pressed again.
-  - ✕ and Select all are disabled.
-  - Pull-to-refresh is ignored.
-
-**Code**
-
-| File | What |
-|---|---|
-| `call_controller.dart` | `isSelecting` / `selectedIds` (same objects as `isSelectionMode` / `selectedCallIds`), `startSelection(id)`, `toggle(id)`, `selectAll()`, `clearSelection()`, `areAllVisibleSelected`, `deleteSelected()`. `_rebuildRecentDisplay()` drops selected ids that are no longer in the list, and new rows arrive unselected. `refreshRecentCalls()` is skipped during a delete. |
-| `call_recent_calls_tab.dart` | Long-press → `startSelection`, check circle on the avatar, hidden call icon, `RecentCallsSelectionBar` + confirm dialog, bottom Delete button. The old long-press sheet and old dialog are kept but unused (`// moved to selection bar`). |
-| `call_screen.dart` | Header 3-dot removed; the selection bar replaces the header while selecting; selection cleared on screen open. |
-
-**Test cases (Android + iPhone)**
-1. No 3-dot in the header; row layout unchanged.
-2. Tap a row in normal mode → same as before.
-3. Long-press → selection mode, row selected, haptic.
-4. Tap other rows → toggle; counter correct; Select all / Unselect all work.
-5. Delete 3 → confirm → rows removed, snackbar; still gone after refresh.
-6. Delete with no internet → rows restored + error snackbar.
-7. ✕ / Android back / n = 0 → exits selection.
-8. Pull-to-refresh / pagination while selecting → new rows unselected, selection kept.
-9. Calling, call details, Contacts / Groups tabs unchanged.
-
-**Known limitations**
-- There is no recent-calls count on screen, so only the list updates.
-- New calls don't arrive live; the list updates on refresh or pagination.
-- Bulk delete is all-or-nothing, so a failure restores every selected row.
-- Moving to another screen and coming back without closing the Call screen keeps the selection.
+### 3.4 In-App Floating Overlay (Minimize Call)
+* **Service:** `InAppCallOverlayService`
+* **Bug Resolved (`No Overlay widget found`):**
+  - Previously, `Overlay.of(Get.overlayContext!)` threw when called on an unattached theater context.
+  - Resolved using safe navigation key lookup:
+    ```dart
+    final OverlayState? overlayState = Get.key.currentState?.overlay ??
+        (Get.overlayContext != null ? Overlay.maybeOf(Get.overlayContext!) : null);
+    ```
+  - When minimized, renders a draggable floating bubble showing caller video or avatar, call duration, mute status, and expand/end controls.
 
 ---
 
-### 5.9 Cache: Recent calls (v1.2.0)
-- The first page of Recent calls is kept on the device (encrypted app cache, area `call_history`, 50 calls). It is shown at once on the next open **on the same local day**; after midnight it is dropped, because the server's "Today / Yesterday" sections would be wrong.
-- The first API page then **replaces** the cached rows (server order; calls deleted on another phone disappear). There is a 10 s timeout; on failure the rows stay with "Couldn't refresh · Retry".
-- Delete, multi-delete and "clear all" are saved, so no ghost calls come back after a restart. New: a silent page-1 refresh on app resume.
-- Details and rules: [07_APP_CACHE_FRONTEND.md](07_APP_CACHE_FRONTEND.md).
+## 4. Change Log
 
-## 6. Change log
 | Version | Date | Change |
 |---|---|---|
-| v1.2.0 | 2026-11-17 | §5.9 Recent calls cache (guide 07): today's first page shown at once, replaced by the API, retry bar, resume refresh, deletes saved. |
-| v1.1.0 | 2026-11-07 | Recent Calls multi-select delete (§5.3): header 3-dot menu removed; long-press a row to select; top bar ✕ · n selected · Select all / Unselect all; red Delete (n) button at the bottom; confirm dialog; optimistic bulk delete via `CallRepo.deleteMultipleCallHistory` with restore + snackbar on failure. §5.1 corrected (no Clear All in the UI). |
-| v1.0.0 | — | First version: single and group calls, signaling, CallKit, screen sharing, audio routing, proximity lock, call history and details screens. |
+| v1.3.0 | 2026-11-18 | Added AWS Server Confirmation (`sfu.fgtracker.fgmanpower.co.in:3478`). Documented all 1-on-1 socket events & REST APIs in full detail. Fixed overlay crash via `Overlay.maybeOf`. Re-enabled direct speaker-to-earpiece toggle. Added top-bar camera switch trigger and wrapped `CallingScreen` in `GetBuilder` for instant reactive UI updates. |
+| v1.2.0 | 2026-11-17 | Recent calls cache (guide 07): today's first page shown at once, replaced by the API, retry bar, resume refresh, deletes saved. |
+| v1.1.0 | 2026-11-07 | Recent Calls multi-select delete: header 3-dot menu removed; long-press a row to select; optimistic bulk delete. |
+| v1.0.0 | — | Initial release of calling architecture. |

@@ -35,14 +35,17 @@ class CallingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = controller;
-    return Obx(() => PopScope(
-      canPop: c.isMinimized.value,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        c.minimizeCall();
-      },
-      child: _screen(context, c),
-    ));
+    return GetBuilder<CallingController>(
+      init: c,
+      builder: (ctrl) => Obx(() => PopScope(
+        canPop: ctrl.isMinimized.value,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          ctrl.minimizeCall();
+        },
+        child: _screen(context, ctrl),
+      )),
+    );
   }
 
   Widget _screen(BuildContext context, CallingController c) {
@@ -226,7 +229,26 @@ class CallingScreen extends StatelessWidget {
             )
           else
             const Spacer(),
-          SizedBox(width: 42.w),
+          if (isVideo && c.isVideoOn)
+            GestureDetector(
+              onTap: c.switchCamera,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.45),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24, width: 1),
+                ),
+                child: Icon(
+                  Icons.cameraswitch_rounded,
+                  color: Colors.white,
+                  size: 22.sp,
+                ),
+              ),
+            )
+          else
+            SizedBox(width: 42.w),
         ],
       ),
     );

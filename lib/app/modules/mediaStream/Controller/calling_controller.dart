@@ -2568,9 +2568,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _isSwitchingCamera = true;
     showControlsTemporarily();
     try {
-      for (final MediaStreamTrack t in tracks) {
-        await Helper.switchCamera(t);
-      }
+      final MediaStreamTrack track = tracks.first;
+      await Helper.switchCamera(track);
       isFrontCamera = !isFrontCamera;
       update();
     } catch (e) {
@@ -2581,6 +2580,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> toggleSpeaker(BuildContext context) async {
+    final bool hasExternal = audioRouteController.isBluetoothConnected.value ||
+        audioRouteController.isHeadsetConnected.value;
+    if (!hasExternal) {
+      final CallAudioRoute current = audioRouteController.currentRoute.value;
+      final CallAudioRoute next = current == CallAudioRoute.speaker
+          ? CallAudioRoute.earpiece
+          : CallAudioRoute.speaker;
+      await audioRouteController.selectRoute(next);
+      update();
+      return;
+    }
     showAudioRoutePicker(context);
   }
 

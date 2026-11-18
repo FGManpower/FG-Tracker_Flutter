@@ -21,9 +21,8 @@ class InAppCallOverlayService {
   void showOverlay(CallingController controller) {
     if (_isOverlayShowing) return;
 
-    final OverlayState? overlayState = Get.overlayContext != null
-        ? Overlay.of(Get.overlayContext!)
-        : (Get.key.currentState?.overlay);
+    final OverlayState? overlayState = Get.key.currentState?.overlay ??
+        (Get.overlayContext != null ? Overlay.maybeOf(Get.overlayContext!) : null);
 
     if (overlayState == null) {
       Get.log('[InAppCallOverlay] No OverlayState found to attach floating bubble');

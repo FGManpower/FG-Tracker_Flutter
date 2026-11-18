@@ -119,7 +119,7 @@ class CallAudioRouteController extends GetxController
   CallAudioRoute get confirmedRoute => currentRoute.value;
 
   List<CallAudioRoute> get availableRoutes => <CallAudioRoute>[
-        if (!isVideoCall.value && _hasEarpiece) CallAudioRoute.earpiece,
+        if (_hasEarpiece) CallAudioRoute.earpiece,
         if (_hasSpeaker) CallAudioRoute.speaker,
         if (isBluetoothConnected.value) CallAudioRoute.bluetooth,
         if (isHeadsetConnected.value) CallAudioRoute.headset,
