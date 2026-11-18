@@ -234,6 +234,10 @@ class CallPermissionFlow {
 
   static const int _maxSteps = 8;
 
+  /// Longest wait for the mic prompt after Accept (see beforeCall). The
+  /// caller's ring window is 45 s; tests shorten it.
+  static Duration incomingMicAskTimeout = const Duration(seconds: 30);
+
   Future<CallPermChoice> _show(CallPermSheet s) async {
     final CallPermissionUi? ui = _ui;
     if (ui == null) return CallPermChoice.cancel;
@@ -283,7 +287,24 @@ class CallPermissionFlow {
             return const CallPermResult.stop();
           }
           micAsked = true;
-          await _b.request(Permission.microphone);
+          if (incoming) {
+            // Answered on a locked iPhone / from the background: iOS shows
+            // the mic prompt only once the app is in front. Never leave the
+            // caller waiting on "Connecting" forever: after the limit the
+            // call ends with reason permission_denied (P-05).
+            final CallPermStatus r = await _b
+                .request(Permission.microphone)
+                .timeout(incomingMicAskTimeout,
+                    onTimeout: () => CallPermStatus.canAsk);
+            if (r != CallPermStatus.granted &&
+                await _b.status(Permission.microphone) !=
+                    CallPermStatus.granted) {
+              if (kDebugMode) log('[CALL] incoming: mic not granted ($r)');
+              return const CallPermResult.stop();
+            }
+          } else {
+            await _b.request(Permission.microphone);
+          }
           break;
         case CallPermStep.micSettings:
           if (await _show(CallPermSheet.micBlocked) !=

@@ -372,7 +372,7 @@ private let candidateTokenPrefKeys = [
             ?? Self.stringValue(p["session_id"])
         let id = Self.ensureValidUuid(rawId)
 
-        let signal = Self.stringValue(p["signal_type"])
+        var signal = Self.stringValue(p["signal_type"])
             ?? Self.stringValue(p["type_signal"])
             ?? Self.stringValue(p["action"])
             ?? "startCall"
@@ -401,7 +401,19 @@ private let candidateTokenPrefKeys = [
         let name = resolvedCallerName(payload: p, extra: extraDict, id: id)
         print("[AppDelegate][VoIP] parsed signal=\(signal) id=\(id) name=\(name) video=\(isVideo)")
 
-        let endSignals: Set<String> = ["endCall", "callEnded", "cancelCall", "callRejected", "missedCall"]
+        // Same names as lib/app/modules/mediaStream/Services/call_events.dart
+        // (today's + the ones agreed with the backend: call_cancelled ...).
+        let endSignals: Set<String> = [
+            "endCall", "callEnded", "call_ended", "cancelCall", "callRejected",
+            "missedCall", "missCall",
+            "callCancelled", "call_cancelled", "callCanceled", "call_canceled",
+        ]
+        // The backend may send the cancel as `type: "call_cancelled"`.
+        // `type` only counts when it is an end signal.
+        if !endSignals.contains(signal),
+           let t = Self.stringValue(p["type"]), endSignals.contains(t) {
+            signal = t
+        }
         print("[AppDelegate][VoIP] branch=\(endSignals.contains(signal) ? "END" : "INCOMING")")
         if endSignals.contains(signal) {
             releaseCallKitManualAudio()
@@ -485,6 +497,15 @@ private let candidateTokenPrefKeys = [
             }
             data.extra = NSDictionary(dictionary: extraDict)
 
+            // Server ring deadline (expiresAt, UTC). Same rule as Android
+            // (call_events.dart remainingRingTime): ring for the time left,
+            // 10 s ... 45 s; stale (expired > 60 s ago) = report + end at once,
+            // because iOS requires EVERY VoIP push to be reported to CallKit.
+            let ring = Self.ringMillis(
+                expiresAt: p["expiresAt"] ?? extraDict["expiresAt"]
+            )
+            data.duration = ring ?? 45000
+
             let plugin = SwiftFlutterCallkitIncomingPlugin.sharedInstance
             if plugin == nil {
                 print("[AppDelegate][VoIP] CRITICAL plugin instance is nil -> call NOT reported, iOS will kill app")
@@ -495,8 +516,12 @@ private let candidateTokenPrefKeys = [
             ) {
                 print(
                     "[AppDelegate][VoIP] REPORTED to CallKit id=\(id) name=\(name) "
-                        + "video=\(isVideo) state=\(UIApplication.shared.applicationState.rawValue)"
+                        + "video=\(isVideo) state=\(UIApplication.shared.applicationState.rawValue) ring=\(ring ?? -1)"
                 )
+                if ring == 0 {
+                    print("[AppDelegate][VoIP] stale push (expired) -> ending id=\(id)")
+                    plugin?.endCall(data)
+                }
                 completion()
             }
         }
@@ -1391,6 +1416,27 @@ private let candidateTokenPrefKeys = [
         guard let raw = raw else { return nil }
         let str = "\(raw)".trimmingCharacters(in: .whitespacesAndNewlines)
         return (str.isEmpty || str == "<null>" || str == "null") ? nil : str
+    }
+
+    /// Ring time in ms from the server `expiresAt` (ISO-8601 UTC, or epoch
+    /// seconds / ms). nil = no usable value (use 45 s); 0 = stale (expired
+    /// more than 60 s ago: phone clocks may be off, never drop a real call);
+    /// otherwise the time left clamped to 10 s ... 45 s.
+    /// Mirrors remainingRingTime in lib/.../Services/call_events.dart.
+    static func ringMillis(expiresAt raw: Any?, now: Date = Date()) -> Int? {
+        guard let s = stringValue(raw) else { return nil }
+        var exp: Date?
+        if let n = Double(s), n > 0 {
+            exp = Date(timeIntervalSince1970: n < 10_000_000_000 ? n : n / 1000)
+        } else {
+            let f = ISO8601DateFormatter()
+            f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            exp = f.date(from: s) ?? ISO8601DateFormatter().date(from: s)
+        }
+        guard let expiry = exp else { return nil }
+        let left = expiry.timeIntervalSince(now)
+        if left <= -60 { return 0 }
+        return Int(min(max(left, 10), 45) * 1000)
     }
 
     private static func ensureValidUuid(_ raw: String?) -> String {

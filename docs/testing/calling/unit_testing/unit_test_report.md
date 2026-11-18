@@ -197,3 +197,18 @@ Only call-module files use the new flow: `call_service.dart`, `calling_controlle
 
 ### Regression run (Phase 3)
 `flutter test` (whole suite): **1126 pass**, 45 skipped, 31 fail. That is +27 passes (the new Phase 3 tests). The 31 failures are the same pre-existing set as on the clean HEAD (`permission_setup_flow_test.dart` 27, `language_selection_test.dart` 3, `chat_qa/chat_list_controller_qa_test.dart` 1). `flutter analyze`: 0 errors project-wide.
+
+## v1.5.0 (device-log fixes + backend round 2) — Run 1, 2026-11-18
+
+| File | Cases | Result |
+|---|---|---|
+| `test/call_qa/call_remote_end_v1_test.dart` | RE-01 … RE-16 (server "over" rules, end probe with fake time, remote hang-up with lost `callEnded`, `endCall` push, socket reconnect, native colours) | 16 pass |
+| `test/call_qa/call_backend_ready_v1_test.dart` | BR-01 … BR-24 (event names, `expiresAt` ring time, `call_cancelled` push, `callAccepted` / `callCancelled` / `missedCall` / `callStatus` for this vs another call, reject reasons, backend TURN body) | 24 pass |
+| `test/call_qa/call_permissions_v1_test.dart` | + PM-05b (locked iPhone, mic prompt never shows → stop after the limit), PM-05c (Allow, Android + iOS), PM-05d (video, camera refused → camera off) | pass |
+| `test/permission_gate_service_test.dart` | + PG-R1 … PG-R4 ("Home opens twice": failed resume check retried, never blocks; real revoke still blocks) | pass |
+
+### Regression run (v1.5.0)
+`flutter test` (whole suite): the only failures are the pre-existing set — `permission_setup_flow_test.dart` 27, `language_selection_test.dart` 3, `chat_qa/chat_list_controller_qa_test.dart` 1 — plus `chat_qa/realtime_socket_qa_test.dart` RT-01b, which **also fails on the clean HEAD `73fb8f8e`** (checked in a separate worktree), so it is not caused by these changes. `flutter analyze`: 0 errors.
+
+### Not covered automatically
+Device runs on two phones (Android ↔ Android, iOS ↔ iOS, mobile data, Wi-Fi ↔ 4G, killed-app ringing, caller cancel), and an Xcode build of the `AppDelegate.swift` changes.

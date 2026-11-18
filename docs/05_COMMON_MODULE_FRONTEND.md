@@ -103,6 +103,28 @@ To ensure screens that are not part of the active flow never open:
 
 ---
 
+### 1.3 "Home opens twice" after login (v2.5.5, 2026-11-18)
+
+#### The Issue
+After logging in with Location + Notification already granted, Home opened, then briefly the Permission Gate, then Home again.
+
+#### Root Cause (code path; not yet reproduced with a log)
+1. `PermissionGateService._doCheck()` gives up after 3 s and returns `PermissionGateResult.error(...)`. An error result has `allowsAccess == false`.
+2. Right after login the phone is busy (sockets start, the OTP keyboard closes, a system dialog ends) and an app-resume event fires. The resume check could time out (seen in a device log: `[PermissionGate] snapshot failed: TimeoutException after 0:00:03`).
+3. The resume handler treated that error like a **revoked** permission: `Get.offAllNamed(Routes.permissionGate)`.
+4. The gate checked again, found everything granted and called `Get.offAllNamed(Routes.Home_Screen)` → **Home a second time**. The route middleware (`shouldBlockRoute`) had the same problem with a cached error.
+
+#### Fix (`permission_gate_service.dart`)
+- An error is "unknown", not "revoked". On resume a failed check is retried once (after 1.5 s); if it fails again the user stays where they are. Only a real result (e.g. location set to "Never" in Settings) blocks.
+- `shouldBlockRoute` never redirects on a cached error result.
+- Unchanged: the gate still opens at once when a permission is really missing; the login pre-flight (`OtpController`, protected) is untouched.
+
+Tests: `test/permission_gate_service_test.dart` PG-R1 … PG-R4.
+
+**If it still happens:** send a log from the login. A second possible path is a second OTP verify (button tap after auto-submit), which would need a change in the protected `OtpController`; it was not changed.
+
+---
+
 ## 2. Home Socket & Bottom-Nav Red Dot Markers
 
 ### 2.1 Connecting to Home Socket (`/location`)
@@ -548,6 +570,7 @@ Screen sharing is initiated and controlled over the calling socket connection:
 ### 6.2 Change Log
 | Version | Date | Description |
 |---|---|---|
+| v2.5.5 | 2026-11-18 | §1.3 "Home opens twice" after login: a failed / timed-out permission check on app resume is retried once and never treated as a revoked permission (no more Home → Permission Gate → Home); the route guard ignores a cached error. File: `permission_gate_service.dart`. Tests PG-R1 … PG-R4. Uncommitted. |
 | v2.5.4 | 2026-11-18 | §11 Company contact details: phone **+91 93727 23727**, email **fgtracker@fgmanpower.com**, address **Ghatkopar West, Mumbai, Maharashtra 400086, India** (from the website footer) now used on Legal, About, Privacy / Terms text and the Walkie payment-failed screen. Home › Online members: bottom info card commented out. |
 | v2.5.3 | 2026-11-17 | App cache (guide 07) for Home banners, the Notification Center and All Groups: shown at once, 10 s timeout, "Couldn't refresh · Retry" (not for banners), skeleton only when empty. Notifications are no longer cleared before each refresh; a failed answer (`getNotificationsOrNull` → `null`) never looks like "no notifications"; resume refresh added. All Groups: an error no longer replaces the list. `AppCache.warmUp()` in `main.dart`. Logout unchanged (the existing chat-cache `clearAll` deletes the app cache too). |
 | v2.5.2 | 2026-11-17 | §5.1.1 Custom banner asks for camera (Android + iOS) and photos (iOS) before opening; blocked → Settings dialog, auto-continues after Settings. §9.3 "Follow us" uses real brand icons in brand colours. §9.3.1 side menu: divider + more space between Log out and Delete Account. §10 one back button app-wide: shared `AppBackButton` (white circle, purple `arrow_back_rounded`) and app bars that don't change on scroll (`AppBarStyle`); every back keeps its old action. |

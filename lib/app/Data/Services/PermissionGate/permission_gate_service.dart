@@ -105,23 +105,50 @@ class PermissionGateService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> _onResume() async {
+    final route = await routeToBlockAfterResume();
+    if (route == null) return;
+    log('[PermissionGate] permission revoked while on $route → blocking');
+    Get.offAllNamed(Routes.permissionGate);
+  }
+
+  /// Delay before re-checking when the resume check failed (tests: zero).
+  @visibleForTesting
+  static Duration resumeRetryDelay = const Duration(milliseconds: 1500);
+
+  /// The route to leave for the blocking screen after an app resume, or
+  /// `null` to stay.
+  ///
+  /// A check that FAILED (plugin timeout while the phone is busy, e.g. right
+  /// after login when sockets start or a system dialog closes) is not a
+  /// revoked permission: it is retried once and, if it fails again, the
+  /// user stays. Before, an error result sent Home → Permission Gate → Home
+  /// ("Home opens twice" after login).
+  @visibleForTesting
+  Future<String?> routeToBlockAfterResume() async {
     // A permission flow is running (system dialog just closed) — it re-checks
     // by itself; don't race it.
-    if (_busy > 0) return;
-    if (!_isLoggedIn()) return;
+    if (_busy > 0) return null;
+    if (!_isLoggedIn()) return null;
 
-    final r = await check();
-    if (r.allowsAccess) return;
+    PermissionGateResult r = await check();
+    if (r.hasError) {
+      await Future<void>.delayed(resumeRetryDelay);
+      if (_busy > 0) return null;
+      r = await check();
+      if (r.hasError) {
+        log('[PermissionGate] resume check failed twice → staying');
+        return null;
+      }
+    }
+    if (r.allowsAccess) return null;
 
     final route = Get.currentRoute;
     // The permission screens react to [result] themselves.
     if (route == Routes.permissionGate || route == Routes.permissionSetup) {
-      return;
+      return null;
     }
-    if (exemptRoutes.contains(route) || _isCallOrWalkieActive()) return;
-
-    log('[PermissionGate] permission revoked while on $route → blocking');
-    Get.offAllNamed(Routes.permissionGate);
+    if (exemptRoutes.contains(route) || _isCallOrWalkieActive()) return null;
+    return route;
   }
 
   // ------------------------------------------------------------------- flags
@@ -192,6 +219,9 @@ class PermissionGateService extends GetxService with WidgetsBindingObserver {
     if (route != null && exemptRoutes.contains(route)) return false;
     final r = result.value;
     if (r == null || r.allowsAccess) return false;
+    // A failed check (timeout) is "unknown", not "revoked": never redirect
+    // on it (see routeToBlockAfterResume).
+    if (r.hasError) return false;
     if (!_isLoggedIn()) return false;
     if (_isCallOrWalkieActive()) return false;
     return true;

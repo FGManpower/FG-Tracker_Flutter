@@ -1,6 +1,8 @@
 // Scriptable device + UI for the call permission flow (Phase 2).
 // Same idea as test/support/fake_permission_backend.dart (gate), but for
 // calls: microphone, camera, Bluetooth, notifications, full-screen intent.
+import 'dart:async';
+
 import 'package:fgtracker/app/modules/mediaStream/Services/call_permissions.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -45,9 +47,16 @@ class FakeCallPermissionBackend extends CallPermissionBackend {
   @override
   Future<CallPermStatus> status(Permission p) async => _of(p);
 
+  /// Permissions whose system dialog never answers (iOS lock screen: the
+  /// prompt only shows once the app is in front).
+  final Set<Permission> hangOnRequest = <Permission>{};
+
   @override
   Future<CallPermStatus> request(Permission p) async {
     requests.add(p);
+    if (hangOnRequest.contains(p)) {
+      return Completer<CallPermStatus>().future; // never completes
+    }
     final CallPermStatus? answer = onRequest[p];
     if (answer != null) statuses[p] = answer;
     return _of(p);

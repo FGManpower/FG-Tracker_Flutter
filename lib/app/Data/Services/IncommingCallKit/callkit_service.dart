@@ -12,6 +12,7 @@ import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart'
     show kCallRingTimeout;
+import 'package:fgtracker/app/modules/mediaStream/Services/call_events.dart';
 
 /// Android system incoming-call screen colours, matching the in-app call
 /// design (CallColors in call_widget.dart). Hex because the plugin takes
@@ -92,6 +93,11 @@ class CallKitService with WidgetsBindingObserver {
     'callRejected',
     'cancelCall',
     'groupCallEnded',
+    // agreed with the backend (caller cancel / ring timeout)
+    'callCancelled',
+    'call_cancelled',
+    'callCanceled',
+    'call_canceled',
   };
 
   static const Set<String> _socketMissedEvents = {
@@ -594,8 +600,22 @@ class CallKitService with WidgetsBindingObserver {
     required bool isVideo,
     String avatar = '',
     Map<String, dynamic> extra = const {},
+    dynamic expiresAt,
   }) async {
     final id = sessionId;
+
+    // Server ring deadline (backend point 3). Stale = a push delivered long
+    // after the call expired (phone was off): do not ring a dead call.
+    // Otherwise ring only for the time left. No timestamps: app default.
+    final Duration? ringLeft = remainingRingTime(
+      expiresAt: expiresAt ?? extra['expiresAt'] ?? extra['expires_at'],
+      now: DateTime.now(),
+      max: kCallRingTimeout,
+    );
+    if (ringLeft == Duration.zero) {
+      _ck('showIncoming SKIPPED (expired) sessionId=$id');
+      return;
+    }
 
     // NEW: in-app call already is call ka audio sambhal raha hai -> dobara
     // Telecom connection khada karne ka matlab hoga speaker phir se toot jaye.
@@ -637,7 +657,7 @@ class CallKitService with WidgetsBindingObserver {
             unknownLabel: l.call_unknown),
         type: isVideo ? 1 : 0,
         // Same value as the caller's missed-call timer (BUG-CALL-08).
-        duration: kCallRingTimeout.inMilliseconds,
+        duration: (ringLeft ?? kCallRingTimeout).inMilliseconds,
         callingNotification: const NotificationParams(),
         missedCallNotification: NotificationParams(
           showNotification: true,
@@ -989,6 +1009,7 @@ class CallKitService with WidgetsBindingObserver {
           isVideo: isVideo,
           avatar: (cd['callerProfileImage'] ?? '').toString(),
           extra: cd.map((k, v) => MapEntry(k, v.toString())),
+          expiresAt: cd['expiresAt'] ?? d['expiresAt'],
         );
         return true;
 
@@ -1009,7 +1030,9 @@ class CallKitService with WidgetsBindingObserver {
         return true;
     }
 
-    if (d['signal_type'] == 'endCall') {
+    // Any end signal (today `endCall`; agreed `call_cancelled`, also as
+    // `type`), on the push itself or inside callData.
+    if (endSignalOf(d) != null || endSignalOf(cd) != null) {
       final endTarget =
       (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
       instance._notifyRemoteEndPush(endTarget, callId);
@@ -1070,6 +1093,7 @@ class CallKitService with WidgetsBindingObserver {
       avatar: (m['caller_profile_image'] ?? cd['callerProfileImage'] ?? '')
           .toString(),
       extra: cd.map((k, v) => MapEntry(k, v.toString())),
+      expiresAt: cd['expiresAt'] ?? m['expiresAt'],
     );
   };
 

@@ -167,6 +167,7 @@ If video or calling appears sluggish or delayed during testing, the runtime logs
 
 | Version | Date | Change |
 |---|---|---|
+| v1.5.0 | 2026-11-18 | Uncommitted. Call UI redesign (6 screens: audio calling / connected / incoming, video ringing / connected / incoming; screen-share card + live pill; signal-bars quality icon). Device-log fixes and backend round 2: §8.7 and §10. Bugs BUG-CALL-39 … 51 in `testing/calling/bug_tracker.md`. New: `Services/call_end_probe.dart`, `Services/call_events.dart`. Tests: `call_remote_end_v1_test.dart`, `call_backend_ready_v1_test.dart`, PM-05b/c/d. |
 | v1.4.3 | 2026-11-18 | §9 added: the Calls → Contacts tab now builds its list exactly like All Contacts (shared `ContactMatcher`): phonebook × `/getAllUser`, phonebook names and numbers, phonebook order. The group-members paging (`getGroupMember`) is no longer used here. |
 | v1.4.2 | 2026-11-18 | §8.6 added: backend answers to Q1–Q7. App: `/callSignaling` handshake sends the login token in `auth` (B-01); native decline (Android `CallDeclineReceiver.kt`, iOS `AppDelegate.swift`) moved from `http://fgtracker.in:3000` to the HTTPS production host and sends `reason=declined` (B-13). New test `call_backend_contract_v1_test.dart` (5). |
 | v1.4.1 | 2026-11-18 | §8.5 added: ready-to-send brief for the backend team (B-01 … B-16, questions, what to send back, suggested order). Docs only. |
@@ -867,6 +868,26 @@ The backend team answered the seven questions of §8.3 / §8.5. The app was chan
 
 ---
 
+### 8.7 Backend answers, round 2 (2026-11-18) and app follow-up
+
+The backend reported all 13 points of the second request done (TURN endpoint, ring timer fix, participant check, busy, UTC timestamps, hang-up + `rejoinCall`, status API, iOS VoIP + Android FCM data pushes, no duplicates, events to both sides). App follow-up (v1.5.0, uncommitted):
+
+| Backend change | App |
+|---|---|
+| `GET /api/calls/turn-credentials` (root + `data`, `turns:443`) | Already preferred by `TurnCredentialService`; test BR-23 uses the exact body. The static fallback still holds the old credentials: remove it once phones confirm the endpoint. |
+| Ring timer cleared on accept (call 40) | A `missed` status still never ends a healthy call (`isServerCallOver`). |
+| `createdAt` / `expiresAt` (UTC) in `newCall`, `callData`, pushes | Ring only for the time left (10–45 s); expired more than 60 s ago = no ring. Dart `remainingRingTime`, iOS `AppDelegate.ringMillis`. |
+| `rejoinCall` → `callStatus {status:"connected"}` or `callEnded` | "connected" shows "Connecting" and stops the no-answer timer; `callEnded` ends the call. |
+| `getCallDetail`: `ringing, accepted, ended, missed, rejected, busy, cancelled` + `ended_at` | `isServerCallOver`: `ended / rejected / declined / cancelled / disconnected`, or `completed` with an end time = over. `busy` is NOT treated as over (also sent during call waiting, when the callee can still answer). |
+| `callAccepted`, `callCancelled`, `callRejected` (reasons), `callEnded`, `missedCall` to both sides | All names in `Services/call_events.dart`. Events naming another call are ignored. `timeout` → "No answer"; `permission_denied` / `failed` → "Unavailable". |
+| VoIP cancel `type` / `signal_type: "call_cancelled"`; FCM `screen_name` / `signal_type: "call_cancelled"` | Stops ringing on iOS (`AppDelegate.swift` end signals) and Android (`CallKitService.handlePush`). A push saying only `missedCall` / `callRejected` does not end an answered call. |
+| VoIP token cleared by `/api/logOut` | No app change; the protected `logoutuser.dart` stays untouched. |
+
+**Not verified:** nothing above ran on phones yet; the Swift changes need an Xcode build.
+
+---
+
+
 ## 9. Contacts tab: same list as All Contacts (v1.4.3, 2026-11-18)
 
 **Rule:** Calls → Contacts and Home → All Contacts (New chat) always show the same people, with the same names, numbers and order. Both build the list through one shared file, `lib/app/Data/Services/contact_matcher.dart` (`ContactMatcher`).
@@ -887,3 +908,28 @@ The backend team answered the seven questions of §8.3 / §8.5. The app was chan
 - No longer used here: `TrackRepo.getGroupMember` paging and the 9-digit partial number match.
 
 **Check on a phone:** open All Contacts and Calls → Contacts one after the other; the two lists and the Invite lists must be identical (same names, numbers, order). Search a name and a number in both.
+
+---
+
+## 10. Remote hang-up, permissions and the call screen (v1.5.0, 2026-11-18)
+
+### 10.1 When the other side hangs up
+1. Normal: the socket `callEnded` arrives → the call ends.
+2. If it is lost: the media link drops → "Reconnecting…". After 4 s, and every 4 s, the app asks `GET /api/getCallDetail`. Over → the call ends (nothing sent back). Running or unknown → keep reconnecting; the 25 s give-up still applies.
+3. The same one-shot check runs after a socket reconnect, on app resume (running call only) and on an FCM `endCall` push for this call (link down = end at once).
+
+### 10.2 New user with only Location + Notification granted
+| Case | Android | iOS |
+|---|---|---|
+| Outgoing call | Explainer → mic dialog → call (camera: dialog or "voice instead") | Same |
+| Incoming answered, app open | Mic dialog on the call screen; refused → call ends, caller gets `permission_denied` | Same |
+| Incoming answered on the lock screen | Dialog shows over the lock screen | Mic prompt only appears when the app comes to the front: limited to **30 s**, then the call ends with `permission_denied` (before: stuck on "Connecting") |
+| Video answered, camera never asked | Mic, then camera; camera refused → joins with camera off + "Camera off · Allow" | Same |
+| Can calls ring? | Notification + Android 14 full-screen intent; Calls tab banner "Incoming calls may not ring" | Notification; VoIP push does not need it |
+
+Early mic ask: the Calls tab primer (once) and the optional Microphone row of the permission setup screen.
+
+### 10.3 Call screen pieces
+- Audio top bar right: **signal bars** = call quality (green / amber), tap = "Good / Poor connection". Not a menu.
+- Android system incoming screen: app colours (`#3A2A9E` voice, `#0E0C14` video, accept `#16B364`). iOS uses Apple's CallKit screen, which apps cannot restyle.
+- Screen share: sharer sees a centre card with **Stop sharing**; viewer sees "<name> is sharing their screen" with a live dot.

@@ -235,3 +235,27 @@ Still open after Phase 2: BUG-CALL-05, -06, -07, -11, -12, -16, -17, -20, -23, -
 
 ### BUG-CALL-30 (new) — direct call-screen entry points skip permissions · Confirmed
 - `UserProfileScreen.dart:422-433` (no chat controller branch) and `Tracking_screen.dart:3421, 3446` call `Get.toNamed(Routes.callScreen)` directly, skipping `CallService` and its permission check. Phase 2 routes them through the policy.
+
+---
+
+## Device-log fixes, 2026-11-18 (after Phase 3) — uncommitted
+
+Found from two device logs ("Calling UI Bug (1)" emulator, "Calling UI Bug (2)" physical phone) and the backend's second reply. Proof: **Device** = in the log, **Test** = new unit test, **Code path** = reading the code.
+
+| ID | Bug | Status | Fix | Tests |
+|---|---|---|---|---|
+| BUG-CALL-39 | Red "improper use of GetX" on the call screen once connected: `isCallConnected` stopped reading `callDurationRx` when `callTimer` was set, so two `Obx` (calling_screen.dart) read no observable | **Fixed** (Device) | `AudioCall_screen.dart` `isCallConnected` always reads `callDurationRx` first | analyze + call tests |
+| BUG-CALL-40 | Speaker dead after minimize → restore: GetX deleted `CallAudioRouteController` with the `/callScreen` route (`selectRoute … disposed=true`) | **Fixed** (Device) | `call_platform.dart` `audioRoute()` puts it `permanent`; `CallingController.onClose` deletes it | call tests |
+| BUG-CALL-41 | Remote hangs up, other phone stays on "Reconnecting…" for 25 s when the socket `callEnded` is lost | **Fixed** (Device) | `call_end_probe.dart`: while reconnecting, asks `getCallDetail` after 4 s then every 4 s; also on socket reconnect, app resume, FCM `endCall` push. Ends only on a known "over" status; unknown never ends | RE-01 … RE-16 (`call_remote_end_v1_test.dart`) |
+| BUG-CALL-42 | No TURN relay: allocate `401` then `400`, TLS 443 closes (static credentials vs LiveKit TURN) → drops on mobile data / NAT | **Backend fixed** (Device) — check on phones | Backend serves `GET /api/calls/turn-credentials`; the app already prefers it | BR-23 |
+| BUG-CALL-43 | Answered call marked `missed` at 45 s while running (call 40) | **Backend fixed** (Device) | Server clears the ring timer on accept + DB guard. App: a `missed` status never ends a healthy call | RE-05, BR-24 |
+| BUG-CALL-44 | Android system incoming screen in the old blue `#0955fa` ("old design") | **Fixed** | `callkit_service.dart` app colours (`kCallKitBackgroundColor`) | RE-16 |
+| BUG-CALL-45 | Audio top bar "3 dots" looked like a menu that did nothing (it was the quality indicator) | **Fixed** | Signal-bars icon, tap shows "Good / Poor connection"; `call_goodConnection` in 20 locales | l10n test |
+| BUG-CALL-46 | `missedCall` / `callStatus: ended` for ANOTHER call could end the current one (server now sends to both sides) | **Fixed** (Code path) | `_isForThisCall` on `missedCall` and `callStatus`; incoming screen checks `callId` | BR-17, BR-20 |
+| BUG-CALL-47 | `rejoinCall` reply `callStatus: "connected"` shown as the raw word | **Fixed** (Code path) | Shown as "Connecting", no-answer timer stopped | BR-19 |
+| BUG-CALL-48 | Server ring timeout / `callRejected reason: timeout` showed "Declined" | **Fixed** (Code path) | "No answer" + Call again; `permission_denied` / `failed` = "Unavailable" | BR-18, BR-22 |
+| BUG-CALL-49 | New backend names not understood: `callCancelled` / `call_cancelled`, `callAccepted`, push `type: call_cancelled` | **Fixed** | `call_events.dart` (one list, Dart + iOS) | BR-01 … BR-16 |
+| BUG-CALL-50 | Ring time ignored server `expiresAt`; a late push could ring a dead call. iOS used the plugin default duration | **Fixed** (iOS not compiled here) | Android/Dart `remainingRingTime`, iOS `AppDelegate.ringMillis`: ring for the time left (10–45 s); expired > 60 s = no ring (iOS: report + end, as PushKit requires) | BR-05 … BR-11 |
+| BUG-CALL-51 | New user (only Location + Notification granted) answers on a locked iPhone: mic prompt cannot show, call hangs on "Connecting" | **Fixed** | `call_permissions.dart`: mic request at accept limited to 30 s, then ends with `permission_denied` | PM-05b, PM-05c, PM-05d |
+
+**Not fixed here (needs a decision or a Mac):** BUG-CALL-25 plugin-nil branch still only logs (plugins register before PushKit starts, so it should not happen); the Swift changes of BUG-CALL-49/50 need an Xcode build.

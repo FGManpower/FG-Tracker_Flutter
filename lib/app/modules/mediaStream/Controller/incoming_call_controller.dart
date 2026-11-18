@@ -8,6 +8,7 @@ import '../../../Data/Services/Socket/Socket_SignallingService.dart';
 import '../../../Model/call_model.dart';
 import '../../../routes/app_pages.dart';
 import '../Services/call_entry.dart';
+import '../Services/call_events.dart';
 import '../Services/call_socket_handlers.dart';
 
 class IncomingCallController extends GetxController {
@@ -46,10 +47,29 @@ class IncomingCallController extends GetxController {
     }
 
     _handlers.on("callEnded", _onCallGone);
+    _handlers.on("endCall", _onCallGone);
     _handlers.on("missedCall", _onCallGone);
+    // Caller cancelled / ring timed out (agreed with the backend).
+    for (final String ev in kCallCancelSignals) {
+      if (ev == 'cancelCall') continue;
+      _handlers.on(ev, _onCallGone);
+    }
+  }
+
+  /// False when [data] names another call (late event from an earlier one).
+  bool isForThisCall(dynamic data) {
+    if (data is! Map) return true;
+    final String theirs =
+        (data['callId'] ?? data['call_id'] ?? '').toString().trim();
+    final String ours = call.callId?.toString() ?? '';
+    if (theirs.isEmpty || theirs == 'null' || ours.isEmpty || ours == 'null') {
+      return true;
+    }
+    return theirs == ours;
   }
 
   void _onCallGone(dynamic data) {
+    if (!isForThisCall(data)) return;
     FlutterRingtonePlayer().stop();
     CallStateTracker.isIncomingCallScreenOpen = false;
     _handlers.offAll();

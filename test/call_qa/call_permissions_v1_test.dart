@@ -233,6 +233,54 @@ void main() {
       expect(r.proceed, isFalse);
     });
 
+    test('PM-05b new user (only location + notification granted) answers on '
+        'a locked iPhone, the mic prompt never shows: the call stops after '
+        'the limit instead of hanging on "Connecting"', () async {
+      final Duration old = CallPermissionFlow.incomingMicAskTimeout;
+      CallPermissionFlow.incomingMicAskTimeout =
+          const Duration(milliseconds: 200);
+      addTearDown(() => CallPermissionFlow.incomingMicAskTimeout = old);
+      final b = device(<Permission, CallPermStatus>{
+        Permission.notification: G,
+      }) // mic + camera never asked
+        ..android = false
+        ..hangOnRequest.add(Permission.microphone);
+      final r = await CallPermissionFlow(backend: b, ui: FakeCallPermissionUi())
+          .beforeCall(video: false, incoming: true);
+      expect(b.requests, [Permission.microphone], reason: 'asked once');
+      expect(r.proceed, isFalse);
+    });
+
+    test('PM-05c same user, prompt answered "Allow": the call goes on '
+        '(Android and iOS)', () async {
+      for (final bool android in <bool>[true, false]) {
+        final b = device(<Permission, CallPermStatus>{
+          Permission.notification: G,
+        })
+          ..android = android
+          ..onRequest[Permission.microphone] = G;
+        final r =
+            await CallPermissionFlow(backend: b, ui: FakeCallPermissionUi())
+                .beforeCall(video: false, incoming: true);
+        expect(r.proceed, isTrue, reason: 'android=$android');
+      }
+    });
+
+    test('PM-05d same user, VIDEO call accepted, camera never asked: '
+        'mic then camera asked; camera refused = joins with camera off',
+        () async {
+      final b = device(<Permission, CallPermStatus>{
+        Permission.notification: G,
+      })
+        ..onRequest[Permission.microphone] = G
+        ..onRequest[Permission.camera] = A;
+      final r = await CallPermissionFlow(backend: b, ui: FakeCallPermissionUi())
+          .beforeCall(video: true, incoming: true);
+      expect(b.requests, [Permission.microphone, Permission.camera]);
+      expect(r.proceed, isTrue);
+      expect(r.video, isFalse);
+    });
+
     test('PM-06 accept video, camera blocked: join as voice, camera off',
         () async {
       final b = device({Permission.microphone: G, Permission.camera: B});

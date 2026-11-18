@@ -125,6 +125,14 @@ CallEndOutcome rejectOutcome(dynamic data) {
             .toString()
             .toLowerCase();
     if (reason == 'busy') return CallEndOutcome.busy;
+    // Backend reasons (callRejected): timeout = nobody answered;
+    // permission_denied / failed = the other phone could not take it.
+    if (reason == 'timeout' || reason == 'missed') {
+      return CallEndOutcome.noAnswer;
+    }
+    if (reason == 'permission_denied' || reason == 'failed') {
+      return CallEndOutcome.unavailable;
+    }
   }
   return CallEndOutcome.declined;
 }

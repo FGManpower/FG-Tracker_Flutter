@@ -21,6 +21,7 @@ import '../Widget/audio_route_sheet.dart';
 import '../../call/Controller/call_controller.dart';
 import '../Services/call_connection_monitor.dart';
 import '../Services/call_end_probe.dart';
+import '../Services/call_events.dart';
 import '../Services/call_entry.dart';
 import '../Services/call_foreground_service.dart';
 import '../Services/call_permissions.dart';
@@ -2146,12 +2147,37 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     await _cleanupCall(notifyRemote: false, navigateBack: true);
   }
 
+  /// Caller cancelled / ring timed out before an answer (backend
+  /// `callCancelled`). Ignored once the call is running or for another call.
+  Future<void> _onCallCancelled(dynamic data) async {
+    if (!isCallLive || !_isForThisCall(data)) return;
+    if (callTimer != null || callDurationSeconds > 0) return;
+    await _cleanupCall(notifyRemote: false, navigateBack: true);
+  }
+
+  /// The callee answered (backend `callAccepted`, before or without the
+  /// SDP answer): stop the no-answer timer and show "Connecting".
+  void _onCallAcceptedByServer(dynamic data) {
+    if (!isCallLive || !_isForThisCall(data)) return;
+    missedCallTimer?.cancel();
+    missedCallTimer = null;
+    stopSound();
+    if (callTimer == null && callDurationSeconds == 0) {
+      callStatus.value = "Connecting";
+      update();
+    }
+  }
+
   Future<void> _onMissedCall(dynamic data) async {
     if (_isCleaningUp) return;
+    // The server now sends missedCall to BOTH sides: ignore other calls.
+    if (!_isForThisCall(data)) return;
 
     if (callTimer != null || callDurationSeconds > 0) {
       return;
     }
+    // Caller: the server's ring timeout = "No answer" + Call again.
+    if (!_isIncoming) _endOutcome = CallEndOutcome.noAnswer;
 
     final String sessionId = data is Map &&
             data["sessionId"]?.toString().isNotEmpty == true
@@ -2183,6 +2209,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _handlers.off("callEnded");
     _handlers.off("endCall");
     _handlers.off("missedCall");
+    for (final String ev in kCallCancelSignals) {
+      _handlers.off(ev);
+    }
+    _handlers.off("callAccepted");
     _handlers.off("callStatus");
     _handlers.off("callCreated");
     _handlers.off("newCall");
@@ -2270,6 +2300,12 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _handlers.on("callEnded", _onCallEnded);
     _handlers.on("endCall", _onCallEnded);
     _handlers.on("missedCall", _onMissedCall);
+    // Agreed with the backend (point 7); today's server does not send them.
+    for (final String ev in kCallCancelSignals) {
+      if (ev == 'cancelCall') continue; // not a socket event today
+      _handlers.on(ev, _onCallCancelled);
+    }
+    _handlers.on("callAccepted", _onCallAcceptedByServer);
 
     _handlers.on("callRejected", (data) async {
       if (!_isForThisCall(data)) return;
@@ -2288,6 +2324,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _handlers.on("callStatus", (data) {
       final status = (data["status"] ?? data["callingStatus"])?.toString();
       if (status == null || status.isEmpty) return;
+      // Never let a status for another (earlier) call touch this one.
+      if (!_isForThisCall(data)) return;
 
       if (data['callId'] != null) {
         callId = data['callId'];
@@ -2317,6 +2355,18 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           normalized == "cancelled" ||
           normalized == "canceled") {
         unawaited(_cleanupCall(notifyRemote: false, navigateBack: true));
+        return;
+      } else if (normalized == "connected" ||
+          normalized == "accepted" ||
+          normalized == "in_call") {
+        // Answered / rejoinCall reply: keep the running timer as is, and
+        // never show the raw server word.
+        if (callTimer == null && callDurationSeconds == 0) {
+          missedCallTimer?.cancel();
+          missedCallTimer = null;
+          callStatus.value = "Connecting";
+          update();
+        }
         return;
       }
 

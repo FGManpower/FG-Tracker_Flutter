@@ -171,6 +171,42 @@ void main() {
       expect(s.result.value, same(r));
     });
 
+    group('resume after login (Home opened twice)', () {
+      setUp(() => PermissionGateService.resumeRetryDelay = Duration.zero);
+
+      test('PG-R1 a FAILED check on resume never leaves Home', () async {
+        device.throwOnSnapshot = true; // plugin timeout / failure, twice
+        final s = make();
+        expect(await s.routeToBlockAfterResume(), isNull,
+            reason: 'unknown is not revoked: no Home → Gate → Home');
+      });
+
+      test('PG-R2 failed once, then fine: retried, stays', () async {
+        device.throwOnSnapshot = true;
+        final s = make();
+        final Future<String?> decision = s.routeToBlockAfterResume();
+        await Future<void>.delayed(Duration.zero);
+        device.throwOnSnapshot = false;
+        device.grantAll();
+        expect(await decision, isNull);
+      });
+
+      test('PG-R3 a REAL revoke on resume still blocks', () async {
+        // Default fake: location + notification missing (not an error).
+        final s = make();
+        Get.routing.current = Routes.Home_Screen;
+        expect(await s.routeToBlockAfterResume(), Routes.Home_Screen);
+      });
+
+      test('PG-R4 cached error result never redirects a route', () async {
+        device.throwOnSnapshot = true;
+        final s = make();
+        await s.check();
+        expect(s.result.value!.hasError, isTrue);
+        expect(s.shouldBlockRoute(Routes.Home_Screen), isFalse);
+      });
+    });
+
     test('plugin throws → error result (blocking + Retry), no crash',
         () async {
       device.throwOnSnapshot = true;
