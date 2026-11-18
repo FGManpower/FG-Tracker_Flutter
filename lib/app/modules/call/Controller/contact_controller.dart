@@ -1,14 +1,11 @@
 import 'dart:async';
-import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
-import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
+import 'package:fgtracker/app/Data/Services/contact_matcher.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
-import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/l10n/l10n.dart';
@@ -17,14 +14,12 @@ import 'package:permission_handler/permission_handler.dart';
 import '../widget/call_widget.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
-class _PhoneEntry {
-  final String name;
-  final String phone;
-  final String key10;
-  final String key9;
-  const _PhoneEntry(this.name, this.phone, this.key10, this.key9);
-}
 
+/// Calls → Contacts tab.
+///
+/// The list is built exactly like All Contacts (`NewChatController`):
+/// phonebook × `/getAllUser` through [ContactMatcher], so both screens show
+/// the same people with the same names, numbers and order.
 class ContactController extends GetxController {
   static ContactController get instance => Get.isRegistered<ContactController>()
       ? Get.find<ContactController>()
@@ -34,13 +29,9 @@ class ContactController extends GetxController {
 
   final ContactService _contactService = ContactService();
 
+  /// Normalized phone → phonebook name (used by Forward message).
   final Map<String, String> phoneContactNameMap = {};
   Set<String> get savedContactNumbers => phoneContactNameMap.keys.toSet();
-
-  final Map<String, String> _nameByKey10 = {};
-  final Map<String, String> _nameByKey9 = {};
-
-  final List<_PhoneEntry> _phoneEntries = [];
 
   final Map<int, int> chatIdMap = {};
   int? chatIdFor(int? userId) => userId == null ? null : chatIdMap[userId];
@@ -55,29 +46,21 @@ class ContactController extends GetxController {
   final RxBool permissionChecked = false.obs;
   final RxBool isContactPermissionGranted = false.obs;
   final RxBool hasAllowedContacts = false.obs;
-  final RxInt contactPagination = 1.obs;
-
-  /// Server (group member API) page size.
-  static const int contactPageLimit = 10;
 
   /// UI par ek baar me itne registered contacts dikhenge (client-side paging).
   static const int uiPageSize = 20;
-
-  static const int _minMatchesPerLoad = 10;
-
-  static const int _maxPagesPerLoad = 10;
 
   /// Itne seconds ke andar dobara non-forced refresh nahi chalega.
   static const Duration _refreshThrottle = Duration(seconds: 10);
 
   static final RegExp _nonDigit = RegExp(r'[^0-9]');
 
+  /// Whole list comes in one API call now; kept for the tab's footer.
   final RxBool contactLoadingMore = false.obs;
-  final RxBool hasMoreContacts = true.obs;
 
   final RxString searchQuery = ''.obs;
 
-  /// Poori merged list (server pages + getAllUser), name se sorted.
+  /// FG users from the phonebook, in phonebook order (same as All Contacts).
   var allUserProfileData = <UserListData>[].obs;
 
   /// UI ye list dekhta hai: search-filtered list ka current page tak ka hissa.
@@ -97,47 +80,15 @@ class ContactController extends GetxController {
   /// Silent refresh chal raha hai (list screen par rehti hai, clear nahi hoti).
   bool _isRefreshing = false;
 
-  /// Silent refresh me pehla merge purani list ko replace karega.
-  bool _replaceOnNextMerge = false;
-
   DateTime? _lastLoadAt;
-
-  int _session = 0;
-
-  Future<void>? _phoneBookFuture;
-  Future<bool>? _allUsersFuture;
 
   Future<void>? _permCheckFuture;
   bool _permissionPrompted = false;
 
-  final Set<String> _seen = <String>{};
-
-  String _digits(String? raw) => (raw ?? '').replaceAll(_nonDigit, '');
-
-  String _matchKey(String? raw) {
-    String d = _digits(raw);
-    if (d.length > 10) d = d.substring(d.length - 10);
-    return d;
-  }
-
-  String? _lookupName(String? rawPhone) {
-    final String d = _digits(rawPhone);
-    if (d.length < 8) return null;
-
-    final String k10 = _matchKey(rawPhone);
-    final String? exact = _nameByKey10[k10];
-    if (exact != null && exact.isNotEmpty) return exact;
-
-    if (d.length == 9) {
-      final String? partial = _nameByKey9[d];
-      if (partial != null && partial.isNotEmpty) return partial;
-    }
-    return null;
-  }
-
   String? _ownUserId() {
     try {
-      return Global.storageServices.get(PrefConst.userId)?.toString();
+      final s = Global.storageServices.get(PrefConst.userId)?.toString().trim();
+      return (s == null || s.isEmpty || s == 'null') ? null : s;
     } catch (_) {
       return null;
     }
@@ -183,7 +134,6 @@ class ContactController extends GetxController {
         isContactPermissionGranted.value = true;
         hasAllowedContacts.value = true;
         permissionChecked.value = true;
-        _phoneBookFuture = null;
         if (!_initialLoadDone) {
           await getRegisteredContacts();
         } else {
@@ -199,340 +149,109 @@ class ContactController extends GetxController {
 
   // ───────────────────────── Phone book ─────────────────────────
 
-  Future<void> _loadPhoneBook() {
-    return _phoneBookFuture ??= _readPhoneBook().catchError((Object e) {
-      _phoneBookFuture = null;
-      throw e;
-    });
-  }
-
-  Future<void> _readPhoneBook() async {
+  /// Reads the phonebook (fresh every load, like All Contacts) and returns
+  /// its entries; also refreshes [phoneContactNameMap].
+  Future<List<PhonebookEntry>> _readPhoneBook() async {
     final List<Contact> deviceContacts = await _contactService.getContacts();
 
     phoneContactNameMap.clear();
-    _nameByKey10.clear();
-    _nameByKey9.clear();
-    _phoneEntries.clear();
-
-    final Set<String> entrySeen = <String>{};
-
     for (final Contact contact in deviceContacts) {
       final String displayName = contact.displayName.trim();
       if (displayName.isEmpty) continue;
-
       for (final Phone phone in contact.phones) {
         final String norm = normalizePhone(phone.number);
-        if (norm.isNotEmpty) {
-          phoneContactNameMap[norm] = displayName;
-        }
-
-        final String d = _digits(phone.number);
-        if (d.length < 8) continue;
-
-        final String k10 = _matchKey(phone.number);
-        _nameByKey10.putIfAbsent(k10, () => displayName);
-
-        String k9 = '';
-        if (d.length >= 9) {
-          k9 = d.substring(d.length - 9);
-          _nameByKey9.putIfAbsent(k9, () => displayName);
-        }
-
-        if (k10.length == 10 && entrySeen.add(k10)) {
-          _phoneEntries.add(_PhoneEntry(displayName, phone.number, k10, k9));
-        }
-      }
-    }
-    AppLog.d("PHONEBOOK KEYS => ${_nameByKey10.length}");
-  }
-
-  // ───────────────────────── Merge helpers ─────────────────────────
-
-  void _mergeUsers(List<UserListData> incoming) {
-    if (incoming.isEmpty) return;
-
-    final List<UserListData> merged = _replaceOnNextMerge
-        ? <UserListData>[]
-        : List<UserListData>.from(allUserProfileData);
-    _replaceOnNextMerge = false;
-    bool changed = false;
-
-    for (final UserListData user in incoming) {
-      final String id = user.userId != null
-          ? 'u:${user.userId}'
-          : 'p:${_matchKey(user.mobileNo)}';
-      if (_seen.add(id)) {
-        merged.add(user);
-        changed = true;
+        if (norm.isNotEmpty) phoneContactNameMap[norm] = displayName;
       }
     }
 
-    if (!changed) return;
-
-    merged.sort((a, b) =>
-        (a.name ?? '').toLowerCase().compareTo((b.name ?? '').toLowerCase()));
-
-    allUserProfileData.value = merged;
-    filterUsers(searchQuery.value);
-  }
-
-  void _buildInvites(Set<String> reg10, Set<String> reg9, String? myKey) {
-    for (final u in allUserProfileData) {
-      final String k = _matchKey(u.mobileNo);
-      if (k.isNotEmpty) reg10.add(k);
-    }
-
-    final List<UserListData> invites = <UserListData>[];
-
-    for (final _PhoneEntry e in _phoneEntries) {
-      if (myKey != null && e.key10 == myKey) continue;
-      if (reg10.contains(e.key10)) continue;
-      if (e.key9.isNotEmpty && reg9.contains(e.key9)) continue;
-
-      invites.add(UserListData(
-        userId: null,
-        name: e.name,
-        mobileNo: e.phone,
-        profileImage: null,
-      ));
-    }
-
-    invites.sort((a, b) =>
-        (a.name ?? '').toLowerCase().compareTo((b.name ?? '').toLowerCase()));
-
-    inviteUsers.value = invites;
-    filterUsers(searchQuery.value);
-  }
-
-  Future<List<GroupMemberData>> _fetchMembers(int page) async {
-    final GroupMemberModel res = await TrackRepo.getGroupMember(
-      page: page.toString(),
-      filter: 'all',
-      limit: contactPageLimit,
-    );
-    return res.data?.allMember?.memberList ?? res.data?.allMemberList ?? [];
-  }
-
-  Future<bool> _loadAllUsersAndMerge(int session) async {
-    try {
-      await _loadPhoneBook();
-
-      final result = await GroupRepo.getAllUserData();
-      if (session != _session) return true;
-
-      if (result.status != true) return false;
-
-      final String? me = _ownUserId();
-      final List<UserListData> matched = <UserListData>[];
-
-      final Set<String> reg10 = <String>{};
-      final Set<String> reg9 = <String>{};
-      String? myKey;
-
-      for (final user in (result.userData ?? <UserListData>[])) {
-        final String d = _digits(user.mobileNo);
-        final bool isMe = me != null && user.userId?.toString() == me;
-
-        if (d.length >= 8) {
-          if (isMe) {
-            myKey = _matchKey(user.mobileNo);
-          } else {
-            reg10.add(_matchKey(user.mobileNo));
-            if (d.length == 9) reg9.add(d);
-          }
-        }
-
-        if (isMe) continue;
-
-        final String? name = _lookupName(user.mobileNo);
-        if (name == null) continue;
-
-        final int? chatId =
-            user.privateChatId ?? user.chatId ?? user.conversationId;
-        if (user.userId != null &&
-            chatId != null &&
-            !chatIdMap.containsKey(user.userId)) {
-          chatIdMap[user.userId!] = chatId;
-        }
-
-        matched.add(UserListData(
-          userId: user.userId,
-          profileImage: user.profileImage,
-          name: name.trim(),
-          mobileNo: user.mobileNo,
-          isOnline: user.isOnline,
-        ));
-      }
-
-      _mergeUsers(matched);
-      _buildInvites(reg10, reg9, myKey);
-      return true;
-    } catch (e) {
-      AppLog.d("getAllUser hybrid load error: $e");
-      return false;
-    }
+    return ContactMatcher.buildEntries(deviceContacts);
   }
 
   // ───────────────────────── Main loader ─────────────────────────
 
-  Future<void> getRegisteredContacts({
-    bool loadMore = false,
-    bool silent = false,
-  }) async {
-    if (!isContactPermissionGranted.value) return;
+  void _applyLists(List<UserListData> matched, List<UserListData> invites) {
+    chatIdMap.clear();
+    for (final u in matched) {
+      if (u.userId != null && u.chatId != null) chatIdMap[u.userId!] = u.chatId!;
+    }
+    allUserProfileData.value = matched;
+    inviteUsers.value = invites;
+    filterUsers(searchQuery.value);
+  }
 
-    if (loadMore) {
-      if (contactLoading.value ||
-          contactLoadingMore.value ||
-          _isRefreshing ||
-          !hasMoreContacts.value) {
-        return;
-      }
-      contactLoadingMore.value = true;
-    } else if (silent) {
-      if (contactLoading.value || _isRefreshing) return;
+  void _patchChatIds(Map<int, int> map) {
+    if (isClosed) return;
+    final updated = ContactMatcher.patchChatIds(allUserProfileData, map);
+    if (updated == null) return;
+    _applyLists(updated, List<UserListData>.from(inviteUsers));
+  }
+
+  /// Loads the list. [silent] keeps the current list on screen while
+  /// refreshing; a failed silent refresh leaves it untouched.
+  Future<void> getRegisteredContacts({bool silent = false}) async {
+    if (!isContactPermissionGranted.value) return;
+    if (contactLoading.value || _isRefreshing) return;
+
+    if (silent) {
       _isRefreshing = true;
-      responseError.value = "";
-      contactPagination.value = 1;
-      hasMoreContacts.value = true;
-      _seen.clear();
-      _replaceOnNextMerge = true;
-      _session++;
-      _allUsersFuture = null;
     } else {
-      if (contactLoading.value || _isRefreshing) return;
       contactLoading.value = true;
-      responseError.value = "";
-      contactPagination.value = 1;
-      hasMoreContacts.value = true;
       chatIdMap.clear();
       allUserProfileData.clear();
       _fullFiltered = <UserListData>[];
       filteredUsers.clear();
       inviteUsers.clear();
       filteredInviteUsers.clear();
-      _seen.clear();
-      _replaceOnNextMerge = false;
       _visibleCount = uiPageSize;
-      _session++;
-      _allUsersFuture = null;
     }
-
-    final int session = _session;
+    responseError.value = "";
 
     try {
-      Future<List<GroupMemberData>>? firstPage;
+      final usersFuture =
+          GroupRepo.getAllUserData().timeout(const Duration(seconds: 10));
+      usersFuture.ignore();
+      final chatMapFuture = ContactMatcher.loadPrivateChatIdMap();
 
-      if (!loadMore) {
-        firstPage = _fetchMembers(contactPagination.value);
-        firstPage.ignore();
-        _allUsersFuture = _loadAllUsersAndMerge(session);
-      }
-
-      await _loadPhoneBook();
+      final List<PhonebookEntry> entries = await _readPhoneBook();
       isContactPermissionGranted.value = true;
 
-      final String? me = _ownUserId();
-      final List<UserListData> matchedUsers = <UserListData>[];
-      bool apiHasMore = true;
-      bool groupApiFailed = false;
-      int pagesFetched = 0;
+      final result = await usersFuture;
 
-      while (matchedUsers.length < _minMatchesPerLoad &&
-          apiHasMore &&
-          pagesFetched < _maxPagesPerLoad) {
-        List<GroupMemberData> members;
-        try {
-          if (pagesFetched == 0 && firstPage != null) {
-            members = await firstPage;
-          } else {
-            members = await _fetchMembers(contactPagination.value);
-          }
-        } catch (e) {
-          AppLog.d("Error fetching group members for call contacts: $e");
-          groupApiFailed = true;
-          break;
-        }
-
-        pagesFetched++;
-        apiHasMore = members.length >= contactPageLimit;
-        contactPagination.value = contactPagination.value + 1;
-
-        for (final GroupMemberData member in members) {
-          if (me != null && member.userId?.toString() == me) continue;
-
-          final String phoneNum = member.mobileNo ?? member.phone ?? '';
-          final String? phoneBookName = _lookupName(phoneNum);
-          if (phoneBookName == null) continue;
-
-          if (member.userId != null && member.chatId != null) {
-            chatIdMap[member.userId!] = member.chatId!;
-          }
-
-          matchedUsers.add(UserListData(
-            userId: member.userId,
-            profileImage: member.profileImage,
-            name: phoneBookName.trim(),
-            mobileNo: phoneNum,
-            isOnline: member.online,
-          ));
-        }
+      if (result.status == true) {
+        final match = ContactMatcher.match(
+          entries,
+          result.userData ?? <UserListData>[],
+          ownUserId: _ownUserId(),
+        );
+        _applyLists(match.matched, match.unmatched);
+        _initialLoadDone = true;
+        unawaited(chatMapFuture.then(_patchChatIds));
+      } else if (allUserProfileData.isEmpty && inviteUsers.isEmpty) {
+        responseError.value =
+            result.message ?? appL10n.common_somethingWentWrong;
       }
-
-      if (session != _session) return;
-
-      hasMoreContacts.value = groupApiFailed ? false : apiHasMore;
-      _mergeUsers(matchedUsers);
-
-      if (silent) {
-        final bool ok = _allUsersFuture != null ? await _allUsersFuture! : true;
-        if (session != _session) return;
-
-        if (_replaceOnNextMerge && ok && !groupApiFailed) {
-          _replaceOnNextMerge = false;
-          allUserProfileData.clear();
-          _fullFiltered = <UserListData>[];
-          filteredUsers.clear();
-        }
-      } else if (!loadMore &&
-          allUserProfileData.isEmpty &&
-          _allUsersFuture != null) {
-        final bool ok = await _allUsersFuture!;
-        if (!ok && allUserProfileData.isEmpty && groupApiFailed) {
-          responseError.value = appL10n.common_somethingWentWrong;
-        }
-      } else if (!loadMore && groupApiFailed && _allUsersFuture != null) {
-        await _allUsersFuture;
-      }
-
-      if (!loadMore && !groupApiFailed) _initialLoadDone = true;
-
-      filterUsers(searchQuery.value);
     } catch (e) {
-      if (!loadMore) responseError.value = e.toString();
+      AppLog.d("Call contacts load error: $e");
+      if (allUserProfileData.isEmpty && inviteUsers.isEmpty) {
+        responseError.value = e.toString();
+      }
     } finally {
-      if (loadMore) {
-        contactLoadingMore.value = false;
+      _lastLoadAt = DateTime.now();
+      isFirstLoadDone.value = true;
+      if (silent) {
+        _isRefreshing = false;
       } else {
-        _replaceOnNextMerge = false;
-        _lastLoadAt = DateTime.now();
-        isFirstLoadDone.value = true;
-        if (silent) {
-          _isRefreshing = false;
-        } else {
-          contactLoading.value = false;
-        }
+        contactLoading.value = false;
       }
     }
   }
 
+  /// Shows the next page of the already-loaded list.
   Future<void> loadMoreContacts() async {
     if (filteredUsers.length < _fullFiltered.length) {
       _visibleCount += uiPageSize;
       _applyPage();
-      return;
     }
-    await getRegisteredContacts(loadMore: true);
   }
 
   Future<void> silentRefresh({
@@ -555,8 +274,6 @@ class ContactController extends GetxController {
         DateTime.now().difference(_lastLoadAt!) < _refreshThrottle) {
       return;
     }
-
-    if (reloadPhoneBook) _phoneBookFuture = null;
 
     await getRegisteredContacts(silent: true);
   }
@@ -691,9 +408,7 @@ class ContactController extends GetxController {
     permissionChecked.close();
     isContactPermissionGranted.close();
     hasAllowedContacts.close();
-    contactPagination.close();
     contactLoadingMore.close();
-    hasMoreContacts.close();
     searchQuery.close();
     allUserProfileData.close();
     filteredUsers.close();
