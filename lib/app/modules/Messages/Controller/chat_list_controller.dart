@@ -231,7 +231,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
           (chat.preview != null && chat.preview!.trim().isNotEmpty) ||
           (chat.messageType != null &&
               chat.messageType!.trim().isNotEmpty &&
-              chat.messageType != 'text');
+              chat.messageType != 'text') ||
+          chat.lastMessageData != null ||
+          (chat.unreadCount != null && chat.unreadCount! > 0) ||
+          (chat.time != null && chat.time!.trim().isNotEmpty) ||
+          (chat.timestamp != null && chat.timestamp!.trim().isNotEmpty) ||
+          chat.isPinned == true;
       if (!hasMsg) return false;
 
       final name = (chat.name ?? chat.groupName)?.trim();
@@ -923,7 +928,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
             (chat.preview != null && chat.preview!.trim().isNotEmpty) ||
             (chat.messageType != null &&
                 chat.messageType!.trim().isNotEmpty &&
-                chat.messageType != 'text');
+                chat.messageType != 'text') ||
+            chat.lastMessageData != null ||
+            (chat.unreadCount != null && chat.unreadCount! > 0) ||
+            (chat.time != null && chat.time!.trim().isNotEmpty) ||
+            (chat.timestamp != null && chat.timestamp!.trim().isNotEmpty) ||
+            chat.isPinned == true;
         final name = (chat.name ?? chat.groupName)?.trim();
         final hasValidName = (name != null && name.isNotEmpty && name != "Unknown User") ||
             chat.userId != null ||
@@ -1000,16 +1010,41 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       }
 
       if (requestedPage == 1) {
-        final uniqueMap = <String, PrivateChatModel>{};
-        for (final chat in mergedChats) {
-          final key = _getChatKey(chat);
-          if (!uniqueMap.containsKey(key)) {
-            uniqueMap[key] = chat;
-          } else {
-            uniqueMap[key] = _mergePrivateChat(uniqueMap[key]!, chat);
+        // WhatsApp behavior: On page 1 refresh, merge the fresh page 1 chats with existingChats.
+        // Chats in page 1 get updated with fresh server data.
+        // Existing chats that were not returned on page 1 (subsequent pages or previous sessions)
+        // are PRESERVED rather than being dropped and disappearing from the screen.
+        final combinedChats = <PrivateChatModel>[...mergedChats];
+
+        final isCompleteServerList = response.pagination != null &&
+            response.pagination!.totalPages == 1 &&
+            response.pagination!.hasNextPage == false &&
+            response.pagination!.totalRecords != null &&
+            response.pagination!.totalRecords! <= chats.length;
+
+        if (!isCompleteServerList) {
+          for (final existing in existingChats) {
+            final inMerged = combinedChats.any((c) => _isSameChat(c, existing));
+            if (!inMerged) {
+              final isArchived = existing.isArchived == true ||
+                  archivedChats.any((a) => _isSameChat(a, existing));
+              if (!isArchived) {
+                combinedChats.add(existing);
+              }
+            }
           }
         }
-        privateChats.assignAll(_sortPinnedChats(uniqueMap.values.toList()));
+
+        final uniqueList = <PrivateChatModel>[];
+        for (final chat in combinedChats) {
+          final existingIndex = uniqueList.indexWhere((c) => _isSameChat(c, chat));
+          if (existingIndex == -1) {
+            uniqueList.add(chat);
+          } else {
+            uniqueList[existingIndex] = _mergePrivateChat(uniqueList[existingIndex], chat);
+          }
+        }
+        privateChats.assignAll(_sortPinnedChats(uniqueList));
       } else {
         for (final apiChat in mergedChats) {
           final existingIndex = privateChats.indexWhere(
@@ -1027,17 +1062,17 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
           }
         }
 
-        final uniqueMap = <String, PrivateChatModel>{};
+        final uniqueList = <PrivateChatModel>[];
         for (final chat in privateChats) {
-          final key = _getChatKey(chat);
-          if (!uniqueMap.containsKey(key)) {
-            uniqueMap[key] = chat;
+          final existingIndex = uniqueList.indexWhere((c) => _isSameChat(c, chat));
+          if (existingIndex == -1) {
+            uniqueList.add(chat);
           } else {
-            uniqueMap[key] = _mergePrivateChat(uniqueMap[key]!, chat);
+            uniqueList[existingIndex] = _mergePrivateChat(uniqueList[existingIndex], chat);
           }
         }
 
-        privateChats.assignAll(_sortPinnedChats(uniqueMap.values.toList()));
+        privateChats.assignAll(_sortPinnedChats(uniqueList));
       }
 
       _lastServerSync = DateTime.now();
@@ -1218,7 +1253,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
             (chat.preview != null && chat.preview!.trim().isNotEmpty) ||
             (chat.messageType != null &&
                 chat.messageType!.trim().isNotEmpty &&
-                chat.messageType != 'text');
+                chat.messageType != 'text') ||
+            chat.lastMessageData != null ||
+            (chat.unreadCount != null && chat.unreadCount! > 0) ||
+            (chat.time != null && chat.time!.trim().isNotEmpty) ||
+            (chat.timestamp != null && chat.timestamp!.trim().isNotEmpty) ||
+            chat.isPinned == true;
         final name = (chat.name ?? chat.groupName)?.trim();
         final hasValidName = (name != null && name.isNotEmpty && name != "Unknown User") ||
             chat.userId != null ||
@@ -1246,33 +1286,39 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       }
 
       if (chats.isNotEmpty) {
-        final uniqueMap = <String, PrivateChatModel>{};
+        final uniqueList = <PrivateChatModel>[];
         for (final chat in chats) {
-          final key = _getChatKey(chat);
-          if (!uniqueMap.containsKey(key)) {
-            uniqueMap[key] = chat;
+          final existingIndex = uniqueList.indexWhere((c) => _isSameChat(c, chat));
+          if (existingIndex == -1) {
+            uniqueList.add(chat);
           } else {
-            uniqueMap[key] = _mergePrivateChat(uniqueMap[key]!, chat);
+            uniqueList[existingIndex] = _mergePrivateChat(uniqueList[existingIndex], chat);
           }
         }
-        // A full server list is the truth, except for rows with an action
-        // still pending here (pin / mute / mark read …): keep our optimistic
-        // row, and never bring back a chat whose delete is pending (doc 07).
+        for (final existing in privateChats) {
+          final inList = uniqueList.any((c) => _isSameChat(c, existing));
+          if (!inList && existing.isArchived != true) {
+            uniqueList.add(existing);
+          }
+        }
         _pendingActions.forEach((key, pending) {
           if (pending.action == 'delete') {
-            uniqueMap.remove(key);
+            uniqueList.removeWhere((c) => _getChatKey(c) == key);
             return;
           }
           final local =
               privateChats.firstWhereOrNull((c) => _getChatKey(c) == key);
-          if (local != null && uniqueMap.containsKey(key)) {
-            uniqueMap[key] = local;
+          if (local != null) {
+            final idx = uniqueList.indexWhere((c) => _getChatKey(c) == key);
+            if (idx != -1) {
+              uniqueList[idx] = local;
+            }
           }
         });
-        privateChats.assignAll(_sortPinnedChats(uniqueMap.values.toList()));
+        privateChats.assignAll(_sortPinnedChats(uniqueList));
         privateChats.refresh();
         _syncChattingNotificationMarker();
-        _bar.success('socket full list'); // fresh again: the bar goes
+        _bar.success('socket full list');
       }
     } catch (_) {}
   }
@@ -1353,14 +1399,18 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
     try {
       final rawPayload = Map<String, dynamic>.from(data);
-      final nestedData = rawPayload['data'];
-      final payload = nestedData is Map
-          ? Map<String, dynamic>.from(nestedData)
-          : rawPayload;
+      var payload = rawPayload;
+      if (rawPayload['data'] is Map) {
+        payload = Map<String, dynamic>.from(rawPayload['data'] as Map);
+      }
+      if (payload['message'] is Map) {
+        final msgMap = Map<String, dynamic>.from(payload['message'] as Map);
+        msgMap.forEach((k, v) {
+          payload.putIfAbsent(k, () => v);
+        });
+        payload['lastMessage'] = msgMap;
+      }
 
-      // receive_message (also heard by the list socket) is a MESSAGE, not a
-      // chat row: its `id` is the message id. Keep it as the row's last
-      // message id so the duplicate event compares equal (counted once).
       final isMessagePayload = payload['lastMessage'] == null &&
           payload['last_message'] == null &&
           payload['lastActivity'] == null &&
@@ -1387,8 +1437,17 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       if (payload['chatId'] == null) {
         payload['chatId'] = payload['conversationId'] ?? payload['chat_id'];
       }
-      if (payload['message'] == null) {
+      if (payload['groupId'] == null) {
+        payload['groupId'] = payload['group_id'];
+      }
+      if (payload['message'] == null || payload['message'] is Map) {
         payload['message'] = payload['text'] ?? payload['content'];
+      }
+      if (payload['time'] == null && payload['createdAt'] != null) {
+        payload['time'] = payload['createdAt'];
+      }
+      if (payload['timestamp'] == null && payload['time'] != null) {
+        payload['timestamp'] = payload['time'];
       }
 
       final updatedChat = PrivateChatModel.fromJson(payload);
@@ -1494,11 +1553,13 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       }
 
       if (mainIndex == -1) {
-        if (!_isDisplayable(updatedChat)) {
+        final hasIdentity = updatedChat.userId != null ||
+            updatedChat.groupId != null ||
+            updatedChat.chatId != null ||
+            updatedChat.id != null;
+        if (!_isDisplayable(updatedChat) && !hasIdentity) {
           arcLog('realtime ACTION', // TODO(arc-diagnostics)
               'not archived, not in main, payload incomplete => _scheduleServerRefetch()');
-          // New chat, or not in the loaded page, and the payload lacks the
-          // row details: fetch it instead of dropping the message.
           _scheduleServerRefetch();
           return;
         }
@@ -1508,6 +1569,9 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         privateChats.add(updatedChat);
         privateChats.assignAll(ChatListRules.sort(privateChats));
         _syncChattingNotificationMarker();
+        if (!_isDisplayable(updatedChat)) {
+          _scheduleServerRefetch();
+        }
         return;
       }
 
@@ -1575,7 +1639,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         (chat.preview?.trim().isNotEmpty ?? false) ||
         (chat.messageType != null &&
             chat.messageType!.trim().isNotEmpty &&
-            chat.messageType != 'text');
+            chat.messageType != 'text') ||
+        chat.lastMessageData != null ||
+        (chat.unreadCount != null && chat.unreadCount! > 0) ||
+        (chat.time != null && chat.time!.trim().isNotEmpty) ||
+        (chat.timestamp != null && chat.timestamp!.trim().isNotEmpty) ||
+        chat.isPinned == true;
     final name = (chat.name ?? chat.groupName)?.trim();
     final hasIdentity = (name != null && name.isNotEmpty && name != "Unknown User") ||
         chat.userId != null ||

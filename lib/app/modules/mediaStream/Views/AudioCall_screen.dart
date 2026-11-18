@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -28,12 +27,12 @@ class AudiocallScreen extends StatelessWidget {
           status.toLowerCase().startsWith('reconnecting');
       final String name = (c.args["callerName"] ?? "").toString();
 
-      final Color nameColor = connected ? Colors.white : AppColors.darkText;
+      final Color nameColor = connected ? Colors.white : CallColors.name;
       final Color statusColor = reconnecting
           ? const Color(0xFFFFB020)
           : (connected
               ? Colors.white.withOpacity(0.80)
-              : AppColors.primaryPurple);
+              : CallColors.primary);
 
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -83,7 +82,7 @@ class AudiocallScreen extends StatelessWidget {
                     height: 48.h,
                     child: connected
                         ? null
-                        : const _VoiceWave(color: AppColors.primaryPurple),
+                        : const _VoiceWave(color: CallColors.primaryLight),
                   ),
                 ],
               ),
@@ -162,7 +161,7 @@ class _CallPulseAvatarState extends State<CallPulseAvatar>
     final double avatar = widget.avatarSize.r;
     final double box = avatar * 2.0;
     final Color ring =
-        widget.accent ?? (widget.onDark ? Colors.white : AppColors.primaryPurple);
+        widget.accent ?? (widget.onDark ? Colors.white : CallColors.primaryLight);
 
     return SizedBox(
       width: box,

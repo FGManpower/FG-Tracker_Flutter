@@ -25,14 +25,12 @@ class CallingScreen extends StatelessWidget {
   /// created a new controller would start a NEW call (BUG-CALL-01).
   CallingController get controller => Get.find<CallingController>();
 
-  static const Color _danger = Color(0xFFFF3B30);
+  static const Color _danger = CallColors.end;
   static const Color _warn = Color(0xFFFFB020);
-  static const Color _cameraOffBg = Color(0xFF12131F);
+  static const Color _cameraOffBg = CallColors.videoBg;
   static const Color _pipOffBg = Color(0xFF1A1A2E);
   static const Color _panelBg = Color(0xFF1E1F2B);
-  static const Color _purpleTop = Color(0xFF6E4BFF);
-  static const Color _purpleBottom = Color(0xFF4626D6);
-  static const Color _good = Color(0xFF34C759);
+  static const Color _good = CallColors.accept;
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +217,7 @@ class CallingScreen extends StatelessWidget {
                       child: TextButton(
                         key: const ValueKey<String>('call_waiting_accept'),
                         style: TextButton.styleFrom(
-                          backgroundColor: const Color(0xFF2BB673),
+                          backgroundColor: CallColors.accept,
                           foregroundColor: Colors.white,
                         ),
                         onPressed: c.endAndAcceptWaitingCall,
@@ -297,7 +295,15 @@ class CallingScreen extends StatelessWidget {
                   mirror: showLocalInMain && c.isFrontCamera,
                   objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                 )
-              : _cameraOffTile(),
+              // Before the call connects the ringing avatar sits in the
+              // middle; a "Camera off" tile under it would overlap it.
+              : Obx(() => isCallConnected(c)
+                  ? _cameraOffTile()
+                  : const ColoredBox(
+                      key: ValueKey<String>('main_video_waiting'),
+                      color: _cameraOffBg,
+                      child: SizedBox.expand(),
+                    )),
         ),
       ),
     );
@@ -320,7 +326,7 @@ class CallingScreen extends StatelessWidget {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [_purpleTop, _purpleBottom],
+                        colors: CallColors.audioConnected,
                       ),
                     ),
                     child: SizedBox.expand(),
@@ -406,8 +412,9 @@ class CallingScreen extends StatelessWidget {
         padding: EdgeInsets.only(top: 12.h),
         child: Obx(() {
           final bool remoteScreen = c.isRemoteScreenSharing.value;
-          final bool hideChrome = _chromeHidden(c, isVideo, remoteScreen);
           final bool connected = isCallConnected(c);
+          final bool hideChrome =
+              _chromeHidden(c, isVideo, remoteScreen, connected);
 
           return Column(
             children: [
@@ -521,7 +528,7 @@ class CallingScreen extends StatelessWidget {
           SizedBox(width: 6.w),
           Flexible(
             child: Text(
-              callKindLabel(appL10n, 'audio'),
+              appL10n.call_secureCallLabel,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -628,12 +635,16 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
+  /// Video controls fade out after a few seconds, but only once the call is
+  /// connected: while it rings, End must always stay on screen.
   bool _chromeHidden(
     CallingController c,
     bool isVideo,
     bool remoteScreen,
+    bool connected,
   ) {
-    return !c.areControlsVisible.value &&
+    return connected &&
+        !c.areControlsVisible.value &&
         (isVideo || c.isVideoCall.value || remoteScreen);
   }
 
@@ -1022,9 +1033,11 @@ class CallingScreen extends StatelessWidget {
         c.toggleVideoViews();
         c.showControlsTemporarily();
       },
+      // Same size as DraggableVideoPip.pipWidth / pipHeight, so dragging
+      // stops exactly at the screen edges.
       child: Container(
-        width: 104.w,
-        height: 148.h,
+        width: 100.w,
+        height: 150.h,
         decoration: BoxDecoration(
           color: _pipOffBg,
           borderRadius: BorderRadius.circular(16.r),
@@ -1094,18 +1107,18 @@ class CallingScreen extends StatelessWidget {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _speakerControl(context, c, true),
-              _micControl(c, true),
-              _upgradeControl(c, true),
-              _shareControl(context, c, true),
-            ],
-          ),
+          // Connected audio grid: white circle + purple icon when ON.
+          _evenRow([
+            _speakerControl(context, c, true,
+                size: 54, activeIconColor: CallColors.primary),
+            _micControl(c, true,
+                size: 54, activeIconColor: CallColors.primary),
+            _upgradeControl(c, true, size: 54),
+            _shareControl(context, c, true,
+                size: 54, activeIconColor: CallColors.primary),
+          ]),
           SizedBox(height: 28.h),
-          _endControl(c, true, size: 68),
+          _endControl(c, true, size: 68, label: appL10n.call_endCall),
           SizedBox(height: 8.h),
         ],
       );
@@ -1118,19 +1131,19 @@ class CallingScreen extends StatelessWidget {
                 _cameraControl(c, true),
                 _micControl(c, true),
                 _flipControl(c),
-                _endControl(c, true, size: 52),
+                _endControl(c, true, size: 52, label: appL10n.call_end),
               ]
             : <Widget>[
                 _flipControl(c),
                 _cameraControl(c, true),
                 _micControl(c, true),
-                _endControl(c, true, size: 52),
+                _endControl(c, true, size: 52, label: appL10n.call_end),
               ])
         : <Widget>[
             _speakerControl(context, c, false),
             _upgradeControl(c, false),
             _micControl(c, false),
-            _endControl(c, false, size: 52),
+            _endControl(c, false, size: 52, label: appL10n.call_end),
           ];
 
     return ClipRRect(
@@ -1141,7 +1154,7 @@ class CallingScreen extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 14.h),
           decoration: BoxDecoration(
             color: isVideo
-                ? Colors.black.withOpacity(0.42)
+                ? CallColors.videoGlass
                 : Colors.white.withOpacity(0.82),
             borderRadius: BorderRadius.circular(28.r),
             border: Border.all(
@@ -1156,13 +1169,21 @@ class CallingScreen extends StatelessWidget {
               ),
             ],
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: buttons,
-          ),
+          child: _evenRow(buttons),
         ),
       ),
+    );
+  }
+
+  /// Equal share of the width for every button, so 5 buttons with long
+  /// labels (Hindi, Tamil, German …) never overflow a narrow phone.
+  Widget _evenRow(List<Widget> buttons) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final Widget b in buttons)
+          Expanded(child: Center(child: b)),
+      ],
     );
   }
 
@@ -1203,8 +1224,10 @@ class CallingScreen extends StatelessWidget {
   Widget _shareControl(
     BuildContext context,
     CallingController c,
-    bool onDark,
-  ) {
+    bool onDark, {
+    double size = 52,
+    Color? activeIconColor,
+  }) {
     return Obx(() {
       final bool waiting = c.isScreenShareWaiting.value;
       final bool sharing = c.isScreenSharing.value;
@@ -1220,6 +1243,8 @@ class CallingScreen extends StatelessWidget {
             : (sharing ? appL10n.call_stop : appL10n.call_shareScreenShort),
         active: sharing || waiting,
         isVideo: onDark,
+        size: size,
+        activeIconColor: activeIconColor,
         videoInactive: _blocked(c) || _busy(c),
         onTap: () => _onShareTap(context, c, isVideo: isVideo),
       );
@@ -1259,8 +1284,10 @@ class CallingScreen extends StatelessWidget {
   Widget _speakerControl(
     BuildContext context,
     CallingController c,
-    bool onDark,
-  ) {
+    bool onDark, {
+    double size = 52,
+    Color? activeIconColor,
+  }) {
     return Obx(() {
       final CallAudioRoute route = c.audioRouteController.currentRoute.value;
 
@@ -1269,6 +1296,8 @@ class CallingScreen extends StatelessWidget {
         label: c.audioRouteController.currentAudioRouteLabel,
         active: route != CallAudioRoute.earpiece,
         isVideo: onDark,
+        size: size,
+        activeIconColor: activeIconColor,
         onTap: () async {
           await c.toggleSpeaker(context);
           c.showControlsTemporarily();
@@ -1277,9 +1306,15 @@ class CallingScreen extends StatelessWidget {
     });
   }
 
-  Widget _endControl(CallingController c, bool onDark, {double size = 64}) {
+  /// [label]: "End" inside a button bar, "End call" for the big button.
+  Widget _endControl(
+    CallingController c,
+    bool onDark, {
+    required double size,
+    required String label,
+  }) {
     return endCallButton(
-      label: appL10n.call_endCall,
+      label: label,
       isVideo: onDark,
       size: size,
       onTap: () async {
@@ -1292,12 +1327,19 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
-  Widget _micControl(CallingController c, bool onDark) {
+  Widget _micControl(
+    CallingController c,
+    bool onDark, {
+    double size = 52,
+    Color? activeIconColor,
+  }) {
     return ctrl(
       icon: c.isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
       label: c.isAudioOn ? appL10n.call_mute : appL10n.call_unmute,
       active: !c.isAudioOn,
       isVideo: onDark,
+      size: size,
+      activeIconColor: activeIconColor,
       onTap: () {
         c.toggleMic();
         c.showControlsTemporarily();
@@ -1333,7 +1375,11 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
-  Widget _upgradeControl(CallingController c, bool onDark) {
+  Widget _upgradeControl(
+    CallingController c,
+    bool onDark, {
+    double size = 52,
+  }) {
     return Obx(() {
       final bool busy = _busy(c);
       final bool blocked = _blocked(c);
@@ -1342,6 +1388,7 @@ class CallingScreen extends StatelessWidget {
         icon: busy ? Icons.hourglass_top_rounded : Icons.videocam_rounded,
         label: busy ? appL10n.call_statusConnecting : appL10n.call_video,
         isVideo: onDark,
+        size: size,
         videoInactive: blocked || busy,
         onTap: () {
           if (blocked || busy) return;

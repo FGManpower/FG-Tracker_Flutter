@@ -383,6 +383,12 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "call_endAndAccept": "End & accept",
+  "call_end": "End",
+  "call_secureCallLabel": "FG Tracker call",
+  "call_audioCallBrand": "FG TRACKER AUDIO CALL",
+  "call_videoCallBrand": "FG TRACKER VIDEO CALL",
+  "call_isCallingYou": "is calling you…",
+  "call_isVideoCallingYou": "is video calling you…",
   "call_callBack": "Call back",
   "call_onHold": "On hold",
   "call_allowAccess": "Allow Access",

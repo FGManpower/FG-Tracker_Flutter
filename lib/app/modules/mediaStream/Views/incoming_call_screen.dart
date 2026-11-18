@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/AudioCall_screen.dart';
@@ -18,9 +17,9 @@ import '../Controller/incoming_call_controller.dart';
 class IncomingCallScreen extends GetView<IncomingCallController> {
   const IncomingCallScreen({super.key});
 
-  static const Color _green = Color(0xFF22C55E);
-  static const Color _videoBgTop = Color(0xFF26272F);
-  static const Color _videoBgBottom = Color(0xFF0E0F14);
+  static const Color _green = CallColors.accept;
+  static const Color _videoBgTop = Color(0xFF26222F);
+  static const Color _videoBgBottom = CallColors.videoBg;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +28,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
         final bool isVideo = controller.call.isVideo;
         final String name = controller.call.callerName;
         final Object? image = controller.call.callerProfileImage;
-        final Color fg = isVideo ? Colors.white : AppColors.darkText;
+        final Color fg = isVideo ? Colors.white : CallColors.name;
 
         return PopScope(
           canPop: false,
@@ -38,19 +37,31 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
             body: Stack(
               fit: StackFit.expand,
               children: [
-                if (isVideo) _videoBg(image) else const AudioBackground(),
+                if (isVideo)
+                  _videoBg(image)
+                else
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: CallColors.audioIncoming,
+                      ),
+                    ),
+                  ),
                 SafeArea(
                   child: Column(
                     children: [
                       SizedBox(height: 36.h),
                       Text(
-                        'FG Tracker · ${callKindLabel(context.l10n, isVideo ? 'video' : 'audio')}'
-                            .toUpperCase(),
+                        isVideo
+                            ? context.l10n.call_videoCallBrand
+                            : context.l10n.call_audioCallBrand,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: isVideo
                               ? Colors.white.withOpacity(0.70)
-                              : AppColors.primaryPurple,
+                              : CallColors.primary,
                           fontSize: 12.sp,
                           letterSpacing: 1.4,
                           fontFamily: FontFamily.interSemiBold,
@@ -89,8 +100,8 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                                   SizedBox(height: 6.h),
                                   Text(
                                     isVideo
-                                        ? context.l10n.call_incomingVideo
-                                        : context.l10n.call_incomingAudio,
+                                        ? context.l10n.call_isVideoCallingYou
+                                        : context.l10n.call_isCallingYou,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       color: fg.withOpacity(0.65),
@@ -190,7 +201,7 @@ class _AnswerButtonsState extends State<_AnswerButtons> {
           _button(
             key: const ValueKey<String>('incoming_decline'),
             icon: Icons.call_end_rounded,
-            color: const Color(0xFFFF3B30),
+            color: CallColors.end,
             label: context.l10n.call_decline,
             onTap: () => _once(widget.onDecline),
           ),

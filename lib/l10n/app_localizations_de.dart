@@ -752,6 +752,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get call_endAndAccept => 'Beenden & annehmen';
 
   @override
+  String get call_end => 'Beenden';
+
+  @override
+  String get call_secureCallLabel => 'FG Tracker-Anruf';
+
+  @override
+  String get call_audioCallBrand => 'FG TRACKER AUDIOANRUF';
+
+  @override
+  String get call_videoCallBrand => 'FG TRACKER VIDEOANRUF';
+
+  @override
+  String get call_isCallingYou => 'ruft dich an…';
+
+  @override
+  String get call_isVideoCallingYou => 'ruft dich per Video an…';
+
+  @override
   String get call_callBack => 'Zurückrufen';
 
   @override

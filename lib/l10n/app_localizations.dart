@@ -1417,6 +1417,42 @@ abstract class AppLocalizations {
   /// **'End & accept'**
   String get call_endAndAccept;
 
+  /// No description provided for @call_end.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get call_end;
+
+  /// No description provided for @call_secureCallLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'FG Tracker call'**
+  String get call_secureCallLabel;
+
+  /// No description provided for @call_audioCallBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'FG TRACKER AUDIO CALL'**
+  String get call_audioCallBrand;
+
+  /// No description provided for @call_videoCallBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'FG TRACKER VIDEO CALL'**
+  String get call_videoCallBrand;
+
+  /// No description provided for @call_isCallingYou.
+  ///
+  /// In en, this message translates to:
+  /// **'is calling you…'**
+  String get call_isCallingYou;
+
+  /// No description provided for @call_isVideoCallingYou.
+  ///
+  /// In en, this message translates to:
+  /// **'is video calling you…'**
+  String get call_isVideoCallingYou;
+
   /// No description provided for @call_callBack.
   ///
   /// In en, this message translates to:

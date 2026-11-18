@@ -741,6 +741,24 @@ class AppLocalizationsTe extends AppLocalizations {
   String get call_endAndAccept => 'ముగించి ఎత్తండి';
 
   @override
+  String get call_end => 'ముగించు';
+
+  @override
+  String get call_secureCallLabel => 'FG Tracker కాల్';
+
+  @override
+  String get call_audioCallBrand => 'FG TRACKER ఆడియో కాల్';
+
+  @override
+  String get call_videoCallBrand => 'FG TRACKER వీడియో కాల్';
+
+  @override
+  String get call_isCallingYou => 'మీకు కాల్ చేస్తున్నారు…';
+
+  @override
+  String get call_isVideoCallingYou => 'మీకు వీడియో కాల్ చేస్తున్నారు…';
+
+  @override
   String get call_callBack => 'తిరిగి కాల్ చేయండి';
 
   @override

@@ -1,6 +1,6 @@
 # Calling Module — Flutter Frontend Architecture & Implementation Guide
 
-**Document Version:** `v1.4.1` · **Last updated:** 2026-11-18 · **Branch:** `46Solution`  
+**Document Version:** `v1.4.2` · **Last updated:** 2026-11-18 · **Branch:** `46Solution`  
 **Target Audience:** Flutter Frontend Developers & Backend Integrators  
 **Covers:** 1-on-1 Audio/Video Calls (reliability, permissions, busy / call waiting, reconnect, CallKit, PiP), WebRTC PeerConnection, AWS SFU & Coturn STUN/TURN, Sockets & REST APIs, CallKit, Audio Routing, Proximity Sensor, In-App PIP Overlay, Screen Sharing, Recent Calls Cache & Multi-Delete  
 **Status:** Phases 1–3 done in code (uncommitted), unit-tested; **phone checks and backend items pending** (§5.3, §8, `testing/calling/`)  
@@ -167,6 +167,7 @@ If video or calling appears sluggish or delayed during testing, the runtime logs
 
 | Version | Date | Change |
 |---|---|---|
+| v1.4.2 | 2026-11-18 | §8.6 added: backend answers to Q1–Q7. App: `/callSignaling` handshake sends the login token in `auth` (B-01); native decline (Android `CallDeclineReceiver.kt`, iOS `AppDelegate.swift`) moved from `http://fgtracker.in:3000` to the HTTPS production host and sends `reason=declined` (B-13). New test `call_backend_contract_v1_test.dart` (5). |
 | v1.4.1 | 2026-11-18 | §8.5 added: ready-to-send brief for the backend team (B-01 … B-16, questions, what to send back, suggested order). Docs only. |
 | v1.4.0 | 2026-11-18 | Phase 3 (uncommitted): §7 added (busy / call waiting, ICE restart + rejoin, TURN service + TLS 443 fallback, quality badge, other side's state, end screen + tones, missed-call Call back, iOS CallKit outgoing + mute/hold + VoIP token upload, Android PiP); §8 backend handover (B-01 … B-16). Out-of-date parts fixed (C19): header status, §0.1 (TURN 443 not live; credential name removed), event tables (directions, fields, reasons, `acceptCallFromCallKit`, `rejoinCall`). Late end events of another call are ignored (BUG-CALL-37/38). |
 | v1.3.3 | 2026-11-18 | Phase 2 (permissions), uncommitted: §6 added. One permission policy for every call entry point; explainer / Settings / voice-instead sheets; accept without mic ends cleanly with `reason: permission_denied`; video accept without camera joins as voice with "Camera off · Allow"; Bluetooth permission on Android 12+; Calls-tab banner "Incoming calls may not ring"; one-time mic primer; no ghost call after the app is killed. 12 new strings in all 20 locales. |
@@ -816,3 +817,23 @@ Sprint 3: B-09 (TURN endpoint + 443), then rotate the old TURN credential; B-08.
 
 Full reference: docs/02_CALLING_MODULE_FRONTEND.md §8 (FG Tracker Flutter repo).
 ````
+
+### 8.6 Backend answers (2026-11-18) and app follow-up
+
+The backend team answered the seven questions of §8.3 / §8.5. The app was changed where an answer allowed it (v1.4.2, uncommitted).
+
+| Q | Backend answer | App change |
+|---|---|---|
+| 1 (B-01) | JWT is checked from `auth.token`, `query.token` or the `Authorization` header. Transition mode: no token = still allowed (warning); a token whose user ≠ `callerId` = refused (403). | **Done.** `Socket_SignallingService.init` now sends `auth: {token}` (read from the saved login token) next to `query.callerId`; the token is not put in the URL. Switch: `kSendCallSocketAuthToken` (set `false` to go back). No change in the protected `OtpController`. |
+| 2 | `rejectCall` needs only `callId`; `remoteUserId` saves a lookup. | None: the app already sends `{callId, remoteUserId, reason}`. |
+| 3 (B-03) | Server ring timeout 45 s: marks `missed` (`reason: timeout`), `missedCall {callId, sessionId}` to both sides, late answer → `callError {code: "call_expired"}`. | None: same 45 s as the app; `callError` is already handled. |
+| 4 (B-07) | `upgradeToVideo` / `upgradeToVideoAnswer` forwarded with all fields, incl. `iceRestart`, `mediaState`, `cameraState`, `needKeyframe`. | None needed. |
+| 5 (B-09) | TURN host `sfu.fgtracker.fgmanpower.co.in`: `turn:` 3478 udp/tcp, `turns:` 443 tcp; apps should use `GET /api/calls/turn-credentials`. | None: the app already calls the endpoint and has the same three URLs as fallback. **Check on a phone** that `turns:…:443` works, since LiveKit also uses 443 on that host. |
+| 6 (B-13) | `/api/callRejected` (GET and POST, query or JSON) on `https://api.fgtracker.fgmanpower.co.in` (primary); `fgtracker.in` and the `sfu` host also listed; the old VPS path is legacy. | **Done.** Android `CallDeclineReceiver.kt` and iOS `AppDelegate.swift` now use `https://api.fgtracker.fgmanpower.co.in/api` (the same host as the Dart app) instead of `http://fgtracker.in:3000/api`, and send `reason=declined` for 1:1 calls. The Dart REST fallback sends `reason=declined` too. iOS: the same base URL is also used by `/calling-status`. |
+| 7 (B-16) | VoIP pushes go to production APNs, with automatic fallback to sandbox on `BadDeviceToken` / `DeviceTokenNotForTopic`. | None required. The Release entitlement can stay; App Store / TestFlight export sets `production` from the provisioning profile. |
+
+**Still open on the backend side** (not covered by the answers): B-02 sender checks, B-04 busy relay, B-05 reason allowlist + history, B-06 `rejoinCall` + 30 s grace, B-08, B-09 endpoint live + credential rotation, B-10 VoIP token endpoint, B-11 / B-12 confirmations, B-14, B-15. Ask for a status per item (§8.5 "What to send back").
+
+**Tests:** `test/call_qa/call_backend_contract_v1_test.dart` (5 cases: token in `auth`, never in the URL, old handshake without a token, Android and iOS decline host). All 74 calling tests pass.
+
+**To check on phones:** (1) calls still connect after the token change (a stale token would now be refused instead of ignored); (2) Decline from the notification / lock screen with the app killed reaches the caller on Android and iOS.

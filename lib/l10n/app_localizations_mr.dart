@@ -741,6 +741,24 @@ class AppLocalizationsMr extends AppLocalizations {
   String get call_endAndAccept => 'संपवा आणि उचला';
 
   @override
+  String get call_end => 'समाप्त';
+
+  @override
+  String get call_secureCallLabel => 'FG Tracker कॉल';
+
+  @override
+  String get call_audioCallBrand => 'FG TRACKER ऑडिओ कॉल';
+
+  @override
+  String get call_videoCallBrand => 'FG TRACKER व्हिडिओ कॉल';
+
+  @override
+  String get call_isCallingYou => 'तुम्हाला कॉल करत आहेत…';
+
+  @override
+  String get call_isVideoCallingYou => 'तुम्हाला व्हिडिओ कॉल करत आहेत…';
+
+  @override
   String get call_callBack => 'परत कॉल करा';
 
   @override

@@ -752,6 +752,24 @@ class AppLocalizationsTa extends AppLocalizations {
   String get call_endAndAccept => 'முடித்து ஏற்கவும்';
 
   @override
+  String get call_end => 'முடி';
+
+  @override
+  String get call_secureCallLabel => 'FG Tracker அழைப்பு';
+
+  @override
+  String get call_audioCallBrand => 'FG TRACKER ஆடியோ அழைப்பு';
+
+  @override
+  String get call_videoCallBrand => 'FG TRACKER வீடியோ அழைப்பு';
+
+  @override
+  String get call_isCallingYou => 'உங்களை அழைக்கிறார்…';
+
+  @override
+  String get call_isVideoCallingYou => 'உங்களை வீடியோ அழைப்பில் அழைக்கிறார்…';
+
+  @override
   String get call_callBack => 'திரும்ப அழை';
 
   @override

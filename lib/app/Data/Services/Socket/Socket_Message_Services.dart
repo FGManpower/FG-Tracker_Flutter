@@ -356,6 +356,11 @@ class SocketMessageService extends GetxService {
       rtLog(
         "[RT_DEBUG] /chat connected: group=$activeGroupId poll=$_subscribedPollId",
       );
+      // Re-register chat list listeners on (re)connect
+      _registerChatListListeners(_socket);
+      _registerFullChatListListeners(_socket);
+      _registerChatListGroupTyping(_socket);
+
       // Screens re-fetch receipts / Message Info after a reconnect.
       if (!_chatConnectedCtrl.isClosed) _chatConnectedCtrl.add(null);
     });
@@ -1513,45 +1518,9 @@ class SocketMessageService extends GetxService {
     );
 
     _privateChatListSocket?.onConnect((_) {
-      _privateChatListSocket?.off("chat_list_updated");
-      _privateChatListSocket?.off("conversation_updated");
-      _privateChatListSocket?.off("receive_message");
-      _privateChatListSocket?.off("group_chat_list_updated");
-      _privateChatListSocket?.off("group_chat_updated");
-      _privateChatListSocket?.off("update_group_chat_list");
-      _privateChatListSocket?.off("chat_list");
-      _privateChatListSocket?.off("common_chat_list");
-      _privateChatListSocket?.off("unified_chat_list");
-
-      if (_privateChatListUpdatedCallback != null) {
-        _privateChatListSocket?.on("chat_list_updated", (data) {
-          _privateChatListUpdatedCallback?.call(data);
-        });
-        _privateChatListSocket?.on("conversation_updated", (data) {
-          _privateChatListUpdatedCallback?.call(data);
-        });
-        _privateChatListSocket?.on("receive_message", (data) {
-          _privateChatListUpdatedCallback?.call(data);
-        });
-        _privateChatListSocket?.on("group_chat_list_updated", (data) {
-          _privateChatListUpdatedCallback?.call(data);
-        });
-        _privateChatListSocket?.on("group_chat_updated", (data) {
-          _privateChatListUpdatedCallback?.call(data);
-        });
-        _privateChatListSocket?.on("update_group_chat_list", (data) {
-          _privateChatListUpdatedCallback?.call(data);
-        });
-        _privateChatListSocket?.on("chat_list", (data) {
-          _privateChatListUpdatedCallback?.call(data);
-        });
-        _privateChatListSocket?.on("common_chat_list", (data) {
-          _privateChatListUpdatedCallback?.call(data);
-        });
-        _privateChatListSocket?.on("unified_chat_list", (data) {
-          _privateChatListUpdatedCallback?.call(data);
-        });
-      }
+      _registerChatListListeners(_privateChatListSocket);
+      _registerFullChatListListeners(_privateChatListSocket);
+      _registerChatListPrivateTyping(_privateChatListSocket);
 
       _privateChatListSocket?.off("private_chat_removed");
 
@@ -1629,6 +1598,14 @@ class SocketMessageService extends GetxService {
       "private_chat_list_updated",
       "group_chat_list_updated",
       "conversation_updated",
+      "group_chat_updated",
+      "update_group_chat_list",
+      "receive_message",
+      "receive_private_message",
+      "receive_group_message",
+      "new_message",
+      "message_forwarded",
+      "receive_forward_message",
     ];
     for (final ev in events) {
       s.off(ev);

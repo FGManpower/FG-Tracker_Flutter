@@ -1,6 +1,7 @@
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
+import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/call_entry.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
@@ -54,22 +55,15 @@ class CallEndedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String avatar = info.avatar ?? '';
-    final bool hasAvatar = avatar.startsWith('http');
     return Scaffold(
-      backgroundColor: const Color(0xFF12131F),
+      backgroundColor: CallColors.videoBg,
       body: SafeArea(
         child: Column(
           children: [
             const Spacer(flex: 2),
-            CircleAvatar(
-              radius: 48.r,
-              backgroundColor: Colors.white12,
-              backgroundImage: hasAvatar ? NetworkImage(avatar) : null,
-              child: hasAvatar
-                  ? null
-                  : Icon(Icons.person_rounded, color: Colors.white70, size: 48.r),
-            ),
+            // Same avatar as the call screens: photo (full URL or server
+            // path) or the first letter of the name.
+            CallAvatar(name: info.name, image: info.avatar, size: 96.r),
             SizedBox(height: 16.h),
             Text(
               info.name,
@@ -100,7 +94,7 @@ class CallEndedScreen extends StatelessWidget {
                 _action(
                   key: const ValueKey<String>('call_end_again'),
                   icon: info.isVideo ? Icons.videocam_rounded : Icons.call_rounded,
-                  color: const Color(0xFF2BB673),
+                  color: CallColors.accept,
                   label: appL10n.call_callAgain,
                   onTap: () => _callAgain(context),
                 ),

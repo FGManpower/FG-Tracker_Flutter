@@ -752,6 +752,24 @@ class AppLocalizationsFr extends AppLocalizations {
   String get call_endAndAccept => 'Raccrocher et répondre';
 
   @override
+  String get call_end => 'Raccrocher';
+
+  @override
+  String get call_secureCallLabel => 'Appel FG Tracker';
+
+  @override
+  String get call_audioCallBrand => 'APPEL AUDIO FG TRACKER';
+
+  @override
+  String get call_videoCallBrand => 'APPEL VIDÉO FG TRACKER';
+
+  @override
+  String get call_isCallingYou => 'vous appelle…';
+
+  @override
+  String get call_isVideoCallingYou => 'vous appelle en vidéo…';
+
+  @override
   String get call_callBack => 'Rappeler';
 
   @override

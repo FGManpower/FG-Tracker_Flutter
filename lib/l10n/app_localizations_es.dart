@@ -750,6 +750,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get call_endAndAccept => 'Finalizar y contestar';
 
   @override
+  String get call_end => 'Colgar';
+
+  @override
+  String get call_secureCallLabel => 'Llamada de FG Tracker';
+
+  @override
+  String get call_audioCallBrand => 'LLAMADA DE AUDIO FG TRACKER';
+
+  @override
+  String get call_videoCallBrand => 'VIDEOLLAMADA FG TRACKER';
+
+  @override
+  String get call_isCallingYou => 'te está llamando…';
+
+  @override
+  String get call_isVideoCallingYou => 'te está videollamando…';
+
+  @override
   String get call_callBack => 'Devolver llamada';
 
   @override

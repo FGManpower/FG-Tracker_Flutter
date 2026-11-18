@@ -742,6 +742,24 @@ class AppLocalizationsUr extends AppLocalizations {
   String get call_endAndAccept => 'ختم کریں اور اٹھائیں';
 
   @override
+  String get call_end => 'ختم';
+
+  @override
+  String get call_secureCallLabel => 'FG Tracker کال';
+
+  @override
+  String get call_audioCallBrand => 'FG TRACKER آڈیو کال';
+
+  @override
+  String get call_videoCallBrand => 'FG TRACKER ویڈیو کال';
+
+  @override
+  String get call_isCallingYou => 'آپ کو کال کر رہے ہیں…';
+
+  @override
+  String get call_isVideoCallingYou => 'آپ کو ویڈیو کال کر رہے ہیں…';
+
+  @override
   String get call_callBack => 'واپس کال کریں';
 
   @override

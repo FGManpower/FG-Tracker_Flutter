@@ -704,6 +704,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get call_endAndAccept => '结束并接听';
 
   @override
+  String get call_end => '结束';
+
+  @override
+  String get call_secureCallLabel => 'FG Tracker 通话';
+
+  @override
+  String get call_audioCallBrand => 'FG TRACKER 语音通话';
+
+  @override
+  String get call_videoCallBrand => 'FG TRACKER 视频通话';
+
+  @override
+  String get call_isCallingYou => '正在呼叫你…';
+
+  @override
+  String get call_isVideoCallingYou => '正在邀请你视频通话…';
+
+  @override
   String get call_callBack => '回拨';
 
   @override
@@ -8456,6 +8474,24 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get call_endAndAccept => '結束並接聽';
+
+  @override
+  String get call_end => '結束';
+
+  @override
+  String get call_secureCallLabel => 'FG Tracker 通話';
+
+  @override
+  String get call_audioCallBrand => 'FG TRACKER 語音通話';
+
+  @override
+  String get call_videoCallBrand => 'FG TRACKER 視訊通話';
+
+  @override
+  String get call_isCallingYou => '正在呼叫你…';
+
+  @override
+  String get call_isVideoCallingYou => '正在邀請你視訊通話…';
 
   @override
   String get call_callBack => '回撥';

@@ -173,7 +173,8 @@ Future<void> rejectCallViaRest(String callId) async {
     final token = shared.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ?? '';
     if (token.isEmpty) return;
 
-    final url = Uri.parse('${ConstRes.aBaseUrl}callRejected?callId=$callId');
+    final url = Uri.parse(
+        '${ConstRes.aBaseUrl}callRejected?callId=$callId&reason=declined');
     final response = await http.get(
       url,
       headers: {

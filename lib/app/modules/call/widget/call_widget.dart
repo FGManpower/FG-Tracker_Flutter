@@ -54,14 +54,9 @@ class AudioBackground extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFE4DEFF),
-            Color(0xFFF5F3FF),
-            Color(0xFFEAE4FF),
-          ],
-          stops: [0.0, 0.55, 1.0],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: CallColors.audioRinging,
         ),
       ),
     );
@@ -77,6 +72,9 @@ class AudioBackground extends StatelessWidget {
 ///   connected yet, upgrade in progress). The button is faded and taps are
 ///   ignored by the caller.
 /// * [iconColor]: optional override of the idle icon colour.
+/// * [size]: circle size (52 in a bar, 54 in the connected-audio grid).
+/// * [activeIconColor]: icon colour on the filled (active) circle when
+///   [isVideo]; purple on the connected-audio screen.
 Widget ctrl({
   required IconData icon,
   required String label,
@@ -85,6 +83,8 @@ Widget ctrl({
   bool active = false,
   bool videoInactive = false,
   Color? iconColor,
+  double size = 52,
+  Color? activeIconColor,
 }) {
   return _CallControlButton(
     icon: icon,
@@ -94,7 +94,38 @@ Widget ctrl({
     active: active,
     disabled: videoInactive,
     iconColor: iconColor,
+    size: size,
+    activeIconColor: activeIconColor,
   );
+}
+
+/// Colours of the 1:1 call screens (design "FG Tracker – Audio / Video
+/// call UI options").
+class CallColors {
+  CallColors._();
+
+  static const Color primary = Color(0xFF5B3FD0);
+  static const Color primaryLight = Color(0xFF7B61FF);
+  static const Color end = Color(0xFFF04438);
+  static const Color accept = Color(0xFF16B364);
+  static const Color name = Color(0xFF1B1446);
+  static const Color videoBg = Color(0xFF0E0C14);
+
+  /// Glass behind the video controls: rgba(20, 16, 36, .55).
+  static const Color videoGlass = Color.fromRGBO(20, 16, 36, 0.55);
+
+  /// Audio · 1 outgoing / connecting.
+  static const List<Color> audioRinging = [Color(0xFFF1EDFF), Color(0xFFFAF9FF)];
+
+  /// Audio · 2 connected.
+  static const List<Color> audioConnected = [
+    Color(0xFF6B4FE8),
+    Color(0xFF4B32B8),
+    Color(0xFF2E1F7A),
+  ];
+
+  /// Audio · 3 incoming.
+  static const List<Color> audioIncoming = [Color(0xFFFFFFFF), Color(0xFFF1EDFF)];
 }
 
 class _CallControlButton extends StatelessWidget {
@@ -106,6 +137,8 @@ class _CallControlButton extends StatelessWidget {
     required this.active,
     required this.disabled,
     this.iconColor,
+    this.size = 52,
+    this.activeIconColor,
   });
 
   final IconData icon;
@@ -115,6 +148,8 @@ class _CallControlButton extends StatelessWidget {
   final bool active;
   final bool disabled;
   final Color? iconColor;
+  final double size;
+  final Color? activeIconColor;
 
   static const Color _videoActiveIcon = Color(0xFF1B1530);
 
@@ -123,8 +158,10 @@ class _CallControlButton extends StatelessWidget {
     final Color bg;
     final Color fg;
     if (isVideo) {
-      bg = active ? Colors.white : Colors.white.withOpacity(0.16);
-      fg = active ? _videoActiveIcon : (iconColor ?? Colors.white);
+      bg = active ? Colors.white : Colors.white.withOpacity(0.14);
+      fg = active
+          ? (activeIconColor ?? _videoActiveIcon)
+          : (iconColor ?? Colors.white);
     } else {
       bg = active ? AppColors.primaryPurple : Colors.white;
       fg = active ? Colors.white : (iconColor ?? AppColors.primaryPurple);
@@ -145,8 +182,8 @@ class _CallControlButton extends StatelessWidget {
             AnimatedContainer(
               duration: const Duration(milliseconds: 180),
               curve: Curves.easeOut,
-              width: 52.r,
-              height: 52.r,
+              width: size.r,
+              height: size.r,
               decoration: BoxDecoration(
                 color: bg,
                 shape: BoxShape.circle,
@@ -179,7 +216,7 @@ class _CallControlButton extends StatelessWidget {
                         icon,
                         key: ValueKey<int>(icon.codePoint),
                         color: fg,
-                        size: 24.r,
+                        size: (size * 0.46).r,
                       ),
                     ),
                   ),
@@ -188,12 +225,12 @@ class _CallControlButton extends StatelessWidget {
             ),
             SizedBox(height: 7.h),
             ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 62.w),
+              constraints: BoxConstraints(maxWidth: (size + 12).w),
               child: AutoFitText(
                 label,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 11.sp,
+                  fontSize: 11.5.sp,
                   color: isVideo
                       ? Colors.white.withOpacity(0.92)
                       : AppColors.darkText.withOpacity(0.85),
@@ -216,7 +253,7 @@ Widget endCallButton({
   required VoidCallback onTap,
   double size = 64,
 }) {
-  const Color red = Color(0xFFFF3B30);
+  const Color red = CallColors.end;
   return Semantics(
     button: true,
     label: label,
@@ -260,7 +297,7 @@ Widget endCallButton({
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 11.sp,
+              fontSize: size >= 64 ? 13.sp : 11.5.sp,
               color: isVideo
                   ? Colors.white.withOpacity(0.92)
                   : AppColors.darkText.withOpacity(0.85),

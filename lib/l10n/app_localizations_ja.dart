@@ -707,6 +707,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get call_endAndAccept => '終了して応答';
 
   @override
+  String get call_end => '終了';
+
+  @override
+  String get call_secureCallLabel => 'FG Tracker 通話';
+
+  @override
+  String get call_audioCallBrand => 'FG TRACKER 音声通話';
+
+  @override
+  String get call_videoCallBrand => 'FG TRACKER ビデオ通話';
+
+  @override
+  String get call_isCallingYou => 'から着信中…';
+
+  @override
+  String get call_isVideoCallingYou => 'からビデオ通話の着信…';
+
+  @override
   String get call_callBack => '折り返す';
 
   @override

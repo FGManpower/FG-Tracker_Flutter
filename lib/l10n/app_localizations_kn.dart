@@ -743,6 +743,24 @@ class AppLocalizationsKn extends AppLocalizations {
   String get call_endAndAccept => 'ಮುಗಿಸಿ ಮತ್ತು ಸ್ವೀಕರಿಸಿ';
 
   @override
+  String get call_end => 'ಮುಗಿಸಿ';
+
+  @override
+  String get call_secureCallLabel => 'FG Tracker ಕರೆ';
+
+  @override
+  String get call_audioCallBrand => 'FG TRACKER ಆಡಿಯೋ ಕರೆ';
+
+  @override
+  String get call_videoCallBrand => 'FG TRACKER ವೀಡಿಯೋ ಕರೆ';
+
+  @override
+  String get call_isCallingYou => 'ನಿಮಗೆ ಕರೆ ಮಾಡುತ್ತಿದ್ದಾರೆ…';
+
+  @override
+  String get call_isVideoCallingYou => 'ನಿಮಗೆ ವೀಡಿಯೋ ಕರೆ ಮಾಡುತ್ತಿದ್ದಾರೆ…';
+
+  @override
   String get call_callBack => 'ಮರಳಿ ಕರೆ ಮಾಡಿ';
 
   @override

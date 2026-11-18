@@ -14,7 +14,10 @@ import WebRTC
 import flutter_callkit_incoming
 
 // private let apiBaseUrl = "http://10.57.204.163:4000/api"
-private let apiBaseUrl = "http://fgtracker.in:3000/api"
+// Same HTTPS production host as the Dart app (ConstRes.aBaseUrl). Backend
+// confirmed /callRejected (GET + POST) there (calling doc 02, B-13). The old
+// http://fgtracker.in:3000 host was cleartext and is legacy.
+private let apiBaseUrl = "https://api.fgtracker.fgmanpower.co.in/api"
 private let callingStatusEndpoints = ["/calling-status"]
 private let candidateTokenPrefKeys = [
     "flutter.user_token_key",
@@ -1286,6 +1289,8 @@ private let candidateTokenPrefKeys = [
         var items = [URLQueryItem(name: "callId", value: callId)]
         if let g = groupId, !g.isEmpty, g != "null" {
             items.append(URLQueryItem(name: "groupId", value: g))
+        } else {
+            items.append(URLQueryItem(name: "reason", value: "declined"))
         }
         comps?.queryItems = items
 

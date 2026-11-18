@@ -748,6 +748,24 @@ class AppLocalizationsPt extends AppLocalizations {
   String get call_endAndAccept => 'Encerrar e atender';
 
   @override
+  String get call_end => 'Encerrar';
+
+  @override
+  String get call_secureCallLabel => 'Chamada FG Tracker';
+
+  @override
+  String get call_audioCallBrand => 'CHAMADA DE ÁUDIO FG TRACKER';
+
+  @override
+  String get call_videoCallBrand => 'CHAMADA DE VÍDEO FG TRACKER';
+
+  @override
+  String get call_isCallingYou => 'está ligando para você…';
+
+  @override
+  String get call_isVideoCallingYou => 'está fazendo uma videochamada…';
+
+  @override
   String get call_callBack => 'Retornar ligação';
 
   @override

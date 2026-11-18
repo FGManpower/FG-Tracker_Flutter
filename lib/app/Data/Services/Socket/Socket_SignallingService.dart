@@ -10,8 +10,41 @@ import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dar
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
+/// Send the login token on the /callSignaling handshake (backend B-01).
+/// The server checks it and refuses a token that belongs to another user.
+/// Set to false to go back to the old `callerId`-only handshake.
+const bool kSendCallSocketAuthToken = true;
+
+/// Socket.IO options for /callSignaling. `callerId` stays for older servers;
+/// the token goes in `auth` (not in the URL, so it never shows up in URL logs).
+Map<String, dynamic> callSocketOptions({
+  required String selfCallerID,
+  String? authToken,
+}) {
+  final options = <String, dynamic>{
+    "transports": ["websocket"],
+    "query": {"callerId": selfCallerID},
+    "autoConnect": true,
+    "forceNew": true,
+  };
+  final token = authToken?.trim() ?? '';
+  if (kSendCallSocketAuthToken && token.isNotEmpty && token != 'null') {
+    options["auth"] = {"token": token};
+  }
+  return options;
+}
+
 class SignallingService {
   Socket? socket;
+
+  /// Token saved at login (null before login or in tests).
+  static String? _savedToken() {
+    try {
+      return Global.storageServices.getaccesstoken();
+    } catch (_) {
+      return null;
+    }
+  }
 
   SignallingService._();
   static final instance = SignallingService._();
@@ -31,12 +64,7 @@ class SignallingService {
 
     final s = io(
       "$websocketUrl/callSignaling",
-      {
-        "transports": ["websocket"],
-        "query": {"callerId": selfCallerID},
-        "autoConnect": true,
-        "forceNew": true,
-      },
+      callSocketOptions(selfCallerID: selfCallerID, authToken: _savedToken()),
     );
     socket = s;
 

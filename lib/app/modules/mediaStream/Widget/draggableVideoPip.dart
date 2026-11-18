@@ -12,7 +12,7 @@ class DraggableVideoPip extends StatelessWidget {
     required this.child,
   });
 
-  double get pipWidth => 110.w;
+  double get pipWidth => 100.w;
 
   double get pipHeight => 150.h;
 
@@ -32,9 +32,12 @@ class DraggableVideoPip extends StatelessWidget {
 
         final double minTop = safeTop + 12.h;
 
-        // Keep the floating video above the bottom controls.
-        final double maxTop =
-            screenHeight - pipHeight - 145.h;
+        // Keep the floating video above the bottom controls (bar + its
+        // label + the phone's bottom inset).
+        final double maxTop = screenHeight -
+            pipHeight -
+            150.h -
+            MediaQuery.of(context).padding.bottom;
 
         final double boundedMaxLeft =
         maxLeft < minLeft ? minLeft : maxLeft;

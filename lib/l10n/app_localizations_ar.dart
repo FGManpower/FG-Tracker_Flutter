@@ -736,6 +736,24 @@ class AppLocalizationsAr extends AppLocalizations {
   String get call_endAndAccept => 'إنهاء والرد';
 
   @override
+  String get call_end => 'إنهاء';
+
+  @override
+  String get call_secureCallLabel => 'مكالمة FG Tracker';
+
+  @override
+  String get call_audioCallBrand => 'مكالمة صوتية FG TRACKER';
+
+  @override
+  String get call_videoCallBrand => 'مكالمة فيديو FG TRACKER';
+
+  @override
+  String get call_isCallingYou => 'يتصل بك…';
+
+  @override
+  String get call_isVideoCallingYou => 'يتصل بك بالفيديو…';
+
+  @override
   String get call_callBack => 'معاودة الاتصال';
 
   @override

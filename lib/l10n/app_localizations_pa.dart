@@ -737,6 +737,24 @@ class AppLocalizationsPa extends AppLocalizations {
   String get call_endAndAccept => 'ਖ਼ਤਮ ਕਰੋ ਅਤੇ ਚੁੱਕੋ';
 
   @override
+  String get call_end => 'ਖਤਮ';
+
+  @override
+  String get call_secureCallLabel => 'FG Tracker ਕਾਲ';
+
+  @override
+  String get call_audioCallBrand => 'FG TRACKER ਆਡੀਓ ਕਾਲ';
+
+  @override
+  String get call_videoCallBrand => 'FG TRACKER ਵੀਡੀਓ ਕਾਲ';
+
+  @override
+  String get call_isCallingYou => 'ਤੁਹਾਨੂੰ ਕਾਲ ਕਰ ਰਹੇ ਹਨ…';
+
+  @override
+  String get call_isVideoCallingYou => 'ਤੁਹਾਨੂੰ ਵੀਡੀਓ ਕਾਲ ਕਰ ਰਹੇ ਹਨ…';
+
+  @override
   String get call_callBack => 'ਵਾਪਸ ਕਾਲ ਕਰੋ';
 
   @override

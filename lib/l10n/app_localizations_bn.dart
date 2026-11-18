@@ -739,6 +739,24 @@ class AppLocalizationsBn extends AppLocalizations {
   String get call_endAndAccept => 'শেষ করুন ও ধরুন';
 
   @override
+  String get call_end => 'শেষ';
+
+  @override
+  String get call_secureCallLabel => 'FG Tracker কল';
+
+  @override
+  String get call_audioCallBrand => 'FG TRACKER অডিও কল';
+
+  @override
+  String get call_videoCallBrand => 'FG TRACKER ভিডিও কল';
+
+  @override
+  String get call_isCallingYou => 'আপনাকে কল করছেন…';
+
+  @override
+  String get call_isVideoCallingYou => 'আপনাকে ভিডিও কল করছেন…';
+
+  @override
   String get call_callBack => 'ফিরতি কল করুন';
 
   @override
