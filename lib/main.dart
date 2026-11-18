@@ -5,16 +5,18 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/call_kit_handlers.dart';
+import 'package:fgtracker/app/modules/mediaStream/Services/call_permissions.dart';
+import 'package:fgtracker/app/modules/mediaStream/Widget/call_permission_sheet.dart';
+import 'package:socket_io_client/socket_io_client.dart' show Socket;
 import 'package:fgtracker/app/Data/Services/chat_message_cache.dart';
 import 'package:fgtracker/app/Data/Services/app_cache.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
-import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
 import 'package:fgtracker/features/language/fallback_localizations_delegate.dart';
 import 'package:fgtracker/features/language/language_controller.dart';
@@ -44,10 +46,11 @@ import 'app/modules/Track/Controller/GroupTrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:http/http.dart' as http;
 import 'package:fgtracker/l10n/l10n.dart';
 
-final socket = SignallingService.instance.socket;
+// Always the CURRENT call socket (it is re-created on login, BUG-CALL-02).
+// Used by NotificationServices for the foreground "Ringing" status.
+Socket? get socket => SignallingService.instance.socket;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
@@ -145,102 +148,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
 }
 
-void _setupCallKit() {
-  final callKit = CallKitService.instance;
-
-  callKit.onAcceptCall = (callId, extra, uuid) async {
-    final isGroup = extra['screen_name'] == 'incomingGroupCall';
-    CallSessionState.sessionId = uuid ?? '';
-
-    if (isGroup) {
-      log('Group call accepted: $extra');
-      return;
-    }
-
-    final callerId = extra['callerId']?.toString() ?? '';
-
-    if (Get.isRegistered<CallingController>() &&
-        Get.currentRoute == Routes.callScreen) {
-      return;
-    }
-
-    log('Incoming call accepted: $extra');
-
-    Get.toNamed(Routes.callScreen, arguments: {
-      'callerId': callerId,
-      'remoteUserId': callerId,
-      'callId': callId,
-      'sessionId': uuid,
-      'is_video': extra['isVideo'] == 'true' || extra['isVideo'] == true,
-      'profileImage': extra['profileImage'],
-      'callType': 'Incoming',
-      'fromCallKit': true,
-      'callerName': extra['callerName'],
-      'offer': CallKitService.decodeOffer(extra['sdpOfferCompressed']),
-    });
-  };
-
-  callKit.onDeclineCall = (callId, extra, uuid) async {
-    if (extra['screen_name'] == 'incomingGroupCall') return;
-
-    final s = SignallingService.instance.socket;
-    if (s != null && s.connected) {
-      s.emit('rejectCall', {
-        'callId': callId,
-        'remoteUserId': extra['callerId']?.toString(),
-      });
-    } else {
-      await rejectCallViaRest(callId);
-    }
-  };
-
-  callKit.onEndCall = (callId, extra, uuid) async {
-    if (Get.isRegistered<CallingController>()) {
-      final ctrl = Get.find<CallingController>();
-      if (ctrl.callDurationRx.value == 0 &&
-          ctrl.callTimer == null &&
-          ctrl.args != null &&
-          ctrl.args["fromCallKit"] == true) {
-        log("[CallKit] onEndCall suppressed during connection phase");
-        return;
-      }
-      await ctrl.endCall(type: 'callkit');
-    }
-  };
-
-  callKit.onTimeoutCall = (callId, extra, uuid) async {
-    log('Incoming call timed out: $callId');
-  };
-
-  callKit.getCallStatus = (callId) async => null;
-
-  callKit.onVoipToken = (token) async {
-    log('VoIP token: $token');
-  };
-}
-
-Future<void> rejectCallViaRest(String callId) async {
-  try {
-    final shared = await SharedPreferences.getInstance();
-    final token = shared.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ??
-        '';
-    if (token.isEmpty) return;
-
-    final url = Uri.parse('${ConstRes.aBaseUrl}callRejected?callId=$callId');
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    ).timeout(const Duration(seconds: 10));
-
-    log('REST reject status: ${response.statusCode}');
-  } catch (e) {
-    log('REST reject error: $e');
-  }
-}
-
 @pragma('vm:entry-point')
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -302,7 +209,9 @@ Future<void> main() async {
 
   var userId = shared.get(PrefConst.userId);
 
-  _setupCallKit();
+  setupCallKitHandlers();
+  // Permission sheets for calls (doc 02, Phase 2).
+  CallPermissionUi.instance = const GetCallPermissionUi();
 
   if (userId != null) {
     SignallingService.instance.init(

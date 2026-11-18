@@ -236,6 +236,11 @@ String callStatusLabel(AppLocalizations l, String status) {
       return l.call_statusRinging;
     case 'busy':
       return l.call_statusBusy;
+    // 1:1 call screen (calling Phase 3): callee on another call, CallKit hold.
+    case 'on another call':
+      return l.call_onAnotherCall;
+    case 'on hold':
+      return l.call_onHold;
   }
   return base;
 }

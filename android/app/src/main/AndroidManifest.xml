@@ -37,6 +37,7 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
     <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
@@ -47,7 +48,6 @@
         android:name=".MainApplication"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
-        android:foregroundServiceType="location|microphone"
         android:requestLegacyExternalStorage="true"
         android:enableOnBackInvokedCallback="true"
         android:allowBackup="false"
@@ -64,7 +64,8 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-
+            android:supportsPictureInPicture="true"
+            android:resizeableActivity="true"
             android:launchMode="singleInstance"
             android:taskAffinity=""
             android:theme="@style/LaunchTheme"
@@ -132,15 +133,12 @@
             android:enabled="true"
             android:foregroundServiceType="location" />
 
-        <service
-            android:name="com.connectycube.flutter.calls.CallService"
-            android:exported="false"
-            android:foregroundServiceType="phoneCall|microphone" />
+        <!-- Removed (BUG-CALL-27): ConnectyCube CallService, plugin is not used. -->
 
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
             android:exported="false"
-            android:foregroundServiceType="microphone|phoneCall|mediaProjection"
+            android:foregroundServiceType="microphone|camera|phoneCall|mediaProjection"
             android:stopWithTask="true"
             tools:replace="android:foregroundServiceType" />
 
@@ -171,21 +169,9 @@
             android:label="@string/app_name" />
 
 
-        <receiver
-            android:name="com.hiennv.flutter_callkit_incoming.CallkitIncomingReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_INCOMING" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_ACCEPT" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_DECLINE" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_END" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_HOLD" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_MUTE" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_SPEAKER" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_GROUP" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_CALLKIT_PERMISSION" />
-            </intent-filter>
-        </receiver>
+        <!-- Removed (BUG-CALL-27): exported receiver for a class that does not
+             exist in flutter_callkit_incoming 3.1.6. The plugin declares its own
+             CallkitIncomingBroadcastReceiver. -->
 
 
         <receiver

@@ -21,7 +21,7 @@ import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
-import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
+import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
 
@@ -3414,21 +3414,15 @@ class TrackingScreen extends StatelessWidget {
                 icon: Icons.call_outlined,
                 color: const Color(0xFF2BB673),
                 onTap: () {
-                  if (Get.isRegistered<CallingController>()) {
-                    Get.delete<CallingController>(force: true);
-                  }
-                  Get.toNamed(
-                    Routes.callScreen,
-                    arguments: {
-                      "callerId": currentUserId,
-                      "remoteUserId": memberUserId,
-                      "callerName": name,
-                      "callerProfile":
-                          member.profileImage?.toString() ?? "",
-                      "offer": null,
-                      "is_video": false,
-                      "callType": "outGoing",
-                    },
+                  // Same entry as every other call: live-call check +
+                  // permissions (BUG-CALL-21, BUG-CALL-30).
+                  CallService().startOutGoingCall(
+                    Get.context!,
+                    callerId: currentUserId.toString(),
+                    remoteUserId: memberUserId.toString(),
+                    is_video: false,
+                    callerName: name,
+                    callerProfile: member.profileImage?.toString() ?? "",
                   );
 
 
@@ -3439,21 +3433,15 @@ class TrackingScreen extends StatelessWidget {
                 icon: Icons.videocam_outlined,
                 color: const Color(0xFFEF4444),
                 onTap: () {
-                  if (Get.isRegistered<CallingController>()) {
-                    Get.delete<CallingController>(force: true);
-                  }
-                  Get.toNamed(
-                    Routes.callScreen,
-                    arguments: {
-                      "callerId": currentUserId,
-                      "remoteUserId": memberUserId,
-                      "callerName": name,
-                      "callerProfile":
-                          member.profileImage?.toString() ?? "",
-                      "offer": null,
-                      "is_video": true,
-                      "callType": "outGoing",
-                    },
+                  // Same entry as every other call: live-call check +
+                  // permissions (BUG-CALL-21, BUG-CALL-30).
+                  CallService().startOutGoingCall(
+                    Get.context!,
+                    callerId: currentUserId.toString(),
+                    remoteUserId: memberUserId.toString(),
+                    is_video: true,
+                    callerName: name,
+                    callerProfile: member.profileImage?.toString() ?? "",
                   );
                 },
               ),

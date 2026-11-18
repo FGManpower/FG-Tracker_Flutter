@@ -172,6 +172,29 @@ private let candidateTokenPrefKeys = [
                 }
                 self.startAudioRouteMonitoring()
                 result(self.readAudioState())
+            case "prepareCallKitAudio":
+                // Outgoing call reported to CallKit (calling doc 02 §7,
+                // BUG-CALL-12): same manual-audio path as incoming calls.
+                // CallKit's didActivateAudioSession then enables WebRTC
+                // audio. Safety net: if CallKit never activates the session,
+                // enable audio after 2 s so the call is never silent.
+                let args = call.arguments as? [String: Any]
+                let isVideo = (args?["isVideo"] as? Bool) ?? false
+                self.currentCallIsVideo = isVideo
+                self.audioGeneration += 1
+                let expectedGen = self.audioGeneration
+                self.prepareCallKitManualAudio(isVideo: isVideo)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+                    guard let self = self, self.audioGeneration == expectedGen else { return }
+                    let rtcAudio = RTCAudioSession.sharedInstance()
+                    if !rtcAudio.isAudioEnabled {
+                        print("[AppDelegate] prepareCallKitAudio fallback: enabling audio")
+                        rtcAudio.audioSessionDidActivate(AVAudioSession.sharedInstance())
+                        rtcAudio.isAudioEnabled = true
+                        self.applyInitialOutputPort(isVideo: isVideo)
+                    }
+                }
+                result(true)
             case "stopAudioRouteMonitoring":
                 self.stopAudioRouteMonitoring()
                 result(nil)

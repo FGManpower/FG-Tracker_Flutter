@@ -655,6 +655,98 @@ class AppLocalizationsTe extends AppLocalizations {
   String get call_allContacts => 'అన్ని కాంటాక్ట్‌లు';
 
   @override
+  String get call_alreadyInCall => 'మీరు ఇప్పటికే కాల్‌లో ఉన్నారు';
+
+  @override
+  String get call_permMicTitle => 'మైక్రోఫోన్‌ను అనుమతించండి';
+
+  @override
+  String get call_permMicBody =>
+      'అవతలి వ్యక్తికి మీ గొంతు వినిపించాలి. కాల్‌లు చేయడానికి, ఎత్తడానికి మైక్రోఫోన్‌ను అనుమతించండి.';
+
+  @override
+  String get call_permMicBlockedBody =>
+      'FG Tracker కోసం మైక్రోఫోన్ ఆఫ్‌లో ఉంది. సెట్టింగ్‌లు తెరిచి, మైక్రోఫోన్ ఆన్ చేసి, కొనసాగించడానికి తిరిగి రండి.';
+
+  @override
+  String get call_permCameraTitle => 'కెమెరా ఆఫ్‌లో ఉంది';
+
+  @override
+  String get call_permCameraBlockedBody =>
+      'FG Tracker కోసం కెమెరా ఆఫ్‌లో ఉంది. ఇప్పుడు వాయిస్ కాల్ ప్రారంభించండి, లేదా సెట్టింగ్‌లలో కెమెరా ఆన్ చేయండి.';
+
+  @override
+  String get call_permCameraMidCallBody =>
+      'కెమెరా ఆఫ్‌లో ఉంది. వీడియో షేర్ చేయడానికి సెట్టింగ్‌లలో కెమెరా ఆన్ చేయండి. మీ కాల్ కొనసాగుతుంది.';
+
+  @override
+  String get call_permVoiceInstead => 'బదులుగా వాయిస్ కాల్ ప్రారంభించండి';
+
+  @override
+  String get call_permMicNeededToAnswer =>
+      'కాల్‌లు ఎత్తడానికి మైక్రోఫోన్ అనుమతి అవసరం';
+
+  @override
+  String get call_permCameraOffChip => 'కెమెరా ఆఫ్ · అనుమతించు';
+
+  @override
+  String get call_permRingBanner => 'ఇన్‌కమింగ్ కాల్‌లు రింగ్ కాకపోవచ్చు';
+
+  @override
+  String get call_permAnswerReadyTitle => 'కాల్‌లు ఎత్తడానికి సిద్ధంగా ఉండండి';
+
+  @override
+  String get call_permAnswerReadyBody =>
+      'లాక్ స్క్రీన్ నుండి కూడా కాల్‌లు ఎత్తడానికి ఇప్పుడే మైక్రోఫోన్‌ను అనుమతించండి.';
+
+  @override
+  String get call_onAnotherCall => 'వేరే కాల్‌లో ఉన్నారు';
+
+  @override
+  String call_remoteMuted(String name) {
+    return '$name మ్యూట్ చేశారు';
+  }
+
+  @override
+  String get call_videoPaused => 'వీడియో పాజ్ అయింది';
+
+  @override
+  String get call_poorConnection => 'బలహీనమైన కనెక్షన్';
+
+  @override
+  String get call_poorConnectionTip =>
+      'కనెక్షన్ బలహీనంగా ఉంది. స్పష్టమైన ఆడియో కోసం మీ కెమెరా ఆఫ్ చేయండి.';
+
+  @override
+  String get call_endNoAnswer => 'సమాధానం లేదు';
+
+  @override
+  String get call_endDeclined => 'కాల్ తిరస్కరించబడింది';
+
+  @override
+  String get call_endUnavailable => 'అందుబాటులో లేరు';
+
+  @override
+  String get call_endConnectionLost => 'కనెక్షన్ తెగిపోయింది';
+
+  @override
+  String get call_callAgain => 'మళ్లీ కాల్ చేయండి';
+
+  @override
+  String call_waitingCall(String name) {
+    return '$name కాల్ చేస్తున్నారు…';
+  }
+
+  @override
+  String get call_endAndAccept => 'ముగించి ఎత్తండి';
+
+  @override
+  String get call_callBack => 'తిరిగి కాల్ చేయండి';
+
+  @override
+  String get call_onHold => 'హోల్డ్‌లో ఉంది';
+
+  @override
   String get call_allowAccess => 'అనుమతించండి';
 
   @override

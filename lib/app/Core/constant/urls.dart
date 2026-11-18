@@ -77,6 +77,9 @@ class Urls {
     'stun:sfu.fgtracker.fgmanpower.co.in:3478',
     'turn:sfu.fgtracker.fgmanpower.co.in:3478?transport=udp',
     'turn:sfu.fgtracker.fgmanpower.co.in:3478?transport=tcp',
+    // TURN over TLS on 443 for networks that block 3478 (BUG-CALL-07).
+    // Needs the coturn TLS listener on the server (backend handover doc).
+    'turns:sfu.fgtracker.fgmanpower.co.in:443?transport=tcp',
   ];
 
   // Hostinger VPS Coturn Credentials (Testing / Staging)

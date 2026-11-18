@@ -625,6 +625,94 @@ class AppLocalizationsJa extends AppLocalizations {
   String get call_allContacts => 'すべての連絡先';
 
   @override
+  String get call_alreadyInCall => 'すでに通話中です';
+
+  @override
+  String get call_permMicTitle => 'マイクを許可';
+
+  @override
+  String get call_permMicBody => '相手にあなたの声を届けるため、通話の発信と応答にはマイクの許可が必要です。';
+
+  @override
+  String get call_permMicBlockedBody =>
+      'FG Tracker のマイクがオフになっています。設定を開いてマイクをオンにし、戻って続けてください。';
+
+  @override
+  String get call_permCameraTitle => 'カメラがオフです';
+
+  @override
+  String get call_permCameraBlockedBody =>
+      'FG Tracker のカメラがオフになっています。今すぐ音声通話を開始するか、設定でカメラをオンにしてください。';
+
+  @override
+  String get call_permCameraMidCallBody =>
+      'カメラがオフになっています。ビデオを共有するには設定でカメラをオンにしてください。通話は続きます。';
+
+  @override
+  String get call_permVoiceInstead => '代わりに音声通話を開始';
+
+  @override
+  String get call_permMicNeededToAnswer => '通話に応答するにはマイクへのアクセスが必要です';
+
+  @override
+  String get call_permCameraOffChip => 'カメラオフ · 許可';
+
+  @override
+  String get call_permRingBanner => '着信が鳴らない可能性があります';
+
+  @override
+  String get call_permAnswerReadyTitle => '着信に応答できるようにしましょう';
+
+  @override
+  String get call_permAnswerReadyBody => 'ロック画面からでも通話に応答できるよう、今マイクを許可してください。';
+
+  @override
+  String get call_onAnotherCall => '別の通話中';
+
+  @override
+  String call_remoteMuted(String name) {
+    return '$name がミュートしました';
+  }
+
+  @override
+  String get call_videoPaused => 'ビデオ一時停止中';
+
+  @override
+  String get call_poorConnection => '接続が不安定です';
+
+  @override
+  String get call_poorConnectionTip => '接続が不安定です。音声をクリアにするにはカメラをオフにしてください。';
+
+  @override
+  String get call_endNoAnswer => '応答なし';
+
+  @override
+  String get call_endDeclined => '通話が拒否されました';
+
+  @override
+  String get call_endUnavailable => '応答できません';
+
+  @override
+  String get call_endConnectionLost => '接続が切れました';
+
+  @override
+  String get call_callAgain => 'もう一度かける';
+
+  @override
+  String call_waitingCall(String name) {
+    return '$name から着信中…';
+  }
+
+  @override
+  String get call_endAndAccept => '終了して応答';
+
+  @override
+  String get call_callBack => '折り返す';
+
+  @override
+  String get call_onHold => '保留中';
+
+  @override
   String get call_allowAccess => 'アクセスを許可';
 
   @override

@@ -650,6 +650,98 @@ class AppLocalizationsAr extends AppLocalizations {
   String get call_allContacts => 'جميع جهات الاتصال';
 
   @override
+  String get call_alreadyInCall => 'أنت في مكالمة بالفعل';
+
+  @override
+  String get call_permMicTitle => 'السماح بالميكروفون';
+
+  @override
+  String get call_permMicBody =>
+      'يجب أن يسمعك الطرف الآخر. اسمح باستخدام الميكروفون لإجراء المكالمات والرد عليها.';
+
+  @override
+  String get call_permMicBlockedBody =>
+      'الوصول إلى الميكروفون متوقف لتطبيق FG Tracker. افتح الإعدادات وفعّل الميكروفون، ثم عد للمتابعة.';
+
+  @override
+  String get call_permCameraTitle => 'الكاميرا متوقفة';
+
+  @override
+  String get call_permCameraBlockedBody =>
+      'الوصول إلى الكاميرا متوقف لتطبيق FG Tracker. ابدأ مكالمة صوتية الآن، أو فعّل الكاميرا من الإعدادات.';
+
+  @override
+  String get call_permCameraMidCallBody =>
+      'الوصول إلى الكاميرا متوقف. فعّل الكاميرا من الإعدادات لمشاركة الفيديو. ستستمر مكالمتك.';
+
+  @override
+  String get call_permVoiceInstead => 'بدء مكالمة صوتية بدلاً من ذلك';
+
+  @override
+  String get call_permMicNeededToAnswer =>
+      'يلزم الوصول إلى الميكروفون للرد على المكالمات';
+
+  @override
+  String get call_permCameraOffChip => 'الكاميرا متوقفة · سماح';
+
+  @override
+  String get call_permRingBanner => 'قد لا ترن المكالمات الواردة';
+
+  @override
+  String get call_permAnswerReadyTitle => 'كن مستعدًا للرد على المكالمات';
+
+  @override
+  String get call_permAnswerReadyBody =>
+      'اسمح بالميكروفون الآن لتتمكن من الرد على المكالمات حتى من شاشة القفل.';
+
+  @override
+  String get call_onAnotherCall => 'في مكالمة أخرى';
+
+  @override
+  String call_remoteMuted(String name) {
+    return 'كتم $name الصوت';
+  }
+
+  @override
+  String get call_videoPaused => 'الفيديو متوقف مؤقتًا';
+
+  @override
+  String get call_poorConnection => 'اتصال ضعيف';
+
+  @override
+  String get call_poorConnectionTip =>
+      'الاتصال ضعيف. أوقف الكاميرا للحصول على صوت أوضح.';
+
+  @override
+  String get call_endNoAnswer => 'لا يوجد رد';
+
+  @override
+  String get call_endDeclined => 'تم رفض المكالمة';
+
+  @override
+  String get call_endUnavailable => 'غير متاح';
+
+  @override
+  String get call_endConnectionLost => 'انقطع الاتصال';
+
+  @override
+  String get call_callAgain => 'اتصال مرة أخرى';
+
+  @override
+  String call_waitingCall(String name) {
+    return '$name يتصل…';
+  }
+
+  @override
+  String get call_endAndAccept => 'إنهاء والرد';
+
+  @override
+  String get call_callBack => 'معاودة الاتصال';
+
+  @override
+  String get call_onHold => 'قيد الانتظار';
+
+  @override
   String get call_allowAccess => 'السماح بالوصول';
 
   @override

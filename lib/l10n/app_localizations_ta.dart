@@ -666,6 +666,98 @@ class AppLocalizationsTa extends AppLocalizations {
   String get call_allContacts => 'அனைத்து தொடர்புகள்';
 
   @override
+  String get call_alreadyInCall => 'நீங்கள் ஏற்கனவே ஒரு அழைப்பில் உள்ளீர்கள்';
+
+  @override
+  String get call_permMicTitle => 'மைக்ரோஃபோனை அனுமதிக்கவும்';
+
+  @override
+  String get call_permMicBody =>
+      'மற்றவர் உங்கள் குரலைக் கேட்க வேண்டும். அழைப்புகளைச் செய்யவும் ஏற்கவும் மைக்ரோஃபோனை அனுமதிக்கவும்.';
+
+  @override
+  String get call_permMicBlockedBody =>
+      'FG Tracker-க்கு மைக்ரோஃபோன் அணைக்கப்பட்டுள்ளது. அமைப்புகளைத் திறந்து, மைக்ரோஃபோனை இயக்கி, தொடர திரும்பி வரவும்.';
+
+  @override
+  String get call_permCameraTitle => 'கேமரா அணைக்கப்பட்டுள்ளது';
+
+  @override
+  String get call_permCameraBlockedBody =>
+      'FG Tracker-க்கு கேமரா அணைக்கப்பட்டுள்ளது. இப்போது குரல் அழைப்பைத் தொடங்கவும், அல்லது அமைப்புகளில் கேமராவை இயக்கவும்.';
+
+  @override
+  String get call_permCameraMidCallBody =>
+      'கேமரா அணைக்கப்பட்டுள்ளது. வீடியோவைப் பகிர அமைப்புகளில் கேமராவை இயக்கவும். உங்கள் அழைப்பு தொடரும்.';
+
+  @override
+  String get call_permVoiceInstead => 'அதற்குப் பதிலாக குரல் அழைப்பைத் தொடங்கு';
+
+  @override
+  String get call_permMicNeededToAnswer =>
+      'அழைப்புகளை ஏற்க மைக்ரோஃபோன் அனுமதி தேவை';
+
+  @override
+  String get call_permCameraOffChip => 'கேமரா ஆஃப் · அனுமதி';
+
+  @override
+  String get call_permRingBanner => 'உள்வரும் அழைப்புகள் ஒலிக்காமல் போகலாம்';
+
+  @override
+  String get call_permAnswerReadyTitle => 'அழைப்புகளை ஏற்கத் தயாராக இருங்கள்';
+
+  @override
+  String get call_permAnswerReadyBody =>
+      'பூட்டுத் திரையிலிருந்தும் அழைப்புகளை ஏற்க இப்போதே மைக்ரோஃபோனை அனுமதிக்கவும்.';
+
+  @override
+  String get call_onAnotherCall => 'வேறொரு அழைப்பில் உள்ளார்';
+
+  @override
+  String call_remoteMuted(String name) {
+    return '$name மியூட் செய்தார்';
+  }
+
+  @override
+  String get call_videoPaused => 'வீடியோ இடைநிறுத்தப்பட்டது';
+
+  @override
+  String get call_poorConnection => 'பலவீனமான இணைப்பு';
+
+  @override
+  String get call_poorConnectionTip =>
+      'இணைப்பு பலவீனமாக உள்ளது. தெளிவான ஒலிக்கு உங்கள் கேமராவை அணைக்கவும்.';
+
+  @override
+  String get call_endNoAnswer => 'பதில் இல்லை';
+
+  @override
+  String get call_endDeclined => 'அழைப்பு நிராகரிக்கப்பட்டது';
+
+  @override
+  String get call_endUnavailable => 'கிடைக்கவில்லை';
+
+  @override
+  String get call_endConnectionLost => 'இணைப்பு துண்டிக்கப்பட்டது';
+
+  @override
+  String get call_callAgain => 'மீண்டும் அழை';
+
+  @override
+  String call_waitingCall(String name) {
+    return '$name அழைக்கிறார்…';
+  }
+
+  @override
+  String get call_endAndAccept => 'முடித்து ஏற்கவும்';
+
+  @override
+  String get call_callBack => 'திரும்ப அழை';
+
+  @override
+  String get call_onHold => 'காத்திருப்பில்';
+
+  @override
   String get call_allowAccess => 'அனுமதி';
 
   @override

@@ -651,6 +651,98 @@ class AppLocalizationsPa extends AppLocalizations {
   String get call_allContacts => 'ਸਾਰੇ ਸੰਪਰਕ';
 
   @override
+  String get call_alreadyInCall => 'ਤੁਸੀਂ ਪਹਿਲਾਂ ਹੀ ਇੱਕ ਕਾਲ \'ਤੇ ਹੋ';
+
+  @override
+  String get call_permMicTitle => 'ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ';
+
+  @override
+  String get call_permMicBody =>
+      'ਦੂਜੇ ਵਿਅਕਤੀ ਨੂੰ ਤੁਹਾਡੀ ਆਵਾਜ਼ ਸੁਣਨੀ ਚਾਹੀਦੀ ਹੈ। ਕਾਲ ਕਰਨ ਅਤੇ ਚੁੱਕਣ ਲਈ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ।';
+
+  @override
+  String get call_permMicBlockedBody =>
+      'FG Tracker ਲਈ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਬੰਦ ਹੈ। ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ, ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਚਾਲੂ ਕਰੋ, ਫਿਰ ਜਾਰੀ ਰੱਖਣ ਲਈ ਵਾਪਸ ਆਓ।';
+
+  @override
+  String get call_permCameraTitle => 'ਕੈਮਰਾ ਬੰਦ ਹੈ';
+
+  @override
+  String get call_permCameraBlockedBody =>
+      'FG Tracker ਲਈ ਕੈਮਰਾ ਬੰਦ ਹੈ। ਹੁਣੇ ਵੌਇਸ ਕਾਲ ਸ਼ੁਰੂ ਕਰੋ, ਜਾਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਕੈਮਰਾ ਚਾਲੂ ਕਰੋ।';
+
+  @override
+  String get call_permCameraMidCallBody =>
+      'ਕੈਮਰਾ ਬੰਦ ਹੈ। ਵੀਡੀਓ ਦਿਖਾਉਣ ਲਈ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਕੈਮਰਾ ਚਾਲੂ ਕਰੋ। ਤੁਹਾਡੀ ਕਾਲ ਜਾਰੀ ਰਹੇਗੀ।';
+
+  @override
+  String get call_permVoiceInstead => 'ਇਸਦੀ ਬਜਾਏ ਵੌਇਸ ਕਾਲ ਸ਼ੁਰੂ ਕਰੋ';
+
+  @override
+  String get call_permMicNeededToAnswer =>
+      'ਕਾਲ ਚੁੱਕਣ ਲਈ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਦੀ ਇਜਾਜ਼ਤ ਲੋੜੀਂਦੀ ਹੈ';
+
+  @override
+  String get call_permCameraOffChip => 'ਕੈਮਰਾ ਬੰਦ · ਇਜਾਜ਼ਤ ਦਿਓ';
+
+  @override
+  String get call_permRingBanner => 'ਆਉਣ ਵਾਲੀਆਂ ਕਾਲਾਂ ਦੀ ਘੰਟੀ ਸ਼ਾਇਦ ਨਾ ਵੱਜੇ';
+
+  @override
+  String get call_permAnswerReadyTitle => 'ਕਾਲ ਚੁੱਕਣ ਲਈ ਤਿਆਰ ਰਹੋ';
+
+  @override
+  String get call_permAnswerReadyBody =>
+      'ਹੁਣੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ, ਤਾਂ ਜੋ ਤੁਸੀਂ ਲੌਕ ਸਕ੍ਰੀਨ ਤੋਂ ਵੀ ਕਾਲ ਚੁੱਕ ਸਕੋ।';
+
+  @override
+  String get call_onAnotherCall => 'ਕਿਸੇ ਹੋਰ ਕਾਲ \'ਤੇ ਹਨ';
+
+  @override
+  String call_remoteMuted(String name) {
+    return '$name ਨੇ ਮਿਊਟ ਕੀਤਾ';
+  }
+
+  @override
+  String get call_videoPaused => 'ਵੀਡੀਓ ਰੁਕੀ ਹੋਈ ਹੈ';
+
+  @override
+  String get call_poorConnection => 'ਕਮਜ਼ੋਰ ਕਨੈਕਸ਼ਨ';
+
+  @override
+  String get call_poorConnectionTip =>
+      'ਕਨੈਕਸ਼ਨ ਕਮਜ਼ੋਰ ਹੈ। ਸਾਫ਼ ਆਵਾਜ਼ ਲਈ ਆਪਣਾ ਕੈਮਰਾ ਬੰਦ ਕਰੋ।';
+
+  @override
+  String get call_endNoAnswer => 'ਕੋਈ ਜਵਾਬ ਨਹੀਂ';
+
+  @override
+  String get call_endDeclined => 'ਕਾਲ ਅਸਵੀਕਾਰ ਕੀਤੀ ਗਈ';
+
+  @override
+  String get call_endUnavailable => 'ਉਪਲਬਧ ਨਹੀਂ';
+
+  @override
+  String get call_endConnectionLost => 'ਕਨੈਕਸ਼ਨ ਟੁੱਟ ਗਿਆ';
+
+  @override
+  String get call_callAgain => 'ਦੁਬਾਰਾ ਕਾਲ ਕਰੋ';
+
+  @override
+  String call_waitingCall(String name) {
+    return '$name ਕਾਲ ਕਰ ਰਹੇ ਹਨ…';
+  }
+
+  @override
+  String get call_endAndAccept => 'ਖ਼ਤਮ ਕਰੋ ਅਤੇ ਚੁੱਕੋ';
+
+  @override
+  String get call_callBack => 'ਵਾਪਸ ਕਾਲ ਕਰੋ';
+
+  @override
+  String get call_onHold => 'ਹੋਲਡ \'ਤੇ';
+
+  @override
   String get call_allowAccess => 'ਇਜਾਜ਼ਤ ਦਿਓ';
 
   @override

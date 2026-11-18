@@ -17,14 +17,16 @@ import 'package:fgtracker/l10n/l10n.dart';
 
 import '../../../../gen/fonts.gen.dart';
 import '../Controller/calling_controller.dart';
+import '../Services/call_pip.dart';
 
 class CallingScreen extends StatelessWidget {
   CallingScreen({super.key});
 
-  CallingController get controller =>
-      Get.isRegistered<CallingController>()
-          ? Get.find<CallingController>()
-          : Get.put(CallingController(), permanent: true);
+  /// The controller is created by `StreamBinding` only. This getter must
+  /// never create one: after a call ends the controller deletes itself
+  /// while this screen may still be animating out, and a rebuild that
+  /// created a new controller would start a NEW call (BUG-CALL-01).
+  CallingController get controller => Get.find<CallingController>();
 
   static const Color _danger = Color(0xFFFF3B30);
   static const Color _warn = Color(0xFFFFB020);
@@ -34,6 +36,10 @@ class CallingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!Get.isRegistered<CallingController>()) {
+      // Call already ended; the route is closing.
+      return const ColoredBox(color: Colors.black);
+    }
     final c = controller;
     return GetBuilder<CallingController>(
       init: c,
@@ -51,6 +57,14 @@ class CallingScreen extends StatelessWidget {
   Widget _screen(BuildContext context, CallingController c) {
     final bool isVideo = c.is_video || c.isVideoCall.value;
 
+    // Android picture-in-picture: only the video, no controls.
+    if (CallPip.inPip.value && isVideo) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(fit: StackFit.expand, children: [_mainVideoLayer(c)]),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -62,9 +76,178 @@ class CallingScreen extends StatelessWidget {
           _chrome(context, c, isVideo),
           _waitingOverlay(c),
           _pip(c, isVideo),
+          _cameraPermissionChip(c),
+          _statusPills(c),
+          _waitingCallBanner(c),
         ],
       ),
     );
+  }
+
+  /// Other side's state and link quality (doc 02 §7): "X muted",
+  /// "Video paused", "Poor connection", "On hold".
+  Widget _statusPills(CallingController c) {
+    return Obx(() {
+      final String name = c.args["callerName"]?.toString() ?? '';
+      final List<String> pills = <String>[
+        if (c.isOnHold.value) appL10n.call_onHold,
+        if (c.remoteMicMuted.value)
+          appL10n.call_remoteMuted(name.isEmpty ? appL10n.call_someone : name),
+        if (c.remoteVideoPaused.value) appL10n.call_videoPaused,
+        if (c.isPoorConnection.value) appL10n.call_poorConnection,
+      ];
+      if (pills.isEmpty) return const SizedBox.shrink();
+      return Positioned(
+        left: 0,
+        right: 0,
+        top: MediaQuery.of(Get.context!).padding.top + 96.h,
+        child: Center(
+          child: Wrap(
+            spacing: 6.w,
+            runSpacing: 6.h,
+            alignment: WrapAlignment.center,
+            children: [
+              for (final String p in pills)
+                Container(
+                  key: ValueKey<String>('call_pill_$p'),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: p == appL10n.call_poorConnection
+                        ? _warn.withValues(alpha: 0.85)
+                        : Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Text(
+                    p,
+                    style: TextStyle(color: Colors.white, fontSize: 12.sp),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  /// Second incoming call while on this call (BUG-CALL-05):
+  /// "X is calling…" with Decline / End & accept.
+  Widget _waitingCallBanner(CallingController c) {
+    return Obx(() {
+      final w = c.waitingCall.value;
+      if (w == null) return const SizedBox.shrink();
+      final String name = w.callerName.isEmpty ? appL10n.call_unknown : w.callerName;
+      return Positioned(
+        left: 12.w,
+        right: 12.w,
+        top: MediaQuery.of(Get.context!).padding.top + 8.h,
+        child: Material(
+          key: const ValueKey<String>('call_waiting_banner'),
+          color: _panelBg,
+          elevation: 8,
+          borderRadius: BorderRadius.circular(18.r),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 12.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      w.isVideo ? Icons.videocam_rounded : Icons.call_rounded,
+                      color: Colors.white70,
+                      size: 20.r,
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        appL10n.call_waitingCall(name),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        key: const ValueKey<String>('call_waiting_decline'),
+                        style: TextButton.styleFrom(
+                          backgroundColor: _danger,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: c.declineWaitingCall,
+                        child: Text(appL10n.call_decline),
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: TextButton(
+                        key: const ValueKey<String>('call_waiting_accept'),
+                        style: TextButton.styleFrom(
+                          backgroundColor: const Color(0xFF2BB673),
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: c.endAndAcceptWaitingCall,
+                        child: Text(appL10n.call_endAndAccept),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  /// "Camera off · Allow" when the camera permission is missing (P-06).
+  /// Tapping asks for the camera (or opens Settings) and turns it on; the
+  /// call continues either way.
+  Widget _cameraPermissionChip(CallingController c) {
+    return Obx(() {
+      if (!c.cameraBlockedByPermission.value) return const SizedBox.shrink();
+      return Positioned(
+        left: 0,
+        right: 0,
+        bottom: 150.h,
+        child: Center(
+          child: Material(
+            color: Colors.black.withValues(alpha: 0.55),
+            shape: const StadiumBorder(),
+            child: InkWell(
+              key: const ValueKey<String>('call_camera_permission_chip'),
+              customBorder: const StadiumBorder(),
+              onTap: c.allowCameraFromChip,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.videocam_off_rounded,
+                        color: Colors.white, size: 18.r),
+                    SizedBox(width: 6.w),
+                    Text(
+                      appL10n.call_permCameraOffChip,
+                      style: TextStyle(color: Colors.white, fontSize: 13.sp),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Widget _mainVideoLayer(CallingController c) {

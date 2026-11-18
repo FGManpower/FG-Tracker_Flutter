@@ -654,6 +654,98 @@ class AppLocalizationsEn extends AppLocalizations {
   String get call_allContacts => 'All Contacts';
 
   @override
+  String get call_alreadyInCall => 'You\'re already on a call';
+
+  @override
+  String get call_permMicTitle => 'Allow microphone';
+
+  @override
+  String get call_permMicBody =>
+      'The other person needs to hear you. Allow the microphone to make and answer calls.';
+
+  @override
+  String get call_permMicBlockedBody =>
+      'Microphone access is off for FG Tracker. Open Settings, turn on Microphone, then come back to continue.';
+
+  @override
+  String get call_permCameraTitle => 'Camera is off';
+
+  @override
+  String get call_permCameraBlockedBody =>
+      'Camera access is off for FG Tracker. Start a voice call now, or turn on Camera in Settings.';
+
+  @override
+  String get call_permCameraMidCallBody =>
+      'Camera access is off. Turn on Camera in Settings to share video. Your call continues.';
+
+  @override
+  String get call_permVoiceInstead => 'Start voice call instead';
+
+  @override
+  String get call_permMicNeededToAnswer =>
+      'Microphone access is needed to answer calls';
+
+  @override
+  String get call_permCameraOffChip => 'Camera off · Allow';
+
+  @override
+  String get call_permRingBanner => 'Incoming calls may not ring';
+
+  @override
+  String get call_permAnswerReadyTitle => 'Be ready to answer calls';
+
+  @override
+  String get call_permAnswerReadyBody =>
+      'Allow the microphone now, so you can answer calls even from the lock screen.';
+
+  @override
+  String get call_onAnotherCall => 'On another call';
+
+  @override
+  String call_remoteMuted(String name) {
+    return '$name muted';
+  }
+
+  @override
+  String get call_videoPaused => 'Video paused';
+
+  @override
+  String get call_poorConnection => 'Poor connection';
+
+  @override
+  String get call_poorConnectionTip =>
+      'Poor connection. Turn off your camera for clearer audio.';
+
+  @override
+  String get call_endNoAnswer => 'No answer';
+
+  @override
+  String get call_endDeclined => 'Call declined';
+
+  @override
+  String get call_endUnavailable => 'Unavailable';
+
+  @override
+  String get call_endConnectionLost => 'Connection lost';
+
+  @override
+  String get call_callAgain => 'Call again';
+
+  @override
+  String call_waitingCall(String name) {
+    return '$name is calling…';
+  }
+
+  @override
+  String get call_endAndAccept => 'End & accept';
+
+  @override
+  String get call_callBack => 'Call back';
+
+  @override
+  String get call_onHold => 'On hold';
+
+  @override
   String get call_allowAccess => 'Allow Access';
 
   @override

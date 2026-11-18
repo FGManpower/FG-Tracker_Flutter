@@ -2,29 +2,34 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
-import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
-import 'package:proximity_screen_lock/proximity_screen_lock.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:socket_io_client/socket_io_client.dart' show Socket;
 import 'package:fgtracker/l10n/l10n.dart';
-import '../../../../gen/assets.gen.dart';
 import '../../../Data/Services/IncommingCallKit/call_session.dart'
     show CallSessionState;
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
 import '../Widget/audio_route_sheet.dart';
+import '../../call/Controller/call_controller.dart';
+import '../Services/call_connection_monitor.dart';
+import '../Services/call_entry.dart';
+import '../Services/call_foreground_service.dart';
+import '../Services/call_permissions.dart';
+import '../Services/call_pip.dart';
+import '../Services/call_platform.dart';
+import '../Services/call_quality.dart';
+import '../Services/call_socket_handlers.dart';
 import '../Services/in_app_call_overlay_service.dart';
+import '../Services/turn_credentials.dart';
+import '../Views/call_ended_screen.dart';
 
 class CallingController extends GetxController with WidgetsBindingObserver {
   static CallingController get instance => Get.find<CallingController>();
@@ -48,7 +53,117 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   MediaStream? _remoteScreenStream;
   final RTCVideoRenderer screenRenderer = RTCVideoRenderer();
 
-  final socket = SignallingService.instance.socket;
+  /// Always the CURRENT signaling socket. It is re-created on login, so a
+  /// copy taken at construction can be dead (BUG-CALL-02).
+  Socket? get socket => SignallingService.instance.socket;
+
+  /// This call's socket handlers only. `socket.off(event)` without a handler
+  /// would also remove the global SignallingService handlers (BUG-CALL-03).
+  late final CallSocketHandlers _handlers = CallSocketHandlers(() => socket);
+
+  CallPlatform get _platform => CallPlatform.instance;
+
+  /// Set by every end path. A finished controller is never reused for the
+  /// next call (BUG-CALL-01).
+  bool _callFinished = false;
+
+  /// True once anything about this call was sent to the other user.
+  bool _callAnnounced = false;
+
+  /// Own camera is off because the camera permission is missing (P-06):
+  /// the call runs as voice for us, the other side's video still shows,
+  /// and the screen offers "Camera off · Allow".
+  final RxBool cameraBlockedByPermission = false.obs;
+  bool _cameraBlocked = false;
+
+  /// Sent with endCall so the other side knows why (e.g. permission_denied).
+  String? _endReason;
+
+  // ---- Phase 3 (WhatsApp / IMO parity), doc 02 §7 ------------------------
+
+  /// Reconnect / ICE restart / give-up timing (BUG-CALL-06).
+  late final CallLinkMonitor _linkMonitor = CallLinkMonitor(
+    onAction: _onLinkAction,
+    // The original caller restarts ICE first; the callee only if that does
+    // not help (avoids both sides offering at once).
+    isInitiator: !_isIncoming,
+  );
+
+  /// A second incoming call while on this call (BUG-CALL-05).
+  final Rx<WaitingCall?> waitingCall = Rx<WaitingCall?>(null);
+  Timer? _waitingTimer;
+
+  /// Other side's state (BUG-CALL-17): "X muted", "Video paused".
+  final RxBool remoteMicMuted = false.obs;
+  final RxBool remoteVideoPaused = false.obs;
+
+  /// "Poor connection" from getStats (RTT, loss, jitter).
+  final RxBool isPoorConnection = false.obs;
+  final CallQualityEvaluator _quality = CallQualityEvaluator();
+  final CallStatsReader _statsReader = CallStatsReader();
+  Timer? _statsTimer;
+
+  /// Held by CallKit (e.g. a cellular call), BUG-CALL-12.
+  final RxBool isOnHold = false.obs;
+  bool _audioBeforeHold = true;
+
+  /// iOS: id of this OUTGOING call in CallKit (incoming calls use the
+  /// session id).
+  String _outgoingCallKitId = '';
+
+  /// Why the call ended, for the end screen (Call again / Cancel).
+  CallEndOutcome? _endOutcome;
+
+  /// Last end-screen info (read by tests and by the end screen route).
+  @visibleForTesting
+  static CallEndInfo? lastEndInfo;
+
+  String get _callKitId =>
+      _outgoingCallKitId.isNotEmpty ? _outgoingCallKitId : _sessionId;
+
+  String get _myUserId =>
+      Global.storageServices.get(PrefConst.userId).toString();
+
+  /// The other user of this call, whichever side started it.
+  String get _peerUserId {
+    final String me = _myUserId;
+    String t = (me == callerId.toString()) ? remoteUserId : callerId;
+    if (t.isEmpty || t == me) {
+      t = (remoteUserId.isNotEmpty && remoteUserId != me)
+          ? remoteUserId
+          : callerId;
+    }
+    return t;
+  }
+
+  /// True while this call can still be shown again (e.g. from the overlay).
+  bool get isCallLive => !_callFinished && !isClosed;
+
+  /// Call before opening the call screen for a NEW outgoing call.
+  ///
+  /// - A live call (for example minimized in the overlay) is never deleted:
+  ///   the user is told and taken back to it, and `false` is returned.
+  /// - A finished controller left over from an earlier call is removed so the
+  ///   binding creates a fresh one.
+  ///
+  /// Replaces the old `Get.delete<CallingController>(force: true)` before a
+  /// call, which turned a minimized call into a zombie (BUG-CALL-21).
+  static bool prepareForNewCall({bool notifyUser = true}) {
+    if (!Get.isRegistered<CallingController>()) return true;
+    final CallingController existing = Get.find<CallingController>();
+    if (existing.isCallLive) {
+      if (notifyUser) {
+        Utils().fluttertoast(appL10n.call_alreadyInCall);
+        if (existing.isMinimized.value) {
+          InAppCallOverlayService.instance.expandCall(existing);
+        }
+      }
+      return false;
+    }
+    existing.isMinimized.value = false;
+    Get.delete<CallingController>(force: true);
+    return true;
+  }
 
   final localRenderer = RTCVideoRenderer();
   final remoteRenderer = RTCVideoRenderer();
@@ -87,19 +202,21 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   bool _audioRouteRestored = false;
   bool _renegotiating = false;
   bool _pendingRenegotiation = false;
+  bool _pendingIceRestart = false;
   bool _localOfferPending = false;
 
   Timer? _peerDisconnectTimer;
 
   bool _everConnected = false;
-  final args = Get.arguments;
+  /// Route arguments of THIS call, read in [onInit] (BUG-CALL-01).
+  dynamic args = const <String, dynamic>{};
   Timer? callTimer;
   int callDurationSeconds = 0;
   final RxInt callDurationRx = 0.obs;
   Offset? pipPosition;
 
   Timer? missedCallTimer;
-  var missCallDurationSeconds = 40.obs;
+  var missCallDurationSeconds = kCallRingTimeout.inSeconds.obs;
 
   final RxBool isVideoCall = false.obs;
   final RxBool isUpgradingToVideo = false.obs;
@@ -307,7 +424,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     return RTCSessionDescription(_preferH264InSdp(raw), type);
   }
 
-  Future<void> _tuneLocalVideoSender({double? scaleDown}) async {
+  Future<void> _tuneLocalVideoSender({double? scaleDown, int? maxBitrate}) async {
     if (isScreenSharing.value && defaultTargetPlatform == TargetPlatform.iOS) {
       log("[SHARE] local sender tune skipped: iOS screen share running");
       return;
@@ -322,7 +439,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (encodings != null && encodings.isNotEmpty) {
         for (final RTCRtpEncoding enc in encodings) {
           enc.active = true;
-          enc.maxBitrate = 1800000;
+          enc.maxBitrate = maxBitrate ?? 1800000;
           enc.maxFramerate = 30;
           if (scaleDown != null && scaleDown > 0) {
             enc.scaleResolutionDownBy = scaleDown;
@@ -469,17 +586,29 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     return needsRenegotiation;
   }
 
-  Future<void> _renegotiateVideo() async {
+  /// Sends a new offer over the existing `upgradeToVideo` relay. With
+  /// [iceRestart] it is an ICE restart (new network path, BUG-CALL-06):
+  /// the other side answers with `upgradeToVideoAnswer` as for any
+  /// renegotiation, so today's server needs no change.
+  Future<void> _renegotiateVideo({bool iceRestart = false}) async {
     final RTCPeerConnection? pc = peer;
     if (pc == null || isClosed) return;
 
     if (_renegotiating) {
       _pendingRenegotiation = true;
+      _pendingIceRestart = _pendingIceRestart || iceRestart;
       return;
     }
 
     _renegotiating = true;
     try {
+      if (iceRestart) {
+        try {
+          await pc.restartIce();
+        } catch (e) {
+          log("[CALL] restartIce error: $e");
+        }
+      }
       final RTCSessionDescription rawOffer = await pc.createOffer({
         'offerToReceiveAudio': true,
         'offerToReceiveVideo': true,
@@ -505,6 +634,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         "remoteUserId": targetUser,
         "sdpOffer": desc.toMap(),
         "callerId": myUserId,
+        if (iceRestart) "iceRestart": true,
       });
     } catch (e) {
       log("[Call] renegotiate error: $e");
@@ -512,7 +642,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       _renegotiating = false;
       if (_pendingRenegotiation) {
         _pendingRenegotiation = false;
-        unawaited(_renegotiateVideo());
+        final bool again = _pendingIceRestart;
+        _pendingIceRestart = false;
+        unawaited(_renegotiateVideo(iceRestart: again));
       }
     }
   }
@@ -555,23 +687,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           "callerId": callerId,
           "receiverId": remoteUserId,
           "sessionId": _sessionId,
+          if (_endReason != null) "reason": _endReason,
         };
 
-    final dynamic s = socket;
+    final Socket? s = socket;
     if (s == null) return;
 
     try {
-      if (s.connected == true) {
-        s.emit("endCall", payload);
-      } else {
-        s.emit("endCall", payload);
-        s.once("connect", (_) {
-          try {
-            s.emit("endCall", payload);
-          } catch (_) {}
-        });
-        s.connect();
-      }
+      // While disconnected, socket.io buffers the emit and sends it once on
+      // reconnect. The old extra once("connect") re-emit sent endCall twice.
+      s.emit("endCall", payload);
+      if (!s.connected && !s.active) s.connect();
     } catch (e) {
       log("[Call] _emitEndCallRealtime error: $e");
     }
@@ -580,6 +706,22 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   void _exitCallScreen() {
     if (_hasExitedScreen) return;
     _hasExitedScreen = true;
+
+    // Minimized: the call screen is no longer on the stack (minimize popped
+    // it). Popping now would close the page the user is on (BUG-CALL-22).
+    if (isMinimized.value) return;
+
+    // Caller side "No answer / Declined / On another call / Unavailable /
+    // Connection lost": replace the call screen with the end screen
+    // (Call again / Cancel), WhatsApp-like (BUG-CALL-17).
+    final CallEndInfo? info = _endInfo;
+    if (info != null) {
+      final NavigatorState? nav = Get.key.currentState;
+      nav?.popUntil((route) => route is! PopupRoute);
+      Get.off<void>(() => CallEndedScreen(info: info),
+          transition: Transition.fadeIn);
+      return;
+    }
 
     final NavigatorState? nav = Get.key.currentState;
     if (nav != null) {
@@ -656,6 +798,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
 
+    args = Get.arguments ?? const <String, dynamic>{};
     callerId = args["callerId"]?.toString() ?? "";
     remoteUserId = args["remoteUserId"]?.toString() ?? "";
     offer = args["offer"];
@@ -684,27 +827,27 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       "hasOffer=${offer != null} fromCallKit=$fromCallKit",
     );
 
-    if (Get.isRegistered<CallAudioRouteController>()) {
-      audioRouteController = Get.find<CallAudioRouteController>();
-      log("[Call] Audio route controller reused (single owner)");
-    } else {
-      audioRouteController = Get.put(CallAudioRouteController());
-      log("[Call] Audio route controller created");
-    }
+    audioRouteController = _platform.audioRoute();
 
     _listenForCallEvents();
+    _startPhase3();
 
     if (args["callType"] == "outGoing") {
       playSound();
     }
 
-    WakelockPlus.enable();
+    unawaited(_platform.setWakelock(true).catchError((_) {}));
 
-    try {
-      GroupTrackingController.instance.initializeLocation();
-    } catch (e) {
-      log("[Call] Location initialization error: $e");
-    }
+    // Android: keep mic (+camera) alive from the first second, while the app
+    // is still visible. Starting only after ICE connected let the OS cut
+    // them if the user left the app while connecting (BUG-CALL-15).
+    CallForegroundService.onHangUp = () {
+      if (isCallLive) unawaited(endCall(type: 'notification'));
+    };
+    unawaited(_platform.startCallService(video: is_video));
+
+    // Tracking keep-alive, without any dialog over the call (BUG-CALL-18).
+    unawaited(_platform.keepTrackingAlive());
 
     unawaited(_initializeCall());
   }
@@ -934,6 +1077,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> _initializeCall() async {
+    // Permissions on the call screen, for every way a call is opened
+    // (outgoing, in-app accept, CallKit accept). Phase 2, P-05 / P-06.
+    if (!await _ensureCallPermissions()) return;
+    if (!_platform.mediaEnabled) return;
     try {
       await localRenderer.initialize();
       await remoteRenderer.initialize();
@@ -945,29 +1092,316 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       remoteRenderer.onResize = _onRendererFrameEvent;
 
       await _setupPeer();
+    } on CallSignalingUnavailable catch (e) {
+      log("[Call] Initialization error: $e");
+      await _cleanupCall(notifyRemote: _callAnnounced, navigateBack: true);
+      Get.snackbar(appL10n.call_failedTitle, appL10n.call_cannotReachCallServer);
     } catch (e, stackTrace) {
       log("[Call] Initialization error: $e", stackTrace: stackTrace);
-      await _cleanupCall(notifyRemote: true, navigateBack: true);
+      // Incoming: the caller is waiting, tell them. Outgoing: only if
+      // makeCall already went out.
+      await _cleanupCall(
+        notifyRemote: _callAnnounced || _isIncoming,
+        navigateBack: true,
+      );
+    }
+  }
+
+  bool get _isIncoming => fromCallKit || args["callType"] == "Incoming";
+
+  /// True unless [data] clearly names a different call. Events without ids,
+  /// or before this call has an id, are treated as ours (old behaviour).
+  bool _isForThisCall(dynamic data) {
+    if (data is! Map) return true;
+    final Set<String> theirs = <String>{
+      for (final String k in const <String>['callId', 'call_id', 'sessionId', 'session_id'])
+        if (data[k] != null && data[k].toString().isNotEmpty && data[k].toString() != 'null')
+          data[k].toString(),
+    };
+    if (theirs.isEmpty) return true;
+    final Set<String> ours = <String>{
+      if (callId != null && callId.toString() != 'null') callId.toString(),
+      if (_sessionId.isNotEmpty) _sessionId,
+    };
+    if (ours.isEmpty) return true;
+    return theirs.any(ours.contains);
+  }
+
+  // ---- Phase 3 helpers (doc 02 §7) ----------------------------------------
+
+  /// Live call history: refresh Recent calls right after a call (both
+  /// directions), so it does not wait for a manual refresh.
+  void _refreshCallHistory() {
+    Future<void>.delayed(const Duration(seconds: 2), () {
+      try {
+        if (Get.isRegistered<CallController>()) {
+          unawaited(CallController.instance.refreshRecentCalls());
+        }
+      } catch (_) {}
+    });
+  }
+
+  /// Started from onInit, after the socket handlers.
+  void _startPhase3() {
+    // Signaling reconnect during the call: tell the server we are still in
+    // this call (`rejoinCall`, backend handover) and restart ICE if the media
+    // link is down (BUG-CALL-06).
+    _handlers.on("connect", (_) => _onSignalingReconnected());
+    _handlers.on("mediaState", (dynamic data) {
+      if (data is Map && data["mediaState"] is Map) {
+        _applyRemoteMediaState(data["mediaState"] as Map);
+      } else if (data is Map) {
+        _applyRemoteMediaState(data);
+      }
+    });
+    ever<bool>(isMinimized, (_) => _refreshAutoPip());
+    ever<bool>(isVideoCall, (_) => _refreshAutoPip());
+    ever<bool>(isScreenSharing, (_) => _refreshAutoPip());
+
+    // iOS: outgoing calls in CallKit too (BUG-CALL-12).
+    if (!_isIncoming && kReportOutgoingCallsToCallKit) {
+      _outgoingCallKitId = CallKitService.newUuid();
+      unawaited(_platform.reportOutgoingToCallKit(
+        uuid: _outgoingCallKitId,
+        name: args["callerName"]?.toString() ?? '',
+        handle: remoteUserId,
+        isVideo: is_video,
+      ));
+    }
+  }
+
+  void _onSignalingReconnected() {
+    if (!isCallLive) return;
+    final String cid = callId?.toString() ?? '';
+    if (cid.isEmpty || cid == 'null') return;
+    if (kDebugMode) log("[CALL] signaling reconnected: rejoinCall $cid");
+    socket?.emit("rejoinCall", <String, dynamic>{
+      "callId": callId,
+      "sessionId": _sessionId,
+      "remoteUserId": _peerUserId,
+    });
+    _linkMonitor.onSignalingReconnected();
+  }
+
+  /// Sends mic / camera / background state to the other side.
+  void _emitMediaState({bool videoPaused = false}) {
+    final String to = _peerUserId;
+    if (to.isEmpty || to == _myUserId || !isCallLive) return;
+    socket?.emit(
+      "upgradeToVideo",
+      mediaStatePayload(
+        callId: callId,
+        to: to,
+        me: _myUserId,
+        micMuted: !isAudioOn,
+        cameraOn: isVideoOn,
+        videoPaused: videoPaused,
+      ),
+    );
+  }
+
+  void _applyRemoteMediaState(Map<dynamic, dynamic> s) {
+    bool flag(dynamic v) => v == true || v.toString() == 'true';
+    if (s.containsKey("micMuted")) remoteMicMuted.value = flag(s["micMuted"]);
+    if (s.containsKey("videoPaused")) {
+      remoteVideoPaused.value = flag(s["videoPaused"]);
+    }
+    update();
+  }
+
+  /// Mute from the iOS lock screen / CallKit / headset (BUG-CALL-12).
+  /// Does not echo back to CallKit.
+  void setMutedFromSystem(bool muted) {
+    if (isAudioOn == !muted) return;
+    isAudioOn = !muted;
+    localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
+    _emitMediaState();
+    update();
+  }
+
+  /// Hold from CallKit (e.g. a cellular call comes in) and resume.
+  void setOnHoldFromSystem(bool held) {
+    if (isOnHold.value == held) return;
+    isOnHold.value = held;
+    if (held) {
+      _audioBeforeHold = isAudioOn;
+      isAudioOn = false;
+    } else {
+      isAudioOn = _audioBeforeHold;
+    }
+    localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
+    if (isVideoOn) {
+      localStream?.getVideoTracks().forEach((t) => t.enabled = !held);
+    }
+    _emitMediaState(videoPaused: held);
+    update();
+  }
+
+  /// getStats every 3 s while connected: "Poor connection", lower video
+  /// quality on a weak link, suggest camera off once (IMO-like).
+  void _startQualityMonitor() {
+    if (_statsTimer != null) return;
+    _statsTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
+      final RTCPeerConnection? pc = peer;
+      if (pc == null || isClosed || _callFinished) return;
+      try {
+        final List<StatsReport> reports = await pc.getStats();
+        final CallQualitySample sample = _statsReader.read(
+          reports.map((StatsReport r) =>
+              MapEntry<String, Map<dynamic, dynamic>>(r.type, r.values)),
+        );
+        _onQualitySample(sample);
+      } catch (_) {}
+    });
+  }
+
+  void _onQualitySample(CallQualitySample sample) {
+    if (_quality.add(sample)) {
+      isPoorConnection.value = _quality.isPoor;
+      if (kDebugMode) log("[CALL] quality poor=${_quality.isPoor} $sample");
+      if (isVideoOn && !isScreenSharing.value) {
+        unawaited(_quality.isPoor
+            ? _tuneLocalVideoSender(scaleDown: 2.0, maxBitrate: 400000)
+            : _tuneLocalVideoSender(scaleDown: 1.0));
+      }
+      update();
+    }
+    if (_quality.takeCameraOffSuggestion(videoOn: isVideoOn)) {
+      Utils().fluttertoast(appL10n.call_poorConnectionTip);
+    }
+  }
+
+  /// Test hook for the quality logic.
+  @visibleForTesting
+  void debugQualitySample(CallQualitySample sample) => _onQualitySample(sample);
+
+  void _refreshAutoPip() {
+    final bool on = isCallLive &&
+        CallPip.shouldAutoPip(
+          video: isVideoCall.value && (isRemoteVideoOn || isVideoOn),
+          connected: callTimer != null,
+          minimized: isMinimized.value,
+          screenSharing: isScreenSharing.value,
+        );
+    unawaited(_platform.setAutoPip(on));
+  }
+
+  /// Info for the end screen; null when no end screen is shown.
+  CallEndInfo? get _endInfo {
+    final CallEndOutcome? o = _endOutcome;
+    if (o == null) return null;
+    return CallEndInfo(
+      outcome: o,
+      remoteUserId: _peerUserId,
+      name: args["callerName"]?.toString() ?? '',
+      avatar: (args["profileImage"] ?? args["callerProfile"])?.toString(),
+      isVideo: is_video,
+    );
+  }
+
+  /// Mic (+ camera for video) before any media is opened.
+  ///
+  /// - Incoming (in-app or CallKit accept): the system dialog is shown on
+  ///   the call screen. Refused: the call ends cleanly, the caller gets
+  ///   `reason: permission_denied`, the user sees why (P-05; before, the
+  ///   call dropped silently). Camera refused: join as voice with the
+  ///   camera off and "Camera off · Allow" (P-06).
+  /// - Outgoing: CallService already ran the same flow, so this returns at
+  ///   once; it only guards entry points that skip CallService.
+  Future<bool> _ensureCallPermissions() async {
+    final CallPermResult r = await CallPermissionFlow().beforeCall(
+      video: is_video,
+      incoming: _isIncoming,
+      settingsWait: const Duration(seconds: 45),
+    );
+    if (isClosed || _callFinished) return false;
+
+    if (!r.proceed) {
+      if (_isIncoming) {
+        _endReason = 'permission_denied';
+        Utils().fluttertoast(appL10n.call_permMicNeededToAnswer);
+      }
+      await _finishCall(
+        notifyRemote: _isIncoming,
+        navigateBack: true,
+        type: 'permission_denied',
+      );
+      return false;
+    }
+
+    if (is_video && !r.video) {
+      _cameraBlocked = true;
+      isVideoOn = false;
+      cameraBlockedByPermission.value = r.cameraBlocked;
+      update();
+    }
+    return true;
+  }
+
+  /// Camera ON during a call (P-07). The call continues whatever happens.
+  Future<bool> _cameraAllowed() async {
+    final bool ok = await CallPermissionFlow().cameraDuringCall();
+    if (ok && (_cameraBlocked || cameraBlockedByPermission.value)) {
+      _cameraBlocked = false;
+      cameraBlockedByPermission.value = false;
+      update();
+    }
+    return ok;
+  }
+
+  /// "Camera off · Allow" chip (P-06): ask, then turn the camera on.
+  Future<void> allowCameraFromChip() async {
+    if (await _cameraAllowed()) {
+      await toggleCamera();
     }
   }
 
   Future<void> _cleanupCall({
     required bool notifyRemote,
     required bool navigateBack,
-  }) async {
-    if (_isCleaningUp) return;
-    _isCleaningUp = true;
+  }) {
+    return _finishCall(
+      notifyRemote: notifyRemote,
+      navigateBack: navigateBack,
+      type: "CallCleanedUp",
+    );
+  }
 
-    final String sessionId = _sessionId;
+  /// The ONE end path of a call. Every way a call ends (own hang-up, remote
+  /// end, reject, missed, CallKit / notification End, overlay End, failure)
+  /// comes here, and it always releases this controller at the end, so the
+  /// next call gets a fresh one (BUG-CALL-01).
+  Future<void> _finishCall({
+    required bool notifyRemote,
+    required bool navigateBack,
+    required String type,
+    String? sessionId,
+  }) async {
+    if (_isCleaningUp || _callFinished) return;
+    _isCleaningUp = true;
+    _callFinished = true;
+
+    final String sid = (sessionId != null && sessionId.isNotEmpty)
+        ? sessionId
+        : _sessionId;
+    if (kDebugMode) log("[CALL] finish type=$type notifyRemote=$notifyRemote");
 
     try {
-      InAppCallOverlayService.instance.hideOverlay();
-      isMinimized.value = false;
       _clearTimers();
       _controlsTimer?.cancel();
       _peerDisconnectTimer?.cancel();
 
       stopSound();
+      _linkMonitor.dispose();
+      waitingCall.value = null;
+      unawaited(_platform.setAutoPip(false));
+      lastEndInfo = _endInfo;
+      // Short end tone (busy tone when the other side is busy).
+      if (_callAnnounced) {
+        _platform.playTone(_endOutcome == CallEndOutcome.busy
+            ? kCallBusyToneAsset
+            : kCallEndToneAsset);
+      }
 
       if (notifyRemote) {
         _emitEndCallRealtime();
@@ -976,36 +1410,55 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       CallSessionState.reset();
 
       if (navigateBack) {
-        _exitCallScreen();
+        // A navigation error must not skip the cleanup below (foreground
+        // service, CallKit, wakelock would stay on).
+        try {
+          _exitCallScreen();
+        } catch (e) {
+          log("[Call] exit screen error: $e");
+        }
       }
+      try {
+        InAppCallOverlayService.instance.hideOverlay();
+      } catch (_) {}
 
       await _disposePeerResources();
       await audioRouteController.stopCall();
-      await _stopForegroundCallService();
+      await _platform.stopCallService();
 
-      if (sessionId.isNotEmpty) {
-        CallKitService.clearAudioHandover(
-          sessionId,
+      if (sid.isNotEmpty) {
+        _platform.clearCallKitAudioHandover(
+          sid,
           callId: callId?.toString() ?? '',
         );
-        await CallKitService.dismiss(sessionId);
+        await _platform.dismissCallKit(sid);
         try {
-          await callEnded(sessionId, type: "CallCleanedUp");
+          await _platform.callEndedCleanup(sid, type: type);
         } catch (e) {
           log("[Call] Call cleanup error: $e");
         }
       }
-
-      await WakelockPlus.disable();
-      await ProximityScreenLock.setActive(false);
-
-      if (Get.isRegistered<CallingController>()) {
-        Get.delete<CallingController>(force: true);
+      if (_outgoingCallKitId.isNotEmpty) {
+        await _platform.dismissCallKit(_outgoingCallKitId);
       }
+
+      await _platform.setWakelock(false);
+      await _platform.setProximity(false);
     } catch (e, stackTrace) {
       log("[Call] General cleanup error: $e", stackTrace: stackTrace);
     } finally {
       _isCleaningUp = false;
+      _releaseController();
+    }
+  }
+
+  void _releaseController() {
+    CallForegroundService.onHangUp = null;
+    _refreshCallHistory();
+    isMinimized.value = false;
+    if (Get.isRegistered<CallingController>() &&
+        identical(Get.find<CallingController>(), this)) {
+      Get.delete<CallingController>(force: true);
     }
   }
 
@@ -1017,82 +1470,16 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     return callId != null ? callId.toString() : "";
   }
 
-  Future<void> _startCallForegroundService() async {
-    if (defaultTargetPlatform != TargetPlatform.android) return;
-    try {
-      if (!FlutterForegroundTask.isInitialized) {
-        FlutterForegroundTask.init(
-          androidNotificationOptions: AndroidNotificationOptions(
-            channelId: 'fgtracker_call_service',
-            channelName: appL10n.call_ongoingChannelName,
-            channelDescription: appL10n.call_ongoingChannelDescription,
-            channelImportance: NotificationChannelImportance.LOW,
-            priority: NotificationPriority.LOW,
-          ),
-          iosNotificationOptions: const IOSNotificationOptions(
-            showNotification: false,
-            playSound: false,
-          ),
-          foregroundTaskOptions: ForegroundTaskOptions(
-            eventAction: ForegroundTaskEventAction.repeat(5000),
-            autoRunOnBoot: false,
-            allowWakeLock: true,
-            allowWifiLock: true,
-          ),
-        );
-      }
-
-      if (await FlutterForegroundTask.isRunningService) return;
-
-      ServiceRequestResult result;
-      try {
-        result = await FlutterForegroundTask.startService(
-          serviceId: 9910,
-          notificationTitle: isVideoCall.value
-              ? "FG Tracker Video Call"
-              : "FG Tracker Voice Call",
-          notificationText: "Call in progress...",
-          serviceTypes: const <ForegroundServiceTypes>[
-            ForegroundServiceTypes.microphone,
-            ForegroundServiceTypes.phoneCall,
-          ],
-        );
-      } catch (fgsErr) {
-        log("[Call] startService with phoneCall failed, falling back to microphone: $fgsErr");
-        result = await FlutterForegroundTask.startService(
-          serviceId: 9910,
-          notificationTitle: isVideoCall.value
-              ? "FG Tracker Video Call"
-              : "FG Tracker Voice Call",
-          notificationText: "Call in progress...",
-          serviceTypes: const <ForegroundServiceTypes>[
-            ForegroundServiceTypes.microphone,
-          ],
-        );
-      }
-      log("[Call] foreground call service started: $result");
-    } catch (e) {
-      log("[Call] startCallForegroundService error: $e");
-    }
-  }
-
-  Future<void> _stopForegroundCallService() async {
-    try {
-      if (await FlutterForegroundTask.isRunningService) {
-        await FlutterForegroundTask.stopService();
-      }
-    } catch (e) {
-      log("Error stopping call foreground task: $e");
-    }
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _ensureAudioTracksActive();
       unawaited(_restoreVideoAfterForeground());
+      if (isVideoOn) _emitMediaState();
     } else if (state == AppLifecycleState.paused) {
       _keepTracksAliveInBackground();
+      // Other side shows "Video paused" (unless we are in PiP).
+      if (isVideoOn && !CallPip.inPip.value) _emitMediaState(videoPaused: true);
     }
   }
 
@@ -1259,7 +1646,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           !_callKitAudioHandoverDone &&
           (fromCallKit || args["callType"] == "Incoming")) {
         _callKitConnectedSent = true;
-        unawaited(CallKitService.setConnected(_sessionId));
+        unawaited(_platform.markCallKitConnected(_sessionId));
       }
     } catch (e, stackTrace) {
       log("[Call] onTrack error: $e", stackTrace: stackTrace);
@@ -1310,6 +1697,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   Future<void> upgradeToVideoCall() async {
     if (isUpgradingToVideo.value) return;
+    if (!await _cameraAllowed()) return;
     if (isRemoteUpgrading.value) {
       log("[CAM] upgrade blocked: remote is already upgrading");
       Utils().fluttertoast(appL10n.call_otherStartingVideo);
@@ -1369,28 +1757,36 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   }
 
   void _listenVideoUpgradeEvents() {
-    socket?.off("upgradeToVideo");
-    socket?.off("upgradeToVideoAnswer");
-    socket?.off("requestVideoUpgrade");
+    _handlers.off("upgradeToVideo");
+    _handlers.off("upgradeToVideoAnswer");
+    _handlers.off("requestVideoUpgrade");
 
-    socket?.on("requestVideoUpgrade", (data) {
+    _handlers.on("requestVideoUpgrade", (data) {
       final String from = data["callerId"]?.toString() ?? "";
       log("[CAM] requestVideoUpgrade from=$from");
       _markRemoteUpgrading("intent");
     });
 
-    socket?.on("upgradeToVideo", (data) async {
+    _handlers.on("upgradeToVideo", (data) async {
       try {
+        // Other side's mic / camera / app state (BUG-CALL-17), sent over
+        // this relay so today's server forwards it unchanged.
+        if (data is Map && data["mediaState"] is Map) {
+          _applyRemoteMediaState(data["mediaState"] as Map);
+          if (data["sdpOffer"] == null) return;
+        }
         final RTCPeerConnection? pc = peer;
         if (pc == null) return;
         final dynamic sdp = data["sdpOffer"];
+        // ICE restart: same offer/answer, but no video-upgrade side effects.
+        final bool iceRestart = data["iceRestart"] == true;
         log(
           "[CAM] upgradeToVideo recv hasSdp=${sdp != null} "
           "cameraState=${data["cameraState"]} from=${data["callerId"]} "
           "videoOn=$isVideoOn remoteOn=$isRemoteVideoOn",
         );
 
-        if (sdp != null && !_localOfferPending) {
+        if (sdp != null && !_localOfferPending && !iceRestart) {
           _markRemoteUpgrading("offer");
         }
 
@@ -1462,7 +1858,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           isLocalVideoMain = true;
         }
 
-        if (_localVideoSender == null && !isVideoOn) {
+        if (!iceRestart && _localVideoSender == null && !isVideoOn) {
           try {
             final bool answerNeedsReneg = await _ensureLocalVideoTrackAttached(
               pc,
@@ -1480,7 +1876,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         bool slotAdvertised = false;
         try {
           final RTCRtpTransceiver? slot = _remoteVideoTransceiver;
-          if (slot != null) {
+          if (slot != null && !iceRestart) {
             await slot.setDirection(TransceiverDirection.SendRecv);
             slotAdvertised = true;
             log("[CAM] answer: video slot advertised sendrecv");
@@ -1553,7 +1949,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
     });
 
-    socket?.on("upgradeToVideoAnswer", (data) async {
+    _handlers.on("upgradeToVideoAnswer", (data) async {
       try {
         final RTCPeerConnection? pc = peer;
         if (pc == null) return;
@@ -1597,16 +1993,82 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     });
   }
 
-  void _onNewCall(dynamic data) {
-    socket?.emit("CallingStatus", {
-      "callId": data['callId'].toString(),
-      "remoteUserId": int.tryParse(data['callerId'].toString()) ?? 0,
-      "callingStatus": "Ringing",
+  /// A `newCall` while this call is live: a SECOND call (BUG-CALL-05).
+  /// Before: "Ringing" was sent to that caller although we were busy.
+  /// Now: the caller is told "busy" (shows "On another call") and this
+  /// screen shows a waiting-call banner: End & accept / Decline.
+  void _onNewCall(dynamic data) => showWaitingCall(data);
+
+  /// Also called for an FCM / push of a second call (CallKitService hook).
+  void showWaitingCall(dynamic data) {
+    if (!isCallLive) return;
+    final WaitingCall? w = WaitingCall.parse(
+      data,
+      decodeCallData: CallKitService.decodeCallData,
+      decodeOffer: CallKitService.decodeOffer,
+    );
+    if (w == null) return;
+    // The current call itself, or the same waiting call twice.
+    if (w.callId == callId?.toString() || w.callerId == _peerUserId) return;
+    if (waitingCall.value?.callId == w.callId) return;
+
+    socket?.emit("CallingStatus", <String, dynamic>{
+      "callId": w.callId,
+      "remoteUserId": int.tryParse(w.callerId) ?? w.callerId,
+      "callingStatus": "busy",
     });
+    waitingCall.value = w;
+    _waitingTimer?.cancel();
+    _waitingTimer = Timer(kCallRingTimeout, () {
+      if (waitingCall.value?.callId == w.callId) waitingCall.value = null;
+    });
+    update();
   }
 
+  /// Waiting call → Decline: the caller gets `reason: busy`.
+  void declineWaitingCall() {
+    final WaitingCall? w = waitingCall.value;
+    if (w == null) return;
+    waitingCall.value = null;
+    _waitingTimer?.cancel();
+    socket?.emit("rejectCall", <String, dynamic>{
+      ...rejectCallPayload(callId: w.callId, callerId: w.callerId),
+      "reason": "busy",
+    });
+    final String sid = w.sessionId ?? w.callId;
+    unawaited(_platform.dismissCallKit(sid).catchError((_) {}));
+    update();
+  }
+
+  /// Waiting call → End & accept: end this call, then join the new one.
+  Future<void> endAndAcceptWaitingCall() async {
+    final WaitingCall? w = waitingCall.value;
+    if (w == null) return;
+    waitingCall.value = null;
+    _waitingTimer?.cancel();
+    await endCall(type: "switchToWaitingCall");
+    Get.toNamed(
+      Routes.callScreen,
+      arguments: incomingCallArgs(
+        callerId: w.callerId,
+        callId: w.callId,
+        sessionId: w.sessionId,
+        isVideo: w.isVideo,
+        callerName: w.callerName,
+        profileImage: w.avatar,
+        offer: w.offer,
+        fromCallKit: false,
+      ),
+    );
+  }
+
+  /// Remote end. Ignored when it names another call (late / replayed event
+  /// from an earlier call after a quick redial or a reconnect).
   Future<void> _onCallEnded(dynamic data) async {
-    log("[Socket] callEnded RECEIVED: $data");
+    if (!_isForThisCall(data)) {
+      log("[CALL] callEnded for another call ignored");
+      return;
+    }
     // Utils().fluttertoast('Call Ended By ${args["callerName"] ?? "Unknown"}');
     await _cleanupCall(notifyRemote: false, navigateBack: true);
   }
@@ -1618,36 +2080,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       return;
     }
 
-    _isCleaningUp = true;
-    try {
-      _clearTimers();
-      stopSound();
+    final String sessionId = data is Map &&
+            data["sessionId"]?.toString().isNotEmpty == true
+        ? data["sessionId"].toString()
+        : _sessionId;
 
-      final String sessionId = data["sessionId"]?.toString().isNotEmpty == true
-          ? data["sessionId"].toString()
-          : _sessionId;
-
-      CallSessionState.reset();
-      _exitCallScreen();
-
-      await resetPeer();
-      await audioRouteController.stopCall();
-
-      if (sessionId.isNotEmpty) {
-        CallKitService.clearAudioHandover(
-          sessionId,
-          callId: callId?.toString() ?? '',
-        );
-        await CallKitService.dismiss(sessionId);
-        await callEnded(sessionId, type: "missedCallFromSocket");
-      }
-
-      await _stopForegroundCallService();
-      await WakelockPlus.disable();
-      await ProximityScreenLock.setActive(false);
-    } finally {
-      _isCleaningUp = false;
-    }
+    await _finishCall(
+      notifyRemote: false,
+      navigateBack: true,
+      type: "missedCallFromSocket",
+      sessionId: sessionId,
+    );
   }
 
   void _onCallCreated(dynamic data) {
@@ -1663,26 +2106,27 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   }
 
   void _listenForCallEvents() {
-    socket?.off("callRejected");
-    socket?.off("callEnded", _onCallEnded);
-    socket?.off("endCall", _onCallEnded);
-    socket?.off("missedCall", _onMissedCall);
-    socket?.off("callStatus");
-    socket?.off("callCreated");
-    socket?.off("newCall", _onNewCall);
-    socket?.off("sdpOfferFromCaller");
-    socket?.off("callError");
-    socket?.off("callBlocked");
-    socket?.off("screen_share_started");
-    socket?.off("screen_share_stopped");
-    socket?.off("screen_share_offer");
-    socket?.off("screen_share_answer");
-    socket?.off("screen_share_ice");
+    _handlers.off("callRejected");
+    _handlers.off("callEnded");
+    _handlers.off("endCall");
+    _handlers.off("missedCall");
+    _handlers.off("callStatus");
+    _handlers.off("callCreated");
+    _handlers.off("newCall");
+    _handlers.off("sdpOfferFromCaller");
+    _handlers.off("callError");
+    _handlers.off("callBlocked");
+    _handlers.off("screen_share_started");
+    _handlers.off("screen_share_stopped");
+    _handlers.off("screen_share_offer");
+    _handlers.off("screen_share_answer");
+    _handlers.off("screen_share_ice");
 
-    socket?.on("callCreated", _onCallCreated);
+    _handlers.on("callCreated", _onCallCreated);
 
-    socket?.on("callError", (data) async {
+    _handlers.on("callError", (data) async {
       log("CALL ERROR => $data");
+      if (!_isIncoming) _endOutcome = CallEndOutcome.unavailable;
       await _cleanupCall(notifyRemote: false, navigateBack: true);
       Get.snackbar(
         appL10n.call_failedTitle,
@@ -1690,7 +2134,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       );
     });
 
-    socket?.on("callBlocked", (data) async {
+    _handlers.on("callBlocked", (data) async {
       log("CALL BLOCKED => $data");
       await _cleanupCall(notifyRemote: false, navigateBack: true);
       Get.snackbar(
@@ -1700,7 +2144,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       );
     });
 
-    socket?.on("sdpOfferFromCaller", (data) async {
+    _handlers.on("sdpOfferFromCaller", (data) async {
       final RTCPeerConnection? pc = peer;
       if (pc == null) return;
 
@@ -1735,6 +2179,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         await pc.setLocalDescription(answer);
         log("[SDP] callkit answer ${_sdpInfo(answer.sdp)}");
 
+        _callAnnounced = true;
         socket!.emit("answerCall", {
           "callId": callId,
           "callerId": callerId,
@@ -1748,15 +2193,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
     });
 
-    socket?.on("newCall", _onNewCall);
-    socket?.on("callEnded", _onCallEnded);
-    socket?.on("endCall", _onCallEnded);
-    socket?.on("missedCall", _onMissedCall);
+    _handlers.on("newCall", _onNewCall);
+    _handlers.on("callEnded", _onCallEnded);
+    _handlers.on("endCall", _onCallEnded);
+    _handlers.on("missedCall", _onMissedCall);
 
-    socket?.on("callRejected", (data) async {
+    _handlers.on("callRejected", (data) async {
+      if (!_isForThisCall(data)) return;
       if (callTimer != null || callDurationSeconds > 0) {
         return;
       }
+      if (!_isIncoming) _endOutcome = rejectOutcome(data);
 
       // Utils().fluttertoast(
       //   'Call Rejected By ${args["callerName"] ?? "Unknown"}',
@@ -1765,7 +2212,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await _cleanupCall(notifyRemote: false, navigateBack: true);
     });
 
-    socket?.on("callStatus", (data) {
+    _handlers.on("callStatus", (data) {
       final status = (data["status"] ?? data["callingStatus"])?.toString();
       if (status == null || status.isEmpty) return;
 
@@ -1776,6 +2223,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       final String normalized = status.trim().toLowerCase();
       if (normalized == "rejected" || normalized == "declined") {
         if (callTimer == null && callDurationSeconds == 0) {
+          if (!_isIncoming) _endOutcome = rejectOutcome(data);
           // Utils().fluttertoast(
           //   'Call Rejected By ${args["callerName"] ?? "Unknown"}',
           //   bgColor: Colors.red,
@@ -1783,6 +2231,13 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           unawaited(_cleanupCall(notifyRemote: false, navigateBack: true));
           return;
         }
+      } else if (normalized == "busy") {
+        // The callee is on another call; they may still take this one.
+        if (callTimer == null && callDurationSeconds == 0) {
+          callStatus.value = "On another call";
+          update();
+        }
+        return;
       } else if (normalized == "ended" ||
           normalized == "callended" ||
           normalized == "disconnected" ||
@@ -1797,14 +2252,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
     });
 
-    socket?.on("screen_share_started", (data) {
+    _handlers.on("screen_share_started", (data) {
       log("[SHARE] remote started: $data");
       isRemoteScreenSharing.value = true;
       showControlsTemporarily();
       update();
     });
 
-    socket?.on("screen_share_stopped", (data) async {
+    _handlers.on("screen_share_stopped", (data) async {
       log("[SHARE] remote stopped: $data");
       isRemoteScreenSharing.value = false;
       _remoteScreenStream = null;
@@ -1821,7 +2276,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       update();
     });
 
-    socket?.on("screen_share_offer", (data) async {
+    _handlers.on("screen_share_offer", (data) async {
       try {
         final sdp = data["sdpOffer"];
         if (sdp == null) return;
@@ -1835,16 +2290,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
         final pc = await createPeerConnection({
           'sdpSemantics': 'unified-plan',
-          'iceServers': [
-            {
-              'urls': ['stun:stun.l.google.com:19302']
-            },
-            {
-              'urls': Urls.rtcUrl,
-              'username': Urls.rtcUserName,
-              'credential': Urls.rtcCredential,
-            },
-          ],
+          'iceServers': await TurnCredentialService.instance.iceServers(),
         });
         _screenPc = pc;
 
@@ -1927,7 +2373,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
     });
 
-    socket?.on("screen_share_answer", (data) async {
+    _handlers.on("screen_share_answer", (data) async {
       try {
         final sdp = data["sdpAnswer"];
         final pc = _screenPc;
@@ -1960,7 +2406,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
     });
 
-    socket?.on("screen_share_ice", (data) async {
+    _handlers.on("screen_share_ice", (data) async {
       try {
         final ice = data["iceCandidate"];
         if (ice == null) return;
@@ -2041,8 +2487,12 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await localStream?.dispose();
       localStream = null;
 
-      remoteRenderer.srcObject = null;
-      localRenderer.srcObject = null;
+      // Throws on a renderer that was never initialized (call failed early);
+      // that used to skip the rest of this cleanup.
+      try {
+        remoteRenderer.srcObject = null;
+        localRenderer.srcObject = null;
+      } catch (_) {}
 
       await pc?.close();
 
@@ -2065,8 +2515,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       isScreenSharing.value = false;
       isScreenShareLive.value = false;
 
-      socket?.off("IceCandidate");
-      socket?.off("callAnswered");
+      _handlers.off("IceCandidate");
+      _handlers.off("callAnswered");
     } catch (e, stackTrace) {
       log("[Call] Peer dispose error: $e", stackTrace: stackTrace);
     }
@@ -2107,68 +2557,79 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  // ICE disconnected / failed → CallLinkMonitor (BUG-CALL-06): show
+  // "Reconnecting…", restart ICE, end only after the give-up limit.
+  // (Before: 30 s / 12 s timer, then hang up, no ICE restart.)
   void _startPeerDisconnectTimer({
     Duration grace = const Duration(seconds: 30),
   }) {
-    if (_peerDisconnectTimer?.isActive ?? false) return;
-
-    if (_everConnected && !_isCleaningUp && !isClosed) {
-      callStatus.value = "Reconnecting...";
-      update();
-    }
-
-    _peerDisconnectTimer = Timer(grace, () {
-      final RTCIceConnectionState? ice = peer?.iceConnectionState;
-      final RTCPeerConnectionState? conn = peer?.connectionState;
-
-      final bool recovered =
-          ice == RTCIceConnectionState.RTCIceConnectionStateConnected ||
-              ice == RTCIceConnectionState.RTCIceConnectionStateCompleted ||
-              conn == RTCPeerConnectionState.RTCPeerConnectionStateConnected;
-
-      if (recovered) return;
-
-      _handlePeerDisconnected();
-    });
+    _linkMonitor.onState(
+      grace.inSeconds <= 12 ? CallLinkState.failed : CallLinkState.disconnected,
+    );
   }
 
   void _cancelPeerDisconnectTimer() {
-    final bool wasWaiting = _peerDisconnectTimer?.isActive ?? false;
-    _peerDisconnectTimer?.cancel();
-    _peerDisconnectTimer = null;
+    _linkMonitor.onState(CallLinkState.connected);
+  }
 
-    if (wasWaiting && callStatus.value == "Reconnecting...") {
-      callStatus.value = "Connected";
-      update();
+  void _onLinkAction(CallLinkAction action) {
+    if (isClosed || _callFinished) return;
+    if (kDebugMode) log("[CALL] link action=$action");
+    switch (action) {
+      case CallLinkAction.showReconnecting:
+        if (_everConnected || _linkMonitor.everConnected) {
+          callStatus.value = "Reconnecting...";
+          update();
+        }
+        break;
+      case CallLinkAction.iceRestart:
+        unawaited(_renegotiateVideo(iceRestart: true));
+        break;
+      case CallLinkAction.recovered:
+        if (callStatus.value == "Reconnecting...") {
+          callStatus.value = callTimer != null ? "Connected" : "Connecting";
+          update();
+        }
+        break;
+      case CallLinkAction.connectionLost:
+        _endReason = 'connection_lost';
+        _endOutcome = CallEndOutcome.connectionLost;
+        _handlePeerDisconnected();
+        break;
     }
   }
+
+  /// Test hook: drive the reconnect logic without a real peer connection.
+  @visibleForTesting
+  void debugLinkAction(CallLinkAction action) => _onLinkAction(action);
 
   Future<void> _setupPeer() async {
     await resetPeer();
 
-    if (socket == null) {
-      throw Exception("Socket is not initialized");
+    // Use the CURRENT socket and wait until it is connected (BUG-CALL-02).
+    // Nothing is sent to the other user if signaling is unreachable.
+    final Socket? live = await SignallingService.instance.ensureConnected();
+    if (live == null) {
+      throw const CallSignalingUnavailable();
     }
+    if (isClosed || _callFinished) return;
+    // Handlers registered in onInit may sit on an older socket object.
+    _listenForCallEvents();
 
-    socket!.off("IceCandidate");
-    socket!.off("callAnswered");
+    _handlers.off("IceCandidate");
+    _handlers.off("callAnswered");
 
-    socket!.on("IceCandidate", (data) {
+    _handlers.on("IceCandidate", (data) {
       safeAddCandidate(data);
     });
 
+    // Short-lived TURN credentials from the backend when available, else
+    // the static list (now incl. TURN over TLS 443). BUG-CALL-07.
+    final List<Map<String, dynamic>> iceServers =
+        await TurnCredentialService.instance.iceServers();
     final RTCPeerConnection pc = await createPeerConnection({
       'sdpSemantics': 'unified-plan',
-      'iceServers': [
-        {
-          'urls': ['stun:stun.l.google.com:19302'],
-        },
-        {
-          'urls': Urls.rtcUrl,
-          'username': Urls.rtcUserName,
-          'credential': Urls.rtcCredential,
-        },
-      ],
+      'iceServers': iceServers,
       'iceTransportPolicy': 'all',
     });
     peer = pc;
@@ -2183,7 +2644,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         _cancelPeerDisconnectTimer();
         missedCallTimer?.cancel();
         missedCallTimer = null;
-        unawaited(_startCallForegroundService());
+        // Normally already running since onInit; restarts it if that failed.
+        unawaited(_platform.startCallService(video: isVideoCall.value));
         return;
       }
 
@@ -2209,7 +2671,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
         _everConnected = true;
         _cancelPeerDisconnectTimer();
-        unawaited(_startCallForegroundService());
+        // Normally already running since onInit; restarts it if that failed.
+        unawaited(_platform.startCallService(video: isVideoCall.value));
         unawaited(audioRouteController.reapplyCurrentRoute());
         return;
       }
@@ -2238,7 +2701,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         'noiseSuppression': true,
         'autoGainControl': true,
       },
-      'video': is_video == true ? _videoCaptureConstraints() : false,
+      'video': is_video == true && !_cameraBlocked
+          ? _videoCaptureConstraints()
+          : false,
     });
 
     for (final MediaStreamTrack t in localStream!.getTracks()) {
@@ -2248,7 +2713,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
     }
 
-    if (is_video == true) {
+    if (is_video == true && !_cameraBlocked) {
       _logCaptureSettings("setup");
       await _tuneLocalVideoSender();
       final MediaStreamTrack? vidTrack =
@@ -2306,6 +2771,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await pc.setLocalDescription(answer);
       log("[SDP] initial answer ${_sdpInfo(answer.sdp)}");
 
+      _callAnnounced = true;
       socket!.emit("answerCall", {
         "callId": callId,
         "callerId": callerId,
@@ -2321,12 +2787,13 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         "callId": callId,
         "receiverId": Global.storageServices.get(PrefConst.userId),
       };
+      _callAnnounced = true;
       socket!.emit("acceptCallFromCallKit", acceptPayload);
       unawaited(_handoverCallKitAudio());
     } else {
       pc.onIceCandidate = (c) => iceCandidates.add(c);
 
-      socket!.on("callAnswered", (data) async {
+      _handlers.on("callAnswered", (data) async {
         if (!identical(peer, pc) || _remoteDescriptionSet) return;
 
         stopSound();
@@ -2380,6 +2847,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await pc.setLocalDescription(sdpOffer);
       log("[SDP] initial offer ${_sdpInfo(sdpOffer.sdp)}");
 
+      _callAnnounced = true;
       socket!.emit("makeCall", {
         "remoteUserId": remoteUserId,
         "sdpOffer": sdpOffer.toMap(),
@@ -2432,42 +2900,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  Future<void> endCall({String? type}) async {
-    if (_isCleaningUp) return;
-    _isCleaningUp = true;
-
-    final String sid = _sessionId;
-
-    try {
-      _clearTimers();
-      stopSound();
-
-      _emitEndCallRealtime();
-
-      CallSessionState.reset();
-      _exitCallScreen();
-
-      await resetPeer();
-      await audioRouteController.stopCall();
-      await _stopForegroundCallService();
-
-      if (sid.isNotEmpty) {
-        CallKitService.clearAudioHandover(
-          sid,
-          callId: callId?.toString() ?? '',
-        );
-        await CallKitService.dismiss(sid);
-        await callEnded(
-          sid,
-          type: "endCallMethodHittedFromController-Type:$type",
-        );
-      }
-
-      await WakelockPlus.disable();
-      await ProximityScreenLock.setActive(false);
-    } finally {
-      _isCleaningUp = false;
-    }
+  /// Local hang-up (End button, overlay End, CallKit / notification End,
+  /// missed-call timeout). Always tells the other side once.
+  Future<void> endCall({String? type}) {
+    return _finishCall(
+      notifyRemote: true,
+      navigateBack: true,
+      type: "endCall:${type ?? 'button'}",
+    );
   }
 
   void _handlePeerDisconnected() {
@@ -2478,6 +2918,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   void toggleMic() {
     isAudioOn = !isAudioOn;
     localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
+    _emitMediaState();
+    // Keep the iOS lock screen / CallKit mute button in sync.
+    unawaited(_platform.syncCallKitMute(_callKitId, !isAudioOn));
     update();
   }
 
@@ -2520,6 +2963,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await upgradeToVideoCall();
       return;
     }
+
+    // Turning the camera ON needs the permission (P-07). Off never does.
+    if (!isVideoOn && !await _cameraAllowed()) return;
 
     isVideoOn = !isVideoOn;
     for (final MediaStreamTrack t in vids) {
@@ -2580,7 +3026,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> toggleSpeaker(BuildContext context) async {
-    final bool hasExternal = audioRouteController.isBluetoothConnected.value ||
+    final bool hasExternal = (audioRouteController.isBluetoothConnected.value &&
+            CallAudioRouteController.bluetoothPermitted.value) ||
         audioRouteController.isHeadsetConnected.value;
     if (!hasExternal) {
       final CallAudioRoute current = audioRouteController.currentRoute.value;
@@ -2600,6 +3047,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     await audioRouteController.checkDevices();
     if (!context.mounted) return;
 
+    // Android 12+: Bluetooth audio needs BLUETOOTH_CONNECT. Asked only here,
+    // when a Bluetooth device is present; denied = Bluetooth hidden (P-08).
+    CallAudioRouteController.bluetoothPermitted.value =
+        await CallPermissionFlow().bluetoothForRoutes(
+      devicePresent: audioRouteController.isBluetoothConnected.value,
+    );
+    if (!context.mounted) return;
+
     final CallAudioRoute? selected = await showAudioRouteSheet(
       context,
       audioRouteController,
@@ -2614,16 +3069,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     final int secs = callDurationRx.value;
     final minutes = (secs ~/ 60).toString().padLeft(2, '0');
     final seconds = (secs % 60).toString().padLeft(2, '0');
-    if (Utility.isNotNullEmptyOrFalse("$minutes:$seconds")) {
-      if (args["callType"] == "outGoing") {
-        stopSound();
-      }
-    }
     return "$minutes:$seconds";
   }
 
   void startCallTimer() {
     if (callTimer != null) return;
+    // The ringback stops when the call connects. This used to happen as a
+    // side effect of the `formattedDuration` getter (BUG-CALL-18).
+    stopSound();
     callTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       callDurationSeconds++;
       callDurationRx.value = callDurationSeconds;
@@ -2631,11 +3084,16 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         update();
       }
     });
+    _startQualityMonitor();
+    _refreshAutoPip();
+    if (_outgoingCallKitId.isNotEmpty) {
+      unawaited(_platform.markCallKitConnected(_outgoingCallKitId));
+    }
   }
 
   void startMissedCallTimer() {
     missedCallTimer?.cancel();
-    missCallDurationSeconds.value = 40;
+    missCallDurationSeconds.value = kCallRingTimeout.inSeconds;
     missedCallTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (isClosed) {
         timer.cancel();
@@ -2646,12 +3104,16 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
       if (missCallDurationSeconds.value == 0) {
         timer.cancel();
-        missedCall();
+        missedCall(timedOut: true);
       }
     });
   }
 
-  Future<void> missedCall() async {
+  /// Caller side: ring timeout ([timedOut], shows "No answer" with Call
+  /// again) or the user cancelled before an answer.
+  Future<void> missedCall({bool timedOut = false}) async {
+    if (!isCallLive) return;
+    if (timedOut) _endOutcome = CallEndOutcome.noAnswer;
     final Map<String, dynamic> param = {
       "callId": callId,
       "remoteUserId": remoteUserId,
@@ -2664,6 +3126,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   void _clearTimers() {
     callTimer?.cancel();
+    _statsTimer?.cancel();
+    _statsTimer = null;
+    _waitingTimer?.cancel();
     missedCallTimer?.cancel();
     _firstFrameTimer?.cancel();
     _qualityTimer?.cancel();
@@ -2676,16 +3141,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   }
 
   void playSound() {
-    FlutterRingtonePlayer().play(
-      asAlarm: false,
-      fromAsset: Assets.music.ringing,
-      looping: true,
-      volume: 1.0,
-    );
+    _platform.playRingback(_platform.ringbackAsset);
   }
 
   void stopSound() {
-    FlutterRingtonePlayer().stop();
+    _platform.stopRingtone();
   }
 
   void updatePipPosition({
@@ -2793,16 +3253,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
       final pc = await createPeerConnection({
         'sdpSemantics': 'unified-plan',
-        'iceServers': [
-          {
-            'urls': ['stun:stun.l.google.com:19302']
-          },
-          {
-            'urls': Urls.rtcUrl,
-            'username': Urls.rtcUserName,
-            'credential': Urls.rtcCredential,
-          },
-        ],
+        'iceServers': await TurnCredentialService.instance.iceServers(),
       });
       _screenPc = pc;
 
@@ -3139,6 +3590,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         log("[SHARE] foreground task initialized");
       }
 
+      // Screen share replaces the call's service with its own (it adds
+      // mediaProjection); the call takes it back when sharing stops.
+      CallForegroundService.yieldToScreenShare();
       for (int attempt = 1; attempt <= 2; attempt++) {
         if (await FlutterForegroundTask.isRunningService) {
           await FlutterForegroundTask.stopService();
@@ -3189,6 +3643,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     } catch (e) {
       log("[SHARE] foreground service stop error: $e");
     }
+    // The call continues: give it its own ongoing-call service back.
+    if (isCallLive && !_isCleaningUp) {
+      unawaited(_platform.startCallService(video: isVideoCall.value));
+    }
   }
 
   Future<void> _tuneScreenSender() async {
@@ -3216,67 +3674,69 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   @override
   void onClose() {
-    if (isMinimized.value) {
-      log("[Call] onClose ignored because call is minimized in overlay");
-      return;
-    }
+    // Normally every end path ran _finishCall before the delete. If this
+    // controller is deleted while the call is still live (old code paths),
+    // end it properly instead of leaving a zombie call (BUG-CALL-21).
+    final bool wasLive = !_callFinished;
+    _callFinished = true;
     _isCleaningUp = true;
 
     WidgetsBinding.instance.removeObserver(this);
 
     _peerDisconnectTimer?.cancel();
     _controlsTimer?.cancel();
+    _clearTimers();
 
-    stopSound();
-
-    navigator.mediaDevices.ondevicechange = null;
-
-    socket?.off("IceCandidate");
-    socket?.off("callAnswered");
-    socket?.off("upgradeToVideo");
-    socket?.off("upgradeToVideoAnswer");
-    socket?.off("callRejected");
-    socket?.off("callEnded", _onCallEnded);
-    socket?.off("endCall", _onCallEnded);
-    socket?.off("missedCall", _onMissedCall);
-    socket?.off("callStatus");
-    socket?.off("callCreated", _onCallCreated);
-    socket?.off("newCall", _onNewCall);
-    socket?.off("sdpOfferFromCaller");
-    socket?.off("callError");
-    socket?.off("callBlocked");
-    socket?.off("screen_share_started");
-    socket?.off("screen_share_stopped");
-    socket?.off("screen_share_offer");
-    socket?.off("screen_share_answer");
-    socket?.off("screen_share_ice");
-
-    if (!_screenRendererReleased) {
-      _screenRendererReleased = true;
-      _clearScreenRenderer();
-      _disposeScreenRenderer();
+    if (wasLive) {
+      log("[Call] onClose with a live call: ending it");
+      stopSound();
+      _emitEndCallRealtime();
+      InAppCallOverlayService.instance.hideOverlay();
+      unawaited(_disposePeerResources());
+      unawaited(_platform.stopCallService());
+      unawaited(audioRouteController.stopCall());
+      final String sid = _sessionId;
+      if (sid.isNotEmpty) {
+        unawaited(_platform.dismissCallKit(sid).catchError((_) {}));
+        unawaited(
+          _platform.callEndedCleanup(sid, type: "onClose").catchError((_) {}),
+        );
+      }
+      CallSessionState.reset();
+      unawaited(_platform.setWakelock(false).catchError((_) {}));
+      unawaited(_platform.setProximity(false).catchError((_) {}));
     }
 
-    unawaited(_disposePeerResources());
-    unawaited(_stopForegroundCallService());
-    unawaited(audioRouteController.stopCall());
+    if (CallForegroundService.onHangUp != null && wasLive) {
+      CallForegroundService.onHangUp = null;
+    }
+
+    // Only this call's handlers; global ones stay (BUG-CALL-03).
+    _handlers.offAll();
+
+    if (_platform.mediaEnabled) {
+      navigator.mediaDevices.ondevicechange = null;
+      if (!_screenRendererReleased) {
+        _screenRendererReleased = true;
+        _clearScreenRenderer();
+        _disposeScreenRenderer();
+      }
+      // One controller per call now, so the renderers must go with it.
+      unawaited(localRenderer.dispose().catchError((_) {}));
+      unawaited(remoteRenderer.dispose().catchError((_) {}));
+    }
 
     if (Get.isRegistered<CallAudioRouteController>()) {
       Get.delete<CallAudioRouteController>(force: true);
     }
 
-    _clearTimers();
-
-    final sid = _sessionId;
-    if (sid.isNotEmpty) {
-      unawaited(callEnded(sid, type: "onClose"));
-    }
-
-    CallSessionState.reset();
-
-    WakelockPlus.disable();
-    ProximityScreenLock.setActive(false);
-
     super.onClose();
   }
+}
+
+/// Thrown when the signaling socket cannot be reached before a call starts.
+class CallSignalingUnavailable implements Exception {
+  const CallSignalingUnavailable();
+  @override
+  String toString() => 'CallSignalingUnavailable';
 }

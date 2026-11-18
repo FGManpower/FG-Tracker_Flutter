@@ -14,12 +14,10 @@ import 'package:fgtracker/app/Model/profile_details_model.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Messages/Views/Group/media_links_docs_screen.dart';
 import 'package:fgtracker/app/Core/util/chat_navigation.dart';
-import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../Controller/user_profile_details_controller.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart' hide BlockStatus;
@@ -415,22 +413,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       return;
     }
 
-    if (Get.isRegistered<CallingController>()) {
-      Get.delete<CallingController>(force: true);
-    }
-
-    Get.toNamed(
-      Routes.callScreen,
-      arguments: {
-        "callerId": _myId,
-        "remoteUserId": (user.userId ?? "").toString(),
-        "callerName": user.name ?? appL10n.chatList_memberFallback,
-        "callerProfile": user.profileImage,
-        "offer": null,
-        "is_video": isVideo,
-        "callType": "outGoing",
-      },
-    );
+    // Same entry as every other call: live-call check + permissions
+    // (BUG-CALL-21, BUG-CALL-30).
+    CallService().startOutGoingCall(context,
+        callerId: _myId,
+        remoteUserId: (user.userId ?? "").toString(),
+        is_video: isVideo,
+        callerName: user.name ?? appL10n.chatList_memberFallback,
+        callerProfile: user.profileImage);
   }
 
   Widget _buildQuickActions(UserDetails user) {

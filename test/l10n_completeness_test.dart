@@ -81,7 +81,9 @@ void main() {
     }
   });
 
-  test('the number of languages shown on the picker equals the number of codes in _compiledL10nCodes (20)', () {
+  test(
+      'the number of languages shown on the picker equals the number of codes in _compiledL10nCodes (20)',
+      () {
     expect(kWorkingLanguages.length, codes.length);
     expect(kWorkingLanguages.length, 20);
     expect(kWorkingLanguages.map((o) => o.code).toList(), codes);
@@ -176,6 +178,7 @@ void main() {
   test('every key resolves through AppLocalizations in all 17 locales', () {
     // Spot-check the generated code: no locale falls back to the key name.
     for (final c in codes) {
+      final l = lookupAppLocalizations(Locale(c));
       final l = lookupAppLocalizations(parseLocale(c));
       expect(l.localeName, c);
       expect(l.common_cancel, isNot('common_cancel'));
@@ -189,6 +192,7 @@ void main() {
 
     for (final c in codes) {
       test(c, () {
+        final l = lookupAppLocalizations(Locale(c));
         final l = lookupAppLocalizations(parseLocale(c));
         final d = appDateFormat('d MMM yyyy', l).format(date);
         final t = appTime(date, l);

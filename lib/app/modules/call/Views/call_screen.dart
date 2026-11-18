@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 
 import '../widget/call_dial_pad.dart';
+import '../widget/call_ring_readiness_banner.dart';
 import 'call_recent_calls_tab.dart';
 
 class CallScreen extends StatefulWidget {
@@ -83,6 +84,8 @@ class _CallScreenState extends State<CallScreen>
                 Column(
                   children: [
                     _buildAppBar(),
+                    // P-09 / P-10 (calling Phase 2): non-blocking.
+                    const CallRingReadinessBanner(),
                     SizedBox(height: 8.h),
                     _buildSearchBar(),
                     SizedBox(height: 12.h),

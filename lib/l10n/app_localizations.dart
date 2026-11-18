@@ -1267,6 +1267,168 @@ abstract class AppLocalizations {
   /// **'All Contacts'**
   String get call_allContacts;
 
+  /// No description provided for @call_alreadyInCall.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re already on a call'**
+  String get call_alreadyInCall;
+
+  /// No description provided for @call_permMicTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow microphone'**
+  String get call_permMicTitle;
+
+  /// No description provided for @call_permMicBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The other person needs to hear you. Allow the microphone to make and answer calls.'**
+  String get call_permMicBody;
+
+  /// No description provided for @call_permMicBlockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone access is off for FG Tracker. Open Settings, turn on Microphone, then come back to continue.'**
+  String get call_permMicBlockedBody;
+
+  /// No description provided for @call_permCameraTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera is off'**
+  String get call_permCameraTitle;
+
+  /// No description provided for @call_permCameraBlockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera access is off for FG Tracker. Start a voice call now, or turn on Camera in Settings.'**
+  String get call_permCameraBlockedBody;
+
+  /// No description provided for @call_permCameraMidCallBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera access is off. Turn on Camera in Settings to share video. Your call continues.'**
+  String get call_permCameraMidCallBody;
+
+  /// No description provided for @call_permVoiceInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Start voice call instead'**
+  String get call_permVoiceInstead;
+
+  /// No description provided for @call_permMicNeededToAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone access is needed to answer calls'**
+  String get call_permMicNeededToAnswer;
+
+  /// No description provided for @call_permCameraOffChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera off · Allow'**
+  String get call_permCameraOffChip;
+
+  /// No description provided for @call_permRingBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Incoming calls may not ring'**
+  String get call_permRingBanner;
+
+  /// No description provided for @call_permAnswerReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Be ready to answer calls'**
+  String get call_permAnswerReadyTitle;
+
+  /// No description provided for @call_permAnswerReadyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow the microphone now, so you can answer calls even from the lock screen.'**
+  String get call_permAnswerReadyBody;
+
+  /// No description provided for @call_onAnotherCall.
+  ///
+  /// In en, this message translates to:
+  /// **'On another call'**
+  String get call_onAnotherCall;
+
+  /// No description provided for @call_remoteMuted.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} muted'**
+  String call_remoteMuted(String name);
+
+  /// No description provided for @call_videoPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Video paused'**
+  String get call_videoPaused;
+
+  /// No description provided for @call_poorConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Poor connection'**
+  String get call_poorConnection;
+
+  /// No description provided for @call_poorConnectionTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Poor connection. Turn off your camera for clearer audio.'**
+  String get call_poorConnectionTip;
+
+  /// No description provided for @call_endNoAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'No answer'**
+  String get call_endNoAnswer;
+
+  /// No description provided for @call_endDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Call declined'**
+  String get call_endDeclined;
+
+  /// No description provided for @call_endUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get call_endUnavailable;
+
+  /// No description provided for @call_endConnectionLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection lost'**
+  String get call_endConnectionLost;
+
+  /// No description provided for @call_callAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Call again'**
+  String get call_callAgain;
+
+  /// No description provided for @call_waitingCall.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is calling…'**
+  String call_waitingCall(String name);
+
+  /// No description provided for @call_endAndAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'End & accept'**
+  String get call_endAndAccept;
+
+  /// No description provided for @call_callBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Call back'**
+  String get call_callBack;
+
+  /// No description provided for @call_onHold.
+  ///
+  /// In en, this message translates to:
+  /// **'On hold'**
+  String get call_onHold;
+
   /// No description provided for @call_allowAccess.
   ///
   /// In en, this message translates to:

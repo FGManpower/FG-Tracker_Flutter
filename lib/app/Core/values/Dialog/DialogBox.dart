@@ -23,7 +23,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
-import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:geolocator/geolocator.dart';
@@ -1549,11 +1548,6 @@ class DialogBox {
                                         Navigator.pop(ctx);
                                         Navigator.pop(ctx);
 
-                                        if (Get.isRegistered<
-                                            CallingController>()) {
-                                          Get.delete<CallingController>(
-                                              force: true);
-                                        }
 
 
 
@@ -1627,11 +1621,6 @@ class DialogBox {
                                         Navigator.pop(ctx);
                                         Navigator.pop(ctx);
 
-                                        if (Get.isRegistered<
-                                            CallingController>()) {
-                                          Get.delete<CallingController>(
-                                              force: true);
-                                        }
 
 
 

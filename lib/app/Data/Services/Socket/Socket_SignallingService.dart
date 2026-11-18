@@ -1,12 +1,13 @@
-import 'dart:convert';
+import 'dart:async';
 import 'dart:developer';
 
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
-import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
-import 'package:fgtracker/app/routes/app_pages.dart';
-import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 class SignallingService {
@@ -76,55 +77,25 @@ class SignallingService {
       final sessionId = _extractSessionId(data);
       if (sessionId.isEmpty) return;
 
-      CallSessionState.sessionId = sessionId;
+      // Do not overwrite the live session id: callEnded() resets it only
+      // when this event is for the live call.
       await callEnded(sessionId, type: "socketCallEnded");
     });
 
+    // Event names only: payloads carry SDP / ICE candidates (no full SDP in
+    // logs).
     s.onAny((event, dynamic data) {
-      log("SingleCallEvent: $event, Data: $data");
+      if (kDebugMode) log("[CALL] signaling event: $event");
     });
 
     s.on('cancelMissedCallTimer', (data) {
       log("Cancel missed call timer received");
     });
 
-    s.on("newCall", (data) {
-      if (Get.isRegistered<CallingController>()) {
-        final controller = Get.find<CallingController>();
-        if (Get.currentRoute == Routes.callScreen) {
-          final callKit = CallKitService.instance;
-
-          callKit.onAcceptCall = (callId, extra, uuid) async {
-            CallSessionState.sessionId = uuid ?? '';
-            controller.endCall();
-            CallSessionState.sessionId = uuid ?? '';
-
-            Future.delayed(
-              Duration(seconds: 2),
-              () {
-                final callerId = extra['callerId']?.toString() ?? '';
-
-                log('Incoming call accepted automatic without press to notification: $extra');
-                Get.toNamed(Routes.callScreen, arguments: {
-                  'callerId': callerId,
-                  'remoteUserId': callerId,
-                  'callId': callId,
-                  'sessionId': uuid,
-                  'is_video':
-                      extra['isVideo'] == 'true' || extra['isVideo'] == true,
-                  'profileImage': extra['profileImage'],
-                  'callType': 'Incoming',
-                  'fromCallKit': true,
-                  'callerName': extra['callerName'],
-                  'offer':
-                      CallKitService.decodeOffer(extra['sdpOfferCompressed']),
-                });
-              },
-            );
-          };
-        }
-      }
-    });
+    // A `newCall` during a live call is handled by the call screen (waiting
+    // banner: End & accept / Decline, BUG-CALL-05). The old handler here
+    // replaced the global CallKit accept handler, ended the current call and
+    // opened the new one after a fixed 2 s, and never restored the handler.
     s.onConnectError((err) {
       log("Connect Error: $err");
     });
@@ -132,6 +103,38 @@ class SignallingService {
     s.onError((err) {
       log("Socket Error: $err");
     });
+  }
+
+  /// Returns the CURRENT socket once it is connected, or `null` after
+  /// [timeout]. Creates it from the saved user id if it does not exist yet.
+  /// Callers must read the socket through this service and never keep their
+  /// own copy: it is re-created on login (BUG-CALL-02).
+  Future<Socket?> ensureConnected({
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
+    Socket? s = socket;
+    if (s == null) {
+      final dynamic userId = Global.storageServices.get(PrefConst.userId);
+      if (userId == null || userId.toString().isEmpty) return null;
+      init(websocketUrl: ConstRes.socketUrl, selfCallerID: userId.toString());
+      s = socket;
+      if (s == null) return null;
+    }
+    if (s.connected) return s;
+
+    final Socket target = s;
+    final Completer<bool> done = Completer<bool>();
+    void onConnect(dynamic _) {
+      if (!done.isCompleted) done.complete(true);
+    }
+
+    target.on('connect', onConnect);
+    if (!target.active) target.connect();
+    final bool ok = await done.future
+        .timeout(timeout, onTimeout: () => target.connected);
+    target.off('connect', onConnect);
+    if (kDebugMode) log('[CALL] signaling ensureConnected ok=$ok');
+    return ok && identical(target, socket) ? target : null;
   }
 
   void disconnect() {

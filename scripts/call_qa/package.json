@@ -1,0 +1,17 @@
+{
+  "name": "fg-call-qa-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Signaling-only bot that plays the other user in 1:1 call E2E tests (/callSignaling). No media.",
+  "main": "call_bot.js",
+  "scripts": {
+    "bot": "node call_bot.js",
+    "check": "node --check call_bot.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.7.5"
+  }
+}

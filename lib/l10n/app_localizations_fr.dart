@@ -665,6 +665,99 @@ class AppLocalizationsFr extends AppLocalizations {
   String get call_allContacts => 'Tous les contacts';
 
   @override
+  String get call_alreadyInCall => 'Vous êtes déjà en communication';
+
+  @override
+  String get call_permMicTitle => 'Autoriser le micro';
+
+  @override
+  String get call_permMicBody =>
+      'Votre correspondant doit vous entendre. Autorisez le micro pour passer et recevoir des appels.';
+
+  @override
+  String get call_permMicBlockedBody =>
+      'L’accès au micro est désactivé pour FG Tracker. Ouvrez les Réglages, activez le micro, puis revenez pour continuer.';
+
+  @override
+  String get call_permCameraTitle => 'La caméra est désactivée';
+
+  @override
+  String get call_permCameraBlockedBody =>
+      'L’accès à la caméra est désactivé pour FG Tracker. Lancez un appel vocal maintenant ou activez la caméra dans les Réglages.';
+
+  @override
+  String get call_permCameraMidCallBody =>
+      'L’accès à la caméra est désactivé. Activez la caméra dans les Réglages pour partager la vidéo. Votre appel continue.';
+
+  @override
+  String get call_permVoiceInstead => 'Passer un appel vocal à la place';
+
+  @override
+  String get call_permMicNeededToAnswer =>
+      'L’accès au micro est nécessaire pour répondre aux appels';
+
+  @override
+  String get call_permCameraOffChip => 'Caméra désactivée · Autoriser';
+
+  @override
+  String get call_permRingBanner =>
+      'Les appels entrants risquent de ne pas sonner';
+
+  @override
+  String get call_permAnswerReadyTitle => 'Soyez prêt à répondre aux appels';
+
+  @override
+  String get call_permAnswerReadyBody =>
+      'Autorisez le micro maintenant pour répondre aux appels même depuis l’écran verrouillé.';
+
+  @override
+  String get call_onAnotherCall => 'Déjà en communication';
+
+  @override
+  String call_remoteMuted(String name) {
+    return '$name a coupé son micro';
+  }
+
+  @override
+  String get call_videoPaused => 'Vidéo en pause';
+
+  @override
+  String get call_poorConnection => 'Connexion faible';
+
+  @override
+  String get call_poorConnectionTip =>
+      'Connexion faible. Coupez votre caméra pour un son plus clair.';
+
+  @override
+  String get call_endNoAnswer => 'Pas de réponse';
+
+  @override
+  String get call_endDeclined => 'Appel refusé';
+
+  @override
+  String get call_endUnavailable => 'Indisponible';
+
+  @override
+  String get call_endConnectionLost => 'Connexion perdue';
+
+  @override
+  String get call_callAgain => 'Rappeler';
+
+  @override
+  String call_waitingCall(String name) {
+    return '$name vous appelle…';
+  }
+
+  @override
+  String get call_endAndAccept => 'Raccrocher et répondre';
+
+  @override
+  String get call_callBack => 'Rappeler';
+
+  @override
+  String get call_onHold => 'En attente';
+
+  @override
   String get call_allowAccess => 'Autoriser l\'accès';
 
   @override

@@ -1,18 +1,24 @@
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
-import 'package:fgtracker/l10n/l10n.dart';
-import '../../../Core/constant/pref_res.dart';
+import 'package:socket_io_client/socket_io_client.dart' show Socket;
 import '../../../Core/util/decomPress.dart';
-import '../../../Core/values/global.dart';
 import '../../../Data/Services/CallStateTracker.dart';
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
 import '../../../Model/call_model.dart';
 import '../../../routes/app_pages.dart';
+import '../Services/call_entry.dart';
+import '../Services/call_socket_handlers.dart';
 
 class IncomingCallController extends GetxController {
   final args = Get.arguments;
-  final socket = SignallingService.instance.socket;
+
+  /// Always the current signaling socket (re-created on login, BUG-CALL-02).
+  Socket? get socket => SignallingService.instance.socket;
+
+  /// Only this screen's handlers; global ones are never removed (BUG-CALL-03).
+  late final CallSocketHandlers _handlers = CallSocketHandlers(() => socket);
+
   late IncomingCallModel call;
   Map<String, dynamic>? offer;
   bool gotSDP = false;
@@ -26,7 +32,6 @@ class IncomingCallController extends GetxController {
       fromAsset: Assets.music.incomingCall,
       looping: true,
       volume: 1.0,
-
     );
 
     call = args['callDetail'];
@@ -37,56 +42,49 @@ class IncomingCallController extends GetxController {
       gotSDP = true;
       update();
     } else {
-      _listenForSocketOffer();
+      _handlers.on("newCall", _onNewCallOffer);
     }
 
-    socket?.off("callEnded");
-    socket?.on("callEnded", (data) {
-      FlutterRingtonePlayer().stop();
-      CallStateTracker.isIncomingCallScreenOpen = false;
-      Get.back();
-    });
-
-    socket?.on("missedCall", (data) {
-      FlutterRingtonePlayer().stop();
-      CallStateTracker.isIncomingCallScreenOpen = false;
-      Get.back();
-    });
+    _handlers.on("callEnded", _onCallGone);
+    _handlers.on("missedCall", _onCallGone);
   }
 
-  void _listenForSocketOffer() {
-    socket?.off("newCall");
-    socket?.on("newCall", (data) {
-      final incomingRemoteId =
-          (data["callerId"] ?? data["remoteUserId"])?.toString() ?? "";
-      if (incomingRemoteId.isNotEmpty && incomingRemoteId != call.callerId) return;
+  void _onCallGone(dynamic data) {
+    FlutterRingtonePlayer().stop();
+    CallStateTracker.isIncomingCallScreenOpen = false;
+    _handlers.offAll();
+    Get.back();
+  }
 
-      offer = data["sdpOffer"];
-      gotSDP = true;
-      update();
-    });
+  void _onNewCallOffer(dynamic data) {
+    final incomingRemoteId =
+        (data["callerId"] ?? data["remoteUserId"])?.toString() ?? "";
+    if (incomingRemoteId.isNotEmpty && incomingRemoteId != call.callerId) {
+      return;
+    }
+
+    offer = data["sdpOffer"];
+    gotSDP = true;
+    update();
   }
 
   @override
   void onClose() {
     FlutterRingtonePlayer().stop();
     CallStateTracker.isIncomingCallScreenOpen = false;
-    socket?.off("callEnded");
-    socket?.off("missedCall");
-    socket?.off("newCall");
+    _handlers.offAll();
     super.onClose();
   }
 
   void rejectCall() {
     FlutterRingtonePlayer().stop();
-    socket?.off("callEnded");
-    socket?.off("missedCall");
-    socket?.off("newCall");
-    final myId = Global.storageServices.get(PrefConst.userId).toString();
-    socket?.emit("rejectCall", {
-      "callId": call.callId,
-      "remoteUserId": myId,
-    });
+    _handlers.offAll();
+    // The server routes the reject to `remoteUserId`: it must be the CALLER,
+    // not me, or the caller keeps ringing (BUG-CALL-04).
+    socket?.emit(
+      "rejectCall",
+      rejectCallPayload(callId: call.callId, callerId: call.callerId),
+    );
     CallStateTracker.isIncomingCallScreenOpen = false;
     Get.back();
   }
@@ -94,22 +92,19 @@ class IncomingCallController extends GetxController {
   void acceptCall() {
     FlutterRingtonePlayer().stop();
     CallStateTracker.isIncomingCallScreenOpen = false;
-    socket?.off("callEnded");
-    socket?.off("missedCall");
-    socket?.off("newCall");
+    _handlers.offAll();
 
     Get.offNamed(
       Routes.callScreen,
-      arguments: {
-        "callerId": call.callerId,
-        "remoteUserId": Global.storageServices.get(PrefConst.userId).toString(),
-        "offer": offer,
-        "is_video": call.isVideo,
-        "callerName": call.callerName,
-        "callId": call.callId,
-        "callerProfile": call.callerProfileImage,
-        "callType": "Incoming",
-      },
+      arguments: incomingCallArgs(
+        callerId: call.callerId,
+        callId: call.callId,
+        isVideo: call.isVideo,
+        callerName: call.callerName,
+        profileImage: call.callerProfileImage,
+        offer: offer,
+        fromCallKit: false,
+      ),
     );
   }
 }

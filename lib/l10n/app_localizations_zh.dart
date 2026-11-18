@@ -623,6 +623,93 @@ class AppLocalizationsZh extends AppLocalizations {
   String get call_allContacts => '所有联系人';
 
   @override
+  String get call_alreadyInCall => '您已在通话中';
+
+  @override
+  String get call_permMicTitle => '允许使用麦克风';
+
+  @override
+  String get call_permMicBody => '对方需要听到你的声音。请允许使用麦克风以拨打和接听电话。';
+
+  @override
+  String get call_permMicBlockedBody =>
+      'FG Tracker 的麦克风权限已关闭。请打开设置，开启麦克风，然后返回继续。';
+
+  @override
+  String get call_permCameraTitle => '摄像头已关闭';
+
+  @override
+  String get call_permCameraBlockedBody =>
+      'FG Tracker 的摄像头权限已关闭。现在发起语音通话，或在设置中开启摄像头。';
+
+  @override
+  String get call_permCameraMidCallBody => '摄像头权限已关闭。请在设置中开启摄像头以共享视频。通话将继续。';
+
+  @override
+  String get call_permVoiceInstead => '改为发起语音通话';
+
+  @override
+  String get call_permMicNeededToAnswer => '接听电话需要麦克风权限';
+
+  @override
+  String get call_permCameraOffChip => '摄像头已关闭 · 允许';
+
+  @override
+  String get call_permRingBanner => '来电可能不会响铃';
+
+  @override
+  String get call_permAnswerReadyTitle => '随时准备接听电话';
+
+  @override
+  String get call_permAnswerReadyBody => '现在允许使用麦克风，这样即使在锁屏界面也能接听电话。';
+
+  @override
+  String get call_onAnotherCall => '正在通话中';
+
+  @override
+  String call_remoteMuted(String name) {
+    return '$name 已静音';
+  }
+
+  @override
+  String get call_videoPaused => '视频已暂停';
+
+  @override
+  String get call_poorConnection => '网络连接较差';
+
+  @override
+  String get call_poorConnectionTip => '网络连接较差。关闭摄像头可让声音更清晰。';
+
+  @override
+  String get call_endNoAnswer => '无人接听';
+
+  @override
+  String get call_endDeclined => '通话被拒绝';
+
+  @override
+  String get call_endUnavailable => '无法接通';
+
+  @override
+  String get call_endConnectionLost => '连接已断开';
+
+  @override
+  String get call_callAgain => '重新拨打';
+
+  @override
+  String call_waitingCall(String name) {
+    return '$name 来电…';
+  }
+
+  @override
+  String get call_endAndAccept => '结束并接听';
+
+  @override
+  String get call_callBack => '回拨';
+
+  @override
+  String get call_onHold => '通话保持中';
+
+  @override
   String get call_allowAccess => '允许访问';
 
   @override
@@ -8288,6 +8375,93 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get call_allContacts => '所有聯絡人';
+
+  @override
+  String get call_alreadyInCall => '您已在通話中';
+
+  @override
+  String get call_permMicTitle => '允許使用麥克風';
+
+  @override
+  String get call_permMicBody => '對方需要聽到你的聲音。請允許使用麥克風以撥打和接聽電話。';
+
+  @override
+  String get call_permMicBlockedBody =>
+      'FG Tracker 的麥克風權限已關閉。請開啟設定，開啟麥克風，然後返回繼續。';
+
+  @override
+  String get call_permCameraTitle => '相機已關閉';
+
+  @override
+  String get call_permCameraBlockedBody =>
+      'FG Tracker 的相機權限已關閉。現在發起語音通話，或在設定中開啟相機。';
+
+  @override
+  String get call_permCameraMidCallBody => '相機權限已關閉。請在設定中開啟相機以分享視訊。通話將繼續。';
+
+  @override
+  String get call_permVoiceInstead => '改為發起語音通話';
+
+  @override
+  String get call_permMicNeededToAnswer => '接聽電話需要麥克風權限';
+
+  @override
+  String get call_permCameraOffChip => '相機已關閉 · 允許';
+
+  @override
+  String get call_permRingBanner => '來電可能不會響鈴';
+
+  @override
+  String get call_permAnswerReadyTitle => '隨時準備接聽電話';
+
+  @override
+  String get call_permAnswerReadyBody => '現在允許使用麥克風，這樣即使在鎖定畫面也能接聽電話。';
+
+  @override
+  String get call_onAnotherCall => '正在通話中';
+
+  @override
+  String call_remoteMuted(String name) {
+    return '$name 已靜音';
+  }
+
+  @override
+  String get call_videoPaused => '視訊已暫停';
+
+  @override
+  String get call_poorConnection => '網路連線不佳';
+
+  @override
+  String get call_poorConnectionTip => '網路連線不佳。關閉相機可讓聲音更清楚。';
+
+  @override
+  String get call_endNoAnswer => '無人接聽';
+
+  @override
+  String get call_endDeclined => '通話被拒絕';
+
+  @override
+  String get call_endUnavailable => '無法接通';
+
+  @override
+  String get call_endConnectionLost => '連線已中斷';
+
+  @override
+  String get call_callAgain => '重新撥打';
+
+  @override
+  String call_waitingCall(String name) {
+    return '$name 來電…';
+  }
+
+  @override
+  String get call_endAndAccept => '結束並接聽';
+
+  @override
+  String get call_callBack => '回撥';
+
+  @override
+  String get call_onHold => '通話保留中';
 
   @override
   String get call_allowAccess => '允許訪問';

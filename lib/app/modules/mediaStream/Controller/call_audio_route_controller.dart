@@ -17,6 +17,10 @@ class CallAudioRouteController extends GetxController
   static final RxBool _sharedIsVideo = false.obs;
   static final RxBool _sharedBluetooth = false.obs;
   static final RxBool _sharedWired = false.obs;
+
+  /// False when Android 12+ BLUETOOTH_CONNECT was refused: Bluetooth routes
+  /// are hidden and the call continues (calling P-08).
+  static final RxBool bluetoothPermitted = true.obs;
   static final List<MediaStreamTrack> _remoteAudioTracks = <MediaStreamTrack>[];
 
   static int _generation = 0;
@@ -121,7 +125,8 @@ class CallAudioRouteController extends GetxController
   List<CallAudioRoute> get availableRoutes => <CallAudioRoute>[
         if (_hasEarpiece) CallAudioRoute.earpiece,
         if (_hasSpeaker) CallAudioRoute.speaker,
-        if (isBluetoothConnected.value) CallAudioRoute.bluetooth,
+        if (isBluetoothConnected.value && bluetoothPermitted.value)
+          CallAudioRoute.bluetooth,
         if (isHeadsetConnected.value) CallAudioRoute.headset,
       ];
 

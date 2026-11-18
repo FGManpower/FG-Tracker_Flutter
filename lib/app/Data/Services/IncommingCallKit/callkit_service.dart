@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +10,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_callkit_incoming/entities/entities.dart';
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart'
+    show kCallRingTimeout;
 
 typedef CallActionCallback = FutureOr<void> Function(
     String callId,
@@ -105,6 +108,18 @@ class CallKitService with WidgetsBindingObserver {
   CallActionCallback? onEndCall;
   Future<void> Function(String token)? onVoipToken;
   Future<String?> Function(String callId)? getCallStatus;
+
+  /// True while a 1:1 call is live in the app (set by call_kit_handlers).
+  /// A second call then goes to the call screen's waiting banner instead
+  /// of the system incoming UI (BUG-CALL-05).
+  bool Function()? isInCall;
+  void Function(Map<String, dynamic> data)? onCallWaiting;
+
+  /// CallKit / lock-screen mute and hold (BUG-CALL-12), and "Call back" on
+  /// the missed-call notification.
+  void Function(String id, bool muted)? onMuteChanged;
+  void Function(String id, bool onHold)? onHoldChanged;
+  void Function(Map<String, dynamic> extra)? onCallback;
 
   static void _registerUuidMapping({
     String? uuid,
@@ -402,7 +417,7 @@ class CallKitService with WidgetsBindingObserver {
     if (Platform.isIOS) {
       try {
         final t = await FlutterCallkitIncoming.getDevicePushTokenVoIP();
-        _ck('VoIP token: $t');
+        _ck('VoIP token received (length ${t?.toString().length ?? 0})');
         if (t != null && t.toString().isNotEmpty) {
           await _uploadVoipToken(t.toString());
         }
@@ -429,6 +444,18 @@ class CallKitService with WidgetsBindingObserver {
             uuid;
         final callId =
             extra['callId']?.toString() ?? extra['call_id']?.toString() ?? '';
+        // P-11: the app was killed during this call (e.g. a permission was
+        // revoked in Settings). If the server says the call is over, clear
+        // CallKit instead of reopening a ghost call. Unknown status (offline)
+        // keeps the old behaviour: reopen.
+        if (callId.isNotEmpty && getCallStatus != null) {
+          final String? status = (await getCallStatus!(callId))?.toLowerCase();
+          if (status != null && _terminalStatuses.contains(status)) {
+            _ck('recover skipped: call $callId already $status');
+            await dismiss(sessionId, callId: callId, endAllUnaccepted: true);
+            continue;
+          }
+        }
         _registerUuidMapping(uuid: uuid, sessionId: sessionId, callId: callId);
         _accepted.add(uuid);
         _ck(
@@ -586,11 +613,13 @@ class CallKitService with WidgetsBindingObserver {
         handle: _iosHandle(extra, callerName, callId,
             unknownLabel: l.call_unknown),
         type: isVideo ? 1 : 0,
-        duration: 45000,
+        // Same value as the caller's missed-call timer (BUG-CALL-08).
+        duration: kCallRingTimeout.inMilliseconds,
         callingNotification: const NotificationParams(),
         missedCallNotification: NotificationParams(
           showNotification: true,
-          isShowCallback: false,
+          isShowCallback: true,
+          callbackText: l.call_callBack,
           subtitle: l.call_missedCallNotification,
         ),
         extra: <String, dynamic>{
@@ -622,7 +651,8 @@ class CallKitService with WidgetsBindingObserver {
           audioSessionPreferredSampleRate: 44100.0,
           audioSessionPreferredIOBufferDuration: 0.005,
           supportsDTMF: false,
-          supportsHolding: false,
+          // Hold / resume from CallKit (e.g. a cellular call comes in).
+          supportsHolding: true,
           supportsGrouping: false,
           supportsUngrouping: false,
           ringtonePath: 'system_ringtone_default',
@@ -785,7 +815,8 @@ class CallKitService with WidgetsBindingObserver {
             type: isVideo ? 1 : 0,
             missedCallNotification: NotificationParams(
               showNotification: true,
-              isShowCallback: false,
+              isShowCallback: true,
+              callbackText: l.call_callBack,
               subtitle: l.call_missedCallNotification,
             ),
             extra: {'callId': callId, 'session_id': id},
@@ -911,6 +942,11 @@ class CallKitService with WidgetsBindingObserver {
       case 'incomingCall':
       case 'incomingGroupCall':
         if (Platform.isIOS) return true;
+        if (screen == 'incomingCall' &&
+            instance.isInCall?.call() == true) {
+          instance.onCallWaiting?.call(<String, dynamic>{...d, 'callData': cd});
+          return true;
+        }
         final incomingId = sessionId.isNotEmpty ? sessionId : callId;
         if (incomingId.isEmpty) {
           _ck('handlePush incoming with EMPTY sessionId');
@@ -980,6 +1016,10 @@ class CallKitService with WidgetsBindingObserver {
     if (state != null && state != AppLifecycleState.resumed) return;
 
     final m = _asMap(data);
+    if (isInCall?.call() == true) {
+      _ck("socket newCall while in a call -> waiting banner, no system UI");
+      return;
+    }
     final cd = decodeCallData(m['callData']);
     final sessionId = (m['session_id'] ??
         m['sessionId'] ??
@@ -1207,6 +1247,34 @@ class CallKitService with WidgetsBindingObserver {
           onEndCall?.call(callId, extra, uuid);
           break;
 
+        case 'actioncalltogglemute':
+        case 'actioncalltogglehold':
+        case 'actioncallcallback':
+        case 'actioncalltoggleaudiosession':
+          final CallKitSystemAction? a =
+              mapSystemAction(name, _asMap(_eventBody(e)));
+          _ck('system action $name -> $a');
+          if (a == null) break;
+          switch (a.kind) {
+            case CallKitSystemActionKind.mute:
+              onMuteChanged?.call(a.id, a.value);
+              break;
+            case CallKitSystemActionKind.hold:
+              onHoldChanged?.call(a.id, a.value);
+              break;
+            case CallKitSystemActionKind.callback:
+              onCallback?.call(extra);
+              break;
+            case CallKitSystemActionKind.audioSession:
+              break; // handled natively (AppDelegate)
+          }
+          break;
+
+        case 'actioncallstart':
+        case 'actioncallconnected':
+        case 'actioncallincoming':
+          break;
+
         case 'actiondidupdatedevicepushtokenvoip':
           final t = (e as dynamic).body?['deviceTokenVoIP']?.toString() ?? '';
           if (t.isNotEmpty) _uploadVoipToken(t);
@@ -1330,4 +1398,116 @@ class CallKitService with WidgetsBindingObserver {
   Future<void> _uploadVoipToken(String token) async {
     if (onVoipToken != null) await onVoipToken!(token);
   }
+
+  /// Maps a CallKit system action (lock screen, headset, cellular call) to
+  /// what the call screen must do. Pure: unit-tested (CT-14).
+  static CallKitSystemAction? mapSystemAction(
+    String name,
+    Map<String, dynamic> body,
+  ) {
+    bool flag(List<String> keys) {
+      for (final String k in keys) {
+        final dynamic v = body[k];
+        if (v is bool) return v;
+        if (v != null) return v.toString() == 'true' || v.toString() == '1';
+      }
+      return false;
+    }
+
+    final String id = (body['id'] ?? body['uuid'] ?? '').toString();
+    switch (name) {
+      case 'actioncalltogglemute':
+        return CallKitSystemAction(
+            CallKitSystemActionKind.mute, id, flag(<String>['isMuted', 'muted']));
+      case 'actioncalltogglehold':
+        return CallKitSystemAction(
+            CallKitSystemActionKind.hold, id, flag(<String>['isOnHold', 'onHold']));
+      case 'actioncalltoggleaudiosession':
+        return CallKitSystemAction(CallKitSystemActionKind.audioSession, id,
+            flag(<String>['isActivate', 'isActive']));
+      case 'actioncallcallback':
+        return CallKitSystemAction(CallKitSystemActionKind.callback, id, true);
+    }
+    return null;
+  }
+
+  /// Random RFC 4122 v4 id for an outgoing CallKit call.
+  static String newUuid() {
+    final Random r = Random.secure();
+    final List<int> b = List<int>.generate(16, (_) => r.nextInt(256));
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    final String h = b.map((int x) => x.toRadixString(16).padLeft(2, '0')).join();
+    return '${h.substring(0, 8)}-${h.substring(8, 12)}-${h.substring(12, 16)}-'
+        '${h.substring(16, 20)}-${h.substring(20)}';
+  }
+
+  /// iOS: report an OUTGOING call to CallKit (BUG-CALL-12), so it shows in
+  /// the system call UI / Recents, the lock screen and headset can end or
+  /// mute it, and a cellular call can hold it. Audio uses the same manual
+  /// CallKit path as incoming calls (AppDelegate `prepareCallKitAudio`).
+  static Future<void> startOutgoing({
+    required String uuid,
+    required String name,
+    required String handle,
+    required bool isVideo,
+  }) async {
+    if (!Platform.isIOS) return;
+    try {
+      await const MethodChannel('com.fgtracker.audio_route')
+          .invokeMethod<dynamic>('prepareCallKitAudio', <String, dynamic>{
+        'isVideo': isVideo,
+      });
+    } catch (e) {
+      _ck('prepareCallKitAudio error: $e');
+    }
+    try {
+      _registerUuidMapping(uuid: uuid, sessionId: uuid, callId: '');
+      await FlutterCallkitIncoming.startCall(
+        CallKitParams(
+          id: uuid,
+          nameCaller: name,
+          handle: handle.isNotEmpty ? handle : name,
+          type: isVideo ? 1 : 0,
+          extra: <String, dynamic>{'direction': 'outgoing'},
+          ios: IOSParams(
+            handleType: 'generic',
+            supportsVideo: isVideo,
+            supportsHolding: true,
+            maximumCallGroups: 1,
+            maximumCallsPerCallGroup: 1,
+            audioSessionMode: isVideo ? 'videoChat' : 'voiceChat',
+            audioSessionActive: true,
+            audioSessionPreferredSampleRate: 44100.0,
+            audioSessionPreferredIOBufferDuration: 0.005,
+          ),
+        ),
+      );
+      _ck('outgoing call reported to CallKit uuid=$uuid');
+    } catch (e) {
+      _ck('startCall error: $e');
+    }
+  }
+
+  /// Keep the CallKit mute state in sync with the in-app mute button.
+  static Future<void> syncMute(String id, bool muted) async {
+    if (!Platform.isIOS || id.isEmpty) return;
+    try {
+      await FlutterCallkitIncoming.muteCall(id, isMuted: muted);
+    } catch (e) {
+      _ck('muteCall error: $e');
+    }
+  }
+}
+
+enum CallKitSystemActionKind { mute, hold, audioSession, callback }
+
+class CallKitSystemAction {
+  const CallKitSystemAction(this.kind, this.id, this.value);
+  final CallKitSystemActionKind kind;
+  final String id;
+  final bool value;
+
+  @override
+  String toString() => 'CallKitSystemAction($kind, id=$id, value=$value)';
 }

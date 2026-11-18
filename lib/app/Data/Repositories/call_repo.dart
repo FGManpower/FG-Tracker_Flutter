@@ -47,6 +47,47 @@ class CallRepo {
     return CommonResponse.fromJson(response);
   }
 
+  /// Server status of a call (`callDetail.status`, lower case), or `null`
+  /// when it is unknown: no token, no network, timeout, non-200, bad body.
+  ///
+  /// `null` must never be read as "ended": the old [isCallActive] returned
+  /// `false` on any error, which would dismiss a real ringing call when the
+  /// phone is offline (BUG-CALL-24). Used to clear stale ringing calls on
+  /// app start / resume (BUG-CALL-10).
+  static Future<String?> fetchCallStatus(
+    String callId, {
+    Duration timeout = const Duration(seconds: 4),
+  }) async {
+    if (callId.isEmpty) return null;
+    try {
+      final pref = await SharedPreferences.getInstance();
+      final token = pref.get(PrefConst.STORAGE_USER_TOKEN_KEY);
+      if (token == null || token.toString().isEmpty) return null;
+
+      final Uri uri = Uri.parse('${ConstRes.aBaseUrl}getCallDetail')
+          .replace(queryParameters: <String, String>{'callId': callId});
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(timeout);
+      if (response.statusCode != 200) return null;
+
+      final dynamic data = jsonDecode(response.body);
+      if (data is! Map) return null;
+      final dynamic detail = data['callDetail'];
+      if (detail is! Map) return null;
+      final String? status =
+          detail['status']?.toString().trim().toLowerCase();
+      return (status == null || status.isEmpty) ? null : status;
+    } catch (e) {
+      log("[CALL] fetchCallStatus unknown: ${e.runtimeType}");
+      return null;
+    }
+  }
+
   Future<bool> isCallActive(String callId) async {
     try {
       var pref = await SharedPreferences.getInstance();
