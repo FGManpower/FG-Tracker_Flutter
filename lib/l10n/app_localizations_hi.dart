@@ -714,6 +714,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get call_poorConnection => 'कमज़ोर कनेक्शन';
 
   @override
+  String get call_goodConnection => 'अच्छा कनेक्शन';
+
+  @override
   String get call_poorConnectionTip =>
       'कनेक्शन कमज़ोर है। साफ़ आवाज़ के लिए अपना कैमरा बंद करें।';
 

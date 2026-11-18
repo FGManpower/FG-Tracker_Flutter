@@ -681,6 +681,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get call_poorConnection => '接続が不安定です';
 
   @override
+  String get call_goodConnection => '接続は良好です';
+
+  @override
   String get call_poorConnectionTip => '接続が不安定です。音声をクリアにするにはカメラをオフにしてください。';
 
   @override

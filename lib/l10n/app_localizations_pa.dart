@@ -710,6 +710,9 @@ class AppLocalizationsPa extends AppLocalizations {
   String get call_poorConnection => 'ਕਮਜ਼ੋਰ ਕਨੈਕਸ਼ਨ';
 
   @override
+  String get call_goodConnection => 'ਵਧੀਆ ਕਨੈਕਸ਼ਨ';
+
+  @override
   String get call_poorConnectionTip =>
       'ਕਨੈਕਸ਼ਨ ਕਮਜ਼ੋਰ ਹੈ। ਸਾਫ਼ ਆਵਾਜ਼ ਲਈ ਆਪਣਾ ਕੈਮਰਾ ਬੰਦ ਕਰੋ।';
 

@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../Core/constant/pref_res.dart';
 import '../../Core/constant/urls.dart';
 import '../../Core/util/http/http_util.dart';
+import '../../modules/mediaStream/Services/call_end_probe.dart';
 import '../../Model/CallDetail.dart';
 import '../../Model/CommonRes.dart';
 import '../../Model/callDetailRes.dart';
@@ -58,7 +59,45 @@ class CallRepo {
     String callId, {
     Duration timeout = const Duration(seconds: 4),
   }) async {
-    if (callId.isEmpty) return null;
+    final Map<dynamic, dynamic>? detail =
+        await _fetchCallDetail(callId, timeout: timeout);
+    if (detail == null) return null;
+    final String? status = detail['status']?.toString().trim().toLowerCase();
+    return (status == null || status.isEmpty) ? null : status;
+  }
+
+  /// Status + end time of a call, or `null` when unknown (same rules as
+  /// [fetchCallStatus]). Used during a live call to find out whether the
+  /// other side already hung up when the socket `callEnded` was lost.
+  static Future<CallServerState?> fetchCallServerState(
+    String callId, {
+    Duration timeout = const Duration(seconds: 4),
+  }) async {
+    final Map<dynamic, dynamic>? detail =
+        await _fetchCallDetail(callId, timeout: timeout);
+    if (detail == null) return null;
+    final String status =
+        detail['status']?.toString().trim().toLowerCase() ?? '';
+    if (status.isEmpty) return null;
+    bool has(dynamic v) {
+      final String t = v?.toString().trim() ?? '';
+      return t.isNotEmpty && t != 'null' && t != '0';
+    }
+
+    return CallServerState(
+      status: status,
+      hasEndedAt: has(detail['ended_at']) ||
+          has(detail['endedAt']) ||
+          has(detail['end_time']) ||
+          has(detail['endTime']),
+    );
+  }
+
+  static Future<Map<dynamic, dynamic>?> _fetchCallDetail(
+    String callId, {
+    required Duration timeout,
+  }) async {
+    if (callId.isEmpty || callId == 'null') return null;
     try {
       final pref = await SharedPreferences.getInstance();
       final token = pref.get(PrefConst.STORAGE_USER_TOKEN_KEY);
@@ -78,10 +117,7 @@ class CallRepo {
       final dynamic data = jsonDecode(response.body);
       if (data is! Map) return null;
       final dynamic detail = data['callDetail'];
-      if (detail is! Map) return null;
-      final String? status =
-          detail['status']?.toString().trim().toLowerCase();
-      return (status == null || status.isEmpty) ? null : status;
+      return detail is Map ? detail : null;
     } catch (e) {
       log("[CALL] fetchCallStatus unknown: ${e.runtimeType}");
       return null;

@@ -715,6 +715,9 @@ class AppLocalizationsUr extends AppLocalizations {
   String get call_poorConnection => 'کمزور کنکشن';
 
   @override
+  String get call_goodConnection => 'اچھا کنکشن';
+
+  @override
   String get call_poorConnectionTip =>
       'کنکشن کمزور ہے۔ صاف آواز کے لیے اپنا کیمرا بند کریں۔';
 

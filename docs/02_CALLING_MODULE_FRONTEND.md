@@ -533,6 +533,9 @@ Every end goes through `_finishCall` (one path): timers off, `endCall` sent once
 | B-14 | Accept `remoteUserId` as string or number everywhere | Low | Unknown | Mixed today |
 | B-15 | Always include `callId` and `sessionId` in `callEnded` / `callRejected` / `missedCall` | Medium | Partly | App ignores events for other calls when ids are present |
 | B-16 | APNs environment for VoIP pushes per build | Medium | Unknown | `aps-environment=development` in the app today |
+| B-17 | Working TURN relay (static credentials rejected) | High | Broken | Device log: TURN allocate `401` then `400`, TLS 443 closes. No relay = drops on mobile data / NAT |
+| B-18 | Do not mark an answered call `missed` at the 45 s ring timeout | High | Broken | Call 40: answered via CallKit, later `missed` + `ended_at` while still running |
+| B-19 | `getCallDetail` must return `ended_at` once a call ends | Medium | Unknown | App uses it to end a call whose `callEnded` was lost |
 
 ### 8.2 Details
 
@@ -792,6 +795,29 @@ WORK ITEMS (in priority order)
   Tell us which APNs gateway (sandbox / production) the server uses for
   TestFlight and App Store VoIP pushes. The app will set
   aps-environment=production for Release builds.
+
+[B-17] HIGH – TURN relay does not work
+  The app's static TURN host (sfu.fgtracker.fgmanpower.co.in:3478, the
+  LiveKit SFU) answers Allocate with 401 and then 400 Bad Request with our
+  credentials; TURN over TLS 443 closes the connection. So 1:1 calls get no
+  relay candidate and only connect on direct / STUN paths. Calls fail or
+  drop on carrier NAT and when switching Wi-Fi <-> 4G. Please either run a
+  coturn with these credentials or ship GET /api/calls/turn-credentials
+  (B-07); the app already uses it when it exists.
+
+[B-18] HIGH – Answered calls marked "missed" at 45 s
+  Call 40 was answered from the system call screen (acceptCallFromCallKit,
+  then answerCall); history showed "completed", then at 45 s after start the
+  server changed it to "missed" with ended_at while the call was still
+  running. The ring timeout must stop once the call is answered.
+
+[B-19] MEDIUM – ended_at in getCallDetail
+  While "Reconnecting…", after a socket reconnect, on app resume and on an
+  endCall push, the app asks GET /api/getCallDetail whether the call ended
+  (a lost callEnded used to leave the other phone on "Reconnecting…" for
+  25 s). It treats ended / rejected / declined / cancelled / disconnected,
+  or completed with ended_at, as over. Please set ended_at as soon as either
+  side ends the call.
 
 PLEASE ANSWER THESE QUESTIONS
 1. Does /callSignaling verify a token today?

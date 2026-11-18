@@ -548,28 +548,33 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
-  /// Three dots: green while the link is good, amber + one dot dimmed
-  /// when the quality monitor reports a poor connection.
+  /// Connection quality: signal bars, green while the link is good, amber
+  /// with fewer bars when the quality monitor reports a poor connection.
+  /// Tap shows what it means. (It used to be three dots, which looked like
+  /// a "more options" menu that did nothing.)
   Widget _signalDots(CallingController c) {
     return Obx(() {
       final bool poor = c.isPoorConnection.value;
-      final Color on = poor ? _warn : _good;
-      return Semantics(
-        label: poor ? appL10n.call_poorConnection : null,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (int i = 0; i < 3; i++)
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 1.5.w),
-                width: 6.r,
-                height: 6.r,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: (poor && i == 2) ? Colors.white30 : on,
-                ),
-              ),
-          ],
+      final String label =
+          poor ? appL10n.call_poorConnection : appL10n.call_goodConnection;
+      return Tooltip(
+        key: const ValueKey<String>('call_signal_quality'),
+        message: poor ? appL10n.call_poorConnectionTip : label,
+        triggerMode: TooltipTriggerMode.tap,
+        showDuration: const Duration(seconds: 3),
+        child: Semantics(
+          label: label,
+          child: SizedBox(
+            width: 44.r,
+            height: 44.r,
+            child: Icon(
+              poor
+                  ? Icons.signal_cellular_alt_1_bar_rounded
+                  : Icons.signal_cellular_alt_rounded,
+              color: poor ? _warn : _good,
+              size: 20.r,
+            ),
+          ),
         ),
       );
     });

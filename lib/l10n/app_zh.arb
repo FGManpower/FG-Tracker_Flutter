@@ -206,6 +206,7 @@
   "call_remoteMuted": "{name} 已静音",
   "call_videoPaused": "视频已暂停",
   "call_poorConnection": "网络连接较差",
+  "call_goodConnection": "连接良好",
   "call_poorConnectionTip": "网络连接较差。关闭摄像头可让声音更清晰。",
   "call_endNoAnswer": "无人接听",
   "call_endDeclined": "通话被拒绝",

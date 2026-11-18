@@ -372,6 +372,7 @@
   },
   "call_videoPaused": "Video paused",
   "call_poorConnection": "Poor connection",
+  "call_goodConnection": "Good connection",
   "call_poorConnectionTip": "Poor connection. Turn off your camera for clearer audio.",
   "call_endNoAnswer": "No answer",
   "call_endDeclined": "Call declined",

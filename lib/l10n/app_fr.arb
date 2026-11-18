@@ -206,6 +206,7 @@
   "call_remoteMuted": "{name} a coupé son micro",
   "call_videoPaused": "Vidéo en pause",
   "call_poorConnection": "Connexion faible",
+  "call_goodConnection": "Bonne connexion",
   "call_poorConnectionTip": "Connexion faible. Coupez votre caméra pour un son plus clair.",
   "call_endNoAnswer": "Pas de réponse",
   "call_endDeclined": "Appel refusé",

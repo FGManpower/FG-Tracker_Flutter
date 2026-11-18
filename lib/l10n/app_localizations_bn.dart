@@ -712,6 +712,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get call_poorConnection => 'দুর্বল সংযোগ';
 
   @override
+  String get call_goodConnection => 'ভালো সংযোগ';
+
+  @override
   String get call_poorConnectionTip =>
       'সংযোগ দুর্বল। পরিষ্কার শব্দের জন্য ক্যামেরা বন্ধ করুন।';
 

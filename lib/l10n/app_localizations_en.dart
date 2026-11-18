@@ -713,6 +713,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get call_poorConnection => 'Poor connection';
 
   @override
+  String get call_goodConnection => 'Good connection';
+
+  @override
   String get call_poorConnectionTip =>
       'Poor connection. Turn off your camera for clearer audio.';
 

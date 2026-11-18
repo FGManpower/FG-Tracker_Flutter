@@ -206,6 +206,7 @@
   "call_remoteMuted": "{name} மியூட் செய்தார்",
   "call_videoPaused": "வீடியோ இடைநிறுத்தப்பட்டது",
   "call_poorConnection": "பலவீனமான இணைப்பு",
+  "call_goodConnection": "நல்ல இணைப்பு",
   "call_poorConnectionTip": "இணைப்பு பலவீனமாக உள்ளது. தெளிவான ஒலிக்கு உங்கள் கேமராவை அணைக்கவும்.",
   "call_endNoAnswer": "பதில் இல்லை",
   "call_endDeclined": "அழைப்பு நிராகரிக்கப்பட்டது",

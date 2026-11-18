@@ -721,6 +721,9 @@ class AppLocalizationsMl extends AppLocalizations {
   String get call_poorConnection => 'ദുർബലമായ കണക്ഷൻ';
 
   @override
+  String get call_goodConnection => 'നല്ല കണക്ഷൻ';
+
+  @override
   String get call_poorConnectionTip =>
       'കണക്ഷൻ ദുർബലമാണ്. വ്യക്തമായ ശബ്ദത്തിന് ക്യാമറ ഓഫാക്കുക.';
 

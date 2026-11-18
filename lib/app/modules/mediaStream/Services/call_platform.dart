@@ -1,6 +1,8 @@
 import 'dart:developer';
 
+import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
+import 'package:fgtracker/app/modules/mediaStream/Services/call_end_probe.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart'
     show callEnded;
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
@@ -115,6 +117,12 @@ class CallPlatform {
       CallKitService.syncMute(id, muted);
 
   Future<void> setAutoPip(bool enabled) => CallPip.setAuto(enabled);
+
+  /// Server view of the call (`GET /api/getCallDetail`), `null` when unknown.
+  /// Asked while the call shows "Reconnecting…" and after a signaling
+  /// reconnect, to catch a hang-up whose socket `callEnded` was lost.
+  Future<CallServerState?> fetchCallServerState(String callId) =>
+      CallRepo.fetchCallServerState(callId);
 
   /// Keeps location tracking running while the phone is locked during a call
   /// (added with group calls, commit 9a6c524a). It must never show a

@@ -716,6 +716,9 @@ class AppLocalizationsKn extends AppLocalizations {
   String get call_poorConnection => 'ದುರ್ಬಲ ಸಂಪರ್ಕ';
 
   @override
+  String get call_goodConnection => 'ಉತ್ತಮ ಸಂಪರ್ಕ';
+
+  @override
   String get call_poorConnectionTip =>
       'ಸಂಪರ್ಕ ದುರ್ಬಲವಾಗಿದೆ. ಸ್ಪಷ್ಟ ಧ್ವನಿಗಾಗಿ ನಿಮ್ಮ ಕ್ಯಾಮೆರಾ ಆಫ್ ಮಾಡಿ.';
 

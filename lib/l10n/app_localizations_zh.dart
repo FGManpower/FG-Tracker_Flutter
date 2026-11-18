@@ -678,6 +678,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get call_poorConnection => '网络连接较差';
 
   @override
+  String get call_goodConnection => '连接良好';
+
+  @override
   String get call_poorConnectionTip => '网络连接较差。关闭摄像头可让声音更清晰。';
 
   @override
@@ -8448,6 +8451,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get call_poorConnection => '網路連線不佳';
+
+  @override
+  String get call_goodConnection => '連線良好';
 
   @override
   String get call_poorConnectionTip => '網路連線不佳。關閉相機可讓聲音更清楚。';

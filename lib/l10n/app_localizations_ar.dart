@@ -709,6 +709,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get call_poorConnection => 'اتصال ضعيف';
 
   @override
+  String get call_goodConnection => 'اتصال جيد';
+
+  @override
   String get call_poorConnectionTip =>
       'الاتصال ضعيف. أوقف الكاميرا للحصول على صوت أوضح.';
 

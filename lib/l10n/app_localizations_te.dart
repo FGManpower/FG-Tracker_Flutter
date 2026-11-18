@@ -714,6 +714,9 @@ class AppLocalizationsTe extends AppLocalizations {
   String get call_poorConnection => 'బలహీనమైన కనెక్షన్';
 
   @override
+  String get call_goodConnection => 'మంచి కనెక్షన్';
+
+  @override
   String get call_poorConnectionTip =>
       'కనెక్షన్ బలహీనంగా ఉంది. స్పష్టమైన ఆడియో కోసం మీ కెమెరా ఆఫ్ చేయండి.';
 

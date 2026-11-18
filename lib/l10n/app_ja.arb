@@ -206,6 +206,7 @@
   "call_remoteMuted": "{name} がミュートしました",
   "call_videoPaused": "ビデオ一時停止中",
   "call_poorConnection": "接続が不安定です",
+  "call_goodConnection": "接続は良好です",
   "call_poorConnectionTip": "接続が不安定です。音声をクリアにするにはカメラをオフにしてください。",
   "call_endNoAnswer": "応答なし",
   "call_endDeclined": "通話が拒否されました",

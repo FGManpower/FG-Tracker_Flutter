@@ -725,6 +725,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get call_poorConnection => 'பலவீனமான இணைப்பு';
 
   @override
+  String get call_goodConnection => 'நல்ல இணைப்பு';
+
+  @override
   String get call_poorConnectionTip =>
       'இணைப்பு பலவீனமாக உள்ளது. தெளிவான ஒலிக்கு உங்கள் கேமராவை அணைக்கவும்.';
 

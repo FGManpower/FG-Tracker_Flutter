@@ -206,6 +206,7 @@
   "call_remoteMuted": "{name} એ મ્યૂટ કર્યું",
   "call_videoPaused": "વીડિયો થોભાવેલો છે",
   "call_poorConnection": "નબળું કનેક્શન",
+  "call_goodConnection": "સારું કનેક્શન",
   "call_poorConnectionTip": "કનેક્શન નબળું છે. સ્પષ્ટ અવાજ માટે તમારો કૅમેરા બંધ કરો.",
   "call_endNoAnswer": "કોઈ જવાબ નથી",
   "call_endDeclined": "કૉલ નકાર્યો",

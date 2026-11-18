@@ -722,6 +722,9 @@ class AppLocalizationsOr extends AppLocalizations {
   String get call_poorConnection => 'ଦୁର୍ବଳ ସଂଯୋଗ';
 
   @override
+  String get call_goodConnection => 'ଭଲ ସଂଯୋଗ';
+
+  @override
   String get call_poorConnectionTip =>
       'ସଂଯୋଗ ଦୁର୍ବଳ ଅଛି। ସ୍ପଷ୍ଟ ଶବ୍ଦ ପାଇଁ ଆପଣଙ୍କ କ୍ୟାମେରା ବନ୍ଦ କରନ୍ତୁ।';
 

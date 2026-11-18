@@ -206,6 +206,7 @@
   "call_remoteMuted": "{name} മ്യൂട്ട് ചെയ്തു",
   "call_videoPaused": "വീഡിയോ താൽക്കാലികമായി നിർത്തി",
   "call_poorConnection": "ദുർബലമായ കണക്ഷൻ",
+  "call_goodConnection": "നല്ല കണക്ഷൻ",
   "call_poorConnectionTip": "കണക്ഷൻ ദുർബലമാണ്. വ്യക്തമായ ശബ്ദത്തിന് ക്യാമറ ഓഫാക്കുക.",
   "call_endNoAnswer": "മറുപടിയില്ല",
   "call_endDeclined": "കോൾ നിരസിച്ചു",

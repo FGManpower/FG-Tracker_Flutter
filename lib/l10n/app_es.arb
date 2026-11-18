@@ -206,6 +206,7 @@
   "call_remoteMuted": "{name} silenció el micrófono",
   "call_videoPaused": "Video en pausa",
   "call_poorConnection": "Conexión débil",
+  "call_goodConnection": "Buena conexión",
   "call_poorConnectionTip": "Conexión débil. Apaga la cámara para oír mejor.",
   "call_endNoAnswer": "Sin respuesta",
   "call_endDeclined": "Llamada rechazada",

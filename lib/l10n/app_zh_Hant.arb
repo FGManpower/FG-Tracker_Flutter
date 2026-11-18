@@ -206,6 +206,7 @@
   "call_remoteMuted": "{name} 已靜音",
   "call_videoPaused": "視訊已暫停",
   "call_poorConnection": "網路連線不佳",
+  "call_goodConnection": "連線良好",
   "call_poorConnectionTip": "網路連線不佳。關閉相機可讓聲音更清楚。",
   "call_endNoAnswer": "無人接聽",
   "call_endDeclined": "通話被拒絕",

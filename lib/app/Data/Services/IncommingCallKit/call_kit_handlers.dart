@@ -98,6 +98,11 @@ void setupCallKitHandlers() {
     if (Platform.isIOS) await VoipTokenUploader.instance.upload(token);
   };
 
+  // Hang-up push for the live call (its socket `callEnded` may be lost).
+  callKit.onRemoteEndPush = (String sessionId, String callId) {
+    _liveCall()?.onRemoteEndHint(sessionId: sessionId, callId: callId);
+  };
+
   // Second call while in a call: waiting banner, not the system UI.
   callKit.isInCall = () => _liveCall() != null;
   callKit.onCallWaiting = (Map<String, dynamic> data) {

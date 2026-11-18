@@ -206,6 +206,7 @@
   "call_remoteMuted": "{name} ಮ್ಯೂಟ್ ಮಾಡಿದ್ದಾರೆ",
   "call_videoPaused": "ವೀಡಿಯೊ ವಿರಾಮದಲ್ಲಿದೆ",
   "call_poorConnection": "ದುರ್ಬಲ ಸಂಪರ್ಕ",
+  "call_goodConnection": "ಉತ್ತಮ ಸಂಪರ್ಕ",
   "call_poorConnectionTip": "ಸಂಪರ್ಕ ದುರ್ಬಲವಾಗಿದೆ. ಸ್ಪಷ್ಟ ಧ್ವನಿಗಾಗಿ ನಿಮ್ಮ ಕ್ಯಾಮೆರಾ ಆಫ್ ಮಾಡಿ.",
   "call_endNoAnswer": "ಉತ್ತರವಿಲ್ಲ",
   "call_endDeclined": "ಕರೆ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ",

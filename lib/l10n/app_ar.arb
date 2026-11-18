@@ -206,6 +206,7 @@
   "call_remoteMuted": "كتم {name} الصوت",
   "call_videoPaused": "الفيديو متوقف مؤقتًا",
   "call_poorConnection": "اتصال ضعيف",
+  "call_goodConnection": "اتصال جيد",
   "call_poorConnectionTip": "الاتصال ضعيف. أوقف الكاميرا للحصول على صوت أوضح.",
   "call_endNoAnswer": "لا يوجد رد",
   "call_endDeclined": "تم رفض المكالمة",

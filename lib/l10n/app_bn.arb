@@ -206,6 +206,7 @@
   "call_remoteMuted": "{name} মিউট করেছেন",
   "call_videoPaused": "ভিডিও থামানো আছে",
   "call_poorConnection": "দুর্বল সংযোগ",
+  "call_goodConnection": "ভালো সংযোগ",
   "call_poorConnectionTip": "সংযোগ দুর্বল। পরিষ্কার শব্দের জন্য ক্যামেরা বন্ধ করুন।",
   "call_endNoAnswer": "কোনো উত্তর নেই",
   "call_endDeclined": "কল প্রত্যাখ্যান করা হয়েছে",

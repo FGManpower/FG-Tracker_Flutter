@@ -13,6 +13,16 @@ import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart'
     show kCallRingTimeout;
 
+/// Android system incoming-call screen colours, matching the in-app call
+/// design (CallColors in call_widget.dart). Hex because the plugin takes
+/// strings. iOS shows Apple's CallKit UI, which apps cannot restyle.
+const String kCallKitAudioBackground = '#3A2A9E'; // deep CallColors.primary
+const String kCallKitVideoBackground = '#0E0C14'; // CallColors.videoBg
+const String kCallKitAcceptColor = '#16B364'; // CallColors.accept
+
+String kCallKitBackgroundColor({required bool isVideo}) =>
+    isVideo ? kCallKitVideoBackground : kCallKitAudioBackground;
+
 typedef CallActionCallback = FutureOr<void> Function(
     String callId,
     Map<String, dynamic> extra,
@@ -120,6 +130,19 @@ class CallKitService with WidgetsBindingObserver {
   void Function(String id, bool muted)? onMuteChanged;
   void Function(String id, bool onHold)? onHoldChanged;
   void Function(Map<String, dynamic> extra)? onCallback;
+
+  /// An "end" push (FCM `callEnded` / `signal_type: endCall`) arrived. The
+  /// live call checks whether it names it (set by call_kit_handlers). A
+  /// second path for a hang-up whose socket `callEnded` was lost.
+  void Function(String sessionId, String callId)? onRemoteEndPush;
+
+  void _notifyRemoteEndPush(String sessionId, String callId) {
+    try {
+      onRemoteEndPush?.call(sessionId, callId);
+    } catch (e) {
+      _ck('onRemoteEndPush error: $e');
+    }
+  }
 
   static void _registerUuidMapping({
     String? uuid,
@@ -633,8 +656,12 @@ class CallKitService with WidgetsBindingObserver {
           isCustomNotification: true,
           isShowLogo: false,
           ringtonePath: 'system_ringtone_default',
-          backgroundColor: '#0955fa',
-          actionColor: '#4CAF50',
+          // App call design (CallColors): the old default blue #0955fa
+          // looked like a different app. Native text is white, so a deep
+          // brand purple for voice and the dark video background for video.
+          backgroundColor: kCallKitBackgroundColor(isVideo: isVideo),
+          actionColor: kCallKitAcceptColor,
+          textColor: '#FFFFFF',
           incomingCallNotificationChannelName: l.call_incomingCallChannelName,
           missedCallNotificationChannelName: l.call_missedCallChannelName,
           textAccept: l.call_accept,
@@ -971,6 +998,9 @@ class CallKitService with WidgetsBindingObserver {
       case 'missedGroupCall':
         final endTarget =
         (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
+        if (screen == 'callEnded') {
+          instance._notifyRemoteEndPush(endTarget, callId);
+        }
         await dismiss(
           endTarget.isNotEmpty ? endTarget : callId,
           callId: callId,
@@ -982,6 +1012,7 @@ class CallKitService with WidgetsBindingObserver {
     if (d['signal_type'] == 'endCall') {
       final endTarget =
       (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
+      instance._notifyRemoteEndPush(endTarget, callId);
       await dismiss(
         endTarget.isNotEmpty ? endTarget : callId,
         callId: callId,

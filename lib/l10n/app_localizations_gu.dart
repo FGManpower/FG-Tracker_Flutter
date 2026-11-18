@@ -706,6 +706,9 @@ class AppLocalizationsGu extends AppLocalizations {
   String get call_poorConnection => 'નબળું કનેક્શન';
 
   @override
+  String get call_goodConnection => 'સારું કનેક્શન';
+
+  @override
   String get call_poorConnectionTip =>
       'કનેક્શન નબળું છે. સ્પષ્ટ અવાજ માટે તમારો કૅમેરા બંધ કરો.';
 

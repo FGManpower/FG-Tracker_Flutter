@@ -4,6 +4,7 @@
 // without WebRTC, CallKit, wakelock, proximity, ringtone or the Android
 // foreground service. Every side effect is recorded for assertions.
 import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
+import 'package:fgtracker/app/modules/mediaStream/Services/call_end_probe.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -119,4 +120,14 @@ class FakeCallPlatform extends CallPlatform {
   @override
   Future<void> syncCallKitMute(String id, bool muted) async =>
       callKitMute.add(muted);
+
+  // Server view of the call (GET /api/getCallDetail). Never hits the network.
+  CallServerState? serverState;
+  final List<String> serverChecks = <String>[];
+
+  @override
+  Future<CallServerState?> fetchCallServerState(String callId) async {
+    serverChecks.add(callId);
+    return serverState;
+  }
 }

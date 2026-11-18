@@ -725,6 +725,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get call_poorConnection => 'Connexion faible';
 
   @override
+  String get call_goodConnection => 'Bonne connexion';
+
+  @override
   String get call_poorConnectionTip =>
       'Connexion faible. Coupez votre caméra pour un son plus clair.';
 

@@ -20,6 +20,7 @@ import '../../../Data/Services/Socket/Socket_SignallingService.dart';
 import '../Widget/audio_route_sheet.dart';
 import '../../call/Controller/call_controller.dart';
 import '../Services/call_connection_monitor.dart';
+import '../Services/call_end_probe.dart';
 import '../Services/call_entry.dart';
 import '../Services/call_foreground_service.dart';
 import '../Services/call_permissions.dart';
@@ -88,6 +89,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     // not help (avoids both sides offering at once).
     isInitiator: !_isIncoming,
   );
+
+  /// While "Reconnecting…": asks the server whether the other side already
+  /// hung up (its socket `callEnded` can be lost), so the screen does not
+  /// sit on "Reconnecting…" until the 25 s give-up.
+  late final CallEndProbe _endProbe = CallEndProbe(
+    check: () => _serverSaysCallOver(linkDown: true),
+    onEnded: () => unawaited(_endBecauseServerSaysOver('probe')),
+  );
+  bool _serverCheckInFlight = false;
 
   /// A second incoming call while on this call (BUG-CALL-05).
   final Rx<WaitingCall?> waitingCall = Rx<WaitingCall?>(null);
@@ -1181,6 +1191,64 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       "remoteUserId": _peerUserId,
     });
     _linkMonitor.onSignalingReconnected();
+    // A hang-up sent while our socket was down is not replayed: ask the
+    // server once.
+    unawaited(verifyCallStillActive(reason: 'signalingReconnected'));
+  }
+
+  bool _isThisCallIds({String sessionId = '', String callId = ''}) =>
+      _isForThisCall(<String, dynamic>{
+        if (sessionId.isNotEmpty) 'sessionId': sessionId,
+        if (callId.isNotEmpty) 'callId': callId,
+      });
+
+  Future<bool> _serverSaysCallOver({required bool linkDown}) async {
+    if (!isCallLive) return false;
+    final String cid = callId?.toString() ?? '';
+    if (cid.isEmpty || cid == 'null') return false;
+    try {
+      final CallServerState? st = await _platform.fetchCallServerState(cid);
+      if (kDebugMode) log('[CALL] server state $st linkDown=$linkDown');
+      return isServerCallOver(st, linkDown: linkDown);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _endBecauseServerSaysOver(String why) async {
+    if (!isCallLive) return;
+    log('[CALL] the call is over ($why): ending');
+    await _cleanupCall(notifyRemote: false, navigateBack: true);
+  }
+
+  /// One-shot check (signaling reconnect, an `endCall` push, app resume):
+  /// ends the call when the server says it is over. Never ends on an
+  /// unknown / failed answer.
+  Future<void> verifyCallStillActive({String reason = ''}) async {
+    if (!isCallLive || _serverCheckInFlight) return;
+    _serverCheckInFlight = true;
+    try {
+      final bool over =
+          await _serverSaysCallOver(linkDown: _linkMonitor.isReconnecting);
+      if (over) await _endBecauseServerSaysOver(reason);
+    } finally {
+      _serverCheckInFlight = false;
+    }
+  }
+
+  /// The other side hung up according to a push (FCM `endCall`), which can
+  /// arrive when the socket event was lost. Ignored when it names another
+  /// call. Ends at once when the media link is already down; otherwise the
+  /// server confirms first (a late push must never end a healthy call).
+  void onRemoteEndHint({String sessionId = '', String callId = ''}) {
+    if (!isCallLive) return;
+    if (sessionId.isEmpty && callId.isEmpty) return;
+    if (!_isThisCallIds(sessionId: sessionId, callId: callId)) return;
+    if (_linkMonitor.isReconnecting) {
+      unawaited(_endBecauseServerSaysOver('endCall push, link down'));
+      return;
+    }
+    unawaited(verifyCallStillActive(reason: 'endCall push'));
   }
 
   /// Sends mic / camera / background state to the other side.
@@ -1393,6 +1461,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
       stopSound();
       _linkMonitor.dispose();
+      _endProbe.dispose();
       waitingCall.value = null;
       unawaited(_platform.setAutoPip(false));
       lastEndInfo = _endInfo;
@@ -1476,6 +1545,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       _ensureAudioTracksActive();
       unawaited(_restoreVideoAfterForeground());
       if (isVideoOn) _emitMediaState();
+      // A hang-up while we were in the background may have been missed.
+      if (callTimer != null) {
+        unawaited(verifyCallStillActive(reason: 'appResumed'));
+      }
     } else if (state == AppLifecycleState.paused) {
       _keepTracksAliveInBackground();
       // Other side shows "Video paused" (unless we are in PiP).
@@ -2581,17 +2654,20 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           callStatus.value = "Reconnecting...";
           update();
         }
+        _endProbe.start();
         break;
       case CallLinkAction.iceRestart:
         unawaited(_renegotiateVideo(iceRestart: true));
         break;
       case CallLinkAction.recovered:
+        _endProbe.stop();
         if (callStatus.value == "Reconnecting...") {
           callStatus.value = callTimer != null ? "Connected" : "Connecting";
           update();
         }
         break;
       case CallLinkAction.connectionLost:
+        _endProbe.dispose();
         _endReason = 'connection_lost';
         _endOutcome = CallEndOutcome.connectionLost;
         _handlePeerDisconnected();
@@ -2602,6 +2678,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   /// Test hook: drive the reconnect logic without a real peer connection.
   @visibleForTesting
   void debugLinkAction(CallLinkAction action) => _onLinkAction(action);
+
+  /// Test hook: feed a media-link state into the real link monitor.
+  @visibleForTesting
+  void debugLinkState(CallLinkState state) => _linkMonitor.onState(state);
+
+  /// Test hook: true while the server-check probe runs.
+  @visibleForTesting
+  bool get debugEndProbeRunning => _endProbe.isRunning;
 
   Future<void> _setupPeer() async {
     await resetPeer();
@@ -2684,6 +2768,16 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected) {
         _startPeerDisconnectTimer();
+        return;
+      }
+
+      // Closed under a live call (we detach these handlers before closing
+      // it ourselves): the media is gone. Reconnect / server check instead
+      // of silently showing a frozen call.
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed &&
+          isCallLive &&
+          (_everConnected || _linkMonitor.everConnected)) {
+        _startPeerDisconnectTimer(grace: const Duration(seconds: 12));
       }
     };
 

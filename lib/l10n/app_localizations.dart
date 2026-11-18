@@ -1369,6 +1369,12 @@ abstract class AppLocalizations {
   /// **'Poor connection'**
   String get call_poorConnection;
 
+  /// No description provided for @call_goodConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Good connection'**
+  String get call_goodConnection;
+
   /// No description provided for @call_poorConnectionTip.
   ///
   /// In en, this message translates to:
