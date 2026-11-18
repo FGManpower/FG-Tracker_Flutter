@@ -1044,15 +1044,32 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
       if (await FlutterForegroundTask.isRunningService) return;
 
-      final ServiceRequestResult result = await FlutterForegroundTask.startService(
-        serviceId: 9910,
-        notificationTitle: isVideoCall.value ? "FG Tracker Video Call" : "FG Tracker Voice Call",
-        notificationText: "Call in progress...",
-        serviceTypes: const <ForegroundServiceTypes>[
-          ForegroundServiceTypes.microphone,
-          ForegroundServiceTypes.phoneCall,
-        ],
-      );
+      ServiceRequestResult result;
+      try {
+        result = await FlutterForegroundTask.startService(
+          serviceId: 9910,
+          notificationTitle: isVideoCall.value
+              ? "FG Tracker Video Call"
+              : "FG Tracker Voice Call",
+          notificationText: "Call in progress...",
+          serviceTypes: const <ForegroundServiceTypes>[
+            ForegroundServiceTypes.microphone,
+            ForegroundServiceTypes.phoneCall,
+          ],
+        );
+      } catch (fgsErr) {
+        log("[Call] startService with phoneCall failed, falling back to microphone: $fgsErr");
+        result = await FlutterForegroundTask.startService(
+          serviceId: 9910,
+          notificationTitle: isVideoCall.value
+              ? "FG Tracker Video Call"
+              : "FG Tracker Voice Call",
+          notificationText: "Call in progress...",
+          serviceTypes: const <ForegroundServiceTypes>[
+            ForegroundServiceTypes.microphone,
+          ],
+        );
+      }
       log("[Call] foreground call service started: $result");
     } catch (e) {
       log("[Call] startCallForegroundService error: $e");
