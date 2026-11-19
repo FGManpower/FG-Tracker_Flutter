@@ -719,7 +719,9 @@ class CallController extends GetxController {
 
     final bool isExplicitPrivate = call.isGroup == false ||
         (call.type ?? '').toLowerCase() == 'private' ||
-        (entry.call.type ?? '').toLowerCase() == 'private';
+        (entry.call.type ?? '').toLowerCase() == 'private' ||
+        targetGroupId.isEmpty ||
+        targetGroupId == "0";
 
     GroupsResData? matchedGroup;
     if (!isExplicitPrivate && targetGroupId.isNotEmpty && targetGroupId != "0") {
@@ -731,9 +733,9 @@ class CallController extends GetxController {
     }
 
     final bool isGroupCall = !isExplicitPrivate &&
+        matchedGroup != null &&
         (call.isGroup == true ||
             contact?.isGroup == true ||
-            (targetGroupId.isNotEmpty && targetGroupId != "0" && matchedGroup != null) ||
             (call.groupName != null && call.groupName!.trim().isNotEmpty) ||
             (contact?.groupName != null && contact!.groupName!.trim().isNotEmpty) ||
             (call.type ?? '').toLowerCase().contains('group'));

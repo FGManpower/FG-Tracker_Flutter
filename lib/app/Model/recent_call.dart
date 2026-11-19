@@ -280,15 +280,24 @@ class CallingDetail {
         json['isGroupCall'] ??
         (groupObj != null ? true : null);
 
-    final String callTypeStr = (json['type'] ?? json['call_type'] ?? '').toString().toLowerCase();
+    final String callTypeStr = (json['callType'] ?? json['call_type'] ?? json['type'] ?? '').toString().toLowerCase();
 
-    isGroup = isGroupVal == true ||
-        isGroupVal == 1 ||
-        isGroupVal == '1' ||
-        isGroupVal == 'true' ||
-        callTypeStr.contains('group') ||
-        (groupId != null && groupId!.isNotEmpty && groupId != "0") ||
-        (groupName != null && groupName!.trim().isNotEmpty);
+    final bool isExplicitPrivate = isGroupVal == false ||
+        callTypeStr == 'private' ||
+        json['callType']?.toString().toLowerCase() == 'private' ||
+        json['call_type']?.toString().toLowerCase() == 'private';
+
+    if (isExplicitPrivate) {
+      isGroup = false;
+    } else {
+      isGroup = isGroupVal == true ||
+          isGroupVal == 1 ||
+          isGroupVal == '1' ||
+          isGroupVal == 'true' ||
+          callTypeStr.contains('group') ||
+          (groupId != null && groupId!.isNotEmpty && groupId != "0") ||
+          (groupName != null && groupName!.trim().isNotEmpty);
+    }
 
     if (contactMap != null) {
       contact = RecentContact.fromJson(contactMap);
