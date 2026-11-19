@@ -203,7 +203,9 @@ class _ChatInputAreaState extends State<ChatInputArea> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
 
-            final text = editingMessage.content?.toString() ?? "";
+            final String text = (editingMessage.caption?.toString().trim().isNotEmpty ?? false)
+                ? editingMessage.caption.toString()
+                : (editingMessage.content?.toString() ?? "");
 
             widget.textController.text = text;
 

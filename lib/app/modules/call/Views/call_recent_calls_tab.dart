@@ -1275,13 +1275,16 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
+      lowerBound: -1.0,
+      upperBound: 1.0,
+      value: 0.0,
     );
     widget.coordinator.addListener(_onCoordinatorUpdate);
   }
 
   void _onCoordinatorUpdate(String? openId) {
     if (!mounted) return;
-    if (openId != widget.itemId && _animController.value > 0) {
+    if (openId != widget.itemId && _animController.value.abs() > 0.01) {
       _animController.animateTo(
         0.0,
         duration: const Duration(milliseconds: 200),
@@ -1300,7 +1303,7 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
     if (oldWidget.itemId != widget.itemId) {
       _animController.value = 0.0;
     }
-    if (widget.isSelectionMode && _animController.value > 0) {
+    if (widget.isSelectionMode && _animController.value.abs() > 0) {
       _animController.value = 0.0;
     }
   }
@@ -1326,10 +1329,19 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
     );
   }
 
-  void _open() {
+  void _openRightReveal() {
     widget.coordinator.setOpened(widget.itemId);
     _animController.animateTo(
       1.0,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _openLeftReveal() {
+    widget.coordinator.setOpened(widget.itemId);
+    _animController.animateTo(
+      -1.0,
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeOutCubic,
     );
@@ -1341,17 +1353,20 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
       animation: _animController,
       builder: (context, _) {
         final double currentOffset = _animController.value * _maxReveal;
-        final bool isRevealed = _animController.value > 0.05;
+        final bool isRevealed = _animController.value.abs() > 0.05;
+        final bool isSwipedLeft = _animController.value > 0.01;
+        final Alignment backgroundAlignment =
+            isSwipedLeft ? Alignment.centerRight : Alignment.centerLeft;
 
         return ClipRRect(
           borderRadius: widget.borderRadius,
           child: Stack(
             children: [
-              // Background: revealed Delete action on the right (revealed by left-swipe)
+              // Background: revealed Delete action (right on left-swipe, left on right-swipe)
               Positioned.fill(
                 child: Container(
                   color: Colors.red.shade600,
-                  alignment: Alignment.centerRight,
+                  alignment: backgroundAlignment,
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -1387,7 +1402,7 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
                   ),
                 ),
               ),
-              // Foreground: normal call item translating left
+              // Foreground: normal call item translating with swipe
               Transform.translate(
                 offset: Offset(-currentOffset.w, 0),
                 child: GestureDetector(
@@ -1396,21 +1411,23 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
                     if (widget.isSelectionMode) return;
                     if (details.primaryDelta == null) return;
                     final double delta = -details.primaryDelta! / _maxReveal;
-                    if (delta > 0 && _animController.value == 0) {
+                    if (delta.abs() > 0 && _animController.value.abs() == 0) {
                       widget.coordinator.onStartSwipe(widget.itemId);
                     }
                     _animController.value =
-                        (_animController.value + delta).clamp(0.0, 1.0);
+                        (_animController.value + delta).clamp(-1.0, 1.0);
                   },
                   onHorizontalDragEnd: (details) {
                     if (widget.isSelectionMode) return;
                     final double velocity = details.primaryVelocity ?? 0;
                     if (velocity < -300) {
-                      _open();
+                      _openRightReveal();
                     } else if (velocity > 300) {
-                      _close();
-                    } else if (_animController.value > 0.4) {
-                      _open();
+                      _openLeftReveal();
+                    } else if (_animController.value > 0.35) {
+                      _openRightReveal();
+                    } else if (_animController.value < -0.35) {
+                      _openLeftReveal();
                     } else {
                       _close();
                     }

@@ -869,13 +869,16 @@ class _ViewAttendanceSheetState extends State<ViewAttendanceSheet> {
   String _locationSubtitle(AttendanceVoter voter) {
     final parts = <String>[];
     if (voter.votedAt != null) {
-      final diff = DateTime.now().difference(voter.votedAt!);
-      if (diff.inMinutes < 1) {
+      final dt = voter.votedAt!.toLocal();
+      final diff = DateTime.now().difference(dt);
+      if (diff.isNegative || diff.inMinutes < 1) {
         parts.add(appL10n.common_justNow);
       } else if (diff.inMinutes < 60) {
         parts.add(appL10n.common_minutesAgo(diff.inMinutes));
       } else if (diff.inHours < 24) {
         parts.add(appL10n.common_hoursAgo(diff.inHours));
+      } else {
+        parts.add(appDayLabel(dt));
       }
     }
     final accuracy = voter.location?.accuracy;

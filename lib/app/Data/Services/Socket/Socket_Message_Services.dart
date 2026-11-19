@@ -1084,6 +1084,8 @@ class SocketMessageService extends GetxService {
         receiverId: activeReceiver,
       );
 
+      _flushPendingPrivateMessages();
+
       _privateJoinDebugTimer = Timer(
         const Duration(seconds: 8),
             () {
@@ -1107,6 +1109,7 @@ class SocketMessageService extends GetxService {
         _privateChatId = data["chatId"]?.toString();
 
         log("SAVED PRIVATE CHAT ID => $_privateChatId");
+        _flushPendingPrivateMessages();
       } else {
         log("WARNING => JOINED DATA IS NOT A MAP");
       }
@@ -1171,6 +1174,26 @@ class SocketMessageService extends GetxService {
   }
 
 
+  final List<Map<String, dynamic>> _pendingPrivateMessages = [];
+
+  void _flushPendingPrivateMessages() {
+    if (!isPrivateChatSocketConnected) return;
+    while (_pendingPrivateMessages.isNotEmpty) {
+      final payload = _pendingPrivateMessages.removeAt(0);
+      try {
+        final receiverId = payload["receiverId"]?.toString();
+        log("FLUSHING QUEUED PRIVATE MESSAGE => $payload");
+        _privateChatSocket!.emitWithAck(
+          "send_message",
+          payload,
+          ack: (res) => _onSendAck(res, receiverId: receiverId),
+        );
+      } catch (e) {
+        log("Error flushing pending private message: $e");
+      }
+    }
+  }
+
   void sendPrivateMessage({
     required String receiverId,
     required String content,
@@ -1184,10 +1207,6 @@ class SocketMessageService extends GetxService {
     String? replySender,
     String? clientMessageId,
   }) {
-    if (!isPrivateChatSocketConnected) {
-      return;
-    }
-
     final senderId = Global.storageServices.get(PrefConst.userId).toString();
     final effectiveClientMsgId =
         clientMessageId ?? 'c_${DateTime.now().microsecondsSinceEpoch}';
@@ -1206,6 +1225,13 @@ class SocketMessageService extends GetxService {
       if (replyType != null) "replyType": replyType,
       if (replySender != null) "replySender": replySender,
     };
+
+    if (!isPrivateChatSocketConnected) {
+      log("PRIVATE SOCKET NOT CONNECTED => QUEUEING MESSAGE TO SEND ON CONNECT");
+      _pendingPrivateMessages.add(payload);
+      _privateChatSocket?.connect();
+      return;
+    }
 
     _privateChatSocket!.emitWithAck(
       "send_message",
@@ -1291,9 +1317,17 @@ class SocketMessageService extends GetxService {
               dataMap["receiver_id"])
           ?.toString();
 
+      final eventChatId = (inner["chatId"] ??
+              inner["chat_id"] ??
+              dataMap["chatId"] ??
+              dataMap["chat_id"])
+          ?.toString();
+      final currentChatId = _privateChatId;
+
       final isSameChat =
-          (dataSenderId == senderId && dataReceiverId == receiverId) ||
-          (dataSenderId == receiverId && dataReceiverId == senderId);
+          (currentChatId != null && eventChatId != null && currentChatId == eventChatId) ||
+          (dataSenderId == senderId && (dataReceiverId == null || dataReceiverId == receiverId)) ||
+          (dataSenderId == receiverId && (dataReceiverId == null || dataReceiverId == senderId));
 
       log("EXPECTED SENDER => $senderId");
       log("EXPECTED RECEIVER => $receiverId");
@@ -1706,6 +1740,10 @@ class SocketMessageService extends GetxService {
     _privateMessageHandler = null;
     _privateChatId = null;
     _privateJoinDebugTimer?.cancel();
+  }
+
+  void connectPrivateChat() {
+    _privateChatSocket?.connect();
   }
 
   void disconnectPrivateChatSocket() {

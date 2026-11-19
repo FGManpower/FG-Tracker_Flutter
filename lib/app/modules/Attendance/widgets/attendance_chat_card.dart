@@ -87,8 +87,29 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
     }
   }
 
+  DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value.toLocal();
+    final str = value.toString().trim();
+    if (str.isEmpty || str == "null" || str == "undefined") return null;
+    final numVal = int.tryParse(str);
+    if (numVal != null) {
+      return DateTime.fromMillisecondsSinceEpoch(
+        numVal > 10000000000 ? numVal : numVal * 1000,
+        isUtc: true,
+      ).toLocal();
+    }
+    if (!str.endsWith('Z') && str.contains('-') && (str.contains(' ') || str.contains('T'))) {
+      final isoStr = str.replaceFirst(' ', 'T');
+      final withZ = isoStr.endsWith('Z') ? isoStr : '${isoStr}Z';
+      final dt = DateTime.tryParse(withZ);
+      if (dt != null) return dt.toLocal();
+    }
+    return DateTime.tryParse(str)?.toLocal();
+  }
+
   String get _timeLabel {
-    final parsed = DateTime.tryParse(widget.messageTime ?? "")?.toLocal();
+    final parsed = _parseDateTime(widget.messageTime);
     return parsed != null ? appDateFormat("hh:mm a").format(parsed) : "";
   }
 
@@ -410,7 +431,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
   Widget _buildTitleRow(AttendancePoll poll, {Widget? trailing}) {
     final subtitle = [
       if (poll.longDate.isNotEmpty) poll.longDate,
-      if (poll.eventTime != null) poll.eventTime!,
+      if (poll.formattedEventTime != null) poll.formattedEventTime!,
     ].join(" • ");
 
     return Row(

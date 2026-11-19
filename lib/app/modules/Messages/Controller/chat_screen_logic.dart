@@ -47,22 +47,44 @@ class ChatScreenRules {
   }
 
   /// Oldest-first order. Messages without a usable timestamp keep their
+  static DateTime _parseDateTime(dynamic raw) {
+    if (raw == null) return DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+    if (raw is DateTime) return raw.toUtc();
+    final str = raw.toString().trim();
+    if (str.isEmpty || str == 'null' || str == 'undefined') {
+      return DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+    }
+    final numVal = int.tryParse(str);
+    if (numVal != null) {
+      return DateTime.fromMillisecondsSinceEpoch(
+        numVal > 10000000000 ? numVal : numVal * 1000,
+        isUtc: true,
+      );
+    }
+    if (!str.endsWith('Z') && str.contains('-') && (str.contains(' ') || str.contains('T'))) {
+      final isoStr = str.replaceFirst(' ', 'T');
+      final withZ = isoStr.endsWith('Z') ? isoStr : '${isoStr}Z';
+      final dt = DateTime.tryParse(withZ);
+      if (dt != null) return dt.toUtc();
+    }
+    return DateTime.tryParse(str)?.toUtc() ??
+        DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+  }
+
   /// relative position (stable sort) instead of jumping to 1970.
   static List<MessageData> sortOldestFirst(Iterable<MessageData> input) {
     final list = input.toList();
     final indexed = List.generate(list.length, (i) => (i, list[i]));
     indexed.sort((a, b) {
-      final at = a.$2.timestamp?.toString().trim() ?? '';
-      final bt = b.$2.timestamp?.toString().trim() ?? '';
-      final ad = DateTime.tryParse(at);
-      final bd = DateTime.tryParse(bt);
-      if (ad != null && bd != null) {
-        final c = ad.compareTo(bd);
-        if (c != 0) return c;
-        final ai = int.tryParse(_idKey(a.$2) ?? '');
-        final bi = int.tryParse(_idKey(b.$2) ?? '');
-        if (ai != null && bi != null && ai != bi) return ai.compareTo(bi);
-      }
+      final at = a.$2.timestamp ?? a.$2.createdAt;
+      final bt = b.$2.timestamp ?? b.$2.createdAt;
+      final ad = _parseDateTime(at);
+      final bd = _parseDateTime(bt);
+      final c = ad.compareTo(bd);
+      if (c != 0) return c;
+      final ai = int.tryParse(_idKey(a.$2) ?? '');
+      final bi = int.tryParse(_idKey(b.$2) ?? '');
+      if (ai != null && bi != null && ai != bi) return ai.compareTo(bi);
       return a.$1.compareTo(b.$1);
     });
     return [for (final e in indexed) e.$2];
@@ -118,17 +140,32 @@ class ChatScreenRules {
         }
         final isIncomingDeleted =
             m.isDeleted == true || m.content?.toString() == 'This message was deleted';
-        if (isIncomingDeleted && existingMsg.isDeleted != true) {
-          markDeletedForEveryone(existingMsg);
+        if (isIncomingDeleted) {
+          existing.remove(existingMsg);
           statusUpdated = true;
+          continue;
         }
         if (m.isEdited == true && existingMsg.isEdited != true) {
           existingMsg.isEdited = true;
-          existingMsg.content = m.content;
+          final t = (existingMsg.messageType?.toString() ?? '').toLowerCase().trim();
+          final isAttachment = t == 'image' ||
+              t == 'image_text' ||
+              t == 'media' ||
+              t == 'video' ||
+              t == 'document' ||
+              t == 'audio';
+          if (isAttachment) {
+            existingMsg.caption = m.caption ?? m.content;
+          } else {
+            existingMsg.content = m.content;
+          }
           statusUpdated = true;
         }
         continue;
       }
+      final isIncomingDeleted =
+          m.isDeleted == true || m.content?.toString() == 'This message was deleted';
+      if (isIncomingDeleted) continue;
       if (key != null) known.add(key);
       added.add(m);
     }
@@ -224,18 +261,33 @@ class ChatScreenRules {
     return t.isEmpty || t == 'text' || t == 'text_message';
   }
 
+  /// Messages with or without attachments that support editing caption/text.
+  static bool isEditable(dynamic messageType) {
+    final t = messageType?.toString().toLowerCase().trim() ?? '';
+    return t.isEmpty ||
+        t == 'text' ||
+        t == 'text_message' ||
+        t == 'image' ||
+        t == 'image_text' ||
+        t == 'media' ||
+        t == 'video' ||
+        t == 'document' ||
+        t == 'audio';
+  }
+
   /// Long-press options for a message.
   static Set<MessageMenuOption> menuOptions({
     required dynamic messageType,
     required bool isSentByMe,
   }) {
     final text = isText(messageType);
+    final editable = isEditable(messageType);
     return {
       MessageMenuOption.reply,
       if (text) MessageMenuOption.copy,
       // Attendance cards are tied to their group's poll: never forwarded.
       if (!isAttendance(messageType)) MessageMenuOption.forward,
-      if (isSentByMe && text) MessageMenuOption.edit,
+      if (isSentByMe && editable) MessageMenuOption.edit,
       MessageMenuOption.pin,
       if (isSentByMe) MessageMenuOption.info,
       if (isSentByMe) MessageMenuOption.deleteForEveryone,
@@ -267,7 +319,19 @@ class ChatScreenRules {
     if (content == null) return false;
 
     final msg = messages[index];
-    msg.content = content.toString();
+    final t = (msg.messageType?.toString() ?? '').toLowerCase().trim();
+    final isAttachment = t == 'image' ||
+        t == 'image_text' ||
+        t == 'media' ||
+        t == 'video' ||
+        t == 'document' ||
+        t == 'audio';
+
+    if (isAttachment) {
+      msg.caption = content.toString();
+    } else {
+      msg.content = content.toString();
+    }
     msg.isEdited = data['isEdited'] ?? nested?['isEdited'] ?? true;
     msg.edited = msg.isEdited;
     msg.editedAt = data['editedAt'] ?? nested?['editedAt'] ?? msg.editedAt;
@@ -285,15 +349,37 @@ class ChatScreenRules {
     return by == currentUserId?.trim();
   }
 
-  /// "Deleted for everyone": no text, media, caption or reply left behind.
+  /// "Deleted for everyone": completely remove the message from the list so
+  /// no tick, no placeholder, and no duplicate remains.
+  static bool applyDelete(
+    List<MessageData> messages,
+    Map<String, dynamic> data,
+    String? currentUserId,
+  ) {
+    final messageId = MessageData.parseIntOrNull(
+      data['messageId'] ?? data['message_id'] ?? data['id'],
+    );
+    if (messageId == null) return false;
+    final index = messages.indexWhere((m) => m.id == messageId);
+    if (index == -1) return false;
+
+    final deleteType =
+        (data['deleteType'] ?? data['delete_type'] ?? 'for_everyone').toString();
+    if (deleteType == 'for_me') {
+      if (!isDeleteForMeByMe(data, currentUserId)) return false;
+      messages.removeAt(index);
+      return true;
+    } else {
+      // for_everyone: remove completely from sender and receiver screens
+      messages.removeAt(index);
+      return true;
+    }
+  }
+
+  /// Legacy helper kept for backward compatibility if called elsewhere.
   static void markDeletedForEveryone(MessageData msg) {
-    msg.messageType = 'text';
-    msg.content = 'This message was deleted';
-    msg.caption = null;
-    msg.images = [];
-    msg.videos = [];
-    msg.replyId = null;
     msg.isDeleted = true;
+    msg.content = '';
   }
 
   // ---------------------------------------------------------------------------
