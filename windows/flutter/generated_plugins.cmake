@@ -5,10 +5,10 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   awesome_notifications
+  cloud_firestore
   emoji_picker_flutter
   file_selector_windows
   firebase_core
-  cloud_firestore
   firebase_remote_config
   flutter_secure_storage_windows
   flutter_sound
@@ -18,12 +18,13 @@ list(APPEND FLUTTER_PLUGIN_LIST
   geolocator_windows
   permission_handler_windows
   record_windows
+  share_plus
   speech_to_text_windows
   url_launcher_windows
-  share_plus
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
+  jni
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)
