@@ -11,14 +11,12 @@ import '../../Data/Services/call_service.dart';
 import '../../Data/Services/group_call_service.dart';
 import '../../Model/MemberDataRes.dart';
 import '../../Model/PrivateChatModel.dart';
-import '../../modules/Messages/Controller/MessageController.dart';
 import '../../modules/Messages/Controller/chat_list_controller.dart';
-import '../../modules/Messages/Views/Chat_Screen.dart';
 import '../../modules/Messages/Views/UserProfileScreen.dart';
+import 'chat_navigation.dart';
 import '../../modules/call/Controller/contact_controller.dart';
 import '../../modules/call/widget/call_widget.dart';
 import '../../modules/Group/controller/Group_Controller.dart';
-import '../../routes/app_pages.dart';
 import '../constant/const_res.dart';
 import '../constant/pref_res.dart';
 import '../values/Utils.dart';
@@ -113,21 +111,15 @@ Future<void> openPrivateChatWith({
   final int? resolvedChatId =
       (chatId != null && chatId != 0) ? chatId : resolvePrivateChatId(uid);
 
-  await Get.to(
-    () => ChatScreen(),
-    arguments: {
-      "userData": MemberData(
-        userId: int.tryParse(uid),
-        name: name,
-        profileImage: profileImage,
-        groupId: 0,
-      ),
-      "chatId": resolvedChatId?.toString(),
-    },
-    binding: BindingsBuilder(() {
-      Get.put(MessageController());
-    }),
-  );
+  await ChatNavigation.openPrivateChat({
+    "userData": MemberData(
+      userId: int.tryParse(uid),
+      name: name,
+      profileImage: profileImage,
+      groupId: 0,
+    ),
+    "chatId": resolvedChatId?.toString(),
+  });
 }
 
 /// Opens a group chat (same flow as the chat list group row).
@@ -158,18 +150,15 @@ Future<void> openGroupChat({
     }
   }
 
-  await Get.toNamed(
-    Routes.groupChatScreen,
-    arguments: {
-      "groupId": gId,
-      "groupName": groupName ?? "Group Chat",
-      "groupProfile": profileImg,
-      "groupImage": profileImg,
-      "groupCode": groupCode,
-      "isCreator": isCreator,
-      "isActive": isActive,
-    },
-  );
+  await ChatNavigation.openGroupChat({
+    "groupId": gId,
+    "groupName": groupName ?? "Group Chat",
+    "groupProfile": profileImg,
+    "groupImage": profileImg,
+    "groupCode": groupCode,
+    "isCreator": isCreator,
+    "isActive": isActive,
+  });
 }
 
 /// Starts an audio / video call with a user (same flow as New Chat).

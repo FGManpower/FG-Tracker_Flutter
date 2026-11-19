@@ -28,7 +28,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
         final bool isVideo = controller.call.isVideo;
         final String name = controller.call.callerName;
         final Object? image = controller.call.callerProfileImage;
-        final Color fg = isVideo ? Colors.white : CallColors.name;
+        const Color fg = Colors.white;
 
         return PopScope(
           canPop: false,
@@ -59,9 +59,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                             : context.l10n.call_audioCallBrand,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: isVideo
-                              ? Colors.white.withOpacity(0.70)
-                              : CallColors.primary,
+                          color: Colors.white.withOpacity(0.70),
                           fontSize: 12.sp,
                           letterSpacing: 1.4,
                           fontFamily: FontFamily.interSemiBold,
@@ -80,7 +78,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                                   CallPulseAvatar(
                                     name: name,
                                     image: image,
-                                    onDark: isVideo,
+                                    onDark: true,
                                     accent: isVideo ? null : _green,
                                     avatarSize: 120,
                                   ),

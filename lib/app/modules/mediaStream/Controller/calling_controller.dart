@@ -16,6 +16,8 @@ import 'package:socket_io_client/socket_io_client.dart' show Socket;
 import 'package:fgtracker/l10n/l10n.dart';
 import '../../../Data/Services/IncommingCallKit/call_session.dart'
     show CallSessionState;
+import '../../../Data/Services/IncommingCallKit/call_kit_handlers.dart'
+    show endCallViaRest;
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
 import '../Widget/audio_route_sheet.dart';
 import '../../call/Controller/call_controller.dart';
@@ -685,32 +687,44 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (_remoteEndSent) return;
     _remoteEndSent = true;
 
-    final String myUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
-    final String targetUser =
-        myUserId == callerId.toString() ? remoteUserId : callerId;
+    final String myUserId = _myUserId;
+    final String peerId = _peerUserId;
+    final String targetUser = peerId.isNotEmpty
+        ? peerId
+        : (myUserId == callerId.toString() ? remoteUserId : callerId);
+
+    final String actualCallerId =
+        (myUserId == callerId.toString()) ? myUserId : targetUser;
+    final String actualReceiverId =
+        (myUserId == callerId.toString()) ? targetUser : myUserId;
 
     final Map<String, dynamic> payload = customPayload ??
         <String, dynamic>{
           "callId": callId,
           "to": targetUser,
           "remoteUserId": targetUser,
-          "callerId": callerId,
-          "receiverId": remoteUserId,
+          "callerId": actualCallerId,
+          "receiverId": actualReceiverId,
           "sessionId": _sessionId,
           if (_endReason != null) "reason": _endReason,
         };
 
     final Socket? s = socket;
-    if (s == null) return;
+    if (s != null) {
+      try {
+        // While disconnected, socket.io buffers the emit and sends it once on
+        // reconnect. The old extra once("connect") re-emit sent endCall twice.
+        s.emit("endCall", payload);
+        if (!s.connected && !s.active) s.connect();
+      } catch (e) {
+        log("[Call] _emitEndCallRealtime error: $e");
+      }
+    }
 
-    try {
-      // While disconnected, socket.io buffers the emit and sends it once on
-      // reconnect. The old extra once("connect") re-emit sent endCall twice.
-      s.emit("endCall", payload);
-      if (!s.connected && !s.active) s.connect();
-    } catch (e) {
-      log("[Call] _emitEndCallRealtime error: $e");
+    final String cid =
+        (callId != null && callId.toString() != 'null') ? callId.toString() : '';
+    if (cid.isNotEmpty) {
+      unawaited(endCallViaRest(cid, targetUserId: targetUser));
     }
   }
 
@@ -1129,13 +1143,32 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         if (data[k] != null && data[k].toString().isNotEmpty && data[k].toString() != 'null')
           data[k].toString(),
     };
-    if (theirs.isEmpty) return true;
     final Set<String> ours = <String>{
       if (callId != null && callId.toString() != 'null') callId.toString(),
       if (_sessionId.isNotEmpty) _sessionId,
     };
-    if (ours.isEmpty) return true;
-    return theirs.any(ours.contains);
+    if (theirs.isEmpty || ours.isEmpty) return true;
+    if (theirs.any(ours.contains)) return true;
+
+    for (final String id in theirs) {
+      final String mapped = CallKitService.mappedUuid(id);
+      if (mapped.isNotEmpty && ours.contains(mapped)) return true;
+    }
+    for (final String id in ours) {
+      final String mapped = CallKitService.mappedUuid(id);
+      if (mapped.isNotEmpty && theirs.contains(mapped)) return true;
+    }
+
+    final String peer = _peerUserId;
+    if (peer.isNotEmpty) {
+      final String from = (data['callerId'] ?? data['caller_id'] ?? data['from'] ?? '')?.toString() ?? '';
+      final String to = (data['remoteUserId'] ?? data['receiverId'] ?? data['to'] ?? '')?.toString() ?? '';
+      if (from == peer || to == peer) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   // ---- Phase 3 helpers (doc 02 §7) ----------------------------------------
@@ -1284,6 +1317,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (isAudioOn == !muted) return;
     isAudioOn = !muted;
     localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
+    if (peer != null) {
+      peer!.getSenders().then((senders) {
+        for (final sender in senders) {
+          if (sender.track?.kind == 'audio') {
+            sender.track?.enabled = isAudioOn;
+          }
+        }
+      }).catchError((_) {});
+    }
     _emitMediaState();
     update();
   }
@@ -2925,14 +2967,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     } else if (fromCallKit ||
         (args["callType"] == "Incoming" && offer == null)) {
       callStatus.value = "Connecting...";
+      final dynamic resolvedReceiverId = _myUserId.isNotEmpty
+          ? _myUserId
+          : Global.storageServices.get(PrefConst.userId);
       final acceptPayload = {
         "callerId": callerId,
         "sessionId": CallSessionState.sessionId ?? args["sessionId"],
         "callId": callId,
-        "receiverId": Global.storageServices.get(PrefConst.userId),
+        "receiverId": resolvedReceiverId,
       };
       _callAnnounced = true;
-      socket!.emit("acceptCallFromCallKit", acceptPayload);
+      socket?.emit("acceptCallFromCallKit", acceptPayload);
       unawaited(_handoverCallKitAudio());
     } else {
       pc.onIceCandidate = (c) => iceCandidates.add(c);
@@ -3062,6 +3107,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   void toggleMic() {
     isAudioOn = !isAudioOn;
     localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
+    if (peer != null) {
+      peer!.getSenders().then((senders) {
+        for (final sender in senders) {
+          if (sender.track?.kind == 'audio') {
+            sender.track?.enabled = isAudioOn;
+          }
+        }
+      }).catchError((_) {});
+    }
     _emitMediaState();
     // Keep the iOS lock screen / CallKit mute button in sync.
     unawaited(_platform.syncCallKitMute(_callKitId, !isAudioOn));
@@ -3162,6 +3216,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await Helper.switchCamera(track);
       isFrontCamera = !isFrontCamera;
       update();
+      unawaited(_forceKeyframe());
     } catch (e) {
       log("[Call] switchCamera error: $e");
     } finally {

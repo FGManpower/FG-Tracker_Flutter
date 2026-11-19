@@ -52,7 +52,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       ItemPositionsListener.create();
   final List<MessageData> _messages = [];
 
-  late final TextEditingController textEditingController = TextEditingController();
+  TextEditingController textEditingController = TextEditingController();
   final RxBool showScrollToBottom = false.obs;
   final RxInt unreadBelowCount = 0.obs;
   final RxnInt firstUnreadMessageId = RxnInt();
@@ -334,6 +334,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   @override
   void onInit() {
     super.onInit();
+    textEditingController = TextEditingController();
+    focusNode = FocusNode();
 
     groupId = arguments?["groupId"] is int
         ? (arguments!["groupId"] as int)
@@ -2251,7 +2253,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     Navigator.of(context).pop();
   }
 
-  final FocusNode focusNode = FocusNode();
+  FocusNode focusNode = FocusNode();
 
   final RxList<LocationData> filteredMembers = <LocationData>[].obs;
   final RxBool showMentionList = false.obs;
@@ -2731,8 +2733,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     itemPositionsListener.itemPositions.removeListener(_onScrollDateChanged);
     itemPositionsListener.itemPositions.removeListener(_updateScrollBottomState);
     itemPositionsListener.itemPositions.removeListener(_onScrollForOlderMessages);
-    textEditingController.dispose();
-    focusNode.dispose();
+    // Note: textEditingController and focusNode are left for GC to avoid
+    // crashing widget builds during the 500ms route pop transition.
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
     super.onClose();

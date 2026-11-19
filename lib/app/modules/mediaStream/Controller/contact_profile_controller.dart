@@ -12,9 +12,8 @@ import '../../../Model/CallDetail.dart';
 import '../../../Model/MemberDataRes.dart';
 import '../../../Model/recent_call.dart';
 import '../../../routes/app_pages.dart';
+import '../../../Core/util/chat_navigation.dart';
 import '../../call/widget/call_widget.dart';
-import '../../Messages/Controller/MessageController.dart';
-import '../../Messages/Views/Chat_Screen.dart';
 
 class ContactProfileController extends GetxController {
   final MemberData? contactData;
@@ -312,32 +311,21 @@ class ContactProfileController extends GetxController {
     log("PROFILE CHAT ID => ${user.chatId}");
     log("CHAT ID ARGUMENT => ${chatId?.toString()}");
 
-    Get.to(
-      () => ChatScreen(),
-      arguments: {
-        "userData": MemberData(
-          userId: user.userId,
-          name: user.name,
-          mobileNo: user.mobileNo,
-          profileImage: user.profileImage,
-          isOnline: user.isOnline,
-          chatId: chatId,
-          groupId: 0,
-        ),
-        "type": "chatScreen",
-        "chatType": "private",
-        "chatId": chatId?.toString(),
-        "groupId": 0,
-        "groupName": user.name ?? appL10n.call_chatFallback,
-      },
-      binding: BindingsBuilder(() {
-        if (!Get.isRegistered<MessageController>()) {
-          Get.put(MessageController());
-          log("MessageController CREATED");
-        } else {
-          log("MessageController ALREADY REGISTERED");
-        }
-      }),
-    );
+    ChatNavigation.openPrivateChat({
+      "userData": MemberData(
+        userId: user.userId,
+        name: user.name,
+        mobileNo: user.mobileNo,
+        profileImage: user.profileImage,
+        isOnline: user.isOnline,
+        chatId: chatId,
+        groupId: 0,
+      ),
+      "type": "chatScreen",
+      "chatType": "private",
+      "chatId": chatId?.toString(),
+      "groupId": 0,
+      "groupName": user.name ?? appL10n.call_chatFallback,
+    });
   }
 }

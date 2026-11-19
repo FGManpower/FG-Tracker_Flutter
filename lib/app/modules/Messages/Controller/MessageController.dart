@@ -54,7 +54,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       ItemPositionsListener.create();
   final List<MessageData> _messages = [];
 
-  late final TextEditingController textEditingController = TextEditingController();
+  TextEditingController textEditingController = TextEditingController();
   final RxBool showScrollToBottom = false.obs;
   final RxInt unreadBelowCount = 0.obs;
   bool _wasKeyboardOpen = false;
@@ -271,6 +271,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   @override
   void onInit() {
     super.onInit();
+    textEditingController = TextEditingController();
     arguments = Get.arguments is Map
         ? Map<String, dynamic>.from(Get.arguments as Map)
         : null;
@@ -502,7 +503,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     itemPositionsListener.itemPositions.removeListener(_onScrollDateChanged);
     itemPositionsListener.itemPositions.removeListener(_onScrollForOlderMessages);
     itemPositionsListener.itemPositions.removeListener(_updateScrollBottomState);
-    textEditingController.dispose();
+    // Note: textEditingController is left for GC to avoid crashing widget
+    // builds during the 500ms route pop transition.
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
     _sendPrivateStopTypingNow();

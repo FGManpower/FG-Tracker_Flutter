@@ -44,23 +44,65 @@ void setupCallKitHandlers() {
 
     log('Incoming call accepted: $extra');
 
-    Get.toNamed(
-      Routes.callScreen,
-      arguments: incomingCallArgs(
-        callerId: extra['callerId']?.toString() ?? '',
-        callId: callId,
-        sessionId: uuid,
-        isVideo: extra['isVideo'] == 'true' || extra['isVideo'] == true,
-        callerName: extra['callerName'],
-        profileImage: extra['profileImage'],
-        offer: CallKitService.decodeOffer(extra['sdpOfferCompressed']),
-        fromCallKit: true,
-      ),
+    final String resolvedCallerId = (extra['callerId'] ??
+            extra['caller_id'] ??
+            extra['remoteUserId'] ??
+            extra['user_id'] ??
+            extra['userId'])
+        ?.toString() ??
+        '';
+
+    final String resolvedCallerName = (extra['callerName'] ??
+            extra['caller_name'] ??
+            extra['name'])
+        ?.toString() ??
+        '';
+
+    final dynamic resolvedProfileImage = extra['profileImage'] ??
+        extra['callerProfileImage'] ??
+        extra['caller_profile_image'] ??
+        extra['avatar'];
+
+    final bool resolvedIsVideo = extra['isVideo'] == 'true' ||
+        extra['isVideo'] == true ||
+        extra['is_video'] == 'true' ||
+        extra['is_video'] == true ||
+        extra['type'] == 1 ||
+        extra['type'] == '1';
+
+    final dynamic resolvedOffer = CallKitService.decodeOffer(
+            extra['sdpOfferCompressed'] ?? extra['sdpOfferCompressed_string']) ??
+        extra['sdpOffer'] ??
+        extra['offer'];
+
+    final args = incomingCallArgs(
+      callerId: resolvedCallerId,
+      callId: callId,
+      sessionId: uuid,
+      isVideo: resolvedIsVideo,
+      callerName: resolvedCallerName,
+      profileImage: resolvedProfileImage,
+      offer: resolvedOffer,
+      fromCallKit: true,
     );
+
+    if (Get.currentRoute == Routes.callScreen) {
+      Get.offNamed(Routes.callScreen, arguments: args);
+    } else {
+      Get.toNamed(Routes.callScreen, arguments: args);
+    }
   };
 
   callKit.onDeclineCall = (callId, extra, uuid) async {
     if (extra['screen_name'] == 'incomingGroupCall') return;
+
+    final String resolvedCallerId = (extra['callerId'] ??
+            extra['caller_id'] ??
+            extra['remoteUserId'] ??
+            extra['user_id'] ??
+            extra['userId'])
+        ?.toString() ??
+        '';
 
     final s = SignallingService.instance.socket;
     if (s != null && s.connected) {
@@ -68,7 +110,7 @@ void setupCallKitHandlers() {
         'rejectCall',
         rejectCallPayload(
           callId: callId,
-          callerId: extra['callerId']?.toString() ?? '',
+          callerId: resolvedCallerId,
         ),
       );
     } else {
@@ -154,7 +196,37 @@ Future<void> handleSystemEndCall({
   String? uuid,
   Map<String, dynamic> extra = const <String, dynamic>{},
 }) async {
-  if (!Get.isRegistered<CallingController>()) return;
+  if (!Get.isRegistered<CallingController>()) {
+    final String resolvedCallerId = (extra['callerId'] ??
+            extra['caller_id'] ??
+            extra['remoteUserId'] ??
+            extra['user_id'] ??
+            extra['userId'])
+        ?.toString() ??
+        '';
+    final s = SignallingService.instance.socket;
+    if (s != null && s.connected) {
+      s.emit(
+        'rejectCall',
+        rejectCallPayload(
+          callId: callId,
+          callerId: resolvedCallerId,
+        ),
+      );
+      s.emit(
+        'endCall',
+        {
+          'callId': callId,
+          'to': resolvedCallerId,
+          'remoteUserId': resolvedCallerId,
+          'sessionId': uuid ?? extra['sessionId'],
+        },
+      );
+    }
+    await rejectCallViaRest(callId);
+    await endCallViaRest(callId, targetUserId: resolvedCallerId);
+    return;
+  }
   final CallingController ctrl = Get.find<CallingController>();
 
   final Set<String> ids = <String>{
@@ -170,6 +242,39 @@ Future<void> handleSystemEndCall({
     return;
   }
   await ctrl.endCall(type: 'callkit');
+}
+
+Future<void> endCallViaRest(dynamic callId, {String? targetUserId}) async {
+  if (callId == null || callId.toString().isEmpty || callId.toString() == 'null') return;
+  final String cid = callId.toString();
+  try {
+    final shared = await SharedPreferences.getInstance();
+    final token = shared.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ?? '';
+    if (token.isEmpty) return;
+
+    final url = Uri.parse(
+        '${ConstRes.aBaseUrl}callRejected?callId=$cid&reason=ended');
+    unawaited(http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    ).timeout(const Duration(seconds: 5)).catchError((e) {
+      log('REST endCall error: $e');
+      return http.Response('', 500);
+    }));
+
+    if (targetUserId != null && targetUserId.isNotEmpty) {
+      unawaited(CallRepo.updateCallingStatus(
+        callId: cid,
+        remoteUserId: targetUserId,
+        callingStatus: "ended",
+      ).catchError((_) {}));
+    }
+  } catch (e) {
+    log('REST endCall error: $e');
+  }
 }
 
 Future<void> rejectCallViaRest(String callId) async {
