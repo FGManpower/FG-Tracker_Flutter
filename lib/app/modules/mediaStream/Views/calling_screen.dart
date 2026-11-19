@@ -1345,18 +1345,21 @@ class CallingScreen extends StatelessWidget {
     double size = 52,
     Color? activeIconColor,
   }) {
-    return ctrl(
-      icon: c.isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
-      label: c.isAudioOn ? appL10n.call_mute : appL10n.call_unmute,
-      active: !c.isAudioOn,
-      isVideo: onDark,
-      size: size,
-      activeIconColor: activeIconColor,
-      onTap: () {
-        c.toggleMic();
-        c.showControlsTemporarily();
-      },
-    );
+    return Obx(() {
+      final bool micOn = c.isAudioOnRx.value;
+      return ctrl(
+        icon: micOn ? Icons.mic_rounded : Icons.mic_off_rounded,
+        label: micOn ? appL10n.call_mute : appL10n.call_unmute,
+        active: !micOn,
+        isVideo: onDark,
+        size: size,
+        activeIconColor: activeIconColor,
+        onTap: () {
+          c.toggleMic();
+          c.showControlsTemporarily();
+        },
+      );
+    });
   }
 
   /// Camera on / off. Filled white while the camera is ON, as in the mock.

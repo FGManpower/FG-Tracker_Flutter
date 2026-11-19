@@ -1255,6 +1255,10 @@ class CallKitService with WidgetsBindingObserver {
 
       switch (name) {
         case 'actioncallaccept':
+          if (extra['direction'] == 'outgoing') {
+            _ck('IGNORED actioncallaccept for outgoing call uuid=$uuid');
+            break;
+          }
           if (uuid != null) _accepted.add(uuid);
           _handleAccept(callId, extra, uuid, sessionId: sessionId);
           break;
@@ -1290,6 +1294,10 @@ class CallKitService with WidgetsBindingObserver {
             sessionId: sessionId,
             callId: callId,
           );
+          if (extra['direction'] == 'outgoing') {
+            _ck('IGNORED actioncallended for outgoing call uuid=$uuid');
+            break;
+          }
           final selfEndedAllRecent = _selfEndedAllAt != null &&
               DateTime.now().difference(_selfEndedAllAt!).inSeconds < 5;
           if (selfEndedAllRecent ||

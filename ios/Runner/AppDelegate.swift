@@ -431,35 +431,13 @@ private let candidateTokenPrefKeys = [
             real.normalHandle = 1
             real.appName = "FG Tracker"
 
-            if hasLiveCall(id: id) {
-                print("[AppDelegate] endCall push resolves live CallKit call id=\(id) name=\(name)")
-                SwiftFlutterCallkitIncomingPlugin.sharedInstance?.endCall(real)
-                completion()
-                return
-            }
-
-            let dummy = flutter_callkit_incoming.Data(
-                id: id,
-                nameCaller: name,
-                handle: handleValue,
-                type: isVideo ? 1 : 0
-            )
-            dummy.normalHandle = 1
-            dummy.appName = "FG Tracker"
-            print("[AppDelegate] endCall push had no live call, reporting+ending id=\(id) name=\(name)")
-            SwiftFlutterCallkitIncomingPlugin.sharedInstance?.showCallkitIncoming(
-                dummy,
-                fromPushKit: true
-            ) {
-                print("[AppDelegate][VoIP] dummy reportNewIncomingCall returned id=\(id)")
-                SwiftFlutterCallkitIncomingPlugin.sharedInstance?.endCall(dummy)
-                SwiftFlutterCallkitIncomingPlugin.sharedInstance?.endCall(real)
-                completion()
-            }
+            print("[AppDelegate] endCall push received for id=\(id) name=\(name), ending CallKit call")
+            SwiftFlutterCallkitIncomingPlugin.sharedInstance?.endCall(real)
+            SwiftFlutterCallkitIncomingPlugin.sharedInstance?.endAllCalls()
+            completion()
         } else {
             manualAudioRoute = nil
             currentCallIsVideo = isVideo
-            prepareCallKitManualAudio(isVideo: isVideo)
 
             let incomingCallId = Self.stringValue(extraDict["callId"])
                 ?? Self.stringValue(extraDict["call_id"])

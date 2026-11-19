@@ -196,7 +196,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   List<RTCIceCandidate> iceCandidates = [];
   RxString callStatus = "Calling".obs;
-  bool isAudioOn = true;
+  final RxBool isAudioOnRx = true.obs;
+  bool get isAudioOn => isAudioOnRx.value;
+  set isAudioOn(bool v) => isAudioOnRx.value = v;
   bool isVideoOn = false;
   bool isRemoteVideoOn = false;
   bool isFrontCamera = true;
@@ -1316,12 +1318,20 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   void setMutedFromSystem(bool muted) {
     if (isAudioOn == !muted) return;
     isAudioOn = !muted;
-    localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
+    final bool enabled = isAudioOn;
+    if (localStream != null) {
+      for (final t in localStream!.getAudioTracks()) {
+        t.enabled = enabled;
+        try {
+          Helper.setMicrophoneMute(!enabled, t);
+        } catch (_) {}
+      }
+    }
     if (peer != null) {
       peer!.getSenders().then((senders) {
         for (final sender in senders) {
           if (sender.track?.kind == 'audio') {
-            sender.track?.enabled = isAudioOn;
+            sender.track?.enabled = enabled;
           }
         }
       }).catchError((_) {});
@@ -2832,11 +2842,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
 
       if (state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
+        unawaited(_serverSaysCallOver(linkDown: true).then((over) {
+          if (over) _endBecauseServerSaysOver('ice-disconnected');
+        }));
         _startPeerDisconnectTimer();
         return;
       }
 
       if (state == RTCIceConnectionState.RTCIceConnectionStateFailed) {
+        unawaited(_serverSaysCallOver(linkDown: true).then((over) {
+          if (over) _endBecauseServerSaysOver('ice-failed');
+        }));
         _startPeerDisconnectTimer(grace: const Duration(seconds: 12));
         return;
       }
@@ -2860,11 +2876,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
 
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
+        unawaited(_serverSaysCallOver(linkDown: true).then((over) {
+          if (over) _endBecauseServerSaysOver('peer-failed');
+        }));
         _startPeerDisconnectTimer(grace: const Duration(seconds: 12));
         return;
       }
 
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected) {
+        unawaited(_serverSaysCallOver(linkDown: true).then((over) {
+          if (over) _endBecauseServerSaysOver('peer-disconnected');
+        }));
         _startPeerDisconnectTimer();
         return;
       }
@@ -3116,19 +3138,27 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   void toggleMic() {
     isAudioOn = !isAudioOn;
-    localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
+    final bool enabled = isAudioOn;
+    if (localStream != null) {
+      for (final t in localStream!.getAudioTracks()) {
+        t.enabled = enabled;
+        try {
+          Helper.setMicrophoneMute(!enabled, t);
+        } catch (_) {}
+      }
+    }
     if (peer != null) {
       peer!.getSenders().then((senders) {
         for (final sender in senders) {
           if (sender.track?.kind == 'audio') {
-            sender.track?.enabled = isAudioOn;
+            sender.track?.enabled = enabled;
           }
         }
       }).catchError((_) {});
     }
     _emitMediaState();
     // Keep the iOS lock screen / CallKit mute button in sync.
-    unawaited(_platform.syncCallKitMute(_callKitId, !isAudioOn));
+    unawaited(_platform.syncCallKitMute(_callKitId, !enabled));
     update();
   }
 

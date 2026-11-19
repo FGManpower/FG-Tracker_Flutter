@@ -26,9 +26,9 @@ const Duration kCallRingTimeout = Duration(seconds: 45);
 const String kCallEndToneAsset = 'assets/music/call_end_tone.wav';
 const String kCallBusyToneAsset = 'assets/music/call_busy_tone.wav';
 
-/// iOS: report outgoing calls to CallKit (BUG-CALL-12). Kill switch in case
-/// a device shows an audio problem with it.
-const bool kReportOutgoingCallsToCallKit = true;
+/// iOS: report outgoing calls to CallKit (BUG-CALL-12). Disabled to prevent
+/// CallKit from auto-terminating outgoing WebRTC calls when callee answers.
+const bool kReportOutgoingCallsToCallKit = false;
 
 /// Side effects of a 1:1 call outside WebRTC and the socket: device (wakelock,
 /// proximity, ringtone, foreground service), CallKit, audio route, tracking.

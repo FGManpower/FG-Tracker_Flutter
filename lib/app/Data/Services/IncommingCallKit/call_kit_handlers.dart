@@ -26,6 +26,10 @@ void setupCallKitHandlers() {
   final CallKitService callKit = CallKitService.instance;
 
   callKit.onAcceptCall = (callId, extra, uuid) async {
+    if (extra['direction'] == 'outgoing') {
+      log('[CALL] Ignored onAcceptCall for outgoing call: $extra');
+      return;
+    }
     final bool isGroup = extra['screen_name'] == 'incomingGroupCall';
     CallSessionState.sessionId = uuid ?? '';
 
@@ -237,6 +241,11 @@ Future<void> handleSystemEndCall({
     extra['session_id']?.toString() ?? '',
     ctrl.callId?.toString() ?? '',
   }..removeWhere((String id) => id.isEmpty || id == 'null');
+
+  if (extra['direction'] == 'outgoing' && ctrl.isCallLive) {
+    log('[CALL] system End ignored: active outgoing call');
+    return;
+  }
 
   if (ids.any(CallKitService.isAudioHandoverActive)) {
     log('[CALL] system End ignored: audio handover of this call');
