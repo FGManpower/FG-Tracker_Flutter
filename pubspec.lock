@@ -508,10 +508,9 @@ packages:
   file_picker:
     dependency: "direct main"
     description:
-      name: file_picker
-      sha256: "29cc1fdb20613876cc7afc529738c1c0f11a9ca159b010edad0c566ac330847e"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/file_picker"
+      relative: true
+    source: path
     version: "11.0.3"
   file_selector_linux:
     dependency: transitive
@@ -1695,10 +1694,9 @@ packages:
   otp_autofill:
     dependency: "direct main"
     description:
-      name: otp_autofill
-      sha256: "081a8366475db40c44f0582a34a779dbda0f54ac1f40a9b99dcd4b4546f025c2"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/otp_autofill"
+      relative: true
+    source: path
     version: "4.1.0"
   package_config:
     dependency: transitive
@@ -2548,10 +2546,9 @@ packages:
   video_thumbnail:
     dependency: "direct main"
     description:
-      name: video_thumbnail
-      sha256: "181a0c205b353918954a881f53a3441476b9e301641688a581e0c13f00dc588b"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/video_thumbnail"
+      relative: true
+    source: path
     version: "0.5.6"
   vm_service:
     dependency: transitive
