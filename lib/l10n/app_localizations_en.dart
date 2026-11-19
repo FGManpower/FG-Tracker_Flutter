@@ -182,7 +182,7 @@ class AppLocalizationsEn extends AppLocalizations {
     return 'Updating... $progress%';
   }
 
-  @override 
+  @override
   String get attendance_addOption => 'Add Another Option';
 
   @override
