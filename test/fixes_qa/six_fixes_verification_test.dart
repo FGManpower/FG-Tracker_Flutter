@@ -107,8 +107,8 @@ void main() {
     });
   });
 
-  group('3. Delete for Everyone (No Tick, No Placeholder)', () {
-    test('applyDelete completely removes message from message list', () {
+  group('3. Delete for Everyone (WhatsApp Parity: Preserves Position, No Ticks, Shows Deleted Text)', () {
+    test('applyDelete marks message as deleted in place preserving message list position', () {
       final msg1 = MessageData(id: 601, content: 'Keep this');
       final msg2 = MessageData(id: 602, content: 'Delete this everyone');
       final msg3 = MessageData(id: 603, content: 'Keep this too');
@@ -124,11 +124,13 @@ void main() {
       );
 
       expect(deleted, isTrue);
-      expect(messages.length, 2);
-      expect(messages.any((m) => m.id == 602), isFalse);
+      expect(messages.length, 3);
+      expect(messages[1].id, 602);
+      expect(messages[1].isDeleted, isTrue);
+      expect(messages[1].content, 'This message was deleted');
     });
 
-    test('merge filters out messages marked isDeleted or with placeholder string', () {
+    test('merge retains deleted messages in place with isDeleted marked true', () {
       final existing = [MessageData(id: 701, content: 'Active 1')];
       final incoming = [
         MessageData(id: 702, content: 'Active 2'),
@@ -140,9 +142,10 @@ void main() {
         incoming,
       );
 
-      expect(result.added, 1);
-      expect(result.messages.length, 2);
-      expect(result.messages.map((m) => m.id).toList(), [701, 702]);
+      expect(result.added, 2);
+      expect(result.messages.length, 3);
+      expect(result.messages.map((m) => m.id).toList(), [701, 702, 703]);
+      expect(result.messages[2].isDeleted, isTrue);
     });
   });
 

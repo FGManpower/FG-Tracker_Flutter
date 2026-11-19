@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:fgtracker/app/Core/util/http/http_util.dart' show HttpGetException;
+import 'package:fgtracker/app/Core/util/http/http_util.dart'
+    show HttpGetException;
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:fgtracker/app/Model/GetMessage.dart';
 
@@ -61,7 +62,9 @@ class ChatScreenRules {
         isUtc: true,
       );
     }
-    if (!str.endsWith('Z') && str.contains('-') && (str.contains(' ') || str.contains('T'))) {
+    if (!str.endsWith('Z') &&
+        str.contains('-') &&
+        (str.contains(' ') || str.contains('T'))) {
       final isoStr = str.replaceFirst(' ', 'T');
       final withZ = isoStr.endsWith('Z') ? isoStr : '${isoStr}Z';
       final dt = DateTime.tryParse(withZ);
@@ -121,7 +124,8 @@ class ChatScreenRules {
         }
         if (m.seenCount != null) {
           final inCount = int.tryParse(m.seenCount.toString()) ?? 0;
-          final exCount = int.tryParse(existingMsg.seenCount?.toString() ?? '') ?? 0;
+          final exCount =
+              int.tryParse(existingMsg.seenCount?.toString() ?? '') ?? 0;
           if (inCount > exCount) {
             existingMsg.seenCount = inCount;
             statusUpdated = true;
@@ -131,23 +135,31 @@ class ChatScreenRules {
           if (existingMsg.seenBy is! List) existingMsg.seenBy = [];
           final exList = (existingMsg.seenBy as List);
           for (final s in (m.seenBy as List)) {
-            final sId = (s is Map ? (s['userId'] ?? s['user_id'] ?? s['id']) : s)?.toString();
-            if (sId != null && !exList.any((e) => (e is Map ? (e['userId'] ?? e['user_id'] ?? e['id']) : e)?.toString() == sId)) {
+            final sId =
+                (s is Map ? (s['userId'] ?? s['user_id'] ?? s['id']) : s)
+                    ?.toString();
+            if (sId != null &&
+                !exList.any((e) =>
+                    (e is Map ? (e['userId'] ?? e['user_id'] ?? e['id']) : e)
+                        ?.toString() ==
+                    sId)) {
               exList.add(s);
               statusUpdated = true;
             }
           }
         }
-        final isIncomingDeleted =
-            m.isDeleted == true || m.content?.toString() == 'This message was deleted';
+        final isIncomingDeleted = m.isDeleted == true ||
+            m.isDeletedForEveryone == true ||
+            m.content?.toString() == 'This message was deleted';
         if (isIncomingDeleted) {
-          existing.remove(existingMsg);
+          markDeletedForEveryone(existingMsg);
           statusUpdated = true;
           continue;
         }
         if (m.isEdited == true && existingMsg.isEdited != true) {
           existingMsg.isEdited = true;
-          final t = (existingMsg.messageType?.toString() ?? '').toLowerCase().trim();
+          final t =
+              (existingMsg.messageType?.toString() ?? '').toLowerCase().trim();
           final isAttachment = t == 'image' ||
               t == 'image_text' ||
               t == 'media' ||
@@ -163,9 +175,12 @@ class ChatScreenRules {
         }
         continue;
       }
-      final isIncomingDeleted =
-          m.isDeleted == true || m.content?.toString() == 'This message was deleted';
-      if (isIncomingDeleted) continue;
+      final isIncomingDeleted = m.isDeleted == true ||
+          m.isDeletedForEveryone == true ||
+          m.content?.toString() == 'This message was deleted';
+      if (isIncomingDeleted) {
+        markDeletedForEveryone(m);
+      }
       if (key != null) known.add(key);
       added.add(m);
     }
@@ -177,8 +192,9 @@ class ChatScreenRules {
 
     final firstBefore = existing.isEmpty ? null : existing.first;
     final merged = sortOldestFirst([...existing, ...added]);
-    final prepended =
-        firstBefore == null ? 0 : merged.indexOf(firstBefore).clamp(0, merged.length);
+    final prepended = firstBefore == null
+        ? 0
+        : merged.indexOf(firstBefore).clamp(0, merged.length);
     return MergeResult(merged, added.length, prepended, updated: statusUpdated);
   }
 
@@ -244,7 +260,9 @@ class ChatScreenRules {
     if (type == MessageData.unsupportedType) return true;
     if (type.isEmpty || renderableTypes.contains(type)) return false;
     final content = m.content?.toString().trim() ?? '';
-    return content.isEmpty || content.startsWith('{') || content.startsWith('[');
+    return content.isEmpty ||
+        content.startsWith('{') ||
+        content.startsWith('[');
   }
 
   // ---------------------------------------------------------------------------
@@ -259,6 +277,17 @@ class ChatScreenRules {
   static bool isText(dynamic messageType) {
     final t = messageType?.toString().toLowerCase().trim() ?? '';
     return t.isEmpty || t == 'text' || t == 'text_message';
+  }
+
+  /// Whether the message type is an attachment that carries media/document.
+  static bool isAttachment(dynamic messageType) {
+    final t = messageType?.toString().toLowerCase().trim() ?? '';
+    return t == 'image' ||
+        t == 'image_text' ||
+        t == 'media' ||
+        t == 'video' ||
+        t == 'document' ||
+        t == 'audio';
   }
 
   /// Messages with or without attachments that support editing caption/text.
@@ -279,7 +308,9 @@ class ChatScreenRules {
   static Set<MessageMenuOption> menuOptions({
     required dynamic messageType,
     required bool isSentByMe,
+    bool isDeleted = false,
   }) {
+    if (isDeleted) return {MessageMenuOption.deleteForMe};
     final text = isText(messageType);
     final editable = isEditable(messageType);
     return {
@@ -287,7 +318,7 @@ class ChatScreenRules {
       if (text) MessageMenuOption.copy,
       // Attendance cards are tied to their group's poll: never forwarded.
       if (!isAttendance(messageType)) MessageMenuOption.forward,
-      if (isSentByMe && editable) MessageMenuOption.edit,
+      if (isSentByMe && editable && !isDeleted) MessageMenuOption.edit,
       MessageMenuOption.pin,
       if (isSentByMe) MessageMenuOption.info,
       if (isSentByMe) MessageMenuOption.deleteForEveryone,
@@ -312,22 +343,16 @@ class ChatScreenRules {
     final index = messages.indexWhere((m) => m.id == id);
     if (index == -1) return false;
 
-    final content = data['content'] ??
+    final content = data['caption'] ??
+        nested?['caption'] ??
+        data['content'] ??
         data['newContent'] ??
         (data['message'] is String ? data['message'] : null) ??
         nested?['content'];
     if (content == null) return false;
 
     final msg = messages[index];
-    final t = (msg.messageType?.toString() ?? '').toLowerCase().trim();
-    final isAttachment = t == 'image' ||
-        t == 'image_text' ||
-        t == 'media' ||
-        t == 'video' ||
-        t == 'document' ||
-        t == 'audio';
-
-    if (isAttachment) {
+    if (isAttachment(msg.messageType)) {
       msg.caption = content.toString();
     } else {
       msg.content = content.toString();
@@ -349,8 +374,8 @@ class ChatScreenRules {
     return by == currentUserId?.trim();
   }
 
-  /// "Deleted for everyone": completely remove the message from the list so
-  /// no tick, no placeholder, and no duplicate remains.
+  /// "Deleted for everyone": mark deleted in place for WhatsApp deleted bubble
+  /// with no media, no caption, no ticks, preserving message position.
   static bool applyDelete(
     List<MessageData> messages,
     Map<String, dynamic> data,
@@ -364,22 +389,27 @@ class ChatScreenRules {
     if (index == -1) return false;
 
     final deleteType =
-        (data['deleteType'] ?? data['delete_type'] ?? 'for_everyone').toString();
+        (data['deleteType'] ?? data['delete_type'] ?? 'for_everyone')
+            .toString();
     if (deleteType == 'for_me') {
       if (!isDeleteForMeByMe(data, currentUserId)) return false;
       messages.removeAt(index);
       return true;
     } else {
-      // for_everyone: remove completely from sender and receiver screens
-      messages.removeAt(index);
+      markDeletedForEveryone(messages[index]);
       return true;
     }
   }
 
-  /// Legacy helper kept for backward compatibility if called elsewhere.
+  /// Sets up a message as deleted for everyone (WhatsApp parity).
   static void markDeletedForEveryone(MessageData msg) {
     msg.isDeleted = true;
-    msg.content = '';
+    msg.content = 'This message was deleted';
+    msg.messageType = 'text';
+    msg.images = [];
+    msg.videos = null;
+    msg.caption = null;
+    msg.replyId = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -481,7 +511,9 @@ class ChatScreenRules {
     required String? currentUserId,
   }) {
     final me = currentUserId?.trim() ?? '';
-    if (readerId != null && readerId.trim().isNotEmpty && readerId.trim() == me) {
+    if (readerId != null &&
+        readerId.trim().isNotEmpty &&
+        readerId.trim() == me) {
       return false;
     }
     final ids = messageIds.map((e) => e.toString()).toSet();
@@ -515,7 +547,8 @@ class MergeResult {
   /// Whether any already-loaded message had its tick/seen/deleted status updated.
   final bool updated;
 
-  const MergeResult(this.messages, this.added, this.prepended, {this.updated = false});
+  const MergeResult(this.messages, this.added, this.prepended,
+      {this.updated = false});
 }
 
 enum MessageMenuOption {
@@ -561,7 +594,8 @@ class HistoryPager {
   }) {
     _loading = false;
     if (page > _lastLoadedPage) _lastLoadedPage = page;
-    _hasMore = receivedCount > 0 && (hasNextPage ?? receivedCount >= ChatScreenRules.pageSize);
+    _hasMore = receivedCount > 0 &&
+        (hasNextPage ?? receivedCount >= ChatScreenRules.pageSize);
   }
 
   /// Call when the request failed; paging can be retried.

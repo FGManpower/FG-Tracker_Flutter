@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:fgtracker/app/modules/Messages/Controller/message_receipts.dart';
 
 import '../Core/constant/const_res.dart';
@@ -92,6 +93,15 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
     _initLocalData();
     _setupRealtimeListeners();
     _fetchLiveInfo();
+    if (_isGroup && (widget.groupController?.groupMembers.isEmpty ?? true)) {
+      widget.groupController?.getGroupMembers().then((_) {
+        if (mounted) {
+          setState(() {
+            _initLocalData();
+          });
+        }
+      });
+    }
   }
 
   @override
@@ -163,8 +173,10 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
         _reconnectSub = sm.chatConnected.listen((_) => _scheduleRefetch());
         WidgetsBinding.instance.addObserver(this);
       } else {
-        sm.privateChatSocket.on("messages_seen_update", _handlePrivateSeenUpdate);
-        sm.privateChatSocket.on("messages_delivered", _handlePrivateDeliveredUpdate);
+        sm.privateChatSocket
+            .on("messages_seen_update", _handlePrivateSeenUpdate);
+        sm.privateChatSocket
+            .on("messages_delivered", _handlePrivateDeliveredUpdate);
       }
     } catch (_) {}
   }
@@ -178,8 +190,10 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
         WidgetsBinding.instance.removeObserver(this);
       } else {
         final sm = SocketMessageService.instance;
-        sm.privateChatSocket.off("messages_seen_update", _handlePrivateSeenUpdate);
-        sm.privateChatSocket.off("messages_delivered", _handlePrivateDeliveredUpdate);
+        sm.privateChatSocket
+            .off("messages_seen_update", _handlePrivateSeenUpdate);
+        sm.privateChatSocket
+            .off("messages_delivered", _handlePrivateDeliveredUpdate);
       }
     } catch (_) {}
   }
@@ -200,7 +214,8 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
     }
     final msgId = normalizeReceiptId(widget.message.id);
     if (msgId == null || !u.messageIds.contains(msgId)) return;
-    seenDbg('INFO apply ${u.isRead ? 'read' : 'delivered'} msg=$msgId user=$user');
+    seenDbg(
+        'INFO apply ${u.isRead ? 'read' : 'delivered'} msg=$msgId user=$user');
     setState(() {
       if (u.isRead) {
         _groupRead.putIfAbsent(user, () => u.at);
@@ -251,7 +266,8 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
   void _handlePrivateSeenUpdate(dynamic data) {
     if (!mounted || data == null) return;
     try {
-      final map = data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{};
+      final map =
+          data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{};
       final ids = (map['messageIds'] is List
               ? (map['messageIds'] as List)
               : [map['messageId'], map['id']])
@@ -261,7 +277,8 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
 
       final currentMsgId = widget.message.id?.toString();
       if (currentMsgId != null && ids.contains(currentMsgId)) {
-        final seenAt = map['seenAt']?.toString() ?? DateTime.now().toIso8601String();
+        final seenAt =
+            map['seenAt']?.toString() ?? DateTime.now().toIso8601String();
         setState(() {
           _infoData ??= {};
           _infoData!['isSeen'] = true;
@@ -289,7 +306,8 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
   void _handlePrivateDeliveredUpdate(dynamic data) {
     if (!mounted || data == null) return;
     try {
-      final map = data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{};
+      final map =
+          data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{};
       final ids = (map['messageIds'] is List
               ? (map['messageIds'] as List)
               : [map['messageId'], map['id']])
@@ -299,7 +317,8 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
 
       final currentMsgId = widget.message.id?.toString();
       if (currentMsgId != null && ids.contains(currentMsgId)) {
-        final delAt = map['deliveredAt']?.toString() ?? DateTime.now().toIso8601String();
+        final delAt =
+            map['deliveredAt']?.toString() ?? DateTime.now().toIso8601String();
         setState(() {
           _infoData ??= {};
           _infoData!['isDelivered'] = true;
@@ -316,7 +335,8 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
                 'deliveredAt': delAt,
               }
             ];
-          } else if (_deliveredToList.isNotEmpty && _deliveredToList.first is Map) {
+          } else if (_deliveredToList.isNotEmpty &&
+              _deliveredToList.first is Map) {
             (_deliveredToList.first as Map)['deliveredAt'] = delAt;
           }
         });
@@ -325,7 +345,10 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
   }
 
   Future<void> _fetchLiveInfo() async {
-    final msgId = widget.message.id;
+    final msgId = widget.message.id ??
+        int.tryParse(widget.message.attendancePollId?.toString() ?? '') ??
+        int.tryParse(widget.message.attendance?['id']?.toString() ?? '') ??
+        int.tryParse(widget.message.attendance?['pollId']?.toString() ?? '');
     if (msgId == null) {
       if (mounted) setState(() => _isLoading = false);
       return;
@@ -340,7 +363,10 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
       );
       seenDbg('INFO API response => $res');
 
-      if (mounted && res != null && res['status'] == true && res['data'] != null) {
+      if (mounted &&
+          res != null &&
+          res['status'] == true &&
+          res['data'] != null) {
         final data = res['data'] as Map<String, dynamic>;
         setState(() {
           _infoData = data;
@@ -387,7 +413,9 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
         isUtc: true,
       ).toLocal();
     }
-    if (!s.endsWith('Z') && s.contains('-') && (s.contains(' ') || s.contains('T'))) {
+    if (!s.endsWith('Z') &&
+        s.contains('-') &&
+        (s.contains(' ') || s.contains('T'))) {
       final isoStr = s.replaceFirst(' ', 'T');
       final withZ = isoStr.endsWith('Z') ? isoStr : '${isoStr}Z';
       final dt = DateTime.tryParse(withZ);
@@ -444,6 +472,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
         icon: Icons.done_all,
         iconColor: const Color(0xFF34B7F1),
         title: appL10n.msgInfo_readBy,
+        emptyText: appL10n.widget_notSeenYet,
         rows: [
           for (final e in newestFirst(summary.read))
             _groupMemberTile(e.key, time: e.value, kind: _RowKind.read),
@@ -456,6 +485,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
         icon: Icons.done_all,
         iconColor: Colors.grey.shade600,
         title: appL10n.msgInfo_deliveredTo,
+        emptyText: appL10n.chatSys_notDeliveredYet,
         rows: [
           for (final e in newestFirst(summary.delivered))
             _groupMemberTile(e.key, time: e.value, kind: _RowKind.delivered),
@@ -472,6 +502,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
     required String title,
     required List<Widget> rows,
     required int remaining,
+    String? emptyText,
   }) {
     return Container(
       key: key,
@@ -502,13 +533,27 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
               ],
             ),
           ),
-          ...rows,
+          if (rows.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+              child: Text(
+                emptyText ?? "---",
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: Colors.grey.shade500,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            )
+          else
+            ...rows,
           if (remaining > 0)
             Padding(
               padding: EdgeInsets.fromLTRB(16.w, 6.h, 16.w, 12.h),
               child: Text(
                 appL10n.msgInfo_remainingCount(remaining),
-                style: TextStyle(fontSize: 12.5.sp, color: Colors.grey.shade600),
+                style:
+                    TextStyle(fontSize: 12.5.sp, color: Colors.grey.shade600),
               ),
             )
           else
@@ -550,7 +595,8 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
               backgroundColor: const Color(0xFFEDE9FE),
               backgroundImage: image.isNotEmpty ? NetworkImage(imageUrl) : null,
               child: image.isEmpty
-                  ? Icon(Icons.person, size: 20.sp, color: const Color(0xFF5D47F1))
+                  ? Icon(Icons.person,
+                      size: 20.sp, color: const Color(0xFF5D47F1))
                   : null,
             ),
             SizedBox(width: 12.w),
@@ -562,13 +608,12 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
                 style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
               ),
             ),
-            if (time != null) ...[
-              SizedBox(width: 8.w),
-              Text(
-                _formatTimestamp(time),
-                style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
-              ),
-            ],
+            SizedBox(width: 8.w),
+            Text(
+              _formatTimestamp(
+                  time ?? _infoData?['sentAt'] ?? widget.message.timestamp),
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
+            ),
           ],
         ),
       ),
@@ -577,16 +622,19 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
 
   @override
   Widget build(BuildContext context) {
-
     final privateReadCount = (_infoData?['isSeen'] == true ||
-            (_infoData?['readBy'] is List && (_infoData!['readBy'] as List).isNotEmpty) ||
+            (_infoData?['readBy'] is List &&
+                (_infoData!['readBy'] as List).isNotEmpty) ||
             _readByList.isNotEmpty ||
-            ChatScreenRules.seenCount(widget.message, currentUserId: _currentUserId, isGroup: false) > 0)
+            ChatScreenRules.seenCount(widget.message,
+                    currentUserId: _currentUserId, isGroup: false) >
+                0)
         ? 1
         : 0;
 
     final privateDeliveredCount = (_infoData?['isDelivered'] == true ||
-            (_infoData?['deliveredTo'] is List && (_infoData!['deliveredTo'] as List).isNotEmpty) ||
+            (_infoData?['deliveredTo'] is List &&
+                (_infoData!['deliveredTo'] as List).isNotEmpty) ||
             _deliveredToList.isNotEmpty ||
             widget.message.isDelivered == true ||
             privateReadCount > 0)
@@ -668,26 +716,26 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
                     if (_isGroup)
                       ..._buildGroupSections()
                     else ...[
-                    // 1. Read / Seen Section
-                    _buildSectionTitle(
-                      icon: Icons.done_all,
-                      iconColor: Colors.blue,
-                      title: appL10n.widget_seen,
-                      count: privateReadCount,
-                    ),
-                    _buildPrivateReadTile(),
+                      // 1. Read / Seen Section
+                      _buildSectionTitle(
+                        icon: Icons.done_all,
+                        iconColor: Colors.blue,
+                        title: appL10n.widget_seen,
+                        count: privateReadCount,
+                      ),
+                      _buildPrivateReadTile(),
 
-                    SizedBox(height: 8.h),
-                    Divider(height: 1, color: Colors.grey.shade200),
+                      SizedBox(height: 8.h),
+                      Divider(height: 1, color: Colors.grey.shade200),
 
-                    // 2. Delivered Section
-                    _buildSectionTitle(
-                      icon: Icons.done_all,
-                      iconColor: Colors.grey.shade600,
-                      title: appL10n.chatSys_delivered,
-                      count: privateDeliveredCount,
-                    ),
-                    _buildPrivateDeliveredTile(),
+                      // 2. Delivered Section
+                      _buildSectionTitle(
+                        icon: Icons.done_all,
+                        iconColor: Colors.grey.shade600,
+                        title: appL10n.chatSys_delivered,
+                        count: privateDeliveredCount,
+                      ),
+                      _buildPrivateDeliveredTile(),
                     ],
 
                     SizedBox(height: 20.h),
@@ -701,25 +749,113 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
     );
   }
 
+  Widget _buildMediaThumbnail() {
+    final type = (widget.message.messageType?.toString() ?? '').toLowerCase().trim();
+    String? mediaPath;
+    if (widget.message.images?.isNotEmpty ?? false) {
+      mediaPath = widget.message.images!.first;
+    } else if (type == 'image' || type == 'image_text' || type == 'media') {
+      final c = widget.message.content?.toString() ?? '';
+      if (c.isNotEmpty && !c.contains('||')) mediaPath = c;
+    } else if (type == 'video') {
+      if (widget.message.videos?.isNotEmpty ?? false) {
+        final v = widget.message.videos!.first;
+        mediaPath = v.thumbnail ?? v.videoUrl;
+      }
+    }
+
+    if (mediaPath != null && mediaPath.trim().isNotEmpty) {
+      final val = mediaPath.trim();
+      final isLocal = val.startsWith('/') && !val.startsWith('http');
+      Widget img;
+      if (isLocal) {
+        img = Image.file(
+          File(val),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Icon(_getMessageIcon(), color: Colors.grey.shade600, size: 22.sp),
+        );
+      } else {
+        final fullUrl = val.startsWith('http://') || val.startsWith('https://')
+            ? val
+            : '${ConstRes.aImageBaseUrl}$val';
+        img = Image.network(
+          fullUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Icon(_getMessageIcon(), color: Colors.grey.shade600, size: 22.sp),
+        );
+      }
+
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8.r),
+        child: Container(
+          width: 48.w,
+          height: 48.w,
+          color: Colors.grey.shade200,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              img,
+              if (type == 'video')
+                Center(
+                  child: Container(
+                    padding: EdgeInsets.all(4.w),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 18.sp),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Default icon badge for non-image attachments or text
+    return Container(
+      width: 44.w,
+      height: 44.w,
+      decoration: BoxDecoration(
+        color: const Color(0xFFEDE9FE),
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Center(
+        child: Icon(
+          _getMessageIcon(),
+          color: const Color(0xFF5045B9),
+          size: 22.sp,
+        ),
+      ),
+    );
+  }
+
   Widget _buildMessagePreview() {
     String preview;
+    final caption = widget.message.caption?.toString().trim() ?? "";
 
     switch (widget.message.messageType?.toString()) {
       case "image":
       case "image_text":
-        preview = appL10n.util_previewPhoto;
+      case "media":
+        preview = caption.isNotEmpty ? caption : appL10n.util_previewPhoto;
         break;
 
       case "video":
-        preview = appL10n.util_previewVideo;
+        preview = caption.isNotEmpty ? caption : appL10n.util_previewVideo;
         break;
 
       case "audio":
-        preview = appL10n.util_previewVoice;
+        preview = caption.isNotEmpty ? caption : appL10n.util_previewVoice;
         break;
 
       case "document":
-        preview = appL10n.util_previewDocument;
+        final raw = widget.message.content?.toString() ?? "";
+        final parts = raw.split("||");
+        final docUrl = parts.isNotEmpty ? parts[0] : "";
+        String docName = parts.length > 1 ? parts[1] : docUrl.split('/').last;
+        if (docName.isEmpty || docName == 'null') docName = appL10n.util_previewDocument;
+        preview = caption.isNotEmpty ? "$docName • $caption" : docName;
         break;
 
       case "location":
@@ -727,7 +863,8 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
         break;
 
       case "contact":
-        preview = appL10n.util_previewContact;
+        final c = widget.message.content?.toString() ?? "";
+        preview = c.isNotEmpty && !c.startsWith('{') ? c : appL10n.util_previewContact;
         break;
 
       case "attendance":
@@ -744,40 +881,35 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              Icon(
-                _getMessageIcon(),
-                color: Colors.grey.shade600,
-                size: 20.sp,
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: Text(
+          _buildMediaThumbnail(),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
                   preview,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 13.sp,
-                    color: Colors.grey.shade800,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 14.sp,
+                    color: Colors.grey.shade900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 6.h),
-          Padding(
-            padding: EdgeInsets.only(left: 30.w),
-            child: Text(
-              "Sent: $sentTime",
-              style: TextStyle(
-                fontSize: 11.sp,
-                color: Colors.grey.shade500,
-              ),
+                SizedBox(height: 4.h),
+                Text(
+                  "Sent: $sentTime",
+                  style: TextStyle(
+                    fontSize: 11.5.sp,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -821,11 +953,15 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
       final dynamic att = widget.message.attendance;
       if (att is Map) {
         final title = att['title']?.toString().trim() ?? '';
+        final desc = att['description']?.toString().trim() ?? '';
+        if (title.isNotEmpty && desc.isNotEmpty) return '$title • $desc';
         if (title.isNotEmpty) return title;
       }
       final decoded = jsonDecode(widget.message.content?.toString() ?? "");
       if (decoded is Map) {
         final title = decoded["title"]?.toString().trim() ?? "";
+        final desc = decoded["description"]?.toString().trim() ?? "";
+        if (title.isNotEmpty && desc.isNotEmpty) return '$title • $desc';
         if (title.isNotEmpty) return title;
       }
     } catch (_) {}
@@ -893,11 +1029,11 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
     final isSeen = _infoData?['isSeen'] == true ||
         _readByList.isNotEmpty ||
         ChatScreenRules.seenCount(
-          widget.message,
-          currentUserId: _currentUserId,
-          isGroup: false,
-        ) >
-        0;
+              widget.message,
+              currentUserId: _currentUserId,
+              isGroup: false,
+            ) >
+            0;
 
     if (!isSeen) {
       return _buildEmptyTile(appL10n.widget_notSeenYet);

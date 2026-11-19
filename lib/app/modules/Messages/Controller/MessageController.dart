@@ -1388,8 +1388,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               if (!ChatScreenRules.isDeleteForMeByMe(data, me)) return;
               _messages.removeAt(index);
             } else if (deleteType == "for_everyone") {
-              // for_everyone: completely remove the message so no tick or placeholder remains
-              _messages.removeAt(index);
+              ChatScreenRules.markDeletedForEveryone(_messages[index]);
             }
 
             if (pinnedMessage.value?.id == messageId) {
@@ -1991,7 +1990,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     final idx = _messages.indexWhere((m) => m.id == messageId);
     if (idx != -1) {
-      _messages.removeAt(idx);
+      if (deleteType == "for_everyone") {
+        ChatScreenRules.markDeletedForEveryone(_messages[idx]);
+      } else {
+        _messages.removeAt(idx);
+      }
       updateMessageStream();
       _syncChatListPreview();
     }
@@ -2724,6 +2727,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       return;
     }
 
+    if (message.isDeleted == true ||
+        message.isDeletedForEveryone ||
+        message.content?.toString() == "This message was deleted") {
+      return;
+    }
+
     final currentUserId =
         Global.storageServices.get(PrefConst.userId).toString();
 
@@ -2754,20 +2763,38 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     final otherUserId = memberData.userId.toString();
 
-    log(
+    // 1. Optimistic in-place update for instant sender feedback.
+    final targetIndex = _messages.indexWhere((m) => m.id == message.id);
+    final targetMsg = targetIndex != -1 ? _messages[targetIndex] : message;
+
+    final isAttachment = ChatScreenRules.isAttachment(targetMsg.messageType);
+    if (isAttachment) {
+      targetMsg.caption = text;
+    } else {
+      targetMsg.content = text;
+    }
+    targetMsg.isEdited = true;
+    targetMsg.edited = true;
+    targetMsg.editedAt = DateTime.now().toUtc().toIso8601String();
+
+    updateMessageStream();
+
+    AppLog.d(
       "UPDATE EDITED MESSAGE => messageId=${message.id}, userId=$currentUserId, otherUserId=$otherUserId, text=$text",
     );
 
+    // 2. Emit socket event to notify peer
     socketService.editMessage(
       messageId: message.id!,
       content: text,
+      caption: text,
       userId: currentUserId,
       otherUserId: otherUserId,
     );
 
     editingMessage.value = null;
 
-    log(
+    AppLog.d(
       "EDIT REQUEST SENT => messageId=${message.id}",
     );
   }

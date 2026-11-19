@@ -668,8 +668,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             if (!ChatScreenRules.isDeleteForMeByMe(data, me)) return;
             _messages.removeAt(index);
           } else {
-            // for_everyone: completely remove the message so no tick or placeholder remains
-            _messages.removeAt(index);
+            ChatScreenRules.markDeletedForEveryone(_messages[index]);
           }
         }
 
@@ -1567,7 +1566,11 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     final poll = data["poll"] is Map
         ? Map<String, dynamic>.from(data["poll"])
         : null;
-    message["id"] ??= data["messageId"] ?? poll?["messageId"];
+    message["id"] ??= data["messageId"] ??
+        data["data"]?["messageId"] ??
+        data["message"]?["id"] ??
+        poll?["messageId"] ??
+        poll?["id"];
     message["pollId"] ??= data["pollId"] ?? poll?["pollId"] ?? poll?["id"];
     if (poll != null) message["attendance"] ??= poll;
     message["content"] ??= jsonEncode({
@@ -1575,7 +1578,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       "title": poll?["title"],
       "eventDate": poll?["eventDate"],
     });
-    message["timestamp"] ??= poll?["createdAt"];
+    message["timestamp"] ??= poll?["createdAt"] ?? DateTime.now().toUtc().toIso8601String();
     message["senderId"] ??=
         Global.storageServices.get(PrefConst.userId)?.toString();
     message["senderName"] ??=
@@ -1933,7 +1936,11 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
     final idx = _messages.indexWhere((m) => m.id == messageId);
     if (idx != -1) {
-      _messages.removeAt(idx);
+      if (deleteType == "for_everyone") {
+        ChatScreenRules.markDeletedForEveryone(_messages[idx]);
+      } else {
+        _messages.removeAt(idx);
+      }
       updateMessageStream();
       _syncChatListPreview();
     }
@@ -2530,6 +2537,12 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       return;
     }
 
+    if (message.isDeleted == true ||
+        message.isDeletedForEveryone ||
+        message.content?.toString() == "This message was deleted") {
+      return;
+    }
+
     final currentUserId =
         Global.storageServices.get(PrefConst.userId).toString();
 
@@ -2555,10 +2568,36 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
     if (text.isEmpty) return;
 
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId).toString();
+
+    // 1. Optimistic in-place update for instant sender feedback.
+    final targetIndex = _messages.indexWhere((m) => m.id == message.id);
+    final targetMsg = targetIndex != -1 ? _messages[targetIndex] : message;
+
+    final isAttachment = ChatScreenRules.isAttachment(targetMsg.messageType);
+    if (isAttachment) {
+      targetMsg.caption = text;
+    } else {
+      targetMsg.content = text;
+    }
+    targetMsg.isEdited = true;
+    targetMsg.edited = true;
+    targetMsg.editedAt = DateTime.now().toUtc().toIso8601String();
+
+    updateMessageStream();
+
+    AppLog.d(
+      "UPDATE GROUP EDITED MESSAGE => messageId=${message.id}, groupId=$groupId, userId=$currentUserId, text=$text",
+    );
+
+    // 2. Emit socket event to notify group members
     socketService.editMessage(
       messageId: message.id!,
       content: text,
-      userId: Global.storageServices.get(PrefConst.userId).toString(),
+      caption: text,
+      userId: currentUserId,
+      groupId: groupId,
     );
 
     editingMessage.value = null;

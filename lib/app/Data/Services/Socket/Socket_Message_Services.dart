@@ -1795,15 +1795,24 @@ class SocketMessageService extends GetxService {
     required String content,
     required String userId,
     String? otherUserId,
+    dynamic groupId,
+    String? caption,
   }) {
     final payload = {
       "messageId": messageId,
       "content": content,
+      "caption": caption ?? content,
       "userId": userId,
       if (otherUserId != null) "otherUserId": otherUserId,
+      if (groupId != null) "groupId": groupId,
     };
 
+    AppLog.d("========== SOCKET EDIT MESSAGE EMIT ==========");
+    AppLog.d("EVENT: editMessage");
+    AppLog.d("PAYLOAD: $payload");
+
     if (otherUserId != null && isPrivateChatSocketConnected) {
+      AppLog.d("EMITTING editMessage ON PRIVATE CHAT SOCKET");
       _privateChatSocket!.emit(
         "editMessage",
         payload,
@@ -1812,6 +1821,7 @@ class SocketMessageService extends GetxService {
       return;
     }
 
+    AppLog.d("EMITTING editMessage ON GROUP/MAIN SOCKET");
     socket.emit(
       "editMessage",
       payload,

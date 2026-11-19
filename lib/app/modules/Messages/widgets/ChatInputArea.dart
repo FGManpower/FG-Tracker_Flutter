@@ -203,8 +203,10 @@ class _ChatInputAreaState extends State<ChatInputArea> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
 
-            final String text = (editingMessage.caption?.toString().trim().isNotEmpty ?? false)
-                ? editingMessage.caption.toString()
+            final isAttachment =
+                ChatScreenRules.isAttachment(editingMessage.messageType);
+            final String text = isAttachment
+                ? (editingMessage.caption?.toString() ?? "")
                 : (editingMessage.content?.toString() ?? "");
 
             widget.textController.text = text;
@@ -232,7 +234,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
 
         final hasRecordedAudio =
             voiceInputController.recordedAudioPath.value.isNotEmpty;
-        final shouldShowSend = isMessageNotEmpty ||
+        final shouldShowSend = isEditing ||
+            isMessageNotEmpty ||
             isImageSelected ||
             isVideoSelected ||
             isDocumentSelected ||
@@ -260,6 +263,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (isEditing)
+                      _buildEditingBanner(editingMessage, context),
                     if (isImageSelected)
                       SizedBox(
                         height: 110.h,
@@ -687,6 +692,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                                 }
                                                 widget.textController.clear();
                                                 widget.messageText.value = "";
+                                                _lastEditingMessage = null;
                                               } else {
                                                 widget.onSend();
                                               }
@@ -1194,6 +1200,80 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditingBanner(MessageData message, BuildContext context) {
+    final isAttachment = ChatScreenRules.isAttachment(message.messageType);
+    final String preview = isAttachment
+        ? ((message.caption?.toString().trim().isNotEmpty ?? false)
+            ? message.caption.toString()
+            : (message.messageType?.toString().toUpperCase() ?? 'Attachment'))
+        : (message.content?.toString() ?? '');
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: _inputBg,
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border(
+          left: BorderSide(color: _purple, width: 3.5.w),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.edit_rounded,
+            color: _purple,
+            size: 18.sp,
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  context.l10n.common_edit,
+                  style: TextStyle(
+                    color: _purple,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12.sp,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  preview,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              widget.messageController?.cancelEditingMessage();
+              widget.groupMessageController?.cancelEditingMessage();
+              widget.textController.clear();
+              widget.messageText.value = '';
+              _lastEditingMessage = null;
+            },
+            child: Padding(
+              padding: EdgeInsets.all(4.w),
+              child: Icon(
+                Icons.close_rounded,
+                color: Colors.grey.shade600,
+                size: 18.sp,
+              ),
+            ),
+          ),
         ],
       ),
     );

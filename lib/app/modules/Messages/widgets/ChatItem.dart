@@ -44,6 +44,7 @@ import '../../../Data/Services/call_service.dart';
 import '../../../Data/Services/group_call_service.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+
 /// Text bubbles shrink-wrap via IntrinsicWidth. The attendance card has
 /// full-width bars and buttons (infinite intrinsic width), which crashes
 /// IntrinsicWidth, so it fills the bubble's max width instead.
@@ -186,7 +187,8 @@ Widget _unsupportedMessageContent(bool isSentByMe) {
   return Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Icon(Icons.info_outline_rounded, size: 16.sp, color: Colors.grey.shade600),
+      Icon(Icons.info_outline_rounded,
+          size: 16.sp, color: Colors.grey.shade600),
       SizedBox(width: 6.w),
       Flexible(
         child: Text(
@@ -236,7 +238,8 @@ Widget _quotedReplyCard({
   if (replyId == null) return const SizedBox.shrink();
 
   const purple = Color(0xFF5045B9);
-  final currentUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+  final currentUserId =
+      Global.storageServices.get(PrefConst.userId)?.toString();
   final preview =
       MessagePreviewBuilder.forQuotedReply(message, original: original).display;
   final sender = MessagePreviewBuilder.replySenderLabel(
@@ -320,7 +323,8 @@ String formatSystemMessageText(MessageData message, String currentUserId) {
   final List<String> addedUserIds = addedUserIdsRaw is List
       ? addedUserIdsRaw.map((e) => e.toString()).toList()
       : [];
-  final isMeTarget = targetUserId == currentUserId || addedUserIds.contains(currentUserId);
+  final isMeTarget =
+      targetUserId == currentUserId || addedUserIds.contains(currentUserId);
 
   switch (action) {
     case 'member_added':
@@ -540,13 +544,15 @@ Widget _buildCallLogTile({
       ? (isMissed ? Icons.missed_video_call_rounded : Icons.videocam_rounded)
       : (isMissed ? Icons.phone_missed_rounded : Icons.phone_callback_rounded);
 
-  final iconColor = isMissed ? const Color(0xFFE53935) : const Color(0xFF43A047);
+  final iconColor =
+      isMissed ? const Color(0xFFE53935) : const Color(0xFF43A047);
 
   String timeStr = '';
   if (message.timestamp != null) {
     try {
       final dt = DateTime.parse(message.timestamp.toString()).toLocal();
-      timeStr = "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+      timeStr =
+          "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
     } catch (_) {}
   }
 
@@ -578,7 +584,8 @@ Widget _buildCallLogTile({
               style: TextStyle(
                 fontSize: 11.5.sp,
                 fontWeight: FontWeight.w600,
-                color: isMissed ? const Color(0xFFE53935) : Colors.grey.shade800,
+                color:
+                    isMissed ? const Color(0xFFE53935) : Colors.grey.shade800,
               ),
             ),
           ),
@@ -648,18 +655,18 @@ class ChatBubble extends StatelessWidget {
 
   bool get _isDeletedMessage =>
       message.isDeleted == true ||
-          message.content?.toString() == "This message was deleted";
+      message.isDeleted.toString() == 'true' ||
+      message.isDeleted.toString() == '1' ||
+      message.isDeletedForEveryone == true ||
+      message.content?.toString() == "This message was deleted" ||
+      message.content?.toString() == "You deleted this message";
 
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
-
-    if (_isDeletedMessage) {
-      return const SizedBox.shrink();
-    }
 
     if (message.isSystemMessage) {
       return _buildSystemMessageTile(
@@ -675,12 +682,19 @@ class ChatBubble extends StatelessWidget {
         isSentByMe: isSentByMe,
         onCallBack: () {
           try {
-            final isVideo = message.content?.toString().toLowerCase().contains('video') == true ||
-                message.callLogMeta?['isVideo'] == true ||
-                message.callLogMeta?['callType'] == 'video';
-            final myId = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
-            final remoteId = isSentByMe ? (message.receiverId?.toString() ?? '') : (message.senderId?.toString() ?? '');
-            final finalRemoteId = remoteId.isNotEmpty && remoteId != '0' ? remoteId : (controller.memberData.userId?.toString() ?? '');
+            final isVideo =
+                message.content?.toString().toLowerCase().contains('video') ==
+                        true ||
+                    message.callLogMeta?['isVideo'] == true ||
+                    message.callLogMeta?['callType'] == 'video';
+            final myId =
+                Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+            final remoteId = isSentByMe
+                ? (message.receiverId?.toString() ?? '')
+                : (message.senderId?.toString() ?? '');
+            final finalRemoteId = remoteId.isNotEmpty && remoteId != '0'
+                ? remoteId
+                : (controller.memberData.userId?.toString() ?? '');
             final targetName = controller.memberData.name?.toString() ?? 'User';
             final targetPic = controller.memberData.profileImage;
             CallService().startOutGoingCall(
@@ -708,7 +722,7 @@ class ChatBubble extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
-        isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           Flexible(
             child: Builder(
@@ -728,9 +742,8 @@ class ChatBubble extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       GestureDetector(
-                        onLongPress: _isDeletedMessage
-                            ? null
-                            : () => _showMessageMenu(bubbleContext, isSentByMe),
+                        onLongPress: () =>
+                            _showMessageMenu(bubbleContext, isSentByMe),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           constraints: BoxConstraints(
@@ -741,15 +754,15 @@ class ChatBubble extends StatelessWidget {
                           padding: isAttendance
                               ? EdgeInsets.zero
                               : EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 8.h,
-                          ),
+                                  horizontal: 12.w,
+                                  vertical: 8.h,
+                                ),
                           decoration: BoxDecoration(
                             color: isAttendance
                                 ? Colors.transparent
                                 : (isHighlighted
-                                ? Colors.yellow.withValues(alpha: .35)
-                                : bgColor),
+                                    ? Colors.yellow.withValues(alpha: .35)
+                                    : bgColor),
                             borderRadius: isAttendance
                                 ? BorderRadius.circular(20.r)
                                 : borderRadius,
@@ -760,13 +773,13 @@ class ChatBubble extends StatelessWidget {
                             boxShadow: isAttendance
                                 ? []
                                 : [
-                              BoxShadow(
-                                color:
-                                Colors.black.withValues(alpha: 0.04),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.04),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                           ),
                           child: _bubbleWidth(
                             isAttendance: isAttendance,
@@ -873,7 +886,9 @@ class ChatBubble extends StatelessWidget {
         SizedBox(width: 6.w),
         Flexible(
           child: Text(
-            appL10n.chat_messageDeleted,
+            isSentByMe
+                ? appL10n.chat_previewOwnDeleted
+                : appL10n.chat_messageDeleted,
             style: TextStyle(
               fontSize: 13.sp,
               fontStyle: FontStyle.italic,
@@ -904,7 +919,7 @@ class ChatBubble extends StatelessWidget {
       final parts = message.content?.split("||") ?? [];
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
       String documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
       documentName = removeDuplicateExtension(documentName).trim();
       return documentName;
     }
@@ -975,10 +990,18 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildTimeRow(bool isSentByMe) {
+    final wasEdited = !_isDeletedMessage &&
+        (message.isEdited == true ||
+            message.isEdited?.toString() == 'true' ||
+            message.isEdited?.toString() == '1' ||
+            message.edited == true ||
+            message.edited?.toString() == 'true' ||
+            message.edited?.toString() == '1');
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (message.isEdited == true && !_isDeletedMessage) ...[
+        if (wasEdited) ...[
           Text(
             appL10n.chat_edited,
             style: TextStyle(
@@ -997,15 +1020,14 @@ class ChatBubble extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-        if (isSentByMe) ...[
+        if (isSentByMe && !_isDeletedMessage) ...[
           SizedBox(width: 3.w),
           Icon(
             (_seenAtLeastOnce(message) || message.isDelivered)
                 ? Icons.done_all
                 : Icons.done,
             size: 14.sp,
-            color:
-                _seenAtLeastOnce(message) ? _purple : Colors.grey.shade500,
+            color: _seenAtLeastOnce(message) ? _purple : Colors.grey.shade500,
           ),
         ],
       ],
@@ -1043,10 +1065,10 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildTextContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
     final query = controller.searchQuery.value;
     String content = message.content?.toString() ?? "";
     if (content.trim().isEmpty &&
@@ -1105,10 +1127,10 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
     final msgType =
         (message.messageType?.toString() ?? '').toLowerCase().trim();
     final hasImages = (message.images?.isNotEmpty ?? false);
@@ -1152,7 +1174,7 @@ class ChatBubble extends StatelessWidget {
 
       void openGallery(int index) {
         Get.to(
-              () => GroupImageGallery(
+          () => GroupImageGallery(
             images: imageList,
             videos: videos,
             initialIndex: index,
@@ -1161,10 +1183,10 @@ class ChatBubble extends StatelessWidget {
       }
 
       Widget buildImageTile(
-          int index,
-          double width,
-          double height,
-          ) {
+        int index,
+        double width,
+        double height,
+      ) {
         return GestureDetector(
           onTap: () => openGallery(index),
           child: SizedBox(
@@ -1321,13 +1343,32 @@ class ChatBubble extends StatelessWidget {
     } else if (message.messageType == "audio") {
       // Server audio location first (socket payloads), else content.
       final audioSrc = _audioFullUrl(message.audioUrl ?? message.content);
-      return AudioBubble(
+      final audioBubble = AudioBubble(
         // Temp → server message, or a later event with the URL: a new key
         // gives a fresh bubble, so the player loads the new source.
-        key: ValueKey('audio_${message.id ?? message.clientMessageId}_$audioSrc'),
+        key: ValueKey(
+            'audio_${message.id ?? message.clientMessageId}_$audioSrc'),
         audioUrl: audioSrc,
         isMe: false,
       );
+      if ((message.caption ?? "").trim().isNotEmpty) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            audioBubble,
+            Padding(
+              padding: EdgeInsets.only(top: 6.h),
+              child: reausabletext(
+                message.caption.toString(),
+                color: textColor,
+                fontsize: 12.sp,
+              ),
+            ),
+          ],
+        );
+      }
+      return audioBubble;
     } else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];
       final videoPath = parts.isNotEmpty ? parts[0].trim() : "";
@@ -1369,7 +1410,7 @@ class ChatBubble extends StatelessWidget {
       final parts = message.content?.split("||") ?? [];
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
       String documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
       documentName = removeDuplicateExtension(documentName);
       final extension = documentName.split('.').last.toLowerCase();
       final fileSize = parts.length > 2 ? parts[2] : "";
@@ -1405,109 +1446,109 @@ class ChatBubble extends StatelessWidget {
         fileName: documentName,
         width: 240.w,
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          InkWell(
-            onTap: () async {
-              await DocumentService().openDocument(documentFullUrl);
-            },
-            borderRadius: BorderRadius.circular(12.r),
-            child: Container(
-              width: 240.w,
-              padding: EdgeInsets.all(10.w),
-              decoration: BoxDecoration(
-                color: isSentByMe
-                    ? Colors.white.withValues(alpha: 0.6)
-                    : const Color(0xFFF3F1FB),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44.w,
-                    height: 44.w,
-                    decoration: BoxDecoration(
-                      color: _purple.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    child: Icon(
-                      icon,
-                      color: _purple,
-                      size: 24.sp,
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          documentName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        SizedBox(height: 3.h),
-                        Text(
-                          fileSize.isNotEmpty
-                              ? "$fileSize • ${extension.toUpperCase()}"
-                              : extension.toUpperCase(),
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 6.w),
-                  if (!isSentByMe) ...[
-                    SizedBox(width: 6.w),
-                    Obx(() {
-                      final url = documentFullUrl;
-
-                      if (DocumentService.isDownloading(url)) {
-                        return SizedBox(
-                          width: 20.sp,
-                          height: 20.sp,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: _purple,
-                          ),
-                        );
-                      }
-
-                      return Icon(
-                        DocumentService.isDownloaded(url)
-                            ? Icons.download_done_rounded
-                            : Icons.download_rounded,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkWell(
+              onTap: () async {
+                await DocumentService().openDocument(documentFullUrl);
+              },
+              borderRadius: BorderRadius.circular(12.r),
+              child: Container(
+                width: 240.w,
+                padding: EdgeInsets.all(10.w),
+                decoration: BoxDecoration(
+                  color: isSentByMe
+                      ? Colors.white.withValues(alpha: 0.6)
+                      : const Color(0xFFF3F1FB),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44.w,
+                      height: 44.w,
+                      decoration: BoxDecoration(
+                        color: _purple.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Icon(
+                        icon,
                         color: _purple,
-                        size: 20.sp,
-                      );
-                    }),
+                        size: 24.sp,
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            documentName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 3.h),
+                          Text(
+                            fileSize.isNotEmpty
+                                ? "$fileSize • ${extension.toUpperCase()}"
+                                : extension.toUpperCase(),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 6.w),
+                    if (!isSentByMe) ...[
+                      SizedBox(width: 6.w),
+                      Obx(() {
+                        final url = documentFullUrl;
+
+                        if (DocumentService.isDownloading(url)) {
+                          return SizedBox(
+                            width: 20.sp,
+                            height: 20.sp,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: _purple,
+                            ),
+                          );
+                        }
+
+                        return Icon(
+                          DocumentService.isDownloaded(url)
+                              ? Icons.download_done_rounded
+                              : Icons.download_rounded,
+                          color: _purple,
+                          size: 20.sp,
+                        );
+                      }),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-          if ((message.caption ?? "").isNotEmpty)
-            Padding(
-              padding: EdgeInsets.only(top: 8.h),
-              child: reausabletext(
-                message.caption.toString(),
-                color: textColor,
-                fontsize: 12.sp,
-                fontfamily: FontFamily.interMedium,
+            if ((message.caption ?? "").isNotEmpty)
+              Padding(
+                padding: EdgeInsets.only(top: 8.h),
+                child: reausabletext(
+                  message.caption.toString(),
+                  color: textColor,
+                  fontsize: 12.sp,
+                  fontfamily: FontFamily.interMedium,
+                ),
               ),
-            ),
-        ],
-      ),
+          ],
+        ),
       );
     } else if (message.messageType == "location") {
       return LocationBubbleWidget(
@@ -1574,9 +1615,9 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildReplyPreview(
-      MessageData message,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    bool isSentByMe,
+  ) {
     if (message.isStatusReply) {
       return _buildStatusReplyPreview(message, isSentByMe);
     }
@@ -1599,9 +1640,9 @@ class ChatBubble extends StatelessWidget {
         appL10n.chat_statusLabel;
 
     final statusType =
-    (status?.type ?? meta?.type ?? message.statusType?.toString() ?? 'text')
-        .toString()
-        .toLowerCase();
+        (status?.type ?? meta?.type ?? message.statusType?.toString() ?? 'text')
+            .toString()
+            .toLowerCase();
 
     final isVideo = statusType == 'video' || (status?.isVideo ?? false);
     final isImage = statusType == 'image' ||
@@ -1669,8 +1710,8 @@ class ChatBubble extends StatelessWidget {
                           isVideo
                               ? Icons.videocam_rounded
                               : isImage
-                              ? Icons.photo_rounded
-                              : Icons.text_fields_rounded,
+                                  ? Icons.photo_rounded
+                                  : Icons.text_fields_rounded,
                           size: 13.sp,
                           color: Colors.grey.shade700,
                         ),
@@ -1730,8 +1771,7 @@ class ChatBubble extends StatelessWidget {
             imageUrl: mediaUrl,
             fit: BoxFit.cover,
             memCacheWidth: 600,
-            errorWidget: (_, __, ___) =>
-                Container(color: Colors.grey.shade300),
+            errorWidget: (_, __, ___) => Container(color: Colors.grey.shade300),
           ),
           if (isVideo)
             Container(
@@ -1778,22 +1818,20 @@ class ChatBubble extends StatelessWidget {
     }
 
     Get.to(() => StatusViewScreen(
-      isOwnStatus: false,
-      userName: status.creator?.name ??
-          message.replySenderName?.toString() ??
-          appL10n.chat_statusLabel,
-      userAvatar: status.creator?.profilePic,
-      statuses: [status],
-      currentIndex: 0,
-    ));
+          isOwnStatus: false,
+          userName: status.creator?.name ??
+              message.replySenderName?.toString() ??
+              appL10n.chat_statusLabel,
+          userAvatar: status.creator?.profilePic,
+          statuses: [status],
+          currentIndex: 0,
+        ));
   }
 
   void _showMessageMenu(
-      BuildContext bubbleContext,
-      bool isSentByMe,
-      ) {
-    if (_isDeletedMessage) return;
-
+    BuildContext bubbleContext,
+    bool isSentByMe,
+  ) {
     final isPinned = controller.pinnedMessage.value?.id == message.id;
     final isText = message.messageType == "text" ||
         message.messageType == "text_message" ||
@@ -1802,18 +1840,20 @@ class ChatBubble extends StatelessWidget {
     final options = ChatScreenRules.menuOptions(
       messageType: message.messageType,
       isSentByMe: isSentByMe,
+      isDeleted: _isDeletedMessage,
     );
 
     final actions = <MessageContextMenuAction>[
-      MessageContextMenuAction(
-        icon: Icons.reply_rounded,
-        title: appL10n.chat_menuReply,
-        iconColor: _purple,
-        onTap: () {
-          controller.setReply(message);
-        },
-      ),
-      if (isText)
+      if (options.contains(MessageMenuOption.reply))
+        MessageContextMenuAction(
+          icon: Icons.reply_rounded,
+          title: appL10n.chat_menuReply,
+          iconColor: _purple,
+          onTap: () {
+            controller.setReply(message);
+          },
+        ),
+      if (isText && options.contains(MessageMenuOption.copy))
         MessageContextMenuAction(
           icon: Icons.copy_rounded,
           title: appL10n.common_copy,
@@ -1827,23 +1867,43 @@ class ChatBubble extends StatelessWidget {
         ),
       // Hidden for attendance cards (ChatScreenRules.menuOptions).
       if (options.contains(MessageMenuOption.forward))
-      MessageContextMenuAction(
-        icon: Icons.forward_rounded,
-        title: appL10n.chat_menuForward,
-        iconColor: _purple,
-        onTap: () {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Get.toNamed(
-              Routes.forwardMessageScreen,
-              arguments: {
-                "message": message,
-                "sourceType": "private",
-              },
-            );
-          });
-        },
-      ),
-      if (isSentByMe && (isText || ChatScreenRules.isEditable(message.messageType)))
+        MessageContextMenuAction(
+          icon: Icons.forward_rounded,
+          title: appL10n.chat_menuForward,
+          iconColor: _purple,
+          onTap: () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Get.toNamed(
+                Routes.forwardMessageScreen,
+                arguments: {
+                  "message": message,
+                  "sourceType": "private",
+                },
+              );
+            });
+          },
+        ),
+      if (isSentByMe &&
+          !_isDeletedMessage &&
+          (isText || ChatScreenRules.isEditable(message.messageType)))
+        MessageContextMenuAction(
+          icon: Icons.forward_rounded,
+          title: appL10n.chat_menuForward,
+          iconColor: _purple,
+          onTap: () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Get.toNamed(
+                Routes.forwardMessageScreen,
+                arguments: {
+                  "message": message,
+                  "sourceType": "private",
+                },
+              );
+            });
+          },
+        ),
+      if (isSentByMe &&
+          (isText || ChatScreenRules.isEditable(message.messageType)))
         MessageContextMenuAction(
           icon: Icons.edit_rounded,
           title: appL10n.common_edit,
@@ -1852,19 +1912,20 @@ class ChatBubble extends StatelessWidget {
             controller.startEditingMessage(message);
           },
         ),
-      MessageContextMenuAction(
-        icon: Icons.push_pin_rounded,
-        title: isPinned ? appL10n.chat_menuUnpin : appL10n.chat_menuPin,
-        iconColor: isPinned ? Colors.redAccent : _purple,
-        onTap: () {
-          if (isPinned) {
-            controller.unpinMessage();
-          } else {
-            controller.pinMessage(message);
-          }
-        },
-      ),
-      if (isSentByMe)
+      if (options.contains(MessageMenuOption.pin))
+        MessageContextMenuAction(
+          icon: Icons.push_pin_rounded,
+          title: isPinned ? appL10n.chat_menuUnpin : appL10n.chat_menuPin,
+          iconColor: isPinned ? Colors.redAccent : _purple,
+          onTap: () {
+            if (isPinned) {
+              controller.unpinMessage();
+            } else {
+              controller.pinMessage(message);
+            }
+          },
+        ),
+      if (options.contains(MessageMenuOption.info))
         MessageContextMenuAction(
           icon: Icons.info_outline_rounded,
           title: appL10n.chat_menuMessageInfo,
@@ -1902,27 +1963,27 @@ class ChatBubble extends StatelessWidget {
           },
         ),
       if (options.contains(MessageMenuOption.deleteForMe))
-      MessageContextMenuAction(
-        icon: Icons.delete_rounded,
-        title: appL10n.chat_deleteForMe,
-        isDestructive: true,
-        onTap: () {
-          CommonDialog.ConfirmationDialog(
-            title: appL10n.chat_deleteForMe,
-            content: appL10n.chat_deleteForMeConfirm,
-            cancel: appL10n.common_no,
-            confirm: appL10n.common_yes,
-            icon: Icons.delete_rounded,
-            onConfirm: () {
-              Get.back();
-              controller.deleteMessage(
-                messageId: message.id!,
-                deleteType: "for_me",
-              );
-            },
-          );
-        },
-      ),
+        MessageContextMenuAction(
+          icon: Icons.delete_rounded,
+          title: appL10n.chat_deleteForMe,
+          isDestructive: true,
+          onTap: () {
+            CommonDialog.ConfirmationDialog(
+              title: appL10n.chat_deleteForMe,
+              content: appL10n.chat_deleteForMeConfirm,
+              cancel: appL10n.common_no,
+              confirm: appL10n.common_yes,
+              icon: Icons.delete_rounded,
+              onConfirm: () {
+                Get.back();
+                controller.deleteMessage(
+                  messageId: message.id!,
+                  deleteType: "for_me",
+                );
+              },
+            );
+          },
+        ),
     ];
 
     MessageContextMenu.show(
@@ -2002,11 +2063,11 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildHighlightedText(
-      String text,
-      String query, {
-        required TextStyle normalStyle,
-        required TextStyle highlightStyle,
-      }) {
+    String text,
+    String query, {
+    required TextStyle normalStyle,
+    required TextStyle highlightStyle,
+  }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
 
@@ -2089,7 +2150,11 @@ class GroupChatBubble extends StatelessWidget {
 
   bool get _isDeletedMessage =>
       message.isDeleted == true ||
-          message.content?.toString() == "This message was deleted";
+      message.isDeleted.toString() == 'true' ||
+      message.isDeleted.toString() == '1' ||
+      message.isDeletedForEveryone == true ||
+      message.content?.toString() == "This message was deleted" ||
+      message.content?.toString() == "You deleted this message";
 
   /// Name above a received group message: the message's own name, or the
   /// member list's when a real-time message arrived without one.
@@ -2127,24 +2192,20 @@ class GroupChatBubble extends StatelessWidget {
       return;
     }
     openUserProfile(
-      userId: senderId,
-      name: name,
-      profileImage: image,
-      mobileNo: mobileNo,
-      chatId: chatId,
+        userId: senderId,
+        name: name,
+        profileImage: image,
+        mobileNo: mobileNo,
+        chatId: chatId,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
-
-    if (_isDeletedMessage) {
-      return const SizedBox.shrink();
-    }
 
     if (message.isSystemMessage) {
       return _buildSystemMessageTile(
@@ -2160,9 +2221,11 @@ class GroupChatBubble extends StatelessWidget {
         isSentByMe: isSentByMe,
         onCallBack: () {
           try {
-            final isVideo = message.content?.toString().toLowerCase().contains('video') == true ||
-                message.callLogMeta?['isVideo'] == true ||
-                message.callLogMeta?['callType'] == 'video';
+            final isVideo =
+                message.content?.toString().toLowerCase().contains('video') ==
+                        true ||
+                    message.callLogMeta?['isVideo'] == true ||
+                    message.callLogMeta?['callType'] == 'video';
             GroupCallService.instance.startGroupCall(
               context,
               groupId: groupId?.toString() ?? '',
@@ -2187,7 +2250,7 @@ class GroupChatBubble extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
-        isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           Flexible(
             child: Builder(
@@ -2207,9 +2270,7 @@ class GroupChatBubble extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       GestureDetector(
-                        onLongPress: _isDeletedMessage
-                            ? null
-                            : () => _showMessageMenu(
+                        onLongPress: () => _showMessageMenu(
                           bubbleContext,
                           isSentByMe,
                         ),
@@ -2222,17 +2283,17 @@ class GroupChatBubble extends StatelessWidget {
                           padding: isAttendance
                               ? EdgeInsets.zero
                               : EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 8.h,
-                          ),
+                                  horizontal: 12.w,
+                                  vertical: 8.h,
+                                ),
                           decoration: BoxDecoration(
                             color: isAttendance
                                 ? Colors.transparent
                                 : (isHighlighted
-                                ? Colors.yellow.withValues(
-                              alpha: .35,
-                            )
-                                : bgColor),
+                                    ? Colors.yellow.withValues(
+                                        alpha: .35,
+                                      )
+                                    : bgColor),
                             borderRadius: isAttendance
                                 ? BorderRadius.circular(20.r)
                                 : borderRadius,
@@ -2243,14 +2304,14 @@ class GroupChatBubble extends StatelessWidget {
                             boxShadow: isAttendance
                                 ? []
                                 : [
-                              BoxShadow(
-                                color: Colors.black.withValues(
-                                  alpha: 0.04,
-                                ),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.04,
+                                      ),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                           ),
                           child: _bubbleWidth(
                             isAttendance: isAttendance,
@@ -2272,8 +2333,8 @@ class GroupChatBubble extends StatelessWidget {
                                         style: TextStyle(
                                           fontSize: 12.sp,
                                           fontWeight: FontWeight.w700,
-                                          color: senderNameColor(
-                                              message.senderId),
+                                          color:
+                                              senderNameColor(message.senderId),
                                         ),
                                       ),
                                     ),
@@ -2377,7 +2438,9 @@ class GroupChatBubble extends StatelessWidget {
         SizedBox(width: 6.w),
         Flexible(
           child: Text(
-            appL10n.chat_messageDeleted,
+            isSentByMe
+                ? appL10n.chat_previewOwnDeleted
+                : appL10n.chat_messageDeleted,
             style: TextStyle(
               fontSize: 13.sp,
               fontStyle: FontStyle.italic,
@@ -2408,7 +2471,7 @@ class GroupChatBubble extends StatelessWidget {
       final parts = message.content?.split("||") ?? [];
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
       String documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
       documentName = removeDuplicateExtension(documentName).trim();
       return documentName;
     }
@@ -2479,10 +2542,18 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildTimeRow(bool isSentByMe) {
+    final wasEdited = !_isDeletedMessage &&
+        (message.isEdited == true ||
+            message.isEdited?.toString() == 'true' ||
+            message.isEdited?.toString() == '1' ||
+            message.edited == true ||
+            message.edited?.toString() == 'true' ||
+            message.edited?.toString() == '1');
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (message.isEdited == true && !_isDeletedMessage) ...[
+        if (wasEdited) ...[
           Text(
             appL10n.chat_edited,
             style: TextStyle(
@@ -2501,7 +2572,7 @@ class GroupChatBubble extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-        if (isSentByMe) ...[
+        if (isSentByMe && !_isDeletedMessage) ...[
           SizedBox(width: 3.w),
           // Same aggregation as Message Info (MessageReceipts.groupTick).
           Builder(builder: (_) {
@@ -2547,10 +2618,10 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildTextContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
     final query = controller.searchQuery.value;
     String content = message.content?.toString() ?? "";
     if (content.trim().isEmpty &&
@@ -2605,11 +2676,11 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildHighlightedText(
-      String text,
-      String query, {
-        required TextStyle normalStyle,
-        required TextStyle highlightStyle,
-      }) {
+    String text,
+    String query, {
+    required TextStyle normalStyle,
+    required TextStyle highlightStyle,
+  }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
     final List<InlineSpan> spans = [];
@@ -2663,9 +2734,9 @@ class GroupChatBubble extends StatelessWidget {
         appL10n.chat_statusLabel;
 
     final statusType =
-    (status?.type ?? meta?.type ?? message.statusType?.toString() ?? 'text')
-        .toString()
-        .toLowerCase();
+        (status?.type ?? meta?.type ?? message.statusType?.toString() ?? 'text')
+            .toString()
+            .toLowerCase();
 
     final isVideo = statusType == 'video' || (status?.isVideo ?? false);
     final isImage = statusType == 'image' ||
@@ -2733,8 +2804,8 @@ class GroupChatBubble extends StatelessWidget {
                           isVideo
                               ? Icons.videocam_rounded
                               : isImage
-                              ? Icons.photo_rounded
-                              : Icons.text_fields_rounded,
+                                  ? Icons.photo_rounded
+                                  : Icons.text_fields_rounded,
                           size: 13.sp,
                           color: Colors.grey.shade700,
                         ),
@@ -2794,8 +2865,7 @@ class GroupChatBubble extends StatelessWidget {
             imageUrl: mediaUrl,
             fit: BoxFit.cover,
             memCacheWidth: 600,
-            errorWidget: (_, __, ___) =>
-                Container(color: Colors.grey.shade300),
+            errorWidget: (_, __, ___) => Container(color: Colors.grey.shade300),
           ),
           if (isVideo)
             Container(
@@ -2842,23 +2912,23 @@ class GroupChatBubble extends StatelessWidget {
     }
 
     Get.to(() => StatusViewScreen(
-      isOwnStatus: false,
-      userName: status.creator?.name ??
-          message.replySenderName?.toString() ??
-          appL10n.chat_statusLabel,
-      userAvatar: status.creator?.profilePic,
-      statuses: [status],
-      currentIndex: 0,
-    ));
+          isOwnStatus: false,
+          userName: status.creator?.name ??
+              message.replySenderName?.toString() ??
+              appL10n.chat_statusLabel,
+          userAvatar: status.creator?.profilePic,
+          statuses: [status],
+          currentIndex: 0,
+        ));
   }
 
   Widget _buildMessageContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
     final messageType =
-    (message.messageType?.toString() ?? '').toLowerCase().trim();
+        (message.messageType?.toString() ?? '').toLowerCase().trim();
 
     final videos = message.videos ?? [];
 
@@ -2907,7 +2977,7 @@ class GroupChatBubble extends StatelessWidget {
 
       void openGallery(int index) {
         Get.to(
-              () => GroupImageGallery(
+          () => GroupImageGallery(
             images: imageList,
             videos: videos,
             initialIndex: index,
@@ -2916,10 +2986,10 @@ class GroupChatBubble extends StatelessWidget {
       }
 
       Widget buildImageTile(
-          int index,
-          double width,
-          double height,
-          ) {
+        int index,
+        double width,
+        double height,
+      ) {
         return GestureDetector(
           onTap: () => openGallery(index),
           child: SizedBox(
@@ -3018,15 +3088,15 @@ class GroupChatBubble extends StatelessWidget {
                     runSpacing: 3.w,
                     children: List.generate(
                       visibleImages,
-                          (index) {
+                      (index) {
                         final tileSize = totalImages == 2
                             ? 108.w
                             : totalImages == 3 && index == 0
-                            ? 220.w
-                            : 108.w;
+                                ? 220.w
+                                : 108.w;
 
                         final tileHeight =
-                        totalImages == 3 && index == 0 ? 130.h : 108.h;
+                            totalImages == 3 && index == 0 ? 130.h : 108.h;
 
                         return buildImageTile(
                           index,
@@ -3048,7 +3118,7 @@ class GroupChatBubble extends StatelessWidget {
                     runSpacing: 3.w,
                     children: List.generate(
                       (imageList.length + videos.length).clamp(0, 4),
-                          (index) {
+                      (index) {
                         final isVideo = index >= imageList.length;
                         final totalMedia = imageList.length + videos.length;
 
@@ -3107,13 +3177,32 @@ class GroupChatBubble extends StatelessWidget {
     } else if (message.messageType == "audio") {
       // Server audio location first (socket payloads), else content.
       final audioSrc = _audioFullUrl(message.audioUrl ?? message.content);
-      return AudioBubble(
+      final audioBubble = AudioBubble(
         // Temp → server message, or a later event with the URL: a new key
         // gives a fresh bubble, so the player loads the new source.
-        key: ValueKey('audio_${message.id ?? message.clientMessageId}_$audioSrc'),
+        key: ValueKey(
+            'audio_${message.id ?? message.clientMessageId}_$audioSrc'),
         audioUrl: audioSrc,
         isMe: false,
       );
+      if ((message.caption ?? "").trim().isNotEmpty) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            audioBubble,
+            Padding(
+              padding: EdgeInsets.only(top: 6.h),
+              child: reausabletext(
+                message.caption.toString(),
+                color: textColor,
+                fontsize: 12.sp,
+              ),
+            ),
+          ],
+        );
+      }
+      return audioBubble;
     } else if (messageType == "video") {
       final parts = message.content?.split("||") ?? [];
       final videoPath = parts.isNotEmpty ? parts[0].trim() : "";
@@ -3127,7 +3216,7 @@ class GroupChatBubble extends StatelessWidget {
               ? videoPath
               : "${ConstRes.aImageBaseUrl}$videoPath";
       final thumbnailUrl = thumbnailPath.startsWith("http://") ||
-          thumbnailPath.startsWith("https://")
+              thumbnailPath.startsWith("https://")
           ? thumbnailPath
           : "${ConstRes.aImageBaseUrl}$thumbnailPath";
 
@@ -3162,7 +3251,7 @@ class GroupChatBubble extends StatelessWidget {
       final parts = message.content?.split("||") ?? [];
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
       String documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
       documentName = removeDuplicateExtension(documentName);
       final extension = documentName.split('.').last.toLowerCase();
       final fileSize = parts.length > 2 ? parts[2] : "";
@@ -3197,109 +3286,109 @@ class GroupChatBubble extends StatelessWidget {
         fileName: documentName,
         width: 240.w,
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          InkWell(
-            onTap: () async {
-              await DocumentService().openDocument(documentFullUrl);
-            },
-            borderRadius: BorderRadius.circular(12.r),
-            child: Container(
-              width: 240.w,
-              padding: EdgeInsets.all(10.w),
-              decoration: BoxDecoration(
-                color: isSentByMe
-                    ? Colors.white.withValues(alpha: 0.6)
-                    : const Color(0xFFF3F1FB),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44.w,
-                    height: 44.w,
-                    decoration: BoxDecoration(
-                      color: _purple.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    child: Icon(
-                      icon,
-                      color: _purple,
-                      size: 24.sp,
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          documentName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        SizedBox(height: 3.h),
-                        Text(
-                          fileSize.isNotEmpty
-                              ? "$fileSize • ${extension.toUpperCase()}"
-                              : extension.toUpperCase(),
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 6.w),
-                  if (!isSentByMe) ...[
-                    SizedBox(width: 6.w),
-                    Obx(() {
-                      final url = documentFullUrl;
-
-                      if (DocumentService.isDownloading(url)) {
-                        return SizedBox(
-                          width: 20.sp,
-                          height: 20.sp,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: _purple,
-                          ),
-                        );
-                      }
-
-                      return Icon(
-                        DocumentService.isDownloaded(url)
-                            ? Icons.download_done_rounded
-                            : Icons.download_rounded,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkWell(
+              onTap: () async {
+                await DocumentService().openDocument(documentFullUrl);
+              },
+              borderRadius: BorderRadius.circular(12.r),
+              child: Container(
+                width: 240.w,
+                padding: EdgeInsets.all(10.w),
+                decoration: BoxDecoration(
+                  color: isSentByMe
+                      ? Colors.white.withValues(alpha: 0.6)
+                      : const Color(0xFFF3F1FB),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44.w,
+                      height: 44.w,
+                      decoration: BoxDecoration(
+                        color: _purple.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Icon(
+                        icon,
                         color: _purple,
-                        size: 20.sp,
-                      );
-                    }),
+                        size: 24.sp,
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            documentName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 3.h),
+                          Text(
+                            fileSize.isNotEmpty
+                                ? "$fileSize • ${extension.toUpperCase()}"
+                                : extension.toUpperCase(),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 6.w),
+                    if (!isSentByMe) ...[
+                      SizedBox(width: 6.w),
+                      Obx(() {
+                        final url = documentFullUrl;
+
+                        if (DocumentService.isDownloading(url)) {
+                          return SizedBox(
+                            width: 20.sp,
+                            height: 20.sp,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: _purple,
+                            ),
+                          );
+                        }
+
+                        return Icon(
+                          DocumentService.isDownloaded(url)
+                              ? Icons.download_done_rounded
+                              : Icons.download_rounded,
+                          color: _purple,
+                          size: 20.sp,
+                        );
+                      }),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-          if ((message.caption ?? "").isNotEmpty)
-            Padding(
-              padding: EdgeInsets.only(top: 8.h),
-              child: reausabletext(
-                message.caption.toString(),
-                color: textColor,
-                fontsize: 12.sp,
-                fontfamily: FontFamily.interMedium,
+            if ((message.caption ?? "").isNotEmpty)
+              Padding(
+                padding: EdgeInsets.only(top: 8.h),
+                child: reausabletext(
+                  message.caption.toString(),
+                  color: textColor,
+                  fontsize: 12.sp,
+                  fontfamily: FontFamily.interMedium,
+                ),
               ),
-            ),
-        ],
-      ),
+          ],
+        ),
       );
     } else if (message.messageType == "location") {
       return LocationBubbleWidget(
@@ -3364,8 +3453,6 @@ class GroupChatBubble extends StatelessWidget {
   // and never matched (BUG-CS-13).
 
   void _showMessageMenu(BuildContext bubbleContext, bool isSentByMe) {
-    if (_isDeletedMessage) return;
-
     final isPinned = controller.pinnedMessage.value?.id == message.id;
     final isText = message.messageType == "text" ||
         message.messageType == "text_message" ||
@@ -3374,18 +3461,20 @@ class GroupChatBubble extends StatelessWidget {
     final options = ChatScreenRules.menuOptions(
       messageType: message.messageType,
       isSentByMe: isSentByMe,
+      isDeleted: _isDeletedMessage,
     );
 
     final actions = <MessageContextMenuAction>[
-      MessageContextMenuAction(
-        icon: Icons.reply_rounded,
-        title: appL10n.chat_menuReply,
-        iconColor: _purple,
-        onTap: () {
-          controller.setReply(message);
-        },
-      ),
-      if (isText)
+      if (options.contains(MessageMenuOption.reply))
+        MessageContextMenuAction(
+          icon: Icons.reply_rounded,
+          title: appL10n.chat_menuReply,
+          iconColor: _purple,
+          onTap: () {
+            controller.setReply(message);
+          },
+        ),
+      if (isText && options.contains(MessageMenuOption.copy))
         MessageContextMenuAction(
           icon: Icons.copy_rounded,
           title: appL10n.common_copy,
@@ -3399,23 +3488,43 @@ class GroupChatBubble extends StatelessWidget {
         ),
       // Hidden for attendance cards (ChatScreenRules.menuOptions).
       if (options.contains(MessageMenuOption.forward))
-      MessageContextMenuAction(
-        icon: Icons.forward_rounded,
-        title: appL10n.chat_menuForward,
-        iconColor: _purple,
-        onTap: () {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Get.toNamed(
-              Routes.forwardMessageScreen,
-              arguments: {
-                "message": message,
-                "sourceType": "group",
-              },
-            );
-          });
-        },
-      ),
-      if (isSentByMe && (isText || ChatScreenRules.isEditable(message.messageType)))
+        MessageContextMenuAction(
+          icon: Icons.forward_rounded,
+          title: appL10n.chat_menuForward,
+          iconColor: _purple,
+          onTap: () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Get.toNamed(
+                Routes.forwardMessageScreen,
+                arguments: {
+                  "message": message,
+                  "sourceType": "group",
+                },
+              );
+            });
+          },
+        ),
+      if (isSentByMe &&
+          !_isDeletedMessage &&
+          (isText || ChatScreenRules.isEditable(message.messageType)))
+        MessageContextMenuAction(
+          icon: Icons.forward_rounded,
+          title: appL10n.chat_menuForward,
+          iconColor: _purple,
+          onTap: () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Get.toNamed(
+                Routes.forwardMessageScreen,
+                arguments: {
+                  "message": message,
+                  "sourceType": "group",
+                },
+              );
+            });
+          },
+        ),
+      if (isSentByMe &&
+          (isText || ChatScreenRules.isEditable(message.messageType)))
         MessageContextMenuAction(
           icon: Icons.edit_rounded,
           title: appL10n.common_edit,
@@ -3424,19 +3533,20 @@ class GroupChatBubble extends StatelessWidget {
             controller.startEditingMessage(message);
           },
         ),
-      MessageContextMenuAction(
-        icon: Icons.push_pin_rounded,
-        title: isPinned ? appL10n.chat_menuUnpin : appL10n.chat_menuPin,
-        iconColor: isPinned ? Colors.redAccent : _purple,
-        onTap: () {
-          if (isPinned) {
-            controller.unpinMessage();
-          } else {
-            controller.pinMessage(message);
-          }
-        },
-      ),
-      if (isSentByMe)
+      if (options.contains(MessageMenuOption.pin))
+        MessageContextMenuAction(
+          icon: Icons.push_pin_rounded,
+          title: isPinned ? appL10n.chat_menuUnpin : appL10n.chat_menuPin,
+          iconColor: isPinned ? Colors.redAccent : _purple,
+          onTap: () {
+            if (isPinned) {
+              controller.unpinMessage();
+            } else {
+              controller.pinMessage(message);
+            }
+          },
+        ),
+      if (options.contains(MessageMenuOption.info))
         MessageContextMenuAction(
           icon: Icons.info_outline_rounded,
           title: appL10n.chat_menuMessageInfo,
@@ -3474,27 +3584,27 @@ class GroupChatBubble extends StatelessWidget {
           },
         ),
       if (options.contains(MessageMenuOption.deleteForMe))
-      MessageContextMenuAction(
-        icon: Icons.delete_rounded,
-        title: appL10n.chat_deleteForMe,
-        isDestructive: true,
-        onTap: () {
-          CommonDialog.ConfirmationDialog(
-            title: appL10n.chat_deleteForMe,
-            content: appL10n.chat_deleteForMeConfirm,
-            cancel: appL10n.common_no,
-            confirm: appL10n.common_yes,
-            icon: Icons.delete_rounded,
-            onConfirm: () {
-              Get.back();
-              controller.deleteMessage(
-                messageId: message.id!,
-                deleteType: "for_me",
-              );
-            },
-          );
-        },
-      ),
+        MessageContextMenuAction(
+          icon: Icons.delete_rounded,
+          title: appL10n.chat_deleteForMe,
+          isDestructive: true,
+          onTap: () {
+            CommonDialog.ConfirmationDialog(
+              title: appL10n.chat_deleteForMe,
+              content: appL10n.chat_deleteForMeConfirm,
+              cancel: appL10n.common_no,
+              confirm: appL10n.common_yes,
+              icon: Icons.delete_rounded,
+              onConfirm: () {
+                Get.back();
+                controller.deleteMessage(
+                  messageId: message.id!,
+                  deleteType: "for_me",
+                );
+              },
+            );
+          },
+        ),
     ];
 
     MessageContextMenu.show(
@@ -3619,21 +3729,21 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
     _media = [
       ...widget.images.where((image) => image.trim().isNotEmpty).map(
             (image) => GroupGalleryMedia(
-          url: _buildMediaUrl(image),
-        ),
-      ),
+              url: _buildMediaUrl(image),
+            ),
+          ),
       ...widget.videos
           .where((video) => (video.videoUrl ?? '').trim().isNotEmpty)
           .map(
             (video) => GroupGalleryMedia(
-          url: _buildMediaUrl(video.videoUrl!),
-          isVideo: true,
-          thumbnail: video.thumbnail == null
-              ? null
-              : _buildMediaUrl(video.thumbnail!),
-          duration: video.duration,
-        ),
-      ),
+              url: _buildMediaUrl(video.videoUrl!),
+              isVideo: true,
+              thumbnail: video.thumbnail == null
+                  ? null
+                  : _buildMediaUrl(video.thumbnail!),
+              duration: video.duration,
+            ),
+          ),
     ];
 
     _currentIndex =
@@ -3655,7 +3765,8 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
     const itemWidth = 56.0;
     final targetOffset = (index * itemWidth) - 100.0;
     _thumbnailScrollController.animateTo(
-      targetOffset.clamp(0.0, _thumbnailScrollController.position.maxScrollExtent),
+      targetOffset.clamp(
+          0.0, _thumbnailScrollController.position.maxScrollExtent),
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOut,
     );
@@ -3916,7 +4027,8 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
                       itemBuilder: (context, i) {
                         final isSelected = i == _currentIndex;
                         final m = _media[i];
-                        final thumbUrl = m.isVideo ? (m.thumbnail ?? m.url) : m.url;
+                        final thumbUrl =
+                            m.isVideo ? (m.thumbnail ?? m.url) : m.url;
 
                         return GestureDetector(
                           onTap: () {
@@ -3932,7 +4044,9 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8.r),
                               border: Border.all(
-                                color: isSelected ? Colors.white : Colors.transparent,
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.transparent,
                                 width: 2.2,
                               ),
                             ),
