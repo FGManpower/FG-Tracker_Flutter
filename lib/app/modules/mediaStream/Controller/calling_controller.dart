@@ -2271,12 +2271,18 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
     _handlers.on("callError", (data) async {
       log("CALL ERROR => $data");
-      if (!_isIncoming) _endOutcome = CallEndOutcome.unavailable;
-      await _cleanupCall(notifyRemote: false, navigateBack: true);
-      Get.snackbar(
-        appL10n.call_failedTitle,
-        data?["message"]?.toString() ?? appL10n.call_unableToMakeCall,
-      );
+      final String code = (data is Map ? data["code"] : null)?.toString() ?? '';
+      // Only tear down the call if it has not connected yet, or if it is fatal (call_expired / call_unavailable)
+      if (!isCallLive || code == "call_expired" || code == "call_unavailable") {
+        if (!_isIncoming) _endOutcome = CallEndOutcome.unavailable;
+        await _cleanupCall(notifyRemote: false, navigateBack: true);
+        Get.snackbar(
+          appL10n.call_failedTitle,
+          data?["message"]?.toString() ?? appL10n.call_unableToMakeCall,
+        );
+      } else {
+        log("[Call] Non-fatal callError ignored during active connection: $data");
+      }
     });
 
     _handlers.on("callBlocked", (data) async {
@@ -3002,6 +3008,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         for (final c in iceCandidates) {
           if (c.candidate == null) continue;
           socket!.emit("IceCandidate", {
+            "callId": callId,
+            "call_id": callId,
             "remoteUserId": remoteUserId,
             "iceCandidate": {
               "id": c.sdpMid,
@@ -3015,6 +3023,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         pc.onIceCandidate = (c) {
           if (c.candidate == null) return;
           socket!.emit("IceCandidate", {
+            "callId": callId,
+            "call_id": callId,
             "remoteUserId": remoteUserId,
             "iceCandidate": {
               "id": c.sdpMid,

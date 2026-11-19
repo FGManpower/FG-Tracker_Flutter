@@ -401,25 +401,26 @@ class CallingScreen extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.only(top: 12.h),
         child: Obx(() {
+          final bool currentIsVideo = c.is_video || c.isVideoCall.value;
           final bool remoteScreen = c.isRemoteScreenSharing.value;
           final bool connected = isCallConnected(c);
           final bool hideChrome =
-              _chromeHidden(c, isVideo, remoteScreen, connected);
+              _chromeHidden(c, currentIsVideo, remoteScreen, connected);
 
           final bool sharing = c.isScreenSharing.value;
 
           return Column(
             children: [
-              if (!hideChrome) _topBar(context, c, isVideo, connected),
+              if (!hideChrome) _topBar(context, c, currentIsVideo, connected),
               // While I share my screen: a card in the middle with Stop
               // sharing (stays visible when the controls fade out).
               if (sharing)
                 Expanded(child: Center(child: _sharingCard(c)))
-              else if (!isVideo && !remoteScreen)
+              else if (!currentIsVideo && !remoteScreen)
                 Expanded(child: AudiocallScreen(controller: c))
               else
                 const Spacer(),
-              if (!hideChrome) _controlsBar(context, c, isVideo, connected),
+              if (!hideChrome) _controlsBar(context, c, currentIsVideo, connected),
             ],
           );
         }),
@@ -1202,7 +1203,8 @@ class CallingScreen extends StatelessWidget {
   }
 
   bool _blocked(CallingController c) {
-    return c.callStatus.toString() == "busy" || c.callDurationRx.value == 0;
+    final s = c.callStatus.value.toLowerCase();
+    return s == "busy" || (!isCallConnected(c) && !c.isCallLive);
   }
 
   /// Same behaviour for the bottom Share button (audio) and the top-bar

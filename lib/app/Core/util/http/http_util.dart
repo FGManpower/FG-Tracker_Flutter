@@ -248,10 +248,10 @@ class HttpUtil {
           queryParameters: queryParameteres);
       return response.data;
     } catch (e) {
-      if (e is DioException) {
-        throw ApiErrorHandler.handleDioError(e);
+      if (kDebugMode) {
+        debugPrint('[updateCallingStatusPost] error: $e');
       }
-      throw sharedL10n.http_unexpectedError;
+      return null;
     }
   }
 }
