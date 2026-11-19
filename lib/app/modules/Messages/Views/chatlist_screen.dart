@@ -23,13 +23,12 @@ import '../widgets/chat_history_widgets.dart'
 import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../routes/app_pages.dart';
 import '../../home/Controller/total_group_controller.dart';
-import '../Controller/MessageController.dart';
 import '../Controller/chat_list_controller.dart';
 import '../widgets/custom_dropdown_menu.dart';
 import '../widgets/custom_dropdown_menu.dart' as CustomDropdownMenu;
 import 'ArchivedChatsScreen.dart';
 import 'package:fgtracker/app/Core/util/arc_log.dart'; // TODO(arc-diagnostics)
-import 'Chat_Screen.dart';
+import '../../../Core/util/chat_navigation.dart';
 import '../../../Core/util/profile_navigation.dart';
 import 'new_chat_screen.dart';
 
@@ -967,22 +966,19 @@ class _AllChatsBody extends StatelessWidget {
           }
         }
 
-        await Get.toNamed(
-          Routes.groupChatScreen,
-          arguments: {
-            "groupId": effectiveGroupId,
-            "groupName": chat.name ??
-                chat.groupName ??
-                appL10n.chatList_groupChatFallback,
-            "groupProfile": profileImg,
-            "groupImage": profileImg,
-            "groupCode": groupCode,
-            "isCreator": isCreator,
-            "isActive": isActive,
-            if (controller.isGroupDeactivated(chat))
-              "groupStatus": "deactivated",
-          },
-        );
+        await ChatNavigation.openGroupChat({
+          "groupId": effectiveGroupId,
+          "groupName": chat.name ??
+              chat.groupName ??
+              appL10n.chatList_groupChatFallback,
+          "groupProfile": profileImg,
+          "groupImage": profileImg,
+          "groupCode": groupCode,
+          "isCreator": isCreator,
+          "isActive": isActive,
+          if (controller.isGroupDeactivated(chat))
+            "groupStatus": "deactivated",
+        });
         return;
       }
 
@@ -994,21 +990,15 @@ class _AllChatsBody extends StatelessWidget {
         Get.find<ChatListController>().markChatAsRead(chat);
       }
 
-      await Get.to(
-        () => ChatScreen(),
-        arguments: {
-          "userData": MemberData(
-            userId: chat.userId,
-            name: chat.name,
-            profileImage: chat.image,
-            groupId: 0,
-          ),
-          "chatId": (chat.chatId ?? chat.conversationId ?? chat.id)?.toString(),
-        },
-        binding: BindingsBuilder(() {
-          Get.put(MessageController());
-        }),
-      );
+      await ChatNavigation.openPrivateChat({
+        "userData": MemberData(
+          userId: chat.userId,
+          name: chat.name,
+          profileImage: chat.image,
+          groupId: 0,
+        ),
+        "chatId": (chat.chatId ?? chat.conversationId ?? chat.id)?.toString(),
+      });
     }
 
     final bool isGroupChat = chat.isGroup == true;

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
@@ -142,7 +143,14 @@ class SignallingService {
   }) async {
     Socket? s = socket;
     if (s == null) {
-      final dynamic userId = Global.storageServices.get(PrefConst.userId);
+      dynamic userId;
+      try {
+        userId = Global.storageServices.get(PrefConst.userId);
+      } catch (_) {}
+      if (userId == null || userId.toString().isEmpty) {
+        final pref = await SharedPreferences.getInstance();
+        userId = pref.get(PrefConst.userId);
+      }
       if (userId == null || userId.toString().isEmpty) return null;
       init(websocketUrl: ConstRes.socketUrl, selfCallerID: userId.toString());
       s = socket;

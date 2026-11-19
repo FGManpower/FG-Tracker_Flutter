@@ -27,12 +27,10 @@ class AudiocallScreen extends StatelessWidget {
           status.toLowerCase().startsWith('reconnecting');
       final String name = (c.args["callerName"] ?? "").toString();
 
-      final Color nameColor = connected ? Colors.white : CallColors.name;
+      final Color nameColor = Colors.white;
       final Color statusColor = reconnecting
           ? const Color(0xFFFFB020)
-          : (connected
-              ? Colors.white.withOpacity(0.80)
-              : CallColors.primary);
+          : Colors.white.withOpacity(0.80);
 
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -48,7 +46,8 @@ class AudiocallScreen extends StatelessWidget {
                     name: name,
                     image: c.args['profileImage'],
                     animate: !connected,
-                    onDark: connected,
+                    onDark: true,
+                    avatarSize: 120,
                   ),
                   SizedBox(height: 18.h),
                   Text(
@@ -82,7 +81,7 @@ class AudiocallScreen extends StatelessWidget {
                     height: 48.h,
                     child: connected
                         ? null
-                        : const _VoiceWave(color: CallColors.primaryLight),
+                        : const _VoiceWave(color: Colors.white38),
                   ),
                 ],
               ),

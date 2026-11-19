@@ -169,16 +169,45 @@ class MessageRepo {
     return ChatImageUploadResponse.fromJson(response);
   }
 
+  static MediaType getDocumentMediaType(String extension) {
+    final ext = extension.replaceFirst('.', '').toLowerCase();
+    switch (ext) {
+      case 'pdf':
+        return MediaType('application', 'pdf');
+      case 'doc':
+        return MediaType('application', 'msword');
+      case 'docx':
+        return MediaType('application',
+            'vnd.openxmlformats-officedocument.wordprocessingml.document');
+      case 'xls':
+        return MediaType('application', 'vnd.ms-excel');
+      case 'xlsx':
+        return MediaType('application',
+            'vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      case 'ppt':
+        return MediaType('application', 'vnd.ms-powerpoint');
+      case 'pptx':
+        return MediaType('application',
+            'vnd.openxmlformats-officedocument.presentationml.presentation');
+      case 'txt':
+        return MediaType('text', 'plain');
+      default:
+        return MediaType('application', 'octet-stream');
+    }
+  }
+
   static Future<ChatImageUploadResponse> uploadChatDocument(
-      String documentPath,
-      ) async {
-    final ext = p.extension(documentPath).replaceFirst('.', '');
+    String documentPath, {
+    void Function(int sent, int total)? onSendProgress,
+  }) async {
+    final ext = p.extension(documentPath);
+    final mediaType = getDocumentMediaType(ext);
 
     FormData data = FormData.fromMap({
       "chatDocument": await MultipartFile.fromFile(
         documentPath,
         filename: p.basename(documentPath),
-        contentType: MediaType('document', ext),
+        contentType: mediaType,
       ),
     });
 
@@ -186,6 +215,7 @@ class MessageRepo {
       "/uploadDocument",
       formdata: data,
       type: "formdata",
+      onSendProgress: onSendProgress,
     );
 
     rtUpload("uploadChatDocument", response); // TODO(rt-diagnostics)

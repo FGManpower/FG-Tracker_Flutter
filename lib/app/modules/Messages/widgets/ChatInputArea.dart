@@ -114,6 +114,14 @@ class _ChatInputAreaState extends State<ChatInputArea> {
     super.dispose();
   }
 
+  String get _safeInputText {
+    try {
+      return widget.textController.text;
+    } catch (_) {
+      return widget.messageText.value;
+    }
+  }
+
   /// Sends a recorded voice note together with what else is pending, in one
   /// action. The voice sheet says "Your voice will be sent with the file as
   /// audio", but the file used to be left behind (or sent on a second tap).
@@ -122,7 +130,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
     final hasAttachment = widget.imagePath.isNotEmpty ||
         widget.videoPaths.isNotEmpty ||
         widget.documentPath.value.isNotEmpty;
-    final hasText = widget.textController.text.trim().isNotEmpty;
+    final hasText = _safeInputText.trim().isNotEmpty;
     if (hasAttachment || (includeText && hasText)) {
       widget.onSend();
     }
@@ -183,7 +191,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
       top: false,
       child: Obx(() {
         final isMessageNotEmpty = widget.messageText.value.trim().isNotEmpty ||
-            widget.textController.text.trim().isNotEmpty;
+            _safeInputText.trim().isNotEmpty;
         final editingMessage = widget.messageController?.editingMessage.value ??
             widget.groupMessageController?.editingMessage.value;
 
@@ -195,7 +203,9 @@ class _ChatInputAreaState extends State<ChatInputArea> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
 
-            final text = editingMessage.content?.toString() ?? "";
+            final String text = (editingMessage.caption?.toString().trim().isNotEmpty ?? false)
+                ? editingMessage.caption.toString()
+                : (editingMessage.content?.toString() ?? "");
 
             widget.textController.text = text;
 
@@ -658,9 +668,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                                     .closeInlinePanel();
                                               }
                                               if (isEditing) {
-                                                final newText = widget
-                                                    .textController.text
-                                                    .trim();
+                                                final newText =
+                                                    _safeInputText.trim();
                                                 if (newText.isEmpty) return;
                                                 if (widget.messageController !=
                                                     null) {

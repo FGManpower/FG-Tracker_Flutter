@@ -25,10 +25,10 @@ String kCallKitBackgroundColor({required bool isVideo}) =>
     isVideo ? kCallKitVideoBackground : kCallKitAudioBackground;
 
 typedef CallActionCallback = FutureOr<void> Function(
-    String callId,
-    Map<String, dynamic> extra,
-    String? uuid,
-    );
+  String callId,
+  Map<String, dynamic> extra,
+  String? uuid,
+);
 
 void _ck(String msg) {
   if (kDebugMode) {
@@ -53,7 +53,7 @@ class CallKitService with WidgetsBindingObserver {
   );
 
   static FutureOr<void> Function(String handle, bool isVideo)?
-  onRecentsCallback;
+      onRecentsCallback;
 
   static final Set<String> _selfEnded = {};
   static DateTime? _selfEndedAllAt;
@@ -65,6 +65,8 @@ class CallKitService with WidgetsBindingObserver {
   static final Map<String, DateTime> _shown = {};
 
   static final Map<String, String> _uuidByKey = {};
+
+  static String mappedUuid(String key) => _uuidByKey[key] ?? '';
 
   // ───────────────────────────────────────────────────────────────────────────
   // NEW: audio ownership handover (Android Telecom / ConnectionService)
@@ -189,7 +191,7 @@ class CallKitService with WidgetsBindingObserver {
     if (matched) {
       _ck(
         'Clearing stale pendingAccept for ended/declined call '
-            'callId=$pCid sessionId=$pSid',
+        'callId=$pCid sessionId=$pSid',
       );
       pendingAccept = null;
     }
@@ -239,13 +241,13 @@ class CallKitService with WidgetsBindingObserver {
 
   static dynamic _eventBody(dynamic e) {
     final getters = <dynamic Function()>[
-          () => (e as dynamic).body,
-          () => (e as dynamic).data,
-          () => (e as dynamic).args,
-          () => (e as dynamic).arguments,
-          () => (e as dynamic).payload,
-          () => (e as dynamic).toJson(),
-          () => (e as dynamic).toMap(),
+      () => (e as dynamic).body,
+      () => (e as dynamic).data,
+      () => (e as dynamic).args,
+      () => (e as dynamic).arguments,
+      () => (e as dynamic).payload,
+      () => (e as dynamic).toJson(),
+      () => (e as dynamic).toMap(),
     ];
     for (final g in getters) {
       try {
@@ -342,12 +344,12 @@ class CallKitService with WidgetsBindingObserver {
   }
 
   static Future<bool> _isAccepted(
-      String sessionId, {
-        String callId = '',
-      }) async {
+    String sessionId, {
+    String callId = '',
+  }) async {
     final targetUuid = _uuidByKey[sessionId] ?? sessionId;
     final targetCallUuid =
-    callId.isNotEmpty ? (_uuidByKey[callId] ?? callId) : '';
+        callId.isNotEmpty ? (_uuidByKey[callId] ?? callId) : '';
     try {
       final calls = await FlutterCallkitIncoming.activeCalls();
       if (calls is List) {
@@ -393,7 +395,7 @@ class CallKitService with WidgetsBindingObserver {
 
     _sub?.cancel();
     _sub = FlutterCallkitIncoming.onEvent.listen(
-          (dynamic e) => _onEvent(e),
+      (dynamic e) => _onEvent(e),
       onError: (err) => _ck('onEvent stream ERROR: $err'),
     );
     _ck('event listener ATTACHED');
@@ -429,7 +431,7 @@ class CallKitService with WidgetsBindingObserver {
           'title': l.call_notificationPermissionTitle,
           'rationaleMessagePermission': l.call_notificationPermissionRationale,
           'postNotificationMessageRequired':
-          l.call_notificationPermissionSettings,
+              l.call_notificationPermissionSettings,
         });
         if (Platform.isAndroid) {
           final ok = await FlutterCallkitIncoming.canUseFullScreenIntent();
@@ -500,7 +502,8 @@ class CallKitService with WidgetsBindingObserver {
   static Future<dynamic> _onCallkitEvent(MethodCall call) async {
     if (call.method != 'recentsCallback') return null;
     final Map<String, dynamic> args =
-        (call.arguments as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
+        (call.arguments as Map?)?.cast<String, dynamic>() ??
+            <String, dynamic>{};
     final String handle = args['handle']?.toString() ?? '';
     final bool isVideo = args['isVideo'] == true;
     _ck('recentsCallback from CallKit handle=$handle isVideo=$isVideo');
@@ -519,11 +522,11 @@ class CallKitService with WidgetsBindingObserver {
   }
 
   static String _iosHandle(
-      Map<String, dynamic> extra,
-      String fallbackName,
-      String callId, {
-      String unknownLabel = 'Unknown',
-      }) {
+    Map<String, dynamic> extra,
+    String fallbackName,
+    String callId, {
+    String unknownLabel = 'Unknown',
+  }) {
     for (final String key in <String>[
       'callerPhone',
       'caller_phone',
@@ -571,7 +574,7 @@ class CallKitService with WidgetsBindingObserver {
   Future<void> markAppReady() async {
     _ck(
       'markAppReady() pendingAccept=$pendingAccept '
-          'onAcceptCall=${onAcceptCall != null}',
+      'onAcceptCall=${onAcceptCall != null}',
     );
     _appReady = true;
     final p = pendingAccept;
@@ -653,8 +656,8 @@ class CallKitService with WidgetsBindingObserver {
         nameCaller: callerName,
         appName: 'FG Tracker',
         avatar: avatar,
-        handle: _iosHandle(extra, callerName, callId,
-            unknownLabel: l.call_unknown),
+        handle:
+            _iosHandle(extra, callerName, callId, unknownLabel: l.call_unknown),
         type: isVideo ? 1 : 0,
         // Same value as the caller's missed-call timer (BUG-CALL-08).
         duration: (ringLeft ?? kCallRingTimeout).inMilliseconds,
@@ -714,17 +717,16 @@ class CallKitService with WidgetsBindingObserver {
   }
 
   static Future<void> dismiss(
-      String sessionId, {
-        String callId = '',
-        bool endAllUnaccepted = false,
-      }) async {
+    String sessionId, {
+    String callId = '',
+    bool endAllUnaccepted = false,
+  }) async {
     if (sessionId.isEmpty && callId.isEmpty && !endAllUnaccepted) return;
 
-    final resolvedUuid = sessionId.isNotEmpty
-        ? (_uuidByKey.remove(sessionId) ?? sessionId)
-        : '';
+    final resolvedUuid =
+        sessionId.isNotEmpty ? (_uuidByKey.remove(sessionId) ?? sessionId) : '';
     final resolvedCallUuid =
-    callId.isNotEmpty ? (_uuidByKey.remove(callId) ?? callId) : '';
+        callId.isNotEmpty ? (_uuidByKey.remove(callId) ?? callId) : '';
 
     final lookupKeys = <String>{
       if (sessionId.isNotEmpty) sessionId,
@@ -734,7 +736,7 @@ class CallKitService with WidgetsBindingObserver {
     };
 
     _uuidByKey.removeWhere(
-          (k, v) => lookupKeys.contains(k) || lookupKeys.contains(v),
+      (k, v) => lookupKeys.contains(k) || lookupKeys.contains(v),
     );
 
     final idsToEnd = <String>{...lookupKeys};
@@ -762,7 +764,7 @@ class CallKitService with WidgetsBindingObserver {
           };
 
           final isMatch =
-          activeIdentifiers.any((id) => lookupKeys.contains(id));
+              activeIdentifiers.any((id) => lookupKeys.contains(id));
 
           if (isMatch) {
             matchedActiveCall = true;
@@ -790,7 +792,7 @@ class CallKitService with WidgetsBindingObserver {
 
     _ck(
       'dismiss targets=$idsToEnd matched=$matchedActiveCall '
-          '(requested=$sessionId callId=$callId endAllUnaccepted=$endAllUnaccepted)',
+      '(requested=$sessionId callId=$callId endAllUnaccepted=$endAllUnaccepted)',
     );
 
     for (final target in idsToEnd) {
@@ -898,9 +900,9 @@ class CallKitService with WidgetsBindingObserver {
   /// gaya (ya pehle hi hat chuka tha), `false` = abhi koi active CallKit call
   /// nahi mili (caller retry karega).
   static Future<bool> releaseAudioOwnership(
-      String sessionId, {
-        String callId = '',
-      }) async {
+    String sessionId, {
+    String callId = '',
+  }) async {
     if (!Platform.isAndroid) return false;
     if (sessionId.isEmpty && callId.isEmpty) return false;
 
@@ -975,22 +977,21 @@ class CallKitService with WidgetsBindingObserver {
     final cd = decodeCallData(d['callData']);
 
     final sessionId = (d['session_id'] ??
-        d['sessionId'] ??
-        cd['session_id'] ??
-        cd['sessionId'] ??
-        '')
+            d['sessionId'] ??
+            cd['session_id'] ??
+            cd['sessionId'] ??
+            '')
         .toString();
     final callId =
-    (cd['callId'] ?? cd['call_id'] ?? d['callId'] ?? d['call_id'] ?? '')
-        .toString();
+        (cd['callId'] ?? cd['call_id'] ?? d['callId'] ?? d['call_id'] ?? '')
+            .toString();
     final isVideo = cd['isVideo'].toString() == "true" ? true : false;
 
     switch (screen) {
       case 'incomingCall':
       case 'incomingGroupCall':
         if (Platform.isIOS) return true;
-        if (screen == 'incomingCall' &&
-            instance.isInCall?.call() == true) {
+        if (screen == 'incomingCall' && instance.isInCall?.call() == true) {
           instance.onCallWaiting?.call(<String, dynamic>{...d, 'callData': cd});
           return true;
         }
@@ -1018,7 +1019,7 @@ class CallKitService with WidgetsBindingObserver {
       case 'missedCall':
       case 'missedGroupCall':
         final endTarget =
-        (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
+            (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
         if (screen == 'callEnded') {
           instance._notifyRemoteEndPush(endTarget, callId);
         }
@@ -1034,7 +1035,7 @@ class CallKitService with WidgetsBindingObserver {
     // `type`), on the push itself or inside callData.
     if (endSignalOf(d) != null || endSignalOf(cd) != null) {
       final endTarget =
-      (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
+          (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
       instance._notifyRemoteEndPush(endTarget, callId);
       await dismiss(
         endTarget.isNotEmpty ? endTarget : callId,
@@ -1052,14 +1053,14 @@ class CallKitService with WidgetsBindingObserver {
     final m = _asMap(data);
     final cd = decodeCallData(m['callData']);
     final sessionId = (m['session_id'] ??
-        m['sessionId'] ??
-        cd['session_id'] ??
-        cd['sessionId'] ??
-        '')
+            m['sessionId'] ??
+            cd['session_id'] ??
+            cd['sessionId'] ??
+            '')
         .toString();
     final callId =
-    (m['callId'] ?? m['call_id'] ?? cd['callId'] ?? cd['call_id'] ?? '')
-        .toString();
+        (m['callId'] ?? m['call_id'] ?? cd['callId'] ?? cd['call_id'] ?? '')
+            .toString();
     return MapEntry<String, String>(sessionId, callId);
   }
 
@@ -1076,10 +1077,10 @@ class CallKitService with WidgetsBindingObserver {
     }
     final cd = decodeCallData(m['callData']);
     final sessionId = (m['session_id'] ??
-        m['sessionId'] ??
-        cd['session_id'] ??
-        cd['sessionId'] ??
-        '')
+            m['sessionId'] ??
+            cd['session_id'] ??
+            cd['sessionId'] ??
+            '')
         .toString();
     final callId = (m['callId'] ?? cd['callId'] ?? '').toString();
     final incomingId = sessionId.isNotEmpty ? sessionId : callId;
@@ -1087,8 +1088,8 @@ class CallKitService with WidgetsBindingObserver {
     showIncoming(
       sessionId: incomingId,
       callId: callId,
-      callerName:
-      (m['caller_name'] ?? cd['callerName'] ?? appL10n.call_unknown).toString(),
+      callerName: (m['caller_name'] ?? cd['callerName'] ?? appL10n.call_unknown)
+          .toString(),
       isVideo: m['isVideo'].toString() == "true" ? true : false,
       avatar: (m['caller_profile_image'] ?? cd['callerProfileImage'] ?? '')
           .toString(),
@@ -1125,8 +1126,10 @@ class CallKitService with WidgetsBindingObserver {
 
   late final void Function(dynamic) _hStatus = (data) {
     final m = _asMap(data);
-    final status =
-    (m['status'] ?? m['callingStatus'] ?? '').toString().trim().toLowerCase();
+    final status = (m['status'] ?? m['callingStatus'] ?? '')
+        .toString()
+        .trim()
+        .toLowerCase();
     if (!_terminalStatuses.contains(status)) return;
     final ids = _extractEndIds(data);
     final sessionId = ids.key;
@@ -1245,9 +1248,9 @@ class CallKitService with WidgetsBindingObserver {
 
       _ck(
         'EVENT normalized="$name" '
-            'sessionId="$sessionId" uuid=$uuid callId="$callId" '
-            'extraKeys=${extra.keys.toList()} '
-            'toString="${e.toString()}"',
+        'sessionId="$sessionId" uuid=$uuid callId="$callId" '
+        'extraKeys=${extra.keys.toList()} '
+        'toString="${e.toString()}"',
       );
 
       switch (name) {
@@ -1265,7 +1268,7 @@ class CallKitService with WidgetsBindingObserver {
           );
           _ck(
             'DECLINE onDeclineCall=${onDeclineCall != null} '
-                'sessionId=$sessionId callId=$callId',
+            'sessionId=$sessionId callId=$callId',
           );
 
           onDeclineCall?.call(callId, extra, uuid);
@@ -1344,15 +1347,15 @@ class CallKitService with WidgetsBindingObserver {
   }
 
   Future<void> _handleAccept(
-      String callId,
-      Map<String, dynamic> extra,
-      String? uuid, {
-        String? sessionId,
-      }) async {
+    String callId,
+    Map<String, dynamic> extra,
+    String? uuid, {
+    String? sessionId,
+  }) async {
     var resolvedSessionId = sessionId ?? uuid ?? '';
     _ck(
       '_handleAccept callId="$callId" uuid=$uuid sessionId=$resolvedSessionId '
-          'appReady=$_appReady onAcceptCall=${onAcceptCall != null}',
+      'appReady=$_appReady onAcceptCall=${onAcceptCall != null}',
     );
 
     if (resolvedSessionId.isEmpty || callId.isEmpty) {
@@ -1407,7 +1410,7 @@ class CallKitService with WidgetsBindingObserver {
     };
     if (_appReady && onAcceptCall != null) {
       try {
-        await onAcceptCall!(callId, extra, uuid);
+        await onAcceptCall!(callId, payload, uuid);
         _ck('onAcceptCall finished OK sessionId=$resolvedSessionId');
       } catch (e, st) {
         _ck('onAcceptCall THREW: $e\n$st');
@@ -1416,7 +1419,7 @@ class CallKitService with WidgetsBindingObserver {
       pendingAccept = payload;
       _ck(
         'accept STORED as pendingAccept callId=$callId sessionId=$resolvedSessionId '
-            '(waiting for markAppReady() from Home screen)',
+        '(waiting for markAppReady() from Home screen)',
       );
     }
   }
@@ -1430,7 +1433,7 @@ class CallKitService with WidgetsBindingObserver {
         final extra = _asMap(_field(c, 'extra'));
         final sessionId =
             (extra['session_id'] ?? extra['sessionId'] ?? _field(c, 'id'))
-                ?.toString() ??
+                    ?.toString() ??
                 '';
         final callId =
             extra['callId']?.toString() ?? extra['call_id']?.toString() ?? '';
@@ -1472,11 +1475,11 @@ class CallKitService with WidgetsBindingObserver {
     final String id = (body['id'] ?? body['uuid'] ?? '').toString();
     switch (name) {
       case 'actioncalltogglemute':
-        return CallKitSystemAction(
-            CallKitSystemActionKind.mute, id, flag(<String>['isMuted', 'muted']));
+        return CallKitSystemAction(CallKitSystemActionKind.mute, id,
+            flag(<String>['isMuted', 'muted']));
       case 'actioncalltogglehold':
-        return CallKitSystemAction(
-            CallKitSystemActionKind.hold, id, flag(<String>['isOnHold', 'onHold']));
+        return CallKitSystemAction(CallKitSystemActionKind.hold, id,
+            flag(<String>['isOnHold', 'onHold']));
       case 'actioncalltoggleaudiosession':
         return CallKitSystemAction(CallKitSystemActionKind.audioSession, id,
             flag(<String>['isActivate', 'isActive']));
@@ -1492,7 +1495,8 @@ class CallKitService with WidgetsBindingObserver {
     final List<int> b = List<int>.generate(16, (_) => r.nextInt(256));
     b[6] = (b[6] & 0x0f) | 0x40;
     b[8] = (b[8] & 0x3f) | 0x80;
-    final String h = b.map((int x) => x.toRadixString(16).padLeft(2, '0')).join();
+    final String h =
+        b.map((int x) => x.toRadixString(16).padLeft(2, '0')).join();
     return '${h.substring(0, 8)}-${h.substring(8, 12)}-${h.substring(12, 16)}-'
         '${h.substring(16, 20)}-${h.substring(20)}';
   }

@@ -381,7 +381,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   void _openChat(UserDetails user) {
-    if (_chatController != null) {
+    if (_chatController != null &&
+        _chatController!.memberData.userId?.toString() == user.userId?.toString()) {
       Get.back();
     } else {
       MemberData md = MemberData(

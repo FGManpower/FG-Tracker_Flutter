@@ -59,9 +59,10 @@ class ChatNavigation {
 
       Get.until((route) => route.settings.name != Routes.chatScreen);
       await Future.delayed(_disposeWait);
-      if (Get.isRegistered<MessageController>()) {
-        await Get.delete<MessageController>(force: true);
-      }
+    }
+
+    if (Get.isRegistered<MessageController>()) {
+      await Get.delete<MessageController>(force: true);
     }
     Get.toNamed(Routes.chatScreen, arguments: arguments);
   }
@@ -79,9 +80,10 @@ class ChatNavigation {
 
       Get.until((route) => route.settings.name != Routes.groupChatScreen);
       await Future.delayed(_disposeWait);
-      if (Get.isRegistered<GroupMessageController>()) {
-        await Get.delete<GroupMessageController>(force: true);
-      }
+    }
+
+    if (Get.isRegistered<GroupMessageController>()) {
+      await Get.delete<GroupMessageController>(force: true);
     }
     Get.toNamed(Routes.groupChatScreen, arguments: arguments);
   }

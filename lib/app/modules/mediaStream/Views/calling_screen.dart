@@ -309,33 +309,23 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
-  /// Light lavender while calling / ringing, brand purple once connected.
+  /// Consistent audio call background matching the deep purple/blue design in the screenshot.
   Widget _audioLayer(CallingController c) {
     return Positioned.fill(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: c.showControlsTemporarily,
-        child: Obx(() {
-          final bool connected = isCallConnected(c);
-          return AnimatedSwitcher(
-            duration: const Duration(milliseconds: 450),
-            child: connected
-                ? const DecoratedBox(
-                    key: ValueKey<String>('audio_bg_connected'),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: CallColors.audioConnected,
-                      ),
-                    ),
-                    child: SizedBox.expand(),
-                  )
-                : const AudioBackground(
-                    key: ValueKey<String>('audio_bg_ringing'),
-                  ),
-          );
-        }),
+        child: const DecoratedBox(
+          key: ValueKey<String>('audio_call_bg'),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: CallColors.audioConnected,
+            ),
+          ),
+          child: SizedBox.expand(),
+        ),
       ),
     );
   }
@@ -445,7 +435,7 @@ class CallingScreen extends StatelessWidget {
     bool isVideo,
     bool connected,
   ) {
-    final bool onDark = isVideo || connected;
+    const bool onDark = true;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
       child: Row(
@@ -461,11 +451,11 @@ class CallingScreen extends StatelessWidget {
           Expanded(
             child: isVideo
                 ? _videoTitle(c)
-                : Center(child: _callKindPill(onDark: connected)),
+                : Center(child: _callKindPill(onDark: onDark)),
           ),
           if (isVideo && connected)
             _shareTopButton(context, c)
-          else if (!isVideo && connected)
+          else if (!isVideo)
             SizedBox(
               width: 44.r,
               child: Center(child: _signalDots(c)),
@@ -1133,11 +1123,11 @@ class CallingScreen extends StatelessWidget {
     bool isVideo,
     bool connected,
   ) {
-    if (!isVideo && connected) {
+    if (!isVideo) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Connected audio grid: white circle + purple icon when ON.
+          // Audio call controls row: matching the design system
           _evenRow([
             _speakerControl(context, c, true,
                 size: 54, activeIconColor: CallColors.primary),
@@ -1154,26 +1144,19 @@ class CallingScreen extends StatelessWidget {
       );
     }
 
-    final List<Widget> buttons = isVideo
-        ? (connected
-            ? <Widget>[
-                _speakerControl(context, c, true),
-                _cameraControl(c, true),
-                _micControl(c, true),
-                _flipControl(c),
-                _endControl(c, true, size: 52, label: appL10n.call_end),
-              ]
-            : <Widget>[
-                _flipControl(c),
-                _cameraControl(c, true),
-                _micControl(c, true),
-                _endControl(c, true, size: 52, label: appL10n.call_end),
-              ])
+    final List<Widget> buttons = connected
+        ? <Widget>[
+            _speakerControl(context, c, true),
+            _cameraControl(c, true),
+            _micControl(c, true),
+            _flipControl(c),
+            _endControl(c, true, size: 52, label: appL10n.call_end),
+          ]
         : <Widget>[
-            _speakerControl(context, c, false),
-            _upgradeControl(c, false),
-            _micControl(c, false),
-            _endControl(c, false, size: 52, label: appL10n.call_end),
+            _flipControl(c),
+            _cameraControl(c, true),
+            _micControl(c, true),
+            _endControl(c, true, size: 52, label: appL10n.call_end),
           ];
 
     return ClipRRect(
@@ -1183,17 +1166,14 @@ class CallingScreen extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 14.h),
           decoration: BoxDecoration(
-            color: isVideo
-                ? CallColors.videoGlass
-                : Colors.white.withOpacity(0.82),
+            color: CallColors.videoGlass,
             borderRadius: BorderRadius.circular(28.r),
             border: Border.all(
-              color: isVideo ? Colors.white.withOpacity(0.10) : Colors.white,
+              color: Colors.white.withOpacity(0.10),
             ),
             boxShadow: [
               BoxShadow(
-                color: (isVideo ? Colors.black : AppColors.primaryPurple)
-                    .withOpacity(0.10),
+                color: Colors.black.withOpacity(0.10),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),

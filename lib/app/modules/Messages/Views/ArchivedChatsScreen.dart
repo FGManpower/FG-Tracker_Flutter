@@ -8,15 +8,13 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
 import '../../../Core/util/message_preview_builder.dart';
+import '../../../Core/util/chat_navigation.dart';
 import '../Controller/chat_list_logic.dart';
 import '../widgets/chat_list_row_widgets.dart';
 import '../../../Core/util/profile_navigation.dart';
 import '../Controller/chat_list_controller.dart';
-import '../Controller/MessageController.dart';
 import '../widgets/custom_dropdown_menu.dart';
 import '../widgets/custom_dropdown_menu.dart' as CustomDropdownMenu;
-import 'Chat_Screen.dart';
-import '../../../routes/app_pages.dart';
 import '../../../Core/constant/const_res.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 
@@ -386,7 +384,7 @@ class ArchivedChatsScreen extends StatelessWidget {
     }
   }
 
-  void _openChat(dynamic chat) {
+  Future<void> _openChat(dynamic chat) async {
     // Archived group rows have no userId, so the private path below did
     // nothing on tap. Open them like the main Chats list does.
     if (chat is PrivateChatModel &&
@@ -398,20 +396,14 @@ class ArchivedChatsScreen extends StatelessWidget {
       return;
     }
 
-    Get.to(
-          () => ChatScreen(),
-      arguments: {
-        "userData": MemberData(
-          userId: chat.userId,
-          name: chat.name,
-          profileImage: chat.image,
-          groupId: 0,
-        ),
-      },
-      binding: BindingsBuilder(() {
-        Get.put(MessageController());
-      }),
-    );
+    await ChatNavigation.openPrivateChat({
+      "userData": MemberData(
+        userId: chat.userId,
+        name: chat.name,
+        profileImage: chat.image,
+        groupId: 0,
+      ),
+    });
   }
 
   /// Same arguments as the main Chats list (chatlist_screen `openChat`), so
@@ -444,22 +436,19 @@ class ArchivedChatsScreen extends StatelessWidget {
       }
     }
 
-    await Get.toNamed(
-      Routes.groupChatScreen,
-      arguments: {
-        "groupId": int.tryParse(groupId) ?? groupId,
-        "groupName": chat.name ??
-            chat.groupName ??
-            appL10n.chatList_groupChatFallback,
-        "groupProfile": profileImg,
-        "groupImage": profileImg,
-        "groupCode": groupCode,
-        "isCreator": isCreator,
-        "isActive": isActive,
-        if (listCtrl != null && listCtrl.isGroupDeactivated(chat))
-          "groupStatus": "deactivated",
-      },
-    );
+    await ChatNavigation.openGroupChat({
+      "groupId": int.tryParse(groupId) ?? groupId,
+      "groupName": chat.name ??
+          chat.groupName ??
+          appL10n.chatList_groupChatFallback,
+      "groupProfile": profileImg,
+      "groupImage": profileImg,
+      "groupCode": groupCode,
+      "isCreator": isCreator,
+      "isActive": isActive,
+      if (listCtrl != null && listCtrl.isGroupDeactivated(chat))
+        "groupStatus": "deactivated",
+    });
   }
 
   void _showArchivedChatOptions(

@@ -52,7 +52,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       ItemPositionsListener.create();
   final List<MessageData> _messages = [];
 
-  late final TextEditingController textEditingController = TextEditingController();
+  TextEditingController textEditingController = TextEditingController();
   final RxBool showScrollToBottom = false.obs;
   final RxInt unreadBelowCount = 0.obs;
   final RxnInt firstUnreadMessageId = RxnInt();
@@ -334,6 +334,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   @override
   void onInit() {
     super.onInit();
+    textEditingController = TextEditingController();
+    focusNode = FocusNode();
 
     groupId = arguments?["groupId"] is int
         ? (arguments!["groupId"] as int)
@@ -666,7 +668,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
             if (!ChatScreenRules.isDeleteForMeByMe(data, me)) return;
             _messages.removeAt(index);
           } else {
-            ChatScreenRules.markDeletedForEveryone(_messages[index]);
+            // for_everyone: completely remove the message so no tick or placeholder remains
+            _messages.removeAt(index);
           }
         }
 
@@ -1509,8 +1512,10 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       }
 
       if (documentPath.value.isNotEmpty) {
-        await uploadDocument(documentPath.value, text);
-        documentPath.value = "";
+        final ok = await uploadDocument(documentPath.value, text);
+        if (ok) {
+          documentPath.value = "";
+        }
       }
 
       if (!hasMedia && text.isNotEmpty) {
@@ -1753,18 +1758,28 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     }
   }
 
-  Future<void> uploadDocument(
+  Future<bool> uploadDocument(
     String path,
     String caption,
   ) async {
-    if (_blockIfDeactivated()) return;
+    if (_blockIfDeactivated()) return false;
     try {
-      var result = await MessageRepo.uploadChatDocument(path);
+      uploadProgress.value = 0.0;
+      var result = await MessageRepo.uploadChatDocument(
+        path,
+        onSendProgress: (sent, total) {
+          if (total > 0) {
+            uploadProgress.value = sent / total;
+          }
+        },
+      );
 
       if (result.status == true) {
         final clientMsgId = 'c_${DateTime.now().microsecondsSinceEpoch}';
-        final content =
-            "${result.filename}||${result.originalName ?? path.split(RegExp(r'[\\/]')).last}";
+        final filename = result.filename ?? "";
+        final originalName =
+            result.originalName ?? path.split(RegExp(r'[\\/]')).last;
+        final content = "$filename||$originalName";
 
         _addOptimisticMessage(
           clientMessageId: clientMsgId,
@@ -1790,11 +1805,19 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         );
 
         clearReply();
+        return true;
+      } else {
+        final name = path.split(RegExp(r'[\\/]')).last;
+        Utils().fluttertoast(appL10n.chat_uploadFileFailed(name));
+        return false;
       }
     } catch (e) {
-      log(
-        "GROUP Video ERROR => $e",
-      );
+      log("Group Document Upload Error: $e");
+      final name = path.split(RegExp(r'[\\/]')).last;
+      Utils().fluttertoast(appL10n.chat_uploadFileFailed(name));
+      return false;
+    } finally {
+      uploadProgress.value = 0.0;
     }
   }
 
@@ -1907,6 +1930,13 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       userId: userId,
       deleteType: deleteType,
     );
+
+    final idx = _messages.indexWhere((m) => m.id == messageId);
+    if (idx != -1) {
+      _messages.removeAt(idx);
+      updateMessageStream();
+      _syncChatListPreview();
+    }
 
     AppLog.d("DELETE MESSAGE EMIT CALLED");
     AppLog.d("==========================================");
@@ -2251,7 +2281,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     Navigator.of(context).pop();
   }
 
-  final FocusNode focusNode = FocusNode();
+  FocusNode focusNode = FocusNode();
 
   final RxList<LocationData> filteredMembers = <LocationData>[].obs;
   final RxBool showMentionList = false.obs;
@@ -2496,7 +2526,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
   }
 
   void startEditingMessage(MessageData message) {
-    if (message.messageType?.toString() != "text") {
+    if (!ChatScreenRules.isEditable(message.messageType)) {
       return;
     }
 
@@ -2731,8 +2761,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     itemPositionsListener.itemPositions.removeListener(_onScrollDateChanged);
     itemPositionsListener.itemPositions.removeListener(_updateScrollBottomState);
     itemPositionsListener.itemPositions.removeListener(_onScrollForOlderMessages);
-    textEditingController.dispose();
-    focusNode.dispose();
+    // Note: textEditingController and focusNode are left for GC to avoid
+    // crashing widget builds during the 500ms route pop transition.
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
     super.onClose();

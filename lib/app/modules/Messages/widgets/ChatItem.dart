@@ -657,6 +657,10 @@ class ChatBubble extends StatelessWidget {
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
+    if (_isDeletedMessage) {
+      return const SizedBox.shrink();
+    }
+
     if (message.isSystemMessage) {
       return _buildSystemMessageTile(
         formatSystemMessageText(message, currentUserId),
@@ -1839,7 +1843,7 @@ class ChatBubble extends StatelessWidget {
           });
         },
       ),
-      if (isSentByMe && isText)
+      if (isSentByMe && (isText || ChatScreenRules.isEditable(message.messageType)))
         MessageContextMenuAction(
           icon: Icons.edit_rounded,
           title: appL10n.common_edit,
@@ -2137,6 +2141,10 @@ class GroupChatBubble extends StatelessWidget {
     Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
+
+    if (_isDeletedMessage) {
+      return const SizedBox.shrink();
+    }
 
     if (message.isSystemMessage) {
       return _buildSystemMessageTile(
@@ -3407,7 +3415,7 @@ class GroupChatBubble extends StatelessWidget {
           });
         },
       ),
-      if (isSentByMe && isText)
+      if (isSentByMe && (isText || ChatScreenRules.isEditable(message.messageType)))
         MessageContextMenuAction(
           icon: Icons.edit_rounded,
           title: appL10n.common_edit,

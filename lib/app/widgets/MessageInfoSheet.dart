@@ -375,12 +375,32 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
     }
   }
 
+  DateTime? _parseTimestampToLocal(dynamic ts) {
+    if (ts == null) return null;
+    if (ts is DateTime) return ts.toLocal();
+    final s = ts.toString().trim();
+    if (s.isEmpty || s == 'null' || s == 'undefined') return null;
+    final numVal = int.tryParse(s);
+    if (numVal != null) {
+      return DateTime.fromMillisecondsSinceEpoch(
+        numVal > 10000000000 ? numVal : numVal * 1000,
+        isUtc: true,
+      ).toLocal();
+    }
+    if (!s.endsWith('Z') && s.contains('-') && (s.contains(' ') || s.contains('T'))) {
+      final isoStr = s.replaceFirst(' ', 'T');
+      final withZ = isoStr.endsWith('Z') ? isoStr : '${isoStr}Z';
+      final dt = DateTime.tryParse(withZ);
+      if (dt != null) return dt.toLocal();
+    }
+    return DateTime.tryParse(s)?.toLocal();
+  }
+
   String _formatTimestamp(dynamic ts) {
     if (ts == null) return "---";
-    final s = ts.toString().trim();
-    if (s.isEmpty) return "---";
+    final dt = _parseTimestampToLocal(ts);
+    if (dt == null) return ts.toString().trim().isEmpty ? "---" : ts.toString();
     try {
-      final dt = DateTime.parse(s).toLocal();
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final itemDate = DateTime(dt.year, dt.month, dt.day);
@@ -393,7 +413,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
         return "${appDateFormat('dd MMM yyyy').format(dt)}, $timeStr";
       }
     } catch (_) {
-      return s;
+      return ts.toString();
     }
   }
 
@@ -798,6 +818,11 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
   /// Show its title, never the raw JSON.
   String _attendanceTitle() {
     try {
+      final dynamic att = widget.message.attendance;
+      if (att is Map) {
+        final title = att['title']?.toString().trim() ?? '';
+        if (title.isNotEmpty) return title;
+      }
       final decoded = jsonDecode(widget.message.content?.toString() ?? "");
       if (decoded is Map) {
         final title = decoded["title"]?.toString().trim() ?? "";

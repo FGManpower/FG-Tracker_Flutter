@@ -54,7 +54,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       ItemPositionsListener.create();
   final List<MessageData> _messages = [];
 
-  late final TextEditingController textEditingController = TextEditingController();
+  TextEditingController textEditingController = TextEditingController();
   final RxBool showScrollToBottom = false.obs;
   final RxInt unreadBelowCount = 0.obs;
   bool _wasKeyboardOpen = false;
@@ -271,6 +271,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   @override
   void onInit() {
     super.onInit();
+    textEditingController = TextEditingController();
     arguments = Get.arguments is Map
         ? Map<String, dynamic>.from(Get.arguments as Map)
         : null;
@@ -502,7 +503,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     itemPositionsListener.itemPositions.removeListener(_onScrollDateChanged);
     itemPositionsListener.itemPositions.removeListener(_onScrollForOlderMessages);
     itemPositionsListener.itemPositions.removeListener(_updateScrollBottomState);
-    textEditingController.dispose();
+    // Note: textEditingController is left for GC to avoid crashing widget
+    // builds during the 500ms route pop transition.
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
     _sendPrivateStopTypingNow();
@@ -1046,6 +1048,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               }
 
               _messages.add(messageData);
+              final sorted = ChatScreenRules.sortOldestFirst(_messages);
+              _messages
+                ..clear()
+                ..addAll(sorted);
               updateMessageStream();
               rtDecision('private list', messageData,
                   'ADDED listLength=${_messages.length} streamEmitted=true'); // TODO(rt-diagnostics)
@@ -1071,16 +1077,33 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               );
             }
 
-            // "Seen" only while the user is actually looking at the chat;
-            // in the background the read is sent on resume.
-            if (privateChatId.value.isNotEmpty &&
-                fromPeer &&
-                ActiveChatTracker.isAppInForeground) {
-              socketService.markPrivateSeen(
-                chatId: privateChatId.value,
-                userId: currentUserId,
-                otherUserId: receiverId,
-              );
+            // Resolve privateChatId if not resolved yet (e.g. opened from Profile)
+            if (privateChatId.value.isEmpty) {
+              final eventChatId = (message["chatId"] ??
+                      message["chat_id"] ??
+                      message["conversationId"])
+                  ?.toString();
+              if (eventChatId != null && eventChatId.isNotEmpty) {
+                privateChatId.value = eventChatId;
+                ActiveChatTracker.setPrivateChatId(receiverId, eventChatId);
+              }
+            }
+
+            // "Seen" while the user is actively viewing this chat
+            if (fromPeer && ActiveChatTracker.isAppInForeground) {
+              final activeChatId = privateChatId.value.isNotEmpty
+                  ? privateChatId.value
+                  : (message["chatId"] ??
+                          message["chat_id"] ??
+                          message["conversationId"])
+                      ?.toString();
+              if (activeChatId != null && activeChatId.isNotEmpty) {
+                socketService.markPrivateSeen(
+                  chatId: activeChatId,
+                  userId: currentUserId,
+                  otherUserId: receiverId,
+                );
+              }
             }
 
             // The user is in this chat: also clear the chat-list unread count.
@@ -1365,7 +1388,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               if (!ChatScreenRules.isDeleteForMeByMe(data, me)) return;
               _messages.removeAt(index);
             } else if (deleteType == "for_everyone") {
-              ChatScreenRules.markDeletedForEveryone(_messages[index]);
+              // for_everyone: completely remove the message so no tick or placeholder remains
+              _messages.removeAt(index);
             }
 
             if (pinnedMessage.value?.id == messageId) {
@@ -1705,8 +1729,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       }
 
       if (hasDocument) {
-        await uploadDocument(documentPath.value, text);
-        documentPath.value = "";
+        final ok = await uploadDocument(documentPath.value, text);
+        if (ok) {
+          documentPath.value = "";
+        }
       }
 
       if (!hasMedia && text.isNotEmpty) {
@@ -1734,12 +1760,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  /// Private messages go only over the socket. When it is disconnected the
-  /// emit is dropped, so tell the user and keep their draft instead.
+  /// Private messages go over the socket (and are queued in socketService if connecting).
   bool _ensurePrivateSocketOnline() {
     if (socketService.isPrivateChatSocketConnected) return true;
-    Utils().fluttertoast(appL10n.chat_offlineNotSent);
-    return false;
+    socketService.connectPrivateChat();
+    return true;
   }
 
   Future<void> uploadAudio(String path) async {
@@ -1853,23 +1878,46 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  Future<void> uploadDocument(String path, String caption) async {
-    var result = await MessageRepo.uploadChatDocument(path);
-
-    if (result.status == true) {
-      socketService.sendPrivateMessage(
-        messageType: "document",
-        receiverId: memberData.userId.toString(),
-        // originalName may be missing: fall back to the stored file name
-        // instead of crashing on `!`.
-        content: "${result.filename}||${result.originalName ?? path.split(RegExp(r'[\\/]')).last}",
-        caption: caption,
-        replyId: replyMessage.value?.id,
-        replyMessage: replyMessage.value?.content,
-        replyType: replyMessage.value?.messageType,
-        replySender: replyMessage.value?.senderName,
+  Future<bool> uploadDocument(String path, String caption) async {
+    try {
+      uploadProgress.value = 0.0;
+      var result = await MessageRepo.uploadChatDocument(
+        path,
+        onSendProgress: (sent, total) {
+          if (total > 0) {
+            uploadProgress.value = sent / total;
+          }
+        },
       );
-      clearReply();
+
+      if (result.status == true) {
+        final filename = result.filename ?? "";
+        final originalName =
+            result.originalName ?? path.split(RegExp(r'[\\/]')).last;
+        socketService.sendPrivateMessage(
+          messageType: "document",
+          receiverId: memberData.userId.toString(),
+          content: "$filename||$originalName",
+          caption: caption,
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
+        );
+        clearReply();
+        return true;
+      } else {
+        final name = path.split(RegExp(r'[\\/]')).last;
+        Utils().fluttertoast(appL10n.chat_uploadFileFailed(name));
+        return false;
+      }
+    } catch (e) {
+      log("Document upload error: $e");
+      final name = path.split(RegExp(r'[\\/]')).last;
+      Utils().fluttertoast(appL10n.chat_uploadFileFailed(name));
+      return false;
+    } finally {
+      uploadProgress.value = 0.0;
     }
   }
 
@@ -1940,6 +1988,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       deleteType: deleteType,
       otherUserId: otherUserId,
     );
+
+    final idx = _messages.indexWhere((m) => m.id == messageId);
+    if (idx != -1) {
+      _messages.removeAt(idx);
+      updateMessageStream();
+      _syncChatListPreview();
+    }
 
     log("PRIVATE DELETE EMIT CALLED");
   }
@@ -2665,7 +2720,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   void startEditingMessage(MessageData message) {
-    if (message.messageType?.toString() != "text") {
+    if (!ChatScreenRules.isEditable(message.messageType)) {
       return;
     }
 

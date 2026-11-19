@@ -56,7 +56,7 @@ class AudioBackground extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: CallColors.audioRinging,
+          colors: CallColors.audioIncoming,
         ),
       ),
     );
@@ -115,7 +115,11 @@ class CallColors {
   static const Color videoGlass = Color.fromRGBO(20, 16, 36, 0.55);
 
   /// Audio · 1 outgoing / connecting.
-  static const List<Color> audioRinging = [Color(0xFFF1EDFF), Color(0xFFFAF9FF)];
+  static const List<Color> audioRinging = [
+    Color(0xFF6B4FE8),
+    Color(0xFF4B32B8),
+    Color(0xFF2E1F7A),
+  ];
 
   /// Audio · 2 connected.
   static const List<Color> audioConnected = [
@@ -125,7 +129,11 @@ class CallColors {
   ];
 
   /// Audio · 3 incoming.
-  static const List<Color> audioIncoming = [Color(0xFFFFFFFF), Color(0xFFF1EDFF)];
+  static const List<Color> audioIncoming = [
+    Color(0xFF6B4FE8),
+    Color(0xFF4B32B8),
+    Color(0xFF2E1F7A),
+  ];
 }
 
 class _CallControlButton extends StatelessWidget {
@@ -233,7 +241,7 @@ class _CallControlButton extends StatelessWidget {
                   fontSize: 11.5.sp,
                   color: isVideo
                       ? Colors.white.withOpacity(0.92)
-                      : AppColors.darkText.withOpacity(0.85),
+                      : CallColors.name.withOpacity(0.85),
                   fontFamily: FontFamily.interMedium,
                 ),
               ),
@@ -300,7 +308,7 @@ Widget endCallButton({
               fontSize: size >= 64 ? 13.sp : 11.5.sp,
               color: isVideo
                   ? Colors.white.withOpacity(0.92)
-                  : AppColors.darkText.withOpacity(0.85),
+                  : CallColors.name.withOpacity(0.85),
               fontFamily: FontFamily.interMedium,
             ),
           ),

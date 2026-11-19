@@ -6,8 +6,11 @@ import 'package:get/get.dart';
 class ChatBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<MessageController>(
-      () => MessageController(),
+    if (Get.isRegistered<MessageController>()) {
+      Get.delete<MessageController>(force: true);
+    }
+    Get.put<MessageController>(
+      MessageController(),
     );
   }
 }
@@ -15,8 +18,11 @@ class ChatBinding extends Bindings {
 class GroupChatBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<GroupMessageController>(
-      () => GroupMessageController(),
+    if (Get.isRegistered<GroupMessageController>()) {
+      Get.delete<GroupMessageController>(force: true);
+    }
+    Get.put<GroupMessageController>(
+      GroupMessageController(),
     );
   }
 }

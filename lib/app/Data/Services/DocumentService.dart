@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../Core/constant/const_res.dart';
 import '../../Core/values/Utils.dart';
 import 'media_availability_service.dart';
 
@@ -30,13 +31,18 @@ class DocumentService {
   }
 
   Future<void> openDocument(String documentUrl) async {
-    if (documentUrl.trim().isEmpty) return;
+    final cleanUrl = documentUrl.trim();
+    if (cleanUrl.isEmpty) return;
 
-    if (downloadingDocuments.contains(documentUrl)) return;
+    final String fullUrl = cleanUrl.startsWith("http://") || cleanUrl.startsWith("https://")
+        ? cleanUrl
+        : "${ConstRes.aImageBaseUrl}${cleanUrl.replaceFirst(RegExp(r'^/+'), '')}";
+
+    if (downloadingDocuments.contains(fullUrl)) return;
 
     try {
-      if (isDownloaded(documentUrl)) {
-        final filePath = downloadedFilePaths[documentUrl]!;
+      if (isDownloaded(fullUrl)) {
+        final filePath = downloadedFilePaths[fullUrl]!;
 
         final result = await OpenFile.open(filePath);
 
@@ -47,14 +53,14 @@ class DocumentService {
         return;
       }
 
-      downloadedFilePaths.remove(documentUrl);
-      downloadedDocuments.remove(documentUrl);
+      downloadedFilePaths.remove(fullUrl);
+      downloadedDocuments.remove(fullUrl);
 
-      downloadingDocuments.add(documentUrl);
+      downloadingDocuments.add(fullUrl);
 
       final directory = await getApplicationDocumentsDirectory();
 
-      final uri = Uri.parse(documentUrl);
+      final uri = Uri.parse(fullUrl);
       final filename = uri.pathSegments.isNotEmpty
           ? Uri.decodeComponent(uri.pathSegments.last)
           : 'document';
@@ -68,7 +74,7 @@ class DocumentService {
           '${directory.path}/${DateTime.now().microsecondsSinceEpoch}_$safeFilename';
 
       final response = await Dio().download(
-        documentUrl,
+        fullUrl,
         filePath,
         options: Options(
           followRedirects: true,
@@ -90,8 +96,8 @@ class DocumentService {
         throw Exception('Document download failed');
       }
 
-      downloadedFilePaths[documentUrl] = filePath;
-      downloadedDocuments.add(documentUrl);
+      downloadedFilePaths[fullUrl] = filePath;
+      downloadedDocuments.add(fullUrl);
 
       final result = await OpenFile.open(filePath);
 
@@ -106,13 +112,13 @@ class DocumentService {
       final statusCode = e is DioException ? e.response?.statusCode : null;
       if (MediaAvailabilityService.isMissingStatusCode(statusCode)) {
         // The bubble listens to this and switches to "Media is missing".
-        MediaAvailabilityService.markMissing(documentUrl);
+        MediaAvailabilityService.markMissing(fullUrl);
         Utils().fluttertoast(appL10n.chat_mediaMissingToast);
       } else {
         Utils().fluttertoast(appL10n.chat_documentOpenFailed);
       }
     } finally {
-      downloadingDocuments.remove(documentUrl);
+      downloadingDocuments.remove(fullUrl);
     }
   }
 }

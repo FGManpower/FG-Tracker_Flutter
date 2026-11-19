@@ -22,8 +22,47 @@ String? _nonEmpty(dynamic value) {
   return (str == null || str.isEmpty || str == "null") ? null : str;
 }
 
-DateTime? _toDate(dynamic value) =>
-    DateTime.tryParse(value?.toString() ?? "")?.toLocal();
+DateTime? _toDate(dynamic value) {
+  if (value == null) return null;
+  if (value is DateTime) return value.toLocal();
+  final str = value.toString().trim();
+  if (str.isEmpty || str == "null" || str == "undefined") return null;
+  final numVal = int.tryParse(str);
+  if (numVal != null) {
+    return DateTime.fromMillisecondsSinceEpoch(
+      numVal > 10000000000 ? numVal : numVal * 1000,
+      isUtc: true,
+    ).toLocal();
+  }
+  if (!str.endsWith('Z') && str.contains('-') && (str.contains(' ') || str.contains('T'))) {
+    final isoStr = str.replaceFirst(' ', 'T');
+    final withZ = isoStr.endsWith('Z') ? isoStr : '${isoStr}Z';
+    final dt = DateTime.tryParse(withZ);
+    if (dt != null) return dt.toLocal();
+  }
+  return DateTime.tryParse(str)?.toLocal();
+}
+
+String? formatAttendanceTime(String? rawTime) {
+  if (rawTime == null || rawTime.trim().isEmpty) return null;
+  final t = rawTime.trim();
+  if (t.toUpperCase().contains("AM") || t.toUpperCase().contains("PM")) return t;
+  try {
+    final parts = t.split(":");
+    if (parts.length >= 2) {
+      final hour = int.tryParse(parts[0]);
+      final minute = int.tryParse(parts[1]);
+      if (hour != null && minute != null) {
+        final period = hour >= 12 ? 'PM' : 'AM';
+        final h = hour % 12 == 0 ? 12 : hour % 12;
+        final hStr = h.toString().padLeft(2, '0');
+        final mStr = minute.toString().padLeft(2, '0');
+        return '$hStr:$mStr $period';
+      }
+    }
+  } catch (_) {}
+  return t;
+}
 
 Map<String, dynamic>? _asMap(dynamic value) {
   if (value is Map) return Map<String, dynamic>.from(value);
@@ -302,15 +341,18 @@ class AttendancePoll {
 
   /// "11 Sep" style label.
   String get shortDate {
-    final parsed = DateTime.tryParse(eventDate ?? "");
+    final parsed = _toDate(eventDate) ?? DateTime.tryParse(eventDate ?? "");
     return parsed != null ? appDateFormat("dd MMM").format(parsed) : "";
   }
 
   /// "11 Sep 2026" style label.
   String get longDate {
-    final parsed = DateTime.tryParse(eventDate ?? "");
+    final parsed = _toDate(eventDate) ?? DateTime.tryParse(eventDate ?? "");
     return parsed != null ? appDateFormat("dd MMM yyyy").format(parsed) : "";
   }
+
+  /// Formatted 12-hour event time with AM/PM (e.g. "02:30 PM").
+  String? get formattedEventTime => formatAttendanceTime(eventTime);
 
   /// Parses a poll summary. Accepts `{poll, myVote}` envelopes or a bare poll.
   static AttendancePoll? fromJson(dynamic raw) {
