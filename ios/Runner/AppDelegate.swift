@@ -485,18 +485,19 @@ private let candidateTokenPrefKeys = [
             // Ring for remaining server deadline, minimum 15s to allow user pickup without client clock skew killing the call
             data.duration = (ring != nil && ring! > 0) ? ring! : 45000
 
-            let plugin = SwiftFlutterCallkitIncomingPlugin.sharedInstance
-            if plugin == nil {
-                print("[AppDelegate][VoIP] CRITICAL plugin instance is nil -> call NOT reported, iOS will kill app")
-            }
-            plugin?.showCallkitIncoming(
-                data,
-                fromPushKit: true
-            ) {
-                print(
-                    "[AppDelegate][VoIP] REPORTED to CallKit id=\(id) name=\(name) "
-                        + "video=\(isVideo) state=\(UIApplication.shared.applicationState.rawValue) ring=\(ring ?? -1)"
-                )
+            if let plugin = SwiftFlutterCallkitIncomingPlugin.sharedInstance {
+                plugin.showCallkitIncoming(
+                    data,
+                    fromPushKit: true
+                ) {
+                    print(
+                        "[AppDelegate][VoIP] REPORTED to CallKit id=\(id) name=\(name) "
+                            + "video=\(isVideo) state=\(UIApplication.shared.applicationState.rawValue) ring=\(ring ?? -1)"
+                    )
+                    completion()
+                }
+            } else {
+                print("[AppDelegate][VoIP] CRITICAL plugin instance is nil -> completing VoIP push handler to prevent process kill")
                 completion()
             }
         }

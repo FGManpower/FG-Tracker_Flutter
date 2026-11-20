@@ -26,30 +26,38 @@ class VoipTokenUploader {
 
   Future<bool> upload(
     String token, {
+    bool force = false,
     Duration timeout = const Duration(seconds: 10),
   }) async {
-    if (token.isEmpty) return false;
+    final cleanToken = token.trim();
+    if (cleanToken.isEmpty) return false;
     try {
       final SharedPreferences p = await SharedPreferences.getInstance();
-      final Object? auth = p.get(PrefConst.STORAGE_USER_TOKEN_KEY);
-      if (auth == null || auth.toString().isEmpty) return false; // logged out
-      if (p.getString(_lastKey) == token) return true;
+      await p.reload();
+      final Object? authRaw = p.get(PrefConst.STORAGE_USER_TOKEN_KEY) ??
+          p.get('user_token_key') ??
+          p.get('token');
+      if (authRaw == null || authRaw.toString().trim().isEmpty) return false; // logged out
+      final String auth = authRaw.toString().trim().replaceFirst(RegExp(r'^Bearer\s+', caseSensitive: false), '');
 
+      if (!force && p.getString(_lastKey) == cleanToken) return true;
+
+      final baseUrl = ConstRes.aBaseUrl.endsWith('/') ? ConstRes.aBaseUrl : '${ConstRes.aBaseUrl}/';
       final http.Response r = await http
           .post(
-            Uri.parse('${ConstRes.aBaseUrl}update-voip-token'),
+            Uri.parse('${baseUrl}update-voip-token'),
             headers: <String, String>{
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $auth',
             },
             body: jsonEncode(<String, String>{
-              'voipToken': token,
+              'voipToken': cleanToken,
               'platform': 'ios',
             }),
           )
           .timeout(timeout);
       final bool ok = r.statusCode >= 200 && r.statusCode < 300;
-      if (ok) await p.setString(_lastKey, token);
+      if (ok) await p.setString(_lastKey, cleanToken);
       if (kDebugMode) log('[CALL] VoIP token upload status=${r.statusCode}');
       return ok;
     } catch (e) {

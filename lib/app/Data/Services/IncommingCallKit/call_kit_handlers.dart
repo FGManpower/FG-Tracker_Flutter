@@ -142,7 +142,7 @@ void setupCallKitHandlers() {
   callKit.onVoipToken = (token) async {
     if (kDebugMode) log('[CALL] VoIP token updated (length ${token.length})');
     // Upload every new token (BUG-CALL-11); OtpController is not touched.
-    if (Platform.isIOS) await VoipTokenUploader.instance.upload(token);
+    if (Platform.isIOS) await VoipTokenUploader.instance.upload(token, force: true);
   };
 
   // Hang-up push for the live call (its socket `callEnded` may be lost).

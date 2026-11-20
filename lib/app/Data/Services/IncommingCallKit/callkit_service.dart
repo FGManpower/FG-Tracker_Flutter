@@ -13,6 +13,7 @@ import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart'
     show kCallRingTimeout;
 import 'package:fgtracker/app/modules/mediaStream/Services/call_events.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/voip_token_uploader.dart';
 
 /// Android system incoming-call screen colours, matching the in-app call
 /// design (CallColors in call_widget.dart). Hex because the plugin takes
@@ -420,6 +421,9 @@ class CallKitService with WidgetsBindingObserver {
     _ensureSocketHandlersAttached();
     if (state == AppLifecycleState.resumed) {
       unawaited(restoreActiveCalls());
+      if (Platform.isIOS) {
+        unawaited(syncVoipToken(force: false));
+      }
     }
   }
 
@@ -577,6 +581,9 @@ class CallKitService with WidgetsBindingObserver {
       'onAcceptCall=${onAcceptCall != null}',
     );
     _appReady = true;
+    if (Platform.isIOS) {
+      unawaited(syncVoipToken(force: true));
+    }
     final p = pendingAccept;
     if (p != null && onAcceptCall != null) {
       pendingAccept = null;
@@ -1478,8 +1485,25 @@ class CallKitService with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _uploadVoipToken(String token) async {
-    if (onVoipToken != null) await onVoipToken!(token);
+  Future<void> _uploadVoipToken(String token, {bool force = false}) async {
+    if (onVoipToken != null) {
+      await onVoipToken!(token);
+    } else {
+      await VoipTokenUploader.instance.upload(token, force: force);
+    }
+  }
+
+  Future<void> syncVoipToken({bool force = false}) async {
+    if (!Platform.isIOS) return;
+    try {
+      final t = await FlutterCallkitIncoming.getDevicePushTokenVoIP();
+      _ck('syncVoipToken length=${t?.toString().length ?? 0}');
+      if (t != null && t.toString().isNotEmpty) {
+        await _uploadVoipToken(t.toString(), force: force);
+      }
+    } catch (e) {
+      _ck('syncVoipToken error: $e');
+    }
   }
 
   /// Maps a CallKit system action (lock screen, headset, cellular call) to
