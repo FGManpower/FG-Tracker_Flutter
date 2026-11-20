@@ -1446,12 +1446,29 @@ class CallKitService with WidgetsBindingObserver {
         final callId =
             extra['callId']?.toString() ?? extra['call_id']?.toString() ?? '';
         if (callId.isEmpty) continue;
+
+        // WhatsApp-grade protection: Never dismiss a call that was recently shown (< 25s)
+        // on cold start or app resume from background / screen lock.
+        final DateTime? shownTime =
+            _shown[sessionId] ?? (callId.isNotEmpty ? _shown[callId] : null);
+        if (shownTime != null &&
+            DateTime.now().difference(shownTime).inSeconds < 25) {
+          _ck(
+            'restoreActiveCalls: call $callId ($sessionId) was recently shown '
+            '(${DateTime.now().difference(shownTime).inSeconds}s ago), skipping dismiss',
+          );
+          continue;
+        }
+
         if (getCallStatus != null) {
           final status = (await getCallStatus!(callId))?.toLowerCase();
           _ck(
             'restoreActiveCalls callId=$callId sessionId=$sessionId status=$status',
           );
-          if (status != null && status != 'ringing') {
+          // Only dismiss if the server explicitly confirms a terminal state ('ended', 'missed', 'rejected', etc.)
+          // Non-terminal states like 'ringing', 'initiated', 'created', 'calling' must NEVER be dismissed!
+          if (status != null && _terminalStatuses.contains(status)) {
+            _ck('restoreActiveCalls: dismissing terminal call $callId status=$status');
             await dismiss(sessionId, callId: callId, endAllUnaccepted: true);
           }
         }

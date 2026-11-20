@@ -533,7 +533,16 @@ class firebaseNotificationServices {
     var title =
         message.notification?.title ?? message.data['title']?.toString();
     var body = message.notification?.body ?? message.data['body']?.toString();
-    if (message.data['screen_name'] == "incomingGroupCall") {
+    final screen = message.data['screen_name']?.toString() ??
+        message.data['screenName']?.toString() ??
+        '';
+    // WhatsApp calling model: CallKit / IncomingCallKit handles ringing screens & lifecycle.
+    // Suppress redundant static local notification banners for incoming / live call events.
+    if (screen == "incomingGroupCall" ||
+        screen == "incomingCall" ||
+        screen == "callEnded" ||
+        screen == "groupCallEnded" ||
+        screen == "callCancelled") {
       return;
     }
     if ((title == null || title.trim().isEmpty) &&

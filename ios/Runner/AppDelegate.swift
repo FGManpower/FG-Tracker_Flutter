@@ -482,7 +482,8 @@ private let candidateTokenPrefKeys = [
             let ring = Self.ringMillis(
                 expiresAt: p["expiresAt"] ?? extraDict["expiresAt"]
             )
-            data.duration = ring ?? 45000
+            // Ring for remaining server deadline, minimum 15s to allow user pickup without client clock skew killing the call
+            data.duration = (ring != nil && ring! > 0) ? ring! : 45000
 
             let plugin = SwiftFlutterCallkitIncomingPlugin.sharedInstance
             if plugin == nil {
@@ -496,10 +497,6 @@ private let candidateTokenPrefKeys = [
                     "[AppDelegate][VoIP] REPORTED to CallKit id=\(id) name=\(name) "
                         + "video=\(isVideo) state=\(UIApplication.shared.applicationState.rawValue) ring=\(ring ?? -1)"
                 )
-                if ring == 0 {
-                    print("[AppDelegate][VoIP] stale push (expired) -> ending id=\(id)")
-                    plugin?.endCall(data)
-                }
                 completion()
             }
         }

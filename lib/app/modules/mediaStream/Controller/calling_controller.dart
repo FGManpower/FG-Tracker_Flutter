@@ -1322,9 +1322,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (localStream != null) {
       for (final t in localStream!.getAudioTracks()) {
         t.enabled = enabled;
-        try {
-          Helper.setMicrophoneMute(!enabled, t);
-        } catch (_) {}
       }
     }
     if (peer != null) {
@@ -1897,8 +1894,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       try {
         // Other side's mic / camera / app state (BUG-CALL-17), sent over
         // this relay so today's server forwards it unchanged.
-        if (data is Map && data["mediaState"] is Map) {
-          _applyRemoteMediaState(data["mediaState"] as Map);
+        if (data is Map) {
+          if (data["mediaState"] is Map) {
+            _applyRemoteMediaState(data["mediaState"] as Map);
+          } else if (data.containsKey("micMuted") ||
+              data.containsKey("cameraOn") ||
+              data.containsKey("videoPaused")) {
+            _applyRemoteMediaState(data);
+          }
           if (data["sdpOffer"] == null) return;
         }
         final RTCPeerConnection? pc = peer;
@@ -2317,7 +2320,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
         pc.onIceCandidate = (c) {
           if (c.candidate == null) return;
-          socket!.emit("IceCandidate", {
+          socket?.emit("IceCandidate", {
+            "callId": callId,
+            "call_id": callId,
             "remoteUserId": callerId,
             "iceCandidate": {
               "id": c.sdpMid,
@@ -2326,6 +2331,21 @@ class CallingController extends GetxController with WidgetsBindingObserver {
             },
           });
         };
+
+        for (final c in iceCandidates) {
+          if (c.candidate == null) continue;
+          socket?.emit("IceCandidate", {
+            "callId": callId,
+            "call_id": callId,
+            "remoteUserId": callerId,
+            "iceCandidate": {
+              "id": c.sdpMid,
+              "label": c.sdpMLineIndex,
+              "candidate": c.candidate,
+            },
+          });
+        }
+        iceCandidates.clear();
 
         await _applyRemoteSdp(pc, sdp);
 
@@ -2809,9 +2829,13 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _listenForCallEvents();
 
     _handlers.off("IceCandidate");
+    _handlers.off("iceCandidate");
     _handlers.off("callAnswered");
 
     _handlers.on("IceCandidate", (data) {
+      safeAddCandidate(data);
+    });
+    _handlers.on("iceCandidate", (data) {
       safeAddCandidate(data);
     });
 
@@ -3142,9 +3166,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (localStream != null) {
       for (final t in localStream!.getAudioTracks()) {
         t.enabled = enabled;
-        try {
-          Helper.setMicrophoneMute(!enabled, t);
-        } catch (_) {}
       }
     }
     if (peer != null) {
