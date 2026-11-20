@@ -59,6 +59,7 @@ private let candidateTokenPrefKeys = [
     private var callDisplayNames: [String: String] = [:]
     private var pendingRecentsCallback: [String: Any]?
     private var deferredRouteCheck: DispatchWorkItem?
+    private var nativeCallKitProvider: CXProvider?
 
     override func application(
         _ application: UIApplication,
@@ -201,6 +202,12 @@ private let candidateTokenPrefKeys = [
             case "stopAudioRouteMonitoring":
                 self.stopAudioRouteMonitoring()
                 result(nil)
+            case "setMicrophoneMute":
+                let args = call.arguments as? [String: Any]
+                let muted = (args?["muted"] as? Bool) ?? false
+                let callIdStr = (args?["callId"] as? String) ?? ""
+                self.setMicrophoneMuteOnCallKit(muted: muted, callId: callIdStr)
+                result(true)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -340,6 +347,9 @@ private let candidateTokenPrefKeys = [
         let token = credentials.token.map { String(format: "%02x", $0) }.joined()
         print("[AppDelegate] PushKit VoIP token updated (len=\(token.count))")
         SwiftFlutterCallkitIncomingPlugin.sharedInstance?.setDevicePushTokenVoIP(token)
+        UserDefaults.standard.set(token, forKey: "voip_token_hex")
+        UserDefaults.standard.set(token, forKey: "flutter.voip_token_uploaded_v1")
+        uploadVoipTokenViaApi(token: token)
     }
 
     func pushRegistry(_ registry: PKPushRegistry, didInvalidatePushTokenFor type: PKPushType) {
@@ -422,18 +432,20 @@ private let candidateTokenPrefKeys = [
                 extra: extraDict,
                 fallbackName: name
             )
+            let isPhone = isPurePhoneNumber(handleValue)
             let real = flutter_callkit_incoming.Data(
                 id: id,
                 nameCaller: name,
                 handle: handleValue,
                 type: isVideo ? 1 : 0
             )
-            real.normalHandle = 1
+            real.normalHandle = isPhone ? 1 : 0
             real.appName = "FG Tracker"
 
             print("[AppDelegate] endCall push received for id=\(id) name=\(name), ending CallKit call")
             SwiftFlutterCallkitIncomingPlugin.sharedInstance?.endCall(real)
             SwiftFlutterCallkitIncomingPlugin.sharedInstance?.endAllCalls()
+            nativeEndCall(uuidString: id)
             completion()
         } else {
             manualAudioRoute = nil
@@ -456,17 +468,20 @@ private let candidateTokenPrefKeys = [
 
             rememberCallerName(name, id: id, extra: extraDict)
 
+            let handleValue = resolvedCallerHandle(
+                payload: p,
+                extra: extraDict,
+                fallbackName: name
+            )
+            let isPhone = isPurePhoneNumber(handleValue)
+
             let data = flutter_callkit_incoming.Data(
                 id: id,
                 nameCaller: name,
-                handle: resolvedCallerHandle(
-                    payload: p,
-                    extra: extraDict,
-                    fallbackName: name
-                ),
+                handle: handleValue,
                 type: isVideo ? 1 : 0
             )
-            data.normalHandle = 1
+            data.normalHandle = isPhone ? 1 : 0
             data.appName = "FG Tracker"
             data.supportsVideo = isVideo
             data.audioSessionMode = isVideo ? "videoChat" : "voiceChat"
@@ -491,14 +506,21 @@ private let candidateTokenPrefKeys = [
                     fromPushKit: true
                 ) {
                     print(
-                        "[AppDelegate][VoIP] REPORTED to CallKit id=\(id) name=\(name) "
+                        "[AppDelegate][VoIP] REPORTED to CallKit via plugin id=\(id) name=\(name) "
                             + "video=\(isVideo) state=\(UIApplication.shared.applicationState.rawValue) ring=\(ring ?? -1)"
                     )
                     completion()
                 }
             } else {
-                print("[AppDelegate][VoIP] CRITICAL plugin instance is nil -> completing VoIP push handler to prevent process kill")
-                completion()
+                print("[AppDelegate][VoIP] plugin instance is nil -> reporting via native CXProvider fallback id=\(id)")
+                self.showNativeCallKitIncoming(
+                    id: id,
+                    callerName: name,
+                    handle: handleValue,
+                    isVideo: isVideo,
+                    extra: extraDict,
+                    completion: completion
+                )
             }
         }
     }
@@ -609,6 +631,16 @@ private let candidateTokenPrefKeys = [
         handledDeclineCallIds.removeAll()
         handledRingingCallIds.removeAll()
         callDisplayNames.removeAll()
+    }
+
+    func onMute(_ call: Call, _ action: CXSetMutedCallAction) {
+        print("[AppDelegate] onMute from flutter_callkit_incoming: isMuted=\(action.isMuted)")
+        let isMuted = action.isMuted
+        if let vc = window?.rootViewController as? FlutterViewController {
+            let channel = FlutterMethodChannel(name: "com.fgtracker.audio_route", binaryMessenger: vc.binaryMessenger)
+            channel.invokeMethod("onCallKitMuteChanged", arguments: ["muted": isMuted, "callId": call.uuid.uuidString])
+        }
+        action.fulfill()
     }
 
     private func resolvedCallerName(
@@ -1450,5 +1482,196 @@ private let candidateTokenPrefKeys = [
             }
         }
         return false
+    }
+
+    private func isPurePhoneNumber(_ s: String) -> Bool {
+        let trimmed = s.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        let stripped = trimmed.hasPrefix("+") ? String(trimmed.dropFirst()) : trimmed
+        return !stripped.isEmpty && stripped.allSatisfy { $0.isNumber }
+    }
+
+    private func getNativeCallKitProvider(isVideo: Bool) -> CXProvider {
+        if let provider = self.nativeCallKitProvider {
+            return provider
+        }
+        let config = CXProviderConfiguration(localizedName: "FG Tracker")
+        config.supportsVideo = isVideo
+        config.maximumCallsPerCallGroup = 1
+        config.supportedHandleTypes = [.phoneNumber, .generic]
+        if #available(iOS 11.0, *) {
+            config.includesCallsInRecents = true
+        }
+        let provider = CXProvider(configuration: config)
+        provider.setDelegate(self, queue: nil)
+        self.nativeCallKitProvider = provider
+        return provider
+    }
+
+    private func showNativeCallKitIncoming(
+        id: String,
+        callerName: String,
+        handle: String,
+        isVideo: Bool,
+        extra: [String: Any],
+        completion: @escaping () -> Void
+    ) {
+        let provider = getNativeCallKitProvider(isVideo: isVideo)
+        guard let uuid = UUID(uuidString: id) else {
+            print("[AppDelegate][VoIP] Invalid UUID for native CallKit: \(id)")
+            completion()
+            return
+        }
+
+        let isPhone = isPurePhoneNumber(handle)
+        let cxHandle = CXHandle(type: isPhone ? .phoneNumber : .generic, value: handle)
+        let update = CXCallUpdate()
+        update.remoteHandle = cxHandle
+        update.localizedCallerName = callerName
+        update.hasVideo = isVideo
+        update.supportsDTMF = false
+        update.supportsHolding = false
+        update.supportsGrouping = false
+        update.supportsUngrouping = false
+
+        provider.reportNewIncomingCall(with: uuid, update: update) { [weak self] error in
+            if let error = error {
+                print("[AppDelegate][VoIP] native CallKit reportNewIncomingCall FAILED: \(error.localizedDescription)")
+            } else {
+                print("[AppDelegate][VoIP] native CallKit reportNewIncomingCall SUCCEEDED id=\(id) name=\(callerName)")
+            }
+            completion()
+        }
+    }
+
+    private func nativeEndCall(uuidString: String) {
+        guard let uuid = UUID(uuidString: uuidString) else { return }
+        nativeCallKitProvider?.reportCall(with: uuid, endedAt: Date(), reason: .remoteEnded)
+    }
+
+    private func setMicrophoneMuteOnCallKit(muted: Bool, callId: String) {
+        guard let uuid = UUID(uuidString: callId) else {
+            print("[AppDelegate] setMicrophoneMuteOnCallKit: invalid UUID '\(callId)'")
+            return
+        }
+        let controller = CXCallController()
+        let action = CXSetMutedCallAction(callUUID: uuid, isMuted: muted)
+        let transaction = CXTransaction(action: action)
+        controller.request(transaction) { error in
+            if let error = error {
+                print("[AppDelegate] CXSetMutedCallAction request error: \(error.localizedDescription)")
+            } else {
+                print("[AppDelegate] CXSetMutedCallAction request succeeded: muted=\(muted) uuid=\(uuid.uuidString)")
+            }
+        }
+    }
+
+    private func uploadVoipTokenViaApi(token: String) {
+        guard !token.isEmpty else { return }
+        guard let url = URL(string: "\(apiBaseUrl)/update-voip-token") else { return }
+
+        var req = URLRequest(url: url, timeoutInterval: 10)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        if let auth = Self.readAccessToken(), !auth.isEmpty {
+            req.setValue("Bearer \(auth)", forHTTPHeaderField: "Authorization")
+        }
+
+        var body: [String: Any] = [
+            "voipToken": token,
+            "platform": "ios"
+        ]
+        if let uid = Self.readUserId(), !uid.isEmpty {
+            body["userId"] = uid
+        }
+
+        guard let httpBody = try? JSONSerialization.data(withJSONObject: body) else { return }
+        req.httpBody = httpBody
+
+        let taskKey = UUID()
+        let bgId = UIApplication.shared.beginBackgroundTask(withName: "uploadVoipToken") { [weak self] in
+            self?.finishBackgroundTask(for: taskKey)
+        }
+        activeBgTasks[taskKey] = bgId
+
+        URLSession.shared.dataTask(with: req) { [weak self] data, response, error in
+            if let error = error {
+                print("[AppDelegate] uploadVoipToken error: \(error.localizedDescription)")
+            } else if let http = response as? HTTPURLResponse {
+                print("[AppDelegate] uploadVoipToken HTTP status=\(http.statusCode)")
+            }
+            DispatchQueue.main.async {
+                self?.finishBackgroundTask(for: taskKey)
+            }
+        }.resume()
+    }
+
+    private static func readUserId() -> String? {
+        let defaults = UserDefaults.standard
+        let candidateKeys = [
+            "flutter.userId",
+            "userId",
+            "flutter.user_id",
+            "user_id",
+            "flutter.profile_id",
+            "profile_id"
+        ]
+        for key in candidateKeys {
+            if let val = defaults.string(forKey: key), !val.isEmpty {
+                return val
+            }
+            if let intVal = defaults.object(forKey: key) as? Int, intVal > 0 {
+                return String(intVal)
+            }
+        }
+        return nil
+    }
+}
+
+extension AppDelegate: CXProviderDelegate {
+    func providerDidReset(_ provider: CXProvider) {
+        print("[AppDelegate] native CXProvider didReset")
+        audioGeneration += 1
+        releaseCallKitManualAudio()
+        handledDeclineCallIds.removeAll()
+        handledRingingCallIds.removeAll()
+        callDisplayNames.removeAll()
+    }
+
+    func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
+        print("[AppDelegate] native CXProvider perform CXAnswerCallAction")
+        configureDefaultWebRTCAudio(isVideo: currentCallIsVideo)
+        audioGeneration += 1
+        RTCAudioSession.sharedInstance().useManualAudio = true
+        action.fulfill()
+    }
+
+    func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
+        print("[AppDelegate] native CXProvider perform CXEndCallAction")
+        audioGeneration += 1
+        releaseCallKitManualAudio()
+        action.fulfill()
+    }
+
+    func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
+        print("[AppDelegate] native CXProvider perform CXSetMutedCallAction: isMuted=\(action.isMuted)")
+        let isMuted = action.isMuted
+        if let vc = window?.rootViewController as? FlutterViewController {
+            let channel = FlutterMethodChannel(name: "com.fgtracker.audio_route", binaryMessenger: vc.binaryMessenger)
+            channel.invokeMethod("onCallKitMuteChanged", arguments: ["muted": isMuted, "callId": action.callUUID.uuidString])
+        }
+        action.fulfill()
+    }
+
+    func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
+        print("[AppDelegate] native CXProvider didActivate audioSession")
+        didActivateAudioSession(audioSession)
+    }
+
+    func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
+        print("[AppDelegate] native CXProvider didDeactivate audioSession")
+        didDeactivateAudioSession(audioSession)
     }
 }

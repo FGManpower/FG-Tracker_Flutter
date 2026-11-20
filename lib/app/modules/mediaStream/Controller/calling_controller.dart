@@ -131,8 +131,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   @visibleForTesting
   static CallEndInfo? lastEndInfo;
 
-  String get _callKitId =>
-      _outgoingCallKitId.isNotEmpty ? _outgoingCallKitId : _sessionId;
+  String get _callKitId {
+    if (_outgoingCallKitId.isNotEmpty) return _outgoingCallKitId;
+    final String sid = _sessionId;
+    final String mapped = CallKitService.mappedUuid(sid);
+    if (mapped.isNotEmpty) return mapped;
+    if (callId != null) {
+      final String mappedCallId = CallKitService.mappedUuid(callId.toString());
+      if (mappedCallId.isNotEmpty) return mappedCallId;
+    }
+    return sid;
+  }
 
   String get _myUserId =>
       Global.storageServices.get(PrefConst.userId).toString();
@@ -3183,6 +3192,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }).catchError((_) {});
     }
     _emitMediaState();
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      try {
+        const MethodChannel('com.fgtracker.audio_route')
+            .invokeMethod('setMicrophoneMute', <String, dynamic>{
+          'muted': !enabled,
+          'callId': _callKitId,
+        });
+      } catch (_) {}
+    }
     // Keep the iOS lock screen / CallKit mute button in sync.
     unawaited(_platform.syncCallKitMute(_callKitId, !enabled));
     update();

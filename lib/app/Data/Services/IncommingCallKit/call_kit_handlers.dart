@@ -16,6 +16,7 @@ import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.
 import 'package:fgtracker/app/modules/mediaStream/Services/call_entry.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -132,6 +133,27 @@ void setupCallKitHandlers() {
   callKit.onTimeoutCall = (callId, extra, uuid) async {
     log('Incoming call timed out: $callId');
   };
+
+  callKit.onMuteChanged = (id, muted) {
+    final CallingController? live = _liveCall();
+    if (live != null) {
+      live.setMutedFromSystem(muted);
+    }
+  };
+
+  if (Platform.isIOS) {
+    const MethodChannel('com.fgtracker.audio_route')
+        .setMethodCallHandler((call) async {
+      if (call.method == 'onCallKitMuteChanged') {
+        final bool muted = call.arguments?['muted'] == true;
+        final CallingController? live = _liveCall();
+        if (live != null) {
+          live.setMutedFromSystem(muted);
+        }
+      }
+      return null;
+    });
+  }
 
   // Clears stale ringing calls on start / resume. `null` (unknown, offline)
   // never dismisses anything (BUG-CALL-10, BUG-CALL-24).
