@@ -1601,7 +1601,8 @@ class CallKitService with WidgetsBindingObserver {
   static Future<void> syncMute(String id, bool muted) async {
     if (!Platform.isIOS || id.isEmpty) return;
     try {
-      await FlutterCallkitIncoming.muteCall(id, isMuted: muted);
+      final targetId = _uuidByKey[id] ?? id;
+      await FlutterCallkitIncoming.muteCall(targetId, isMuted: muted);
     } catch (e) {
       _ck('muteCall error: $e');
     }

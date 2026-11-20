@@ -1291,17 +1291,16 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   void _emitMediaState({bool videoPaused = false}) {
     final String to = _peerUserId;
     if (to.isEmpty || to == _myUserId || !isCallLive) return;
-    socket?.emit(
-      "upgradeToVideo",
-      mediaStatePayload(
-        callId: callId,
-        to: to,
-        me: _myUserId,
-        micMuted: !isAudioOn,
-        cameraOn: isVideoOn,
-        videoPaused: videoPaused,
-      ),
+    final payload = mediaStatePayload(
+      callId: callId,
+      to: to,
+      me: _myUserId,
+      micMuted: !isAudioOn,
+      cameraOn: isVideoOn,
+      videoPaused: videoPaused,
     );
+    socket?.emit("upgradeToVideo", payload);
+    socket?.emit("mediaState", payload);
   }
 
   void _applyRemoteMediaState(Map<dynamic, dynamic> s) {
@@ -1322,6 +1321,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (localStream != null) {
       for (final t in localStream!.getAudioTracks()) {
         t.enabled = enabled;
+        try {
+          Helper.setMicrophoneMute(!enabled, t);
+        } catch (_) {}
       }
     }
     if (peer != null) {
@@ -3166,6 +3168,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (localStream != null) {
       for (final t in localStream!.getAudioTracks()) {
         t.enabled = enabled;
+        try {
+          Helper.setMicrophoneMute(!enabled, t);
+        } catch (_) {}
       }
     }
     if (peer != null) {

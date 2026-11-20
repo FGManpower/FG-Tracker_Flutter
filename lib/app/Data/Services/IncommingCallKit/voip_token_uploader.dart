@@ -37,22 +37,28 @@ class VoipTokenUploader {
       final Object? authRaw = p.get(PrefConst.STORAGE_USER_TOKEN_KEY) ??
           p.get('user_token_key') ??
           p.get('token');
-      if (authRaw == null || authRaw.toString().trim().isEmpty) return false; // logged out
-      final String auth = authRaw.toString().trim().replaceFirst(RegExp(r'^Bearer\s+', caseSensitive: false), '');
+      final String auth = authRaw != null
+          ? authRaw.toString().trim().replaceFirst(RegExp(r'^Bearer\s+', caseSensitive: false), '')
+          : '';
+      final String? userId = p.getString(PrefConst.userId) ?? p.get('userId')?.toString();
+
+      if (auth.isEmpty && (userId == null || userId.isEmpty)) return false; // logged out
 
       if (!force && p.getString(_lastKey) == cleanToken) return true;
 
       final baseUrl = ConstRes.aBaseUrl.endsWith('/') ? ConstRes.aBaseUrl : '${ConstRes.aBaseUrl}/';
+      final Map<String, String> headers = <String, String>{
+        'Content-Type': 'application/json',
+        if (auth.isNotEmpty) 'Authorization': 'Bearer $auth',
+      };
       final http.Response r = await http
           .post(
             Uri.parse('${baseUrl}update-voip-token'),
-            headers: <String, String>{
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $auth',
-            },
-            body: jsonEncode(<String, String>{
+            headers: headers,
+            body: jsonEncode(<String, dynamic>{
               'voipToken': cleanToken,
               'platform': 'ios',
+              if (userId != null && userId.isNotEmpty) 'userId': userId,
             }),
           )
           .timeout(timeout);

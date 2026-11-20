@@ -151,8 +151,14 @@ Map<String, dynamic> mediaStatePayload({
 }) {
   return <String, dynamic>{
     'callId': callId,
+    'call_id': callId,
     'remoteUserId': to,
+    'remote_user_id': to,
+    'receiverId': to,
     'callerId': me,
+    'micMuted': micMuted,
+    'cameraOn': cameraOn,
+    'videoPaused': videoPaused,
     'mediaState': <String, dynamic>{
       'micMuted': micMuted,
       'cameraOn': cameraOn,
