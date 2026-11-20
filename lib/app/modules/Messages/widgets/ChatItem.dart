@@ -1550,11 +1550,15 @@ class ChatBubble extends StatelessWidget {
           ],
         ),
       );
-    } else if (message.messageType == "location") {
+    } else if (message.messageType == "location" ||
+        message.messageType == "live_location") {
       return LocationBubbleWidget(
         content: message.content,
         isSentByMe: isSentByMe,
         textColor: textColor,
+        senderName: isSentByMe ? "You" : controller.memberData.name,
+        senderImage: isSentByMe ? null : controller.memberData.profileImage,
+        onStopLiveLocation: () => controller.stopLiveLocation(message),
       );
     } else if (message.messageType == "contact") {
       return ContactBubbleWidget(
@@ -1883,26 +1887,9 @@ class ChatBubble extends StatelessWidget {
             });
           },
         ),
-      if (isSentByMe &&
+      if (options.contains(MessageMenuOption.edit) &&
           !_isDeletedMessage &&
-          (isText || ChatScreenRules.isEditable(message.messageType)))
-        MessageContextMenuAction(
-          icon: Icons.forward_rounded,
-          title: appL10n.chat_menuForward,
-          iconColor: _purple,
-          onTap: () {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              Get.toNamed(
-                Routes.forwardMessageScreen,
-                arguments: {
-                  "message": message,
-                  "sourceType": "private",
-                },
-              );
-            });
-          },
-        ),
-      if (isSentByMe &&
+          isSentByMe &&
           (isText || ChatScreenRules.isEditable(message.messageType)))
         MessageContextMenuAction(
           icon: Icons.edit_rounded,
@@ -1991,12 +1978,14 @@ class ChatBubble extends StatelessWidget {
       bubbleContext: bubbleContext,
       isSentByMe: isSentByMe,
       actions: actions,
-      currentReaction: message.userReaction,
-      onReactionSelected: (emoji) {
-        try {
-          controller.toggleReaction(message, emoji);
-        } catch (_) {}
-      },
+      currentReaction: _isDeletedMessage ? null : message.userReaction,
+      onReactionSelected: _isDeletedMessage
+          ? null
+          : (emoji) {
+              try {
+                controller.toggleReaction(message, emoji);
+              } catch (_) {}
+            },
     );
   }
 
@@ -2192,11 +2181,11 @@ class GroupChatBubble extends StatelessWidget {
       return;
     }
     openUserProfile(
-        userId: senderId,
-        name: name,
-        profileImage: image,
-        mobileNo: mobileNo,
-        chatId: chatId,
+      userId: senderId,
+      name: name,
+      profileImage: image,
+      mobileNo: mobileNo,
+      chatId: chatId,
     );
   }
 
@@ -3390,11 +3379,20 @@ class GroupChatBubble extends StatelessWidget {
           ],
         ),
       );
-    } else if (message.messageType == "location") {
+    } else if (message.messageType == "location" ||
+        message.messageType == "live_location") {
+      final senderMember = controller.groupMembers.firstWhereOrNull(
+          (m) => m.userId?.toString() == message.senderId?.toString());
       return LocationBubbleWidget(
         content: message.content,
         isSentByMe: isSentByMe,
         textColor: textColor,
+        senderName: isSentByMe ? "You" : _senderDisplayName(),
+        senderImage: isSentByMe
+            ? null
+            : (message.senderImage?.toString() ??
+                senderMember?.profileImage?.toString()),
+        onStopLiveLocation: () => controller.stopLiveLocation(message),
       );
     } else if (message.messageType == "contact") {
       return ContactBubbleWidget(
@@ -3504,26 +3502,9 @@ class GroupChatBubble extends StatelessWidget {
             });
           },
         ),
-      if (isSentByMe &&
+      if (options.contains(MessageMenuOption.edit) &&
           !_isDeletedMessage &&
-          (isText || ChatScreenRules.isEditable(message.messageType)))
-        MessageContextMenuAction(
-          icon: Icons.forward_rounded,
-          title: appL10n.chat_menuForward,
-          iconColor: _purple,
-          onTap: () {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              Get.toNamed(
-                Routes.forwardMessageScreen,
-                arguments: {
-                  "message": message,
-                  "sourceType": "group",
-                },
-              );
-            });
-          },
-        ),
-      if (isSentByMe &&
+          isSentByMe &&
           (isText || ChatScreenRules.isEditable(message.messageType)))
         MessageContextMenuAction(
           icon: Icons.edit_rounded,
@@ -3612,12 +3593,14 @@ class GroupChatBubble extends StatelessWidget {
       bubbleContext: bubbleContext,
       isSentByMe: isSentByMe,
       actions: actions,
-      currentReaction: message.userReaction,
-      onReactionSelected: (emoji) {
-        try {
-          controller.toggleReaction(message, emoji);
-        } catch (_) {}
-      },
+      currentReaction: _isDeletedMessage ? null : message.userReaction,
+      onReactionSelected: _isDeletedMessage
+          ? null
+          : (emoji) {
+              try {
+                controller.toggleReaction(message, emoji);
+              } catch (_) {}
+            },
     );
   }
 

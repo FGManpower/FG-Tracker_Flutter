@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Model/GetMessage.dart';
+import 'package:fgtracker/app/Model/LocationMessage.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/chat_screen_logic.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -122,6 +123,24 @@ void main() {
       expect(theirImage, contains(MessageMenuOption.deleteForMe));
       expect(theirImage, isNot(contains(MessageMenuOption.deleteForEveryone)));
       expect(theirImage, isNot(contains(MessageMenuOption.edit)));
+    });
+
+    test('deleted messages allow ONLY Delete for me, never Edit, Forward, Copy, or Info', () {
+      for (final type in ['text', 'image', 'video', 'document', 'audio']) {
+        final mineDeleted = ChatScreenRules.menuOptions(
+          messageType: type,
+          isSentByMe: true,
+          isDeleted: true,
+        );
+        expect(mineDeleted, {MessageMenuOption.deleteForMe}, reason: 'Mine deleted $type must have ONLY deleteForMe');
+
+        final theirDeleted = ChatScreenRules.menuOptions(
+          messageType: type,
+          isSentByMe: false,
+          isDeleted: true,
+        );
+        expect(theirDeleted, {MessageMenuOption.deleteForMe}, reason: 'Their deleted $type must have ONLY deleteForMe');
+      }
     });
   });
 
@@ -298,6 +317,83 @@ void main() {
       expect(p.hasMore, isFalse);
       expect(p.oldestId, 183160);
       expect(p.hasNextPage, isNull);
+    });
+  });
+
+  group('LocationMessage model serialization and live status', () {
+    test('static location fromContent and toContent round-trip', () {
+      final loc = LocationMessage(
+        latitude: 28.6139,
+        longitude: 77.2090,
+        locationName: 'India Gate',
+        address: 'Rajpath, India Gate, New Delhi',
+        isLive: false,
+      );
+      final jsonStr = loc.toContent();
+      final parsed = LocationMessage.fromContent(jsonStr);
+      expect(parsed.latitude, closeTo(28.6139, 0.0001));
+      expect(parsed.longitude, closeTo(77.2090, 0.0001));
+      expect(parsed.locationName, 'India Gate');
+      expect(parsed.address, 'Rajpath, India Gate, New Delhi');
+      expect(parsed.isLive, isFalse);
+    });
+
+    test('live location serialization with duration and comment', () {
+      final start = DateTime.now();
+      final end = start.add(const Duration(hours: 1));
+      final liveLoc = LocationMessage(
+        latitude: 19.0760,
+        longitude: 72.8777,
+        locationName: 'Live Location',
+        isLive: true,
+        durationMinutes: 60,
+        startTime: start,
+        endTime: end,
+        comment: 'I am on my way',
+      );
+      final jsonStr = liveLoc.toContent();
+      final parsed = LocationMessage.fromContent(jsonStr);
+      expect(parsed.isLive, isTrue);
+      expect(parsed.durationMinutes, 60);
+      expect(parsed.comment, 'I am on my way');
+      expect(parsed.isEnded, isFalse);
+      expect(parsed.liveUntilText.contains('Live until'), isTrue);
+    });
+
+    test('expired live location reports isEnded as true', () {
+      final start = DateTime.now().subtract(const Duration(hours: 2));
+      final end = start.add(const Duration(hours: 1));
+      final expired = LocationMessage(
+        latitude: 19.0760,
+        longitude: 72.8777,
+        locationName: 'Live Location',
+        isLive: true,
+        startTime: start,
+        endTime: end,
+      );
+      expect(expired.isEnded, isTrue);
+    });
+
+    test('stopped live location with isLive=false reports isEnded as true', () {
+      final liveLoc = LocationMessage(
+        latitude: 19.0760,
+        longitude: 72.8777,
+        locationName: 'Live Location',
+        isLive: true,
+        startTime: DateTime.now(),
+        endTime: DateTime.now().add(const Duration(hours: 1)),
+      );
+      final stopped = liveLoc.copyWith(isLive: false);
+      expect(stopped.isEnded, isTrue);
+      expect(stopped.liveUntilText, 'Live location ended');
+    });
+
+    test('parses lat/lng from various formats (string, int, double)', () {
+      final parsedStr = LocationMessage.fromContent('{"latitude":"28.6139","longitude":"77.2090"}');
+      expect(parsedStr.latitude, closeTo(28.6139, 0.0001));
+
+      final parsedInt = LocationMessage.fromContent('{"latitude":28,"longitude":77}');
+      expect(parsedInt.latitude, 28.0);
     });
   });
 }

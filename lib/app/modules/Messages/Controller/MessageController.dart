@@ -5,7 +5,6 @@ import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
@@ -15,7 +14,6 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart' show HttpGetException;
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
-import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
@@ -28,7 +26,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
-import '../../../routes/app_pages.dart';
+import 'package:location/location.dart' as loc_pkg;
+import '../../Track/Controller/SocketServices.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_message_cache.dart';
 import '../../../Core/util/refresh_bar_log.dart';
@@ -480,6 +479,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   @override
   void onClose() {
+    _liveLocationTimer?.cancel();
     // Everything shown in this chat has been read: send it once more (covers
     // a pending debounce) and clear the list badge locally.
     _markReadTimer?.cancel();
@@ -1920,15 +1920,18 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  Timer? _liveLocationTimer;
+
   Future<void> sendLocation({
     required LocationMessage location,
   }) async {
     if (!_ensurePrivateSocketOnline()) return;
     try {
+      final msgType = location.isLive ? "live_location" : "location";
       socketService.sendPrivateMessage(
         receiverId: memberData.userId.toString(),
         content: location.toContent(),
-        messageType: "location",
+        messageType: msgType,
         replyId: replyMessage.value?.id,
         replyMessage: replyMessage.value?.content,
         replyType: replyMessage.value?.messageType,
@@ -1937,8 +1940,61 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
       clearReply();
       scrollToBottom();
+
+      if (location.isLive) {
+        _startLiveLocationTracking(location);
+      }
     } catch (e) {
       log("LOCATION SEND ERROR => $e");
+    }
+  }
+
+  void _startLiveLocationTracking(LocationMessage initialLocation) {
+    _liveLocationTimer?.cancel();
+    final endTime = initialLocation.endTime;
+    if (endTime == null) return;
+
+    final myUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (myUserId == null) return;
+
+    _liveLocationTimer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+      if (DateTime.now().isAfter(endTime)) {
+        timer.cancel();
+        return;
+      }
+      try {
+        final loc = await loc_pkg.Location().getLocation();
+        if (loc.latitude != null && loc.longitude != null) {
+          SocketService.instance.emitLocation(
+            myUserId,
+            loc.latitude!,
+            loc.longitude!,
+          );
+        }
+      } catch (_) {}
+    });
+  }
+
+  Future<void> stopLiveLocation(MessageData message) async {
+    _liveLocationTimer?.cancel();
+    try {
+      if (message.content != null && message.id != null) {
+        final loc = LocationMessage.fromContent(message.content!);
+        final updated = loc.copyWith(isLive: false);
+        message.content = updated.toContent();
+        updateMessageStream();
+
+        final myUserId = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+        final otherId = memberData.userId.toString();
+        socketService.editMessage(
+          messageId: message.id!,
+          userId: myUserId,
+          otherUserId: otherId,
+          content: message.content!,
+        );
+      }
+    } catch (e) {
+      log("STOP LIVE LOCATION ERROR => $e");
     }
   }
 

@@ -1,4 +1,3 @@
-import 'package:fgtracker/app/global_widget/auto_fit_text.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -40,6 +39,18 @@ class MessageInfoSheet extends StatefulWidget {
     GroupMessageController? groupController,
     MemberData? memberData,
   }) async {
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString();
+    final senderId = message.senderId?.toString();
+    // Guard: Message info should only ever be opened for messages sent by me!
+    if (senderId != null &&
+        currentUserId != null &&
+        senderId.isNotEmpty &&
+        currentUserId.isNotEmpty &&
+        senderId != currentUserId) {
+      return;
+    }
+
     if (_isOpen) return;
     _isOpen = true;
     try {
@@ -68,13 +79,15 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
   bool _isLoading = true;
   Map<String, dynamic>? _infoData;
 
-  // Private chat (unchanged behaviour).
+  // Private chat.
   List<dynamic> _readByList = [];
   List<dynamic> _deliveredToList = [];
+  List<dynamic> _playedByList = [];
 
   // Group chat: userId -> time, forward-only (a reader is never removed).
   final Map<String, String?> _groupRead = {};
   final Map<String, String?> _groupDelivered = {};
+  final Map<String, String?> _groupPlayed = {};
 
   /// userId -> {name, profileImage, mobileNo, chatId} for the member rows.
   final Map<String, Map<String, dynamic>> _people = {};
@@ -371,15 +384,26 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
         setState(() {
           _infoData = data;
           if (_isGroup) {
+            _mergeGroupList(data['playedBy'] ?? data['played_by'], _groupPlayed,
+                timeKeys: const ['playedAt', 'played_at', 'listenAt', 'listened_at']);
             _mergeGroupList(data['readBy'], _groupRead,
                 timeKeys: const ['readAt', 'seenAt', 'read_at']);
             _mergeGroupList(data['deliveredTo'], _groupDelivered,
                 timeKeys: const ['deliveredAt', 'delivered_at']);
-            // A reader has also received it.
+            // A listener has read & received it, and a reader has also received it.
+            for (final e in _groupPlayed.entries) {
+              _groupRead.putIfAbsent(e.key, () => e.value);
+              _groupDelivered.putIfAbsent(e.key, () => e.value);
+            }
             for (final e in _groupRead.entries) {
               _groupDelivered.putIfAbsent(e.key, () => e.value);
             }
           } else {
+            if (data['playedBy'] is List) {
+              _playedByList = List<dynamic>.from(data['playedBy']);
+            } else if (data['played_by'] is List) {
+              _playedByList = List<dynamic>.from(data['played_by']);
+            }
             if (data['readBy'] is List) {
               _readByList = List<dynamic>.from(data['readBy']);
             }
@@ -427,27 +451,30 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
   String _formatTimestamp(dynamic ts) {
     if (ts == null) return "---";
     final dt = _parseTimestampToLocal(ts);
-    if (dt == null) return ts.toString().trim().isEmpty ? "---" : ts.toString();
+    if (dt == null) {
+      final s = ts.toString().trim();
+      return (s.isEmpty || s == 'null' || s == 'undefined') ? "---" : s;
+    }
     try {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final itemDate = DateTime(dt.year, dt.month, dt.day);
       final timeStr = appDateFormat('hh:mm a').format(dt);
       if (itemDate == today) {
-        return "${appL10n.common_today}, $timeStr";
+        return "${appL10n.common_today} $timeStr";
       } else if (itemDate == today.subtract(const Duration(days: 1))) {
-        return "${appL10n.common_yesterday}, $timeStr";
+        return "${appL10n.common_yesterday} $timeStr";
+      } else if (now.year == dt.year) {
+        return "${appDateFormat('dd MMM').format(dt)} $timeStr";
       } else {
-        return "${appDateFormat('dd MMM yyyy').format(dt)}, $timeStr";
+        return "${appDateFormat('dd MMM yyyy').format(dt)} $timeStr";
       }
     } catch (_) {
       return ts.toString();
     }
   }
 
-  /// Group, WhatsApp style: "Read by" and "Delivered to" cards, each with
-  /// the members and their time on the right, and "N remaining" under it.
-  /// Built with the same aggregation as the bubble tick (MessageReceipts).
+  /// Group, WhatsApp style: "READ BY", "DELIVERED TO", "REMAINING", and optional "PLAYED BY".
   List<Widget> _buildGroupSections() {
     final summary = MessageReceipts.summarizeMaps(
       senderId: widget.message.senderId,
@@ -456,43 +483,94 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
       memberIds:
           widget.groupController?.groupMembers.map((m) => m.userId) ?? const [],
     );
-    final recipients = summary.recipients.toSet();
-    final notRead =
-        recipients.where((id) => !summary.read.containsKey(id)).length;
-    final notReceived = summary.remaining.length;
+
+    final isAudio = widget.message.messageType == 'audio' ||
+        widget.message.messageType == 'voice';
 
     List<MapEntry<String, String?>> newestFirst(Map<String, String?> m) =>
         m.entries.toList()
           ..sort((a, b) => (b.value ?? '').compareTo(a.value ?? ''));
 
-    return [
+    final cards = <Widget>[];
+
+    // 0. Optional Played section for Audio / Voice
+    if (isAudio && _groupPlayed.isNotEmpty) {
+      cards.addAll([
+        SizedBox(height: 10.h),
+        _groupCard(
+          key: const ValueKey('msg_info_played_card'),
+          icon: Icons.mic,
+          iconColor: const Color(0xFF34B7F1),
+          title: "PLAYED BY",
+          count: _groupPlayed.length,
+          emptyText: "Not played yet",
+          rows: [
+            for (final e in newestFirst(_groupPlayed))
+              _groupMemberTile(e.key, time: e.value, kind: _RowKind.played),
+          ],
+        ),
+      ]);
+    }
+
+    // 1. Read by (exclude members who already appear in PLAYED BY)
+    final readFiltered = <String, String?>{
+      for (final e in summary.read.entries)
+        if (!isAudio || !_groupPlayed.containsKey(e.key)) e.key: e.value,
+    };
+
+    cards.addAll([
       SizedBox(height: 10.h),
       _groupCard(
         key: const ValueKey('msg_info_read_card'),
         icon: Icons.done_all,
         iconColor: const Color(0xFF34B7F1),
-        title: appL10n.msgInfo_readBy,
+        title: "READ BY",
+        count: readFiltered.length,
         emptyText: appL10n.widget_notSeenYet,
         rows: [
-          for (final e in newestFirst(summary.read))
+          for (final e in newestFirst(readFiltered))
             _groupMemberTile(e.key, time: e.value, kind: _RowKind.read),
         ],
-        remaining: notRead,
       ),
+    ]);
+
+    // 2. Delivered to
+    cards.addAll([
       SizedBox(height: 10.h),
       _groupCard(
         key: const ValueKey('msg_info_delivered_card'),
         icon: Icons.done_all,
         iconColor: Colors.grey.shade600,
-        title: appL10n.msgInfo_deliveredTo,
+        title: "DELIVERED TO",
+        count: summary.delivered.length,
         emptyText: appL10n.chatSys_notDeliveredYet,
         rows: [
           for (final e in newestFirst(summary.delivered))
             _groupMemberTile(e.key, time: e.value, kind: _RowKind.delivered),
         ],
-        remaining: notReceived,
       ),
-    ];
+    ]);
+
+    // 3. Remaining (Jinko deliver nahi hua)
+    if (summary.remaining.isNotEmpty) {
+      cards.addAll([
+        SizedBox(height: 10.h),
+        _groupCard(
+          key: const ValueKey('msg_info_remaining_card'),
+          icon: Icons.access_time_rounded,
+          iconColor: Colors.grey.shade500,
+          title: "REMAINING",
+          count: summary.remaining.length,
+          emptyText: null,
+          rows: [
+            for (final userId in summary.remaining)
+              _groupMemberTile(userId, time: null, kind: _RowKind.remaining),
+          ],
+        ),
+      ]);
+    }
+
+    return cards;
   }
 
   Widget _groupCard({
@@ -501,12 +579,12 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
     required Color iconColor,
     required String title,
     required List<Widget> rows,
-    required int remaining,
+    int? count,
     String? emptyText,
   }) {
     return Container(
       key: key,
-      margin: EdgeInsets.symmetric(horizontal: 12.w),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
@@ -521,18 +599,20 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
               children: [
                 Expanded(
                   child: Text(
-                    title,
+                    count != null && count > 0 ? "$title ($count)" : title,
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF1E202B),
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
-                Icon(icon, color: iconColor, size: 20.sp),
+                Icon(icon, color: iconColor, size: 18.sp),
               ],
             ),
           ),
+          const Divider(height: 1, color: Color(0xFFF1F1F5)),
           if (rows.isEmpty)
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
@@ -547,17 +627,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
             )
           else
             ...rows,
-          if (remaining > 0)
-            Padding(
-              padding: EdgeInsets.fromLTRB(16.w, 6.h, 16.w, 12.h),
-              child: Text(
-                appL10n.msgInfo_remainingCount(remaining),
-                style:
-                    TextStyle(fontSize: 12.5.sp, color: Colors.grey.shade600),
-              ),
-            )
-          else
-            SizedBox(height: 8.h),
+          SizedBox(height: 4.h),
         ],
       ),
     );
@@ -576,6 +646,32 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
     final imageUrl = image.startsWith('http://') || image.startsWith('https://')
         ? image
         : "${ConstRes.aImageBaseUrl}$image";
+
+    final IconData icon;
+    final Color iconColor;
+    final String timeDisplay;
+    switch (kind) {
+      case _RowKind.played:
+        icon = Icons.mic;
+        iconColor = const Color(0xFF34B7F1);
+        timeDisplay = _formatTimestamp(time);
+        break;
+      case _RowKind.read:
+        icon = Icons.done_all;
+        iconColor = const Color(0xFF34B7F1);
+        timeDisplay = _formatTimestamp(time);
+        break;
+      case _RowKind.delivered:
+        icon = Icons.done_all;
+        iconColor = Colors.grey.shade600;
+        timeDisplay = _formatTimestamp(time);
+        break;
+      case _RowKind.remaining:
+        icon = Icons.access_time_rounded;
+        iconColor = Colors.grey.shade400;
+        timeDisplay = "Pending";
+        break;
+    }
 
     return InkWell(
       key: ValueKey('msg_info_${kind.name}_$userId'),
@@ -605,14 +701,28 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
                 displayName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E202B),
+                ),
               ),
             ),
             SizedBox(width: 8.w),
-            Text(
-              _formatTimestamp(
-                  time ?? _infoData?['sentAt'] ?? widget.message.timestamp),
-              style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  timeDisplay,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(width: 6.w),
+                Icon(icon, color: iconColor, size: 16.sp),
+              ],
             ),
           ],
         ),
@@ -622,24 +732,46 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
 
   @override
   Widget build(BuildContext context) {
-    final privateReadCount = (_infoData?['isSeen'] == true ||
-            (_infoData?['readBy'] is List &&
-                (_infoData!['readBy'] as List).isNotEmpty) ||
-            _readByList.isNotEmpty ||
-            ChatScreenRules.seenCount(widget.message,
-                    currentUserId: _currentUserId, isGroup: false) >
-                0)
-        ? 1
-        : 0;
+    final isAudio = widget.message.messageType == 'audio' ||
+        widget.message.messageType == 'voice';
 
-    final privateDeliveredCount = (_infoData?['isDelivered'] == true ||
-            (_infoData?['deliveredTo'] is List &&
-                (_infoData!['deliveredTo'] as List).isNotEmpty) ||
-            _deliveredToList.isNotEmpty ||
-            widget.message.isDelivered == true ||
-            privateReadCount > 0)
-        ? 1
-        : 0;
+    final isSeen = _infoData?['isSeen'] == true ||
+        _readByList.isNotEmpty ||
+        ChatScreenRules.seenCount(
+              widget.message,
+              currentUserId: _currentUserId,
+              isGroup: false,
+            ) >
+            0;
+
+    final isDelivered = _infoData?['isDelivered'] == true ||
+        _deliveredToList.isNotEmpty ||
+        widget.message.isDelivered == true ||
+        isSeen;
+
+    final isPlayed = isAudio &&
+        (_infoData?['isPlayed'] == true ||
+            _infoData?['playedAt'] != null ||
+            _infoData?['played_at'] != null ||
+            _playedByList.isNotEmpty);
+
+    final rawPlayedAt = _infoData?['playedAt'] ??
+        _infoData?['played_at'] ??
+        (_playedByList.isNotEmpty && _playedByList.first is Map
+            ? _playedByList.first['playedAt']
+            : null);
+
+    final rawSeenAt = _infoData?['seenAt'] ??
+        _infoData?['readAt'] ??
+        (_readByList.isNotEmpty && _readByList.first is Map
+            ? (_readByList.first['readAt'] ?? _readByList.first['seenAt'])
+            : null);
+
+    final rawDeliveredAt = _infoData?['deliveredAt'] ??
+        _infoData?['delivered_at'] ??
+        (_deliveredToList.isNotEmpty && _deliveredToList.first is Map
+            ? _deliveredToList.first['deliveredAt']
+            : null);
 
     return SafeArea(
       child: Container(
@@ -716,26 +848,65 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
                     if (_isGroup)
                       ..._buildGroupSections()
                     else ...[
-                      // 1. Read / Seen Section
-                      _buildSectionTitle(
-                        icon: Icons.done_all,
-                        iconColor: Colors.blue,
-                        title: appL10n.widget_seen,
-                        count: privateReadCount,
-                      ),
-                      _buildPrivateReadTile(),
-
-                      SizedBox(height: 8.h),
-                      Divider(height: 1, color: Colors.grey.shade200),
-
-                      // 2. Delivered Section
-                      _buildSectionTitle(
-                        icon: Icons.done_all,
-                        iconColor: Colors.grey.shade600,
-                        title: appL10n.chatSys_delivered,
-                        count: privateDeliveredCount,
-                      ),
-                      _buildPrivateDeliveredTile(),
+                      // 0. Played Section for Voice/Audio (if played)
+                      if (isPlayed) ...[
+                        SizedBox(height: 10.h),
+                        _buildSectionCard(
+                          icon: Icons.mic,
+                          iconColor: const Color(0xFF34B7F1),
+                          title: "PLAYED",
+                          child: _buildPrivateMemberRow(
+                            name: widget.memberData?.name,
+                            image: widget.memberData?.profileImage,
+                            time: rawPlayedAt,
+                            secondaryTime: rawDeliveredAt,
+                            icon: Icons.mic,
+                            tickColor: const Color(0xFF34B7F1),
+                            userId: widget.memberData?.userId,
+                            mobileNo: widget.memberData?.mobileNo,
+                            chatId: widget.memberData?.chatId,
+                          ),
+                        ),
+                      ] else if (isSeen) ...[
+                        // 1. Read / Seen Section (ONLY when seen and not played)
+                        SizedBox(height: 10.h),
+                        _buildSectionCard(
+                          icon: Icons.done_all,
+                          iconColor: const Color(0xFF34B7F1),
+                          title: "READ",
+                          child: _buildPrivateMemberRow(
+                            name: widget.memberData?.name,
+                            image: widget.memberData?.profileImage,
+                            time: rawSeenAt,
+                            secondaryTime: rawDeliveredAt,
+                            icon: Icons.done_all,
+                            tickColor: const Color(0xFF34B7F1),
+                            userId: widget.memberData?.userId,
+                            mobileNo: widget.memberData?.mobileNo,
+                            chatId: widget.memberData?.chatId,
+                          ),
+                        ),
+                      ] else ...[
+                        // 2. Delivered Section (ONLY when NOT seen / read yet!)
+                        SizedBox(height: 10.h),
+                        _buildSectionCard(
+                          icon: Icons.done_all,
+                          iconColor: Colors.grey.shade600,
+                          title: "DELIVERED",
+                          child: isDelivered
+                              ? _buildPrivateMemberRow(
+                                  name: widget.memberData?.name,
+                                  image: widget.memberData?.profileImage,
+                                  time: rawDeliveredAt,
+                                  icon: Icons.done_all,
+                                  tickColor: Colors.grey.shade600,
+                                  userId: widget.memberData?.userId,
+                                  mobileNo: widget.memberData?.mobileNo,
+                                  chatId: widget.memberData?.chatId,
+                                )
+                              : _buildEmptyTile(appL10n.chatSys_notDeliveredYet),
+                        ),
+                      ],
                     ],
 
                     SizedBox(height: 20.h),
@@ -968,52 +1139,160 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
     return appL10n.chat_previewAttendancePoll;
   }
 
-  Widget _buildSectionTitle({
+  Widget _buildSectionCard({
     required IconData icon,
     required Color iconColor,
     required String title,
-    required int count,
-    int? total,
+    required Widget child,
   }) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 8.h),
-      child: Row(
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            color: iconColor,
-            size: 20.sp,
-          ),
-          SizedBox(width: 10.w),
-          Flexible(
-            child: AutoFitText(
-              title,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w700,
-              ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 6.h),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E202B),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                Icon(icon, color: iconColor, size: 18.sp),
+              ],
             ),
           ),
-          if (count > 0 || (total ?? 0) > 0) ...[
-            SizedBox(width: 5.w),
-            Text(
-              total != null && total > 0
-                  ? appL10n.widget_seenCountOfTotal(count, total)
-                  : "($count)",
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: Colors.grey.shade600,
+          const Divider(height: 1, color: Color(0xFFF1F1F5)),
+          child,
+          SizedBox(height: 4.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrivateMemberRow({
+    required dynamic name,
+    required dynamic image,
+    required dynamic time,
+    required IconData icon,
+    required Color tickColor,
+    dynamic secondaryTime,
+    IconData? secondaryIcon,
+    Color? secondaryTickColor,
+    dynamic userId,
+    dynamic mobileNo,
+    dynamic chatId,
+  }) {
+    final displayName = (name != null && name.toString().trim().isNotEmpty)
+        ? name.toString().trim()
+        : appL10n.chat_unknown;
+    final imageStr = image?.toString() ?? "";
+    final imageUrl = imageStr.startsWith('http://') || imageStr.startsWith('https://')
+        ? imageStr
+        : "${ConstRes.aImageBaseUrl}$imageStr";
+    final timeStr = time != null
+        ? _formatTimestamp(time)
+        : (_isLoading ? "Loading..." : "Pending");
+
+    return InkWell(
+      onTap: () => showUserQuickProfile(
+        userId: userId is int ? userId : int.tryParse(userId?.toString() ?? ''),
+        name: displayName,
+        profileImage: imageStr,
+        mobileNo: mobileNo?.toString(),
+        chatId: chatId is int ? chatId : int.tryParse(chatId?.toString() ?? ''),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 20.r,
+              backgroundColor: const Color(0xFFEDE9FE),
+              backgroundImage: imageStr.isNotEmpty ? NetworkImage(imageUrl) : null,
+              child: imageStr.isEmpty
+                  ? Icon(Icons.person,
+                      size: 20.sp, color: const Color(0xFF5D47F1))
+                  : null,
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E202B),
+                ),
               ),
+            ),
+            SizedBox(width: 8.w),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      timeStr,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 5.w),
+                    Icon(icon, color: tickColor, size: 16.sp),
+                  ],
+                ),
+                if (secondaryTime != null) ...[
+                  SizedBox(height: 3.h),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _formatTimestamp(secondaryTime),
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: Colors.grey.shade500,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      SizedBox(width: 4.w),
+                      Icon(
+                        secondaryIcon ?? Icons.done_all,
+                        color: secondaryTickColor ?? Colors.grey.shade500,
+                        size: 14.sp,
+                      ),
+                    ],
+                  ),
+                ],
+              ],
             ),
           ],
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildEmptyTile(String text) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       child: Text(
         text,
         style: TextStyle(
@@ -1024,122 +1303,7 @@ class _MessageInfoSheetState extends State<MessageInfoSheet>
       ),
     );
   }
-
-  Widget _buildPrivateReadTile() {
-    final isSeen = _infoData?['isSeen'] == true ||
-        _readByList.isNotEmpty ||
-        ChatScreenRules.seenCount(
-              widget.message,
-              currentUserId: _currentUserId,
-              isGroup: false,
-            ) >
-            0;
-
-    if (!isSeen) {
-      return _buildEmptyTile(appL10n.widget_notSeenYet);
-    }
-
-    final rawSeenAt = _infoData?['seenAt'] ??
-        (_readByList.isNotEmpty && _readByList.first is Map
-            ? (_readByList.first['readAt'] ?? _readByList.first['seenAt'])
-            : null);
-    final seenTime = rawSeenAt != null
-        ? _formatTimestamp(rawSeenAt)
-        : (_isLoading ? "Loading..." : "Seen");
-
-    final name = widget.memberData?.name?.toString().trim().isNotEmpty == true
-        ? widget.memberData!.name.toString()
-        : appL10n.chat_unknown;
-    final image = widget.memberData?.profileImage?.toString() ?? "";
-
-    return ListTile(
-      onTap: () => showUserQuickProfile(
-        userId: widget.memberData?.userId,
-        name: name,
-        profileImage: image,
-        mobileNo: widget.memberData?.mobileNo,
-        chatId: widget.memberData?.chatId,
-      ),
-      contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 2.h),
-      leading: CircleAvatar(
-        radius: 20.r,
-        backgroundImage: image.isNotEmpty
-            ? NetworkImage("${ConstRes.aImageBaseUrl}$image")
-            : null,
-        child: image.isEmpty ? Icon(Icons.person, size: 20.sp) : null,
-      ),
-      title: Text(
-        name,
-        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-      ),
-      subtitle: Text(
-        seenTime,
-        style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
-      ),
-      trailing: const Icon(
-        Icons.done_all,
-        color: Colors.blue,
-        size: 18,
-      ),
-    );
-  }
-
-  Widget _buildPrivateDeliveredTile() {
-    final isDelivered = _infoData?['isDelivered'] == true ||
-        _deliveredToList.isNotEmpty ||
-        widget.message.isDelivered == true ||
-        _infoData?['isSeen'] == true ||
-        _readByList.isNotEmpty;
-
-    if (!isDelivered) {
-      return _buildEmptyTile(appL10n.chatSys_notDeliveredYet);
-    }
-
-    final rawDeliveredAt = _infoData?['deliveredAt'] ??
-        (_deliveredToList.isNotEmpty && _deliveredToList.first is Map
-            ? _deliveredToList.first['deliveredAt']
-            : null);
-    final deliveredTime = rawDeliveredAt != null
-        ? _formatTimestamp(rawDeliveredAt)
-        : (_isLoading ? "Loading..." : "Delivered");
-
-    final name = widget.memberData?.name?.toString().trim().isNotEmpty == true
-        ? widget.memberData!.name.toString()
-        : appL10n.chat_unknown;
-    final image = widget.memberData?.profileImage?.toString() ?? "";
-
-    return ListTile(
-      onTap: () => showUserQuickProfile(
-        userId: widget.memberData?.userId,
-        name: name,
-        profileImage: image,
-        mobileNo: widget.memberData?.mobileNo,
-        chatId: widget.memberData?.chatId,
-      ),
-      contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 2.h),
-      leading: CircleAvatar(
-        radius: 20.r,
-        backgroundImage: image.isNotEmpty
-            ? NetworkImage("${ConstRes.aImageBaseUrl}$image")
-            : null,
-        child: image.isEmpty ? Icon(Icons.person, size: 20.sp) : null,
-      ),
-      title: Text(
-        name,
-        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-      ),
-      subtitle: Text(
-        deliveredTime,
-        style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
-      ),
-      trailing: Icon(
-        Icons.done_all,
-        color: Colors.grey.shade600,
-        size: 18,
-      ),
-    );
-  }
 }
 
 /// Which group section a member row belongs to.
-enum _RowKind { read, delivered }
+enum _RowKind { played, read, delivered, remaining }
