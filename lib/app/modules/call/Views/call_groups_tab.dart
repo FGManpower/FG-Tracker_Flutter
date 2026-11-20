@@ -16,13 +16,23 @@ import '../../../routes/app_pages.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:fgtracker/l10n/l10n.dart';
-class CallGroupsTab extends StatelessWidget {
-  CallGroupsTab({super.key});
+class CallGroupsTab extends StatefulWidget {
+  const CallGroupsTab({super.key});
+
+  @override
+  State<CallGroupsTab> createState() => _CallGroupsTabState();
+}
+
+class _CallGroupsTabState extends State<CallGroupsTab>
+    with AutomaticKeepAliveClientMixin<CallGroupsTab> {
+  @override
+  bool get wantKeepAlive => true;
 
   final CallController controller = CallController.instance;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Obx(() {
       if (controller.groupsError.isNotEmpty) {
         return LostinternetConnection(

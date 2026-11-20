@@ -30,7 +30,11 @@ class CallRecentCallsTab extends StatefulWidget {
   State<CallRecentCallsTab> createState() => _CallRecentCallsTabState();
 }
 
-class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
+class _CallRecentCallsTabState extends State<CallRecentCallsTab>
+    with AutomaticKeepAliveClientMixin<CallRecentCallsTab> {
+  @override
+  bool get wantKeepAlive => true;
+
   final CallController controller = CallController.instance;
   final ScrollController _scrollController = ScrollController();
   final _SwipeActionCoordinator _swipeCoordinator = _SwipeActionCoordinator();
@@ -492,6 +496,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Obx(() {
       if (controller.recentCallLoading.value &&
           controller.recentCallList.isEmpty) {

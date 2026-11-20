@@ -31,48 +31,34 @@ class CallContactsTab extends StatefulWidget {
 }
 
 class _CallContactsTabState extends State<CallContactsTab>
-    with WidgetsBindingObserver {
-  // Settings page ka package id (Play Store link se). Flavor/debug suffix ho to badlo.
+    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin<CallContactsTab> {
   static const String _androidPackage = 'com.fg.fgtracker';
+
+  @override
+  bool get wantKeepAlive => true;
 
   final CallController controller = CallController.instance;
   final ContactController contactController = ContactController.instance;
   final ScrollController scrollController = ScrollController();
-  bool _loadMoreScheduled = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // Permission check + (pehli baar) load, ya (baad me) silent refresh
     contactController.onTabOpened();
-    scrollController.addListener(_onScroll);
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // Settings se permission dekar aane par load, warna throttled silent refresh
       contactController.onAppResumed();
     }
-  }
-
-  void _onScroll() {
-    if (!scrollController.hasClients) return;
-    if (scrollController.position.extentAfter > 500) return;
-    if (_loadMoreScheduled) return;
-    _loadMoreScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadMoreScheduled = false;
-      contactController.loadMoreContacts();
-    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    scrollController.removeListener(_onScroll);
     scrollController.dispose();
     super.dispose();
   }
@@ -190,6 +176,7 @@ class _CallContactsTabState extends State<CallContactsTab>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Obx(() {
       // 1. Permission check hone tak skeleton
       if (!contactController.permissionChecked.value) {
@@ -203,27 +190,26 @@ class _CallContactsTabState extends State<CallContactsTab>
 
       final List<UserListData> registered = contactController.filteredUsers;
       final List<UserListData> invites = contactController.filteredInviteUsers;
-      final bool noData = contactController.allUserProfileData.isEmpty &&
-          contactController.inviteUsers.isEmpty;
+      final bool hasList = registered.isNotEmpty || invites.isNotEmpty;
+      final bool isBusy = contactController.contactLoading.value ||
+          contactController.isResolving.value;
 
-      if (contactController.responseError.value.isNotEmpty && noData) {
+      if (contactController.responseError.value.isNotEmpty &&
+          contactController.allUserProfileData.isEmpty &&
+          contactController.inviteUsers.isEmpty) {
         return LostinternetConnection(
-          retry: () {
-            contactController.getRegisteredContacts();
-          },
+          retry: () => contactController.refreshContacts(),
           messgae: contactController.responseError.value,
         );
       }
 
-      // 3. Pehla load poora hone se pehle hamesha skeleton (no "empty" flash)
-      if (noData &&
-          (contactController.contactLoading.value ||
-              !contactController.isFirstLoadDone.value)) {
+      // 3. Pehla load poora hone se pehle ya background me resolve ho raha ho to ALWAYS skeleton shimmer (no empty flash)
+      if (!hasList && (isBusy || !contactController.isFirstLoadDone.value)) {
         return _buildContactsListUi(isLoading: true);
       }
 
-      // 4. Registered aur invite, dono khali ho tabhi empty screen
-      if (registered.isEmpty && invites.isEmpty) {
+      // 4. Load complete hone ke baad bhi agar sach me empty hai tabhi empty screen
+      if (!hasList) {
         return _buildEmptyUi();
       }
 
@@ -242,7 +228,7 @@ class _CallContactsTabState extends State<CallContactsTab>
 
     return RefreshIndicator(
       color: const Color(0xFF4818F0),
-      onRefresh: contactController.refreshContacts,
+      onRefresh: () => contactController.refreshContacts(),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.only(bottom: isDialOpen ? 390.h : 90.h),
@@ -286,7 +272,7 @@ class _CallContactsTabState extends State<CallContactsTab>
 
     return RefreshIndicator(
       color: const Color(0xFF4818F0),
-      onRefresh: contactController.refreshContacts,
+      onRefresh: () => contactController.refreshContacts(),
       child: Skeletonizer(
         enabled: loading,
         child: CustomScrollView(
@@ -307,7 +293,7 @@ class _CallContactsTabState extends State<CallContactsTab>
                     SliverToBoxAdapter(
                       child: Padding(
                         padding:
-                        EdgeInsets.only(left: 4.w, bottom: 12.h, top: 4.h),
+                            EdgeInsets.only(left: 4.w, bottom: 12.h, top: 4.h),
                         child: Text(
                           context.l10n.call_allContacts,
                           style: TextStyle(
@@ -324,45 +310,35 @@ class _CallContactsTabState extends State<CallContactsTab>
                     itemBuilder: (context, index) {
                       if (loading) return const SkeletonContactCard();
                       final UserListData user = contactData[index];
-                      return ContactCard(
-                        user: user,
-                        onTapCard: () {
-                          if (controller.isDialPadOpen.value) {
-                            _startCall(user, false);
-                            return;
-                          }
-                          Get.to(
-                                () => ContactProfileScreen(
-                              contactData: MemberData(
-                                userId: user.userId,
-                                name: user.name,
-                                mobileNo: user.mobileNo,
-                                profileImage: user.profileImage,
-                                isOnline: user.isOnline ?? false,
-                                chatId:
-                                contactController.chatIdFor(user.userId),
+                      return RepaintBoundary(
+                        child: ContactCard(
+                          user: user,
+                          onTapCard: () {
+                            if (controller.isDialPadOpen.value) {
+                              _startCall(user, false);
+                              return;
+                            }
+                            Get.to(
+                              () => ContactProfileScreen(
+                                contactData: MemberData(
+                                  userId: user.userId,
+                                  name: user.name,
+                                  mobileNo: user.mobileNo,
+                                  profileImage: user.profileImage,
+                                  isOnline: user.isOnline ?? false,
+                                  chatId: user.chatId ??
+                                      user.privateChatId ??
+                                      user.conversationId,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                        onTapAudio: () => _startCall(user, false),
-                        onTapVideo: () => _startCall(user, true),
+                            );
+                          },
+                          onTapAudio: () => _startCall(user, false),
+                          onTapVideo: () => _startCall(user, true),
+                        ),
                       );
                     },
                   ),
-
-                  if (contactController.contactLoadingMore.value)
-                    SliverToBoxAdapter(
-                      child: Skeletonizer(
-                        enabled: true,
-                        child: Column(
-                          children: List<Widget>.generate(
-                            3,
-                                (int index) => const SkeletonContactCard(),
-                          ),
-                        ),
-                      ),
-                    ),
 
                   // Invite section (jo contacts app par nahi hain)
                   if (!loading && inviteData.isNotEmpty) ...[
@@ -400,71 +376,73 @@ class _CallContactsTabState extends State<CallContactsTab>
         ? user.name!.trim()
         : (user.mobileNo ?? context.l10n.call_unknownUser);
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 10.h),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          RepaintBoundary(
-            child: CircleAvatar(
-              radius: 25.r,
-              backgroundColor: _getAvatarColor(displayName),
-              child: reausabletext(
-                _getInitials(displayName),
-                fontsize: 13.sp,
-                fontfamily: FontFamily.interBold,
-                color: Colors.white,
+    return RepaintBoundary(
+      child: Container(
+        margin: EdgeInsets.only(bottom: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            RepaintBoundary(
+              child: CircleAvatar(
+                radius: 25.r,
+                backgroundColor: _getAvatarColor(displayName),
+                child: reausabletext(
+                  _getInitials(displayName),
+                  fontsize: 13.sp,
+                  fontfamily: FontFamily.interBold,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                reausabletext(
-                  displayName,
-                  fontsize: 14.sp,
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  reausabletext(
+                    displayName,
+                    fontsize: 14.sp,
+                    fontfamily: FontFamily.interSemiBold,
+                  ),
+                  SizedBox(height: 2.h),
+                  reausabletext(
+                    user.mobileNo ?? '',
+                    fontsize: 11.sp,
+                    fontweight: FontWeight(500),
+                    color: Colors.grey.shade600,
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () => InviteHelper.showInviteOptions(user),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F0FF),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: reausabletext(
+                  context.l10n.call_invite,
+                  fontsize: 12.sp,
+                  color: const Color(0xFF6B4DFF),
                   fontfamily: FontFamily.interSemiBold,
                 ),
-                SizedBox(height: 2.h),
-                reausabletext(
-                  user.mobileNo ?? '',
-                  fontsize: 11.sp,
-                  fontweight: FontWeight(500),
-                  color: Colors.grey.shade600,
-                ),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: () => InviteHelper.showInviteOptions(user),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3F0FF),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: reausabletext(
-                context.l10n.call_invite,
-                fontsize: 12.sp,
-                color: const Color(0xFF6B4DFF),
-                fontfamily: FontFamily.interSemiBold,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -477,11 +455,12 @@ class _CallContactsTabState extends State<CallContactsTab>
       return;
     }
     CallService().startOutGoingCall(
-        context,
-        callerId: Global.storageServices.get(PrefConst.userId).toString(),
-        remoteUserId: user.userId.toString(),
-        is_video: isVideo,
-        callerName: user.name ?? context.l10n.call_user,
-        callerProfile: user.profileImage);
+      context,
+      callerId: Global.storageServices.get(PrefConst.userId).toString(),
+      remoteUserId: user.userId.toString(),
+      is_video: isVideo,
+      callerName: user.name ?? context.l10n.call_user,
+      callerProfile: user.profileImage,
+    );
   }
 }

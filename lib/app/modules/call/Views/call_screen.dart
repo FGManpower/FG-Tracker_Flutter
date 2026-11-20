@@ -2,6 +2,7 @@ import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/modules/call/Views/call_contacts_tab.dart';
 import 'package:fgtracker/app/modules/call/Views/call_groups_tab.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
+import 'package:fgtracker/app/modules/call/Controller/contact_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
@@ -36,6 +37,8 @@ class _CallScreenState extends State<CallScreen>
         controller.switchTab(_tabController.index);
         if (_tabController.index == 0) {
           SocketService.instance.markCallHistoryViewed();
+        } else if (_tabController.index == 1) {
+          ContactController.instance.onTabOpened();
         }
       }
     });
@@ -98,7 +101,7 @@ class _CallScreenState extends State<CallScreen>
                         children: [
                           const CallRecentCallsTab(),
                           const CallContactsTab(),
-                          CallGroupsTab(),
+                          const CallGroupsTab(),
                         ],
                       ),
                     ),
@@ -266,6 +269,9 @@ class _CallScreenState extends State<CallScreen>
           controller: _tabController,
           onTap: (index) {
             controller.switchTab(index);
+            if (index == 1) {
+              ContactController.instance.onTabOpened();
+            }
           },
           indicator: BoxDecoration(
             color: const Color(0xFF4818F0),
