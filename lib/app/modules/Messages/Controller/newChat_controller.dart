@@ -25,6 +25,27 @@ class NewChatController extends GetxController {
   static List<UserListData>? _cachedOther;
   static DateTime? _cachedAt;
 
+  static List<UserListData>? get cachedMatched => _cachedMatched;
+  static List<UserListData>? get cachedOther => _cachedOther;
+
+  /// Pre-warms the session cache in background (reads disk cache `AppCache.fgContacts`)
+  /// so when NewChatScreen opens, contacts render instantly on frame 0 with zero lag.
+  static Future<void> preWarm() async {
+    try {
+      if (_cachedMatched != null && _cachedMatched!.isNotEmpty) return;
+      final saved = await AppCache.readAs(
+        AppCache.fgContacts,
+        (m) => UserListData.fromJson(m),
+      );
+      if (saved.isNotEmpty &&
+          (_cachedMatched == null || _cachedMatched!.isEmpty)) {
+        _cachedMatched = saved;
+        _cachedOther ??= const [];
+        _cachedAt = DateTime.now();
+      }
+    } catch (_) {}
+  }
+
   /// Whose contacts the session cache holds. It is static, so it survives
   /// logout (`Get.deleteAll`): another account on the same phone used to see
   /// the first account's list. Now it is dropped when the user changes.
@@ -87,6 +108,10 @@ class NewChatController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // Fast initial frame: if session cache exists, apply immediately on frame 0
+    if (_cachedMatched != null && _cachedMatched!.isNotEmpty) {
+      _applyLists(_cachedMatched!, _cachedOther ?? const []);
+    }
     if (autoLoad) {
       getRegisteredContacts();
     }

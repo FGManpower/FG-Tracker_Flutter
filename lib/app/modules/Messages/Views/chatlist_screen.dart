@@ -31,6 +31,7 @@ import 'package:fgtracker/app/Core/util/arc_log.dart'; // TODO(arc-diagnostics)
 import '../../../Core/util/chat_navigation.dart';
 import '../../../Core/util/profile_navigation.dart';
 import 'new_chat_screen.dart';
+import '../Controller/newChat_controller.dart';
 
 import 'package:fgtracker/app/Core/values/colorPool.dart';
 import 'package:fgtracker/app/Model/GroupChatListModel.dart';
@@ -46,6 +47,9 @@ class ChatListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NewChatController.preWarm();
+    });
     // Single Unified WhatsApp Chat List Screen:
     // TabBar and legacy separate Groups Tab are commented out as requested.
     // Both 1-to-1 chats and group chats are now presented in a single unified list.

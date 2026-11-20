@@ -13,7 +13,7 @@ class ConstRes {
   ///   flutter run --dart-define=IS_PROD=true
   ///   flutter run --dart-define=IS_PROD=false
   static const bool isProduction =
-      bool.fromEnvironment('IS_PROD', defaultValue: true);
+      bool.fromEnvironment('IS_PROD', defaultValue: false);
 
   ///------------------------ Server Endpoints By Environment ------------------------///
   // AWS Production (Mumbai ap-south-1 - HTTPS & WSS via ALB)

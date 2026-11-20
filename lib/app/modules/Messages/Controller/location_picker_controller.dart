@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart' hide Location;
-import 'package:geolocator/geolocator.dart' show Geolocator;
+import 'package:geolocator/geolocator.dart' show Geolocator, Position;
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -123,29 +124,45 @@ class LocationPickerController extends GetxController {
         distanceFilter: 5,
       );
 
-      final LocationData location = await _location.getLocation();
-      currentLocation.value = location;
-      accuracyMeters.value = (location.accuracy ?? 15).round();
+      // Fast iOS & Android GPS: Query last known location first (<20ms)
+      try {
+        final Position? lastKnown = await Geolocator.getLastKnownPosition();
+        if (lastKnown != null && selectedLatLng.value == null) {
+          final initialLatLng = LatLng(lastKnown.latitude, lastKnown.longitude);
+          selectedLatLng.value = initialLatLng;
+          _updateMarker(initialLatLng);
+          isLoading.value = false; // Immediately dismiss skeleton & show map
+          unawaited(_getAddress(initialLatLng, isCurrentLoc: true));
+        }
+      } catch (_) {}
 
-      final initialLatLng = LatLng(
-        location.latitude!,
-        location.longitude!,
-      );
-      selectedLatLng.value = initialLatLng;
+      // In parallel / background, fetch fresh live location with 3-second timeout
+      try {
+        final LocationData location = await _location
+            .getLocation()
+            .timeout(const Duration(seconds: 3));
+        currentLocation.value = location;
+        accuracyMeters.value = (location.accuracy ?? 15).round();
 
-      _updateMarker(initialLatLng);
-      await _getAddress(initialLatLng, isCurrentLoc: true);
-      _fetchNearbyPlaces(initialLatLng);
+        if (location.latitude != null && location.longitude != null) {
+          final liveLatLng = LatLng(location.latitude!, location.longitude!);
+          selectedLatLng.value = liveLatLng;
+          _updateMarker(liveLatLng);
+          isLoading.value = false;
+          unawaited(_getAddress(liveLatLng, isCurrentLoc: true));
 
-      isLoading.value = false;
-
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (mapController != null && selectedLatLng.value != null) {
-          mapController!.animateCamera(
-            CameraUpdate.newLatLngZoom(selectedLatLng.value!, 17),
+          mapController?.animateCamera(
+            CameraUpdate.newLatLngZoom(liveLatLng, 17),
           );
         }
-      });
+      } catch (e) {
+        AppLog.d("Live GPS timeout or error: $e");
+        if (selectedLatLng.value == null) {
+          // If neither lastKnown nor live location succeeded
+          errorMessage.value = appL10n.chat_locationFetchFailed;
+          isLoading.value = false;
+        }
+      }
     } catch (e) {
       AppLog.d("Location picker error: $e");
       errorMessage.value = appL10n.chat_locationFetchFailed;
@@ -172,8 +189,7 @@ class LocationPickerController extends GetxController {
   Future<void> updateSelectedLocation(LatLng latLng) async {
     selectedLatLng.value = latLng;
     _updateMarker(latLng);
-    await _getAddress(latLng);
-    _fetchNearbyPlaces(latLng);
+    unawaited(_getAddress(latLng));
   }
 
   Future<void> recenterToCurrentLocation() async {
@@ -188,8 +204,7 @@ class LocationPickerController extends GetxController {
       mapController?.animateCamera(
         CameraUpdate.newLatLngZoom(currentLatLng, 17),
       );
-      await _getAddress(currentLatLng);
-      _fetchNearbyPlaces(currentLatLng);
+      unawaited(_getAddress(currentLatLng));
     } else {
       _initializeLocation();
     }
@@ -239,79 +254,9 @@ class LocationPickerController extends GetxController {
   }
 
   Future<void> _fetchNearbyPlaces(LatLng center) async {
-    isLoadingNearby.value = true;
-    try {
-      final places = <NearbyPlaceItem>[];
-      final apiKey = ConstRes.gMapApiKey;
-
-      if (apiKey.isNotEmpty) {
-        final url = Uri.parse(
-          "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
-          "?location=${center.latitude},${center.longitude}"
-          "&radius=1000"
-          "&key=$apiKey",
-        );
-        final response = await http.get(url).timeout(const Duration(seconds: 4));
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          if (data["results"] is List) {
-            for (final item in (data["results"] as List).take(15)) {
-              final name = item["name"]?.toString() ?? "";
-              final vicinity = item["vicinity"]?.toString() ?? "";
-              final loc = item["geometry"]?["location"];
-              if (name.isNotEmpty && loc != null) {
-                final lat = (loc["lat"] as num).toDouble();
-                final lng = (loc["lng"] as num).toDouble();
-                final distance = Geolocator.distanceBetween(
-                  center.latitude,
-                  center.longitude,
-                  lat,
-                  lng,
-                ).round();
-                places.add(
-                  NearbyPlaceItem(
-                    name: name,
-                    address: vicinity.isNotEmpty ? vicinity : name,
-                    latitude: lat,
-                    longitude: lng,
-                    distanceMeters: distance,
-                  ),
-                );
-              }
-            }
-          }
-        }
-      }
-
-      // Fallback or augment with placemarks around center
-      if (places.isEmpty) {
-        final placemarks = await placemarkFromCoordinates(
-          center.latitude,
-          center.longitude,
-        );
-        for (final p in placemarks.take(6)) {
-          final name = p.name ?? p.street ?? p.subLocality ?? "Nearby Place";
-          final full = [p.street, p.subLocality, p.locality]
-              .where((e) => e != null && e.isNotEmpty)
-              .join(", ");
-          places.add(
-            NearbyPlaceItem(
-              name: name,
-              address: full.isNotEmpty ? full : name,
-              latitude: center.latitude,
-              longitude: center.longitude,
-              distanceMeters: 0,
-            ),
-          );
-        }
-      }
-
-      nearbyPlaces.assignAll(places);
-    } catch (e) {
-      AppLog.d("Error fetching nearby places: $e");
-    } finally {
-      isLoadingNearby.value = false;
-    }
+    // Nearby places disabled as per Task 2 to eliminate network latency
+    nearbyPlaces.clear();
+    isLoadingNearby.value = false;
   }
 
   Future<void> searchPlaces(String query) async {

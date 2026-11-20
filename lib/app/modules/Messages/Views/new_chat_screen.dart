@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
@@ -24,6 +25,7 @@ import '../../../Core/util/profile_navigation.dart';
 import '../../../Core/values/Utils.dart';
 import '../../../Core/values/global.dart';
 import '../../../Data/Services/call_service.dart';
+import '../../call/Controller/contact_controller.dart';
 import '../../call/widget/call_widget.dart';
 import '../widgets/chat_history_widgets.dart' show ChatRefreshFailedBar;
 
@@ -55,7 +57,7 @@ class _NewChatScreenState extends State<NewChatScreen>
 
   late final NewChatController controller;
 
-  final Map<String, String> _initialsCache = {};
+  static final Map<String, String> _initialsCache = {};
 
   bool get _isBusy =>
       controller.contactLoading.value || controller.isResolving.value;
@@ -68,6 +70,20 @@ class _NewChatScreenState extends State<NewChatScreen>
     WidgetsBinding.instance.addObserver(this);
 
     controller = Get.put(NewChatController(autoLoad: false));
+
+    // Fast initial frame: if session contacts or permission are already known,
+    // immediately mark permission and first load ready to eliminate opening lag!
+    final bool hasCached = (NewChatController.cachedMatched != null &&
+            NewChatController.cachedMatched!.isNotEmpty) ||
+        controller.matchedUsers.isNotEmpty;
+    final bool contactPermKnown =
+        ContactController.instance.isContactPermissionGranted.value;
+
+    if (contactPermKnown || hasCached) {
+      _permissionChecked.value = true;
+      _permissionGranted.value = true;
+      _firstLoadDone.value = true;
+    }
 
     _setupFirstLoadTracking();
 
@@ -87,7 +103,9 @@ class _NewChatScreenState extends State<NewChatScreen>
 
   void _setupFirstLoadTracking() {
     if (controller.matchedUsers.isNotEmpty ||
-        controller.otherUsers.isNotEmpty) {
+        controller.otherUsers.isNotEmpty ||
+        (NewChatController.cachedMatched != null &&
+            NewChatController.cachedMatched!.isNotEmpty)) {
       _firstLoadDone.value = true;
     }
 
@@ -128,7 +146,6 @@ class _NewChatScreenState extends State<NewChatScreen>
     _fallbackTimer?.cancel();
     _scrollController.dispose();
     _searchController.dispose();
-    _initialsCache.clear();
     super.dispose();
   }
 
@@ -156,7 +173,8 @@ class _NewChatScreenState extends State<NewChatScreen>
     final bool wasGranted = _permissionGranted.value;
     _permissionGranted.value = true;
     _permissionChecked.value = true;
-    if (!wasGranted) {
+    ContactController.instance.isContactPermissionGranted.value = true;
+    if (!wasGranted || controller.matchedUsers.isEmpty) {
       controller.getRegisteredContacts().whenComplete(() {
         if (mounted) _firstLoadDone.value = true;
       });
@@ -527,7 +545,7 @@ class _NewChatScreenState extends State<NewChatScreen>
                   ? Colors.grey.shade200
                   : _getAvatarColor(displayName),
               backgroundImage: hasAvatar
-                  ? ResizeImage(NetworkImage(imageUrl), width: 120)
+                  ? CachedNetworkImageProvider(imageUrl)
                   : null,
               child: !hasAvatar
                   ? reausabletext(

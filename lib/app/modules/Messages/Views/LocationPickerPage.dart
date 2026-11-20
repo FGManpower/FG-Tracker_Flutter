@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart'
     show openAppSettings;
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../Controller/location_picker_controller.dart';
 
@@ -36,11 +37,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
         }
         if (controller.isLoading.value ||
             controller.selectedLatLng.value == null) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: ToggleThemeData.Appcolor,
-            ),
-          );
+          return _buildLocationSkeleton(context);
         }
 
         return Stack(
@@ -64,7 +61,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
             // Recenter GPS floating button
             Positioned(
               right: 16.w,
-              bottom: 0.42.sh + 16.h,
+              bottom: 0.24.sh + 16.h,
               child: FloatingActionButton.small(
                 heroTag: "recenter_gps_btn",
                 backgroundColor:
@@ -96,8 +93,8 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
                       final item = controller.searchResults[index];
                       return ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: ToggleThemeData.Appcolor.withValues(
-                              alpha: 0.12),
+                          backgroundColor:
+                              ToggleThemeData.Appcolor.withValues(alpha: 0.12),
                           child: Icon(
                             Icons.location_on_outlined,
                             color: ToggleThemeData.Appcolor,
@@ -108,9 +105,8 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
-                            color: isDark
-                                ? Colors.white
-                                : const Color(0xFF1E202B),
+                            color:
+                                isDark ? Colors.white : const Color(0xFF1E202B),
                           ),
                         ),
                         subtitle: Text(
@@ -196,9 +192,9 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
   Widget _buildDraggableSheet() {
     final bool isDark = Get.isDarkMode;
     return DraggableScrollableSheet(
-      initialChildSize: 0.42,
-      minChildSize: 0.22,
-      maxChildSize: 0.85,
+      initialChildSize: 0.24,
+      minChildSize: 0.16,
+      maxChildSize: 0.45,
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
@@ -312,108 +308,65 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
                     : Colors.grey.shade200,
               ),
 
-              // 3. NEARBY PLACES Section Header
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 8.h),
-                child: Row(
-                  children: [
-                    Text(
-                      "NEARBY PLACES",
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w700,
-                        color: ToggleThemeData.Appcolor,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                    const Spacer(),
-                    if (controller.isLoadingNearby.value)
-                      SizedBox(
-                        width: 14.w,
-                        height: 14.h,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: ToggleThemeData.Appcolor,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-
-              // Nearby places items
+              // 3. Send Selected / Pin Location (if pin moved or searched)
               Obx(() {
-                if (controller.nearbyPlaces.isEmpty &&
-                    !controller.isLoadingNearby.value) {
-                  return Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                    child: Text(
-                      "Move the map to browse nearby places",
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: isDark
-                            ? Colors.grey.shade400
-                            : Colors.grey.shade500,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  );
-                }
+                final selectedAddr = controller.selectedAddress.value;
+                final isFetching = selectedAddr ==
+                    LocationPickerController.fetchingLocationValue;
+                final isSelectedAvailable =
+                    controller.selectedLatLng.value != null &&
+                        selectedAddr.isNotEmpty &&
+                        !isFetching;
+                if (!isSelectedAvailable) return const SizedBox.shrink();
+
+                final placeName = controller.selectedPlaceName.value.isNotEmpty
+                    ? controller.selectedPlaceName.value
+                    : selectedAddr;
 
                 return Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    for (final place in controller.nearbyPlaces)
-                      ListTile(
-                        contentPadding: EdgeInsets.symmetric(
-                            horizontal: 20.w, vertical: 2.h),
-                        leading: CircleAvatar(
-                          backgroundColor: ToggleThemeData.Appcolor.withValues(
-                              alpha: 0.12),
-                          radius: 18.r,
-                          child: Icon(
-                            Icons.location_on_outlined,
-                            size: 20.sp,
-                            color: ToggleThemeData.Appcolor,
-                          ),
+                    Divider(
+                      height: 1,
+                      color: isDark
+                          ? ToggleThemeData.BlackMatteLight
+                          : Colors.grey.shade200,
+                    ),
+                    ListTile(
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 20.w, vertical: 2.h),
+                      leading: CircleAvatar(
+                        backgroundColor:
+                            ToggleThemeData.Appcolor.withValues(alpha: 0.12),
+                        radius: 22.r,
+                        child: Icon(
+                          Icons.location_on_rounded,
+                          color: ToggleThemeData.Appcolor,
+                          size: 22,
                         ),
-                        title: Text(
-                          place.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                            color:
-                                isDark ? Colors.white : const Color(0xFF1E202B),
-                          ),
-                        ),
-                        subtitle: Text(
-                          place.address,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: isDark
-                                ? Colors.grey.shade400
-                                : Colors.grey.shade600,
-                          ),
-                        ),
-                        trailing: place.distanceMeters != null &&
-                                place.distanceMeters! > 0
-                            ? Text(
-                                place.distanceMeters! >= 1000
-                                    ? "${(place.distanceMeters! / 1000).toStringAsFixed(1)} km"
-                                    : "${place.distanceMeters} m",
-                                style: TextStyle(
-                                  fontSize: 11.5.sp,
-                                  color: isDark
-                                      ? Colors.grey.shade400
-                                      : Colors.grey.shade500,
-                                ),
-                              )
-                            : null,
-                        onTap: () => controller.sendNearbyPlace(place),
                       ),
+                      title: Text(
+                        "Send this location",
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              isDark ? Colors.white : const Color(0xFF1E202B),
+                        ),
+                      ),
+                      subtitle: Text(
+                        placeName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: isDark
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade600,
+                        ),
+                      ),
+                      onTap: controller.sendSelectedLocation,
+                    ),
                   ],
                 );
               }),
@@ -423,6 +376,87 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildLocationSkeleton(BuildContext context) {
+    final bool isDark = Get.isDarkMode;
+    return Skeletonizer(
+      enabled: true,
+      child: Stack(
+        children: [
+          // Simulated map background skeleton
+          Container(
+            color: isDark ? const Color(0xFF232530) : const Color(0xFFE8ECF2),
+            width: double.infinity,
+            height: double.infinity,
+          ),
+          // Recenter GPS button skeleton placeholder
+          Positioned(
+            right: 16.w,
+            bottom: 0.24.sh + 16.h,
+            child: FloatingActionButton.small(
+              heroTag: "skeleton_gps_btn",
+              backgroundColor:
+                  isDark ? ToggleThemeData.BlackMatte : Colors.white,
+              elevation: 2,
+              onPressed: null,
+              child: const Icon(Icons.my_location, size: 22),
+            ),
+          ),
+          // Bottom sheet skeleton placeholder
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 0.24.sh,
+            child: Container(
+              decoration: BoxDecoration(
+                color:
+                    isDark ? ToggleThemeData.darkThemeBackground : Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.grey.shade300,
+                      radius: 22.r,
+                    ),
+                    title: Container(
+                      height: 16.h,
+                      width: 180.w,
+                      color: Colors.grey.shade300,
+                    ),
+                    subtitle: Container(
+                      height: 12.h,
+                      width: 120.w,
+                      margin: EdgeInsets.only(top: 6.h),
+                      color: Colors.grey.shade300,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
