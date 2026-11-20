@@ -27,6 +27,8 @@ import '../../../Data/Repositories/GetMessageRepo.dart';
 
 import '../../../Model/GetMessage.dart';
 
+import 'package:location/location.dart' as loc_pkg;
+import '../../Track/Controller/SocketServices.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import '../../../Data/Services/active_chat_tracker.dart';
@@ -727,7 +729,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       },
     );
 
-    socketService.socket?.on("group_settings_updated", (data) {
+    socketService.socket.on("group_settings_updated", (data) {
       if (data is Map) {
         final gId = data["groupId"] ?? data["id"];
         if (gId?.toString() == groupId.toString()) {
@@ -740,7 +742,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       }
     });
 
-    socketService.socket?.on("group_updated", (data) {
+    socketService.socket.on("group_updated", (data) {
       if (data is Map) {
         final gId = data["groupId"] ?? data["id"];
         if (gId?.toString() == groupId.toString()) {
@@ -1824,6 +1826,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     }
   }
 
+  Timer? _liveLocationTimer;
+
   Future<void> sendLocation({
     required LocationMessage location,
   }) async {
@@ -1834,13 +1838,20 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         "latitude": location.latitude,
         "longitude": location.longitude,
         "name": location.locationName,
-        "address": location.locationName,
+        "address": location.address ?? location.locationName,
         "locationName": location.locationName,
+        "isLive": location.isLive,
+        if (location.durationMinutes != null) "durationMinutes": location.durationMinutes,
+        if (location.startTime != null) "startTime": location.startTime!.toIso8601String(),
+        if (location.endTime != null) "endTime": location.endTime!.toIso8601String(),
+        if (location.comment != null) "comment": location.comment,
       };
+
+      final msgType = location.isLive ? "live_location" : "location";
 
       _addOptimisticMessage(
         clientMessageId: clientMsgId,
-        messageType: "location",
+        messageType: msgType,
         content: location.toContent(),
         locationMeta: locationMeta,
         replyId: replyMessage.value?.id,
@@ -1852,7 +1863,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       socketService.sendGroupMessage(
         groupId: groupId,
         content: location.toContent(),
-        messageType: "location",
+        messageType: msgType,
         clientMessageId: clientMsgId,
         locationMeta: locationMeta,
         replyId: replyMessage.value?.id,
@@ -1863,9 +1874,59 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
       clearReply();
 
-      scrollToBottom();
+      if (location.isLive) {
+        _startLiveLocationTracking(location);
+      }
     } catch (e) {
-      log("LOCATION SEND ERROR => $e");
+      log("GROUP LOCATION SEND ERROR => $e");
+    }
+  }
+
+  void _startLiveLocationTracking(LocationMessage initialLocation) {
+    _liveLocationTimer?.cancel();
+    final endTime = initialLocation.endTime;
+    if (endTime == null) return;
+
+    final myUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (myUserId == null) return;
+
+    _liveLocationTimer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+      if (DateTime.now().isAfter(endTime)) {
+        timer.cancel();
+        return;
+      }
+      try {
+        final loc = await loc_pkg.Location().getLocation();
+        if (loc.latitude != null && loc.longitude != null) {
+          SocketService.instance.emitLocation(
+            myUserId,
+            loc.latitude!,
+            loc.longitude!,
+          );
+        }
+      } catch (_) {}
+    });
+  }
+
+  Future<void> stopLiveLocation(MessageData message) async {
+    _liveLocationTimer?.cancel();
+    try {
+      if (message.content != null && message.id != null) {
+        final loc = LocationMessage.fromContent(message.content!);
+        final updated = loc.copyWith(isLive: false);
+        message.content = updated.toContent();
+        updateMessageStream();
+
+        final myUserId = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+        socketService.editMessage(
+          messageId: message.id!,
+          userId: myUserId,
+          groupId: groupId,
+          content: message.content!,
+        );
+      }
+    } catch (e) {
+      log("GROUP STOP LIVE LOCATION ERROR => $e");
     }
   }
 
@@ -2766,6 +2827,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
   @override
   void onClose() {
+    _liveLocationTimer?.cancel();
     // Everything shown in this chat has been read: tell the server once more
     // (covers a debounce still pending) and clear the list badge locally.
     _markSeenTimer?.cancel();

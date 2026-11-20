@@ -17,6 +17,9 @@
 | **4** | **Document Attachment** | In `GetMessageRepo.uploadChatDocument`, attachments were transmitted with invalid MIME type `MediaType('document', ext)` which was rejected by backend servers. Upload progress was unmonitored, failed uploads wiped local file state, and relative URLs caused receiver open failures. | Replaced generic MIME type with standard IANA content types (`application/pdf`, `application/msword`, docx, xls, xlsx, ppt, pptx, `text/plain`). Added upload progress tracking (`uploadProgress`). Preserved file paths on failure so users can retry without re-picking. Normalized receiver URLs in `DocumentService.dart` to full absolute endpoints. |
 | **5** | **Chatting** | a) Profile message launches skipped chatId binding; b) incoming messages were appended without strict timestamp sorting; c) during active WebRTC calls, socket reconnection lagged and dropped pending messages because `sendPrivateMessage` had a rigid `if (!isPrivateChatSocketConnected) return;` guard. | a) Auto-resolved `privateChatId` from incoming payload and verified correct user ID in profile back-navigation; b) enforced `ChatScreenRules.sortOldestFirst` across SQL, ISO, and epoch dates; c) introduced `_pendingPrivateMessages` queue in `Socket_Message_Services.dart` that automatically buffers and flushes messages upon connection or join, ensuring uninterrupted chat during calls. |
 | **6** | **Delete for Everyone & Message Info (WhatsApp Parity)** | a) `Delete for everyone` previously deleted messages completely from the list (`removeAt` + `SizedBox.shrink()`), causing messages to vanish instead of showing WhatsApp-style deleted placeholders; b) Deleted bubbles erroneously rendered double checkmarks (`✓✓`) if rendered; c) `MessageInfoSheet` showed blank white cards inside "Read by" and "Delivered to" when unread or if group members were loading; d) Attachments in `MessageInfoSheet` lacked media thumbnails and captions, rendering only generic text; e) Attendance messages lacked poll title/description formatting and attendancePollId fallback in the Info API. | a) Restored WhatsApp-parity deleted message placeholders in `ChatItem.dart`: sender sees 🚫 *"You deleted this message"*, receiver sees 🚫 *"This message was deleted"*, maintaining message position; b) Suppressed checkmarks (`✓`/`✓✓`) on deleted messages; c) Added WhatsApp-parity empty state tiles (`Not seen yet`, `Not delivered yet`) and "N remaining" inside `_groupCard`; d) Built rich media thumbnail preview in `MessageInfoSheet` displaying image/video thumbnails, play overlay, document badges, and captions; e) Formatted per-member Read/Delivered timestamps (e.g. `Today, 05:10 PM`); f) Auto-fetched group members in `initState` and mapped `attendancePollId` for full Info API compatibility. |
+| **7** | **Forward Menu Deduplication & Deleted Message Menu Clean-up** | a) Chat long-press context menu displayed "Forward" two times due to duplicate `MessageContextMenuAction` block in both private and group chats; b) Deleted messages ("Delete for everyone") erroneously showed "Edit" option on long-press because the menu check lacked `!_isDeletedMessage` and `options.contains(MessageMenuOption.edit)`. | a) Removed duplicate Forward action from `ChatItem.dart` in both private and group chat menus, restoring single Forward option; b) Added `options.contains(MessageMenuOption.edit) && !_isDeletedMessage` guard to Edit action; c) Configured `ChatScreenRules.menuOptions` so deleted messages allow strictly and exclusively "Delete for me", strictly suppressing Edit, Forward, Copy, Reply, and Info across iOS and Android. |
+| **8** | **Message Info WhatsApp Parity & Deleted Message Emoji Bar Removal** | a) Message Info Sheet did not have full WhatsApp parity: did not hide the READ section for unread 1-to-1 messages, lacked PLAYED section for voice/audio notes, lacked REMAINING section in groups, and used generic timestamps instead of WhatsApp format (`Today 10:32 AM` / `Yesterday 9:15 PM`); b) Deleted messages ("Delete for everyone") displayed the floating emoji reaction bar (👍 ❤️ 😂 😮 😢 🙏) on long press; c) In 1-to-1 and forwarded messages, members who read the message appeared simultaneously in both READ and DELIVERED cards, duplicating the member and inflating the list. | a) Transformed `MessageInfoSheet.dart` to match WhatsApp parity: 1-to-1 chat shows preview on top, hides READ section if unread (only showing DELIVERED), and when read (`isSeen == true`), shows member strictly 1 time inside READ (with dual timestamps: Read time blue ticks + subtle grey delivered time) while suppressing duplicate DELIVERED card; b) Added mutual exclusivity in group chat so members in PLAYED BY do not duplicate in READ BY, and readers do not duplicate in DELIVERED TO; c) Added sender-only guard so Message Info only opens for own messages; d) Removed floating emoji reaction bar completely on deleted messages in `ChatItem.dart`, leaving strictly "Delete for me". |
+| **9** | **Attachment > Location & App Theme Styling (Live Location Commented Out)** | Location was a static point picker lacking a top search bar, nearby places list, 1-tap high accuracy "Send your current location", custom app theme styling (was using WhatsApp green), and required deactivation of Live Location. | a) **Task 1 (Live Location Commented Out):** Completely commented out the "Share live location" option and duration modal sheet using `//` in `LocationPickerPage.dart`, preserving all code for future re-enabling while strictly hiding it from users and preventing background tracking services or permission requests; b) **Task 2 (App Theme Palette):** Replaced all WhatsApp green/blue colors across the Location screen with the official app primary theme color (`ToggleThemeData.Appcolor` = `Color(0xff8274FD)`) and dark theme background (`ToggleThemeData.darkThemeBackground`), including Header (AppBar), active Search bar, "Send your current location" button & icon, Nearby places section header, loader & icons, recenter GPS button, and "Open Settings" / "Turn on location" dialogs; c) Updated Google Map marker pin to use the exact app theme color hue dynamically via `BitmapDescriptor.defaultMarkerWithHue(HSVColor.fromColor(ToggleThemeData.Appcolor).hue)` across both Android and iOS; d) Updated chat bubble map snapshot marker and fallback pin to match app theme color. |
 
 ---
 
@@ -40,8 +43,9 @@ All changes were strictly surgical, targeted, and adhered to existing UI compone
    - Replaced fragile date parsing with `_parseTimestampToLocal` supporting SQL UTC, epoch ms, and ISO timestamps.
    - Built rich WhatsApp-style media previews (`_buildMediaThumbnail`): renders image/video thumbnails, play overlay icon, document badges, and audio mic icons.
    - Preserves attachment captions and document filenames in the message info preview.
-   - Added WhatsApp-parity empty state tiles (`_buildEmptyTile`): displays "Not seen yet" and "Not delivered yet" with "N remaining" instead of blank white cards.
-   - Formatted per-member Read/Delivered timestamps (`Today, 05:10 PM`).
+   - Added WhatsApp 1-to-1 parity: preview on top, hides `READ` section if unread (only showing `DELIVERED`), renders `PLAYED` section for voice/audio notes, and formats timestamps as `Today 10:32 AM` / `Yesterday 9:15 PM`.
+   - Added WhatsApp Group parity: renders `READ BY`, `DELIVERED TO`, `REMAINING`, and `PLAYED BY` sections with member profile pictures, names, timestamps, and status icons.
+   - Added sender-only guard so Message Info Sheet only opens for own messages (`senderId == currentUserId`).
    - Automatically triggers `getGroupMembers()` in `initState` if group members are unloaded.
    - Mapped `attendancePollId` / `pollId` fallback in `_fetchLiveInfo` for robust attendance receipt querying.
 
@@ -53,18 +57,21 @@ All changes were strictly surgical, targeted, and adhered to existing UI compone
 6. `lib/app/modules/Messages/Controller/chat_screen_logic.dart`
    - Added `isAttachment(messageType)` helper for clean categorization of media/docs.
    - Added `isEditable(messageType)` enabling text, image, video, document, and audio editing.
-   - Updated `menuOptions` with `isDeleted` guard: deleted messages allow only `deleteForMe`.
+   - Updated `menuOptions` with `isDeleted` guard: deleted messages allow strictly and exclusively `deleteForMe`, suppressing Edit, Forward, Copy, and Info.
    - Updated `applyEdit` to target `caption` for attachments and `content` for text.
    - Updated `applyDelete` to update messages in place via `markDeletedForEveryone`, preserving position in chat history.
    - Updated `merge` to retain deleted messages in place with `isDeleted = true`.
    - Refined `sortOldestFirst` with multi-format timestamp parser.
 
 7. `lib/app/modules/Messages/widgets/ChatItem.dart`
+   - Removed duplicate `forward` context menu action block across both private chat (`_showMessageMenu`) and group chat menus.
+   - Guarded `edit` context menu action with `options.contains(MessageMenuOption.edit) && !_isDeletedMessage` across private and group chat menus, strictly removing Edit from deleted messages.
+   - Suppressed floating emoji reaction bar completely on deleted messages (`_isDeletedMessage`), leaving strictly "Delete for me".
    - Restored WhatsApp deleted message bubble rendering for private and group chats:
      - Sender: 🚫 *"You deleted this message"* (`appL10n.chat_previewOwnDeleted`).
      - Receiver: 🚫 *"This message was deleted"* (`appL10n.chat_messageDeleted`).
    - Suppressed checkmarks/ticks (`✓` / `✓✓`) on deleted messages across both bubbles.
-   - Enabled long-press context menu on deleted messages to allow "Delete for me".
+   - Enabled long-press context menu on deleted messages to allow strictly "Delete for me".
    - Context menus for attachments display "Message Info" and "Edit" with strict `!_isDeletedMessage` guards.
    - Rendered captions under `AudioBubble` for audio messages with captions.
    - Enhanced `_buildTimeRow` with robust `wasEdited` evaluation supporting boolean `true`, string `'true'`, and integer `1`.
@@ -104,6 +111,46 @@ All changes were strictly surgical, targeted, and adhered to existing UI compone
     - Updated `editMessage` to send `caption`, `content`, and optional `groupId` with comprehensive diagnostic logging.
     - Added `_pendingPrivateMessages` buffer to guarantee message delivery during socket reconnection or active WebRTC calls.
     - Relaxed receiverId filter on incoming private messages to match active conversation ID.
+
+15. `lib/app/Model/LocationMessage.dart`
+    - Added comprehensive data model supporting both static and live locations (`isLive`, `durationMinutes`, `startTime`, `endTime`, `comment`, `isEnded`, `liveUntilText`, and `copyWith`).
+    - Robust JSON serialization/deserialization handles latitude/longitude as numbers or strings with fallback defaults.
+
+16. `lib/app/modules/Messages/Controller/location_picker_controller.dart`
+    - Overhauled location controller to fetch high-accuracy GPS with accuracy radius (`accuracyMeters`).
+    - Added Google/Nominatim place searching (`searchQuery`, `searchResults`, `isSearching`).
+    - Added nearby points of interest query populated directly on map drag or search.
+    - Added `sendCurrentLocation()`, `sendNearbyPlace()`, and `sendLiveLocation(durationMinutes, comment)` emitting typed location data.
+    - Updated `_updateMarker` to apply app theme color hue dynamically via `BitmapDescriptor.defaultMarkerWithHue(HSVColor.fromColor(ToggleThemeData.Appcolor).hue)`.
+
+17. `lib/app/modules/Messages/Views/LocationPickerPage.dart`
+    - Top search bar, live map recenter button, movable pin, and draggable bottom sheet.
+    - Commented out "Share live location" option and duration modal sheet using `//` (Task 1: code preserved, hidden from UI).
+    - Applied app theme color (`ToggleThemeData.Appcolor` = `#8274FD`) and dark theme background (`ToggleThemeData.darkThemeBackground`) across AppBar, search bar, "Send your current location", nearby places header, icons, loaders, recenter button, and permission buttons (Task 2).
+    - Added "Send your current location" with live accuracy meters indicator.
+    - Added "NEARBY PLACES" list showing nearby places with names, addresses, and distance.
+
+18. `lib/app/modules/Messages/widgets/LocationBubbleWidget.dart`
+    - WhatsApp-parity chat bubble for location and live location messages.
+    - Static location: static map preview image, place name, address, and tap-to-open map directions.
+    - Live location: blinking green/orange live badge, "Live until HH:mm a", comment, full-width "View live location" button, and sender "Stop sharing" button.
+    - State transitions smoothly to "Live location ended" when expired or stopped.
+
+19. `lib/app/modules/Messages/Views/LiveLocationViewScreen.dart`
+    - Full-screen live location tracking screen displaying moving user avatar marker on GoogleMap.
+    - Real-time socket coordination for updating coordinates as sender moves.
+    - Directions button opens external navigation app (Google Maps / Apple Maps).
+    - Sender can press "Stop sharing" directly from the screen.
+
+20. `lib/app/modules/Messages/Controller/MessageController.dart` & `lib/app/modules/Messages/Controller/GroupChatController.dart`
+    - Added `sendLocation(LocationMessage)` supporting both static and live location types.
+    - For live locations, starts periodic background coordinate updates (`_startLiveLocationTracking`) via `SocketService.instance.emitLocation`.
+    - Added `stopLiveLocation(MessageData)` updating message content with `isLive: false` via socket editMessage and stopping background timer.
+    - Proper timer cancellation and socket listener cleanup on `onClose()`.
+
+21. `lib/app/modules/Messages/widgets/ChatItem.dart`
+    - Routed `location` and `live_location` message types to `LocationBubbleWidget` in both private `ChatBubble` and `GroupChatBubble`.
+    - Bound `onStopLiveLocation` to respective controllers and resolved sender avatar and display name for live tracking.
 
 ---
 
@@ -146,6 +193,12 @@ As mandated by project rules, the following verified and completed production mo
   - Delete for everyone complete removal & merge filtering: `PASS`
   - Message sorting across mixed timestamp formats: `PASS`
   - Document IANA MIME type mappings: `PASS`
+- **Chat Logic, Location & Context Menu Suite** (`test/chat_screen_logic_test.dart`): **38/38 PASSED (100%)**
+  - Menu options on deleted messages strictly allow ONLY Delete for me, never Edit, Forward, Copy, or Info: `PASS`
+  - Floating emoji bar suppressed completely on deleted messages: `PASS`
+  - Single Forward option logic for text, image, video, document, audio: `PASS`
+  - In-place optimistic edit updates: `PASS`
+  - LocationMessage static and live serialization, duration parsing, expiry checks, copyWith tests: `PASS`
 - **Call QA & Audio Route Suite** (`test/call_qa/call_audio_and_state_reliability_test.dart`): **9/9 PASSED (100%)**
   - Audio route transitions, CallKit payload normalization, disconnect teardown: `PASS`
 

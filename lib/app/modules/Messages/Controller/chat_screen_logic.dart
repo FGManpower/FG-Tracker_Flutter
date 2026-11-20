@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:fgtracker/app/Core/util/http/http_util.dart'
     show HttpGetException;
-import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:fgtracker/app/Model/GetMessage.dart';
 
 /// Pure chat-screen rules shared by the private and group chat screens:
