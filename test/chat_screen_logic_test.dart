@@ -275,6 +275,157 @@ void main() {
       expect(m.replyId, isNull);
       expect(m.isDeleted, isTrue);
     });
+
+    test('attachment edit with caption preserves media URL and updates caption and edited flag', () {
+      final m = MessageData(
+        id: 10,
+        messageType: 'image',
+        content: 'https://storage.example.com/photos/pic.jpg',
+        caption: 'Old Caption',
+        images: ['https://storage.example.com/photos/pic.jpg'],
+      );
+      final ok = ChatScreenRules.applyEdit([m], {
+        'messageId': 10,
+        'caption': 'Updated Caption',
+        'content': 'https://storage.example.com/photos/pic.jpg',
+        'isEdited': true,
+      });
+      expect(ok, isTrue);
+      expect(m.caption, 'Updated Caption');
+      expect(m.content, 'https://storage.example.com/photos/pic.jpg');
+      expect(m.isEdited, isTrue);
+      expect(m.edited, isTrue);
+    });
+
+    test('attachment edit with plain text content updates caption instead of overwriting media', () {
+      final m = MessageData(
+        id: 11,
+        messageType: 'document',
+        content: 'https://storage.example.com/docs/invoice.pdf',
+        caption: 'Invoice July',
+      );
+      final ok = ChatScreenRules.applyEdit([m], {
+        'id': 11,
+        'content': 'Invoice August (Corrected)',
+      });
+      expect(ok, isTrue);
+      expect(m.caption, 'Invoice August (Corrected)');
+      expect(m.content, 'https://storage.example.com/docs/invoice.pdf');
+      expect(m.isEdited, isTrue);
+      expect(m.edited, isTrue);
+    });
+
+    test('attachment edit works with nested message payload and text/newContent keys', () {
+      final m = MessageData(
+        id: 12,
+        messageType: 'video',
+        content: 'https://storage.example.com/videos/clip.mp4',
+        caption: 'My Trip',
+      );
+      final ok = ChatScreenRules.applyEdit([m], {
+        'message': {
+          'id': 12,
+          'text': 'Trip to Mountains 2026',
+          'is_edited': true,
+        }
+      });
+      expect(ok, isTrue);
+      expect(m.caption, 'Trip to Mountains 2026');
+      expect(m.content, 'https://storage.example.com/videos/clip.mp4');
+      expect(m.isEdited, isTrue);
+      expect(m.edited, isTrue);
+    });
+
+    test('document edit preserves path||name||size content and updates caption', () {
+      final m = MessageData(
+        id: 13,
+        messageType: 'document',
+        content: 'uploads/docs/doc_123.pdf||Statement.pdf||1024KB',
+        caption: 'Old statement',
+      );
+      final ok = ChatScreenRules.applyEdit([m], {
+        'messageId': 13,
+        'newContent': 'Updated statement for Q4',
+        'isEdited': true,
+      });
+      expect(ok, isTrue);
+      expect(m.caption, 'Updated statement for Q4');
+      expect(m.content, 'uploads/docs/doc_123.pdf||Statement.pdf||1024KB');
+      expect(m.isEdited, isTrue);
+      expect(m.edited, isTrue);
+    });
+
+    test('audio edit with caption candidate updates audio caption', () {
+      final m = MessageData(
+        id: 14,
+        messageType: 'audio',
+        content: 'uploads/audio/rec_1.mp3',
+        caption: 'Original audio description',
+      )..audioUrl = 'uploads/audio/rec_1.mp3';
+      final ok = ChatScreenRules.applyEdit([m], {
+        'id': 14,
+        'content': 'Updated audio transcription description',
+        'isEdited': true,
+      });
+      expect(ok, isTrue);
+      expect(m.caption, 'Updated audio transcription description');
+      expect(m.audioUrl, 'uploads/audio/rec_1.mp3');
+      expect(m.isEdited, isTrue);
+    });
+
+    test('isAttachment detects various attachment formats and message instances', () {
+      expect(ChatScreenRules.isAttachment('image'), isTrue);
+      expect(ChatScreenRules.isAttachment('video'), isTrue);
+      expect(ChatScreenRules.isAttachment('document'), isTrue);
+      expect(ChatScreenRules.isAttachment('audio'), isTrue);
+      expect(ChatScreenRules.isAttachment('file'), isTrue);
+      expect(ChatScreenRules.isAttachment('photo'), isTrue);
+      expect(ChatScreenRules.isAttachment('voice'), isTrue);
+      expect(ChatScreenRules.isAttachment('text'), isFalse);
+
+      final mWithImages =
+          MessageData(id: 1, messageType: 'media', images: ['pic.jpg']);
+      expect(ChatScreenRules.isAttachment('media', mWithImages), isTrue);
+
+      final mWithCaption = MessageData(
+          id: 2,
+          messageType: 'forward',
+          content: 'https://url.com/a.jpg',
+          caption: 'Forwarded Photo');
+      expect(ChatScreenRules.isAttachment('forward', mWithCaption), isTrue);
+    });
+
+    test('looksLikeMediaUrl identifies media URLs vs plain captions', () {
+      expect(ChatScreenRules.looksLikeMediaUrl('https://s3.amazonaws.com/pic.jpg'), isTrue);
+      expect(ChatScreenRules.looksLikeMediaUrl('http://example.com/doc.pdf'), isTrue);
+      expect(ChatScreenRules.looksLikeMediaUrl('/storage/emulated/0/audio.mp3'), isTrue);
+      expect(ChatScreenRules.looksLikeMediaUrl('Hello this is my caption'), isFalse);
+      expect(ChatScreenRules.looksLikeMediaUrl('Meeting notes for today'), isFalse);
+    });
+
+    test('mergeAttachmentFrom updates caption and isEdited flag when message was edited', () {
+      final existing = MessageData(
+        id: 25,
+        messageType: 'image',
+        content: 'https://s3.amazonaws.com/pic.jpg',
+        caption: 'Old caption',
+        images: ['https://s3.amazonaws.com/pic.jpg'],
+      );
+      final incoming = MessageData(
+        id: 25,
+        messageType: 'image',
+        content: 'https://s3.amazonaws.com/pic.jpg',
+        caption: 'New edited caption',
+        isEdited: true,
+      );
+
+      final changed = existing.mergeAttachmentFrom(incoming);
+      expect(changed, isTrue);
+      expect(existing.caption, 'New edited caption');
+      expect(existing.isEdited, isTrue);
+      expect(existing.edited, isTrue);
+      expect(existing.content, 'https://s3.amazonaws.com/pic.jpg');
+    });
   });
 
   group('emoji panel height', () {

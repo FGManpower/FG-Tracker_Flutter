@@ -225,6 +225,21 @@ String _audioFullUrl(dynamic content) {
   return resolveMediaUrl(value);
 }
 
+/// Extracts caption for an attachment message, falling back to non-media text
+/// in content if caption is empty (covers real-time edits and history API).
+String _resolveAttachmentCaption(MessageData message) {
+  final cap = (message.caption?.toString() ?? '').trim();
+  if (cap.isNotEmpty && cap != 'null') return cap;
+  final content = (message.content?.toString() ?? '').trim();
+  if (content.isNotEmpty &&
+      content != 'null' &&
+      !content.contains('||') &&
+      !ChatScreenRules.looksLikeMediaUrl(content)) {
+    return content;
+  }
+  return '';
+}
+
 /// Quoted message shown at the top of a reply bubble (private + group).
 /// Built from the original message when it is loaded, otherwise from the
 /// reply fields, so it never renders empty for any message type.
@@ -910,7 +925,7 @@ class ChatBubble extends StatelessWidget {
       return (message.content?.toString() ?? '').trim();
     }
 
-    final caption = (message.caption?.toString() ?? '').trim();
+    final caption = _resolveAttachmentCaption(message);
     if (caption.isNotEmpty) {
       return caption;
     }
@@ -1249,7 +1264,7 @@ class ChatBubble extends StatelessWidget {
       }
 
       final mediaCount = imageList.length + videos.length;
-      final caption = (message.caption ?? "").trim();
+      final caption = _resolveAttachmentCaption(message);
 
       if (mediaCount == 0) {
         return MissingMediaCard(
@@ -1351,7 +1366,8 @@ class ChatBubble extends StatelessWidget {
         audioUrl: audioSrc,
         isMe: false,
       );
-      if ((message.caption ?? "").trim().isNotEmpty) {
+      final audioCaption = _resolveAttachmentCaption(message);
+      if (audioCaption.isNotEmpty) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -1360,7 +1376,7 @@ class ChatBubble extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(top: 6.h),
               child: reausabletext(
-                message.caption.toString(),
+                audioCaption,
                 color: textColor,
                 fontsize: 12.sp,
               ),
@@ -1395,11 +1411,11 @@ class ChatBubble extends StatelessWidget {
               );
             },
           ),
-          if ((message.caption ?? "").isNotEmpty)
+          if (_resolveAttachmentCaption(message).isNotEmpty)
             Padding(
               padding: EdgeInsets.only(top: 8.h),
               child: reausabletext(
-                message.caption!,
+                _resolveAttachmentCaption(message),
                 color: textColor,
                 fontsize: 12.sp,
               ),
@@ -1537,11 +1553,11 @@ class ChatBubble extends StatelessWidget {
                 ),
               ),
             ),
-            if ((message.caption ?? "").isNotEmpty)
+            if (_resolveAttachmentCaption(message).isNotEmpty)
               Padding(
                 padding: EdgeInsets.only(top: 8.h),
                 child: reausabletext(
-                  message.caption.toString(),
+                  _resolveAttachmentCaption(message),
                   color: textColor,
                   fontsize: 12.sp,
                   fontfamily: FontFamily.interMedium,
@@ -2451,7 +2467,7 @@ class GroupChatBubble extends StatelessWidget {
       return (message.content?.toString() ?? '').trim();
     }
 
-    final caption = (message.caption?.toString() ?? '').trim();
+    final caption = _resolveAttachmentCaption(message);
     if (caption.isNotEmpty) {
       return caption;
     }
@@ -2953,7 +2969,7 @@ class GroupChatBubble extends StatelessWidget {
               ? (message.videos ?? [])
               : <MessageVideo>[]);
 
-      final caption = (message.caption ?? "").trim();
+      final caption = _resolveAttachmentCaption(message);
 
       String getMediaUrl(String path) {
         final value = path.trim();
@@ -3174,7 +3190,8 @@ class GroupChatBubble extends StatelessWidget {
         audioUrl: audioSrc,
         isMe: false,
       );
-      if ((message.caption ?? "").trim().isNotEmpty) {
+      final audioCaption = _resolveAttachmentCaption(message);
+      if (audioCaption.isNotEmpty) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -3183,7 +3200,7 @@ class GroupChatBubble extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(top: 6.h),
               child: reausabletext(
-                message.caption.toString(),
+                audioCaption,
                 color: textColor,
                 fontsize: 12.sp,
               ),
@@ -3225,11 +3242,11 @@ class GroupChatBubble extends StatelessWidget {
               );
             },
           ),
-          if ((message.caption ?? "").isNotEmpty)
+          if (_resolveAttachmentCaption(message).isNotEmpty)
             Padding(
               padding: EdgeInsets.only(top: 8.h),
               child: reausabletext(
-                message.caption!,
+                _resolveAttachmentCaption(message),
                 color: textColor,
                 fontsize: 12.sp,
               ),
@@ -3366,11 +3383,11 @@ class GroupChatBubble extends StatelessWidget {
                 ),
               ),
             ),
-            if ((message.caption ?? "").isNotEmpty)
+            if (_resolveAttachmentCaption(message).isNotEmpty)
               Padding(
                 padding: EdgeInsets.only(top: 8.h),
                 child: reausabletext(
-                  message.caption.toString(),
+                  _resolveAttachmentCaption(message),
                   color: textColor,
                   fontsize: 12.sp,
                   fontfamily: FontFamily.interMedium,

@@ -80,6 +80,62 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab>
 
   /// Group call avatar tap → group photo popup with
   /// Chat / Audio call / Video call / Info (call history profile).
+  void _handleCall(Map<String, String> callItem, [String? explicitType]) {
+    if (controller.isSelectionMode.value) return;
+    final String callType = (explicitType ??
+            callItem['callType'] ??
+            callItem['type'] ??
+            'audio')
+        .toLowerCase();
+    final isGroup = callItem['isGroup'] == 'true';
+    final bool isVideo = callType == "video";
+
+    if (isGroup) {
+      _startGroupCall(callItem, isVideo);
+    } else {
+      final remoteId = callItem['callerId']?.toString() ?? '';
+      final String phone =
+          callItem['mobileNo'] ?? callItem['phone'] ?? '';
+
+      if (!CallValidation.validateCall(
+        destinationPhone: phone,
+        destinationUserId: remoteId,
+      )) {
+        return;
+      }
+
+      final callerName =
+          callItem['name']?.toString() ?? context.l10n.call_user;
+      final profileImage =
+          callItem['avatar']?.toString() ?? 'User';
+
+      if (remoteId.isNotEmpty &&
+          remoteId !=
+              Global.storageServices
+                  .get(PrefConst.userId)
+                  ?.toString()) {
+        CallService().startOutGoingCall(
+          context,
+          callerId: Global.storageServices
+              .get(PrefConst.userId)
+              .toString(),
+          remoteUserId: remoteId,
+          is_video: isVideo,
+          callerName: callerName,
+          callerProfile: profileImage,
+        );
+      } else {
+        if (phone.isNotEmpty) {
+          controller.dialNumber.value = phone;
+          controller.makeCall(isVideo: isVideo);
+        } else {
+          Utils().fluttertoast(
+              context.l10n.call_unableToCallContact);
+        }
+      }
+    }
+  }
+
   void _showGroupCallPopup(Map<String, String> call) {
     final String gId = (call['groupId']?.isNotEmpty == true)
         ? call['groupId']!
@@ -643,7 +699,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab>
                                           HapticFeedback.lightImpact();
                                           controller.startSelection(callId);
                                         },
-                                  onDeleteTap: () =>
+                                  onCallSwipe: () => _handleCall(callItem),
+                                  onDeleteSwipe: () =>
                                       _showDeleteConfirmationBottomSheet(
                                           callItem),
                                   child: Padding(
@@ -671,70 +728,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab>
                                                         callItem['mobileNo'] ??
                                                             callItem['phone'],
                                                   ),
-                                      onCallTap: (type) {
-                                        if (isSelectionMode) {
-                                          controller
-                                              .toggleCallSelection(callId);
-                                          return;
-                                        }
-                                        final isGroup =
-                                            callItem['isGroup'] == 'true';
-                                        final bool isVideo = type == "video";
-
-                                        if (isGroup) {
-                                          _startGroupCall(callItem, isVideo);
-                                        } else {
-                                          final remoteId = callItem['callerId']
-                                                  ?.toString() ??
-                                              '';
-                                          final String phone =
-                                              callItem['mobileNo'] ??
-                                                  callItem['phone'] ??
-                                                  '';
-
-                                          if (!CallValidation.validateCall(
-                                            destinationPhone: phone,
-                                            destinationUserId: remoteId,
-                                          )) {
-                                            return;
-                                          }
-
-                                          final callerName =
-                                              callItem['name']?.toString() ??
-                                                  context.l10n.call_user;
-
-                                          final profileImage =
-                                              callItem['avatar']?.toString() ??
-                                                  'User';
-
-                                          if (remoteId.isNotEmpty &&
-                                              remoteId !=
-                                                  Global.storageServices
-                                                      .get(PrefConst.userId)
-                                                      ?.toString()) {
-                                            CallService().startOutGoingCall(
-                                              context,
-                                              callerId: Global.storageServices
-                                                  .get(PrefConst.userId)
-                                                  .toString(),
-                                              remoteUserId: remoteId,
-                                              is_video: isVideo,
-                                              callerName: callerName,
-                                              callerProfile: profileImage,
-                                            );
-                                          } else {
-                                            if (phone.isNotEmpty) {
-                                              controller.dialNumber.value =
-                                                  phone;
-                                              controller.makeCall(
-                                                  isVideo: isVideo);
-                                            } else {
-                                              Utils().fluttertoast(
-                                                  context.l10n.call_unableToCallContact);
-                                            }
-                                          }
-                                        }
-                                      },
+                                      onCallTap: (type) =>
+                                          _handleCall(callItem, type?.toString()),
                                     ),
                                   ),
                                 );
@@ -1245,7 +1240,8 @@ class _SwipeableRecentCallItem extends StatefulWidget {
   final BorderRadius borderRadius;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
-  final VoidCallback onDeleteTap;
+  final VoidCallback onCallSwipe;
+  final VoidCallback onDeleteSwipe;
   final Widget child;
   final bool isSelectionMode;
   final bool isSelected;
@@ -1258,7 +1254,8 @@ class _SwipeableRecentCallItem extends StatefulWidget {
     required this.borderRadius,
     required this.onTap,
     required this.onLongPress,
-    required this.onDeleteTap,
+    required this.onCallSwipe,
+    required this.onDeleteSwipe,
     required this.child,
     this.isSelectionMode = false,
     this.isSelected = false,
@@ -1359,26 +1356,46 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
       builder: (context, _) {
         final double currentOffset = _animController.value * _maxReveal;
         final bool isRevealed = _animController.value.abs() > 0.05;
-        final bool isSwipedLeft = _animController.value > 0.01;
+
+        // RIGHT SWIPE (drag to right, value < 0): reveals LEFT side -> Green CALL
+        // LEFT SWIPE (drag to left, value >= 0): reveals RIGHT side -> Red DELETE
+        final bool isRightSwipe = _animController.value < 0.0;
         final Alignment backgroundAlignment =
-            isSwipedLeft ? Alignment.centerRight : Alignment.centerLeft;
+            isRightSwipe ? Alignment.centerLeft : Alignment.centerRight;
+        final Color actionBgColor = isRightSwipe
+            ? const Color(0xFF22C55E) // Green for Call
+            : Colors.red.shade600; // Red for Delete
+        final IconData actionIcon = isRightSwipe
+            ? Icons.call_rounded
+            : Icons.delete_outline_rounded;
+        final String actionLabel = isRightSwipe
+            ? context.l10n.chat_call
+            : context.l10n.common_delete;
+        final VoidCallback onActionTap = isRightSwipe
+            ? () {
+                _close();
+                HapticFeedback.lightImpact();
+                widget.onCallSwipe();
+              }
+            : () {
+                _close();
+                HapticFeedback.lightImpact();
+                widget.onDeleteSwipe();
+              };
 
         return ClipRRect(
           borderRadius: widget.borderRadius,
           child: Stack(
             children: [
-              // Background: revealed Delete action (right on left-swipe, left on right-swipe)
+              // Background action: Green Call (revealed on Left by Right-swipe) / Red Delete (revealed on Right by Left-swipe)
               Positioned.fill(
                 child: Container(
-                  color: Colors.red.shade600,
+                  color: actionBgColor,
                   alignment: backgroundAlignment,
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () {
-                        _close();
-                        widget.onDeleteTap();
-                      },
+                      onTap: onActionTap,
                       child: SizedBox(
                         width: _maxReveal.w,
                         height: double.infinity,
@@ -1386,13 +1403,13 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.delete_outline_rounded,
+                              actionIcon,
                               color: Colors.white,
                               size: 24.sp,
                             ),
                             SizedBox(height: 3.h),
                             AutoFitText(
-                              context.l10n.common_delete,
+                              actionLabel,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 12.sp,
@@ -1425,15 +1442,24 @@ class _SwipeableRecentCallItemState extends State<_SwipeableRecentCallItem>
                   onHorizontalDragEnd: (details) {
                     if (widget.isSelectionMode) return;
                     final double velocity = details.primaryVelocity ?? 0;
-                    if (velocity < -300) {
-                      _openRightReveal();
-                    } else if (velocity > 300) {
+                    // RIGHT SWIPE: finger dragged to right (velocity > 0, _animController.value < 0) -> CALL
+                    if (velocity > 250 || _animController.value < -0.35) {
+                      _close();
+                      HapticFeedback.mediumImpact();
+                      widget.onCallSwipe();
+                    } else if (velocity > 80 || _animController.value < -0.15) {
                       _openLeftReveal();
-                    } else if (_animController.value > 0.35) {
+                    }
+                    // LEFT SWIPE: finger dragged to left (velocity < 0, _animController.value > 0) -> DELETE
+                    else if (velocity < -250 || _animController.value > 0.35) {
+                      _close();
+                      HapticFeedback.mediumImpact();
+                      widget.onDeleteSwipe();
+                    } else if (velocity < -80 || _animController.value > 0.15) {
                       _openRightReveal();
-                    } else if (_animController.value < -0.35) {
-                      _openLeftReveal();
-                    } else {
+                    }
+                    // Released below threshold -> smoothly return to 0 (no freeze)
+                    else {
                       _close();
                     }
                   },

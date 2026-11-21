@@ -157,15 +157,8 @@ class ChatScreenRules {
         }
         if (m.isEdited == true && existingMsg.isEdited != true) {
           existingMsg.isEdited = true;
-          final t =
-              (existingMsg.messageType?.toString() ?? '').toLowerCase().trim();
-          final isAttachment = t == 'image' ||
-              t == 'image_text' ||
-              t == 'media' ||
-              t == 'video' ||
-              t == 'document' ||
-              t == 'audio';
-          if (isAttachment) {
+          existingMsg.edited = true;
+          if (isAttachment(existingMsg.messageType, existingMsg)) {
             existingMsg.caption = m.caption ?? m.content;
           } else {
             existingMsg.content = m.content;
@@ -279,14 +272,32 @@ class ChatScreenRules {
   }
 
   /// Whether the message type is an attachment that carries media/document.
-  static bool isAttachment(dynamic messageType) {
+  static bool isAttachment(dynamic messageType, [MessageData? msg]) {
     final t = messageType?.toString().toLowerCase().trim() ?? '';
-    return t == 'image' ||
+    final typeMatches = t == 'image' ||
         t == 'image_text' ||
         t == 'media' ||
         t == 'video' ||
         t == 'document' ||
-        t == 'audio';
+        t == 'audio' ||
+        t == 'voice' ||
+        t == 'file' ||
+        t == 'photo' ||
+        t == 'doc' ||
+        t == 'attachment';
+    if (typeMatches) return true;
+    if (msg != null) {
+      if ((msg.images != null && msg.images!.isNotEmpty) ||
+          (msg.videos != null && msg.videos!.isNotEmpty)) {
+        return true;
+      }
+      if (msg.caption != null &&
+          msg.caption.toString().trim().isNotEmpty &&
+          msg.content != msg.caption) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /// Messages with or without attachments that support editing caption/text.
@@ -300,7 +311,12 @@ class ChatScreenRules {
         t == 'media' ||
         t == 'video' ||
         t == 'document' ||
-        t == 'audio';
+        t == 'audio' ||
+        t == 'voice' ||
+        t == 'file' ||
+        t == 'photo' ||
+        t == 'doc' ||
+        t == 'attachment';
   }
 
   /// Long-press options for a message.
@@ -329,36 +345,116 @@ class ChatScreenRules {
   // Edit / delete events
   // ---------------------------------------------------------------------------
 
+  static bool looksLikeMediaUrl(String value) => _looksLikeMediaUrl(value);
+
+  static bool _looksLikeMediaUrl(String value) {
+    final v = value.trim().toLowerCase();
+    if (v.startsWith('http://') || v.startsWith('https://')) return true;
+    if (v.startsWith('/data/') ||
+        v.startsWith('/storage/') ||
+        v.startsWith('uploads/')) {
+      return true;
+    }
+    return v.endsWith('.jpg') ||
+        v.endsWith('.jpeg') ||
+        v.endsWith('.png') ||
+        v.endsWith('.webp') ||
+        v.endsWith('.gif') ||
+        v.endsWith('.mp4') ||
+        v.endsWith('.mov') ||
+        v.endsWith('.pdf') ||
+        v.endsWith('.doc') ||
+        v.endsWith('.docx') ||
+        v.endsWith('.mp3') ||
+        v.endsWith('.m4a') ||
+        v.endsWith('.aac') ||
+        v.endsWith('.wav');
+  }
+
   /// Applies a `messageEdited` event in place (keeps ticks, reply, media).
-  /// Accepts `messageId` or `id`, and `content`/`newContent`/`message`.
+  /// Accepts `messageId` or `id`, and `caption`/`text`/`newContent`/`content`/`message`.
   static bool applyEdit(List<MessageData> messages, Map<String, dynamic> data) {
-    final nested = data['message'] is Map
-        ? Map<String, dynamic>.from(data['message'] as Map)
-        : null;
+    Map<String, dynamic>? nested;
+    if (data['message'] is Map) {
+      nested = Map<String, dynamic>.from(data['message'] as Map);
+    } else if (data['data'] is Map) {
+      nested = Map<String, dynamic>.from(data['data'] as Map);
+    } else if (data['messageData'] is Map) {
+      nested = Map<String, dynamic>.from(data['messageData'] as Map);
+    } else if (data['result'] is Map) {
+      nested = Map<String, dynamic>.from(data['result'] as Map);
+    }
+
     final id = MessageData.parseIntOrNull(
-      data['messageId'] ?? data['message_id'] ?? data['id'] ?? nested?['id'],
+      data['messageId'] ??
+          data['message_id'] ??
+          data['id'] ??
+          nested?['id'] ??
+          nested?['messageId'] ??
+          nested?['message_id'],
     );
     if (id == null) return false;
-    final index = messages.indexWhere((m) => m.id == id);
+    final index = messages.indexWhere((m) =>
+        m.id == id || (m.id != null && m.id.toString() == id.toString()));
     if (index == -1) return false;
 
-    final content = data['caption'] ??
-        nested?['caption'] ??
-        data['content'] ??
-        data['newContent'] ??
-        (data['message'] is String ? data['message'] : null) ??
-        nested?['content'];
-    if (content == null) return false;
-
     final msg = messages[index];
-    if (isAttachment(msg.messageType)) {
-      msg.caption = content.toString();
+    final isAtt = isAttachment(msg.messageType, msg);
+
+    final captionCandidate = data['caption'] ??
+        nested?['caption'] ??
+        data['text'] ??
+        nested?['text'] ??
+        data['newContent'] ??
+        nested?['newContent'] ??
+        data['body'] ??
+        nested?['body'];
+
+    final rawContent = data['content'] ??
+        (data['message'] is String ? data['message'] : null) ??
+        nested?['content'] ??
+        (nested?['message'] is String ? nested!['message'] : null);
+
+    if (captionCandidate == null && rawContent == null) return false;
+
+    if (isAtt) {
+      if (captionCandidate != null &&
+          !_looksLikeMediaUrl(captionCandidate.toString())) {
+        msg.caption = captionCandidate.toString();
+      } else if (rawContent != null &&
+          !_looksLikeMediaUrl(rawContent.toString()) &&
+          !rawContent.toString().contains('||')) {
+        msg.caption = rawContent.toString();
+      }
+      if (rawContent != null &&
+          (_looksLikeMediaUrl(rawContent.toString()) ||
+              rawContent.toString().contains('||'))) {
+        msg.content = rawContent.toString();
+      }
     } else {
-      msg.content = content.toString();
+      final newContent = rawContent ?? captionCandidate;
+      if (newContent != null) {
+        msg.content = newContent.toString();
+      }
     }
-    msg.isEdited = data['isEdited'] ?? nested?['isEdited'] ?? true;
+
+    final isEditedVal = data['isEdited'] ??
+        data['is_edited'] ??
+        data['edited'] ??
+        nested?['isEdited'] ??
+        nested?['is_edited'] ??
+        nested?['edited'] ??
+        true;
+    msg.isEdited = isEditedVal == true ||
+        isEditedVal.toString() == 'true' ||
+        isEditedVal.toString() == '1';
     msg.edited = msg.isEdited;
-    msg.editedAt = data['editedAt'] ?? nested?['editedAt'] ?? msg.editedAt;
+    msg.editedAt = (data['editedAt'] ??
+            data['edited_at'] ??
+            nested?['editedAt'] ??
+            nested?['edited_at'] ??
+            DateTime.now().toUtc().toIso8601String())
+        .toString();
     return true;
   }
 

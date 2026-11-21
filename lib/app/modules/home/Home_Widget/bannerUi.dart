@@ -150,13 +150,6 @@ class _BannerSliderState extends State<BannerSlider> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoadingLocal) {
-      return SizedBox(
-        height: 160.h,
-        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-      );
-    }
-
     final int count = _totalSlides;
     final int apiCount = _apiCount;
 
@@ -222,6 +215,12 @@ class _BannerSliderState extends State<BannerSlider> {
 
   /// Renders server-fetched API promotional banners
   Widget _buildApiBanner(BannerData banner) {
+    final String resolvedUrl = banner.resolvedImageUrl.isNotEmpty
+        ? banner.resolvedImageUrl
+        : (Utility.isNullEmptyOrFalse(banner.imageUrl)
+            ? MyAppTheme.notFoundImg
+            : banner.imageUrl.toString());
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
@@ -237,9 +236,7 @@ class _BannerSliderState extends State<BannerSlider> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16.r),
         child: CachedNetworkImage(
-          imageUrl: Utility.isNullEmptyOrFalse(banner.imageUrl)
-              ? MyAppTheme.notFoundImg
-              : banner.imageUrl.toString(),
+          imageUrl: resolvedUrl,
           fit: BoxFit.fill,
           width: double.infinity,
           height: double.infinity,
@@ -275,7 +272,8 @@ class _BannerSliderState extends State<BannerSlider> {
       // Remember the card's real shape (page width minus the 4.w margins,
       // full height) so the crop after picking matches the banner exactly.
       final cardWidth = constraints.maxWidth - 8.w;
-      if (cardWidth > 0 && constraints.maxHeight.isFinite &&
+      if (cardWidth > 0 &&
+          constraints.maxHeight.isFinite &&
           constraints.maxHeight > 0) {
         _bannerAspect = cardWidth / constraints.maxHeight;
       }
@@ -284,6 +282,21 @@ class _BannerSliderState extends State<BannerSlider> {
   }
 
   Widget _localBannerCard() {
+    if (_isLoadingLocal) {
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 4.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: Color(0xFF6B4DFF),
+          ),
+        ),
+      );
+    }
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
@@ -626,14 +639,10 @@ class _BannerSliderState extends State<BannerSlider> {
   /// them the app is back on Home for a moment (photo resize). A loader
   /// covers that gap so Home doesn't flash before the crop screen.
   Future<void> _pickBanner(ImageSource source) async {
-    // Camera: permission on Android (CAMERA is in the manifest) and iOS.
-    // Gallery: Photos permission on iOS; Android's system Photo Picker
-    // needs none (see LocalBannerService.ensureGalleryPermission).
     if (!await _sourceAllowed(source)) {
       _startAutoPlay();
       return;
     }
-    final loader = _showPhotoLoader();
     try {
       final file = await LocalBannerService.pickAndSaveBanner(
         source,
@@ -643,7 +652,7 @@ class _BannerSliderState extends State<BannerSlider> {
         setState(() => _localBannerFile = file);
       }
     } finally {
-      _hidePhotoLoader(loader);
+      // Done picking and cropping
     }
     // The system refused the camera / photos inside the picker (e.g. turned
     // off in Settings after our check): tell the user instead of nothing.
@@ -879,29 +888,6 @@ class _BannerSliderState extends State<BannerSlider> {
 
   /// True while the user is in app Settings from our dialog.
   bool _inSettings = false;
-
-  Route<void>? _showPhotoLoader() {
-    if (!mounted) return null;
-    final route = DialogRoute<void>(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black54,
-      builder: (_) => const PopScope(
-        canPop: false,
-        child: Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
-      ),
-    );
-    Navigator.of(context, rootNavigator: true).push(route);
-    return route;
-  }
-
-  /// Removes exactly this loader, even if another route opened on top.
-  void _hidePhotoLoader(Route<void>? route) {
-    if (route == null || !route.isActive) return;
-    route.navigator?.removeRoute(route);
-  }
 
   /// Sheet to select Camera or Gallery source
   void _showPickerSheet() {

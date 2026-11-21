@@ -88,24 +88,45 @@ class LocalBannerService {
     return retry ? BannerCameraAccess.blocked : BannerCameraAccess.denied;
   }
 
-  /// Photo access for the banner photo.
-  ///
-  /// iOS: asks for Photos (NSPhotoLibraryUsageDescription + PERMISSION_PHOTOS
-  /// are set); "Limited" counts as allowed.
-  /// Android: always allowed. image_picker opens the system Photo Picker,
-  /// which needs no permission (the user picks the photo); the manifest has
-  /// no READ_MEDIA_IMAGES on purpose (Google Play photo/video policy).
-  static Future<BannerCameraAccess> ensureGalleryPermission({
-    bool retry = false,
-  }) async {
-    if (!Platform.isIOS) return BannerCameraAccess.granted;
-    return _ensure(Permission.photos, retry: retry);
+  static int get _androidSdk {
+    final os = Platform.operatingSystemVersion;
+    final sdkMatch =
+        RegExp(r'(?:SDK|API)\s*(\d+)', caseSensitive: false).firstMatch(os);
+    if (sdkMatch != null) {
+      return int.tryParse(sdkMatch.group(1) ?? '') ?? 33;
+    }
+    final verMatch =
+        RegExp(r'(?:Android\s*)?(\d+)', caseSensitive: false).firstMatch(os);
+    final v = int.tryParse(verMatch?.group(1) ?? '') ?? 0;
+    if (v >= 13) return 33;
+    if (v > 0) return v;
+    return 33; // Default to modern Android (API 33+)
   }
 
+  /// Photo access permission based on OS & SDK version.
+  /// - iOS: [Permission.photos] (handles full access and limited/selected photos)
+  /// - Android 13+ (SDK >= 33): [Permission.photos] (READ_MEDIA_IMAGES)
+  /// - Android <= 12 (SDK < 33): [Permission.storage] (READ_EXTERNAL_STORAGE)
+  static Permission get _galleryPermission {
+    if (Platform.isIOS) {
+      return Permission.photos;
+    }
+    if (_androidSdk >= 33) {
+      return Permission.photos;
+    } else {
+      return Permission.storage;
+    }
+  }
+
+  /// Photo access for the banner photo across Android and iOS.
+  static Future<BannerCameraAccess> ensureGalleryPermission({
+    bool retry = false,
+  }) =>
+      _ensure(_galleryPermission, retry: retry);
+
   static Future<bool> isGalleryGranted() async {
-    if (!Platform.isIOS) return true;
     try {
-      final s = await Permission.photos.status;
+      final s = await _galleryPermission.status;
       return s.isGranted || s.isLimited;
     } catch (_) {
       return false;
@@ -124,15 +145,30 @@ class LocalBannerService {
     }
   }
 
-  /// Retrieve the locally saved banner file if it exists
+  static const String _bannerFileName = 'local_custom_banner.jpg';
+
+  /// Retrieve the locally saved banner file if it exists.
+  ///
+  /// Uses a fixed stable filename in [getApplicationDocumentsDirectory] so it
+  /// remains valid across app updates, reboots, and iOS container UUID changes.
   static Future<File?> getLocalBanner() async {
     try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final file = File('${appDir.path}/$_bannerFileName');
+      if (await file.exists() && await file.length() > 0) {
+        return file;
+      }
+
+      // Backward-compatibility migration: if old path was in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      final path = prefs.getString(_prefKey);
-      if (path != null && path.isNotEmpty) {
-        final file = File(path);
-        if (await file.exists()) {
-          return file;
+      final oldPath = prefs.getString(_prefKey);
+      if (oldPath != null && oldPath.isNotEmpty) {
+        final oldFile = File(oldPath);
+        if (await oldFile.exists()) {
+          final migrated =
+              await oldFile.copy('${appDir.path}/$_bannerFileName');
+          await prefs.setString(_prefKey, migrated.path);
+          return migrated;
         } else {
           await prefs.remove(_prefKey);
         }
@@ -170,14 +206,13 @@ class LocalBannerService {
       }
 
       final appDir = await getApplicationDocumentsDirectory();
-      final targetPath =
-          '${appDir.path}/local_custom_banner_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final targetPath = '${appDir.path}/$_bannerFileName';
 
       // Delete existing banner file if any
-      final oldFile = await getLocalBanner();
-      if (oldFile != null && await oldFile.exists()) {
+      final existingFile = File(targetPath);
+      if (await existingFile.exists()) {
         try {
-          await oldFile.delete();
+          await existingFile.delete();
         } catch (_) {}
       }
 
@@ -243,18 +278,25 @@ class LocalBannerService {
   /// Delete the locally saved banner
   static Future<bool> deleteLocalBanner() async {
     try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final file = File('${appDir.path}/$_bannerFileName');
+      if (await file.exists()) {
+        try {
+          await file.delete();
+        } catch (_) {}
+      }
       final prefs = await SharedPreferences.getInstance();
-      final path = prefs.getString(_prefKey);
-      if (path != null && path.isNotEmpty) {
-        final file = File(path);
-        if (await file.exists()) {
+      final oldPath = prefs.getString(_prefKey);
+      if (oldPath != null && oldPath.isNotEmpty) {
+        final oldFile = File(oldPath);
+        if (await oldFile.exists()) {
           try {
-            await file.delete();
+            await oldFile.delete();
           } catch (_) {}
         }
         await prefs.remove(_prefKey);
-        return true;
       }
+      return true;
     } catch (_) {}
     return false;
   }

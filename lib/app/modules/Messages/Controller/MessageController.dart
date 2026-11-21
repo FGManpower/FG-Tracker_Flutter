@@ -2,6 +2,7 @@ import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/Core/util/last_seen_formatter.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'dart:io';
@@ -1011,6 +1012,55 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               if (existing.mergeAttachmentFrom(messageData)) {
                 updateMessageStream();
               }
+
+              // WHATSAPP PARITY: Synchronize Edited Message in Real-Time
+              final isEditUpdate = (messageData.isEdited == true ||
+                      messageData.isEdited?.toString() == 'true' ||
+                      messageData.isEdited?.toString() == '1' ||
+                      messageData.edited == true ||
+                      messageData.edited?.toString() == 'true' ||
+                      messageData.edited?.toString() == '1') ||
+                  (messageData.caption != null &&
+                      messageData.caption.toString().trim().isNotEmpty &&
+                      messageData.caption.toString().trim() !=
+                          (existing.caption?.toString().trim() ?? '')) ||
+                  (!ChatScreenRules.isAttachment(
+                          existing.messageType, existing) &&
+                      messageData.content != null &&
+                      messageData.content.toString().trim().isNotEmpty &&
+                      messageData.content.toString().trim() !=
+                          (existing.content?.toString().trim() ?? ''));
+
+              if (isEditUpdate) {
+                final isAtt = ChatScreenRules.isAttachment(
+                    existing.messageType, existing);
+                if (isAtt) {
+                  final newCap = messageData.caption?.toString().trim();
+                  if (newCap != null && newCap.isNotEmpty) {
+                    existing.caption = newCap;
+                  } else if (messageData.content != null &&
+                      !ChatScreenRules.looksLikeMediaUrl(
+                          messageData.content.toString())) {
+                    existing.caption = messageData.content.toString().trim();
+                  }
+                } else {
+                  final newTxt = messageData.content?.toString().trim() ??
+                      messageData.caption?.toString().trim();
+                  if (newTxt != null && newTxt.isNotEmpty) {
+                    existing.content = newTxt;
+                  }
+                }
+                existing.isEdited = true;
+                existing.edited = true;
+                if (messageData.editedAt != null &&
+                    messageData.editedAt.toString().trim().isNotEmpty) {
+                  existing.editedAt = messageData.editedAt;
+                } else {
+                  existing.editedAt =
+                      DateTime.now().toUtc().toIso8601String();
+                }
+                updateMessageStream();
+              }
               rtDecision('private list', messageData,
                   'MERGED into index $existingIndex (contentUpdated=${!hasOldContent && hasNewContent}) listLength=${_messages.length}'); // TODO(rt-diagnostics)
             } else {
@@ -1296,19 +1346,34 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       );
 
       socketService.listenMessageEdited(
-      scope: ChatSocketScope.private,
+        scope: ChatSocketScope.private,
         callback: (data) {
-          if (data is! Map) {
-            return;
-          }
-
           try {
-            // Same shape as the group handler: `messageId` (falls back to
-            // `id`). Update in place so ticks, reply and media stay; the old
-            // full replace lost them and missed payloads keyed `messageId`.
-            final map = Map<String, dynamic>.from(data);
+            AppLog.d("PRIVATE MESSAGE EDITED EVENT RECEIVED => $data");
+            Map<String, dynamic>? map;
+            if (data is Map) {
+              map = Map<String, dynamic>.from(data);
+            } else if (data is String) {
+              try {
+                final decoded = jsonDecode(data);
+                if (decoded is Map) map = Map<String, dynamic>.from(decoded);
+              } catch (_) {}
+            }
+            if (map == null) return;
+
+            final gid = map['groupId'] ?? map['group_id'];
+            if (gid != null &&
+                gid.toString() != 'null' &&
+                gid.toString().isNotEmpty) {
+              return;
+            }
+
             final applied = ChatScreenRules.applyEdit(_messages, map);
-            if (applied) updateMessageStream();
+            if (applied) {
+              updateMessageStream();
+              AppLog.d(
+                  "PRIVATE MESSAGE EDITED APPLIED IN UI => messageId=${map['messageId'] ?? map['id']}");
+            }
           } catch (e) {
             log("Private edit event error: $e");
           }
@@ -2823,7 +2888,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final targetIndex = _messages.indexWhere((m) => m.id == message.id);
     final targetMsg = targetIndex != -1 ? _messages[targetIndex] : message;
 
-    final isAttachment = ChatScreenRules.isAttachment(targetMsg.messageType);
+    final isAttachment =
+        ChatScreenRules.isAttachment(targetMsg.messageType, targetMsg);
     if (isAttachment) {
       targetMsg.caption = text;
     } else {
@@ -2836,14 +2902,22 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     updateMessageStream();
 
     AppLog.d(
-      "UPDATE EDITED MESSAGE => messageId=${message.id}, userId=$currentUserId, otherUserId=$otherUserId, text=$text",
+      "UPDATE EDITED MESSAGE => messageId=${message.id}, userId=$currentUserId, otherUserId=$otherUserId, chatId=${privateChatId.value}, text=$text",
     );
 
     // 2. Emit socket event to notify peer
+    final originalMedia = targetMsg.content?.toString();
+    final isDoc = targetMsg.messageType == 'document' ||
+        targetMsg.messageType == 'file' ||
+        (originalMedia != null && originalMedia.contains('||'));
+
     socketService.editMessage(
       messageId: message.id!,
-      content: text,
+      content: isDoc ? (originalMedia ?? text) : text,
       caption: text,
+      mediaUrl: originalMedia,
+      messageType: targetMsg.messageType?.toString(),
+      chatId: privateChatId.value.isNotEmpty ? privateChatId.value : null,
       userId: currentUserId,
       otherUserId: otherUserId,
     );

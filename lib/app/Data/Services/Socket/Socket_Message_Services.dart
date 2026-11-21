@@ -19,9 +19,14 @@ import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:fgtracker/app/Core/util/rt_attachment_log.dart'; // TODO(rt-diagnostics)
 import 'package:fgtracker/app/modules/Messages/Controller/message_receipts.dart';
 import 'package:fgtracker/app/Data/Services/chat_message_cache.dart';
-void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
+
+void log(String message,
+    {Object? error, StackTrace? stackTrace, String? name}) {
   if (kDebugMode) {
-    developer.log(message, error: error, stackTrace: stackTrace, name: name ?? 'SocketMessageService');
+    developer.log(message,
+        error: error,
+        stackTrace: stackTrace,
+        name: name ?? 'SocketMessageService');
     AppLog.d("[${name ?? 'Socket'}] $message");
   }
 }
@@ -158,7 +163,8 @@ class SocketMessageService extends GetxService {
     final gid = data['groupId'] ?? data['group_id'];
     final type = data['chatType']?.toString().toLowerCase();
     if (gid == null || (type != null && type != 'group')) return;
-    final last = data['lastMessage'] ?? data['lastMessageData'] ?? data['message'];
+    final last =
+        data['lastMessage'] ?? data['lastMessageData'] ?? data['message'];
     if (last is Map) _deliverIfFromOther(groupId: gid, message: last);
   }
 
@@ -247,10 +253,10 @@ class SocketMessageService extends GetxService {
   String? get privateChatId => _privateChatId;
 
   Future<void> init(
-      String socketUrl, {
-        required String userId,
-        int? groupId,
-      }) async {
+    String socketUrl, {
+    required String userId,
+    int? groupId,
+  }) async {
     log("========== GROUP CHAT SOCKET INIT ==========");
     log("SOCKET URL: $socketUrl/chat");
     log("USER ID: $userId");
@@ -360,6 +366,7 @@ class SocketMessageService extends GetxService {
       _registerChatListListeners(_socket);
       _registerFullChatListListeners(_socket);
       _registerChatListGroupTyping(_socket);
+      _registerEditListener(_socket);
 
       // Screens re-fetch receipts / Message Info after a reconnect.
       if (!_chatConnectedCtrl.isClosed) _chatConnectedCtrl.add(null);
@@ -563,7 +570,6 @@ class SocketMessageService extends GetxService {
     );
   }
 
-
   void joinGroupChat({
     required int groupId,
     required String userId,
@@ -664,9 +670,11 @@ class SocketMessageService extends GetxService {
   static String? _groupMessageKey(dynamic data) {
     if (data is! Map) return null;
     final inner = data['message'] is Map ? data['message'] as Map : data;
-    final id = normalizeReceiptId(inner['id'] ?? inner['messageId'] ?? data['id']);
+    final id =
+        normalizeReceiptId(inner['id'] ?? inner['messageId'] ?? data['id']);
     if (id != null) return 'id:$id';
-    final client = (inner['clientMessageId'] ?? data['clientMessageId'])?.toString();
+    final client =
+        (inner['clientMessageId'] ?? data['clientMessageId'])?.toString();
     if (client != null && client.isNotEmpty) return 'c:$client';
     return null;
   }
@@ -1000,11 +1008,11 @@ class SocketMessageService extends GetxService {
   }
 
   Future<void> initPrivateChat(
-      String socketUrl, {
-        required String userId,
-        required String receiverId,
-        Function(dynamic)? onJoined,
-      }) async {
+    String socketUrl, {
+    required String userId,
+    required String receiverId,
+    Function(dynamic)? onJoined,
+  }) async {
     _activePrivateUserId = userId;
     _activePrivateReceiverId = receiverId;
 
@@ -1063,10 +1071,7 @@ class SocketMessageService extends GetxService {
     );
     _registerGroupStatus(_privateChatSocket);
     _registerBlockStatus(_privateChatSocket);
-
-
-
-
+    _registerEditListener(_privateChatSocket);
 
     _privateChatSocket?.onConnect((_) {
       log("PRIVATE CHAT SOCKET CONNECTED");
@@ -1088,7 +1093,7 @@ class SocketMessageService extends GetxService {
 
       _privateJoinDebugTimer = Timer(
         const Duration(seconds: 8),
-            () {
+        () {
           log("========== JOIN TIMEOUT DEBUG ==========");
           log("JOINED EVENT NOT RECEIVED WITHIN 8 SECONDS");
           log("SOCKET CONNECTED => $isPrivateChatSocketConnected");
@@ -1139,7 +1144,6 @@ class SocketMessageService extends GetxService {
       log("CONNECT ERROR => $error");
       _onTokenRejected(_privateChatSocket, error);
     });
-
   }
 
   void joinPrivateChat({
@@ -1172,7 +1176,6 @@ class SocketMessageService extends GetxService {
     log("JOIN EVENT EMIT CALLED");
     log("========== PRIVATE JOIN DEBUG END ==========");
   }
-
 
   final List<Map<String, dynamic>> _pendingPrivateMessages = [];
 
@@ -1324,10 +1327,13 @@ class SocketMessageService extends GetxService {
           ?.toString();
       final currentChatId = _privateChatId;
 
-      final isSameChat =
-          (currentChatId != null && eventChatId != null && currentChatId == eventChatId) ||
-          (dataSenderId == senderId && (dataReceiverId == null || dataReceiverId == receiverId)) ||
-          (dataSenderId == receiverId && (dataReceiverId == null || dataReceiverId == senderId));
+      final isSameChat = (currentChatId != null &&
+              eventChatId != null &&
+              currentChatId == eventChatId) ||
+          (dataSenderId == senderId &&
+              (dataReceiverId == null || dataReceiverId == receiverId)) ||
+          (dataSenderId == receiverId &&
+              (dataReceiverId == null || dataReceiverId == senderId));
 
       log("EXPECTED SENDER => $senderId");
       log("EXPECTED RECEIVER => $receiverId");
@@ -1572,7 +1578,7 @@ class SocketMessageService extends GetxService {
       if (_privateChatClearedListCallback != null) {
         _privateChatListSocket?.on(
           "private_chat_cleared",
-              (data) {
+          (data) {
             if (data is Map) {
               _dropClearedPrivateChatCache(data);
               _privateChatClearedListCallback?.call(
@@ -1607,6 +1613,7 @@ class SocketMessageService extends GetxService {
 
     _privateChatListSocket?.onError((error) {});
   }
+
   Function(Map<String, dynamic>)? _privateChatClearedListCallback;
   Function(dynamic)? _privateChatListUpdatedCallback;
 
@@ -1665,8 +1672,10 @@ class SocketMessageService extends GetxService {
     s.off("common_chat_list");
     s.off("unified_chat_list");
     s.on("chat_list", (data) => _unifiedFullChatListCallback?.call(data));
-    s.on("common_chat_list", (data) => _unifiedFullChatListCallback?.call(data));
-    s.on("unified_chat_list", (data) => _unifiedFullChatListCallback?.call(data));
+    s.on(
+        "common_chat_list", (data) => _unifiedFullChatListCallback?.call(data));
+    s.on("unified_chat_list",
+        (data) => _unifiedFullChatListCallback?.call(data));
   }
 
   void fetchUnifiedChatList({
@@ -1734,6 +1743,13 @@ class SocketMessageService extends GetxService {
     _privateChatSocket?.off("typing");
     _privateChatSocket?.off("stop_typing");
     _privateChatSocket?.off("messageEdited");
+    _privateChatSocket?.off("message_edited");
+    _privateChatSocket?.off("editMessage");
+    _privateChatSocket?.off("edit_message");
+    _privateChatSocket?.off("message_update");
+    _privateChatSocket?.off("messageUpdated");
+    _privateChatSocket?.off("update_message");
+    _privateChatSocket?.off("updateMessage");
     _privateChatSocket?.off("message_deleted");
     _privateChatSocket?.off("message_pinned");
     _privateChatSocket?.off("message_unpinned");
@@ -1790,42 +1806,112 @@ class SocketMessageService extends GetxService {
     _chatListReconnectCallback = null;
   }
 
+  void Function(dynamic data)? _messageEditedCallback;
+
+  void _registerEditListener(IO.Socket? s) {
+    if (s == null || _messageEditedCallback == null) return;
+    for (final ev in const [
+      "messageEdited",
+      "message_edited",
+      "editMessage",
+      "edit_message",
+      "message_update",
+      "messageUpdated",
+      "update_message",
+      "updateMessage",
+    ]) {
+      s.off(ev);
+      s.on(ev, (data) {
+        AppLog.d("SOCKET EDIT EVENT RECEIVED ($ev) => $data");
+        _messageEditedCallback?.call(data);
+      });
+    }
+  }
+
   void editMessage({
     required int messageId,
     required String content,
     required String userId,
     String? otherUserId,
     dynamic groupId,
+    dynamic chatId,
     String? caption,
+    String? messageType,
+    String? mediaUrl,
   }) {
+    final effectiveChatId = chatId ?? (groupId ?? _privateChatId);
     final payload = {
       "messageId": messageId,
+      "id": messageId,
       "content": content,
       "caption": caption ?? content,
+      "text": caption ?? content,
+      "newContent": caption ?? content,
+      "body": caption ?? content,
+      "message": caption ?? content,
       "userId": userId,
-      if (otherUserId != null) "otherUserId": otherUserId,
-      if (groupId != null) "groupId": groupId,
+      "isEdited": true,
+      "is_edited": true,
+      "edited": true,
+      if (mediaUrl != null && mediaUrl.isNotEmpty) ...{
+        "mediaUrl": mediaUrl,
+        "fileUrl": mediaUrl,
+      },
+      if (messageType != null) ...{
+        "messageType": messageType,
+        "type": messageType,
+      },
+      if (otherUserId != null) ...{
+        "otherUserId": otherUserId,
+        "receiverId": otherUserId,
+        "targetId": otherUserId,
+      },
+      if (groupId != null) ...{
+        "groupId": groupId,
+        "group_id": groupId,
+      },
+      if (effectiveChatId != null) ...{
+        "chatId": effectiveChatId,
+        "conversationId": effectiveChatId,
+      },
+      "chatType": otherUserId != null ? "private" : "group",
     };
 
     AppLog.d("========== SOCKET EDIT MESSAGE EMIT ==========");
-    AppLog.d("EVENT: editMessage");
+    AppLog.d("EVENT: editMessage / edit_message");
     AppLog.d("PAYLOAD: $payload");
 
     if (otherUserId != null && isPrivateChatSocketConnected) {
       AppLog.d("EMITTING editMessage ON PRIVATE CHAT SOCKET");
-      _privateChatSocket!.emit(
-        "editMessage",
-        payload,
-      );
-
-      return;
+      try {
+        _privateChatSocket!.emit(
+          "editMessage",
+          payload,
+        );
+        _privateChatSocket!.emit(
+          "edit_message",
+          payload,
+        );
+      } catch (e) {
+        AppLog.d("Private chat socket emit error: $e");
+      }
     }
 
-    AppLog.d("EMITTING editMessage ON GROUP/MAIN SOCKET");
-    socket.emit(
-      "editMessage",
-      payload,
-    );
+    if (_socket != null && _socket!.connected) {
+      AppLog.d("EMITTING editMessage ON GROUP/MAIN SOCKET");
+      try {
+        _socket!.emit(
+          "editMessage",
+          payload,
+        );
+        _socket!.emit(
+          "edit_message",
+          payload,
+        );
+      } catch (e) {
+        AppLog.d("Main socket emit error: $e");
+      }
+    }
   }
 
   // ==========================================
@@ -1853,7 +1939,8 @@ class SocketMessageService extends GetxService {
     if (chatType == "private" || otherUserId != null) {
       if (isPrivateChatSocketConnected) {
         try {
-          _privateChatSocket?.emitWithAck("send_message_reaction", payload, ack: (res) {
+          _privateChatSocket?.emitWithAck("send_message_reaction", payload,
+              ack: (res) {
             ack?.call(res);
           });
         } catch (_) {
@@ -1922,7 +2009,8 @@ class SocketMessageService extends GetxService {
         isBlocked: true,
       ));
     }
-    final serverText = data['message'] is String ? data['message'] as String : '';
+    final serverText =
+        data['message'] is String ? data['message'] as String : '';
     final text = serverText.trim().isNotEmpty
         ? serverText.trim()
         : (code == 'BLOCKED'
@@ -2016,6 +2104,12 @@ class SocketMessageService extends GetxService {
     for (final event in const [
       "messageEdited",
       "message_edited",
+      "editMessage",
+      "edit_message",
+      "message_update",
+      "messageUpdated",
+      "update_message",
+      "updateMessage",
       "message_deleted",
       "message_pinned",
       "message_unpinned",
@@ -2049,8 +2143,15 @@ class SocketMessageService extends GetxService {
     required Function(dynamic data) callback,
     ChatSocketScope? scope,
   }) {
-    _listenScoped("messageEdited", scope, (data) => callback(data));
-    _listenScoped("message_edited", scope, (data) => callback(data));
+    _messageEditedCallback = callback;
+    final socketsToListen = <IO.Socket>{
+      if (_socket != null) _socket!,
+      if (_privateChatSocket != null) _privateChatSocket!,
+      if (_privateChatListSocket != null) _privateChatListSocket!,
+    };
+    for (final s in socketsToListen) {
+      _registerEditListener(s);
+    }
   }
 
   void deleteMessage({
@@ -2202,6 +2303,7 @@ class SocketMessageService extends GetxService {
     void handler(dynamic data) {
       if (data is Map) callback(Map<String, dynamic>.from(data));
     }
+
     _listenScoped("message_sent", scope, handler);
     _listenScoped("group_message_sent", scope, handler);
   }
@@ -2218,6 +2320,7 @@ class SocketMessageService extends GetxService {
     void handler(dynamic data) {
       if (data is Map) callback(Map<String, dynamic>.from(data));
     }
+
     _socket?.off("group_updated");
     _socket?.on("group_updated", handler);
     _socket?.off("group_info_updated");
@@ -2309,7 +2412,10 @@ class SocketMessageService extends GetxService {
       }
       if (v is! Map) return;
       for (final k in const [
-        'chatId', 'chat_id', 'conversationId', 'conversation_id',
+        'chatId',
+        'chat_id',
+        'conversationId',
+        'conversation_id',
       ]) {
         final id = v[k]?.toString().trim();
         if (id != null && id.isNotEmpty && id != 'null') ids.add(id);
@@ -2378,11 +2484,20 @@ class SocketMessageService extends GetxService {
     }
 
     final blocker = pick(const [
-      'blockerId', 'blocker_id', 'blockedBy', 'blocked_by', 'userId', 'user_id',
+      'blockerId',
+      'blocker_id',
+      'blockedBy',
+      'blocked_by',
+      'userId',
+      'user_id',
     ]);
     final blocked = pick(const [
-      'blockedUserId', 'blocked_user_id', 'blockedId', 'blocked_id',
-      'targetUserId', 'target_user_id',
+      'blockedUserId',
+      'blocked_user_id',
+      'blockedId',
+      'blocked_id',
+      'targetUserId',
+      'target_user_id',
     ]);
 
     bool? isBlocked;
@@ -2443,6 +2558,7 @@ class SocketMessageService extends GetxService {
     void handler(dynamic data) {
       if (data is Map) callback(Map<String, dynamic>.from(data));
     }
+
     _socket?.off("member_removed");
     _socket?.on("member_removed", handler);
     _socket?.off("member_left");

@@ -515,6 +515,28 @@ class MessageData {
       thumbnail = other.thumbnail;
       changed = true;
     }
+    if (_cleanStr(other.caption) != null &&
+        (overwrite ||
+            _cleanStr(caption) == null ||
+            other.isEdited == true ||
+            other.edited == true ||
+            other.isEdited?.toString() == 'true' ||
+            other.edited?.toString() == 'true') &&
+        caption?.toString() != other.caption?.toString()) {
+      caption = other.caption;
+      changed = true;
+    }
+    if ((other.isEdited == true ||
+            other.edited == true ||
+            other.isEdited?.toString() == 'true' ||
+            other.edited?.toString() == 'true' ||
+            other.isEdited?.toString() == '1' ||
+            other.edited?.toString() == '1') &&
+        isEdited != true) {
+      isEdited = true;
+      edited = true;
+      changed = true;
+    }
     return changed;
   }
 

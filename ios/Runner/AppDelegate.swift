@@ -1555,7 +1555,7 @@ private let candidateTokenPrefKeys = [
             return
         }
         let controller = CXCallController()
-        let action = CXSetMutedCallAction(callUUID: uuid, isMuted: muted)
+        let action = CXSetMutedCallAction(call: uuid, muted: muted)
         let transaction = CXTransaction(action: action)
         controller.request(transaction) { error in
             if let error = error {

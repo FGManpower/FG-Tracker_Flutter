@@ -563,6 +563,54 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
           // and media/voice only worked after re-opening. Temp bubble: the
           // server copy wins; duplicate event: fill what's still missing.
           existing.mergeAttachmentFrom(incomingMessage, overwrite: wasTemp);
+
+          // WHATSAPP PARITY: Synchronize Edited Message in Real-Time
+          final isEditUpdate = (incomingMessage.isEdited == true ||
+                  incomingMessage.isEdited?.toString() == 'true' ||
+                  incomingMessage.isEdited?.toString() == '1' ||
+                  incomingMessage.edited == true ||
+                  incomingMessage.edited?.toString() == 'true' ||
+                  incomingMessage.edited?.toString() == '1') ||
+              (incomingMessage.caption != null &&
+                  incomingMessage.caption.toString().trim().isNotEmpty &&
+                  incomingMessage.caption.toString().trim() !=
+                      (existing.caption?.toString().trim() ?? '')) ||
+              (!ChatScreenRules.isAttachment(
+                      existing.messageType, existing) &&
+                  incomingMessage.content != null &&
+                  incomingMessage.content.toString().trim().isNotEmpty &&
+                  incomingMessage.content.toString().trim() !=
+                      (existing.content?.toString().trim() ?? ''));
+
+          if (isEditUpdate) {
+            final isAtt = ChatScreenRules.isAttachment(
+                existing.messageType, existing);
+            if (isAtt) {
+              final newCap = incomingMessage.caption?.toString().trim();
+              if (newCap != null && newCap.isNotEmpty) {
+                existing.caption = newCap;
+              } else if (incomingMessage.content != null &&
+                  !ChatScreenRules.looksLikeMediaUrl(
+                      incomingMessage.content.toString())) {
+                existing.caption = incomingMessage.content.toString().trim();
+              }
+            } else {
+              final newTxt = incomingMessage.content?.toString().trim() ??
+                  incomingMessage.caption?.toString().trim();
+              if (newTxt != null && newTxt.isNotEmpty) {
+                existing.content = newTxt;
+              }
+            }
+            existing.isEdited = true;
+            existing.edited = true;
+            if (incomingMessage.editedAt != null &&
+                incomingMessage.editedAt.toString().trim().isNotEmpty) {
+              existing.editedAt = incomingMessage.editedAt;
+            } else {
+              existing.editedAt =
+                  DateTime.now().toUtc().toIso8601String();
+            }
+          }
           if (incomingMessage.senderName != null && incomingMessage.senderName.toString().isNotEmpty) {
             existing.senderName = incomingMessage.senderName;
           }
@@ -626,10 +674,27 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     socketService.listenMessageEdited(
       scope: ChatSocketScope.group,
       callback: (data) {
-        if (data is! Map) return;
-        final map = Map<String, dynamic>.from(data);
-        if (_isOtherGroup(map["groupId"] ?? map["group_id"])) return;
-        if (ChatScreenRules.applyEdit(_messages, map)) updateMessageStream();
+        try {
+          AppLog.d("GROUP MESSAGE EDITED EVENT RECEIVED => $data");
+          Map<String, dynamic>? map;
+          if (data is Map) {
+            map = Map<String, dynamic>.from(data);
+          } else if (data is String) {
+            try {
+              final decoded = jsonDecode(data);
+              if (decoded is Map) map = Map<String, dynamic>.from(decoded);
+            } catch (_) {}
+          }
+          if (map == null) return;
+          if (_isOtherGroup(map["groupId"] ?? map["group_id"])) return;
+          if (ChatScreenRules.applyEdit(_messages, map)) {
+            updateMessageStream();
+            AppLog.d(
+                "GROUP MESSAGE EDITED APPLIED IN UI => messageId=${map['messageId'] ?? map['id']}");
+          }
+        } catch (e) {
+          log("Group edit event error: $e");
+        }
       },
     );
 
@@ -2636,7 +2701,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     final targetIndex = _messages.indexWhere((m) => m.id == message.id);
     final targetMsg = targetIndex != -1 ? _messages[targetIndex] : message;
 
-    final isAttachment = ChatScreenRules.isAttachment(targetMsg.messageType);
+    final isAttachment =
+        ChatScreenRules.isAttachment(targetMsg.messageType, targetMsg);
     if (isAttachment) {
       targetMsg.caption = text;
     } else {
@@ -2653,12 +2719,20 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     );
 
     // 2. Emit socket event to notify group members
+    final originalMedia = targetMsg.content?.toString();
+    final isDoc = targetMsg.messageType == 'document' ||
+        targetMsg.messageType == 'file' ||
+        (originalMedia != null && originalMedia.contains('||'));
+
     socketService.editMessage(
       messageId: message.id!,
-      content: text,
+      content: isDoc ? (originalMedia ?? text) : text,
       caption: text,
-      userId: currentUserId,
+      mediaUrl: originalMedia,
+      messageType: targetMsg.messageType?.toString(),
+      chatId: groupId,
       groupId: groupId,
+      userId: currentUserId,
     );
 
     editingMessage.value = null;

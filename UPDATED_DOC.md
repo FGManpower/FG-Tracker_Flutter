@@ -21,6 +21,8 @@
 | **8** | **Message Info WhatsApp Parity & Deleted Message Emoji Bar Removal** | a) Message Info Sheet did not have full WhatsApp parity: did not hide the READ section for unread 1-to-1 messages, lacked PLAYED section for voice/audio notes, lacked REMAINING section in groups, and used generic timestamps instead of WhatsApp format (`Today 10:32 AM` / `Yesterday 9:15 PM`); b) Deleted messages ("Delete for everyone") displayed the floating emoji reaction bar (👍 ❤️ 😂 😮 😢 🙏) on long press; c) In 1-to-1 and forwarded messages, members who read the message appeared simultaneously in both READ and DELIVERED cards, duplicating the member and inflating the list. | a) Transformed `MessageInfoSheet.dart` to match WhatsApp parity: 1-to-1 chat shows preview on top, hides READ section if unread (only showing DELIVERED), and when read (`isSeen == true`), shows member strictly 1 time inside READ (with dual timestamps: Read time blue ticks + subtle grey delivered time) while suppressing duplicate DELIVERED card; b) Added mutual exclusivity in group chat so members in PLAYED BY do not duplicate in READ BY, and readers do not duplicate in DELIVERED TO; c) Added sender-only guard so Message Info only opens for own messages; d) Removed floating emoji reaction bar completely on deleted messages in `ChatItem.dart`, leaving strictly "Delete for me". |
 | **9** | **Attachment > Location & App Theme Styling (Live Location Commented Out)** | Location was a static point picker lacking a top search bar, nearby places list, 1-tap high accuracy "Send your current location", custom app theme styling (was using WhatsApp green), and required deactivation of Live Location. | a) **Task 1 (Live Location Commented Out):** Completely commented out the "Share live location" option and duration modal sheet using `//` in `LocationPickerPage.dart`, preserving all code for future re-enabling while strictly hiding it from users and preventing background tracking services or permission requests; b) **Task 2 (App Theme Palette):** Replaced all WhatsApp green/blue colors across the Location screen with the official app primary theme color (`ToggleThemeData.Appcolor` = `Color(0xff8274FD)`) and dark theme background (`ToggleThemeData.darkThemeBackground`), including Header (AppBar), active Search bar, "Send your current location" button & icon, Nearby places section header, loader & icons, recenter GPS button, and "Open Settings" / "Turn on location" dialogs; c) Updated Google Map marker pin to use the exact app theme color hue dynamically via `BitmapDescriptor.defaultMarkerWithHue(HSVColor.fromColor(ToggleThemeData.Appcolor).hue)` across both Android and iOS; d) Updated chat bubble map snapshot marker and fallback pin to match app theme color. |
 | **10** | **New Chat Screen Fast Load & Location Screen Skeleton / Fast GPS (Nearby Places Removed)** | a) New Chat screen lagged/hesitated upon clicking from Chat List because `_permissionChecked` and `_permissionGranted` were initialized to `false`, causing blank/skeleton gating before rendering, and avatar images lacked persistent disk caching; b) Location screen took too long to load, displaying an infinite raw spinner due to slow OSM/Google Places API HTTP requests (`_fetchNearbyPlaces`) and slow GPS locks (especially on iOS); c) Nearby Places cluttered the UI and slowed performance. | a) **New Chat Instant Frame-0 Load:** Bound initial permission and state directly to session cache (`NewChatController.cachedMatched` / `AppCache.fgContacts`) and known permissions (`ContactController.instance.isContactPermissionGranted`), rendering contacts instantly on frame 0 without screen hesitation; added background pre-warming (`NewChatController.preWarm()`) in `ChatListScreen`; upgraded avatar rendering to `CachedNetworkImageProvider` and made initials cache static for smooth 60fps scrolling on iOS & Android; b) **Nearby Places Removed:** Completely eliminated Nearby Places HTTP network calls and UI sections in `location_picker_controller.dart` and `LocationPickerPage.dart`, keeping strictly Map + Search bar + "Send current location" + Pin location; c) **Skeletonizer Effect & Fast GPS:** Replaced raw `CircularProgressIndicator` with a smooth, themed Skeletonizer effect (`_buildLocationSkeleton`) matching map, search bar, and draggable sheet; added ultra-fast GPS retrieval checking `Geolocator.getLastKnownPosition()` (<20ms) first so map renders in <100ms on iOS and Android while refining live GPS with a 3s timeout; immediately shows clear action buttons on GPS off or permission denied without infinite loading. |
+| **11** | **Attachment + Msg Edit Synchronization on Receiver Screen (WhatsApp Parity)** | When an attachment message (image, video, document, audio) with a caption was edited, the sender's screen updated optimistically, but the recipient did not see the edited caption or the "Edited" tag. Root causes: a) `socketService.editMessage` was sending `content: text`, clobbering the media URL and omitting `messageType` and universal `id`; b) Socket listeners missed event variations between `editMessage` and `messageEdited`; c) `ChatScreenRules.applyEdit` did not recognize all attachment types (such as `forward`, `photo`, `doc`, `voice`, or messages carrying images/videos) and only updated `msg.content`, whereas `ChatItem.dart` strictly renders `message.caption` for attachments; d) Plain text updates in `data['content']` were not mapped to `caption` for attachments; e) Edit flags (`isEdited`, `edited`) were not guaranteed on receiver payloads. | a) **Socket Message Services:** Updated `editMessage` to send `messageId`, `id`, `content` (preserving media URL for attachments), `caption`, `text`, `newContent`, `isEdited: true`, `is_edited: true`, `edited: true`, and `messageType`. Emits across both `editMessage` and `edit_message` on both private and group chat sockets. Updated `listenMessageEdited` to subscribe to `messageEdited`, `message_edited`, `editMessage`, and `edit_message`; b) **Chat Logic (`applyEdit` & `isAttachment`):** Expanded `isAttachment` to recognize `image`, `image_text`, `media`, `video`, `document`, `audio`, `voice`, `file`, `photo`, `doc`, `attachment`, plus any message with non-empty `images`, `videos`, or existing `caption`. Updated `applyEdit` to extract new captions from `caption`, `text`, `newContent`, or non-media `content`, update `msg.caption` while strictly preserving media URLs in `msg.content`, and guarantee `msg.isEdited = true` and `msg.edited = true`; c) **Controllers:** Updated `MessageController` and `GroupChatController` `updateEditedMessage` to preserve `targetMsg.content` while forwarding `caption: text` and `messageType`, and added UI stream updates in edit event listeners; d) **Input Area:** Bound `ChatInputArea` editing state to `isAttachment(messageType, message)` for accurate banner and caption prefill. |
+| **12** | **Receiver Screen Real-Time Edit Sync (`receive_message` & Multi-Event Interception)** | When User A edited an attachment message with a caption, User A saw it instantly, but User B (recipient) never saw the edited caption or "Edited" tag. Root causes: a) In `MessageController.dart` and `GroupChatController.dart`, when the backend broadcast the updated message row via `receive_message`, the condition `if (!hasOldContent && hasNewContent)` evaluated to false because `hasOldContent` was already true for existing messages, causing receiver to completely drop and ignore the update; b) `mergeAttachmentFrom` lacked synchronization logic for `caption` and `isEdited`; c) Sender's `updateEditedMessage` passed `content: text` clobbering media storage links; d) Socket edit listeners omitted `message_update`, `messageUpdated`, `update_message`, `updateMessage` variants and lacked auto-reconnection reattachment on the main `/chat` socket. | a) **MessageController & GroupChatController:** Added explicit `isEditUpdate` evaluation in `receivePrivateMessage` and `receiveGroupMessage` checking `isEdited`, `edited`, and modified `caption`/`content`. Updates `existing.caption` for attachments (preserving media URLs in `content`), updates `existing.content` for text, sets `isEdited = true` and `edited = true`, and calls `updateMessageStream()` so receiver screen updates instantly; b) **Safe Media Content Preservation:** Updated `updateEditedMessage` across private and group chat to pass `content: isAttachment ? targetMsg.content : text`, preserving the cloud storage URL while passing the new caption in `caption`; c) **Model Resilience:** Upgraded `mergeAttachmentFrom` in `GetMessage.dart` to merge updated `caption` and `isEdited` flags; d) **Socket Coverage:** Registered `message_update`, `messageUpdated`, `update_message`, and `updateMessage` across all sockets and guaranteed re-registration upon `/chat` socket reconnection. |
 
 ---
 
@@ -179,6 +181,63 @@ All changes were strictly surgical, targeted, and adhered to existing UI compone
 26. `lib/app/modules/Messages/Views/chatlist_screen.dart`
     - Added post-frame background pre-warming (`NewChatController.preWarm()`) so when user clicks the floating New Chat button, contacts are ready in memory.
 
+27. `lib/app/Data/Services/Socket/Socket_Message_Services.dart`
+    - Enhanced `editMessage` method to transmit complete payload: `messageId`, `id`, `chatId` (from `chatId ?? (groupId ?? _privateChatId)`), `conversationId`, `content`, `caption`, `text`, `newContent`, `isEdited: true`, `is_edited: true`, `edited: true`, `chatType`, `receiverId`, and `messageType`.
+    - Emits on BOTH `_privateChatSocket` AND main `_socket` (if connected) without premature return, ensuring 100% backend receipt regardless of socket namespace.
+    - Updated `listenMessageEdited` to register listeners across all active sockets (`_socket`, `_privateChatSocket`, `_privateChatListSocket`) for all 4 event names (`messageEdited`, `message_edited`, `editMessage`, `edit_message`).
+    - Added `_registerEditListener` on `initPrivateChat` and `_privateChatSocket` creation so listeners are persistently re-attached upon socket re-creation/reconnect.
+
+28. `lib/app/modules/Messages/Controller/chat_screen_logic.dart`
+    - Expanded `isAttachment(dynamic messageType, [MessageData? msg])` to identify `'image'`, `'image_text'`, `'media'`, `'video'`, `'document'`, `'audio'`, `'voice'`, `'file'`, `'photo'`, `'doc'`, `'attachment'`, and check for non-empty `images`, `videos`, or existing non-content `caption`.
+    - Expanded `isEditable(dynamic messageType)` to permit editing across all supported attachment types (`voice`, `file`, `photo`, `doc`, `attachment`).
+    - Upgraded `applyEdit(List<MessageData> messages, Map<String, dynamic> data)` to unwrap nested payloads (`message`, `data`, `messageData`, `result`), match IDs resiliently (`m.id == id || m.id?.toString() == id.toString()`), update `msg.caption` with the new text while strictly protecting media URLs in `msg.content`, and guarantee `msg.isEdited = true` and `msg.edited = true`.
+    - Updated `merge` to mark `existingMsg.edited = true` when incoming edit occurs.
+
+29. `lib/app/modules/Messages/Controller/MessageController.dart`
+    - Updated `updateEditedMessage` for 1-to-1 chats to forward `chatId: privateChatId.value`, `content: text`, `caption: text`, and `messageType: targetMsg.messageType` via `socketService.editMessage`.
+    - Updated `listenMessageEdited` to parse String JSON via `jsonDecode`, unwrap nested payloads, filter out group messages, apply edits, and trigger `updateMessageStream()`.
+
+30. `lib/app/modules/Messages/Controller/GroupChatController.dart`
+    - Updated `updateEditedMessage` for group chats to forward `chatId: groupId`, `groupId: groupId`, `content: text`, `caption: text`, and `messageType: targetMsg.messageType` via `socketService.editMessage`.
+    - Updated `listenMessageEdited` to support String JSON decoding and nested payloads before updating UI stream.
+
+31. `lib/app/modules/Messages/widgets/ChatInputArea.dart`
+    - Enhanced `_buildEditingBanner` and `editingMessage` text initialization to evaluate `ChatScreenRules.isAttachment(editingMessage.messageType, editingMessage)`, ensuring exact caption prefill and banner preview for all attachment types.
+
+32. `lib/app/modules/Messages/Controller/MessageController.dart`
+    - Added `isEditUpdate` evaluation in `receivePrivateMessage`: checks `messageData.isEdited == true`, `messageData.edited == true`, or modified `caption`/`content`. For attachments, updates `existing.caption` while strictly protecting the media storage URL in `existing.content`; for text messages, updates `existing.content`. Sets `existing.isEdited = true` and `existing.edited = true`, and invokes `updateMessageStream()` so the receiver screen updates in real time upon receiving server broadcast messages.
+    - Updated `updateEditedMessage` to pass `content: isAttachment ? targetMsg.content : text` so media storage links are never clobbered by caption text in backend payloads.
+
+33. `lib/app/modules/Messages/Controller/GroupChatController.dart`
+    - Added identical real-time edit synchronization in `receiveGroupMessage`: parses `isEditUpdate`, updates `existing.caption` or `existing.content` in place, sets `isEdited = true` and `edited = true`, and updates the message stream.
+    - Updated `updateEditedMessage` for group chats to preserve media URLs in `content`.
+
+34. `lib/app/Data/Services/Socket/Socket_Message_Services.dart`
+    - Expanded edit event listener in `_registerEditListener` to subscribe to `messageEdited`, `message_edited`, `editMessage`, `edit_message`, `message_update`, `messageUpdated`, `update_message`, and `updateMessage`.
+    - Added edit listener re-registration in `_socket.onConnect` so group and main socket reconnections persistently restore edit synchronization.
+    - Cleaned up unregistration in `clearPrivateChatListeners` and `clearGroupChatListeners`.
+
+35. `lib/app/Model/GetMessage.dart`
+    - Upgraded `mergeAttachmentFrom` to synchronize incoming edited `caption` and `isEdited` / `edited` flags on existing messages.
+    - Exposed `ChatScreenRules.looksLikeMediaUrl` for robust discrimination between media storage links and user captions.
+
+36. `lib/app/Data/Services/Socket/Socket_Message_Services.dart`
+    - Added `mediaUrl` parameter to `socketService.editMessage` to send `mediaUrl` and `fileUrl` alongside `body`, `message`, `content`, `caption`, `text`, `newContent`.
+    - Transmits edited text consistently across all text-carrying keys so backend stores and broadcasts edited text regardless of whether it inspects `content` or `caption`.
+
+37. `lib/app/modules/Messages/Controller/MessageController.dart` & `lib/app/modules/Messages/Controller/GroupChatController.dart`
+    - Corrected payload in `updateEditedMessage`: for attachments (image, video, audio), passes `text` in `content`, `caption`, `text`, and `newContent`, while passing original media URL in `mediaUrl`.
+    - For document attachments (`document`, `file`, or containing `||`), preserves `filename||originalName` in `content` while passing new text in `caption`, `text`, and `newContent`.
+
+38. `lib/app/modules/Messages/Controller/chat_screen_logic.dart`
+    - Updated `applyEdit` in `ChatScreenRules`: ensures incoming edit text without `||` and not matching media URLs updates `msg.caption` immediately in place.
+    - Guarantees `msg.content` retains media path / `||` tuple while `msg.caption` renders the updated caption.
+
+39. `lib/app/modules/Messages/widgets/ChatItem.dart`
+    - Added universal helper `_resolveAttachmentCaption(MessageData message)`: evaluates `message.caption`, falling back to non-media `message.content` when `caption` is null/empty.
+    - Connected `_resolveAttachmentCaption` across all attachment bubbles in both `ChatBubble` (1-on-1 private chat) and `GroupChatBubble` (group chat): Media Gallery, Audio, Single Video, Document, and translation lookup.
+    - Guarantees receiver renders edited caption and "Edited" italicized tag in real time and across re-opens.
+
 ---
 
 ## 3. Strict Protection & Locked Modules (NOT Touched)
@@ -220,12 +279,21 @@ As mandated by project rules, the following verified and completed production mo
   - Delete for everyone complete removal & merge filtering: `PASS`
   - Message sorting across mixed timestamp formats: `PASS`
   - Document IANA MIME type mappings: `PASS`
-- **Chat Logic, Location & Context Menu Suite** (`test/chat_screen_logic_test.dart`): **38/38 PASSED (100%)**
+- **Chat Logic, Location & Context Menu Suite** (`test/chat_screen_logic_test.dart`): **46/46 PASSED (100%)**
   - Menu options on deleted messages strictly allow ONLY Delete for me, never Edit, Forward, Copy, or Info: `PASS`
   - Floating emoji bar suppressed completely on deleted messages: `PASS`
   - Single Forward option logic for text, image, video, document, audio: `PASS`
   - In-place optimistic edit updates: `PASS`
   - LocationMessage static and live serialization, duration parsing, expiry checks, copyWith tests: `PASS`
+  - Attachment edit with caption preserves media URL and updates caption & edited tag: `PASS`
+  - Attachment edit with plain text content updates caption instead of overwriting media: `PASS`
+  - Attachment edit works with nested message payload and text/newContent keys: `PASS`
+  - Document edit preserves path||name||size content and updates caption: `PASS`
+  - Audio edit with caption candidate updates audio caption: `PASS`
+  - isAttachment detects all attachment formats, media instances, and caption states: `PASS`
+  - looksLikeMediaUrl identifies media URLs vs plain captions: `PASS`
+  - mergeAttachmentFrom updates caption and isEdited flag when message was edited: `PASS`
+- **Full Verification Suite** (`test/chat_screen_logic_test.dart` + `test/fixes_qa/six_fixes_verification_test.dart`): **57/57 PASSED (100%)**
 - **Call QA & Audio Route Suite** (`test/call_qa/call_audio_and_state_reliability_test.dart`): **9/9 PASSED (100%)**
   - Audio route transitions, CallKit payload normalization, disconnect teardown: `PASS`
 

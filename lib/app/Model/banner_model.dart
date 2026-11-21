@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+
 class bannermodel {
   bool? success;
   String? message;
@@ -39,7 +41,23 @@ class BannerData {
     id = json['id'];
     title = json['title'];
     description = json['description'];
-    imageUrl = json['imageUrl'];
+    imageUrl = (json['imageUrl'] ??
+            json['image'] ??
+            json['image_url'] ??
+            json['banner_image'])
+        ?.toString();
+  }
+
+  /// Resolves the banner image URL to a full network URL if relative.
+  String get resolvedImageUrl {
+    if (imageUrl == null || imageUrl!.trim().isEmpty) return '';
+    final clean = imageUrl!.trim();
+    if (clean.startsWith('http://') || clean.startsWith('https://')) {
+      return clean;
+    }
+    final base = ConstRes.aImageBaseUrl.replaceFirst(RegExp(r'/+$'), '');
+    final path = clean.replaceFirst(RegExp(r'^/+'), '');
+    return '$base/$path';
   }
 
   Map<String, dynamic> toJson() {

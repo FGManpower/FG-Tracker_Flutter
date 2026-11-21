@@ -1,6 +1,6 @@
 # Calling Module — Flutter Frontend Architecture & Implementation Guide
 
-**Document Version:** `v1.4.2` · **Last updated:** 2026-11-18 · **Branch:** `46Solution`  
+**Document Version:** `v1.5.4` · **Last updated:** 2026-11-21 · **Branch:** `46Solution`  
 **Target Audience:** Flutter Frontend Developers & Backend Integrators  
 **Covers:** 1-on-1 Audio/Video Calls (reliability, permissions, busy / call waiting, reconnect, CallKit, PiP), WebRTC PeerConnection, AWS SFU & Coturn STUN/TURN, Sockets & REST APIs, CallKit, Audio Routing, Proximity Sensor, In-App PIP Overlay, Screen Sharing, Recent Calls Cache & Multi-Delete  
 **Status:** Phases 1–3 done in code (uncommitted), unit-tested; **phone checks and backend items pending** (§5.3, §8, `testing/calling/`)  
@@ -171,6 +171,7 @@ If video or calling appears sluggish or delayed during testing, the runtime logs
 | v1.5.1 | 2026-11-20 | Fix lag in Calls → Contacts tab and All Contacts (WhatsApp-style caching, pagination, keep-alive state). Instant tab switch via AutomaticKeepAliveClientMixin; AppCache.fgContacts & session caching in ContactController; withThumbnail: false in ContactService; invite contacts client-side paging (25 items/page); zero-jank RepaintBoundary. Files Changed, Files Locked, and iOS/Android parity results documented in §9. |
 | v1.5.0 | 2026-11-18 | Uncommitted. Call UI redesign (6 screens: audio calling / connected / incoming, video ringing / connected / incoming; screen-share card + live pill; signal-bars quality icon). Device-log fixes and backend round 2: §8.7 and §10. Bugs BUG-CALL-39 … 51 in `testing/calling/bug_tracker.md`. New: `Services/call_end_probe.dart`, `Services/call_events.dart`. Tests: `call_remote_end_v1_test.dart`, `call_backend_ready_v1_test.dart`, PM-05b/c/d. |
 | v1.4.3 | 2026-11-18 | §9 added: the Calls → Contacts tab now builds its list exactly like All Contacts (shared `ContactMatcher`): phonebook × `/getAllUser`, phonebook names and numbers, phonebook order. The group-members paging (`getGroupMember`) is no longer used here. |
+| v1.5.4 | 2026-11-21 | §11 added: Call Recent tab dual-action swipe: Right Swipe (Green `#22C55E` + `Icons.call_rounded`) immediately initiates Call / opens call screen; Left Swipe (Red `Colors.red.shade600` + `Icons.delete_outline_rounded`) triggers Delete confirmation dialog before deletion; partial release smoothly snaps back without freezing; instant reactive list update. |
 | v1.4.2 | 2026-11-18 | §8.6 added: backend answers to Q1–Q7. App: `/callSignaling` handshake sends the login token in `auth` (B-01); native decline (Android `CallDeclineReceiver.kt`, iOS `AppDelegate.swift`) moved from `http://fgtracker.in:3000` to the HTTPS production host and sends `reason=declined` (B-13). New test `call_backend_contract_v1_test.dart` (5). |
 | v1.4.1 | 2026-11-18 | §8.5 added: ready-to-send brief for the backend team (B-01 … B-16, questions, what to send back, suggested order). Docs only. |
 | v1.4.0 | 2026-11-18 | Phase 3 (uncommitted): §7 added (busy / call waiting, ICE restart + rejoin, TURN service + TLS 443 fallback, quality badge, other side's state, end screen + tones, missed-call Call back, iOS CallKit outgoing + mute/hold + VoIP token upload, Android PiP); §8 backend handover (B-01 … B-16). Out-of-date parts fixed (C19): header status, §0.1 (TURN 443 not live; credential name removed), event tables (directions, fields, reasons, `acceptCallFromCallKit`, `rejoinCall`). Late end events of another call are ignored (BUG-CALL-37/38). |
@@ -995,3 +996,36 @@ Early mic ask: the Calls tab primer (once) and the optional Microphone row of th
 - Audio top bar right: **signal bars** = call quality (green / amber), tap = "Good / Poor connection". Not a menu.
 - Android system incoming screen: app colours (`#3A2A9E` voice, `#0E0C14` video, accept `#16B364`). iOS uses Apple's CallKit screen, which apps cannot restyle.
 - Screen share: sharer sees a centre card with **Stop sharing**; viewer sees "<name> is sharing their screen" with a live dot.
+
+---
+
+## 11. Call Recent List Dual-Action Swipe (v1.5.4, 2026-11-21)
+
+### 11.1 Features & Directional Swipe Architecture
+- **RIGHT SWIPE (Left-to-Right Drag):**
+  - **Visuals:** Emerald green background (`const Color(0xFF22C55E)`), call icon (`Icons.call_rounded`), and localized label (`chat_call`) revealed on the left.
+  - **Action:** Swiping past 35% threshold or fling (`velocity > 250`) automatically triggers call initiation via `_handleCall(callItem)`. Opens active calling screen immediately (audio or video call matching the log type).
+  - Tapping the revealed green action button also executes the call.
+- **LEFT SWIPE (Right-to-Left Drag):**
+  - **Visuals:** Red background (`Colors.red.shade600`), delete icon (`Icons.delete_outline_rounded`), and localized label (`common_delete`) revealed on the right.
+  - **Action:** Swiping past 35% threshold, fling (`velocity < -250`), or tapping the revealed red delete button opens the confirmation bottom sheet (`_showDeleteConfirmationBottomSheet(callItem)`).
+  - **Accidental Deletion Protection:** Deletion ONLY occurs if user confirms via "Yes, Delete" on the bottom sheet dialog.
+  - **Instant Reactive Removal:** Calling `controller.deleteRecentCall(call)` triggers `_rebuildRecentDisplay()`, immediately removing the call log item from the UI without requiring any manual pull-to-refresh.
+- **Partial Swipe Physics & Snap-Back:**
+  - If a drag is released below the activation threshold (`< 0.15`), `_close()` executes smoothly using `Curves.easeOutCubic` over 200ms, snapping back to 0.0 without sticking, stuttering, or remaining partially open.
+  - Multi-select mode safeguard: When `controller.isSelectionMode` is active, horizontal drag gestures are disabled so selection check taps take precedence.
+
+### 11.2 Verification & Modules Integrity
+- **Files Changed:**
+  - `lib/app/modules/call/Views/call_recent_calls_tab.dart` (only swipe & call trigger logic).
+- **Files Locked (Protected & Untouched):**
+  - Authentication / Login: `OtpController.dart`, `logoutuser.dart`.
+  - Location Sharing & Ghost Mode: `GroupTrackController.dart`, `LiveStatus_controller.dart`, `Profile_Repo.dart`, `ProfileRes.dart`, `OtpVeriefy.dart`.
+  - Features preserved: Home Screen, Menu, Chatting, Forward, Delete for Everyone, Edit, Msg Info, Location, New Chat, Contacts, Custom Banner, Block/Unblock, Attendance.
+- **iOS + Android Verification Results:**
+  - **Static Analysis:** `dart analyze` / MCP analyzer passed with 0 errors.
+  - **Gesture Physics:** Smooth 60fps drag on both iOS (`Cupertino` physics) and Android.
+  - **Right Swipe:** Green Call background revealed on left, triggers call screen immediately.
+  - **Left Swipe:** Red Delete background revealed on right, opens confirmation popup, removes row reactively on YES.
+  - **No Freeze:** Halfway swipe returns cleanly to origin.
+

@@ -204,7 +204,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
             if (!mounted) return;
 
             final isAttachment =
-                ChatScreenRules.isAttachment(editingMessage.messageType);
+                ChatScreenRules.isAttachment(editingMessage.messageType, editingMessage);
             final String text = isAttachment
                 ? (editingMessage.caption?.toString() ?? "")
                 : (editingMessage.content?.toString() ?? "");
@@ -1206,7 +1206,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
   }
 
   Widget _buildEditingBanner(MessageData message, BuildContext context) {
-    final isAttachment = ChatScreenRules.isAttachment(message.messageType);
+    final isAttachment = ChatScreenRules.isAttachment(message.messageType, message);
     final String preview = isAttachment
         ? ((message.caption?.toString().trim().isNotEmpty ?? false)
             ? message.caption.toString()

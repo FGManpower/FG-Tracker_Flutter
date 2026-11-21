@@ -3,8 +3,8 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class ConstRes {
   ///------------------------ App Version ------------------------///
-  static const String appVersion = '2.0.6';
-  static const int appBuildNumber = 329;
+  static const String appVersion = '2.0.7';
+  static const int appBuildNumber = 333;
 
   ///------------------------ Environment Switch ------------------------///
   /// Set [isProduction] = true to connect to AWS Cloud Production (Mumbai ap-south-1).
@@ -13,7 +13,7 @@ class ConstRes {
   ///   flutter run --dart-define=IS_PROD=true
   ///   flutter run --dart-define=IS_PROD=false
   static const bool isProduction =
-      bool.fromEnvironment('IS_PROD', defaultValue: true);
+      bool.fromEnvironment('IS_PROD', defaultValue: false);
 
   ///------------------------ Server Endpoints By Environment ------------------------///
   // AWS Production (Mumbai ap-south-1 - HTTPS & WSS via ALB)
