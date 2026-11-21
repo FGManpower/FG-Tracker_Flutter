@@ -238,6 +238,18 @@ All changes were strictly surgical, targeted, and adhered to existing UI compone
     - Connected `_resolveAttachmentCaption` across all attachment bubbles in both `ChatBubble` (1-on-1 private chat) and `GroupChatBubble` (group chat): Media Gallery, Audio, Single Video, Document, and translation lookup.
     - Guarantees receiver renders edited caption and "Edited" italicized tag in real time and across re-opens.
 
+40. `lib/app/modules/Messages/widgets/MessageContextMenu.dart` & `lib/app/modules/Messages/widgets/ChatItem.dart`
+    - **WhatsApp-Parity Long-Press Context Menu, Highlight & iOS Auto-Centering Architecture:**
+      - Removed full-screen shader `BackdropFilter(sigmaX: 5, sigmaY: 5)` that was blurring out the active message behind a white/fog overlay and causing GPU stutter / white screens on low-RAM iOS and Android devices.
+      - Replaced with lightweight dim overlay (`Colors.black.withValues(alpha: 0.40)`) and renders the unblurred, full-color message bubble directly on top of the dim overlay at its exact coordinates, wrapped in `AbsorbPointer` and tap-to-dismiss.
+      - **WhatsApp iOS Auto-Centering & Smart Directional Anchor:**
+        - **Bada / Tall Message (`isBadaMsg`):** Message centers smoothly in viewport; Reaction bar pins at the top (`safeTop + 4`); Action Menu pins at the bottom (`safeBottom - menuHeight - 4`), neatly overlapping the bottom of the tall message exactly as in iOS WhatsApp.
+        - **Bottom Message (`isLowerHalf`):** Menu opens **UPAR** (above bubble); Reactions sit directly between Menu and Bubble; all 8 options fully visible within safe screen bounds.
+        - **Top / Middle Message:** Menu opens **NEECHE** (below bubble); Reactions float directly above bubble; message smoothly shifts down/up if boundary space is tight.
+      - All 8 actions strictly ordered and 100% visible without scroll or cutoff: Reply, Copy, Forward, Edit, Pin Message / Unpin, Message Info, Delete for Everyone (red), Delete for Me (red).
+      - In `ChatItem.dart`, isolated `bubbleContext` inside a dedicated `Builder` wrapping the bubble `GestureDetector` so coordinate measurements reflect only the message bubble bounds, completely decoupling it from trailing reaction pills and translation action bars.
+      - Verified across all 4 geometry test cases (Top, Middle, Bottom, Bada Msg) via automated widget suite `test/chat_context_menu_whatsapp_test.dart` (4/4 PASSED).
+
 ---
 
 ## 3. Strict Protection & Locked Modules (NOT Touched)

@@ -725,11 +725,6 @@ class ChatBubble extends StatelessWidget {
       );
     }
 
-    final bgColor = isSentByMe ? _myBubbleBg : _otherBubbleBg;
-    final textColor = Colors.black87;
-
-    final borderRadius = _bubbleRadius();
-
     // No avatar next to received bubbles (UI, F-1.2.6): the app bar
     // already shows and opens the contact's profile.
     return Container(
@@ -740,150 +735,169 @@ class ChatBubble extends StatelessWidget {
             isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           Flexible(
-            child: Builder(
-              builder: (bubbleContext) {
-                return Obx(() {
-                  // Read the observable unconditionally: an Obx that reads none
-                  // (e.g. for attendance cards) throws "improper use of GetX".
-                  final isHighlighted =
-                      controller.highlightedMessageId.value == message.id;
-                  final isAttendance =
-                      !_isDeletedMessage && message.messageType == "attendance";
+            child: Obx(() {
+              // Read the observable unconditionally: an Obx that reads none
+              // (e.g. for attendance cards) throws "improper use of GetX".
+              final isHighlighted =
+                  controller.highlightedMessageId.value == message.id;
 
-                  return Column(
-                    crossAxisAlignment: isSentByMe
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GestureDetector(
-                        onLongPress: () =>
-                            _showMessageMenu(bubbleContext, isSentByMe),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          constraints: BoxConstraints(
-                            maxWidth: isAttendance
-                                ? MediaQuery.of(context).size.width * 0.88
-                                : MediaQuery.of(context).size.width * 0.75,
-                          ),
-                          padding: isAttendance
-                              ? EdgeInsets.zero
-                              : EdgeInsets.symmetric(
-                                  horizontal: 12.w,
-                                  vertical: 8.h,
-                                ),
-                          decoration: BoxDecoration(
-                            color: isAttendance
-                                ? Colors.transparent
-                                : (isHighlighted
-                                    ? Colors.yellow.withValues(alpha: .35)
-                                    : bgColor),
-                            borderRadius: isAttendance
-                                ? BorderRadius.circular(20.r)
-                                : borderRadius,
-                            border: _bubbleBorder(
-                              isSentByMe: isSentByMe,
-                              isAttendance: isAttendance,
-                            ),
-                            boxShadow: isAttendance
-                                ? []
-                                : [
-                                    BoxShadow(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.04),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                          ),
-                          child: _bubbleWidth(
-                            isAttendance: isAttendance,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (!_isDeletedMessage)
-                                  _buildReplyPreview(
-                                    message,
-                                    isSentByMe,
-                                  ),
-                                if (!_isDeletedMessage &&
-                                    message.isForwarded == true)
-                                  Padding(
-                                    padding: EdgeInsets.only(bottom: 5.h),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.forward_rounded,
-                                          size: 14.sp,
-                                          color: Colors.grey.shade600,
-                                        ),
-                                        SizedBox(width: 4.w),
-                                        Text(
-                                          context.l10n.chat_forwarded,
-                                          style: TextStyle(
-                                            fontSize: 10.sp,
-                                            fontStyle: FontStyle.italic,
-                                            color: Colors.grey.shade600,
-                                            fontFamily: FontFamily.interMedium,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                if (_isDeletedMessage) ...[
-                                  _buildDeletedContent(isSentByMe),
-                                ] else if (_isPlainTextMessage(message)) ...[
-                                  _buildTextWithTime(
-                                    message: message,
-                                    textColor: textColor,
-                                    isSentByMe: isSentByMe,
-                                  ),
-                                  if (!isSentByMe)
-                                    _buildTranslatedCard(message),
-                                ] else ...[
-                                  _buildMessageContent(
-                                    message,
-                                    textColor,
-                                    isSentByMe,
-                                  ),
-                                  SizedBox(height: 4.h),
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: _buildTimeRow(
-                                      isSentByMe,
-                                    ),
-                                  ),
-                                  if (!isSentByMe)
-                                    _buildTranslatedCard(message),
-                                ],
-                              ],
-                            ),
+              return Column(
+                crossAxisAlignment: isSentByMe
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Builder(
+                    builder: (bubbleContext) {
+                      return GestureDetector(
+                        onLongPress: () => _showMessageMenu(
+                          bubbleContext,
+                          isSentByMe,
+                          messageWidget: _buildBubbleContainer(
+                            context,
+                            isSentByMe,
+                            isHighlighted: isHighlighted,
                           ),
                         ),
-                      ),
-                      if (!_isDeletedMessage &&
-                          message.reactions != null &&
-                          message.reactions!.isNotEmpty)
-                        _buildReactionPill(message, isSentByMe),
-                      if (!isSentByMe &&
-                          !_isDeletedMessage &&
-                          _getTranslatableText(message).isNotEmpty)
-                        ChatMessageActionRow(
-                          messageId: _getMessageTranslationId(message),
-                          originalText: _getTranslatableText(message),
-                          isSentByMe: isSentByMe,
-                          // Plain text has the speaker inside the bubble.
-                          showListen: !_isPlainTextMessage(message),
+                        child: _buildBubbleContainer(
+                          context,
+                          isSentByMe,
+                          isHighlighted: isHighlighted,
                         ),
-                    ],
-                  );
-                });
-              },
-            ),
+                      );
+                    },
+                  ),
+                  if (!_isDeletedMessage &&
+                      message.reactions != null &&
+                      message.reactions!.isNotEmpty)
+                    _buildReactionPill(message, isSentByMe),
+                  if (!isSentByMe &&
+                      !_isDeletedMessage &&
+                      _getTranslatableText(message).isNotEmpty)
+                    ChatMessageActionRow(
+                      messageId: _getMessageTranslationId(message),
+                      originalText: _getTranslatableText(message),
+                      isSentByMe: isSentByMe,
+                      // Plain text has the speaker inside the bubble.
+                      showListen: !_isPlainTextMessage(message),
+                    ),
+                ],
+              );
+            }),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBubbleContainer(
+    BuildContext context,
+    bool isSentByMe, {
+    bool isHighlighted = false,
+  }) {
+    final bgColor = isSentByMe ? _myBubbleBg : _otherBubbleBg;
+    final textColor = Colors.black87;
+    final borderRadius = _bubbleRadius();
+    final isAttendance =
+        !_isDeletedMessage && message.messageType == "attendance";
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      constraints: BoxConstraints(
+        maxWidth: isAttendance
+            ? MediaQuery.of(context).size.width * 0.88
+            : MediaQuery.of(context).size.width * 0.75,
+      ),
+      padding: isAttendance
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(
+              horizontal: 12.w,
+              vertical: 8.h,
+            ),
+      decoration: BoxDecoration(
+        color: isAttendance
+            ? Colors.transparent
+            : (isHighlighted
+                ? Colors.yellow.withValues(alpha: .35)
+                : bgColor),
+        borderRadius: isAttendance
+            ? BorderRadius.circular(20.r)
+            : borderRadius,
+        border: _bubbleBorder(
+          isSentByMe: isSentByMe,
+          isAttendance: isAttendance,
+        ),
+        boxShadow: isAttendance
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+      ),
+      child: _bubbleWidth(
+        isAttendance: isAttendance,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!_isDeletedMessage)
+              _buildReplyPreview(
+                message,
+                isSentByMe,
+              ),
+            if (!_isDeletedMessage && message.isForwarded == true)
+              Padding(
+                padding: EdgeInsets.only(bottom: 5.h),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.forward_rounded,
+                      size: 14.sp,
+                      color: Colors.grey.shade600,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      context.l10n.chat_forwarded,
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey.shade600,
+                        fontFamily: FontFamily.interMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (_isDeletedMessage) ...[
+              _buildDeletedContent(isSentByMe),
+            ] else if (_isPlainTextMessage(message)) ...[
+              _buildTextWithTime(
+                message: message,
+                textColor: textColor,
+                isSentByMe: isSentByMe,
+              ),
+              if (!isSentByMe) _buildTranslatedCard(message),
+            ] else ...[
+              _buildMessageContent(
+                message,
+                textColor,
+                isSentByMe,
+              ),
+              SizedBox(height: 4.h),
+              Align(
+                alignment: Alignment.centerRight,
+                child: _buildTimeRow(
+                  isSentByMe,
+                ),
+              ),
+              if (!isSentByMe) _buildTranslatedCard(message),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -1850,8 +1864,9 @@ class ChatBubble extends StatelessWidget {
 
   void _showMessageMenu(
     BuildContext bubbleContext,
-    bool isSentByMe,
-  ) {
+    bool isSentByMe, {
+    Widget? messageWidget,
+  }) {
     final isPinned = controller.pinnedMessage.value?.id == message.id;
     final isText = message.messageType == "text" ||
         message.messageType == "text_message" ||
@@ -1994,6 +2009,7 @@ class ChatBubble extends StatelessWidget {
       bubbleContext: bubbleContext,
       isSentByMe: isSentByMe,
       actions: actions,
+      messageWidget: messageWidget,
       currentReaction: _isDeletedMessage ? null : message.userReaction,
       onReactionSelected: _isDeletedMessage
           ? null
@@ -2242,12 +2258,6 @@ class GroupChatBubble extends StatelessWidget {
       );
     }
 
-    final bgColor = isSentByMe ? _myBubbleBg : _otherBubbleBg;
-
-    final textColor = Colors.black87;
-
-    final borderRadius = _bubbleRadius();
-
     // No avatar next to received bubbles (UI, F-1.2.6). The sender's name
     // in the bubble still opens their info.
     return Container(
@@ -2258,174 +2268,195 @@ class GroupChatBubble extends StatelessWidget {
             isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           Flexible(
-            child: Builder(
-              builder: (bubbleContext) {
-                return Obx(() {
-                  // Read the observable unconditionally: an Obx that reads none
-                  // (e.g. for attendance cards) throws "improper use of GetX".
-                  final isHighlighted =
-                      controller.highlightedMessageId.value == message.id;
-                  final isAttendance =
-                      !_isDeletedMessage && message.messageType == "attendance";
+            child: Obx(() {
+              // Read the observable unconditionally: an Obx that reads none
+              // (e.g. for attendance cards) throws "improper use of GetX".
+              final isHighlighted =
+                  controller.highlightedMessageId.value == message.id;
 
-                  return Column(
-                    crossAxisAlignment: isSentByMe
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GestureDetector(
+              return Column(
+                crossAxisAlignment: isSentByMe
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Builder(
+                    builder: (bubbleContext) {
+                      return GestureDetector(
                         onLongPress: () => _showMessageMenu(
                           bubbleContext,
                           isSentByMe,
-                        ),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width *
-                                (isAttendance ? 0.88 : 0.75),
-                          ),
-                          padding: isAttendance
-                              ? EdgeInsets.zero
-                              : EdgeInsets.symmetric(
-                                  horizontal: 12.w,
-                                  vertical: 8.h,
-                                ),
-                          decoration: BoxDecoration(
-                            color: isAttendance
-                                ? Colors.transparent
-                                : (isHighlighted
-                                    ? Colors.yellow.withValues(
-                                        alpha: .35,
-                                      )
-                                    : bgColor),
-                            borderRadius: isAttendance
-                                ? BorderRadius.circular(20.r)
-                                : borderRadius,
-                            border: _bubbleBorder(
-                              isSentByMe: isSentByMe,
-                              isAttendance: isAttendance,
-                            ),
-                            boxShadow: isAttendance
-                                ? []
-                                : [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.04,
-                                      ),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                          ),
-                          child: _bubbleWidth(
-                            isAttendance: isAttendance,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (isGroup && !isSentByMe && showSenderName)
-                                  Padding(
-                                    padding: EdgeInsets.only(
-                                      bottom: 4.h,
-                                    ),
-                                    child: GestureDetector(
-                                      onTap: _openSenderInfo,
-                                      child: Text(
-                                        // Real-time messages may arrive
-                                        // without a name: use the member list.
-                                        _senderDisplayName(),
-                                        style: TextStyle(
-                                          fontSize: 12.sp,
-                                          fontWeight: FontWeight.w700,
-                                          color:
-                                              senderNameColor(message.senderId),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                if (!_isDeletedMessage)
-                                  _buildReplyPreview(
-                                    message,
-                                    isSentByMe,
-                                  ),
-                                if (!_isDeletedMessage &&
-                                    message.isForwarded == true)
-                                  Padding(
-                                    padding: EdgeInsets.only(bottom: 5.h),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.forward_rounded,
-                                          size: 14.sp,
-                                          color: Colors.grey.shade600,
-                                        ),
-                                        SizedBox(width: 4.w),
-                                        Text(
-                                          context.l10n.chat_forwarded,
-                                          style: TextStyle(
-                                            fontSize: 10.sp,
-                                            fontStyle: FontStyle.italic,
-                                            color: Colors.grey.shade600,
-                                            fontFamily: FontFamily.interMedium,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                if (_isDeletedMessage) ...[
-                                  _buildDeletedContent(isSentByMe),
-                                ] else if (_isPlainTextMessage(message)) ...[
-                                  _buildTextWithTime(
-                                    message: message,
-                                    textColor: textColor,
-                                    isSentByMe: isSentByMe,
-                                  ),
-                                  if (!isSentByMe)
-                                    _buildTranslatedCard(message),
-                                ] else ...[
-                                  _buildMessageContent(
-                                    message,
-                                    textColor,
-                                    isSentByMe,
-                                  ),
-                                  SizedBox(height: 4.h),
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: _buildTimeRow(
-                                      isSentByMe,
-                                    ),
-                                  ),
-                                  if (!isSentByMe)
-                                    _buildTranslatedCard(message),
-                                ],
-                              ],
-                            ),
+                          messageWidget: _buildBubbleContainer(
+                            context,
+                            isSentByMe,
+                            isHighlighted: isHighlighted,
                           ),
                         ),
-                      ),
-                      if (!_isDeletedMessage &&
-                          message.reactions != null &&
-                          message.reactions!.isNotEmpty)
-                        _buildReactionPill(message, isSentByMe),
-                      if (!isSentByMe &&
-                          !_isDeletedMessage &&
-                          _getTranslatableText(message).isNotEmpty)
-                        ChatMessageActionRow(
-                          messageId: _getMessageTranslationId(message),
-                          originalText: _getTranslatableText(message),
-                          isSentByMe: isSentByMe,
-                          // Plain text has the speaker inside the bubble.
-                          showListen: !_isPlainTextMessage(message),
+                        child: _buildBubbleContainer(
+                          context,
+                          isSentByMe,
+                          isHighlighted: isHighlighted,
                         ),
-                    ],
-                  );
-                });
-              },
-            ),
+                      );
+                    },
+                  ),
+                  if (!_isDeletedMessage &&
+                      message.reactions != null &&
+                      message.reactions!.isNotEmpty)
+                    _buildReactionPill(message, isSentByMe),
+                  if (!isSentByMe &&
+                      !_isDeletedMessage &&
+                      _getTranslatableText(message).isNotEmpty)
+                    ChatMessageActionRow(
+                      messageId: _getMessageTranslationId(message),
+                      originalText: _getTranslatableText(message),
+                      isSentByMe: isSentByMe,
+                      // Plain text has the speaker inside the bubble.
+                      showListen: !_isPlainTextMessage(message),
+                    ),
+                ],
+              );
+            }),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBubbleContainer(
+    BuildContext context,
+    bool isSentByMe, {
+    bool isHighlighted = false,
+  }) {
+    final bgColor = isSentByMe ? _myBubbleBg : _otherBubbleBg;
+    final textColor = Colors.black87;
+    final borderRadius = _bubbleRadius();
+    final isAttendance =
+        !_isDeletedMessage && message.messageType == "attendance";
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width *
+            (isAttendance ? 0.88 : 0.75),
+      ),
+      padding: isAttendance
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(
+              horizontal: 12.w,
+              vertical: 8.h,
+            ),
+      decoration: BoxDecoration(
+        color: isAttendance
+            ? Colors.transparent
+            : (isHighlighted
+                ? Colors.yellow.withValues(
+                    alpha: .35,
+                  )
+                : bgColor),
+        borderRadius: isAttendance
+            ? BorderRadius.circular(20.r)
+            : borderRadius,
+        border: _bubbleBorder(
+          isSentByMe: isSentByMe,
+          isAttendance: isAttendance,
+        ),
+        boxShadow: isAttendance
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(
+                    alpha: 0.04,
+                  ),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+      ),
+      child: _bubbleWidth(
+        isAttendance: isAttendance,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isGroup && !isSentByMe && showSenderName)
+              Padding(
+                padding: EdgeInsets.only(
+                  bottom: 4.h,
+                ),
+                child: GestureDetector(
+                  onTap: _openSenderInfo,
+                  child: Text(
+                    // Real-time messages may arrive
+                    // without a name: use the member list.
+                    _senderDisplayName(),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                      color:
+                          senderNameColor(message.senderId),
+                    ),
+                  ),
+                ),
+              ),
+            if (!_isDeletedMessage)
+              _buildReplyPreview(
+                message,
+                isSentByMe,
+              ),
+            if (!_isDeletedMessage &&
+                message.isForwarded == true)
+              Padding(
+                padding: EdgeInsets.only(bottom: 5.h),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.forward_rounded,
+                      size: 14.sp,
+                      color: Colors.grey.shade600,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      context.l10n.chat_forwarded,
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey.shade600,
+                        fontFamily: FontFamily.interMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (_isDeletedMessage) ...[
+              _buildDeletedContent(isSentByMe),
+            ] else if (_isPlainTextMessage(message)) ...[
+              _buildTextWithTime(
+                message: message,
+                textColor: textColor,
+                isSentByMe: isSentByMe,
+              ),
+              if (!isSentByMe)
+                _buildTranslatedCard(message),
+            ] else ...[
+              _buildMessageContent(
+                message,
+                textColor,
+                isSentByMe,
+              ),
+              SizedBox(height: 4.h),
+              Align(
+                alignment: Alignment.centerRight,
+                child: _buildTimeRow(
+                  isSentByMe,
+                ),
+              ),
+              if (!isSentByMe)
+                _buildTranslatedCard(message),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -3467,7 +3498,11 @@ class GroupChatBubble extends StatelessWidget {
   // Info). The old _areAllMembersSeen compared map entries with toString()
   // and never matched (BUG-CS-13).
 
-  void _showMessageMenu(BuildContext bubbleContext, bool isSentByMe) {
+  void _showMessageMenu(
+    BuildContext bubbleContext,
+    bool isSentByMe, {
+    Widget? messageWidget,
+  }) {
     final isPinned = controller.pinnedMessage.value?.id == message.id;
     final isText = message.messageType == "text" ||
         message.messageType == "text_message" ||
@@ -3610,6 +3645,7 @@ class GroupChatBubble extends StatelessWidget {
       bubbleContext: bubbleContext,
       isSentByMe: isSentByMe,
       actions: actions,
+      messageWidget: messageWidget,
       currentReaction: _isDeletedMessage ? null : message.userReaction,
       onReactionSelected: _isDeletedMessage
           ? null
