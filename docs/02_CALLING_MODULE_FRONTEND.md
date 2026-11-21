@@ -1,6 +1,6 @@
 # Calling Module — Flutter Frontend Architecture & Implementation Guide
 
-**Document Version:** `v1.5.4` · **Last updated:** 2026-11-21 · **Branch:** `46Solution`  
+**Document Version:** `v1.5.5` · **Last updated:** 2026-11-21 · **Branch:** `46Solution`  
 **Target Audience:** Flutter Frontend Developers & Backend Integrators  
 **Covers:** 1-on-1 Audio/Video Calls (reliability, permissions, busy / call waiting, reconnect, CallKit, PiP), WebRTC PeerConnection, AWS SFU & Coturn STUN/TURN, Sockets & REST APIs, CallKit, Audio Routing, Proximity Sensor, In-App PIP Overlay, Screen Sharing, Recent Calls Cache & Multi-Delete  
 **Status:** Phases 1–3 done in code (uncommitted), unit-tested; **phone checks and backend items pending** (§5.3, §8, `testing/calling/`)  
@@ -1028,4 +1028,64 @@ Early mic ask: the Calls tab primer (once) and the optional Microphone row of th
   - **Right Swipe:** Green Call background revealed on left, triggers call screen immediately.
   - **Left Swipe:** Red Delete background revealed on right, opens confirmation popup, removes row reactively on YES.
   - **No Freeze:** Halfway swipe returns cleanly to origin.
+
+---
+
+## 12. iOS Background / Terminated Wakeup & CallKit Native Mute Architecture (v1.5.5, 2026-11-21)
+
+### 12.1 Background & Terminated PushKit Wakeup Fix
+**Problem:** When an iOS device was locked or the app was terminated (swiped away from the app switcher), incoming calls were not received and the phone did not ring. However, when the app was in the foreground, calls connected normally.
+**Root Causes:**
+1. **Plugin Instance Nil on Headless Wakeup:** When iOS wakes an app via a PushKit VoIP push while the app is in the background or killed, the Flutter engine and its plugin registrar have not yet initialized. In `AppDelegate.swift`, `SwiftFlutterCallkitIncomingPlugin.sharedInstance` returned `nil`. The code fell into an `else` branch that simply called `completion()` without invoking `CXProvider.reportNewIncomingCall`.
+   - Consequence A: CallKit system call UI never appeared on the lock screen.
+   - Consequence B: Under Apple's iOS 13+ policy, failing to report an incoming call to CallKit within `didReceiveIncomingPushWith` triggers immediate process termination and causes APNs to suppress subsequent VoIP pushes.
+2. **Handle Format Mismatch (`CXErrorIncomingCallInvalid`):** `data.normalHandle = 1` (`1` = `.phoneNumber`) was hardcoded. When the caller lacked a numeric phone number and only a string display name was passed as the handle, CallKit threw `CXErrorIncomingCallInvalid`.
+3. **VoIP Token Registration Delay:** When PushKit refreshed the VoIP token in `pushRegistry(_:didUpdate:for:)`, it was not uploaded immediately to the backend via native HTTP. If the app was closed before Flutter code could run `syncVoipToken()`, the MySQL database lacked the device's `Voip_Device` token.
+
+**Implementation & Architectural Fix:**
+* **Native `CXProvider` Fallback in `AppDelegate.swift`:**
+  - Implemented `getNativeCallKitProvider(isVideo:)` and `showNativeCallKitIncoming(...)`.
+  - When a VoIP push arrives and `SwiftFlutterCallkitIncomingPlugin.sharedInstance` is `nil`, `AppDelegate` immediately creates and configures a native `CXProvider` (`localizedName: "FG Tracker"`) and invokes `reportNewIncomingCall(with: uuid, update: update)` directly.
+* **Dynamic Handle Validation:**
+  - Implemented `isPurePhoneNumber(_:)`. If the handle consists purely of digits (with optional `+`), `normalHandle = 1` (`.phoneNumber`); otherwise `normalHandle = 0` (`.generic`), preventing CallKit validation errors.
+* **Direct Native VoIP Token Upload:**
+  - Implemented `uploadVoipTokenViaApi(token:)` inside `pushRegistry(_:didUpdate:for:)`. Uses native `URLSession` to dispatch `POST /api/update-voip-token` immediately upon token generation, before Flutter runtime initializes.
+* **Native CallKit Teardown:**
+  - Implemented `nativeEndCall(uuidString:)` reporting `CXCallEndedReason.remoteEnded` to dismiss any native CallKit incoming call UI when a caller cancel signal arrives.
+
+---
+
+### 12.2 Two-Way Mute / Unmute Hardware Synchronization
+**Problem:** Call receivers on iOS could not mute or unmute their microphones reliably, particularly when the call was answered from the lock screen / CallKit or when the app was launched from the terminated state.
+**Root Causes:**
+1. **Zero Handling of `CXSetMutedCallAction`:** `AppDelegate.swift` had no implementation of `CXSetMutedCallAction` on the CallKit provider delegate. When the user pressed system mute on CallKit, CallKit failed the transaction.
+2. **Missing `onMuteChanged` Registration:** `call_kit_handlers.dart` never assigned `callKit.onMuteChanged`. System mute events were never passed to `CallingController`.
+3. **Callee UUID Resolution Mismatch:** In `CallingController`, `_callKitId` fell back to `_sessionId`. On the receiving side, `_sessionId` often resolved to the integer call ID (e.g. `"42"`). Passing an integer to `FlutterCallkitIncoming.muteCall` failed silently because CallKit requires a valid RFC 4122 UUID.
+4. **WebRTC Manual Audio CoreAudio Capture:** With `RTCAudioSession.sharedInstance().useManualAudio = true`, software `track.enabled = false` without CallKit `CXSetMutedCallAction` does not properly mute the hardware capture unit on iOS.
+
+**Implementation & Architectural Fix:**
+* **Native CallKit Provider Delegate Mute Handling:**
+  - `AppDelegate` implements `provider(_:perform action: CXSetMutedCallAction)` and `onMute(_ call: Call, _ action: CXSetMutedCallAction)` in `CallkitIncomingAppDelegate`.
+  - Upon system mute, `AppDelegate` fulfills the action and notifies Flutter via `com.fgtracker.audio_route` (`onCallKitMuteChanged`).
+* **Native In-App Mute Channel:**
+  - Handled `"setMicrophoneMute"` on `com.fgtracker.audio_route`. Invokes `CXCallController().request(CXTransaction(action: CXSetMutedCallAction(callUUID: uuid, isMuted: muted)))` so in-app mute is synced with Apple CallKit hardware audio state.
+* **Callee CallKit UUID Mapping:**
+  - Updated `_callKitId` getter in `CallingController`:
+    ```dart
+    String get _callKitId {
+      if (_outgoingCallKitId.isNotEmpty) return _outgoingCallKitId;
+      final String sid = _sessionId;
+      final String mapped = CallKitService.mappedUuid(sid);
+      if (mapped.isNotEmpty) return mapped;
+      if (callId != null) {
+        final String mappedCallId = CallKitService.mappedUuid(callId.toString());
+        if (mappedCallId.isNotEmpty) return mappedCallId;
+      }
+      return sid;
+    }
+    ```
+* **Flutter System Mute Handlers:**
+  - In `call_kit_handlers.dart`, registered `callKit.onMuteChanged` and the `com.fgtracker.audio_route` MethodCallHandler for `onCallKitMuteChanged` to route system mute directly to `CallingController.setMutedFromSystem(muted)`.
+* **Platform Isolation Guard:**
+  - Android code was kept 100% untouched. All new native channel calls and handlers are strictly encapsulated with `Platform.isIOS` / `defaultTargetPlatform == TargetPlatform.iOS`.
 
