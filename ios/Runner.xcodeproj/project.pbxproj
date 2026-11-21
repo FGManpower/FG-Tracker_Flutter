@@ -12,6 +12,7 @@
 		126607E32FF2778C0022AD4B /* walkie-talkie-ringtone.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 126607E22FF2778C0022AD4B /* walkie-talkie-ringtone.mp3 */; };
 		126607E52FF2778C0022AD4B /* walkie-talkie-ringtone.caf in Resources */ = {isa = PBXBuildFile; fileRef = 126607E42FF2778C0022AD4B /* walkie-talkie-ringtone.caf */; };
 		126607E72FF2778C0022AD4B /* walkie-talkie-ringtone.wav in Resources */ = {isa = PBXBuildFile; fileRef = 126607E62FF2778C0022AD4B /* walkie-talkie-ringtone.wav */; };
+		12E8B08A3094A62200A7B96A /* WalkieNotificationExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 12E8B0AF3066A333006553E5 /* WalkieNotificationExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		12F468833094A62200A7B96A /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120CB0B03066A333006553E5 /* ReplayKit.framework */; };
 		12F4688A3094A62200A7B96A /* ScreenShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 12F468823094A62200A7B96A /* ScreenShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
@@ -67,6 +68,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				12F4688A3094A62200A7B96A /* ScreenShare.appex in Embed Foundation Extensions */,
+				12E8B08A3094A62200A7B96A /* WalkieNotificationExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -360,6 +362,7 @@
 			buildPhases = (
 				12E8B0AB3066A333006553E5 /* Sources */,
 				12E8B0AC3066A333006553E5 /* Frameworks */,
+				12E8B0AD3066A333006553E5 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -507,6 +510,13 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		12E8B0AD3066A333006553E5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		12F468803094A62200A7B96A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;

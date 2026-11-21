@@ -201,6 +201,7 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
         var groupName: String?
         var speakerName: String?
         var count: String?
+        var speakerImage: String?
 
         let userInfo = notification.request.content.userInfo
 
@@ -208,6 +209,7 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
         groupName = (userInfo["groupName"] as? String) ?? (userInfo["title"] as? String)
         speakerName = (userInfo["speakerName"] as? String) ?? (userInfo["speaker"] as? String)
         count = (userInfo["joinedMemberCount"] as? String) ?? (userInfo["joinedCount"] as? String)
+        speakerImage = (userInfo["speakerImage"] as? String) ?? (userInfo["speaker_image"] as? String)
 
         // 2. Inside payload string (from flutter_local_notifications)
         if let payloadStr = userInfo["payload"] as? String,
@@ -222,6 +224,9 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
             if count == nil || count!.isEmpty {
                 count = (json["joinedMemberCount"] as? String) ?? (json["joinedCount"] as? String)
             }
+            if speakerImage == nil || speakerImage!.isEmpty {
+                speakerImage = (json["speakerImage"] as? String) ?? (json["speaker_image"] as? String)
+            }
         }
 
         // 3. Inside data dictionary (FCM push notification)
@@ -234,6 +239,9 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
             }
             if count == nil || count!.isEmpty {
                 count = (dataDict["joinedMemberCount"] as? String) ?? (dataDict["joinedCount"] as? String)
+            }
+            if speakerImage == nil || speakerImage!.isEmpty {
+                speakerImage = (dataDict["speakerImage"] as? String) ?? (dataDict["speaker_image"] as? String)
             }
         }
 
@@ -254,6 +262,22 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
         } else {
             joinedLabel.text = "👥 Active"
         }
+
+        // Load speaker avatar if available
+        if let imgStr = speakerImage?.trimmingCharacters(in: .whitespacesAndNewlines), !imgStr.isEmpty {
+            let fullUrlStr = imgStr.hasPrefix("http") ? imgStr : "https://api.fgtracker.fgmanpower.co.in/\(imgStr)"
+            if let url = URL(string: fullUrlStr) {
+                URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+                    guard let self = self, let data = data, let img = UIImage(data: data) else { return }
+                    DispatchQueue.main.async {
+                        self.iconImageView.image = img
+                        self.iconImageView.layer.cornerRadius = 24
+                        self.iconImageView.layer.masksToBounds = true
+                        self.iconImageView.contentMode = .scaleAspectFill
+                    }
+                }.resume()
+            }
+        }
     }
 
     @objc private func handleAccept() {
@@ -265,7 +289,8 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
     }
 
     func didReceive(_ response: UNNotificationResponse, completionHandler: @escaping (UNNotificationContentExtensionResponseOption) -> Void) {
-        if response.actionIdentifier == "WALKIE_ACCEPT" {
+        let action = response.actionIdentifier.uppercased()
+        if action == "WALKIE_ACCEPT" || action.contains("ACCEPT") {
             completionHandler(.dismissAndForwardAction)
         } else {
             completionHandler(.dismiss)
