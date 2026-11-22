@@ -68,7 +68,7 @@ data class WalkieNotificationTexts(
 
 class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.NewIntentListener {
     companion object {
-        const val CHANNEL_ID = "fg_tracker_walkie_heads_up_channel_v6"
+        const val CHANNEL_ID = "fg_tracker_walkie_heads_up_channel_v7"
         const val CHANNEL_NAME = "Walkie-Talkie Active Channels"
         const val NOTIFICATION_ID = 90210
         const val ACTION_ACCEPT = "com.fg.walkie.ACTION_ACCEPT"
@@ -102,12 +102,15 @@ class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, Activit
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // Delete older channels to ensure cached settings don't suppress Heads-Up
+                // Delete older channels to ensure cached settings don't suppress Heads-Up or play default sound
                 try {
                     nm.deleteNotificationChannel("fg_tracker_walkie_custom_channel_v1")
                     nm.deleteNotificationChannel("fg_tracker_walkie_custom_channel_v2")
                     nm.deleteNotificationChannel("fg_tracker_walkie_heads_up_channel_v4")
                     nm.deleteNotificationChannel("fg_tracker_walkie_heads_up_channel_v5")
+                    nm.deleteNotificationChannel("fg_tracker_walkie_heads_up_channel_v6")
+                    nm.deleteNotificationChannel("walkie_call_channel")
+                    nm.deleteNotificationChannel("walkie_talkie_channel")
                 } catch (_: Exception) {}
 
                 val audioAttr = AudioAttributes.Builder()
@@ -116,7 +119,7 @@ class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, Activit
                     .build()
 
                 var nChannel = nm.getNotificationChannel(CHANNEL_ID)
-                if (nChannel == null || nChannel.importance < NotificationManager.IMPORTANCE_HIGH) {
+                if (nChannel == null || nChannel.sound != soundUri || nChannel.importance < NotificationManager.IMPORTANCE_HIGH) {
                     if (nChannel != null) {
                         try {
                             nm.deleteNotificationChannel(CHANNEL_ID)
