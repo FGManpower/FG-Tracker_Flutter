@@ -870,7 +870,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _startPhase3();
 
     if (args["callType"] == "outGoing") {
-      playSound();
+      playCallingSound();
     }
 
     unawaited(_platform.setWakelock(true).catchError((_) {}));
@@ -1116,12 +1116,31 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   Future<void> _initializeCall() async {
     // Permissions on the call screen, for every way a call is opened
     // (outgoing, in-app accept, CallKit accept). Phase 2, P-05 / P-06.
-    if (!await _ensureCallPermissions()) return;
+    if (!await _ensureCallPermissions()) {
+      stopSound();
+      return;
+    }
+    if (_callFinished || _isCleaningUp || isClosed) {
+      stopSound();
+      return;
+    }
     if (!_platform.mediaEnabled) return;
     try {
       await localRenderer.initialize();
+      if (_callFinished || _isCleaningUp || isClosed) {
+        stopSound();
+        return;
+      }
       await remoteRenderer.initialize();
+      if (_callFinished || _isCleaningUp || isClosed) {
+        stopSound();
+        return;
+      }
       await screenRenderer.initialize();
+      if (_callFinished || _isCleaningUp || isClosed) {
+        stopSound();
+        return;
+      }
 
       localRenderer.onFirstFrameRendered = _onRendererFrameEvent;
       remoteRenderer.onFirstFrameRendered = _onRendererFrameEvent;
@@ -1507,7 +1526,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     required String type,
     String? sessionId,
   }) async {
-    if (_isCleaningUp || _callFinished) return;
+    stopSound();
+    if (_isCleaningUp || _callFinished) {
+      stopSound();
+      return;
+    }
     _isCleaningUp = true;
     _callFinished = true;
 
@@ -1528,7 +1551,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       unawaited(_platform.setAutoPip(false));
       lastEndInfo = _endInfo;
       // Short end tone (busy tone when the other side is busy).
-      if (_callAnnounced) {
+      // Only play when call was connected or explicitly busy, never on fast millisecond cancel.
+      if (_callAnnounced && (_everConnected || _endOutcome == CallEndOutcome.busy)) {
         _platform.playTone(_endOutcome == CallEndOutcome.busy
             ? kCallBusyToneAsset
             : kCallEndToneAsset);
@@ -2159,6 +2183,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       "callingStatus": "busy",
     });
     waitingCall.value = w;
+    // Soft in-call waiting tone (WhatsApp parity) so User A is alerted without interrupting audio
+    _platform.playTone(kCallBusyToneAsset);
     _waitingTimer?.cancel();
     _waitingTimer = Timer(kCallRingTimeout, () {
       if (waitingCall.value?.callId == w.callId) waitingCall.value = null;
@@ -2181,14 +2207,20 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     update();
   }
 
-  /// Waiting call → End & accept: end this call, then join the new one.
+  /// Waiting call → End & accept: cleanly terminate current call with Peer B,
+  /// reset resources without popping route, and smoothly transition to Peer C (WhatsApp parity).
   Future<void> endAndAcceptWaitingCall() async {
     final WaitingCall? w = waitingCall.value;
     if (w == null) return;
     waitingCall.value = null;
     _waitingTimer?.cancel();
-    await endCall(type: "switchToWaitingCall");
-    Get.toNamed(
+    await _finishCall(
+      notifyRemote: true,
+      navigateBack: false,
+      type: "switchToWaitingCall",
+    );
+    CallingController.prepareForNewCall(notifyUser: false);
+    Get.offNamed(
       Routes.callScreen,
       arguments: incomingCallArgs(
         callerId: w.callerId,
@@ -2423,6 +2455,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
       final String normalized = status.trim().toLowerCase();
       if (normalized == "rejected" || normalized == "declined") {
+        stopSound();
         if (callTimer == null && callDurationSeconds == 0) {
           if (!_isIncoming) _endOutcome = rejectOutcome(data);
           // Utils().fluttertoast(
@@ -2432,7 +2465,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           unawaited(_cleanupCall(notifyRemote: false, navigateBack: true));
           return;
         }
+      } else if (normalized == "ringing") {
+        if (callTimer == null && callDurationSeconds == 0 && !_callFinished) {
+          callStatus.value = "Ringing";
+          playRingingSound();
+          update();
+        }
+        return;
       } else if (normalized == "busy") {
+        stopSound();
         // The callee is on another call; they may still take this one.
         if (callTimer == null && callDurationSeconds == 0) {
           callStatus.value = "On another call";
@@ -2444,11 +2485,13 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           normalized == "disconnected" ||
           normalized == "cancelled" ||
           normalized == "canceled") {
+        stopSound();
         unawaited(_cleanupCall(notifyRemote: false, navigateBack: true));
         return;
       } else if (normalized == "connected" ||
           normalized == "accepted" ||
           normalized == "in_call") {
+        stopSound();
         // Answered / rejoinCall reply: keep the running timer as is, and
         // never show the raw server word.
         if (callTimer == null && callDurationSeconds == 0) {
@@ -2855,11 +2898,20 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     // the static list (now incl. TURN over TLS 443). BUG-CALL-07.
     final List<Map<String, dynamic>> iceServers =
         await TurnCredentialService.instance.iceServers();
+    if (isClosed || _callFinished || _isCleaningUp) {
+      stopSound();
+      return;
+    }
     final RTCPeerConnection pc = await createPeerConnection({
       'sdpSemantics': 'unified-plan',
       'iceServers': iceServers,
       'iceTransportPolicy': 'all',
     });
+    if (isClosed || _callFinished || _isCleaningUp) {
+      unawaited(pc.close());
+      stopSound();
+      return;
+    }
     peer = pc;
 
     pc.onIceConnectionState = (state) {
@@ -2943,6 +2995,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     };
 
     await audioRouteController.prepareCall(isVideo: is_video == true);
+    if (isClosed || _callFinished || _isCleaningUp) {
+      stopSound();
+      return;
+    }
     // unawaited(startCallForegroundService());
 
     localStream = await navigator.mediaDevices.getUserMedia({
@@ -2955,6 +3011,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           ? _videoCaptureConstraints()
           : false,
     });
+    if (isClosed || _callFinished || _isCleaningUp) {
+      stopSound();
+      return;
+    }
 
     for (final MediaStreamTrack t in localStream!.getTracks()) {
       final RTCRtpSender sender = await pc.addTrack(t, localStream!);
@@ -3097,11 +3157,19 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         'offerToReceiveAudio': true,
         'offerToReceiveVideo': true,
       });
+      if (isClosed || _callFinished || _isCleaningUp) {
+        stopSound();
+        return;
+      }
       final RTCSessionDescription sdpOffer = RTCSessionDescription(
         _withCamTag(_preferH264InSdp(rawOffer.sdp ?? ''), isVideoOn),
         rawOffer.type,
       );
       await pc.setLocalDescription(sdpOffer);
+      if (isClosed || _callFinished || _isCleaningUp) {
+        stopSound();
+        return;
+      }
       log("[SDP] initial offer ${_sdpInfo(sdpOffer.sdp)}");
 
       _callAnnounced = true;
@@ -3424,10 +3492,28 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     missCallDurationSeconds.value = 0;
   }
 
-  void playSound() {
+  /// WhatsApp-style outgoing audio feedback:
+  /// 1. While status is "Calling" (connecting/push sent), loop the dialing beep tone.
+  void playCallingSound() {
+    if (_callFinished || _isCleaningUp || isClosed) return;
+    _platform.resetSoundState();
+    _platform.playDialTone(_platform.dialToneAsset);
+  }
+
+  /// 2. When remote device receives the call and reports "Ringing", switch to ringback tone.
+  void playRingingSound() {
+    if (_callFinished || _isCleaningUp || isClosed) return;
+    _platform.stopRingtone();
+    _platform.resetSoundState();
     _platform.playRingback(_platform.ringbackAsset);
   }
 
+  /// Backward-compatible alias.
+  void playSound() {
+    playCallingSound();
+  }
+
+  /// Instant, unconditional halt of all audio.
   void stopSound() {
     _platform.stopRingtone();
   }

@@ -1103,6 +1103,16 @@ class CallKitService with WidgetsBindingObserver {
       extra: cd.map((k, v) => MapEntry(k, v.toString())),
       expiresAt: cd['expiresAt'] ?? m['expiresAt'],
     );
+
+    // Notify caller that receiver device is actively ringing (WhatsApp parity).
+    final callerTarget = cd['callerId'] ?? m['callerId'];
+    if (callerTarget != null && callerTarget.toString().isNotEmpty) {
+      SignallingService.instance.socket?.emit("CallingStatus", {
+        "callId": callId.isNotEmpty ? callId : sessionId,
+        "remoteUserId": callerTarget,
+        "callingStatus": "Ringing",
+      });
+    }
   };
 
   late final void Function(dynamic) _hEnded = (data) {

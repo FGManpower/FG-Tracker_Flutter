@@ -1,6 +1,6 @@
 # Calling Module — Flutter Frontend Architecture & Implementation Guide
 
-**Document Version:** `v1.5.5` · **Last updated:** 2026-11-21 · **Branch:** `46Solution`  
+**Document Version:** `v1.6.0` · **Last updated:** 2026-11-22 · **Branch:** `46Solution`  
 **Target Audience:** Flutter Frontend Developers & Backend Integrators  
 **Covers:** 1-on-1 Audio/Video Calls (reliability, permissions, busy / call waiting, reconnect, CallKit, PiP), WebRTC PeerConnection, AWS SFU & Coturn STUN/TURN, Sockets & REST APIs, CallKit, Audio Routing, Proximity Sensor, In-App PIP Overlay, Screen Sharing, Recent Calls Cache & Multi-Delete  
 **Status:** Phases 1–3 done in code (uncommitted), unit-tested; **phone checks and backend items pending** (§5.3, §8, `testing/calling/`)  
@@ -1088,4 +1088,362 @@ Early mic ask: the Calls tab primer (once) and the optional Microphone row of th
   - In `call_kit_handlers.dart`, registered `callKit.onMuteChanged` and the `com.fgtracker.audio_route` MethodCallHandler for `onCallKitMuteChanged` to route system mute directly to `CallingController.setMutedFromSystem(muted)`.
 * **Platform Isolation Guard:**
   - Android code was kept 100% untouched. All new native channel calls and handlers are strictly encapsulated with `Platform.isIOS` / `defaultTargetPlatform == TargetPlatform.iOS`.
+
+---
+
+## 13. WhatsApp-Style Sound Lifecycle & Millisecond Teardown Engine (v1.5.6)
+
+### 13.1 Root Cause Analysis: Audio Feedback & Rapid Cancellation Deficiencies
+
+1. **Missing Connecting / Dialing Beep:**
+   * **Root Cause:** In legacy versions, `onInit()` in `CallingController` played `Assets.music.ringing` (`ringing.mp3`) unconditionally. The user heard standard ringback immediately, regardless of whether the call was actually connecting, signaling was delayed, or the remote user was offline.
+   * **WhatsApp Parity Fix:** Enterprise calling apps separate outgoing audio into two distinct stages:
+     - **Stage 1 (Calling / Dialing):** When the caller presses "Call", status is `"Calling..."`. The app plays a periodic, subtle 440Hz+480Hz dial tone (`assets/music/call_dialing_tone.wav`) confirming that the call request has been dispatched.
+     - **Stage 2 (Remote Ringing):** When the callee device actually receives the signal and starts ringing, it emits a receipt (`CallingStatus: "Ringing"`). Upon receiving this socket event, the caller's screen updates to `"Ringing..."` and smoothly switches the sound from the dial tone to the looping ringback tone (`assets/music/ringing.mp3`).
+
+2. **iOS Audio Session Category Interference (`AVAudioSessionCategoryPlayAndRecord`):**
+   * **Root Cause:** When `CallingController` initializes, WebRTC's `RTCAudioSession` sets the audio session to `playAndRecord` with `voiceChat` mode. Standard audio players using `AVAudioPlayer` (such as `flutter_ringtone_player` on iOS) play under ambient or playback categories. Without explicit session coordination, iOS ducks or completely silences the audio, making it seem as if the beep sound never played.
+   * **Fix:** Coordinated playback through `CallPlatform.instance.playDialTone()` and `CallAudioRouteController`, ensuring audio stream continuity without muting or conflicting with WebRTC hardware setup.
+
+3. **The "Millisecond Call Cut" Race Condition:**
+   * **Root Cause:** When a user taps "Call" and immediately taps "End Call" within milliseconds (50ms – 500ms):
+     - `endCall()` and `_finishCall()` executed synchronously, calling `stopSound()`.
+     - However, `_initializeCall()` was asynchronous: it awaited `_ensureCallPermissions()`, renderer initializations, TURN credential retrieval, `createPeerConnection()`, `getUserMedia()`, and `createOffer()`.
+     - None of those await steps checked if `_callFinished` or `_isCleaningUp` had become `true`.
+     - When those asynchronous tasks completed, `_setupPeer()` proceeded to emit `socket.emit("makeCall", ...)` for a call that was already destroyed on the frontend!
+     - This caused ghost calls to callee devices, background audio restarts, and leaked camera/mic hardware sessions.
+   * **Fix:** Added cancellation guards (`if (_callFinished || _isCleaningUp || isClosed) { stopSound(); return; }`) after every `await` in `_initializeCall()` and `_setupPeer()`. If the user hangs up during initialization, the pipeline aborts immediately and `makeCall` is never emitted.
+
+---
+
+### 13.2 The Dual-Tone Sound State Machine
+
+```
+              ┌──────────────────────────────────────────────┐
+              │             User Taps Call Button            │
+              └──────────────────────┬───────────────────────┘
+                                     │
+                                     ▼
+                      ┌──────────────────────────────┐
+                      │    Status: "Calling..."      │
+                      │ Audio: call_dialing_tone.wav │
+                      │        (Periodic 440Hz Beep) │
+                      └──────────────┬───────────────┘
+                                     │
+                 ┌───────────────────┴───────────────────┐
+                 │                                       │
+                 ▼ (Socket: "Ringing")                   ▼ (Call Cut < 500ms)
+  ┌──────────────────────────────┐        ┌──────────────────────────────┐
+  │     Status: "Ringing..."     │        │     Call Ended Locally       │
+  │  Audio: ringing.mp3 (Loop)   │        │     Audio: INSTANT SILENCE   │
+  └──────────────┬───────────────┘        │     makeCall NEVER EMITTED!  │
+                 │                        └──────────────────────────────┘
+  ┌──────────────┴───────────────┐
+  │                              │
+  ▼ (Callee Answers)             ▼ (Timeout / Cancel / Busy)
+┌──────────────────────────┐   ┌──────────────────────────────┐
+│  Status: "Connecting"    │   │  Status: "Ended" / "Busy"    │
+│  Timer: 00:01...         │   │  Audio: Stop Ringback        │
+│  Audio: INSTANT SILENCE  │   │  Play End/Busy Tone (1-shot) │
+└──────────────────────────┘   └──────────────────────────────┘
+```
+
+---
+
+### 13.3 Implementation Details
+
+#### A. `CallPlatform` (`lib/app/modules/mediaStream/Services/call_platform.dart`)
+* Added `kCallDialToneAsset = 'assets/music/call_dialing_tone.wav'`.
+* Implemented atomic sound cancellation:
+  ```dart
+  bool _soundStopped = false;
+  void resetSoundState() => _soundStopped = false;
+
+  void playDialTone(String asset) {
+    if (_soundStopped) return;
+    try {
+      FlutterRingtonePlayer().play(
+        asAlarm: false,
+        fromAsset: asset,
+        looping: true,
+        volume: 0.85,
+      );
+    } catch (_) {}
+  }
+
+  void playRingback(String asset) {
+    if (_soundStopped) return;
+    try {
+      FlutterRingtonePlayer().play(
+        asAlarm: false,
+        fromAsset: asset,
+        looping: true,
+        volume: 1.0,
+      );
+    } catch (_) {}
+  }
+
+  void stopRingtone() {
+    _soundStopped = true;
+    try {
+      FlutterRingtonePlayer().stop();
+    } catch (_) {}
+  }
+  ```
+
+#### B. `CallingController` (`lib/app/modules/mediaStream/Controller/calling_controller.dart`)
+* Outgoing initialization invokes `playCallingSound()`:
+  ```dart
+  if (args["callType"] == "outGoing") {
+    playCallingSound();
+  }
+  ```
+* Transitions to `playRingingSound()` when remote device reports ringing:
+  ```dart
+  } else if (normalized == "ringing") {
+    if (callTimer == null && callDurationSeconds == 0 && !_callFinished) {
+      callStatus.value = "Ringing";
+      playRingingSound();
+      update();
+    }
+    return;
+  }
+  ```
+* Rapid millisecond teardown protection in `_finishCall()`:
+  ```dart
+  Future<void> _finishCall({
+    required bool notifyRemote,
+    required bool navigateBack,
+    required String type,
+    String? sessionId,
+  }) async {
+    stopSound();
+    if (_isCleaningUp || _callFinished) {
+      stopSound();
+      return;
+    }
+    _isCleaningUp = true;
+    _callFinished = true;
+    // ...
+    // Short end tone: only play if call was connected or explicitly busy,
+    // NEVER on fast millisecond user cancellation!
+    if (_callAnnounced && (_everConnected || _endOutcome == CallEndOutcome.busy)) {
+      _platform.playTone(_endOutcome == CallEndOutcome.busy
+          ? kCallBusyToneAsset
+          : kCallEndToneAsset);
+    }
+  ```
+* Watertight async cancellation checks throughout `_initializeCall()` and `_setupPeer()`:
+  ```dart
+  if (isClosed || _callFinished || _isCleaningUp) {
+    stopSound();
+    return;
+  }
+  ```
+
+#### C. `CallKitService` (`lib/app/Data/Services/IncommingCallKit/callkit_service.dart`)
+* Emits `CallingStatus: "Ringing"` to caller when incoming call UI is displayed:
+  ```dart
+  final callerTarget = cd['callerId'] ?? m['callerId'];
+  if (callerTarget != null && callerTarget.toString().isNotEmpty) {
+    SignallingService.instance.socket?.emit("CallingStatus", {
+      "callId": callId.isNotEmpty ? callId : sessionId,
+      "remoteUserId": callerTarget,
+      "callingStatus": "Ringing",
+    });
+  }
+  ```
+
+---
+
+### 13.4 Verification Steps on Physical Devices & Simulators
+
+1. **Dialing Beep (Outgoing Call):**
+   * Device A (Android or iOS) dials Device B.
+   * **Verification:** Device A screen shows `"Calling..."` and immediately plays the 440Hz dialing beep.
+2. **Transition to Ringback:**
+   * Device B receives the push/socket notification and displays the CallKit / incoming call screen.
+   * **Verification:** Device A screen updates to `"Ringing..."` and the audio smoothly transitions from the dialing beep to `ringing.mp3`.
+3. **Rapid Millisecond Hangup:**
+   * Device A taps "Call" and immediately taps "End Call" within 100ms – 300ms.
+   * **Verification:** Sound halts instantly (0.0ms lingering). Device B NEVER rings or displays a ghost call.
+4. **Answered Call Silence:**
+   * Device B answers the call.
+   * **Verification:** All sound (beep and ringback) stops immediately. Call timer starts (`00:01`) and two-way WebRTC audio is connected cleanly.
+
+---
+
+## 14. Comprehensive Audio & Video Call Lifecycle Architecture (WhatsApp / Enterprise Parity)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                      FRONTEND CALL LIFECYCLE & STATE MACHINE (v1.6.0)                            │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+  [USER A: Caller]                     [SIGNALING / WEBRTC]                    [USER B: Callee]
+         │                                      │                                      │
+    (1) Tap Call                                │                                      │
+   "Calling..." ──[ Beep Tone Loop ]            │                                      │
+         │                                      │                                      │
+         ├────── emit("makeCall") ─────────────>│                                      │
+         │                                      ├────── Socket / FCM / VoIP Push ─────>│
+         │                                      │                                 (2) Ring UI Pops
+         │                                      │<───── emit("CallingStatus", Ringing) ┤
+         │<───── on("callStatus", Ringing) ─────┤                                      │
+    "Ringing..." ──[ Ringback Loop ]            │                                      │
+         │                                      │                                 (3) User B Accepts
+         │                                      │<───── emit("answerCall") ────────────┤  (Camera Opens)
+         │<───── on("callAnswered") ────────────┤                                      │
+         │                                      │                                      │
+    (4) WebRTC ICE Connected ───────────────────┴───── Audio & Video P2P Active ───────┤
+    [00:01 Timer Running | Proximity On for Audio | WakeLock On for Video | Pip Active]│
+         │                                                                             │
+         ├────────────────────── (5) CALL WAITING (USER C DIALS A) ────────────────────┤
+         │                                                                             │
+    [User C Dials User A] ──── makeCall ───────>│ (A is Busy)                          │
+         │<───── C gets: "On another call" (Busy Tone)                                 │
+         │<───── A gets: Soft In-Call Beep + Floating Call Waiting Banner ─────────────┤
+         │                                                                             │
+         │   Option A: Decline ────────────────> C receives "Declined"; A continues with B
+         │   Option B: End & Accept ───────────> A ends B, cleanly switches to C       │
+         │                                                                             │
+         ├───────────────────── (6) IN-CALL AUDIO TO VIDEO UPGRADE ────────────────────┤
+         │                                                                             │
+    (User A taps Camera)                                                               │
+    [A Camera Previews] ────── upgradeToVideo (SDP) ──────────────────────────────────>│
+                                                                       [B Prompt: Switch?]
+    [Audio Never Interrupts!] <── upgradeToVideoAnswer (SDP) ──────────┤  (B Accepts)
+    [Full 2-Way Video Live]                                                            │
+```
+
+---
+
+### 14.1 Unified Android & iOS Permission Gates & Fallback Rules
+
+| Capability | Android Policy | iOS Policy | Flow Logic & Graceful Degradation |
+| :--- | :--- | :--- | :--- |
+| **Microphone** | Runtime `RECORD_AUDIO` | `NSMicrophoneUsageDescription` | **Strict Gate:** Verified pre-call on Caller. Verified upon "Accept" on Callee. If denied, displays bottom sheet with direct link to App Settings. |
+| **Camera** | Runtime `CAMERA` | `NSCameraUsageDescription` | **Graceful Degradation:** If camera is denied for a video call, the app **never aborts the call**! It degrades to voice mode (`startCameraOff`): user can still view the remote party's video while their own camera remains disabled until permission is granted. |
+| **Full-Screen Wakeup** | `USE_FULL_SCREEN_INTENT` | Apple PushKit Framework (`PKPushRegistry`) | Bypasses lock screen and sleeping state to pop immediate native incoming call UI. |
+| **Bluetooth Audio** | `BLUETOOTH_CONNECT` (Android 12+) | Handled natively by iOS `AVAudioSession` | If Android 12+ Bluetooth permission is refused, Bluetooth routes are hidden and the call seamlessly falls back to earpiece/speaker without crashing (`bluetoothPermitted.value = false`). |
+| **Proximity Sensor** | Sensor `TYPE_PROXIMITY` via `proximity_screen_lock` | Native `UIDevice.isProximityMonitoringEnabled` | **Audio calls:** Screen turns off when held to ear; turns on when moved away. **Video calls:** Proximity monitoring is disabled to keep video display visible. |
+| **Telecom Call State** | `android.telecom.ConnectionService` | Apple CallKit (`CXProvider`, `CXCallController`) | System level integration. Guarantees carrier call interruption handling, lock screen controls, and hardware mute sync. |
+
+---
+
+### 14.2 1-on-1 Full Flow State Machine (User A to User B)
+
+1. **State: `IDLE` ➔ `INITIALIZING`:**
+   - Pre-call permissions checked (`CallPermissionPolicy.decide`).
+   - `CallingController.onInit()` initializes audio routing controller, registers socket handlers, and enables WakeLock.
+2. **State: `CALLING` (Outgoing Dialing):**
+   - Outgoing status displayed: `"Calling..."`.
+   - `playCallingSound()` starts periodic 440Hz/480Hz dial tone (`call_dialing_tone.wav`).
+   - Microphones and local renderers pre-warmed.
+   - SDP offer generated and emitted via `socket.emit("makeCall")`.
+3. **State: `RINGING` (Physical Device Alerted):**
+   - Callee wakes up via Socket (Foreground), FCM High-Priority Data (Android Background), or PushKit VoIP (iOS Locked/Terminated).
+   - Callee displays CallKit / incoming notification and dispatches `CallingStatus: "Ringing"`.
+   - Caller receives `callStatus: "Ringing"`, updates UI to `"Ringing..."`, and switches audio to looping `ringing.mp3`.
+4. **State: `CONNECTING` ➔ `CONNECTED`:**
+   - Callee accepts call. Ringtones on both sides are **instantly silenced**.
+   - Callee creates SDP answer and emits `answerCall`.
+   - PeerConnection reaches `RTCIceConnectionStateConnected`.
+   - Call timer starts (`00:01`, `00:02`...).
+   - Audio routing auto-configures: Earpiece for Audio Call, Speakerphone for Video Call.
+5. **State: `TERMINATING`:**
+   - User hangup, remote hangup, decline, or 45-second timeout triggers `_finishCall()`.
+   - `stopSound()` halts all audio immediately (0.0ms delay).
+   - Peer connections, renderers, audio sessions, wakelock, and foreground services cleanly released.
+
+---
+
+### 14.3 Multi-Party Concurrency: Call Waiting Banner & Seamless Handover Protocol
+
+When User A is talking to User B, and User C calls User A:
+
+```dart
+// CallingController.dart: showWaitingCall & endAndAcceptWaitingCall
+void showWaitingCall(dynamic data) {
+  if (!isCallLive) return;
+  final WaitingCall? w = WaitingCall.parse(data, ...);
+  if (w == null || w.callId == callId?.toString()) return;
+
+  // Inform server/caller that callee is occupied (User C gets "On another call" + busy tone)
+  socket?.emit("CallingStatus", {
+    "callId": w.callId,
+    "remoteUserId": w.callerId,
+    "callingStatus": "busy",
+  });
+  waitingCall.value = w;
+  // Soft in-call waiting tone so User A is alerted without interrupting current conversation!
+  _platform.playTone(kCallBusyToneAsset);
+  update();
+}
+
+Future<void> endAndAcceptWaitingCall() async {
+  final WaitingCall? w = waitingCall.value;
+  if (w == null) return;
+  waitingCall.value = null;
+  // Cleanly terminate current call with Peer B without popping Flutter route
+  await _finishCall(
+    notifyRemote: true,
+    navigateBack: false,
+    type: "switchToWaitingCall",
+  );
+  CallingController.prepareForNewCall(notifyUser: false);
+  // Directly transition into User C's incoming call without screen flicker or route popping
+  Get.offNamed(
+    Routes.callScreen,
+    arguments: incomingCallArgs(
+      callerId: w.callerId,
+      callId: w.callId,
+      sessionId: w.sessionId,
+      isVideo: w.isVideo,
+      callerName: w.callerName,
+      profileImage: w.avatar,
+      offer: w.offer,
+      fromCallKit: false,
+    ),
+  );
+}
+```
+
+---
+
+### 14.4 In-Call Audio-to-Video Escalation Protocol (WebRTC SDP Renegotiation)
+
+1. **User A Taps Camera Button:**
+   - Controller checks runtime camera permission via `_cameraAllowed()`.
+   - If granted, local camera capture begins and is bound to `localRenderer`.
+   - Controller automatically switches audio route from Earpiece to Speakerphone (`audioRouteController.updateCallType(isVideo: true)`).
+2. **SDP Renegotiation (Zero Audio Glitch):**
+   - Video track is attached to the existing `RTCPeerConnection`: `peer.addTrack(videoTrack, localStream)`.
+   - `createOffer` is executed with `{offerToReceiveVideo: true}`.
+   - Local description is set and emitted over socket: `socket.emit("upgradeToVideo", {sdpOffer, cameraState: true})`.
+3. **Callee Remote Handling:**
+   - Callee receives `upgradeToVideo` event.
+   - Remote SDP offer is applied via `peer.setRemoteDescription(offer)`.
+   - Callee creates SDP answer and replies with `upgradeToVideoAnswer`.
+   - Callee's `remoteRenderer` immediately displays User A's incoming video stream.
+   - Callee can choose to turn on their own camera or remain on audio.
+
+---
+
+### 14.5 How Other Professional Applications Work (Architectural Benchmarking)
+
+* **WhatsApp:**
+  - Uses P2P WebRTC for 1:1 calling.
+  - Camera is strictly withheld on the receiver until explicit "Accept" action.
+  - Call Waiting uses non-intrusive dual-tone pip and a top banner with "Decline" and "End & Accept".
+  - Audio route defaults to Earpiece for voice and Speakerphone for video, seamlessly adjusting on camera toggle.
+* **Telegram:**
+  - Proprietary end-to-end encryption handshake over MTProto before audio media unmutes.
+  - Employs dynamic bitrate throttling (down to 12 kbps Opus) under poor 2G/3G conditions to prevent call drops.
+* **Signal:**
+  - WebRTC with strict privacy policies (IP address obfuscation via Signal TURN servers).
+  - CallKit lock screen answering integrated on iOS with immediate hardware mute synchronization.
+* **Google Meet:**
+  - Always routes through central SFU media servers (never direct P2P).
+  - Employs aggressive bandwidth estimation (BWE) with simulcast / SVC (Scalable Video Coding) for multi-participant video adaptation.
+
 

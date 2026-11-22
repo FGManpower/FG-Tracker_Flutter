@@ -25,6 +25,8 @@ const Duration kCallRingTimeout = Duration(seconds: 45);
 /// Short tones at the end of a call (generated, see assets/music).
 const String kCallEndToneAsset = 'assets/music/call_end_tone.wav';
 const String kCallBusyToneAsset = 'assets/music/call_busy_tone.wav';
+/// Outgoing dialing beep tone played while status is "Calling" (WhatsApp parity).
+const String kCallDialToneAsset = 'assets/music/call_dialing_tone.wav';
 
 /// iOS: report outgoing calls to CallKit (BUG-CALL-12). Disabled to prevent
 /// CallKit from auto-terminating outgoing WebRTC calls when callee answers.
@@ -53,18 +55,43 @@ class CallPlatform {
     return Get.put(CallAudioRouteController(), permanent: true);
   }
 
+  bool _soundStopped = false;
+  void resetSoundState() => _soundStopped = false;
+
+  void playDialTone(String asset) {
+    if (_soundStopped) return;
+    try {
+      FlutterRingtonePlayer().play(
+        asAlarm: false,
+        fromAsset: asset,
+        looping: true,
+        volume: 0.85,
+      );
+    } catch (_) {}
+  }
+
+  String get dialToneAsset => kCallDialToneAsset;
+
   void playRingback(String asset) {
-    FlutterRingtonePlayer().play(
-      asAlarm: false,
-      fromAsset: asset,
-      looping: true,
-      volume: 1.0,
-    );
+    if (_soundStopped) return;
+    try {
+      FlutterRingtonePlayer().play(
+        asAlarm: false,
+        fromAsset: asset,
+        looping: true,
+        volume: 1.0,
+      );
+    } catch (_) {}
   }
 
   String get ringbackAsset => Assets.music.ringing;
 
-  void stopRingtone() => FlutterRingtonePlayer().stop();
+  void stopRingtone() {
+    _soundStopped = true;
+    try {
+      FlutterRingtonePlayer().stop();
+    } catch (_) {}
+  }
 
   Future<void> setWakelock(bool on) =>
       on ? WakelockPlus.enable() : WakelockPlus.disable();
