@@ -765,6 +765,24 @@ class firebaseNotificationServices {
     await androidPlugin?.createNotificationChannel(walkieChannel);
     await androidPlugin?.createNotificationChannel(highImportanceChannel);
 
+    const AndroidNotificationChannel walkieHeadsUpChannel =
+        AndroidNotificationChannel(
+      'fg_tracker_walkie_heads_up_channel_v7',
+      'Walkie-Talkie Active Channels',
+      description: 'Walkie Talkie Active Speaker Notifications',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+      sound: RawResourceAndroidNotificationSound('walkie_talkie_ringtone'),
+    );
+    await androidPlugin?.createNotificationChannel(walkieHeadsUpChannel);
+    try {
+      await androidPlugin
+          ?.deleteNotificationChannel('fg_tracker_walkie_heads_up_channel_v6');
+      await androidPlugin?.deleteNotificationChannel('walkie_call_channel');
+      await androidPlugin?.deleteNotificationChannel('walkie_talkie_channel');
+    } catch (_) {}
+
     final launchDetails =
         await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
     if (launchDetails?.didNotificationLaunchApp ?? false) {
