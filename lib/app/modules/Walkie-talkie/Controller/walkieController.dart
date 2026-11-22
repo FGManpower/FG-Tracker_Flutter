@@ -5,6 +5,7 @@ import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_live_activity_service.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -365,6 +366,9 @@ class GroupWalkieController extends GetxController {
     _lockCountdownTimer?.cancel();
     _speakerWatchdogTimer?.cancel();
     onSwitchGroupRequested = null;
+    if (Platform.isIOS) {
+      WalkieLiveActivityService.instance.stopAll();
+    }
     reset();
     super.onClose();
   }

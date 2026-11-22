@@ -75,12 +75,18 @@
 		</dict>
 	</dict>
 
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
+	<true/>
+
 	<key>CFBundleURLTypes</key>
     <array>
         <dict>
             <key>CFBundleURLSchemes</key>
             <array>
                 <string>fb2087541501869419</string>
+                <string>fgtracker</string>
             </array>
         </dict>
     </array>

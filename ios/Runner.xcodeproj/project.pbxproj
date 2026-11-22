@@ -12,6 +12,9 @@
 		126607E32FF2778C0022AD4B /* walkie-talkie-ringtone.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 126607E22FF2778C0022AD4B /* walkie-talkie-ringtone.mp3 */; };
 		126607E52FF2778C0022AD4B /* walkie-talkie-ringtone.caf in Resources */ = {isa = PBXBuildFile; fileRef = 126607E42FF2778C0022AD4B /* walkie-talkie-ringtone.caf */; };
 		126607E72FF2778C0022AD4B /* walkie-talkie-ringtone.wav in Resources */ = {isa = PBXBuildFile; fileRef = 126607E62FF2778C0022AD4B /* walkie-talkie-ringtone.wav */; };
+		12AA00023094A62200A7B96A /* WalkieLiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12AA00013094A62200A7B96A /* WalkieLiveActivityManager.swift */; };
+		12AA00043094A62200A7B96A /* WalkieLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12AA00033094A62200A7B96A /* WalkieLiveActivityAttributes.swift */; };
+		12AA00113094A62200A7B96A /* WalkieLiveActivity.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 12AA00103094A62200A7B96A /* WalkieLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		12E8B08A3094A62200A7B96A /* WalkieNotificationExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 12E8B0AF3066A333006553E5 /* WalkieNotificationExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		12F468833094A62200A7B96A /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120CB0B03066A333006553E5 /* ReplayKit.framework */; };
 		12F4688A3094A62200A7B96A /* ScreenShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 12F468823094A62200A7B96A /* ScreenShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -36,6 +39,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 120CB0AE3066A333006553E5;
 			remoteInfo = BroadcastExtension;
+		};
+		12AA00213094A62200A7B96A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 12AA00203094A62200A7B96A;
+			remoteInfo = WalkieLiveActivity;
 		};
 		12E8B0CA3067E216004E76B2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -69,6 +79,7 @@
 			files = (
 				12F4688A3094A62200A7B96A /* ScreenShare.appex in Embed Foundation Extensions */,
 				12E8B08A3094A62200A7B96A /* WalkieNotificationExtension.appex in Embed Foundation Extensions */,
+				12AA00113094A62200A7B96A /* WalkieLiveActivity.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -94,6 +105,9 @@
 		126607E22FF2778C0022AD4B /* walkie-talkie-ringtone.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "walkie-talkie-ringtone.mp3"; sourceTree = "<group>"; };
 		126607E42FF2778C0022AD4B /* walkie-talkie-ringtone.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "walkie-talkie-ringtone.caf"; sourceTree = "<group>"; };
 		126607E62FF2778C0022AD4B /* walkie-talkie-ringtone.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "walkie-talkie-ringtone.wav"; sourceTree = "<group>"; };
+		12AA00013094A62200A7B96A /* WalkieLiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkieLiveActivityManager.swift; sourceTree = "<group>"; };
+		12AA00033094A62200A7B96A /* WalkieLiveActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkieLiveActivityAttributes.swift; sourceTree = "<group>"; };
+		12AA00103094A62200A7B96A /* WalkieLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WalkieLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		12E8B0AF3066A333006553E5 /* WalkieNotificationExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WalkieNotificationExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		12F468823094A62200A7B96A /* ScreenShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ScreenShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
@@ -154,6 +168,13 @@
 			);
 			target = 12F468813094A62200A7B96A /* ScreenShare */;
 		};
+		12AA00303094A62200A7B96A /* Exceptions for "WalkieLiveActivity" folder in "WalkieLiveActivity" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 12AA00203094A62200A7B96A /* WalkieLiveActivity */;
+		};
 		12E8B0BF3066A333006553E5 /* Exceptions for "WalkieNotificationExtension" folder in "WalkieNotificationExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -182,6 +203,18 @@
 			explicitFolders = (
 			);
 			path = BroadcastExtension;
+			sourceTree = "<group>";
+		};
+		12AA00313094A62200A7B96A /* WalkieLiveActivity */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				12AA00303094A62200A7B96A /* Exceptions for "WalkieLiveActivity" folder in "WalkieLiveActivity" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = WalkieLiveActivity;
 			sourceTree = "<group>";
 		};
 		12E8B0B23066A333006553E5 /* WalkieNotificationExtension */ = {
@@ -216,6 +249,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				120CB0B13066A333006553E5 /* ReplayKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		12AA00413094A62200A7B96A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,6 +321,7 @@
 				97C146F01CF9000F007C117D /* Runner */,
 				120CB0B23066A333006553E5 /* BroadcastExtension */,
 				12E8B0B23066A333006553E5 /* WalkieNotificationExtension */,
+				12AA00313094A62200A7B96A /* WalkieLiveActivity */,
 				12F468843094A62200A7B96A /* ScreenShare */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
@@ -296,6 +337,7 @@
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
 				120CB0AF3066A333006553E5 /* BroadcastExtension.appex */,
 				12E8B0AF3066A333006553E5 /* WalkieNotificationExtension.appex */,
+				12AA00103094A62200A7B96A /* WalkieLiveActivity.appex */,
 				12F468823094A62200A7B96A /* ScreenShare.appex */,
 			);
 			name = Products;
@@ -318,6 +360,8 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */,
+				12AA00013094A62200A7B96A /* WalkieLiveActivityManager.swift */,
+				12AA00033094A62200A7B96A /* WalkieLiveActivityAttributes.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -370,6 +414,26 @@
 			name = BroadcastExtension;
 			productName = BroadcastExtension;
 			productReference = 120CB0AF3066A333006553E5 /* BroadcastExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		12AA00203094A62200A7B96A /* WalkieLiveActivity */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 12AA00503094A62200A7B96A /* Build configuration list for PBXNativeTarget "WalkieLiveActivity" */;
+			buildPhases = (
+				12AA00403094A62200A7B96A /* Sources */,
+				12AA00413094A62200A7B96A /* Frameworks */,
+				12AA00423094A62200A7B96A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				12AA00313094A62200A7B96A /* WalkieLiveActivity */,
+			);
+			name = WalkieLiveActivity;
+			productName = WalkieLiveActivity;
+			productReference = 12AA00103094A62200A7B96A /* WalkieLiveActivity.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 		12E8B0AE3066A333006553E5 /* WalkieNotificationExtension */ = {
@@ -444,6 +508,7 @@
 				12F4688B3094A62200A7B96A /* Embed Foundation Extensions */,
 				128DF9DF3067ED1A004E76B2 /* Embed Broadcast Extension Script */,
 				12E8B0DF3067ED1A004E76B2 /* Embed Walkie Notification Extension Script */,
+				12AA00603094A62200A7B96A /* Embed Walkie Live Activity Extension Script */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				22BA94AB4C646D65DD03C69E /* [CP] Embed Pods Frameworks */,
@@ -454,6 +519,7 @@
 			dependencies = (
 				128DF9CB3067E216004E76B2 /* PBXTargetDependency */,
 				12E8B0CB3067E216004E76B2 /* PBXTargetDependency */,
+				12AA00223094A62200A7B96A /* PBXTargetDependency */,
 				12F468893094A62200A7B96A /* PBXTargetDependency */,
 			);
 			name = Runner;
@@ -473,6 +539,9 @@
 				ORGANIZATIONNAME = "";
 				TargetAttributes = {
 					120CB0AE3066A333006553E5 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					12AA00203094A62200A7B96A = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
 					12E8B0AE3066A333006553E5 = {
@@ -520,12 +589,20 @@
 				331C8080294A63A400263BE5 /* RunnerTests */,
 				120CB0AE3066A333006553E5 /* BroadcastExtension */,
 				12E8B0AE3066A333006553E5 /* WalkieNotificationExtension */,
+				12AA00203094A62200A7B96A /* WalkieLiveActivity */,
 				12F468813094A62200A7B96A /* ScreenShare */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		12AA00423094A62200A7B96A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		12E8B0AD3066A333006553E5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -603,6 +680,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "#!/bin/sh\nset -e\n\nAPPEX_NAME=\"WalkieNotificationExtension.appex\"\nPLUGINS_DIR=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/PlugIns\"\n\nmkdir -p \"${PLUGINS_DIR}\"\nrm -rf \"${PLUGINS_DIR}/${APPEX_NAME}\"\n\nSRC_PATH=\"\"\n\nfor CANDIDATE in \\\n  \"${BUILT_PRODUCTS_DIR}/${APPEX_NAME}\" \\\n  \"${CONFIGURATION_BUILD_DIR}/${APPEX_NAME}\" \\\n  \"${TARGET_BUILD_DIR}/${APPEX_NAME}\" \\\n  \"${OBJROOT}/UninstalledProducts/${PLATFORM_NAME}/${APPEX_NAME}\" \\\n  \"${OBJROOT}/ArchiveIntermediates/Runner/BuildProductsPath/Release-iphoneos/${APPEX_NAME}\" \\\n  \"${OBJROOT}/ArchiveIntermediates/Runner/UninstalledProducts/iphoneos/${APPEX_NAME}\"\ndo\n  if [ -e \"${CANDIDATE}\" ]; then\n    SRC_PATH=\"${CANDIDATE}\"\n    break\n  fi\ndone\n\nif [ -z \"${SRC_PATH}\" ]; then\n  SRC_PATH=$(find \"${OBJROOT}\" \"${BUILD_DIR}\" -name \"${APPEX_NAME}\" 2>/dev/null | head -n 1)\nfi\n\nif [ -z \"${SRC_PATH}\" ] || [ ! -e \"${SRC_PATH}\" ]; then\n  echo \"error: Could not find ${APPEX_NAME}\"\n  exit 1\nfi\n\nREAL_SRC=\"$(cd \"$(dirname \"${SRC_PATH}\")\" && pwd -P)/$(basename \"${SRC_PATH}\")\"\nif [ -L \"${SRC_PATH}\" ]; then\n  REAL_SRC=\"$(cd \"${SRC_PATH}\" && pwd -P)\"\nelif [ -d \"${SRC_PATH}\" ]; then\n  REAL_SRC=\"$(cd \"${SRC_PATH}\" && pwd -P)\"\nfi\n\n# ditto dereferences symlinks into real directories\nditto \"${REAL_SRC}\" \"${PLUGINS_DIR}/${APPEX_NAME}\"\n\nif [ -n \"${EXPANDED_CODE_SIGN_IDENTITY}\" ] && [ \"${EXPANDED_CODE_SIGN_IDENTITY}\" != \"-\" ]; then\n  codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n    --preserve-metadata=identifier,entitlements,flags \\\n    \"${PLUGINS_DIR}/${APPEX_NAME}\"\nfi\n";
+		};
+		12AA00603094A62200A7B96A /* Embed Walkie Live Activity Extension Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Walkie Live Activity Extension Script";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\nset -e\n\nAPPEX_NAME=\"WalkieLiveActivity.appex\"\nPLUGINS_DIR=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/PlugIns\"\n\nmkdir -p \"${PLUGINS_DIR}\"\nrm -rf \"${PLUGINS_DIR}/${APPEX_NAME}\"\n\nSRC_PATH=\"\"\n\nfor CANDIDATE in \\\n  \"${BUILT_PRODUCTS_DIR}/${APPEX_NAME}\" \\\n  \"${CONFIGURATION_BUILD_DIR}/${APPEX_NAME}\" \\\n  \"${TARGET_BUILD_DIR}/${APPEX_NAME}\" \\\n  \"${OBJROOT}/UninstalledProducts/${PLATFORM_NAME}/${APPEX_NAME}\" \\\n  \"${OBJROOT}/ArchiveIntermediates/Runner/BuildProductsPath/Release-iphoneos/${APPEX_NAME}\" \\\n  \"${OBJROOT}/ArchiveIntermediates/Runner/UninstalledProducts/iphoneos/${APPEX_NAME}\"\ndo\n  if [ -e \"${CANDIDATE}\" ]; then\n    SRC_PATH=\"${CANDIDATE}\"\n    break\n  fi\ndone\n\nif [ -z \"${SRC_PATH}\" ]; then\n  SRC_PATH=$(find \"${OBJROOT}\" \"${BUILD_DIR}\" -name \"${APPEX_NAME}\" 2>/dev/null | head -n 1)\nfi\n\nif [ -z \"${SRC_PATH}\" ] || [ ! -e \"${SRC_PATH}\" ]; then\n  echo \"error: Could not find ${APPEX_NAME}\"\n  exit 1\nfi\n\nREAL_SRC=\"$(cd \"$(dirname \"${SRC_PATH}\")\" && pwd -P)/$(basename \"${SRC_PATH}\")\"\nif [ -L \"${SRC_PATH}\" ]; then\n  REAL_SRC=\"$(cd \"${SRC_PATH}\" && pwd -P)\"\nelif [ -d \"${SRC_PATH}\" ]; then\n  REAL_SRC=\"$(cd \"${SRC_PATH}\" && pwd -P)\"\nfi\n\n# ditto dereferences symlinks into real directories\nditto \"${REAL_SRC}\" \"${PLUGINS_DIR}/${APPEX_NAME}\"\n\nif [ -n \"${EXPANDED_CODE_SIGN_IDENTITY}\" ] && [ \"${EXPANDED_CODE_SIGN_IDENTITY}\" != \"-\" ]; then\n  codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n    --preserve-metadata=identifier,entitlements,flags \\\n    \"${PLUGINS_DIR}/${APPEX_NAME}\"\nfi\n";
 		};
 		22BA94AB4C646D65DD03C69E /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -747,6 +843,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		12AA00403094A62200A7B96A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		12E8B0AB3066A333006553E5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -776,6 +879,8 @@
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */,
+				12AA00023094A62200A7B96A /* WalkieLiveActivityManager.swift in Sources */,
+				12AA00043094A62200A7B96A /* WalkieLiveActivityAttributes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -786,6 +891,11 @@
 			isa = PBXTargetDependency;
 			target = 120CB0AE3066A333006553E5 /* BroadcastExtension */;
 			targetProxy = 128DF9CA3067E216004E76B2 /* PBXContainerItemProxy */;
+		};
+		12AA00223094A62200A7B96A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 12AA00203094A62200A7B96A /* WalkieLiveActivity */;
+			targetProxy = 12AA00213094A62200A7B96A /* PBXContainerItemProxy */;
 		};
 		12E8B0CB3067E216004E76B2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1076,6 +1186,129 @@
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fg.fgtracker.WalkieNotificationExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Profile;
+		};
+		12AA00513094A62200A7B96A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = WalkieLiveActivity/WalkieLiveActivity.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 5VH5Y7DS44;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WalkieLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Walkie Live Activity";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fg.fgtracker.WalkieLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		12AA00523094A62200A7B96A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = WalkieLiveActivity/WalkieLiveActivity.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 5VH5Y7DS44;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WalkieLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Walkie Live Activity";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fg.fgtracker.WalkieLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		12AA00533094A62200A7B96A /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = WalkieLiveActivity/WalkieLiveActivity.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 5VH5Y7DS44;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WalkieLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Walkie Live Activity";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fg.fgtracker.WalkieLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1530,6 +1763,16 @@
 				12E8B0BA3066A333006553E5 /* Debug */,
 				12E8B0BB3066A333006553E5 /* Release */,
 				12E8B0BC3066A333006553E5 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		12AA00503094A62200A7B96A /* Build configuration list for PBXNativeTarget "WalkieLiveActivity" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				12AA00513094A62200A7B96A /* Debug */,
+				12AA00523094A62200A7B96A /* Release */,
+				12AA00533094A62200A7B96A /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -84,6 +84,9 @@ private let candidateTokenPrefKeys = [
         let launched = super.application(application, didFinishLaunchingWithOptions: launchOptions)
         setupAudioRouteChannelIfNeeded()
         setupActiveChatChannel()
+        if let vc = window?.rootViewController as? FlutterViewController {
+            WalkieLiveActivityManager.shared.setup(binaryMessenger: vc.binaryMessenger)
+        }
         return launched
     }
 
@@ -226,6 +229,23 @@ private let candidateTokenPrefKeys = [
                 binaryMessenger: vc.binaryMessenger
             )
             channel.invokeMethod("handleDeepLink", arguments: url.absoluteString)
+
+            if url.scheme == "fgtracker", url.host == "walkie" {
+                var queryItems: [String: String] = [:]
+                if let comps = URLComponents(url: url, resolvingAgainstBaseURL: false), let items = comps.queryItems {
+                    for item in items {
+                        queryItems[item.name] = item.value
+                    }
+                }
+                let walkieChannel = FlutterMethodChannel(
+                    name: "com.fg.walkie/notification",
+                    binaryMessenger: vc.binaryMessenger
+                )
+                walkieChannel.invokeMethod("onWalkieAction", arguments: [
+                    "action": queryItems["action"] ?? "accept",
+                    "groupId": queryItems["groupId"] ?? ""
+                ])
+            }
         }
         return super.application(app, open: url, options: options)
     }

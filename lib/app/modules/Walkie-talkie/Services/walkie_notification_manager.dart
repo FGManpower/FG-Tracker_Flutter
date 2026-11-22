@@ -13,6 +13,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:walkie_custom_notification/walkie_custom_notification.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_live_activity_service.dart';
 
 class WalkieNotificationManager {
   WalkieNotificationManager._();
@@ -166,6 +167,13 @@ class WalkieNotificationManager {
     }
 
     _log('Displaying live talking notification for $_activeSpeakerName in $_activeGroupName...');
+    if (Platform.isIOS && (_activeGroupId?.isNotEmpty ?? false)) {
+      WalkieLiveActivityService.instance.update(
+        groupId: _activeGroupId!,
+        speakerName: _activeSpeakerName ?? appL10n.walkie_someone,
+        isSpeaking: true,
+      );
+    }
     await _showOrUpdateTalkingNotification();
     _startDurationTimer();
   }
@@ -177,6 +185,14 @@ class WalkieNotificationManager {
     _log('onSomeoneStoppedTalking => speakerId: $speakerId');
     isSomeoneTalking.value = false;
     _stopDurationTimer();
+
+    if (Platform.isIOS && (_activeGroupId?.isNotEmpty ?? false)) {
+      WalkieLiveActivityService.instance.update(
+        groupId: _activeGroupId!,
+        speakerName: speakerName ?? _activeSpeakerName ?? appL10n.walkie_someone,
+        isSpeaking: false,
+      );
+    }
 
     if (isWalkieScreenActive.value) {
       hideNotification();
@@ -290,6 +306,9 @@ class WalkieNotificationManager {
     try {
       await _plugin.cancel(notificationId);
     } catch (_) {}
+    if (Platform.isIOS && (_activeGroupId?.isNotEmpty ?? false)) {
+      WalkieLiveActivityService.instance.stop(_activeGroupId!);
+    }
     isNotificationVisible.value = false;
     _stopDurationTimer();
   }

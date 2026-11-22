@@ -28,6 +28,7 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_notification_manager.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_live_activity_service.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:walkie_custom_notification/walkie_custom_notification.dart';
 
@@ -380,10 +381,19 @@ class firebaseNotificationServices {
       return;
     }
 
-    // iOS: Use Native UserNotifications with Action Buttons (Accept / Cancel) and Content Extension
+    // iOS: Use Native UserNotifications + Apple Live Activities (ActivityKit for Zomato / Domino's style UI)
     if (Platform.isIOS) {
-      log("🔔 [showWalkieNotification] iOS: Displaying native notification with Accept/Cancel actions");
+      log("🔔 [showWalkieNotification] iOS: Displaying native notification & Live Activity");
       try {
+        // Start Apple Live Activity (ActivityKit) for Zomato / Domino's Lock Screen & Dynamic Island card
+        WalkieLiveActivityService.instance.start(
+          groupId: groupId,
+          groupName: groupName,
+          speakerName: speakerName,
+          speakerImage: speakerImage,
+          joinedCount: joinedCount,
+        );
+
         // May run in the FCM background isolate: read the language from prefs.
         final l10n = await loadAppL10nFromPrefs();
         final title = (groupName.trim().isNotEmpty)
@@ -841,45 +851,49 @@ class firebaseNotificationServices {
       pendingInitialMessage = initMsg;
     }
 
-    if (Platform.isAndroid) {
-      WalkieCustomNotification.initialize();
-      WalkieCustomNotification.setActionListener((data) {
-        log("🔔 [WalkieCustomNotification] Action received: $data");
+    if (Platform.isIOS) {
+      WalkieLiveActivityService.instance.init();
+    }
+
+    WalkieCustomNotification.initialize();
+    WalkieCustomNotification.setActionListener((data) {
+      log("🔔 [WalkieCustomNotification] Action received: $data");
+      final action = data['action']?.toString();
+      final groupId = data['groupId']?.toString() ?? '';
+      final groupName = data['groupName']?.toString() ?? 'Walkie-Talkie';
+      final speakerName =
+          data['speakerName']?.toString() ?? appL10n.walkie_someone;
+
+      if (action == 'accept' && groupId.isNotEmpty) {
+        navigateToWalkieScreen(
+          groupId: groupId,
+          groupName: groupName,
+          speakerName: speakerName,
+        );
+      }
+    });
+
+    WalkieCustomNotification.getInitialAction().then((data) {
+      if (data != null) {
+        log("🔔 [WalkieCustomNotification] Initial action: $data");
         final action = data['action']?.toString();
         final groupId = data['groupId']?.toString() ?? '';
         final groupName = data['groupName']?.toString() ?? 'Walkie-Talkie';
-        final speakerName = data['speakerName']?.toString() ?? appL10n.walkie_someone;
+        final speakerName =
+            data['speakerName']?.toString() ?? appL10n.walkie_someone;
 
         if (action == 'accept' && groupId.isNotEmpty) {
-          navigateToWalkieScreen(
-            groupId: groupId,
-            groupName: groupName,
-            speakerName: speakerName,
-          );
+          WalkieLaunchTracker.fromWalkieCall = true;
+          Future.delayed(const Duration(milliseconds: 600), () {
+            navigateToWalkieScreen(
+              groupId: groupId,
+              groupName: groupName,
+              speakerName: speakerName,
+            );
+          });
         }
-      });
-
-      WalkieCustomNotification.getInitialAction().then((data) {
-        if (data != null) {
-          log("🔔 [WalkieCustomNotification] Initial action: $data");
-          final action = data['action']?.toString();
-          final groupId = data['groupId']?.toString() ?? '';
-          final groupName = data['groupName']?.toString() ?? 'Walkie-Talkie';
-          final speakerName = data['speakerName']?.toString() ?? appL10n.walkie_someone;
-
-          if (action == 'accept' && groupId.isNotEmpty) {
-            WalkieLaunchTracker.fromWalkieCall = true;
-            Future.delayed(const Duration(milliseconds: 600), () {
-              navigateToWalkieScreen(
-                groupId: groupId,
-                groupName: groupName,
-                speakerName: speakerName,
-              );
-            });
-          }
-        }
-      });
-    }
+      }
+    });
 
     FirebaseMessaging.onMessage.listen((message) async {
       final data = message.data;
