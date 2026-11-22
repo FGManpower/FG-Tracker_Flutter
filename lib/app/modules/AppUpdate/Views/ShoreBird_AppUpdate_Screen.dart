@@ -1,6 +1,5 @@
 import 'dart:io';
 
-
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/AppUpdate/Controller/UpdateCubit/update_cubit.dart';
@@ -13,34 +12,62 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../config/themes_data.dart';
 
-
 class ShorebirdAppUpdateScreen extends StatefulWidget {
   const ShorebirdAppUpdateScreen({super.key});
 
   @override
-  State<ShorebirdAppUpdateScreen> createState() => _MyHomePageState();
+  State<ShorebirdAppUpdateScreen> createState() => _ShorebirdAppUpdateScreenState();
 }
 
-class _MyHomePageState extends State<ShorebirdAppUpdateScreen> {
-  UpdateCubit cubit = UpdateCubit();
+class _ShorebirdAppUpdateScreenState extends State<ShorebirdAppUpdateScreen> {
+  final UpdateCubit cubit = UpdateCubit();
+  int? currentPatch;
 
-  Future<bool> _onWillPop() async {
-    await CommonDialog.ConfirmationDialog(
-      title: appL10n.appUpdate_exitConfirmTitle,
-      cancel: appL10n.common_no,
-      confirm: appL10n.common_yes,
-      onConfirm: () => exit(0),
-    );
-    return false;
+  @override
+  void initState() {
+    super.initState();
+    _initUpdateCheck();
+  }
+
+  void _initUpdateCheck() async {
+    final patch = await cubit.getCurrentPatchNumber();
+    if (mounted) {
+      setState(() {
+        currentPatch = patch;
+      });
+    }
+    cubit.updateCheck();
+  }
+
+  Future<void> _handlePop() async {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      await CommonDialog.ConfirmationDialog(
+        title: appL10n.appUpdate_exitConfirmTitle,
+        cancel: appL10n.common_no,
+        confirm: appL10n.common_yes,
+        onConfirm: () => exit(0),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handlePop();
+      },
       child: BlocBuilder<UpdateCubit, UpdateState>(
         bloc: cubit,
         builder: (context, state) => Scaffold(
+          backgroundColor: Colors.white,
+          appBar: reusableAppbar(
+            context.l10n.appUpdate_updateApp,
+            ontap: _handlePop,
+          ),
           bottomNavigationBar: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
             child: Column(
@@ -52,7 +79,7 @@ class _MyHomePageState extends State<ShorebirdAppUpdateScreen> {
                     child: LinearProgressIndicator(
                       value: state.progress / 100, // Convert 0-100 to 0.0-1.0
                       backgroundColor: Colors.grey.shade300,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
                     ),
                   ),
                   reausabletext(
@@ -60,28 +87,30 @@ class _MyHomePageState extends State<ShorebirdAppUpdateScreen> {
                     fontsize: 13,
                     fontfamily: FontFamily.interSemiBold,
                   ),
+                  SizedBox(height: 8.h),
                 ],
                 reausablebutton(
                   title: state.isRestartApp
                       ? context.l10n.appUpdate_restartApp
-                      : context.l10n.appUpdate_updateApp,
-                  ontap: state.isUpdating
+                      : (state.isCheckingForUpdates
+                          ? "Checking..."
+                          : context.l10n.appUpdate_updateApp),
+                  ontap: (state.isUpdating || state.isCheckingForUpdates)
                       ? null
                       : state.isRestartApp
-                      ? cubit.restartApp
-                      : cubit.updateCheck,
+                          ? cubit.restartApp
+                          : cubit.updateCheck,
                 ),
               ],
             ),
           ),
-
           body: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                SizedBox(height: 100.h),
+                SizedBox(height: 40.h),
                 Center(
                   child: reausabletext(
                     context.l10n.appUpdate_updateAvailable,
@@ -90,14 +119,29 @@ class _MyHomePageState extends State<ShorebirdAppUpdateScreen> {
                     fontfamily: FontFamily.interBold,
                   ),
                 ),
+                SizedBox(height: 6.h),
                 Center(
                   child: reausabletext(
-                    context.l10n.appUpdate_updateAvailableMessage,
+                    state.isRestartApp
+                        ? "Update installed. Please restart to apply changes."
+                        : context.l10n.appUpdate_updateAvailableMessage,
                     fontsize: 13,
                     fontfamily: FontFamily.interSemiBold,
+                    textAlign: TextAlign.center,
                   ),
                 ),
-                SizedBox(height: 40.h),
+                if (currentPatch != null) ...[
+                  SizedBox(height: 8.h),
+                  Center(
+                    child: reausabletext(
+                      "Current Patch: #$currentPatch",
+                      fontsize: 12,
+                      color: Colors.grey.shade600,
+                      fontfamily: FontFamily.interMedium,
+                    ),
+                  ),
+                ],
+                SizedBox(height: 30.h),
                 Center(child: Image.asset(Assets.images.appUpdate.path)),
                 SizedBox(height: 30.h),
               ],

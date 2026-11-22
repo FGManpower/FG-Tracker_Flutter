@@ -1,4 +1,4 @@
-﻿import 'dart:developer';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart' as dio;
@@ -507,6 +507,16 @@ class Sidemenu extends StatelessWidget {
           //     Navigator.pop(context);
           //   },
           // ),
+          _buildDivider(),
+          _buildDrawerItem(
+            icon: Icons.system_update_rounded,
+            title: context.l10n.appUpdate_updateApp,
+            subtitle: context.l10n.appUpdate_updateAvailable,
+            onTap: () {
+              Navigator.pop(context);
+              Get.toNamed(Routes.shorebirdUpdate);
+            },
+          ),
           _buildDivider(),
           _buildDrawerItem(
             icon: Icons.logout_rounded,

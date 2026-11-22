@@ -56,6 +56,26 @@ public class MainActivity extends FlutterActivity {
                     result.notImplemented();
             }
         });
+
+        MethodChannel restartChannel = new MethodChannel(
+                flutterEngine.getDartExecutor().getBinaryMessenger(), "app.restart.channel");
+        restartChannel.setMethodCallHandler((call, result) -> {
+            if ("restartApp".equals(call.method)) {
+                try {
+                    android.content.Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
+                    if (intent != null) {
+                        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        Runtime.getRuntime().exit(0);
+                    }
+                    result.success(null);
+                } catch (Exception e) {
+                    result.error("RESTART_FAILED", e.getMessage(), null);
+                }
+            } else {
+                result.notImplemented();
+            }
+        });
     }
 
     private PictureInPictureParams buildParams() {

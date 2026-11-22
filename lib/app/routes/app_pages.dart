@@ -64,6 +64,7 @@ import '../modules/sos/SosBinding.dart';
 import '../modules/sos/sos_screen.dart';
 
 import '../modules/mediaStream/Views/incoming_call_screen.dart';
+import '../modules/AppUpdate/Views/ShoreBird_AppUpdate_Screen.dart';
 part 'app_routes.dart';
 
 class AppPages {
@@ -378,6 +379,12 @@ class AppPages {
       name: Routes.packagePricing,
       page: () => const PackageListView(),
       binding: PackageListBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.shorebirdUpdate,
+      page: () => const ShorebirdAppUpdateScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 400),
     ),

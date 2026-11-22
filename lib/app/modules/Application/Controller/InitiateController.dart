@@ -12,13 +12,11 @@ import '../../../routes/app_pages.dart';
 import '../../../Core/global/launchedFromCall.dart';
 import '../../../Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
-import '../../../modules/AppUpdate/Controller/UpdateCubit/update_cubit.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
 import '../../../modules/Walkie-talkie/Services/walkie_notification_manager.dart';
 
 class InitiateController extends GetxController
     with GetTickerProviderStateMixin {
-  final UpdateCubit updateCubit = UpdateCubit();
-
   late AnimationController animationController;
   late Animation<double> scaleAnimation;
   late Animation<double> fadeAnimation;
@@ -64,6 +62,18 @@ class InitiateController extends GetxController
     );
 
     animationController.forward();
+
+    // Non-blocking background check for Shorebird OTA patch
+    try {
+      final updater = ShorebirdUpdater();
+      if (updater.isAvailable) {
+        updater.checkForUpdate().then((status) {
+          if (status == UpdateStatus.outdated) {
+            updater.update().catchError((_) {});
+          }
+        }).catchError((_) {});
+      }
+    } catch (_) {}
 
     if (_isCallOrWalkieActive) {
       _splashTimer?.cancel();
