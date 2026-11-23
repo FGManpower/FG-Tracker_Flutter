@@ -23,6 +23,17 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+bool _isGroupCall(Map<dynamic, dynamic>? extra) {
+  if (extra == null) return false;
+  final screen = (extra['screen_name'] ?? extra['screenName'] ?? extra['screen'] ?? '').toString();
+  if (screen == 'incomingGroupCall' || screen == 'groupCallNotify' || screen == 'group_call') return true;
+  final type = (extra['type'] ?? extra['callType'] ?? '').toString();
+  if (type == 'group_voice_call' || type == 'group_video_call') return true;
+  final groupId = (extra['groupId'] ?? extra['group_id'] ?? '').toString().trim();
+  if (groupId.isNotEmpty && groupId != '0' && groupId != 'null') return true;
+  return false;
+}
+
 /// Wires the CallKit / Android full-screen call actions to the app.
 /// Moved out of main.dart so it can be unit tested (doc 02 §5).
 void setupCallKitHandlers() {
@@ -33,7 +44,7 @@ void setupCallKitHandlers() {
       log('[CALL] Ignored onAcceptCall for outgoing call: $extra');
       return;
     }
-    final bool isGroup = extra['screen_name'] == 'incomingGroupCall';
+    final bool isGroup = _isGroupCall(extra);
     CallSessionState.sessionId = uuid ?? '';
 
     if (isGroup) {
@@ -70,8 +81,10 @@ void setupCallKitHandlers() {
         arguments: {
           "groupId": effectiveGroupId,
           "groupName": effectiveGroupName,
+          "groupProfile": extra['groupProfile'] ?? extra['callerProfileImage'] ?? extra['caller_profile_image'],
           "callerId": effectiveCallerId,
           "callerName": effectiveCallerName,
+          "callerProfileImage": extra['callerProfileImage'] ?? extra['caller_profile_image'],
           "isVideo": isVideo,
           "callId": effectiveCallId,
           "callType": "incoming",
@@ -143,7 +156,7 @@ void setupCallKitHandlers() {
   };
 
   callKit.onDeclineCall = (callId, extra, uuid) async {
-    if (extra['screen_name'] == 'incomingGroupCall') {
+    if (_isGroupCall(extra)) {
       final String effectiveCallId = (callId.isNotEmpty
               ? callId
               : (extra['callId'] ?? extra['call_id'] ?? ''))

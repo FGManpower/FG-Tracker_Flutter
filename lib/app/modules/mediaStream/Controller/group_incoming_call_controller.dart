@@ -101,16 +101,13 @@ class GroupIncomingCallController extends GetxController {
 
   void declineCall() {
     _stopRingtone();
-    if (callId != null) {
+    CallStateTracker.isIncomingCallScreenOpen = false;
+    if (callId != null && callId!.isNotEmpty) {
       Socket_GroupCallService.instance.rejectGroupCall(callId!, groupId);
-      var data = {
-        "callId": callerId,
-        "groupId": groupId,
-      };
-
-      // CallKitService.instance.declineGroupCall(data);
     }
-    Get.back();
+    if (Get.currentRoute == Routes.groupIncomingCallScreen) {
+      Get.back();
+    }
   }
 
   void toggleMute() {
@@ -120,6 +117,7 @@ class GroupIncomingCallController extends GetxController {
   @override
   void onClose() {
     _stopRingtone();
+    CallStateTracker.isIncomingCallScreenOpen = false;
     super.onClose();
   }
 }

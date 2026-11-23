@@ -3657,6 +3657,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   Future<void> startScreenShare() async {
     if (_screenShareStarting || isScreenSharing.value) return;
+    if (callDurationRx.value <= 0 && callTimer == null) {
+      Utils().fluttertoast("You can share screen after the call is answered.");
+      return;
+    }
     if (peer == null || isClosed) {
       Utils().fluttertoast(appL10n.call_notReady);
       return;

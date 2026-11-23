@@ -17,6 +17,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
@@ -1081,33 +1082,37 @@ class firebaseNotificationServices {
           Routes.IncomingCallScreen,
           arguments: {"callDetail": call},
         );
-      }
-      // else if (message.data['screen_name'] == 'groupCallNotify') {
-      // FlutterRingtonePlayer().stop();
-      // if (CallStateTracker.isIncomingCallScreenOpen) return;
-      //
-      // final data = jsonDecode(message.data['callData']);
-      //
-      // CallStateTracker.isIncomingCallScreenOpen = true;
-      // Get.toNamed(
-      //   Routes.groupIncomingCallScreen,
-      //   arguments: {
-      //     "callId": data['callId']?.toString(),
-      //     "groupId": data['groupId']?.toString() ?? "",
-      //     "groupName": (data['groupName'] ?? "Group Call").toString(),
-      //     "callerName": data['callerName'],
-      //     "groupProfile": data['callerProfileImage'],
-      //     "callerProfileImage": data['callerProfileImage'],
-      //     "activeMemberCount": 1,
-      //     "totalMemberCount": data['totalGroupMember'] ?? 0,
-      //     "isVideo": data['isVideo'] == true,
-      //     "callType": "incoming",
-      //   },
-      // );
-      // flutterLocalNotificationsPlugin.cancelAll();
-      // }
+      } else if (message.data['screen_name'] == 'groupCallNotify' ||
+          message.data['screen_name'] == 'incomingGroupCall' ||
+          message.data['screenName'] == 'incomingGroupCall' ||
+          message.data['screen_name'] == 'group_call' ||
+          message.data['screen'] == 'incomingGroupCall') {
+        FlutterRingtonePlayer().stop();
+        if (CallStateTracker.isIncomingCallScreenOpen) return;
 
-      else if (message.data['screen_name'] == "missedCall") {
+        final rawCallData = message.data['callData'];
+        final Map<dynamic, dynamic> data = (rawCallData is String)
+            ? (jsonDecode(rawCallData) as Map<dynamic, dynamic>)
+            : (rawCallData is Map ? rawCallData : message.data);
+
+        CallStateTracker.isIncomingCallScreenOpen = true;
+        Get.toNamed(
+          Routes.groupIncomingCallScreen,
+          arguments: {
+            "callId": (data['callId'] ?? message.data['callId'] ?? "").toString(),
+            "groupId": (data['groupId'] ?? message.data['groupId'] ?? "").toString(),
+            "groupName": (data['groupName'] ?? message.data['groupName'] ?? "Group Call").toString(),
+            "callerName": (data['callerName'] ?? message.data['callerName'] ?? "Someone").toString(),
+            "groupProfile": data['callerProfileImage'] ?? data['groupProfile'] ?? message.data['callerProfileImage'],
+            "callerProfileImage": data['callerProfileImage'] ?? message.data['callerProfileImage'],
+            "activeMemberCount": 1,
+            "totalMemberCount": data['totalGroupMember'] ?? data['totalMemberCount'] ?? 0,
+            "isVideo": data['isVideo'] == true || data['isVideo'] == 'true' || message.data['isVideo'] == 'true',
+            "callType": "incoming",
+          },
+        );
+        flutterLocalNotificationsPlugin.cancelAll();
+      } else if (message.data['screen_name'] == "missedCall") {
         Get.toNamed(Routes.notificationScreen);
       } else if (message.data['screen_name'] == "group_walkie" ||
           message.data['screenName'] == "group_walkie" ||

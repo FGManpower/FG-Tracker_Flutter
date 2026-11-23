@@ -558,7 +558,8 @@ class CallingScreen extends StatelessWidget {
   /// Screen share in the video top bar (where the mock has its extra icon).
   Widget _shareTopButton(BuildContext context, CallingController c) {
     return Obx(() {
-      final bool busy = _busy(c);
+      final bool connected = isCallConnected(c);
+      final bool busy = _busy(c) || !connected;
       final bool waiting = c.isScreenShareWaiting.value;
       final bool sharing = c.isScreenSharing.value;
       return Opacity(
@@ -575,7 +576,15 @@ class CallingScreen extends StatelessWidget {
               : (sharing ? appL10n.call_stop : appL10n.call_shareScreen),
           onDark: true,
           active: sharing || waiting,
-          onTap: () => _onShareTap(context, c, isVideo: true),
+          onTap: () {
+            if (!connected) {
+              Utils().fluttertoast(
+                "You can share screen after the call is answered.",
+              );
+              return;
+            }
+            _onShareTap(context, c, isVideo: true);
+          },
         ),
       );
     });
@@ -1198,6 +1207,12 @@ class CallingScreen extends StatelessWidget {
     CallingController c, {
     required bool isVideo,
   }) {
+    if (!isCallConnected(c)) {
+      Utils().fluttertoast(
+        "You can share screen after the call is answered.",
+      );
+      return;
+    }
     if (_blocked(c) || _busy(c)) return;
     if (c.isScreenShareWaiting.value) {
       c.cancelScreenShare();
@@ -1228,6 +1243,9 @@ class CallingScreen extends StatelessWidget {
       final bool waiting = c.isScreenShareWaiting.value;
       final bool sharing = c.isScreenSharing.value;
       final bool isVideo = c.is_video || c.isVideoCall.value;
+      final bool connected = isCallConnected(c);
+      final bool blocked = _blocked(c) || _busy(c) || !connected;
+
       return ctrl(
         icon: waiting
             ? Icons.close_rounded
@@ -1241,8 +1259,16 @@ class CallingScreen extends StatelessWidget {
         isVideo: onDark,
         size: size,
         activeIconColor: activeIconColor,
-        videoInactive: _blocked(c) || _busy(c),
-        onTap: () => _onShareTap(context, c, isVideo: isVideo),
+        videoInactive: blocked,
+        onTap: () {
+          if (!connected) {
+            Utils().fluttertoast(
+              "You can share screen after the call is answered.",
+            );
+            return;
+          }
+          _onShareTap(context, c, isVideo: isVideo);
+        },
       );
     });
   }

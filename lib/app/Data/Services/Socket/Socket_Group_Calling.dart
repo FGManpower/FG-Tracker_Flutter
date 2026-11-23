@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Core/constant/urls.dart' show Urls;
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:get/get.dart';
@@ -258,7 +259,45 @@ class Socket_GroupCallService {
       LogoutUser().handleForceLogout();
     });
 
-    socket?.on("group_call_started", (raw) {});
+    socket?.on("group_call_started", (raw) {
+      if (raw == null) return;
+      _log("group_call_started received: $raw");
+      try {
+        final data = Map<String, dynamic>.from(raw);
+        final callerId = (data['callerId'] ?? data['userId'] ?? '').toString();
+        if (callerId.isNotEmpty && callerId == _selfUserId) return;
+
+        if (CallStateTracker.isIncomingCallScreenOpen) return;
+        CallingController? live1on1;
+        if (Get.isRegistered<CallingController>()) {
+          try {
+            final c = Get.find<CallingController>();
+            if (!c.isClosed && c.isCallLive) live1on1 = c;
+          } catch (_) {}
+        }
+        if (live1on1 != null) return;
+        if (currentCallId != null) return;
+
+        CallStateTracker.isIncomingCallScreenOpen = true;
+        Get.toNamed(
+          Routes.groupIncomingCallScreen,
+          arguments: {
+            "callId": (data['callId'] ?? data['id'] ?? "").toString(),
+            "groupId": (data['groupId'] ?? "").toString(),
+            "groupName": (data['groupName'] ?? data['group_name'] ?? "Group Call").toString(),
+            "callerName": (data['callerName'] ?? data['name'] ?? "Someone").toString(),
+            "groupProfile": data['callerProfileImage'] ?? data['profileImage'] ?? data['groupProfile'],
+            "callerProfileImage": data['callerProfileImage'] ?? data['profileImage'],
+            "activeMemberCount": 1,
+            "totalMemberCount": data['totalGroupMember'] ?? data['totalMemberCount'] ?? 0,
+            "isVideo": data['isVideo'] == true || data['isVideo'] == 'true',
+            "callType": "incoming",
+          },
+        );
+      } catch (e, st) {
+        _log("Error handling group_call_started: $e\n$st");
+      }
+    });
 
     socket?.on("group_call_participant_joined", (raw) {
       if (raw == null) return;

@@ -1022,6 +1022,11 @@ class CallKitService with WidgetsBindingObserver {
           return true;
         }
         final l = await loadAppL10nFromPrefs();
+        final extraMap = cd.map((k, v) => MapEntry(k, v.toString()));
+        if (screen != null) {
+          extraMap['screen_name'] = screen;
+          extraMap['screenName'] = screen;
+        }
         await showIncoming(
           sessionId: incomingId,
           callId: callId,
@@ -1030,7 +1035,7 @@ class CallKitService with WidgetsBindingObserver {
               : (cd['callerName'] ?? l.call_unknown).toString(),
           isVideo: isVideo,
           avatar: (cd['callerProfileImage'] ?? '').toString(),
-          extra: cd.map((k, v) => MapEntry(k, v.toString())),
+          extra: extraMap,
           expiresAt: cd['expiresAt'] ?? d['expiresAt'],
         );
         return true;
