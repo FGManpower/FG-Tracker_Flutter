@@ -217,8 +217,9 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   RxBool hasPreviousPage = false.obs;
 
   /// Filtered list of chats for the UI.
-  /// 1. Excludes empty conversations (conversations with 0 messages / no preview or invalid name).
-  /// 2. Performs instant client-side search across name, groupName, message, preview, and role.
+  /// 1. Excludes archived chats and invalid rows without identity.
+  /// 2. Preserves active conversations (including newly started chats with 0 messages).
+  /// 3. Performs instant client-side search across name, groupName, message, preview, and role.
   List<PrivateChatModel> get displayedChats {
     final query = searchQuery.value.trim().toLowerCase();
 
@@ -227,25 +228,13 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       if (archivedChats.any((archived) => _isSameChat(archived, chat))) {
         return false;
       }
-      final hasMsg = (chat.message != null && chat.message!.trim().isNotEmpty) ||
-          (chat.preview != null && chat.preview!.trim().isNotEmpty) ||
-          (chat.messageType != null &&
-              chat.messageType!.trim().isNotEmpty &&
-              chat.messageType != 'text') ||
-          chat.lastMessageData != null ||
-          (chat.unreadCount != null && chat.unreadCount! > 0) ||
-          (chat.time != null && chat.time!.trim().isNotEmpty) ||
-          (chat.timestamp != null && chat.timestamp!.trim().isNotEmpty) ||
-          chat.isPinned == true;
-      if (!hasMsg) return false;
 
       final name = (chat.name ?? chat.groupName)?.trim();
-      final hasIdentity = (name != null && name.isNotEmpty && name != "Unknown User") ||
-          chat.userId != null ||
-          chat.groupId != null ||
-          chat.chatId != null ||
-          chat.id != null;
-      if (!hasIdentity) {
+      final hasValidName = name != null &&
+          name.isNotEmpty &&
+          name.toLowerCase() != "unknown user";
+      final hasPeer = chat.userId != null || chat.groupId != null;
+      if (!hasValidName && !hasPeer) {
         return false;
       }
       return true;
@@ -918,29 +907,19 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
           'rows=${response.data?.length ?? 0} '
           'withIsArchivedTrue=${(response.data ?? []).where((c) => c.isArchived == true).length}');
 
-      // WhatsApp Rule (Recent Activity Only):
-      // Strictly exclude empty chats (chats with 0 messages / no preview, or invalid name).
+      // WhatsApp Rule: Preserve all active chats returned by the server,
+      // including newly started conversations with 0 messages.
       // _reconcileArchived: a server list never re-adds a chat archived here
       // (unless the server says it was unarchived).
       final chats = _reconcileArchived((response.data ?? []).where((chat) {
         if (chat.isArchived == true) return false;
-        final hasMsg = (chat.message != null && chat.message!.trim().isNotEmpty) ||
-            (chat.preview != null && chat.preview!.trim().isNotEmpty) ||
-            (chat.messageType != null &&
-                chat.messageType!.trim().isNotEmpty &&
-                chat.messageType != 'text') ||
-            chat.lastMessageData != null ||
-            (chat.unreadCount != null && chat.unreadCount! > 0) ||
-            (chat.time != null && chat.time!.trim().isNotEmpty) ||
-            (chat.timestamp != null && chat.timestamp!.trim().isNotEmpty) ||
-            chat.isPinned == true;
         final name = (chat.name ?? chat.groupName)?.trim();
         final hasValidName = (name != null && name.isNotEmpty && name != "Unknown User") ||
             chat.userId != null ||
             chat.groupId != null ||
             chat.chatId != null ||
             chat.id != null;
-        return hasMsg && hasValidName;
+        return hasValidName;
       }).toList());
 
       for (final chat in chats) {
@@ -1016,21 +995,15 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         // are PRESERVED rather than being dropped and disappearing from the screen.
         final combinedChats = <PrivateChatModel>[...mergedChats];
 
-        final isCompleteServerList = response.pagination != null &&
-            response.pagination!.totalPages == 1 &&
-            response.pagination!.hasNextPage == false &&
-            response.pagination!.totalRecords != null &&
-            response.pagination!.totalRecords! <= chats.length;
-
-        if (!isCompleteServerList) {
-          for (final existing in existingChats) {
-            final inMerged = combinedChats.any((c) => _isSameChat(c, existing));
-            if (!inMerged) {
-              final isArchived = existing.isArchived == true ||
-                  archivedChats.any((a) => _isSameChat(a, existing));
-              if (!isArchived) {
-                combinedChats.add(existing);
-              }
+        // Preserve existing active in-memory chats that were not returned on page 1
+        // so no chats blink, vanish, or flicker during refresh.
+        for (final existing in existingChats) {
+          final inMerged = combinedChats.any((c) => _isSameChat(c, existing));
+          if (!inMerged) {
+            final isArchived = existing.isArchived == true ||
+                archivedChats.any((a) => _isSameChat(a, existing));
+            if (!isArchived) {
+              combinedChats.add(existing);
             }
           }
         }
@@ -1249,23 +1222,13 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       // (unless the server says it was unarchived).
       final chats = _reconcileArchived((response.data ?? []).where((chat) {
         if (chat.isArchived == true) return false;
-        final hasMsg = (chat.message != null && chat.message!.trim().isNotEmpty) ||
-            (chat.preview != null && chat.preview!.trim().isNotEmpty) ||
-            (chat.messageType != null &&
-                chat.messageType!.trim().isNotEmpty &&
-                chat.messageType != 'text') ||
-            chat.lastMessageData != null ||
-            (chat.unreadCount != null && chat.unreadCount! > 0) ||
-            (chat.time != null && chat.time!.trim().isNotEmpty) ||
-            (chat.timestamp != null && chat.timestamp!.trim().isNotEmpty) ||
-            chat.isPinned == true;
         final name = (chat.name ?? chat.groupName)?.trim();
         final hasValidName = (name != null && name.isNotEmpty && name != "Unknown User") ||
             chat.userId != null ||
             chat.groupId != null ||
             chat.chatId != null ||
             chat.id != null;
-        return hasMsg && hasValidName;
+        return hasValidName;
       }).toList());
 
       for (final chat in chats) {
@@ -1553,11 +1516,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       }
 
       if (mainIndex == -1) {
-        final hasIdentity = updatedChat.userId != null ||
-            updatedChat.groupId != null ||
-            updatedChat.chatId != null ||
-            updatedChat.id != null;
-        if (!_isDisplayable(updatedChat) && !hasIdentity) {
+        final name = (updatedChat.name ?? updatedChat.groupName)?.trim();
+        final hasValidName = name != null &&
+            name.isNotEmpty &&
+            name.toLowerCase() != "unknown user";
+        final hasPeer = updatedChat.userId != null || updatedChat.groupId != null;
+        if (!hasValidName && !hasPeer) {
           arcLog('realtime ACTION', // TODO(arc-diagnostics)
               'not archived, not in main, payload incomplete => _scheduleServerRefetch()');
           _scheduleServerRefetch();
@@ -1635,23 +1599,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   }
 
   bool _isDisplayable(PrivateChatModel chat) {
-    final hasMsg = (chat.message?.trim().isNotEmpty ?? false) ||
-        (chat.preview?.trim().isNotEmpty ?? false) ||
-        (chat.messageType != null &&
-            chat.messageType!.trim().isNotEmpty &&
-            chat.messageType != 'text') ||
-        chat.lastMessageData != null ||
-        (chat.unreadCount != null && chat.unreadCount! > 0) ||
-        (chat.time != null && chat.time!.trim().isNotEmpty) ||
-        (chat.timestamp != null && chat.timestamp!.trim().isNotEmpty) ||
-        chat.isPinned == true;
     final name = (chat.name ?? chat.groupName)?.trim();
-    final hasIdentity = (name != null && name.isNotEmpty && name != "Unknown User") ||
-        chat.userId != null ||
-        chat.groupId != null ||
-        chat.chatId != null ||
-        chat.id != null;
-    return hasMsg && hasIdentity;
+    final hasValidName = name != null &&
+        name.isNotEmpty &&
+        name.toLowerCase() != "unknown user";
+    final hasPeer = chat.userId != null || chat.groupId != null;
+    return hasValidName || hasPeer;
   }
 
   /// PrivateChatModel.fromJson defaults a missing unread count to 0 and a
