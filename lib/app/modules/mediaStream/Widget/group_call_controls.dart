@@ -15,16 +15,20 @@ class GroupCallControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.fromLTRB(12.w, 0, 12.w, 16.h),
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
+      margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
-        borderRadius: BorderRadius.circular(28.r),
+        color: const Color(0xEB1C272E),
+        borderRadius: BorderRadius.circular(32.r),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.12),
+          width: 0.8,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.40),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -34,19 +38,19 @@ class GroupCallControls extends StatelessWidget {
         final isAudioOn = controller.isAudioOn.value;
 
         return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            SizedBox(width: 4.w),
+            // More options
             ControlItem(
               icon: Icons.more_horiz_rounded,
               label: context.l10n.call_more,
-              bgColor: Colors.white,
-              iconColor: const Color(0xFF6E5CA4),
-              borderColor: const Color(0xFFE9E5FE),
+              bgColor: const Color(0xFF2A3942),
+              iconColor: Colors.white,
               onTap: controller.openMoreSheet,
             ),
-            SizedBox(width: 8.w),
-            if (isVideo) ...[
+
+            // Video camera toggle (if video call)
+            if (isVideo)
               ControlItem(
                 icon: isVideoOn
                     ? Icons.videocam_rounded
@@ -54,98 +58,61 @@ class GroupCallControls extends StatelessWidget {
                 label: isVideoOn
                     ? context.l10n.call_cameraOn
                     : context.l10n.call_cameraOff,
-                bgColor: Colors.white,
-                iconColor: const Color(0xFF6E5CA4),
-                borderColor: const Color(0xFFE9E5FE),
+                bgColor: isVideoOn
+                    ? const Color(0xFF2A3942)
+                    : Colors.white.withOpacity(0.12),
+                iconColor: isVideoOn ? Colors.white : Colors.white60,
                 onTap: controller.toggleCamera,
               ),
-              SizedBox(width: 8.w),
-            ],
-            ControlItem(
-              icon: Icons.call_end_rounded,
-              label: context.l10n.call_endCall,
-              bgColor: const Color(0xFFFF3B30),
-              iconColor: Colors.white,
-              size: 54,
-              iconSize: 26,
-              onTap: controller.endCall,
-            ),
-            SizedBox(width: 8.w),
+
+            // Microphone mute toggle
             ControlItem(
               icon: isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
               label: isAudioOn ? context.l10n.call_mute : context.l10n.call_unmute,
-              bgColor: Colors.white,
-              iconColor: const Color(0xFF6E5CA4),
-              borderColor: const Color(0xFFE9E5FE),
+              bgColor: isAudioOn
+                  ? const Color(0xFF2A3942)
+                  : const Color(0xFFEA4335).withOpacity(0.25),
+              iconColor: isAudioOn ? Colors.white : const Color(0xFFFF5252),
+              borderColor: isAudioOn
+                  ? null
+                  : const Color(0xFFFF5252).withOpacity(0.40),
               onTap: controller.toggleMic,
             ),
-            SizedBox(width: 8.w),
+
+            // Speaker / audio route
             Obx(() {
               final CallAudioRoute route =
                   controller.audioRouteController.currentRoute.value;
+              final bool isSpeaker = route != CallAudioRoute.earpiece;
 
-              return groupCtrl(
+              return ControlItem(
                 icon: controller.audioRouteController.currentAudioRouteIcon,
                 label: controller.audioRouteController.currentAudioRouteLabel,
-                active: route != CallAudioRoute.earpiece,
-                isVideo: isVideo,
+                bgColor: isSpeaker
+                    ? Colors.white.withOpacity(0.20)
+                    : const Color(0xFF2A3942),
+                iconColor: Colors.white,
                 onTap: () async {
                   await controller.toggleSpeaker(context);
-                  // c.showControlsTemporarily();
                 },
               );
             }),
-            SizedBox(width: 4.w),
+
+            // End call button (Prominent WhatsApp red)
+            ControlItem(
+              icon: Icons.call_end_rounded,
+              label: context.l10n.call_endCall,
+              bgColor: const Color(0xFFEA4335),
+              iconColor: Colors.white,
+              size: 50,
+              iconSize: 26,
+              onTap: controller.endCall,
+            ),
           ],
         );
       }),
     );
   }
-}
-
-Widget groupCtrl({
-  required IconData icon,
-  required String label,
-  required bool isVideo,
-  required VoidCallback onTap,
-  bool active = false,
-  Color? iconColor,
-}) {
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 46.r,
-          height: 46.r,
-          decoration: BoxDecoration(
-            border: Border.all(color: Color(0xFFE9E5FE)),
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            icon,
-            color: Color(0xFF6E5CA4),
-            size: 22.sp,
-          ),
-        ),
-      ),
-      SizedBox(height: 6.h),
-      ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 54.w),
-        child: AutoFitText(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 10.sp,
-            fontFamily: FontFamily.interMedium,
-            color: const Color(0xFF5B4B8A),
-          ),
-        ),
-      ),
-    ],
-  );
 }
 
 class ControlItem extends StatelessWidget {
@@ -189,17 +156,17 @@ class ControlItem extends StatelessWidget {
                 border: borderColor != null
                     ? Border.all(color: borderColor!, width: 1.2)
                     : null,
-                boxShadow: bgColor == const Color(0xFFFF3B30)
+                boxShadow: bgColor == const Color(0xFFEA4335)
                     ? [
                         BoxShadow(
-                          color: const Color(0xFFFF3B30).withOpacity(0.35),
-                          blurRadius: 10,
+                          color: const Color(0xFFEA4335).withOpacity(0.40),
+                          blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
                       ]
                     : [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withOpacity(0.15),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -209,14 +176,14 @@ class ControlItem extends StatelessWidget {
             ),
             SizedBox(height: 5.h),
             ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 54.w),
+              constraints: BoxConstraints(maxWidth: 58.w),
               child: AutoFitText(
                 label,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 10.sp,
                   fontFamily: FontFamily.interMedium,
-                  color: const Color(0xFF5B4B8A),
+                  color: Colors.white.withOpacity(0.85),
                 ),
               ),
             ),

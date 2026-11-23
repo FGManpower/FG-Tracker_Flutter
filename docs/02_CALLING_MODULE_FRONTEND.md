@@ -1572,11 +1572,22 @@ Future<void> endAndAcceptWaitingCall() async {
 * **Status Sync:** Immediate teardown on both caller and callee ensures that if User A ends a call and User B dials User A immediately, User B connects without receiving a false "On another call" error.
 * **Glare Handling:** When User A and User B call each other simultaneously, the backend detects the collision and auto-bridges them. The frontend's `_onCallAcceptedByServer` handler cancels the missed call timer, stops dial tones, sets status to "Connecting", and proceeds directly to media streaming without error popups.
 
-### 17.4 iOS RTCAudioSession Crash Prevention & Single CXProvider (Issue 5)
-* **Root Cause of iOS App Crashes:**
-  - In `AppDelegate.swift`, both `onAccept` and `didActivateAudioSession` called `RTCAudioSession.sharedInstance().audioSessionDidActivate(audioSession)` without checking `isAudioEnabled`.
-  - WebRTC iOS SDK asserts `RTC_DCHECK(!_isAudioEnabled)`. Calling activate when audio is already enabled throws a fatal `SIGABRT` and crashes the application.
-  - A fallback `nativeCallKitProvider` was instantiated alongside `SwiftFlutterCallkitIncomingPlugin`'s internal `CXProvider`, violating Apple's single-provider mandate and causing `callservicesd` assertion aborts.
-* **iOS Resolution (`AppDelegate.swift`):**
-  - **Audio Session Guard:** Wrapped `audioSessionDidActivate` with `if !rtcAudio.isAudioEnabled` and `audioSessionDidDeactivate` with `if rtcAudio.isAudioEnabled` across `didActivateAudioSession`, `didDeactivateAudioSession`, `onAccept`, and `releaseCallKitManualAudio`.
-  - **Provider Cleanup:** Invalidates and releases `nativeCallKitProvider` whenever `SwiftFlutterCallkitIncomingPlugin.sharedInstance` is present.
+### 17.5 Audio-to-Video Upgrade "Camera Disabled" Fix & Remote Mic State
+* **Audio-to-Video Upgrade State Sync (`calling_controller.dart`):**
+  - **Root Cause:** In `_handlers.on("upgradeToVideo")`, the handler contained `if (data["sdpOffer"] == null) return;`. When a peer upgraded to video and signaled `cameraState: true` without an immediate SDP renegotiation (or before SDP offer arrived), the function returned early, preventing `isRemoteVideoOn` from becoming `true`. Consequently, `calling_screen.dart` displayed the fallback tile saying "Camera Disabled".
+  - **Fix:** Removed the premature null check. When `sdp == null` arrives with `cameraState: true`, the handler immediately sets `isRemoteVideoOn = true`, triggers `_rebindRemoteForFirstFrames()`, syncs reactive state, and updates the UI.
+* **Remote Mic Mute Indication (`AudioCall_screen.dart`):**
+  - Added real-time reactive pill badge on the 1:1 audio call screen when `c.remoteMicMuted.value` is true, displaying the peer name and microphone muted status with icon, matching the video screen UX.
+
+### 17.6 WhatsApp Standard Group Calling UI/UX Parity
+* **Dark Glassmorphism Control Dock (`group_call_controls.dart`):**
+  - Redesigned the controls from the previous white container with purple outlines to a sleek WhatsApp-standard dark dock (`Color(0xEB1C272E)`).
+  - Modernized circular buttons for Mic, Video, Speaker Route, More, and prominent Red End Call (`Color(0xFFEA4335)`).
+* **WhatsApp Group Header & Encryption Badge (`group_calling_screen.dart`):**
+  - Deep dark background (`Color(0xFF0B141B)`).
+  - WhatsApp header featuring end-to-end encryption badge, group name, dynamic duration/status indicator with live green dot, and participant roster sheet counter button.
+* **Modernized Participant Grid (`group_participant_grid.dart`):**
+  - Sleek dark participant card tiles (`Color(0xFF1B2730)`), active audio mute badges (`Color(0xFFEA4335)`), translucent camera switch controls, and dark fallback avatar styling (`Color(0xFF1F2C34)`).
+* **Outgoing Sound & Dial Tone Control (`group_calling_controller.dart`):**
+  - Outgoing dial tone plays automatically on call launch and terminates immediately upon first remote participant connection, call decline, failure, or call termination.
+

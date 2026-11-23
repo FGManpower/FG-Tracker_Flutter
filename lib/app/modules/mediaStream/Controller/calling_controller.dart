@@ -1367,9 +1367,30 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   void _applyRemoteMediaState(Map<dynamic, dynamic> s) {
     bool flag(dynamic v) => v == true || v.toString() == 'true';
-    if (s.containsKey("micMuted")) remoteMicMuted.value = flag(s["micMuted"]);
+    if (s.containsKey("micMuted") || s.containsKey("muted") || s.containsKey("isMuted")) {
+      remoteMicMuted.value = flag(s["micMuted"] ?? s["muted"] ?? s["isMuted"]);
+    }
     if (s.containsKey("videoPaused")) {
       remoteVideoPaused.value = flag(s["videoPaused"]);
+    }
+    if (s.containsKey("cameraOn") || s.containsKey("cameraState") || s.containsKey("videoOn") || s.containsKey("isVideoOn")) {
+      final bool camOn = flag(s["cameraOn"] ?? s["cameraState"] ?? s["videoOn"] ?? s["isVideoOn"]);
+      final bool wasRemoteVideoOn = isRemoteVideoOn;
+      _remoteCamStateKnown = true;
+      isRemoteVideoOn = camOn;
+      if (camOn) {
+        isVideoCall.value = true;
+        is_video = true;
+        if (!wasRemoteVideoOn) {
+          isLocalVideoMain = false;
+          _rebindRemoteForFirstFrames();
+          _startFirstFrameWatchdog();
+          _watchRemoteVideo("mediaStateCamOn");
+        }
+      } else if (isVideoOn) {
+        isLocalVideoMain = true;
+      }
+      _syncVideoState();
     }
     update();
   }
@@ -1968,19 +1989,19 @@ class CallingController extends GetxController with WidgetsBindingObserver {
             _applyRemoteMediaState(data["mediaState"] as Map);
           } else if (data.containsKey("micMuted") ||
               data.containsKey("cameraOn") ||
+              data.containsKey("cameraState") ||
               data.containsKey("videoPaused")) {
             _applyRemoteMediaState(data);
           }
-          if (data["sdpOffer"] == null) return;
         }
         final RTCPeerConnection? pc = peer;
         if (pc == null) return;
-        final dynamic sdp = data["sdpOffer"];
+        final dynamic sdp = data is Map ? data["sdpOffer"] : null;
         // ICE restart: same offer/answer, but no video-upgrade side effects.
-        final bool iceRestart = data["iceRestart"] == true;
+        final bool iceRestart = data is Map && data["iceRestart"] == true;
         log(
           "[CAM] upgradeToVideo recv hasSdp=${sdp != null} "
-          "cameraState=${data["cameraState"]} from=${data["callerId"]} "
+          "cameraState=${data is Map ? data["cameraState"] : null} from=${data is Map ? data["callerId"] : null} "
           "videoOn=$isVideoOn remoteOn=$isRemoteVideoOn",
         );
 
@@ -1989,28 +2010,34 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         }
 
         if (sdp == null) {
-          if (data["needKeyframe"] == true) {
+          if (data is Map && data["needKeyframe"] == true) {
             await _forceKeyframe();
             return;
           }
 
-          final dynamic state = data["cameraState"];
-          if (state is bool) {
+          final dynamic state = (data is Map) ? (data["cameraState"] ?? data["cameraOn"]) : null;
+          if (state != null) {
+            final bool boolState = state == true || state.toString() == 'true';
             final bool wasRemoteVideoOn = isRemoteVideoOn;
             _remoteCamStateKnown = true;
-            isRemoteVideoOn = state;
-            log("[CAM] recv cameraState=$state from=${data["callerId"]}");
+            isRemoteVideoOn = boolState;
+            log("[CAM] recv cameraState=$boolState from=${data is Map ? data["callerId"] : null}");
             _clearRemoteUpgrading();
-            if (!wasRemoteVideoOn && isRemoteVideoOn) {
-              isLocalVideoMain = false;
-              await _rebindRemoteForFirstFrames();
-              _startFirstFrameWatchdog();
-              _watchRemoteVideo("camOn");
-            } else if (!state && isVideoOn) {
+            if (boolState) {
+              isVideoCall.value = true;
+              is_video = true;
+              if (!wasRemoteVideoOn) {
+                isLocalVideoMain = false;
+                await _rebindRemoteForFirstFrames();
+                _startFirstFrameWatchdog();
+                _watchRemoteVideo("camOn");
+              }
+            } else if (isVideoOn) {
               isLocalVideoMain = true;
             }
             await _syncVideoState();
           }
+          update();
           return;
         }
 
