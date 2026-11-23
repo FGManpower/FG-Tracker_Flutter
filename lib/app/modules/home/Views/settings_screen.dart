@@ -286,7 +286,8 @@ class SettingsScreen extends StatelessWidget {
                         items: [
                           DropdownMenuItem(
                             value: "I no longer need this account",
-                            child: Text(context.l10n.account_reasonNoLongerNeed),
+                            child:
+                                Text(context.l10n.account_reasonNoLongerNeed),
                           ),
                           DropdownMenuItem(
                             value: "Privacy concerns",
@@ -294,7 +295,8 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           DropdownMenuItem(
                             value: "Too many notifications / battery",
-                            child: Text(context.l10n.account_reasonNotifications),
+                            child:
+                                Text(context.l10n.account_reasonNotifications),
                           ),
                           DropdownMenuItem(
                             value: "Switching to another app or device",
@@ -338,7 +340,8 @@ class SettingsScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.r),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                   ),
                   onPressed: () async {
                     Navigator.pop(dialogCtx);

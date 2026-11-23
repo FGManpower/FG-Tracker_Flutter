@@ -784,7 +784,7 @@ private let candidateTokenPrefKeys = [
             ?? Self.stringValue(extra["call_id"])
             ?? ""
         if callId.isEmpty {
-            callId = call.data.id
+            callId = !call.data.uuid.isEmpty ? call.data.uuid : call.uuid.uuidString
         }
         let groupId = Self.stringValue(extra["groupId"])
             ?? Self.stringValue(extra["group_id"])
