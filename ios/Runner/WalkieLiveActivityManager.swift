@@ -8,8 +8,7 @@ import ActivityKit
     @objc public static let shared = WalkieLiveActivityManager()
 
     #if canImport(ActivityKit)
-    @available(iOS 16.1, *)
-    private var activeActivities: [String: Activity<WalkieLiveActivityAttributes>] = [:]
+    private var activeActivities: [String: Any] = [:]
     #endif
 
     private var channel: FlutterMethodChannel?
@@ -111,7 +110,7 @@ import ActivityKit
         }
 
         // If activity already exists for this group, update it
-        if let existing = activeActivities[groupId] {
+        if let existing = activeActivities[groupId] as? Activity<WalkieLiveActivityAttributes> {
             let updatedState = WalkieLiveActivityAttributes.ContentState(
                 speakerName: speakerName,
                 speakerImage: speakerImage,
@@ -172,7 +171,7 @@ import ActivityKit
         joinedCount: Int = 0,
         isSpeaking: Bool = true
     ) {
-        guard let activity = activeActivities[groupId] else { return }
+        guard let activity = activeActivities[groupId] as? Activity<WalkieLiveActivityAttributes> else { return }
         let updatedState = WalkieLiveActivityAttributes.ContentState(
             speakerName: speakerName,
             speakerImage: speakerImage,
@@ -187,7 +186,7 @@ import ActivityKit
 
     @available(iOS 16.1, *)
     public func stopLiveActivity(groupId: String) {
-        guard let activity = activeActivities.removeValue(forKey: groupId) else { return }
+        guard let activity = activeActivities.removeValue(forKey: groupId) as? Activity<WalkieLiveActivityAttributes> else { return }
         Task {
             await activity.end(dismissalPolicy: .immediate)
             print("[WalkieLiveActivityManager] Stopped Live Activity for group=\(groupId)")
@@ -196,9 +195,11 @@ import ActivityKit
 
     @available(iOS 16.1, *)
     public func stopAllLiveActivities() {
-        for (_, activity) in activeActivities {
-            Task {
-                await activity.end(dismissalPolicy: .immediate)
+        for (_, act) in activeActivities {
+            if let activity = act as? Activity<WalkieLiveActivityAttributes> {
+                Task {
+                    await activity.end(dismissalPolicy: .immediate)
+                }
             }
         }
         activeActivities.removeAll()
