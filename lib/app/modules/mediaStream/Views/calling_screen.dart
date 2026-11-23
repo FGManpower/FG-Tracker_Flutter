@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/AudioCall_screen.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
@@ -73,7 +74,6 @@ class CallingScreen extends StatelessWidget {
           if (isVideo) ...[
             _topGradient(),
             _bottomGradient(),
-            _videoRingingAvatar(c),
           ],
           _chrome(context, c, isVideo),
           _waitingOverlay(c),
@@ -330,26 +330,10 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
-  /// Video call before it connects: the other person's avatar in the
-  /// middle of your own camera (mock "Video · 1 Outgoing").
+  /// In video calls, clean full-screen camera preview is shown (like WhatsApp)
+  /// without a center avatar blocking the camera.
   Widget _videoRingingAvatar(CallingController c) {
-    return Obx(() {
-      if (isCallConnected(c) || c.isRemoteScreenSharing.value) {
-        return const SizedBox.shrink();
-      }
-      return Positioned.fill(
-        child: IgnorePointer(
-          child: Center(
-            child: CallPulseAvatar(
-              name: _peerName(c),
-              image: c.args['profileImage'],
-              onDark: true,
-              avatarSize: 104,
-            ),
-          ),
-        ),
-      );
-    });
+    return const SizedBox.shrink();
   }
 
   Widget _topGradient() {
@@ -1397,7 +1381,8 @@ class CallingScreen extends StatelessWidget {
   }) {
     return Obx(() {
       final bool busy = _busy(c);
-      final bool blocked = _blocked(c);
+      final bool connected = isCallConnected(c);
+      final bool blocked = _blocked(c) || !connected;
 
       return ctrl(
         icon: busy ? Icons.hourglass_top_rounded : Icons.videocam_rounded,
@@ -1406,6 +1391,12 @@ class CallingScreen extends StatelessWidget {
         size: size,
         videoInactive: blocked || busy,
         onTap: () {
+          if (!connected) {
+            Utils().fluttertoast(
+              "You can switch to video after the call is answered.",
+            );
+            return;
+          }
           if (blocked || busy) return;
           c.upgradeToVideoCall();
           c.showControlsTemporarily();

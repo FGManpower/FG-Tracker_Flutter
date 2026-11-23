@@ -20,6 +20,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/group_call_participant.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart';
+import 'package:fgtracker/app/modules/mediaStream/Services/in_app_group_call_overlay_service.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import '../Widget/audio_route_sheet.dart';
 import '../Widget/group_call_sheets.dart';
@@ -43,6 +44,23 @@ class GroupCallingController extends GetxController {
   RxBool isAudioOn = true.obs;
   RxBool isVideoOn = true.obs;
   RxBool isFrontCamera = true.obs;
+  final RxBool isMinimized = false.obs;
+
+  bool get isConnected =>
+      callTimer != null ||
+      callDurationSeconds.value > 0 ||
+      callStatus.value == "Connected";
+
+  void minimizeCall() {
+    isMinimized.value = true;
+    InAppGroupCallOverlayService.instance.showOverlay(this);
+    final NavigatorState? nav = Get.key.currentState;
+    if (nav != null && nav.canPop()) {
+      nav.pop();
+    } else {
+      Get.offAllNamed(Routes.Home_Screen);
+    }
+  }
 
   RxBool isScreenSharing = false.obs;
   webrtc.MediaStream? screenStream;
@@ -117,6 +135,7 @@ class GroupCallingController extends GetxController {
         onResponse: (success, generatedCallId, errorMessage) {
           if (success) {
             callId = generatedCallId;
+            callStatus.value = "Ringing...";
           } else {
             _stopSound();
             Utils().fluttertoast(errorMessage ?? appL10n.call_groupCallInitFailed);
@@ -480,6 +499,10 @@ class GroupCallingController extends GetxController {
         Get.back();
         _openGroupChat();
       },
+      onAddParticipants: () {
+        Get.back();
+        openParticipantsSheet();
+      },
     ).then((_) => onSheetClosed());
   }
 
@@ -713,10 +736,47 @@ class GroupCallingController extends GetxController {
     Socket_GroupCallService.instance.emitMute(isMuted: !isAudioOn.value);
   }
 
-  void toggleCamera() {
-    if (!isVideo || isScreenSharing.value) return;
+  Future<void> toggleCamera() async {
+    if (isScreenSharing.value) return;
 
-    // Check 4-video limit before allowing turn ON
+    if (!isVideo) {
+      if (!isConnected) {
+        Utils().fluttertoast("You can switch to video after the call is answered.");
+        return;
+      }
+      // Upgrade from Audio to Video call
+      isVideo = true;
+      isVideoOn.value = true;
+      try {
+        final videoStream = await webrtc.navigator.mediaDevices.getUserMedia({
+          'audio': false,
+          'video': {
+            'facingMode': isFrontCamera.value ? 'user' : 'environment',
+            'width': {'ideal': 640},
+            'height': {'ideal': 480},
+          },
+        });
+        final newTrack = videoStream.getVideoTracks().firstOrNull;
+        if (newTrack != null) {
+          Socket_GroupCallService.instance.localStream?.addTrack(newTrack);
+          await Socket_GroupCallService.instance.replaceVideoTrack(newTrack);
+          localRenderer.srcObject = Socket_GroupCallService.instance.localStream;
+        }
+      } catch (e) {
+        _log('Error upgrading to video track: $e');
+      }
+      activeParticipants.firstWhereOrNull((p) => p.isLocal)?.isVideoOn.value = true;
+      Socket_GroupCallService.instance.emitCameraChange(isVideoOn: true);
+      Socket_GroupCallService.instance.socket?.emit("group_call_media_change", {
+        "callId": int.tryParse(callId ?? '') ?? callId,
+        "groupId": int.tryParse(groupId) ?? groupId,
+        "isVideo": true,
+      });
+      participantsUiTick.value++;
+      return;
+    }
+
+    // Normal Video Toggle
     if (!isVideoOn.value) {
       final activeVideoCount = activeParticipants.where((p) => p.isVideoOn.value).length;
       if (activeVideoCount >= maxAllowedVideos) {
@@ -731,6 +791,7 @@ class GroupCallingController extends GetxController {
     Socket_GroupCallService.instance.emitCameraChange(isVideoOn: isVideoOn.value);
 
     _syncParticipants();
+    participantsUiTick.value++;
   }
 
   Future<void> _releaseLocalMedia() async {
@@ -753,6 +814,7 @@ class GroupCallingController extends GetxController {
   }
 
   Future<void> endCall() async {
+    InAppGroupCallOverlayService.instance.hideOverlay();
     _updateProximitySensor(forceDisable: true);
     _clearTimers();
     _stopSound();
@@ -886,6 +948,7 @@ class GroupCallingController extends GetxController {
 
   @override
   void onClose() {
+    InAppGroupCallOverlayService.instance.hideOverlay();
     _routeWorker?.dispose();
     _routeWorker = null;
 

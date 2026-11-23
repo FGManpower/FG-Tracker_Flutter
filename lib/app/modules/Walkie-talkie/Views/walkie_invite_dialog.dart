@@ -30,9 +30,17 @@ class WalkieInviteDialog {
   }) {
     if (WalkieLaunchTracker.fromWalkieCall) return;
 
-    // Do not show dialog if user is already connected to this exact group
-    if (GroupWalkieService.instance.currentGroupId != null &&
-        GroupWalkieService.instance.currentGroupId == groupId) {
+    // Do not show dialog if user is already connected to or viewing this exact group
+    final currentGid = GroupWalkieService.instance.currentGroupId ??
+        (Get.isRegistered<GroupWalkieController>()
+            ? Get.find<GroupWalkieController>().currentGroupId
+            : null);
+    if (currentGid != null && currentGid.toString() == groupId.toString()) {
+      return;
+    }
+    if ((Get.currentRoute == Routes.groupWalkieScreen ||
+            WalkieNotificationManager.instance.isWalkieScreenActive.value) &&
+        (currentGid == null || currentGid.toString() == groupId.toString())) {
       return;
     }
 

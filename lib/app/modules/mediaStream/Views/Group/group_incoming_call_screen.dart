@@ -3,166 +3,153 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import '../../../../../gen/fonts.gen.dart';
-import '../../../../global_widget/auto_fit_text.dart';
-import '../../../../global_widget/common_widget.dart';
+import '../../../../Core/constant/const_res.dart';
+import '../../../../Core/theme/appTheme.dart';
+import '../../../../Core/values/utility.dart';
 import '../../Controller/group_incoming_call_controller.dart';
+import '../AudioCall_screen.dart';
 
 class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
   const GroupIncomingCallScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false,
+    return PopScope(
+      canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F0B29),
+        backgroundColor: const Color(0xFF0B141B),
         body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(height: 20.h),
-              _buildIncomingBadge(),
-              SizedBox(height: 60.h),
-              _buildStackedAvatars(),
-              SizedBox(height: 30.h),
-              reausabletext(
-                controller.groupName,
-                fontsize: 28,
-                fontfamily: FontFamily.interSemiBold,
-                color: Colors.white,
-              ),
-              SizedBox(height: 8.h),
-              reausabletext(
-                context.l10n.call_callerAndOthers(
-                    controller.callerName, controller.totalMemberCount - 1),
-                fontsize: 16,
-                fontfamily: FontFamily.interRegular,
-                color: const Color(0xFFB1A9D1),
-              ),
-              SizedBox(height: 40.h),
-              _buildInfoCard(),
-              const Spacer(),
-              const Icon(
-                Icons.keyboard_double_arrow_up,
-                color: Color(0xFF6E5CA4),
-                size: 30,
-              ),
-              SizedBox(height: 20.h),
-              _buildActionButtons(),
-              SizedBox(height: 30.h),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildIncomingBadge() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(30.r),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            controller.isVideo ? Icons.videocam : Icons.call,
-            color: const Color(0xFF9880FA),
-            size: 20,
-          ),
-          SizedBox(width: 8.w),
-          reausabletext(
-            controller.isVideo
-                ? appL10n.call_incomingGroupVideo
-                : appL10n.call_incomingGroupAudio,
-            fontsize: 14,
-            fontfamily: FontFamily.interMedium,
-            color: Colors.white,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStackedAvatars() {
-    return SizedBox(
-      height: 90.h,
-      width: 250.w,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(left: 0, child: _circleAvatar(radius: 35.r)),
-          Positioned(left: 45.w, child: _circleAvatar(radius: 40.r)),
-          Positioned(right: 45.w, child: _circleAvatar(radius: 40.r)),
-          Positioned(right: 0, child: _circleAvatar(radius: 35.r)),
-          Positioned(
-            child: Container(
-              height: 90.r,
-              width: 90.r,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF6E5CA4),
-                border: Border.all(color: const Color(0xFF0F0B29), width: 4),
-              ),
-              alignment: Alignment.center,
-              child: reausabletext(
-                "+${controller.activeMemberCount}",
-                fontsize: 20,
-                fontfamily: FontFamily.interSemiBold,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _circleAvatar({required double radius}) {
-    return CircleAvatar(
-      radius: radius,
-      backgroundColor: Colors.grey,
-      backgroundImage: const NetworkImage("https://via.placeholder.com/150"),
-    );
-  }
-
-  Widget _buildInfoCard() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
-      padding: EdgeInsets.all(20.r),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1147),
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.people, color: Color(0xFF6E5CA4), size: 30),
-          SizedBox(width: 15.w),
-          Expanded(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                reausabletext(
-                  appL10n.call_membersInCall(controller.activeMemberCount),
-                  fontsize: 16,
-                  fontfamily: FontFamily.interMedium,
-                  color: Colors.white,
+                SizedBox(height: 12.h),
+
+                // Top WhatsApp Call Type & Encryption Badge
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(24.r),
+                    border: Border.all(color: Colors.white12, width: 0.8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        controller.isVideo
+                            ? Icons.videocam_rounded
+                            : Icons.call_rounded,
+                        color: const Color(0xFF25D366),
+                        size: 18.sp,
+                      ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        controller.isVideo
+                            ? appL10n.call_incomingGroupVideo
+                            : appL10n.call_incomingGroupAudio,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontFamily: FontFamily.interMedium,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 6.w),
+                      Icon(
+                        Icons.lock_rounded,
+                        color: Colors.white54,
+                        size: 13.sp,
+                      ),
+                    ],
+                  ),
                 ),
-                SizedBox(height: 4.h),
-                reausabletext(
-                  appL10n.call_joinOnAnswer,
-                  fontsize: 13,
-                  fontfamily: FontFamily.interRegular,
-                  color: const Color(0xFFB1A9D1),
+
+                const Spacer(flex: 2),
+
+                // Pulsing Group Avatar
+                CallPulseAvatar(
+                  name: controller.groupName,
+                  image: controller.groupProfile ?? controller.callerProfileImage,
+                  animate: true,
+                  onDark: true,
+                  avatarSize: 130,
+                  accent: const Color(0xFF25D366),
                 ),
+                SizedBox(height: 24.h),
+
+                // Group Name
+                Text(
+                  controller.groupName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 26.sp,
+                    fontFamily: FontFamily.interBold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+
+                // Caller & Members Subtitle
+                Text(
+                  context.l10n.call_callerAndOthers(
+                    controller.callerName,
+                    controller.totalMemberCount > 1
+                        ? controller.totalMemberCount - 1
+                        : 0,
+                  ),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontFamily: FontFamily.interRegular,
+                    color: Colors.white70,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+
+                // Members in call pill
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E262C),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: Colors.white12, width: 0.6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8.r,
+                        height: 8.r,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF25D366),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        appL10n.call_membersInCall(controller.activeMemberCount),
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontFamily: FontFamily.interMedium,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Spacer(flex: 3),
+
+                // Bottom Action Buttons (Decline / Accept / Mute)
+                _buildActionButtons(),
+                SizedBox(height: 20.h),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: Colors.white),
-        ],
+        ),
       ),
     );
   }
@@ -170,251 +157,93 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
   Widget _buildActionButtons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _actionButton(
-          icon: Icons.close,
+        // Decline button (Red)
+        _circleAction(
+          icon: Icons.call_end_rounded,
           label: appL10n.call_decline,
-          color: const Color(0xFF2A2146),
-          iconColor: Colors.white,
+          color: const Color(0xFFEA4335),
+          size: 64,
+          iconSize: 30,
           onTap: controller.declineCall,
         ),
-        _SlideUpJoinButton(
-          isVideo: controller.isVideo,
-          onJoin: controller.joinCall,
+
+        // Mute mic before answering toggle
+        Obx(
+          () => _circleAction(
+            icon: controller.isMuted.value
+                ? Icons.mic_off_rounded
+                : Icons.mic_rounded,
+            label: controller.isMuted.value
+                ? appL10n.call_muted
+                : appL10n.call_mute,
+            color: controller.isMuted.value
+                ? const Color(0xFFEA4335).withOpacity(0.3)
+                : const Color(0xFF2A3942),
+            iconColor: controller.isMuted.value
+                ? const Color(0xFFFF5252)
+                : Colors.white,
+            size: 52,
+            iconSize: 24,
+            onTap: controller.toggleMute,
+          ),
         ),
-        Obx(() => _actionButton(
-              icon: controller.isMuted.value ? Icons.mic_off : Icons.mic,
-              label: controller.isMuted.value
-                  ? appL10n.call_muted
-                  : appL10n.call_mute,
-              color: const Color(0xFF2A2146),
-              iconColor: Colors.white,
-              onTap: controller.toggleMute,
-            )),
+
+        // Join / Answer button (WhatsApp Green)
+        _circleAction(
+          icon: controller.isVideo
+              ? Icons.videocam_rounded
+              : Icons.call_rounded,
+          label: "Join call",
+          color: const Color(0xFF25D366),
+          size: 64,
+          iconSize: 30,
+          onTap: controller.joinCall,
+        ),
       ],
     );
   }
 
-  Widget _actionButton({
+  Widget _circleAction({
     required IconData icon,
     required String label,
     required Color color,
-    required Color iconColor,
+    Color iconColor = Colors.white,
+    required double size,
+    required double iconSize,
     required VoidCallback onTap,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        InkWell(
+        GestureDetector(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(50.r),
           child: Container(
-            height: 65.r,
-            width: 65.r,
+            height: size.r,
+            width: size.r,
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.40),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
-            child: Icon(icon, color: iconColor, size: 30.sp),
+            child: Icon(icon, color: iconColor, size: iconSize.sp),
           ),
         ),
-        SizedBox(height: 10.h),
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 90.w),
-          child: AutoFitText(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: FontFamily.interMedium,
-              fontSize: 14.sp,
-              color: Colors.white,
-            ),
+        SizedBox(height: 8.h),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.sp,
+            fontFamily: FontFamily.interMedium,
+            color: Colors.white.withOpacity(0.85),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SlideUpJoinButton extends StatefulWidget {
-  final bool isVideo;
-  final VoidCallback onJoin;
-
-  const _SlideUpJoinButton({
-    required this.isVideo,
-    required this.onJoin,
-  });
-
-  @override
-  State<_SlideUpJoinButton> createState() => _SlideUpJoinButtonState();
-}
-
-class _SlideUpJoinButtonState extends State<_SlideUpJoinButton>
-    with SingleTickerProviderStateMixin {
-  final RxDouble dragOffset = 0.0.obs;
-  final RxBool isJoined = false.obs;
-  final RxBool isDragging = false.obs;
-
-  static const double _joinThreshold = 70.0;
-  static const double _maxDrag = 90.0;
-
-  late final AnimationController _pulseController;
-  late final Animation<double> _pulseAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1100),
-    )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.12).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
-
-  void _stopPulse() {
-    if (_pulseController.isAnimating) {
-      _pulseController.stop();
-      _pulseController.value = 0.0;
-    }
-  }
-
-  void _startPulse() {
-    if (!_pulseController.isAnimating && !isJoined.value) {
-      _pulseController.repeat(reverse: true);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          height: 80.r,
-          width: 80.r,
-          child: Obx(() {
-            final offset = dragOffset.value;
-            final joined = isJoined.value;
-            final dragging = isDragging.value;
-
-            return Transform.translate(
-              offset: Offset(0, offset),
-              child: Stack(
-                alignment: Alignment.center,
-                clipBehavior: Clip.none,
-                children: [
-                  if (!joined && !dragging)
-                    AnimatedBuilder(
-                      animation: _pulseAnimation,
-                      builder: (context, _) {
-                        final v = _pulseAnimation.value;
-                        return Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Container(
-                              height: 80.r * v,
-                              width: 80.r * v,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFF9880FA)
-                                    .withOpacity((1.12 - v) * 0.35),
-                              ),
-                            ),
-                            Container(
-                              height: 80.r * (0.85 + (v - 1.0) * 2.5),
-                              width: 80.r * (0.85 + (v - 1.0) * 2.5),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(0xFF9880FA)
-                                      .withOpacity((1.12 - v) * 0.5),
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  GestureDetector(
-                    onVerticalDragStart: (_) {
-                      if (joined) return;
-                      isDragging.value = true;
-                      _stopPulse();
-                    },
-                    onVerticalDragUpdate: (details) {
-                      if (joined) return;
-                      dragOffset.value = (dragOffset.value + details.delta.dy)
-                          .clamp(-_maxDrag, 0.0);
-                    },
-                    onVerticalDragEnd: (_) {
-                      if (joined) return;
-                      isDragging.value = false;
-
-                      if (dragOffset.value.abs() >= _joinThreshold) {
-                        isJoined.value = true;
-                        _stopPulse();
-                        widget.onJoin();
-                      } else {
-                        dragOffset.value = 0.0;
-                        _startPulse();
-                      }
-                    },
-                    onVerticalDragCancel: () {
-                      if (joined) return;
-                      isDragging.value = false;
-                      dragOffset.value = 0.0;
-                      _startPulse();
-                    },
-                    child: AnimatedBuilder(
-                      animation: _pulseAnimation,
-                      builder: (context, child) {
-                        final scale =
-                            (joined || dragging) ? 1.0 : _pulseAnimation.value;
-                        return Transform.scale(scale: scale, child: child);
-                      },
-                      child: Container(
-                        height: 70.r,
-                        width: 70.r,
-                        decoration: BoxDecoration(
-                          color: Color(0xFF6E5CA4),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF9880FA).withOpacity(0.45),
-                              blurRadius: 18,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          widget.isVideo ? Icons.videocam : Icons.call,
-                          color: Colors.white,
-                          size: 40.sp,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
-        ),
-        SizedBox(height: 10.h),
-        reausabletext(
-          context.l10n.call_join,
-          fontsize: 14,
-          fontfamily: FontFamily.interMedium,
-          color: Colors.white,
         ),
       ],
     );

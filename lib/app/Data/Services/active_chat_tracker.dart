@@ -14,10 +14,30 @@ class ActiveChatTracker {
   static int? _groupId;
   static String? _privateChatId;
   static String? _privatePeerId;
+  static String? _walkieGroupId;
 
   static bool get isAppInForeground {
     final state = WidgetsBinding.instance.lifecycleState;
     return state == null || state == AppLifecycleState.resumed;
+  }
+
+  // ---- Walkie-Talkie ----
+  static void openWalkie(dynamic groupId) {
+    _walkieGroupId = groupId?.toString();
+    _syncNative();
+  }
+
+  static void closeWalkie(dynamic groupId) {
+    if (_walkieGroupId == groupId?.toString()) {
+      _walkieGroupId = null;
+      _syncNative();
+    }
+  }
+
+  static bool isViewingWalkie(dynamic groupId) {
+    if (!isAppInForeground) return false;
+    final g = groupId?.toString();
+    return g != null && _walkieGroupId != null && g == _walkieGroupId;
   }
 
   // ---- Group chat ----
@@ -72,6 +92,7 @@ class ActiveChatTracker {
         'chatId': _privateChatId,
         'peerId': _privatePeerId,
         'myUserId': myUserId,
+        'walkieGroupId': _walkieGroupId,
       }).catchError((_) => null);
     } catch (_) {}
   }

@@ -300,10 +300,29 @@ private let candidateTokenPrefKeys = [
 
         let userInfo = notification.request.content.userInfo
         let categoryId = notification.request.content.categoryIdentifier
+        let dataDict = userInfo["data"] as? [String: Any]
+        let screenName = (userInfo["screen_name"] as? String) ?? (dataDict?["screen_name"] as? String)
         let isWalkie = categoryId == "WALKIE_INVITE" || categoryId == "walkie_invite_category" || categoryId == "group_walkie"
-            || (userInfo["screen_name"] as? String) == "group_walkie"
+            || categoryId == "walkie_admin_alert"
+            || screenName == "group_walkie"
 
         if isWalkie {
+            func s(_ key: String) -> String? {
+                if let v = userInfo[key] as? String, !v.isEmpty { return v }
+                if let v = userInfo[key] as? NSNumber { return v.stringValue }
+                if let data = dataDict {
+                    if let v = data[key] as? String, !v.isEmpty { return v }
+                    if let v = data[key] as? NSNumber { return v.stringValue }
+                }
+                return nil
+            }
+            let notifGid = s("groupId") ?? s("group_id") ?? ""
+            if let activeWalkie = activeChat["walkieGroupId"], !activeWalkie.isEmpty, notifGid == activeWalkie {
+                // User is actively looking at / connected to this exact Walkie channel! Suppress foreground banner & sound.
+                completionHandler([])
+                return
+            }
+
             if #available(iOS 14.0, *) {
                 completionHandler([.banner, .sound, .badge, .list])
             } else {
@@ -383,7 +402,7 @@ private let candidateTokenPrefKeys = [
         let userInfo = response.notification.request.content.userInfo
         let categoryId = response.notification.request.content.categoryIdentifier
 
-        var isWalkie = categoryId == "WALKIE_INVITE" || categoryId == "walkie_invite_category" || categoryId == "group_walkie"
+        var isWalkie = categoryId == "WALKIE_INVITE" || categoryId == "walkie_invite_category" || categoryId == "group_walkie" || categoryId == "walkie_admin_alert"
         var walkieGroupId = ""
         var walkieGroupName = ""
         var walkieSpeakerName = ""
@@ -516,11 +535,18 @@ private let candidateTokenPrefKeys = [
                 intentIdentifiers: [],
                 options: [.customDismissAction]
             )
+            let cat4 = UNNotificationCategory(
+                identifier: "walkie_admin_alert",
+                actions: [acceptAction, cancelAction],
+                intentIdentifiers: [],
+                options: [.customDismissAction]
+            )
             UNUserNotificationCenter.current().getNotificationCategories { existing in
                 var updated = existing
                 updated.insert(cat1)
                 updated.insert(cat2)
                 updated.insert(cat3)
+                updated.insert(cat4)
                 UNUserNotificationCenter.current().setNotificationCategories(updated)
             }
         }
@@ -639,9 +665,12 @@ private let candidateTokenPrefKeys = [
             manualAudioRoute = nil
             currentCallIsVideo = isVideo
 
-            let incomingCallId = Self.stringValue(extraDict["callId"])
+            var incomingCallId = Self.stringValue(extraDict["callId"])
                 ?? Self.stringValue(extraDict["call_id"])
                 ?? ""
+            if incomingCallId.isEmpty || incomingCallId == "null" {
+                incomingCallId = id
+            }
             let callerIdInt = Int(
                 Self.stringValue(extraDict["callerId"])
                     ?? Self.stringValue(extraDict["caller_id"])
@@ -1435,11 +1464,7 @@ private let candidateTokenPrefKeys = [
             return
         }
 
-        guard let token = Self.readAccessToken(), !token.isEmpty else {
-            print("[AppDelegate] updateCallingStatusViaApi ABORTED: token not found")
-            handledRingingCallIds.remove(callId)
-            return
-        }
+        let token = Self.readAccessToken() ?? ""
 
         let path = callingStatusEndpoints[endpointIndex]
         guard let url = URL(string: "\(apiBaseUrl)\(path)") else {
@@ -1449,6 +1474,7 @@ private let candidateTokenPrefKeys = [
         let bodyDict: [String: Any] = [
             "callId": callId,
             "remoteUserId": remoteUserId,
+            "callerId": remoteUserId,
             "callingStatus": callingStatus
         ]
 
@@ -1461,7 +1487,9 @@ private let candidateTokenPrefKeys = [
         req.httpBody = bodyData
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("application/json", forHTTPHeaderField: "Accept")
-        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        if !token.isEmpty {
+            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
 
         let taskKey = UUID()
         let bgId = UIApplication.shared.beginBackgroundTask(withName: "callingStatus.\(callId)") { [weak self] in

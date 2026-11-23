@@ -14,13 +14,15 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
+    return Obx(() => PopScope(
+      canPop: controller.isMinimized.value,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         if (controller.fullScreenShareUserId.value != null) {
           controller.closeFullScreenShare();
+          return;
         }
+        controller.minimizeCall();
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0B141B),
@@ -126,7 +128,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -135,14 +137,17 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            padding: EdgeInsets.all(8.r),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.35),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white12, width: 0.8),
+          GestureDetector(
+            onTap: () => controller.minimizeCall(),
+            child: Container(
+              padding: EdgeInsets.all(8.r),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.35),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white12, width: 0.8),
+              ),
+              child: Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 22.sp),
             ),
-            child: Icon(Icons.lock_rounded, color: Colors.white70, size: 16.sp),
           ),
           SizedBox(width: 12.w),
           Expanded(

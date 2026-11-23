@@ -167,6 +167,47 @@ class _GroupScreenShareFullScreenState
     });
   }
 
+  Widget _buildTopPresenterBar() {
+    final bool isLocal = widget.participant.isLocal;
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: Padding(
+          padding: EdgeInsets.all(12.r),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.65),
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: Colors.white24, width: 0.8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.present_to_all_rounded,
+                  color: const Color(0xFF25D366),
+                  size: 16.sp,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  isLocal
+                      ? "You are presenting"
+                      : "${widget.participant.name ?? 'Someone'}'s screen",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCloseButton() {
     return SafeArea(
       child: Align(
@@ -220,6 +261,7 @@ class _GroupScreenShareFullScreenState
             },
           ),
           _buildCloseButton(),
+          _buildTopPresenterBar(),
           _buildZoomControls(),
         ],
       ),

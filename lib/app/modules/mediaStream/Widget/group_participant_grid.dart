@@ -39,7 +39,13 @@ class GroupParticipantGrid extends StatelessWidget {
   }
 
   RTCVideoRenderer? _getLiveRenderer(GroupCallParticipant participant) {
-    if (participant.isLocal) return participant.renderer;
+    if (participant.isLocal) {
+      if (Get.isRegistered<GroupCallingController>()) {
+        final c = Get.find<GroupCallingController>();
+        if (c.localRenderer.textureId != null) return c.localRenderer;
+      }
+      return participant.renderer;
+    }
     return Socket_GroupCallService.instance.remoteRenderers[participant.userId] ??
         participant.renderer;
   }
@@ -48,7 +54,7 @@ class GroupParticipantGrid extends StatelessWidget {
     if (renderer == null || renderer.srcObject == null) return false;
     final videos = renderer.srcObject!.getVideoTracks();
     if (videos.isEmpty) return false;
-    return videos.first.enabled && videos.first.muted != true;
+    return videos.first.enabled;
   }
 
   @override
@@ -178,12 +184,12 @@ class GroupParticipantGrid extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF12101F),
+          color: const Color(0xFF1B2730),
           borderRadius: BorderRadius.circular(
             isFullScreen ? 0 : (isThumbnail ? 12.r : 16.r),
           ),
           border: sharing
-              ? Border.all(color: const Color(0xFF7B58FF), width: 2)
+              ? Border.all(color: const Color(0xFF25D366), width: 2)
               : null,
         ),
         child: Stack(
@@ -195,7 +201,12 @@ class GroupParticipantGrid extends StatelessWidget {
                 Get.find<GroupCallingController>().participantsUiTick.value;
               }
 
-              final isVideoOn = participant.isVideoOn.value;
+              final isVideoOn = participant.isLocal
+                  ? (Get.isRegistered<GroupCallingController>()
+                      ? (Get.find<GroupCallingController>().isVideo &&
+                          Get.find<GroupCallingController>().isVideoOn.value)
+                      : participant.isVideoOn.value)
+                  : participant.isVideoOn.value;
 
               // 2. Fetch the live renderer from the Socket Service directly
               final liveRenderer = _getLiveRenderer(participant);
@@ -365,18 +376,18 @@ class GroupParticipantGrid extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF7B58FF),
+        color: const Color(0xFF25D366),
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 14.sp),
+          Icon(icon, color: Colors.black, size: 14.sp),
           SizedBox(width: 5.w),
           Text(
             text,
             style: TextStyle(
-              color: Colors.white,
+              color: Colors.black,
               fontSize: 11.sp,
               fontFamily: FontFamily.interSemiBold,
             ),
@@ -416,14 +427,14 @@ class GroupParticipantGrid extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16.sp, color: const Color(0xFF7B58FF)),
+            Icon(icon, size: 16.sp, color: const Color(0xFF25D366)),
             SizedBox(width: 4.w),
             Text(
               label,
               style: TextStyle(
                 fontSize: 11.sp,
                 fontFamily: FontFamily.interSemiBold,
-                color: const Color(0xFF7B58FF),
+                color: const Color(0xFF25D366),
               ),
             ),
           ],

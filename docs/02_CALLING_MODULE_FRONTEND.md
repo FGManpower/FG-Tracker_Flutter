@@ -1590,4 +1590,53 @@ Future<void> endAndAcceptWaitingCall() async {
   - Sleek dark participant card tiles (`Color(0xFF1B2730)`), active audio mute badges (`Color(0xFFEA4335)`), translucent camera switch controls, and dark fallback avatar styling (`Color(0xFF1F2C34)`).
 * **Outgoing Sound & Dial Tone Control (`group_calling_controller.dart`):**
   - Outgoing dial tone plays automatically on call launch and terminates immediately upon first remote participant connection, call decline, failure, or call termination.
+* **In-App Floating Minimizing Overlay (`in_app_group_call_overlay_service.dart`):**
+  - Added native `OverlayEntry` floating draggable call bubble for group calls.
+  - Floating pill shows live local/remote video or group avatar, duration timer, active participant counter badge, and one-tap red hang up button. Tapping the bubble restores the full call screen.
+* **Audio-to-Video Upgrade in Group Calls (`group_calling_controller.dart` & `group_call_controls.dart`):**
+  - Upgrades an active audio call to video on demand. Camera button is always accessible on controls; tapping in audio mode captures video track, emits `group_call_media_change` with `isVideo: true` and `group_call_camera_change` with `isVideoOn: true`.
+* **WhatsApp Group Incoming Call Screen (`group_incoming_call_screen.dart`):**
+  - Redesigned with WhatsApp dark palette (`Color(0xFF0B141B)`), pulsing avatar rings (`CallPulseAvatar`), caller subtitle, active members pill, Decline (red), Pre-join Mic Mute, and Join Call (WhatsApp green `#25D366`) buttons.
+* **WhatsApp Group Call Sheets (`group_call_sheets.dart` & `groupCallMore_Sheet.dart`):**
+  - Completely redesigned participant roster with WhatsApp dark modal (`Color(0xFF1E262C)`), active mute indicators, and one-tap "Ring" action buttons to invite or re-invite group members.
+  - More sheet with dark rounded tiles for Screen Sharing, Add Participants, and Group Chat.
+
+### 17.7 Calling ➔ Ringing Status Real-Time Sync on iOS Lockscreen & Group Call Initiation
+* **iOS Lockscreen / Terminated Ringing Status Feedback (`AppDelegate.swift`):**
+  - **Problem:** When an Android user called an iOS user whose device was locked or app was in a terminated state, the caller's screen remained stuck displaying "Calling..." instead of transitioning to "Ringing...", even though the iOS user's lockscreen was actively ringing via CallKit. The caller only saw "Ringing..." if the iOS user manually unlocked the phone and opened the app.
+  - **Root Cause:**
+    - In `AppDelegate.swift`, `updateCallingStatusViaApi` had a strict `guard let token = Self.readAccessToken(), !token.isEmpty else { return }` which aborted before sending the HTTP POST if the user token had expired or was unavailable in terminated state.
+    - If `incomingCallId` was empty, it did not fall back to the CallKit UUID `id`.
+  - **Resolution:**
+    - In `AppDelegate.swift`, removed the fatal token guard and allowed posting to `/calling-status` with `OptionalUserAuthentication` so the lockscreen CallKit immediately acknowledges ringing to the backend.
+    - Added fallback: `incomingCallId = incomingCallId.isEmpty ? id : incomingCallId`.
+    - Added `callerId: remoteUserId` to the JSON payload to ensure the backend identifies the caller even if token authentication is absent.
+* **Group Calling "Calling..." ➔ "Ringing..." Feedback (`group_calling_controller.dart`):**
+  - On initiating an outgoing group call, once the backend confirms group member push dispatch (`success == true`), `callStatus.value` is immediately updated from `"Calling..."` to `"Ringing..."`, providing instant visual confirmation that the group members are being signaled.
+
+### 17.8 Audio Call Video Upgrade Guard (Approach A: WhatsApp Standard Parity)
+* **1-on-1 Audio Call (`calling_screen.dart` & `calling_controller.dart`):**
+  - **Problem:** When User A called User B in an audio call and tapped the Video button while in the "Calling..." or "Ringing..." state, User A's local UI switched to video mode, but User B's lock screen had already received an audio call notification. When User B answered, User B entered the call on the Audio Call screen.
+  - **Resolution:**
+    - In `calling_screen.dart`, `_upgradeControl` now checks `connected = isCallConnected(c)`. The video button is dimmed/inactive until the call is connected (`callDurationRx > 0`).
+    - If tapped while ringing, it displays: *"You can switch to video after the call is answered."*
+    - In `calling_controller.dart`, `upgradeToVideoCall()` includes a safety guard blocking video upgrades if `callDurationRx.value <= 0 && callTimer == null`.
+* **Group Audio Call (`group_calling_controller.dart` & `group_call_controls.dart`):**
+  - **Problem:** Tapping camera switch while ringing in an audio group call turned on local video before any participant had joined, causing desynchronization with incoming members.
+  - **Resolution:**
+    - In `group_calling_controller.dart`, added `isConnected` (`callTimer != null || callDurationSeconds.value > 0 || callStatus.value == "Connected"`).
+    - `toggleCamera()` blocks video upgrades when `!isVideo && !isConnected`, displaying: *"You can switch to video after the call is answered."*
+    - In `group_call_controls.dart`, the video button shows dimmed inactive styling (`Colors.white30`) while waiting for participants to answer.
+
+### 17.9 Clean Video Preview & Center Avatar Removal (WhatsApp Parity)
+* **1-on-1 Video Call (`calling_screen.dart`):**
+  - **Problem:** A 104px pulsing avatar circle of the recipient was rendered in the dead center of the screen during `Calling...` and `Ringing...` states, obstructing the caller's live camera preview.
+  - **Resolution:** Removed `_videoRingingAvatar` from the video layer. The caller's front camera preview now fills the screen cleanly and unobstructed, with recipient name and status displayed in the top header bar, exactly matching WhatsApp and FaceTime.
+* **Group Video Call (`group_participant_grid.dart`):**
+  - **Problem:** The local participant tile in group video calls fell back to rendering a circular profile avatar because track validation checks rejected active local video streams.
+  - **Resolution:** Updated `_getLiveRenderer` to bind directly to the active `localRenderer`, streamlined `_hasRenderableVideo` to evaluate track enablement without strict muted-state rejections during pipeline startup, and bound reactive local camera state in `_buildTile`. The local camera stream renders immediately upon call start.
+
+
+
+
 

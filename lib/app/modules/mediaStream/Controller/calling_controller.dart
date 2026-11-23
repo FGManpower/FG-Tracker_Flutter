@@ -1910,6 +1910,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   Future<void> upgradeToVideoCall() async {
     if (isUpgradingToVideo.value) return;
+    if (callDurationRx.value <= 0 && callTimer == null) {
+      Utils().fluttertoast("You can switch to video after the call is answered.");
+      return;
+    }
     if (!await _cameraAllowed()) return;
     if (isRemoteUpgrading.value) {
       log("[CAM] upgrade blocked: remote is already upgrading");

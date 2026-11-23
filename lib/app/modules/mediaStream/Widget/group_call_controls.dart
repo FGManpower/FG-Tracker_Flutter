@@ -49,21 +49,22 @@ class GroupCallControls extends StatelessWidget {
               onTap: controller.openMoreSheet,
             ),
 
-            // Video camera toggle (if video call)
-            if (isVideo)
-              ControlItem(
-                icon: isVideoOn
-                    ? Icons.videocam_rounded
-                    : Icons.videocam_off_rounded,
-                label: isVideoOn
-                    ? context.l10n.call_cameraOn
-                    : context.l10n.call_cameraOff,
-                bgColor: isVideoOn
-                    ? const Color(0xFF2A3942)
-                    : Colors.white.withOpacity(0.12),
-                iconColor: isVideoOn ? Colors.white : Colors.white60,
-                onTap: controller.toggleCamera,
-              ),
+            // Video camera toggle (supports tap to upgrade audio call to video once connected!)
+            ControlItem(
+              icon: (isVideo && isVideoOn)
+                  ? Icons.videocam_rounded
+                  : Icons.videocam_off_rounded,
+              label: (isVideo && isVideoOn)
+                  ? context.l10n.call_cameraOn
+                  : context.l10n.call_cameraOff,
+              bgColor: (isVideo && isVideoOn)
+                  ? const Color(0xFF2A3942)
+                  : Colors.white.withOpacity((!isVideo && !controller.isConnected) ? 0.05 : 0.12),
+              iconColor: (isVideo && isVideoOn)
+                  ? Colors.white
+                  : ((!isVideo && !controller.isConnected) ? Colors.white30 : Colors.white60),
+              onTap: controller.toggleCamera,
+            ),
 
             // Microphone mute toggle
             ControlItem(
