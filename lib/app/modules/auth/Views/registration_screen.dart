@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/global_widget/app_back_button.dart';
+import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'dart:io';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
@@ -25,6 +26,13 @@ class RegistrationScreen extends GetView<RegistrationController> {
       resizeToAvoidBottomInset: true,
       backgroundColor:
       isUpdate ? const Color(0xFFF7F6FD) : const Color(0xFFBBAEF9),
+      appBar: isUpdate
+          ? trackerAppBar(
+              context,
+              context.l10n.editProfile_title,
+              onBack: () => Get.back(),
+            )
+          : null,
       body: Form(
         key: controller.registerKey,
         child: isUpdate
@@ -481,85 +489,36 @@ class RegistrationScreen extends GetView<RegistrationController> {
   }
 
   Widget _buildEditProfileUI(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-
     return Container(
       width: double.infinity,
       height: double.infinity,
       color: const Color(0xFFF7F6FD),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: topPadding + 265.h,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color(0xFF5D47F1),
-                    Color(0xFF705CF6),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
+      child: SafeArea(
+        top: false,
+        bottom: true,
+        child: Container(
+          width: double.infinity,
+          margin: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28.r),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF5D47F1).withValues(alpha: 0.08),
+                blurRadius: 22,
+                offset: const Offset(0, 6),
               ),
-            ),
+            ],
           ),
-          SafeArea(
-            bottom: true,
-            child: Column(
-              children: [
-                Padding(
-                  padding:
-                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  child: Row(
-                    children: [
-                      AppBackButton(onTap: () => Get.back()),
-                      Expanded(
-                        child: Center(
-                          child: AutoFitText(
-                            context.l10n.editProfile_title,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 19.sp,
-                              fontFamily: FontFamily.interBold,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 42.w),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    margin: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(28.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                          const Color(0xFF5D47F1).withValues(alpha: 0.10),
-                          blurRadius: 22,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(28.r),
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 20.w, vertical: 24.h),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28.r),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.symmetric(
+                  horizontal: 20.w, vertical: 24.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
                             GestureDetector(
                               onTap: () => controller.pickImage(context),
                               child: Stack(
@@ -712,12 +671,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+              );
   }
 
   Widget _getAvatarImage(double radius, Color defaultBgColor) {

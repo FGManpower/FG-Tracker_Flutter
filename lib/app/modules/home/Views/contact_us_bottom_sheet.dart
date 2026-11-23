@@ -112,28 +112,30 @@ class ContactUsBottomSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 16.h),
 
-              // Customer Support Illustration
-              Center(
-                child: Image.asset(
-                  'assets/images/contact_support_hero.png',
-                  height: 140.h,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 100.h,
-                      alignment: Alignment.center,
-                      child: Icon(
-                        Icons.headset_mic_rounded,
-                        size: 60.sp,
-                        color: const Color(0xFF5D47F1),
-                      ),
-                    );
-                  },
+              // Title and Subtitle Header
+              Text(
+                context.l10n.about_contactUs,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontFamily: FontFamily.interBold,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1E202B),
                 ),
               ),
-              SizedBox(height: 14.h),
+              SizedBox(height: 4.h),
+              Text(
+                "We're here to help you",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontFamily: FontFamily.interRegular,
+                  color: const Color(0xFF7A7F93),
+                ),
+              ),
+              SizedBox(height: 16.h),
 
               // Phone Option
               _buildContactOption(

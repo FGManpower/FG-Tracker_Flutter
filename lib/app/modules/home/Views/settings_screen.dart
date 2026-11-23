@@ -4,6 +4,7 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/auth/Controller/account_deletion_controller.dart';
 import 'package:fgtracker/app/modules/auth/Controller/logout_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/features/language/language_settings.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
@@ -17,9 +18,10 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: reusableAppbar(
+      appBar: trackerAppBar(
+        context,
         context.l10n.common_settings,
-        ontap: () => Navigator.pop(context),
+        onBack: () => Navigator.pop(context),
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -27,6 +29,27 @@ class SettingsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Language ("Language" + "Change app language"; opens language sheet)
+            LanguageSettingsRow(
+              sizes: LanguageRowSizes(
+                tile: 44.w,
+                tileRadius: 14.r,
+                icon: 22.sp,
+                gap: 14.w,
+                title: 15.sp,
+                subtitleGap: 3.h,
+                subtitle: 12.sp,
+                chevron: 24.sp,
+                padV: 10.h,
+                padH: 8.w,
+                radius: 15.r,
+                appBarHeight: 50.h,
+                appBarTitle: 20.sp,
+                appBarIcon: 20.sp,
+              ),
+            ),
+            _buildDivider(),
+
             // Legal
             _buildSettingsItem(
               icon: Icons.gavel_rounded,
@@ -43,48 +66,13 @@ class SettingsScreen extends StatelessWidget {
               subtitle: context.l10n.appUpdate_updateAvailable,
               onTap: () => Get.toNamed(Routes.shorebirdUpdate),
             ),
-            _buildDivider(),
-
-            // Log Out
-            _buildSettingsItem(
-              icon: Icons.logout_rounded,
-              title: context.l10n.menu_logOut,
-              subtitle: context.l10n.menu_logOutSubtitle,
-              onTap: () {
-                CommonDialog.ConfirmationDialog(
-                  title: context.l10n.menu_logOut,
-                  content: context.l10n.menu_logOutConfirmMessage,
-                  confirm: context.l10n.common_confirm,
-                  cancel: context.l10n.common_cancel,
-                  icon: Icons.logout,
-                  onConfirm: () {
-                    Navigator.pop(ContextUtility.context!);
-                    Navigator.pop(context);
-                    logOutController().logOutUser();
-                  },
-                  onCancel: () {
-                    Navigator.pop(ContextUtility.context!);
-                  },
-                );
-              },
-            ),
-
-            // Clear gap + visible divider for destructive action
-            SizedBox(height: 18.h),
-            Padding(
-              key: const ValueKey('settings_delete_account_divider'),
-              padding: EdgeInsets.symmetric(horizontal: 8.w),
-              child: const Divider(
-                color: Color(0xFFE2DCF3),
-                height: 1,
-                thickness: 1,
-              ),
-            ),
-            SizedBox(height: 18.h),
-
-            // Delete Account card
-            _buildDeleteAccountItem(context),
           ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          child: _buildDeleteAccountButton(context),
         ),
       ),
     );
@@ -160,64 +148,44 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDeleteAccountItem(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFEF2F2),
-        borderRadius: BorderRadius.circular(15.r),
-        border: Border.all(color: const Color(0xFFFECACA), width: 1.0),
-      ),
+  Widget _buildDeleteAccountButton(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
+        key: const ValueKey('settings_delete_account_button'),
         onTap: () => _showDeleteAccountDialog(context),
-        borderRadius: BorderRadius.circular(15.r),
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 8.w),
+        borderRadius: BorderRadius.circular(16.r),
+        child: Container(
+          height: 50.h,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: const Color(0xFFDC2626),
+            borderRadius: BorderRadius.circular(16.r),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFDC2626).withValues(alpha: 0.25),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 44.w,
-                height: 44.w,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEE2E2),
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
-                child: Icon(
-                  Icons.delete_forever_rounded,
-                  color: const Color(0xFFDC2626),
-                  size: 22.sp,
-                ),
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.l10n.account_deleteTitle,
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        fontFamily: FontFamily.interBold,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFDC2626),
-                      ),
-                    ),
-                    SizedBox(height: 3.h),
-                    Text(
-                      context.l10n.account_deleteSubtitle,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontFamily: FontFamily.interRegular,
-                        color: const Color(0xFFB91C1C),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               Icon(
-                Icons.chevron_right_rounded,
-                color: const Color(0xFFDC2626),
-                size: 24.sp,
+                Icons.delete_forever_rounded,
+                color: Colors.white,
+                size: 22.sp,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                context.l10n.account_deleteTitle,
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontFamily: FontFamily.interBold,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),

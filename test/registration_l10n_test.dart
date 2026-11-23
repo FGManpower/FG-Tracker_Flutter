@@ -155,10 +155,10 @@ void main() {
     expect(find.text('User Name is required'), findsOneWidget);
   });
 
-  test('every ARB locale has the Registration keys (no English leftovers)',
-      () {
+  test('every ARB locale has the Registration keys (no English leftovers)', () {
     final en = lookupAppLocalizations(const Locale('en'));
-    for (final o in kAppLanguages.where((o) => o.hasCompiledL10n && o.code != 'en')) {
+    for (final o
+        in kAppLanguages.where((o) => o.hasCompiledL10n && o.code != 'en')) {
       final l = lookupAppLocalizations(o.locale);
       expect(l.registration_userNameLabel, isNot(en.registration_userNameLabel),
           reason: o.code);
