@@ -79,6 +79,7 @@ private let candidateTokenPrefKeys = [
 
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
+            setupWalkieNotificationCategories()
         }
 
         let launched = super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -237,13 +238,24 @@ private let candidateTokenPrefKeys = [
                         queryItems[item.name] = item.value
                     }
                 }
+                let action = queryItems["action"] ?? "accept"
+                let groupId = queryItems["groupId"] ?? ""
+
+                if action == "cancel" && !groupId.isEmpty {
+                    #if canImport(ActivityKit)
+                    if #available(iOS 16.1, *) {
+                        WalkieLiveActivityManager.shared.stopLiveActivity(groupId: groupId)
+                    }
+                    #endif
+                }
+
                 let walkieChannel = FlutterMethodChannel(
                     name: "com.fg.walkie/notification",
                     binaryMessenger: vc.binaryMessenger
                 )
                 walkieChannel.invokeMethod("onWalkieAction", arguments: [
-                    "action": queryItems["action"] ?? "accept",
-                    "groupId": queryItems["groupId"] ?? ""
+                    "action": action,
+                    "groupId": groupId
                 ])
             }
         }
@@ -285,6 +297,21 @@ private let candidateTokenPrefKeys = [
             completionHandler([])
             return
         }
+
+        let userInfo = notification.request.content.userInfo
+        let categoryId = notification.request.content.categoryIdentifier
+        let isWalkie = categoryId == "WALKIE_INVITE" || categoryId == "walkie_invite_category" || categoryId == "group_walkie"
+            || (userInfo["screen_name"] as? String) == "group_walkie"
+
+        if isWalkie {
+            if #available(iOS 14.0, *) {
+                completionHandler([.banner, .sound, .badge, .list])
+            } else {
+                completionHandler([.alert, .sound, .badge])
+            }
+            return
+        }
+
         super.userNotificationCenter(
             center,
             willPresent: notification,
@@ -349,12 +376,153 @@ private let candidateTokenPrefKeys = [
             let data = response.notification.request.content.userInfo as? [String: Any]
             SwiftFlutterCallkitIncomingPlugin.sharedInstance?.sendCallbackEvent(data)
             completionHandler()
-        } else {
-            super.userNotificationCenter(
-                center,
-                didReceive: response,
-                withCompletionHandler: completionHandler
+            return
+        }
+
+        let action = response.actionIdentifier
+        let userInfo = response.notification.request.content.userInfo
+        let categoryId = response.notification.request.content.categoryIdentifier
+
+        var isWalkie = categoryId == "WALKIE_INVITE" || categoryId == "walkie_invite_category" || categoryId == "group_walkie"
+        var walkieGroupId = ""
+        var walkieGroupName = ""
+        var walkieSpeakerName = ""
+
+        if let screen = userInfo["screen_name"] as? String, screen == "group_walkie" {
+            isWalkie = true
+        }
+        if let data = userInfo["data"] as? [String: Any] {
+            if let screen = data["screen_name"] as? String, screen == "group_walkie" {
+                isWalkie = true
+            }
+            walkieGroupId = (data["groupId"] as? String) ?? (data["group_id"] as? String) ?? ""
+            walkieGroupName = (data["groupName"] as? String) ?? (data["group_name"] as? String) ?? ""
+            walkieSpeakerName = (data["speakerName"] as? String) ?? (data["speaker_name"] as? String) ?? ""
+        }
+        if walkieGroupId.isEmpty {
+            walkieGroupId = (userInfo["groupId"] as? String) ?? (userInfo["group_id"] as? String) ?? ""
+        }
+        if walkieGroupName.isEmpty {
+            walkieGroupName = (userInfo["groupName"] as? String) ?? (userInfo["group_name"] as? String) ?? ""
+        }
+        if walkieSpeakerName.isEmpty {
+            walkieSpeakerName = (userInfo["speakerName"] as? String) ?? (userInfo["speaker_name"] as? String) ?? ""
+        }
+
+        if isWalkie {
+            print("[AppDelegate] Walkie notification action: \(action) for groupId=\(walkieGroupId)")
+            if action == "WALKIE_CANCEL" || action == UNNotificationDismissActionIdentifier {
+                #if canImport(ActivityKit)
+                if #available(iOS 16.1, *) {
+                    WalkieLiveActivityManager.shared.stopLiveActivity(groupId: walkieGroupId)
+                }
+                #endif
+                if let vc = window?.rootViewController as? FlutterViewController {
+                    let walkieChannel = FlutterMethodChannel(
+                        name: "com.fg.walkie/notification",
+                        binaryMessenger: vc.binaryMessenger
+                    )
+                    walkieChannel.invokeMethod("onWalkieAction", arguments: [
+                        "action": "cancel",
+                        "groupId": walkieGroupId
+                    ])
+                }
+                completionHandler()
+                return
+            } else if action == "WALKIE_ACCEPT" || action == UNNotificationDefaultActionIdentifier {
+                if let vc = window?.rootViewController as? FlutterViewController {
+                    let walkieChannel = FlutterMethodChannel(
+                        name: "com.fg.walkie/notification",
+                        binaryMessenger: vc.binaryMessenger
+                    )
+                    walkieChannel.invokeMethod("onWalkieAction", arguments: [
+                        "action": "accept",
+                        "groupId": walkieGroupId,
+                        "groupName": walkieGroupName,
+                        "speakerName": walkieSpeakerName
+                    ])
+                }
+            }
+        }
+
+        super.userNotificationCenter(
+            center,
+            didReceive: response,
+            withCompletionHandler: completionHandler
+        )
+    }
+
+    override func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+        var dict = userInfo
+        if let data = userInfo["data"] as? [String: Any] {
+            dict = data
+        }
+        let screen = (dict["screen_name"] as? String) ?? (userInfo["screen_name"] as? String)
+        if screen == "group_walkie" {
+            let groupId = (dict["groupId"] as? String) ?? (dict["group_id"] as? String) ?? ""
+            let groupName = (dict["groupName"] as? String) ?? (dict["group_name"] as? String) ?? "Field Team"
+            let speakerName = (dict["speakerName"] as? String) ?? (dict["speaker_name"] as? String) ?? "Someone"
+            let speakerImage = (dict["speakerImage"] as? String) ?? (dict["speaker_image"] as? String) ?? ""
+            let countStr = (dict["joinedMemberCount"] as? String) ?? (dict["joinedCount"] as? String) ?? "0"
+            let joinedCount = Int(countStr) ?? 0
+
+            #if canImport(ActivityKit)
+            if #available(iOS 16.1, *) {
+                WalkieLiveActivityManager.shared.startLiveActivity(
+                    groupId: groupId,
+                    groupName: groupName,
+                    speakerName: speakerName,
+                    speakerImage: speakerImage,
+                    joinedCount: joinedCount
+                )
+            }
+            #endif
+        }
+
+        super.application(application, didReceiveRemoteNotification: userInfo, fetchCompletionHandler: completionHandler)
+    }
+
+    private func setupWalkieNotificationCategories() {
+        if #available(iOS 10.0, *) {
+            let acceptAction = UNNotificationAction(
+                identifier: "WALKIE_ACCEPT",
+                title: "✓ Accept",
+                options: [.foreground]
             )
+            let cancelAction = UNNotificationAction(
+                identifier: "WALKIE_CANCEL",
+                title: "✕ Cancel",
+                options: [.destructive]
+            )
+            let cat1 = UNNotificationCategory(
+                identifier: "WALKIE_INVITE",
+                actions: [acceptAction, cancelAction],
+                intentIdentifiers: [],
+                options: [.customDismissAction]
+            )
+            let cat2 = UNNotificationCategory(
+                identifier: "walkie_invite_category",
+                actions: [acceptAction, cancelAction],
+                intentIdentifiers: [],
+                options: [.customDismissAction]
+            )
+            let cat3 = UNNotificationCategory(
+                identifier: "group_walkie",
+                actions: [acceptAction, cancelAction],
+                intentIdentifiers: [],
+                options: [.customDismissAction]
+            )
+            UNUserNotificationCenter.current().getNotificationCategories { existing in
+                var updated = existing
+                updated.insert(cat1)
+                updated.insert(cat2)
+                updated.insert(cat3)
+                UNUserNotificationCenter.current().setNotificationCategories(updated)
+            }
         }
     }
 

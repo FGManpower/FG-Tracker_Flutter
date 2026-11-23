@@ -12,7 +12,7 @@ class WalkieLiveActivityService {
 
   bool _isInitialized = false;
 
-  void init() {
+  void init() async {
     if (!Platform.isIOS || _isInitialized) return;
     _isInitialized = true;
 
@@ -22,6 +22,11 @@ class WalkieLiveActivityService {
         AppLog.d("🔔 [WalkieLiveActivity] push token received: $args");
       }
     });
+
+    try {
+      final enabled = await isSupported();
+      AppLog.d("🔔 [WalkieLiveActivity] areActivitiesEnabled: $enabled");
+    } catch (_) {}
   }
 
   Future<bool> isSupported() async {

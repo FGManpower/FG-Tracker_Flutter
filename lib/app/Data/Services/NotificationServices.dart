@@ -870,6 +870,28 @@ class firebaseNotificationServices {
           groupName: groupName,
           speakerName: speakerName,
         );
+      } else if (action == 'cancel' && groupId.isNotEmpty) {
+        if (Platform.isIOS) {
+          WalkieLiveActivityService.instance.stop(groupId);
+        }
+        final myId = GroupWalkieService.instance.selfUserId ??
+            Global.storageServices.get(PrefConst.userId)?.toString() ??
+            '';
+        final myName =
+            Global.storageServices.get(PrefConst.userName)?.toString() ??
+                'A member';
+        GroupWalkieService.instance.socket?.emit('decline_walkie_invite', {
+          'groupId': groupId,
+          'userId': myId,
+          'userName': myName,
+          'name': myName,
+        });
+        GroupWalkieService.instance.socket?.emit('walkie_invite_declined', {
+          'groupId': groupId,
+          'userId': myId,
+          'userName': myName,
+          'name': myName,
+        });
       }
     });
 
