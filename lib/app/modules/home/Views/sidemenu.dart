@@ -24,7 +24,6 @@ import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Views/contact_us_bottom_sheet.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
-import 'package:fgtracker/features/language/language_settings.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/l10n/l10n.dart';
@@ -37,6 +36,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
+
 class Sidemenu extends StatelessWidget {
   final controller = Get.put(HomeController());
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -141,10 +141,19 @@ class Sidemenu extends StatelessWidget {
                         Get.toNamed(Routes.Register, arguments: {
                           "type": "Update",
                           'userData': user,
-                          'email': (user.email != null && user.email!.trim().isNotEmpty && user.email != "null")
+                          'email': (user.email != null &&
+                                  user.email!.trim().isNotEmpty &&
+                                  user.email != "null")
                               ? user.email!.trim()
-                              : (Global.storageServices.get(PrefConst.userEmail)?.toString() ?? ""),
-                          'mobNo': user.mobileNo ?? Global.storageServices.get(PrefConst.userPhone)?.toString() ?? "",
+                              : (Global.storageServices
+                                      .get(PrefConst.userEmail)
+                                      ?.toString() ??
+                                  ""),
+                          'mobNo': user.mobileNo ??
+                              Global.storageServices
+                                  .get(PrefConst.userPhone)
+                                  ?.toString() ??
+                              "",
                         });
                       },
                       child: Container(
@@ -308,7 +317,8 @@ class Sidemenu extends StatelessWidget {
         formMap['Email'] = user.email;
         formMap['email'] = user.email;
       } else {
-        final savedEmail = Global.storageServices.get(PrefConst.userEmail)?.toString();
+        final savedEmail =
+            Global.storageServices.get(PrefConst.userEmail)?.toString();
         if (Utility.isNotNullEmptyOrFalse(savedEmail)) {
           formMap['Email'] = savedEmail;
           formMap['email'] = savedEmail;
@@ -430,48 +440,24 @@ class Sidemenu extends StatelessWidget {
               Get.toNamed(Routes.Register, arguments: {
                 "type": "Update",
                 'userData': controller.userData.value,
-                'email': (controller.userData.value.email != null && controller.userData.value.email!.trim().isNotEmpty && controller.userData.value.email != "null")
+                'email': (controller.userData.value.email != null &&
+                        controller.userData.value.email!.trim().isNotEmpty &&
+                        controller.userData.value.email != "null")
                     ? controller.userData.value.email!.trim()
-                    : (Global.storageServices.get(PrefConst.userEmail)?.toString() ?? ""),
-                'mobNo': controller.userData.value.mobileNo ?? Global.storageServices.get(PrefConst.userPhone)?.toString() ?? "",
+                    : (Global.storageServices
+                            .get(PrefConst.userEmail)
+                            ?.toString() ??
+                        ""),
+                'mobNo': controller.userData.value.mobileNo ??
+                    Global.storageServices
+                        .get(PrefConst.userPhone)
+                        ?.toString() ??
+                    "",
               });
             },
           ),
           _buildDivider(),
-          // Settings â†’ Language ("Language" + "Change app language"; opens
-          // the language sheet, applies instantly).
-          LanguageSettingsRow(
-            // Same sizes as _buildDrawerItem, so it matches the other items.
-            sizes: LanguageRowSizes(
-              tile: 44.w,
-              tileRadius: 14.r,
-              icon: 22.sp,
-              gap: 14.w,
-              title: 15.sp,
-              subtitleGap: 3.h,
-              subtitle: 12.sp,
-              chevron: 24.sp,
-              padV: 8.h,
-              padH: 8.w,
-              radius: 15.r,
-              // Language screen app bar = reusableAppbar sizes.
-              appBarHeight: 50.h,
-              appBarTitle: 20.sp,
-              appBarIcon: 20.sp,
-            ),
-          ),
-          // _buildDivider(),
-          // _buildDrawerItem(
-          //   icon: Icons.receipt_long_rounded,
-          //   title: "OTP Charges",
-          //   subtitle: "Charges for every OTP",
-          //   onTap: () {
-          //     Navigator.pop(context);
-          //     Get.toNamed(Routes.OTP_CHARGES);
-          //   },
-          // ),
-          _buildDivider(),
-          // Contact Us (placed directly under Language as requested)
+          // Contact Us
           _buildDrawerItem(
             icon: Icons.headset_mic_rounded,
             title: context.l10n.about_contactUs,
@@ -482,16 +468,29 @@ class Sidemenu extends StatelessWidget {
             },
           ),
           _buildDivider(),
-          // Settings (containing Legal, Update App, Log out & Delete Account)
+          // Settings (containing Language, Legal, Update App & Delete Account)
           _buildDrawerItem(
             icon: Icons.settings_rounded,
             title: context.l10n.common_settings,
-            subtitle: "Legal, app updates & account",
+            subtitle: "Language, legal & updates",
             onTap: () {
               Navigator.pop(context);
               Get.toNamed(Routes.settings);
             },
           ),
+          // Clear gap + visible divider separating Log Out
+          SizedBox(height: 14.h),
+          Padding(
+            key: const ValueKey('menu_logout_divider'),
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            child: const Divider(
+              color: Color(0xFFE2DCF3),
+              height: 1,
+              thickness: 1,
+            ),
+          ),
+          SizedBox(height: 14.h),
+          _buildLogoutItem(context),
         ],
       ),
     );
@@ -612,7 +611,7 @@ class Sidemenu extends StatelessWidget {
           ),
           SizedBox(height: 12.h),
           Text(
-            "v 1.0.0",
+            "v ${ConstRes.appVersion}",
             style: TextStyle(
               fontSize: 12.sp,
               fontFamily: FontFamily.interRegular,
@@ -725,7 +724,87 @@ class Sidemenu extends StatelessWidget {
     );
   }
 
-
+  Widget _buildLogoutItem(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(15.r),
+        border: Border.all(color: const Color(0xFFFECACA), width: 1.0),
+      ),
+      child: InkWell(
+        onTap: () {
+          CommonDialog.ConfirmationDialog(
+            title: context.l10n.menu_logOut,
+            content: context.l10n.menu_logOutConfirmMessage,
+            confirm: context.l10n.common_confirm,
+            cancel: context.l10n.common_cancel,
+            icon: Icons.logout_rounded,
+            onConfirm: () {
+              Navigator.pop(ContextUtility.context!);
+              Navigator.pop(context);
+              logOutController().logOutUser();
+            },
+            onCancel: () {
+              Navigator.pop(ContextUtility.context!);
+            },
+          );
+        },
+        borderRadius: BorderRadius.circular(15.r),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
+          child: Row(
+            children: [
+              Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEE2E2),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: Icon(
+                  Icons.logout_rounded,
+                  color: const Color(0xFFDC2626),
+                  size: 22.sp,
+                ),
+              ),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.menu_logOut,
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontFamily: FontFamily.interBold,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFFDC2626),
+                      ),
+                    ),
+                    SizedBox(height: 3.h),
+                    Text(
+                      context.l10n.menu_logOutSubtitle,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontFamily: FontFamily.interRegular,
+                        color: const Color(0xFFB91C1C),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: const Color(0xFFDC2626),
+                size: 24.sp,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _WaveHeaderClipper extends CustomClipper<Path> {
@@ -752,4 +831,3 @@ class _WaveHeaderClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
-

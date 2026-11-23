@@ -71,21 +71,7 @@ class _GhostMemberState extends State<GhostMember> {
           title: Row(
             children: [
               AppBackButton(onTap: () => Get.back()),
-              SizedBox(width: 12.w),
-              Container(
-                width: 42.w,
-                height: 42.w,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFEDE9FE),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.verified_user_rounded,
-                  color: const Color(0xFF6B4DFF),
-                  size: 22.sp,
-                ),
-              ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 14.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

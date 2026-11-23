@@ -87,28 +87,7 @@ class _OnlineMemberState extends State<OnlineMember> {
           title: Row(
             children: [
               AppBackButton(onTap: () => Get.back()),
-              SizedBox(width: 12.w),
-              Container(
-                width: 42.w,
-                height: 42.w,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF818CF8),
-                      Color(0xFF6366F1),
-                    ],
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.person_pin_circle_rounded,
-                  color: Colors.white,
-                  size: 22.sp,
-                ),
-              ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 14.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

@@ -64,9 +64,10 @@ class _ShorebirdAppUpdateScreenState extends State<ShorebirdAppUpdateScreen> {
         bloc: cubit,
         builder: (context, state) => Scaffold(
           backgroundColor: Colors.white,
-          appBar: reusableAppbar(
+          appBar: trackerAppBar(
+            context,
             context.l10n.appUpdate_updateApp,
-            ontap: _handlePop,
+            onBack: _handlePop,
           ),
           bottomNavigationBar: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),

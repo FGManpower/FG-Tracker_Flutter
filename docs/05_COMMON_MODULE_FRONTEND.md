@@ -877,15 +877,15 @@ Same look and size as the other menu items: "Language" + "Change app language", 
 ### 12.1 Side Menu Hierarchy
 The drawer navigation in `lib/app/modules/home/Views/sidemenu.dart` is refactored into a clean, modern layout:
 1. **User Profile Header**: Wave gradient, avatar, online indicator, name, email/phone.
-2. **Edit Profile**: Navigation to `Routes.Register` (update mode).
-3. **Language**: `LanguageSettingsRow` (opens instant language selection sheet).
-4. **Contact Us**: Located directly below Language. Tapping opens the Contact Us bottom sheet.
-5. **Settings**: Dedicated settings menu item navigating to `Routes.settings`.
-6. **Footer**: FG Manpower LLP branding card, official social links (Facebook, Instagram, YouTube), and version tag.
+2. **Edit Profile**: Navigation to `Routes.Register` (update mode, standardized with Tracker's `reusableAppbar`).
+3. **Contact Us**: Tapping opens the Contact Us bottom sheet.
+4. **Settings**: Dedicated settings menu item navigating to `Routes.settings` (subtitle short and clean: `"Language, legal & updates"`).
+5. **Log Out**: Positioned outside on the menu bar below Settings, set apart with a divider line and styled in an isolated red card (`#FEF2F2` background, `#FECACA` border, `#DC2626` red icon and bold title).
+6. **Footer**: FG Manpower LLP branding card, official social links (Facebook, Instagram, YouTube), and dynamic app version tag (`"v ${ConstRes.appVersion}"` from `ConstRes.appVersion`).
 
 ### 12.2 Contact Us Bottom Sheet (`contact_us_bottom_sheet.dart`)
+- **Clean Native Design**: Removed hero illustration/fallback icon; renders a clean top drag handle (`#E2DCF3`), centered bold title ("Contact Us"), and subtle helper subtitle ("We're here to help you").
 - **Visuals & Theme Styling**: Full FG-Tracker signature palette:
-  - Header: Customer support hero illustration (`assets/images/contact_support_hero.png`) with `#E2DCF3` drag handle and pure white rounded sheet (`Radius.circular(24.r)`).
   - Badges: `#EDE9FE` soft-purple rounded tiles (44×44, 14.r radius) with `#5D47F1` brand purple icons.
   - Typography: `#1E202B` bold headers with `#7A7F93` regular subtitles and `#7E69F7` chevrons.
   - Dividers: Subtle `#F0ECFC` lines.
@@ -901,21 +901,44 @@ The drawer navigation in `lib/app/modules/home/Views/sidemenu.dart` is refactore
 - Route: `Routes.settings` (`/settings`).
 - App bar: Standard `reusableAppbar` / `AppBarStyle.leading` with `AppBackButton`.
 - Screen Content:
-  1. **Legal**: `Icons.gavel_rounded` -> `Routes.Legal` (Contact Us section removed from Legal screen to eliminate duplication).
-  2. **Update App**: `Icons.system_update_rounded` -> `Routes.shorebirdUpdate`.
-  3. **Log Out**: `Icons.logout_rounded` -> Confirmation dialog -> `logOutController().logOutUser()`.
-  4. Divider (`#E2DCF3`) with 18h gap for destructive action protection.
-  5. **Delete Account**: Red alert card (`#FEF2F2`) with `Icons.delete_forever_rounded` -> confirmation dialog with reason selector -> `AccountDeletionController().deleteUserAccount()`.
+  1. **Language**: `LanguageSettingsRow` (opens instant language selection sheet).
+  2. **Legal**: `Icons.gavel_rounded` -> `Routes.Legal` (Contact Us section removed from Legal screen to eliminate duplication).
+  3. **Update App**: `Icons.system_update_rounded` -> `Routes.shorebirdUpdate`.
+- **Bottom Destructive Action**:
+  - `Delete Account`: Pinned in `bottomNavigationBar` inside `SafeArea` as a prominent red button (`#DC2626` background, white trash icon, bold white title) -> confirmation dialog with reason selector -> `AccountDeletionController().deleteUserAccount()`.
 
-### 12.4 Verification & Modules Integrity
+### 12.4 AppBar Standardization Across Menu Screens (Matching All Media)
+All screens reachable from the side menu now share the exact AppBar pattern from **All Media** (`MediaLinksDocsScreen` in `lib/app/modules/Messages/Views/Group/media_links_docs_screen.dart`):
+- **Visuals & Specifications**:
+  - `backgroundColor: Colors.white` (pure clean white background; dark theme compatible).
+  - `elevation: 1` and `scrolledUnderElevation: 1` (subtle persistent border shadow).
+  - `shadowColor: const Color(0xFF5045B9).withValues(alpha: 0.1)` (soft purple-tinted shadow).
+  - `surfaceTintColor: AppBarStyle.surfaceTintColor` (no Material 3 scroll tint).
+  - `centerTitle: false` (left-aligned title).
+  - `automaticallyImplyLeading: false`.
+  - `leadingWidth: AppBarStyle.leadingWidth` with `AppBarStyle.leading(...)` (`AppBackButton` white circular badge with purple arrow).
+  - `title`: `Text(title, style: TextStyle(color: Colors.black87, fontSize: 18.sp, fontWeight: FontWeight.w700))`.
+- **Screens Standardized**:
+  1. **Settings Screen** (`settings_screen.dart`)
+  2. **Language Screen** (`language_settings.dart`)
+  3. **Legal Screen & Legal Documents** (`legal_app_bar.dart` / `legal_screen.dart`)
+  4. **Update App Screen** (`ShoreBird_AppUpdate_Screen.dart`)
+  5. **Edit Profile Screen** (`registration_screen.dart`)
+
+### 12.5 Home Screen 4 Stats Tab AppBars (Icons Removed)
+The extra circular badge icons between `AppBackButton` and the title have been completely removed across the 4 Home stat tab screens for a clean, streamlined AppBar:
+1. **Online Members** (`online_member.dart`): Removed `Icons.person_pin_circle_rounded` badge.
+2. **Ghost / Private Mode** (`ghost_member.dart`): Removed `Icons.verified_user_rounded` badge.
+3. **Total Members** (`total_member.dart`): Removed `Icons.group_rounded` badge.
+4. **Groups** (`total_groups.dart` / `groups_list_screen.dart`): Clean back button + title + count subtitle.
+
+### 12.5 Verification & Modules Integrity
 - **Files Modified/Created**:
-  - `lib/app/modules/home/Views/contact_us_bottom_sheet.dart` (New: full legal contacts + Tracker theme colors)
-  - `lib/app/modules/home/Views/settings_screen.dart` (New)
-  - `lib/app/modules/home/Views/sidemenu.dart` (Modified)
-  - `lib/app/modules/Legal/Views/legal_screen.dart` (Modified: removed duplicate contact section)
-  - `lib/app/routes/app_routes.dart` & `lib/app/routes/app_pages.dart` (Modified)
-  - `test/legal_screen_test.dart` (Updated tests for legal screen)
-  - `assets/images/contact_support_hero.png` (New asset)
+  - `lib/app/modules/home/Views/contact_us_bottom_sheet.dart` (Updated: clean header without hero icon)
+  - `lib/app/modules/home/Views/settings_screen.dart` (Updated: red bottom delete account button)
+  - `lib/app/modules/home/Views/sidemenu.dart` (Updated: version uses `ConstRes.appVersion`)
+  - `lib/app/modules/Legal/Views/legal_app_bar.dart` (Updated: standardized to 50h, 20sp, AppColors.darkBlue)
+  - `lib/app/modules/auth/Views/registration_screen.dart` (Updated: edit profile uses standard `reusableAppbar`)
 - **Files Locked (Protected & Untouched)**:
   - Authentication / Login: `OtpController.dart`, `logoutuser.dart`.
   - Location Sharing & Ghost Mode: `GroupTrackController.dart`, `LiveStatus_controller.dart`, `Profile_Repo.dart`, `ProfileRes.dart`, `OtpVeriefy.dart`.

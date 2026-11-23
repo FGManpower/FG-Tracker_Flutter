@@ -174,35 +174,30 @@ Future<void> showLanguageSheet(
 /// Same look as `reusableAppbar` (lib/app/global_widget/common_widget.dart).
 AppBar _languageAppBar(
     BuildContext context, String title, LanguageRowSizes sizes) {
+  const Color purple = Color(0xFF5045B9);
   final isDark = Theme.of(context).brightness == Brightness.dark;
   return AppBar(
     key: const Key('language-sheet-appbar'),
-    toolbarHeight: sizes.appBarHeight,
-    backgroundColor:
-        isDark ? ToggleThemeData.darkThemeBackground : AppColors.darkBlue,
-    scrolledUnderElevation: 0,
-    elevation: 0,
-    systemOverlayStyle: SystemUiOverlayStyle.light,
+    backgroundColor: isDark ? ToggleThemeData.darkThemeBackground : Colors.white,
+    elevation: 1,
+    scrolledUnderElevation: 1,
     surfaceTintColor: AppBarStyle.surfaceTintColor,
+    shadowColor: purple.withValues(alpha: 0.1),
+    centerTitle: false,
+    iconTheme: const IconThemeData(color: purple),
+    automaticallyImplyLeading: false,
     leadingWidth: AppBarStyle.leadingWidth,
-    leading: Padding(
-      padding: EdgeInsets.only(left: 16.w),
-      child: Center(
-        child: AppBackButton(
-          key: const Key('language-sheet-close'),
-          onTap: () => Navigator.of(context).maybePop(),
-        ),
-      ),
+    leading: AppBarStyle.leading(
+      onTap: () => Navigator.of(context).maybePop(),
     ),
-    centerTitle: true,
     title: Text(
       title,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
-        color: Colors.white,
-        fontSize: sizes.appBarTitle,
-        fontWeight: FontWeight.w600,
+        color: isDark ? Colors.white : Colors.black87,
+        fontSize: 18.sp,
+        fontWeight: FontWeight.w700,
       ),
     ),
   );
