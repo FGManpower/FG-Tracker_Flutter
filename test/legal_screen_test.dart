@@ -189,12 +189,6 @@ void main() {
         expect(find.text(d.title(en)), findsOneWidget);
         expect(find.text(d.subtitle(en)), findsOneWidget);
       }
-      for (final c in legalContacts) {
-        final row = find.byKey(ValueKey('legal_contact_${c.id}'));
-        await tester.scrollUntilVisible(row, 80);
-        expect(find.text(c.label(en)), findsOneWidget);
-        expect(find.text(c.value), findsOneWidget);
-      }
     });
 
     test('website links and contacts match fgtracker.fgmanpower.com', () {
@@ -215,7 +209,7 @@ void main() {
       expect(byId['website']!.uri, 'https://fgtracker.fgmanpower.com/');
     });
 
-    testWidgets('tapping each document and contact opens its link',
+    testWidgets('tapping each document opens its link',
         (tester) async {
       _phone(tester);
       final opened = <Uri>[];
@@ -229,7 +223,6 @@ void main() {
 
       final keys = [
         for (final d in legalDocuments) 'legal_row_${d.id}',
-        for (final c in legalContacts) 'legal_contact_${c.id}',
       ];
       for (final k in keys) {
         final row = find.byKey(ValueKey(k));
@@ -242,7 +235,6 @@ void main() {
 
       expect(opened.map((u) => u.toString()).toList(), [
         for (final d in legalDocuments) d.websiteUrl,
-        for (final c in legalContacts) c.uri,
       ]);
       // Opens outside the app; the in-app document screen is not pushed.
       expect(find.byType(LegalDocumentScreen), findsNothing);
@@ -259,19 +251,6 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('legal_row_privacy_policy')));
       await tester.pumpAndSettle();
       expect(find.text(en.legal_loadError), findsOneWidget);
-
-      // Clear it so it can't cover the next row.
-      ScaffoldMessenger.of(tester.element(find.byType(ListView)))
-          .removeCurrentSnackBar();
-      await tester.pumpAndSettle();
-
-      final phone = find.byKey(const ValueKey('legal_contact_phone'));
-      await tester.scrollUntilVisible(phone, 80);
-      await tester.ensureVisible(phone);
-      await tester.pumpAndSettle();
-      await tester.tap(phone);
-      await tester.pumpAndSettle();
-      expect(find.text(en.chat_unableToOpen), findsOneWidget);
     });
 
     testWidgets('no overflow at large font size, small phone', (tester) async {

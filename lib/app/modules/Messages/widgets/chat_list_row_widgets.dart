@@ -21,13 +21,22 @@ String chatListForwardedLabel(String? label) {
   return l;
 }
 
-/// Chat name for display: the model fallbacks ("Unknown User" / "Group")
-/// and an empty name show in the app language, real names as they come.
-String chatListDisplayName(String? name) {
+/// Chat name for display:
+/// 1. Real names as they come.
+/// 2. If name is missing / Unknown User, display phone number if available.
+/// 3. Group fallback ("Group") in app language.
+/// 4. Otherwise, unknown user in app language.
+String chatListDisplayName(String? name, {String? phone}) {
   final n = name?.trim() ?? '';
-  if (n.isEmpty || n == kUnknownUserName) return appL10n.chatList_unknownUser;
+  if (n.isNotEmpty && n != kUnknownUserName && n != kGroupFallbackName) {
+    return name!;
+  }
+  final p = phone?.trim() ?? '';
+  if (p.isNotEmpty) {
+    return p;
+  }
   if (n == kGroupFallbackName) return appL10n.chatList_groupFallback;
-  return name!;
+  return appL10n.chatList_unknownUser;
 }
 
 /// Grey "Deactivated" chip next to a group name (backend v2.5.0): the

@@ -39,6 +39,7 @@ class ChatListCacheCodec {
       chatType: _s(m['chatType']),
       userId: _i(m['userId']),
       name: _s(m['name']),
+      phone: _s(m['phone']),
       groupName: _s(m['groupName']),
       memberCount: _i(m['memberCount']),
       role: _s(m['role']),

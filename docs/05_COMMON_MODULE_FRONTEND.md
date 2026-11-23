@@ -1,8 +1,8 @@
 # Frontend Guide: Common Module (App Load, Screen Priority, Auth & Core Systems)
 
-> **Document Version:** `v2.5.3`  
+> **Document Version:** `v2.5.5`  
 > **Target Framework:** Flutter (Dart)  
-> **Scope:** App Bootstrap & Screen Priority Hierarchy, Pre-Navigation Permission Evaluation, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing, "Last seen" format across all modules (§7), Real-time Location Tracking & Socket Synchronization Architecture (§8), Side Menu: Legal / Language / Social Links (§9), Custom Banner + Crop + permissions (§5.1.1), One back button & app bar style (§10)
+> **Scope:** App Bootstrap & Screen Priority Hierarchy, Pre-Navigation Permission Evaluation, Home Socket, Red Dot Navigation Badges, 90-Day JWT & OTP Lifecycle, Side-Menu OTP Charges Rate, Notification Center, Banners, Screen Sharing, "Last seen" format across all modules (§7), Real-time Location Tracking & Socket Synchronization Architecture (§8), Side Menu: Legal / Language / Social Links (§9), Custom Banner + Crop + permissions (§5.1.1), One back button & app bar style (§10), Company contact details (§11), Side Menu Refactor & Contact Us Bottom Sheet (§12)
 
 ---
 
@@ -869,3 +869,56 @@ Same look and size as the other menu items: "Language" + "Change app language", 
 
 ### 11.1 Home › Online members: bottom info card hidden
 `home/Views/LiveStatus/components/online_member.dart`: the call to `_buildBottomInfoCard()` is commented out (method kept, marked `// ignore: unused_element`). Remove the `//` to show it again.
+
+---
+
+## 12. Side Menu Refactor & Contact Us Bottom Sheet (v2.5.5, 2026-11-23)
+
+### 12.1 Side Menu Hierarchy
+The drawer navigation in `lib/app/modules/home/Views/sidemenu.dart` is refactored into a clean, modern layout:
+1. **User Profile Header**: Wave gradient, avatar, online indicator, name, email/phone.
+2. **Edit Profile**: Navigation to `Routes.Register` (update mode).
+3. **Language**: `LanguageSettingsRow` (opens instant language selection sheet).
+4. **Contact Us**: Located directly below Language. Tapping opens the Contact Us bottom sheet.
+5. **Settings**: Dedicated settings menu item navigating to `Routes.settings`.
+6. **Footer**: FG Manpower LLP branding card, official social links (Facebook, Instagram, YouTube), and version tag.
+
+### 12.2 Contact Us Bottom Sheet (`contact_us_bottom_sheet.dart`)
+- **Visuals & Theme Styling**: Full FG-Tracker signature palette:
+  - Header: Customer support hero illustration (`assets/images/contact_support_hero.png`) with `#E2DCF3` drag handle and pure white rounded sheet (`Radius.circular(24.r)`).
+  - Badges: `#EDE9FE` soft-purple rounded tiles (44×44, 14.r radius) with `#5D47F1` brand purple icons.
+  - Typography: `#1E202B` bold headers with `#7A7F93` regular subtitles and `#7E69F7` chevrons.
+  - Dividers: Subtle `#F0ECFC` lines.
+- **Communication Channels (Full data from Legal §11)**:
+  - **Phone**: Calls `tel:+919372723727` to launch device dialer (`+91 93727 23727`).
+  - **Email**: Calls `mailto:fgtracker@fgmanpower.com` to launch mail client (`fgtracker@fgmanpower.com`).
+  - **WhatsApp**: Calls `whatsapp://send?phone=919372723727` with automatic web fallback `https://wa.me/919372723727` (`+91 93727 23727`).
+  - **Website**: Launches `https://fgtracker.fgmanpower.com/` in browser (`fgtracker.fgmanpower.com`).
+  - **Office Address**: Launches Google Maps search for `Ghatkopar West, Mumbai, Maharashtra 400086, India`.
+  - Safe error handling with localized toasts (`chat_unableToOpen`, `chatList_whatsappOpenFailed`).
+
+### 12.3 Dedicated Settings Screen (`settings_screen.dart`)
+- Route: `Routes.settings` (`/settings`).
+- App bar: Standard `reusableAppbar` / `AppBarStyle.leading` with `AppBackButton`.
+- Screen Content:
+  1. **Legal**: `Icons.gavel_rounded` -> `Routes.Legal` (Contact Us section removed from Legal screen to eliminate duplication).
+  2. **Update App**: `Icons.system_update_rounded` -> `Routes.shorebirdUpdate`.
+  3. **Log Out**: `Icons.logout_rounded` -> Confirmation dialog -> `logOutController().logOutUser()`.
+  4. Divider (`#E2DCF3`) with 18h gap for destructive action protection.
+  5. **Delete Account**: Red alert card (`#FEF2F2`) with `Icons.delete_forever_rounded` -> confirmation dialog with reason selector -> `AccountDeletionController().deleteUserAccount()`.
+
+### 12.4 Verification & Modules Integrity
+- **Files Modified/Created**:
+  - `lib/app/modules/home/Views/contact_us_bottom_sheet.dart` (New: full legal contacts + Tracker theme colors)
+  - `lib/app/modules/home/Views/settings_screen.dart` (New)
+  - `lib/app/modules/home/Views/sidemenu.dart` (Modified)
+  - `lib/app/modules/Legal/Views/legal_screen.dart` (Modified: removed duplicate contact section)
+  - `lib/app/routes/app_routes.dart` & `lib/app/routes/app_pages.dart` (Modified)
+  - `test/legal_screen_test.dart` (Updated tests for legal screen)
+  - `assets/images/contact_support_hero.png` (New asset)
+- **Files Locked (Protected & Untouched)**:
+  - Authentication / Login: `OtpController.dart`, `logoutuser.dart`.
+  - Location Sharing & Ghost Mode: `GroupTrackController.dart`, `LiveStatus_controller.dart`, `Profile_Repo.dart`, `ProfileRes.dart`, `OtpVeriefy.dart`.
+  - Core existing modules: Home Screen, Menu user header, Chatting, Call Swipe, Attendance, Safe Zone, Walkie-talkie, Block/Unblock.
+- **Static Analysis**: `0 errors` verified with `analyze_files`.
+

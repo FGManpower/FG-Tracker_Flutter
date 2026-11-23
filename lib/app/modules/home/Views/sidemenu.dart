@@ -22,6 +22,7 @@ import 'package:fgtracker/app/modules/auth/Controller/logout_controller.dart';
 import 'package:fgtracker/app/modules/auth/Controller/account_deletion_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
+import 'package:fgtracker/app/modules/home/Views/contact_us_bottom_sheet.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/features/language/language_settings.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
@@ -470,90 +471,27 @@ class Sidemenu extends StatelessWidget {
           //   },
           // ),
           _buildDivider(),
+          // Contact Us (placed directly under Language as requested)
           _buildDrawerItem(
-            icon: Icons.gavel_rounded,
-            title: context.l10n.legal_title,
-            subtitle: context.l10n.legal_menuSubtitle,
+            icon: Icons.headset_mic_rounded,
+            title: context.l10n.about_contactUs,
+            subtitle: "Phone, Email & WhatsApp",
             onTap: () {
               Navigator.pop(context);
-              Get.toNamed(Routes.Legal);
-            },
-          ),
-          // _buildDivider(),
-          // _buildDrawerItem(
-          //   icon: Icons.verified_user_rounded,
-          //   title: "Privacy Policy",
-          //   subtitle: "View our privacy policy",
-          //   onTap: () async {
-          //     Navigator.pop(context);
-          //     try {
-          //       final Uri url =
-          //           Uri.parse('https://www.fgmanpower.co.in/privacy-policy/');
-          //       if (!await launchUrl(url,
-          //           mode: LaunchMode.externalApplication)) {
-          //         AppLog.d('Could not launch $url');
-          //       }
-          //     } catch (e) {
-          //       log(e.toString());
-          //     }
-          //   },
-          // ),
-          // _buildDivider(),
-          // _buildDrawerItem(
-          //   icon: Icons.headset_mic_rounded,
-          //   title: "Help & Support",
-          //   subtitle: "Get help and support",
-          //   onTap: () {
-          //     Navigator.pop(context);
-          //   },
-          // ),
-          _buildDivider(),
-          _buildDrawerItem(
-            icon: Icons.system_update_rounded,
-            title: context.l10n.appUpdate_updateApp,
-            subtitle: context.l10n.appUpdate_updateAvailable,
-            onTap: () {
-              Navigator.pop(context);
-              Get.toNamed(Routes.shorebirdUpdate);
+              showContactUsBottomSheet(context);
             },
           ),
           _buildDivider(),
+          // Settings (containing Legal, Update App, Log out & Delete Account)
           _buildDrawerItem(
-            icon: Icons.logout_rounded,
-            title: context.l10n.menu_logOut,
-            subtitle: context.l10n.menu_logOutSubtitle,
+            icon: Icons.settings_rounded,
+            title: context.l10n.common_settings,
+            subtitle: "Legal, app updates & account",
             onTap: () {
-              CommonDialog.ConfirmationDialog(
-                title: context.l10n.menu_logOut,
-                content: context.l10n.menu_logOutConfirmMessage,
-                confirm: context.l10n.common_confirm,
-                cancel: context.l10n.common_cancel,
-                icon: Icons.logout,
-                onConfirm: () {
-                  Navigator.pop(ContextUtility.context!);
-                  Navigator.pop(context);
-                  logOutController().logOutUser();
-                },
-                onCancel: () {
-                  Navigator.pop(ContextUtility.context!);
-                },
-              );
+              Navigator.pop(context);
+              Get.toNamed(Routes.settings);
             },
           ),
-          // Clear gap + visible line so Delete Account sits apart from
-          // Log out (avoids a mis-tap on the destructive action).
-          SizedBox(height: 14.h),
-          Padding(
-            key: const ValueKey('menu_delete_account_divider'),
-            padding: EdgeInsets.symmetric(horizontal: 8.w),
-            child: const Divider(
-              color: Color(0xFFE2DCF3),
-              height: 1,
-              thickness: 1,
-            ),
-          ),
-          SizedBox(height: 18.h),
-          _buildDeleteAccountItem(context),
         ],
       ),
     );
@@ -787,242 +725,7 @@ class Sidemenu extends StatelessWidget {
     );
   }
 
-  Widget _buildDeleteAccountItem(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFEF2F2),
-        borderRadius: BorderRadius.circular(15.r),
-        border: Border.all(color: const Color(0xFFFECACA), width: 1.0),
-      ),
-      child: InkWell(
-        onTap: () {
-          _showDeleteAccountDialog(context);
-        },
-        borderRadius: BorderRadius.circular(15.r),
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
-          child: Row(
-            children: [
-              Container(
-                width: 44.w,
-                height: 44.w,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEE2E2),
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
-                child: Icon(
-                  Icons.delete_forever_rounded,
-                  color: const Color(0xFFDC2626),
-                  size: 22.sp,
-                ),
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.l10n.account_deleteTitle,
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        fontFamily: FontFamily.interBold,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFDC2626),
-                      ),
-                    ),
-                    SizedBox(height: 3.h),
-                    Text(
-                      context.l10n.account_deleteSubtitle,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontFamily: FontFamily.interRegular,
-                        color: const Color(0xFFB91C1C),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: const Color(0xFFDC2626),
-                size: 24.sp,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
-  void _showDeleteAccountDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogCtx) {
-        String selectedReason = "I no longer need this account";
-        return StatefulBuilder(
-          builder: (ctx, setState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              backgroundColor: Colors.white,
-              surfaceTintColor: Colors.transparent,
-              contentPadding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 10.h),
-              title: Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(8.w),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFEE2E2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.warning_amber_rounded,
-                      color: const Color(0xFFDC2626),
-                      size: 24.sp,
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Text(
-                      context.l10n.account_deleteDialogTitle,
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontFamily: FontFamily.interBold,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFDC2626),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.l10n.account_deleteConfirm,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1E202B),
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    context.l10n.account_deleteWarning,
-                    style: TextStyle(
-                      fontSize: 12.5.sp,
-                      color: const Color(0xFF6B7280),
-                      height: 1.4,
-                    ),
-                  ),
-                  SizedBox(height: 14.h),
-                  Text(
-                    context.l10n.account_reasonLabel,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF374151),
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF9FAFB),
-                      borderRadius: BorderRadius.circular(10.r),
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: selectedReason,
-                        style: TextStyle(
-                          fontSize: 12.5.sp,
-                          color: const Color(0xFF1F2937),
-                        ),
-                        items: [
-                          DropdownMenuItem(
-                            value: "I no longer need this account",
-                            child: Text(context.l10n.account_reasonNoLongerNeed),
-                          ),
-                          DropdownMenuItem(
-                            value: "Privacy concerns",
-                            child: Text(context.l10n.account_reasonPrivacy),
-                          ),
-                          DropdownMenuItem(
-                            value: "Too many notifications / battery",
-                            child: Text(context.l10n.account_reasonNotifications),
-                          ),
-                          DropdownMenuItem(
-                            value: "Switching to another app or device",
-                            child: Text(context.l10n.account_reasonSwitching),
-                          ),
-                          DropdownMenuItem(
-                            value: "Other reason",
-                            child: Text(context.l10n.account_reasonOther),
-                          ),
-                        ],
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() {
-                              selectedReason = val;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              actionsPadding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogCtx),
-                  child: Text(
-                    context.l10n.common_cancel,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: const Color(0xFF6B7280),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFDC2626),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                  ),
-                  onPressed: () async {
-                    Navigator.pop(dialogCtx);
-                    Navigator.pop(context);
-                    await AccountDeletionController().deleteUserAccount(
-                      reason: selectedReason,
-                    );
-                  },
-                  child: Text(
-                    context.l10n.account_deleteForever,
-                    style: TextStyle(
-                      fontSize: 13.5.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
 }
 
 class _WaveHeaderClipper extends CustomClipper<Path> {
