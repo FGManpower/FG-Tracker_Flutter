@@ -2276,6 +2276,21 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       log("[CALL] callEnded for another call ignored");
       return;
     }
+    stopSound();
+    if (!_everConnected) {
+      if (!_isIncoming) {
+        _endOutcome = rejectOutcome(data);
+      }
+      final String reason = (data is Map ? (data['reason'] ?? data['status'] ?? '') : '').toString().toLowerCase();
+      if (reason == 'declined' || reason == 'rejected' || reason == 'call_declined') {
+        callStatus.value = "Call Declined";
+      } else if (reason == 'busy' || reason == 'on_another_call') {
+        callStatus.value = "Busy";
+      } else if (reason == 'missed' || reason == 'timeout') {
+        callStatus.value = "No Answer";
+      }
+      update();
+    }
     // Utils().fluttertoast('Call Ended By ${args["callerName"] ?? "Unknown"}');
     await _cleanupCall(notifyRemote: false, navigateBack: true);
   }
@@ -2470,7 +2485,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (callTimer != null || callDurationSeconds > 0) {
         return;
       }
+      stopSound();
+      callStatus.value = "Call Declined";
       if (!_isIncoming) _endOutcome = rejectOutcome(data);
+      update();
       await _cleanupCall(notifyRemote: false, navigateBack: true);
     });
     _handlers.on("rejectCall", (data) async {
@@ -2478,7 +2496,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (callTimer != null || callDurationSeconds > 0) {
         return;
       }
+      stopSound();
+      callStatus.value = "Call Declined";
       if (!_isIncoming) _endOutcome = rejectOutcome(data);
+      update();
       await _cleanupCall(notifyRemote: false, navigateBack: true);
     });
 

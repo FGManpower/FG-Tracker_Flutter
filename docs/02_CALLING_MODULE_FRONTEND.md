@@ -1516,3 +1516,67 @@ Future<void> endAndAcceptWaitingCall() async {
   - `call_permissions_v1_test.dart`: 11/11
   - `call_reliability_v1_test.dart`: 38/38
   - `call_remote_end_v1_test.dart`: 16/16
+
+---
+
+## 16. Group Calling Lifecycle, Audio Feedback & Room Persistence
+
+### 16.1 Native Audio Feedback Parity (WhatsApp Style)
+* **Outgoing Group Calling Sound:**
+  - In `GroupCallingController`, implemented `_playSound()` using `CallPlatform.instance.playDialTone(CallPlatform.instance.dialToneAsset)` and `_stopSound()` using `CallPlatform.instance.stopRingtone()`.
+  - Dial tone plays immediately when initiating a group call and automatically ceases when any participant connects or when the call is cancelled/ended.
+* **Incoming Group Calling Ringtone:**
+  - In `GroupIncomingCallController`, implemented `_playRingtone()` with `CallPlatform.instance.playRingback()` backed by `AVAudioSessionCategoryPlayAndRecord` for iOS and Android audio manager stream routing, with fallback to `FlutterRingtonePlayer`.
+  - Added `Socket_GroupCallService.instance.onCallEnded` listener so remote caller hangup immediately silences audio and dismisses the incoming screen.
+
+### 16.2 Native CallKit & Android Telecom Integration
+* In `lib/app/Data/Services/IncommingCallKit/call_kit_handlers.dart`:
+  - **Accept Handling:** Replaced stub with full transition logic that dismisses CallKit UUID via `CallPlatform.instance.dismissCallKit(uuid)`, shuts down any active 1-on-1 call, and routes directly to `Routes.groupCallingScreen` with parameters (`groupId`, `groupName`, `callerId`, `callerName`, `isVideo`, `callId`, `callType: "incoming"`, `fromCallKit: true`).
+  - **Decline Handling:** Invokes `Socket_GroupCallService.instance.rejectGroupCall(effectiveCallId, effectiveGroupId)` to notify the backend and group roster immediately.
+
+### 16.3 Room Persistence Contract
+* In `GroupCallingController.endCall()`:
+  - Checked `hasOtherActiveParticipants = activeParticipants.where((p) => p.userId != myId).isNotEmpty`.
+  - If other participants are active, caller leaving invokes `leaveGroupCall()` instead of terminating the room for everyone via `endGroupCall()`.
+* Outgoing group calling is enabled via `group_call_service.dart` (`isGroupCallEnabled = true`).
+
+
+---
+
+## 17. Calling Bug Fixes & iOS Reliability Architecture
+
+### 17.1 Decline Screen Transition & Dial Tone Cut (Issue 1)
+* **Root Cause:**
+  - When the callee rejected a call, the caller's dial tone/ringback tone continued playing, and the caller remained stuck on "Ringing..." instead of transitioning to the "Call Declined" screen.
+  - In `calling_controller.dart`, `_handlers.on("callRejected")` did not immediately silence sound or update the visual status, and `_onCallEnded` did not assign `_endOutcome = rejectOutcome(data)`, leaving `_endInfo` null and bypassing `CallEndedScreen`.
+* **Frontend Resolution:**
+  - In `_handlers.on("callRejected")` and `_handlers.on("rejectCall")`:
+    - Immediately calls `stopSound()`.
+    - Updates `callStatus.value = "Call Declined"`.
+    - Sets `_endOutcome = rejectOutcome(data)`.
+    - Calls `update()` and cleans up session via `_cleanupCall`.
+  - In `_onCallEnded(dynamic data)`:
+    - If `data['reason']` or `data['status']` is `'declined'` / `'rejected'`, immediately stops sound, sets `callStatus.value = "Call Declined"`, sets `_endOutcome = rejectOutcome(data)`, and transitions to `CallEndedScreen(info: info)` with "Call Again" and "Cancel" buttons.
+
+### 17.2 Background / Terminated Call Pickup & Clock Skew Tolerance (Issue 2)
+* **Root Cause:**
+  - Physical devices with slight clock skews (ahead of server UTC by > 60s) had `remainingRingTime` evaluate to `Duration.zero`.
+  - In `callkit_service.dart`, `showIncoming` dropped the incoming call completely on `ringLeft == Duration.zero`.
+  - In `callkit_service.dart` (`handlePush`), iOS unconditionally executed `if (Platform.isIOS) return true;`, discarding FCM incoming call alerts if PushKit VoIP experienced delays.
+* **Frontend Resolution:**
+  - In `call_events.dart`: Increased `staleAfter` to `const Duration(seconds: 180)` (3 minutes).
+  - In `callkit_service.dart` (`showIncoming`): Added a clock skew tolerance guard. If `ringLeft == Duration.zero` but the server timestamp difference is within 180 seconds, falls back to a 15-second minimum ring duration rather than dropping the call.
+  - In `callkit_service.dart` (`handlePush`): Permitted FCM push fallback on iOS when CallKit is not yet actively displaying the incoming call session.
+
+### 17.3 Real-Time State Sync (Issue 3) & Mutual Call Collision / Glare (Issue 4)
+* **Status Sync:** Immediate teardown on both caller and callee ensures that if User A ends a call and User B dials User A immediately, User B connects without receiving a false "On another call" error.
+* **Glare Handling:** When User A and User B call each other simultaneously, the backend detects the collision and auto-bridges them. The frontend's `_onCallAcceptedByServer` handler cancels the missed call timer, stops dial tones, sets status to "Connecting", and proceeds directly to media streaming without error popups.
+
+### 17.4 iOS RTCAudioSession Crash Prevention & Single CXProvider (Issue 5)
+* **Root Cause of iOS App Crashes:**
+  - In `AppDelegate.swift`, both `onAccept` and `didActivateAudioSession` called `RTCAudioSession.sharedInstance().audioSessionDidActivate(audioSession)` without checking `isAudioEnabled`.
+  - WebRTC iOS SDK asserts `RTC_DCHECK(!_isAudioEnabled)`. Calling activate when audio is already enabled throws a fatal `SIGABRT` and crashes the application.
+  - A fallback `nativeCallKitProvider` was instantiated alongside `SwiftFlutterCallkitIncomingPlugin`'s internal `CXProvider`, violating Apple's single-provider mandate and causing `callservicesd` assertion aborts.
+* **iOS Resolution (`AppDelegate.swift`):**
+  - **Audio Session Guard:** Wrapped `audioSessionDidActivate` with `if !rtcAudio.isAudioEnabled` and `audioSessionDidDeactivate` with `if rtcAudio.isAudioEnabled` across `didActivateAudioSession`, `didDeactivateAudioSession`, `onAccept`, and `releaseCallKitManualAudio`.
+  - **Provider Cleanup:** Invalidates and releases `nativeCallKitProvider` whenever `SwiftFlutterCallkitIncomingPlugin.sharedInstance` is present.

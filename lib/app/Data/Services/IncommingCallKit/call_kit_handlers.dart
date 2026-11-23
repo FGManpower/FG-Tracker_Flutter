@@ -8,6 +8,8 @@ import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
+import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/voip_token_uploader.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -35,7 +37,48 @@ void setupCallKitHandlers() {
     CallSessionState.sessionId = uuid ?? '';
 
     if (isGroup) {
-      log('Group call accepted: $extra');
+      log('[CallKit] Group call accepted: $extra');
+      final CallingController? live = _liveCall();
+      if (live != null) {
+        await live.endCall(type: 'switchFromSystemUi');
+      }
+
+      final String effectiveGroupId =
+          (extra['groupId'] ?? extra['group_id'] ?? '').toString();
+      final String effectiveGroupName =
+          (extra['groupName'] ?? extra['group_name'] ?? 'Group Call').toString();
+      final String effectiveCallerId =
+          (extra['callerId'] ?? extra['caller_id'] ?? '').toString();
+      final String effectiveCallerName =
+          (extra['callerName'] ?? extra['nameCaller'] ?? extra['caller_name'] ?? '')
+              .toString();
+      final String effectiveCallId = (callId.isNotEmpty
+              ? callId
+              : (extra['callId'] ?? extra['call_id'] ?? ''))
+          .toString();
+      final bool isVideo = extra['isVideo'] == 'true' ||
+          extra['isVideo'] == true ||
+          extra['type'] == 1 ||
+          extra['type'] == '1';
+
+      if (uuid != null && uuid.isNotEmpty) {
+        unawaited(CallPlatform.instance.dismissCallKit(uuid).catchError((_) {}));
+      }
+
+      Get.offNamed(
+        Routes.groupCallingScreen,
+        arguments: {
+          "groupId": effectiveGroupId,
+          "groupName": effectiveGroupName,
+          "callerId": effectiveCallerId,
+          "callerName": effectiveCallerName,
+          "isVideo": isVideo,
+          "callId": effectiveCallId,
+          "callType": "incoming",
+          "fromCallKit": true,
+        },
+        preventDuplicates: false,
+      );
       return;
     }
 
@@ -100,7 +143,19 @@ void setupCallKitHandlers() {
   };
 
   callKit.onDeclineCall = (callId, extra, uuid) async {
-    if (extra['screen_name'] == 'incomingGroupCall') return;
+    if (extra['screen_name'] == 'incomingGroupCall') {
+      final String effectiveCallId = (callId.isNotEmpty
+              ? callId
+              : (extra['callId'] ?? extra['call_id'] ?? ''))
+          .toString();
+      final String effectiveGroupId =
+          (extra['groupId'] ?? extra['group_id'] ?? '').toString();
+      if (effectiveCallId.isNotEmpty && effectiveGroupId.isNotEmpty) {
+        Socket_GroupCallService.instance
+            .rejectGroupCall(effectiveCallId, effectiveGroupId);
+      }
+      return;
+    }
 
     final String resolvedCallerId = (extra['callerId'] ??
             extra['caller_id'] ??

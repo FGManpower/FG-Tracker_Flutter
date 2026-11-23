@@ -9,10 +9,8 @@ class GroupCallService {
   GroupCallService._internal();
 
   /// Master switch for STARTING outgoing group calls from the UI.
-  /// While false, every "Group Call" button stays visible but only shows a
-  /// "Coming soon" message. Incoming group calls, screen share and PiP are
-  /// not affected. Flip to true to re-enable outgoing group calls.
-  static const bool isGroupCallEnabled = false;
+  /// Enabled for WhatsApp-grade group calling.
+  static const bool isGroupCallEnabled = true;
 
   /// Shared "Coming soon" feedback for all group call buttons.
   static void showComingSoon() {

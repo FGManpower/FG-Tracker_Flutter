@@ -19,6 +19,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/group_call_participant.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
+import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import '../Widget/audio_route_sheet.dart';
 import '../Widget/group_call_sheets.dart';
@@ -759,7 +760,12 @@ class GroupCallingController extends GetxController {
 
     await _releaseLocalMedia();
 
-    if (callType == "outgoing") {
+    final String myId =
+        (Global.storageServices.get(PrefConst.userId) ?? '').toString();
+    final bool hasOtherActiveParticipants =
+        activeParticipants.where((p) => p.userId != myId).isNotEmpty;
+
+    if (callType == "outgoing" && !hasOtherActiveParticipants) {
       Socket_GroupCallService.instance.endGroupCall();
     } else {
       Socket_GroupCallService.instance.leaveGroupCall();
@@ -799,8 +805,18 @@ class GroupCallingController extends GetxController {
     return "$m:$s";
   }
 
-  void _playSound() {}
-  void _stopSound() {}
+  void _playSound() {
+    try {
+      CallPlatform.instance.resetSoundState();
+      CallPlatform.instance.playDialTone(CallPlatform.instance.dialToneAsset);
+    } catch (_) {}
+  }
+
+  void _stopSound() {
+    try {
+      CallPlatform.instance.stopRingtone();
+    } catch (_) {}
+  }
 
   Future<void> getGroupMembersData(String groupId) async {
     try {

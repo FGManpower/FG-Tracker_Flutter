@@ -689,6 +689,10 @@ private let candidateTokenPrefKeys = [
             data.duration = (ring != nil && ring! > 0) ? ring! : 45000
 
             if let plugin = SwiftFlutterCallkitIncomingPlugin.sharedInstance {
+                if let native = self.nativeCallKitProvider {
+                    native.invalidate()
+                    self.nativeCallKitProvider = nil
+                }
                 plugin.showCallkitIncoming(
                     data,
                     fromPushKit: true
@@ -790,8 +794,10 @@ private let candidateTokenPrefKeys = [
         configureDefaultWebRTCAudio(isVideo: currentCallIsVideo)
         let rtcAudio = RTCAudioSession.sharedInstance()
         rtcAudio.useManualAudio = true
-        rtcAudio.audioSessionDidActivate(audioSession)
-        rtcAudio.isAudioEnabled = true
+        if !rtcAudio.isAudioEnabled {
+            rtcAudio.audioSessionDidActivate(audioSession)
+            rtcAudio.isAudioEnabled = true
+        }
         if let manual = manualAudioRoute {
             _ = applyRequestedAudioRoute(
                 route: manual,
@@ -807,8 +813,10 @@ private let candidateTokenPrefKeys = [
         audioGeneration += 1
         manualAudioRoute = nil
         let rtcAudio = RTCAudioSession.sharedInstance()
-        rtcAudio.audioSessionDidDeactivate(audioSession)
-        rtcAudio.isAudioEnabled = false
+        if rtcAudio.isAudioEnabled {
+            rtcAudio.audioSessionDidDeactivate(audioSession)
+            rtcAudio.isAudioEnabled = false
+        }
         rtcAudio.useManualAudio = false
     }
 
@@ -1395,7 +1403,10 @@ private let candidateTokenPrefKeys = [
         clearPreferredInputSelection()
         configureDefaultWebRTCAudio(isVideo: false)
         let rtcAudio = RTCAudioSession.sharedInstance()
-        rtcAudio.isAudioEnabled = false
+        if rtcAudio.isAudioEnabled {
+            rtcAudio.audioSessionDidDeactivate(AVAudioSession.sharedInstance())
+            rtcAudio.isAudioEnabled = false
+        }
         rtcAudio.useManualAudio = false
     }
 

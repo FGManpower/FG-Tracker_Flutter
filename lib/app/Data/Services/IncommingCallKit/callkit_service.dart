@@ -625,8 +625,15 @@ class CallKitService with WidgetsBindingObserver {
       max: kCallRingTimeout,
     );
     if (ringLeft == Duration.zero) {
-      _ck('showIncoming SKIPPED (expired) sessionId=$id');
-      return;
+      final dynamic rawExp = expiresAt ?? extra['expiresAt'] ?? extra['expires_at'];
+      final DateTime? exp = parseServerTime(rawExp);
+      final int diffSec = exp != null ? DateTime.now().toUtc().difference(exp).inSeconds.abs() : 999;
+      if (diffSec <= 180) {
+        _ck('showIncoming ringLeft zero but diff <= 180s (possible clock skew), using 15s fallback sessionId=$id');
+      } else {
+        _ck('showIncoming SKIPPED (expired) sessionId=$id');
+        return;
+      }
     }
 
     // NEW: in-app call already is call ka audio sambhal raha hai -> dobara
@@ -999,7 +1006,12 @@ class CallKitService with WidgetsBindingObserver {
     switch (screen) {
       case 'incomingCall':
       case 'incomingGroupCall':
-        if (Platform.isIOS) return true;
+        if (Platform.isIOS) {
+          // If CallKit is already displaying this call from VoIP PushKit, do not duplicate.
+          if (_showing.contains(sessionId) || _shown.containsKey(sessionId)) {
+            return true;
+          }
+        }
         if (screen == 'incomingCall' && instance.isInCall?.call() == true) {
           instance.onCallWaiting?.call(<String, dynamic>{...d, 'callData': cd});
           return true;
