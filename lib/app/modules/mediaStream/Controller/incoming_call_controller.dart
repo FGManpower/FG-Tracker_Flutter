@@ -48,10 +48,10 @@ class IncomingCallController extends GetxController {
 
     _handlers.on("callEnded", _onCallGone);
     _handlers.on("endCall", _onCallGone);
+    _handlers.on("call_ended", _onCallGone);
     _handlers.on("missedCall", _onCallGone);
     // Caller cancelled / ring timed out (agreed with the backend).
     for (final String ev in kCallCancelSignals) {
-      if (ev == 'cancelCall') continue;
       _handlers.on(ev, _onCallGone);
     }
   }

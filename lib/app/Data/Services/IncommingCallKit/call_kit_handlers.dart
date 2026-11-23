@@ -93,7 +93,7 @@ void setupCallKitHandlers() {
     );
 
     if (Get.currentRoute == Routes.callScreen) {
-      Get.offNamed(Routes.callScreen, arguments: args);
+      Get.offNamed(Routes.callScreen, arguments: args, preventDuplicates: false);
     } else {
       Get.toNamed(Routes.callScreen, arguments: args);
     }

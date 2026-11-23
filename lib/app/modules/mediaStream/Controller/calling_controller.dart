@@ -865,11 +865,12 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     );
 
     audioRouteController = _platform.audioRoute();
+    CallKitService.instance.isInCall = () => isCallLive;
 
     _listenForCallEvents();
     _startPhase3();
 
-    if (args["callType"] == "outGoing") {
+    if (!_isIncoming) {
       playCallingSound();
     }
 
@@ -1170,8 +1171,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   bool _isForThisCall(dynamic data) {
     if (data is! Map) return true;
     final Set<String> theirs = <String>{
-      for (final String k in const <String>['callId', 'call_id', 'sessionId', 'session_id'])
-        if (data[k] != null && data[k].toString().isNotEmpty && data[k].toString() != 'null')
+      for (final String k in const <String>[
+        'callId',
+        'call_id',
+        'sessionId',
+        'session_id'
+      ])
+        if (data[k] != null &&
+            data[k].toString().isNotEmpty &&
+            data[k].toString() != 'null')
           data[k].toString(),
     };
     final Set<String> ours = <String>{
@@ -1180,6 +1188,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     };
     if (theirs.isEmpty || ours.isEmpty) return true;
     if (theirs.any(ours.contains)) return true;
+
+    // Check UUID integer suffix normalization (e.g. 00000000-0000-4000-8000-000000000123 vs 123)
+    String cleanId(String s) {
+      if (s.startsWith('00000000-0000-4000-8000-')) {
+        return int.tryParse(s.substring(24))?.toString() ?? s;
+      }
+      return s;
+    }
+    final Set<String> theirsClean = theirs.map(cleanId).toSet();
+    final Set<String> oursClean = ours.map(cleanId).toSet();
+    if (theirsClean.any(oursClean.contains)) return true;
 
     for (final String id in theirs) {
       final String mapped = CallKitService.mappedUuid(id);
@@ -1192,8 +1211,22 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
     final String peer = _peerUserId;
     if (peer.isNotEmpty) {
-      final String from = (data['callerId'] ?? data['caller_id'] ?? data['from'] ?? '')?.toString() ?? '';
-      final String to = (data['remoteUserId'] ?? data['receiverId'] ?? data['to'] ?? '')?.toString() ?? '';
+      final String from = (data['callerId'] ??
+              data['caller_id'] ??
+              data['from'] ??
+              data['endedBy'] ??
+              data['ended_by'] ??
+              data['rejectedBy'] ??
+              data['cancelledBy'] ??
+              '')
+          ?.toString() ??
+          '';
+      final String to = (data['remoteUserId'] ??
+              data['receiverId'] ??
+              data['to'] ??
+              '')
+          ?.toString() ??
+          '';
       if (from == peer || to == peer) {
         return true;
       }
@@ -2232,6 +2265,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         offer: w.offer,
         fromCallKit: false,
       ),
+      preventDuplicates: false,
     );
   }
 
@@ -2353,14 +2387,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     });
 
     _handlers.on("sdpOfferFromCaller", (data) async {
-      final RTCPeerConnection? pc = peer;
-      if (pc == null) return;
-
       try {
         final dynamic sdp = data["sdpOffer"] ?? data["offer"];
         if (sdp == null) return;
         offer = sdp;
-        callId = data["callId"] ?? callId;
+        if (data["callId"] != null) callId = data["callId"];
+
+        final RTCPeerConnection? pc = peer;
+        if (pc == null) {
+          log("[SDP] sdpOfferFromCaller cached, waiting for peer setup to complete");
+          return;
+        }
 
         pc.onIceCandidate = (c) {
           if (c.candidate == null) return;
@@ -2405,7 +2442,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         log("[SDP] callkit answer ${_sdpInfo(answer.sdp)}");
 
         _callAnnounced = true;
-        socket!.emit("answerCall", {
+        socket?.emit("answerCall", {
           "callId": callId,
           "callerId": callerId,
           "sdpAnswer": answer.toMap(),
@@ -2421,10 +2458,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _handlers.on("newCall", _onNewCall);
     _handlers.on("callEnded", _onCallEnded);
     _handlers.on("endCall", _onCallEnded);
+    _handlers.on("call_ended", _onCallEnded);
     _handlers.on("missedCall", _onMissedCall);
-    // Agreed with the backend (point 7); today's server does not send them.
     for (final String ev in kCallCancelSignals) {
-      if (ev == 'cancelCall') continue; // not a socket event today
       _handlers.on(ev, _onCallCancelled);
     }
     _handlers.on("callAccepted", _onCallAcceptedByServer);
@@ -2435,11 +2471,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         return;
       }
       if (!_isIncoming) _endOutcome = rejectOutcome(data);
-
-      // Utils().fluttertoast(
-      //   'Call Rejected By ${args["callerName"] ?? "Unknown"}',
-      //   bgColor: Colors.red,
-      // );
+      await _cleanupCall(notifyRemote: false, navigateBack: true);
+    });
+    _handlers.on("rejectCall", (data) async {
+      if (!_isForThisCall(data)) return;
+      if (callTimer != null || callDurationSeconds > 0) {
+        return;
+      }
+      if (!_isIncoming) _endOutcome = rejectOutcome(data);
       await _cleanupCall(notifyRemote: false, navigateBack: true);
     });
 
@@ -2879,6 +2918,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (live == null) {
       throw const CallSignalingUnavailable();
     }
+    _handlers.rebind();
     if (isClosed || _callFinished) return;
     // Handlers registered in onInit may sit on an older socket object.
     _listenForCallEvents();
@@ -3103,6 +3143,22 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       _callAnnounced = true;
       socket?.emit("acceptCallFromCallKit", acceptPayload);
       unawaited(_handoverCallKitAudio());
+
+      // Retry up to 3 times every 2 seconds if offer hasn't arrived
+      int retryCount = 0;
+      Timer.periodic(const Duration(seconds: 2), (t) {
+        if (isClosed ||
+            _callFinished ||
+            offer != null ||
+            _everConnected ||
+            retryCount >= 3) {
+          t.cancel();
+          return;
+        }
+        retryCount++;
+        log("[CallKit] Re-emitting acceptCallFromCallKit (retry $retryCount)");
+        socket?.emit("acceptCallFromCallKit", acceptPayload);
+      });
     } else {
       pc.onIceCandidate = (c) => iceCandidates.add(c);
 
@@ -3112,6 +3168,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         stopSound();
         missedCallTimer?.cancel();
         missedCallTimer = null;
+        if (callTimer == null && callDurationSeconds == 0) {
+          callStatus.value = "Connecting";
+          update();
+        }
 
         try {
           await _applyRemoteSdp(pc, data["sdpAnswer"]);
@@ -4080,6 +4140,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (CallForegroundService.onHangUp != null && wasLive) {
       CallForegroundService.onHangUp = null;
     }
+    CallKitService.instance.isInCall = null;
 
     // Only this call's handlers; global ones stay (BUG-CALL-03).
     _handlers.offAll();

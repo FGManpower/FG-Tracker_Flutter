@@ -64,6 +64,15 @@ class FakeCallPlatform extends CallPlatform {
   void playRingback(String asset) => log.add('ringback');
 
   @override
+  String get dialToneAsset => 'dialing.mp3';
+
+  @override
+  void playDialTone(String asset) => log.add('dialTone:$asset');
+
+  @override
+  void resetSoundState() => log.add('resetSoundState');
+
+  @override
   void stopRingtone() => log.add('stopRingtone');
 
   @override

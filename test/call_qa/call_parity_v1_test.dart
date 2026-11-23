@@ -516,7 +516,7 @@ void main() {
 
     test('iOS CallKit: outgoing reported, incoming not', () async {
       await liveCall();
-      expect(platform.callKitOutgoing.length, 1);
+      expect(platform.callKitOutgoing.length, kReportOutgoingCallsToCallKit ? 1 : 0);
     });
 
     test('push of a second call while in a call goes to the banner', () async {

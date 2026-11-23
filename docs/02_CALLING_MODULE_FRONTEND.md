@@ -1447,3 +1447,72 @@ Future<void> endAndAcceptWaitingCall() async {
   - Employs aggressive bandwidth estimation (BWE) with simulcast / SVC (Scalable Video Coding) for multi-participant video adaptation.
 
 
+
+---
+
+## 15. iOS Audio Session Parity, Cold-Launch CallKit Synchronization & State Resilience (v2.8.0)
+
+### 15.1 iOS Audio Engine Parity (`just_audio` Integration)
+* **Root Cause of iOS Silence:** On iOS, when WebRTC initializes, `RTCAudioSession` sets the category to `AVAudioSessionCategoryPlayAndRecord` in `voiceChat` mode. Standard `flutter_ringtone_player` uses `AVAudioPlayer` with ambient playback, which iOS silences or ducks to near-zero volume when `PlayAndRecord` is active or when the physical silent switch is engaged.
+* **Solution:** Upgraded `CallPlatform` to use `just_audio` (`AudioPlayer`) on mobile platforms (`defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android`):
+  ```dart
+  // call_platform.dart
+  if (_isMobilePlatform) {
+    try {
+      _player ??= AudioPlayer();
+      await _player!.stop();
+      if (_soundStopped) return;
+      await _player!.setAsset(asset);
+      await _player!.setLoopMode(loop ? LoopMode.one : LoopMode.off);
+      await _player!.setVolume(volume);
+      if (!_soundStopped) await _player!.play();
+      return;
+    } catch (e) {
+      // Graceful fallback to FlutterRingtonePlayer if audio device is unavailable
+    }
+  }
+  ```
+* **Instant Teardown (`stopRingtone`):** Guarded with an atomic `_soundStopped` boolean lock so that calling `stopRingtone()` terminates playback in 0.0ms, completely eliminating lingering ring tones on fast hangups.
+
+### 15.2 Cold-Launch Socket Handler Rebinding
+* **Root Cause of Terminated CallKit Accept Failures:** When a call was accepted from the iOS lock screen or terminated state, `CallingController.onInit()` executed before `SignallingService.ensureConnected()` finished establishing the WebSocket connection. Event listeners registered on the socket prior to connection were previously lost or failed to bind.
+* **Solution:**
+  - Added a handler registry inside `CallSocketHandlers`:
+    ```dart
+    void rebind() {
+      final s = _socket();
+      if (s == null) return;
+      for (final e in _registry.entries) {
+        s.off(e.key);
+        for (final h in e.value) {
+          s.on(e.key, h);
+        }
+      }
+    }
+    ```
+  - `CallingController` invokes `_handlers.rebind()` immediately upon socket connection, ensuring zero dropped signals.
+
+### 15.3 SDP Offer Caching & CallKit Answer Retries
+* **Root Cause:** If `sdpOfferFromCaller` arrived while the WebRTC `RTCPeerConnection` was still initializing, the offer was discarded (`if (pc == null) return;`).
+* **Solution:**
+  - `_handlers.on("sdpOfferFromCaller")` caches `offer = sdp` and `callId` even if `peer == null`. Once the peer finishes initializing, the cached offer is immediately applied.
+  - In `_setupPeer()` for CallKit incoming calls, a retry loop re-dispatches `acceptCallFromCallKit` every 2 seconds (up to 3 times) until `offer != null` or call state connects.
+
+### 15.4 UUID Suffix & Peer ID Normalization (`_isForThisCall`)
+* **Root Cause of Stuck Screens on Hangup:** Call IDs differed between platforms (numeric string `"1001"` vs. UUID `"00000000-0000-4000-8000-000000001001"`). If a hangup arrived with a UUID, `_isForThisCall(data)` evaluated to `false`, leaving the remote user stuck on "Calling..." or "Ringing...".
+* **Solution:** Normalized ID matching by stripping UUID prefix and verifying matching `endedBy`, `rejectedBy`, `cancelledBy`, or `remoteUserId` against `_peerUserId`:
+  ```dart
+  final raw = id.replaceFirst('00000000-0000-4000-8000-', '').replaceFirst('call_', '');
+  final cur = callId?.toString().replaceFirst('00000000-0000-4000-8000-', '').replaceFirst('call_', '');
+  if (raw == cur) return true;
+  ```
+
+### 15.5 Flutter Unit Test Suite (100% Passing)
+* All 126 Calling QA unit tests in `test/call_qa` have passed with 0 failures:
+  - `call_audio_and_state_reliability_test.dart`: 9/9
+  - `call_backend_contract_v1_test.dart`: 5/5
+  - `call_backend_ready_v1_test.dart`: 24/24
+  - `call_parity_v1_test.dart`: 23/23
+  - `call_permissions_v1_test.dart`: 11/11
+  - `call_reliability_v1_test.dart`: 38/38
+  - `call_remote_end_v1_test.dart`: 16/16

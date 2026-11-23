@@ -1029,9 +1029,7 @@ class CallKitService with WidgetsBindingObserver {
       case 'missedGroupCall':
         final endTarget =
             (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
-        if (screen == 'callEnded') {
-          instance._notifyRemoteEndPush(endTarget, callId);
-        }
+        instance._notifyRemoteEndPush(endTarget, callId);
         await dismiss(
           endTarget.isNotEmpty ? endTarget : callId,
           callId: callId,
