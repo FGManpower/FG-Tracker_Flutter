@@ -20,6 +20,7 @@ import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../Controller/user_profile_details_controller.dart';
+import '../Controller/chat_list_controller.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart' hide BlockStatus;
 
 class UserProfileScreen extends StatefulWidget {
@@ -41,6 +42,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ? Get.find<MessageController>()
           : null;
 
+  bool get _isUserBlocked {
+    if (_chatController != null) {
+      return _chatController!.isBlocked.value || _apiController.isBlocked.value;
+    }
+    return _apiController.isBlocked.value;
+  }
+
   static const Color _purple = Color(0xFF1E1466);
   static const Color _lightPurple = Color(0xFF5045B9);
   static const Color _bg = Color(0xFFF4F3F8);
@@ -55,8 +63,38 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         int.tryParse(_chatController?.privateChatId.value.toString() ?? '') ??
         0;
 
+    if (_chatController != null) {
+      _apiController.isBlocked.value = _chatController!.isBlocked.value;
+    } else {
+      final uid = widget.userData?.userId ?? widget.userData?.id;
+      if (uid != null && Get.isRegistered<ChatListController>()) {
+        try {
+          final c = Get.find<ChatListController>();
+          for (final list in [c.privateChats, c.archivedChats]) {
+            final chat = list.firstWhereOrNull(
+              (ch) =>
+                  ch.isGroup != true && ch.userId?.toString() == uid.toString(),
+            );
+            if (chat != null &&
+                (chat.isBlocked == true || chat.blockedByMe == true)) {
+              _apiController.isBlocked.value = true;
+              break;
+            }
+          }
+        } catch (_) {}
+      }
+    }
+
     if (cId != 0) {
-      _apiController.fetchProfileDetails(cId);
+      _apiController.fetchProfileDetails(cId).then((_) {
+        if (_chatController != null &&
+            _apiController.profileData.value?.blockStatus != null) {
+          final bs = _apiController.profileData.value!.blockStatus!;
+          if (bs.isBlocked == true || bs.blockedByMe == true) {
+            _chatController!.isBlocked.value = true;
+          }
+        }
+      });
     } else {
       _apiController.isLoading.value = false;
     }
@@ -923,13 +961,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       );
     }
 
-    final controller = _chatController;
-    if (controller == null) {
+    final int? targetUserId =
+        user.userId ?? widget.userData?.userId ?? widget.userData?.id;
+    if (targetUserId != null && targetUserId.toString() == _myId) {
       return const SizedBox.shrink();
     }
 
     return Obx(() {
-      final blocked = controller.isBlocked.value;
+      final blocked = _isUserBlocked;
+      final displayName = user.name ??
+          widget.userData?.name ??
+          appL10n.chatList_userFallback;
 
       return _buildSingleTileCard(
         icon: blocked ? Icons.lock_open_rounded : Icons.block_rounded,
@@ -937,8 +979,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             blocked ? const Color(0xFFF3F1FB) : const Color(0xFFFFF0F0),
         iconColor: blocked ? _lightPurple : Colors.redAccent,
         title: blocked
-            ? appL10n.chatList_unblockName(user.name ?? appL10n.chatList_userFallback)
-            : appL10n.chatList_blockName(user.name ?? appL10n.chatList_userFallback),
+            ? appL10n.chatList_unblockName(displayName)
+            : appL10n.chatList_blockName(displayName),
         titleColor: blocked ? _lightPurple : Colors.redAccent,
         arrowColor: blocked ? _lightPurple : Colors.redAccent,
         onTap: blocked
@@ -947,7 +989,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   title: appL10n.chatList_unblockUser,
                   content: appL10n.chatList_unblockUserConfirm,
                   confirm: appL10n.chatList_unblock,
-                  onConfirm: () => _handleUnblockUser(user.userId),
+                  onConfirm: () {
+                    Get.back();
+                    _handleUnblockUser(targetUserId);
+                  },
                 );
               }
             : () {
@@ -955,7 +1000,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   title: appL10n.chatList_blockUser,
                   content: appL10n.chatList_blockUserConfirm,
                   confirm: appL10n.chatList_block,
-                  onConfirm: () => _handleBlockUser(user.userId),
+                  onConfirm: () {
+                    Get.back();
+                    _handleBlockUser(targetUserId);
+                  },
                 );
               },
       );
@@ -968,17 +1016,36 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       return;
     }
 
+    String? message;
     final controller = _chatController;
-    if (controller == null) {
-      Utils().fluttertoast(appL10n.chatList_blockFailed);
-      return;
+    if (controller != null) {
+      message = await controller.blockUser(userId);
+      _apiController.isBlocked.value = true;
+    } else {
+      message = await _apiController.blockUser(userId);
     }
 
-    final message = await controller.blockUser(userId);
-
     if (message != null) {
+      _apiController.isBlocked.value = true;
+      if (_chatController != null) {
+        _chatController!.isBlocked.value = true;
+      }
+      if (Get.isRegistered<ChatListController>()) {
+        try {
+          final c = Get.find<ChatListController>();
+          for (final list in [c.privateChats, c.archivedChats]) {
+            for (var item in list) {
+              if (item.isGroup != true &&
+                  item.userId?.toString() == userId.toString()) {
+                item.isBlocked = true;
+                item.blockedByMe = true;
+              }
+            }
+            list.refresh();
+          }
+        } catch (_) {}
+      }
       Utils().fluttertoast(message);
-      Get.back();
     } else {
       Utils().fluttertoast(appL10n.chatList_blockFailed);
     }
@@ -990,17 +1057,36 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       return;
     }
 
+    String? message;
     final controller = _chatController;
-    if (controller == null) {
-      Utils().fluttertoast(appL10n.chatList_unblockFailed);
-      return;
+    if (controller != null) {
+      message = await controller.unblockUser(userId);
+      _apiController.isBlocked.value = false;
+    } else {
+      message = await _apiController.unblockUser(userId);
     }
 
-    final message = await controller.unblockUser(userId);
-
     if (message != null) {
+      _apiController.isBlocked.value = false;
+      if (_chatController != null) {
+        _chatController!.isBlocked.value = false;
+      }
+      if (Get.isRegistered<ChatListController>()) {
+        try {
+          final c = Get.find<ChatListController>();
+          for (final list in [c.privateChats, c.archivedChats]) {
+            for (var item in list) {
+              if (item.isGroup != true &&
+                  item.userId?.toString() == userId.toString()) {
+                item.isBlocked = false;
+                item.blockedByMe = false;
+              }
+            }
+            list.refresh();
+          }
+        } catch (_) {}
+      }
       Utils().fluttertoast(message);
-      Get.back();
     } else {
       Utils().fluttertoast(appL10n.chatList_unblockFailed);
     }

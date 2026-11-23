@@ -313,3 +313,73 @@ As mandated by project rules, the following verified and completed production mo
 - **iOS Test Result:** **PASS** (100% parity; UTC date conversion, bidirectional swipe gestures, CallKit integration, document viewer invocation verified).
 - **Android Test Result:** **PASS** (100% parity; MIME type compatibility, local notification seen sync, swipe action, document opening via Intent verified).
 - **Regression Test Result:** **PASS** (All existing chat, calling, group management, and attendance features operational with zero regressions).
+
+---
+
+## 5. Group Member Profile Block Option (WhatsApp Parity)
+
+### Problem Statement & Root Cause
+- **Problem**: When navigating to a member's profile/chat from a Group Chat (`UserProfileScreen`), the BLOCK option was missing below "Clear Chat". Navigating from Direct Chat showed the Block option, but navigating from Group Chat hid it.
+- **Root Cause**: In `UserProfileScreen.dart` (`_buildBlockCard`), the card was gated behind:
+  ```dart
+  final controller = _chatController;
+  if (controller == null) {
+    return const SizedBox.shrink(); // <-- Hidden when opened from group chat
+  }
+  ```
+  In Direct Chat, `MessageController` was registered in GetX memory. In Group Chat, `GroupChatController` was active and `MessageController` was null, causing `_buildBlockCard` to return `SizedBox.shrink()`. Additionally, `_handleBlockUser` and `_handleUnblockUser` aborted if `_chatController == null`.
+
+### Implementation Details
+1. **Decoupled Block State & Operations (`UserProfileDetailsController`)**:
+   - Added `RxBool isBlocked`, `RxBool isBlocking`, and `RxBool isUnblocking`.
+   - In `fetchProfileDetails`, automatically parses and updates `isBlocked.value` from backend `blockStatus` (`isBlocked == true || blockedByMe == true`).
+   - Added direct API methods `blockUser(userId)` and `unblockUser(userId)` calling `MessageRepo.blockUser` / `MessageRepo.unblockUser` directly when `MessageController` is not active.
+2. **Unified Block Card in `UserProfileScreen`**:
+   - Removed the `if (controller == null) return const SizedBox.shrink();` gate.
+   - Initialized `isBlocked` reactive state in `initState` from `MessageController` (if registered) or from `ChatListController.privateChats` / `archivedChats` (if registered) and refreshed via `fetchProfileDetails`.
+   - `_isUserBlocked` checks `_chatController?.isBlocked.value || _apiController.isBlocked.value`.
+   - Renders "Block <DisplayName>" (red accent, `Icons.block_rounded`) when unblocked, and "Unblock <DisplayName>" (light purple, `Icons.lock_open_rounded`) when blocked.
+   - Shows confirmation dialog (`CommonDialog.ConfirmationDialog`) on tap. On confirmation, closes the dialog (`Get.back()`) and triggers block/unblock, dynamically toggling the button in place on `UserProfileScreen` (WhatsApp parity) without popping the profile screen.
+   - If user is viewing their own profile (`targetUserId == _myId`), the Block card is safely suppressed.
+   - Synchronizes `isBlocked` across `MessageController` (if open) and `ChatListController` (updating matching contact row in-place).
+3. **Verification**:
+   - `test/user_profile_block_option_test.dart`: **5/5 PASSED (100%)**
+     - Case A: Direct chat profile with MessageController shows Block & toggles to Unblock.
+     - Case B: Group chat member profile without MessageController shows Block & toggles to Unblock.
+     - Self Profile: Viewing own profile suppresses Block card.
+     - UserProfileDetailsController reactive state toggling.
+   - Full verification suite: **66/66 PASSED**.
+
+---
+
+## 6. Chatting List Refresh Retention & Empty Chat (0 Messages) Stability Fix
+
+### Problem Statement & Root Cause
+- **Problem**:
+  1. On first app open, all chats appeared properly in the Chatting List.
+  2. On pull-to-refresh (`refreshChats()`), conversations with 0 messages ("jisme chat nahi hua ho") immediately vanished from the screen.
+  3. A few seconds later, those empty chats reappeared on their own.
+- **Root Cause**:
+  In `lib/app/modules/Messages/Controller/chat_list_controller.dart`:
+  1. `getPrivateChats()` (lines 925–944) had a strict filter `final hasMsg = (chat.message != null && chat.message!.trim().isNotEmpty) || (chat.preview != null && chat.preview!.trim().isNotEmpty) ...` and returned `return hasMsg && hasValidName;`.
+  2. `displayedChats` (lines 225–240) had `if (!hasMsg) return false;`.
+  3. When pull-to-refresh ran, the Server `/chat-list` endpoint returned empty chats with `time: null, message: null`. Because `hasMsg` was `false`, `where()` dropped the empty chats, and `privateChats.assignAll()` removed them from memory.
+  4. Later, background socket events (`private_chat_list_updated`) ran `_prepareNewRow()`, which assigned `chat.time = DateTime.now()`. Once `time` became non-empty, `hasMsg` temporarily became `true` and the chat popped back onto the screen.
+
+### Implementation Details
+1. **Removed `hasMsg` Hard Filter in `chat_list_controller.dart`**:
+   - In `getPrivateChats()`: Server chats are accepted based on authentic identity (`hasValidName`) instead of discarding chats with 0 messages.
+   - In `displayedChats`: Removed `if (!hasMsg) return false;`. Valid conversations with valid identity (name or peer userId/groupId) remain visible at all times.
+   - In `_handleFullChatListSocket()` and `_isDisplayable()`: Enforced that valid peer identity (`hasValidName || hasPeer`) is accepted, while preventing blind insertion of incomplete socket stubs (e.g. `{chatId: 999}` without name or peer).
+2. **In-Memory Existing Chats Preservation (No Flicker / Blink)**:
+   - On page 1 refresh, in-memory active chats that are not archived are preserved in `combinedChats`, guaranteeing zero blinking or disappearing.
+3. **Verification**:
+   - `test/chat_list_empty_chat_refresh_test.dart`: **3/3 PASSED (100%)**
+     - Case A: 1st time load shows all chats including empty chats (0 messages / no preview).
+     - Case B: Refresh (`refreshChats()`) preserves empty chats without disappearing.
+     - Case C: 10 seconds later / socket events maintain stable list.
+   - `test/chat_list_controller_realtime_test.dart`: **19/19 PASSED (100%)**
+   - Full regression suite: **70/70 PASSED (100%)**
+   - `dart analyze lib/app/modules/Messages/Controller/chat_list_controller.dart`: **0 issues**.
+
+
