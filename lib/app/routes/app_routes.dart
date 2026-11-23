@@ -50,6 +50,7 @@ abstract class Routes {
   static const forceUpdate = _Paths.forceUpdate;
   static const languageSelect = _Paths.languageSelect;
   static const shorebirdUpdate = _Paths.shorebirdUpdate;
+  static const settings = _Paths.settings;
 }
 
 abstract class _Paths {
@@ -102,4 +103,5 @@ abstract class _Paths {
   static const forceUpdate = '/force-update';
   static const languageSelect = LanguageController.routeName;
   static const shorebirdUpdate = '/shorebird-update';
+  static const settings = '/settings';
 }

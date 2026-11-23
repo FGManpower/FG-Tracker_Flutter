@@ -18,8 +18,13 @@ import 'chat_list_cache_codec.dart';
 import 'package:fgtracker/app/Core/util/refresh_bar_log.dart';
 import 'package:fgtracker/app/Data/Services/app_cache.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/chat_screen_logic.dart'
-    show ChatScreenRules, RefreshBarAction, RefreshBarState, ServerAnswerFailure;
-import 'package:flutter/foundation.dart' show kDebugMode; // TODO(cl-diagnostics)
+    show
+        ChatScreenRules,
+        RefreshBarAction,
+        RefreshBarState,
+        ServerAnswerFailure;
+import 'package:flutter/foundation.dart'
+    show kDebugMode; // TODO(cl-diagnostics)
 import 'package:fgtracker/app/Core/util/arc_log.dart'; // TODO(arc-diagnostics)
 
 /// Single store for the unified chat list and the Archived list.
@@ -29,7 +34,9 @@ import 'package:fgtracker/app/Core/util/arc_log.dart'; // TODO(arc-diagnostics)
 /// Get.deleteAll disposes it. ChatListScreen's Get.put reuses the instance.
 class ChatListController extends GetxController with WidgetsBindingObserver {
   static ChatListController? get instance =>
-      Get.isRegistered<ChatListController>() ? Get.find<ChatListController>() : null;
+      Get.isRegistered<ChatListController>()
+          ? Get.find<ChatListController>()
+          : null;
 
   /// Finds an existing private chat model by peer user ID in either active or archived lists.
   PrivateChatModel? findPrivateChatByUserId(dynamic userId) {
@@ -38,13 +45,15 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     if (uidStr.isEmpty) return null;
 
     final inPrivate = privateChats.firstWhereOrNull((c) {
-      if (c.isGroup == true || c.chatType == "group" || c.groupId != null) return false;
+      if (c.isGroup == true || c.chatType == "group" || c.groupId != null)
+        return false;
       return c.userId?.toString() == uidStr;
     });
     if (inPrivate != null) return inPrivate;
 
     return archivedChats.firstWhereOrNull((c) {
-      if (c.isGroup == true || c.chatType == "group" || c.groupId != null) return false;
+      if (c.isGroup == true || c.chatType == "group" || c.groupId != null)
+        return false;
       return c.userId?.toString() == uidStr;
     });
   }
@@ -58,7 +67,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   );
 
   /// Snapshot taken before an optimistic action, restored if it fails.
-  final Map<String, ({PrivateChatModel snapshot, bool wasArchived, String action})>
+  final Map<String,
+          ({PrivateChatModel snapshot, bool wasArchived, String action})>
       _pendingActions = {};
 
   DateTime? _lastServerSync;
@@ -93,7 +103,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
   /// Loads the user is waiting for; everything else is background (it may
   /// clear the bar, never raise it).
-  static const _foregroundTriggers = {'open', 'pull', 'retry-tap', 'quiet-retry'};
+  static const _foregroundTriggers = {
+    'open',
+    'pull',
+    'retry-tap',
+    'quiet-retry'
+  };
 
   Future<void> _onListLoadFailed(
     Object error, {
@@ -138,8 +153,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   /// (R3). Listeners are registered before this and never wait for it (R1).
   Future<void> _showCachedChatList() async {
     try {
-      final main = await AppCache.readAs(
-          AppCache.chatList, ChatListCacheCodec.decode);
+      final main =
+          await AppCache.readAs(AppCache.chatList, ChatListCacheCodec.decode);
       final archived = await AppCache.readAs(
           AppCache.chatArchived, ChatListCacheCodec.decode);
       if (isClosed) return;
@@ -154,8 +169,9 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       if (main.isNotEmpty) {
         final merged = AppCache.mergeCachedIntoLive<PrivateChatModel>(
           live: privateChats,
-          cached: main.where(
-              (c) => !archivedChats.any((a) => _isSameChat(a, c))).toList(),
+          cached: main
+              .where((c) => !archivedChats.any((a) => _isSameChat(a, c)))
+              .toList(),
           keyOf: _getChatKey,
           // A socket row that arrived first is newer; an older live row
           // loses only if the cached copy has a newer last message.
@@ -216,10 +232,51 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   RxBool hasNextPage = false.obs;
   RxBool hasPreviousPage = false.obs;
 
+  /// Whether a chat row is valid and displayable:
+  /// 1. Archived rows are not shown in main list.
+  /// 2. Group chats must have a group identity (groupId, id, or groupName).
+  /// 3. Private chats must have either an identity (valid name or phone number)
+  ///    OR an actual message/preview.
+  /// 4. Orphan dummy rows (no name, no phone, no message) are suppressed so
+  ///    "Unknown User" is never displayed in the list.
+  bool _isDisplayableChat(PrivateChatModel chat) {
+    if (chat.isArchived == true) return false;
+    final isGrp = chat.isGroup == true ||
+        chat.chatType == "group" ||
+        chat.groupId != null;
+    if (isGrp) {
+      final gName = (chat.groupName ?? chat.name)?.trim();
+      final hasGroupIdentity = (gName != null && gName.isNotEmpty) ||
+          chat.groupId != null ||
+          chat.id != null;
+      return hasGroupIdentity;
+    }
+
+    final name = chat.name?.trim();
+    final phone = chat.phone?.trim();
+    final hasName =
+        name != null && name.isNotEmpty && name.toLowerCase() != "unknown user";
+    final hasPhone = phone != null && phone.isNotEmpty;
+    final hasIdentity = hasName || hasPhone;
+
+    final message = chat.message?.trim();
+    final preview = chat.preview?.trim();
+    final hasMessage = (message != null && message.isNotEmpty) ||
+        (preview != null && preview.isNotEmpty);
+
+    // Rule: Na naam ho, na phone ho, na message ho - aisi orphan / dummy row ko list me dikhao hi mat.
+    // Kisi real user ko is filter me hide mat karna (name/phone preserves 0-message chat).
+    if (!hasIdentity && !hasMessage) {
+      return false;
+    }
+    return true;
+  }
+
   /// Filtered list of chats for the UI.
   /// 1. Excludes archived chats and invalid rows without identity.
   /// 2. Preserves active conversations (including newly started chats with 0 messages).
-  /// 3. Performs instant client-side search across name, groupName, message, preview, and role.
+  /// 3. Suppresses orphan dummy rows with Unknown User and no message.
+  /// 4. Performs instant client-side search across name, groupName, message, preview, and role.
   List<PrivateChatModel> get displayedChats {
     final query = searchQuery.value.trim().toLowerCase();
 
@@ -228,16 +285,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       if (archivedChats.any((archived) => _isSameChat(archived, chat))) {
         return false;
       }
-
-      final name = (chat.name ?? chat.groupName)?.trim();
-      final hasValidName = name != null &&
-          name.isNotEmpty &&
-          name.toLowerCase() != "unknown user";
-      final hasPeer = chat.userId != null || chat.groupId != null;
-      if (!hasValidName && !hasPeer) {
-        return false;
-      }
-      return true;
+      return _isDisplayableChat(chat);
     }).toList();
 
     if (query.isEmpty) {
@@ -262,7 +310,6 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   List<PrivateChatModel> get displayedArchivedChats {
     return archivedChats.where((chat) => chat.isArchived != false).toList();
   }
-
 
   /// Total count of all chats currently displayed (both private and group chats).
   int get allChatsCount => displayedChats.length;
@@ -341,13 +388,15 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   Future<void> _saveManuallyUnreadKeys() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(_prefUnreadKey, manuallyUnreadChatKeys.toList());
+      await prefs.setStringList(
+          _prefUnreadKey, manuallyUnreadChatKeys.toList());
     } catch (_) {}
   }
 
   List<String> _getAllChatKeys(PrivateChatModel chat) {
-    final isGroup =
-        chat.isGroup == true || chat.chatType == "group" || chat.groupId != null;
+    final isGroup = chat.isGroup == true ||
+        chat.chatType == "group" ||
+        chat.groupId != null;
     final keys = <String>[];
     if (isGroup) {
       if (chat.groupId != null) keys.add('group_${chat.groupId}');
@@ -357,7 +406,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     } else {
       if (chat.userId != null) keys.add('private_${chat.userId}');
       if (chat.chatId != null) keys.add('private_${chat.chatId}');
-      if (chat.conversationId != null) keys.add('private_${chat.conversationId}');
+      if (chat.conversationId != null)
+        keys.add('private_${chat.conversationId}');
       if (chat.id != null) keys.add('private_${chat.id}');
     }
     return keys;
@@ -383,7 +433,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     final bool isGroup = _isGroupChat(chat);
     try {
       await MessageRepo.markConversationUnread(
-        chatId: isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id),
+        chatId:
+            isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id),
         groupId: isGroup ? (chat.groupId ?? chat.id) : null,
         chatType: isGroup ? "group" : "private",
       );
@@ -422,7 +473,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  Future<void> clearManualUnreadForPrivate({dynamic userId, dynamic chatId}) async {
+  Future<void> clearManualUnreadForPrivate(
+      {dynamic userId, dynamic chatId}) async {
     _clearServerMarkedUnread((c) {
       if (_isGroupChat(c)) return false;
       final u = userId?.toString();
@@ -717,7 +769,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     if (row == null) return;
 
     if (last == null) {
-      // Do not clear the existing row on normal screen exit if it already has valid content!
+      row
+        ..message = ''
+        ..preview = ''
+        ..lastMessageData = null
+        ..isDeletedForEveryone = false;
+      privateChats.refresh();
       return;
     }
 
@@ -726,8 +783,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     final preview = MessagePreviewBuilder.forMessage(last);
     final text =
         deleted ? MessagePreviewBuilder.deletedDisplayText : preview.display;
-    final isSamePreview = row.preview == text &&
-        (row.isDeletedForEveryone == true) == deleted;
+    final isSamePreview =
+        row.preview == text && (row.isDeletedForEveryone == true) == deleted;
     final hasValidLastData = row.lastMessageData != null;
     if (isSamePreview && hasValidLastData) {
       return;
@@ -799,8 +856,10 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   }
 
   bool _isSameChat(PrivateChatModel a, PrivateChatModel b) {
-    final aIsGroup = a.isGroup == true || a.chatType == "group" || a.groupId != null;
-    final bIsGroup = b.isGroup == true || b.chatType == "group" || b.groupId != null;
+    final aIsGroup =
+        a.isGroup == true || a.chatType == "group" || a.groupId != null;
+    final bIsGroup =
+        b.isGroup == true || b.chatType == "group" || b.groupId != null;
 
     // A group chat and a private 1-to-1 chat can NEVER be the same chat
     if (aIsGroup != bIsGroup) return false;
@@ -809,7 +868,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       if (a.groupId != null && b.groupId != null) return a.groupId == b.groupId;
       if (a.id != null && b.id != null) return a.id == b.id;
       if (a.chatId != null && b.chatId != null) return a.chatId == b.chatId;
-      if (a.conversationId != null && b.conversationId != null) return a.conversationId == b.conversationId;
+      if (a.conversationId != null && b.conversationId != null)
+        return a.conversationId == b.conversationId;
       final aAny = a.groupId ?? a.id ?? a.chatId ?? a.conversationId;
       final bAny = b.groupId ?? b.id ?? b.chatId ?? b.conversationId;
       if (aAny != null && bAny != null && aAny == bAny) return true;
@@ -817,7 +877,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     } else {
       if (a.userId != null && b.userId != null) return a.userId == b.userId;
       if (a.chatId != null && b.chatId != null) return a.chatId == b.chatId;
-      if (a.conversationId != null && b.conversationId != null) return a.conversationId == b.conversationId;
+      if (a.conversationId != null && b.conversationId != null)
+        return a.conversationId == b.conversationId;
       if (a.id != null && b.id != null) return a.id == b.id;
       final aConv = a.conversationId ?? a.chatId ?? a.id;
       final bConv = b.conversationId ?? b.chatId ?? b.id;
@@ -902,10 +963,11 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         _bar.success('chat list page 1');
         _perf?.mark('API done', extra: '${response.data?.length ?? 0} rows');
       }
-      arcLog('main LOAD', // TODO(arc-diagnostics)
+      arcLog(
+          'main LOAD', // TODO(arc-diagnostics)
           'GET /chat-list?page=$requestedPage&includeArchived=false => '
-          'rows=${response.data?.length ?? 0} '
-          'withIsArchivedTrue=${(response.data ?? []).where((c) => c.isArchived == true).length}');
+              'rows=${response.data?.length ?? 0} '
+              'withIsArchivedTrue=${(response.data ?? []).where((c) => c.isArchived == true).length}');
 
       // WhatsApp Rule: Preserve all active chats returned by the server,
       // including newly started conversations with 0 messages.
@@ -913,13 +975,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       // (unless the server says it was unarchived).
       final chats = _reconcileArchived((response.data ?? []).where((chat) {
         if (chat.isArchived == true) return false;
-        final name = (chat.name ?? chat.groupName)?.trim();
-        final hasValidName = (name != null && name.isNotEmpty && name != "Unknown User") ||
-            chat.userId != null ||
-            chat.groupId != null ||
-            chat.chatId != null ||
-            chat.id != null;
-        return hasValidName;
+        return _isDisplayableChat(chat);
       }).toList());
 
       for (final chat in chats) {
@@ -996,25 +1052,43 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         final combinedChats = <PrivateChatModel>[...mergedChats];
 
         // Preserve existing active in-memory chats that were not returned on page 1
-        // so no chats blink, vanish, or flicker during refresh.
+        // (including newly started conversations with 0 messages) so no chats blink, vanish, or flicker.
         for (final existing in existingChats) {
           final inMerged = combinedChats.any((c) => _isSameChat(c, existing));
           if (!inMerged) {
             final isArchived = existing.isArchived == true ||
                 archivedChats.any((a) => _isSameChat(a, existing));
-            if (!isArchived) {
+            if (!isArchived && _isDisplayableChat(existing)) {
               combinedChats.add(existing);
             }
           }
         }
 
+        // Also preserve cached conversations so refresh never drops 0-message chats
+        try {
+          final cachedMain = await AppCache.readAs(
+              AppCache.chatList, ChatListCacheCodec.decode);
+          for (final cached in cachedMain) {
+            final inCombined = combinedChats.any((c) => _isSameChat(c, cached));
+            if (!inCombined) {
+              final isArchived = cached.isArchived == true ||
+                  archivedChats.any((a) => _isSameChat(a, cached));
+              if (!isArchived && _isDisplayableChat(cached)) {
+                combinedChats.add(cached);
+              }
+            }
+          }
+        } catch (_) {}
+
         final uniqueList = <PrivateChatModel>[];
         for (final chat in combinedChats) {
-          final existingIndex = uniqueList.indexWhere((c) => _isSameChat(c, chat));
+          final existingIndex =
+              uniqueList.indexWhere((c) => _isSameChat(c, chat));
           if (existingIndex == -1) {
             uniqueList.add(chat);
           } else {
-            uniqueList[existingIndex] = _mergePrivateChat(uniqueList[existingIndex], chat);
+            uniqueList[existingIndex] =
+                _mergePrivateChat(uniqueList[existingIndex], chat);
           }
         }
         privateChats.assignAll(_sortPinnedChats(uniqueList));
@@ -1037,11 +1111,13 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
         final uniqueList = <PrivateChatModel>[];
         for (final chat in privateChats) {
-          final existingIndex = uniqueList.indexWhere((c) => _isSameChat(c, chat));
+          final existingIndex =
+              uniqueList.indexWhere((c) => _isSameChat(c, chat));
           if (existingIndex == -1) {
             uniqueList.add(chat);
           } else {
-            uniqueList[existingIndex] = _mergePrivateChat(uniqueList[existingIndex], chat);
+            uniqueList[existingIndex] =
+                _mergePrivateChat(uniqueList[existingIndex], chat);
           }
         }
 
@@ -1222,13 +1298,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       // (unless the server says it was unarchived).
       final chats = _reconcileArchived((response.data ?? []).where((chat) {
         if (chat.isArchived == true) return false;
-        final name = (chat.name ?? chat.groupName)?.trim();
-        final hasValidName = (name != null && name.isNotEmpty && name != "Unknown User") ||
-            chat.userId != null ||
-            chat.groupId != null ||
-            chat.chatId != null ||
-            chat.id != null;
-        return hasValidName;
+        return _isDisplayableChat(chat);
       }).toList());
 
       for (final chat in chats) {
@@ -1251,11 +1321,13 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       if (chats.isNotEmpty) {
         final uniqueList = <PrivateChatModel>[];
         for (final chat in chats) {
-          final existingIndex = uniqueList.indexWhere((c) => _isSameChat(c, chat));
+          final existingIndex =
+              uniqueList.indexWhere((c) => _isSameChat(c, chat));
           if (existingIndex == -1) {
             uniqueList.add(chat);
           } else {
-            uniqueList[existingIndex] = _mergePrivateChat(uniqueList[existingIndex], chat);
+            uniqueList[existingIndex] =
+                _mergePrivateChat(uniqueList[existingIndex], chat);
           }
         }
         for (final existing in privateChats) {
@@ -1378,7 +1450,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
           payload['last_message'] == null &&
           payload['lastActivity'] == null &&
           payload['senderId'] != null &&
-          (payload.containsKey('content') || payload.containsKey('messageType'));
+          (payload.containsKey('content') ||
+              payload.containsKey('messageType'));
       final payloadMessageId = isMessagePayload ? payload['id'] : null;
 
       if (payload['lastActivity'] == null && payload['lastMessage'] is Map) {
@@ -1462,9 +1535,10 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       // (_reconcileArchived).
       final bool archived =
           archivedIndex >= 0 || updatedChat.isArchived == true;
-      arcLog('realtime DECISION', // TODO(arc-diagnostics)
+      arcLog(
+          'realtime DECISION', // TODO(arc-diagnostics)
           '${arcChat(updatedChat)} inMain=${mainIndex >= 0} '
-          'inArchived=${archivedIndex >= 0} => treatedAsArchived=$archived');
+              'inArchived=${archivedIndex >= 0} => treatedAsArchived=$archived');
 
       if (archived) {
         if (mainIndex >= 0) {
@@ -1479,7 +1553,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
           archivedChats[archivedIndex] = merged;
         } else {
           if (!_isDisplayable(updatedChat)) {
-            arcLog('realtime ACTION', // TODO(arc-diagnostics)
+            arcLog(
+                'realtime ACTION', // TODO(arc-diagnostics)
                 'archived but not in archived list & payload incomplete => loadArchivedChats() REFETCH');
             loadArchivedChats();
             return;
@@ -1490,13 +1565,15 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         }
         archivedChats.assignAll(ChatListRules.sort(archivedChats));
         _syncChattingNotificationMarker();
-        arcLog('realtime ACTION', // TODO(arc-diagnostics)
+        arcLog(
+            'realtime ACTION', // TODO(arc-diagnostics)
             'updated ARCHIVED list (removedFromMain=${mainIndex >= 0}) ${arcLists(privateChats, archivedChats)}');
         return;
       }
 
       if (archivedIndex >= 0) {
-        arcLog('realtime ACTION', // TODO(arc-diagnostics)
+        arcLog(
+            'realtime ACTION', // TODO(arc-diagnostics)
             'payload isArchived=false => MOVED archived -> MAIN');
         // Explicitly unarchived (isArchived: false).
         final moved =
@@ -1520,14 +1597,17 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         final hasValidName = name != null &&
             name.isNotEmpty &&
             name.toLowerCase() != "unknown user";
-        final hasPeer = updatedChat.userId != null || updatedChat.groupId != null;
+        final hasPeer =
+            updatedChat.userId != null || updatedChat.groupId != null;
         if (!hasValidName && !hasPeer) {
-          arcLog('realtime ACTION', // TODO(arc-diagnostics)
+          arcLog(
+              'realtime ACTION', // TODO(arc-diagnostics)
               'not archived, not in main, payload incomplete => _scheduleServerRefetch()');
           _scheduleServerRefetch();
           return;
         }
-        arcLog('realtime ACTION', // TODO(arc-diagnostics)
+        arcLog(
+            'realtime ACTION', // TODO(arc-diagnostics)
             'not archived, not in main => ADDED to MAIN list');
         _prepareNewRow(updatedChat);
         privateChats.add(updatedChat);
@@ -1543,7 +1623,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       final newMessage = ChatListRules.isNewMessage(current, updatedChat);
       final merged = _applyRealtimeUpdate(current, updatedChat);
       _applyExplicitNoMessage(merged, payload);
-      final pinChanged = (current.isPinned == true) != (merged.isPinned == true);
+      final pinChanged =
+          (current.isPinned == true) != (merged.isPinned == true);
       privateChats[mainIndex] = merged;
       if (newMessage || pinChanged) {
         privateChats.assignAll(ChatListRules.sort(privateChats));
@@ -1600,9 +1681,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
   bool _isDisplayable(PrivateChatModel chat) {
     final name = (chat.name ?? chat.groupName)?.trim();
-    final hasValidName = name != null &&
-        name.isNotEmpty &&
-        name.toLowerCase() != "unknown user";
+    final hasValidName =
+        name != null && name.isNotEmpty && name.toLowerCase() != "unknown user";
     final hasPeer = chat.userId != null || chat.groupId != null;
     return hasValidName || hasPeer;
   }
@@ -1846,6 +1926,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
                 updated.name != 'Unknown User')
             ? updated.name
             : current.name,
+        phone: updated.phone ?? current.phone,
         groupName: updated.groupName ?? current.groupName,
         memberCount: updated.memberCount ?? current.memberCount,
         role: updated.role ?? current.role,
@@ -1901,9 +1982,9 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       );
     }
 
-    final updatedHasTime = (updated.timestamp != null &&
-            updated.timestamp!.isNotEmpty) ||
-        (updated.time != null && updated.time!.isNotEmpty);
+    final updatedHasTime =
+        (updated.timestamp != null && updated.timestamp!.isNotEmpty) ||
+            (updated.time != null && updated.time!.isNotEmpty);
 
     final updatedHasMessage =
         (updated.message != null && updated.message!.isNotEmpty);
@@ -1921,16 +2002,16 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         current.message != null &&
         updated.message != current.message;
 
-    final bool isDifferentPreview = (updated.preview?.trim().isNotEmpty ?? false) &&
-        (current.preview?.trim().isNotEmpty ?? false) &&
-        updated.preview?.trim() != current.preview?.trim();
+    final bool isDifferentPreview =
+        (updated.preview?.trim().isNotEmpty ?? false) &&
+            (current.preview?.trim().isNotEmpty ?? false) &&
+            updated.preview?.trim() != current.preview?.trim();
 
     final bool textActuallyChanged = isDifferentText || isDifferentPreview;
 
     // Same last message re-sent with a read/seen change (often a newer
     // updatedAt): take its fields but keep the time, so the row doesn't move.
-    final bool sameMessage =
-        (currentId != null && currentId == updatedId) ||
+    final bool sameMessage = (currentId != null && currentId == updatedId) ||
         (!textActuallyChanged && !isDistinctNewId);
 
     final bool useUpdatedMessage = updatedHasMessage &&
@@ -1962,6 +2043,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
               updated.name != 'Unknown User')
           ? updated.name
           : current.name,
+      phone: updated.phone ?? current.phone,
       groupName: updated.groupName ?? current.groupName,
       memberCount: updated.memberCount ?? current.memberCount,
       role: updated.role ?? current.role,
@@ -2014,14 +2096,16 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     PrivateChatModel chat, {
     String? mutedUntil,
   }) {
-    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
+    final effectiveId =
+        chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
     if (effectiveId == null) {
       return;
     }
 
     final bool isGroup = chat.isGroup == true || chat.groupId != null;
     final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
-    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+    final int? cId =
+        isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
 
     if (!isGroup) {
       socketService.mutePrivateChat(
@@ -2047,14 +2131,16 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   }
 
   void unmuteChat(PrivateChatModel chat) {
-    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
+    final effectiveId =
+        chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
     if (effectiveId == null) {
       return;
     }
 
     final bool isGroup = chat.isGroup == true || chat.groupId != null;
     final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
-    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+    final int? cId =
+        isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
 
     if (!isGroup) {
       socketService.unmutePrivateChat(
@@ -2135,6 +2221,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         chatType: c.chatType,
         userId: c.userId,
         name: c.name,
+        phone: c.phone,
         groupName: c.groupName,
         memberCount: c.memberCount,
         role: c.role,
@@ -2170,7 +2257,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       );
 
   void pinChat(PrivateChatModel chat) {
-    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
+    final effectiveId =
+        chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
     if (effectiveId == null) {
       return;
     }
@@ -2179,7 +2267,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
     final bool isGroup = chat.isGroup == true || chat.groupId != null;
     final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
-    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+    final int? cId =
+        isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
 
     if (!isGroup) {
       socketService.pinPrivateChat(
@@ -2206,7 +2295,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   }
 
   void unpinChat(PrivateChatModel chat) {
-    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
+    final effectiveId =
+        chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
     if (effectiveId == null) {
       return;
     }
@@ -2215,7 +2305,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
     final bool isGroup = chat.isGroup == true || chat.groupId != null;
     final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
-    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+    final int? cId =
+        isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
 
     if (!isGroup) {
       socketService.unpinPrivateChat(
@@ -2242,13 +2333,17 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   }
 
   void archiveChat(PrivateChatModel chat) {
-    final effectiveId =
-        chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId ?? chat.userId;
+    final effectiveId = chat.chatId ??
+        chat.conversationId ??
+        chat.id ??
+        chat.groupId ??
+        chat.userId;
     _beginAction(chat, 'archive');
 
     final bool isGroup = chat.isGroup == true || chat.groupId != null;
     final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
-    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+    final int? cId =
+        isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
 
     if (chat.isPinned == true) {
       MessageRepo.pinConversation(
@@ -2279,7 +2374,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       chatType: isGroup ? "group" : "private",
       isArchived: true,
     ).then((res) {
-      arcLog('archive API', // TODO(arc-diagnostics)
+      arcLog(
+          'archive API', // TODO(arc-diagnostics)
           'POST /archive chatId=$cId groupId=$gId chatType=${isGroup ? "group" : "private"} isArchived=true => $res');
       // The API can answer {status:false} without throwing: roll back.
       if (_isFailedResponse(res)) {
@@ -2318,18 +2414,23 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     privateChats.refresh();
     archivedChats.refresh();
     _syncChattingNotificationMarker();
-    arcLog('archive LOCAL', // TODO(arc-diagnostics)
+    arcLog(
+        'archive LOCAL', // TODO(arc-diagnostics)
         '${arcChat(chat)} => ${arcLists(privateChats, archivedChats)}');
   }
 
   void unarchiveChat(PrivateChatModel chat) {
-    final effectiveId =
-        chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId ?? chat.userId;
+    final effectiveId = chat.chatId ??
+        chat.conversationId ??
+        chat.id ??
+        chat.groupId ??
+        chat.userId;
     _beginAction(chat, 'unarchive');
 
     final bool isGroup = chat.isGroup == true || chat.groupId != null;
     final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
-    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+    final int? cId =
+        isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
 
     if (!isGroup && effectiveId != null) {
       socketService.unarchivePrivateChat(
@@ -2344,7 +2445,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       chatType: isGroup ? "group" : "private",
       isArchived: false,
     ).then((res) {
-      arcLog('unarchive API', // TODO(arc-diagnostics)
+      arcLog(
+          'unarchive API', // TODO(arc-diagnostics)
           'POST /archive chatId=$cId groupId=$gId isArchived=false => $res');
       if (_isFailedResponse(res)) {
         _rollbackAction(_getChatKey(chat), message: _offlineMessage);
@@ -2352,7 +2454,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       }
       _pendingActions.remove(_getChatKey(chat));
     }).catchError((e) {
-      arcLog('unarchive API', 'FAILED => $e (rollback)'); // TODO(arc-diagnostics)
+      arcLog(
+          'unarchive API', 'FAILED => $e (rollback)'); // TODO(arc-diagnostics)
       _rollbackAction(_getChatKey(chat), message: _offlineMessage);
     });
 
@@ -2390,7 +2493,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     final previousUnread = chat.unreadCount ?? 0;
     final bool isGroup = chat.isGroup == true || chat.groupId != null;
     final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
-    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+    final int? cId =
+        isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
 
     if (isGroup) {
       if (gId != null) {
@@ -2446,7 +2550,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
   }
 
   void deleteChat(PrivateChatModel chat) {
-    final effectiveId = chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
+    final effectiveId =
+        chat.chatId ?? chat.conversationId ?? chat.id ?? chat.groupId;
     if (effectiveId == null) {
       return;
     }
@@ -2455,7 +2560,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
     final bool isGroup = chat.isGroup == true || chat.groupId != null;
     final int? gId = isGroup ? (chat.groupId ?? chat.id) : null;
-    final int? cId = isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
+    final int? cId =
+        isGroup ? null : (chat.chatId ?? chat.conversationId ?? chat.id);
 
     if (!isGroup) {
       socketService.deletePrivateChat(
@@ -2534,19 +2640,23 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     if (data is! Map) return;
     try {
       final map = Map<String, dynamic>.from(data);
-      final rawGid = map['groupId'] ?? map['group_id'] ?? map['chatId'] ?? map['id'];
+      final rawGid =
+          map['groupId'] ?? map['group_id'] ?? map['chatId'] ?? map['id'];
       final gid = int.tryParse(rawGid?.toString() ?? '');
-      final uid = (map['userId'] ?? map['user_id'] ?? map['removedUserId'])?.toString();
+      final uid =
+          (map['userId'] ?? map['user_id'] ?? map['removedUserId'])?.toString();
       if (gid != null && (uid == null || uid == currentUserId)) {
         socketService.clearActiveGroup(gid);
         socketService.leaveUserFromGroup(currentUserId, gid);
         for (final c in privateChats) {
-          if ((c.isGroup == true || c.chatType == 'group') && (c.groupId == gid || c.id == gid)) {
+          if ((c.isGroup == true || c.chatType == 'group') &&
+              (c.groupId == gid || c.id == gid)) {
             c.isMember = false;
           }
         }
         for (final c in archivedChats) {
-          if ((c.isGroup == true || c.chatType == 'group') && (c.groupId == gid || c.id == gid)) {
+          if ((c.isGroup == true || c.chatType == 'group') &&
+              (c.groupId == gid || c.id == gid)) {
             c.isMember = false;
           }
         }
@@ -2595,10 +2705,11 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     int page = 1,
     int limit = 20,
   }) {
-    arcLog('archived LOAD', // TODO(arc-diagnostics)
+    arcLog(
+        'archived LOAD', // TODO(arc-diagnostics)
         'source=socket get_archived_private_chats page=$page limit=$limit '
-        'socketConnected=${socketService.isPrivateChatListSocketConnected} '
-        '(false = request silently skipped)');
+            'socketConnected=${socketService.isPrivateChatListSocketConnected} '
+            '(false = request silently skipped)');
     socketService.getArchivedPrivateChats(
       page: page,
       limit: limit,
@@ -2610,14 +2721,16 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
     try {
       if (data is! Map) {
         // A bad payload never wipes Archive (R8, doc 07): keep what is shown.
-        arcLog('archived RESPONSE', 'not a Map => ignored'); // TODO(arc-diagnostics)
+        arcLog('archived RESPONSE',
+            'not a Map => ignored'); // TODO(arc-diagnostics)
         return;
       }
 
       final rawData = data["data"];
 
       if (rawData is! List) {
-        arcLog('archived RESPONSE', 'data is not a List => ignored'); // TODO(arc-diagnostics)
+        arcLog('archived RESPONSE',
+            'data is not a List => ignored'); // TODO(arc-diagnostics)
         return;
       }
 
@@ -2639,11 +2752,12 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         chat.isArchived = true;
       }
 
-      arcLog('archived RESPONSE', // TODO(arc-diagnostics)
+      arcLog(
+          'archived RESPONSE', // TODO(arc-diagnostics)
           'server items=${rawData.length} parsed=${chats.length} '
-          'REPLACING list. before: ${arcLists(privateChats, archivedChats)} '
-          'after: ${arcLists(privateChats, chats)} '
-          'dropped=[${archivedChats.where((a) => !chats.any((c) => _isSameChat(a, c))).map(arcChat).join(' | ')}]');
+              'REPLACING list. before: ${arcLists(privateChats, archivedChats)} '
+              'after: ${arcLists(privateChats, chats)} '
+              'dropped=[${archivedChats.where((a) => !chats.any((c) => _isSameChat(a, c))).map(arcChat).join(' | ')}]');
       // Merge, never replace: the reply may hold only PRIVATE archived chats,
       // and replacing dropped archived groups from both lists. Sorted
       // client-side and removed from the main list inside _mergeArchived.
@@ -2669,7 +2783,8 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
 
       archivedChats.refresh();
     } catch (e) {
-      arcLog('archived RESPONSE', 'parse error $e => ignored'); // TODO(arc-diagnostics)
+      arcLog('archived RESPONSE',
+          'parse error $e => ignored'); // TODO(arc-diagnostics)
     }
   }
 

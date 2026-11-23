@@ -382,4 +382,54 @@ As mandated by project rules, the following verified and completed production mo
    - Full regression suite: **70/70 PASSED (100%)**
    - `dart analyze lib/app/modules/Messages/Controller/chat_list_controller.dart`: **0 issues**.
 
+---
+
+## 7. Chatting List Refresh Source Unification, 0-Message Chat Preservation & Unknown User Elimination
+
+### Problem Statement & Root Cause
+1. **Refresh Dropping 0-Message Chats**:
+   - On 1st open, chats were loaded from Hive Cache + Socket (`chat_list`) + REST API (`/chat-list`) + Incremental Sync (`/chat/sync`).
+   - On pull-to-refresh (`refreshChats()`), only the REST API (`/chat-list`) was queried. Because the server `/chat-list` endpoint only returns conversations with active message history (`lastMessage != null`), newly created conversations with 0 messages were omitted from the server response.
+   - During the refresh page 1 reconciliation, in-memory chats were prone to temporary drop or timing flicker until background socket events repopulated them.
+2. **"Unknown User" in List**:
+   - Backend conversation records containing an orphan user record or `name: null` caused `PrivateChatModel.fromJson()` to fall back to `'Unknown User'`.
+   - Phone numbers (`phone`, `phoneNumber`, `mobile`, `contactNumber`) were not evaluated during name fallback.
+   - In `chat_list_controller.dart`, `hasPeer` (`userId != null`) was allowing rows that had no valid name, no phone, and no message, causing "Unknown User" to render in `chat_list_row_widgets.dart`.
+
+### Implementation Details
+1. **Phone Fallback & Elimination of "Unknown User"**:
+   - In `lib/app/Model/PrivateChatModel.dart`:
+     - Added `phone` property and parsed all phone variants (`phone`, `phoneNumber`, `phone_number`, `mobile`, `mobileNumber`, `contactNumber`, `receiverPhone`).
+     - In `fromJson`: If `name` is null or `"Unknown User"`, it falls back to `phone`. If phone is also absent, it defaults to `isGroupChat ? 'Group' : 'Unknown User'`.
+     - Serialized `phone` in `toJson()`.
+   - In `lib/app/modules/Messages/Controller/chat_list_cache_codec.dart`:
+     - Persists and decodes `phone` field in Hive cache.
+   - In `lib/app/modules/Messages/widgets/chat_list_row_widgets.dart`:
+     - `chatListDisplayName(String? name, {String? phone})` displays phone number whenever name is absent or `"Unknown User"`.
+   - In `lib/app/modules/Messages/Controller/chat_list_controller.dart`:
+     - Added `_isDisplayableChat(PrivateChatModel chat)`:
+       - Real users with valid name or phone number (even with 0 messages) are strictly **preserved**.
+       - Real active chats with message content are strictly **preserved**.
+       - Orphan / dummy rows with no name, no phone, and no message are strictly **suppressed** from `displayedChats` and server list ingestion.
+2. **Unified Refresh & 0-Message Chat Retention (Zero Flicker)**:
+   - In `chat_list_controller.dart` `getPrivateChats()`:
+     - On page 1 refresh, in-memory active chats that are `_isDisplayableChat()` are preserved in `combinedChats`.
+     - Also scans local Hive cache (`AppCache.chatList`) to ensure 0-message conversations are never dropped during refresh.
+     - `_mergePrivateChat()` and `_copyChat()` retain and copy `phone` state across server and local updates.
+     - `_handleFullChatListSocket()` and `getPrivateChats()` use identical `_isDisplayableChat()` validation.
+3. **Automated Verification**:
+   - `test/chat_list_unknown_user_and_refresh_test.dart`: **6/6 PASSED (100%)**
+     - Model parses phone and uses it as fallback name when name is missing.
+     - Model replaces "Unknown User" with phone number when phone is present.
+     - `chatListDisplayName` returns phone when name is null or "Unknown User".
+     - Orphan dummy rows (no name, no phone, no message) are suppressed from `displayedChats`.
+     - Refresh retains 0-message chats in memory when server returns only active chats.
+     - Socket full chat list update retains 0-message chats and suppresses orphan dummy rows.
+   - `test/chat_list_empty_chat_refresh_test.dart`: **3/3 PASSED (100%)**
+   - `test/chat_qa/private_chat_model_qa_test.dart`: **43/43 PASSED (100%)**
+   - `test/chat_qa/chat_list_controller_qa_test.dart`: **69/69 PASSED (100%)**
+   - Total Suite: **124/124 PASSED (100%)**
+   - `dart analyze lib/app/Model/PrivateChatModel.dart lib/app/modules/Messages/Controller/chat_list_controller.dart lib/app/modules/Messages/Controller/chat_list_cache_codec.dart lib/app/modules/Messages/widgets/chat_list_row_widgets.dart`: **0 errors, 0 warnings**.
+
+
 

@@ -19,6 +19,7 @@ import 'package:fgtracker/app/modules/auth/Views/Otp_Screen.dart';
 import 'package:fgtracker/app/modules/auth/Views/login_Page.dart';
 import 'package:fgtracker/app/modules/auth/Views/registration_screen.dart';
 import 'package:fgtracker/app/modules/home/Views/AboutUs.dart';
+import 'package:fgtracker/app/modules/home/Views/settings_screen.dart';
 import 'package:fgtracker/app/modules/Legal/Views/legal_document_screen.dart';
 import 'package:fgtracker/app/modules/Legal/Views/legal_screen.dart';
 import 'package:fgtracker/app/modules/home/Views/home_screen.dart';
@@ -385,6 +386,12 @@ class AppPages {
     GetPage(
       name: Routes.shorebirdUpdate,
       page: () => const ShorebirdAppUpdateScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.settings,
+      page: () => const SettingsScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 400),
     ),
