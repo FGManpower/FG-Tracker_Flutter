@@ -433,3 +433,37 @@ As mandated by project rules, the following verified and completed production mo
 
 
 
+
+---
+
+## 13. FG Partner App - MenuBar (Drawer) White Screen Resolution & Large Name Protection
+
+### Root Causes Identified
+1. **Initial State Blank Fallback (`const SizedBox()`)**:
+   - In `lib/Pages/Presentation/Application/Navigationbar.dart`, `BlocConsumer<ProfileBloc, ProfileState>` previously fell back to `default: return const SizedBox();` on initial load (`ProfileInitial`). On low-RAM devices or with network latency, this rendered an empty `SizedBox()` inside a white `Drawer`, causing a blank white screen.
+2. **RangeError on Initials with Large / Multi-Word Names**:
+   - `_Header` parsed avatar initials using `name.trim().split(" ")`. When names contained multiple consecutive spaces or multi-word long names, empty segments resulted in `parts[1]` being `""`, causing `${parts[1][0]}` to throw an unhandled `RangeError (Index out of range: 0)`. In Flutter production builds, this unhandled build exception triggered `ErrorWidget`, turning the entire drawer white.
+3. **Vertical Header Growth & Layout Overflow**:
+   - Profile Name had `maxLines: 2` without single-line constraints, causing long names to wrap and expand the header height, which pressured the `Expanded(child: ListView)` layout inside the fixed-height Drawer on smaller screens or devices with display zoom.
+4. **Theme Text Contrast Bug**:
+   - `menuBar_widget.dart` inspected global context dark mode rather than local widget theme, turning text white on white backgrounds when phone system Dark Mode was enabled.
+
+### Architectural & UI Fixes Applied
+1. **Instant Frame-0 UI Rendering (`Navigationbar.dart`)**:
+   - Added `_getCachedUser()` to load `SharedpUserDataModel` synchronously from local storage (`Global.storageServices.getprofiledata()`).
+   - Replaced `const SizedBox()` fallback in `BlocConsumer.builder` with `NavigationBarUi(userdata: cachedUser, isLoading: state is ProfileDataLoadingState && cachedUser == null)`. The menu renders immediately on frame 0 with 0ms delay.
+2. **Safe Initials Parsing**:
+   - Replaced fragile split with whitespace regex filtering: `name.trim().split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList()`. Eliminates `RangeError` crashes regardless of name length or spaces.
+3. **Strict 1-Line Name Display with Ellipsis**:
+   - Configured Name text with `maxLines: 1`, `overflow: TextOverflow.ellipsis`, and `softWrap: false`. Extremely large names cleanly truncate with `...` without wrapping or expanding the header.
+   - Configured Mobile text with `maxLines: 1` and `overflow: TextOverflow.ellipsis`.
+4. **Theme Text Color Contrast**:
+   - Updated `menuBar_widget.dart` to use local `context.isDarkMode` and locked title color to `#1E202B` (light mode) / `Colors.white` (dark mode) and subtitle to `#6B7280` / `grey.shade400`.
+
+### Verification
+- **Files Changed:**
+  - `lib/Pages/Presentation/Application/Navigationbar.dart`
+  - `lib/Pages/Presentation/Application/Widget/menuBar_widget.dart`
+- **Files Strictly Locked (Untouched):**
+  - Profile Edit (`register1.dart`, `register2.dart`, etc.), Home, Dashboard, Attendance, Bookings, Chat, Payments.
+- **Static Analysis:** `dart analyze lib/Pages/Presentation/Application/Navigationbar.dart lib/Pages/Presentation/Application/Widget/menuBar_widget.dart` — **0 compilation errors**.
