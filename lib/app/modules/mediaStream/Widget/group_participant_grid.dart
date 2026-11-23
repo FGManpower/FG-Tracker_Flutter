@@ -316,13 +316,13 @@ class GroupParticipantGrid extends StatelessWidget {
                   child: Container(
                     padding: EdgeInsets.all(6.r),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: const Color(0xFF2A3942),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE9E5FE)),
+                      border: Border.all(color: Colors.white24, width: 0.8),
                     ),
                     child: Icon(
                       Icons.cameraswitch_rounded,
-                      color: const Color(0xFF6E5CA4),
+                      color: Colors.white,
                       size: 18.sp,
                     ),
                   ),
@@ -338,11 +338,11 @@ class GroupParticipantGrid extends StatelessWidget {
                   return Container(
                     padding: EdgeInsets.all(5.r),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.55),
+                      color: const Color(0xFFEA4335).withOpacity(0.85),
                       shape: BoxShape.circle,
                     ),
                     child:
-                    Icon(Icons.mic_off, color: Colors.white, size: 14.sp),
+                    Icon(Icons.mic_off_rounded, color: Colors.white, size: 13.sp),
                   );
                 }),
               ),
@@ -444,7 +444,7 @@ class GroupParticipantGrid extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Container(color: const Color(0xFF1E1147)),
+        Container(color: const Color(0xFF1F2C34)),
         Center(
           child: CircleAvatar(
             radius: isFullScreen ? 70.r : (isThumbnail ? 18.r : 36.r),

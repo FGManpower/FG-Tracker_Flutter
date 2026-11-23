@@ -751,9 +751,12 @@ private let candidateTokenPrefKeys = [
         releaseCallKitManualAudio()
 
         let extra = call.data.extra as? [String: Any] ?? [:]
-        let callId = Self.stringValue(extra["callId"])
+        var callId = Self.stringValue(extra["callId"])
             ?? Self.stringValue(extra["call_id"])
             ?? ""
+        if callId.isEmpty {
+            callId = call.data.id
+        }
         let groupId = Self.stringValue(extra["groupId"])
             ?? Self.stringValue(extra["group_id"])
 
@@ -1511,11 +1514,7 @@ private let candidateTokenPrefKeys = [
         }
         handledDeclineCallIds.insert(callId)
 
-        guard let token = Self.readAccessToken(), !token.isEmpty else {
-            print("[AppDelegate] rejectCallViaApi ABORTED: no access token found in UserDefaults")
-            handledDeclineCallIds.remove(callId)
-            return
-        }
+        let token = Self.readAccessToken()
 
         var comps = URLComponents(string: "\(apiBaseUrl)/callRejected")
         var items = [URLQueryItem(name: "callId", value: callId)]
@@ -1536,7 +1535,9 @@ private let candidateTokenPrefKeys = [
         req.httpMethod = "GET"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("application/json", forHTTPHeaderField: "Accept")
-        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        if let auth = token, !auth.isEmpty {
+            req.setValue("Bearer \(auth)", forHTTPHeaderField: "Authorization")
+        }
 
         let taskKey = UUID()
         let bgId = UIApplication.shared.beginBackgroundTask(withName: "rejectCall.\(callId)") { [weak self] in
@@ -1851,6 +1852,8 @@ extension AppDelegate: CXProviderDelegate {
         print("[AppDelegate] native CXProvider perform CXEndCallAction")
         audioGeneration += 1
         releaseCallKitManualAudio()
+        let callId = action.callUUID.uuidString
+        rejectCallViaApi(callId: callId, groupId: nil)
         action.fulfill()
     }
 

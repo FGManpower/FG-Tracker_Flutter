@@ -76,6 +76,32 @@ class AudiocallScreen extends StatelessWidget {
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
+                  if (connected && c.remoteMicMuted.value) ...[
+                    SizedBox(height: 10.h),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.45),
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(color: Colors.white24, width: 0.8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.mic_off_rounded, color: const Color(0xFFFFB020), size: 16.sp),
+                          SizedBox(width: 6.w),
+                          Text(
+                            context.l10n.call_remoteMuted(name.isEmpty ? context.l10n.call_someone : name),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13.sp,
+                              fontFamily: FontFamily.interMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   SizedBox(height: 28.h),
                   SizedBox(
                     height: 48.h,

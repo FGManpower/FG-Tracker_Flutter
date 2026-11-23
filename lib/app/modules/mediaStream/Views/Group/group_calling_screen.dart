@@ -23,7 +23,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F0B29),
+        backgroundColor: const Color(0xFF0B141B),
         body: GestureDetector(
           onTap: controller.toggleControls,
           behavior: HitTestBehavior.opaque,
@@ -91,7 +91,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                             ],
                           ),
                         ),
-                        child: _buildHeader(),
+                        child: _buildHeader(context),
                       ),
                     ),
                   ),
@@ -129,40 +129,46 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          Container(
+            padding: EdgeInsets.all(8.r),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.35),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white12, width: 0.8),
+            ),
+            child: Icon(Icons.lock_rounded, color: Colors.white70, size: 16.sp),
+          ),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   controller.groupName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 18.sp,
+                    fontSize: 17.sp,
                     fontFamily: FontFamily.interSemiBold,
                     color: Colors.white,
                   ),
                 ),
-                SizedBox(height: 2.h),
-                SizedBox(height: 6.h),
+                SizedBox(height: 3.h),
                 Row(
                   mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      width: 8.r,
-                      height: 8.r,
+                      width: 7.r,
+                      height: 7.r,
                       decoration: const BoxDecoration(
-                        color: Colors.greenAccent,
+                        color: Color(0xFF25D366),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -171,11 +177,11 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                       () => Text(
                         controller.callStatus.value == "Connected"
                             ? controller.formattedDuration
-                            : "${callStatusLabel(appL10n, controller.callStatus.value)}...",
+                            : "${callStatusLabel(context.l10n, controller.callStatus.value)}...",
                         style: TextStyle(
-                          fontSize: 13.sp,
+                          fontSize: 12.sp,
                           fontFamily: FontFamily.interMedium,
-                          color: Colors.greenAccent,
+                          color: const Color(0xFF25D366),
                         ),
                       ),
                     ),
@@ -185,25 +191,37 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
             ),
           ),
           SizedBox(width: 8.w),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 44.w,
-                height: 44.w,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  icon: const Icon(
-                    Icons.people_outline,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                  onPressed: controller.openParticipantsSheet,
-                ),
+          GestureDetector(
+            onTap: controller.openParticipantsSheet,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2A3942),
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: Colors.white12, width: 0.8),
               ),
-            ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.person_add_alt_1_rounded,
+                    color: Colors.white,
+                    size: 16.sp,
+                  ),
+                  SizedBox(width: 6.w),
+                  Obx(
+                    () => Text(
+                      '${controller.activeParticipants.length}',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.sp,
+                        fontFamily: FontFamily.interSemiBold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
