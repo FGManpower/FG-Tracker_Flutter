@@ -14,6 +14,7 @@ import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/logoutuser.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 
@@ -39,6 +40,7 @@ class Socket_GroupCallService {
 
   final Set<String> _pendingOfferUserIds = <String>{};
   final Map<String, String> participantStatus = {};
+  final Map<String, Timer> _peerDisconnectWatchdogs = {};
   int totalParticipants = 0;
 
   Function()? onParticipantsUpdated;
@@ -269,6 +271,10 @@ class Socket_GroupCallService {
         if (callerId.isNotEmpty && callerId == _selfUserId) return;
 
         if (CallStateTracker.isIncomingCallScreenOpen) return;
+        if (CallKitService.instance.isCallKitActive) {
+          _log("group_call_started: CallKit is active, suppressing in-app incoming screen");
+          return;
+        }
         if (Platform.isIOS) {
           _log("group_call_started on iOS: CallKit handles incoming screen natively");
           return;
@@ -410,6 +416,7 @@ class Socket_GroupCallService {
       final data = Map<String, dynamic>.from(raw);
       final userId = data['userId']?.toString();
       if (userId == null || userId == _selfUserId) return;
+      remoteCameraStates[userId] = true;
       onScreenShareStarted?.call(userId);
       onParticipantsUpdated?.call();
     });
@@ -894,6 +901,9 @@ class Socket_GroupCallService {
 
   Future<void> replaceVideoTrack(MediaStreamTrack newTrack) async {
     activeVideoTrack = newTrack;
+    try {
+      newTrack.enabled = true;
+    } catch (_) {}
     _log('🔄 replaceVideoTrack kind=${newTrack.kind}');
 
     for (final entry in _peers.entries) {
@@ -909,6 +919,7 @@ class Socket_GroupCallService {
         } else if (localStream != null) {
           await pc.addTrack(newTrack, localStream!);
           _log('➕ video track added for peer ${entry.key}');
+          await _renegotiateIfNeeded(entry.key);
         }
       } catch (e) {
         _log(' replaceVideoTrack error for ${entry.key}: $e');
@@ -1027,12 +1038,17 @@ class Socket_GroupCallService {
 
     pc.onConnectionState = (state) async {
       _log("PC $remoteId => ${state.name}");
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected ||
-          state == RTCPeerConnectionState.RTCPeerConnectionStateConnecting) {
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
+        _cancelPeerDisconnectWatchdog(remoteId);
         _addRemoteUser(remoteId);
         onParticipantsUpdated?.call();
-      }
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
+      } else if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnecting) {
+        _addRemoteUser(remoteId);
+        onParticipantsUpdated?.call();
+      } else if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected) {
+        _startPeerDisconnectWatchdog(remoteId);
+      } else if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
+        _startPeerDisconnectWatchdog(remoteId);
         _log("PC failed $remoteId — ice restart");
         try {
           if (_shouldCreateOfferTo(remoteId)) {
@@ -1050,7 +1066,19 @@ class Socket_GroupCallService {
         }
       }
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+        _cancelPeerDisconnectWatchdog(remoteId);
         await _removeRemotePeer(remoteId);
+      }
+    };
+
+    pc.onIceConnectionState = (state) {
+      _log("ICE $remoteId => ${state.name}");
+      if (state == RTCIceConnectionState.RTCIceConnectionStateConnected ||
+          state == RTCIceConnectionState.RTCIceConnectionStateCompleted) {
+        _cancelPeerDisconnectWatchdog(remoteId);
+      } else if (state == RTCIceConnectionState.RTCIceConnectionStateDisconnected ||
+                 state == RTCIceConnectionState.RTCIceConnectionStateFailed) {
+        _startPeerDisconnectWatchdog(remoteId);
       }
     };
 
@@ -1232,6 +1260,11 @@ class Socket_GroupCallService {
       } catch (_) {}
     }
 
+    for (final timer in _peerDisconnectWatchdogs.values) {
+      timer.cancel();
+    }
+    _peerDisconnectWatchdogs.clear();
+
     remoteUsers.clear();
     remoteCameraStates.clear();
     participantStatus.clear();
@@ -1341,8 +1374,33 @@ class Socket_GroupCallService {
     remoteUsers.add(remoteUserId);
   }
 
+  void _startPeerDisconnectWatchdog(String remoteId) {
+    if (_peerDisconnectWatchdogs.containsKey(remoteId)) return;
+    _log("Starting 10s disconnect watchdog for peer $remoteId");
+    _peerDisconnectWatchdogs[remoteId] = Timer(const Duration(seconds: 10), () async {
+      _peerDisconnectWatchdogs.remove(remoteId);
+      final pc = _peers[remoteId];
+      if (pc != null &&
+          (pc.connectionState == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected ||
+           pc.connectionState == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
+           pc.iceConnectionState == RTCIceConnectionState.RTCIceConnectionStateDisconnected ||
+           pc.iceConnectionState == RTCIceConnectionState.RTCIceConnectionStateFailed)) {
+        _log("Peer $remoteId watchdog expired, removing dropped participant");
+        participantStatus[remoteId] = 'left';
+        await _removeRemotePeer(remoteId);
+        onParticipantLeft?.call(remoteId);
+        onParticipantsUpdated?.call();
+      }
+    });
+  }
+
+  void _cancelPeerDisconnectWatchdog(String remoteId) {
+    _peerDisconnectWatchdogs.remove(remoteId)?.cancel();
+  }
+
   Future<void> _removeRemotePeer(String remoteUserId) async {
     final remoteId = remoteUserId.toString();
+    _cancelPeerDisconnectWatchdog(remoteId);
 
     final pc = _peers.remove(remoteId);
     final hadState = pc != null ||

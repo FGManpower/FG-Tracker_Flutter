@@ -12,6 +12,7 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/voip_token_uploader.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
+import 'package:fgtracker/app/modules/call/Controller/contact_controller.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:flutter/material.dart' show BuildContext;
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
@@ -215,6 +216,51 @@ void setupCallKitHandlers() {
     final CallingController? live = _liveCall();
     if (live != null) {
       live.setMutedFromSystem(muted);
+    }
+  };
+
+  CallKitService.onRecentsCallback = (String handle, bool isVideo) async {
+    log('[CallKit] onRecentsCallback handle=$handle isVideo=$isVideo');
+    if (handle.isEmpty) return;
+
+    final String myId =
+        (Global.storageServices.get(PrefConst.userId) ?? '').toString();
+    if (myId.isEmpty) {
+      log('[CallKit] onRecentsCallback aborted: user not logged in');
+      return;
+    }
+
+    String remoteUserId = handle;
+    String callerName = handle;
+    String? callerProfile;
+
+    try {
+      final ContactController cc = ContactController.instance;
+      final cleanHandle = handle.replaceAll(RegExp(r'\D'), '');
+      final match = cc.allUserProfileData.firstWhereOrNull((u) {
+        if (u.userId?.toString() == handle) return true;
+        final phone = (u.mobileNo ?? '').replaceAll(RegExp(r'\D'), '');
+        return phone.isNotEmpty && cleanHandle.isNotEmpty && phone == cleanHandle;
+      });
+      if (match != null) {
+        remoteUserId = match.userId?.toString() ?? handle;
+        callerName = match.name ?? handle;
+        callerProfile = match.profileImage;
+      }
+    } catch (e) {
+      log('[CallKit] onRecentsCallback contact resolution error: $e');
+    }
+
+    final BuildContext? context = Get.context;
+    if (context != null) {
+      await CallService().startOutGoingCall(
+        context,
+        callerId: myId,
+        remoteUserId: remoteUserId,
+        is_video: isVideo,
+        callerName: callerName,
+        callerProfile: callerProfile,
+      );
     }
   };
 

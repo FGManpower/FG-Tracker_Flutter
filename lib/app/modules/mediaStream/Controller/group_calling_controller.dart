@@ -23,10 +23,11 @@ import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/in_app_group_call_overlay_service.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import '../Services/call_permissions.dart';
+import '../Services/call_pip.dart';
 import '../Widget/audio_route_sheet.dart';
 import '../Widget/group_call_sheets.dart';
 
-class GroupCallingController extends GetxController {
+class GroupCallingController extends GetxController with WidgetsBindingObserver {
   final args = Get.arguments;
   final RxInt participantsUiTick = 0.obs;
 
@@ -117,6 +118,7 @@ class GroupCallingController extends GetxController {
     }
 
     _initData();
+    WidgetsBinding.instance.addObserver(this);
     WakelockPlus.enable();
     resetControlsTimer();
     _bindServiceCallbacks();
@@ -492,8 +494,13 @@ class GroupCallingController extends GetxController {
     }
   }
 
-  Future<void> toggleSpeaker(BuildContext context) async {
-    showAudioRoutePicker(context);
+  Future<void> toggleSpeaker([BuildContext? context]) async {
+    final CallAudioRoute current = audioRouteController.currentRoute.value;
+    final CallAudioRoute next = current == CallAudioRoute.speaker
+        ? CallAudioRoute.earpiece
+        : CallAudioRoute.speaker;
+    await audioRouteController.selectRoute(next);
+    _updateProximitySensor();
   }
 
   Future<void> showAudioRoutePicker(BuildContext context) async {
@@ -753,6 +760,7 @@ class GroupCallingController extends GetxController {
       callStatus.value = "Connected";
       startCallTimer();
     }
+    _checkAloneTimer();
   }
 
   void toggleMic() {
@@ -872,17 +880,56 @@ class GroupCallingController extends GetxController {
     CallSessionState.reset();
     isMinimized.value = false;
     InAppGroupCallOverlayService.instance.hideOverlay();
-    if (Get.isRegistered<GroupCallingController>()) {
-      Get.delete<GroupCallingController>(force: true);
-    }
+
     if (Get.currentRoute == Routes.groupCallingScreen) {
       Get.offAllNamed(Routes.Home_Screen);
+    } else if (Get.context != null && Navigator.canPop(Get.context!)) {
+      Get.back();
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Get.isRegistered<GroupCallingController>()) {
+        Get.delete<GroupCallingController>(force: true);
+      }
+    });
+  }
+
+  Timer? _aloneCallTimer;
+
+  void _checkAloneTimer() {
+    final remoteConnected = activeParticipants.where((p) => !p.isLocal && p.isConnected.value).length;
+    if (callStatus.value == "Connected" && remoteConnected == 0) {
+      if (_aloneCallTimer == null) {
+        _log("Only 1 participant remaining, starting 60s alone auto-end timer");
+        _aloneCallTimer = Timer(const Duration(seconds: 60), () {
+          _log("Alone timer expired (60s), ending call");
+          Utils().fluttertoast(appL10n.call_ended);
+          endCall();
+        });
+      }
+    } else {
+      _aloneCallTimer?.cancel();
+      _aloneCallTimer = null;
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (isVideoOn.value) {
+        Socket_GroupCallService.instance.localStream?.getVideoTracks().forEach((t) => t.enabled = true);
+      }
+    } else if (state == AppLifecycleState.paused) {
+      if (isVideoOn.value) {
+        Socket_GroupCallService.instance.localStream?.getVideoTracks().forEach((t) => t.enabled = true);
+      }
     }
   }
 
   void startCallTimer() {
     if (callTimer != null) return;
     callTimer = Timer.periodic(const Duration(seconds: 1), (_) => callDurationSeconds.value++);
+    CallPip.setAuto(true);
   }
 
   void _clearTimers() {
@@ -890,6 +937,9 @@ class GroupCallingController extends GetxController {
     callTimer = null;
     callDurationSeconds.value = 0;
     _controlsTimer?.cancel();
+    _aloneCallTimer?.cancel();
+    _aloneCallTimer = null;
+    CallPip.setAuto(false);
   }
 
   String get formattedDuration {
@@ -1022,6 +1072,8 @@ class GroupCallingController extends GetxController {
     } catch (_) {}
     WakelockPlus.disable();
     CallSessionState.reset();
+    WidgetsBinding.instance.removeObserver(this);
+    CallPip.setAuto(false);
     super.onClose();
   }
 }

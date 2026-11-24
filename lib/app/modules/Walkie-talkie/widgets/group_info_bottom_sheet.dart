@@ -72,6 +72,58 @@ class GroupInfoBottomSheet extends StatelessWidget {
   GroupWalkieController get _effectiveController =>
       controller ?? Get.find<GroupWalkieController>();
 
+  bool _checkIsMemberAdmin(dynamic member) {
+    if (member == null) return false;
+    final mId = (member is MemberData)
+        ? member.userId?.toString()
+        : (member is Map
+            ? (member['userId'] ?? member['UserId'] ?? member['id'])?.toString()
+            : null);
+
+    if (adminId != null && adminId!.trim().isNotEmpty && mId != null && mId.isNotEmpty) {
+      if (adminId!.trim() == mId.trim() ||
+          (int.tryParse(adminId!.trim()) != null &&
+              int.tryParse(adminId!.trim()) == int.tryParse(mId.trim()))) {
+        return true;
+      }
+    }
+
+    if (member is MemberData) {
+      return member.isCreator == true ||
+          member.isAdmin == true ||
+          member.role?.toLowerCase() == 'admin' ||
+          member.role?.toLowerCase() == 'creator';
+    }
+
+    if (member is Map) {
+      final role = member['role']?.toString().toLowerCase();
+      final rawAdmin = member['isAdmin'] ?? member['is_admin'];
+      final rawCreator = member['isCreator'] ?? member['is_creator'];
+      return role == 'admin' ||
+          role == 'creator' ||
+          rawAdmin == true ||
+          rawAdmin == 1 ||
+          rawAdmin == '1' ||
+          rawCreator == true ||
+          rawCreator == 1 ||
+          rawCreator == '1';
+    }
+
+    try {
+      final dynamic dyn = member;
+      return dyn.isCreator == true ||
+          dyn.isCreator == 1 ||
+          dyn.isCreator == '1' ||
+          dyn.isAdmin == true ||
+          dyn.isAdmin == 1 ||
+          dyn.isAdmin == '1' ||
+          dyn.role?.toString().toLowerCase() == 'admin' ||
+          dyn.role?.toString().toLowerCase() == 'creator';
+    } catch (_) {}
+
+    return false;
+  }
+
   bool get _isCurrentViewerAdmin {
     final selfId = _effectiveController.safeSelfUserId;
     if (selfId.isEmpty) return false;
@@ -85,11 +137,13 @@ class GroupInfoBottomSheet extends StatelessWidget {
     }
 
     for (final m in allGroupMembers) {
-      final mId = m.userId?.toString();
+      final mId = (m is MemberData)
+          ? m.userId?.toString()
+          : (m is Map ? (m['userId'] ?? m['id'])?.toString() : null);
       if (mId == selfId ||
           (int.tryParse(mId ?? '') != null &&
               int.tryParse(mId ?? '') == int.tryParse(selfId))) {
-        if (m.isCreator == true || m.isCreator == 1 || m.isCreator == '1') {
+        if (_checkIsMemberAdmin(m)) {
           return true;
         }
       }
@@ -352,14 +406,7 @@ class GroupInfoBottomSheet extends StatelessWidget {
         final memberName = (member.name != null && member.name!.trim().isNotEmpty)
             ? member.name!.trim()
             : context.l10n.walkie_member;
-        final bool isThisMemberAdmin = (adminId != null &&
-                adminId!.trim().isNotEmpty &&
-                (adminId!.trim() == memberId.trim() ||
-                    (int.tryParse(adminId!.trim()) != null &&
-                        int.tryParse(adminId!.trim()) == int.tryParse(memberId.trim())))) ||
-            member.isCreator == true ||
-            member.isCreator == 1 ||
-            member.isCreator == '1';
+        final bool isThisMemberAdmin = _checkIsMemberAdmin(member);
 
         return Obx(() {
           final participant = _effectiveController.participants.firstWhereOrNull(

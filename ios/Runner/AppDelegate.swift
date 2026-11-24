@@ -819,10 +819,16 @@ private let candidateTokenPrefKeys = [
         }
         let groupId = Self.stringValue(extra["groupId"])
             ?? Self.stringValue(extra["group_id"])
+        let callerId = Self.stringValue(extra["callerId"])
+            ?? Self.stringValue(extra["caller_id"])
+            ?? Self.stringValue(extra["from"])
+        let userId = Self.stringValue(extra["userId"])
+            ?? Self.stringValue(extra["user_id"])
+            ?? Self.readUserId()
 
-        print("[AppDelegate] onDecline callId=\(callId) groupId=\(groupId ?? "nil")")
+        print("[AppDelegate] onDecline callId=\(callId) callerId=\(callerId ?? "nil") userId=\(userId ?? "nil") groupId=\(groupId ?? "nil")")
 
-        rejectCallViaApi(callId: callId, groupId: groupId)
+        rejectCallViaApi(callId: callId, groupId: groupId, callerId: callerId, userId: userId)
         action.fulfill()
     }
 
@@ -1561,32 +1567,46 @@ private let candidateTokenPrefKeys = [
         }.resume()
     }
 
-    private func rejectCallViaApi(callId: String, groupId: String?) {
-        guard !callId.isEmpty, callId != "null" else {
-            print("[AppDelegate] rejectCallViaApi ABORTED: callId is empty")
+    private func rejectCallViaApi(callId: String?, groupId: String?, callerId: String? = nil, userId: String? = nil) {
+        let cleanCallId = (callId ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let effectiveUserId = userId ?? Self.readUserId()
+        let effectiveCallerId = callerId
+
+        if (cleanCallId.isEmpty || cleanCallId == "null") && (effectiveUserId == nil || effectiveUserId!.isEmpty) && (effectiveCallerId == nil || effectiveCallerId!.isEmpty) {
+            print("[AppDelegate] rejectCallViaApi ABORTED: no identifiers provided")
             return
         }
 
-        if handledDeclineCallIds.contains(callId) {
-            print("[AppDelegate] rejectCallViaApi skipped duplicate callId=\(callId)")
+        let deDupeKey = (!cleanCallId.isEmpty && cleanCallId != "null") ? cleanCallId : "user_\(effectiveUserId ?? "")_caller_\(effectiveCallerId ?? "")"
+        if handledDeclineCallIds.contains(deDupeKey) {
+            print("[AppDelegate] rejectCallViaApi skipped duplicate key=\(deDupeKey)")
             return
         }
-        handledDeclineCallIds.insert(callId)
+        handledDeclineCallIds.insert(deDupeKey)
 
         let token = Self.readAccessToken()
 
         var comps = URLComponents(string: "\(apiBaseUrl)/callRejected")
-        var items = [URLQueryItem(name: "callId", value: callId)]
+        var items: [URLQueryItem] = []
+        if !cleanCallId.isEmpty && cleanCallId != "null" {
+            items.append(URLQueryItem(name: "callId", value: cleanCallId))
+        }
         if let g = groupId, !g.isEmpty, g != "null" {
             items.append(URLQueryItem(name: "groupId", value: g))
         } else {
             items.append(URLQueryItem(name: "reason", value: "declined"))
         }
+        if let c = effectiveCallerId, !c.isEmpty, c != "null" {
+            items.append(URLQueryItem(name: "callerId", value: c))
+        }
+        if let u = effectiveUserId, !u.isEmpty, u != "null" {
+            items.append(URLQueryItem(name: "userId", value: u))
+        }
         comps?.queryItems = items
 
         guard let url = comps?.url else {
             print("[AppDelegate] rejectCallViaApi ABORTED: malformed URL")
-            handledDeclineCallIds.remove(callId)
+            handledDeclineCallIds.remove(deDupeKey)
             return
         }
 
@@ -1599,7 +1619,7 @@ private let candidateTokenPrefKeys = [
         }
 
         let taskKey = UUID()
-        let bgId = UIApplication.shared.beginBackgroundTask(withName: "rejectCall.\(callId)") { [weak self] in
+        let bgId = UIApplication.shared.beginBackgroundTask(withName: "rejectCall.\(deDupeKey)") { [weak self] in
             self?.finishBackgroundTask(for: taskKey)
         }
         activeBgTasks[taskKey] = bgId
@@ -1608,7 +1628,7 @@ private let candidateTokenPrefKeys = [
             if let error = error {
                 print("[AppDelegate] rejectCallViaApi error: \(error.localizedDescription)")
                 DispatchQueue.main.async {
-                    self?.handledDeclineCallIds.remove(callId)
+                    self?.handledDeclineCallIds.remove(deDupeKey)
                 }
             } else if let http = response as? HTTPURLResponse {
                 let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
@@ -1657,13 +1677,29 @@ private let candidateTokenPrefKeys = [
 
     private func flushRecentsCallback() {
         guard let payload = pendingRecentsCallback else { return }
-        guard let controller = window?.rootViewController as? FlutterViewController else { return }
+        guard let controller = window?.rootViewController as? FlutterViewController else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+                self?.flushRecentsCallback()
+            }
+            return
+        }
         let channel = FlutterMethodChannel(
             name: "com.fgtracker.callkit_events",
             binaryMessenger: controller.binaryMessenger
         )
         channel.invokeMethod("recentsCallback", arguments: payload) { [weak self] result in
-            if result is FlutterError { return }
+            if result is FlutterError || result == nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    guard let pending = self?.pendingRecentsCallback else { return }
+                    channel.invokeMethod("recentsCallback", arguments: pending) { secondResult in
+                        if secondResult is Bool, secondResult as! Bool == true {
+                            self?.pendingRecentsCallback = nil
+                            print("[AppDelegate] recents callback delivered to Dart on retry")
+                        }
+                    }
+                }
+                return
+            }
             self?.pendingRecentsCallback = nil
             print("[AppDelegate] recents callback delivered to Dart")
         }
@@ -1899,6 +1935,17 @@ extension AppDelegate: CXProviderDelegate {
         callDisplayNames.removeAll()
     }
 
+    func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
+        let handle = action.handle.value
+        let isVideo = action.isVideo
+        print("[AppDelegate] native CXProvider perform CXStartCallAction uuid=\(action.callUUID.uuidString) handle=\(handle) isVideo=\(isVideo)")
+        configureDefaultWebRTCAudio(isVideo: isVideo)
+        audioGeneration += 1
+        RTCAudioSession.sharedInstance().useManualAudio = true
+        action.fulfill()
+        sendRecentsCallback(handle: handle, isVideo: isVideo)
+    }
+
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         print("[AppDelegate] native CXProvider perform CXAnswerCallAction")
         configureDefaultWebRTCAudio(isVideo: currentCallIsVideo)
@@ -1912,7 +1959,8 @@ extension AppDelegate: CXProviderDelegate {
         audioGeneration += 1
         releaseCallKitManualAudio()
         let callId = action.callUUID.uuidString
-        rejectCallViaApi(callId: callId, groupId: nil)
+        let userId = Self.readUserId()
+        rejectCallViaApi(callId: callId, groupId: nil, callerId: nil, userId: userId)
         action.fulfill()
     }
 

@@ -229,45 +229,86 @@ class _GroupParticipantsSheetView extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: () => sheetCtrl.notify(participant),
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 14.w,
-                                    vertical: 8.h,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF5B3FD0),
-                                    borderRadius: BorderRadius.circular(20.r),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFF5B3FD0).withOpacity(0.35),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
+                              Obx(() {
+                                final isRinging = sheetCtrl.ringingParticipantUserIds.contains(participant.userId);
+                                if (isRinging) {
+                                  return Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12.w,
+                                      vertical: 6.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF261D45),
+                                      borderRadius: BorderRadius.circular(16.r),
+                                      border: Border.all(
+                                        color: const Color(0xFF7B61FF).withOpacity(0.5),
+                                        width: 1,
                                       ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.phone_forwarded_rounded,
-                                        color: Colors.black,
-                                        size: 15.sp,
-                                      ),
-                                      SizedBox(width: 6.w),
-                                      Text(
-                                        "Ring",
-                                        style: TextStyle(
-                                          fontSize: 12.sp,
-                                          fontFamily: FontFamily.interSemiBold,
-                                          color: Colors.black,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        SizedBox(
+                                          width: 10.w,
+                                          height: 10.h,
+                                          child: const CircularProgressIndicator(
+                                            strokeWidth: 1.5,
+                                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7B61FF)),
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                        SizedBox(width: 6.w),
+                                        Text(
+                                          "Ringing...",
+                                          style: TextStyle(
+                                            fontSize: 11.sp,
+                                            fontFamily: FontFamily.interMedium,
+                                            color: const Color(0xFF7B61FF),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return GestureDetector(
+                                  onTap: () => sheetCtrl.notify(participant),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 14.w,
+                                      vertical: 8.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF5B3FD0),
+                                      borderRadius: BorderRadius.circular(20.r),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF5B3FD0).withOpacity(0.35),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.phone_forwarded_rounded,
+                                          color: Colors.white,
+                                          size: 15.sp,
+                                        ),
+                                        SizedBox(width: 6.w),
+                                        Text(
+                                          "Ring",
+                                          style: TextStyle(
+                                            fontSize: 12.sp,
+                                            fontFamily: FontFamily.interSemiBold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ),
+                                );
+                              }),
                             ],
                           ),
                         );

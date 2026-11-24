@@ -1368,7 +1368,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   void _applyRemoteMediaState(Map<dynamic, dynamic> s) {
     bool flag(dynamic v) => v == true || v.toString() == 'true';
     if (s.containsKey("micMuted") || s.containsKey("muted") || s.containsKey("isMuted")) {
-      remoteMicMuted.value = flag(s["micMuted"] ?? s["muted"] ?? s["isMuted"]);
+      final newMute = flag(s["micMuted"] ?? s["muted"] ?? s["isMuted"]);
+      if (remoteMicMuted.value != newMute) {
+        remoteMicMuted.value = newMute;
+      }
     }
     if (s.containsKey("videoPaused")) {
       remoteVideoPaused.value = flag(s["videoPaused"]);
@@ -1694,8 +1697,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
     } else if (state == AppLifecycleState.paused) {
       _keepTracksAliveInBackground();
-      // Other side shows "Video paused" (unless we are in PiP).
-      if (isVideoOn && !CallPip.inPip.value) _emitMediaState(videoPaused: true);
+      if (!isVideoOn) _emitMediaState(videoPaused: true);
     }
   }
 
@@ -1773,7 +1775,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           track.enabled = isAudioOn;
         }
         for (final MediaStreamTrack track in localStream!.getVideoTracks()) {
-          track.enabled = false;
+          track.enabled = isVideoOn;
         }
       }
     } catch (e) {

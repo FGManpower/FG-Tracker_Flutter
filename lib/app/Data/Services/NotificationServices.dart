@@ -1118,6 +1118,10 @@ class firebaseNotificationServices {
           message.data['screen'] == 'incomingGroupCall') {
         FlutterRingtonePlayer().stop();
         if (CallStateTracker.isIncomingCallScreenOpen) return;
+        if (CallKitService.instance.isCallKitActive) {
+          AppLog.d("⏭️ Suppressed in-app groupIncomingCall screen (CallKit active)");
+          return;
+        }
 
         // On iOS, native CallKit handles group incoming calls
         if (Platform.isIOS) {

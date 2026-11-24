@@ -49,6 +49,8 @@ class CallKitService with WidgetsBindingObserver {
   bool _appReady = false;
   bool _usingOnAny = false;
 
+  bool get isCallKitActive => _showing.isNotEmpty;
+
   Map<String, dynamic>? pendingAccept;
 
   static const MethodChannel _callkitEvents = MethodChannel(
@@ -1371,6 +1373,20 @@ class CallKitService with WidgetsBindingObserver {
           break;
 
         case 'actioncallstart':
+          final targetHandle = extra['handle']?.toString() ??
+              extra['callerId']?.toString() ??
+              extra['remoteUserId']?.toString() ??
+              (e as dynamic).body?['handle']?.toString() ??
+              '';
+          final bool isVid = extra['isVideo'] == true ||
+              extra['type'] == 1 ||
+              (e as dynamic).body?['type'] == 1;
+          if (targetHandle.isNotEmpty && onRecentsCallback != null) {
+            final res = onRecentsCallback!(targetHandle, isVid);
+            if (res is Future<void>) unawaited(res);
+          }
+          break;
+
         case 'actioncallconnected':
         case 'actioncallincoming':
           break;
