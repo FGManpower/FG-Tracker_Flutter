@@ -178,17 +178,26 @@ void setupCallKitHandlers() {
         ?.toString() ??
         '';
 
+    final String effectiveCallId = (callId.isNotEmpty
+            ? callId
+            : (extra['callId'] ?? extra['call_id'] ?? ''))
+        .toString();
+
     final s = SignallingService.instance.socket;
     if (s != null && s.connected) {
       s.emit(
         'rejectCall',
         rejectCallPayload(
-          callId: callId,
+          callId: effectiveCallId,
           callerId: resolvedCallerId,
         ),
       );
     } else {
-      await rejectCallViaRest(callId);
+      await rejectCallViaRest(
+        effectiveCallId,
+        callerId: resolvedCallerId,
+        uuid: uuid,
+      );
     }
   };
 
@@ -377,18 +386,29 @@ Future<void> endCallViaRest(dynamic callId, {String? targetUserId}) async {
   }
 }
 
-Future<void> rejectCallViaRest(String callId) async {
+Future<void> rejectCallViaRest(
+  String callId, {
+  String? callerId,
+  String? uuid,
+  String? reason,
+}) async {
   try {
     final shared = await SharedPreferences.getInstance();
     final token = shared.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ?? '';
-    if (token.isEmpty) return;
+    final myUserId = shared.getString(PrefConst.userId) ?? '';
 
-    final url = Uri.parse(
-        '${ConstRes.aBaseUrl}callRejected?callId=$callId&reason=declined');
+    final queryParams = <String, String>{
+      'callId': callId,
+      'reason': reason ?? 'declined',
+      if (myUserId.isNotEmpty) 'userId': myUserId,
+      if (callerId != null && callerId.isNotEmpty) 'callerId': callerId,
+      if (uuid != null && uuid.isNotEmpty) 'sessionId': uuid,
+    };
+    final uri = Uri.parse('${ConstRes.aBaseUrl}callRejected').replace(queryParameters: queryParams);
     final response = await http.get(
-      url,
+      uri,
       headers: {
-        'Authorization': 'Bearer $token',
+        if (token.isNotEmpty) 'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
     ).timeout(const Duration(seconds: 10));

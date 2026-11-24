@@ -184,12 +184,12 @@ class GroupParticipantGrid extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1B2730),
+          color: const Color(0xFF141024),
           borderRadius: BorderRadius.circular(
             isFullScreen ? 0 : (isThumbnail ? 12.r : 16.r),
           ),
           border: sharing
-              ? Border.all(color: const Color(0xFF25D366), width: 2)
+              ? Border.all(color: const Color(0xFF7B61FF), width: 2)
               : null,
         ),
         child: Stack(
@@ -296,22 +296,28 @@ class GroupParticipantGrid extends StatelessWidget {
               Positioned(
                 left: isThumbnail ? 4.w : 10.w,
                 bottom: isThumbnail ? 4.h : 12.h,
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isThumbnail ? 6.w : 8.w,
-                    vertical: isThumbnail ? 2.h : 4.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.55),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: reausabletext(
-                    participant.isLocal ? appL10n.common_you : participant.name.toString(),
-                    fontsize: isThumbnail ? 10 : 12,
-                    fontfamily: FontFamily.interSemiBold,
-                    color: Colors.white,
-                  ),
-                ),
+                child: Obx(() {
+                  final isConnected = participant.isConnected.value;
+                  final statusText = participant.isLocal
+                      ? appL10n.common_you
+                      : (!isConnected ? '${participant.name} • Ringing...' : participant.name.toString());
+                  return Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isThumbnail ? 6.w : 8.w,
+                      vertical: isThumbnail ? 2.h : 4.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.55),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: reausabletext(
+                      statusText,
+                      fontsize: isThumbnail ? 10 : 12,
+                      fontfamily: FontFamily.interSemiBold,
+                      color: Colors.white,
+                    ),
+                  );
+                }),
               ),
 
             if (participant.isLocal &&
@@ -327,7 +333,7 @@ class GroupParticipantGrid extends StatelessWidget {
                   child: Container(
                     padding: EdgeInsets.all(6.r),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2A3942),
+                      color: const Color(0xFF261D45),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white24, width: 0.8),
                     ),
@@ -376,18 +382,18 @@ class GroupParticipantGrid extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF25D366),
+        color: const Color(0xFF5B3FD0),
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.black, size: 14.sp),
+          Icon(icon, color: Colors.white, size: 14.sp),
           SizedBox(width: 5.w),
           Text(
             text,
             style: TextStyle(
-              color: Colors.black,
+              color: Colors.white,
               fontSize: 11.sp,
               fontFamily: FontFamily.interSemiBold,
             ),
@@ -427,14 +433,14 @@ class GroupParticipantGrid extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16.sp, color: const Color(0xFF25D366)),
+            Icon(icon, size: 16.sp, color: const Color(0xFF5B3FD0)),
             SizedBox(width: 4.w),
             Text(
               label,
               style: TextStyle(
                 fontSize: 11.sp,
                 fontFamily: FontFamily.interSemiBold,
-                color: const Color(0xFF25D366),
+                color: const Color(0xFF5B3FD0),
               ),
             ),
           ],
@@ -455,20 +461,47 @@ class GroupParticipantGrid extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Container(color: const Color(0xFF1F2C34)),
+        Container(color: const Color(0xFF141024)),
         Center(
-          child: CircleAvatar(
-            radius: isFullScreen ? 70.r : (isThumbnail ? 18.r : 36.r),
-            backgroundColor: Colors.white12,
-            backgroundImage: NetworkImage(imageUrl),
-            onBackgroundImageError: (_, __) {},
-            child: Utility.isNullEmptyOrFalse(participant.profileImage)
-                ? Icon(
-              Icons.person,
-              color: Colors.white,
-              size: isFullScreen ? 72.r : (isThumbnail ? 20.r : 40.r),
-            )
-                : null,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: isFullScreen ? 70.r : (isThumbnail ? 18.r : 36.r),
+                backgroundColor: Colors.white12,
+                backgroundImage: NetworkImage(imageUrl),
+                onBackgroundImageError: (_, __) {},
+                child: Utility.isNullEmptyOrFalse(participant.profileImage)
+                    ? Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: isFullScreen ? 72.r : (isThumbnail ? 20.r : 40.r),
+                )
+                    : null,
+              ),
+              if (!participant.isLocal && !isThumbnail)
+                Obx(() {
+                  if (participant.isConnected.value) return const SizedBox.shrink();
+                  return Padding(
+                    padding: EdgeInsets.only(top: 8.h),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF5B3FD0).withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Text(
+                        'Ringing...',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10.sp,
+                          fontFamily: FontFamily.interMedium,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+            ],
           ),
         ),
         if (cameraOff && !isThumbnail)

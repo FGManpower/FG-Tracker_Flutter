@@ -17,7 +17,7 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0B141B),
+        backgroundColor: const Color(0xFF0E0C14),
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
@@ -41,7 +41,7 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
                         controller.isVideo
                             ? Icons.videocam_rounded
                             : Icons.call_rounded,
-                        color: const Color(0xFF25D366),
+                        color: const Color(0xFF7B61FF),
                         size: 18.sp,
                       ),
                       SizedBox(width: 8.w),
@@ -74,7 +74,7 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
                   animate: true,
                   onDark: true,
                   avatarSize: 130,
-                  accent: const Color(0xFF25D366),
+                  accent: const Color(0xFF5B3FD0),
                 ),
                 SizedBox(height: 24.h),
 
@@ -113,7 +113,7 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E262C),
+                    color: const Color(0xFF141024),
                     borderRadius: BorderRadius.circular(20.r),
                     border: Border.all(color: Colors.white12, width: 0.6),
                   ),
@@ -124,7 +124,7 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
                         width: 8.r,
                         height: 8.r,
                         decoration: const BoxDecoration(
-                          color: Color(0xFF25D366),
+                          color: Color(0xFF16B364),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -180,7 +180,7 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
                 : appL10n.call_mute,
             color: controller.isMuted.value
                 ? const Color(0xFFEA4335).withOpacity(0.3)
-                : const Color(0xFF2A3942),
+                : const Color(0xFF261D45),
             iconColor: controller.isMuted.value
                 ? const Color(0xFFFF5252)
                 : Colors.white,
@@ -190,13 +190,13 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
           ),
         ),
 
-        // Join / Answer button (WhatsApp Green)
+        // Join / Answer button
         _circleAction(
           icon: controller.isVideo
               ? Icons.videocam_rounded
               : Icons.call_rounded,
           label: "Join call",
-          color: const Color(0xFF25D366),
+          color: const Color(0xFF16B364),
           size: 64,
           iconSize: 30,
           onTap: controller.joinCall,

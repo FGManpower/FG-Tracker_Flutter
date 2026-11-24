@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
@@ -105,8 +106,8 @@ class _FloatingCallBubbleState extends State<_FloatingCallBubble> {
     final bool isVideo = widget.controller.isVideoCall.value &&
         (widget.controller.isRemoteVideoOn || widget.controller.isVideoOn);
 
-    final double cardWidth = isVideo ? 120.w : 190.w;
-    final double cardHeight = isVideo ? 165.h : 68.h;
+    final double cardWidth = isVideo ? 130.w : 255.w;
+    final double cardHeight = isVideo ? 175.h : 68.h;
 
     return Positioned(
       left: _pos.dx,
@@ -203,20 +204,49 @@ class _FloatingCallBubbleState extends State<_FloatingCallBubble> {
           left: 6.w,
           right: 6.w,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
             decoration: BoxDecoration(
               color: Colors.black54,
               borderRadius: BorderRadius.circular(8.r),
             ),
-            child: Obx(() => Text(
-                  _formatDuration(c.callDurationRx.value),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                )),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                GestureDetector(
+                  onTap: () => c.toggleMic(),
+                  child: Obx(() => Icon(
+                        c.isAudioOn ? Icons.mic : Icons.mic_off,
+                        color: c.isAudioOn ? Colors.white : const Color(0xFFFF3B30),
+                        size: 14.sp,
+                      )),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    final current = c.audioRouteController.currentRoute.value;
+                    final next = current == CallAudioRoute.speaker
+                        ? CallAudioRoute.earpiece
+                        : CallAudioRoute.speaker;
+                    c.audioRouteController.selectRoute(next);
+                  },
+                  child: Obx(() {
+                    final isSpeaker = c.audioRouteController.currentRoute.value == CallAudioRoute.speaker;
+                    return Icon(
+                      isSpeaker ? Icons.volume_up : Icons.phone_in_talk,
+                      color: isSpeaker ? const Color(0xFF7B61FF) : Colors.white,
+                      size: 14.sp,
+                    );
+                  }),
+                ),
+                Obx(() => Text(
+                      _formatDuration(c.callDurationRx.value),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 9.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    )),
+              ],
+            ),
           ),
         ),
       ],
@@ -229,11 +259,11 @@ class _FloatingCallBubbleState extends State<_FloatingCallBubble> {
     final String? profileImage = c.args?["profileImage"]?.toString();
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
       child: Row(
         children: [
           CircleAvatar(
-            radius: 18.r,
+            radius: 17.r,
             backgroundColor: const Color(0xFF2C2D3E),
             backgroundImage: profileImage != null && profileImage.isNotEmpty
                 ? CachedNetworkImageProvider(
@@ -243,7 +273,7 @@ class _FloatingCallBubbleState extends State<_FloatingCallBubble> {
                   )
                 : CachedNetworkImageProvider(MyAppTheme.ProfilenotFoundImg) as ImageProvider,
           ),
-          SizedBox(width: 8.w),
+          SizedBox(width: 6.w),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -255,7 +285,7 @@ class _FloatingCallBubbleState extends State<_FloatingCallBubble> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 12.sp,
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -263,23 +293,70 @@ class _FloatingCallBubbleState extends State<_FloatingCallBubble> {
                 Obx(() => Text(
                       _formatDuration(c.callDurationRx.value),
                       style: TextStyle(
-                        color: const Color(0xFF4CAF50),
-                        fontSize: 11.sp,
+                        color: const Color(0xFF16B364),
+                        fontSize: 10.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     )),
               ],
             ),
           ),
+          // Mute Button
+          GestureDetector(
+            onTap: () => c.toggleMic(),
+            child: Obx(() {
+              final bool isMuted = !c.isAudioOn;
+              return Container(
+                padding: EdgeInsets.all(5.w),
+                decoration: BoxDecoration(
+                  color: isMuted ? const Color(0xFFFF3B30).withOpacity(0.2) : Colors.white12,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isMuted ? Icons.mic_off : Icons.mic,
+                  color: isMuted ? const Color(0xFFFF3B30) : Colors.white,
+                  size: 14.sp,
+                ),
+              );
+            }),
+          ),
+          SizedBox(width: 5.w),
+          // Speaker Button
+          GestureDetector(
+            onTap: () {
+              final current = c.audioRouteController.currentRoute.value;
+              final next = current == CallAudioRoute.speaker
+                  ? CallAudioRoute.earpiece
+                  : CallAudioRoute.speaker;
+              c.audioRouteController.selectRoute(next);
+            },
+            child: Obx(() {
+              final isSpeaker = c.audioRouteController.currentRoute.value == CallAudioRoute.speaker;
+              return Container(
+                padding: EdgeInsets.all(5.w),
+                decoration: BoxDecoration(
+                  color: isSpeaker ? const Color(0xFF5B3FD0) : Colors.white12,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isSpeaker ? Icons.volume_up : Icons.phone_in_talk,
+                  color: Colors.white,
+                  size: 14.sp,
+                ),
+              );
+            }),
+          ),
+          SizedBox(width: 5.w),
+          // End Call Button
           GestureDetector(
             onTap: widget.onEndCall,
             child: Container(
-              padding: EdgeInsets.all(7.w),
+              padding: EdgeInsets.all(6.w),
               decoration: const BoxDecoration(
                 color: Color(0xFFFF3B30),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.call_end, color: Colors.white, size: 16.sp),
+              child: Icon(Icons.call_end, color: Colors.white, size: 14.sp),
             ),
           ),
         ],

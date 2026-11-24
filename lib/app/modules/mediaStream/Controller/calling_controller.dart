@@ -1395,9 +1395,12 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     update();
   }
 
+  bool _isMuteSyncing = false;
+
   /// Mute from the iOS lock screen / CallKit / headset (BUG-CALL-12).
   /// Does not echo back to CallKit.
   void setMutedFromSystem(bool muted) {
+    if (_isMuteSyncing) return;
     if (isAudioOn == !muted) return;
     isAudioOn = !muted;
     final bool enabled = isAudioOn;
@@ -3374,6 +3377,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
     _emitMediaState();
     if (defaultTargetPlatform == TargetPlatform.iOS) {
+      _isMuteSyncing = true;
       try {
         const MethodChannel('com.fgtracker.audio_route')
             .invokeMethod('setMicrophoneMute', <String, dynamic>{
@@ -3381,6 +3385,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           'callId': _callKitId,
         });
       } catch (_) {}
+      Future.delayed(const Duration(milliseconds: 600), () {
+        _isMuteSyncing = false;
+      });
     }
     // Keep the iOS lock screen / CallKit mute button in sync.
     unawaited(_platform.syncCallKitMute(_callKitId, !enabled));

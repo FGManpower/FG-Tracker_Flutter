@@ -1073,9 +1073,34 @@ class firebaseNotificationServices {
       } else if (message.data['screen_name'] == 'incomingCall') {
         if (CallStateTracker.isIncomingCallScreenOpen) return;
 
-        final callMap = jsonDecode(message.data['callData']);
-        final call = IncomingCallModel.fromMap(callMap);
+        // On iOS, native CallKit handles the incoming call screen (prevents double UI)
+        if (Platform.isIOS) {
+          AppLog.d("⏭️ Suppressed in-app incomingCall screen on iOS (CallKit active)");
+          return;
+        }
 
+        final dynamic rawCallData = message.data['callData'];
+        final Map<String, dynamic> callMap = (rawCallData is String)
+            ? (jsonDecode(rawCallData) as Map<String, dynamic>)
+            : (rawCallData is Map ? Map<String, dynamic>.from(rawCallData) : <String, dynamic>{});
+
+        // BUG-CALL-COLLISION: If user is already on a live 1:1 call, route to call waiting
+        if (Get.isRegistered<CallingController>()) {
+          final live = Get.find<CallingController>();
+          if (live.isCallLive) {
+            AppLog.d("📞 User is already in call, showing call waiting banner");
+            live.showWaitingCall(callMap);
+            return;
+          }
+        }
+
+        // If user is already in active group call, suppress 1:1 incoming full screen
+        if (Get.isRegistered<GroupCallingController>() && Get.find<GroupCallingController>().isConnected) {
+          AppLog.d("📞 User is in active group call, suppressed 1:1 incoming full screen");
+          return;
+        }
+
+        final call = IncomingCallModel.fromMap(callMap);
         CallStateTracker.isIncomingCallScreenOpen = true;
 
         Get.toNamed(
@@ -1089,6 +1114,22 @@ class firebaseNotificationServices {
           message.data['screen'] == 'incomingGroupCall') {
         FlutterRingtonePlayer().stop();
         if (CallStateTracker.isIncomingCallScreenOpen) return;
+
+        // On iOS, native CallKit handles group incoming calls
+        if (Platform.isIOS) {
+          AppLog.d("⏭️ Suppressed in-app groupIncomingCall screen on iOS (CallKit active)");
+          return;
+        }
+
+        // If user is already in another call, do not crash or replace
+        if (Get.isRegistered<CallingController>() && Get.find<CallingController>().isCallLive) {
+          AppLog.d("📞 User in 1:1 call, suppressed group incoming screen");
+          return;
+        }
+        if (Get.isRegistered<GroupCallingController>() && Get.find<GroupCallingController>().isConnected) {
+          AppLog.d("📞 User in active group call, suppressed new group incoming screen");
+          return;
+        }
 
         final rawCallData = message.data['callData'];
         final Map<dynamic, dynamic> data = (rawCallData is String)

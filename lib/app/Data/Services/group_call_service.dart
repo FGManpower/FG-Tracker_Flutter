@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/modules/mediaStream/Services/call_permissions.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,18 +18,22 @@ class GroupCallService {
     Utils().fluttertoast(appL10n.call_groupCallComingSoon);
   }
 
-  void startGroupCall(
+  Future<void> startGroupCall(
       BuildContext context, {
         required String groupId,
         required String groupName,
         required bool isVideo,
         String? groupProfile,
         int? memberCount,
-      }) {
+      }) async {
     if (!isGroupCallEnabled) {
       showComingSoon();
       return;
     }
+
+    final CallPermResult perm =
+        await CallPermissionFlow().beforeCall(video: isVideo, incoming: false);
+    if (!perm.proceed) return;
 
     Get.toNamed(
       Routes.groupCallingScreen,
@@ -36,7 +41,7 @@ class GroupCallService {
         "groupId": groupId,
         "groupName": groupName,
         "groupProfile": groupProfile,
-        "isVideo": isVideo,
+        "isVideo": perm.video,
         "memberCount": memberCount ?? 0,
         "callType": "outgoing",
       },

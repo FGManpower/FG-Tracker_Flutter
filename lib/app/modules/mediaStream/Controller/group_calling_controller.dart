@@ -22,6 +22,7 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/in_app_group_call_overlay_service.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import '../Services/call_permissions.dart';
 import '../Widget/audio_route_sheet.dart';
 import '../Widget/group_call_sheets.dart';
 
@@ -158,11 +159,23 @@ class GroupCallingController extends GetxController {
       }
     }
 
-    _setupLocalMedia().then((_) async {
-      await Socket_GroupCallService.instance.onLocalStreamReady();
-    }).catchError((e) {
-      Utils().fluttertoast(appL10n.call_cameraMicRequired);
-      Get.back();
+    CallPermissionFlow()
+        .beforeCall(video: isVideo, incoming: callType == "incoming")
+        .then((perm) {
+      if (!perm.proceed) {
+        Get.back();
+        return;
+      }
+      if (!perm.video && isVideo) {
+        isVideo = false;
+        isVideoOn.value = false;
+      }
+      _setupLocalMedia().then((_) async {
+        await Socket_GroupCallService.instance.onLocalStreamReady();
+      }).catchError((e) {
+        Utils().fluttertoast(appL10n.call_cameraMicRequired);
+        Get.back();
+      });
     });
 
     getGroupMembersData(args["groupId"].toString());
@@ -407,6 +420,11 @@ class GroupCallingController extends GetxController {
   Future<void> toggleScreenShare() async {
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
 
+    if (!isConnected) {
+      Utils().fluttertoast('Please wait until call connects to share screen');
+      return;
+    }
+
     if (isScreenSharing.value) {
       isScreenSharing.value = false;
       screenSharingUsers.remove(myUserId);
@@ -429,6 +447,14 @@ class GroupCallingController extends GetxController {
       if (pinnedUserId.value == myUserId) pinnedUserId.value = null;
     } else {
       try {
+        if (Platform.isAndroid) {
+          final bool granted = await webrtc.Helper.requestCapturePermission();
+          if (!granted) {
+            Utils().fluttertoast('Screen share permission denied');
+            return;
+          }
+        }
+
         final constraints = webrtc.WebRTC.platformIsIOS
             ? { 'video': {'deviceId': 'broadcast'} }
             : { 'video': true, 'audio': false };
@@ -844,6 +870,11 @@ class GroupCallingController extends GetxController {
     }
 
     CallSessionState.reset();
+    isMinimized.value = false;
+    InAppGroupCallOverlayService.instance.hideOverlay();
+    if (Get.isRegistered<GroupCallingController>()) {
+      Get.delete<GroupCallingController>(force: true);
+    }
     if (Get.currentRoute == Routes.groupCallingScreen) {
       Get.offAllNamed(Routes.Home_Screen);
     }
@@ -948,6 +979,10 @@ class GroupCallingController extends GetxController {
 
   @override
   void onClose() {
+    if (isMinimized.value) {
+      log('[GroupCall] onClose ignored because call is minimized');
+      return;
+    }
     InAppGroupCallOverlayService.instance.hideOverlay();
     _routeWorker?.dispose();
     _routeWorker = null;

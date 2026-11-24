@@ -14,7 +14,7 @@ class GroupCallMoreSheet {
     return Get.bottomSheet(
       Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1E262C),
+          color: const Color(0xFF141024),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
           border: Border.all(color: Colors.white12, width: 0.8),
         ),
@@ -52,7 +52,7 @@ class GroupCallMoreSheet {
             // Action Items Box
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF2A3942),
+                color: const Color(0xFF261D45),
                 borderRadius: BorderRadius.circular(16.r),
               ),
               child: Column(
@@ -65,7 +65,7 @@ class GroupCallMoreSheet {
                           : Icons.screen_share_rounded,
                       iconColor: isScreenSharing.value
                           ? const Color(0xFFFF5252)
-                          : const Color(0xFF25D366),
+                          : const Color(0xFF7B61FF),
                       title: isScreenSharing.value
                           ? appL10n.call_stopSharing
                           : appL10n.call_shareScreen,
@@ -82,7 +82,7 @@ class GroupCallMoreSheet {
                   if (onAddParticipants != null) ...[
                     _buildTile(
                       icon: Icons.person_add_alt_1_rounded,
-                      iconColor: const Color(0xFF25D366),
+                      iconColor: const Color(0xFF7B61FF),
                       title: "Add participants",
                       subtitle: "Invite other group members to this call",
                       onTap: onAddParticipants,
@@ -112,7 +112,7 @@ class GroupCallMoreSheet {
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2A3942),
+                  color: const Color(0xFF261D45),
                   borderRadius: BorderRadius.circular(30.r),
                 ),
                 child: Text(

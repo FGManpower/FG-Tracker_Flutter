@@ -44,7 +44,7 @@ class GroupCallControls extends StatelessWidget {
             ControlItem(
               icon: Icons.more_horiz_rounded,
               label: context.l10n.call_more,
-              bgColor: const Color(0xFF2A3942),
+              bgColor: const Color(0xFF261D45),
               iconColor: Colors.white,
               onTap: controller.openMoreSheet,
             ),
@@ -58,7 +58,7 @@ class GroupCallControls extends StatelessWidget {
                   ? context.l10n.call_cameraOn
                   : context.l10n.call_cameraOff,
               bgColor: (isVideo && isVideoOn)
-                  ? const Color(0xFF2A3942)
+                  ? const Color(0xFF261D45)
                   : Colors.white.withOpacity((!isVideo && !controller.isConnected) ? 0.05 : 0.12),
               iconColor: (isVideo && isVideoOn)
                   ? Colors.white
@@ -71,7 +71,7 @@ class GroupCallControls extends StatelessWidget {
               icon: isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
               label: isAudioOn ? context.l10n.call_mute : context.l10n.call_unmute,
               bgColor: isAudioOn
-                  ? const Color(0xFF2A3942)
+                  ? const Color(0xFF261D45)
                   : const Color(0xFFEA4335).withOpacity(0.25),
               iconColor: isAudioOn ? Colors.white : const Color(0xFFFF5252),
               borderColor: isAudioOn
@@ -91,7 +91,7 @@ class GroupCallControls extends StatelessWidget {
                 label: controller.audioRouteController.currentAudioRouteLabel,
                 bgColor: isSpeaker
                     ? Colors.white.withOpacity(0.20)
-                    : const Color(0xFF2A3942),
+                    : const Color(0xFF261D45),
                 iconColor: Colors.white,
                 onTap: () async {
                   await controller.toggleSpeaker(context);

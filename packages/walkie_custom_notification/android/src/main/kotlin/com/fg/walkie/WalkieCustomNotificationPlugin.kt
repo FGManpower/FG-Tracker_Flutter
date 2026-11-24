@@ -119,12 +119,7 @@ class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, Activit
                     .build()
 
                 var nChannel = nm.getNotificationChannel(CHANNEL_ID)
-                if (nChannel == null || nChannel.sound != soundUri || nChannel.importance < NotificationManager.IMPORTANCE_HIGH) {
-                    if (nChannel != null) {
-                        try {
-                            nm.deleteNotificationChannel(CHANNEL_ID)
-                        } catch (_: Exception) {}
-                    }
+                if (nChannel == null) {
                     nChannel = NotificationChannel(
                         CHANNEL_ID,
                         CHANNEL_NAME,

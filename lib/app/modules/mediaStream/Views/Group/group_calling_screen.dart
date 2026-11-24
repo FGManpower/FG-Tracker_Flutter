@@ -25,7 +25,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
         controller.minimizeCall();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF0B141B),
+        backgroundColor: const Color(0xFF0E0C14),
         body: GestureDetector(
           onTap: controller.toggleControls,
           behavior: HitTestBehavior.opaque,
@@ -173,7 +173,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                       width: 7.r,
                       height: 7.r,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF25D366),
+                        color: Color(0xFF16B364),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -186,7 +186,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontFamily: FontFamily.interMedium,
-                          color: const Color(0xFF25D366),
+                          color: const Color(0xFF7B61FF),
                         ),
                       ),
                     ),
@@ -201,7 +201,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
               decoration: BoxDecoration(
-                color: const Color(0xFF2A3942),
+                color: const Color(0xFF261D45),
                 borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(color: Colors.white12, width: 0.8),
               ),

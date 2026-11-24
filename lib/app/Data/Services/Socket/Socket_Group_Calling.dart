@@ -268,6 +268,10 @@ class Socket_GroupCallService {
         if (callerId.isNotEmpty && callerId == _selfUserId) return;
 
         if (CallStateTracker.isIncomingCallScreenOpen) return;
+        if (Platform.isIOS) {
+          _log("group_call_started on iOS: CallKit handles incoming screen natively");
+          return;
+        }
         CallingController? live1on1;
         if (Get.isRegistered<CallingController>()) {
           try {

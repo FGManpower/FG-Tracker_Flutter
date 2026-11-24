@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
@@ -134,9 +135,9 @@ class _FloatingGroupCallBubbleState extends State<_FloatingGroupCallBubble> {
             height: bubbleHeight,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              color: const Color(0xFF1E262C),
+              color: const Color(0xFF141024),
               borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(color: Colors.white24, width: 1.0),
+              border: Border.all(color: const Color(0xFF5B3FD0).withOpacity(0.6), width: 1.5),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.50),
@@ -157,7 +158,7 @@ class _FloatingGroupCallBubbleState extends State<_FloatingGroupCallBubble> {
                   left: 0,
                   right: 0,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
@@ -177,7 +178,7 @@ class _FloatingGroupCallBubbleState extends State<_FloatingGroupCallBubble> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 12.sp,
+                              fontSize: 11.sp,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -186,14 +187,14 @@ class _FloatingGroupCallBubbleState extends State<_FloatingGroupCallBubble> {
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF25D366),
+                            color: const Color(0xFF5B3FD0),
                             borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: Obx(
                             () => Text(
                               '${widget.controller.activeParticipants.length}',
                               style: TextStyle(
-                                color: Colors.black,
+                                color: Colors.white,
                                 fontSize: 10.sp,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -211,7 +212,7 @@ class _FloatingGroupCallBubbleState extends State<_FloatingGroupCallBubble> {
                   left: 0,
                   right: 0,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.bottomCenter,
@@ -230,16 +231,63 @@ class _FloatingGroupCallBubbleState extends State<_FloatingGroupCallBubble> {
                             widget.controller.formattedDuration,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 11.sp,
+                              fontSize: 10.sp,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
+                        // Mute Button
+                        GestureDetector(
+                          onTap: () => widget.controller.toggleMic(),
+                          child: Obx(() {
+                            final bool isMuted = !widget.controller.isAudioOn.value;
+                            return Container(
+                              width: 24.r,
+                              height: 24.r,
+                              decoration: BoxDecoration(
+                                color: isMuted ? const Color(0xFFFF3B30).withOpacity(0.3) : Colors.white24,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isMuted ? Icons.mic_off : Icons.mic,
+                                color: isMuted ? const Color(0xFFFF3B30) : Colors.white,
+                                size: 13.sp,
+                              ),
+                            );
+                          }),
+                        ),
+                        // Speaker Button
+                        GestureDetector(
+                          onTap: () {
+                            final current = widget.controller.audioRouteController.currentRoute.value;
+                            final next = current == CallAudioRoute.speaker
+                                ? CallAudioRoute.earpiece
+                                : CallAudioRoute.speaker;
+                            widget.controller.audioRouteController.selectRoute(next);
+                          },
+                          child: Obx(() {
+                            final isSpeaker = widget.controller.audioRouteController.currentRoute.value == CallAudioRoute.speaker;
+                            return Container(
+                              width: 24.r,
+                              height: 24.r,
+                              decoration: BoxDecoration(
+                                color: isSpeaker ? const Color(0xFF5B3FD0) : Colors.white24,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isSpeaker ? Icons.volume_up : Icons.phone_in_talk,
+                                color: Colors.white,
+                                size: 13.sp,
+                              ),
+                            );
+                          }),
+                        ),
+                        // End Call Button
                         GestureDetector(
                           onTap: widget.onEndCall,
                           child: Container(
-                            width: 28.r,
-                            height: 28.r,
+                            width: 24.r,
+                            height: 24.r,
                             decoration: const BoxDecoration(
                               color: Color(0xFFEA4335),
                               shape: BoxShape.circle,
@@ -247,7 +295,7 @@ class _FloatingGroupCallBubbleState extends State<_FloatingGroupCallBubble> {
                             child: Icon(
                               Icons.call_end_rounded,
                               color: Colors.white,
-                              size: 15.sp,
+                              size: 13.sp,
                             ),
                           ),
                         ),
