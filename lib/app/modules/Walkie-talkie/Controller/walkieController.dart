@@ -258,22 +258,19 @@ class GroupWalkieController extends GetxController {
 
     if (socket != null && socket.connected) {
       socket.emit('admin_alert_walkie_member', payload);
-      socket.emit('walkie_alert_member', payload);
-      socket.emit('walkie_invite_member', payload);
-      socket.emit('walkie_invite', payload);
+    } else {
+      // 3. Fallback REST API call only when socket is disconnected
+      try {
+        HttpUtil().Authpost(
+          '/walkie/channels/$groupId/alert-member',
+          data: {
+            'groupId': groupId,
+            'targetUserId': cleanId,
+            'adminId': myId,
+          },
+        ).catchError((_) => null);
+      } catch (_) {}
     }
-
-    // 3. Fallback REST API call
-    try {
-      HttpUtil().Authpost(
-        '/walkie/channels/$groupId/alert-member',
-        data: {
-          'groupId': groupId,
-          'targetUserId': cleanId,
-          'adminId': myId,
-        },
-      ).catchError((_) => null);
-    } catch (_) {}
 
     // 4. User feedback
     if (Get.overlayContext != null) {

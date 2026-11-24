@@ -195,6 +195,9 @@ class GroupCallingController extends GetxController with WidgetsBindingObserver 
     svc.onParticipantMuteChanged = _onParticipantMuteChanged;
     svc.onParticipantCameraChanged = (uid, state) => _syncParticipants();
     svc.onParticipantsRosterUpdated = _onParticipantsRosterUpdated;
+    svc.onRemoteAudioTrackReceived = (audioTrack) {
+      unawaited(audioRouteController.onRemoteAudioTrack(audioTrack));
+    };
 
     svc.onScreenShareStarted = (userId) {
       screenSharingUsers.add(userId);
