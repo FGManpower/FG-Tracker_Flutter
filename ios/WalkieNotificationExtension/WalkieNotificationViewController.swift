@@ -255,7 +255,25 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
             : "Someone"
 
         groupTitleLabel.text = finalTitle
-        speakerSubtitleLabel.text = "\(finalSpeaker) is speaking..."
+
+        let isAdminAlert = (userInfo["type"] as? String) == "WALKIE_ADMIN_ALERT"
+            || (dataDict?["type"] as? String) == "WALKIE_ADMIN_ALERT"
+            || (userInfo["alertType"] as? String) == "admin_nudge"
+            || (dataDict?["alertType"] as? String) == "admin_nudge"
+            || notification.request.content.categoryIdentifier == "walkie_admin_alert"
+
+        let customSubtitle = (userInfo["subtitle"] as? String)
+            ?? (dataDict?["subtitle"] as? String)
+            ?? (userInfo["message"] as? String)
+            ?? (dataDict?["message"] as? String)
+
+        if let custom = customSubtitle, !custom.isEmpty {
+            speakerSubtitleLabel.text = custom
+        } else if isAdminAlert {
+            speakerSubtitleLabel.text = "\(finalSpeaker) (Admin) is calling you into the channel."
+        } else {
+            speakerSubtitleLabel.text = "\(finalSpeaker) is speaking..."
+        }
 
         if let c = count, !c.isEmpty && c != "0" {
             joinedLabel.text = "👥 \(c) Joined"

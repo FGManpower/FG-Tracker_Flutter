@@ -982,6 +982,8 @@ class firebaseNotificationServices {
           showNotification(message);
         }
         handleMessage(context, message);
+      } else {
+        handleMessage(context, message);
       }
     });
 
@@ -1088,7 +1090,7 @@ class firebaseNotificationServices {
             ? (jsonDecode(rawCallData) as Map<String, dynamic>)
             : (rawCallData is Map ? Map<String, dynamic>.from(rawCallData) : <String, dynamic>{});
 
-        // BUG-CALL-COLLISION: If user is already on a live 1:1 call, route to call waiting
+        // If user is already on a live 1:1 call, route to call waiting
         if (Get.isRegistered<CallingController>()) {
           final live = Get.find<CallingController>();
           if (live.isCallLive) {
@@ -1096,6 +1098,12 @@ class firebaseNotificationServices {
             live.showWaitingCall(callMap);
             return;
           }
+        }
+
+        // Suppress in-app incoming full screen when CallKit is active or on iOS to avoid dual incoming screens
+        if (CallKitService.instance.isCallKitActive || Platform.isIOS) {
+          AppLog.d("⏭️ Suppressed in-app 1:1 IncomingCallScreen (CallKit active or iOS)");
+          return;
         }
 
         // If user is already in active group call, suppress 1:1 incoming full screen

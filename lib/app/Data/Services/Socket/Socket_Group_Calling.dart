@@ -55,6 +55,7 @@ class Socket_GroupCallService {
 
   Function(String userId)? onScreenShareStarted;
   Function(String userId)? onScreenShareStopped;
+  Function(MediaStreamTrack audioTrack)? onRemoteAudioTrackReceived;
 
   Function(List<Map<String, dynamic>> participants, int total)?
   onParticipantsRosterUpdated;
@@ -353,6 +354,16 @@ class Socket_GroupCallService {
       );
 
       onParticipantRejected?.call(userId, userName, userProfile);
+    });
+
+    socket?.on("group_call_participant_ringing", (raw) {
+      _log("group_call_participant_ringing: $raw");
+      if (raw == null) return;
+      final data = Map<String, dynamic>.from(raw);
+      final targetUid = data['userId']?.toString();
+      if (targetUid == null) return;
+      participantStatus[targetUid] = 'ringing';
+      onParticipantsUpdated?.call();
     });
 
     socket?.on("group_call_participant_mute", (raw) {
@@ -1030,6 +1041,8 @@ class Socket_GroupCallService {
           onParticipantCameraChanged?.call(remoteId, true);
           onParticipantsUpdated?.call();
         };
+      } else if (event.track.kind == 'audio') {
+        onRemoteAudioTrackReceived?.call(event.track);
       }
 
       // UI must rebuild AFTER srcObject is set

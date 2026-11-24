@@ -74,7 +74,9 @@ void setupCallKitHandlers() {
           extra['type'] == '1';
 
       if (uuid != null && uuid.isNotEmpty) {
-        unawaited(CallPlatform.instance.dismissCallKit(uuid).catchError((_) {}));
+        // Do NOT call dismissCallKit here as it triggers CXEndCallAction on iOS ("Call Ended" on CallKit UI).
+        // Instead, mark call as connected in CallKit.
+        unawaited(CallPlatform.instance.markCallKitConnected(uuid).catchError((_) {}));
       }
 
       Get.offNamed(

@@ -47,7 +47,7 @@ struct WalkieLiveActivity: Widget {
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.white)
                             .lineLimit(1)
-                        Text("\(context.state.speakerName) is speaking...")
+                        Text(context.state.speakerName.contains("Admin") ? "\(context.state.speakerName) is calling..." : "\(context.state.speakerName) is speaking...")
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(Color(red: 128/255, green: 128/255, blue: 238/255))
                             .lineLimit(1)
@@ -168,11 +168,11 @@ struct WalkieLockScreenView: View {
 
                 // Speaker details
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("\(context.state.speakerName) is speaking...")
+                    Text(context.state.speakerName.contains("Admin") ? "\(context.state.speakerName) is calling you..." : "\(context.state.speakerName) is speaking...")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(Color(red: 128/255, green: 128/255, blue: 238/255))
                         .lineLimit(1)
-                    Text("Tap Accept to join live channel floor")
+                    Text(context.state.speakerName.contains("Admin") ? "Admin invited you to join channel" : "Tap Accept to join live channel floor")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.white.opacity(0.6))
                         .lineLimit(1)

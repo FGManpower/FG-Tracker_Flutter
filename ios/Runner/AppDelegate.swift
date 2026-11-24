@@ -323,11 +323,9 @@ private let candidateTokenPrefKeys = [
                 return
             }
 
-            if #available(iOS 14.0, *) {
-                completionHandler([.banner, .sound, .badge, .list])
-            } else {
-                completionHandler([.alert, .sound, .badge])
-            }
+            // In foreground on iOS, suppress system .banner because Flutter's WalkieInviteDialog renders the rich custom UI.
+            // Play custom ringtone sound and update badge.
+            completionHandler([.sound, .badge])
             return
         }
 
@@ -484,11 +482,11 @@ private let candidateTokenPrefKeys = [
         let screen = (dict["screen_name"] as? String) ?? (userInfo["screen_name"] as? String)
         let type = (dict["type"] as? String) ?? (userInfo["type"] as? String)
 
-        var isWalkie = screen == "group_walkie" || screen == "walkie" || type == "WALKIE_INVITE"
+        var isWalkie = screen == "group_walkie" || screen == "walkie" || type == "WALKIE_INVITE" || type == "WALKIE_ADMIN_ALERT"
 
         let aps = userInfo["aps"] as? [String: Any]
         if let cat = (dict["category"] as? String) ?? (userInfo["category"] as? String) ?? (aps?["category"] as? String) {
-            if cat == "WALKIE_INVITE" || cat == "walkie_invite_category" || cat == "group_walkie" || cat == "walkie" {
+            if cat == "WALKIE_INVITE" || cat == "walkie_invite_category" || cat == "group_walkie" || cat == "walkie" || cat == "walkie_admin_alert" {
                 isWalkie = true
             }
         }
@@ -496,8 +494,8 @@ private let candidateTokenPrefKeys = [
         if isWalkie {
             var groupId = (dict["groupId"] as? String) ?? (dict["group_id"] as? String) ?? (userInfo["groupId"] as? String) ?? (userInfo["group_id"] as? String) ?? ""
             var groupName = (dict["groupName"] as? String) ?? (dict["group_name"] as? String) ?? (userInfo["groupName"] as? String) ?? (userInfo["group_name"] as? String) ?? ""
-            var speakerName = (dict["speakerName"] as? String) ?? (dict["speaker_name"] as? String) ?? (userInfo["speakerName"] as? String) ?? (userInfo["speaker_name"] as? String) ?? ""
-            let speakerImage = (dict["speakerImage"] as? String) ?? (dict["speaker_image"] as? String) ?? (userInfo["speakerImage"] as? String) ?? (userInfo["speaker_image"] as? String) ?? ""
+            var speakerName = (dict["speakerName"] as? String) ?? (dict["speaker_name"] as? String) ?? (userInfo["speakerName"] as? String) ?? (userInfo["speaker_name"] as? String) ?? (dict["adminName"] as? String) ?? ""
+            let speakerImage = (dict["speakerImage"] as? String) ?? (dict["speaker_image"] as? String) ?? (userInfo["speakerImage"] as? String) ?? (userInfo["speaker_image"] as? String) ?? (dict["adminImage"] as? String) ?? ""
             let countStr = (dict["joinedMemberCount"] as? String) ?? (dict["joinedCount"] as? String) ?? (userInfo["joinedMemberCount"] as? String) ?? (userInfo["joinedCount"] as? String) ?? "0"
             let joinedCount = Int(countStr) ?? 0
 
@@ -509,8 +507,10 @@ private let candidateTokenPrefKeys = [
                 if speakerName.isEmpty, let body = alert["body"] as? String {
                     if body.contains(" is speaking") {
                         speakerName = body.components(separatedBy: " is speaking").first ?? "Someone"
+                    } else if body.contains(" (Admin)") {
+                        speakerName = body.components(separatedBy: " (Admin)").first ?? "Admin"
                     } else {
-                        speakerName = body
+                        speakerName = (dict["adminName"] as? String) ?? "Admin"
                     }
                 }
             }
