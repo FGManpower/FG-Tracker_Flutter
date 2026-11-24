@@ -480,14 +480,45 @@ private let candidateTokenPrefKeys = [
         if let data = userInfo["data"] as? [String: Any] {
             dict = data
         }
+
         let screen = (dict["screen_name"] as? String) ?? (userInfo["screen_name"] as? String)
-        if screen == "group_walkie" {
-            let groupId = (dict["groupId"] as? String) ?? (dict["group_id"] as? String) ?? ""
-            let groupName = (dict["groupName"] as? String) ?? (dict["group_name"] as? String) ?? "Field Team"
-            let speakerName = (dict["speakerName"] as? String) ?? (dict["speaker_name"] as? String) ?? "Someone"
-            let speakerImage = (dict["speakerImage"] as? String) ?? (dict["speaker_image"] as? String) ?? ""
-            let countStr = (dict["joinedMemberCount"] as? String) ?? (dict["joinedCount"] as? String) ?? "0"
+        let type = (dict["type"] as? String) ?? (userInfo["type"] as? String)
+
+        var isWalkie = screen == "group_walkie" || screen == "walkie" || type == "WALKIE_INVITE"
+
+        let aps = userInfo["aps"] as? [String: Any]
+        if let cat = (dict["category"] as? String) ?? (userInfo["category"] as? String) ?? (aps?["category"] as? String) {
+            if cat == "WALKIE_INVITE" || cat == "walkie_invite_category" || cat == "group_walkie" || cat == "walkie" {
+                isWalkie = true
+            }
+        }
+
+        if isWalkie {
+            var groupId = (dict["groupId"] as? String) ?? (dict["group_id"] as? String) ?? (userInfo["groupId"] as? String) ?? (userInfo["group_id"] as? String) ?? ""
+            var groupName = (dict["groupName"] as? String) ?? (dict["group_name"] as? String) ?? (userInfo["groupName"] as? String) ?? (userInfo["group_name"] as? String) ?? ""
+            var speakerName = (dict["speakerName"] as? String) ?? (dict["speaker_name"] as? String) ?? (userInfo["speakerName"] as? String) ?? (userInfo["speaker_name"] as? String) ?? ""
+            let speakerImage = (dict["speakerImage"] as? String) ?? (dict["speaker_image"] as? String) ?? (userInfo["speakerImage"] as? String) ?? (userInfo["speaker_image"] as? String) ?? ""
+            let countStr = (dict["joinedMemberCount"] as? String) ?? (dict["joinedCount"] as? String) ?? (userInfo["joinedMemberCount"] as? String) ?? (userInfo["joinedCount"] as? String) ?? "0"
             let joinedCount = Int(countStr) ?? 0
+
+            // Fallback from alert title and body if needed
+            if let alert = aps?["alert"] as? [String: Any] {
+                if groupName.isEmpty {
+                    groupName = (alert["title"] as? String) ?? "Field Team"
+                }
+                if speakerName.isEmpty, let body = alert["body"] as? String {
+                    if body.contains(" is speaking") {
+                        speakerName = body.components(separatedBy: " is speaking").first ?? "Someone"
+                    } else {
+                        speakerName = body
+                    }
+                }
+            }
+
+            if groupName.isEmpty { groupName = "Field Team" }
+            if speakerName.isEmpty { speakerName = "Someone" }
+
+            print("[AppDelegate] didReceiveRemoteNotification starting Live Activity for group=\(groupId), name=\(groupName), speaker=\(speakerName)")
 
             #if canImport(ActivityKit)
             if #available(iOS 16.1, *) {

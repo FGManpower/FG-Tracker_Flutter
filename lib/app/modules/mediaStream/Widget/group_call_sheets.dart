@@ -48,7 +48,7 @@ class _GroupParticipantsSheetView extends StatelessWidget {
     return Container(
       height: Get.height * 0.75,
       decoration: BoxDecoration(
-        color: const Color(0xFF1E262C),
+        color: const Color(0xFF141024),
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         border: Border.all(color: Colors.white12, width: 0.8),
       ),
@@ -56,7 +56,7 @@ class _GroupParticipantsSheetView extends StatelessWidget {
       child: Obx(() {
         if (sheetCtrl.isLoading.value) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF25D366)),
+            child: CircularProgressIndicator(color: Color(0xFF5B3FD0)),
           );
         }
 
@@ -93,7 +93,7 @@ class _GroupParticipantsSheetView extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF25D366),
+                    color: const Color(0xFF5B3FD0),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
@@ -193,7 +193,7 @@ class _GroupParticipantsSheetView extends StatelessWidget {
                             vertical: 10.h,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2A3942),
+                            color: const Color(0xFF261D45),
                             borderRadius: BorderRadius.circular(16.r),
                             border: Border.all(color: Colors.white10, width: 0.6),
                           ),
@@ -237,11 +237,11 @@ class _GroupParticipantsSheetView extends StatelessWidget {
                                     vertical: 8.h,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF25D366),
+                                    color: const Color(0xFF5B3FD0),
                                     borderRadius: BorderRadius.circular(20.r),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: const Color(0xFF25D366).withOpacity(0.35),
+                                        color: const Color(0xFF5B3FD0).withOpacity(0.35),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -298,7 +298,7 @@ class _InCallChip extends StatelessWidget {
       width: 145.w,
       padding: EdgeInsets.all(8.r),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A3942),
+        color: const Color(0xFF261D45),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white10, width: 0.6),
       ),
@@ -339,7 +339,7 @@ class _InCallChip extends StatelessWidget {
                         size: 12.sp,
                         color: participant.isMuted.value
                             ? const Color(0xFFFF5252)
-                            : const Color(0xFF25D366),
+                            : const Color(0xFF16B364),
                       ),
                       SizedBox(width: 4.w),
                       Expanded(
@@ -352,7 +352,7 @@ class _InCallChip extends StatelessWidget {
                             fontFamily: FontFamily.interRegular,
                             color: participant.isMuted.value
                                 ? const Color(0xFFFF5252)
-                                : const Color(0xFF25D366),
+                                : const Color(0xFF16B364),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

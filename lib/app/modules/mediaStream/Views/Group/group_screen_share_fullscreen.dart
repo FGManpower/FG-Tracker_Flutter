@@ -186,7 +186,7 @@ class _GroupScreenShareFullScreenState
               children: [
                 Icon(
                   Icons.present_to_all_rounded,
-                  color: const Color(0xFF25D366),
+                  color: const Color(0xFF7B61FF),
                   size: 16.sp,
                 ),
                 SizedBox(width: 8.w),
