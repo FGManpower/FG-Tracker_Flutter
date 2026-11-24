@@ -945,3 +945,51 @@ The extra circular badge icons between `AppBackButton` and the title have been c
   - Core existing modules: Home Screen, Menu user header, Chatting, Call Swipe, Attendance, Safe Zone, Walkie-talkie, Block/Unblock.
 - **Static Analysis**: `0 errors` verified with `analyze_files`.
 
+---
+
+## 13. Scan Text Module (Offline ML Kit Full-Screen Live Camera / Gallery Text OCR)
+
+### 13.1 Overview & Objective
+An on-device, completely offline Text Recognition (OCR) feature modeled after iOS Live Text OCR capability ("msg type jese"). It provides a unified screen with a top editable **Message Bubble** and an in-app live camera viewfinder with yellow targeting brackets `[  ]`, torch toggle, and an instant "Insert" button. It scans printed, handwritten, or digital text from books, papers, documents, computer monitors, receipts, whiteboards, visiting cards, posters, etc., with Latin-first precision and Devanagari fallback, without opening external camera apps and without requiring internet connectivity.
+
+### 13.2 Architecture & Flow
+1. **Entry Point (MenuBar / Drawer)**:
+   - Added `Scan Text` item in `lib/app/modules/home/Views/sidemenu.dart` under `_buildMenuItems` with `Icons.document_scanner_rounded`.
+   - Preserves all existing side menu items, order, layout, and header overflow constraints.
+   - Tapping it pops the drawer and immediately launches `LiveScanCameraScreen` full screen.
+2. **Unified Live Camera & Message Screen (`LiveScanCameraScreen`)**:
+   - **Top Navigation Bar**: Close button `(X)` and Language selector pill (`English` / `हिंदी`).
+   - **Top Message Bubble ("msg type jese")**:
+     - Shows scanned text directly inside an editable message draft card.
+     - Real-time word and character counter (`X w • Y c`).
+     - Action buttons right on the bubble: **Copy** (with "Copied" toast), **Share** (WhatsApp/Messages native share sheet), and **Clear**.
+   - **Bottom Live Camera Viewfinder**:
+     - Built using Flutter's official `camera` package (`CameraController` with `ResolutionPreset.high`, `enableAudio: false`).
+     - **Viewfinder Reticle**: Centered custom-painted yellow corner brackets (`[   ]`) matching iOS Live Text design.
+     - **Bottom Controls Row**:
+       - **Gallery Button**: Quick access to pick existing documents/photos from phone storage.
+       - **"Insert" Pill Button**: High-visibility blue pill action button (`Color(0xFF007AFF)`) that instantly captures the frame, extracts text, and inserts it directly into the top Message Bubble.
+       - **Flash/Torch Button**: Turns flashlight on/off for dark environments.
+3. **High-Accuracy OCR Pipeline (`ScanTextService`)**:
+   - **Latin-First Recognition**: Prioritizes `TextRecognitionScript.latin` for English, code, numbers, punctuation, and receipts. Eliminates Devanagari hallucination of random Hindi ligatures (`है।`, `औऊ`) on English text.
+   - **Devanagari Fallback / Toggle**: If text contains Hindi characters or if user selects `हिंदी`, runs `TextRecognitionScript.devanagiri` for accurate Hindi OCR.
+4. **Error & Edge Case Resilience**:
+   - If an image contains no recognizable text: Displays `"No text found, try again with clear photo"` toast without crashing.
+   - Blurry, invalid, or zero-byte files are caught cleanly and do not crash the application.
+   - Completely offline functionality without relying on cloud APIs or network requests.
+
+### 13.3 Platform Configurations
+- **Android**:
+  - `AndroidManifest.xml`: `android.permission.CAMERA`, `android.permission.READ_MEDIA_IMAGES`, `android.permission.READ_EXTERNAL_STORAGE`.
+  - `build.gradle`: `implementation 'com.google.mlkit:text-recognition-devanagari:16.0.1'`.
+  - `proguard-rules.pro`: Keep rules for `com.google.mlkit.**`.
+- **iOS**:
+  - `Info.plist`: `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`.
+  - `Podfile`: `pod 'GoogleMLKit/TextRecognitionDevanagari', '~> 9.0.0'`.
+
+### 13.4 Verification & Tests
+- Automated test suites:
+  - `test/scan_text_proof_test.dart`: Verifies MenuBar option, Result Screen editing/copying/sharing, Full-screen live camera reticle, and Error case handling; generates golden proofs.
+  - `test/scan_text_unit_test.dart`: Verifies `ScanTextService` edge cases and exception safety.
+
+

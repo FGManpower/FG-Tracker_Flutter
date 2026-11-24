@@ -119,8 +119,7 @@ void main() {
   tearDown(Get.reset);
 
   group('Language screen', () {
-    testWidgets('shows language cards, exactly one selected',
-        (tester) async {
+    testWidgets('shows language cards, exactly one selected', (tester) async {
       await openLanguageScreen(tester);
 
       expect(cards(tester).where((c) => c.selected), hasLength(1));
@@ -162,9 +161,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('अपनी भाषा चुनें'), findsOneWidget);
-      expect(
-          find.text('आप इसे कभी भी मेनू से बदल सकते हैं'),
-          findsOneWidget);
+      expect(find.text('आप इसे कभी भी मेनू से बदल सकते हैं'), findsOneWidget);
       expect(find.text('भाषा खोजें'), findsOneWidget);
       expect(find.text('आगे बढ़ें'), findsOneWidget);
       expect(find.text('Choose your language'), findsNothing);
@@ -348,7 +345,8 @@ void main() {
 
     testWidgets(
         'new user, language already saved → Language screen still shows '
-        '(English pre-selected, never the saved one), then Registration', (tester) async {
+        '(English pre-selected, never the saved one), then Registration',
+        (tester) async {
       await pumpApp(tester, prefs: {LanguageController.prefKey: 'es'});
       expect(controller.hasSavedLanguage, isTrue);
       otpNewUser();
@@ -435,11 +433,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Language'), findsOneWidget);
-      expect(find.byKey(const Key('settings-language-subtitle')),
-          findsOneWidget);
+      expect(
+          find.byKey(const Key('settings-language-subtitle')), findsOneWidget);
       expect(find.text('Change app language'), findsOneWidget);
       expect(find.byKey(const Key('settings-language-current')), findsNothing);
-      for (final k in ['settings-language-title', 'settings-language-subtitle']) {
+      for (final k in [
+        'settings-language-title',
+        'settings-language-subtitle'
+      ]) {
         expect(tester.widget<Text>(find.byKey(Key(k))).maxLines, 1, reason: k);
       }
       expect(find.text('English'), findsNothing);
