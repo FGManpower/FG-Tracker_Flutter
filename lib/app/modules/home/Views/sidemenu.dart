@@ -23,7 +23,6 @@ import 'package:fgtracker/app/modules/auth/Controller/account_deletion_controlle
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Views/contact_us_bottom_sheet.dart';
-import 'package:fgtracker/app/modules/scan_text/services/scan_text_service.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -454,19 +453,6 @@ class Sidemenu extends StatelessWidget {
                         .get(PrefConst.userPhone)
                         ?.toString() ??
                     "",
-              });
-            },
-          ),
-          _buildDivider(),
-          // Scan Text (Offline ML Kit Full-Screen Live Camera Scanner)
-          _buildDrawerItem(
-            icon: Icons.document_scanner_rounded,
-            title: "Scan Text",
-            subtitle: "Scan text from camera or gallery",
-            onTap: () {
-              Navigator.pop(context);
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                ScanTextService.instance.openCameraScanner();
               });
             },
           ),

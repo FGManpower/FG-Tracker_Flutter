@@ -18,10 +18,12 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 /// with yellow targeting brackets [  ], torch toggle, gallery picker, and a blue "Insert" button.
 class LiveScanCameraScreen extends StatefulWidget {
   final String? initialText;
+  final bool isForChatSelection;
 
   const LiveScanCameraScreen({
     super.key,
     this.initialText,
+    this.isForChatSelection = false,
   });
 
   @override
@@ -111,7 +113,7 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
           _isInitializing = false;
           _permissionDenied = true;
           _errorMessage =
-              "Camera permission permanently denied hai. Settings se allow karein.";
+              "Camera permission permanently denied. Please allow in Settings.";
         });
         return;
       } else if (!status.isGranted) {
@@ -120,7 +122,7 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
           _isInitializing = false;
           _permissionDenied = true;
           _errorMessage =
-              "Camera permission denied. Text scan karne ke liye camera allow karein.";
+              "Camera permission denied. Please allow camera access to scan text.";
         });
         return;
       }
@@ -130,7 +132,7 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
         if (!mounted) return;
         setState(() {
           _isInitializing = false;
-          _errorMessage = "Device par camera nahi mila.";
+          _errorMessage = "No camera found on this device.";
         });
         return;
       }
@@ -146,7 +148,7 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
       if (!mounted) return;
       setState(() {
         _isInitializing = false;
-        _errorMessage = "Camera start nahi ho paya. Punah prayas karein.";
+        _errorMessage = "Camera preview failed to start. Please try again.";
       });
     }
   }
@@ -173,7 +175,7 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
       if (!mounted) return;
       setState(() {
         _isInitializing = false;
-        _errorMessage = "Camera preview start nahi ho paya.";
+        _errorMessage = "Failed to start camera preview.";
       });
     }
   }
@@ -201,7 +203,7 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
     if (_isScanning) return;
 
     if (controller == null || !controller.value.isInitialized) {
-      Utils().fluttertoast("Camera ready nahi hai");
+      Utils().fluttertoast("Camera is not ready");
       return;
     }
 
@@ -349,7 +351,7 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
 
   Widget _buildTopNavBar() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
       child: Row(
         children: [
           // Close button
@@ -381,12 +383,12 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
           ),
           SizedBox(width: 8.w),
 
-          // Language Selector Pill (English / Hindi)
+          // Clean Auto-Detect Chip (Zero Hindi UI text)
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(14.r),
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.15),
                 width: 1,
@@ -395,46 +397,56 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildLangPill(
-                  label: "English",
-                  isSelected: !_preferHindi,
-                  onTap: () => setState(() => _preferHindi = false),
+                Icon(
+                  Icons.auto_awesome_rounded,
+                  color: const Color(0xFFFFD600),
+                  size: 13.sp,
                 ),
-                _buildLangPill(
-                  label: "हिंदी",
-                  isSelected: _preferHindi,
-                  onTap: () => setState(() => _preferHindi = true),
+                SizedBox(width: 5.w),
+                Text(
+                  "Auto Detect",
+                  style: TextStyle(
+                    fontSize: 11.5.sp,
+                    fontFamily: FontFamily.interSemiBold,
+                    color: Colors.white70,
+                  ),
                 ),
               ],
             ),
           ),
+          if (widget.isForChatSelection && _textController.text.trim().isNotEmpty) ...[
+            SizedBox(width: 8.w),
+            InkWell(
+              onTap: () {
+                Navigator.pop(context, _textController.text.trim());
+              },
+              borderRadius: BorderRadius.circular(14.r),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5D47F1),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.check_rounded, color: Colors.white, size: 14.sp),
+                    SizedBox(width: 4.w),
+                    Text(
+                      "Use",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontFamily: FontFamily.interBold,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
-      ),
-    );
-  }
-
-  Widget _buildLangPill({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF5D47F1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(14.r),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 11.5.sp,
-            fontFamily: FontFamily.interSemiBold,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            color: isSelected ? Colors.white : Colors.white70,
-          ),
-        ),
       ),
     );
   }
@@ -540,37 +552,77 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
           ),
           SizedBox(height: 8.h),
 
-          // Message Editable TextField
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: 46.h,
-              maxHeight: 120.h,
-            ),
-            child: Scrollbar(
-              child: TextField(
-                controller: _textController,
-                maxLines: null,
-                keyboardType: TextInputType.multiline,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  height: 1.35,
-                  fontFamily: FontFamily.interRegular,
-                  color: const Color(0xFF1E202B),
-                ),
-                decoration: InputDecoration(
-                  hintText:
-                      "Camera ko text par point karein aur neeche 'Insert' dabayein...",
-                  hintStyle: TextStyle(
-                    fontSize: 13.sp,
-                    color: const Color(0xFF9CA3AF),
-                    fontFamily: FontFamily.interRegular,
+          // Message Editable TextField with Send/Share Action (matching iOS Live Text input bar)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: 46.h,
+                    maxHeight: 120.h,
                   ),
-                  isDense: true,
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
+                  child: Scrollbar(
+                    child: TextField(
+                      controller: _textController,
+                      maxLines: null,
+                      keyboardType: TextInputType.multiline,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        height: 1.35,
+                        fontFamily: FontFamily.interRegular,
+                        color: const Color(0xFF1E202B),
+                      ),
+                      decoration: InputDecoration(
+                        hintText:
+                            "Point camera at any text and tap 'Insert' below...",
+                        hintStyle: TextStyle(
+                          fontSize: 13.sp,
+                          color: const Color(0xFF9CA3AF),
+                          fontFamily: FontFamily.interRegular,
+                        ),
+                        isDense: true,
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              SizedBox(width: 8.w),
+              // Purple circular send/share button
+              InkWell(
+                onTap: hasText
+                    ? () {
+                        if (widget.isForChatSelection) {
+                          Navigator.pop(context, _textController.text.trim());
+                        } else {
+                          _shareText();
+                        }
+                      }
+                    : null,
+                borderRadius: BorderRadius.circular(20.r),
+                child: Container(
+                  width: 36.w,
+                  height: 36.w,
+                  decoration: BoxDecoration(
+                    color: hasText
+                        ? const Color(0xFF5D47F1)
+                        : const Color(0xFFEDE9FE),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      widget.isForChatSelection
+                          ? Icons.check_rounded
+                          : Icons.send_rounded,
+                      size: 17.sp,
+                      color: hasText ? Colors.white : const Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -653,7 +705,7 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
               ),
               SizedBox(height: 12.h),
               Text(
-                _errorMessage ?? "Camera access enable karein.",
+                _errorMessage ?? "Please enable camera access.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white70,

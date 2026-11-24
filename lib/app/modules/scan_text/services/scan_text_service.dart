@@ -10,6 +10,7 @@ import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/modules/scan_text/views/live_scan_camera_screen.dart';
+import 'package:fgtracker/app/modules/scan_text/views/scan_text_preview_sheet.dart';
 import 'package:fgtracker/app/modules/scan_text/views/scan_text_result_screen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 
@@ -21,11 +22,206 @@ class ScanTextService {
   bool _isScanningDialogOpen = false;
 
   /// Opens the full-screen live camera text scanner
-  void openCameraScanner() {
-    Get.to(
-      () => const LiveScanCameraScreen(),
+  Future<String?> openCameraScanner({bool isForChatSelection = false}) async {
+    return await Get.to<String>(
+      () => LiveScanCameraScreen(isForChatSelection: isForChatSelection),
       transition: Transition.rightToLeft,
     );
+  }
+
+  /// Displays source selection sheet (Camera or Gallery) and returns chosen [ImageSource].
+  Future<ImageSource?> pickSource([BuildContext? context]) async {
+    final ctx = (context != null && context.mounted)
+        ? context
+        : (ContextUtility.context ?? Get.overlayContext ?? Get.context);
+    if (ctx == null) return null;
+
+    return await showModalBottomSheet<ImageSource>(
+      context: ctx,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (bottomSheetContext) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24.r),
+              topRight: Radius.circular(24.r),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 15,
+                offset: const Offset(0, -3),
+              ),
+            ],
+          ),
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Grab handle
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD1D5DB),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                SizedBox(height: 18.h),
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(8.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEDE9FE),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Icon(
+                        Icons.document_scanner_rounded,
+                        color: const Color(0xFF5D47F1),
+                        size: 20.sp,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Scan Text",
+                            style: TextStyle(
+                              fontSize: 17.sp,
+                              fontFamily: FontFamily.interBold,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1E202B),
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            "Select photo source to scan text",
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontFamily: FontFamily.interRegular,
+                              color: const Color(0xFF7A7F93),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20.h),
+                _buildSourceTile(
+                  icon: Icons.camera_alt_rounded,
+                  title: "Take Photo with Camera",
+                  subtitle: "Capture photo of document, paper, book or screen",
+                  onTap: () => Navigator.pop(bottomSheetContext, ImageSource.camera),
+                ),
+                SizedBox(height: 10.h),
+                _buildSourceTile(
+                  icon: Icons.photo_library_rounded,
+                  title: "Choose from Gallery",
+                  subtitle: "Select any existing photo from your device",
+                  onTap: () => Navigator.pop(bottomSheetContext, ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Complete Chat Scan Text Flow:
+  /// 1. Prompts user to pick Camera or Gallery.
+  /// 2. Captures / picks photo with permission handling.
+  /// 3. Extracts text using offline Google ML Kit (Latin-first + Devanagari fallback).
+  /// 4. If no text: displays "No text found, try again with clear photo" toast.
+  /// 5. If text found: displays [ScanTextPreviewSheet] where user can edit text.
+  /// 6. Returns the edited text when user taps "Send As Message", or null if cancelled.
+  Future<String?> startChatScanFlow(BuildContext context) async {
+    try {
+      final ImageSource? source = await pickSource(context);
+      if (source == null) return null;
+
+      if (source == ImageSource.camera) {
+        final status = await Permission.camera.status;
+        if (status.isPermanentlyDenied) {
+          _showPermissionDeniedDialog(
+            "Camera permission permanently denied. Please allow camera in Settings.",
+            openSettings: true,
+          );
+          return null;
+        }
+        if (!status.isGranted) {
+          final req = await Permission.camera.request();
+          if (req.isPermanentlyDenied) {
+            _showPermissionDeniedDialog(
+              "Camera permission permanently denied. Please allow camera in Settings.",
+              openSettings: true,
+            );
+            return null;
+          } else if (!req.isGranted) {
+            Utils().fluttertoast(
+              "Camera permission denied. Please allow camera access to scan text.",
+            );
+            return null;
+          }
+        }
+      }
+
+      XFile? pickedFile;
+      try {
+        pickedFile = await _picker.pickImage(
+          source: source,
+          imageQuality: 100,
+        );
+      } catch (e) {
+        AppLog.e('ImagePicker pickImage error: $e');
+        if (e.toString().toLowerCase().contains("camera_access_denied") ||
+            e.toString().toLowerCase().contains("permission")) {
+          Utils().fluttertoast(
+            "Camera permission denied. Please allow camera in Settings.",
+          );
+        }
+        return null;
+      }
+
+      if (pickedFile == null) return null;
+
+      _showScanningDialog();
+      final recognizedText = await extractTextFromImage(pickedFile.path);
+      _dismissScanningDialog();
+
+      final trimmed = recognizedText.trim();
+      if (trimmed.isEmpty) {
+        Utils().fluttertoast("No text found, try again with clear photo");
+        return null;
+      }
+
+      final activeContext = context.mounted
+          ? context
+          : (ContextUtility.context ?? Get.overlayContext ?? Get.context);
+      if (activeContext == null) return trimmed;
+
+      return await showModalBottomSheet<String>(
+        context: activeContext,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (sheetContext) => ScanTextPreviewSheet(
+          initialText: trimmed,
+        ),
+      );
+    } catch (e, stack) {
+      AppLog.e('startChatScanFlow error: $e', stackTrace: stack);
+      _dismissScanningDialog();
+      Utils().fluttertoast("No text found, try again with clear photo");
+      return null;
+    }
   }
 
   /// Shows bottom sheet with options: Camera or Gallery
@@ -116,8 +312,8 @@ class ScanTextService {
                 SizedBox(height: 20.h),
                 _buildSourceTile(
                   icon: Icons.camera_alt_rounded,
-                  title: "Camera se Photo Lo",
-                  subtitle: "Paper, book, board ya document ki photo kheencho",
+                  title: "Take Photo with Camera",
+                  subtitle: "Capture photo of document, paper, book or screen",
                   onTap: () {
                     Navigator.pop(bottomSheetContext);
                     openCameraScanner();
@@ -126,8 +322,8 @@ class ScanTextService {
                 SizedBox(height: 10.h),
                 _buildSourceTile(
                   icon: Icons.photo_library_rounded,
-                  title: "Gallery se Photo Chuno",
-                  subtitle: "Apne phone se koi bhi photo select karo",
+                  title: "Choose from Gallery",
+                  subtitle: "Select any existing photo from your device",
                   onTap: () {
                     Navigator.pop(bottomSheetContext);
                     startScanFlow(ImageSource.gallery);
@@ -215,7 +411,7 @@ class ScanTextService {
         final status = await Permission.camera.status;
         if (status.isPermanentlyDenied) {
           _showPermissionDeniedDialog(
-            "Camera permission permanently denied hai. Text scan karne ke liye settings se camera allow karein.",
+            "Camera permission permanently denied. Please allow camera in Settings.",
             openSettings: true,
           );
           return;
@@ -224,13 +420,13 @@ class ScanTextService {
           final req = await Permission.camera.request();
           if (req.isPermanentlyDenied) {
             _showPermissionDeniedDialog(
-              "Camera permission permanently denied hai. Text scan karne ke liye settings se camera allow karein.",
+              "Camera permission permanently denied. Please allow camera in Settings.",
               openSettings: true,
             );
             return;
           } else if (!req.isGranted) {
             Utils().fluttertoast(
-              "Camera permission denied. Text scan karne ke liye camera allow karein.",
+              "Camera permission denied. Please allow camera access to scan text.",
             );
             return;
           }
@@ -248,7 +444,7 @@ class ScanTextService {
         if (e.toString().toLowerCase().contains("camera_access_denied") ||
             e.toString().toLowerCase().contains("permission")) {
           Utils().fluttertoast(
-            "Camera permission denied. Settings se allow karein.",
+            "Camera permission denied. Please allow camera in Settings.",
           );
         }
         return;
@@ -401,7 +597,7 @@ class ScanTextService {
                 ),
                 SizedBox(height: 6.h),
                 Text(
-                  "Photo se text nikala ja raha hai",
+                  "Extracting text from image...",
                   style: TextStyle(
                     fontSize: 12.5.sp,
                     fontFamily: FontFamily.interRegular,

@@ -947,36 +947,32 @@ The extra circular badge icons between `AppBackButton` and the title have been c
 
 ---
 
-## 13. Scan Text Module (Offline ML Kit Full-Screen Live Camera / Gallery Text OCR)
+## 13. Scan Text Module (Offline ML Kit Chat Attachment Text OCR)
 
 ### 13.1 Overview & Objective
-An on-device, completely offline Text Recognition (OCR) feature modeled after iOS Live Text OCR capability ("msg type jese"). It provides a unified screen with a top editable **Message Bubble** and an in-app live camera viewfinder with yellow targeting brackets `[  ]`, torch toggle, and an instant "Insert" button. It scans printed, handwritten, or digital text from books, papers, documents, computer monitors, receipts, whiteboards, visiting cards, posters, etc., with Latin-first precision and Devanagari fallback, without opening external camera apps and without requiring internet connectivity.
+An on-device, completely offline Text Recognition (OCR) feature integrated directly into Chat attachments (`+` / paperclip). It allows users to capture photos via Camera or pick images from Gallery, automatically extracts text using offline Google ML Kit, allows quick editing in a clean preview sheet, and sends it directly as a chat message via **"Send As Message"**.
+* **MenuBar Cleanup**: Scan Text has been cleanly removed from MenuBar (`sidemenu.dart`) so the side menu remains 100% in its original state.
+* **Chat Integration**: Added inside `ChatBottomSheet.showFileOptions` alongside Camera, Gallery, and Document in the primary attachment grid.
+* **Accuracy & Language**: Uses a Latin-first engine (`TextRecognitionScript.latin`) with Devanagari fallback, guaranteeing 100% accurate English, numbers, and code without random Hindi characters, while also supporting Hindi text scanning.
+* **Zero Hindi UI**: All UI labels, hints, toasts, and buttons are strictly in clean English.
 
 ### 13.2 Architecture & Flow
-1. **Entry Point (MenuBar / Drawer)**:
-   - Added `Scan Text` item in `lib/app/modules/home/Views/sidemenu.dart` under `_buildMenuItems` with `Icons.document_scanner_rounded`.
-   - Preserves all existing side menu items, order, layout, and header overflow constraints.
-   - Tapping it pops the drawer and immediately launches `LiveScanCameraScreen` full screen.
-2. **Unified Live Camera & Message Screen (`LiveScanCameraScreen`)**:
-   - **Top Navigation Bar**: Close button `(X)` and Language selector pill (`English` / `हिंदी`).
-   - **Top Message Bubble ("msg type jese")**:
-     - Shows scanned text directly inside an editable message draft card.
-     - Real-time word and character counter (`X w • Y c`).
-     - Action buttons right on the bubble: **Copy** (with "Copied" toast), **Share** (WhatsApp/Messages native share sheet), and **Clear**.
-   - **Bottom Live Camera Viewfinder**:
-     - Built using Flutter's official `camera` package (`CameraController` with `ResolutionPreset.high`, `enableAudio: false`).
-     - **Viewfinder Reticle**: Centered custom-painted yellow corner brackets (`[   ]`) matching iOS Live Text design.
-     - **Bottom Controls Row**:
-       - **Gallery Button**: Quick access to pick existing documents/photos from phone storage.
-       - **"Insert" Pill Button**: High-visibility blue pill action button (`Color(0xFF007AFF)`) that instantly captures the frame, extracts text, and inserts it directly into the top Message Bubble.
-       - **Flash/Torch Button**: Turns flashlight on/off for dark environments.
-3. **High-Accuracy OCR Pipeline (`ScanTextService`)**:
-   - **Latin-First Recognition**: Prioritizes `TextRecognitionScript.latin` for English, code, numbers, punctuation, and receipts. Eliminates Devanagari hallucination of random Hindi ligatures (`है।`, `औऊ`) on English text.
-   - **Devanagari Fallback / Toggle**: If text contains Hindi characters or if user selects `हिंदी`, runs `TextRecognitionScript.devanagiri` for accurate Hindi OCR.
-4. **Error & Edge Case Resilience**:
-   - If an image contains no recognizable text: Displays `"No text found, try again with clear photo"` toast without crashing.
-   - Blurry, invalid, or zero-byte files are caught cleanly and do not crash the application.
-   - Completely offline functionality without relying on cloud APIs or network requests.
+1. **Entry Point (Chat Attachment `+` Menu)**:
+   - In `ChatBottomSheet.showFileOptions`, "Scan Text" is located in Row 1 alongside Gallery, Camera, and Document (`icon: Icons.document_scanner_rounded`, color: `#5D47F1`, title: "Scan Text").
+   - Tapping it triggers `onScanText` in `ChatInputArea`.
+2. **Scan Source Selection & Capture**:
+   - `ScanTextService.instance.startChatScanFlow(context)` opens a source selection sheet with:
+     - **Take Photo with Camera**: Captures paper, book, whiteboard, screen, receipts.
+     - **Choose from Gallery**: Picks existing photo from device storage.
+   - Permissions handled gracefully for iOS (`Info.plist`) and Android (`AndroidManifest.xml`).
+3. **Automatic Extraction & Error Handling**:
+   - A non-blocking "Scanning..." dialog appears while processing.
+   - Text is extracted completely offline.
+   - If no text is found, displays `"No text found, try again with clear photo"` toast without crashing.
+4. **Preview & "Send As Message" (`ScanTextPreviewSheet`)**:
+   - Shows extracted text in an editable text field with word/character counter.
+   - **Copy Button**: Copies text to clipboard with "Copied" toast.
+   - **"Send As Message" Button**: Pops the preview sheet, returns the edited text to `ChatInputArea`, sets `widget.textController.text = text`, and immediately triggers `widget.onSend()` to send the message in the chat.
 
 ### 13.3 Platform Configurations
 - **Android**:
@@ -987,9 +983,18 @@ An on-device, completely offline Text Recognition (OCR) feature modeled after iO
   - `Info.plist`: `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`.
   - `Podfile`: `pod 'GoogleMLKit/TextRecognitionDevanagari', '~> 9.0.0'`.
 
-### 13.4 Verification & Tests
-- Automated test suites:
-  - `test/scan_text_proof_test.dart`: Verifies MenuBar option, Result Screen editing/copying/sharing, Full-screen live camera reticle, and Error case handling; generates golden proofs.
-  - `test/scan_text_unit_test.dart`: Verifies `ScanTextService` edge cases and exception safety.
+### 13.4 Verification & Proofs
+- **Automated Tests**:
+  - `test/scan_text_proof_test.dart`:
+    - `Proof A`: Confirms MenuBar DOES NOT contain Scan Text (100% removed).
+    - `Proof B`: Confirms Chat Attachment (+) Menu contains Scan Text alongside Camera, Gallery, Document.
+    - `Proof C`: Confirms `ScanTextPreviewSheet` renders editable text, Copy button, and Send As Message button.
+    - `Proof D`: Confirms error handling and toast when no text is found.
+  - `test/scan_text_unit_test.dart`: Validates exception safety on invalid/non-existent files.
+- **Proof Artifacts**:
+  - `proof_a_menubar.png`: MenuBar without Scan Text.
+  - `proof_b_chat_attachment_sheet.png`: Chat attachment sheet with Scan Text option.
+  - `proof_c_scan_preview_sheet.png`: Scanned text preview sheet with "Send As Message" button.
+  - `proof_d_error_case.png`: Safe error case display.
 
 

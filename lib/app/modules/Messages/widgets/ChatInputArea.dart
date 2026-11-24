@@ -25,6 +25,7 @@ import 'package:fgtracker/features/voice_input/voice_input_controller.dart';
 import 'package:fgtracker/features/voice_input/voice_input_sheet.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/chat_screen_logic.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/modules/scan_text/services/scan_text_service.dart';
 
 class ChatInputArea extends StatefulWidget {
   final RxString messageText;
@@ -562,6 +563,44 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                             onContact: () async {
                                               Navigator.pop(context);
                                               widget.onContactSelected();
+                                            },
+                                            onScanText: () async {
+                                              final scannedText =
+                                                  await ScanTextService.instance
+                                                      .startChatScanFlow(
+                                                context,
+                                              );
+                                              if (scannedText != null &&
+                                                  scannedText.trim().isNotEmpty) {
+                                                final textToSend =
+                                                    scannedText.trim();
+                                                widget.textController.text =
+                                                    textToSend;
+                                                widget.textController.selection =
+                                                    TextSelection.fromPosition(
+                                                  TextPosition(
+                                                      offset: textToSend.length),
+                                                );
+                                                widget.messageText.value =
+                                                    textToSend;
+                                                widget.messageController
+                                                    ?.onInputTextChanged(
+                                                        textToSend);
+                                                widget.groupMessageController
+                                                    ?.onInputTextChanged(
+                                                        textToSend);
+                                                if (widget.groupMembers
+                                                        ?.isNotEmpty ==
+                                                    true) {
+                                                  widget.groupMessageController
+                                                      ?.onTextChanged(
+                                                    textController:
+                                                        widget.textController,
+                                                  );
+                                                }
+                                                // Automatically send as message in chat
+                                                widget.onSend();
+                                              }
                                             },
                                             onAttendance: isGroupAdmin
                                                 ? () {

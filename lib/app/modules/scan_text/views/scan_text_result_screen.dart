@@ -151,44 +151,10 @@ class _ScanTextResultScreenState extends State<ScanTextResultScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top helper notice
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEDE9FE).withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: const Color(0xFFDDD6FE), width: 1),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.edit_note_rounded,
-                      color: const Color(0xFF5D47F1),
-                      size: 20.sp,
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: Text(
-                        "Scan hua text neeche hai. Aap isme koi bhi badlaav (edit) kar sakte hain.",
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontFamily: FontFamily.interRegular,
-                          color: const Color(0xFF4338CA),
-                          height: 1.3,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
             // Editable Text Area
             Expanded(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 child: Container(
                   width: double.infinity,
                   padding: EdgeInsets.all(16.w),
@@ -220,7 +186,7 @@ class _ScanTextResultScreenState extends State<ScanTextResultScreen> {
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
-                      hintText: "Scanned text yahan dikhega...",
+                      hintText: "Scanned text will appear here...",
                       hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
                     ),
                   ),

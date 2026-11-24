@@ -103,6 +103,7 @@ class ChatBottomSheet {
     required VoidCallback onContact,
     VoidCallback? onAttendance,
     bool showAttendance = false,
+    VoidCallback? onScanText,
   }) async {
     return showModalBottomSheet(
       context: context,
@@ -202,6 +203,17 @@ class ChatBottomSheet {
                     title: context.l10n.sheet_document,
                     onTap: onDocument,
                   ),
+                  if (onScanText != null)
+                    _attachmentItem(
+                      icon: Icons.document_scanner_rounded,
+                      iconColor: const Color(0xFF5D47F1),
+                      bgColor: const Color(0xFFEDE9FE),
+                      title: "Scan Text",
+                      onTap: () {
+                        Navigator.pop(sheetContext);
+                        onScanText();
+                      },
+                    ),
                   _attachmentItem(
                     icon: Icons.location_on_rounded,
                     iconColor: const Color(0xFF3B82F6),
