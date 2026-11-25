@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart' as rtc;
 
 import 'package:fgtracker/app/Model/group_call_participant.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/l10n/l10n.dart';
@@ -80,10 +81,20 @@ class _GroupScreenShareFullScreenState
   void _zoomOut() => _setZoom(_currentZoom.value / 1.25);
   void _resetZoom() => _transformationController.value = Matrix4.identity();
 
+  rtc.RTCVideoRenderer? _getRenderer() {
+    if (widget.participant.isLocal) {
+      if (widget.controller.localRenderer.textureId != null) {
+        return widget.controller.localRenderer;
+      }
+    }
+    return Socket_GroupCallService.instance.remoteRenderers[widget.participant.userId] ??
+        widget.participant.renderer;
+  }
+
   Widget _buildScreenShareView() {
     return Obx(() {
       final isConnected = widget.participant.isConnected.value;
-      final renderer = widget.participant.renderer;
+      final renderer = _getRenderer();
 
       if (!isConnected ||
           renderer == null ||
@@ -104,6 +115,7 @@ class _GroupScreenShareFullScreenState
 
       return rtc.RTCVideoView(
         renderer,
+        key: ValueKey('screen_share_${widget.participant.userId}_${renderer.srcObject?.id}'),
         mirror: false,
         objectFit: rtc.RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
       );

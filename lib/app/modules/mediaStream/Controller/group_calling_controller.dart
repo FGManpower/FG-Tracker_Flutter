@@ -468,6 +468,7 @@ class GroupCallingController extends GetxController with WidgetsBindingObserver 
             Utils().fluttertoast('Screen share permission denied');
             return;
           }
+          await ScreenShareForegroundService.startScreenShareService(groupName: groupName);
         }
 
         final constraints = webrtc.WebRTC.platformIsIOS
@@ -477,10 +478,6 @@ class GroupCallingController extends GetxController with WidgetsBindingObserver 
         screenStream = await webrtc.navigator.mediaDevices.getDisplayMedia(constraints);
         if (screenStream == null || screenStream!.getVideoTracks().isEmpty) {
           throw Exception("No stream");
-        }
-
-        if (Platform.isAndroid) {
-          await ScreenShareForegroundService.startScreenShareService(groupName: groupName);
         }
 
         final screenTrack = screenStream!.getVideoTracks().first;

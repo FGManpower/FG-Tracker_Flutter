@@ -1198,6 +1198,17 @@ class firebaseNotificationServices {
                     message.data['callerProfileImage'])
                 ?.toString() ??
             '';
+        final speakerId = (message.data['speakerId'] ??
+                    message.data['speaker_id'] ??
+                    message.data['adminId'] ??
+                    message.data['admin_id'] ??
+                    message.data['callerId'])
+                ?.toString();
+        final myId = GroupWalkieService.instance.selfUserId ??
+            Global.storageServices.get(PrefConst.userId)?.toString();
+        if (speakerId != null && myId != null && speakerId == myId) {
+          return;
+        }
 
         if (groupId.isNotEmpty) {
           if (type == "frombackground") {
@@ -1291,6 +1302,17 @@ class firebaseNotificationServices {
                     message.data['callerProfileImage'])
                 ?.toString() ??
             '';
+        final speakerId = (message.data['speakerId'] ??
+                    message.data['speaker_id'] ??
+                    message.data['adminId'] ??
+                    message.data['admin_id'] ??
+                    message.data['callerId'])
+                ?.toString();
+        final myId = GroupWalkieService.instance.selfUserId ??
+            Global.storageServices.get(PrefConst.userId)?.toString();
+        if (speakerId != null && myId != null && speakerId == myId) {
+          return;
+        }
 
         final rawJoinedCount = message.data['joinedMemberCount'] ??
             message.data['joinedCount'] ??
@@ -1300,13 +1322,6 @@ class firebaseNotificationServices {
         final int? joinedCount = rawJoinedCount != null
             ? int.tryParse(rawJoinedCount.toString())
             : null;
-
-        final speakerId = message.data['speakerId']?.toString();
-        final myId = GroupWalkieService.instance.selfUserId ??
-            Global.storageServices.get(PrefConst.userId)?.toString();
-        if (speakerId != null && myId != null && speakerId == myId) {
-          return;
-        }
 
         final isForeground =
             WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
