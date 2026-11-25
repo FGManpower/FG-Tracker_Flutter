@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -10,7 +11,6 @@ import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/modules/scan_text/views/live_scan_camera_screen.dart';
-import 'package:fgtracker/app/modules/scan_text/views/scan_text_preview_sheet.dart';
 import 'package:fgtracker/app/modules/scan_text/views/scan_text_result_screen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 
@@ -29,8 +29,15 @@ class ScanTextService {
     );
   }
 
-  /// Displays source selection sheet (Camera or Gallery) and returns chosen [ImageSource].
-  Future<ImageSource?> pickSource([BuildContext? context]) async {
+  /// Starts the chat scan text flow using the live camera scanner:
+  /// Opens the live camera scanner with yellow reticle [  ], torch, and Insert button.
+  /// When user taps Send, recognized text is returned to ChatInputArea and sent as a normal message.
+  Future<String?> startChatScanFlow([BuildContext? context]) async {
+    return await openCameraScanner(isForChatSelection: true);
+  }
+
+  /// Bottom sheet to choose between Camera or Gallery
+  Future<ImageSource?> selectScanSource([BuildContext? context]) async {
     final ctx = (context != null && context.mounted)
         ? context
         : (ContextUtility.context ?? Get.overlayContext ?? Get.context);
@@ -119,14 +126,18 @@ class ScanTextService {
                   icon: Icons.camera_alt_rounded,
                   title: "Take Photo with Camera",
                   subtitle: "Capture photo of document, paper, book or screen",
-                  onTap: () => Navigator.pop(bottomSheetContext, ImageSource.camera),
+                  onTap: () {
+                    Navigator.pop(bottomSheetContext, ImageSource.camera);
+                  },
                 ),
                 SizedBox(height: 10.h),
                 _buildSourceTile(
                   icon: Icons.photo_library_rounded,
                   title: "Choose from Gallery",
                   subtitle: "Select any existing photo from your device",
-                  onTap: () => Navigator.pop(bottomSheetContext, ImageSource.gallery),
+                  onTap: () {
+                    Navigator.pop(bottomSheetContext, ImageSource.gallery);
+                  },
                 ),
               ],
             ),
@@ -134,207 +145,15 @@ class ScanTextService {
         );
       },
     );
-  }
-
-  /// Complete Chat Scan Text Flow:
-  /// 1. Prompts user to pick Camera or Gallery.
-  /// 2. Captures / picks photo with permission handling.
-  /// 3. Extracts text using offline Google ML Kit (Latin-first + Devanagari fallback).
-  /// 4. If no text: displays "No text found, try again with clear photo" toast.
-  /// 5. If text found: displays [ScanTextPreviewSheet] where user can edit text.
-  /// 6. Returns the edited text when user taps "Send As Message", or null if cancelled.
-  Future<String?> startChatScanFlow(BuildContext context) async {
-    try {
-      final ImageSource? source = await pickSource(context);
-      if (source == null) return null;
-
-      if (source == ImageSource.camera) {
-        final status = await Permission.camera.status;
-        if (status.isPermanentlyDenied) {
-          _showPermissionDeniedDialog(
-            "Camera permission permanently denied. Please allow camera in Settings.",
-            openSettings: true,
-          );
-          return null;
-        }
-        if (!status.isGranted) {
-          final req = await Permission.camera.request();
-          if (req.isPermanentlyDenied) {
-            _showPermissionDeniedDialog(
-              "Camera permission permanently denied. Please allow camera in Settings.",
-              openSettings: true,
-            );
-            return null;
-          } else if (!req.isGranted) {
-            Utils().fluttertoast(
-              "Camera permission denied. Please allow camera access to scan text.",
-            );
-            return null;
-          }
-        }
-      }
-
-      XFile? pickedFile;
-      try {
-        pickedFile = await _picker.pickImage(
-          source: source,
-          imageQuality: 100,
-        );
-      } catch (e) {
-        AppLog.e('ImagePicker pickImage error: $e');
-        if (e.toString().toLowerCase().contains("camera_access_denied") ||
-            e.toString().toLowerCase().contains("permission")) {
-          Utils().fluttertoast(
-            "Camera permission denied. Please allow camera in Settings.",
-          );
-        }
-        return null;
-      }
-
-      if (pickedFile == null) return null;
-
-      _showScanningDialog();
-      final recognizedText = await extractTextFromImage(pickedFile.path);
-      _dismissScanningDialog();
-
-      final trimmed = recognizedText.trim();
-      if (trimmed.isEmpty) {
-        Utils().fluttertoast("No text found, try again with clear photo");
-        return null;
-      }
-
-      final activeContext = context.mounted
-          ? context
-          : (ContextUtility.context ?? Get.overlayContext ?? Get.context);
-      if (activeContext == null) return trimmed;
-
-      return await showModalBottomSheet<String>(
-        context: activeContext,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (sheetContext) => ScanTextPreviewSheet(
-          initialText: trimmed,
-        ),
-      );
-    } catch (e, stack) {
-      AppLog.e('startChatScanFlow error: $e', stackTrace: stack);
-      _dismissScanningDialog();
-      Utils().fluttertoast("No text found, try again with clear photo");
-      return null;
-    }
   }
 
   /// Shows bottom sheet with options: Camera or Gallery
   Future<void> showScanSourceSheet([BuildContext? context]) async {
-    final ctx = (context != null && context.mounted)
-        ? context
-        : (ContextUtility.context ?? Get.overlayContext ?? Get.context);
-    if (ctx == null) return;
-
-    showModalBottomSheet(
-      context: ctx,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (bottomSheetContext) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(24.r),
-              topRight: Radius.circular(24.r),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 15,
-                offset: const Offset(0, -3),
-              ),
-            ],
-          ),
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Grab handle
-                Container(
-                  width: 40.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD1D5DB),
-                    borderRadius: BorderRadius.circular(2.r),
-                  ),
-                ),
-                SizedBox(height: 18.h),
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(8.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEDE9FE),
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Icon(
-                        Icons.document_scanner_rounded,
-                        color: const Color(0xFF5D47F1),
-                        size: 20.sp,
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Scan Text",
-                            style: TextStyle(
-                              fontSize: 17.sp,
-                              fontFamily: FontFamily.interBold,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1E202B),
-                            ),
-                          ),
-                          SizedBox(height: 2.h),
-                          Text(
-                            "Select an option to scan text from image",
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              fontFamily: FontFamily.interRegular,
-                              color: const Color(0xFF7A7F93),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 20.h),
-                _buildSourceTile(
-                  icon: Icons.camera_alt_rounded,
-                  title: "Take Photo with Camera",
-                  subtitle: "Capture photo of document, paper, book or screen",
-                  onTap: () {
-                    Navigator.pop(bottomSheetContext);
-                    openCameraScanner();
-                  },
-                ),
-                SizedBox(height: 10.h),
-                _buildSourceTile(
-                  icon: Icons.photo_library_rounded,
-                  title: "Choose from Gallery",
-                  subtitle: "Select any existing photo from your device",
-                  onTap: () {
-                    Navigator.pop(bottomSheetContext);
-                    startScanFlow(ImageSource.gallery);
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+    final source = await selectScanSource(context);
+    if (source != null) {
+      if (context != null && !context.mounted) return;
+      startScanFlow(source, context: context, isForChat: false);
+    }
   }
 
   Widget _buildSourceTile({
@@ -401,10 +220,12 @@ class ScanTextService {
     );
   }
 
-  /// Initiates image pick, scanning, and navigates to result screen
-  Future<void> startScanFlow(
+  /// Captures an image from Camera or Gallery, shows scanning loader, and extracts text.
+  /// Returns the extracted text string, or null if cancelled / no text found.
+  Future<String?> captureAndExtractText(
     ImageSource source, {
     BuildContext? context,
+    bool preferHindi = false,
   }) async {
     try {
       if (source == ImageSource.camera) {
@@ -414,7 +235,7 @@ class ScanTextService {
             "Camera permission permanently denied. Please allow camera in Settings.",
             openSettings: true,
           );
-          return;
+          return null;
         }
         if (!status.isGranted) {
           final req = await Permission.camera.request();
@@ -423,12 +244,12 @@ class ScanTextService {
               "Camera permission permanently denied. Please allow camera in Settings.",
               openSettings: true,
             );
-            return;
+            return null;
           } else if (!req.isGranted) {
             Utils().fluttertoast(
               "Camera permission denied. Please allow camera access to scan text.",
             );
-            return;
+            return null;
           }
         }
       }
@@ -447,12 +268,12 @@ class ScanTextService {
             "Camera permission denied. Please allow camera in Settings.",
           );
         }
-        return;
+        return null;
       }
 
       if (pickedFile == null) {
         // User cancelled without taking/picking a photo
-        return;
+        return null;
       }
 
       final String capturedImagePath = pickedFile.path;
@@ -460,33 +281,92 @@ class ScanTextService {
       // Show "Scanning..." loading dialog
       _showScanningDialog();
 
-      final recognizedText = await extractTextFromImage(capturedImagePath);
+      final recognizedText = await extractTextFromImage(
+        capturedImagePath,
+        preferHindi: preferHindi,
+      );
 
       // Dismiss scanning loading dialog
       _dismissScanningDialog();
 
-      if (recognizedText.trim().isEmpty) {
+      final trimmed = recognizedText.trim();
+      if (trimmed.isEmpty) {
         Utils().fluttertoast("No text found, try again with clear photo");
-        return;
+        return null;
       }
 
-      // Navigate to clean Result Screen
-      Get.to(
-        () => ScanTextResultScreen(
-          scannedText: recognizedText.trim(),
-          imagePath: capturedImagePath,
-        ),
-        transition: Transition.rightToLeft,
-      );
+      return trimmed;
     } catch (e, stack) {
-      AppLog.e('Error during scan text flow: $e', stackTrace: stack);
+      AppLog.e('Error during capture and extract text: $e', stackTrace: stack);
       _dismissScanningDialog();
       Utils().fluttertoast("No text found, try again with clear photo");
+      return null;
     }
   }
 
-  /// Extracts text from image using Latin (English/Numbers/Code) first, with
-  /// fallback to Devanagari (Hindi) if Latin finds no text or if Hindi text is present.
+  /// Initiates image pick, scanning, and navigates to result screen
+  Future<void> startScanFlow(
+    ImageSource source, {
+    BuildContext? context,
+    bool isForChat = false,
+  }) async {
+    final text = await captureAndExtractText(source, context: context);
+    if (text != null && text.isNotEmpty) {
+      Get.to(
+        () => ScanTextResultScreen(
+          scannedText: text,
+          isForChat: isForChat,
+        ),
+        transition: Transition.rightToLeft,
+      );
+    }
+  }
+
+  /// Crops an image to the central reticle zone (with generous safe margin)
+  /// to eliminate background desk, keyboard, monitor bezel, and surrounding noise.
+  Future<String> cropImageToViewfinder(String imagePath) async {
+    try {
+      final file = File(imagePath);
+      if (!file.existsSync()) return imagePath;
+
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty) return imagePath;
+
+      final original = img.decodeImage(bytes);
+      if (original == null) return imagePath;
+
+      // Ensure orientation is right-side up
+      final oriented = img.bakeOrientation(original);
+
+      // Crop the central 82% width and central 60% height
+      final cropW = (oriented.width * 0.82).round();
+      final cropH = (oriented.height * 0.60).round();
+      final cropX = ((oriented.width - cropW) / 2).round().clamp(0, oriented.width - 1);
+      final cropY = ((oriented.height - cropH) / 2).round().clamp(0, oriented.height - 1);
+
+      final cropped = img.copyCrop(
+        oriented,
+        x: cropX,
+        y: cropY,
+        width: cropW.clamp(1, oriented.width - cropX),
+        height: cropH.clamp(1, oriented.height - cropY),
+      );
+
+      final croppedPath = imagePath.replaceAll(RegExp(r'\.[a-zA-Z0-9]+$'), '_cropped.jpg');
+      final croppedFile = File(croppedPath);
+      await croppedFile.writeAsBytes(img.encodeJpg(cropped, quality: 95));
+
+      return croppedPath;
+    } catch (e) {
+      AppLog.e("Error cropping image to viewfinder: $e");
+      return imagePath;
+    }
+  }
+
+  /// Extracts text from image supporting both English (Latin) and Hindi (Devanagari).
+  /// Latin recognizer runs primarily to ensure 100% crisp English, code, numbers, and symbols
+  /// without hallucinating Hindi matras or Devanagari ligatures on English text.
+  /// If significant Hindi text is detected (>= 8 Devanagari characters), Devanagari model is used.
   Future<String> extractTextFromImage(
     String imagePath, {
     bool preferHindi = false,
@@ -497,26 +377,78 @@ class ScanTextService {
     final inputImage = InputImage.fromFilePath(imagePath);
 
     if (preferHindi) {
-      // If user specifically requested Hindi recognition
       final hindiText = await _tryDevanagariRecognition(inputImage);
-      if (hindiText.isNotEmpty) return hindiText;
-      return await _tryLatinRecognition(inputImage);
+      if (hindiText.isNotEmpty) return _cleanOcrText(hindiText);
+      final latinText = await _tryLatinRecognition(inputImage);
+      return _cleanOcrText(latinText);
     }
 
-    // 1. Primary: Latin Recognizer (Google ML Kit English, numbers, code, punctuation)
-    // Produces 100% crisp English recognition without hallucinating Hindi matras/letters
+    // 1. Primary: Run Latin Recognizer (Google ML Kit Latin model).
+    // Provides 100% crisp English recognition without hallucinating Hindi letters/matras on English text.
     final latinText = await _tryLatinRecognition(inputImage);
-    if (latinText.isNotEmpty) {
-      return latinText;
+
+    // 2. Check for Hindi text using Devanagari model
+    final devanagariText = await _tryDevanagariRecognition(inputImage);
+    final int hindiMatches = RegExp(r'[\u0900-\u097F]').allMatches(devanagariText).length;
+
+    // A real Hindi document or sentence contains multiple Devanagari characters (at least 8+).
+    // 1-2 stray matches are typically optical noise/glare on English screens, not genuine Hindi text.
+    if (hindiMatches >= 8) {
+      return _cleanOcrText(devanagariText);
     }
 
-    // 2. Fallback: Devanagari Recognizer (for Hindi documents, signs, books)
-    final devanagariText = await _tryDevanagariRecognition(inputImage);
+    // If no significant Hindi is present, use clean Latin text
+    if (latinText.isNotEmpty) {
+      return _cleanOcrText(latinText);
+    }
+
     if (devanagariText.isNotEmpty) {
-      return devanagariText;
+      return _cleanOcrText(devanagariText);
     }
 
     return '';
+  }
+
+  String _cleanOcrText(String raw) {
+    if (raw.trim().isEmpty) return '';
+    final lines = raw.split('\n');
+    final cleaned = <String>[];
+    bool lastEmpty = false;
+
+    for (var line in lines) {
+      var trimmed = line.trim();
+
+      // Strip leading artifact symbols (e.g. '|When', '•Text', '~Word', '¬Line')
+      trimmed = trimmed.replaceFirst(RegExp(r'^[|~^•°_¬«»§\\\/]+\s*'), '');
+
+      // Strip trailing artifact symbols
+      trimmed = trimmed.replaceFirst(RegExp(r'\s*[|~^•°_¬«»§\\\/]+$'), '');
+
+      // If line is empty after stripping:
+      if (trimmed.isEmpty) {
+        if (!lastEmpty && cleaned.isNotEmpty) {
+          cleaned.add('');
+          lastEmpty = true;
+        }
+        continue;
+      }
+
+      // Discard lines that contain NO letters or numbers (pure noise/borders like '-----' or '***')
+      final hasLetterOrDigit = RegExp(r'[\p{L}\p{N}]', unicode: true).hasMatch(trimmed);
+      if (!hasLetterOrDigit) {
+        continue;
+      }
+
+      // Discard stray 1-character glitch lines (e.g. lonely consonants like 'o', 'v', 'W')
+      if (trimmed.length == 1 && !RegExp(r'[0-9aAI]').hasMatch(trimmed)) {
+        continue;
+      }
+
+      cleaned.add(trimmed);
+      lastEmpty = false;
+    }
+
+    return cleaned.join('\n').trim();
   }
 
   Future<String> _tryLatinRecognition(InputImage inputImage) async {
