@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:fgtracker/app/Core/values/colors.dart';
@@ -36,8 +37,11 @@ class CallingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!Get.isRegistered<CallingController>()) {
-      // Call already ended; the route is closing.
-      return const ColoredBox(color: Colors.black);
+      // Call already ended; the route is closing. Keep seamless dark backdrop.
+      return const Scaffold(
+        backgroundColor: Color(0xFF0E0C14),
+        body: SizedBox.expand(),
+      );
     }
     final c = controller;
     return GetBuilder<CallingController>(
@@ -275,38 +279,42 @@ class CallingScreen extends StatelessWidget {
   }
 
   Widget _mainVideoLayer(CallingController c) {
-    final bool showLocalInMain =
-        c.isLocalVideoMain && (c.isVideoOn || !c.isRemoteVideoOn);
-    final bool hasVideo = showLocalInMain ? c.isVideoOn : c.isRemoteVideoOn;
+    return Obx(() {
+      final bool connected = isCallConnected(c);
+      // Before the call connects, local camera preview fills the screen (like WhatsApp),
+      // so caller sees their own live camera while waiting.
+      // Once connected, follows isLocalVideoMain toggle (remote in main by default).
+      final bool showLocalInMain = !connected ||
+          (c.isLocalVideoMain && (c.isVideoOn || !c.isRemoteVideoOn));
+      final bool hasVideo = showLocalInMain ? c.isVideoOn : c.isRemoteVideoOn;
 
-    return Positioned.fill(
-      child: RepaintBoundary(
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: c.toggleControls,
-          child: hasVideo
-              ? RTCVideoView(
-                  showLocalInMain ? c.localRenderer : c.remoteRenderer,
-                  key: ValueKey<String>(
-                    showLocalInMain
-                        ? 'main_local_${c.localRenderer.textureId}'
-                        : 'main_remote_${c.remoteRenderer.textureId}',
-                  ),
-                  mirror: showLocalInMain && c.isFrontCamera,
-                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                )
-              // Before the call connects the ringing avatar sits in the
-              // middle; a "Camera off" tile under it would overlap it.
-              : Obx(() => isCallConnected(c)
-                  ? _cameraOffTile()
-                  : const ColoredBox(
-                      key: ValueKey<String>('main_video_waiting'),
-                      color: _cameraOffBg,
-                      child: SizedBox.expand(),
-                    )),
+      return Positioned.fill(
+        child: RepaintBoundary(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: c.toggleControls,
+            child: hasVideo
+                ? RTCVideoView(
+                    showLocalInMain ? c.localRenderer : c.remoteRenderer,
+                    key: ValueKey<String>(
+                      showLocalInMain
+                          ? 'main_local_${c.localRenderer.textureId}'
+                          : 'main_remote_${c.remoteRenderer.textureId}',
+                    ),
+                    mirror: showLocalInMain && c.isFrontCamera,
+                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                  )
+                : (connected
+                    ? _cameraOffTile()
+                    : const ColoredBox(
+                        key: ValueKey<String>('main_video_waiting'),
+                        color: _cameraOffBg,
+                        child: SizedBox.expand(),
+                      )),
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   /// Consistent audio call background matching the deep purple/blue design in the screenshot.
@@ -1320,8 +1328,8 @@ class CallingScreen extends StatelessWidget {
         isVideo: onDark,
         size: size,
         activeIconColor: activeIconColor,
-        onTap: () async {
-          await c.toggleSpeaker(context);
+        onTap: () {
+          unawaited(c.toggleSpeaker(context));
           c.showControlsTemporarily();
         },
       );

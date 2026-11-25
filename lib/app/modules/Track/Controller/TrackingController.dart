@@ -308,9 +308,39 @@ class TrackController extends GetxController {
   }
 
   void _applyLiveSocketLocationUpdate(LiveLocationSocketModel data) {
+    final String userIdStr = data.userId.toString();
+
+    if (data.locationSharing == false) {
+      // User is in Private Mode: purge coordinates and map marker immediately
+      _knownUserCoordinates.remove(userIdStr);
+      radiusUsers.removeWhere((u) => u.userId.toString() == userIdStr);
+      groupModeUsers.removeWhere((u) => u.userId.toString() == userIdStr);
+
+      final ogIdx = onlineGroupMembers.indexWhere((m) => m.userId.toString() == userIdStr);
+      if (ogIdx >= 0) {
+        final ogm = onlineGroupMembers[ogIdx];
+        ogm.latitude = 0.0;
+        ogm.longitude = 0.0;
+        ogm.locationSharing = false;
+      }
+      for (final list in groupMembersMap.values) {
+        final mIdx = list.indexWhere((m) => (m.userId ?? m.id)?.toString() == userIdStr);
+        if (mIdx >= 0) {
+          list[mIdx].latitude = null;
+          list[mIdx].longitude = null;
+          list[mIdx].locationSharing = false;
+        }
+      }
+      groupMembersMap.refresh();
+      _refreshMembersAndMap();
+      if (isGroupMode.value) {
+        updateMapMarkersAndCircle();
+      }
+      return;
+    }
+
     if (data.lat == 0.0 || data.lng == 0.0) return;
 
-    final String userIdStr = data.userId.toString();
     final nowIso = DateTime.now().toIso8601String();
 
     String resolvedAddress = data.address;
@@ -525,21 +555,56 @@ class TrackController extends GetxController {
           }
         }
 
+        final rawLocSharing =
+            item['locationSharing'] ?? item['location_sharing'] ?? item['isLocationSharing'];
+        final bool isLocSharing = rawLocSharing is bool
+            ? rawLocSharing
+            : (rawLocSharing == null
+                ? true
+                : (rawLocSharing == 1 ||
+                    rawLocSharing == '1' ||
+                    rawLocSharing.toString().toLowerCase() == 'true'));
+
+        if (userId != null && !isLocSharing) {
+          final userIdStr = userId.toString();
+          _knownUserCoordinates.remove(userIdStr);
+          radiusUsers.removeWhere((u) => u.userId.toString() == userIdStr);
+          groupModeUsers.removeWhere((u) => u.userId.toString() == userIdStr);
+
+          final ogIdx = onlineGroupMembers.indexWhere((m) => m.userId.toString() == userIdStr);
+          if (ogIdx >= 0) {
+            final ogm = onlineGroupMembers[ogIdx];
+            ogm.latitude = 0.0;
+            ogm.longitude = 0.0;
+            ogm.locationSharing = false;
+          }
+          final String? gIdStr = item['groupId']?.toString() ??
+              (selectedGroupId.value.isNotEmpty ? selectedGroupId.value : null);
+          if (gIdStr != null && groupMembersMap.containsKey(gIdStr)) {
+            final list = groupMembersMap[gIdStr]!;
+            final mIdx = list.indexWhere((m) =>
+                (m.userId ?? m.id)?.toString() == userId.toString());
+            if (mIdx >= 0) {
+              final gm = list[mIdx];
+              gm.latitude = null;
+              gm.longitude = null;
+              gm.locationSharing = false;
+              groupMembersMap.refresh();
+            }
+          }
+          _refreshMembersAndMap();
+          if (isGroupMode.value) {
+            updateMapMarkersAndCircle();
+          }
+          return;
+        }
+
         if (userId != null &&
             lat != null &&
             lng != null &&
             lat != 0.0 &&
             lng != 0.0) {
           final nowIso = DateTime.now().toIso8601String();
-          final rawLocSharing =
-              item['locationSharing'] ?? item['location_sharing'];
-          final bool isLocSharing = rawLocSharing is bool
-              ? rawLocSharing
-              : (rawLocSharing == null
-                  ? true
-                  : (rawLocSharing == 1 ||
-                      rawLocSharing == '1' ||
-                      rawLocSharing.toString().toLowerCase() == 'true'));
 
           // Distance check for Live Tracking tab (radiusUsers)
           double myLat = currentLat.value;
@@ -563,7 +628,7 @@ class TrackController extends GetxController {
 
           final existingIdx = radiusUsers
               .indexWhere((u) => u.userId.toString() == userId.toString());
-          if (!isWithinRadius || !isLocSharing) {
+          if (!isWithinRadius) {
             if (existingIdx >= 0) {
               radiusUsers.removeAt(existingIdx);
             }
@@ -583,7 +648,7 @@ class TrackController extends GetxController {
               prev.battery = item['battery'];
             }
             _resolveAddressForUser(prev);
-          } else if (isLocSharing) {
+          } else {
             _knownUserCoordinates[userId.toString()] = LatLng(lat, lng);
             final String? itemName = item['name']?.toString();
             if (!isLoading.value &&
@@ -602,6 +667,7 @@ class TrackController extends GetxController {
                 battery: item['battery'] ??
                     item['batteryLevel'] ??
                     item['battery_level'],
+                locationSharing: true,
               );
               radiusUsers.add(newUser);
               _resolveAddressForUser(newUser);
@@ -617,6 +683,7 @@ class TrackController extends GetxController {
               gu.longitude = lng;
               gu.isOnline = true;
               gu.lastSeen = nowIso;
+              gu.locationSharing = true;
               if (addr != null && addr.isNotEmpty) gu.location = addr;
             }
           }
@@ -634,7 +701,7 @@ class TrackController extends GetxController {
               gm.longitude = lng;
               gm.isOnline = true;
               gm.lastSeen = nowIso;
-              gm.locationSharing = isLocSharing;
+              gm.locationSharing = true;
               if (addr != null && addr.isNotEmpty) gm.location = addr;
               if (item['battery'] != null) gm.battery = item['battery'];
               groupMembersMap.refresh();
@@ -986,19 +1053,10 @@ class TrackController extends GetxController {
           }
         }
 
-        // If member still has no GPS, generate a natural spread around the anchor so they APPEAR on map
+        // If member has no GPS or is in private mode, do NOT generate fake coordinates
         if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
-          final double ringMeters = 50.0 + (fallbackIndex % 4) * 30.0;
-          final double angle = (2 * math.pi * fallbackIndex) /
-              (allMemberUserIds.isNotEmpty ? allMemberUserIds.length : 1);
-          final double offsetLat = (ringMeters / 111320.0) * math.cos(angle);
-          final double cosLat = math.cos(anchorLat * math.pi / 180.0);
-          final double offsetLng =
-              (ringMeters / (111320.0 * (cosLat.abs() > 0.01 ? cosLat : 1.0))) *
-                  math.sin(angle);
-          lat = anchorLat + offsetLat;
-          lng = anchorLng + offsetLng;
-          fallbackIndex++;
+          lat = null;
+          lng = null;
         }
 
         // Resolved Profile Image
@@ -1086,8 +1144,8 @@ class TrackController extends GetxController {
 
         final int parsedUserId = int.tryParse(uId) ?? 0;
 
-        // If member is in Ghost Mode, do not show their location pin on the map
-        if (!isGhost) {
+        // If member is in Ghost Mode or has no valid coordinates, do not show their location pin on the map
+        if (!isGhost && lat != null && lng != null && lat != 0.0 && lng != 0.0) {
           groupUsers.add(UsersWithinRadiusData(
             userId:
                 parsedUserId != 0 ? parsedUserId : (m?.userId ?? loc?.userId),
@@ -1100,6 +1158,7 @@ class TrackController extends GetxController {
             team: selectedGroupName.value,
             location: m?.location ?? loc?.location,
             mobileNo: m?.mobileNo ?? loc?.mobileNo?.toString(),
+            locationSharing: true,
           ));
         }
       }
@@ -2380,13 +2439,31 @@ class TrackController extends GetxController {
   }
 
   void zoomToMember(dynamic member) {
-    // Check if member is in Ghost Mode: if so, do not zoom to location, show top notification popup
+    // Check if member is in Ghost / Private Mode: if so, do not zoom to location, show top notification popup
     bool isGhost = false;
     String memberName = appL10n.track_member;
-    if (member is LocationData) {
+    if (member is MemberModel) {
+      isGhost = member.locationSharing == false ||
+          member.latitude == null ||
+          member.longitude == null ||
+          member.latitude == 0.0 ||
+          member.longitude == 0.0;
+      memberName = member.name.trim().isNotEmpty ? member.name.trim() : appL10n.track_member;
+    } else if (member is LocationData) {
       isGhost = member.locationSharing == false ||
           member.locationSharing == 0 ||
-          member.locationSharing == '0';
+          member.locationSharing == '0' ||
+          member.latitude == null ||
+          member.longitude == null ||
+          member.latitude == 0.0 ||
+          member.longitude == 0.0;
+      memberName = member.name?.toString() ?? appL10n.track_member;
+    } else if (member is UsersWithinRadiusData) {
+      isGhost = member.locationSharing == false ||
+          member.latitude == null ||
+          member.longitude == null ||
+          member.latitude == 0.0 ||
+          member.longitude == 0.0;
       memberName = member.name?.toString() ?? appL10n.track_member;
     }
 
@@ -2587,11 +2664,18 @@ class TrackController extends GetxController {
       }
     }
 
-    // Fallback: nearby center position
+    // Fallback: if coordinates could not be resolved, do not zoom to a fake/center location
     if (targetLatLng == null) {
-      final lat = currentLat.value != 0.0 ? currentLat.value : 19.0932;
-      final lng = currentLong.value != 0.0 ? currentLong.value : 72.9163;
-      targetLatLng = LatLng(lat, lng);
+      Get.rawSnackbar(
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.white,
+        borderColor: const Color(0xFFE2E8F0),
+        borderWidth: 1.2,
+        borderRadius: 16,
+        duration: const Duration(seconds: 3),
+        message: appL10n.track_memberPausedSharing(memberName),
+      );
+      return;
     }
 
     mapController?.animateCamera(

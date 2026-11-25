@@ -887,7 +887,16 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     // Tracking keep-alive, without any dialog over the call (BUG-CALL-18).
     unawaited(_platform.keepTrackingAlive());
 
-    unawaited(_initializeCall());
+    // Allow the first frame of the route transition to render before heavy async media setup
+    if (!_platform.mediaEnabled) {
+      unawaited(_initializeCall());
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!isClosed && !_callFinished) {
+          unawaited(_initializeCall());
+        }
+      });
+    }
   }
 
   void _onRendererFrameEvent([int? width, int? height]) {
@@ -1127,17 +1136,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
     if (!_platform.mediaEnabled) return;
     try {
-      await localRenderer.initialize();
       if (_callFinished || _isCleaningUp || isClosed) {
         stopSound();
         return;
       }
-      await remoteRenderer.initialize();
-      if (_callFinished || _isCleaningUp || isClosed) {
-        stopSound();
-        return;
-      }
-      await screenRenderer.initialize();
+      await Future.wait([
+        localRenderer.initialize(),
+        remoteRenderer.initialize(),
+      ]);
       if (_callFinished || _isCleaningUp || isClosed) {
         stopSound();
         return;
@@ -2671,6 +2677,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           if (event.streams.isEmpty) await stream.addTrack(event.track);
           _remoteScreenStream = stream;
           try {
+            await _ensureScreenRendererInitialized();
             await screenRenderer.setSrcObject(
               stream: stream,
               trackId: event.track.id,
@@ -2785,15 +2792,31 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     await _disposePeerResources();
   }
 
+  bool _screenRendererInitialized = false;
+
+  Future<void> _ensureScreenRendererInitialized() async {
+    if (_screenRendererInitialized || _screenRendererReleased) return;
+    try {
+      await screenRenderer.initialize();
+      _screenRendererInitialized = true;
+    } catch (e) {
+      log("[SHARE] screenRenderer init error: $e");
+    }
+  }
+
   void _clearScreenRenderer() {
     try {
-      screenRenderer.srcObject = null;
+      if (_screenRendererInitialized) {
+        screenRenderer.srcObject = null;
+      }
     } catch (_) {}
   }
 
   void _disposeScreenRenderer() {
+    if (!_screenRendererInitialized) return;
     try {
       screenRenderer.dispose();
+      _screenRendererInitialized = false;
     } catch (_) {}
   }
 
@@ -3360,6 +3383,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   void toggleMic() {
     isAudioOn = !isAudioOn;
     final bool enabled = isAudioOn;
+    update();
     if (localStream != null) {
       for (final t in localStream!.getAudioTracks()) {
         t.enabled = enabled;
@@ -3393,7 +3417,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
     // Keep the iOS lock screen / CallKit mute button in sync.
     unawaited(_platform.syncCallKitMute(_callKitId, !enabled));
-    update();
   }
 
   void _emitCameraState(bool cameraOn) {
@@ -3507,8 +3530,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       final CallAudioRoute next = current == CallAudioRoute.speaker
           ? CallAudioRoute.earpiece
           : CallAudioRoute.speaker;
-      await audioRouteController.selectRoute(next);
+      audioRouteController.currentRoute.value = next;
       update();
+      unawaited(audioRouteController.selectRoute(next));
       return;
     }
     showAudioRoutePicker(context);

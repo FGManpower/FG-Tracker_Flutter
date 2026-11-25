@@ -24,7 +24,6 @@ import 'package:fgtracker/app/modules/Legal/Views/legal_document_screen.dart';
 import 'package:fgtracker/app/modules/Legal/Views/legal_screen.dart';
 import 'package:fgtracker/app/modules/home/Views/home_screen.dart';
 import 'package:fgtracker/app/modules/mediaStream/Bindings/call_binding.dart';
-import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/calling_screen.dart';
 import 'package:get/get.dart';
 import '../modules/Group/Views/QRScanScreen.dart';
@@ -189,16 +188,16 @@ class AppPages {
     GetPage(
       name: _Paths.callScreen,
       page: () => CallingScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       binding: StreamBinding(),
-      transitionDuration: const Duration(milliseconds: 500),
+      transitionDuration: const Duration(milliseconds: 250),
     ),
     GetPage(
       name: _Paths.IncomingCallScreen,
       page: () => IncomingCallScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       binding: IncomingCallBinding(),
-      transitionDuration: const Duration(milliseconds: 500),
+      transitionDuration: const Duration(milliseconds: 250),
     ),
     GetPage(
       name: _Paths.groupWalkieScreen,

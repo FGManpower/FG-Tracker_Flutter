@@ -76,38 +76,14 @@ class AudiocallScreen extends StatelessWidget {
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
-                  if (connected && c.remoteMicMuted.value) ...[
-                    SizedBox(height: 10.h),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.45),
-                        borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(color: Colors.white24, width: 0.8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.mic_off_rounded, color: const Color(0xFFFFB020), size: 16.sp),
-                          SizedBox(width: 6.w),
-                          Text(
-                            context.l10n.call_remoteMuted(name.isEmpty ? context.l10n.call_someone : name),
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13.sp,
-                              fontFamily: FontFamily.interMedium,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                   SizedBox(height: 28.h),
                   SizedBox(
                     height: 48.h,
-                    child: connected
-                        ? null
-                        : const _VoiceWave(color: Colors.white38),
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 250),
+                      opacity: connected ? 0.0 : 1.0,
+                      child: const _VoiceWave(color: Colors.white38),
+                    ),
                   ),
                 ],
               ),
@@ -127,7 +103,9 @@ class AudiocallScreen extends StatelessWidget {
 /// of GetX" on every rebuild.)
 bool isCallConnected(CallingController c) {
   final int seconds = c.callDurationRx.value;
-  return seconds > 0 || c.callTimer != null;
+  return seconds > 0 ||
+      c.callTimer != null ||
+      c.callStatus.value == "Connected";
 }
 
 /// Avatar with soft halo rings. The rings pulse while [animate] (calling /
@@ -178,7 +156,7 @@ class _CallPulseAvatarState extends State<CallPulseAvatar>
       _anim.repeat();
     } else if (!widget.animate && _anim.isAnimating) {
       _anim.stop();
-      _anim.value = 0.5;
+      _anim.value = 0.0;
     }
   }
 
@@ -227,6 +205,7 @@ class _CallPulseAvatarState extends State<CallPulseAvatar>
   }
 
   Widget _ring(double avatar, double box, Color color, double t) {
+    if (!widget.animate && t == 0.0) return const SizedBox.shrink();
     // Each ring grows from the avatar to the box edge and fades out.
     final double size = avatar + (box - avatar) * t;
     final double opacity = (1 - t) * (widget.onDark ? 0.22 : 0.20);
