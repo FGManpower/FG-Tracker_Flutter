@@ -39,6 +39,7 @@ import 'package:walkie_custom_notification/walkie_custom_notification.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:fgtracker/app/Data/Services/active_chat_tracker.dart';
+import 'package:fgtracker/app/Data/Services/group_call_service.dart';
 @pragma('vm:entry-point')
 void notificationTapBackground(
     NotificationResponse notificationResponse) async {
@@ -1124,6 +1125,10 @@ class firebaseNotificationServices {
           message.data['screenName'] == 'incomingGroupCall' ||
           message.data['screen_name'] == 'group_call' ||
           message.data['screen'] == 'incomingGroupCall') {
+        if (!GroupCallService.isGroupCallEnabled) {
+          AppLog.d("Group calls currently disabled (Coming Soon), ignoring incoming notification");
+          return;
+        }
         FlutterRingtonePlayer().stop();
         if (CallStateTracker.isIncomingCallScreenOpen) return;
         if (CallKitService.instance.isCallKitActive) {

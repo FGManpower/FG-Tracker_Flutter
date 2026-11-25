@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/Data/Services/group_call_service.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/call_pip.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/Group/group_call_pip_bubble.dart';
@@ -26,6 +28,18 @@ class GroupCallingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!GroupCallService.isGroupCallEnabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        GroupCallService.showComingSoon();
+        if (Get.currentRoute == Routes.groupCallingScreen) {
+          Get.back();
+        }
+      });
+      return const Scaffold(
+        backgroundColor: Color(0xFF0E0C14),
+        body: SizedBox.shrink(),
+      );
+    }
     final ctrl = _controller;
     return Obx(() {
       if (CallPip.inPip.value) {

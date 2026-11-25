@@ -16,6 +16,7 @@ import 'package:fgtracker/app/modules/mediaStream/Services/call_events.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/voip_token_uploader.dart';
 
 import '../Socket/Socket_SignallingService.dart';
+import '../group_call_service.dart';
 
 /// Android system incoming-call screen colours, matching the in-app call
 /// design (CallColors in call_widget.dart). Hex because the plugin takes
@@ -1021,6 +1022,10 @@ class CallKitService with WidgetsBindingObserver {
         final incomingId = sessionId.isNotEmpty ? sessionId : callId;
         if (incomingId.isEmpty) {
           _ck('handlePush incoming with EMPTY sessionId');
+          return true;
+        }
+        if (screen == 'incomingGroupCall' && !GroupCallService.isGroupCallEnabled) {
+          _ck('handlePush incomingGroupCall SKIPPED (group calls disabled)');
           return true;
         }
         final l = await loadAppL10nFromPrefs();

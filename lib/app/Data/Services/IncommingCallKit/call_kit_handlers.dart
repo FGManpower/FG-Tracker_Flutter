@@ -18,6 +18,7 @@ import 'package:flutter/material.dart' show BuildContext;
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/call_entry.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/app/Data/Services/group_call_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -72,6 +73,14 @@ void setupCallKitHandlers() {
           extra['isVideo'] == true ||
           extra['type'] == 1 ||
           extra['type'] == '1';
+
+      if (!GroupCallService.isGroupCallEnabled) {
+        if (uuid != null && uuid.isNotEmpty) {
+          unawaited(CallPlatform.instance.dismissCallKit(uuid).catchError((_) {}));
+        }
+        GroupCallService.showComingSoon();
+        return;
+      }
 
       if (uuid != null && uuid.isNotEmpty) {
         // Do NOT call dismissCallKit here as it triggers CXEndCallAction on iOS ("Call Ended" on CallKit UI).

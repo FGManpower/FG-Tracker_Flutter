@@ -4,6 +4,7 @@ import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Data/Services/group_call_service.dart';
 import '../../../routes/app_pages.dart';
 
 class GroupIncomingCallController extends GetxController {
@@ -82,6 +83,11 @@ class GroupIncomingCallController extends GetxController {
   void joinCall() {
     _stopRingtone();
     CallStateTracker.isIncomingCallScreenOpen = false;
+    if (!GroupCallService.isGroupCallEnabled) {
+      GroupCallService.showComingSoon();
+      Get.back();
+      return;
+    }
     Get.offNamed(
       Routes.groupCallingScreen,
       arguments: {

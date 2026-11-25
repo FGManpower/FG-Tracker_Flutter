@@ -6,6 +6,8 @@ import '../../../../../gen/fonts.gen.dart';
 import '../../../../Core/constant/const_res.dart';
 import '../../../../Core/theme/appTheme.dart';
 import '../../../../Core/values/utility.dart';
+import 'package:fgtracker/app/Data/Services/group_call_service.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import '../../Controller/group_incoming_call_controller.dart';
 import '../AudioCall_screen.dart';
 
@@ -14,6 +16,18 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
 
   @override
   Widget build(BuildContext context) {
+    if (!GroupCallService.isGroupCallEnabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        GroupCallService.showComingSoon();
+        if (Get.currentRoute == Routes.groupIncomingCallScreen) {
+          Get.back();
+        }
+      });
+      return const Scaffold(
+        backgroundColor: Color(0xFF0E0C14),
+        body: SizedBox.shrink(),
+      );
+    }
     return PopScope(
       canPop: false,
       child: Scaffold(
