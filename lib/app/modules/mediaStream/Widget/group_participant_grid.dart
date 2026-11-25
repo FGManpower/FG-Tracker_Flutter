@@ -38,12 +38,15 @@ class GroupParticipantGrid extends StatelessWidget {
         .contains(userId.toString().trim());
   }
 
+  GroupCallingController? get _groupController =>
+      Get.isRegistered<GroupCallingController>()
+          ? Get.find<GroupCallingController>()
+          : null;
+
   RTCVideoRenderer? _getLiveRenderer(GroupCallParticipant participant) {
     if (participant.isLocal) {
-      if (Get.isRegistered<GroupCallingController>()) {
-        final c = Get.find<GroupCallingController>();
-        if (c.localRenderer.textureId != null) return c.localRenderer;
-      }
+      final c = _groupController;
+      if (c != null && c.localRenderer.textureId != null) return c.localRenderer;
       return participant.renderer;
     }
     return Socket_GroupCallService.instance.remoteRenderers[participant.userId] ??
@@ -197,15 +200,13 @@ class GroupParticipantGrid extends StatelessWidget {
           children: [
             Obx(() {
               // 1. Force UI rebuild when new WebRTC streams attach to peers
-              if (Get.isRegistered<GroupCallingController>()) {
-                Get.find<GroupCallingController>().participantsUiTick.value;
+              final c = _groupController;
+              if (c != null) {
+                c.participantsUiTick.value;
               }
 
               final isVideoOn = participant.isLocal
-                  ? (Get.isRegistered<GroupCallingController>()
-                      ? (Get.find<GroupCallingController>().isVideo &&
-                          Get.find<GroupCallingController>().isVideoOn.value)
-                      : participant.isVideoOn.value)
+                  ? (c != null ? (c.isVideo && c.isVideoOn.value) : participant.isVideoOn.value)
                   : participant.isVideoOn.value;
 
               // 2. Fetch the live renderer from the Socket Service directly

@@ -17,6 +17,9 @@ import '../Services/walkie_notification_manager.dart';
 import '../../../routes/app_pages.dart';
 
 class WalkieInviteDialog {
+  static String? _lastGroupId;
+  static int _lastShowTime = 0;
+
   static void show({
     required String groupId,
     required String groupName,
@@ -29,6 +32,13 @@ class WalkieInviteDialog {
     int? joinedCount,
   }) {
     if (WalkieLaunchTracker.fromWalkieCall) return;
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (_lastGroupId == groupId && (now - _lastShowTime < 3000)) {
+      return;
+    }
+    _lastGroupId = groupId;
+    _lastShowTime = now;
 
     // Do not show dialog if user is already connected to or viewing this exact group
     final currentGid = GroupWalkieService.instance.currentGroupId ??

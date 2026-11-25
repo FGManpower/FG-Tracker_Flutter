@@ -207,11 +207,8 @@ class CallDeclineReceiver : BroadcastReceiver() {
 
     companion object {
         private const val TAG = "CallDeclineReceiver"
-//        private const val BASE_URL = "http://192.168.1.29:4000/api"
-        // Same HTTPS production host as the Dart app (ConstRes.aBaseUrl).
-        // Backend confirmed /callRejected there (calling doc 02, B-13);
-        // http://fgtracker.in:3000 was cleartext and is legacy.
-        private const val BASE_URL = "https://api.fgtracker.fgmanpower.co.in/api"
+        // VPS Testing Server host as the Dart app (ConstRes.aBaseUrl)
+        private const val BASE_URL = "http://89.116.23.2:3000/api"
 
         private const val FLUTTER_PREFS_NAME = "FlutterSharedPreferences"
         private const val PLUGIN_DECLINE_ACTION =

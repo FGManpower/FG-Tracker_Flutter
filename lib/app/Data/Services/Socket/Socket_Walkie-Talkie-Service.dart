@@ -941,10 +941,9 @@ class GroupWalkieService {
         return;
       }
 
-      // Backend emits walkie_member_alerted + admin_alert_walkie_member +
-      // walkie_invite for ONE admin alert — show it only once.
+      // Unified dedupe key matching NotificationServices to prevent dual popup from socket + FCM
       final dedupeKey =
-          'socket_invite_${inviteGroupId ?? ''}_${speakerId ?? data['speakerName'] ?? ''}';
+          'walkie_invite_${inviteGroupId ?? ''}_${speakerId ?? data['speakerName'] ?? ''}';
       if (firebaseNotificationServices.isDuplicateWalkieEvent(dedupeKey)) {
         return;
       }

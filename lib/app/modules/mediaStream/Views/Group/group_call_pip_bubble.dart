@@ -18,12 +18,17 @@ class GroupCallPipBubble extends StatelessWidget {
   static const double pipW = 160;
   static const double pipH = 260;
 
+  GroupCallingController? get _controller =>
+      Get.isRegistered<GroupCallingController>()
+          ? Get.find<GroupCallingController>()
+          : null;
+
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<GroupCallingController>()) {
+    final c = _controller;
+    if (c == null) {
       return const SizedBox.shrink();
     }
-    final c = Get.find<GroupCallingController>();
 
     return Material(
       color: Colors.black,

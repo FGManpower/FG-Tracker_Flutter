@@ -283,7 +283,7 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
 
         // Load speaker avatar if available
         if let imgStr = speakerImage?.trimmingCharacters(in: .whitespacesAndNewlines), !imgStr.isEmpty {
-            let fullUrlStr = imgStr.hasPrefix("http") ? imgStr : "https://api.fgtracker.fgmanpower.co.in/\(imgStr)"
+            let fullUrlStr = imgStr.hasPrefix("http") ? imgStr : "http://89.116.23.2:3000/\(imgStr)"
             if let url = URL(string: fullUrlStr) {
                 URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
                     guard let self = self, let data = data, let img = UIImage(data: data) else { return }

@@ -331,6 +331,16 @@ class Socket_GroupCallService {
       participantStatus[joinedUserId] = 'accepted';
       _addRemoteUser(joinedUserId);
 
+      if (localStream != null) {
+        if (_shouldCreateOfferTo(joinedUserId) && !_peers.containsKey(joinedUserId)) {
+          _createOfferTo(joinedUserId).catchError((e) {
+            _log('joined offer error $joinedUserId: $e');
+          });
+        }
+      } else {
+        _pendingOfferUserIds.add(joinedUserId);
+      }
+
       onParticipantJoined?.call(joinedUserId);
       onParticipantsUpdated?.call();
     });

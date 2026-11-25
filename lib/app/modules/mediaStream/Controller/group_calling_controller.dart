@@ -28,7 +28,13 @@ import '../Widget/audio_route_sheet.dart';
 import '../Widget/group_call_sheets.dart';
 
 class GroupCallingController extends GetxController with WidgetsBindingObserver {
-  final args = Get.arguments;
+  Map<String, dynamic> get args {
+    final raw = Get.arguments;
+    if (raw is Map<String, dynamic>) return raw;
+    if (raw is Map) return Map<String, dynamic>.from(raw);
+    return const <String, dynamic>{};
+  }
+
   final RxInt participantsUiTick = 0.obs;
 
   late String groupId;
@@ -180,7 +186,10 @@ class GroupCallingController extends GetxController with WidgetsBindingObserver 
       });
     });
 
-    getGroupMembersData(args["groupId"].toString());
+    final gid = groupId.isNotEmpty ? groupId : (args["groupId"]?.toString() ?? "");
+    if (gid.isNotEmpty) {
+      getGroupMembersData(gid);
+    }
   }
 
   void _bindServiceCallbacks() {
@@ -295,18 +304,19 @@ class GroupCallingController extends GetxController with WidgetsBindingObserver 
   }
 
   void _initData() {
-    groupId = args["groupId"]?.toString() ?? "";
-    groupName = args["groupName"]?.toString() ?? "Group Call";
-    groupProfile = args["groupProfile"]?.toString();
-    isVideo = args["isVideo"] == true;
-    totalMemberCount = args["memberCount"] ?? args["totalMemberCount"] ?? 0;
-    callType = args["callType"]?.toString() ?? "outgoing";
-    callId = args["callId"]?.toString();
+    final safeArgs = args;
+    groupId = safeArgs["groupId"]?.toString() ?? Socket_GroupCallService.instance.currentGroupId ?? "";
+    groupName = safeArgs["groupName"]?.toString() ?? "Group Call";
+    groupProfile = safeArgs["groupProfile"]?.toString();
+    isVideo = safeArgs["isVideo"] == true;
+    totalMemberCount = safeArgs["memberCount"] ?? safeArgs["totalMemberCount"] ?? 0;
+    callType = safeArgs["callType"]?.toString() ?? "outgoing";
+    callId = safeArgs["callId"]?.toString() ?? Socket_GroupCallService.instance.currentCallId;
     isVideoOn.value = isVideo;
 
-    final callerId = args["callerId"]?.toString();
-    final callerName = args["callerName"]?.toString();
-    final callerImage = (args["callerProfileImage"] ?? args["groupProfile"])?.toString();
+    final callerId = safeArgs["callerId"]?.toString();
+    final callerName = safeArgs["callerName"]?.toString();
+    final callerImage = (safeArgs["callerProfileImage"] ?? safeArgs["groupProfile"])?.toString();
 
     if (callerId != null && callerId.isNotEmpty) {
       _groupMemberIds.add(callerId);

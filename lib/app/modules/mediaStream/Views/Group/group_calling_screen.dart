@@ -14,21 +14,20 @@ import '../../../../../gen/fonts.gen.dart';
 class GroupCallingScreen extends StatelessWidget {
   const GroupCallingScreen({super.key});
 
-  GroupCallingController? get _controller =>
-      Get.isRegistered<GroupCallingController>()
-          ? Get.find<GroupCallingController>()
-          : null;
+  GroupCallingController get _controller {
+    if (!Get.isRegistered<GroupCallingController>()) {
+      Get.put<GroupCallingController>(
+        GroupCallingController(),
+        permanent: true,
+      );
+    }
+    return Get.find<GroupCallingController>();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final ctrl = _controller;
     return Obx(() {
-      final ctrl = _controller;
-      if (ctrl == null) {
-        return const Scaffold(
-          backgroundColor: Color(0xFF0E0C14),
-          body: SizedBox.shrink(),
-        );
-      }
       if (CallPip.inPip.value) {
         return const Scaffold(
           backgroundColor: Colors.black,

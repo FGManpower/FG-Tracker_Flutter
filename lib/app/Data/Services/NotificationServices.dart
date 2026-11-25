@@ -1218,9 +1218,10 @@ class firebaseNotificationServices {
               (Get.isRegistered<GroupWalkieController>()
                   ? Get.find<GroupWalkieController>().currentGroupId
                   : null);
-          if (currentGid != null && currentGid.toString() == groupId.toString() &&
+          if (ActiveChatTracker.isViewingWalkie(groupId) ||
+              (currentGid != null && currentGid.toString() == groupId.toString() &&
               (Get.currentRoute == Routes.groupWalkieScreen ||
-                  WalkieNotificationManager.instance.isWalkieScreenActive.value)) {
+                  WalkieNotificationManager.instance.isWalkieScreenActive.value))) {
             log("🔔 [handleMessage] User is actively in Walkie channel $groupId. Suppressing foreground notification.");
             return;
           }
@@ -1242,6 +1243,12 @@ class firebaseNotificationServices {
                   message.notification?.body ??
                   "$speakerName (Admin) is calling you into the channel.")
               : (message.notification?.body ?? message.data['body']?.toString());
+
+          final dedupeKey = 'walkie_invite_${groupId}_${speakerId ?? speakerName}';
+          if (isDuplicateWalkieEvent(dedupeKey)) {
+            log("🔔 [handleMessage] Duplicate Walkie event $dedupeKey suppressed");
+            return;
+          }
 
           Future.delayed(const Duration(milliseconds: 300), () {
             WalkieInviteDialog.show(
@@ -1311,17 +1318,25 @@ class firebaseNotificationServices {
             (Get.isRegistered<GroupWalkieController>()
                 ? Get.find<GroupWalkieController>().currentGroupId
                 : null);
-        if (currentGid != null && currentGid.toString() == groupId.toString() &&
+        if (ActiveChatTracker.isViewingWalkie(groupId) ||
+            (currentGid != null && currentGid.toString() == groupId.toString() &&
             (Get.currentRoute == Routes.groupWalkieScreen ||
-                WalkieNotificationManager.instance.isWalkieScreenActive.value)) {
+                WalkieNotificationManager.instance.isWalkieScreenActive.value))) {
           log("🔔 [handleMessage] User is actively in Walkie channel $groupId. Suppressing notification.");
           return;
         }
 
         if (groupId.isNotEmpty &&
+            !ActiveChatTracker.isViewingWalkie(groupId) &&
             (currentGid == null || currentGid.toString() != groupId.toString()) &&
             Get.currentRoute != Routes.groupWalkieScreen &&
             !WalkieNotificationManager.instance.isWalkieScreenActive.value) {
+          final dedupeKey = 'walkie_invite_${groupId}_${speakerId ?? speakerName}';
+          if (isDuplicateWalkieEvent(dedupeKey)) {
+            log("🔔 [handleMessage] Duplicate Walkie event $dedupeKey suppressed");
+            return;
+          }
+
           final String? notifTitle = message.notification?.title ?? message.data['title']?.toString();
           final String? notifSubtitle = (message.data['type'] == 'WALKIE_ADMIN_ALERT' ||
                   message.data['alertType'] == 'admin_nudge')
