@@ -204,6 +204,7 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
         var speakerImage: String?
 
         let userInfo = notification.request.content.userInfo
+        let dataDict = userInfo["data"] as? [String: Any]
 
         // 1. Direct userInfo
         groupName = (userInfo["groupName"] as? String) ?? (userInfo["title"] as? String)
@@ -230,18 +231,18 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
         }
 
         // 3. Inside data dictionary (FCM push notification)
-        if let dataDict = userInfo["data"] as? [String: Any] {
+        if let data = dataDict {
             if groupName == nil || groupName!.isEmpty {
-                groupName = dataDict["groupName"] as? String
+                groupName = data["groupName"] as? String
             }
             if speakerName == nil || speakerName!.isEmpty {
-                speakerName = dataDict["speakerName"] as? String
+                speakerName = data["speakerName"] as? String
             }
             if count == nil || count!.isEmpty {
-                count = (dataDict["joinedMemberCount"] as? String) ?? (dataDict["joinedCount"] as? String)
+                count = (data["joinedMemberCount"] as? String) ?? (data["joinedCount"] as? String)
             }
             if speakerImage == nil || speakerImage!.isEmpty {
-                speakerImage = (dataDict["speakerImage"] as? String) ?? (dataDict["speaker_image"] as? String)
+                speakerImage = (data["speakerImage"] as? String) ?? (data["speaker_image"] as? String)
             }
         }
 
