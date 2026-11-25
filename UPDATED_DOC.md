@@ -477,3 +477,28 @@ As mandated by project rules, the following verified and completed production mo
 - **Files Strictly Locked (Untouched):**
   - Profile Edit (`register1.dart`, `register2.dart`, etc.), Home, Dashboard, Attendance, Bookings, Chat, Payments.
 - **Static Analysis:** `dart analyze lib/Pages/Presentation/Application/Navigationbar.dart lib/Pages/Presentation/Application/Widget/menuBar_widget.dart` — **0 compilation errors**.
+
+---
+
+## 14. Home Screen Create Group Sheet — Single-View Layout & Keyboard Handling Fix
+
+### Problem Statement & Root Cause
+When opening the **Create Group** sheet from Home (`BottomActionsBar` -> `showCreateGroupSheet()` in `lib/app/Core/constant/BottomSheet/bottom_actions_bar.dart`), users had to scroll to see all elements, and opening the keyboard caused the header, text fields, and `Create Group` button to shift or get hidden:
+1. `showCreateGroupSheet()` set `isScrollControlled: false`, capping the bottom sheet at `9/16` (~56.25%) of available height, smaller than the natural form height.
+2. `showCreateGroupSheet()` wrapped `CreateGroupSheet` in `MediaQuery(..., viewInsets: EdgeInsets.zero)`, blocking `GetModalBottomSheetRoute` from receiving keyboard insets, while `CreateGroupSheet` had no keyboard-aware sizing or pinned header/footer.
+3. `_SheetHandle`, `_SheetHeader` (`"Create New Group"`), and `_SubmitButton` (`"Create Group"`) were inside a single `SingleChildScrollView`, causing the title and CTA button to scroll off-screen.
+4. `_FieldLabel` lacked `Flexible` around the label text, risking horizontal `RenderFlex` overflow on narrow screens or longer labels, and `_RoundedField` used `onTapOutside: (_) => FocusScope.of(context).unfocus()` which dismissed focus prematurely on tap transitions.
+
+### Architectural & UI Fixes Applied
+- **File Changed:** `lib/app/Core/constant/BottomSheet/bottom_actions_bar.dart`
+  1. Enabled `isScrollControlled: true` in `showCreateGroupSheet()` and removed the `MediaQuery(..., viewInsets: EdgeInsets.zero)` wrapper so `GetModalBottomSheetRoute` natively lifts the sheet above the keyboard on both iOS and Android.
+  2. Structured `CreateGroupSheet` into a 3-zone `Column(mainAxisSize: MainAxisSize.min)` constrained via `LayoutBuilder` and real hardware top inset (`View.of(context).viewPadding.top / media.devicePixelRatio`) so the sheet never overlaps the status bar/notch:
+     - **Pinned Top Header:** `_SheetHandle`, `_SheetHeader` (`"Create New Group"`, subtitle, close button), and `Divider` stay fixed at the top at all times.
+     - **Compact 1-View Middle Body:** Larger, clearly visible Group Image picker (`CircleAvatar(radius: 46.r)` = `92.r` diameter with `#6B4DFF` outer ring, soft shadow, single `34.sp` camera icon when empty, and red `X` remove badge when picked), Group Name field, Group Description field, and `0/200` counter fit in a single view without scrolling when the keyboard is closed, wrapped in `Flexible(fit: FlexFit.loose, child: SingleChildScrollView(...))` as a fallback only when the keyboard reduces viewport height on compact screens.
+     - **Pinned Bottom Footer:** `_SubmitButton` (`"Create Group"`) stays fixed above `SafeArea` when the keyboard is closed and rises directly above the keyboard when open (`SafeArea(bottom: !keyboardOpen)`).
+  3. **Clear Draft on Sheet Close Without Creating:** Added `_clearCreateGroupDraft()` (clearing `groupName`, `groupDesc`, and `selectedGroupImage` via `removeSelectedGroupImage()`) guarded by `_createGroupSheetGeneration`, invoked on `showCreateGroupSheet()` entry, `PopScope.onPopInvokedWithResult`, `dispose()`, `.whenComplete()`, and after successful creation (`isCreated == true`). Closing via `X`, outside barrier tap, swipe down, or system Back ensures reopening starts with a clean empty sheet while preserving data while picking an image or retrying failed submission.
+  4. Wrapped `_FieldLabel` text in `Flexible` with ellipsis to prevent horizontal overflow, replaced field-level `onTapOutside` with sheet-level `GestureDetector` unfocus, and kept 100% of existing `GroupController.createGroup`, validation, image picking, and `GroupMembershipSheet.showCreatedFor` logic unchanged.
+
+### Verification
+- `dart analyze lib/app/Core/constant/BottomSheet/bottom_actions_bar.dart test/create_group_sheet_test.dart`: **No issues found**.
+- `flutter test test/create_group_sheet_test.dart test/group_flow_navigation_test.dart`: **11/11 PASSED** (`6/6` in `create_group_sheet_test.dart` covering larger group image `>= 90px`, iOS `375x812` & compact Android `360x640` single-view layout, keyboard open/close header+field+button visibility, validation, and close-without-create draft clearing via `X` and barrier tap; `5/5` in `group_flow_navigation_test.dart`).

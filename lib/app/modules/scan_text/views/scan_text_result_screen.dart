@@ -6,17 +6,18 @@ import 'package:share_plus/share_plus.dart';
 
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/global_widget/app_back_button.dart';
-import 'package:fgtracker/app/modules/scan_text/services/scan_text_service.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 
 class ScanTextResultScreen extends StatefulWidget {
   final String scannedText;
   final String? imagePath;
+  final bool isForChat;
 
   const ScanTextResultScreen({
     super.key,
     required this.scannedText,
     this.imagePath,
+    this.isForChat = false,
   });
 
   @override
@@ -75,12 +76,17 @@ class _ScanTextResultScreenState extends State<ScanTextResultScreen> {
     Share.share(text);
   }
 
-  void _rescan() {
-    if (Navigator.canPop(context)) {
-      Get.back();
-    } else {
-      ScanTextService.instance.openCameraScanner();
+  void _sendToChat() {
+    final text = _textController.text.trim();
+    if (text.isEmpty) {
+      Utils().fluttertoast("No text to send");
+      return;
     }
+    Get.back(result: text);
+  }
+
+  void _rescan() {
+    Get.back(result: '__RESCAN__');
   }
 
   @override
@@ -98,7 +104,11 @@ class _ScanTextResultScreenState extends State<ScanTextResultScreen> {
           titleSpacing: 16.w,
           title: Row(
             children: [
-              AppBackButton(onTap: () => Get.back()),
+              AppBackButton(
+                onTap: () => Get.back(
+                  result: widget.isForChat ? null : _textController.text,
+                ),
+              ),
               SizedBox(width: 14.w),
               Expanded(
                 child: Column(
@@ -116,18 +126,49 @@ class _ScanTextResultScreenState extends State<ScanTextResultScreen> {
                     ),
                     SizedBox(height: 2.h),
                     Obx(
-                      () => Text(
-                        "${_wordCount.value} words • ${_charCount.value} characters",
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontFamily: FontFamily.interRegular,
-                          color: const Color(0xFF7A7F93),
+                      () => Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.5.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEDE9FE),
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text(
+                          "${_wordCount.value} words • ${_charCount.value} chars",
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: FontFamily.interSemiBold,
+                            color: const Color(0xFF5D47F1),
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
+              // Clear Text Button
+              IconButton(
+                onPressed: () {
+                  if (_textController.text.isNotEmpty) {
+                    _textController.clear();
+                  }
+                },
+                tooltip: "Clear Text",
+                icon: Container(
+                  padding: EdgeInsets.all(7.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(
+                    Icons.clear_rounded,
+                    color: const Color(0xFF64748B),
+                    size: 18.sp,
+                  ),
+                ),
+              ),
+              SizedBox(width: 4.w),
+              // Copy Text Button
               IconButton(
                 onPressed: _copyText,
                 tooltip: "Copy Text",
@@ -151,102 +192,181 @@ class _ScanTextResultScreenState extends State<ScanTextResultScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Editable Text Area
+            // Enhanced Editable Text Card
             Expanded(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 12.h),
                 child: Container(
                   width: double.infinity,
-                  padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+                    borderRadius: BorderRadius.circular(18.r),
+                    border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  child: TextField(
-                    controller: _textController,
-                    maxLines: null,
-                    expands: true,
-                    keyboardType: TextInputType.multiline,
-                    textAlignVertical: TextAlignVertical.top,
-                    style: TextStyle(
-                      fontSize: 14.5.sp,
-                      fontFamily: FontFamily.interRegular,
-                      color: const Color(0xFF1F2937),
-                      height: 1.5,
-                    ),
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: EdgeInsets.zero,
-                      hintText: "Scanned text will appear here...",
-                      hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
-                    ),
+                  child: Column(
+                    children: [
+                      // Sub-header bar inside the card
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFAF5FF),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(17.r),
+                            topRight: Radius.circular(17.r),
+                          ),
+                          border: const Border(
+                            bottom: BorderSide(color: Color(0xFFEDE9FE), width: 1),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.edit_note_rounded,
+                              size: 18.sp,
+                              color: const Color(0xFF5D47F1),
+                            ),
+                            SizedBox(width: 8.w),
+                            Expanded(
+                              child: Text(
+                                "Editable Scanned Text",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12.5.sp,
+                                  fontFamily: FontFamily.interSemiBold,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF4338CA),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Text Field Area
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.w),
+                          child: TextField(
+                            controller: _textController,
+                            maxLines: null,
+                            expands: true,
+                            keyboardType: TextInputType.multiline,
+                            textAlignVertical: TextAlignVertical.top,
+                            cursorColor: const Color(0xFF5D47F1),
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              fontFamily: FontFamily.interRegular,
+                              color: const Color(0xFF1E293B),
+                              height: 1.55,
+                            ),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                              hintText: "Scanned text will appear here. Tap anywhere to edit...",
+                              hintStyle: TextStyle(color: Color(0xFF94A3B8)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
 
-            // Bottom 3 Action Buttons: Copy, Share, Rescan
+            // Bottom Action Bar: Send Button Provided Exactly 1 Time
             Container(
               padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 14.h),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 12,
-                    offset: const Offset(0, -3),
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
                   ),
                 ],
               ),
               child: Row(
-                children: [
-                  // 1. Copy Button
-                  Expanded(
-                    child: _buildActionButton(
-                      icon: Icons.copy_rounded,
-                      label: "Copy",
-                      backgroundColor: const Color(0xFF5D47F1),
-                      textColor: Colors.white,
-                      iconColor: Colors.white,
-                      onTap: _copyText,
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-
-                  // 2. Share Button
-                  Expanded(
-                    child: _buildActionButton(
-                      icon: Icons.share_rounded,
-                      label: "Share",
-                      backgroundColor: const Color(0xFFEDE9FE),
-                      textColor: const Color(0xFF5D47F1),
-                      iconColor: const Color(0xFF5D47F1),
-                      onTap: _shareText,
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-
-                  // 3. Rescan Button
-                  Expanded(
-                    child: _buildActionButton(
-                      icon: Icons.refresh_rounded,
-                      label: "Rescan",
-                      backgroundColor: const Color(0xFFF3F4F6),
-                      textColor: const Color(0xFF374151),
-                      iconColor: const Color(0xFF374151),
-                      onTap: _rescan,
-                    ),
-                  ),
-                ],
+                children: widget.isForChat
+                    ? [
+                        // Chat Mode: Copy, Rescan, and Send (Single Send Button!)
+                        Expanded(
+                          child: _buildActionButton(
+                            icon: Icons.copy_rounded,
+                            label: "Copy",
+                            backgroundColor: const Color(0xFFEDE9FE),
+                            textColor: const Color(0xFF5D47F1),
+                            iconColor: const Color(0xFF5D47F1),
+                            onTap: _copyText,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: _buildActionButton(
+                            icon: Icons.refresh_rounded,
+                            label: "Rescan",
+                            backgroundColor: const Color(0xFFF1F5F9),
+                            textColor: const Color(0xFF334155),
+                            iconColor: const Color(0xFF334155),
+                            onTap: _rescan,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: _buildActionButton(
+                            icon: Icons.send_rounded,
+                            label: "Send",
+                            backgroundColor: const Color(0xFF5D47F1),
+                            textColor: Colors.white,
+                            iconColor: Colors.white,
+                            onTap: _sendToChat,
+                          ),
+                        ),
+                      ]
+                    : [
+                        // Standalone Mode: Copy, Share, Rescan
+                        Expanded(
+                          child: _buildActionButton(
+                            icon: Icons.copy_rounded,
+                            label: "Copy",
+                            backgroundColor: const Color(0xFF5D47F1),
+                            textColor: Colors.white,
+                            iconColor: Colors.white,
+                            onTap: _copyText,
+                          ),
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: _buildActionButton(
+                            icon: Icons.share_rounded,
+                            label: "Share",
+                            backgroundColor: const Color(0xFFEDE9FE),
+                            textColor: const Color(0xFF5D47F1),
+                            iconColor: const Color(0xFF5D47F1),
+                            onTap: _shareText,
+                          ),
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: _buildActionButton(
+                            icon: Icons.refresh_rounded,
+                            label: "Rescan",
+                            backgroundColor: const Color(0xFFF1F5F9),
+                            textColor: const Color(0xFF334155),
+                            iconColor: const Color(0xFF334155),
+                            onTap: _rescan,
+                          ),
+                        ),
+                      ],
               ),
             ),
           ],
@@ -270,6 +390,7 @@ class _ScanTextResultScreenState extends State<ScanTextResultScreen> {
         borderRadius: BorderRadius.circular(12.r),
         child: Container(
           height: 46.h,
+          padding: EdgeInsets.symmetric(horizontal: 4.w),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: backgroundColor,
@@ -277,16 +398,21 @@ class _ScanTextResultScreenState extends State<ScanTextResultScreen> {
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 18.sp, color: iconColor),
-              SizedBox(width: 6.w),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13.5.sp,
-                  fontFamily: FontFamily.interBold,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
+              Icon(icon, size: 16.sp, color: iconColor),
+              SizedBox(width: 4.w),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontFamily: FontFamily.interBold,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
               ),
             ],

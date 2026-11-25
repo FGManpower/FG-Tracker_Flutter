@@ -1,15 +1,14 @@
-import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:share_plus/share_plus.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/modules/scan_text/services/scan_text_service.dart';
+import 'package:fgtracker/app/modules/scan_text/views/scan_text_result_screen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 
 /// Full-screen iOS Live Text Scanner screen ("msg type jese").
@@ -39,15 +38,12 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
   bool _isInitializing = true;
   bool _isScanning = false;
   bool _isTorchOn = false;
-  bool _preferHindi = false;
+  final bool _preferHindi = false;
   bool _permissionDenied = false;
   String? _errorMessage;
 
   final TextEditingController _textController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-
-  int _wordCount = 0;
-  int _charCount = 0;
 
   @override
   void initState() {
@@ -55,18 +51,8 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
     WidgetsBinding.instance.addObserver(this);
     if (widget.initialText != null && widget.initialText!.isNotEmpty) {
       _textController.text = widget.initialText!;
-      _updateCounters();
     }
-    _textController.addListener(_updateCounters);
     _initializeCamera();
-  }
-
-  void _updateCounters() {
-    final text = _textController.text.trim();
-    setState(() {
-      _charCount = text.length;
-      _wordCount = text.isEmpty ? 0 : text.split(RegExp(r'\s+')).length;
-    });
   }
 
   @override
@@ -90,7 +76,6 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _textController.removeListener(_updateCounters);
     _textController.dispose();
     try {
       _cameraController?.dispose();
@@ -157,11 +142,15 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
     try {
       final controller = CameraController(
         description,
-        ResolutionPreset.high,
+        ResolutionPreset.veryHigh,
         enableAudio: false,
       );
       _cameraController = controller;
       await controller.initialize();
+      try {
+        await controller.setFocusMode(FocusMode.auto);
+        await controller.setExposureMode(ExposureMode.auto);
+      } catch (_) {}
       if (!mounted) {
         await controller.dispose();
         return;
@@ -211,8 +200,12 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
 
     try {
       final XFile photo = await controller.takePicture();
+
+      // Crop to central viewfinder reticle to eliminate background monitor, keyboard, and desk clutter
+      final croppedPath = await ScanTextService.instance.cropImageToViewfinder(photo.path);
+
       final text = await ScanTextService.instance.extractTextFromImage(
-        photo.path,
+        croppedPath,
         preferHindi: _preferHindi,
       );
 
@@ -229,7 +222,34 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
       setState(() {
         _textController.text = trimmed;
       });
-      Utils().fluttertoast("Text Inserted!");
+
+      // Immediately navigate to Full Screen Result View ("text insert pe text msg full screen me aega")
+      final updated = await Get.to<String>(
+        () => ScanTextResultScreen(
+          scannedText: trimmed,
+          imagePath: croppedPath,
+          isForChat: widget.isForChatSelection,
+        ),
+        transition: Transition.rightToLeft,
+      );
+
+      if (updated == '__RESCAN__') {
+        // User tapped Rescan on the full-screen result screen: stay on live camera view!
+        setState(() {
+          _textController.clear();
+        });
+        return;
+      }
+
+      if (updated != null && mounted) {
+        if (widget.isForChatSelection) {
+          Navigator.pop(context, updated);
+          return;
+        }
+        setState(() {
+          _textController.text = updated;
+        });
+      }
     } catch (e) {
       AppLog.e("Capture and insert error: $e");
       if (mounted) {
@@ -269,7 +289,33 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
       setState(() {
         _textController.text = trimmed;
       });
-      Utils().fluttertoast("Text Inserted!");
+
+      // Immediately navigate to Full Screen Result View
+      final updated = await Get.to<String>(
+        () => ScanTextResultScreen(
+          scannedText: trimmed,
+          imagePath: image.path,
+          isForChat: widget.isForChatSelection,
+        ),
+        transition: Transition.rightToLeft,
+      );
+
+      if (updated == '__RESCAN__') {
+        setState(() {
+          _textController.clear();
+        });
+        return;
+      }
+
+      if (updated != null && mounted) {
+        if (widget.isForChatSelection) {
+          Navigator.pop(context, updated);
+          return;
+        }
+        setState(() {
+          _textController.text = updated;
+        });
+      }
     } catch (e) {
       AppLog.e("Gallery pick error: $e");
       if (mounted) {
@@ -277,31 +323,6 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
       }
       Utils().fluttertoast("No text found, try again with clear photo");
     }
-  }
-
-  void _copyText() {
-    final text = _textController.text.trim();
-    if (text.isEmpty) {
-      Utils().fluttertoast("No text to copy");
-      return;
-    }
-    Clipboard.setData(ClipboardData(text: text));
-    Utils().fluttertoast("Copied");
-  }
-
-  void _shareText() {
-    final text = _textController.text.trim();
-    if (text.isEmpty) {
-      Utils().fluttertoast("No text to share");
-      return;
-    }
-    Share.share(text);
-  }
-
-  void _clearText() {
-    setState(() {
-      _textController.clear();
-    });
   }
 
   @override
@@ -314,10 +335,7 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
             // Top Navigation & Language Bar
             _buildTopNavBar(),
 
-            // Top Section: Message Bubble Box ("msg type jese")
-            _buildMessageDraftBox(),
-
-            // Bottom Section: Live Camera Viewfinder with Yellow Reticle
+            // Full Camera Viewfinder with Yellow Reticle
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.only(
@@ -414,255 +432,7 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
               ],
             ),
           ),
-          if (widget.isForChatSelection && _textController.text.trim().isNotEmpty) ...[
-            SizedBox(width: 8.w),
-            InkWell(
-              onTap: () {
-                Navigator.pop(context, _textController.text.trim());
-              },
-              borderRadius: BorderRadius.circular(14.r),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF5D47F1),
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.check_rounded, color: Colors.white, size: 14.sp),
-                    SizedBox(width: 4.w),
-                    Text(
-                      "Use",
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontFamily: FontFamily.interBold,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ],
-      ),
-    );
-  }
-
-  /// Top Message Draft Box ("msg type jese")
-  Widget _buildMessageDraftBox() {
-    final hasText = _textController.text.trim().isNotEmpty;
-
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-      padding: EdgeInsets.fromLTRB(14.w, 10.h, 14.w, 10.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.18),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header info: Label + Word count + Action chips
-          Row(
-            children: [
-              Flexible(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEDE9FE),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.chat_bubble_outline_rounded,
-                        size: 13.sp,
-                        color: const Color(0xFF5D47F1),
-                      ),
-                      SizedBox(width: 5.w),
-                      Flexible(
-                        child: Text(
-                          hasText
-                              ? "$_wordCount w • $_charCount c"
-                              : "Message Text",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            fontFamily: FontFamily.interSemiBold,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF5D47F1),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(width: 6.w),
-
-              // Copy Button
-              _buildMiniAction(
-                icon: Icons.copy_rounded,
-                label: "Copy",
-                onTap: _copyText,
-                enabled: hasText,
-              ),
-              SizedBox(width: 6.w),
-
-              // Share Button
-              _buildMiniAction(
-                icon: Icons.share_rounded,
-                label: "Share",
-                onTap: _shareText,
-                enabled: hasText,
-              ),
-
-              if (hasText) ...[
-                SizedBox(width: 6.w),
-                GestureDetector(
-                  onTap: _clearText,
-                  child: Container(
-                    padding: EdgeInsets.all(4.w),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: 13.sp,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          SizedBox(height: 8.h),
-
-          // Message Editable TextField with Send/Share Action (matching iOS Live Text input bar)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: 46.h,
-                    maxHeight: 120.h,
-                  ),
-                  child: Scrollbar(
-                    child: TextField(
-                      controller: _textController,
-                      maxLines: null,
-                      keyboardType: TextInputType.multiline,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        height: 1.35,
-                        fontFamily: FontFamily.interRegular,
-                        color: const Color(0xFF1E202B),
-                      ),
-                      decoration: InputDecoration(
-                        hintText:
-                            "Point camera at any text and tap 'Insert' below...",
-                        hintStyle: TextStyle(
-                          fontSize: 13.sp,
-                          color: const Color(0xFF9CA3AF),
-                          fontFamily: FontFamily.interRegular,
-                        ),
-                        isDense: true,
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8.w),
-              // Purple circular send/share button
-              InkWell(
-                onTap: hasText
-                    ? () {
-                        if (widget.isForChatSelection) {
-                          Navigator.pop(context, _textController.text.trim());
-                        } else {
-                          _shareText();
-                        }
-                      }
-                    : null,
-                borderRadius: BorderRadius.circular(20.r),
-                child: Container(
-                  width: 36.w,
-                  height: 36.w,
-                  decoration: BoxDecoration(
-                    color: hasText
-                        ? const Color(0xFF5D47F1)
-                        : const Color(0xFFEDE9FE),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Icon(
-                      widget.isForChatSelection
-                          ? Icons.check_rounded
-                          : Icons.send_rounded,
-                      size: 17.sp,
-                      color: hasText ? Colors.white : const Color(0xFF9CA3AF),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMiniAction({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required bool enabled,
-  }) {
-    return InkWell(
-      onTap: enabled ? onTap : null,
-      borderRadius: BorderRadius.circular(8.r),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-        decoration: BoxDecoration(
-          color: enabled ? const Color(0xFFF3F4F6) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 13.sp,
-              color: enabled ? const Color(0xFF4B5563) : Colors.grey.shade400,
-            ),
-            SizedBox(width: 4.w),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11.5.sp,
-                fontFamily: FontFamily.interSemiBold,
-                color: enabled ? const Color(0xFF4B5563) : Colors.grey.shade400,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -737,10 +507,24 @@ class _LiveScanCameraScreenState extends State<LiveScanCameraScreen>
     }
 
     return ClipRect(
-      child: Transform.scale(
-        scale: 1.0,
-        child: Center(
-          child: CameraPreview(controller),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (details) async {
+          try {
+            final size = MediaQuery.of(context).size;
+            final offset = Offset(
+              (details.localPosition.dx / size.width).clamp(0.0, 1.0),
+              (details.localPosition.dy / size.height).clamp(0.0, 1.0),
+            );
+            await controller.setFocusPoint(offset);
+            await controller.setExposurePoint(offset);
+          } catch (_) {}
+        },
+        child: Transform.scale(
+          scale: 1.0,
+          child: Center(
+            child: CameraPreview(controller),
+          ),
         ),
       ),
     );

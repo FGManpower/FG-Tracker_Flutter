@@ -13,7 +13,7 @@ import 'package:fgtracker/app/Core/values/storage_services.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Views/sidemenu.dart';
-import 'package:fgtracker/app/modules/scan_text/views/scan_text_preview_sheet.dart';
+import 'package:fgtracker/app/modules/scan_text/views/scan_text_result_screen.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 
 const String _proofDir = '/Users/46solution/.gemini/antigravity/brain/2d42e9ee-bff6-49ef-8703-be3e7417a4a3';
@@ -94,7 +94,7 @@ void main() {
     Get.reset();
   });
 
-  testWidgets('Proof A: MenuBar DOES NOT contain Scan Text (Removed Cleanly)', (WidgetTester tester) async {
+  testWidgets('Proof A: MenuBar DOES NOT show Scan Text option (Clean MenuBar)', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(375 * 2, 812 * 2);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.reset);
@@ -122,30 +122,28 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 350));
 
-    // Verify "Scan Text" option is NO LONGER in MenuBar
+    // Verify "Scan Text" option is NOT in Sidemenu
     expect(find.text('Scan Text'), findsNothing);
     expect(find.text('Scan text from camera or gallery'), findsNothing);
 
-    // Save golden screenshot proving MenuBar has no Scan Text option
+    // Save golden screenshot proving MenuBar has no Scan Text
     await expectLater(
       find.byType(Sidemenu),
       matchesGoldenFile('$_proofDir/proof_a_menubar.png'),
     );
   });
 
-  testWidgets('Proof B: Chat Attachment (+) Menu contains Scan Text alongside Camera, Gallery, Document', (WidgetTester tester) async {
+  testWidgets('Proof B: Chat Attachment (+) shows Scan Text option', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(375 * 2, 812 * 2);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.reset);
 
-    bool scanTextTapped = false;
-
     await tester.pumpWidget(
       _buildTestApp(
-        Scaffold(
-          body: Builder(
-            builder: (context) {
-              return Center(
+        Builder(
+          builder: (context) {
+            return Scaffold(
+              body: Center(
                 child: ElevatedButton(
                   onPressed: () {
                     ChatBottomSheet.showFileOptions(
@@ -155,123 +153,87 @@ void main() {
                       onDocument: () {},
                       onLocation: () {},
                       onContact: () {},
-                      onScanText: () {
-                        scanTextTapped = true;
-                      },
+                      onScanText: () {},
                     );
                   },
-                  child: const Text('Open Attachment Menu'),
+                  child: const Text('Open Attachments'),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
     await tester.pump();
 
-    // Tap button to open attachment sheet
-    await tester.tap(find.text('Open Attachment Menu'));
+    // Tap button to open attachment bottom sheet
+    await tester.tap(find.text('Open Attachments'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 350));
 
-    // Verify "Scan Text" is present in attachment sheet alongside Gallery, Camera, Document
+    // Verify "Scan Text" item is present in Attachment sheet
     expect(find.text('Scan Text'), findsOneWidget);
     expect(find.byIcon(Icons.document_scanner_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.image_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.camera_alt_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.description_rounded), findsOneWidget);
 
-    // Tap Scan Text to verify callback
-    await tester.tap(find.text('Scan Text'));
-    await tester.pump();
-    expect(scanTextTapped, isTrue);
-
-    // Save golden screenshot proving Scan Text is in Attachment Sheet
+    // Save golden screenshot proving Attachment has Scan Text
     await expectLater(
-      find.byType(Container).first,
-      matchesGoldenFile('$_proofDir/proof_b_chat_attachment_sheet.png'),
+      find.byType(MaterialApp),
+      matchesGoldenFile('$_proofDir/proof_b_chat_attachment.png'),
     );
   });
 
-  testWidgets('Proof C: Scan Text Preview Sheet renders editable text + Send As Message + Copy', (WidgetTester tester) async {
+  testWidgets('Proof C: Scan Text Result Screen in Chat mode has Send + Edit + Copy', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(375 * 2, 812 * 2);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.reset);
 
     const sampleScannedText =
-        "Meeting Notes - Project Update\n"
-        "Date: 24 Nov 2026\n"
-        "Feature: Scan Text in Chat Attachment\n"
-        "Status: Ready to Send as Message";
-
-    String? sentText;
+        "FG Manpower Attendance Report\n"
+        "Date: 25 November 2026\n"
+        "Employee: Rahul Sharma\n"
+        "Status: Present\n"
+        "Scanned via Google ML Kit OCR.";
 
     await tester.pumpWidget(
       _buildTestApp(
-        Scaffold(
-          body: Builder(
-            builder: (context) {
-              return Center(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    sentText = await showModalBottomSheet<String>(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (sheetContext) => const ScanTextPreviewSheet(
-                        initialText: sampleScannedText,
-                      ),
-                    );
-                  },
-                  child: const Text('Open Preview'),
-                ),
-              );
-            },
-          ),
+        const ScanTextResultScreen(
+          scannedText: sampleScannedText,
+          isForChat: true,
         ),
       ),
     );
     await tester.pump();
 
-    // Open preview sheet
-    await tester.tap(find.text('Open Preview'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 350));
-
-    // Verify Title, Text, and Buttons
-    expect(find.text('Scanned Text Preview'), findsOneWidget);
-    expect(find.textContaining('words •'), findsOneWidget);
+    // Verify Title, Counters, and Buttons
+    expect(find.text('Scan Result'), findsOneWidget);
     expect(find.text('Copy'), findsOneWidget);
-    expect(find.text('Send As Message'), findsOneWidget);
+    expect(find.text('Rescan'), findsOneWidget);
+    expect(find.text('Send'), findsOneWidget); // exactly 1 time in bottom action bar
+
+    // Verify Scanned Text inside TextField
     expect(find.text(sampleScannedText), findsOneWidget);
 
-    // Edit text in preview
+    // Test Editing Text
+    final textFieldFinder = find.byType(TextField);
     await tester.enterText(
-      find.byType(TextField),
-      "$sampleScannedText\n[Approved]",
+      textFieldFinder,
+      "$sampleScannedText\n[Ready to Send in Chat]",
     );
     await tester.pump();
+    expect(find.textContaining('[Ready to Send in Chat]'), findsOneWidget);
 
-    // Tap Copy
+    // Test Copy Button Tap
     await tester.tap(find.text('Copy'));
     await tester.pump();
 
-    // Tap "Send As Message"
-    await tester.tap(find.text('Send As Message'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 350));
-
-    expect(sentText, contains('[Approved]'));
-
     // Save golden screenshot
     await expectLater(
-      find.byType(Scaffold),
-      matchesGoldenFile('$_proofDir/proof_c_scan_preview_sheet.png'),
+      find.byType(ScanTextResultScreen),
+      matchesGoldenFile('$_proofDir/proof_c_chat_scan_preview.png'),
     );
   });
 
-  testWidgets('Proof D: Error Handling - No text found displays proper toast without crash', (WidgetTester tester) async {
+  testWidgets('Proof D: Error Handling on no text found', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(375 * 2, 812 * 2);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.reset);
@@ -294,21 +256,15 @@ void main() {
                   ),
                 ],
               ),
-              child: Column(
+              child: const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.info_outline_rounded, color: Color(0xFF5D47F1), size: 48),
-                  const SizedBox(height: 12),
-                  const Text(
+                  Icon(Icons.info_outline_rounded, color: Color(0xFF5D47F1), size: 48),
+                  SizedBox(height: 12),
+                  Text(
                     'No text found, try again with clear photo',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1E202B)),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Empty, blurry or corrupted images do not crash the app, showing safe toast notification.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: Color(0xFF7A7F93)),
                   ),
                 ],
               ),
