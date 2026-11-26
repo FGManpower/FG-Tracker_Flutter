@@ -302,30 +302,29 @@ class ForceUpdateScreen extends StatelessWidget {
                         ),
                       ),
 
-                      SizedBox(height: 16.h),
-
-                      // Helper footer
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            isShorebird ? Icons.bolt_rounded : Icons.lock_outline_rounded,
-                            size: 13.sp,
-                            color: const Color(0xFF64748B),
-                          ),
-                          SizedBox(width: 6.w),
-                          Text(
-                            isShorebird
-                                ? "Instant Over-The-Air update powered by Shorebird"
-                                : context.l10n.forceUpdate_footer,
-                            style: TextStyle(
-                              fontFamily: 'InterRegular',
-                              fontSize: 11.sp,
+                      // Helper footer (Only for Force Update)
+                      if (!isShorebird) ...[
+                        SizedBox(height: 16.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.lock_outline_rounded,
+                              size: 13.sp,
                               color: const Color(0xFF64748B),
                             ),
-                          ),
-                        ],
-                      ),
+                            SizedBox(width: 6.w),
+                            Text(
+                              context.l10n.forceUpdate_footer,
+                              style: TextStyle(
+                                fontFamily: 'InterRegular',
+                                fontSize: 11.sp,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
 
                       SizedBox(height: 20.h),
                     ],

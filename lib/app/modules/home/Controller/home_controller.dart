@@ -31,7 +31,7 @@ class HomeController extends GetxController {
   StreamSubscription<dynamic>? _groupCountSubscription;
   RxList<BannerData> bannerList = <BannerData>[].obs;
   RxString InitializeResponeMessage = ''.obs;
-  RxBool isLoadingBanners = false.obs;
+  RxBool isLoadingBanners = true.obs;
   final RxList<LiveLocationModel> liveLocations = <LiveLocationModel>[].obs;
   final Rx<LatLng?> currentLocation = Rx<LatLng?>(null);
   RxString selectedRadius = '2'.obs;

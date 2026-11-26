@@ -47,7 +47,7 @@ class BannerUi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (controller.isLoadingBanners.value) {
+      if (controller.isLoadingBanners.value && controller.bannerList.isEmpty) {
         return Padding(
           padding: EdgeInsets.only(bottom: 8.h),
           child: _buildBannerSkeleton(),
@@ -55,7 +55,10 @@ class BannerUi extends StatelessWidget {
       } else {
         return Padding(
           padding: EdgeInsets.only(bottom: 8.h),
-          child: BannerSlider(bannerList: controller.bannerList),
+          child: BannerSlider(
+            key: ValueKey('banner_slider_${controller.bannerList.length}'),
+            bannerList: controller.bannerList,
+          ),
         );
       }
     });
@@ -75,6 +78,7 @@ class _BannerSliderState extends State<BannerSlider> {
   late PageController _pageController;
   Timer? _timer;
   int _currentIndex = 0;
+  bool _isUserInteracting = false;
   static const int _initialPageFactor = 1000;
 
   File? _localBannerFile;
@@ -118,16 +122,27 @@ class _BannerSliderState extends State<BannerSlider> {
   void didUpdateWidget(covariant BannerSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.bannerList.length != widget.bannerList.length) {
+      if (_totalSlides > 1 && _pageController.hasClients) {
+        final targetPage =
+            (_totalSlides * _initialPageFactor) + (_currentIndex % _totalSlides);
+        if (_pageController.page?.round() != targetPage) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _pageController.hasClients) {
+              _pageController.jumpToPage(targetPage);
+            }
+          });
+        }
+      }
       _stopAutoPlay();
       _startAutoPlay();
     }
   }
 
   void _startAutoPlay() {
-    if (_totalSlides <= 1) return;
+    if (_totalSlides <= 1 || _isUserInteracting) return;
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(milliseconds: 3800), (timer) {
-      if (_pageController.hasClients) {
+      if (_pageController.hasClients && !_isUserInteracting) {
         _pageController.nextPage(
           duration: const Duration(milliseconds: 700),
           curve: Curves.easeInOut,
@@ -157,28 +172,57 @@ class _BannerSliderState extends State<BannerSlider> {
       height: 160.h,
       child: Stack(
         children: [
-          PageView.builder(
-            controller: _pageController,
-            itemCount: count > 1 ? null : count,
-            onPageChanged: (index) {
-              if (mounted) {
-                setState(() {
-                  _currentIndex = index % count;
-                });
-              }
+          Listener(
+            onPointerDown: (_) {
+              _isUserInteracting = true;
+              _stopAutoPlay();
             },
-            itemBuilder: (context, index) {
-              final int slideIndex = index % count;
-
-              // Slides 0 through (apiCount - 1) -> Remote API Banners
-              if (slideIndex < apiCount) {
-                final BannerData banner = widget.bannerList[slideIndex];
-                return _buildApiBanner(banner);
-              }
-
-              // Final Slide (index == apiCount) -> Local Custom User Banner
-              return _buildLocalBannerSlide();
+            onPointerUp: (_) {
+              _isUserInteracting = false;
+              _startAutoPlay();
             },
+            onPointerCancel: (_) {
+              _isUserInteracting = false;
+              _startAutoPlay();
+            },
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                if (notification is ScrollStartNotification) {
+                  _isUserInteracting = true;
+                  _stopAutoPlay();
+                } else if (notification is ScrollEndNotification) {
+                  _isUserInteracting = false;
+                  _startAutoPlay();
+                }
+                return false;
+              },
+              child: PageView.builder(
+                controller: _pageController,
+                physics: count > 1
+                    ? const PageScrollPhysics()
+                    : const NeverScrollableScrollPhysics(),
+                itemCount: count > 1 ? null : count,
+                onPageChanged: (index) {
+                  if (mounted) {
+                    setState(() {
+                      _currentIndex = index % count;
+                    });
+                  }
+                },
+                itemBuilder: (context, index) {
+                  final int slideIndex = index % count;
+
+                  // Slides 0 through (apiCount - 1) -> Remote API Banners
+                  if (slideIndex < apiCount) {
+                    final BannerData banner = widget.bannerList[slideIndex];
+                    return _buildApiBanner(banner);
+                  }
+
+                  // Final Slide (index == apiCount) -> Local Custom User Banner
+                  return _buildLocalBannerSlide();
+                },
+              ),
+            ),
           ),
           if (count > 1)
             Positioned(
