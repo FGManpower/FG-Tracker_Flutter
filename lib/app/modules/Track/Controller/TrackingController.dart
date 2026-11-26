@@ -486,7 +486,15 @@ class TrackController extends GetxController {
 
       _knownUserCoordinates[userIdStr] = LatLng(data.lat, data.lng);
 
+      final bool isCommonMember = matchedMember != null ||
+          fetchedMember != null ||
+          GroupTrackingController.instance.groupWiseUserData.values.any((list) =>
+              list.any((u) => u.userId.toString() == userIdStr)) ||
+          groupMembersMap.values.any((list) =>
+              list.any((m) => (m.userId ?? m.id)?.toString() == userIdStr));
+
       if (isWithinRadius &&
+          isCommonMember &&
           !isLoading.value &&
           fallbackName != null &&
           fallbackName.trim().isNotEmpty &&
@@ -690,7 +698,18 @@ class TrackController extends GetxController {
           } else {
             _knownUserCoordinates[userId.toString()] = LatLng(lat, lng);
             final String? itemName = item['name']?.toString();
+            final String uIdStr = userId.toString();
+            final bool isCommonMember = onlineGroupMembers
+                    .any((m) => m.userId.toString() == uIdStr) ||
+                allFetchedMembers.any((m) => m.userId.toString() == uIdStr) ||
+                GroupTrackingController.instance.groupWiseUserData.values.any(
+                    (list) =>
+                        list.any((u) => u.userId.toString() == uIdStr)) ||
+                groupMembersMap.values.any((list) => list
+                    .any((m) => (m.userId ?? m.id)?.toString() == uIdStr));
+
             if (!isLoading.value &&
+                isCommonMember &&
                 itemName != null &&
                 itemName.trim().isNotEmpty &&
                 itemName.trim().toLowerCase() != 'member') {
