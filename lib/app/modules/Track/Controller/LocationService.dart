@@ -93,6 +93,11 @@ class LocationService extends GetxService {
 
   void _listenToLocationUpdates(String userId) {
     _positionStream?.cancel();
+    _location.changeSettings(
+      accuracy: LocationAccuracy.high,
+      interval: 5000,
+      distanceFilter: 3.0,
+    );
     _positionStream = _location.onLocationChanged.listen((location) async {
       currentPosition = location;
 

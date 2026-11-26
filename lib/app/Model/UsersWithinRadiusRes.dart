@@ -447,22 +447,7 @@ class UsersWithinRadiusData {
   }) {
     String formattedDistance = "Nearby you";
 
-    if (distance != null &&
-        distance.toString().trim().isNotEmpty &&
-        !distance.toString().toLowerCase().contains("nan")) {
-      final str = distance.toString().trim();
-      final cleaned = str.replaceAll(RegExp(r'[^\d.]'), '');
-      final numVal = double.tryParse(cleaned);
-      if (str.contains("away")) {
-        formattedDistance = str;
-      } else if (str.contains("km") || str.contains("m")) {
-        formattedDistance = "$str away";
-      } else if (numVal != null) {
-        formattedDistance = "${numVal.toStringAsFixed(2)} km away";
-      } else {
-        formattedDistance = str;
-      }
-    } else if (currentUserLat != null &&
+    if (currentUserLat != null &&
         currentUserLong != null &&
         currentUserLat != 0.0 &&
         currentUserLong != 0.0 &&
@@ -480,6 +465,21 @@ class UsersWithinRadiusData {
         formattedDistance = "${meters.round()} m away";
       } else {
         formattedDistance = "${(meters / 1000.0).toStringAsFixed(2)} km away";
+      }
+    } else if (distance != null &&
+        distance.toString().trim().isNotEmpty &&
+        !distance.toString().toLowerCase().contains("nan")) {
+      final str = distance.toString().trim();
+      final cleaned = str.replaceAll(RegExp(r'[^\d.]'), '');
+      final numVal = double.tryParse(cleaned);
+      if (str.contains("away")) {
+        formattedDistance = str;
+      } else if (str.contains("km") || str.contains("m")) {
+        formattedDistance = "$str away";
+      } else if (numVal != null) {
+        formattedDistance = "${numVal.toStringAsFixed(2)} km away";
+      } else {
+        formattedDistance = str;
       }
     } else {
       formattedDistance = "Location unavailable";

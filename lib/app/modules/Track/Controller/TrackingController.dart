@@ -308,7 +308,14 @@ class TrackController extends GetxController {
   }
 
   void _applyLiveSocketLocationUpdate(LiveLocationSocketModel data) {
+    final String myUserIdStr =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
     final String userIdStr = data.userId.toString();
+
+    // Anti-Jitter Guard: Discard self-updates received back from socket to prevent jumping
+    if (myUserIdStr.isNotEmpty && userIdStr == myUserIdStr) {
+      return;
+    }
 
     if (data.locationSharing == false) {
       // User is in Private Mode: purge coordinates and map marker immediately
@@ -389,6 +396,13 @@ class TrackController extends GetxController {
       prev.longitude = data.lng;
       prev.isOnline = true;
       prev.lastSeen = nowIso;
+      if (myLat != 0.0 && myLng != 0.0) {
+        final distM =
+            Geolocator.distanceBetween(myLat, myLng, data.lat, data.lng);
+        prev.distance = distM < 1000
+            ? "${distM.round()} m away"
+            : "${(distM / 1000.0).toStringAsFixed(2)} km away";
+      }
       if (data.name != null && data.name!.isNotEmpty) {
         prev.name = data.name;
       }
@@ -477,6 +491,14 @@ class TrackController extends GetxController {
           fallbackName != null &&
           fallbackName.trim().isNotEmpty &&
           fallbackName.trim().toLowerCase() != 'member') {
+        String? initialDist;
+        if (myLat != 0.0 && myLng != 0.0) {
+          final distM =
+              Geolocator.distanceBetween(myLat, myLng, data.lat, data.lng);
+          initialDist = distM < 1000
+              ? "${distM.round()} m away"
+              : "${(distM / 1000.0).toStringAsFixed(2)} km away";
+        }
         final newUser = UsersWithinRadiusData(
           userId: data.userId,
           name: fallbackName,
@@ -484,6 +506,7 @@ class TrackController extends GetxController {
           mobileNo: fallbackPhone,
           latitude: data.lat,
           longitude: data.lng,
+          distance: initialDist,
           isOnline: true,
           lastSeen: nowIso,
           team: selectedGroupName.value,
@@ -524,6 +547,16 @@ class TrackController extends GetxController {
       AppLog.d("📡 Received group-location-update: $item");
       if (item is Map) {
         final userId = item['userId'];
+        if (userId == null) return;
+        final String myUserIdStr =
+            Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+        final String userIdStr = userId.toString();
+
+        // Anti-Jitter Guard: Discard self-updates
+        if (myUserIdStr.isNotEmpty && userIdStr == myUserIdStr) {
+          return;
+        }
+
         final lat = double.tryParse(item['lat']?.toString() ??
             item['latitude']?.toString() ??
             item['userLat']?.toString() ??
@@ -638,6 +671,12 @@ class TrackController extends GetxController {
             prev.longitude = lng;
             prev.isOnline = true;
             prev.lastSeen = nowIso;
+            if (myLat != 0.0 && myLng != 0.0) {
+              final distM = Geolocator.distanceBetween(myLat, myLng, lat, lng);
+              prev.distance = distM < 1000
+                  ? "${distM.round()} m away"
+                  : "${(distM / 1000.0).toStringAsFixed(2)} km away";
+            }
             if (item['name'] != null && item['name'].toString().isNotEmpty) {
               prev.name = item['name'].toString();
             }
@@ -655,11 +694,19 @@ class TrackController extends GetxController {
                 itemName != null &&
                 itemName.trim().isNotEmpty &&
                 itemName.trim().toLowerCase() != 'member') {
+              String? initialDist;
+              if (myLat != 0.0 && myLng != 0.0) {
+                final distM = Geolocator.distanceBetween(myLat, myLng, lat, lng);
+                initialDist = distM < 1000
+                    ? "${distM.round()} m away"
+                    : "${(distM / 1000.0).toStringAsFixed(2)} km away";
+              }
               final newUser = UsersWithinRadiusData(
                 userId: userId,
                 name: itemName.trim(),
                 latitude: lat,
                 longitude: lng,
+                distance: initialDist,
                 isOnline: true,
                 lastSeen: nowIso,
                 team: selectedGroupName.value,
@@ -2153,8 +2200,8 @@ class TrackController extends GetxController {
     final List<UsersWithinRadiusData> membersToMark =
         isGroupMode.value ? groupModeUsers.toList() : radiusUsers.toList();
 
-    // Group members by coordinates rounded to 4 decimals (~11 meters) to detect overlapping markers
-    final Map<String, List<UsersWithinRadiusData>> coordClusters = {};
+    // Group nearby members within 6 meters into proximity clusters to handle stacked markers
+    final List<List<UsersWithinRadiusData>> coordClusters = [];
     for (var u in membersToMark) {
       if (myUserIdStr.isNotEmpty && u.userId?.toString() == myUserIdStr) {
         continue;
@@ -2177,14 +2224,28 @@ class TrackController extends GetxController {
               (u.mobileNo ?? "").toLowerCase().contains(q);
           if (!matches) continue;
         }
-        final clusterKey =
-            "${u.latitude!.toStringAsFixed(4)},${u.longitude!.toStringAsFixed(4)}";
-        coordClusters.putIfAbsent(clusterKey, () => []).add(u);
+        bool addedToCluster = false;
+        for (final cluster in coordClusters) {
+          final first = cluster.first;
+          final d = Geolocator.distanceBetween(
+            first.latitude!,
+            first.longitude!,
+            u.latitude!,
+            u.longitude!,
+          );
+          if (d <= 6.0) {
+            cluster.add(u);
+            addedToCluster = true;
+            break;
+          }
+        }
+        if (!addedToCluster) {
+          coordClusters.add([u]);
+        }
       }
     }
 
-    for (var entry in coordClusters.entries) {
-      final cluster = entry.value;
+    for (var cluster in coordClusters) {
       final int clusterSize = cluster.length;
 
       for (int i = 0; i < clusterSize; i++) {
@@ -2193,9 +2254,10 @@ class TrackController extends GetxController {
         double markerLat = u.latitude!;
         double markerLng = u.longitude!;
 
-        // When multiple members have identical/stacked coordinates, spread them out in a small spider circle (~35m radius)
+        // When multiple members are at the exact same physical spot, spread pins out slightly (4m)
+        // so pins are individually clickable without distorting geographic location or jumping to 64m.
         if (clusterSize > 1) {
-          const double offsetMeters = 35.0;
+          const double offsetMeters = 4.0;
           final double offsetDeg = offsetMeters / 111320.0;
           final double angle = (2 * math.pi * i) / clusterSize;
           markerLat += offsetDeg * math.cos(angle);
@@ -2234,7 +2296,22 @@ class TrackController extends GetxController {
             ? "${u.location} • "
             : "";
         final String distanceText;
-        if (u.distance != null &&
+        if (currentLat.value != 0.0 &&
+            currentLong.value != 0.0 &&
+            u.latitude! != 0.0 &&
+            u.longitude! != 0.0) {
+          final meters = Geolocator.distanceBetween(
+            currentLat.value,
+            currentLong.value,
+            u.latitude!,
+            u.longitude!,
+          );
+          if (meters < 1000) {
+            distanceText = "${meters.round()} m away";
+          } else {
+            distanceText = "${(meters / 1000.0).toStringAsFixed(2)} km away";
+          }
+        } else if (u.distance != null &&
             u.distance!.trim().isNotEmpty &&
             !u.distance!.toLowerCase().contains("nan")) {
           final dStr = u.distance!.trim();
@@ -2249,21 +2326,6 @@ class TrackController extends GetxController {
           } else {
             distanceText = dStr;
           }
-        } else if (currentLat.value != 0.0 &&
-            currentLong.value != 0.0 &&
-            markerLat != 0.0 &&
-            markerLng != 0.0) {
-          final meters = Geolocator.distanceBetween(
-            currentLat.value,
-            currentLong.value,
-            markerLat,
-            markerLng,
-          );
-          if (meters < 1000) {
-            distanceText = "${meters.round()} m away";
-          } else {
-            distanceText = "${(meters / 1000.0).toStringAsFixed(2)} km away";
-          }
         } else {
           distanceText = "Location unavailable";
         }
@@ -2277,7 +2339,7 @@ class TrackController extends GetxController {
               mapController?.animateCamera(
                 CameraUpdate.newCameraPosition(
                   CameraPosition(
-                    target: LatLng(markerLat, markerLng),
+                    target: LatLng(u.latitude!, u.longitude!),
                     zoom: 16.5,
                   ),
                 ),
