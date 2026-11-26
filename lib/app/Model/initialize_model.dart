@@ -38,6 +38,7 @@ class InitializeData {
   dynamic tracking;
   dynamic safeRoute;
   dynamic notifications;
+  dynamic dashboardCounts;
 
   InitializeData({
     this.initializedAt,
@@ -51,6 +52,7 @@ class InitializeData {
     this.tracking,
     this.safeRoute,
     this.notifications,
+    this.dashboardCounts,
   });
 
   factory InitializeData.fromJson(Map<String, dynamic> json) {
@@ -77,6 +79,7 @@ class InitializeData {
       tracking: json['tracking'],
       safeRoute: json['safeRoute'],
       notifications: json['notifications'],
+      dashboardCounts: json['dashboardCounts'] ?? json['dashboard_counts'] ?? json['groupCounts'],
     );
   }
 

@@ -399,6 +399,34 @@ class SocketMessageService extends GetxService {
       log("GROUP ID: ${groupId ?? 'NULL'}");
     });
 
+    void handleStatusNew(dynamic data) {
+      if (data == null) return;
+      log("[ChatSocket] status:new received: $data");
+      Map<String, dynamic>? map;
+      if (data is Map) {
+        map = Map<String, dynamic>.from(data);
+      } else if (data is String) {
+        try {
+          final decoded = jsonDecode(data);
+          if (decoded is Map) {
+            map = Map<String, dynamic>.from(decoded);
+          }
+        } catch (_) {}
+      }
+      if (map != null) {
+        if (Get.isRegistered<StatusSocketService>()) {
+          Get.find<StatusSocketService>().onNewStatusEvent.value = map;
+          Get.find<StatusSocketService>().onNewStatusEvent.refresh();
+        }
+        if (Get.isRegistered<StatusFeedController>()) {
+          Get.find<StatusFeedController>().refreshAll();
+        }
+      }
+    }
+
+    _socket?.on('status:new', handleStatusNew);
+    _socket?.on('status_new', handleStatusNew);
+
     void handleStatusDeleted(dynamic data) {
       if (data == null) return;
       log("[ChatSocket] status:deleted received: $data");

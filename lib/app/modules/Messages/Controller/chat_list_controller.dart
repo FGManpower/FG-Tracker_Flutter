@@ -1124,6 +1124,14 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
         privateChats.assignAll(_sortPinnedChats(uniqueList));
       }
 
+      final totalUnreadAcrossChats = privateChats.fold<int>(
+        0,
+        (sum, chat) => sum + (chat.unreadCount ?? 0),
+      );
+      if (totalUnreadAcrossChats > unreadTotalCount.value) {
+        unreadTotalCount.value = totalUnreadAcrossChats;
+      }
+
       _lastServerSync = DateTime.now();
 
       if (response.pagination != null) {
@@ -1914,6 +1922,18 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
       final isOnline = updated.isOnline ?? current.isOnline;
       final lastSeen = updated.lastSeen ?? current.lastSeen;
 
+      // WhatsApp parity: Opening chat list must NOT wipe out unread counts.
+      // Only entering individual chat or reading it locally clears that chat's badge.
+      final int? resolvedUnread;
+      if ((current.unreadCount ?? 0) > 0 &&
+          (updated.unreadCount == null || updated.unreadCount == 0) &&
+          !_wasReadLocally(current) &&
+          !_isViewingChat(current)) {
+        resolvedUnread = current.unreadCount;
+      } else {
+        resolvedUnread = updated.unreadCount ?? current.unreadCount;
+      }
+
       return PrivateChatModel(
         id: updated.id ?? current.id,
         chatId: updated.chatId ?? current.chatId,
@@ -1946,7 +1966,7 @@ class ChatListController extends GetxController with WidgetsBindingObserver {
             : (current.timestamp ?? updated.time ?? current.time),
         messageType: updated.messageType ?? current.messageType,
         mutedUntil: updated.mutedUntil ?? current.mutedUntil,
-        unreadCount: updated.unreadCount ?? current.unreadCount,
+        unreadCount: resolvedUnread,
         status: isOnline != null
             ? (isOnline ? "Online" : "Offline")
             : updated.status ?? current.status,

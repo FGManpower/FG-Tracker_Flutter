@@ -90,6 +90,29 @@ class SocketService extends GetxService with WidgetsBindingObserver {
       }
     });
 
+    _socket?.off("group-dashboard-counts");
+    _socket?.on("group-dashboard-counts", (res) {
+      try {
+        dynamic payload = res;
+        if (res is Map && res.containsKey('data') && res['data'] != null) {
+          payload = res['data'];
+        }
+        if (payload != null && payload.toString().isNotEmpty) {
+          if (Get.isRegistered<GroupCountService>()) {
+            GroupCountService.instance.updateFromSocket(payload);
+          }
+        }
+      } catch (e) {
+        log("Error parsing group-dashboard-counts: $e");
+      }
+    });
+
+    _socket?.off("user-offline");
+    _socket?.on("user-offline", (res) {
+      log("[LocationSocket] user-offline received: $res");
+      requestGroupCount();
+    });
+
     _socket?.off("location-update-success");
     _socket?.on("location-update-success", (res) {
       try {
