@@ -17,9 +17,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
+import '../../modules/mediaStream/Controller/calling_controller.dart';
+import '../../modules/mediaStream/Controller/group_calling_controller.dart';
 import 'CallStateTracker.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -27,6 +30,8 @@ import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_notification_manager.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_live_activity_service.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
@@ -34,6 +39,7 @@ import 'package:walkie_custom_notification/walkie_custom_notification.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:fgtracker/app/Data/Services/active_chat_tracker.dart';
+import 'package:fgtracker/app/Data/Services/group_call_service.dart';
 @pragma('vm:entry-point')
 void notificationTapBackground(
     NotificationResponse notificationResponse) async {
@@ -350,12 +356,33 @@ class firebaseNotificationServices {
     }
 
     if (isForeground) {
+      final currentGid = GroupWalkieService.instance.currentGroupId ??
+          (Get.isRegistered<GroupWalkieController>()
+              ? Get.find<GroupWalkieController>().currentGroupId
+              : null);
+      if (currentGid != null && currentGid.toString() == groupId.toString() &&
+          (Get.currentRoute == Routes.groupWalkieScreen ||
+              WalkieNotificationManager.instance.isWalkieScreenActive.value)) {
+        log("🔔 [showWalkieNotification] User is actively in Walkie channel $groupId. Suppressing foreground dialog & notification.");
+        return;
+      }
+
       log("🔔 [showWalkieNotification] App is in foreground, displaying WalkieInviteDialog");
+      final String? notifTitle = extraData?['title']?.toString();
+      final String? notifSubtitle = (extraData?['type'] == 'WALKIE_ADMIN_ALERT' ||
+              extraData?['alertType'] == 'admin_nudge')
+          ? (extraData?['subtitle']?.toString() ??
+              extraData?['message']?.toString() ??
+              "$speakerName (Admin) is calling you into the channel.")
+          : extraData?['subtitle']?.toString();
+
       WalkieInviteDialog.show(
         groupId: groupId,
         groupName: groupName,
         speakerName: speakerName,
         speakerImage: speakerImage ?? '',
+        title: notifTitle,
+        subtitle: notifSubtitle,
         joinedCount: joinedCount,
       );
       return;
@@ -367,12 +394,20 @@ class firebaseNotificationServices {
     if (Platform.isAndroid) {
       log("🔔 [showWalkieNotification] Android: Calling native WalkieCustomNotification.show");
       try {
+        final isAdminAlert = extraData?['type'] == 'WALKIE_ADMIN_ALERT' ||
+            extraData?['alertType'] == 'admin_nudge';
+        final customText = isAdminAlert
+            ? (extraData?['subtitle']?.toString() ??
+                extraData?['message']?.toString() ??
+                "$speakerName (Admin) is calling you into the channel.")
+            : null;
         final success = await showLocalizedWalkieCustomNotification(
           groupId: groupId,
           groupName: groupName,
           speakerName: speakerName,
           speakerImage: speakerImage,
           joinedCount: joinedCount,
+          customText: customText,
         );
         log("✅ [showWalkieNotification] WalkieCustomNotification.show result: $success");
       } catch (e, st) {
@@ -402,9 +437,15 @@ class firebaseNotificationServices {
         final joinedText = (joinedCount != null && joinedCount > 0)
             ? " • ${l10n.walkie_joinedCount(joinedCount)}"
             : "";
-        final body = (speakerName.trim().isNotEmpty)
-            ? "${l10n.walkie_isSpeaking(speakerName)}$joinedText"
-            : "${l10n.notif_walkieActiveConversation}$joinedText";
+        final isAdminAlert = extraData?['type'] == 'WALKIE_ADMIN_ALERT' ||
+            extraData?['alertType'] == 'admin_nudge';
+        final body = isAdminAlert
+            ? (extraData?['subtitle']?.toString() ??
+                extraData?['message']?.toString() ??
+                "$speakerName (Admin) is calling you into the channel.")
+            : (speakerName.trim().isNotEmpty
+                ? "${l10n.walkie_isSpeaking(speakerName)}$joinedText"
+                : "${l10n.notif_walkieActiveConversation}$joinedText");
 
         final localNotifications = FlutterLocalNotificationsPlugin();
         final iosinitializeSetting = createDarwinSettings(l10n);
@@ -942,6 +983,8 @@ class firebaseNotificationServices {
           showNotification(message);
         }
         handleMessage(context, message);
+      } else {
+        handleMessage(context, message);
       }
     });
 
@@ -1037,42 +1080,101 @@ class firebaseNotificationServices {
       } else if (message.data['screen_name'] == 'incomingCall') {
         if (CallStateTracker.isIncomingCallScreenOpen) return;
 
-        final callMap = jsonDecode(message.data['callData']);
-        final call = IncomingCallModel.fromMap(callMap);
+        // On iOS, native CallKit handles the incoming call screen (prevents double UI)
+        if (Platform.isIOS) {
+          AppLog.d("⏭️ Suppressed in-app incomingCall screen on iOS (CallKit active)");
+          return;
+        }
 
+        final dynamic rawCallData = message.data['callData'];
+        final Map<String, dynamic> callMap = (rawCallData is String)
+            ? (jsonDecode(rawCallData) as Map<String, dynamic>)
+            : (rawCallData is Map ? Map<String, dynamic>.from(rawCallData) : <String, dynamic>{});
+
+        // If user is already on a live 1:1 call, route to call waiting
+        if (Get.isRegistered<CallingController>()) {
+          final live = Get.find<CallingController>();
+          if (live.isCallLive) {
+            AppLog.d("📞 User is already in call, showing call waiting banner");
+            live.showWaitingCall(callMap);
+            return;
+          }
+        }
+
+        // Suppress in-app incoming full screen when CallKit is active or on iOS to avoid dual incoming screens
+        if (CallKitService.instance.isCallKitActive || Platform.isIOS) {
+          AppLog.d("⏭️ Suppressed in-app 1:1 IncomingCallScreen (CallKit active or iOS)");
+          return;
+        }
+
+        // If user is already in active group call, suppress 1:1 incoming full screen
+        if (Get.isRegistered<GroupCallingController>() && Get.find<GroupCallingController>().isConnected) {
+          AppLog.d("📞 User is in active group call, suppressed 1:1 incoming full screen");
+          return;
+        }
+
+        final call = IncomingCallModel.fromMap(callMap);
         CallStateTracker.isIncomingCallScreenOpen = true;
 
         Get.toNamed(
           Routes.IncomingCallScreen,
           arguments: {"callDetail": call},
         );
-      }
-      // else if (message.data['screen_name'] == 'groupCallNotify') {
-      // FlutterRingtonePlayer().stop();
-      // if (CallStateTracker.isIncomingCallScreenOpen) return;
-      //
-      // final data = jsonDecode(message.data['callData']);
-      //
-      // CallStateTracker.isIncomingCallScreenOpen = true;
-      // Get.toNamed(
-      //   Routes.groupIncomingCallScreen,
-      //   arguments: {
-      //     "callId": data['callId']?.toString(),
-      //     "groupId": data['groupId']?.toString() ?? "",
-      //     "groupName": (data['groupName'] ?? "Group Call").toString(),
-      //     "callerName": data['callerName'],
-      //     "groupProfile": data['callerProfileImage'],
-      //     "callerProfileImage": data['callerProfileImage'],
-      //     "activeMemberCount": 1,
-      //     "totalMemberCount": data['totalGroupMember'] ?? 0,
-      //     "isVideo": data['isVideo'] == true,
-      //     "callType": "incoming",
-      //   },
-      // );
-      // flutterLocalNotificationsPlugin.cancelAll();
-      // }
+      } else if (message.data['screen_name'] == 'groupCallNotify' ||
+          message.data['screen_name'] == 'incomingGroupCall' ||
+          message.data['screenName'] == 'incomingGroupCall' ||
+          message.data['screen_name'] == 'group_call' ||
+          message.data['screen'] == 'incomingGroupCall') {
+        if (!GroupCallService.isGroupCallEnabled) {
+          AppLog.d("Group calls currently disabled (Coming Soon), ignoring incoming notification");
+          return;
+        }
+        FlutterRingtonePlayer().stop();
+        if (CallStateTracker.isIncomingCallScreenOpen) return;
+        if (CallKitService.instance.isCallKitActive) {
+          AppLog.d("⏭️ Suppressed in-app groupIncomingCall screen (CallKit active)");
+          return;
+        }
 
-      else if (message.data['screen_name'] == "missedCall") {
+        // On iOS, native CallKit handles group incoming calls
+        if (Platform.isIOS) {
+          AppLog.d("⏭️ Suppressed in-app groupIncomingCall screen on iOS (CallKit active)");
+          return;
+        }
+
+        // If user is already in another call, do not crash or replace
+        if (Get.isRegistered<CallingController>() && Get.find<CallingController>().isCallLive) {
+          AppLog.d("📞 User in 1:1 call, suppressed group incoming screen");
+          return;
+        }
+        if (Get.isRegistered<GroupCallingController>() && Get.find<GroupCallingController>().isConnected) {
+          AppLog.d("📞 User in active group call, suppressed new group incoming screen");
+          return;
+        }
+
+        final rawCallData = message.data['callData'];
+        final Map<dynamic, dynamic> data = (rawCallData is String)
+            ? (jsonDecode(rawCallData) as Map<dynamic, dynamic>)
+            : (rawCallData is Map ? rawCallData : message.data);
+
+        CallStateTracker.isIncomingCallScreenOpen = true;
+        Get.toNamed(
+          Routes.groupIncomingCallScreen,
+          arguments: {
+            "callId": (data['callId'] ?? message.data['callId'] ?? "").toString(),
+            "groupId": (data['groupId'] ?? message.data['groupId'] ?? "").toString(),
+            "groupName": (data['groupName'] ?? message.data['groupName'] ?? "Group Call").toString(),
+            "callerName": (data['callerName'] ?? message.data['callerName'] ?? "Someone").toString(),
+            "groupProfile": data['callerProfileImage'] ?? data['groupProfile'] ?? message.data['callerProfileImage'],
+            "callerProfileImage": data['callerProfileImage'] ?? message.data['callerProfileImage'],
+            "activeMemberCount": 1,
+            "totalMemberCount": data['totalGroupMember'] ?? data['totalMemberCount'] ?? 0,
+            "isVideo": data['isVideo'] == true || data['isVideo'] == 'true' || message.data['isVideo'] == 'true',
+            "callType": "incoming",
+          },
+        );
+        flutterLocalNotificationsPlugin.cancelAll();
+      } else if (message.data['screen_name'] == "missedCall") {
         Get.toNamed(Routes.notificationScreen);
       } else if (message.data['screen_name'] == "group_walkie" ||
           message.data['screenName'] == "group_walkie" ||
@@ -1101,6 +1203,17 @@ class firebaseNotificationServices {
                     message.data['callerProfileImage'])
                 ?.toString() ??
             '';
+        final speakerId = (message.data['speakerId'] ??
+                    message.data['speaker_id'] ??
+                    message.data['adminId'] ??
+                    message.data['admin_id'] ??
+                    message.data['callerId'])
+                ?.toString();
+        final myId = GroupWalkieService.instance.selfUserId ??
+            Global.storageServices.get(PrefConst.userId)?.toString();
+        if (speakerId != null && myId != null && speakerId == myId) {
+          return;
+        }
 
         if (groupId.isNotEmpty) {
           if (type == "frombackground") {
@@ -1117,9 +1230,16 @@ class firebaseNotificationServices {
             return;
           }
 
-          if (GroupWalkieService.instance.currentGroupId != null &&
-              GroupWalkieService.instance.currentGroupId != groupId) {
-            await GroupWalkieService.instance.leaveGroup();
+          final currentGid = GroupWalkieService.instance.currentGroupId ??
+              (Get.isRegistered<GroupWalkieController>()
+                  ? Get.find<GroupWalkieController>().currentGroupId
+                  : null);
+          if (ActiveChatTracker.isViewingWalkie(groupId) ||
+              (currentGid != null && currentGid.toString() == groupId.toString() &&
+              (Get.currentRoute == Routes.groupWalkieScreen ||
+                  WalkieNotificationManager.instance.isWalkieScreenActive.value))) {
+            log("🔔 [handleMessage] User is actively in Walkie channel $groupId. Suppressing foreground notification.");
+            return;
           }
 
           final rawJoinedCount = message.data['joinedMemberCount'] ??
@@ -1131,12 +1251,29 @@ class firebaseNotificationServices {
               ? int.tryParse(rawJoinedCount.toString())
               : null;
 
+          final String? notifTitle = message.notification?.title ?? message.data['title']?.toString();
+          final String? notifSubtitle = (message.data['type'] == 'WALKIE_ADMIN_ALERT' ||
+                  message.data['alertType'] == 'admin_nudge')
+              ? (message.data['subtitle']?.toString() ??
+                  message.data['message']?.toString() ??
+                  message.notification?.body ??
+                  "$speakerName (Admin) is calling you into the channel.")
+              : (message.notification?.body ?? message.data['body']?.toString());
+
+          final dedupeKey = 'walkie_invite_${groupId}_${speakerId ?? speakerName}';
+          if (isDuplicateWalkieEvent(dedupeKey)) {
+            log("🔔 [handleMessage] Duplicate Walkie event $dedupeKey suppressed");
+            return;
+          }
+
           Future.delayed(const Duration(milliseconds: 300), () {
             WalkieInviteDialog.show(
               groupId: groupId,
               groupName: groupName,
               speakerName: speakerName,
               speakerImage: speakerImage,
+              title: notifTitle,
+              subtitle: notifSubtitle,
               joinedCount: joinedCount,
             );
           });
@@ -1170,6 +1307,17 @@ class firebaseNotificationServices {
                     message.data['callerProfileImage'])
                 ?.toString() ??
             '';
+        final speakerId = (message.data['speakerId'] ??
+                    message.data['speaker_id'] ??
+                    message.data['adminId'] ??
+                    message.data['admin_id'] ??
+                    message.data['callerId'])
+                ?.toString();
+        final myId = GroupWalkieService.instance.selfUserId ??
+            Global.storageServices.get(PrefConst.userId)?.toString();
+        if (speakerId != null && myId != null && speakerId == myId) {
+          return;
+        }
 
         final rawJoinedCount = message.data['joinedMemberCount'] ??
             message.data['joinedCount'] ??
@@ -1180,31 +1328,51 @@ class firebaseNotificationServices {
             ? int.tryParse(rawJoinedCount.toString())
             : null;
 
-        final speakerId = message.data['speakerId']?.toString();
-        final myId = GroupWalkieService.instance.selfUserId ??
-            Global.storageServices.get(PrefConst.userId)?.toString();
-        if (speakerId != null && myId != null && speakerId == myId) {
-          return;
-        }
-
         final isForeground =
             WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
         if (!isForeground) {
           return;
         }
 
+        final currentGid = GroupWalkieService.instance.currentGroupId ??
+            (Get.isRegistered<GroupWalkieController>()
+                ? Get.find<GroupWalkieController>().currentGroupId
+                : null);
+        if (ActiveChatTracker.isViewingWalkie(groupId) ||
+            (currentGid != null && currentGid.toString() == groupId.toString() &&
+            (Get.currentRoute == Routes.groupWalkieScreen ||
+                WalkieNotificationManager.instance.isWalkieScreenActive.value))) {
+          log("🔔 [handleMessage] User is actively in Walkie channel $groupId. Suppressing notification.");
+          return;
+        }
+
         if (groupId.isNotEmpty &&
-            GroupWalkieService.instance.currentGroupId != groupId &&
-            Get.currentRoute != Routes.groupWalkieScreen) {
+            !ActiveChatTracker.isViewingWalkie(groupId) &&
+            (currentGid == null || currentGid.toString() != groupId.toString()) &&
+            Get.currentRoute != Routes.groupWalkieScreen &&
+            !WalkieNotificationManager.instance.isWalkieScreenActive.value) {
+          final dedupeKey = 'walkie_invite_${groupId}_${speakerId ?? speakerName}';
+          if (isDuplicateWalkieEvent(dedupeKey)) {
+            log("🔔 [handleMessage] Duplicate Walkie event $dedupeKey suppressed");
+            return;
+          }
+
+          final String? notifTitle = message.notification?.title ?? message.data['title']?.toString();
+          final String? notifSubtitle = (message.data['type'] == 'WALKIE_ADMIN_ALERT' ||
+                  message.data['alertType'] == 'admin_nudge')
+              ? (message.data['subtitle']?.toString() ??
+                  message.data['message']?.toString() ??
+                  message.notification?.body ??
+                  "$speakerName (Admin) is calling you into the channel.")
+              : (message.notification?.body ?? message.data['body']?.toString());
+
           WalkieInviteDialog.show(
             groupId: groupId,
             groupName: groupName,
             speakerName: speakerName,
             speakerImage: speakerImage,
-            title: message.notification?.title ??
-                message.data['title']?.toString(),
-            subtitle:
-                message.notification?.body ?? message.data['body']?.toString(),
+            title: notifTitle,
+            subtitle: notifSubtitle,
             location: message.data['location']?.toString() ??
                 message.data['area']?.toString(),
             joinedCount: joinedCount,

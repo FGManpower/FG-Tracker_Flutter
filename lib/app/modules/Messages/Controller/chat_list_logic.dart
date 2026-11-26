@@ -167,6 +167,7 @@ class ChatListRules {
 
     if (server != null) {
       if (sentByMe && server > local) return local;
+      if (server == 0 && local > 0 && !readLocally && !isViewing) return local;
       return server < 0 ? 0 : server;
     }
 

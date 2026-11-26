@@ -48,7 +48,9 @@ String profileImageUrl(String? raw) {
   }
   if (v.startsWith('http://') || v.startsWith('https://')) return v;
   final base = ConstRes.aImageBaseUrl.replaceFirst(RegExp(r'/+$'), '');
-  return '$base/${v.replaceFirst(RegExp(r'^/+'), '')}';
+  final clean = v.replaceFirst(RegExp(r'^/+'), '');
+  final resolved = clean.startsWith('uploads/') ? clean : 'uploads/Auth/$clean';
+  return '$base/$resolved';
 }
 
 

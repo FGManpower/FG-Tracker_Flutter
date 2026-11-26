@@ -356,7 +356,10 @@ class CallAvatar extends StatelessWidget {
     if (path.startsWith('http://') || path.startsWith('https://')) {
       return path;
     }
-    return ConstRes.aImageBaseUrl + path;
+    final base = ConstRes.aImageBaseUrl.replaceFirst(RegExp(r'/+$'), '');
+    final clean = path.replaceFirst(RegExp(r'^/+'), '');
+    final resolved = clean.startsWith('uploads/') ? clean : 'uploads/Auth/$clean';
+    return '$base/$resolved';
   }
 
   Widget _initial() {

@@ -438,6 +438,7 @@ Future<bool> showLocalizedWalkieCustomNotification({
   required String groupId,
   String? speakerImage,
   int? joinedCount,
+  String? customText,
 }) async {
   final l10n = await loadAppL10nFromPrefs();
   final speaker = speakerName.trim();
@@ -447,9 +448,11 @@ Future<bool> showLocalizedWalkieCustomNotification({
     groupId: groupId,
     speakerImage: speakerImage,
     joinedCount: joinedCount,
-    textSpeaking: speaker.isNotEmpty
-        ? l10n.walkie_isSpeaking(speaker)
-        : l10n.walkie_someoneSpeaking,
+    textSpeaking: (customText != null && customText.trim().isNotEmpty)
+        ? customText.trim()
+        : (speaker.isNotEmpty
+            ? l10n.walkie_isSpeaking(speaker)
+            : l10n.walkie_someoneSpeaking),
     textJoined: (joinedCount != null && joinedCount > 0)
         ? l10n.walkie_joinedCount(joinedCount)
         : l10n.walkie_activeBadge,

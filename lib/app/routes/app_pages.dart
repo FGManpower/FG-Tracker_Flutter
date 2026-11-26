@@ -19,11 +19,11 @@ import 'package:fgtracker/app/modules/auth/Views/Otp_Screen.dart';
 import 'package:fgtracker/app/modules/auth/Views/login_Page.dart';
 import 'package:fgtracker/app/modules/auth/Views/registration_screen.dart';
 import 'package:fgtracker/app/modules/home/Views/AboutUs.dart';
+import 'package:fgtracker/app/modules/home/Views/settings_screen.dart';
 import 'package:fgtracker/app/modules/Legal/Views/legal_document_screen.dart';
 import 'package:fgtracker/app/modules/Legal/Views/legal_screen.dart';
 import 'package:fgtracker/app/modules/home/Views/home_screen.dart';
 import 'package:fgtracker/app/modules/mediaStream/Bindings/call_binding.dart';
-import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/calling_screen.dart';
 import 'package:get/get.dart';
 import '../modules/Group/Views/QRScanScreen.dart';
@@ -64,7 +64,6 @@ import '../modules/sos/SosBinding.dart';
 import '../modules/sos/sos_screen.dart';
 
 import '../modules/mediaStream/Views/incoming_call_screen.dart';
-import '../modules/AppUpdate/Views/ShoreBird_AppUpdate_Screen.dart';
 part 'app_routes.dart';
 
 class AppPages {
@@ -189,16 +188,16 @@ class AppPages {
     GetPage(
       name: _Paths.callScreen,
       page: () => CallingScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       binding: StreamBinding(),
-      transitionDuration: const Duration(milliseconds: 500),
+      transitionDuration: const Duration(milliseconds: 250),
     ),
     GetPage(
       name: _Paths.IncomingCallScreen,
       page: () => IncomingCallScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       binding: IncomingCallBinding(),
-      transitionDuration: const Duration(milliseconds: 500),
+      transitionDuration: const Duration(milliseconds: 250),
     ),
     GetPage(
       name: _Paths.groupWalkieScreen,
@@ -384,7 +383,14 @@ class AppPages {
     ),
     GetPage(
       name: Routes.shorebirdUpdate,
-      page: () => const ShorebirdAppUpdateScreen(),
+      page: () => const ForceUpdateScreen(updateType: UpdateType.shorebird),
+      binding: ForceUpdateBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.settings,
+      page: () => const SettingsScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 400),
     ),

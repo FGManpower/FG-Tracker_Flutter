@@ -11,6 +11,8 @@ import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/app/Model/group_count_detail.dart';
 import 'package:fgtracker/app/Model/initialize_model.dart';
 import 'package:fgtracker/app/Model/live_location_model.dart';
+import 'package:fgtracker/app/Data/Services/GroupCountService.dart';
+import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/chat_list_controller.dart';
 import 'package:fgtracker/app/modules/Track/Controller/LocationService.dart';
@@ -31,7 +33,7 @@ class HomeController extends GetxController {
   StreamSubscription<dynamic>? _groupCountSubscription;
   RxList<BannerData> bannerList = <BannerData>[].obs;
   RxString InitializeResponeMessage = ''.obs;
-  RxBool isLoadingBanners = false.obs;
+  RxBool isLoadingBanners = true.obs;
   final RxList<LiveLocationModel> liveLocations = <LiveLocationModel>[].obs;
   final Rx<LatLng?> currentLocation = Rx<LatLng?>(null);
   RxString selectedRadius = '2'.obs;
@@ -118,6 +120,7 @@ class HomeController extends GetxController {
 
     SocketDashboardService.instance.init();
     SocketDashboardService.instance.requestGroupCount();
+    SocketService.instance.requestGroupCount();
 
     // One chat-list store for the whole logged-in session: its sockets keep
     // listening (new messages, typing, counts) on every screen, not only while
@@ -193,6 +196,10 @@ class HomeController extends GetxController {
           Global.storageServices.setBool(_prefWalkieIsTrialExpired, w.isTrialExpired);
           // Access is never cached any more; drop the old key.
           Global.storageServices.remove(_prefWalkieCanUse);
+        }
+
+        if (result.data?.dashboardCounts != null) {
+          GroupCountService.instance.updateFromSocket(result.data?.dashboardCounts);
         }
 
         if (result.data?.notificationMarkers != null) {

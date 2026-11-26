@@ -63,14 +63,8 @@ class TrackRepo {
       );
     }
 
-    // 2. Fallback if primary returned no data
-    final bool hasData = response != null &&
-        ((response is Map &&
-                response['data'] is List &&
-                (response['data'] as List).isNotEmpty) ||
-            (response is List && response.isNotEmpty));
-
-    if (!hasData) {
+    // 2. Fallback only if primary query completely failed (network error / null response)
+    if (response == null) {
       try {
         final res2 = await HttpUtil().get(
           Urls.userWithinRadiusFallback,

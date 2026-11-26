@@ -39,6 +39,7 @@ import 'app/Data/Services/GroupCountService.dart';
 import 'app/Data/Services/notification_marker_service.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/Socket/Socket_SignallingService.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Message_Services.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 import 'app/routes/app_pages.dart';
 import 'app/modules/Track/Controller/SocketServices.dart';
@@ -285,6 +286,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       // Also consume pending accept if app comes back to foreground after
       // user accepted from notification while app was backgrounded.
       CallKitService.instance.markAppReady();
+    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+      // User is no longer actively using the mobile device - disconnect chat socket so peers see offline/last-seen
+      try {
+        if (Get.isRegistered<SocketMessageService>()) {
+          SocketMessageService.instance.disconnectPrivateChatSocket();
+        }
+      } catch (_) {}
     }
   }
 

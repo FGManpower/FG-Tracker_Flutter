@@ -932,17 +932,18 @@ class GroupWalkieService {
       }
 
       final inviteGroupId = (data['groupId'] ?? data['group_id'])?.toString();
-      if (inviteGroupId != null &&
-          _currentGroupId != null &&
-          inviteGroupId == _currentGroupId &&
-          _isTalking) {
+      final currentGid = _currentGroupId ??
+          (Get.isRegistered<GroupWalkieController>()
+              ? Get.find<GroupWalkieController>().currentGroupId
+              : null);
+      if (inviteGroupId != null && currentGid != null && inviteGroupId == currentGid) {
+        // User is ALREADY joined in this exact Walkie group! Never show an invite or alert!
         return;
       }
 
-      // Backend emits walkie_member_alerted + admin_alert_walkie_member +
-      // walkie_invite for ONE admin alert — show it only once.
+      // Unified dedupe key matching NotificationServices to prevent dual popup from socket + FCM
       final dedupeKey =
-          'socket_invite_${inviteGroupId ?? ''}_${speakerId ?? data['speakerName'] ?? ''}';
+          'walkie_invite_${inviteGroupId ?? ''}_${speakerId ?? data['speakerName'] ?? ''}';
       if (firebaseNotificationServices.isDuplicateWalkieEvent(dedupeKey)) {
         return;
       }
@@ -955,12 +956,19 @@ class GroupWalkieService {
       final gId = data['groupId']?.toString() ?? '';
       final gName = data['groupName']?.toString() ?? appL10n.walkie_groupFallback;
 
+      final String? notifTitle = data['title']?.toString();
+      final String? notifSubtitle = (data['type'] == 'WALKIE_ADMIN_ALERT' || data['alertType'] == 'admin_nudge')
+          ? (data['subtitle']?.toString() ?? data['message']?.toString() ?? "$speakerName (Admin) is calling you into the channel.")
+          : data['subtitle']?.toString();
+
       if (isForeground) {
         WalkieInviteDialog.show(
           groupId: gId,
           groupName: gName,
           speakerName: speakerName,
           speakerImage: speakerImage,
+          title: notifTitle,
+          subtitle: notifSubtitle,
           joinedCount: joinedCount,
         );
       } else {

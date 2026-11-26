@@ -93,6 +93,7 @@ class UsersWithinRadiusData {
   String? lastSeen;
   bool isOnline = false;
   int? chatId;
+  bool? locationSharing;
   UsersWithinRadiusData({
     this.userId,
     this.name,
@@ -107,6 +108,7 @@ class UsersWithinRadiusData {
     this.lastSeen,
     this.chatId,
     this.isOnline = false,
+    this.locationSharing,
   });
 
   static double? _parseDouble(dynamic val) {
@@ -342,6 +344,19 @@ class UsersWithinRadiusData {
       thresholdMinutes: 15,
     );
 
+    final rawLocSharing = json['locationSharing'] ??
+        json['location_sharing'] ??
+        json['isLocationSharing'] ??
+        user?['locationSharing'] ??
+        user?['location_sharing'];
+    locationSharing = rawLocSharing is bool
+        ? rawLocSharing
+        : (rawLocSharing == null
+            ? true
+            : (rawLocSharing == 1 ||
+                rawLocSharing == '1' ||
+                rawLocSharing.toString().toLowerCase() == 'true'));
+
     if (onlineVal == null && (lastSeen == null || isOnline)) {
       if (latitude != null && longitude != null && latitude != 0.0) {
         isOnline = true;
@@ -364,6 +379,7 @@ class UsersWithinRadiusData {
     data['lastSeen'] = lastSeen;
     data['isOnline'] = isOnline;
     data['chatId'] = chatId;
+    data['locationSharing'] = locationSharing;
     return data;
   }
 
@@ -431,22 +447,7 @@ class UsersWithinRadiusData {
   }) {
     String formattedDistance = "Nearby you";
 
-    if (distance != null &&
-        distance.toString().trim().isNotEmpty &&
-        !distance.toString().toLowerCase().contains("nan")) {
-      final str = distance.toString().trim();
-      final cleaned = str.replaceAll(RegExp(r'[^\d.]'), '');
-      final numVal = double.tryParse(cleaned);
-      if (str.contains("away")) {
-        formattedDistance = str;
-      } else if (str.contains("km") || str.contains("m")) {
-        formattedDistance = "$str away";
-      } else if (numVal != null) {
-        formattedDistance = "${numVal.toStringAsFixed(2)} km away";
-      } else {
-        formattedDistance = str;
-      }
-    } else if (currentUserLat != null &&
+    if (currentUserLat != null &&
         currentUserLong != null &&
         currentUserLat != 0.0 &&
         currentUserLong != 0.0 &&
@@ -464,6 +465,21 @@ class UsersWithinRadiusData {
         formattedDistance = "${meters.round()} m away";
       } else {
         formattedDistance = "${(meters / 1000.0).toStringAsFixed(2)} km away";
+      }
+    } else if (distance != null &&
+        distance.toString().trim().isNotEmpty &&
+        !distance.toString().toLowerCase().contains("nan")) {
+      final str = distance.toString().trim();
+      final cleaned = str.replaceAll(RegExp(r'[^\d.]'), '');
+      final numVal = double.tryParse(cleaned);
+      if (str.contains("away")) {
+        formattedDistance = str;
+      } else if (str.contains("km") || str.contains("m")) {
+        formattedDistance = "$str away";
+      } else if (numVal != null) {
+        formattedDistance = "${numVal.toStringAsFixed(2)} km away";
+      } else {
+        formattedDistance = str;
       }
     } else {
       formattedDistance = "Location unavailable";
@@ -526,12 +542,16 @@ class UsersWithinRadiusData {
       }
     }
 
+    final bool isSharing = locationSharing ??
+        (latitude != null && longitude != null && latitude != 0.0 && longitude != 0.0);
+
     return MemberModel(
       userId: userId,
-      latitude: latitude,
-      longitude: longitude,
+      latitude: isSharing ? latitude : null,
+      longitude: isSharing ? longitude : null,
       chatId: chatId,
       isOnline: isOnline,
+      locationSharing: isSharing,
       name: (name != null && name!.trim().isNotEmpty)
           ? name!.trim()
           : (mobileNo != null && mobileNo!.trim().isNotEmpty
@@ -540,8 +560,10 @@ class UsersWithinRadiusData {
       team: (team != null && team!.trim().isNotEmpty)
           ? team!.trim()
           : (fallbackTeam ?? ""),
-      location: resolvedLocation.isNotEmpty ? resolvedLocation : "Location unavailable",
-      distance: formattedDistance,
+      location: isSharing && resolvedLocation.isNotEmpty
+          ? resolvedLocation
+          : (!isSharing ? "Private mode" : "Location unavailable"),
+      distance: isSharing ? formattedDistance : "",
       battery: finalBattery,
       avatarUrl: avatar,
     );

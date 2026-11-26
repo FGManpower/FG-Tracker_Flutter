@@ -393,35 +393,88 @@ Widget ReusableUpderline() {
   );
 }
 
+/// Standard AppBar styled identically to All Media (MediaLinksDocsScreen).
+AppBar trackerAppBar(
+  BuildContext context,
+  String title, {
+  VoidCallback? onBack,
+  List<Widget>? actions,
+}) {
+  const Color purple = Color(0xFF5045B9);
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  return AppBar(
+    backgroundColor: isDark ? ToggleThemeData.darkThemeBackground : Colors.white,
+    elevation: 1,
+    scrolledUnderElevation: 1,
+    surfaceTintColor: AppBarStyle.surfaceTintColor,
+    shadowColor: purple.withValues(alpha: 0.1),
+    centerTitle: false,
+    iconTheme: const IconThemeData(color: purple),
+    automaticallyImplyLeading: false,
+    leadingWidth: AppBarStyle.leadingWidth,
+    leading: AppBarStyle.leading(
+      onTap: onBack ?? () => Navigator.of(context).maybePop(),
+    ),
+    title: Text(
+      title,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        color: isDark ? Colors.white : Colors.black87,
+        fontSize: 18.sp,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    actions: actions,
+  );
+}
+
 AppBar reusableAppbar(
     String title, {
       void Function()? ontap,
-      Color color = AppColors.darkBlue,
+      Color? color,
       BuildContext? context,
       bool showActions = false,
+      bool centerTitle = false,
+      double elevation = 1,
     }) {
+  const Color purple = Color(0xFF5045B9);
+  final bool isDark = context != null
+      ? Theme.of(context).brightness == Brightness.dark
+      : (ContextUtility.context?.isDarkMode ?? false);
   return AppBar(
-    toolbarHeight: 50.h,
-    backgroundColor: ContextUtility.context!.isDarkMode
-        ? ToggleThemeData.darkThemeBackground
-        : color,
-    scrolledUnderElevation: 0,
+    backgroundColor:
+        isDark ? ToggleThemeData.darkThemeBackground : (color ?? Colors.white),
+    elevation: elevation,
+    scrolledUnderElevation: elevation,
     surfaceTintColor: AppBarStyle.surfaceTintColor,
+    shadowColor: purple.withValues(alpha: 0.1),
+    centerTitle: centerTitle,
+    iconTheme: const IconThemeData(color: purple),
+    automaticallyImplyLeading: false,
     leadingWidth: AppBarStyle.leadingWidth,
     leading: AppBarStyle.leading(
-      onTap: ontap ?? () => Navigator.pop(ContextUtility.navigator!.context),
+      onTap: ontap ??
+          () {
+            if (context != null && Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else if (ContextUtility.navigator?.canPop() ?? false) {
+              Navigator.pop(ContextUtility.navigator!.context);
+            } else {
+              Get.back();
+            }
+          },
     ),
-    centerTitle: true,
     title: Text(
       title,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
       style: TextStyle(
-        color: Colors.white,
-        fontSize: 20.sp,
-        fontWeight: FontWeight.w600,
+        color: isDark ? Colors.white : Colors.black87,
+        fontSize: 18.sp,
+        fontWeight: FontWeight.w700,
       ),
     ),
-    systemOverlayStyle: SystemUiOverlayStyle.dark,
-    elevation: 0,
     actions: [
       if (showActions == true)
         Padding(
@@ -430,8 +483,8 @@ AppBar reusableAppbar(
             onTap: () async {},
             child: FaIcon(
               FontAwesomeIcons.ellipsisVertical,
-              color: Colors.white,
-              size: 25.sp,
+              color: isDark ? Colors.white : Colors.black87,
+              size: 22.sp,
             ),
           ),
         )

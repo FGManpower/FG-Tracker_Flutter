@@ -244,6 +244,12 @@ class LocationData {
                 rawLocSharing == '1' ||
                 rawLocSharing.toString().toLowerCase() == 'true'));
 
+    if (locationSharing == false) {
+      latitude = null;
+      longitude = null;
+      location = null;
+    }
+
     profileImage = json['ProfileImage'] ??
         json['profileImage'] ??
         json['image'] ??

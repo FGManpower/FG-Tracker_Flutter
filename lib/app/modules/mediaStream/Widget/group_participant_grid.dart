@@ -38,8 +38,17 @@ class GroupParticipantGrid extends StatelessWidget {
         .contains(userId.toString().trim());
   }
 
+  GroupCallingController? get _groupController =>
+      Get.isRegistered<GroupCallingController>()
+          ? Get.find<GroupCallingController>()
+          : null;
+
   RTCVideoRenderer? _getLiveRenderer(GroupCallParticipant participant) {
-    if (participant.isLocal) return participant.renderer;
+    if (participant.isLocal) {
+      final c = _groupController;
+      if (c != null && c.localRenderer.textureId != null) return c.localRenderer;
+      return participant.renderer;
+    }
     return Socket_GroupCallService.instance.remoteRenderers[participant.userId] ??
         participant.renderer;
   }
@@ -48,7 +57,7 @@ class GroupParticipantGrid extends StatelessWidget {
     if (renderer == null || renderer.srcObject == null) return false;
     final videos = renderer.srcObject!.getVideoTracks();
     if (videos.isEmpty) return false;
-    return videos.first.enabled && videos.first.muted != true;
+    return videos.first.enabled;
   }
 
   @override
@@ -178,12 +187,12 @@ class GroupParticipantGrid extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF12101F),
+          color: const Color(0xFF141024),
           borderRadius: BorderRadius.circular(
             isFullScreen ? 0 : (isThumbnail ? 12.r : 16.r),
           ),
           border: sharing
-              ? Border.all(color: const Color(0xFF7B58FF), width: 2)
+              ? Border.all(color: const Color(0xFF7B61FF), width: 2)
               : null,
         ),
         child: Stack(
@@ -191,11 +200,14 @@ class GroupParticipantGrid extends StatelessWidget {
           children: [
             Obx(() {
               // 1. Force UI rebuild when new WebRTC streams attach to peers
-              if (Get.isRegistered<GroupCallingController>()) {
-                Get.find<GroupCallingController>().participantsUiTick.value;
+              final c = _groupController;
+              if (c != null) {
+                c.participantsUiTick.value;
               }
 
-              final isVideoOn = participant.isVideoOn.value;
+              final isVideoOn = participant.isLocal
+                  ? (c != null ? (c.isVideo && c.isVideoOn.value) : participant.isVideoOn.value)
+                  : participant.isVideoOn.value;
 
               // 2. Fetch the live renderer from the Socket Service directly
               final liveRenderer = _getLiveRenderer(participant);
@@ -285,22 +297,28 @@ class GroupParticipantGrid extends StatelessWidget {
               Positioned(
                 left: isThumbnail ? 4.w : 10.w,
                 bottom: isThumbnail ? 4.h : 12.h,
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isThumbnail ? 6.w : 8.w,
-                    vertical: isThumbnail ? 2.h : 4.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.55),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: reausabletext(
-                    participant.isLocal ? appL10n.common_you : participant.name.toString(),
-                    fontsize: isThumbnail ? 10 : 12,
-                    fontfamily: FontFamily.interSemiBold,
-                    color: Colors.white,
-                  ),
-                ),
+                child: Obx(() {
+                  final isConnected = participant.isConnected.value;
+                  final statusText = participant.isLocal
+                      ? appL10n.common_you
+                      : (!isConnected ? '${participant.name} • Ringing...' : participant.name.toString());
+                  return Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isThumbnail ? 6.w : 8.w,
+                      vertical: isThumbnail ? 2.h : 4.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.55),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: reausabletext(
+                      statusText,
+                      fontsize: isThumbnail ? 10 : 12,
+                      fontfamily: FontFamily.interSemiBold,
+                      color: Colors.white,
+                    ),
+                  );
+                }),
               ),
 
             if (participant.isLocal &&
@@ -316,13 +334,13 @@ class GroupParticipantGrid extends StatelessWidget {
                   child: Container(
                     padding: EdgeInsets.all(6.r),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: const Color(0xFF261D45),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE9E5FE)),
+                      border: Border.all(color: Colors.white24, width: 0.8),
                     ),
                     child: Icon(
                       Icons.cameraswitch_rounded,
-                      color: const Color(0xFF6E5CA4),
+                      color: Colors.white,
                       size: 18.sp,
                     ),
                   ),
@@ -338,11 +356,11 @@ class GroupParticipantGrid extends StatelessWidget {
                   return Container(
                     padding: EdgeInsets.all(5.r),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.55),
+                      color: const Color(0xFFEA4335).withOpacity(0.85),
                       shape: BoxShape.circle,
                     ),
                     child:
-                    Icon(Icons.mic_off, color: Colors.white, size: 14.sp),
+                    Icon(Icons.mic_off_rounded, color: Colors.white, size: 13.sp),
                   );
                 }),
               ),
@@ -365,7 +383,7 @@ class GroupParticipantGrid extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF7B58FF),
+        color: const Color(0xFF5B3FD0),
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
@@ -416,14 +434,14 @@ class GroupParticipantGrid extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16.sp, color: const Color(0xFF7B58FF)),
+            Icon(icon, size: 16.sp, color: const Color(0xFF5B3FD0)),
             SizedBox(width: 4.w),
             Text(
               label,
               style: TextStyle(
                 fontSize: 11.sp,
                 fontFamily: FontFamily.interSemiBold,
-                color: const Color(0xFF7B58FF),
+                color: const Color(0xFF5B3FD0),
               ),
             ),
           ],
@@ -444,20 +462,47 @@ class GroupParticipantGrid extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Container(color: const Color(0xFF1E1147)),
+        Container(color: const Color(0xFF141024)),
         Center(
-          child: CircleAvatar(
-            radius: isFullScreen ? 70.r : (isThumbnail ? 18.r : 36.r),
-            backgroundColor: Colors.white12,
-            backgroundImage: NetworkImage(imageUrl),
-            onBackgroundImageError: (_, __) {},
-            child: Utility.isNullEmptyOrFalse(participant.profileImage)
-                ? Icon(
-              Icons.person,
-              color: Colors.white,
-              size: isFullScreen ? 72.r : (isThumbnail ? 20.r : 40.r),
-            )
-                : null,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: isFullScreen ? 70.r : (isThumbnail ? 18.r : 36.r),
+                backgroundColor: Colors.white12,
+                backgroundImage: NetworkImage(imageUrl),
+                onBackgroundImageError: (_, __) {},
+                child: Utility.isNullEmptyOrFalse(participant.profileImage)
+                    ? Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: isFullScreen ? 72.r : (isThumbnail ? 20.r : 40.r),
+                )
+                    : null,
+              ),
+              if (!participant.isLocal && !isThumbnail)
+                Obx(() {
+                  if (participant.isConnected.value) return const SizedBox.shrink();
+                  return Padding(
+                    padding: EdgeInsets.only(top: 8.h),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF5B3FD0).withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Text(
+                        'Ringing...',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10.sp,
+                          fontFamily: FontFamily.interMedium,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+            ],
           ),
         ),
         if (cameraOff && !isThumbnail)

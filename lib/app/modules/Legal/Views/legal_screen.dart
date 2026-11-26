@@ -70,59 +70,7 @@ class LegalScreen extends StatelessWidget {
               ),
               SizedBox(height: 10.h),
             ],
-            SizedBox(height: 10.h),
-            _SectionTitle(text: l10n.about_contactUs, isDark: isDark),
-            SizedBox(height: 10.h),
-            for (final contact in legalContacts) ...[
-              _LegalRow(
-                key: ValueKey('legal_contact_${contact.id}'),
-                icon: _contactIcon(contact.id),
-                title: contact.label(l10n),
-                subtitle: contact.value,
-                isDark: isDark,
-                onTap: () =>
-                    _open(context, contact.uri, l10n.chat_unableToOpen),
-              ),
-              SizedBox(height: 10.h),
-            ],
           ],
-        ),
-      ),
-    );
-  }
-
-  static IconData _contactIcon(String id) {
-    switch (id) {
-      case 'phone':
-        return Icons.call_outlined;
-      case 'email':
-        return Icons.mail_outline_rounded;
-      case 'address':
-        return Icons.location_on_outlined;
-      default:
-        return Icons.language_rounded;
-    }
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.text, required this.isDark});
-
-  final String text;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsetsDirectional.only(start: 4.w),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 14.sp,
-          height: 1.3,
-          fontFamily: FontFamily.interBold,
-          fontWeight: FontWeight.bold,
-          color: isDark ? const Color(0xFFB5B8C6) : const Color(0xFF7A7F93),
         ),
       ),
     );

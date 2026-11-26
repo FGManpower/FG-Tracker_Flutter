@@ -19,6 +19,7 @@ class LiveLocationSocketModel {
   final String? name;
   final String? profileImage;
   final int? battery;
+  final bool? locationSharing;
   final DateTime timestamp;
 
   LiveLocationSocketModel({
@@ -32,6 +33,7 @@ class LiveLocationSocketModel {
     this.name,
     this.profileImage,
     this.battery,
+    this.locationSharing,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 
@@ -87,6 +89,17 @@ class LiveLocationSocketModel {
         ? int.tryParse(rawBattery.toString().replaceAll(RegExp(r'[^\d]'), ''))
         : null;
 
+    final rawLocSharing = json['locationSharing'] ??
+        json['location_sharing'] ??
+        json['isLocationSharing'];
+    final bool? locationSharing = rawLocSharing is bool
+        ? rawLocSharing
+        : (rawLocSharing == null
+            ? null
+            : (rawLocSharing == 1 ||
+                rawLocSharing == '1' ||
+                rawLocSharing.toString().toLowerCase() == 'true'));
+
     return LiveLocationSocketModel(
       userId: rawUserId,
       groupId: rawGroupId,
@@ -100,6 +113,7 @@ class LiveLocationSocketModel {
           (json['profileImage'] ?? json['image'] ?? json['profile_image'])
               ?.toString(),
       battery: battery,
+      locationSharing: locationSharing,
     );
   }
 
@@ -117,6 +131,7 @@ class LiveLocationSocketModel {
       if (name != null) 'name': name,
       if (profileImage != null) 'profileImage': profileImage,
       if (battery != null) 'battery': battery,
+      if (locationSharing != null) 'locationSharing': locationSharing,
       'timestamp': timestamp.toIso8601String(),
     };
   }
@@ -289,8 +304,8 @@ class TrackLiveLocationSocketService extends GetxService {
     final map = Map<String, dynamic>.from(rawItem);
     final model = LiveLocationSocketModel.fromJson(map);
 
-    // Ignore invalid coordinates
-    if (model.lat == 0.0 || model.lng == 0.0) return;
+    // Ignore invalid coordinates unless this is a private mode notification (which has coordinates cleared)
+    if ((model.lat == 0.0 || model.lng == 0.0) && model.locationSharing != false) return;
 
     // Filter out self update to prevent jitter on current user's GPS marker
     final currentUserId =

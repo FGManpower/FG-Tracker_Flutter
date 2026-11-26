@@ -19,7 +19,7 @@ if (flutterRoot == null) {
     throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
 }
 
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode', '335')
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode', '346')
 def flutterVersionName = localProperties.getProperty('flutter.versionName', '2.0.8')
 
 
@@ -92,6 +92,7 @@ dependencies {
     implementation("io.socket:socket.io-client:2.1.0") {
         exclude group: "org.json", module: "json"
     }
+    implementation 'com.google.mlkit:text-recognition-devanagari:16.0.1'
 }
 
 

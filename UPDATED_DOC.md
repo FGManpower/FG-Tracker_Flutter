@@ -23,6 +23,7 @@
 | **10** | **New Chat Screen Fast Load & Location Screen Skeleton / Fast GPS (Nearby Places Removed)** | a) New Chat screen lagged/hesitated upon clicking from Chat List because `_permissionChecked` and `_permissionGranted` were initialized to `false`, causing blank/skeleton gating before rendering, and avatar images lacked persistent disk caching; b) Location screen took too long to load, displaying an infinite raw spinner due to slow OSM/Google Places API HTTP requests (`_fetchNearbyPlaces`) and slow GPS locks (especially on iOS); c) Nearby Places cluttered the UI and slowed performance. | a) **New Chat Instant Frame-0 Load:** Bound initial permission and state directly to session cache (`NewChatController.cachedMatched` / `AppCache.fgContacts`) and known permissions (`ContactController.instance.isContactPermissionGranted`), rendering contacts instantly on frame 0 without screen hesitation; added background pre-warming (`NewChatController.preWarm()`) in `ChatListScreen`; upgraded avatar rendering to `CachedNetworkImageProvider` and made initials cache static for smooth 60fps scrolling on iOS & Android; b) **Nearby Places Removed:** Completely eliminated Nearby Places HTTP network calls and UI sections in `location_picker_controller.dart` and `LocationPickerPage.dart`, keeping strictly Map + Search bar + "Send current location" + Pin location; c) **Skeletonizer Effect & Fast GPS:** Replaced raw `CircularProgressIndicator` with a smooth, themed Skeletonizer effect (`_buildLocationSkeleton`) matching map, search bar, and draggable sheet; added ultra-fast GPS retrieval checking `Geolocator.getLastKnownPosition()` (<20ms) first so map renders in <100ms on iOS and Android while refining live GPS with a 3s timeout; immediately shows clear action buttons on GPS off or permission denied without infinite loading. |
 | **11** | **Attachment + Msg Edit Synchronization on Receiver Screen (WhatsApp Parity)** | When an attachment message (image, video, document, audio) with a caption was edited, the sender's screen updated optimistically, but the recipient did not see the edited caption or the "Edited" tag. Root causes: a) `socketService.editMessage` was sending `content: text`, clobbering the media URL and omitting `messageType` and universal `id`; b) Socket listeners missed event variations between `editMessage` and `messageEdited`; c) `ChatScreenRules.applyEdit` did not recognize all attachment types (such as `forward`, `photo`, `doc`, `voice`, or messages carrying images/videos) and only updated `msg.content`, whereas `ChatItem.dart` strictly renders `message.caption` for attachments; d) Plain text updates in `data['content']` were not mapped to `caption` for attachments; e) Edit flags (`isEdited`, `edited`) were not guaranteed on receiver payloads. | a) **Socket Message Services:** Updated `editMessage` to send `messageId`, `id`, `content` (preserving media URL for attachments), `caption`, `text`, `newContent`, `isEdited: true`, `is_edited: true`, `edited: true`, and `messageType`. Emits across both `editMessage` and `edit_message` on both private and group chat sockets. Updated `listenMessageEdited` to subscribe to `messageEdited`, `message_edited`, `editMessage`, and `edit_message`; b) **Chat Logic (`applyEdit` & `isAttachment`):** Expanded `isAttachment` to recognize `image`, `image_text`, `media`, `video`, `document`, `audio`, `voice`, `file`, `photo`, `doc`, `attachment`, plus any message with non-empty `images`, `videos`, or existing `caption`. Updated `applyEdit` to extract new captions from `caption`, `text`, `newContent`, or non-media `content`, update `msg.caption` while strictly preserving media URLs in `msg.content`, and guarantee `msg.isEdited = true` and `msg.edited = true`; c) **Controllers:** Updated `MessageController` and `GroupChatController` `updateEditedMessage` to preserve `targetMsg.content` while forwarding `caption: text` and `messageType`, and added UI stream updates in edit event listeners; d) **Input Area:** Bound `ChatInputArea` editing state to `isAttachment(messageType, message)` for accurate banner and caption prefill. |
 | **12** | **Receiver Screen Real-Time Edit Sync (`receive_message` & Multi-Event Interception)** | When User A edited an attachment message with a caption, User A saw it instantly, but User B (recipient) never saw the edited caption or "Edited" tag. Root causes: a) In `MessageController.dart` and `GroupChatController.dart`, when the backend broadcast the updated message row via `receive_message`, the condition `if (!hasOldContent && hasNewContent)` evaluated to false because `hasOldContent` was already true for existing messages, causing receiver to completely drop and ignore the update; b) `mergeAttachmentFrom` lacked synchronization logic for `caption` and `isEdited`; c) Sender's `updateEditedMessage` passed `content: text` clobbering media storage links; d) Socket edit listeners omitted `message_update`, `messageUpdated`, `update_message`, `updateMessage` variants and lacked auto-reconnection reattachment on the main `/chat` socket. | a) **MessageController & GroupChatController:** Added explicit `isEditUpdate` evaluation in `receivePrivateMessage` and `receiveGroupMessage` checking `isEdited`, `edited`, and modified `caption`/`content`. Updates `existing.caption` for attachments (preserving media URLs in `content`), updates `existing.content` for text, sets `isEdited = true` and `edited = true`, and calls `updateMessageStream()` so receiver screen updates instantly; b) **Safe Media Content Preservation:** Updated `updateEditedMessage` across private and group chat to pass `content: isAttachment ? targetMsg.content : text`, preserving the cloud storage URL while passing the new caption in `caption`; c) **Model Resilience:** Upgraded `mergeAttachmentFrom` in `GetMessage.dart` to merge updated `caption` and `isEdited` flags; d) **Socket Coverage:** Registered `message_update`, `messageUpdated`, `update_message`, and `updateMessage` across all sockets and guaranteed re-registration upon `/chat` socket reconnection. |
+| **13** | **Walkie-Talkie Bell Icon & Reminder Push Notification (Multi-Admin, Android Heads-Up & iOS Parity)** | a) When newly created admins triggered the bell icon, 4 concurrent triggers fired (3 redundant socket events + immediate REST POST), and backend debounce race condition bypassed rate-limiting, causing 4 duplicate FCM pushes; b) Android used obsolete channel ID `walkie_call_channel`, causing OS fallback to default system notification; c) On iOS, `onMessage` ignored iOS (`Platform.isAndroid` only), preventing `WalkieInviteDialog` from ever displaying while `AppDelegate` showed small default text banner; d) APNs payload lacked `mutableContent: true`, preventing rich Notification Content Extension and ActivityKit Live Activities from receiving custom alert text. | a) Consolidated client trigger in `walkieController.dart` to emit single `admin_alert_walkie_member`, using REST API strictly as offline fallback; b) Backend atomic debounce caches key at function entry before async DB calls, preventing concurrent duplicates; c) Aligned Android channel ID to `fg_tracker_walkie_heads_up_channel_v7`, triggering native RemoteViews heads-up notification and clearing stray system notifications; d) Enabled `handleMessage` on iOS in foreground for rich `WalkieInviteDialog` and suppressed system text banner in `AppDelegate.swift`; e) Added `mutableContent: true` and `walkie_admin_alert` category in APNs and `Info.plist`, displaying custom admin alert subtitle in `WalkieNotificationViewController` and `WalkieLiveActivity`. |
 
 ---
 
@@ -250,6 +251,15 @@ All changes were strictly surgical, targeted, and adhered to existing UI compone
       - In `ChatItem.dart`, isolated `bubbleContext` inside a dedicated `Builder` wrapping the bubble `GestureDetector` so coordinate measurements reflect only the message bubble bounds, completely decoupling it from trailing reaction pills and translation action bars.
       - Verified across all 4 geometry test cases (Top, Middle, Bottom, Bada Msg) via automated widget suite `test/chat_context_menu_whatsapp_test.dart` (4/4 PASSED).
 
+41. **Walkie-Talkie Multi-Admin Bell Access & Rich Notification Parity:**
+    - `lib/app/modules/Walkie-talkie/Controller/walkieController.dart`: Consolidated client trigger in `triggerAdminAlertForMember` to emit single `admin_alert_walkie_member` event when socket is connected, using the REST API `/walkie/channels/$groupId/alert-member` strictly as an offline fallback.
+    - `lib/app/Data/Services/NotificationServices.dart`: In `FirebaseMessaging.onMessage.listen`, enabled `handleMessage` for iOS in foreground to display the rich custom `WalkieInviteDialog` with Accept / Decline actions.
+    - `lib/app/modules/Walkie-talkie/widgets/group_info_bottom_sheet.dart`: Extended admin authorization checking so any assigned admin or co-admin (`isCreator || isAdmin || role in ('admin', 'creator')`) sees the active purple bell button.
+    - `ios/Runner/AppDelegate.swift`: In `willPresent`, suppressed system `.banner` for Walkie notifications so rich `WalkieInviteDialog` displays without a clashing small system text banner; in `didReceiveRemoteNotification`, added support for `WALKIE_ADMIN_ALERT` and cleanly extracted speaker/admin names.
+    - `ios/WalkieNotificationExtension/Info.plist`: Added `walkie_admin_alert` to `UNNotificationExtensionCategory`.
+    - `ios/WalkieNotificationExtension/WalkieNotificationViewController.swift`: Handled `subtitle` and `message` to show custom admin reminder text (`\(finalSpeaker) (Admin) is calling you into the channel.`).
+    - `ios/WalkieLiveActivity/WalkieLiveActivity.swift`: Updated ActivityKit Lock Screen and Dynamic Island card views to display admin call invitation copy.
+
 ---
 
 ## 3. Strict Protection & Locked Modules (NOT Touched)
@@ -313,3 +323,182 @@ As mandated by project rules, the following verified and completed production mo
 - **iOS Test Result:** **PASS** (100% parity; UTC date conversion, bidirectional swipe gestures, CallKit integration, document viewer invocation verified).
 - **Android Test Result:** **PASS** (100% parity; MIME type compatibility, local notification seen sync, swipe action, document opening via Intent verified).
 - **Regression Test Result:** **PASS** (All existing chat, calling, group management, and attendance features operational with zero regressions).
+
+---
+
+## 5. Group Member Profile Block Option (WhatsApp Parity)
+
+### Problem Statement & Root Cause
+- **Problem**: When navigating to a member's profile/chat from a Group Chat (`UserProfileScreen`), the BLOCK option was missing below "Clear Chat". Navigating from Direct Chat showed the Block option, but navigating from Group Chat hid it.
+- **Root Cause**: In `UserProfileScreen.dart` (`_buildBlockCard`), the card was gated behind:
+  ```dart
+  final controller = _chatController;
+  if (controller == null) {
+    return const SizedBox.shrink(); // <-- Hidden when opened from group chat
+  }
+  ```
+  In Direct Chat, `MessageController` was registered in GetX memory. In Group Chat, `GroupChatController` was active and `MessageController` was null, causing `_buildBlockCard` to return `SizedBox.shrink()`. Additionally, `_handleBlockUser` and `_handleUnblockUser` aborted if `_chatController == null`.
+
+### Implementation Details
+1. **Decoupled Block State & Operations (`UserProfileDetailsController`)**:
+   - Added `RxBool isBlocked`, `RxBool isBlocking`, and `RxBool isUnblocking`.
+   - In `fetchProfileDetails`, automatically parses and updates `isBlocked.value` from backend `blockStatus` (`isBlocked == true || blockedByMe == true`).
+   - Added direct API methods `blockUser(userId)` and `unblockUser(userId)` calling `MessageRepo.blockUser` / `MessageRepo.unblockUser` directly when `MessageController` is not active.
+2. **Unified Block Card in `UserProfileScreen`**:
+   - Removed the `if (controller == null) return const SizedBox.shrink();` gate.
+   - Initialized `isBlocked` reactive state in `initState` from `MessageController` (if registered) or from `ChatListController.privateChats` / `archivedChats` (if registered) and refreshed via `fetchProfileDetails`.
+   - `_isUserBlocked` checks `_chatController?.isBlocked.value || _apiController.isBlocked.value`.
+   - Renders "Block <DisplayName>" (red accent, `Icons.block_rounded`) when unblocked, and "Unblock <DisplayName>" (light purple, `Icons.lock_open_rounded`) when blocked.
+   - Shows confirmation dialog (`CommonDialog.ConfirmationDialog`) on tap. On confirmation, closes the dialog (`Get.back()`) and triggers block/unblock, dynamically toggling the button in place on `UserProfileScreen` (WhatsApp parity) without popping the profile screen.
+   - If user is viewing their own profile (`targetUserId == _myId`), the Block card is safely suppressed.
+   - Synchronizes `isBlocked` across `MessageController` (if open) and `ChatListController` (updating matching contact row in-place).
+3. **Verification**:
+   - `test/user_profile_block_option_test.dart`: **5/5 PASSED (100%)**
+     - Case A: Direct chat profile with MessageController shows Block & toggles to Unblock.
+     - Case B: Group chat member profile without MessageController shows Block & toggles to Unblock.
+     - Self Profile: Viewing own profile suppresses Block card.
+     - UserProfileDetailsController reactive state toggling.
+   - Full verification suite: **66/66 PASSED**.
+
+---
+
+## 6. Chatting List Refresh Retention & Empty Chat (0 Messages) Stability Fix
+
+### Problem Statement & Root Cause
+- **Problem**:
+  1. On first app open, all chats appeared properly in the Chatting List.
+  2. On pull-to-refresh (`refreshChats()`), conversations with 0 messages ("jisme chat nahi hua ho") immediately vanished from the screen.
+  3. A few seconds later, those empty chats reappeared on their own.
+- **Root Cause**:
+  In `lib/app/modules/Messages/Controller/chat_list_controller.dart`:
+  1. `getPrivateChats()` (lines 925–944) had a strict filter `final hasMsg = (chat.message != null && chat.message!.trim().isNotEmpty) || (chat.preview != null && chat.preview!.trim().isNotEmpty) ...` and returned `return hasMsg && hasValidName;`.
+  2. `displayedChats` (lines 225–240) had `if (!hasMsg) return false;`.
+  3. When pull-to-refresh ran, the Server `/chat-list` endpoint returned empty chats with `time: null, message: null`. Because `hasMsg` was `false`, `where()` dropped the empty chats, and `privateChats.assignAll()` removed them from memory.
+  4. Later, background socket events (`private_chat_list_updated`) ran `_prepareNewRow()`, which assigned `chat.time = DateTime.now()`. Once `time` became non-empty, `hasMsg` temporarily became `true` and the chat popped back onto the screen.
+
+### Implementation Details
+1. **Removed `hasMsg` Hard Filter in `chat_list_controller.dart`**:
+   - In `getPrivateChats()`: Server chats are accepted based on authentic identity (`hasValidName`) instead of discarding chats with 0 messages.
+   - In `displayedChats`: Removed `if (!hasMsg) return false;`. Valid conversations with valid identity (name or peer userId/groupId) remain visible at all times.
+   - In `_handleFullChatListSocket()` and `_isDisplayable()`: Enforced that valid peer identity (`hasValidName || hasPeer`) is accepted, while preventing blind insertion of incomplete socket stubs (e.g. `{chatId: 999}` without name or peer).
+2. **In-Memory Existing Chats Preservation (No Flicker / Blink)**:
+   - On page 1 refresh, in-memory active chats that are not archived are preserved in `combinedChats`, guaranteeing zero blinking or disappearing.
+3. **Verification**:
+   - `test/chat_list_empty_chat_refresh_test.dart`: **3/3 PASSED (100%)**
+     - Case A: 1st time load shows all chats including empty chats (0 messages / no preview).
+     - Case B: Refresh (`refreshChats()`) preserves empty chats without disappearing.
+     - Case C: 10 seconds later / socket events maintain stable list.
+   - `test/chat_list_controller_realtime_test.dart`: **19/19 PASSED (100%)**
+   - Full regression suite: **70/70 PASSED (100%)**
+   - `dart analyze lib/app/modules/Messages/Controller/chat_list_controller.dart`: **0 issues**.
+
+---
+
+## 7. Chatting List Refresh Source Unification, 0-Message Chat Preservation & Unknown User Elimination
+
+### Problem Statement & Root Cause
+1. **Refresh Dropping 0-Message Chats**:
+   - On 1st open, chats were loaded from Hive Cache + Socket (`chat_list`) + REST API (`/chat-list`) + Incremental Sync (`/chat/sync`).
+   - On pull-to-refresh (`refreshChats()`), only the REST API (`/chat-list`) was queried. Because the server `/chat-list` endpoint only returns conversations with active message history (`lastMessage != null`), newly created conversations with 0 messages were omitted from the server response.
+   - During the refresh page 1 reconciliation, in-memory chats were prone to temporary drop or timing flicker until background socket events repopulated them.
+2. **"Unknown User" in List**:
+   - Backend conversation records containing an orphan user record or `name: null` caused `PrivateChatModel.fromJson()` to fall back to `'Unknown User'`.
+   - Phone numbers (`phone`, `phoneNumber`, `mobile`, `contactNumber`) were not evaluated during name fallback.
+   - In `chat_list_controller.dart`, `hasPeer` (`userId != null`) was allowing rows that had no valid name, no phone, and no message, causing "Unknown User" to render in `chat_list_row_widgets.dart`.
+
+### Implementation Details
+1. **Phone Fallback & Elimination of "Unknown User"**:
+   - In `lib/app/Model/PrivateChatModel.dart`:
+     - Added `phone` property and parsed all phone variants (`phone`, `phoneNumber`, `phone_number`, `mobile`, `mobileNumber`, `contactNumber`, `receiverPhone`).
+     - In `fromJson`: If `name` is null or `"Unknown User"`, it falls back to `phone`. If phone is also absent, it defaults to `isGroupChat ? 'Group' : 'Unknown User'`.
+     - Serialized `phone` in `toJson()`.
+   - In `lib/app/modules/Messages/Controller/chat_list_cache_codec.dart`:
+     - Persists and decodes `phone` field in Hive cache.
+   - In `lib/app/modules/Messages/widgets/chat_list_row_widgets.dart`:
+     - `chatListDisplayName(String? name, {String? phone})` displays phone number whenever name is absent or `"Unknown User"`.
+   - In `lib/app/modules/Messages/Controller/chat_list_controller.dart`:
+     - Added `_isDisplayableChat(PrivateChatModel chat)`:
+       - Real users with valid name or phone number (even with 0 messages) are strictly **preserved**.
+       - Real active chats with message content are strictly **preserved**.
+       - Orphan / dummy rows with no name, no phone, and no message are strictly **suppressed** from `displayedChats` and server list ingestion.
+2. **Unified Refresh & 0-Message Chat Retention (Zero Flicker)**:
+   - In `chat_list_controller.dart` `getPrivateChats()`:
+     - On page 1 refresh, in-memory active chats that are `_isDisplayableChat()` are preserved in `combinedChats`.
+     - Also scans local Hive cache (`AppCache.chatList`) to ensure 0-message conversations are never dropped during refresh.
+     - `_mergePrivateChat()` and `_copyChat()` retain and copy `phone` state across server and local updates.
+     - `_handleFullChatListSocket()` and `getPrivateChats()` use identical `_isDisplayableChat()` validation.
+3. **Automated Verification**:
+   - `test/chat_list_unknown_user_and_refresh_test.dart`: **6/6 PASSED (100%)**
+     - Model parses phone and uses it as fallback name when name is missing.
+     - Model replaces "Unknown User" with phone number when phone is present.
+     - `chatListDisplayName` returns phone when name is null or "Unknown User".
+     - Orphan dummy rows (no name, no phone, no message) are suppressed from `displayedChats`.
+     - Refresh retains 0-message chats in memory when server returns only active chats.
+     - Socket full chat list update retains 0-message chats and suppresses orphan dummy rows.
+   - `test/chat_list_empty_chat_refresh_test.dart`: **3/3 PASSED (100%)**
+   - `test/chat_qa/private_chat_model_qa_test.dart`: **43/43 PASSED (100%)**
+   - `test/chat_qa/chat_list_controller_qa_test.dart`: **69/69 PASSED (100%)**
+   - Total Suite: **124/124 PASSED (100%)**
+   - `dart analyze lib/app/Model/PrivateChatModel.dart lib/app/modules/Messages/Controller/chat_list_controller.dart lib/app/modules/Messages/Controller/chat_list_cache_codec.dart lib/app/modules/Messages/widgets/chat_list_row_widgets.dart`: **0 errors, 0 warnings**.
+
+
+
+
+---
+
+## 13. FG Partner App - MenuBar (Drawer) White Screen Resolution & Large Name Protection
+
+### Root Causes Identified
+1. **Initial State Blank Fallback (`const SizedBox()`)**:
+   - In `lib/Pages/Presentation/Application/Navigationbar.dart`, `BlocConsumer<ProfileBloc, ProfileState>` previously fell back to `default: return const SizedBox();` on initial load (`ProfileInitial`). On low-RAM devices or with network latency, this rendered an empty `SizedBox()` inside a white `Drawer`, causing a blank white screen.
+2. **RangeError on Initials with Large / Multi-Word Names**:
+   - `_Header` parsed avatar initials using `name.trim().split(" ")`. When names contained multiple consecutive spaces or multi-word long names, empty segments resulted in `parts[1]` being `""`, causing `${parts[1][0]}` to throw an unhandled `RangeError (Index out of range: 0)`. In Flutter production builds, this unhandled build exception triggered `ErrorWidget`, turning the entire drawer white.
+3. **Vertical Header Growth & Layout Overflow**:
+   - Profile Name had `maxLines: 2` without single-line constraints, causing long names to wrap and expand the header height, which pressured the `Expanded(child: ListView)` layout inside the fixed-height Drawer on smaller screens or devices with display zoom.
+4. **Theme Text Contrast Bug**:
+   - `menuBar_widget.dart` inspected global context dark mode rather than local widget theme, turning text white on white backgrounds when phone system Dark Mode was enabled.
+
+### Architectural & UI Fixes Applied
+1. **Instant Frame-0 UI Rendering (`Navigationbar.dart`)**:
+   - Added `_getCachedUser()` to load `SharedpUserDataModel` synchronously from local storage (`Global.storageServices.getprofiledata()`).
+   - Replaced `const SizedBox()` fallback in `BlocConsumer.builder` with `NavigationBarUi(userdata: cachedUser, isLoading: state is ProfileDataLoadingState && cachedUser == null)`. The menu renders immediately on frame 0 with 0ms delay.
+2. **Safe Initials Parsing**:
+   - Replaced fragile split with whitespace regex filtering: `name.trim().split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList()`. Eliminates `RangeError` crashes regardless of name length or spaces.
+3. **Strict 1-Line Name Display with Ellipsis**:
+   - Configured Name text with `maxLines: 1`, `overflow: TextOverflow.ellipsis`, and `softWrap: false`. Extremely large names cleanly truncate with `...` without wrapping or expanding the header.
+   - Configured Mobile text with `maxLines: 1` and `overflow: TextOverflow.ellipsis`.
+4. **Theme Text Color Contrast**:
+   - Updated `menuBar_widget.dart` to use local `context.isDarkMode` and locked title color to `#1E202B` (light mode) / `Colors.white` (dark mode) and subtitle to `#6B7280` / `grey.shade400`.
+
+### Verification
+- **Files Changed:**
+  - `lib/Pages/Presentation/Application/Navigationbar.dart`
+  - `lib/Pages/Presentation/Application/Widget/menuBar_widget.dart`
+- **Files Strictly Locked (Untouched):**
+  - Profile Edit (`register1.dart`, `register2.dart`, etc.), Home, Dashboard, Attendance, Bookings, Chat, Payments.
+- **Static Analysis:** `dart analyze lib/Pages/Presentation/Application/Navigationbar.dart lib/Pages/Presentation/Application/Widget/menuBar_widget.dart` — **0 compilation errors**.
+
+---
+
+## 14. Home Screen Create Group Sheet — Single-View Layout & Keyboard Handling Fix
+
+### Problem Statement & Root Cause
+When opening the **Create Group** sheet from Home (`BottomActionsBar` -> `showCreateGroupSheet()` in `lib/app/Core/constant/BottomSheet/bottom_actions_bar.dart`), users had to scroll to see all elements, and opening the keyboard caused the header, text fields, and `Create Group` button to shift or get hidden:
+1. `showCreateGroupSheet()` set `isScrollControlled: false`, capping the bottom sheet at `9/16` (~56.25%) of available height, smaller than the natural form height.
+2. `showCreateGroupSheet()` wrapped `CreateGroupSheet` in `MediaQuery(..., viewInsets: EdgeInsets.zero)`, blocking `GetModalBottomSheetRoute` from receiving keyboard insets, while `CreateGroupSheet` had no keyboard-aware sizing or pinned header/footer.
+3. `_SheetHandle`, `_SheetHeader` (`"Create New Group"`), and `_SubmitButton` (`"Create Group"`) were inside a single `SingleChildScrollView`, causing the title and CTA button to scroll off-screen.
+4. `_FieldLabel` lacked `Flexible` around the label text, risking horizontal `RenderFlex` overflow on narrow screens or longer labels, and `_RoundedField` used `onTapOutside: (_) => FocusScope.of(context).unfocus()` which dismissed focus prematurely on tap transitions.
+
+### Architectural & UI Fixes Applied
+- **File Changed:** `lib/app/Core/constant/BottomSheet/bottom_actions_bar.dart`
+  1. Enabled `isScrollControlled: true` in `showCreateGroupSheet()` and removed the `MediaQuery(..., viewInsets: EdgeInsets.zero)` wrapper so `GetModalBottomSheetRoute` natively lifts the sheet above the keyboard on both iOS and Android.
+  2. Structured `CreateGroupSheet` into a 3-zone `Column(mainAxisSize: MainAxisSize.min)` constrained via `LayoutBuilder` and real hardware top inset (`View.of(context).viewPadding.top / media.devicePixelRatio`) so the sheet never overlaps the status bar/notch:
+     - **Pinned Top Header:** `_SheetHandle`, `_SheetHeader` (`"Create New Group"`, subtitle, close button), and `Divider` stay fixed at the top at all times.
+     - **Compact 1-View Middle Body:** Larger, clearly visible Group Image picker (`CircleAvatar(radius: 46.r)` = `92.r` diameter with `#6B4DFF` outer ring, soft shadow, single `34.sp` camera icon when empty, and red `X` remove badge when picked), Group Name field, Group Description field, and `0/200` counter fit in a single view without scrolling when the keyboard is closed, wrapped in `Flexible(fit: FlexFit.loose, child: SingleChildScrollView(...))` as a fallback only when the keyboard reduces viewport height on compact screens.
+     - **Pinned Bottom Footer:** `_SubmitButton` (`"Create Group"`) stays fixed above `SafeArea` when the keyboard is closed and rises directly above the keyboard when open (`SafeArea(bottom: !keyboardOpen)`).
+  3. **Clear Draft on Sheet Close Without Creating:** Added `_clearCreateGroupDraft()` (clearing `groupName`, `groupDesc`, and `selectedGroupImage` via `removeSelectedGroupImage()`) guarded by `_createGroupSheetGeneration`, invoked on `showCreateGroupSheet()` entry, `PopScope.onPopInvokedWithResult`, `dispose()`, `.whenComplete()`, and after successful creation (`isCreated == true`). Closing via `X`, outside barrier tap, swipe down, or system Back ensures reopening starts with a clean empty sheet while preserving data while picking an image or retrying failed submission.
+  4. Wrapped `_FieldLabel` text in `Flexible` with ellipsis to prevent horizontal overflow, replaced field-level `onTapOutside` with sheet-level `GestureDetector` unfocus, and kept 100% of existing `GroupController.createGroup`, validation, image picking, and `GroupMembershipSheet.showCreatedFor` logic unchanged.
+
+### Verification
+- `dart analyze lib/app/Core/constant/BottomSheet/bottom_actions_bar.dart test/create_group_sheet_test.dart`: **No issues found**.
+- `flutter test test/create_group_sheet_test.dart test/group_flow_navigation_test.dart`: **11/11 PASSED** (`6/6` in `create_group_sheet_test.dart` covering larger group image `>= 90px`, iOS `375x812` & compact Android `360x640` single-view layout, keyboard open/close header+field+button visibility, validation, and close-without-create draft clearing via `X` and barrier tap; `5/5` in `group_flow_navigation_test.dart`).

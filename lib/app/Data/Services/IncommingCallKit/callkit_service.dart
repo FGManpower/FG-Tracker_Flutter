@@ -16,6 +16,7 @@ import 'package:fgtracker/app/modules/mediaStream/Services/call_events.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/voip_token_uploader.dart';
 
 import '../Socket/Socket_SignallingService.dart';
+import '../group_call_service.dart';
 
 /// Android system incoming-call screen colours, matching the in-app call
 /// design (CallColors in call_widget.dart). Hex because the plugin takes
@@ -48,6 +49,8 @@ class CallKitService with WidgetsBindingObserver {
   bool _inited = false;
   bool _appReady = false;
   bool _usingOnAny = false;
+
+  bool get isCallKitActive => _showing.isNotEmpty;
 
   Map<String, dynamic>? pendingAccept;
 
@@ -625,8 +628,15 @@ class CallKitService with WidgetsBindingObserver {
       max: kCallRingTimeout,
     );
     if (ringLeft == Duration.zero) {
-      _ck('showIncoming SKIPPED (expired) sessionId=$id');
-      return;
+      final dynamic rawExp = expiresAt ?? extra['expiresAt'] ?? extra['expires_at'];
+      final DateTime? exp = parseServerTime(rawExp);
+      final int diffSec = exp != null ? DateTime.now().toUtc().difference(exp).inSeconds.abs() : 999;
+      if (diffSec <= 180) {
+        _ck('showIncoming ringLeft zero but diff <= 180s (possible clock skew), using 15s fallback sessionId=$id');
+      } else {
+        _ck('showIncoming SKIPPED (expired) sessionId=$id');
+        return;
+      }
     }
 
     // NEW: in-app call already is call ka audio sambhal raha hai -> dobara
@@ -999,7 +1009,12 @@ class CallKitService with WidgetsBindingObserver {
     switch (screen) {
       case 'incomingCall':
       case 'incomingGroupCall':
-        if (Platform.isIOS) return true;
+        if (Platform.isIOS) {
+          // If CallKit is already displaying this call from VoIP PushKit, do not duplicate.
+          if (_showing.contains(sessionId) || _shown.containsKey(sessionId)) {
+            return true;
+          }
+        }
         if (screen == 'incomingCall' && instance.isInCall?.call() == true) {
           instance.onCallWaiting?.call(<String, dynamic>{...d, 'callData': cd});
           return true;
@@ -1009,7 +1024,16 @@ class CallKitService with WidgetsBindingObserver {
           _ck('handlePush incoming with EMPTY sessionId');
           return true;
         }
+        if (screen == 'incomingGroupCall' && !GroupCallService.isGroupCallEnabled) {
+          _ck('handlePush incomingGroupCall SKIPPED (group calls disabled)');
+          return true;
+        }
         final l = await loadAppL10nFromPrefs();
+        final extraMap = cd.map((k, v) => MapEntry(k, v.toString()));
+        if (screen != null) {
+          extraMap['screen_name'] = screen;
+          extraMap['screenName'] = screen;
+        }
         await showIncoming(
           sessionId: incomingId,
           callId: callId,
@@ -1018,7 +1042,7 @@ class CallKitService with WidgetsBindingObserver {
               : (cd['callerName'] ?? l.call_unknown).toString(),
           isVideo: isVideo,
           avatar: (cd['callerProfileImage'] ?? '').toString(),
-          extra: cd.map((k, v) => MapEntry(k, v.toString())),
+          extra: extraMap,
           expiresAt: cd['expiresAt'] ?? d['expiresAt'],
         );
         return true;
@@ -1029,9 +1053,7 @@ class CallKitService with WidgetsBindingObserver {
       case 'missedGroupCall':
         final endTarget =
             (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
-        if (screen == 'callEnded') {
-          instance._notifyRemoteEndPush(endTarget, callId);
-        }
+        instance._notifyRemoteEndPush(endTarget, callId);
         await dismiss(
           endTarget.isNotEmpty ? endTarget : callId,
           callId: callId,
@@ -1356,6 +1378,20 @@ class CallKitService with WidgetsBindingObserver {
           break;
 
         case 'actioncallstart':
+          final targetHandle = extra['handle']?.toString() ??
+              extra['callerId']?.toString() ??
+              extra['remoteUserId']?.toString() ??
+              (e as dynamic).body?['handle']?.toString() ??
+              '';
+          final bool isVid = extra['isVideo'] == true ||
+              extra['type'] == 1 ||
+              (e as dynamic).body?['type'] == 1;
+          if (targetHandle.isNotEmpty && onRecentsCallback != null) {
+            final res = onRecentsCallback!(targetHandle, isVid);
+            if (res is Future<void>) unawaited(res);
+          }
+          break;
+
         case 'actioncallconnected':
         case 'actioncallincoming':
           break;

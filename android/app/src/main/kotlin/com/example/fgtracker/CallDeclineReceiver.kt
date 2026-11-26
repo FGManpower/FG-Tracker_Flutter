@@ -29,16 +29,19 @@ class CallDeclineReceiver : BroadcastReceiver() {
 
         val callId = extractCallId(intent)
         val groupId = extractGroupId(intent)
+        val callerId = extractCallerId(intent)
+        val userId = extractUserId(intent) ?: readUserId(context)
 
-        Log.d(TAG, "ACTION_CALL_DECLINE received action=$action callId=$callId groupId=$groupId")
+        Log.d(TAG, "ACTION_CALL_DECLINE received action=$action callId=$callId groupId=$groupId callerId=$callerId userId=$userId")
 
-        if (callId.isNullOrBlank() || callId == "null") {
-            Log.e(TAG, "ABORTED — callId is missing in intent")
+        if ((callId.isNullOrBlank() || callId == "null") && (callerId.isNullOrBlank() && userId.isNullOrBlank())) {
+            Log.e(TAG, "ABORTED — no callId, callerId, or userId found to decline")
             return
         }
 
-        if (!inFlightOrHandledCallIds.add(callId)) {
-            Log.d(TAG, "Skipping duplicate native decline for callId=$callId")
+        val deDupeKey = callId?.takeIf { it.isNotBlank() && it != "null" } ?: "user_${userId}_caller_${callerId}"
+        if (!inFlightOrHandledCallIds.add(deDupeKey)) {
+            Log.d(TAG, "Skipping duplicate native decline for key=$deDupeKey")
             return
         }
 
@@ -47,9 +50,9 @@ class CallDeclineReceiver : BroadcastReceiver() {
 
         executor.execute {
             try {
-                rejectCallViaApi(appContext, callId, groupId)
+                rejectCallViaApi(appContext, callId, groupId, callerId, userId)
             } catch (e: Exception) {
-                inFlightOrHandledCallIds.remove(callId)
+                inFlightOrHandledCallIds.remove(deDupeKey)
                 Log.e(TAG, "rejectCallViaApi exception: ${e.message}", e)
             } finally {
                 pendingResult.finish()
@@ -57,24 +60,33 @@ class CallDeclineReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun rejectCallViaApi(context: Context, callId: String, groupId: String?) {
+    private fun rejectCallViaApi(
+        context: Context,
+        callId: String?,
+        groupId: String?,
+        callerId: String? = null,
+        userId: String? = null
+    ) {
         val token = readAccessToken(context)
-        if (token.isNullOrBlank()) {
-            val flutterPrefs =
-                context.getSharedPreferences(FLUTTER_PREFS_NAME, Context.MODE_PRIVATE)
-            Log.e(
-                TAG,
-                "ABORTED — access token not found. Available FlutterSharedPreferences keys=" +
-                        "${flutterPrefs.all.keys}"
-            )
-            return
+        val query = StringBuilder()
+        if (!callId.isNullOrBlank() && callId != "null") {
+            query.append("callId=").append(URLEncoder.encode(callId, "UTF-8"))
         }
-
-        val query = StringBuilder("callId=").append(URLEncoder.encode(callId, "UTF-8"))
         if (!groupId.isNullOrBlank() && groupId != "null") {
-            query.append("&groupId=").append(URLEncoder.encode(groupId, "UTF-8"))
+            if (query.isNotEmpty()) query.append("&")
+            query.append("groupId=").append(URLEncoder.encode(groupId, "UTF-8"))
         } else {
-            query.append("&reason=declined")
+            if (query.isNotEmpty()) query.append("&")
+            query.append("reason=declined")
+        }
+        if (!callerId.isNullOrBlank() && callerId != "null") {
+            if (query.isNotEmpty()) query.append("&")
+            query.append("callerId=").append(URLEncoder.encode(callerId, "UTF-8"))
+        }
+        val effectiveUserId = userId ?: readUserId(context)
+        if (!effectiveUserId.isNullOrBlank() && effectiveUserId != "null") {
+            if (query.isNotEmpty()) query.append("&")
+            query.append("userId=").append(URLEncoder.encode(effectiveUserId, "UTF-8"))
         }
 
         val urlString = "$BASE_URL/callRejected?$query"
@@ -88,7 +100,9 @@ class CallDeclineReceiver : BroadcastReceiver() {
                 readTimeout = 8000
                 setRequestProperty("Content-Type", "application/json")
                 setRequestProperty("Accept", "application/json")
-                setRequestProperty("Authorization", "Bearer $token")
+                if (!token.isNullOrBlank()) {
+                    setRequestProperty("Authorization", "Bearer $token")
+                }
             }
 
             val status = conn.responseCode
@@ -116,6 +130,9 @@ class CallDeclineReceiver : BroadcastReceiver() {
             map?.get("callId")?.toString()?.takeIf { it.isNotBlank() && it != "null" }?.let {
                 return it
             }
+            map?.get("call_id")?.toString()?.takeIf { it.isNotBlank() && it != "null" }?.let {
+                return it
+            }
             dataBundle.getString("EXTRA_CALLKIT_ID")
                 ?.takeIf { it.isNotBlank() && it != "null" }
                 ?.let { return it }
@@ -123,6 +140,9 @@ class CallDeclineReceiver : BroadcastReceiver() {
 
         val topExtra = intent.getSerializableExtra("EXTRA_CALLKIT_EXTRA") as? Map<*, *>
         topExtra?.get("callId")?.toString()?.takeIf { it.isNotBlank() && it != "null" }?.let {
+            return it
+        }
+        topExtra?.get("call_id")?.toString()?.takeIf { it.isNotBlank() && it != "null" }?.let {
             return it
         }
 
@@ -141,19 +161,54 @@ class CallDeclineReceiver : BroadcastReceiver() {
             map?.get("groupId")?.toString()?.takeIf { it.isNotBlank() && it != "null" }?.let {
                 return it
             }
+            map?.get("group_id")?.toString()?.takeIf { it.isNotBlank() && it != "null" }?.let {
+                return it
+            }
         }
 
         val topExtra = intent.getSerializableExtra("EXTRA_CALLKIT_EXTRA") as? Map<*, *>
         return topExtra?.get("groupId")?.toString()?.takeIf { it.isNotBlank() && it != "null" }
+            ?: topExtra?.get("group_id")?.toString()?.takeIf { it.isNotBlank() && it != "null" }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun extractCallerId(intent: Intent): String? {
+        intent.getStringExtra("callerId")?.takeIf { it.isNotBlank() && it != "null" }?.let { return it }
+        intent.getStringExtra("caller_id")?.takeIf { it.isNotBlank() && it != "null" }?.let { return it }
+
+        val dataBundle: Bundle? = intent.extras?.getBundle("EXTRA_CALLKIT_INCOMING_DATA")
+        if (dataBundle != null) {
+            val map = dataBundle.getSerializable("EXTRA_CALLKIT_EXTRA") as? Map<*, *>
+            map?.get("callerId")?.toString()?.takeIf { it.isNotBlank() && it != "null" }?.let { return it }
+            map?.get("caller_id")?.toString()?.takeIf { it.isNotBlank() && it != "null" }?.let { return it }
+        }
+
+        val topExtra = intent.getSerializableExtra("EXTRA_CALLKIT_EXTRA") as? Map<*, *>
+        return topExtra?.get("callerId")?.toString()?.takeIf { it.isNotBlank() && it != "null" }
+            ?: topExtra?.get("caller_id")?.toString()?.takeIf { it.isNotBlank() && it != "null" }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun extractUserId(intent: Intent): String? {
+        intent.getStringExtra("userId")?.takeIf { it.isNotBlank() && it != "null" }?.let { return it }
+        intent.getStringExtra("user_id")?.takeIf { it.isNotBlank() && it != "null" }?.let { return it }
+
+        val dataBundle: Bundle? = intent.extras?.getBundle("EXTRA_CALLKIT_INCOMING_DATA")
+        if (dataBundle != null) {
+            val map = dataBundle.getSerializable("EXTRA_CALLKIT_EXTRA") as? Map<*, *>
+            map?.get("userId")?.toString()?.takeIf { it.isNotBlank() && it != "null" }?.let { return it }
+            map?.get("user_id")?.toString()?.takeIf { it.isNotBlank() && it != "null" }?.let { return it }
+        }
+
+        val topExtra = intent.getSerializableExtra("EXTRA_CALLKIT_EXTRA") as? Map<*, *>
+        return topExtra?.get("userId")?.toString()?.takeIf { it.isNotBlank() && it != "null" }
+            ?: topExtra?.get("user_id")?.toString()?.takeIf { it.isNotBlank() && it != "null" }
     }
 
     companion object {
         private const val TAG = "CallDeclineReceiver"
-//        private const val BASE_URL = "http://192.168.1.29:4000/api"
-        // Same HTTPS production host as the Dart app (ConstRes.aBaseUrl).
-        // Backend confirmed /callRejected there (calling doc 02, B-13);
-        // http://fgtracker.in:3000 was cleartext and is legacy.
-        private const val BASE_URL = "https://api.fgtracker.fgmanpower.co.in/api"
+        // VPS Testing Server host as the Dart app (ConstRes.aBaseUrl)
+        private const val BASE_URL = "http://89.116.23.2:3000/api"
 
         private const val FLUTTER_PREFS_NAME = "FlutterSharedPreferences"
         private const val PLUGIN_DECLINE_ACTION =
@@ -199,6 +254,28 @@ class CallDeclineReceiver : BroadcastReceiver() {
                 if (!value.isNullOrBlank()) return value
             }
 
+            return null
+        }
+
+        fun readUserId(context: Context): String? {
+            val flutterPrefs =
+                context.getSharedPreferences(FLUTTER_PREFS_NAME, Context.MODE_PRIVATE)
+            val candidateKeys = listOf(
+                "flutter.userId",
+                "userId",
+                "flutter.user_id",
+                "user_id",
+                "flutter.profile_id",
+                "profile_id"
+            )
+            for (key in candidateKeys) {
+                val value = flutterPrefs.getString(key, null)
+                if (!value.isNullOrBlank()) return value
+                val intVal = try { flutterPrefs.getInt(key, -1) } catch (_: Exception) { -1 }
+                if (intVal > 0) return intVal.toString()
+                val longVal = try { flutterPrefs.getLong(key, -1L) } catch (_: Exception) { -1L }
+                if (longVal > 0L) return longVal.toString()
+            }
             return null
         }
     }

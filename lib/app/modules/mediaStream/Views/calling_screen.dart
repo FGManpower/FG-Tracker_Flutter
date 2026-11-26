@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/AudioCall_screen.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
@@ -35,8 +37,11 @@ class CallingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!Get.isRegistered<CallingController>()) {
-      // Call already ended; the route is closing.
-      return const ColoredBox(color: Colors.black);
+      // Call already ended; the route is closing. Keep seamless dark backdrop.
+      return const Scaffold(
+        backgroundColor: Color(0xFF0E0C14),
+        body: SizedBox.expand(),
+      );
     }
     final c = controller;
     return GetBuilder<CallingController>(
@@ -73,7 +78,6 @@ class CallingScreen extends StatelessWidget {
           if (isVideo) ...[
             _topGradient(),
             _bottomGradient(),
-            _videoRingingAvatar(c),
           ],
           _chrome(context, c, isVideo),
           _waitingOverlay(c),
@@ -275,38 +279,42 @@ class CallingScreen extends StatelessWidget {
   }
 
   Widget _mainVideoLayer(CallingController c) {
-    final bool showLocalInMain =
-        c.isLocalVideoMain && (c.isVideoOn || !c.isRemoteVideoOn);
-    final bool hasVideo = showLocalInMain ? c.isVideoOn : c.isRemoteVideoOn;
+    return Obx(() {
+      final bool connected = isCallConnected(c);
+      // Before the call connects, local camera preview fills the screen (like WhatsApp),
+      // so caller sees their own live camera while waiting.
+      // Once connected, follows isLocalVideoMain toggle (remote in main by default).
+      final bool showLocalInMain = !connected ||
+          (c.isLocalVideoMain && (c.isVideoOn || !c.isRemoteVideoOn));
+      final bool hasVideo = showLocalInMain ? c.isVideoOn : c.isRemoteVideoOn;
 
-    return Positioned.fill(
-      child: RepaintBoundary(
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: c.toggleControls,
-          child: hasVideo
-              ? RTCVideoView(
-                  showLocalInMain ? c.localRenderer : c.remoteRenderer,
-                  key: ValueKey<String>(
-                    showLocalInMain
-                        ? 'main_local_${c.localRenderer.textureId}'
-                        : 'main_remote_${c.remoteRenderer.textureId}',
-                  ),
-                  mirror: showLocalInMain && c.isFrontCamera,
-                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                )
-              // Before the call connects the ringing avatar sits in the
-              // middle; a "Camera off" tile under it would overlap it.
-              : Obx(() => isCallConnected(c)
-                  ? _cameraOffTile()
-                  : const ColoredBox(
-                      key: ValueKey<String>('main_video_waiting'),
-                      color: _cameraOffBg,
-                      child: SizedBox.expand(),
-                    )),
+      return Positioned.fill(
+        child: RepaintBoundary(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: c.toggleControls,
+            child: hasVideo
+                ? RTCVideoView(
+                    showLocalInMain ? c.localRenderer : c.remoteRenderer,
+                    key: ValueKey<String>(
+                      showLocalInMain
+                          ? 'main_local_${c.localRenderer.textureId}'
+                          : 'main_remote_${c.remoteRenderer.textureId}',
+                    ),
+                    mirror: showLocalInMain && c.isFrontCamera,
+                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                  )
+                : (connected
+                    ? _cameraOffTile()
+                    : const ColoredBox(
+                        key: ValueKey<String>('main_video_waiting'),
+                        color: _cameraOffBg,
+                        child: SizedBox.expand(),
+                      )),
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   /// Consistent audio call background matching the deep purple/blue design in the screenshot.
@@ -330,26 +338,10 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
-  /// Video call before it connects: the other person's avatar in the
-  /// middle of your own camera (mock "Video · 1 Outgoing").
+  /// In video calls, clean full-screen camera preview is shown (like WhatsApp)
+  /// without a center avatar blocking the camera.
   Widget _videoRingingAvatar(CallingController c) {
-    return Obx(() {
-      if (isCallConnected(c) || c.isRemoteScreenSharing.value) {
-        return const SizedBox.shrink();
-      }
-      return Positioned.fill(
-        child: IgnorePointer(
-          child: Center(
-            child: CallPulseAvatar(
-              name: _peerName(c),
-              image: c.args['profileImage'],
-              onDark: true,
-              avatarSize: 104,
-            ),
-          ),
-        ),
-      );
-    });
+    return const SizedBox.shrink();
   }
 
   Widget _topGradient() {
@@ -574,7 +566,8 @@ class CallingScreen extends StatelessWidget {
   /// Screen share in the video top bar (where the mock has its extra icon).
   Widget _shareTopButton(BuildContext context, CallingController c) {
     return Obx(() {
-      final bool busy = _busy(c);
+      final bool connected = isCallConnected(c);
+      final bool busy = _busy(c) || !connected;
       final bool waiting = c.isScreenShareWaiting.value;
       final bool sharing = c.isScreenSharing.value;
       return Opacity(
@@ -591,7 +584,15 @@ class CallingScreen extends StatelessWidget {
               : (sharing ? appL10n.call_stop : appL10n.call_shareScreen),
           onDark: true,
           active: sharing || waiting,
-          onTap: () => _onShareTap(context, c, isVideo: true),
+          onTap: () {
+            if (!connected) {
+              Utils().fluttertoast(
+                "You can share screen after the call is answered.",
+              );
+              return;
+            }
+            _onShareTap(context, c, isVideo: true);
+          },
         ),
       );
     });
@@ -1214,6 +1215,12 @@ class CallingScreen extends StatelessWidget {
     CallingController c, {
     required bool isVideo,
   }) {
+    if (!isCallConnected(c)) {
+      Utils().fluttertoast(
+        "You can share screen after the call is answered.",
+      );
+      return;
+    }
     if (_blocked(c) || _busy(c)) return;
     if (c.isScreenShareWaiting.value) {
       c.cancelScreenShare();
@@ -1244,6 +1251,9 @@ class CallingScreen extends StatelessWidget {
       final bool waiting = c.isScreenShareWaiting.value;
       final bool sharing = c.isScreenSharing.value;
       final bool isVideo = c.is_video || c.isVideoCall.value;
+      final bool connected = isCallConnected(c);
+      final bool blocked = _blocked(c) || _busy(c) || !connected;
+
       return ctrl(
         icon: waiting
             ? Icons.close_rounded
@@ -1257,8 +1267,16 @@ class CallingScreen extends StatelessWidget {
         isVideo: onDark,
         size: size,
         activeIconColor: activeIconColor,
-        videoInactive: _blocked(c) || _busy(c),
-        onTap: () => _onShareTap(context, c, isVideo: isVideo),
+        videoInactive: blocked,
+        onTap: () {
+          if (!connected) {
+            Utils().fluttertoast(
+              "You can share screen after the call is answered.",
+            );
+            return;
+          }
+          _onShareTap(context, c, isVideo: isVideo);
+        },
       );
     });
   }
@@ -1310,8 +1328,8 @@ class CallingScreen extends StatelessWidget {
         isVideo: onDark,
         size: size,
         activeIconColor: activeIconColor,
-        onTap: () async {
-          await c.toggleSpeaker(context);
+        onTap: () {
+          unawaited(c.toggleSpeaker(context));
           c.showControlsTemporarily();
         },
       );
@@ -1397,7 +1415,8 @@ class CallingScreen extends StatelessWidget {
   }) {
     return Obx(() {
       final bool busy = _busy(c);
-      final bool blocked = _blocked(c);
+      final bool connected = isCallConnected(c);
+      final bool blocked = _blocked(c) || !connected;
 
       return ctrl(
         icon: busy ? Icons.hourglass_top_rounded : Icons.videocam_rounded,
@@ -1406,6 +1425,12 @@ class CallingScreen extends StatelessWidget {
         size: size,
         videoInactive: blocked || busy,
         onTap: () {
+          if (!connected) {
+            Utils().fluttertoast(
+              "You can switch to video after the call is answered.",
+            );
+            return;
+          }
           if (blocked || busy) return;
           c.upgradeToVideoCall();
           c.showControlsTemporarily();

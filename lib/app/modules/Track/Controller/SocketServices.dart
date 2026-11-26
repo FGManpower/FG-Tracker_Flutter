@@ -90,6 +90,29 @@ class SocketService extends GetxService with WidgetsBindingObserver {
       }
     });
 
+    _socket?.off("group-dashboard-counts");
+    _socket?.on("group-dashboard-counts", (res) {
+      try {
+        dynamic payload = res;
+        if (res is Map && res.containsKey('data') && res['data'] != null) {
+          payload = res['data'];
+        }
+        if (payload != null && payload.toString().isNotEmpty) {
+          if (Get.isRegistered<GroupCountService>()) {
+            GroupCountService.instance.updateFromSocket(payload);
+          }
+        }
+      } catch (e) {
+        log("Error parsing group-dashboard-counts: $e");
+      }
+    });
+
+    _socket?.off("user-offline");
+    _socket?.on("user-offline", (res) {
+      log("[LocationSocket] user-offline received: $res");
+      requestGroupCount();
+    });
+
     _socket?.off("location-update-success");
     _socket?.on("location-update-success", (res) {
       try {
@@ -115,8 +138,7 @@ class SocketService extends GetxService with WidgetsBindingObserver {
       }
     });
 
-    _socket?.off("notification_markers");
-    _socket?.on("notification_markers", (res) {
+    void handleMarkers(dynamic res) {
       try {
         if (res is Map) {
           final data = res['data'] ?? res;
@@ -127,7 +149,12 @@ class SocketService extends GetxService with WidgetsBindingObserver {
       } catch (e) {
         log("Error parsing notification_markers: $e");
       }
-    });
+    }
+
+    _socket?.off("notification_markers");
+    _socket?.on("notification_markers", handleMarkers);
+    _socket?.off("notification-markers");
+    _socket?.on("notification-markers", handleMarkers);
 
     _socket?.off("location-update-error");
     _socket?.on("location-update-error", (err) {

@@ -15,6 +15,7 @@ class GroupParticipantsSheetController extends GetxController {
   final RxList<GroupCallParticipant> inCallList = <GroupCallParticipant>[].obs;
   final RxList<GroupCallParticipant> notInCallList =
       <GroupCallParticipant>[].obs;
+  final RxSet<String> ringingParticipantUserIds = <String>{}.obs;
 
   Worker? _socketWorker;
 
@@ -131,6 +132,7 @@ class GroupParticipantsSheetController extends GetxController {
   }
 
   void notify(GroupCallParticipant participant) {
+    ringingParticipantUserIds.add(participant.userId);
     callController.notifyParticipant(participant);
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart' as rtc;
 
 import 'package:fgtracker/app/Model/group_call_participant.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/l10n/l10n.dart';
@@ -80,10 +81,20 @@ class _GroupScreenShareFullScreenState
   void _zoomOut() => _setZoom(_currentZoom.value / 1.25);
   void _resetZoom() => _transformationController.value = Matrix4.identity();
 
+  rtc.RTCVideoRenderer? _getRenderer() {
+    if (widget.participant.isLocal) {
+      if (widget.controller.localRenderer.textureId != null) {
+        return widget.controller.localRenderer;
+      }
+    }
+    return Socket_GroupCallService.instance.remoteRenderers[widget.participant.userId] ??
+        widget.participant.renderer;
+  }
+
   Widget _buildScreenShareView() {
     return Obx(() {
       final isConnected = widget.participant.isConnected.value;
-      final renderer = widget.participant.renderer;
+      final renderer = _getRenderer();
 
       if (!isConnected ||
           renderer == null ||
@@ -104,6 +115,7 @@ class _GroupScreenShareFullScreenState
 
       return rtc.RTCVideoView(
         renderer,
+        key: ValueKey('screen_share_${widget.participant.userId}_${renderer.srcObject?.id}'),
         mirror: false,
         objectFit: rtc.RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
       );
@@ -167,6 +179,47 @@ class _GroupScreenShareFullScreenState
     });
   }
 
+  Widget _buildTopPresenterBar() {
+    final bool isLocal = widget.participant.isLocal;
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: Padding(
+          padding: EdgeInsets.all(12.r),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.65),
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: Colors.white24, width: 0.8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.present_to_all_rounded,
+                  color: const Color(0xFF7B61FF),
+                  size: 16.sp,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  isLocal
+                      ? "You are presenting"
+                      : "${widget.participant.name ?? 'Someone'}'s screen",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCloseButton() {
     return SafeArea(
       child: Align(
@@ -220,6 +273,7 @@ class _GroupScreenShareFullScreenState
             },
           ),
           _buildCloseButton(),
+          _buildTopPresenterBar(),
           _buildZoomControls(),
         ],
       ),

@@ -45,5 +45,17 @@ app.*.map.json
 /android/app/release
 assets/service_account.json
 
-git filter-repo --https://github.com/FGManpower/FG-Tracker_Flutter.git
- /assets/service_account.json --invert-paths
+# Documentation
+/docs/
+
+# Privacy Policy & Legal Docs
+/assets/legal/
+
+# Test Cases
+/test/
+/integration_test/
+
+# Scratch & temporary outputs
+/scratch/
+/Claude outputs/
+

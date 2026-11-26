@@ -365,6 +365,8 @@ class SocketMessageService extends GetxService {
       // Re-register chat list listeners on (re)connect
       _registerChatListListeners(_socket);
       _registerFullChatListListeners(_socket);
+      _registerListRemovalListeners(_socket);
+      _registerListGroupLifecycleListeners(_socket);
       _registerChatListGroupTyping(_socket);
       _registerEditListener(_socket);
 
@@ -375,6 +377,8 @@ class SocketMessageService extends GetxService {
     // The chat list may have registered before this socket existed.
     _registerChatListListeners(_socket);
     _registerFullChatListListeners(_socket);
+    _registerListRemovalListeners(_socket);
+    _registerListGroupLifecycleListeners(_socket);
     _registerChatListGroupTyping(_socket);
 
     _socket?.onDisconnect((reason) {
@@ -398,6 +402,34 @@ class SocketMessageService extends GetxService {
       log("USER ID: $userId");
       log("GROUP ID: ${groupId ?? 'NULL'}");
     });
+
+    void handleStatusNew(dynamic data) {
+      if (data == null) return;
+      log("[ChatSocket] status:new received: $data");
+      Map<String, dynamic>? map;
+      if (data is Map) {
+        map = Map<String, dynamic>.from(data);
+      } else if (data is String) {
+        try {
+          final decoded = jsonDecode(data);
+          if (decoded is Map) {
+            map = Map<String, dynamic>.from(decoded);
+          }
+        } catch (_) {}
+      }
+      if (map != null) {
+        if (Get.isRegistered<StatusSocketService>()) {
+          Get.find<StatusSocketService>().onNewStatusEvent.value = map;
+          Get.find<StatusSocketService>().onNewStatusEvent.refresh();
+        }
+        if (Get.isRegistered<StatusFeedController>()) {
+          Get.find<StatusFeedController>().refreshAll();
+        }
+      }
+    }
+
+    _socket?.on('status:new', handleStatusNew);
+    _socket?.on('status_new', handleStatusNew);
 
     void handleStatusDeleted(dynamic data) {
       if (data == null) return;
@@ -1560,34 +1592,9 @@ class SocketMessageService extends GetxService {
     _privateChatListSocket?.onConnect((_) {
       _registerChatListListeners(_privateChatListSocket);
       _registerFullChatListListeners(_privateChatListSocket);
+      _registerListRemovalListeners(_privateChatListSocket);
+      _registerListGroupLifecycleListeners(_privateChatListSocket);
       _registerChatListPrivateTyping(_privateChatListSocket);
-
-      _privateChatListSocket?.off("private_chat_removed");
-
-      if (_privateChatRemovedCallback != null) {
-        _privateChatListSocket?.on(
-          "private_chat_removed",
-          (data) {
-            _privateChatRemovedCallback?.call(data);
-          },
-        );
-      }
-
-      _privateChatListSocket?.off("private_chat_cleared");
-
-      if (_privateChatClearedListCallback != null) {
-        _privateChatListSocket?.on(
-          "private_chat_cleared",
-          (data) {
-            if (data is Map) {
-              _dropClearedPrivateChatCache(data);
-              _privateChatClearedListCallback?.call(
-                Map<String, dynamic>.from(data),
-              );
-            }
-          },
-        );
-      }
 
       _privateChatListSocket?.off("private_chat_action_error");
 
@@ -1794,6 +1801,39 @@ class SocketMessageService extends GetxService {
       if (_listGroupStopTypingHandler != null) {
         _socket!.off("group_stop_typing", _listGroupStopTypingHandler);
       }
+      if (_listGroupUpdatedHandler != null) {
+        _socket!.off("group_updated", _listGroupUpdatedHandler);
+        _socket!.off("group_info_updated", _listGroupUpdatedHandler);
+      }
+      if (_listGroupExitHandler != null) {
+        for (final ev in const [
+          "user_removed_from_group",
+          "group_left",
+          "member_removed",
+          "group_chat_removed",
+          "group_removed",
+        ]) {
+          _socket!.off(ev, _listGroupExitHandler);
+        }
+      }
+      if (_listChatRemovedHandler != null) {
+        for (final ev in const [
+          "private_chat_removed",
+          "chat_removed",
+          "group_chat_removed",
+        ]) {
+          _socket!.off(ev, _listChatRemovedHandler);
+        }
+      }
+      if (_listChatClearedHandler != null) {
+        for (final ev in const [
+          "private_chat_cleared",
+          "chat_cleared",
+          "group_chat_cleared",
+        ]) {
+          _socket!.off(ev, _listChatClearedHandler);
+        }
+      }
     }
     _chatListPrivateTyping = null;
     _chatListPrivateStopTyping = null;
@@ -1803,6 +1843,10 @@ class SocketMessageService extends GetxService {
     _listPrivateStopTypingHandler = null;
     _listGroupTypingHandler = null;
     _listGroupStopTypingHandler = null;
+    _listGroupUpdatedHandler = null;
+    _listGroupExitHandler = null;
+    _listChatRemovedHandler = null;
+    _listChatClearedHandler = null;
     _chatListReconnectCallback = null;
   }
 
@@ -2093,13 +2137,35 @@ class SocketMessageService extends GetxService {
     if (!identical(_groupChatOwner, owner)) return;
     _groupChatOwner = null;
     // Message events: remove only this screen's handler. The app-level
-    // "delivered" and receipt listeners on the same events stay.
+    // "delivered", receipt and ChatListController listeners stay intact.
     final receive = _groupScreenReceiveHandler;
     if (receive != null) {
       for (final event in _groupReceiveEvents) {
         _socket?.off(event, receive);
       }
       _groupScreenReceiveHandler = null;
+    }
+    if (_groupScreenUpdatedHandler != null) {
+      for (final s in <IO.Socket?>[_socket, _privateChatSocket]) {
+        s?.off("group_updated", _groupScreenUpdatedHandler);
+        s?.off("group_info_updated", _groupScreenUpdatedHandler);
+      }
+      _groupScreenUpdatedHandler = null;
+    }
+    if (_groupScreenClearedHandler != null) {
+      _socket?.off("group_chat_cleared", _groupScreenClearedHandler);
+      _groupScreenClearedHandler = null;
+    }
+    if (_groupScreenMemberRemovedHandler != null) {
+      for (final event in const [
+        "member_removed",
+        "member_left",
+        "user_removed_from_group",
+        "group_left",
+      ]) {
+        _socket?.off(event, _groupScreenMemberRemovedHandler);
+      }
+      _groupScreenMemberRemovedHandler = null;
     }
     for (final event in const [
       "messageEdited",
@@ -2115,13 +2181,6 @@ class SocketMessageService extends GetxService {
       "message_unpinned",
       "message_sent",
       "group_message_sent",
-      "group_updated",
-      "group_info_updated",
-      "group_chat_cleared",
-      "member_removed",
-      "member_left",
-      "user_removed_from_group",
-      "group_left",
     ]) {
       _socket?.off(event);
     }
@@ -2313,20 +2372,52 @@ class SocketMessageService extends GetxService {
   // listenGroupMessageSeen / listenGroupMessagesDelivered / listenSeenUpdate
   // replaced each other's handlers with off(event) and were removed.
 
+  EventHandler<dynamic>? _groupScreenUpdatedHandler;
+  EventHandler<dynamic>? _listGroupUpdatedHandler;
+
+  void _registerListGroupUpdated(IO.Socket? s) {
+    if (s == null || _listGroupUpdatedHandler == null) return;
+    s.off("group_updated", _listGroupUpdatedHandler);
+    s.on("group_updated", _listGroupUpdatedHandler!);
+    s.off("group_info_updated", _listGroupUpdatedHandler);
+    s.on("group_info_updated", _listGroupUpdatedHandler!);
+  }
+
   /// Listens for real-time group info updates (groupName, groupProfile, groupDesc).
+  /// Set [forChatList] = true from [ChatListController] so closing a group chat screen
+  /// never detaches the chat list listener.
   void listenGroupUpdated({
     required Function(Map<String, dynamic>) callback,
+    bool forChatList = false,
   }) {
-    void handler(dynamic data) {
-      if (data is Map) callback(Map<String, dynamic>.from(data));
+    if (forChatList) {
+      if (_listGroupUpdatedHandler != null) {
+        for (final s in <IO.Socket?>[_socket, _privateChatSocket, _privateChatListSocket]) {
+          s?.off("group_updated", _listGroupUpdatedHandler);
+          s?.off("group_info_updated", _listGroupUpdatedHandler);
+        }
+      }
+      _listGroupUpdatedHandler = (dynamic data) {
+        if (data is Map) callback(Map<String, dynamic>.from(data));
+      };
+      _registerListGroupUpdated(_socket);
+      _registerListGroupUpdated(_privateChatSocket);
+      _registerListGroupUpdated(_privateChatListSocket);
+      return;
     }
 
-    _socket?.off("group_updated");
-    _socket?.on("group_updated", handler);
-    _socket?.off("group_info_updated");
-    _socket?.on("group_info_updated", handler);
-    _privateChatSocket?.off("group_updated");
-    _privateChatSocket?.on("group_updated", handler);
+    if (_groupScreenUpdatedHandler != null) {
+      _socket?.off("group_updated", _groupScreenUpdatedHandler);
+      _socket?.off("group_info_updated", _groupScreenUpdatedHandler);
+      _privateChatSocket?.off("group_updated", _groupScreenUpdatedHandler);
+    }
+    _groupScreenUpdatedHandler = (dynamic data) {
+      if (data is Map) callback(Map<String, dynamic>.from(data));
+    };
+
+    _socket?.on("group_updated", _groupScreenUpdatedHandler!);
+    _socket?.on("group_info_updated", _groupScreenUpdatedHandler!);
+    _privateChatSocket?.on("group_updated", _groupScreenUpdatedHandler!);
   }
 
   /// Backend v2.5.0: groups deactivated / reactivated by the admin.
@@ -2541,49 +2632,79 @@ class SocketMessageService extends GetxService {
     ChatMessageCache.clearPrivateByChatId(chatId);
   }
 
+  EventHandler<dynamic>? _groupScreenClearedHandler;
+  EventHandler<dynamic>? _groupScreenMemberRemovedHandler;
+  EventHandler<dynamic>? _listGroupExitHandler;
+
+  void _registerListGroupLifecycleListeners(IO.Socket? s) {
+    _registerListGroupUpdated(s);
+    if (s == null || _listGroupExitHandler == null) return;
+    for (final ev in const [
+      "user_removed_from_group",
+      "group_left",
+      "member_removed",
+      "group_chat_removed",
+      "group_removed",
+    ]) {
+      s.off(ev, _listGroupExitHandler);
+      s.on(ev, _listGroupExitHandler!);
+    }
+  }
+
   /// Listens for group chat cleared event (clear chat history strictly for calling user).
   void listenGroupChatCleared({
     required Function(Map<String, dynamic>) callback,
   }) {
-    _socket?.off("group_chat_cleared");
-    _socket?.on("group_chat_cleared", (data) {
+    if (_groupScreenClearedHandler != null) {
+      _socket?.off("group_chat_cleared", _groupScreenClearedHandler);
+    }
+    _groupScreenClearedHandler = (dynamic data) {
       if (data is Map) callback(Map<String, dynamic>.from(data));
-    });
+    };
+    _socket?.on("group_chat_cleared", _groupScreenClearedHandler!);
   }
 
   /// Listens for member removed or member left events in group.
   void listenMemberRemoved({
     required Function(Map<String, dynamic>) callback,
   }) {
-    void handler(dynamic data) {
-      if (data is Map) callback(Map<String, dynamic>.from(data));
+    if (_groupScreenMemberRemovedHandler != null) {
+      for (final ev in const [
+        "member_removed",
+        "member_left",
+        "user_removed_from_group",
+        "group_left",
+      ]) {
+        _socket?.off(ev, _groupScreenMemberRemovedHandler);
+      }
     }
+    _groupScreenMemberRemovedHandler = (dynamic data) {
+      if (data is Map) callback(Map<String, dynamic>.from(data));
+    };
 
-    _socket?.off("member_removed");
-    _socket?.on("member_removed", handler);
-    _socket?.off("member_left");
-    _socket?.on("member_left", handler);
+    _socket?.on("member_removed", _groupScreenMemberRemovedHandler!);
+    _socket?.on("member_left", _groupScreenMemberRemovedHandler!);
     // Backend v2.8.0: sent to the removed / leaving user themself.
-    _socket?.off("user_removed_from_group");
-    _socket?.on("user_removed_from_group", handler);
-    _socket?.off("group_left");
-    _socket?.on("group_left", handler);
+    _socket?.on("user_removed_from_group", _groupScreenMemberRemovedHandler!);
+    _socket?.on("group_left", _groupScreenMemberRemovedHandler!);
   }
 
   void listenGroupExit({required Function(dynamic) callback}) {
-    final events = [
-      "user_removed_from_group",
-      "group_left",
-      "member_removed",
-      "group_chat_removed",
-      "group_removed",
-    ];
-    for (final ev in events) {
-      _privateChatListSocket?.off(ev);
-      _privateChatListSocket?.on(ev, callback);
-      _socket?.off(ev);
-      _socket?.on(ev, callback);
+    if (_listGroupExitHandler != null) {
+      for (final ev in const [
+        "user_removed_from_group",
+        "group_left",
+        "member_removed",
+        "group_chat_removed",
+        "group_removed",
+      ]) {
+        _privateChatListSocket?.off(ev, _listGroupExitHandler);
+        _socket?.off(ev, _listGroupExitHandler);
+      }
     }
+    _listGroupExitHandler = (dynamic data) => callback(data);
+    _registerListGroupLifecycleListeners(_privateChatListSocket);
+    _registerListGroupLifecycleListeners(_socket);
   }
 
   void forwardMessage({
@@ -2842,48 +2963,78 @@ class SocketMessageService extends GetxService {
   }
 
   Function(dynamic)? _privateChatRemovedCallback;
+  EventHandler<dynamic>? _listChatRemovedHandler;
+  EventHandler<dynamic>? _listChatClearedHandler;
+
+  void _registerListRemovalListeners(IO.Socket? s) {
+    if (s == null) return;
+    if (_listChatRemovedHandler != null) {
+      for (final ev in const [
+        "private_chat_removed",
+        "chat_removed",
+        "group_chat_removed",
+      ]) {
+        s.off(ev, _listChatRemovedHandler);
+        s.on(ev, _listChatRemovedHandler!);
+      }
+    }
+    if (_listChatClearedHandler != null) {
+      for (final ev in const [
+        "private_chat_cleared",
+        "chat_cleared",
+        "group_chat_cleared",
+      ]) {
+        s.off(ev, _listChatClearedHandler);
+        s.on(ev, _listChatClearedHandler!);
+      }
+    }
+  }
 
   void listenPrivateChatRemoved({
     required Function(dynamic) callback,
   }) {
     _privateChatRemovedCallback = callback;
-
-    if (_privateChatListSocket == null) {
-      return;
+    if (_listChatRemovedHandler != null) {
+      for (final ev in const [
+        "private_chat_removed",
+        "chat_removed",
+        "group_chat_removed",
+      ]) {
+        _privateChatListSocket?.off(ev, _listChatRemovedHandler);
+        _socket?.off(ev, _listChatRemovedHandler);
+      }
     }
-
-    _privateChatListSocket!.off("private_chat_removed");
-
-    _privateChatListSocket!.on(
-      "private_chat_removed",
-      (data) {
-        _privateChatRemovedCallback?.call(data);
-      },
-    );
+    _listChatRemovedHandler = (dynamic data) {
+      _privateChatRemovedCallback?.call(data);
+    };
+    _registerListRemovalListeners(_privateChatListSocket);
+    _registerListRemovalListeners(_socket);
   }
 
   void listenPrivateChatClearedOnListSocket({
     required Function(Map<String, dynamic>) callback,
   }) {
     _privateChatClearedListCallback = callback;
-
-    if (_privateChatListSocket == null) {
-      return;
+    if (_listChatClearedHandler != null) {
+      for (final ev in const [
+        "private_chat_cleared",
+        "chat_cleared",
+        "group_chat_cleared",
+      ]) {
+        _privateChatListSocket?.off(ev, _listChatClearedHandler);
+        _socket?.off(ev, _listChatClearedHandler);
+      }
     }
-
-    _privateChatListSocket!.off("private_chat_cleared");
-
-    _privateChatListSocket!.on(
-      "private_chat_cleared",
-      (data) {
-        if (data is Map) {
-          _dropClearedPrivateChatCache(data);
-          _privateChatClearedListCallback?.call(
-            Map<String, dynamic>.from(data),
-          );
-        }
-      },
-    );
+    _listChatClearedHandler = (dynamic data) {
+      if (data is Map) {
+        _dropClearedPrivateChatCache(data);
+        _privateChatClearedListCallback?.call(
+          Map<String, dynamic>.from(data),
+        );
+      }
+    };
+    _registerListRemovalListeners(_privateChatListSocket);
+    _registerListRemovalListeners(_socket);
   }
 
   Function(dynamic)? _privateChatActionErrorCallback;

@@ -14,10 +14,8 @@ import WebRTC
 import flutter_callkit_incoming
 
 // private let apiBaseUrl = "http://10.57.204.163:4000/api"
-// Same HTTPS production host as the Dart app (ConstRes.aBaseUrl). Backend
-// confirmed /callRejected (GET + POST) there (calling doc 02, B-13). The old
-// http://fgtracker.in:3000 host was cleartext and is legacy.
-private let apiBaseUrl = "https://api.fgtracker.fgmanpower.co.in/api"
+// VPS Testing Server host as the Dart app (ConstRes.aBaseUrl).
+private let apiBaseUrl = "http://89.116.23.2:3000/api"
 private let callingStatusEndpoints = ["/calling-status"]
 private let candidateTokenPrefKeys = [
     "flutter.user_token_key",
@@ -300,15 +298,32 @@ private let candidateTokenPrefKeys = [
 
         let userInfo = notification.request.content.userInfo
         let categoryId = notification.request.content.categoryIdentifier
+        let dataDict = userInfo["data"] as? [String: Any]
+        let screenName = (userInfo["screen_name"] as? String) ?? (dataDict?["screen_name"] as? String)
         let isWalkie = categoryId == "WALKIE_INVITE" || categoryId == "walkie_invite_category" || categoryId == "group_walkie"
-            || (userInfo["screen_name"] as? String) == "group_walkie"
+            || categoryId == "walkie_admin_alert"
+            || screenName == "group_walkie"
 
         if isWalkie {
-            if #available(iOS 14.0, *) {
-                completionHandler([.banner, .sound, .badge, .list])
-            } else {
-                completionHandler([.alert, .sound, .badge])
+            func s(_ key: String) -> String? {
+                if let v = userInfo[key] as? String, !v.isEmpty { return v }
+                if let v = userInfo[key] as? NSNumber { return v.stringValue }
+                if let data = dataDict {
+                    if let v = data[key] as? String, !v.isEmpty { return v }
+                    if let v = data[key] as? NSNumber { return v.stringValue }
+                }
+                return nil
             }
+            let notifGid = s("groupId") ?? s("group_id") ?? ""
+            if let activeWalkie = activeChat["walkieGroupId"], !activeWalkie.isEmpty, notifGid == activeWalkie {
+                // User is actively looking at / connected to this exact Walkie channel! Suppress foreground banner & sound.
+                completionHandler([])
+                return
+            }
+
+            // In foreground on iOS, suppress system .banner because Flutter's WalkieInviteDialog renders the rich custom UI.
+            // Play custom ringtone sound and update badge.
+            completionHandler([.sound, .badge])
             return
         }
 
@@ -383,7 +398,7 @@ private let candidateTokenPrefKeys = [
         let userInfo = response.notification.request.content.userInfo
         let categoryId = response.notification.request.content.categoryIdentifier
 
-        var isWalkie = categoryId == "WALKIE_INVITE" || categoryId == "walkie_invite_category" || categoryId == "group_walkie"
+        var isWalkie = categoryId == "WALKIE_INVITE" || categoryId == "walkie_invite_category" || categoryId == "group_walkie" || categoryId == "walkie_admin_alert"
         var walkieGroupId = ""
         var walkieGroupName = ""
         var walkieSpeakerName = ""
@@ -461,14 +476,47 @@ private let candidateTokenPrefKeys = [
         if let data = userInfo["data"] as? [String: Any] {
             dict = data
         }
+
         let screen = (dict["screen_name"] as? String) ?? (userInfo["screen_name"] as? String)
-        if screen == "group_walkie" {
-            let groupId = (dict["groupId"] as? String) ?? (dict["group_id"] as? String) ?? ""
-            let groupName = (dict["groupName"] as? String) ?? (dict["group_name"] as? String) ?? "Field Team"
-            let speakerName = (dict["speakerName"] as? String) ?? (dict["speaker_name"] as? String) ?? "Someone"
-            let speakerImage = (dict["speakerImage"] as? String) ?? (dict["speaker_image"] as? String) ?? ""
-            let countStr = (dict["joinedMemberCount"] as? String) ?? (dict["joinedCount"] as? String) ?? "0"
+        let type = (dict["type"] as? String) ?? (userInfo["type"] as? String)
+
+        var isWalkie = screen == "group_walkie" || screen == "walkie" || type == "WALKIE_INVITE" || type == "WALKIE_ADMIN_ALERT"
+
+        let aps = userInfo["aps"] as? [String: Any]
+        if let cat = (dict["category"] as? String) ?? (userInfo["category"] as? String) ?? (aps?["category"] as? String) {
+            if cat == "WALKIE_INVITE" || cat == "walkie_invite_category" || cat == "group_walkie" || cat == "walkie" || cat == "walkie_admin_alert" {
+                isWalkie = true
+            }
+        }
+
+        if isWalkie {
+            var groupId = (dict["groupId"] as? String) ?? (dict["group_id"] as? String) ?? (userInfo["groupId"] as? String) ?? (userInfo["group_id"] as? String) ?? ""
+            var groupName = (dict["groupName"] as? String) ?? (dict["group_name"] as? String) ?? (userInfo["groupName"] as? String) ?? (userInfo["group_name"] as? String) ?? ""
+            var speakerName = (dict["speakerName"] as? String) ?? (dict["speaker_name"] as? String) ?? (userInfo["speakerName"] as? String) ?? (userInfo["speaker_name"] as? String) ?? (dict["adminName"] as? String) ?? ""
+            let speakerImage = (dict["speakerImage"] as? String) ?? (dict["speaker_image"] as? String) ?? (userInfo["speakerImage"] as? String) ?? (userInfo["speaker_image"] as? String) ?? (dict["adminImage"] as? String) ?? ""
+            let countStr = (dict["joinedMemberCount"] as? String) ?? (dict["joinedCount"] as? String) ?? (userInfo["joinedMemberCount"] as? String) ?? (userInfo["joinedCount"] as? String) ?? "0"
             let joinedCount = Int(countStr) ?? 0
+
+            // Fallback from alert title and body if needed
+            if let alert = aps?["alert"] as? [String: Any] {
+                if groupName.isEmpty {
+                    groupName = (alert["title"] as? String) ?? "Field Team"
+                }
+                if speakerName.isEmpty, let body = alert["body"] as? String {
+                    if body.contains(" is speaking") {
+                        speakerName = body.components(separatedBy: " is speaking").first ?? "Someone"
+                    } else if body.contains(" (Admin)") {
+                        speakerName = body.components(separatedBy: " (Admin)").first ?? "Admin"
+                    } else {
+                        speakerName = (dict["adminName"] as? String) ?? "Admin"
+                    }
+                }
+            }
+
+            if groupName.isEmpty { groupName = "Field Team" }
+            if speakerName.isEmpty { speakerName = "Someone" }
+
+            print("[AppDelegate] didReceiveRemoteNotification starting Live Activity for group=\(groupId), name=\(groupName), speaker=\(speakerName)")
 
             #if canImport(ActivityKit)
             if #available(iOS 16.1, *) {
@@ -516,11 +564,18 @@ private let candidateTokenPrefKeys = [
                 intentIdentifiers: [],
                 options: [.customDismissAction]
             )
+            let cat4 = UNNotificationCategory(
+                identifier: "walkie_admin_alert",
+                actions: [acceptAction, cancelAction],
+                intentIdentifiers: [],
+                options: [.customDismissAction]
+            )
             UNUserNotificationCenter.current().getNotificationCategories { existing in
                 var updated = existing
                 updated.insert(cat1)
                 updated.insert(cat2)
                 updated.insert(cat3)
+                updated.insert(cat4)
                 UNUserNotificationCenter.current().setNotificationCategories(updated)
             }
         }
@@ -639,9 +694,12 @@ private let candidateTokenPrefKeys = [
             manualAudioRoute = nil
             currentCallIsVideo = isVideo
 
-            let incomingCallId = Self.stringValue(extraDict["callId"])
+            var incomingCallId = Self.stringValue(extraDict["callId"])
                 ?? Self.stringValue(extraDict["call_id"])
                 ?? ""
+            if incomingCallId.isEmpty || incomingCallId == "null" {
+                incomingCallId = id
+            }
             let callerIdInt = Int(
                 Self.stringValue(extraDict["callerId"])
                     ?? Self.stringValue(extraDict["caller_id"])
@@ -689,6 +747,10 @@ private let candidateTokenPrefKeys = [
             data.duration = (ring != nil && ring! > 0) ? ring! : 45000
 
             if let plugin = SwiftFlutterCallkitIncomingPlugin.sharedInstance {
+                if let native = self.nativeCallKitProvider {
+                    native.invalidate()
+                    self.nativeCallKitProvider = nil
+                }
                 plugin.showCallkitIncoming(
                     data,
                     fromPushKit: true
@@ -747,15 +809,24 @@ private let candidateTokenPrefKeys = [
         releaseCallKitManualAudio()
 
         let extra = call.data.extra as? [String: Any] ?? [:]
-        let callId = Self.stringValue(extra["callId"])
+        var callId = Self.stringValue(extra["callId"])
             ?? Self.stringValue(extra["call_id"])
             ?? ""
+        if callId.isEmpty {
+            callId = !call.data.uuid.isEmpty ? call.data.uuid : call.uuid.uuidString
+        }
         let groupId = Self.stringValue(extra["groupId"])
             ?? Self.stringValue(extra["group_id"])
+        let callerId = Self.stringValue(extra["callerId"])
+            ?? Self.stringValue(extra["caller_id"])
+            ?? Self.stringValue(extra["from"])
+        let userId = Self.stringValue(extra["userId"])
+            ?? Self.stringValue(extra["user_id"])
+            ?? Self.readUserId()
 
-        print("[AppDelegate] onDecline callId=\(callId) groupId=\(groupId ?? "nil")")
+        print("[AppDelegate] onDecline callId=\(callId) callerId=\(callerId ?? "nil") userId=\(userId ?? "nil") groupId=\(groupId ?? "nil")")
 
-        rejectCallViaApi(callId: callId, groupId: groupId)
+        rejectCallViaApi(callId: callId, groupId: groupId, callerId: callerId, userId: userId)
         action.fulfill()
     }
 
@@ -790,8 +861,10 @@ private let candidateTokenPrefKeys = [
         configureDefaultWebRTCAudio(isVideo: currentCallIsVideo)
         let rtcAudio = RTCAudioSession.sharedInstance()
         rtcAudio.useManualAudio = true
-        rtcAudio.audioSessionDidActivate(audioSession)
-        rtcAudio.isAudioEnabled = true
+        if !rtcAudio.isAudioEnabled {
+            rtcAudio.audioSessionDidActivate(audioSession)
+            rtcAudio.isAudioEnabled = true
+        }
         if let manual = manualAudioRoute {
             _ = applyRequestedAudioRoute(
                 route: manual,
@@ -807,8 +880,10 @@ private let candidateTokenPrefKeys = [
         audioGeneration += 1
         manualAudioRoute = nil
         let rtcAudio = RTCAudioSession.sharedInstance()
-        rtcAudio.audioSessionDidDeactivate(audioSession)
-        rtcAudio.isAudioEnabled = false
+        if rtcAudio.isAudioEnabled {
+            rtcAudio.audioSessionDidDeactivate(audioSession)
+            rtcAudio.isAudioEnabled = false
+        }
         rtcAudio.useManualAudio = false
     }
 
@@ -1395,7 +1470,10 @@ private let candidateTokenPrefKeys = [
         clearPreferredInputSelection()
         configureDefaultWebRTCAudio(isVideo: false)
         let rtcAudio = RTCAudioSession.sharedInstance()
-        rtcAudio.isAudioEnabled = false
+        if rtcAudio.isAudioEnabled {
+            rtcAudio.audioSessionDidDeactivate(AVAudioSession.sharedInstance())
+            rtcAudio.isAudioEnabled = false
+        }
         rtcAudio.useManualAudio = false
     }
 
@@ -1421,11 +1499,7 @@ private let candidateTokenPrefKeys = [
             return
         }
 
-        guard let token = Self.readAccessToken(), !token.isEmpty else {
-            print("[AppDelegate] updateCallingStatusViaApi ABORTED: token not found")
-            handledRingingCallIds.remove(callId)
-            return
-        }
+        let token = Self.readAccessToken() ?? ""
 
         let path = callingStatusEndpoints[endpointIndex]
         guard let url = URL(string: "\(apiBaseUrl)\(path)") else {
@@ -1435,6 +1509,7 @@ private let candidateTokenPrefKeys = [
         let bodyDict: [String: Any] = [
             "callId": callId,
             "remoteUserId": remoteUserId,
+            "callerId": remoteUserId,
             "callingStatus": callingStatus
         ]
 
@@ -1447,7 +1522,9 @@ private let candidateTokenPrefKeys = [
         req.httpBody = bodyData
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("application/json", forHTTPHeaderField: "Accept")
-        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        if !token.isEmpty {
+            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
 
         let taskKey = UUID()
         let bgId = UIApplication.shared.beginBackgroundTask(withName: "callingStatus.\(callId)") { [weak self] in
@@ -1488,36 +1565,46 @@ private let candidateTokenPrefKeys = [
         }.resume()
     }
 
-    private func rejectCallViaApi(callId: String, groupId: String?) {
-        guard !callId.isEmpty, callId != "null" else {
-            print("[AppDelegate] rejectCallViaApi ABORTED: callId is empty")
+    private func rejectCallViaApi(callId: String?, groupId: String?, callerId: String? = nil, userId: String? = nil) {
+        let cleanCallId = (callId ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let effectiveUserId = userId ?? Self.readUserId()
+        let effectiveCallerId = callerId
+
+        if (cleanCallId.isEmpty || cleanCallId == "null") && (effectiveUserId == nil || effectiveUserId!.isEmpty) && (effectiveCallerId == nil || effectiveCallerId!.isEmpty) {
+            print("[AppDelegate] rejectCallViaApi ABORTED: no identifiers provided")
             return
         }
 
-        if handledDeclineCallIds.contains(callId) {
-            print("[AppDelegate] rejectCallViaApi skipped duplicate callId=\(callId)")
+        let deDupeKey = (!cleanCallId.isEmpty && cleanCallId != "null") ? cleanCallId : "user_\(effectiveUserId ?? "")_caller_\(effectiveCallerId ?? "")"
+        if handledDeclineCallIds.contains(deDupeKey) {
+            print("[AppDelegate] rejectCallViaApi skipped duplicate key=\(deDupeKey)")
             return
         }
-        handledDeclineCallIds.insert(callId)
+        handledDeclineCallIds.insert(deDupeKey)
 
-        guard let token = Self.readAccessToken(), !token.isEmpty else {
-            print("[AppDelegate] rejectCallViaApi ABORTED: no access token found in UserDefaults")
-            handledDeclineCallIds.remove(callId)
-            return
-        }
+        let token = Self.readAccessToken()
 
         var comps = URLComponents(string: "\(apiBaseUrl)/callRejected")
-        var items = [URLQueryItem(name: "callId", value: callId)]
+        var items: [URLQueryItem] = []
+        if !cleanCallId.isEmpty && cleanCallId != "null" {
+            items.append(URLQueryItem(name: "callId", value: cleanCallId))
+        }
         if let g = groupId, !g.isEmpty, g != "null" {
             items.append(URLQueryItem(name: "groupId", value: g))
         } else {
             items.append(URLQueryItem(name: "reason", value: "declined"))
         }
+        if let c = effectiveCallerId, !c.isEmpty, c != "null" {
+            items.append(URLQueryItem(name: "callerId", value: c))
+        }
+        if let u = effectiveUserId, !u.isEmpty, u != "null" {
+            items.append(URLQueryItem(name: "userId", value: u))
+        }
         comps?.queryItems = items
 
         guard let url = comps?.url else {
             print("[AppDelegate] rejectCallViaApi ABORTED: malformed URL")
-            handledDeclineCallIds.remove(callId)
+            handledDeclineCallIds.remove(deDupeKey)
             return
         }
 
@@ -1525,10 +1612,12 @@ private let candidateTokenPrefKeys = [
         req.httpMethod = "GET"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("application/json", forHTTPHeaderField: "Accept")
-        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        if let auth = token, !auth.isEmpty {
+            req.setValue("Bearer \(auth)", forHTTPHeaderField: "Authorization")
+        }
 
         let taskKey = UUID()
-        let bgId = UIApplication.shared.beginBackgroundTask(withName: "rejectCall.\(callId)") { [weak self] in
+        let bgId = UIApplication.shared.beginBackgroundTask(withName: "rejectCall.\(deDupeKey)") { [weak self] in
             self?.finishBackgroundTask(for: taskKey)
         }
         activeBgTasks[taskKey] = bgId
@@ -1537,7 +1626,7 @@ private let candidateTokenPrefKeys = [
             if let error = error {
                 print("[AppDelegate] rejectCallViaApi error: \(error.localizedDescription)")
                 DispatchQueue.main.async {
-                    self?.handledDeclineCallIds.remove(callId)
+                    self?.handledDeclineCallIds.remove(deDupeKey)
                 }
             } else if let http = response as? HTTPURLResponse {
                 let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
@@ -1586,13 +1675,29 @@ private let candidateTokenPrefKeys = [
 
     private func flushRecentsCallback() {
         guard let payload = pendingRecentsCallback else { return }
-        guard let controller = window?.rootViewController as? FlutterViewController else { return }
+        guard let controller = window?.rootViewController as? FlutterViewController else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+                self?.flushRecentsCallback()
+            }
+            return
+        }
         let channel = FlutterMethodChannel(
             name: "com.fgtracker.callkit_events",
             binaryMessenger: controller.binaryMessenger
         )
         channel.invokeMethod("recentsCallback", arguments: payload) { [weak self] result in
-            if result is FlutterError { return }
+            if result is FlutterError || result == nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    guard let pending = self?.pendingRecentsCallback else { return }
+                    channel.invokeMethod("recentsCallback", arguments: pending) { secondResult in
+                        if secondResult is Bool, secondResult as! Bool == true {
+                            self?.pendingRecentsCallback = nil
+                            print("[AppDelegate] recents callback delivered to Dart on retry")
+                        }
+                    }
+                }
+                return
+            }
             self?.pendingRecentsCallback = nil
             print("[AppDelegate] recents callback delivered to Dart")
         }
@@ -1828,6 +1933,17 @@ extension AppDelegate: CXProviderDelegate {
         callDisplayNames.removeAll()
     }
 
+    func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
+        let handle = action.handle.value
+        let isVideo = action.isVideo
+        print("[AppDelegate] native CXProvider perform CXStartCallAction uuid=\(action.callUUID.uuidString) handle=\(handle) isVideo=\(isVideo)")
+        configureDefaultWebRTCAudio(isVideo: isVideo)
+        audioGeneration += 1
+        RTCAudioSession.sharedInstance().useManualAudio = true
+        action.fulfill()
+        sendRecentsCallback(handle: handle, isVideo: isVideo)
+    }
+
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         print("[AppDelegate] native CXProvider perform CXAnswerCallAction")
         configureDefaultWebRTCAudio(isVideo: currentCallIsVideo)
@@ -1840,6 +1956,9 @@ extension AppDelegate: CXProviderDelegate {
         print("[AppDelegate] native CXProvider perform CXEndCallAction")
         audioGeneration += 1
         releaseCallKitManualAudio()
+        let callId = action.callUUID.uuidString
+        let userId = Self.readUserId()
+        rejectCallViaApi(callId: callId, groupId: nil, callerId: nil, userId: userId)
         action.fulfill()
     }
 

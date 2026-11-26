@@ -204,6 +204,7 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
         var speakerImage: String?
 
         let userInfo = notification.request.content.userInfo
+        let dataDict = userInfo["data"] as? [String: Any]
 
         // 1. Direct userInfo
         groupName = (userInfo["groupName"] as? String) ?? (userInfo["title"] as? String)
@@ -230,18 +231,18 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
         }
 
         // 3. Inside data dictionary (FCM push notification)
-        if let dataDict = userInfo["data"] as? [String: Any] {
+        if let data = dataDict {
             if groupName == nil || groupName!.isEmpty {
-                groupName = dataDict["groupName"] as? String
+                groupName = data["groupName"] as? String
             }
             if speakerName == nil || speakerName!.isEmpty {
-                speakerName = dataDict["speakerName"] as? String
+                speakerName = data["speakerName"] as? String
             }
             if count == nil || count!.isEmpty {
-                count = (dataDict["joinedMemberCount"] as? String) ?? (dataDict["joinedCount"] as? String)
+                count = (data["joinedMemberCount"] as? String) ?? (data["joinedCount"] as? String)
             }
             if speakerImage == nil || speakerImage!.isEmpty {
-                speakerImage = (dataDict["speakerImage"] as? String) ?? (dataDict["speaker_image"] as? String)
+                speakerImage = (data["speakerImage"] as? String) ?? (data["speaker_image"] as? String)
             }
         }
 
@@ -255,7 +256,25 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
             : "Someone"
 
         groupTitleLabel.text = finalTitle
-        speakerSubtitleLabel.text = "\(finalSpeaker) is speaking..."
+
+        let isAdminAlert = (userInfo["type"] as? String) == "WALKIE_ADMIN_ALERT"
+            || (dataDict?["type"] as? String) == "WALKIE_ADMIN_ALERT"
+            || (userInfo["alertType"] as? String) == "admin_nudge"
+            || (dataDict?["alertType"] as? String) == "admin_nudge"
+            || notification.request.content.categoryIdentifier == "walkie_admin_alert"
+
+        let customSubtitle = (userInfo["subtitle"] as? String)
+            ?? (dataDict?["subtitle"] as? String)
+            ?? (userInfo["message"] as? String)
+            ?? (dataDict?["message"] as? String)
+
+        if let custom = customSubtitle, !custom.isEmpty {
+            speakerSubtitleLabel.text = custom
+        } else if isAdminAlert {
+            speakerSubtitleLabel.text = "\(finalSpeaker) (Admin) is calling you into the channel."
+        } else {
+            speakerSubtitleLabel.text = "\(finalSpeaker) is speaking..."
+        }
 
         if let c = count, !c.isEmpty && c != "0" {
             joinedLabel.text = "👥 \(c) Joined"
@@ -265,7 +284,7 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
 
         // Load speaker avatar if available
         if let imgStr = speakerImage?.trimmingCharacters(in: .whitespacesAndNewlines), !imgStr.isEmpty {
-            let fullUrlStr = imgStr.hasPrefix("http") ? imgStr : "https://api.fgtracker.fgmanpower.co.in/\(imgStr)"
+            let fullUrlStr = imgStr.hasPrefix("http") ? imgStr : "http://89.116.23.2:3000/\(imgStr)"
             if let url = URL(string: fullUrlStr) {
                 URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
                     guard let self = self, let data = data, let img = UIImage(data: data) else { return }

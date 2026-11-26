@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 2.0.8+335
+version: 2.0.8+346
 
 environment:
   sdk: ^3.6.1
@@ -42,6 +42,7 @@ dependencies:
   skeletonizer: ^2.0.1
   url_launcher: ^6.3.2
   google_mlkit_barcode_scanning: ^0.15.0
+  google_mlkit_text_recognition: ^0.17.0
   permission_handler: ^12.0.0+1
   image_cropper: ^12.2.1
   liquid_pull_to_refresh: ^3.0.1
@@ -152,7 +153,6 @@ flutter:
     - assets/svg/
     - assets/music/
     - assets/walkie_talkie/
-    - assets/legal/
     - shorebird.yaml
     - assets/map_theme/dark_map.json
     - lib/app/routes/

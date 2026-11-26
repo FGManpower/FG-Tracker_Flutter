@@ -175,14 +175,14 @@ class WalkieChannelController extends GetxController {
             rawEnabled?.toString() == 'true';
         final activeGroupId = int.tryParse(activeGroupIdStr ?? '');
 
-        for (var c in channels) {
-          if (activeGroupId != null && enabled) {
-            c.notificationsEnabled = (c.groupId == activeGroupId);
-          } else if (activeGroupId != null && !enabled && c.groupId == activeGroupId) {
-            c.notificationsEnabled = false;
+        if (activeGroupId != null) {
+          for (var c in channels) {
+            if (c.groupId == activeGroupId) {
+              c.notificationsEnabled = enabled;
+            }
           }
+          _safeChannelsRefresh();
         }
-        _safeChannelsRefresh();
       } catch (e) {
         AppLog.d("⚠️ [WalkieChannelController] channelChangedHandler error: $e");
       }
@@ -381,34 +381,8 @@ class WalkieChannelController extends GetxController {
         }
       }
 
-      // If server provides top-level activeNotificationGroupId, respect it directly
-      final serverActiveNotifId = res.data?.activeNotificationGroupId;
-      if (serverActiveNotifId != null) {
-        for (var c in loadedChannels) {
-          c.notificationsEnabled = (c.groupId == serverActiveNotifId);
-        }
-      } else {
-        // Enforce business rule: At most ONE group notification active in entire list
-        int activeNotificationGroupId = -1;
-        final activeChannelMatch = loadedChannels.firstWhereOrNull(
-            (c) => c.groupId == activeChannelId.value && c.notificationsEnabled);
-        if (activeChannelMatch != null) {
-          activeNotificationGroupId = activeChannelMatch.groupId;
-        } else {
-          final firstEnabled =
-              loadedChannels.firstWhereOrNull((c) => c.notificationsEnabled);
-          if (firstEnabled != null) {
-            activeNotificationGroupId = firstEnabled.groupId;
-          }
-        }
-
-        // Ensure ONLY the active notification group is enabled, all others are disabled
-        if (activeNotificationGroupId != -1) {
-          for (var c in loadedChannels) {
-            c.notificationsEnabled = (c.groupId == activeNotificationGroupId);
-          }
-        }
-      }
+      // In multi-channel notification mode:
+      // Each channel independently maintains its notificationsEnabled preference from server
 
       channels.assignAll(loadedChannels);
       refreshFailed.value = false;
@@ -442,16 +416,8 @@ class WalkieChannelController extends GetxController {
     };
     final bool willBeEnabled = !channel.notificationsEnabled;
 
-    // 1. Optimistic UI update: ONLY ONE group notification can be active at a time!
-    // If turning ON: turn OFF all other groups, set this one to true.
-    // If turning OFF: set this one to false.
-    for (var c in channels) {
-      if (willBeEnabled) {
-        c.notificationsEnabled = (c.groupId == groupId);
-      } else if (c.groupId == groupId) {
-        c.notificationsEnabled = false;
-      }
-    }
+    // 1. Optimistic UI update: Toggle target channel independently (Multi-Channel active)
+    channel.notificationsEnabled = willBeEnabled;
     _safeChannelsRefresh();
 
     // 2. Real-time Socket Event (emit to /groupWalkie namespace if connected)

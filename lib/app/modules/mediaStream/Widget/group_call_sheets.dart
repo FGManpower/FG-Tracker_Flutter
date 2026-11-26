@@ -48,14 +48,15 @@ class _GroupParticipantsSheetView extends StatelessWidget {
     return Container(
       height: Get.height * 0.75,
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F7FF),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25.r)),
+        color: const Color(0xFF141024),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        border: Border.all(color: Colors.white12, width: 0.8),
       ),
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Obx(() {
         if (sheetCtrl.isLoading.value) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF6E5CA4)),
+            child: CircularProgressIndicator(color: Color(0xFF5B3FD0)),
           );
         }
 
@@ -67,35 +68,69 @@ class _GroupParticipantsSheetView extends StatelessWidget {
           children: [
             Center(
               child: Container(
-                width: 40.w,
+                width: 44.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
+                  color: Colors.white24,
                   borderRadius: BorderRadius.circular(10.r),
                 ),
               ),
             ),
             SizedBox(height: 16.h),
-            reausabletext(
+
+            // Header title
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Call Participants",
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontFamily: FontFamily.interSemiBold,
+                    color: Colors.white,
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5B3FD0),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Text(
+                    "${inCall.length} in call",
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+
+            // In-Call Section
+            Text(
               context.l10n.call_inThisCall(inCall.length),
-              fontsize: 16,
-              fontfamily: FontFamily.interSemiBold,
-              color: const Color(0xFF1E1147),
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontFamily: FontFamily.interMedium,
+                color: Colors.white70,
+              ),
             ),
             SizedBox(height: 10.h),
             if (inCall.isEmpty)
-              reausabletext(
+              Text(
                 context.l10n.call_noActiveParticipants,
-                fontsize: 13,
-                color: Colors.grey,
+                style: TextStyle(fontSize: 13.sp, color: Colors.white38),
               )
             else
               SizedBox(
-                height: 84.h,
+                height: 80.h,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: inCall.length,
-                  separatorBuilder: (_, __) => SizedBox(width: 12.w),
+                  separatorBuilder: (_, __) => SizedBox(width: 10.w),
                   itemBuilder: (_, index) {
                     return _InCallChip(
                       participant: inCall[index],
@@ -104,101 +139,178 @@ class _GroupParticipantsSheetView extends StatelessWidget {
                   },
                 ),
               ),
-            SizedBox(height: 18.h),
-            reausabletext(
-              context.l10n.call_notInThisCall(notIn.length),
-              fontsize: 16,
-              fontfamily: FontFamily.interSemiBold,
-              color: const Color(0xFF1E1147),
+            SizedBox(height: 20.h),
+
+            // Not In Call / Add Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  context.l10n.call_notInThisCall(notIn.length),
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontFamily: FontFamily.interMedium,
+                    color: Colors.white70,
+                  ),
+                ),
+                Text(
+                  "Tap to invite",
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontFamily: FontFamily.interRegular,
+                    color: Colors.white38,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 12.h),
+
             Expanded(
               child: notIn.isEmpty
                   ? Center(
-                      child: reausabletext(
+                      child: Text(
                         context.l10n.call_everyoneInCall,
-                        fontsize: 14,
-                        color: Colors.grey,
+                        style: TextStyle(fontSize: 14.sp, color: Colors.white38),
                       ),
                     )
                   : ListView.separated(
                       itemCount: notIn.length,
-                      separatorBuilder: (_, __) => SizedBox(height: 14.h),
+                      separatorBuilder: (_, __) => SizedBox(height: 12.h),
                       itemBuilder: (context, index) {
                         final participant = notIn[index];
                         final imageUrl =
                             Utility.isNullEmptyOrFalse(participant.profileImage)
                                 ? MyAppTheme.ProfilenotFoundImg
-                                : ConstRes.aImageBaseUrl +
-                                    (participant.profileImage ?? '');
+                                : (participant.profileImage!.startsWith('http')
+                                    ? participant.profileImage!
+                                    : ConstRes.aImageBaseUrl +
+                                        participant.profileImage!);
 
-                        return Row(
+                        return Container(
                           key: ValueKey('out_${participant.userId}'),
-                          children: [
-                            CircleAvatar(
-                              radius: 24.r,
-                              backgroundColor: Colors.black12,
-                              backgroundImage: NetworkImage(imageUrl),
-                              onBackgroundImageError: (_, __) {},
-                            ),
-                            SizedBox(width: 14.w),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  reausabletext(
-                                    participant.name ?? '',
-                                    fontsize: 15,
-                                    fontfamily: FontFamily.interMedium,
-                                    color: const Color(0xFF1E1147),
-                                  ),
-                                  SizedBox(height: 2.h),
-                                  reausabletext(
-                                    context.l10n.call_tapNotifyToInvite,
-                                    fontsize: 12,
-                                    color: Colors.grey,
-                                  ),
-                                ],
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 14.w,
+                            vertical: 10.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF261D45),
+                            borderRadius: BorderRadius.circular(16.r),
+                            border: Border.all(color: Colors.white10, width: 0.6),
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 22.r,
+                                backgroundColor: Colors.white12,
+                                backgroundImage: NetworkImage(imageUrl),
+                                onBackgroundImageError: (_, __) {},
                               ),
-                            ),
-                            Material(
-                              color: Colors.transparent,
-                              borderRadius: BorderRadius.circular(20.r),
-                              child: InkWell(
-                                onTap: () => sheetCtrl.notify(participant),
-                                borderRadius: BorderRadius.circular(20.r),
-                                splashColor: const Color(0xFF6E5CA4).withValues(alpha: 0.15),
-                                highlightColor: const Color(0xFF6E5CA4).withValues(alpha: 0.10),
-                                child: Ink(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 12.w,
-                                    vertical: 8.h,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE9E5FE),
-                                    borderRadius: BorderRadius.circular(20.r),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.notifications_active,
-                                        color: Color(0xFF6E5CA4),
-                                        size: 18,
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      participant.name ?? '',
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
+                                        fontFamily: FontFamily.interMedium,
+                                        color: Colors.white,
                                       ),
-                                      SizedBox(width: 6.w),
-                                      reausabletext(
-                                        context.l10n.call_notify,
-                                        fontsize: 12,
-                                        fontfamily: FontFamily.interSemiBold,
-                                        color: const Color(0xFF6E5CA4),
+                                    ),
+                                    SizedBox(height: 2.h),
+                                    Text(
+                                      context.l10n.call_tapNotifyToInvite,
+                                      style: TextStyle(
+                                        fontSize: 11.sp,
+                                        color: Colors.white54,
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            )
-                          ],
+                              Obx(() {
+                                final isRinging = sheetCtrl.ringingParticipantUserIds.contains(participant.userId);
+                                if (isRinging) {
+                                  return Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12.w,
+                                      vertical: 6.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF261D45),
+                                      borderRadius: BorderRadius.circular(16.r),
+                                      border: Border.all(
+                                        color: const Color(0xFF7B61FF).withOpacity(0.5),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        SizedBox(
+                                          width: 10.w,
+                                          height: 10.h,
+                                          child: const CircularProgressIndicator(
+                                            strokeWidth: 1.5,
+                                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7B61FF)),
+                                          ),
+                                        ),
+                                        SizedBox(width: 6.w),
+                                        Text(
+                                          "Ringing...",
+                                          style: TextStyle(
+                                            fontSize: 11.sp,
+                                            fontFamily: FontFamily.interMedium,
+                                            color: const Color(0xFF7B61FF),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return GestureDetector(
+                                  onTap: () => sheetCtrl.notify(participant),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 14.w,
+                                      vertical: 8.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF5B3FD0),
+                                      borderRadius: BorderRadius.circular(20.r),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF5B3FD0).withOpacity(0.35),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.phone_forwarded_rounded,
+                                          color: Colors.white,
+                                          size: 15.sp,
+                                        ),
+                                        SizedBox(width: 6.w),
+                                        Text(
+                                          "Ring",
+                                          style: TextStyle(
+                                            fontSize: 12.sp,
+                                            fontFamily: FontFamily.interSemiBold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ],
+                          ),
                         );
                       },
                     ),
@@ -219,19 +331,23 @@ class _InCallChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final imageUrl = Utility.isNullEmptyOrFalse(participant.profileImage)
         ? MyAppTheme.ProfilenotFoundImg
-        : ConstRes.aImageBaseUrl + (participant.profileImage ?? '');
+        : (participant.profileImage!.startsWith('http')
+            ? participant.profileImage!
+            : ConstRes.aImageBaseUrl + participant.profileImage!);
 
     return Container(
-      width: 150.w,
-      padding: EdgeInsets.all(10.r),
+      width: 145.w,
+      padding: EdgeInsets.all(8.r),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14.r),
+        color: const Color(0xFF261D45),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white10, width: 0.6),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 18.r,
+            backgroundColor: Colors.white12,
             backgroundImage: NetworkImage(imageUrl),
             onBackgroundImageError: (_, __) {},
           ),
@@ -241,26 +357,49 @@ class _InCallChip extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                reausabletext(
+                Text(
                   participant.isLocal
                       ? context.l10n.call_nameYou(participant.name.toString())
                       : participant.name.toString(),
-                  fontsize: 12,
-                  fontfamily: FontFamily.interMedium,
-                  maxline: 1,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontFamily: FontFamily.interMedium,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                SizedBox(height: 2.h),
                 Obx(
-                  () => AutoFitText(
-                    participant.isMuted.value
-                        ? context.l10n.call_muted
-                        : context.l10n.call_inCall,
-                    style: TextStyle(
-                      fontFamily: "geographeditwebbold",
-                      fontSize: 11.sp,
-                      color: participant.isMuted.value
-                          ? Colors.redAccent
-                          : Colors.green,
-                    ),
+                  () => Row(
+                    children: [
+                      Icon(
+                        participant.isMuted.value
+                            ? Icons.mic_off_rounded
+                            : Icons.volume_up_rounded,
+                        size: 12.sp,
+                        color: participant.isMuted.value
+                            ? const Color(0xFFFF5252)
+                            : const Color(0xFF16B364),
+                      ),
+                      SizedBox(width: 4.w),
+                      Expanded(
+                        child: Text(
+                          participant.isMuted.value
+                              ? context.l10n.call_muted
+                              : context.l10n.call_inCall,
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontFamily: FontFamily.interRegular,
+                            color: participant.isMuted.value
+                                ? const Color(0xFFFF5252)
+                                : const Color(0xFF16B364),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

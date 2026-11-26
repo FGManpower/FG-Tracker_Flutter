@@ -1,7 +1,10 @@
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
+import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/l10n/l10n.dart';
+import 'package:fgtracker/app/Data/Services/group_call_service.dart';
 import '../../../routes/app_pages.dart';
 
 class GroupIncomingCallController extends GetxController {
@@ -43,37 +46,48 @@ class GroupIncomingCallController extends GetxController {
         "isMuted": false,
       };
     }
+    Socket_GroupCallService.instance.onCallEnded = () {
+      _stopRingtone();
+      CallStateTracker.isIncomingCallScreenOpen = false;
+      if (Get.currentRoute == Routes.groupIncomingCallScreen) {
+        Get.back();
+      }
+    };
     _playRingtone();
   }
 
   void _playRingtone() {
-    // try {
-    //   FlutterRingtonePlayer().play(
-    //     asAlarm: false,
-    //     fromAsset: Assets.music.incomingCall,
-    //     looping: true,
-    //     volume: 1.0,
-    //   );
-    // } catch (_) {
-    //   try {
-    //     FlutterRingtonePlayer().playRingtone(
-    //       asAlarm: false,
-    //       looping: true,
-    //       volume: 1.0,
-    //     );
-    //   } catch (_) {}
-    // }
+    try {
+      CallPlatform.instance.resetSoundState();
+      CallPlatform.instance.playRingback(CallPlatform.instance.ringbackAsset);
+    } catch (_) {
+      try {
+        FlutterRingtonePlayer().playRingtone(
+          asAlarm: false,
+          looping: true,
+          volume: 1.0,
+        );
+      } catch (_) {}
+    }
   }
 
   void _stopRingtone() {
     try {
-      // FlutterRingtonePlayer().stop();
+      CallPlatform.instance.stopRingtone();
+    } catch (_) {}
+    try {
+      FlutterRingtonePlayer().stop();
     } catch (_) {}
   }
 
   void joinCall() {
     _stopRingtone();
     CallStateTracker.isIncomingCallScreenOpen = false;
+    if (!GroupCallService.isGroupCallEnabled) {
+      GroupCallService.showComingSoon();
+      Get.back();
+      return;
+    }
     Get.offNamed(
       Routes.groupCallingScreen,
       arguments: {
@@ -93,16 +107,13 @@ class GroupIncomingCallController extends GetxController {
 
   void declineCall() {
     _stopRingtone();
-    if (callId != null) {
+    CallStateTracker.isIncomingCallScreenOpen = false;
+    if (callId != null && callId!.isNotEmpty) {
       Socket_GroupCallService.instance.rejectGroupCall(callId!, groupId);
-      var data = {
-        "callId": callerId,
-        "groupId": groupId,
-      };
-
-      // CallKitService.instance.declineGroupCall(data);
     }
-    Get.back();
+    if (Get.currentRoute == Routes.groupIncomingCallScreen) {
+      Get.back();
+    }
   }
 
   void toggleMute() {
@@ -112,6 +123,7 @@ class GroupIncomingCallController extends GetxController {
   @override
   void onClose() {
     _stopRingtone();
+    CallStateTracker.isIncomingCallScreenOpen = false;
     super.onClose();
   }
 }

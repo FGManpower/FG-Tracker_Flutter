@@ -12,6 +12,7 @@ import 'package:fgtracker/app/modules/mediaStream/Services/call_pip.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
@@ -55,39 +56,75 @@ class CallPlatform {
     return Get.put(CallAudioRouteController(), permanent: true);
   }
 
+  AudioPlayer? _player;
   bool _soundStopped = false;
   void resetSoundState() => _soundStopped = false;
 
+  bool get _isMobilePlatform =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.android);
+
+  Future<void> _playAssetWithPlayer(
+    String asset, {
+    required bool loop,
+    required double volume,
+  }) async {
+    if (_soundStopped) return;
+    if (_isMobilePlatform) {
+      try {
+        _player ??= AudioPlayer();
+        await _player!.stop();
+        if (_soundStopped) return;
+        await _player!.setAsset(asset);
+        if (_soundStopped) {
+          await _player!.stop();
+          return;
+        }
+        await _player!.setLoopMode(loop ? LoopMode.one : LoopMode.off);
+        await _player!.setVolume(volume);
+        if (!_soundStopped) {
+          await _player!.play();
+        }
+        return;
+      } catch (e) {
+        if (kDebugMode) {
+          log('[CallPlatform] AudioPlayer error: $e, falling back to FlutterRingtonePlayer');
+        }
+      }
+    }
+
+    if (!_soundStopped) {
+      try {
+        FlutterRingtonePlayer().play(
+          asAlarm: false,
+          fromAsset: asset,
+          looping: loop,
+          volume: volume,
+        );
+      } catch (_) {}
+    }
+  }
+
   void playDialTone(String asset) {
     if (_soundStopped) return;
-    try {
-      FlutterRingtonePlayer().play(
-        asAlarm: false,
-        fromAsset: asset,
-        looping: true,
-        volume: 0.85,
-      );
-    } catch (_) {}
+    _playAssetWithPlayer(asset, loop: true, volume: 0.85).catchError((_) {});
   }
 
   String get dialToneAsset => kCallDialToneAsset;
 
   void playRingback(String asset) {
     if (_soundStopped) return;
-    try {
-      FlutterRingtonePlayer().play(
-        asAlarm: false,
-        fromAsset: asset,
-        looping: true,
-        volume: 1.0,
-      );
-    } catch (_) {}
+    _playAssetWithPlayer(asset, loop: true, volume: 1.0).catchError((_) {});
   }
 
   String get ringbackAsset => Assets.music.ringing;
 
   void stopRingtone() {
     _soundStopped = true;
+    try {
+      _player?.stop();
+    } catch (_) {}
     try {
       FlutterRingtonePlayer().stop();
     } catch (_) {}
@@ -117,14 +154,7 @@ class CallPlatform {
 
   /// One-shot tone (end / busy). Never loops.
   void playTone(String asset) {
-    try {
-      FlutterRingtonePlayer().play(
-        asAlarm: false,
-        fromAsset: asset,
-        looping: false,
-        volume: 0.6,
-      );
-    } catch (_) {}
+    _playAssetWithPlayer(asset, loop: false, volume: 0.7);
   }
 
   Future<void> reportOutgoingToCallKit({

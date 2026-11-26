@@ -25,6 +25,7 @@ import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
 import 'package:fgtracker/app/Data/Services/walkie_talkie_trial_service.dart';
+import 'package:fgtracker/app/Data/Services/active_chat_tracker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
@@ -167,6 +168,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
     // 3. Setup controller for new group
     controller.setCurrentGroup(newGroupId);
+    ActiveChatTracker.openWalkie(newGroupId);
     controller.setConnected(
         GroupWalkieService.instance.socket?.connected == true);
 
@@ -266,6 +268,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       final groupName = args?['groupName']?.toString() ?? appL10n.walkie_defaultGroupName;
       log('Configuring active session for group ID: $groupId ($groupName)');
       controller.setCurrentGroup(groupId);
+      ActiveChatTracker.openWalkie(groupId);
 
       // Stage 1: Immediate UI rendering, then schedule asynchronous progressive initialization
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -352,6 +355,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _saveTrialRemainingSeconds();
     WalkieLaunchTracker.fromWalkieCall = false;
     WalkieNotificationManager.instance.setWalkieScreenActive(false);
+    ActiveChatTracker.closeWalkie(controller.currentGroupId ?? args?['groupId']);
     if (controller.onSwitchGroupRequested == _handleGroupSwitch) {
       controller.onSwitchGroupRequested = null;
     }

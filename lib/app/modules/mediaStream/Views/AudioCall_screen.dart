@@ -79,9 +79,11 @@ class AudiocallScreen extends StatelessWidget {
                   SizedBox(height: 28.h),
                   SizedBox(
                     height: 48.h,
-                    child: connected
-                        ? null
-                        : const _VoiceWave(color: Colors.white38),
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 250),
+                      opacity: connected ? 0.0 : 1.0,
+                      child: const _VoiceWave(color: Colors.white38),
+                    ),
                   ),
                 ],
               ),
@@ -101,7 +103,9 @@ class AudiocallScreen extends StatelessWidget {
 /// of GetX" on every rebuild.)
 bool isCallConnected(CallingController c) {
   final int seconds = c.callDurationRx.value;
-  return seconds > 0 || c.callTimer != null;
+  return seconds > 0 ||
+      c.callTimer != null ||
+      c.callStatus.value == "Connected";
 }
 
 /// Avatar with soft halo rings. The rings pulse while [animate] (calling /
@@ -152,7 +156,7 @@ class _CallPulseAvatarState extends State<CallPulseAvatar>
       _anim.repeat();
     } else if (!widget.animate && _anim.isAnimating) {
       _anim.stop();
-      _anim.value = 0.5;
+      _anim.value = 0.0;
     }
   }
 
@@ -201,6 +205,7 @@ class _CallPulseAvatarState extends State<CallPulseAvatar>
   }
 
   Widget _ring(double avatar, double box, Color color, double t) {
+    if (!widget.animate && t == 0.0) return const SizedBox.shrink();
     // Each ring grows from the avatar to the box edge and fades out.
     final double size = avatar + (box - avatar) * t;
     final double opacity = (1 - t) * (widget.onDark ? 0.22 : 0.20);

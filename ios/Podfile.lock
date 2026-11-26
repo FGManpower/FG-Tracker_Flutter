@@ -1394,6 +1394,10 @@ PODS:
     - Flutter
     - google_mlkit_commons
     - GoogleMLKit/FaceDetection (~> 9.0.0)
+  - google_mlkit_text_recognition (0.17.0):
+    - Flutter
+    - google_mlkit_commons
+    - GoogleMLKit/TextRecognition (~> 9.0.0)
   - GoogleDataTransport (10.1.1):
     - nanopb (~> 3.30910.0)
     - PromisesObjC (~> 2.4)
@@ -1408,6 +1412,12 @@ PODS:
     - MLKitFaceDetection (~> 8.0.0)
   - GoogleMLKit/MLKitCore (9.0.0):
     - MLKitCommon (~> 14.0.0)
+  - GoogleMLKit/TextRecognition (9.0.0):
+    - GoogleMLKit/MLKitCore
+    - MLKitTextRecognition (~> 7.0.0)
+  - GoogleMLKit/TextRecognitionDevanagari (9.0.0):
+    - GoogleMLKit/MLKitCore
+    - MLKitTextRecognitionDevanagari (~> 6.0.0)
   - GoogleToolboxForMac/Defines (4.2.1)
   - GoogleToolboxForMac/Logger (4.2.1):
     - GoogleToolboxForMac/Defines (= 4.2.1)
@@ -1570,6 +1580,17 @@ PODS:
   - MLKitFaceDetection (8.0.0):
     - MLKitCommon (~> 14.0)
     - MLKitVision (~> 10.0)
+  - MLKitTextRecognition (7.0.0):
+    - MLKitCommon (~> 14.0)
+    - MLKitTextRecognitionCommon (= 6.0.0)
+    - MLKitVision (~> 10.0)
+  - MLKitTextRecognitionCommon (6.0.0):
+    - MLKitCommon (~> 14.0)
+    - MLKitVision (~> 10.0)
+  - MLKitTextRecognitionDevanagari (6.0.0):
+    - MLKitCommon (~> 14.0)
+    - MLKitTextRecognitionCommon (= 6.0.0)
+    - MLKitVision (~> 10.0)
   - MLKitVision (10.0.0):
     - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
     - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
@@ -1673,6 +1694,8 @@ DEPENDENCIES:
   - google_mlkit_barcode_scanning (from `.symlinks/plugins/google_mlkit_barcode_scanning/ios`)
   - google_mlkit_commons (from `.symlinks/plugins/google_mlkit_commons/ios`)
   - google_mlkit_face_detection (from `.symlinks/plugins/google_mlkit_face_detection/ios`)
+  - google_mlkit_text_recognition (from `.symlinks/plugins/google_mlkit_text_recognition/ios`)
+  - GoogleMLKit/TextRecognitionDevanagari (~> 9.0.0)
   - image_cropper (from `.symlinks/plugins/image_cropper/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
@@ -1739,6 +1762,9 @@ SPEC REPOS:
     - MLKitBarcodeScanning
     - MLKitCommon
     - MLKitFaceDetection
+    - MLKitTextRecognition
+    - MLKitTextRecognitionCommon
+    - MLKitTextRecognitionDevanagari
     - MLKitVision
     - nanopb
     - PromisesObjC
@@ -1817,6 +1843,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/google_mlkit_commons/ios"
   google_mlkit_face_detection:
     :path: ".symlinks/plugins/google_mlkit_face_detection/ios"
+  google_mlkit_text_recognition:
+    :path: ".symlinks/plugins/google_mlkit_text_recognition/ios"
   image_cropper:
     :path: ".symlinks/plugins/image_cropper/ios"
   image_picker_ios:
@@ -1923,6 +1951,7 @@ SPEC CHECKSUMS:
   google_mlkit_barcode_scanning: ec258a9f08c16d43ed3c4f76e4f1f436ffa899df
   google_mlkit_commons: 75b2579ccf522fe01d42e689babda04c4510ba2f
   google_mlkit_face_detection: d8263f2249be956bab368ce49fc5b5ed12962f9e
+  google_mlkit_text_recognition: 6ab640b6dc28de2bc373a83dfbe5618f36b2b711
   GoogleDataTransport: a24e58982ab3ba2f64d79613e027fe7f57e88539
   GoogleMaps: 306f6ea18af2dc9ef85d98b0d1b41bc7d506df5f
   GoogleMLKit: b1eee21a41c57704fe72483b15c85cb2c0cd7444
@@ -1943,6 +1972,9 @@ SPEC CHECKSUMS:
   MLKitBarcodeScanning: 39de223e7b1b8a8fbf10816a536dd292d8a39343
   MLKitCommon: 47d47b50a031d00db62f1b0efe5a1d8b09a3b2e6
   MLKitFaceDetection: 32549f1e70e6e7731261bf9cea2b74095e2531cb
+  MLKitTextRecognition: c0ad24510481dfc8893ad15dfcb8a5f05ed9e826
+  MLKitTextRecognitionCommon: 234ceb1cfdfb5fceb4fd664943046609a2961cc2
+  MLKitTextRecognitionDevanagari: 326281ad520172466dd6dd6a784fa03fb8ab9e37
   MLKitVision: 39a5a812db83c4a0794445088e567f3631c11961
   mobile_scanner: 77265f3dc8d580810e91849d4a0811a90467ed5e
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
@@ -1972,6 +2004,6 @@ SPEC CHECKSUMS:
   wakelock_plus: 76957ab028e12bfa4e66813c99e46637f367fc7e
   WebRTC-SDK: 71bce2be85c3082d24bbfd1a9930ea07d0c494c1
 
-PODFILE CHECKSUM: 9666c0e594bb02f5de30aa732a68bdc8229c51a1
+PODFILE CHECKSUM: 50707cf36046f872b39a5ec654938e5c2d4ad959
 
 COCOAPODS: 1.16.2

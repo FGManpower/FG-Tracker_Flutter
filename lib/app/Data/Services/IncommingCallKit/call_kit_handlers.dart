@@ -8,18 +8,33 @@ import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
+import 'package:fgtracker/app/modules/mediaStream/Services/call_platform.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/voip_token_uploader.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
+import 'package:fgtracker/app/modules/call/Controller/contact_controller.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:flutter/material.dart' show BuildContext;
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:fgtracker/app/modules/mediaStream/Services/call_entry.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/app/Data/Services/group_call_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
+bool _isGroupCall(Map<dynamic, dynamic>? extra) {
+  if (extra == null) return false;
+  final screen = (extra['screen_name'] ?? extra['screenName'] ?? extra['screen'] ?? '').toString();
+  if (screen == 'incomingGroupCall' || screen == 'groupCallNotify' || screen == 'group_call') return true;
+  final type = (extra['type'] ?? extra['callType'] ?? '').toString();
+  if (type == 'group_voice_call' || type == 'group_video_call') return true;
+  final groupId = (extra['groupId'] ?? extra['group_id'] ?? '').toString().trim();
+  if (groupId.isNotEmpty && groupId != '0' && groupId != 'null') return true;
+  return false;
+}
 
 /// Wires the CallKit / Android full-screen call actions to the app.
 /// Moved out of main.dart so it can be unit tested (doc 02 §5).
@@ -31,11 +46,64 @@ void setupCallKitHandlers() {
       log('[CALL] Ignored onAcceptCall for outgoing call: $extra');
       return;
     }
-    final bool isGroup = extra['screen_name'] == 'incomingGroupCall';
+    final bool isGroup = _isGroupCall(extra);
     CallSessionState.sessionId = uuid ?? '';
 
     if (isGroup) {
-      log('Group call accepted: $extra');
+      log('[CallKit] Group call accepted: $extra');
+      final CallingController? live = _liveCall();
+      if (live != null) {
+        await live.endCall(type: 'switchFromSystemUi');
+      }
+
+      final String effectiveGroupId =
+          (extra['groupId'] ?? extra['group_id'] ?? '').toString();
+      final String effectiveGroupName =
+          (extra['groupName'] ?? extra['group_name'] ?? 'Group Call').toString();
+      final String effectiveCallerId =
+          (extra['callerId'] ?? extra['caller_id'] ?? '').toString();
+      final String effectiveCallerName =
+          (extra['callerName'] ?? extra['nameCaller'] ?? extra['caller_name'] ?? '')
+              .toString();
+      final String effectiveCallId = (callId.isNotEmpty
+              ? callId
+              : (extra['callId'] ?? extra['call_id'] ?? ''))
+          .toString();
+      final bool isVideo = extra['isVideo'] == 'true' ||
+          extra['isVideo'] == true ||
+          extra['type'] == 1 ||
+          extra['type'] == '1';
+
+      if (!GroupCallService.isGroupCallEnabled) {
+        if (uuid != null && uuid.isNotEmpty) {
+          unawaited(CallPlatform.instance.dismissCallKit(uuid).catchError((_) {}));
+        }
+        GroupCallService.showComingSoon();
+        return;
+      }
+
+      if (uuid != null && uuid.isNotEmpty) {
+        // Do NOT call dismissCallKit here as it triggers CXEndCallAction on iOS ("Call Ended" on CallKit UI).
+        // Instead, mark call as connected in CallKit.
+        unawaited(CallPlatform.instance.markCallKitConnected(uuid).catchError((_) {}));
+      }
+
+      Get.offNamed(
+        Routes.groupCallingScreen,
+        arguments: {
+          "groupId": effectiveGroupId,
+          "groupName": effectiveGroupName,
+          "groupProfile": extra['groupProfile'] ?? extra['callerProfileImage'] ?? extra['caller_profile_image'],
+          "callerId": effectiveCallerId,
+          "callerName": effectiveCallerName,
+          "callerProfileImage": extra['callerProfileImage'] ?? extra['caller_profile_image'],
+          "isVideo": isVideo,
+          "callId": effectiveCallId,
+          "callType": "incoming",
+          "fromCallKit": true,
+        },
+        preventDuplicates: false,
+      );
       return;
     }
 
@@ -93,14 +161,26 @@ void setupCallKitHandlers() {
     );
 
     if (Get.currentRoute == Routes.callScreen) {
-      Get.offNamed(Routes.callScreen, arguments: args);
+      Get.offNamed(Routes.callScreen, arguments: args, preventDuplicates: false);
     } else {
       Get.toNamed(Routes.callScreen, arguments: args);
     }
   };
 
   callKit.onDeclineCall = (callId, extra, uuid) async {
-    if (extra['screen_name'] == 'incomingGroupCall') return;
+    if (_isGroupCall(extra)) {
+      final String effectiveCallId = (callId.isNotEmpty
+              ? callId
+              : (extra['callId'] ?? extra['call_id'] ?? ''))
+          .toString();
+      final String effectiveGroupId =
+          (extra['groupId'] ?? extra['group_id'] ?? '').toString();
+      if (effectiveCallId.isNotEmpty && effectiveGroupId.isNotEmpty) {
+        Socket_GroupCallService.instance
+            .rejectGroupCall(effectiveCallId, effectiveGroupId);
+      }
+      return;
+    }
 
     final String resolvedCallerId = (extra['callerId'] ??
             extra['caller_id'] ??
@@ -110,17 +190,26 @@ void setupCallKitHandlers() {
         ?.toString() ??
         '';
 
+    final String effectiveCallId = (callId.isNotEmpty
+            ? callId
+            : (extra['callId'] ?? extra['call_id'] ?? ''))
+        .toString();
+
     final s = SignallingService.instance.socket;
     if (s != null && s.connected) {
       s.emit(
         'rejectCall',
         rejectCallPayload(
-          callId: callId,
+          callId: effectiveCallId,
           callerId: resolvedCallerId,
         ),
       );
     } else {
-      await rejectCallViaRest(callId);
+      await rejectCallViaRest(
+        effectiveCallId,
+        callerId: resolvedCallerId,
+        uuid: uuid,
+      );
     }
   };
 
@@ -138,6 +227,51 @@ void setupCallKitHandlers() {
     final CallingController? live = _liveCall();
     if (live != null) {
       live.setMutedFromSystem(muted);
+    }
+  };
+
+  CallKitService.onRecentsCallback = (String handle, bool isVideo) async {
+    log('[CallKit] onRecentsCallback handle=$handle isVideo=$isVideo');
+    if (handle.isEmpty) return;
+
+    final String myId =
+        (Global.storageServices.get(PrefConst.userId) ?? '').toString();
+    if (myId.isEmpty) {
+      log('[CallKit] onRecentsCallback aborted: user not logged in');
+      return;
+    }
+
+    String remoteUserId = handle;
+    String callerName = handle;
+    String? callerProfile;
+
+    try {
+      final ContactController cc = ContactController.instance;
+      final cleanHandle = handle.replaceAll(RegExp(r'\D'), '');
+      final match = cc.allUserProfileData.firstWhereOrNull((u) {
+        if (u.userId?.toString() == handle) return true;
+        final phone = (u.mobileNo ?? '').replaceAll(RegExp(r'\D'), '');
+        return phone.isNotEmpty && cleanHandle.isNotEmpty && phone == cleanHandle;
+      });
+      if (match != null) {
+        remoteUserId = match.userId?.toString() ?? handle;
+        callerName = match.name ?? handle;
+        callerProfile = match.profileImage;
+      }
+    } catch (e) {
+      log('[CallKit] onRecentsCallback contact resolution error: $e');
+    }
+
+    final BuildContext? context = Get.context;
+    if (context != null) {
+      await CallService().startOutGoingCall(
+        context,
+        callerId: myId,
+        remoteUserId: remoteUserId,
+        is_video: isVideo,
+        callerName: callerName,
+        callerProfile: callerProfile,
+      );
     }
   };
 
@@ -309,18 +443,29 @@ Future<void> endCallViaRest(dynamic callId, {String? targetUserId}) async {
   }
 }
 
-Future<void> rejectCallViaRest(String callId) async {
+Future<void> rejectCallViaRest(
+  String callId, {
+  String? callerId,
+  String? uuid,
+  String? reason,
+}) async {
   try {
     final shared = await SharedPreferences.getInstance();
     final token = shared.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ?? '';
-    if (token.isEmpty) return;
+    final myUserId = shared.getString(PrefConst.userId) ?? '';
 
-    final url = Uri.parse(
-        '${ConstRes.aBaseUrl}callRejected?callId=$callId&reason=declined');
+    final queryParams = <String, String>{
+      'callId': callId,
+      'reason': reason ?? 'declined',
+      if (myUserId.isNotEmpty) 'userId': myUserId,
+      if (callerId != null && callerId.isNotEmpty) 'callerId': callerId,
+      if (uuid != null && uuid.isNotEmpty) 'sessionId': uuid,
+    };
+    final uri = Uri.parse('${ConstRes.aBaseUrl}callRejected').replace(queryParameters: queryParams);
     final response = await http.get(
-      url,
+      uri,
       headers: {
-        'Authorization': 'Bearer $token',
+        if (token.isNotEmpty) 'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
     ).timeout(const Duration(seconds: 10));
