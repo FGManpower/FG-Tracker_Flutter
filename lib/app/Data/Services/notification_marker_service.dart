@@ -23,6 +23,17 @@ class NotificationMarkerService extends GetxService {
   final RxBool hasGroupChatUnread = false.obs;
   final RxBool hasPrivateChatUnread = false.obs;
 
+  /// Optional live checks supplied by [ChatListController] when registered so
+  /// stale backend heartbeats cannot turn off the dot while verified local
+  /// unreads or manually-unread rows remain.
+  bool Function()? hasLocalPrivateUnreadCheck;
+  bool Function()? hasLocalGroupUnreadCheck;
+
+  bool get _hasVerifiedLocalPrivateUnread =>
+      hasLocalPrivateUnreadCheck?.call() ?? false;
+  bool get _hasVerifiedLocalGroupUnread =>
+      hasLocalGroupUnreadCheck?.call() ?? false;
+
   void _syncChattingMarker() {
     final next = hasGroupChatUnread.value || hasPrivateChatUnread.value;
     if (hasChattingMarker.value != next) {
@@ -96,7 +107,9 @@ class NotificationMarkerService extends GetxService {
       final val = markers['privateChat'] ??
           markers['private_chat'] ??
           markers['private'];
-      final parsed = NotificationMarkers.parseMarkerBool(val);
+      final parsed =
+          NotificationMarkers.parseMarkerBool(val) ||
+          _hasVerifiedLocalPrivateUnread;
       if (hasPrivateChatUnread.value != parsed) {
         hasPrivateChatUnread.value = parsed;
       }
@@ -109,7 +122,9 @@ class NotificationMarkerService extends GetxService {
       final val = markers['groupChat'] ??
           markers['group_chat'] ??
           markers['group'];
-      final parsed = NotificationMarkers.parseMarkerBool(val);
+      final parsed =
+          NotificationMarkers.parseMarkerBool(val) ||
+          _hasVerifiedLocalGroupUnread;
       if (hasGroupChatUnread.value != parsed) {
         hasGroupChatUnread.value = parsed;
       }
@@ -125,9 +140,19 @@ class NotificationMarkerService extends GetxService {
         // Do NOT blindly wipe local unread chat states!
         // Local ChatListController maintains authoritative unread chat counts.
         if (!hasPrivateChatKey && !hasGroupChatKey) {
-          if (!hasGroupChatUnread.value && !hasPrivateChatUnread.value) {
+          final anyLocal = hasGroupChatUnread.value ||
+              hasPrivateChatUnread.value ||
+              _hasVerifiedLocalGroupUnread ||
+              _hasVerifiedLocalPrivateUnread;
+          if (!anyLocal) {
             if (hasChattingMarker.value) hasChattingMarker.value = false;
           } else {
+            if (_hasVerifiedLocalGroupUnread && !hasGroupChatUnread.value) {
+              hasGroupChatUnread.value = true;
+            }
+            if (_hasVerifiedLocalPrivateUnread && !hasPrivateChatUnread.value) {
+              hasPrivateChatUnread.value = true;
+            }
             // Keep chatting marker true because verified local unreads exist
             if (!hasChattingMarker.value) hasChattingMarker.value = true;
           }
@@ -151,13 +176,15 @@ class NotificationMarkerService extends GetxService {
     }
 
     if (markers.groupChat != null) {
-      if (hasGroupChatUnread.value != markers.groupChat!) {
-        hasGroupChatUnread.value = markers.groupChat!;
+      final next = markers.groupChat! || _hasVerifiedLocalGroupUnread;
+      if (hasGroupChatUnread.value != next) {
+        hasGroupChatUnread.value = next;
       }
     }
     if (markers.privateChat != null) {
-      if (hasPrivateChatUnread.value != markers.privateChat!) {
-        hasPrivateChatUnread.value = markers.privateChat!;
+      final next = markers.privateChat! || _hasVerifiedLocalPrivateUnread;
+      if (hasPrivateChatUnread.value != next) {
+        hasPrivateChatUnread.value = next;
       }
     }
 
@@ -165,9 +192,19 @@ class NotificationMarkerService extends GetxService {
       if (!hasChattingMarker.value) hasChattingMarker.value = true;
     } else {
       if (markers.groupChat == null && markers.privateChat == null) {
-        if (!hasGroupChatUnread.value && !hasPrivateChatUnread.value) {
+        final anyLocal = hasGroupChatUnread.value ||
+            hasPrivateChatUnread.value ||
+            _hasVerifiedLocalGroupUnread ||
+            _hasVerifiedLocalPrivateUnread;
+        if (!anyLocal) {
           if (hasChattingMarker.value) hasChattingMarker.value = false;
         } else {
+          if (_hasVerifiedLocalGroupUnread && !hasGroupChatUnread.value) {
+            hasGroupChatUnread.value = true;
+          }
+          if (_hasVerifiedLocalPrivateUnread && !hasPrivateChatUnread.value) {
+            hasPrivateChatUnread.value = true;
+          }
           if (!hasChattingMarker.value) hasChattingMarker.value = true;
         }
       } else {

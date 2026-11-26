@@ -363,7 +363,12 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     _runAfterBuild(() {
       ChatTranslationService.instance.resetVisibility();
       if (Get.isRegistered<ChatListController>()) {
-        Get.find<ChatListController>().clearManualUnreadForGroup(groupId);
+        final chatListController = Get.find<ChatListController>();
+        chatListController.clearManualUnreadForGroup(groupId);
+        chatListController.clearUnreadForOpenedChat(
+          isGroup: true,
+          groupId: groupId,
+        );
       }
       initializeGroupChat();
     });

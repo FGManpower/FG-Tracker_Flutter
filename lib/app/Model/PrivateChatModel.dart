@@ -268,15 +268,24 @@ class PrivateChatModel {
 
     final sender = activity?['sender'] is Map
         ? Map<String, dynamic>.from(activity!['sender'])
-        : null;
+        : (json['sender'] is Map
+            ? Map<String, dynamic>.from(json['sender'])
+            : null);
     final rawSenderId = activity?['senderId'] ??
         activity?['sender_id'] ??
         sender?['id'] ??
-        sender?['userId'];
+        sender?['userId'] ??
+        sender?['UserId'] ??
+        json['senderId'] ??
+        json['sender_id'] ??
+        json['senderUserId'];
     final rawSenderName = activity?['senderName'] ??
         activity?['sender_name'] ??
         sender?['name'] ??
-        sender?['fullName'];
+        sender?['fullName'] ??
+        sender?['Name'] ??
+        json['senderName'] ??
+        json['sender_name'];
 
     final rawChatType = _readString(json, ['chatType', 'chat_type', 'type']);
     final isGroupParsed = _parseBool(

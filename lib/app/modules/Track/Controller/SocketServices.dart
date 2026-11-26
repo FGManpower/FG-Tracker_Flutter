@@ -138,8 +138,7 @@ class SocketService extends GetxService with WidgetsBindingObserver {
       }
     });
 
-    _socket?.off("notification_markers");
-    _socket?.on("notification_markers", (res) {
+    void handleMarkers(dynamic res) {
       try {
         if (res is Map) {
           final data = res['data'] ?? res;
@@ -150,7 +149,12 @@ class SocketService extends GetxService with WidgetsBindingObserver {
       } catch (e) {
         log("Error parsing notification_markers: $e");
       }
-    });
+    }
+
+    _socket?.off("notification_markers");
+    _socket?.on("notification_markers", handleMarkers);
+    _socket?.off("notification-markers");
+    _socket?.on("notification-markers", handleMarkers);
 
     _socket?.off("location-update-error");
     _socket?.on("location-update-error", (err) {

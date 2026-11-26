@@ -642,12 +642,12 @@ class _AllChatsBody extends StatelessWidget {
                                   chat.timestamp ?? chat.time ?? "",
                                 ),
                                 unreadCount: chat.unreadCount ?? 0,
-                                statusColor: chat.isGroup == true
+                                statusColor: ChatListRules.isGroup(chat)
                                     ? null
                                     : (chat.isOnline == true
                                         ? const Color(0xFF16A765)
                                         : Colors.grey),
-                                isGroup: chat.isGroup ?? false,
+                                isGroup: ChatListRules.isGroup(chat),
                                 image: chat.image,
                               ),
                             );
@@ -939,7 +939,7 @@ class _AllChatsBody extends StatelessWidget {
     Offset tapPos = Offset.zero;
 
     Future<void> openChat() async {
-      if (chat.isGroup == true) {
+      if (ChatListRules.isGroup(chat)) {
         final effectiveGroupId =
             chat.groupId?.toString() ?? chat.id?.toString() ?? '';
         if (effectiveGroupId.isEmpty) return;
@@ -1005,7 +1005,7 @@ class _AllChatsBody extends StatelessWidget {
       });
     }
 
-    final bool isGroupChat = chat.isGroup == true;
+    final bool isGroupChat = ChatListRules.isGroup(chat);
 
     void startCall(bool isVideo) => startUserCall(
           userId: chat.userId,
