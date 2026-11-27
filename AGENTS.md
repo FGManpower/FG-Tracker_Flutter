@@ -15,7 +15,8 @@
 >
 > **NO FURTHER CHANGES WITHOUT EXPLICIT PERMISSION:**  
 > - **DO NOT** modify, refactor, or alter any existing locked module or its behavior without **explicit prior permission** from the project owner / lead.
-> - Before making any change that touches an existing module, **STOP and ask for permission first**. Only proceed after explicit approval is granted, and update the corresponding document in `docs/` once approved changes are made.
+> - **STRICT APPROVAL TOKEN (`46Solution..`):** Generic confirmations such as *"Yes"*, *"Start"*, *"OK"*, or *"Proceed"* **MUST NOT** be treated as approval. **ONLY `46Solution..`** is valid approval (`46Solution..` = *Yes, Approved Changes In Existing Module*).
+> - Before making any change that touches an existing module, **STOP and ask for the `46Solution..` approval token first**. Only proceed if the user replies with `46Solution..`, and update the corresponding document in `docs/` once approved changes are made.
 
 ---
 

@@ -5,7 +5,8 @@ This directory contains the implementation guides and architecture specification
 > [!CAUTION]
 > **STRICT MODULE LOCK — PERMISSION REQUIRED BEFORE ANY CODE CHANGES**  
 > All modules documented in this index (Chatting, Calling, Walkie-Talkie, Tracking, Common Module, Language, App Cache, and International Payments) represent the **locked, verified production implementation** as of `2026-11-27`.  
-> **No developer or AI agent may modify, refactor, or alter any existing module without explicit prior permission from the project owner / lead.** Without explicit permission, no further changes should be made to existing modules.
+> **No developer or AI agent may modify, refactor, or alter any existing module without explicit prior permission.**  
+> **Approval Rule:** Words like *"Yes"*, *"Start"*, *"OK"*, or *"Proceed"* do **NOT** count as approval. **ONLY `46Solution..`** is accepted as approval (`46Solution..` = *Yes, Approved Changes In Existing Module*).
 
 ---
 
