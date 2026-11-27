@@ -1,0 +1,30 @@
+# FG Tracker — Frontend (Flutter) Documentation Index
+
+This directory contains the implementation guides and architecture specifications for the Flutter mobile engineering team.
+
+> [!CAUTION]
+> **STRICT MODULE LOCK — PERMISSION REQUIRED BEFORE ANY CODE CHANGES**  
+> All modules documented in this index (Chatting, Calling, Walkie-Talkie, Tracking, Common Module, Language, App Cache, and International Payments) represent the **locked, verified production implementation** as of `2026-11-27`.  
+> **No developer or AI agent may modify, refactor, or alter any existing module without explicit prior permission from the project owner / lead.** Without explicit permission, no further changes should be made to existing modules.
+
+---
+
+## Master Architecture & Integration Guides
+
+- **[International Multi-Currency Payments & Production Setup Guide](./INTERNATIONAL_PAYMENT_SETUP_GUIDE.md)**  
+  Comprehensive reference covering multi-currency handling (`INR` / `USD`), zero-rated 0% export GST under LUT RFD-11, E.164 phone formatting, Razorpay PayPal & International Cards integration, and production checklist.
+
+---
+
+## Module Specifications
+
+| Module | Specification File | Version | Core Responsibilities |
+|---|---|:---:|---|
+| **Master Payment Guide** | [INTERNATIONAL_PAYMENT_SETUP_GUIDE.md](./INTERNATIONAL_PAYMENT_SETUP_GUIDE.md) | `v1.0.0` | Enterprise Cross-Border Gateway Integration, Currency Formatting, Razorpay Options, Production Checklist |
+| **01. Chatting** | [01_CHATTING_MODULE_FRONTEND.md](./01_CHATTING_MODULE_FRONTEND.md) | `F-1.3.1` | 1-on-1 & Group Chat, `/chat` Sockets, Cursor Pagination, Media Sharing, Polls, Voice Notes |
+| **02. Calling** | [02_CALLING_MODULE_FRONTEND.md](./02_CALLING_MODULE_FRONTEND.md) | `v1.2.0` | WebRTC Audio/Video Calls, Screen Sharing, Floating PIP Bubble, CallKit / Call History |
+| **03. Walkie-Talkie** | [03_WALKIE_TALKIE_MODULE_FRONTEND.md](./03_WALKIE_TALKIE_MODULE_FRONTEND.md) | `v1.9.0` | PTT over `/groupWalkie`, Audio Floor Control, Razorpay Plan Purchase & Multi-Currency Checkout |
+| **04. Tracking** | [04_TRACKING_MODULE_FRONTEND.md](./04_TRACKING_MODULE_FRONTEND.md) | `v1.0.0` | Live Tracking by Radius, `/location` Sockets, Custom Google Maps Pins, Ghost Mode Privacy Sync |
+| **05. Common Module** | [05_COMMON_MODULE_FRONTEND.md](./05_COMMON_MODULE_FRONTEND.md) | `v2.5.6` | Side Menu (Legal, Language, Social Links), Custom Banner + Crop, Bootstrap Sequence, Home Socket (`/location`), Red Dot Badges, Phone OTP Login & International OTP Charges |
+| **06. Language** | [06_LANGUAGE_MODULE_FRONTEND.md](./06_LANGUAGE_MODULE_FRONTEND.md) | `L-1.1.2` | Whole app in 10 languages, Language screen before Registration (new users, English pre-selected), side menu → Language, English by default, 10 languages via gen-l10n (ARB), on-device `app_language` (no backend) |
+| **07. App Cache** | [07_APP_CACHE_FRONTEND.md](./07_APP_CACHE_FRONTEND.md) | `C-1.0.1` | Encrypted on-device Hive cache for list screens (chat list, Archived, New chat, groups, banners, call history, status, walkie channels, notifications): show last data at once, refresh from server, socket rules R1–R8, logout / account switch, never-cache list, how to add a screen |

@@ -1,5 +1,24 @@
 # Project Guidelines & Critical Frozen Modules
 
+## 🔒 STRICT MODULE LOCK POLICY (ALL IMPLEMENTED MODULES)
+
+> **MANDATORY RULE FOR ALL DEVELOPERS & AI AGENTS:**  
+> Every module currently implemented and documented in `docs/` (up to `2026-11-27`) is **LOCKED / FROZEN** in production:
+> - **01. Chatting** (`docs/01_CHATTING_MODULE_FRONTEND.md`)
+> - **02. Calling** (`docs/02_CALLING_MODULE_FRONTEND.md`)
+> - **03. Walkie-Talkie** (`docs/03_WALKIE_TALKIE_MODULE_FRONTEND.md`)
+> - **04. Live Tracking** (`docs/04_TRACKING_MODULE_FRONTEND.md`)
+> - **05. Common Module** (Bootstrap, Home Sockets, Auth, OTP Charges, Banners, Force Update, Side Menu, Scan Text — `docs/05_COMMON_MODULE_FRONTEND.md`)
+> - **06. Language / Localization** (`docs/06_LANGUAGE_MODULE_FRONTEND.md`)
+> - **07. App Cache** (`docs/07_APP_CACHE_FRONTEND.md`)
+> - **International Multi-Currency Payments** (`docs/INTERNATIONAL_PAYMENT_SETUP_GUIDE.md`)
+>
+> **NO FURTHER CHANGES WITHOUT EXPLICIT PERMISSION:**  
+> - **DO NOT** modify, refactor, or alter any existing locked module or its behavior without **explicit prior permission** from the project owner / lead.
+> - Before making any change that touches an existing module, **STOP and ask for permission first**. Only proceed after explicit approval is granted, and update the corresponding document in `docs/` once approved changes are made.
+
+---
+
 ## ⚠️ STRICT RULE: Protected / Completed Modules
 
 The following flow has been completely tested, stabilized, and verified to be working perfectly across devices:

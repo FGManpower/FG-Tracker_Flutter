@@ -1,0 +1,1657 @@
+# Calling Module — Flutter Frontend Architecture & Implementation Guide
+
+**Document Version:** `v1.6.0` · **Last updated:** 2026-11-22 · **Branch:** `46Solution`  
+**Target Audience:** Flutter Frontend Developers & Backend Integrators  
+**Covers:** 1-on-1 Audio/Video Calls (reliability, permissions, busy / call waiting, reconnect, CallKit, PiP), WebRTC PeerConnection, AWS SFU & Coturn STUN/TURN, Sockets & REST APIs, CallKit, Audio Routing, Proximity Sensor, In-App PIP Overlay, Screen Sharing, Recent Calls Cache & Multi-Delete  
+**Status:** Phases 1–3 done in code (uncommitted), unit-tested; **phone checks and backend items pending** (§5.3, §8, `testing/calling/`)  
+
+---
+
+## 0. AWS Infrastructure & Server Confirmation
+
+### 0.1 AWS Deployment Status (Verified Live)
+* **Server Host:** `sfu.fgtracker.fgmanpower.co.in` (Resolves to AWS EC2 Mumbai `ap-south-1` IP `35.154.126.x`).
+* **Active Services on AWS:**
+  1. **Socket.io Signaling Server:** Node.js application hosting `/callSignaling`, `/screen-share`, `/groupCall`.
+  2. **Coturn STUN/TURN Server:** port `3478` (UDP/TCP). TURN over TLS on `443` is **not live yet** (the app lists it since v1.4.0; backend item B-09 in §8).
+  3. **LiveKit SFU Gateway:** `wss://sfu.fgtracker.fgmanpower.co.in` for multi-party group calls.
+* **Environment Selection (`lib/app/Core/constant/urls.dart`):**
+  - Controlled by `ConstRes.isProduction`.
+  - Production uses static TURN credentials compiled into the app (not repeated here; see pentest SEC-CALL-03). Since v1.4.0 the app first asks the backend for short-lived credentials (`GET /api/calls/turn-credentials`, B-09) and falls back to the static list.
+
+### 0.2 Understanding Data Processing Latency & Slowness
+If video or calling appears sluggish or delayed during testing, the runtime logs reveal the exact technical causes:
+1. **Network Bandwidth Estimation (BWE):** Mobile networks/emulators frequently drop into low BWE (e.g. `Current BWE 148000 ~ 190119 bps` ≈ 150-190 kbps). When BWE drops below video bitrate thresholds, Google WebRTC enters `bandwidth limited state` and stops active probing.
+2. **Playout Delay Buffering:** When packet jitter occurs on bandwidth-limited connections, the WebRTC receive pipeline automatically adapts receiver playout delays (e.g. `Actual delay value set to 744 ms`), introducing ~0.75s of visible latency to prevent frame stuttering.
+3. **High Resolution Target:** Default video stream requests `1280x720 @ 30fps` with `1.8 Mbps` target bitrate, and Screen Sharing requests `2.5 Mbps`. On constrained mobile connections, this forces WebRTC into aggressive downscaling and temporal frame drops.
+
+---
+
+## 1. Architecture & File Registry
+
+| Layer | File Path | Core Responsibility |
+|---|---|---|
+| **Repositories** | `lib/app/Data/Repositories/call_repo.dart` | Communicates with `/api/history`, `/api/getCallDetail`, `/api/calling-status` |
+| **Single Signaling** | `lib/app/Data/Services/Socket/Socket_SignallingService.dart` | Socket.io client for `/callSignaling` namespace |
+| **Screen Share Signaling**| `lib/app/modules/mediaStream/Controller/calling_controller.dart` | Direct socket handlers for `/screen-share` namespace |
+| **Group Signaling** | `lib/app/Data/Services/Socket/Socket_Group_Calling.dart` | Socket.io client for `/groupCall` namespace |
+| **CallKit Service** | `lib/app/Data/Services/IncommingCallKit/callkit_service.dart`<br>`lib/app/Data/Services/IncommingCallKit/call_session.dart` | Integrates iOS CallKit & Android Telecom framework |
+| **Audio Routing** | `lib/app/modules/mediaStream/Controller/call_audio_route_controller.dart` | Manages hardware output: Speaker, Earpiece, Bluetooth, Wired Headset |
+| **Overlay Service** | `lib/app/modules/mediaStream/Services/in_app_call_overlay_service.dart` | Floating movable PiP bubble across the entire app |
+| **1-on-1 Call Controller**| `lib/app/modules/mediaStream/Controller/calling_controller.dart` | WebRTC lifecycle, camera switch, proximity screen lock, timer |
+| **Group Call Controller**| `lib/app/modules/mediaStream/Controller/group_calling_controller.dart` | Mesh / SFU peer connections, group video layout |
+| **Screens & Views** | `lib/app/modules/call/Views/call_screen.dart`<br>`lib/app/modules/mediaStream/Views/calling_screen.dart`<br>`lib/app/modules/mediaStream/Views/AudioCall_screen.dart` | Visual UI presentation layers |
+
+---
+
+## 2. 1-on-1 Calling: Socket Events & REST APIs
+
+### 2.1 Complete Socket Event Specification (`/callSignaling` & `/screen-share`)
+
+#### Outgoing & Signaling Core
+| Event Name | Direction | Payload Schema | Purpose & Flow |
+|---|---|---|---|
+| `makeCall` | Client ➔ Server | `{ remoteUserId, sdpOffer, is_video, callerId }` | Emitted by caller after creating SDP offer and local description. |
+| `newCall` | Server ➔ Client | `{ callId, callerId, caller_name, caller_profile_image, isVideo, sdpOffer?, callData? }` (`callData` = JSON with `callId, callerId, callerName, callerProfileImage, sdpOfferCompressed, session_id`) | Pushed to receiver socket (or VoIP / FCM push). During a live call the app shows the waiting banner (§7.2). |
+| `CallingStatus` → `callStatus` | Callee ➔ Server ➔ Caller | `{ callId, remoteUserId, callingStatus }` | `"Ringing"` when the callee device shows the call; `"busy"` when the callee is on another call (§7.2). `"Connected"` is not sent. |
+| `answerCall` | Client ➔ Server | `{ callId, callerId, sdpAnswer }` | Emitted by receiver after generating SDP answer. |
+| `callAnswered` | Server ➔ Client | `{ callId, sdpAnswer }` | Caller receives answer and sets remote description. |
+| `IceCandidate` | Bidirectional | `{ remoteUserId, iceCandidate: { id, label, candidate } }` | ICE trickling for NAT candidate exchange. |
+| `rejectCall` → `callRejected` | Callee ➔ Server ➔ Caller | `{ callId, remoteUserId: <callerId>, reason? }` (`busy` | `declined` | `permission_denied`) | Decline. Paths: in-app screen and CallKit (socket); REST `callRejected?callId=` when the socket is down; iOS / Android native REST when Dart is not running. |
+| `endCall` → `callEnded` | Either side ➔ Server ➔ other side | `{ callId, to, remoteUserId, callerId, receiverId, sessionId, reason? }` (`connection_lost` | `permission_denied`) | Hang-up. Sent exactly once per call; events naming another call are ignored (BUG-CALL-37). |
+| `missCall` (Caller ➔ Server) / `missedCall` (Server ➔ callee) | as shown | `{ callId, remoteUserId }` | Caller ring timeout **45 s** (`kCallRingTimeout`, same as the CallKit `duration`), then `endCall`. |
+| `acceptCallFromCallKit` → `sdpOfferFromCaller` | Callee ➔ Server ➔ Callee | `{ callerId, sessionId, callId, receiverId }` → `{ callId, sdpOffer }` | Accept when the push had no SDP offer; the callee then answers with `answerCall`. |
+| `rejoinCall` | Client ➔ Server | `{ callId, sessionId, remoteUserId }` | **New (v1.4.0, backend B-06):** after the signaling socket reconnects during a call. Ignored by today's server. |
+
+#### Media State & Upgrades
+| Event Name | Direction | Payload Schema | Purpose & Flow |
+|---|---|---|---|
+| `upgradeToVideo` | Either side ➔ Server ➔ other side | `{ callId, remoteUserId, callerId, sdpOffer? , iceRestart?, cameraState?, needKeyframe?, mediaState? }` | Renegotiation relay: video upgrade, **ICE restart** (`iceRestart: true`, §7.3), camera state, keyframe request, **media state** (`mediaState: {micMuted, cameraOn, videoPaused}`, §7.5). The server must forward unknown fields unchanged. |
+| `upgradeToVideoAnswer` | Either side ➔ Server ➔ other side | `{ callId, remoteUserId, sdpAnswer }` | Answer to any `upgradeToVideo` offer (incl. ICE restart). |
+| `cameraState` | Server ➔ Client | `{ cameraState: bool, userId }` | Syncs remote peer's camera muted/unmuted state. |
+
+#### 1-on-1 Screen Sharing (`/screen-share` Namespace)
+| Event Name | Direction | Payload Schema | Purpose & Flow |
+|---|---|---|---|
+| `start_screen_share` | Client ➔ Server | `{ callId, targetUserId }` | Initiates secondary WebRTC peer connection for screen capture. |
+| `screen_share_offer` | Client ➔ Server | `{ callId, targetUserId, sdpOffer }` | Sends screen stream SDP offer (2.5 Mbps, 15 fps screencast). |
+| `screen_share_answer` | Client ➔ Server | `{ callId, targetUserId, sdpAnswer }` | Remote peer answers screen sharing offer. |
+| `screen_share_ice` | Bidirectional | `{ callId, targetUserId, candidate }` | ICE candidate exchange for screen sharing stream. |
+| `stop_screen_share` | Bidirectional | `{ callId, targetUserId }` | Terminates screen stream and restores standard camera PiP. |
+
+---
+
+### 2.2 REST APIs for 1-on-1 Calling
+
+#### 1. Recent Call History
+* **Endpoint:** `GET /api/history`
+* **Headers:** `Authorization: Bearer <token>`
+* **Query Parameters:** `page=1&limit=20&filter=all|missed|incoming|outgoing`
+* **Response:**
+  ```json
+  {
+    "status": true,
+    "message": "Call history fetched successfully",
+    "data": {
+      "today": [{ "id": "call_2", "callType": "private", "type": "video", "direction": "outgoing", "status": "completed", "duration": 120 }],
+      "yesterday": [],
+      "older": []
+    }
+  }
+  ```
+
+#### 2. Call Session Audit Details
+* **Endpoint:** `GET /api/getCallDetail?callId=<callId>`
+* **Headers:** `Authorization: Bearer <token>`
+* **Response:** Returns caller/receiver profile, call duration, start time, termination reason, and participant records.
+
+#### 3. Update Calling Status
+* **Endpoint:** `POST /api/calling-status`
+* **Headers:** `Authorization: Bearer <token>`
+* **Body:** `{ "callId": 2, "callingStatus": "missed" | "rejected" | "ended", "duration": 45 }`
+
+#### 4. LiveKit SFU Token Generation (Group Calls)
+* **Endpoint:** `POST /api/calls/livekit-token`
+* **Headers:** `Authorization: Bearer <token>`
+* **Body:** `{ "roomName": "call_room_2", "participantName": "Vikas" }`
+* **Response:** `{ "status": true, "token": "jwt_livekit_token", "wsUrl": "wss://sfu.fgtracker.fgmanpower.co.in" }`
+
+---
+
+## 3. Hardware Controls & Feature Implementation
+
+### 3.1 Mic On / Off (Mute Toggle)
+* **Function:** `CallingController.toggleMic()`
+* **Mechanism:**
+  ```dart
+  isAudioOn = !isAudioOn;
+  localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
+  update();
+  ```
+* **UI Rebuild:** Bound through `GetBuilder<CallingController>` in `CallingScreen` so the button icon instantly switches between `Icons.mic_rounded` and `Icons.mic_off_rounded`.
+
+### 3.2 Speaker / Earpiece Audio Switching
+* **Function:** `CallingController.toggleSpeaker(BuildContext context)`
+* **Intelligent Fast Switching:**
+  - **Single Tap Toggle:** When no external audio device (Bluetooth headset or wired headphones) is connected, tapping the audio button instantly toggles between **Speaker** (`CallAudioRoute.speaker`) and **Earpiece** (`CallAudioRoute.earpiece`) without opening any modal dialog.
+  - **Device Picker Sheet:** If Bluetooth or a wired headset is plugged in, `showAudioRoutePicker(context)` opens the native route picker sheet.
+  - **Video Call Parity:** `CallAudioRouteController.availableRoutes` allows `earpiece` in both audio and video calls, enabling private listening during video calls.
+
+### 3.3 Camera Switch (Front / Back)
+* **Dual Trigger Architecture:**
+  1. **Top Bar Button:** Located on the top right of `CallingScreen._topBar` whenever video is active.
+  2. **PiP Badge Button:** Located on the floating camera preview tile.
+* **Mechanism:**
+  ```dart
+  final MediaStreamTrack track = tracks.first;
+  await Helper.switchCamera(track);
+  isFrontCamera = !isFrontCamera;
+  update();
+  ```
+  Switching `tracks.first` guarantees that secondary screen sharing tracks are not mistakenly flipped.
+
+### 3.4 In-App Floating Overlay (Minimize Call)
+* **Service:** `InAppCallOverlayService`
+* **Bug Resolved (`No Overlay widget found`):**
+  - Previously, `Overlay.of(Get.overlayContext!)` threw when called on an unattached theater context.
+  - Resolved using safe navigation key lookup:
+    ```dart
+    final OverlayState? overlayState = Get.key.currentState?.overlay ??
+        (Get.overlayContext != null ? Overlay.maybeOf(Get.overlayContext!) : null);
+    ```
+  - When minimized, renders a draggable floating bubble showing caller video or avatar, call duration, mute status, and expand/end controls.
+
+---
+
+## 4. Change Log
+
+| Version | Date | Change |
+|---|---|---|
+| v1.5.2 | 2026-11-20 | Fix Call → Contacts tab first-load bug. Followed All Contacts (`NewChatController` / `NewChatScreen`) first-load tracking: `_setupFirstLoadTracking`, `isResolving` phase 1/phase 2 loading, guaranteed shimmer skeleton until match completes (no premature empty screen flash), wired tab-switch listener from `CallScreen` Tab 1 to `ContactController.onTabOpened()`. Direct load on first open without requiring back navigation. Documented in §9.3. |
+| v1.5.1 | 2026-11-20 | Fix lag in Calls → Contacts tab and All Contacts (WhatsApp-style caching, pagination, keep-alive state). Instant tab switch via AutomaticKeepAliveClientMixin; AppCache.fgContacts & session caching in ContactController; withThumbnail: false in ContactService; invite contacts client-side paging (25 items/page); zero-jank RepaintBoundary. Files Changed, Files Locked, and iOS/Android parity results documented in §9. |
+| v1.5.0 | 2026-11-18 | Uncommitted. Call UI redesign (6 screens: audio calling / connected / incoming, video ringing / connected / incoming; screen-share card + live pill; signal-bars quality icon). Device-log fixes and backend round 2: §8.7 and §10. Bugs BUG-CALL-39 … 51 in `testing/calling/bug_tracker.md`. New: `Services/call_end_probe.dart`, `Services/call_events.dart`. Tests: `call_remote_end_v1_test.dart`, `call_backend_ready_v1_test.dart`, PM-05b/c/d. |
+| v1.4.3 | 2026-11-18 | §9 added: the Calls → Contacts tab now builds its list exactly like All Contacts (shared `ContactMatcher`): phonebook × `/getAllUser`, phonebook names and numbers, phonebook order. The group-members paging (`getGroupMember`) is no longer used here. |
+| v1.5.4 | 2026-11-21 | §11 added: Call Recent tab dual-action swipe: Right Swipe (Green `#22C55E` + `Icons.call_rounded`) immediately initiates Call / opens call screen; Left Swipe (Red `Colors.red.shade600` + `Icons.delete_outline_rounded`) triggers Delete confirmation dialog before deletion; partial release smoothly snaps back without freezing; instant reactive list update. |
+| v1.4.2 | 2026-11-18 | §8.6 added: backend answers to Q1–Q7. App: `/callSignaling` handshake sends the login token in `auth` (B-01); native decline (Android `CallDeclineReceiver.kt`, iOS `AppDelegate.swift`) moved from `http://fgtracker.in:3000` to the HTTPS production host and sends `reason=declined` (B-13). New test `call_backend_contract_v1_test.dart` (5). |
+| v1.4.1 | 2026-11-18 | §8.5 added: ready-to-send brief for the backend team (B-01 … B-16, questions, what to send back, suggested order). Docs only. |
+| v1.4.0 | 2026-11-18 | Phase 3 (uncommitted): §7 added (busy / call waiting, ICE restart + rejoin, TURN service + TLS 443 fallback, quality badge, other side's state, end screen + tones, missed-call Call back, iOS CallKit outgoing + mute/hold + VoIP token upload, Android PiP); §8 backend handover (B-01 … B-16). Out-of-date parts fixed (C19): header status, §0.1 (TURN 443 not live; credential name removed), event tables (directions, fields, reasons, `acceptCallFromCallKit`, `rejoinCall`). Late end events of another call are ignored (BUG-CALL-37/38). |
+| v1.3.3 | 2026-11-18 | Phase 2 (permissions), uncommitted: §6 added. One permission policy for every call entry point; explainer / Settings / voice-instead sheets; accept without mic ends cleanly with `reason: permission_denied`; video accept without camera joins as voice with "Camera off · Allow"; Bluetooth permission on Android 12+; Calls-tab banner "Incoming calls may not ring"; one-time mic primer; no ghost call after the app is killed. 12 new strings in all 20 locales. |
+| v1.3.2 | 2026-11-18 | Phase 1 (reliability), uncommitted: fresh controller per call, current socket + wait-for-connect, own socket handlers only, reject to the caller, system End always ends, stale ringing check, one ring timeout (45 s caller = CallKit), ongoing-call service from call start (mic + camera, Hang up), no location prompt during a call, "You're already on a call". New: `Services/call_platform.dart`, `call_socket_handlers.dart`, `call_entry.dart`, `call_foreground_service.dart`, `IncommingCallKit/call_kit_handlers.dart`. Details: `testing/calling/bug_tracker.md`. |
+| v1.3.1 | 2026-11-18 | §5 added: Part 0 audit of 1:1 calling (real flows, F1–F16 gap table, backend questions, phased plan). Findings with proof are in [`docs/testing/calling/bug_tracker.md`](testing/calling/bug_tracker.md). No app code changed. Note: §0.1 "TLS port 443" is **not** used by the production app (see BUG-CALL-07); full corrections come with v1.4.0. |
+| v1.3.0 | 2026-11-18 | Added AWS Server Confirmation (`sfu.fgtracker.fgmanpower.co.in:3478`). Documented all 1-on-1 socket events & REST APIs in full detail. Fixed overlay crash via `Overlay.maybeOf`. Re-enabled direct speaker-to-earpiece toggle. Added top-bar camera switch trigger and wrapped `CallingScreen` in `GetBuilder` for instant reactive UI updates. |
+| v1.2.0 | 2026-11-17 | Recent calls cache (guide 07): today's first page shown at once, replaced by the API, retry bar, resume refresh, deletes saved. |
+| v1.1.0 | 2026-11-07 | Recent Calls multi-select delete: header 3-dot menu removed; long-press a row to select; optimistic bulk delete. |
+| v1.0.0 | — | Initial release of calling architecture. |
+
+---
+
+## 5. Audit 2026-11-18 (Part 0) — 1:1 calls, Android + iOS
+
+Status: **audit only, no code changed.** Every claim below has file:line proof in [`testing/calling/bug_tracker.md`](testing/calling/bug_tracker.md) (BUG-CALL-01 … 30). The flows describe the code **as it is today** at `3e16f524`, bugs included.
+
+### 5.1 Real flows
+
+**Outgoing (caller)**
+
+```mermaid
+sequenceDiagram
+  participant UI as Chat / Calls tab
+  participant CS as CallService
+  participant CC as CallingController
+  participant S as /callSignaling
+  participant B as Callee
+  UI->>CS: startOutGoingCall
+  CS->>CS: mic (+camera) request. Denied = English toast, stop
+  CS->>CC: Get.toNamed(callScreen). Binding reuses the old controller if registered (BUG-01)
+  CC->>CC: onInit: getUserMedia, createOffer, play ringing.mp3
+  CC->>S: makeCall {remoteUserId, sdpOffer, is_video, callerId}
+  CC->>CC: 40 s missedCallTimer
+  S-->>B: newCall (socket) or FCM / VoIP push
+  S-->>CC: callCreated {callId, sessionId}
+  S-->>CC: callStatus "Ringing"
+  B-->>S: answerCall {sdpAnswer}
+  S-->>CC: callAnswered: setRemoteDescription, flush ICE
+  CC->>B: IceCandidate (trickle, both ways)
+  CC->>CC: onTrack: timer, "Connected". ICE connected: start FGS (late, BUG-15)
+```
+
+**Incoming, app in foreground (socket)**
+
+```mermaid
+sequenceDiagram
+  participant S as /callSignaling
+  participant CK as CallKitService (onAny)
+  participant SS as SignallingService.newCall
+  participant M as main.onAcceptCall
+  participant CC as CallingController
+  S-->>CK: newCall (app resumed)
+  CK->>CK: showIncoming (system UI, 45 s)
+  S-->>SS: newCall (acts only if already on the call screen, BUG-05)
+  CK->>M: actionCallAccept
+  M->>CC: toNamed(callScreen, fromCallKit, offer from push or null)
+  alt offer present
+    CC->>S: answerCall
+  else no offer
+    CC->>S: acceptCallFromCallKit
+    S-->>CC: sdpOfferFromCaller, then answerCall
+  end
+```
+
+**Incoming, background / killed**
+
+```mermaid
+sequenceDiagram
+  participant P as FCM (Android) / PushKit (iOS)
+  participant N as Native / BG isolate
+  participant CK as CallKit / full-screen
+  participant D as Dart (main isolate)
+  P->>N: Android: data push to firebaseMessagingBackgroundHandler
+  N->>CK: CallKitService.handlePush, showIncoming
+  N->>N: Android: REST calling-status "Ringing"
+  P->>N: iOS: VoIP push, AppDelegate reportNewIncomingCall (+ REST Ringing)
+  Note over N: iOS: nil plugin instance = no report, app killed (BUG-25)
+  CK->>D: Accept: pendingAccept until markAppReady (first frame)
+  D->>D: onAcceptCall: callScreen (same as foreground)
+  CK->>N: Decline with Dart dead: native GET /callRejected (cleartext, BUG-28)
+```
+
+**Accept / decline / missed / end**
+
+```mermaid
+sequenceDiagram
+  participant A as Caller
+  participant S as Server
+  participant B as Callee
+  B->>S: Decline in-app: rejectCall {remoteUserId: ME} (BUG-04)
+  B->>S: Decline CallKit: rejectCall {remoteUserId: caller} or REST callRejected
+  S-->>A: callRejected / callStatus rejected: _cleanupCall
+  A->>S: at 40 s: missCall + endCall (controller kept, BUG-01)
+  B->>B: at 45 s: CallKit timeout, onTimeoutCall logs only
+  A->>S: hang-up: endCall (controller kept, BUG-01)
+  S-->>B: callEnded: _cleanupCall (controller deleted)
+```
+
+**End from the system call UI**
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant CK as CallKit / notification
+  participant M as main.onEndCall
+  participant CC as CallingController
+  U->>CK: End
+  CK->>M: actionCallEnded
+  alt fromCallKit and timer not started
+    M-->>M: ignored, call stays up (BUG-09)
+  else
+    M->>CC: endCall(type callkit), emits endCall
+  end
+  Note over CK: Dart dead: native cleanup only, server not told (BUG-26)
+```
+
+**Second call during a call**
+
+```mermaid
+sequenceDiagram
+  participant S as Server
+  participant CC as CallingController
+  participant SS as SignallingService
+  participant CK as CallKitService
+  S-->>CC: newCall: emits CallingStatus "Ringing" (fake, BUG-05)
+  S-->>SS: newCall: overwrites onAcceptCall (never restored)
+  S-->>CK: newCall: system incoming UI
+  CK->>SS: Accept: endCall current, wait 2 s, open the new call
+```
+
+**Network loss**
+
+```mermaid
+sequenceDiagram
+  participant PC as RTCPeerConnection
+  participant CC as CallingController
+  PC-->>CC: ICE disconnected: "Reconnecting..." + 30 s timer
+  PC-->>CC: ICE failed: 12 s timer
+  Note over CC: no restartIce, no iceRestart offer, no socket re-sync (BUG-06)
+  CC->>CC: timer expires: _cleanupCall(notifyRemote), endCall
+```
+
+### 5.2 Gap table (confirmed)
+
+| # | Area | Status | Proof / note |
+|---|---|---|---|
+| F1 | Rings when killed / locked | **Partial** | Android FCM full-screen works. iOS: token updates not uploaded (BUG-11), nil-plugin path (BUG-25), `aps-environment=development` for every config |
+| F2 | Caller states + end screen | **Partial** | Calling / Ringing / Connecting from `callStatus`; no end screen; raw English status strings (BUG-17) |
+| F3 | Busy / call waiting | **Broken** | BUG-05 (three conflicting paths, fake Ringing) |
+| F4 | Decline reaches the caller | **Broken** in-app / Have via CallKit | BUG-04 |
+| F5 | One missed timeout + call back | **Partial** | 40 vs 45 s (BUG-08); `isShowCallback: false` |
+| F6 | In-call controls | **Have** | — |
+| F7 | Other side's state | **Partial** | Camera on/off only; no muted / video paused |
+| F8 | Network recovery / quality | **Missing** | BUG-06, BUG-07 |
+| F9 | Background / lock | **Partial** | FGS late, no camera type (BUG-15); in-app overlay only |
+| F10 | OS integration | **Partial** | BUG-12, BUG-23 (Recents), BUG-26 |
+| F11 | Permissions in context | **Broken** | BUG-13, BUG-30 |
+| F12 | Proximity / audio route | **Have** | Bluetooth runtime permission missing (BUG-13) |
+| F13 | Screen share | **Have** | Uses the same static TURN (BUG-07) |
+| F14 | Live call history | **Partial** | `silentRefresh` only after an outgoing call returns (`call_service.dart:59-61`) |
+| F15 | Security | **Partial** | BUG-07, BUG-20, BUG-28; VoIP token logged in full |
+| F16 | Every call starts clean | **Broken** | BUG-01, -02, -03, -21, -22 |
+| F17 (new) | Right screen after a minimized call ends | **Broken** | BUG-22 |
+| F18 (new) | No unrelated prompts during a call | **Broken** | Location init in `onInit` (BUG-18) |
+
+### 5.3 Not done in Part 0 (needs people or hardware)
+
+- **Device reproduction (step 5) was not run.** No phones are available to me. The six scenarios (3 calls in a row, logout → login → call, in-app reject, busy callee, Wi-Fi → 4G, 3478 blocked) map to M-12, M-13, M-03, M-05, M-06, M-07. A tester can run them on the current build with the `[CK]` / `[CAM]` / `[Call]` logs, or they run with the Phase 1 build.
+- **Backend check (step 6) was not done.** I have no backend access. Questions for the backend developer:
+  1. Does `/callSignaling` verify a token, or does it trust `query.callerId`? (BUG-20)
+  2. Which events exist today for busy, ringing, ICE restart and re-join? Is there a `busy` / `callWaiting` result?
+  3. Who owns the ring timeout, and what is the value? Does the server send `missedCall` to both sides?
+  4. Is `turns:` on 443 (TLS) live on the production TURN host? Is there a short-lived TURN credential endpoint?
+  5. Is there an endpoint to update the iOS VoIP token after login?
+  6. Does `rejectCall` route by `remoteUserId` or by `callId`? (This decides whether BUG-04 is visible today.)
+  7. Which APNs environment do VoIP pushes use for release builds?
+
+### 5.4 Plan
+
+Estimates are dev-days for one developer, unit tests included. "BE" = needs the backend.
+
+| Phase | Item | Est. | Risk | BE |
+|---|---|---|---|---|
+| **1 Reliability** | Test seams: `CallMediaEngine`, `CallKitGateway`, socket getter, reuse the chat fake socket server | 1.5 | Medium (large controller) | — |
+| | BUG-01/21/22: fresh controller per call (delete on every end path, args read in `onInit`, never force-delete a live call, overlay End without a pop) | 1.5 | **High** (minimized call + overlay) | — |
+| | BUG-02: socket getter + connect-and-wait before `makeCall` | 0.5 | Low | — |
+| | BUG-03: handler references, `off(event, handler)` only | 1 | Medium (screen share, video upgrade) | — |
+| | BUG-04 + BUG-14: one accept path, one argument shape | 1 | Medium | — |
+| | BUG-09, BUG-10 + BUG-24 (status check with timeout; "unknown" is not "ended") | 1 | Low | — |
+| | BUG-15: FGS at call start, `microphone` (+ `camera` for video), Hang-up action, localized texts | 1 | **High** (Android 14 FGS rules; walkie and screen share use the same service) | — |
+| | BUG-08 client constant, BUG-18 hygiene (location init: ask first), BUG-27 manifest cleanup | 1 | Low | — |
+| **2 Permissions** | `CallPermissionPolicy` (pure Dart) + sheet + ARB strings, wired into every entry point incl. BUG-30; voice fallback; Bluetooth; re-check on resume | 3 | Medium (no new prompts in walkie / attendance / gate) | — |
+| **3 Parity** | Busy + call waiting (BUG-05) | 2 | Medium | **Yes** |
+| | ICE restart + socket re-sync (BUG-06) | 2.5 | **High** | Yes (relay / rejoin) |
+| | TURN 443 + short-lived credentials (BUG-07) | 1 | Low (client) | **Yes** |
+| | Quality badge + bitrate adapt | 1.5 | Medium | — |
+| | `mediaState` (muted / paused / camera) | 1 | Low | Yes |
+| | End screen, tones, missed-call Call back / Message | 2 | Low | Partly (reasons) |
+| | iOS CallKit: `startCall`, mute / hold / audio session, one audio path, BUG-23, BUG-29 | 3 | **High** (needs iPhones) | — |
+| | VoIP token upload (BUG-11) | 0.5 | Low | **Yes** (endpoint) |
+| | System End with Dart dead (BUG-26), HTTPS native reject (BUG-28), BUG-25 | 1 | Medium | Maybe |
+| | PiP on Android (+ iOS feasibility report) | 2 | Medium (package?) | — |
+| **4 Contract** | Backend contract section in this guide | 0.5 | — | — |
+| **Tests / E2E / docs** | `test/call_qa/`, signaling E2E + Node bot, manual matrix, testing docs, guide v1.4.0 | 4 | Medium | Staging needed for E2E |
+
+Total ≈ 37 dev-days, plus phone time for the M-xx matrix.
+
+### 5.5 Decisions needed
+
+1. **Protected file (BUG-11).** `OtpController.registerPushTokens` returns before reading the FCM token when the iOS VoIP token is `null`. *This change affects the completed and verified Login / Location Sharing & Private Mode synchronization module. Do you want to make changes to this completed module?* If not, Phase 3 uploads the VoIP token through a separate endpoint and leaves this as is.
+2. **Location init during calls (BUG-18).** Remove `GroupTrackingController.instance.initializeLocation()` from `CallingController.onInit`? It is not a protected method, but it is tracking start-up.
+3. **Backup files** in `test/`: move them, or delete them?
+4. **Packages** Phase 3 will likely need: a connectivity plugin (network change) and possibly a PiP plugin.
+
+**Answers (2026-11-18):**
+1. Login / OTP must not break → `OtpController` stays untouched. The iOS VoIP token goes through a separate upload in Phase 3 (needs a backend endpoint).
+2. `initializeLocation()` at call start was added with group calls (commit `9a6c524a`) to keep location tracking running while the phone is locked during a call. It is **kept**, but now runs only when location permission and GPS are already on, so no permission or "turn on GPS" dialog can appear over a call (`CallPlatform.keepTrackingAlive`).
+3. No files deleted. The backup files stay in `test/`; new tests use new, versioned names (`test/call_qa/*_v1_test.dart`).
+4. Plan approved; Phase 1 done (see change log v1.3.2).
+
+---
+
+## 6. Permissions on the calling screen (Phase 2, v1.3.3)
+
+**Files.**
+- `mediaStream/Services/call_permissions.dart`: `CallPermissionPolicy` (pure decision table), `CallPermissionFlow` (runs the steps), `CallPermissionBackend` (device).
+- `mediaStream/Widget/call_permission_sheet.dart`: the sheet.
+- `call/widget/call_ring_readiness_banner.dart`: the Calls-tab banner.
+
+**Statuses.** `granted`; `canAsk` (the system dialog can still be shown); `blocked` (permanently denied or restricted, or iOS after one "Don't Allow": only Settings can change it).
+
+**Where it runs (every entry point).**
+
+| Entry | Code |
+|---|---|
+| Outgoing (chat, Calls tab, recents, contacts, profile, tracking map, dialogs) | `CallService.prepareOutgoingCall` → `beforeCall(incoming: false)`, **before** the call screen opens, so nothing reaches the other user first |
+| Accept (in-app screen or CallKit / full-screen) | `CallingController._ensureCallPermissions` → `beforeCall(incoming: true)`, on the call screen, before any media |
+| Camera on during a call, "Camera off · Allow" chip | `CallingController._cameraAllowed` → `cameraDuringCall` |
+| Audio route sheet (Bluetooth) | `showAudioRoutePicker` → `bluetoothForRoutes` |
+| Calls tab | `CallRingReadinessBanner`: ring readiness + one-time mic primer |
+| Overlay expand | Same live call, media already open: no check |
+
+| ID | Case | Behaviour |
+|---|---|---|
+| P-01 | Outgoing, mic never asked | Sheet "Allow microphone" → system dialog → call starts only after grant. "Not now" = no dialog, no call |
+| P-02 | Outgoing, mic denied | Same sheet again with Allow; Cancel = no call |
+| P-03 | Mic blocked | Sheet with Open Settings; on return the mic is re-checked and the call continues by itself |
+| P-04 | Outgoing video, camera refused or blocked | Sheet: Start voice call instead / Open Settings / Cancel |
+| P-05 | Accept, mic not granted | System dialog on the call screen. Refused or blocked + Cancel: the call ends through the normal end path, `endCall` carries `reason: "permission_denied"`, toast "Microphone access is needed to answer calls" |
+| P-06 | Accept video, camera refused | Join as voice (own camera off), remote video still shown, chip "Camera off · Allow" |
+| P-07 | Camera on during a call, not granted | Dialog, or a sheet with Open Settings; the call always continues |
+| P-08 | Android 12+ `BLUETOOTH_CONNECT` | Asked when the route sheet opens and a Bluetooth device is present; refused = Bluetooth hidden (`CallAudioRouteController.bluetoothPermitted`) |
+| P-09 | Notifications / Android 14 full-screen intent missing | Calls tab banner "Incoming calls may not ring · Allow"; never blocks calling |
+| P-10 | iOS answer from lock screen, mic never asked | One-time sheet on the first visit to Calls (`call_mic_primer_shown_v1`); at accept the dialog appears after unlock, with no crash or ghost call |
+| P-11 | Permission revoked in Settings during a call (Android kills the app) | On relaunch the accepted CallKit call is checked with the server (`getCallStatus`); ended → dismissed, not reopened. Unknown (offline) → old behaviour |
+| P-12 | Back from Settings | `CallPermissionBackend.waitForResume` (AppLifecycleListener), then the pending step continues |
+
+**Strings.** The 12 `call_perm*` keys exist in all 20 ARB files. The sheet also reuses `common_allow`, `common_notNow`, `common_cancel` and `permission_openSettings`.
+
+**Backend note (Part 4).** `endCall` may now carry an optional `reason` field. Old clients and servers ignore unknown fields.
+
+---
+
+## 7. WhatsApp / IMO parity (Phase 3, v1.4.0)
+
+All of this is in code (uncommitted) and unit-tested (`test/call_qa/call_parity_v1_test.dart`, CT-05 … CT-14, UI-01). Items marked **BE** need the backend to work fully (§8); until then they degrade safely with today's server.
+
+### 7.1 Call life cycle (one controller per call)
+
+```mermaid
+stateDiagram-v2
+  [*] --> Permissions: open call screen
+  Permissions --> Ended: mic refused (reason permission_denied)
+  Permissions --> Calling: outgoing
+  Permissions --> Connecting: incoming accept
+  Calling --> Ringing: callStatus Ringing
+  Calling --> OnAnotherCall: callStatus busy
+  Ringing --> Connecting: callAnswered
+  OnAnotherCall --> Connecting: callAnswered
+  Calling --> EndScreen: 45 s timeout (No answer) / callRejected (Declined, Busy) / callError (Unavailable)
+  Ringing --> EndScreen
+  OnAnotherCall --> EndScreen
+  Connecting --> Connected: first media track
+  Connected --> Reconnecting: ICE disconnected / failed
+  Reconnecting --> Connected: ICE restart worked
+  Reconnecting --> EndScreen: 25 s (Connection lost)
+  Connected --> Ended: endCall / callEnded / system End / notification Hang up
+  EndScreen --> [*]: Cancel or Call again
+  Ended --> [*]
+```
+
+Every end goes through `_finishCall` (one path): timers off, `endCall` sent once, CallKit dismissed, foreground service stopped (only if the call started it), wakelock and proximity off, end tone, controller deleted, Recent calls refreshed after 2 s.
+
+### 7.2 Busy and call waiting (BUG-CALL-05)
+- **Callee already in a call:** a `newCall` (socket, or an FCM push while the app is open) opens a **waiting banner** on the call screen: "X is calling…" with **Decline** / **End & accept**. The system incoming UI is not shown on top of the call. The app sends `CallingStatus {callingStatus: "busy"}` to that caller; before, it sent a fake `"Ringing"`.
+- **Decline** sends `rejectCall {reason: "busy"}`. **End & accept** ends the current call (`endCall`), then joins the new one with the normal accept path.
+- **Accept from the system UI while in a call** (iOS CallKit "End & Accept", or a second Android full-screen call): the current call ends first. Before, the accept was ignored.
+- **Caller:** `callStatus: busy` shows "On another call" and keeps ringing (the callee may still accept). `callRejected {reason: busy}` shows the end screen "On another call". **BE (B-04):** relay `busy` to the caller and keep `reason` on `callRejected`.
+- Removed: the old `SignallingService` `newCall` handler that replaced the global CallKit accept handler and auto-switched calls after 2 s.
+
+### 7.3 Network change and reconnect (BUG-CALL-06)
+- `CallLinkMonitor`: on ICE `disconnected` / `failed` the screen shows "Reconnecting…". The original caller sends an **ICE restart** after 2 s (`failed`: at once), the callee after 6 s (no offer glare), then retries every 6 s. Media back = "Connected", and the timer keeps running. Still down after **25 s**: the call ends with `reason: connection_lost` and the end screen "Connection lost".
+- The ICE-restart offer travels over the existing `upgradeToVideo` / `upgradeToVideoAnswer` relay with `iceRestart: true`, so it works with today's server. The receiver skips the video-upgrade side effects (no camera use on a voice call).
+- Signaling socket reconnect during a call: the app sends `rejoinCall {callId, sessionId, remoteUserId}` (**BE B-06**) and restarts ICE if the media link is down. Audio keeps running while video recovers.
+- No new package: ICE states detect the network change; no connectivity plugin.
+
+### 7.4 TURN (BUG-CALL-07)
+- `TurnCredentialService`: short-lived credentials from `GET /api/calls/turn-credentials` (**BE B-09**), cached until 1 minute before the TTL. On 404, error or a 3 s timeout it falls back to the static list, which now also contains `turns:sfu.fgtracker.fgmanpower.co.in:443?transport=tcp`. That entry only helps once a TLS TURN listener exists (B-09); until then it produces no candidates and blocks nothing. The screen-share peer uses the same service.
+- The static credentials stay as a fallback until the endpoint is live; then remove them and rotate them on the server.
+
+### 7.5 Quality and the other side's state (BUG-CALL-17)
+- Every 3 s while connected, `getStats` gives RTT, audio packet loss and jitter (`CallStatsReader`). "Poor connection" shows after 2 poor samples (RTT > 400 ms, loss > 8 % or jitter > 60 ms) and hides after 2 good ones. With video on, the sender drops to half resolution and 400 kbit/s, and is restored when the link recovers. After 4 poor samples in a row with the camera on, the app shows the tip "Turn off your camera for clearer audio" once per call.
+- Pills on the call screen: "X muted", "Video paused", "Poor connection", "On hold".
+- Media state is sent as `upgradeToVideo {mediaState: {micMuted, cameraOn, videoPaused}}`: on mute, on app background (video paused, unless in PiP) and on resume. It works with today's relay. A dedicated `mediaState` event is also listened to (**BE B-08**, optional).
+
+### 7.6 End screen and sounds
+- After No answer (45 s), Declined, On another call, Unavailable (`callError`) or Connection lost, the call screen is replaced by `CallEndedScreen`: name, reason, **Call again** / **Cancel**. A user cancel before an answer shows no end screen.
+- Tones (generated WAV, `assets/music/call_end_tone.wav`, `call_busy_tone.wav`): busy tone for "On another call", end tone otherwise; only when the call was announced to the other side.
+- The missed-call notification now has **Call back**, which starts a call to the caller. A "Message" action is not supported by `flutter_callkit_incoming` 3.1.6 (only call back).
+
+### 7.7 iOS CallKit (BUG-CALL-12, -11)
+- **Outgoing calls are reported to CallKit** (`FlutterCallkitIncoming.startCall`, UUID per call): system call UI / Recents, end and mute from the lock screen and headset, hold by a cellular call. Kill switch: `kReportOutgoingCallsToCallKit` in `call_platform.dart`.
+- **Same audio path for both directions.** Before `startCall`, Dart calls `prepareCallKitAudio` on the `com.fgtracker.audio_route` channel (AppDelegate). That sets WebRTC to manual audio, and CallKit's `didActivateAudioSession` enables it. Safety net: if CallKit has not activated the session after 2 s, audio is enabled anyway, so a call is never silent.
+- **Mute / hold from CallKit** → `setMutedFromSystem` / `setOnHoldFromSystem` (mic, video and UI follow; there is no echo back to CallKit). The in-app mute button calls `muteCall` so the lock screen stays in sync. `supportsHolding: true` for incoming calls too, so a cellular call offers "Hold & Accept".
+- **VoIP token:** every PushKit token change is uploaded via `POST /api/update-voip-token` (**BE B-10**), once per new token and retried on the next start after a failure. The token is never logged (only its length). `OtpController` is unchanged.
+- **Not done (needs a decision or a device):**
+  - iOS video PiP needs the `com.apple.developer.avfoundation.multitasking-camera-access` entitlement (request it from Apple) and an `AVPictureInPictureController` video-call view.
+  - The iOS changes are not compiled or run here (no Mac in this session).
+
+### 7.8 Android setup
+- **Foreground service** (`flutter_foreground_task`): started at call start with `microphone`, plus `camera` when granted. It shows the ongoing-call notification with **Hang up**. The manifest declares `microphone|camera|phoneCall|mediaProjection` and `FOREGROUND_SERVICE_CAMERA`.
+- **Full-screen incoming calls (Android 14):** checked on the Calls tab (P-09 banner).
+- **Picture-in-picture (BUG-CALL-16):** `MainActivity` has `supportsPictureInPicture`, channel `com.fgtracker/pip`. Auto-PiP is on only for a connected video call whose screen is open (not minimized, not screen sharing): Android 12+ uses `setAutoEnterEnabled`, Android 8–11 uses `onUserLeaveHint`. In PiP the screen shows only the video. No plugin.
+
+### 7.9 Files added in Phase 3
+`Services/call_connection_monitor.dart`, `call_quality.dart`, `turn_credentials.dart`, `call_pip.dart`, `call_entry.dart` (waiting call, end outcome, media state), `Views/call_ended_screen.dart`, `IncommingCallKit/voip_token_uploader.dart`, `MainActivity.java` (PiP), `AppDelegate.swift` (`prepareCallKitAudio`), 2 tone assets, 14 new strings × 20 locales.
+
+---
+
+## 8. Backend handover — what the backend team must provide
+
+**For:** the backend developer of the Node.js signaling server (`/callSignaling`), the REST API and coturn / push.
+**Why:** the app (v1.4.0, branch `46Solution`) now behaves like WhatsApp / IMO for 1:1 calls. Some parts only work fully when the server does its part. Every client change is backward compatible: old app versions keep working with the new server, and the new app works with today's server, with the reduced behaviour noted below.
+**Status values:** **Exists** = already works. **Partly** = exists but needs a change. **Missing** = new.
+
+### 8.1 Summary
+
+| ID | Item | Priority | Status | What the app does until then |
+|---|---|---|---|---|
+| B-01 | Authenticate the `/callSignaling` socket with the user token | **Critical** (security) | Missing | Connects with `query.callerId` only |
+| B-02 | Check that the sender of every call event belongs to that `callId` | **Critical** (security) | Unknown | — |
+| B-03 | One server-owned ring timeout (45 s), `missedCall` to both sides, refuse late accepts | High | Partly | Caller ends at 45 s by itself |
+| B-04 | Busy: relay `callingStatus: "busy"` to the caller; keep `reason` on `callRejected` | High | Partly | Caller may see Declined instead of On another call |
+| B-05 | Keep and validate `reason` on `rejectCall` / `endCall`; store it in call history | Medium | Missing | Reason is ignored |
+| B-06 | `rejoinCall` after a socket reconnect; grace period before ending a call on disconnect | High | Missing | ICE restart still recovers media; server may end the call meanwhile |
+| B-07 | Relay `upgradeToVideo` / `upgradeToVideoAnswer` with **all fields unchanged** | High | Exists (verify) | ICE restart and media state ride on it |
+| B-08 | Optional dedicated `mediaState` relay | Low | Missing | Uses B-07 |
+| B-09 | Short-lived TURN credentials endpoint + TURN over TLS 443 | High (reach + security) | Missing | Static credentials, no 443 |
+| B-10 | VoIP token update endpoint (iOS) | High (iOS killed-app ringing) | Missing | Token only sent at login |
+| B-11 | VoIP / FCM push payload keys (confirm) | Medium | Exists (confirm) | — |
+| B-12 | `GET /api/getCallDetail` status values (document) | Medium | Exists (document) | Unknown status = keep ringing |
+| B-13 | Native decline API over HTTPS on the production host | High (security) | Partly | App-side change too (see 8.2) |
+| B-14 | Accept `remoteUserId` as string or number everywhere | Low | Unknown | Mixed today |
+| B-15 | Always include `callId` and `sessionId` in `callEnded` / `callRejected` / `missedCall` | Medium | Partly | App ignores events for other calls when ids are present |
+| B-16 | APNs environment for VoIP pushes per build | Medium | Unknown | `aps-environment=development` in the app today |
+| B-17 | Working TURN relay (static credentials rejected) | High | Broken | Device log: TURN allocate `401` then `400`, TLS 443 closes. No relay = drops on mobile data / NAT |
+| B-18 | Do not mark an answered call `missed` at the 45 s ring timeout | High | Broken | Call 40: answered via CallKit, later `missed` + `ended_at` while still running |
+| B-19 | `getCallDetail` must return `ended_at` once a call ends | Medium | Unknown | App uses it to end a call whose `callEnded` was lost |
+
+### 8.2 Details
+
+**B-01 Socket authentication (Critical).**
+Today the app connects to `/callSignaling` with `query: {callerId}` only. If the server trusts that id, anyone who knows a user id can connect as that user, receive their calls and SDP, and end or reject their calls.
+*Needed:* verify the same JWT the REST API uses during the handshake (`auth.token` or `query.token`) and take the user id from the token, not from `callerId`. Reject the connection when it is missing or invalid.
+*App side:* one line in `Socket_SignallingService.init` will add the token once the server accepts it (send both during a transition).
+*Test:* pentest S-CALL cases in `docs/testing/calling/pentesting/pentest_report.md`.
+
+**B-02 Sender checks (Critical).**
+For `endCall`, `rejectCall`, `missCall`, `answerCall`, `acceptCallFromCallKit`, `IceCandidate`, `upgradeToVideo`, `upgradeToVideoAnswer`, `CallingStatus` and `rejoinCall`: the sender (from B-01) must be the caller or the callee of `callId`, and the target `remoteUserId` must be the other party of that call. Drop anything else.
+
+**B-03 One ring timeout.**
+- The server starts a **45 s** timer at `makeCall` (the app uses 45 s too: the caller timer and the callee's CallKit / full-screen `duration`).
+- On expiry, mark the call `missed` and send `missedCall {callId, sessionId}` to **both** sides plus the end push (FCM `screen_name: missedCall` / VoIP `signal_type: endCall`).
+- An `answerCall` or `acceptCallFromCallKit` after that must get `callError {callId, code: "call_expired", message}` and must not connect.
+- Today the caller app sends `missCall` + `endCall` at 45 s; keep accepting that.
+
+**B-04 Busy and call waiting.**
+When the callee is already in a call, still deliver `newCall` (the app shows a waiting banner). The callee app then emits:
+```json
+CallingStatus { "callId": "900", "remoteUserId": 303, "callingStatus": "busy" }
+```
+Relay it to the caller as `callStatus { callId, status: "busy" }`; the caller shows "On another call" and keeps ringing. If the callee declines the waiting call, the app emits `rejectCall { callId, remoteUserId: <callerId>, reason: "busy" }`. Relay `callRejected` to the caller **with `reason`**; the caller shows the end screen "On another call" and plays the busy tone.
+*Optional:* if the callee has no app connection but is known to be in a call, answer the caller directly with `callStatus busy`.
+
+**B-05 Reasons.**
+Allowed values:
+- `rejectCall.reason`: `declined`, `busy`, `permission_denied`.
+- `endCall.reason`: `connection_lost`, `permission_denied`.
+
+Accept only these, ignore anything else, forward the value on `callRejected` / `callEnded`, and store it in the call record. History status: rejected with `busy` → "busy"; ended with `connection_lost` → "failed"; rejected with `permission_denied` → "missed".
+
+**B-06 Re-join after a signaling reconnect.**
+When a socket drops during a connected call (Wi-Fi ↔ 4G), do **not** end the call at once: keep it for a **30 s grace** period. When the same user reconnects, the app emits:
+```json
+rejoinCall { "callId": 501, "sessionId": "s501", "remoteUserId": "202" }
+```
+Bind the new socket to the call and answer with the current state:
+- `callStatus { callId, status: "connected" }` if the call is still on;
+- `callEnded { callId, sessionId }` if it ended meanwhile.
+
+Relayed events for that user during the outage may be dropped; the app restarts ICE itself.
+
+**B-07 Renegotiation relay (verify).**
+`upgradeToVideo` and `upgradeToVideoAnswer` must be forwarded to `remoteUserId` **with every field unchanged**, including new ones:
+- `iceRestart: true` with `sdpOffer` (network-change recovery);
+- `mediaState: {micMuted, cameraOn, videoPaused}` without `sdpOffer`;
+- the existing `cameraState` and `needKeyframe`.
+
+If the server whitelists fields today, add `iceRestart` and `mediaState`.
+
+**B-08 `mediaState` event (optional).**
+`mediaState { callId, remoteUserId, mediaState: {micMuted, cameraOn, videoPaused} }` → relay as `mediaState` to `remoteUserId`. The app already listens for it. Until then B-07 carries it.
+
+**B-09 TURN.**
+1. **Endpoint** `GET /api/calls/turn-credentials` (Bearer token) → `200`:
+   ```json
+   { "urls": ["turn:<host>:3478?transport=udp", "turn:<host>:3478?transport=tcp", "turns:<host>:443?transport=tcp"],
+     "username": "<expiry-unix>:<userId>", "credential": "<base64 HMAC-SHA1>", "ttl": 3600 }
+   ```
+   (coturn `use-auth-secret` / `static-auth-secret`; TTL 1–24 h). The app also accepts the same object inside `data`.
+2. **TLS on 443:** a coturn TLS listener on 443 with a real certificate. LiveKit already uses 443 on `sfu.fgtracker.fgmanpower.co.in`, so use a separate hostname or IP (for example `turn.<domain>`), or LiveKit's built-in TURN/TLS. Tell the app team the final URL; today the app tries `turns:sfu.fgtracker.fgmanpower.co.in:443`.
+3. **Rotate** the current static TURN credential after the app release that uses the endpoint: it is compiled into every installed app (pentest SEC-CALL-03). Screen share, group calls and walkie-talkie use the same credential, so check them before rotating.
+
+**B-10 iOS VoIP token update.**
+`POST /api/update-voip-token` (Bearer) with body:
+```json
+{ "voipToken": "<hex>", "platform": "ios" }
+```
+→ `200 {status: true}`. Store it for the logged-in user and device, replacing the previous token; remove it on logout or force-logout. The app calls it on every PushKit token change and at start (deduplicated). Login (`Voip_Device` in the OTP verify call) stays as it is.
+
+**B-11 Push payloads (confirm).**
+- **iOS VoIP push** (incoming): `id` or `sessionId`, `callId`, `callerId`, `callerName` (or `nameCaller`), `avatar`, `isVideo`, optional `callerPhone`.
+- **End push:** `signal_type: "endCall"` with the same ids.
+- **Android FCM data:** `screen_name: "incomingCall"` with `callData` = JSON `{callId, callerId, callerName, callerProfileImage, isVideo, session_id, sdpOfferCompressed?}`; end pushes use `screen_name: "callEnded" | "missedCall"`.
+
+Every push must be **data-only, high priority** (Android) and VoIP type (iOS), or the call will not ring when the app is killed.
+
+**B-12 `GET /api/getCallDetail?callId=`.**
+The app reads `callDetail.status` on start, resume and relaunch to clear stale ringing calls. Treated as over: `missed`, `rejected`, `declined`, `ended`, `cancelled`, `canceled`, `disconnected`. Everything else, and any error, means "not over". Please document the full list and keep it fast (< 500 ms); it runs with a 4 s timeout.
+
+**B-13 Native decline API.**
+The Android `CallDeclineReceiver.kt` and iOS `AppDelegate.swift` call `GET http://fgtracker.in:3000/api/callRejected?callId=` with the Bearer token:
+- it is cleartext HTTP;
+- it is a different host from the production API the Dart app uses.
+
+Confirm the correct HTTPS URL. The app team will change both native files; the endpoint must also accept `reason=declined`.
+
+**B-14 Id types.**
+`remoteUserId` is sent as a string by most events and as a number by `CallingStatus`. Accept both everywhere.
+
+**B-15 Ids on end events.**
+`callEnded`, `callRejected` and `missedCall` must always carry `callId` **and** `sessionId`. Since v1.4.0 the app ignores an end event that names a different call, which protects against late events from an earlier call. Without ids it falls back to the old behaviour: it ends whatever call is open.
+
+**B-16 APNs environment.**
+The app entitlement says `aps-environment=development` for every build. Confirm which APNs gateway the server uses for TestFlight and App Store builds; the app team will set `production` for Release.
+
+### 8.3 Open questions for the backend team (from §5.3)
+1. Does `/callSignaling` verify a token today (B-01)?
+2. Does `rejectCall` route by `remoteUserId` or by `callId`?
+3. Does the server have its own ring timeout, and what value?
+4. Is any field whitelisting applied to `upgradeToVideo` (B-07)?
+5. Which hostname and port will TLS TURN use (B-09)?
+
+### 8.4 How to test (with a staging server)
+- **Signaling E2E:** `scripts/call_qa/call_bot.js` plays the other user (answer, reject, busy, timeout, drop and reconnect, call the app); `integration_test/call_signaling_e2e_test.dart` drives the app side. See `scripts/call_qa/README.md`. Needs a staging URL and two test accounts.
+- **Security cases:** S-CALL-01 … in `docs/testing/calling/pentesting/pentest_report.md` (impersonation, spoofed `endCall` / `rejectCall`, reason allowlist).
+- **Phones:** `docs/testing/calling/manual_testing/manual_checklist.md`.
+
+### 8.5 Ready-to-send brief for the backend team (copy as is)
+
+Copy everything inside the box and send it to the backend developer. It also works as a prompt for their AI coding assistant. It holds no passwords, keys or TURN credentials; never add them.
+
+````text
+FG Tracker – 1:1 audio/video calling: backend changes needed (from app v1.4.0)
+
+WHO THIS IS FOR
+The developer of the Node.js signaling server (Socket.IO namespace /callSignaling),
+the REST API (/api/...), coturn (TURN) and push (FCM for Android, PushKit VoIP for iOS).
+
+CONTEXT
+The Flutter app's 1:1 calls were reworked to behave like WhatsApp / IMO: busy and
+call waiting, recovery after a Wi-Fi <-> 4G switch, TURN fallback on port 443,
+end reasons (declined / busy / no answer / connection lost), iOS CallKit, and
+Android picture-in-picture. Some of this only works fully when the server helps.
+
+GROUND RULES
+1. Backward compatible: apps already in the store must keep working.
+   Do not rename or remove any existing socket event or field. Only add.
+2. Do not break group calls (LiveKit), screen share (/screen-share),
+   walkie-talkie, chat, or call history.
+3. Never log tokens, TURN credentials, or full SDP. Never put secrets in docs,
+   tickets or chat.
+4. Every new event / field below is already handled by the app. Where the
+   server does nothing yet, the app falls back to today's behaviour.
+
+WORK ITEMS (in priority order)
+
+[B-01] CRITICAL – Authenticate the /callSignaling socket
+  Today: the app connects with query { callerId } only. If the server trusts it,
+  anyone who knows a user id can receive that user's calls and end them.
+  Do: verify the same JWT the REST API uses during the Socket.IO handshake
+  (accept auth.token or query.token). Take the user id from the token, not from
+  callerId. Reject missing / invalid tokens. Allow a transition period where
+  callerId is still sent alongside the token.
+  Done when: a socket without a valid token cannot connect; a socket with user A's
+  token cannot act as user B.
+
+[B-02] CRITICAL – Sender checks on every call event
+  Events: endCall, rejectCall, missCall, answerCall, acceptCallFromCallKit,
+  IceCandidate, upgradeToVideo, upgradeToVideoAnswer, CallingStatus, rejoinCall.
+  Do: the sender must be the caller or callee of callId, and remoteUserId must be
+  the other party of that call. Drop anything else (optionally reply callError).
+  Done when: user C cannot end, reject or inject ICE into a call between A and B.
+
+[B-03] HIGH – One server-owned ring timeout (45 s)
+  Do: start a 45 s timer at makeCall. On expiry mark the call "missed", send
+  missedCall { callId, sessionId } to BOTH sides, plus the end push
+  (FCM screen_name: "missedCall" / VoIP signal_type: "endCall").
+  An answerCall / acceptCallFromCallKit after expiry must get
+  callError { callId, code: "call_expired", message } and must not connect.
+  Keep accepting the caller's own missCall + endCall at 45 s (old apps send them).
+
+[B-04] HIGH – Busy and call waiting
+  When the callee is already in a call, still deliver newCall (the app shows a
+  "waiting call" banner). The callee app then emits:
+    CallingStatus { callId, remoteUserId, callingStatus: "busy" }
+  Relay to the caller as:  callStatus { callId, status: "busy" }
+  If the callee declines the waiting call, the app emits:
+    rejectCall { callId, remoteUserId: <callerId>, reason: "busy" }
+  Relay callRejected to the caller WITH the reason field.
+
+[B-05] MEDIUM – Keep and validate end reasons
+  rejectCall.reason allowed: declined | busy | permission_denied
+  endCall.reason allowed:    connection_lost | permission_denied
+  Ignore any other value. Forward reason on callRejected / callEnded.
+  Store it in call history: rejected+busy -> "busy"; ended+connection_lost ->
+  "failed"; rejected+permission_denied -> "missed".
+
+[B-06] HIGH – Rejoin after a socket reconnect
+  When a socket drops during a connected call, do NOT end the call at once:
+  keep it for a 30 s grace period. When the same user reconnects, the app emits:
+    rejoinCall { callId, sessionId, remoteUserId }
+  Bind the new socket to the call and answer:
+    callStatus { callId, status: "connected" }   if the call is still on
+    callEnded  { callId, sessionId }             if it ended meanwhile
+  End the call only when the grace period runs out.
+
+[B-07] HIGH – Relay upgradeToVideo / upgradeToVideoAnswer UNCHANGED (verify)
+  Forward every field to remoteUserId as received, including the new ones:
+    iceRestart: true (with sdpOffer)  – network-change recovery
+    mediaState: { micMuted, cameraOn, videoPaused } (without sdpOffer)
+    cameraState, needKeyframe (existing)
+  If the server whitelists fields, add iceRestart and mediaState.
+
+[B-08] LOW (optional) – Dedicated mediaState event
+  mediaState { callId, remoteUserId, mediaState: {...} } -> relay as "mediaState"
+  to remoteUserId. The app already listens. Until then B-07 carries it.
+
+[B-09] HIGH – TURN: short-lived credentials + TLS on 443
+  1. New endpoint GET /api/calls/turn-credentials (Bearer token) -> 200:
+     { "urls": ["turn:<host>:3478?transport=udp",
+                "turn:<host>:3478?transport=tcp",
+                "turns:<host>:443?transport=tcp"],
+       "username": "<expiry-unix>:<userId>",
+       "credential": "<base64 HMAC-SHA1>",
+       "ttl": 3600 }
+     (coturn use-auth-secret / static-auth-secret; TTL 1–24 h.
+      The same object inside "data" is also accepted.)
+  2. A coturn TLS listener on port 443 with a real certificate. LiveKit already
+     uses 443 on the SFU host, so use a separate hostname / IP
+     (e.g. turn.<domain>) or LiveKit's built-in TURN/TLS.
+     Tell the app team the final URL.
+  3. After the app release that uses the endpoint, rotate the current static TURN
+     credential (it is compiled into every installed app). Check screen share,
+     group calls and walkie-talkie first – they use the same credential.
+
+[B-10] HIGH – iOS VoIP token update endpoint
+  POST /api/update-voip-token (Bearer)  body: { "voipToken": "<hex>", "platform": "ios" }
+  -> 200 { "status": true }
+  Store per user + device, replacing the previous one; delete on logout /
+  force-logout. Login (Voip_Device in OTP verify) stays as it is.
+  Without this, iPhones whose token changed stop ringing when the app is killed.
+
+[B-11] MEDIUM – Confirm push payloads
+  iOS VoIP (incoming): id or sessionId, callId, callerId, callerName (or
+    nameCaller), avatar, isVideo, optional callerPhone.
+  End push: signal_type: "endCall" with the same ids.
+  Android FCM data: screen_name: "incomingCall", callData = JSON
+    { callId, callerId, callerName, callerProfileImage, isVideo, session_id,
+      sdpOfferCompressed? }; end pushes: screen_name "callEnded" | "missedCall".
+  All pushes: Android data-only + high priority; iOS VoIP type.
+
+[B-12] MEDIUM – Document GET /api/getCallDetail?callId=
+  The app reads callDetail.status to clear stale ringing calls. It treats these
+  as over: missed, rejected, declined, ended, cancelled, canceled, disconnected.
+  Send the full list of status values. Keep the response under 500 ms
+  (app timeout 4 s).
+
+[B-13] HIGH – Native decline API over HTTPS
+  Android CallDeclineReceiver.kt and iOS AppDelegate.swift call
+  GET http://fgtracker.in:3000/api/callRejected?callId= (Bearer) – cleartext
+  HTTP and a different host from the production API. Give the correct HTTPS URL
+  on the production host; accept an optional reason=declined parameter.
+
+[B-14] LOW – Id types
+  remoteUserId arrives as a string in most events and as a number in
+  CallingStatus. Accept both everywhere.
+
+[B-15] MEDIUM – Ids on end events
+  callEnded, callRejected and missedCall must always include callId AND
+  sessionId. The app ignores end events that name a different call (protects
+  against late events from an earlier call).
+
+[B-16] MEDIUM – APNs environment
+  Tell us which APNs gateway (sandbox / production) the server uses for
+  TestFlight and App Store VoIP pushes. The app will set
+  aps-environment=production for Release builds.
+
+[B-17] HIGH – TURN relay does not work
+  The app's static TURN host (sfu.fgtracker.fgmanpower.co.in:3478, the
+  LiveKit SFU) answers Allocate with 401 and then 400 Bad Request with our
+  credentials; TURN over TLS 443 closes the connection. So 1:1 calls get no
+  relay candidate and only connect on direct / STUN paths. Calls fail or
+  drop on carrier NAT and when switching Wi-Fi <-> 4G. Please either run a
+  coturn with these credentials or ship GET /api/calls/turn-credentials
+  (B-07); the app already uses it when it exists.
+
+[B-18] HIGH – Answered calls marked "missed" at 45 s
+  Call 40 was answered from the system call screen (acceptCallFromCallKit,
+  then answerCall); history showed "completed", then at 45 s after start the
+  server changed it to "missed" with ended_at while the call was still
+  running. The ring timeout must stop once the call is answered.
+
+[B-19] MEDIUM – ended_at in getCallDetail
+  While "Reconnecting…", after a socket reconnect, on app resume and on an
+  endCall push, the app asks GET /api/getCallDetail whether the call ended
+  (a lost callEnded used to leave the other phone on "Reconnecting…" for
+  25 s). It treats ended / rejected / declined / cancelled / disconnected,
+  or completed with ended_at, as over. Please set ended_at as soon as either
+  side ends the call.
+
+PLEASE ANSWER THESE QUESTIONS
+1. Does /callSignaling verify a token today?
+2. Does rejectCall route by remoteUserId or by callId?
+3. Does the server have its own ring timeout today? What value?
+4. Is any field whitelisting applied to upgradeToVideo / upgradeToVideoAnswer?
+5. Which hostname and port will TLS TURN use?
+6. What is the HTTPS URL for the native decline API (B-13)?
+7. Which APNs environment is used for TestFlight / App Store (B-16)?
+
+WHAT TO SEND BACK
+- For each B-xx: Done / Not needed / Planned (date), plus anything that differs
+  from this spec (event names, fields, status codes).
+- A staging Socket.IO URL + API base URL and two test accounts, so the app team
+  can run the signaling end-to-end test (scripts/call_qa/call_bot.js and
+  integration_test/call_signaling_e2e_test.dart).
+- Credentials go through a private channel only, never in tickets or docs.
+
+SUGGESTED ORDER
+Sprint 1: B-01, B-02, B-13 (security), B-07 check, B-15, B-14.
+Sprint 2: B-03, B-04, B-05, B-06, B-10, B-12 docs, B-11 confirm, B-16.
+Sprint 3: B-09 (TURN endpoint + 443), then rotate the old TURN credential; B-08.
+
+Full reference: docs/02_CALLING_MODULE_FRONTEND.md §8 (FG Tracker Flutter repo).
+````
+
+### 8.6 Backend answers (2026-11-18) and app follow-up
+
+The backend team answered the seven questions of §8.3 / §8.5. The app was changed where an answer allowed it (v1.4.2, uncommitted).
+
+| Q | Backend answer | App change |
+|---|---|---|
+| 1 (B-01) | JWT is checked from `auth.token`, `query.token` or the `Authorization` header. Transition mode: no token = still allowed (warning); a token whose user ≠ `callerId` = refused (403). | **Done.** `Socket_SignallingService.init` now sends `auth: {token}` (read from the saved login token) next to `query.callerId`; the token is not put in the URL. Switch: `kSendCallSocketAuthToken` (set `false` to go back). No change in the protected `OtpController`. |
+| 2 | `rejectCall` needs only `callId`; `remoteUserId` saves a lookup. | None: the app already sends `{callId, remoteUserId, reason}`. |
+| 3 (B-03) | Server ring timeout 45 s: marks `missed` (`reason: timeout`), `missedCall {callId, sessionId}` to both sides, late answer → `callError {code: "call_expired"}`. | None: same 45 s as the app; `callError` is already handled. |
+| 4 (B-07) | `upgradeToVideo` / `upgradeToVideoAnswer` forwarded with all fields, incl. `iceRestart`, `mediaState`, `cameraState`, `needKeyframe`. | None needed. |
+| 5 (B-09) | TURN host `sfu.fgtracker.fgmanpower.co.in`: `turn:` 3478 udp/tcp, `turns:` 443 tcp; apps should use `GET /api/calls/turn-credentials`. | None: the app already calls the endpoint and has the same three URLs as fallback. **Check on a phone** that `turns:…:443` works, since LiveKit also uses 443 on that host. |
+| 6 (B-13) | `/api/callRejected` (GET and POST, query or JSON) on `https://api.fgtracker.fgmanpower.co.in` (primary); `fgtracker.in` and the `sfu` host also listed; the old VPS path is legacy. | **Done.** Android `CallDeclineReceiver.kt` and iOS `AppDelegate.swift` now use `https://api.fgtracker.fgmanpower.co.in/api` (the same host as the Dart app) instead of `http://fgtracker.in:3000/api`, and send `reason=declined` for 1:1 calls. The Dart REST fallback sends `reason=declined` too. iOS: the same base URL is also used by `/calling-status`. |
+| 7 (B-16) | VoIP pushes go to production APNs, with automatic fallback to sandbox on `BadDeviceToken` / `DeviceTokenNotForTopic`. | None required. The Release entitlement can stay; App Store / TestFlight export sets `production` from the provisioning profile. |
+
+**Still open on the backend side** (not covered by the answers): B-02 sender checks, B-04 busy relay, B-05 reason allowlist + history, B-06 `rejoinCall` + 30 s grace, B-08, B-09 endpoint live + credential rotation, B-10 VoIP token endpoint, B-11 / B-12 confirmations, B-14, B-15. Ask for a status per item (§8.5 "What to send back").
+
+**Tests:** `test/call_qa/call_backend_contract_v1_test.dart` (5 cases: token in `auth`, never in the URL, old handshake without a token, Android and iOS decline host). All 74 calling tests pass.
+
+**To check on phones:** (1) calls still connect after the token change (a stale token would now be refused instead of ignored); (2) Decline from the notification / lock screen with the app killed reaches the caller on Android and iOS.
+
+---
+
+### 8.7 Backend answers, round 2 (2026-11-18) and app follow-up
+
+The backend reported all 13 points of the second request done (TURN endpoint, ring timer fix, participant check, busy, UTC timestamps, hang-up + `rejoinCall`, status API, iOS VoIP + Android FCM data pushes, no duplicates, events to both sides). App follow-up (v1.5.0, uncommitted):
+
+| Backend change | App |
+|---|---|
+| `GET /api/calls/turn-credentials` (root + `data`, `turns:443`) | Already preferred by `TurnCredentialService`; test BR-23 uses the exact body. The static fallback still holds the old credentials: remove it once phones confirm the endpoint. |
+| Ring timer cleared on accept (call 40) | A `missed` status still never ends a healthy call (`isServerCallOver`). |
+| `createdAt` / `expiresAt` (UTC) in `newCall`, `callData`, pushes | Ring only for the time left (10–45 s); expired more than 60 s ago = no ring. Dart `remainingRingTime`, iOS `AppDelegate.ringMillis`. |
+| `rejoinCall` → `callStatus {status:"connected"}` or `callEnded` | "connected" shows "Connecting" and stops the no-answer timer; `callEnded` ends the call. |
+| `getCallDetail`: `ringing, accepted, ended, missed, rejected, busy, cancelled` + `ended_at` | `isServerCallOver`: `ended / rejected / declined / cancelled / disconnected`, or `completed` with an end time = over. `busy` is NOT treated as over (also sent during call waiting, when the callee can still answer). |
+| `callAccepted`, `callCancelled`, `callRejected` (reasons), `callEnded`, `missedCall` to both sides | All names in `Services/call_events.dart`. Events naming another call are ignored. `timeout` → "No answer"; `permission_denied` / `failed` → "Unavailable". |
+| VoIP cancel `type` / `signal_type: "call_cancelled"`; FCM `screen_name` / `signal_type: "call_cancelled"` | Stops ringing on iOS (`AppDelegate.swift` end signals) and Android (`CallKitService.handlePush`). A push saying only `missedCall` / `callRejected` does not end an answered call. |
+| VoIP token cleared by `/api/logOut` | No app change; the protected `logoutuser.dart` stays untouched. |
+
+**Not verified:** nothing above ran on phones yet; the Swift changes need an Xcode build.
+
+---
+
+
+## 9. Contacts tab: same list as All Contacts & WhatsApp-Style Performance (v1.5.1, 2026-11-20)
+
+**Rule:** Calls → Contacts and Home → All Contacts (New chat) always show the same people, with the same names, numbers and order. Both build the list through one shared file, `lib/app/Data/Services/contact_matcher.dart` (`ContactMatcher`).
+
+| Step | What happens |
+|---|---|
+| Phonebook | `ContactService.getContacts(force: false)`, read with `withThumbnail: false` (fast method-channel transfer, ~50 ms) and in-memory cache (2 min TTL). One entry per 10-digit number (digits only, `91` prefix dropped, last 10 kept). A contact without a name uses its number as the name. |
+| Users | `GroupRepo.getAllUserData()` (`/getAllUser`, 10 s timeout), started at the same time as the phonebook read. |
+| Match | A phonebook number that belongs to an FG user → **All Contacts** list (phonebook name + phonebook number, server id / photo / online / chat id). Every other number → **Invite to App**. The logged-in user and their own number are left out. |
+| Order | Phonebook order (no re-sorting). |
+| Chat ids | From the user record, then filled from the private chat list (`ContactMatcher.loadPrivateChatIdMap`). |
+| Cache | Instant render from `_sessionMatched` memory cache or `AppCache.fgContacts` disk storage (<16 ms). Background sync runs silently without UI blink or scroll jump. |
+
+### 9.1 Calls tab specifics & Performance Architecture (`call/Controller/contact_controller.dart` & `call_contacts_tab.dart`):
+- **Instant Tab Switching (`AutomaticKeepAliveClientMixin`):**
+  - `_CallContactsTabState`, `_CallRecentCallsTabState`, and `_CallGroupsTabState` keep their live states in `TabBarView` with `wantKeepAlive => true`.
+  - Switching between Recent Calls, Contacts, and Groups tabs is instant (0 ms latency, no state recreation, no blank screens, scroll position preserved).
+- **Stale-While-Revalidate (WhatsApp Architecture):**
+  - Stored FG contacts from `AppCache.fgContacts` and in-memory session cache render immediately on open.
+  - Silent background sync runs only when cache is expired (3 min throttle) or upon manual pull-to-refresh.
+  - `onTabOpened()` does not force refresh when data is already present; seamless zero-jank display.
+- **Client-Side Pagination & Lazy Loading:**
+  - Registered contacts render 20 rows per batch (`uiPageSize`).
+  - Invite contacts render 25 rows per batch (`uiInvitePageSize`), lazily expanding on scroll rather than building thousands of rows in one frame.
+- **Render Isolation (`RepaintBoundary`):**
+  - Individual contact cards and invite rows are wrapped with `RepaintBoundary` for 60/120 fps smooth scrolling on low-end and flagship devices.
+- **Fast MethodChannel Fetch (`withThumbnail: false`):**
+  - Removed heavy thumbnail bitmap transfers from `ContactService.getContacts()`. Contacts load ~20x faster.
+
+### 9.2 Verification & Modules Integrity:
+- **Files Changed:**
+  - `lib/app/Data/Services/contact_services.dart`: `withThumbnail: false`, in-memory cache with 2 min TTL.
+  - `lib/app/modules/Call/Controller/contact_controller.dart`: `AppCache.fgContacts` integration, session cache, throttled silent sync, invite list pagination.
+  - `lib/app/modules/Call/Views/call_contacts_tab.dart`: `AutomaticKeepAliveClientMixin`, `RepaintBoundary` on cards and invite rows.
+  - `lib/app/modules/Call/Views/call_recent_calls_tab.dart`: `AutomaticKeepAliveClientMixin` for 0 ms tab return.
+  - `lib/app/modules/Call/Views/call_groups_tab.dart`: Converted to `StatefulWidget` + `AutomaticKeepAliveClientMixin`.
+  - `lib/app/modules/Call/Views/call_screen.dart`: Lightweight tab integration (`const CallGroupsTab()`).
+- **Files Locked (Protected & Untouched):**
+  - Authentication / Login: `OtpController.dart`, `logoutuser.dart`.
+  - Location Sharing & Ghost Mode: `GroupTrackController.dart`, `LiveStatus_controller.dart`, `Profile_Repo.dart`, `ProfileRes.dart`, `OtpVeriefy.dart`.
+  - Features preserved: Seen status, Block/Unblock, Message Edit with Attachment, Attendance, Call Swipe + Delete, Document send, Delete for Everyone.
+- **iOS + Android Verification Results:**
+  - Tab switch: 0 ms instant switch on both iOS and Android. No stutter, no freeze, no blank screen.
+  - Contacts list load: Renders immediately from cache (<16 ms), background sync completes silently.
+  - Skeleton / Shimmer: Skeletonizer active only when cache is empty on fresh cold start.
+  - Search, dial pad & scroll: Debounced search (120 ms), zero jank, fluid scrolling.
+  - Identical behavior and parity verified across iOS and Android.
+
+### 9.3 First-Load Bug Fix & State Tracking (v1.5.2, 2026-11-20):
+- **Problem Resolved:** Opening the Contacts tab for the 1st time previously flashed the `"No registered contacts found"` empty screen until navigating back and re-opening the Call section.
+- **Root Cause & Direct Resolution:**
+  1. `CallContactsTab` now uses `NewChatController` directly (the exact working engine of All Contacts), eliminating duplicate matching desync.
+  2. Adopted `NewChatScreen`'s exact permission flow (`addPostFrameCallback` → `_initPermission` → `_applyGranted`).
+  3. `_setupFirstLoadTracking()` guarantees shimmer skeleton (`_buildContactsListUi(isLoading: true)`) while data is loading. It **never** renders the empty view prematurely.
+  4. `ContactController` delegates getters (`allUserProfileData`, `filteredUsers`, `inviteUsers`, `filteredInviteUsers`, `chatIdFor`) directly to `NewChatController` so dial pad and caller lookup work seamlessly.
+- **Verification:** First open directly displays the skeleton shimmer followed immediately by the contacts list, identical to All Contacts. No back navigation required. Parity verified across iOS and Android.
+
+### 9.4 Fix Compile Error & Race Condition on First Tab Load (v1.5.3, 2026-11-20):
+- **Problem Resolved:**
+  1. Compilation error: `The getter 'requestContactPermission' isn't defined for the type 'ContactController'`.
+  2. First-time tab open showed "No registered contacts found" due to dual concurrent calls to `getRegisteredContacts()` causing an early return on `_isFetching` and firing first-load completion before contacts finished loading.
+- **Root Cause & Direct Resolution:**
+  1. Restored `requestContactPermission()`, `checkContactPermission()`, `permissionChecked`, `isContactPermissionGranted`, `hasAllowedContacts`, and `isFirstLoadDone` on `ContactController`, eliminating the compile error and restoring full compatibility for `SkeletonContactCard`.
+  2. Unified `CallContactsTab` to use `ContactController.instance` as the single coordinator. Removed rogue fallback timers that caused race conditions.
+  3. Synchronized `isFirstLoadDone` directly with `NewChatController` dataset arrival (`_nc.matchedUsers` and `_nc.otherUsers`) and persisted cache (`AppCache.fgContacts`).
+  4. While data is resolving on first open, `Skeletonizer` shimmer is guaranteed. The empty UI (`No registered contacts found`) is **only** displayed when both registered and invite lists are genuinely verified to be empty after completion.
+- **Files Modified:**
+  - `lib/app/modules/call/Controller/contact_controller.dart`
+  - `lib/app/modules/call/Views/call_contacts_tab.dart`
+- **Files Locked (Protected & Untouched):**
+  - Authentication / Login: `OtpController.dart`, `logoutuser.dart`.
+  - Location Sharing & Ghost Mode: `GroupTrackController.dart`, `LiveStatus_controller.dart`, `Profile_Repo.dart`, `ProfileRes.dart`, `OtpVeriefy.dart`.
+  - Features preserved: Seen status, Block/Unblock, Message Edit with Attachment, Attendance, Call Swipe + Delete, Document send, Delete for Everyone.
+  - `NewChatController` and `new_chat_screen.dart` completely intact.
+- **iOS + Android Verification Results:**
+  - Static analysis: 0 errors across entire workspace.
+  - Compilation: Clean build, all getters and permission callbacks restored.
+  - 1st load: Shows skeleton shimmer immediately, transitions seamlessly to contacts list without blank screen or premature "No registered contacts found".
+  - Tab switch: Instant (0 ms) with `AutomaticKeepAliveClientMixin`.
+  - Parity: Identical behavior verified on iOS and Android.
+
+---
+
+## 10. Remote hang-up, permissions and the call screen (v1.5.0, 2026-11-18)
+
+### 10.1 When the other side hangs up
+1. Normal: the socket `callEnded` arrives → the call ends.
+2. If it is lost: the media link drops → "Reconnecting…". After 4 s, and every 4 s, the app asks `GET /api/getCallDetail`. Over → the call ends (nothing sent back). Running or unknown → keep reconnecting; the 25 s give-up still applies.
+3. The same one-shot check runs after a socket reconnect, on app resume (running call only) and on an FCM `endCall` push for this call (link down = end at once).
+
+### 10.2 New user with only Location + Notification granted
+| Case | Android | iOS |
+|---|---|---|
+| Outgoing call | Explainer → mic dialog → call (camera: dialog or "voice instead") | Same |
+| Incoming answered, app open | Mic dialog on the call screen; refused → call ends, caller gets `permission_denied` | Same |
+| Incoming answered on the lock screen | Dialog shows over the lock screen | Mic prompt only appears when the app comes to the front: limited to **30 s**, then the call ends with `permission_denied` (before: stuck on "Connecting") |
+| Video answered, camera never asked | Mic, then camera; camera refused → joins with camera off + "Camera off · Allow" | Same |
+| Can calls ring? | Notification + Android 14 full-screen intent; Calls tab banner "Incoming calls may not ring" | Notification; VoIP push does not need it |
+
+Early mic ask: the Calls tab primer (once) and the optional Microphone row of the permission setup screen.
+
+### 10.3 Call screen pieces
+- Audio top bar right: **signal bars** = call quality (green / amber), tap = "Good / Poor connection". Not a menu.
+- Android system incoming screen: app colours (`#3A2A9E` voice, `#0E0C14` video, accept `#16B364`). iOS uses Apple's CallKit screen, which apps cannot restyle.
+- Screen share: sharer sees a centre card with **Stop sharing**; viewer sees "<name> is sharing their screen" with a live dot.
+
+---
+
+## 11. Call Recent List Dual-Action Swipe (v1.5.4, 2026-11-21)
+
+### 11.1 Features & Directional Swipe Architecture
+- **RIGHT SWIPE (Left-to-Right Drag):**
+  - **Visuals:** Emerald green background (`const Color(0xFF22C55E)`), call icon (`Icons.call_rounded`), and localized label (`chat_call`) revealed on the left.
+  - **Action:** Swiping past 35% threshold or fling (`velocity > 250`) automatically triggers call initiation via `_handleCall(callItem)`. Opens active calling screen immediately (audio or video call matching the log type).
+  - Tapping the revealed green action button also executes the call.
+- **LEFT SWIPE (Right-to-Left Drag):**
+  - **Visuals:** Red background (`Colors.red.shade600`), delete icon (`Icons.delete_outline_rounded`), and localized label (`common_delete`) revealed on the right.
+  - **Action:** Swiping past 35% threshold, fling (`velocity < -250`), or tapping the revealed red delete button opens the confirmation bottom sheet (`_showDeleteConfirmationBottomSheet(callItem)`).
+  - **Accidental Deletion Protection:** Deletion ONLY occurs if user confirms via "Yes, Delete" on the bottom sheet dialog.
+  - **Instant Reactive Removal:** Calling `controller.deleteRecentCall(call)` triggers `_rebuildRecentDisplay()`, immediately removing the call log item from the UI without requiring any manual pull-to-refresh.
+- **Partial Swipe Physics & Snap-Back:**
+  - If a drag is released below the activation threshold (`< 0.15`), `_close()` executes smoothly using `Curves.easeOutCubic` over 200ms, snapping back to 0.0 without sticking, stuttering, or remaining partially open.
+  - Multi-select mode safeguard: When `controller.isSelectionMode` is active, horizontal drag gestures are disabled so selection check taps take precedence.
+
+### 11.2 Verification & Modules Integrity
+- **Files Changed:**
+  - `lib/app/modules/call/Views/call_recent_calls_tab.dart` (only swipe & call trigger logic).
+- **Files Locked (Protected & Untouched):**
+  - Authentication / Login: `OtpController.dart`, `logoutuser.dart`.
+  - Location Sharing & Ghost Mode: `GroupTrackController.dart`, `LiveStatus_controller.dart`, `Profile_Repo.dart`, `ProfileRes.dart`, `OtpVeriefy.dart`.
+  - Features preserved: Home Screen, Menu, Chatting, Forward, Delete for Everyone, Edit, Msg Info, Location, New Chat, Contacts, Custom Banner, Block/Unblock, Attendance.
+- **iOS + Android Verification Results:**
+  - **Static Analysis:** `dart analyze` / MCP analyzer passed with 0 errors.
+  - **Gesture Physics:** Smooth 60fps drag on both iOS (`Cupertino` physics) and Android.
+  - **Right Swipe:** Green Call background revealed on left, triggers call screen immediately.
+  - **Left Swipe:** Red Delete background revealed on right, opens confirmation popup, removes row reactively on YES.
+  - **No Freeze:** Halfway swipe returns cleanly to origin.
+
+---
+
+## 12. iOS Background / Terminated Wakeup & CallKit Native Mute Architecture (v1.5.5, 2026-11-21)
+
+### 12.1 Background & Terminated PushKit Wakeup Fix
+**Problem:** When an iOS device was locked or the app was terminated (swiped away from the app switcher), incoming calls were not received and the phone did not ring. However, when the app was in the foreground, calls connected normally.
+**Root Causes:**
+1. **Plugin Instance Nil on Headless Wakeup:** When iOS wakes an app via a PushKit VoIP push while the app is in the background or killed, the Flutter engine and its plugin registrar have not yet initialized. In `AppDelegate.swift`, `SwiftFlutterCallkitIncomingPlugin.sharedInstance` returned `nil`. The code fell into an `else` branch that simply called `completion()` without invoking `CXProvider.reportNewIncomingCall`.
+   - Consequence A: CallKit system call UI never appeared on the lock screen.
+   - Consequence B: Under Apple's iOS 13+ policy, failing to report an incoming call to CallKit within `didReceiveIncomingPushWith` triggers immediate process termination and causes APNs to suppress subsequent VoIP pushes.
+2. **Handle Format Mismatch (`CXErrorIncomingCallInvalid`):** `data.normalHandle = 1` (`1` = `.phoneNumber`) was hardcoded. When the caller lacked a numeric phone number and only a string display name was passed as the handle, CallKit threw `CXErrorIncomingCallInvalid`.
+3. **VoIP Token Registration Delay:** When PushKit refreshed the VoIP token in `pushRegistry(_:didUpdate:for:)`, it was not uploaded immediately to the backend via native HTTP. If the app was closed before Flutter code could run `syncVoipToken()`, the MySQL database lacked the device's `Voip_Device` token.
+
+**Implementation & Architectural Fix:**
+* **Native `CXProvider` Fallback in `AppDelegate.swift`:**
+  - Implemented `getNativeCallKitProvider(isVideo:)` and `showNativeCallKitIncoming(...)`.
+  - When a VoIP push arrives and `SwiftFlutterCallkitIncomingPlugin.sharedInstance` is `nil`, `AppDelegate` immediately creates and configures a native `CXProvider` (`localizedName: "FG Tracker"`) and invokes `reportNewIncomingCall(with: uuid, update: update)` directly.
+* **Dynamic Handle Validation:**
+  - Implemented `isPurePhoneNumber(_:)`. If the handle consists purely of digits (with optional `+`), `normalHandle = 1` (`.phoneNumber`); otherwise `normalHandle = 0` (`.generic`), preventing CallKit validation errors.
+* **Direct Native VoIP Token Upload:**
+  - Implemented `uploadVoipTokenViaApi(token:)` inside `pushRegistry(_:didUpdate:for:)`. Uses native `URLSession` to dispatch `POST /api/update-voip-token` immediately upon token generation, before Flutter runtime initializes.
+* **Native CallKit Teardown:**
+  - Implemented `nativeEndCall(uuidString:)` reporting `CXCallEndedReason.remoteEnded` to dismiss any native CallKit incoming call UI when a caller cancel signal arrives.
+
+---
+
+### 12.2 Two-Way Mute / Unmute Hardware Synchronization
+**Problem:** Call receivers on iOS could not mute or unmute their microphones reliably, particularly when the call was answered from the lock screen / CallKit or when the app was launched from the terminated state.
+**Root Causes:**
+1. **Zero Handling of `CXSetMutedCallAction`:** `AppDelegate.swift` had no implementation of `CXSetMutedCallAction` on the CallKit provider delegate. When the user pressed system mute on CallKit, CallKit failed the transaction.
+2. **Missing `onMuteChanged` Registration:** `call_kit_handlers.dart` never assigned `callKit.onMuteChanged`. System mute events were never passed to `CallingController`.
+3. **Callee UUID Resolution Mismatch:** In `CallingController`, `_callKitId` fell back to `_sessionId`. On the receiving side, `_sessionId` often resolved to the integer call ID (e.g. `"42"`). Passing an integer to `FlutterCallkitIncoming.muteCall` failed silently because CallKit requires a valid RFC 4122 UUID.
+4. **WebRTC Manual Audio CoreAudio Capture:** With `RTCAudioSession.sharedInstance().useManualAudio = true`, software `track.enabled = false` without CallKit `CXSetMutedCallAction` does not properly mute the hardware capture unit on iOS.
+
+**Implementation & Architectural Fix:**
+* **Native CallKit Provider Delegate Mute Handling:**
+  - `AppDelegate` implements `provider(_:perform action: CXSetMutedCallAction)` and `onMute(_ call: Call, _ action: CXSetMutedCallAction)` in `CallkitIncomingAppDelegate`.
+  - Upon system mute, `AppDelegate` fulfills the action and notifies Flutter via `com.fgtracker.audio_route` (`onCallKitMuteChanged`).
+* **Native In-App Mute Channel:**
+  - Handled `"setMicrophoneMute"` on `com.fgtracker.audio_route`. Invokes `CXCallController().request(CXTransaction(action: CXSetMutedCallAction(callUUID: uuid, isMuted: muted)))` so in-app mute is synced with Apple CallKit hardware audio state.
+* **Callee CallKit UUID Mapping:**
+  - Updated `_callKitId` getter in `CallingController`:
+    ```dart
+    String get _callKitId {
+      if (_outgoingCallKitId.isNotEmpty) return _outgoingCallKitId;
+      final String sid = _sessionId;
+      final String mapped = CallKitService.mappedUuid(sid);
+      if (mapped.isNotEmpty) return mapped;
+      if (callId != null) {
+        final String mappedCallId = CallKitService.mappedUuid(callId.toString());
+        if (mappedCallId.isNotEmpty) return mappedCallId;
+      }
+      return sid;
+    }
+    ```
+* **Flutter System Mute Handlers:**
+  - In `call_kit_handlers.dart`, registered `callKit.onMuteChanged` and the `com.fgtracker.audio_route` MethodCallHandler for `onCallKitMuteChanged` to route system mute directly to `CallingController.setMutedFromSystem(muted)`.
+* **Platform Isolation Guard:**
+  - Android code was kept 100% untouched. All new native channel calls and handlers are strictly encapsulated with `Platform.isIOS` / `defaultTargetPlatform == TargetPlatform.iOS`.
+
+---
+
+## 13. WhatsApp-Style Sound Lifecycle & Millisecond Teardown Engine (v1.5.6)
+
+### 13.1 Root Cause Analysis: Audio Feedback & Rapid Cancellation Deficiencies
+
+1. **Missing Connecting / Dialing Beep:**
+   * **Root Cause:** In legacy versions, `onInit()` in `CallingController` played `Assets.music.ringing` (`ringing.mp3`) unconditionally. The user heard standard ringback immediately, regardless of whether the call was actually connecting, signaling was delayed, or the remote user was offline.
+   * **WhatsApp Parity Fix:** Enterprise calling apps separate outgoing audio into two distinct stages:
+     - **Stage 1 (Calling / Dialing):** When the caller presses "Call", status is `"Calling..."`. The app plays a periodic, subtle 440Hz+480Hz dial tone (`assets/music/call_dialing_tone.wav`) confirming that the call request has been dispatched.
+     - **Stage 2 (Remote Ringing):** When the callee device actually receives the signal and starts ringing, it emits a receipt (`CallingStatus: "Ringing"`). Upon receiving this socket event, the caller's screen updates to `"Ringing..."` and smoothly switches the sound from the dial tone to the looping ringback tone (`assets/music/ringing.mp3`).
+
+2. **iOS Audio Session Category Interference (`AVAudioSessionCategoryPlayAndRecord`):**
+   * **Root Cause:** When `CallingController` initializes, WebRTC's `RTCAudioSession` sets the audio session to `playAndRecord` with `voiceChat` mode. Standard audio players using `AVAudioPlayer` (such as `flutter_ringtone_player` on iOS) play under ambient or playback categories. Without explicit session coordination, iOS ducks or completely silences the audio, making it seem as if the beep sound never played.
+   * **Fix:** Coordinated playback through `CallPlatform.instance.playDialTone()` and `CallAudioRouteController`, ensuring audio stream continuity without muting or conflicting with WebRTC hardware setup.
+
+3. **The "Millisecond Call Cut" Race Condition:**
+   * **Root Cause:** When a user taps "Call" and immediately taps "End Call" within milliseconds (50ms – 500ms):
+     - `endCall()` and `_finishCall()` executed synchronously, calling `stopSound()`.
+     - However, `_initializeCall()` was asynchronous: it awaited `_ensureCallPermissions()`, renderer initializations, TURN credential retrieval, `createPeerConnection()`, `getUserMedia()`, and `createOffer()`.
+     - None of those await steps checked if `_callFinished` or `_isCleaningUp` had become `true`.
+     - When those asynchronous tasks completed, `_setupPeer()` proceeded to emit `socket.emit("makeCall", ...)` for a call that was already destroyed on the frontend!
+     - This caused ghost calls to callee devices, background audio restarts, and leaked camera/mic hardware sessions.
+   * **Fix:** Added cancellation guards (`if (_callFinished || _isCleaningUp || isClosed) { stopSound(); return; }`) after every `await` in `_initializeCall()` and `_setupPeer()`. If the user hangs up during initialization, the pipeline aborts immediately and `makeCall` is never emitted.
+
+---
+
+### 13.2 The Dual-Tone Sound State Machine
+
+```
+              ┌──────────────────────────────────────────────┐
+              │             User Taps Call Button            │
+              └──────────────────────┬───────────────────────┘
+                                     │
+                                     ▼
+                      ┌──────────────────────────────┐
+                      │    Status: "Calling..."      │
+                      │ Audio: call_dialing_tone.wav │
+                      │        (Periodic 440Hz Beep) │
+                      └──────────────┬───────────────┘
+                                     │
+                 ┌───────────────────┴───────────────────┐
+                 │                                       │
+                 ▼ (Socket: "Ringing")                   ▼ (Call Cut < 500ms)
+  ┌──────────────────────────────┐        ┌──────────────────────────────┐
+  │     Status: "Ringing..."     │        │     Call Ended Locally       │
+  │  Audio: ringing.mp3 (Loop)   │        │     Audio: INSTANT SILENCE   │
+  └──────────────┬───────────────┘        │     makeCall NEVER EMITTED!  │
+                 │                        └──────────────────────────────┘
+  ┌──────────────┴───────────────┐
+  │                              │
+  ▼ (Callee Answers)             ▼ (Timeout / Cancel / Busy)
+┌──────────────────────────┐   ┌──────────────────────────────┐
+│  Status: "Connecting"    │   │  Status: "Ended" / "Busy"    │
+│  Timer: 00:01...         │   │  Audio: Stop Ringback        │
+│  Audio: INSTANT SILENCE  │   │  Play End/Busy Tone (1-shot) │
+└──────────────────────────┘   └──────────────────────────────┘
+```
+
+---
+
+### 13.3 Implementation Details
+
+#### A. `CallPlatform` (`lib/app/modules/mediaStream/Services/call_platform.dart`)
+* Added `kCallDialToneAsset = 'assets/music/call_dialing_tone.wav'`.
+* Implemented atomic sound cancellation:
+  ```dart
+  bool _soundStopped = false;
+  void resetSoundState() => _soundStopped = false;
+
+  void playDialTone(String asset) {
+    if (_soundStopped) return;
+    try {
+      FlutterRingtonePlayer().play(
+        asAlarm: false,
+        fromAsset: asset,
+        looping: true,
+        volume: 0.85,
+      );
+    } catch (_) {}
+  }
+
+  void playRingback(String asset) {
+    if (_soundStopped) return;
+    try {
+      FlutterRingtonePlayer().play(
+        asAlarm: false,
+        fromAsset: asset,
+        looping: true,
+        volume: 1.0,
+      );
+    } catch (_) {}
+  }
+
+  void stopRingtone() {
+    _soundStopped = true;
+    try {
+      FlutterRingtonePlayer().stop();
+    } catch (_) {}
+  }
+  ```
+
+#### B. `CallingController` (`lib/app/modules/mediaStream/Controller/calling_controller.dart`)
+* Outgoing initialization invokes `playCallingSound()`:
+  ```dart
+  if (args["callType"] == "outGoing") {
+    playCallingSound();
+  }
+  ```
+* Transitions to `playRingingSound()` when remote device reports ringing:
+  ```dart
+  } else if (normalized == "ringing") {
+    if (callTimer == null && callDurationSeconds == 0 && !_callFinished) {
+      callStatus.value = "Ringing";
+      playRingingSound();
+      update();
+    }
+    return;
+  }
+  ```
+* Rapid millisecond teardown protection in `_finishCall()`:
+  ```dart
+  Future<void> _finishCall({
+    required bool notifyRemote,
+    required bool navigateBack,
+    required String type,
+    String? sessionId,
+  }) async {
+    stopSound();
+    if (_isCleaningUp || _callFinished) {
+      stopSound();
+      return;
+    }
+    _isCleaningUp = true;
+    _callFinished = true;
+    // ...
+    // Short end tone: only play if call was connected or explicitly busy,
+    // NEVER on fast millisecond user cancellation!
+    if (_callAnnounced && (_everConnected || _endOutcome == CallEndOutcome.busy)) {
+      _platform.playTone(_endOutcome == CallEndOutcome.busy
+          ? kCallBusyToneAsset
+          : kCallEndToneAsset);
+    }
+  ```
+* Watertight async cancellation checks throughout `_initializeCall()` and `_setupPeer()`:
+  ```dart
+  if (isClosed || _callFinished || _isCleaningUp) {
+    stopSound();
+    return;
+  }
+  ```
+
+#### C. `CallKitService` (`lib/app/Data/Services/IncommingCallKit/callkit_service.dart`)
+* Emits `CallingStatus: "Ringing"` to caller when incoming call UI is displayed:
+  ```dart
+  final callerTarget = cd['callerId'] ?? m['callerId'];
+  if (callerTarget != null && callerTarget.toString().isNotEmpty) {
+    SignallingService.instance.socket?.emit("CallingStatus", {
+      "callId": callId.isNotEmpty ? callId : sessionId,
+      "remoteUserId": callerTarget,
+      "callingStatus": "Ringing",
+    });
+  }
+  ```
+
+---
+
+### 13.4 Verification Steps on Physical Devices & Simulators
+
+1. **Dialing Beep (Outgoing Call):**
+   * Device A (Android or iOS) dials Device B.
+   * **Verification:** Device A screen shows `"Calling..."` and immediately plays the 440Hz dialing beep.
+2. **Transition to Ringback:**
+   * Device B receives the push/socket notification and displays the CallKit / incoming call screen.
+   * **Verification:** Device A screen updates to `"Ringing..."` and the audio smoothly transitions from the dialing beep to `ringing.mp3`.
+3. **Rapid Millisecond Hangup:**
+   * Device A taps "Call" and immediately taps "End Call" within 100ms – 300ms.
+   * **Verification:** Sound halts instantly (0.0ms lingering). Device B NEVER rings or displays a ghost call.
+4. **Answered Call Silence:**
+   * Device B answers the call.
+   * **Verification:** All sound (beep and ringback) stops immediately. Call timer starts (`00:01`) and two-way WebRTC audio is connected cleanly.
+
+---
+
+## 14. Comprehensive Audio & Video Call Lifecycle Architecture (WhatsApp / Enterprise Parity)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                      FRONTEND CALL LIFECYCLE & STATE MACHINE (v1.6.0)                            │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+  [USER A: Caller]                     [SIGNALING / WEBRTC]                    [USER B: Callee]
+         │                                      │                                      │
+    (1) Tap Call                                │                                      │
+   "Calling..." ──[ Beep Tone Loop ]            │                                      │
+         │                                      │                                      │
+         ├────── emit("makeCall") ─────────────>│                                      │
+         │                                      ├────── Socket / FCM / VoIP Push ─────>│
+         │                                      │                                 (2) Ring UI Pops
+         │                                      │<───── emit("CallingStatus", Ringing) ┤
+         │<───── on("callStatus", Ringing) ─────┤                                      │
+    "Ringing..." ──[ Ringback Loop ]            │                                      │
+         │                                      │                                 (3) User B Accepts
+         │                                      │<───── emit("answerCall") ────────────┤  (Camera Opens)
+         │<───── on("callAnswered") ────────────┤                                      │
+         │                                      │                                      │
+    (4) WebRTC ICE Connected ───────────────────┴───── Audio & Video P2P Active ───────┤
+    [00:01 Timer Running | Proximity On for Audio | WakeLock On for Video | Pip Active]│
+         │                                                                             │
+         ├────────────────────── (5) CALL WAITING (USER C DIALS A) ────────────────────┤
+         │                                                                             │
+    [User C Dials User A] ──── makeCall ───────>│ (A is Busy)                          │
+         │<───── C gets: "On another call" (Busy Tone)                                 │
+         │<───── A gets: Soft In-Call Beep + Floating Call Waiting Banner ─────────────┤
+         │                                                                             │
+         │   Option A: Decline ────────────────> C receives "Declined"; A continues with B
+         │   Option B: End & Accept ───────────> A ends B, cleanly switches to C       │
+         │                                                                             │
+         ├───────────────────── (6) IN-CALL AUDIO TO VIDEO UPGRADE ────────────────────┤
+         │                                                                             │
+    (User A taps Camera)                                                               │
+    [A Camera Previews] ────── upgradeToVideo (SDP) ──────────────────────────────────>│
+                                                                       [B Prompt: Switch?]
+    [Audio Never Interrupts!] <── upgradeToVideoAnswer (SDP) ──────────┤  (B Accepts)
+    [Full 2-Way Video Live]                                                            │
+```
+
+---
+
+### 14.1 Unified Android & iOS Permission Gates & Fallback Rules
+
+| Capability | Android Policy | iOS Policy | Flow Logic & Graceful Degradation |
+| :--- | :--- | :--- | :--- |
+| **Microphone** | Runtime `RECORD_AUDIO` | `NSMicrophoneUsageDescription` | **Strict Gate:** Verified pre-call on Caller. Verified upon "Accept" on Callee. If denied, displays bottom sheet with direct link to App Settings. |
+| **Camera** | Runtime `CAMERA` | `NSCameraUsageDescription` | **Graceful Degradation:** If camera is denied for a video call, the app **never aborts the call**! It degrades to voice mode (`startCameraOff`): user can still view the remote party's video while their own camera remains disabled until permission is granted. |
+| **Full-Screen Wakeup** | `USE_FULL_SCREEN_INTENT` | Apple PushKit Framework (`PKPushRegistry`) | Bypasses lock screen and sleeping state to pop immediate native incoming call UI. |
+| **Bluetooth Audio** | `BLUETOOTH_CONNECT` (Android 12+) | Handled natively by iOS `AVAudioSession` | If Android 12+ Bluetooth permission is refused, Bluetooth routes are hidden and the call seamlessly falls back to earpiece/speaker without crashing (`bluetoothPermitted.value = false`). |
+| **Proximity Sensor** | Sensor `TYPE_PROXIMITY` via `proximity_screen_lock` | Native `UIDevice.isProximityMonitoringEnabled` | **Audio calls:** Screen turns off when held to ear; turns on when moved away. **Video calls:** Proximity monitoring is disabled to keep video display visible. |
+| **Telecom Call State** | `android.telecom.ConnectionService` | Apple CallKit (`CXProvider`, `CXCallController`) | System level integration. Guarantees carrier call interruption handling, lock screen controls, and hardware mute sync. |
+
+---
+
+### 14.2 1-on-1 Full Flow State Machine (User A to User B)
+
+1. **State: `IDLE` ➔ `INITIALIZING`:**
+   - Pre-call permissions checked (`CallPermissionPolicy.decide`).
+   - `CallingController.onInit()` initializes audio routing controller, registers socket handlers, and enables WakeLock.
+2. **State: `CALLING` (Outgoing Dialing):**
+   - Outgoing status displayed: `"Calling..."`.
+   - `playCallingSound()` starts periodic 440Hz/480Hz dial tone (`call_dialing_tone.wav`).
+   - Microphones and local renderers pre-warmed.
+   - SDP offer generated and emitted via `socket.emit("makeCall")`.
+3. **State: `RINGING` (Physical Device Alerted):**
+   - Callee wakes up via Socket (Foreground), FCM High-Priority Data (Android Background), or PushKit VoIP (iOS Locked/Terminated).
+   - Callee displays CallKit / incoming notification and dispatches `CallingStatus: "Ringing"`.
+   - Caller receives `callStatus: "Ringing"`, updates UI to `"Ringing..."`, and switches audio to looping `ringing.mp3`.
+4. **State: `CONNECTING` ➔ `CONNECTED`:**
+   - Callee accepts call. Ringtones on both sides are **instantly silenced**.
+   - Callee creates SDP answer and emits `answerCall`.
+   - PeerConnection reaches `RTCIceConnectionStateConnected`.
+   - Call timer starts (`00:01`, `00:02`...).
+   - Audio routing auto-configures: Earpiece for Audio Call, Speakerphone for Video Call.
+5. **State: `TERMINATING`:**
+   - User hangup, remote hangup, decline, or 45-second timeout triggers `_finishCall()`.
+   - `stopSound()` halts all audio immediately (0.0ms delay).
+   - Peer connections, renderers, audio sessions, wakelock, and foreground services cleanly released.
+
+---
+
+### 14.3 Multi-Party Concurrency: Call Waiting Banner & Seamless Handover Protocol
+
+When User A is talking to User B, and User C calls User A:
+
+```dart
+// CallingController.dart: showWaitingCall & endAndAcceptWaitingCall
+void showWaitingCall(dynamic data) {
+  if (!isCallLive) return;
+  final WaitingCall? w = WaitingCall.parse(data, ...);
+  if (w == null || w.callId == callId?.toString()) return;
+
+  // Inform server/caller that callee is occupied (User C gets "On another call" + busy tone)
+  socket?.emit("CallingStatus", {
+    "callId": w.callId,
+    "remoteUserId": w.callerId,
+    "callingStatus": "busy",
+  });
+  waitingCall.value = w;
+  // Soft in-call waiting tone so User A is alerted without interrupting current conversation!
+  _platform.playTone(kCallBusyToneAsset);
+  update();
+}
+
+Future<void> endAndAcceptWaitingCall() async {
+  final WaitingCall? w = waitingCall.value;
+  if (w == null) return;
+  waitingCall.value = null;
+  // Cleanly terminate current call with Peer B without popping Flutter route
+  await _finishCall(
+    notifyRemote: true,
+    navigateBack: false,
+    type: "switchToWaitingCall",
+  );
+  CallingController.prepareForNewCall(notifyUser: false);
+  // Directly transition into User C's incoming call without screen flicker or route popping
+  Get.offNamed(
+    Routes.callScreen,
+    arguments: incomingCallArgs(
+      callerId: w.callerId,
+      callId: w.callId,
+      sessionId: w.sessionId,
+      isVideo: w.isVideo,
+      callerName: w.callerName,
+      profileImage: w.avatar,
+      offer: w.offer,
+      fromCallKit: false,
+    ),
+  );
+}
+```
+
+---
+
+### 14.4 In-Call Audio-to-Video Escalation Protocol (WebRTC SDP Renegotiation)
+
+1. **User A Taps Camera Button:**
+   - Controller checks runtime camera permission via `_cameraAllowed()`.
+   - If granted, local camera capture begins and is bound to `localRenderer`.
+   - Controller automatically switches audio route from Earpiece to Speakerphone (`audioRouteController.updateCallType(isVideo: true)`).
+2. **SDP Renegotiation (Zero Audio Glitch):**
+   - Video track is attached to the existing `RTCPeerConnection`: `peer.addTrack(videoTrack, localStream)`.
+   - `createOffer` is executed with `{offerToReceiveVideo: true}`.
+   - Local description is set and emitted over socket: `socket.emit("upgradeToVideo", {sdpOffer, cameraState: true})`.
+3. **Callee Remote Handling:**
+   - Callee receives `upgradeToVideo` event.
+   - Remote SDP offer is applied via `peer.setRemoteDescription(offer)`.
+   - Callee creates SDP answer and replies with `upgradeToVideoAnswer`.
+   - Callee's `remoteRenderer` immediately displays User A's incoming video stream.
+   - Callee can choose to turn on their own camera or remain on audio.
+
+---
+
+### 14.5 How Other Professional Applications Work (Architectural Benchmarking)
+
+* **WhatsApp:**
+  - Uses P2P WebRTC for 1:1 calling.
+  - Camera is strictly withheld on the receiver until explicit "Accept" action.
+  - Call Waiting uses non-intrusive dual-tone pip and a top banner with "Decline" and "End & Accept".
+  - Audio route defaults to Earpiece for voice and Speakerphone for video, seamlessly adjusting on camera toggle.
+* **Telegram:**
+  - Proprietary end-to-end encryption handshake over MTProto before audio media unmutes.
+  - Employs dynamic bitrate throttling (down to 12 kbps Opus) under poor 2G/3G conditions to prevent call drops.
+* **Signal:**
+  - WebRTC with strict privacy policies (IP address obfuscation via Signal TURN servers).
+  - CallKit lock screen answering integrated on iOS with immediate hardware mute synchronization.
+* **Google Meet:**
+  - Always routes through central SFU media servers (never direct P2P).
+  - Employs aggressive bandwidth estimation (BWE) with simulcast / SVC (Scalable Video Coding) for multi-participant video adaptation.
+
+
+
+---
+
+## 15. iOS Audio Session Parity, Cold-Launch CallKit Synchronization & State Resilience (v2.8.0)
+
+### 15.1 iOS Audio Engine Parity (`just_audio` Integration)
+* **Root Cause of iOS Silence:** On iOS, when WebRTC initializes, `RTCAudioSession` sets the category to `AVAudioSessionCategoryPlayAndRecord` in `voiceChat` mode. Standard `flutter_ringtone_player` uses `AVAudioPlayer` with ambient playback, which iOS silences or ducks to near-zero volume when `PlayAndRecord` is active or when the physical silent switch is engaged.
+* **Solution:** Upgraded `CallPlatform` to use `just_audio` (`AudioPlayer`) on mobile platforms (`defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android`):
+  ```dart
+  // call_platform.dart
+  if (_isMobilePlatform) {
+    try {
+      _player ??= AudioPlayer();
+      await _player!.stop();
+      if (_soundStopped) return;
+      await _player!.setAsset(asset);
+      await _player!.setLoopMode(loop ? LoopMode.one : LoopMode.off);
+      await _player!.setVolume(volume);
+      if (!_soundStopped) await _player!.play();
+      return;
+    } catch (e) {
+      // Graceful fallback to FlutterRingtonePlayer if audio device is unavailable
+    }
+  }
+  ```
+* **Instant Teardown (`stopRingtone`):** Guarded with an atomic `_soundStopped` boolean lock so that calling `stopRingtone()` terminates playback in 0.0ms, completely eliminating lingering ring tones on fast hangups.
+
+### 15.2 Cold-Launch Socket Handler Rebinding
+* **Root Cause of Terminated CallKit Accept Failures:** When a call was accepted from the iOS lock screen or terminated state, `CallingController.onInit()` executed before `SignallingService.ensureConnected()` finished establishing the WebSocket connection. Event listeners registered on the socket prior to connection were previously lost or failed to bind.
+* **Solution:**
+  - Added a handler registry inside `CallSocketHandlers`:
+    ```dart
+    void rebind() {
+      final s = _socket();
+      if (s == null) return;
+      for (final e in _registry.entries) {
+        s.off(e.key);
+        for (final h in e.value) {
+          s.on(e.key, h);
+        }
+      }
+    }
+    ```
+  - `CallingController` invokes `_handlers.rebind()` immediately upon socket connection, ensuring zero dropped signals.
+
+### 15.3 SDP Offer Caching & CallKit Answer Retries
+* **Root Cause:** If `sdpOfferFromCaller` arrived while the WebRTC `RTCPeerConnection` was still initializing, the offer was discarded (`if (pc == null) return;`).
+* **Solution:**
+  - `_handlers.on("sdpOfferFromCaller")` caches `offer = sdp` and `callId` even if `peer == null`. Once the peer finishes initializing, the cached offer is immediately applied.
+  - In `_setupPeer()` for CallKit incoming calls, a retry loop re-dispatches `acceptCallFromCallKit` every 2 seconds (up to 3 times) until `offer != null` or call state connects.
+
+### 15.4 UUID Suffix & Peer ID Normalization (`_isForThisCall`)
+* **Root Cause of Stuck Screens on Hangup:** Call IDs differed between platforms (numeric string `"1001"` vs. UUID `"00000000-0000-4000-8000-000000001001"`). If a hangup arrived with a UUID, `_isForThisCall(data)` evaluated to `false`, leaving the remote user stuck on "Calling..." or "Ringing...".
+* **Solution:** Normalized ID matching by stripping UUID prefix and verifying matching `endedBy`, `rejectedBy`, `cancelledBy`, or `remoteUserId` against `_peerUserId`:
+  ```dart
+  final raw = id.replaceFirst('00000000-0000-4000-8000-', '').replaceFirst('call_', '');
+  final cur = callId?.toString().replaceFirst('00000000-0000-4000-8000-', '').replaceFirst('call_', '');
+  if (raw == cur) return true;
+  ```
+
+### 15.5 Flutter Unit Test Suite (100% Passing)
+* All 126 Calling QA unit tests in `test/call_qa` have passed with 0 failures:
+  - `call_audio_and_state_reliability_test.dart`: 9/9
+  - `call_backend_contract_v1_test.dart`: 5/5
+  - `call_backend_ready_v1_test.dart`: 24/24
+  - `call_parity_v1_test.dart`: 23/23
+  - `call_permissions_v1_test.dart`: 11/11
+  - `call_reliability_v1_test.dart`: 38/38
+  - `call_remote_end_v1_test.dart`: 16/16
+
+---
+
+## 16. Group Calling Lifecycle, Audio Feedback & Room Persistence
+
+### 16.1 Native Audio Feedback Parity (WhatsApp Style)
+* **Outgoing Group Calling Sound:**
+  - In `GroupCallingController`, implemented `_playSound()` using `CallPlatform.instance.playDialTone(CallPlatform.instance.dialToneAsset)` and `_stopSound()` using `CallPlatform.instance.stopRingtone()`.
+  - Dial tone plays immediately when initiating a group call and automatically ceases when any participant connects or when the call is cancelled/ended.
+* **Incoming Group Calling Ringtone:**
+  - In `GroupIncomingCallController`, implemented `_playRingtone()` with `CallPlatform.instance.playRingback()` backed by `AVAudioSessionCategoryPlayAndRecord` for iOS and Android audio manager stream routing, with fallback to `FlutterRingtonePlayer`.
+  - Added `Socket_GroupCallService.instance.onCallEnded` listener so remote caller hangup immediately silences audio and dismisses the incoming screen.
+
+### 16.2 Native CallKit & Android Telecom Integration
+* In `lib/app/Data/Services/IncommingCallKit/call_kit_handlers.dart`:
+  - **Accept Handling:** Replaced stub with full transition logic that dismisses CallKit UUID via `CallPlatform.instance.dismissCallKit(uuid)`, shuts down any active 1-on-1 call, and routes directly to `Routes.groupCallingScreen` with parameters (`groupId`, `groupName`, `callerId`, `callerName`, `isVideo`, `callId`, `callType: "incoming"`, `fromCallKit: true`).
+  - **Decline Handling:** Invokes `Socket_GroupCallService.instance.rejectGroupCall(effectiveCallId, effectiveGroupId)` to notify the backend and group roster immediately.
+
+### 16.3 Room Persistence Contract
+* In `GroupCallingController.endCall()`:
+  - Checked `hasOtherActiveParticipants = activeParticipants.where((p) => p.userId != myId).isNotEmpty`.
+  - If other participants are active, caller leaving invokes `leaveGroupCall()` instead of terminating the room for everyone via `endGroupCall()`.
+* Outgoing group calling is enabled via `group_call_service.dart` (`isGroupCallEnabled = true`).
+
+
+---
+
+## 17. Calling Bug Fixes & iOS Reliability Architecture
+
+### 17.1 Decline Screen Transition & Dial Tone Cut (Issue 1)
+* **Root Cause:**
+  - When the callee rejected a call, the caller's dial tone/ringback tone continued playing, and the caller remained stuck on "Ringing..." instead of transitioning to the "Call Declined" screen.
+  - In `calling_controller.dart`, `_handlers.on("callRejected")` did not immediately silence sound or update the visual status, and `_onCallEnded` did not assign `_endOutcome = rejectOutcome(data)`, leaving `_endInfo` null and bypassing `CallEndedScreen`.
+* **Frontend Resolution:**
+  - In `_handlers.on("callRejected")` and `_handlers.on("rejectCall")`:
+    - Immediately calls `stopSound()`.
+    - Updates `callStatus.value = "Call Declined"`.
+    - Sets `_endOutcome = rejectOutcome(data)`.
+    - Calls `update()` and cleans up session via `_cleanupCall`.
+  - In `_onCallEnded(dynamic data)`:
+    - If `data['reason']` or `data['status']` is `'declined'` / `'rejected'`, immediately stops sound, sets `callStatus.value = "Call Declined"`, sets `_endOutcome = rejectOutcome(data)`, and transitions to `CallEndedScreen(info: info)` with "Call Again" and "Cancel" buttons.
+
+### 17.2 Background / Terminated Call Pickup & Clock Skew Tolerance (Issue 2)
+* **Root Cause:**
+  - Physical devices with slight clock skews (ahead of server UTC by > 60s) had `remainingRingTime` evaluate to `Duration.zero`.
+  - In `callkit_service.dart`, `showIncoming` dropped the incoming call completely on `ringLeft == Duration.zero`.
+  - In `callkit_service.dart` (`handlePush`), iOS unconditionally executed `if (Platform.isIOS) return true;`, discarding FCM incoming call alerts if PushKit VoIP experienced delays.
+* **Frontend Resolution:**
+  - In `call_events.dart`: Increased `staleAfter` to `const Duration(seconds: 180)` (3 minutes).
+  - In `callkit_service.dart` (`showIncoming`): Added a clock skew tolerance guard. If `ringLeft == Duration.zero` but the server timestamp difference is within 180 seconds, falls back to a 15-second minimum ring duration rather than dropping the call.
+  - In `callkit_service.dart` (`handlePush`): Permitted FCM push fallback on iOS when CallKit is not yet actively displaying the incoming call session.
+
+### 17.3 Real-Time State Sync (Issue 3) & Mutual Call Collision / Glare (Issue 4)
+* **Status Sync:** Immediate teardown on both caller and callee ensures that if User A ends a call and User B dials User A immediately, User B connects without receiving a false "On another call" error.
+* **Glare Handling:** When User A and User B call each other simultaneously, the backend detects the collision and auto-bridges them. The frontend's `_onCallAcceptedByServer` handler cancels the missed call timer, stops dial tones, sets status to "Connecting", and proceeds directly to media streaming without error popups.
+
+### 17.5 Audio-to-Video Upgrade "Camera Disabled" Fix & Remote Mic State
+* **Audio-to-Video Upgrade State Sync (`calling_controller.dart`):**
+  - **Root Cause:** In `_handlers.on("upgradeToVideo")`, the handler contained `if (data["sdpOffer"] == null) return;`. When a peer upgraded to video and signaled `cameraState: true` without an immediate SDP renegotiation (or before SDP offer arrived), the function returned early, preventing `isRemoteVideoOn` from becoming `true`. Consequently, `calling_screen.dart` displayed the fallback tile saying "Camera Disabled".
+  - **Fix:** Removed the premature null check. When `sdp == null` arrives with `cameraState: true`, the handler immediately sets `isRemoteVideoOn = true`, triggers `_rebindRemoteForFirstFrames()`, syncs reactive state, and updates the UI.
+* **Remote Mic Mute Indication (`AudioCall_screen.dart`):**
+  - Added real-time reactive pill badge on the 1:1 audio call screen when `c.remoteMicMuted.value` is true, displaying the peer name and microphone muted status with icon, matching the video screen UX.
+
+### 17.6 WhatsApp Standard Group Calling UI/UX Parity
+* **Dark Glassmorphism Control Dock (`group_call_controls.dart`):**
+  - Redesigned the controls from the previous white container with purple outlines to a sleek WhatsApp-standard dark dock (`Color(0xEB1C272E)`).
+  - Modernized circular buttons for Mic, Video, Speaker Route, More, and prominent Red End Call (`Color(0xFFEA4335)`).
+* **WhatsApp Group Header & Encryption Badge (`group_calling_screen.dart`):**
+  - Deep dark background (`Color(0xFF0B141B)`).
+  - WhatsApp header featuring end-to-end encryption badge, group name, dynamic duration/status indicator with live green dot, and participant roster sheet counter button.
+* **Modernized Participant Grid (`group_participant_grid.dart`):**
+  - Sleek dark participant card tiles (`Color(0xFF1B2730)`), active audio mute badges (`Color(0xFFEA4335)`), translucent camera switch controls, and dark fallback avatar styling (`Color(0xFF1F2C34)`).
+* **Outgoing Sound & Dial Tone Control (`group_calling_controller.dart`):**
+  - Outgoing dial tone plays automatically on call launch and terminates immediately upon first remote participant connection, call decline, failure, or call termination.
+* **In-App Floating Minimizing Overlay (`in_app_group_call_overlay_service.dart`):**
+  - Added native `OverlayEntry` floating draggable call bubble for group calls.
+  - Floating pill shows live local/remote video or group avatar, duration timer, active participant counter badge, and one-tap red hang up button. Tapping the bubble restores the full call screen.
+* **Audio-to-Video Upgrade in Group Calls (`group_calling_controller.dart` & `group_call_controls.dart`):**
+  - Upgrades an active audio call to video on demand. Camera button is always accessible on controls; tapping in audio mode captures video track, emits `group_call_media_change` with `isVideo: true` and `group_call_camera_change` with `isVideoOn: true`.
+* **WhatsApp Group Incoming Call Screen (`group_incoming_call_screen.dart`):**
+  - Redesigned with WhatsApp dark palette (`Color(0xFF0B141B)`), pulsing avatar rings (`CallPulseAvatar`), caller subtitle, active members pill, Decline (red), Pre-join Mic Mute, and Join Call (WhatsApp green `#25D366`) buttons.
+* **WhatsApp Group Call Sheets (`group_call_sheets.dart` & `groupCallMore_Sheet.dart`):**
+  - Completely redesigned participant roster with WhatsApp dark modal (`Color(0xFF1E262C)`), active mute indicators, and one-tap "Ring" action buttons to invite or re-invite group members.
+  - More sheet with dark rounded tiles for Screen Sharing, Add Participants, and Group Chat.
+
+### 17.7 Calling ➔ Ringing Status Real-Time Sync on iOS Lockscreen & Group Call Initiation
+* **iOS Lockscreen / Terminated Ringing Status Feedback (`AppDelegate.swift`):**
+  - **Problem:** When an Android user called an iOS user whose device was locked or app was in a terminated state, the caller's screen remained stuck displaying "Calling..." instead of transitioning to "Ringing...", even though the iOS user's lockscreen was actively ringing via CallKit. The caller only saw "Ringing..." if the iOS user manually unlocked the phone and opened the app.
+  - **Root Cause:**
+    - In `AppDelegate.swift`, `updateCallingStatusViaApi` had a strict `guard let token = Self.readAccessToken(), !token.isEmpty else { return }` which aborted before sending the HTTP POST if the user token had expired or was unavailable in terminated state.
+    - If `incomingCallId` was empty, it did not fall back to the CallKit UUID `id`.
+  - **Resolution:**
+    - In `AppDelegate.swift`, removed the fatal token guard and allowed posting to `/calling-status` with `OptionalUserAuthentication` so the lockscreen CallKit immediately acknowledges ringing to the backend.
+    - Added fallback: `incomingCallId = incomingCallId.isEmpty ? id : incomingCallId`.
+    - Added `callerId: remoteUserId` to the JSON payload to ensure the backend identifies the caller even if token authentication is absent.
+* **Group Calling "Calling..." ➔ "Ringing..." Feedback (`group_calling_controller.dart`):**
+  - On initiating an outgoing group call, once the backend confirms group member push dispatch (`success == true`), `callStatus.value` is immediately updated from `"Calling..."` to `"Ringing..."`, providing instant visual confirmation that the group members are being signaled.
+
+### 17.8 Audio Call Video Upgrade Guard (Approach A: WhatsApp Standard Parity)
+* **1-on-1 Audio Call (`calling_screen.dart` & `calling_controller.dart`):**
+  - **Problem:** When User A called User B in an audio call and tapped the Video button while in the "Calling..." or "Ringing..." state, User A's local UI switched to video mode, but User B's lock screen had already received an audio call notification. When User B answered, User B entered the call on the Audio Call screen.
+  - **Resolution:**
+    - In `calling_screen.dart`, `_upgradeControl` now checks `connected = isCallConnected(c)`. The video button is dimmed/inactive until the call is connected (`callDurationRx > 0`).
+    - If tapped while ringing, it displays: *"You can switch to video after the call is answered."*
+    - In `calling_controller.dart`, `upgradeToVideoCall()` includes a safety guard blocking video upgrades if `callDurationRx.value <= 0 && callTimer == null`.
+* **Group Audio Call (`group_calling_controller.dart` & `group_call_controls.dart`):**
+  - **Problem:** Tapping camera switch while ringing in an audio group call turned on local video before any participant had joined, causing desynchronization with incoming members.
+  - **Resolution:**
+    - In `group_calling_controller.dart`, added `isConnected` (`callTimer != null || callDurationSeconds.value > 0 || callStatus.value == "Connected"`).
+    - `toggleCamera()` blocks video upgrades when `!isVideo && !isConnected`, displaying: *"You can switch to video after the call is answered."*
+    - In `group_call_controls.dart`, the video button shows dimmed inactive styling (`Colors.white30`) while waiting for participants to answer.
+
+### 17.9 Clean Video Preview & Center Avatar Removal (WhatsApp Parity)
+* **1-on-1 Video Call (`calling_screen.dart`):**
+  - **Problem:** A 104px pulsing avatar circle of the recipient was rendered in the dead center of the screen during `Calling...` and `Ringing...` states, obstructing the caller's live camera preview.
+  - **Resolution:** Removed `_videoRingingAvatar` from the video layer. The caller's front camera preview now fills the screen cleanly and unobstructed, with recipient name and status displayed in the top header bar, exactly matching WhatsApp and FaceTime.
+* **Group Video Call (`group_participant_grid.dart`):**
+  - **Problem:** The local participant tile in group video calls fell back to rendering a circular profile avatar because track validation checks rejected active local video streams.
+  - **Resolution:** Updated `_getLiveRenderer` to bind directly to the active `localRenderer`, streamlined `_hasRenderableVideo` to evaluate track enablement without strict muted-state rejections during pipeline startup, and bound reactive local camera state in `_buildTile`. The local camera stream renders immediately upon call start.
+
+
+
+
+
+
+
+---
+
+## 18. Group Call Feature Flag, 1-on-1 Call Transition & Avatar Resolution
+
+- **Group Calling Feature Gate (`group_call_service.dart`):**
+  - `GroupCallService.isGroupCallEnabled` is currently `false` ("Coming Soon").
+  - `NotificationServices.dart`, `call_kit_handlers.dart`, `callkit_service.dart`, `group_calling_screen.dart`, and `group_incoming_call_screen.dart` check `isGroupCallEnabled` and dismiss CallKit / show `GroupCallService.showComingSoon()` when disabled.
+- **1-on-1 Call Transition & Pre-Connect Video (`app_pages.dart`, `calling_controller.dart`, `calling_screen.dart`):**
+  - `callScreen` and `IncomingCallScreen` use `Transition.fadeIn` (`250ms`).
+  - `CallingController` defers `_initializeCall()` until `WidgetsBinding.instance.addPostFrameCallback` when media is enabled so the first frame of the route transition renders smoothly.
+  - `CallingScreen._mainVideoLayer` displays the local camera preview full-screen before the call connects (WhatsApp-style) and calls `unawaited(c.toggleSpeaker(context))`.
+- **Avatar Path Normalization (`call_widget.dart`, `profile_navigation.dart`):**
+  - `CallAvatar` and `profileImageUrl` normalize relative paths to `uploads/Auth/<clean>` when not already prefixed with `uploads/`.

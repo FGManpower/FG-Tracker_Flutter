@@ -45,8 +45,8 @@ app.*.map.json
 /android/app/release
 assets/service_account.json
 
-# Documentation
-/docs/
+# Documentation (tracked in Git so all Flutter developers have up-to-date specs)
+# /docs/
 
 # Privacy Policy & Legal Docs
 /assets/legal/
