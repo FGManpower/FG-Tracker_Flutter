@@ -929,6 +929,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             }
 
             _chatController?.messageData.clear();
+            _chatController?.pinnedMessage.value = null;
+            _chatController?.showPinnedBanner.value = false;
             _chatController?.updateMessageStream();
             // Media / Links / Docs used to keep the cleared files.
             _apiController.clearMediaLocally();

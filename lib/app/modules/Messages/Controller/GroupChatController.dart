@@ -891,6 +891,8 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
         if (uId != null && uId != myUserId) return;
         _messages.clear();
         _clearCachedCopy();
+        pinnedMessage.value = null;
+        showPinnedBanner.value = false;
         updateMessageStream();
       },
     );

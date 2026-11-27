@@ -190,8 +190,8 @@ This is the **frontend half** of the chat contract. The backend guide says what 
   - `for_everyone` → "This message was deleted": text, media, caption and reply cleared, pin banner removed.
 - **Pin:** emits `pin_message` / `unpin_message`; listens to `message_pinned` / `message_unpinned`.
 - **Clear chat:**
-  - Emits `clear_private_chat {chatId}`.
-  - `private_chat_cleared` clears the open chat **only if the id matches** (or this screen asked for it).
+  - Emits `clear_private_chat {chatId}` and unpins any active pinned message (`unpin_message`).
+  - Optimistically and upon `private_chat_cleared`, wipes `messageData`, clears `pinnedMessage.value` and hides `showPinnedBanner.value` immediately in real time.
 - **Block:** `POST /blockUser`, `POST /unblockUser`. Block state comes from the history response (`blockStatus`).
 - **Block in real time (F-1.1.8):** the open private chat swaps the input bar for the "blocked" banner without reopening the chat. Sources, all published on `SocketMessageService.blockStatusEvents`:
   - **`BLOCKED` send ack:** the contact blocked me → banner shows on the first rejected send (before, only a toast; the next sends failed silently until the chat was reopened).

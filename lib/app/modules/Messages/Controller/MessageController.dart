@@ -13,7 +13,8 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
-import 'package:fgtracker/app/Core/util/http/http_util.dart' show HttpGetException;
+import 'package:fgtracker/app/Core/util/http/http_util.dart'
+    show HttpGetException;
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
@@ -40,9 +41,14 @@ import 'chat_screen_logic.dart';
 
 import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:fgtracker/app/Core/util/rt_attachment_log.dart'; // TODO(rt-diagnostics)
-void log(String message, {Object? error, StackTrace? stackTrace, String? name}) {
+
+void log(String message,
+    {Object? error, StackTrace? stackTrace, String? name}) {
   if (kDebugMode) {
-    developer.log(message, error: error, stackTrace: stackTrace, name: name ?? 'MessageController');
+    developer.log(message,
+        error: error,
+        stackTrace: stackTrace,
+        name: name ?? 'MessageController');
   }
 }
 
@@ -266,7 +272,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxInt unreadCount = 0.obs;
 
   Timer? _floatingDateTimer;
-
 
   @override
   void onInit() {
@@ -502,8 +507,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     ChatTranslationService.instance.stopAudio();
     WidgetsBinding.instance.removeObserver(this);
     itemPositionsListener.itemPositions.removeListener(_onScrollDateChanged);
-    itemPositionsListener.itemPositions.removeListener(_onScrollForOlderMessages);
-    itemPositionsListener.itemPositions.removeListener(_updateScrollBottomState);
+    itemPositionsListener.itemPositions
+        .removeListener(_onScrollForOlderMessages);
+    itemPositionsListener.itemPositions
+        .removeListener(_updateScrollBottomState);
     // Note: textEditingController is left for GC to avoid crashing widget
     // builds during the 500ms route pop transition.
     _messageStreamController.close();
@@ -760,7 +767,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final stopwatch = Stopwatch()..start();
 
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final receiverId = memberData.userId.toString();
 
@@ -817,7 +824,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         }
       }
 
-      ActiveChatTracker.openPrivate(peerUserId: receiverId, chatId: passedChatId);
+      ActiveChatTracker.openPrivate(
+          peerUserId: receiverId, chatId: passedChatId);
 
       // Cached messages first (async, never blocks the UI); the API below
       // runs at the same time and does not wait for it or for the socket.
@@ -963,7 +971,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         callback: (message) {
           try {
             final messageData =
-            MessageData.fromJson(Map<String, dynamic>.from(message));
+                MessageData.fromJson(Map<String, dynamic>.from(message));
 
             if (messageData.groupId != null) {
               log("MESSAGE IGNORED IN PRIVATE CHAT SCREEN => HAS GROUP ID (${messageData.groupId})");
@@ -984,18 +992,24 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               (msg) => msg.id == messageData.id && messageData.id != null,
             );
             rtModel('private socket', messageData,
-                extra: 'alreadyInList=${existingIndex != -1}'); // TODO(rt-diagnostics)
+                extra:
+                    'alreadyInList=${existingIndex != -1}'); // TODO(rt-diagnostics)
 
             if (existingIndex != -1) {
               final existing = _messages[existingIndex];
-              final hasOldContent = (existing.content?.toString().trim().isNotEmpty ?? false) ||
-                  (existing.caption?.toString().trim().isNotEmpty ?? false) ||
-                  (existing.images?.isNotEmpty ?? false) ||
-                  (existing.videos?.isNotEmpty ?? false);
-              final hasNewContent = (messageData.content?.toString().trim().isNotEmpty ?? false) ||
-                  (messageData.caption?.toString().trim().isNotEmpty ?? false) ||
-                  (messageData.images?.isNotEmpty ?? false) ||
-                  (messageData.videos?.isNotEmpty ?? false);
+              final hasOldContent =
+                  (existing.content?.toString().trim().isNotEmpty ?? false) ||
+                      (existing.caption?.toString().trim().isNotEmpty ??
+                          false) ||
+                      (existing.images?.isNotEmpty ?? false) ||
+                      (existing.videos?.isNotEmpty ?? false);
+              final hasNewContent =
+                  (messageData.content?.toString().trim().isNotEmpty ??
+                          false) ||
+                      (messageData.caption?.toString().trim().isNotEmpty ??
+                          false) ||
+                      (messageData.images?.isNotEmpty ?? false) ||
+                      (messageData.videos?.isNotEmpty ?? false);
               if (!hasOldContent && hasNewContent) {
                 existing.content = messageData.content;
                 existing.caption = messageData.caption;
@@ -1056,8 +1070,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                     messageData.editedAt.toString().trim().isNotEmpty) {
                   existing.editedAt = messageData.editedAt;
                 } else {
-                  existing.editedAt =
-                      DateTime.now().toUtc().toIso8601String();
+                  existing.editedAt = DateTime.now().toUtc().toIso8601String();
                 }
                 updateMessageStream();
               }
@@ -1068,16 +1081,20 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               final isMyMessage =
                   messageData.senderId?.toString() == currentUserId.toString();
 
-              final hasContent = (messageData.content?.toString().trim().isNotEmpty ?? false) ||
-                  (messageData.caption?.toString().trim().isNotEmpty ?? false) ||
-                  (messageData.images?.isNotEmpty ?? false) ||
-                  (messageData.videos?.isNotEmpty ?? false);
+              final hasContent =
+                  (messageData.content?.toString().trim().isNotEmpty ??
+                          false) ||
+                      (messageData.caption?.toString().trim().isNotEmpty ??
+                          false) ||
+                      (messageData.images?.isNotEmpty ?? false) ||
+                      (messageData.videos?.isNotEmpty ?? false);
 
               if (messageData.isForwarded == true && !hasContent) {
                 final fromId = messageData.forwardedFromMessageId;
                 if (fromId != null) {
                   final source = _messages.firstWhereOrNull(
-                    (m) => m.id == fromId || m.id?.toString() == fromId.toString(),
+                    (m) =>
+                        m.id == fromId || m.id?.toString() == fromId.toString(),
                   );
                   if (source != null) {
                     messageData.content = source.content;
@@ -1281,7 +1298,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                     eventChatId == privateChatId.value);
 
             if (isForThisChat) {
-              AppLog.d("[TYPING] Peer typing started: $targetUserId in chat ${privateChatId.value}");
+              AppLog.d(
+                  "[TYPING] Peer typing started: $targetUserId in chat ${privateChatId.value}");
               isPeerTyping.value = true;
               _peerTypingResetTimer?.cancel();
               _peerTypingResetTimer =
@@ -1329,7 +1347,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                       eventChatId == privateChatId.value);
 
               if (isForThisChat) {
-                AppLog.d("[TYPING] Peer typing stopped: $targetUserId in chat ${privateChatId.value}");
+                AppLog.d(
+                    "[TYPING] Peer typing stopped: $targetUserId in chat ${privateChatId.value}");
                 _peerTypingResetTimer?.cancel();
                 isPeerTyping.value = false;
               }
@@ -1387,10 +1406,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         scope: ChatSocketScope.private,
         callback: (data) {
           try {
-            final targetMsgId = MessageData.parseIntOrNull(data['messageId'] ?? data['id']);
+            final targetMsgId =
+                MessageData.parseIntOrNull(data['messageId'] ?? data['id']);
             if (targetMsgId == null) return;
 
-            final currentUid = Global.storageServices.get(PrefConst.userId)?.toString();
+            final currentUid =
+                Global.storageServices.get(PrefConst.userId)?.toString();
             final eventUserId = data['userId']?.toString();
             final rawReactions = data['reactions'];
 
@@ -1400,7 +1421,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                 if (rawReactions is List) {
                   msg.reactions = rawReactions
                       .whereType<Map>()
-                      .map((r) => MessageReactionModel.fromJson(Map<String, dynamic>.from(r)))
+                      .map((r) => MessageReactionModel.fromJson(
+                          Map<String, dynamic>.from(r)))
                       .toList();
                 }
                 if (currentUid != null && eventUserId == currentUid) {
@@ -1421,7 +1443,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       );
 
       socketService.listenMessageDeleted(
-      scope: ChatSocketScope.private,
+        scope: ChatSocketScope.private,
         callback: (data) {
           if (data is! Map) {
             return;
@@ -1439,15 +1461,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             }
 
             final index = _messages.indexWhere(
-                  (message) => message.id == messageId,
+              (message) => message.id == messageId,
             );
 
             if (index == -1) {
               return;
             }
 
-            final me =
-                Global.storageServices.get(PrefConst.userId)?.toString();
+            final me = Global.storageServices.get(PrefConst.userId)?.toString();
             if (deleteType == "for_me") {
               // Only the user who deleted it loses it.
               if (!ChatScreenRules.isDeleteForMeByMe(data, me)) return;
@@ -1506,7 +1527,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+            Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -1522,7 +1543,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         }
 
         final msg = _messages.firstWhereOrNull(
-              (e) => e.id == messageId,
+          (e) => e.id == messageId,
         );
 
         if (msg != null) {
@@ -1540,7 +1561,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+            Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -1555,8 +1576,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                   (senderId == otherUserId && receiverId == currentUserId);
           if (!isSameChat) return;
         } else {
-          final eventMessageId =
-              MessageData.parseIntOrNull(data["messageId"]);
+          final eventMessageId = MessageData.parseIntOrNull(data["messageId"]);
           if (eventMessageId != null &&
               pinnedMessage.value?.id != eventMessageId) {
             return;
@@ -1572,6 +1592,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     log("[CHAT-PERF] Initialization method completed: ${stopwatch.elapsedMilliseconds} ms");
   }
+
   bool isUserAtBottom() {
     if (_messages.isEmpty) return true;
 
@@ -2022,7 +2043,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final myUserId = Global.storageServices.get(PrefConst.userId)?.toString();
     if (myUserId == null) return;
 
-    _liveLocationTimer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+    _liveLocationTimer =
+        Timer.periodic(const Duration(seconds: 15), (timer) async {
       if (DateTime.now().isAfter(endTime)) {
         timer.cancel();
         return;
@@ -2049,7 +2071,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         message.content = updated.toContent();
         updateMessageStream();
 
-        final myUserId = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+        final myUserId =
+            Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
         final otherId = memberData.userId.toString();
         socketService.editMessage(
           messageId: message.id!,
@@ -2090,7 +2113,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     required String deleteType,
   }) async {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final otherUserId = memberData.userId.toString();
 
@@ -2144,7 +2167,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           (m) =>
               (target.id != null && m.id == target.id) ||
               (target.forwardedFromMessageId != null &&
-                  m.id?.toString() == target.forwardedFromMessageId?.toString()),
+                  m.id?.toString() ==
+                      target.forwardedFromMessageId?.toString()),
         );
 
         if (found != null) {
@@ -2230,7 +2254,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-
   /// Direct history fetch by peer user ID (no chatId needed upfront).
   /// Resolves conversationId and loads messages immediately.
   Future<void> getPrivateMessageHistoryByPeer(
@@ -2272,14 +2295,15 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       _perf?.mark('API done');
 
       if (result.status == true) {
-        final resolved = result.chatId?.toString() ??
-            result.conversationId?.toString();
+        final resolved =
+            result.chatId?.toString() ?? result.conversationId?.toString();
         if (resolved != null && resolved.isNotEmpty) {
           privateChatId.value = resolved;
           ActiveChatTracker.setPrivateChatId(peerUserId, resolved);
           if (arguments != null) arguments!['chatId'] = resolved;
 
-          final me = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+          final me =
+              Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
           if (!isClosed && me.isNotEmpty) {
             socketService.markPrivateSeen(
               chatId: resolved,
@@ -2348,7 +2372,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         _pager.fail();
         // After a soft timeout the late failure is a second failure.
         _onHistoryFailed(e,
-            attempt: softTimedOut ? (_lastAttempt = _bar.startAttempt()) : attempt,
+            attempt:
+                softTimedOut ? (_lastAttempt = _bar.startAttempt()) : attempt,
             userRetry: userRetry);
       }
     } finally {
@@ -2427,9 +2452,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           peerLastSeen.value = appL10n.common_online;
         } else if (lastSeen.isNotEmpty) {
           try {
-            peerLastSeen.value = formatLastSeenWith(
-                    appL10n, Tracking.parseDateTime(lastSeen)) ??
-                lastSeen;
+            peerLastSeen.value =
+                formatLastSeenWith(appL10n, Tracking.parseDateTime(lastSeen)) ??
+                    lastSeen;
           } catch (e) {
             log("HISTORY DEBUG => lastSeen parsing error: $e");
             peerLastSeen.value = lastSeen;
@@ -2485,7 +2510,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-                (message) => message.id == pinnedId,
+            (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -2567,7 +2592,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         // messages (after the quiet retry); after a soft timeout the late
         // failure counts as a second failure.
         _onHistoryFailed(e,
-            attempt: softTimedOut ? (_lastAttempt = _bar.startAttempt()) : attempt,
+            attempt:
+                softTimedOut ? (_lastAttempt = _bar.startAttempt()) : attempt,
             background: background,
             userRetry: userRetry);
       }
@@ -2618,7 +2644,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         log("Scroll execution error: $e");
         if (retryCount < 6) {
           Future.delayed(const Duration(milliseconds: 60), () {
-            _scrollToBottomExecution(instant: instant, retryCount: retryCount + 1);
+            _scrollToBottomExecution(
+                instant: instant, retryCount: retryCount + 1);
           });
         }
       }
@@ -2669,8 +2696,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     showPinnedBanner.value = false;
     ChatStateTracker.isChatCallScreenOpen = false;
   }
-
-
 
   void startSearch() {
     // The search field takes focus (keyboard): the emoji panel must not
@@ -2898,7 +2923,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     if (isAttachment) {
       targetMsg.caption = text;
-      final msgType = targetMsg.messageType?.toString().toLowerCase().trim() ?? '';
+      final msgType =
+          targetMsg.messageType?.toString().toLowerCase().trim() ?? '';
       if (msgType == 'audio' || msgType == 'voice') {
         targetMsg.audioUrl ??= originalMedia;
         if (originalMedia != null) {
@@ -2921,7 +2947,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     // 2. Emit socket event to notify peer
     final isMediaAttachment = isAttachment &&
-        (targetMsg.messageType != 'text' && targetMsg.messageType != 'text_message');
+        (targetMsg.messageType != 'text' &&
+            targetMsg.messageType != 'text_message');
 
     socketService.editMessage(
       messageId: message.id!,
@@ -3000,6 +3027,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     _cacheSaveTimer?.cancel();
     _cachedCopy = const [];
     ChatMessageCache.clear(ChatMessageCache.privateKey(_privatePeerId));
+    pinnedMessage.value = null;
+    showPinnedBanner.value = false;
     updateMessageStream();
 
     log("CHAT MESSAGES CLEARED FROM UI");
@@ -3016,7 +3045,23 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       "CLEAR PRIVATE CHAT => chatId=${privateChatId.value}",
     );
 
+    // If a message was pinned in this chat, also unpin so backend and peer sync
+    if (pinnedMessage.value != null) {
+      unpinMessage();
+    }
+
     _clearRequestedAt = DateTime.now();
+
+    // Optimistic UI clear for immediate real-time feedback
+    messageData.clear();
+    _cacheSaveTimer?.cancel();
+    _cachedCopy = const [];
+    ChatMessageCache.clear(ChatMessageCache.privateKey(_privatePeerId));
+    pinnedMessage.value = null;
+    showPinnedBanner.value = false;
+    updateMessageStream();
+    _syncChatListPreview();
+
     socketService.clearPrivateChat(
       chatId: privateChatId.value,
     );
@@ -3083,7 +3128,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   // ==========================================
   void toggleReaction(MessageData message, String emoji) {
     if (message.id == null) return;
-    final currentUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString();
     if (currentUserId == null) return;
 
     final targetPeerId = memberData.userId?.toString() ?? _privatePeerId ?? '';
@@ -3093,9 +3139,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final isToggleOff = existingUserReaction == emoji;
     message.userReaction = isToggleOff ? null : emoji;
 
-    final currentReactions = List<MessageReactionModel>.from(message.reactions ?? []);
+    final currentReactions =
+        List<MessageReactionModel>.from(message.reactions ?? []);
     if (isToggleOff) {
-      final existingIndex = currentReactions.indexWhere((r) => r.emoji == emoji);
+      final existingIndex =
+          currentReactions.indexWhere((r) => r.emoji == emoji);
       if (existingIndex >= 0) {
         final existing = currentReactions[existingIndex];
         final newCount = (existing.count ?? 1) - 1;
@@ -3108,7 +3156,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       }
     } else {
       if (existingUserReaction != null) {
-        final prevIndex = currentReactions.indexWhere((r) => r.emoji == existingUserReaction);
+        final prevIndex =
+            currentReactions.indexWhere((r) => r.emoji == existingUserReaction);
         if (prevIndex >= 0) {
           final prev = currentReactions[prevIndex];
           final newCount = (prev.count ?? 1) - 1;
@@ -3122,8 +3171,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       }
       final newIndex = currentReactions.indexWhere((r) => r.emoji == emoji);
       if (newIndex >= 0) {
-        currentReactions[newIndex].count = (currentReactions[newIndex].count ?? 0) + 1;
-        currentReactions[newIndex].userIds?.add(int.tryParse(currentUserId) ?? 0);
+        currentReactions[newIndex].count =
+            (currentReactions[newIndex].count ?? 0) + 1;
+        currentReactions[newIndex]
+            .userIds
+            ?.add(int.tryParse(currentUserId) ?? 0);
       } else {
         currentReactions.add(MessageReactionModel(
           emoji: emoji,
@@ -3360,7 +3412,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (isClosed || result.status != true) return;
 
         final batch = result.messageData ?? [];
-        final merged = ChatScreenRules.merge(_messages, batch.reversed.toList());
+        final merged =
+            ChatScreenRules.merge(_messages, batch.reversed.toList());
         final overlapped = merged.added < batch.length;
         if (merged.added > 0) {
           appended += merged.added - merged.prepended;
@@ -3368,7 +3421,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             ..clear()
             ..addAll(merged.messages);
         }
-        if (overlapped || batch.isEmpty || result.pagination?.hasNextPage == false) {
+        if (overlapped ||
+            batch.isEmpty ||
+            result.pagination?.hasNextPage == false) {
           break;
         }
       }
@@ -3395,7 +3450,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           limit: ChatScreenRules.pageSize,
         );
         if (recentResult.status == true && recentResult.messageData != null) {
-          final recentMerge = ChatScreenRules.merge(_messages, recentResult.messageData!.reversed.toList());
+          final recentMerge = ChatScreenRules.merge(
+              _messages, recentResult.messageData!.reversed.toList());
           if (recentMerge.updated || recentMerge.added > 0) {
             _messages
               ..clear()
