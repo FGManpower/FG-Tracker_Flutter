@@ -2,6 +2,28 @@ import 'dart:convert';
 
 import 'package:fgtracker/app/Model/status_model.dart';
 
+/// In-memory cache for audio URLs keyed by message id / clientMessageId.
+/// Protects voice notes from losing their audio path when edited with text captions.
+class AudioUrlMemoryCache {
+  AudioUrlMemoryCache._();
+  static final Map<String, String> _cache = <String, String>{};
+
+  static void set(dynamic id, String? url) {
+    if (id == null) return;
+    final key = id.toString().trim();
+    final val = url?.trim();
+    if (key.isEmpty || key == 'null' || val == null || val.isEmpty || val == 'null') return;
+    _cache[key] = val;
+  }
+
+  static String? get(dynamic id) {
+    if (id == null) return null;
+    final key = id.toString().trim();
+    if (key.isEmpty || key == 'null') return null;
+    return _cache[key];
+  }
+}
+
 class GetMessage {
   bool? status;
   String? message;
@@ -315,6 +337,7 @@ class MessageData {
     this.receiverId,
     this.messageType,
     this.content,
+    this.audioUrl,
     this.timestamp,
     this.seenCount,
     this.seenBy,
@@ -426,8 +449,29 @@ class MessageData {
     if (type == 'audio' || type == 'voice') {
       final media = _decodeJsonList(json['mediaUrls'] ?? json['media_urls']);
       if (media != null && media.isNotEmpty) return _cleanStr(media.first);
+      final mediaDirect = _cleanStr(json['mediaUrl'] ??
+          json['media_url'] ??
+          json['fileUrl'] ??
+          json['file_url']);
+      if (mediaDirect != null) return mediaDirect;
     }
     return null;
+  }
+
+  static bool _looksLikeAudioMedia(String value) {
+    final v = value.trim().toLowerCase();
+    if (v.startsWith('http://') || v.startsWith('https://')) return true;
+    if (v.startsWith('/data/') ||
+        v.startsWith('/storage/') ||
+        v.startsWith('uploads/')) {
+      return true;
+    }
+    return v.endsWith('.mp3') ||
+        v.endsWith('.m4a') ||
+        v.endsWith('.aac') ||
+        v.endsWith('.wav') ||
+        v.endsWith('.ogg') ||
+        v.endsWith('.opus');
   }
 
   /// Socket payloads can carry an attachment outside the fields the history
@@ -477,6 +521,35 @@ class MessageData {
         final size = first is Map ? _cleanStr(first['size']) : null;
         content = [path, name ?? path.split('/').last, if (size != null) size]
             .join('||');
+      }
+    }
+
+    // Audio / Voice: audioUrl when missing, fallback to mediaUrl or audio content path.
+    if ((type == 'audio' || type == 'voice')) {
+      if (_cleanStr(audioUrl) == null) {
+        final media = _cleanStr(pick('audioUrl') ??
+            pick('audio_url') ??
+            pick('mediaUrl') ??
+            pick('media_url') ??
+            pick('fileUrl') ??
+            pick('file_url'));
+        if (media != null) {
+          audioUrl = media;
+        } else if (_cleanStr(content) != null &&
+            !content!.contains('||') &&
+            _looksLikeAudioMedia(content!)) {
+          audioUrl = content;
+        } else {
+          final cached = AudioUrlMemoryCache.get(id) ??
+              AudioUrlMemoryCache.get(clientMessageId);
+          if (cached != null) {
+            audioUrl = cached;
+          }
+        }
+      }
+      if (audioUrl != null) {
+        AudioUrlMemoryCache.set(id, audioUrl);
+        AudioUrlMemoryCache.set(clientMessageId, audioUrl);
       }
     }
   }
@@ -622,6 +695,12 @@ class MessageData {
         ?.toString();
     audioUrl = _firstAudioUrl(json) ??
         (nestedSource == null ? null : _firstAudioUrl(nestedSource));
+    audioUrl ??= AudioUrlMemoryCache.get(id) ??
+        AudioUrlMemoryCache.get(clientMessageId);
+    if (audioUrl != null) {
+      AudioUrlMemoryCache.set(id, audioUrl);
+      AudioUrlMemoryCache.set(clientMessageId, audioUrl);
+    }
     senderId = json['senderId'] ??
         json['sender_id'] ??
         json['userId'] ??

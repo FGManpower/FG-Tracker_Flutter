@@ -1023,8 +1023,8 @@ The drawer navigation in `lib/app/modules/home/Views/sidemenu.dart` is refactore
   - Badges: `#EDE9FE` soft-purple rounded tiles (44×44, 14.r radius) with `#5D47F1` brand purple icons.
   - Typography: `#1E202B` bold headers with `#7A7F93` regular subtitles and `#7E69F7` chevrons.
   - Dividers: Subtle `#F0ECFC` lines.
-- **Communication Channels (Full data from Legal §11)**:
-  - **Phone**: Calls `tel:+919372723727` to launch device dialer (`+91 93727 23727`).
+- **Communication Channels (Full data from Legal §11):**
+  - **Phone**: Calls `tel:+919372723727` to launch device dialer (`+91 93727 23727 (9:00 AM - 6:00 PM)`).
   - **Email**: Calls `mailto:fgtracker@fgmanpower.com` to launch mail client (`fgtracker@fgmanpower.com`).
   - **WhatsApp**: Calls `whatsapp://send?phone=919372723727` with automatic web fallback `https://wa.me/919372723727` (`+91 93727 23727`).
   - **Website**: Launches `https://fgtracker.fgmanpower.com/` in browser (`fgtracker.fgmanpower.com`).

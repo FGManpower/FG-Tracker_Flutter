@@ -2890,8 +2890,22 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     final isAttachment =
         ChatScreenRules.isAttachment(targetMsg.messageType, targetMsg);
+    final originalMedia = targetMsg.audioUrl ??
+        (ChatScreenRules.looksLikeMediaUrl(targetMsg.content ?? '')
+            ? targetMsg.content?.toString()
+            : (AudioUrlMemoryCache.get(targetMsg.id) ??
+                AudioUrlMemoryCache.get(targetMsg.clientMessageId)));
+
     if (isAttachment) {
       targetMsg.caption = text;
+      final msgType = targetMsg.messageType?.toString().toLowerCase().trim() ?? '';
+      if (msgType == 'audio' || msgType == 'voice') {
+        targetMsg.audioUrl ??= originalMedia;
+        if (originalMedia != null) {
+          AudioUrlMemoryCache.set(targetMsg.id, originalMedia);
+          AudioUrlMemoryCache.set(targetMsg.clientMessageId, originalMedia);
+        }
+      }
     } else {
       targetMsg.content = text;
     }
@@ -2906,14 +2920,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     );
 
     // 2. Emit socket event to notify peer
-    final originalMedia = targetMsg.content?.toString();
-    final isDoc = targetMsg.messageType == 'document' ||
-        targetMsg.messageType == 'file' ||
-        (originalMedia != null && originalMedia.contains('||'));
+    final isMediaAttachment = isAttachment &&
+        (targetMsg.messageType != 'text' && targetMsg.messageType != 'text_message');
 
     socketService.editMessage(
       messageId: message.id!,
-      content: isDoc ? (originalMedia ?? text) : text,
+      content: isMediaAttachment ? (originalMedia ?? text) : text,
       caption: text,
       mediaUrl: originalMedia,
       messageType: targetMsg.messageType?.toString(),

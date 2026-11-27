@@ -219,10 +219,19 @@ String _documentFullUrl(String path) {
 
 /// Playable URL of a voice/audio message. Empty when the message has no
 /// file, so the bubble shows "Media is missing" instead of a dead player.
-String _audioFullUrl(dynamic content) {
+String _audioFullUrl(dynamic content, [dynamic id, dynamic clientMsgId]) {
   final value = content?.toString().trim() ?? '';
-  if (value.isEmpty || value == 'null') return '';
-  return resolveMediaUrl(value);
+  if (value.isNotEmpty && value != 'null' && ChatScreenRules.looksLikeMediaUrl(value)) {
+    return resolveMediaUrl(value);
+  }
+  final cached = AudioUrlMemoryCache.get(id) ?? AudioUrlMemoryCache.get(clientMsgId);
+  if (cached != null && cached.isNotEmpty && cached != 'null') {
+    return resolveMediaUrl(cached);
+  }
+  if (value.isNotEmpty && value != 'null') {
+    return resolveMediaUrl(value);
+  }
+  return '';
 }
 
 /// Extracts caption for an attachment message, falling back to non-media text
@@ -1371,7 +1380,18 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "audio") {
       // Server audio location first (socket payloads), else content.
-      final audioSrc = _audioFullUrl(message.audioUrl ?? message.content);
+      final audioSrc = _audioFullUrl(
+        message.audioUrl ??
+            (ChatScreenRules.looksLikeMediaUrl(message.content ?? '')
+                ? message.content
+                : null),
+        message.id,
+        message.clientMessageId,
+      );
+      if (audioSrc.isNotEmpty) {
+        AudioUrlMemoryCache.set(message.id, audioSrc);
+        AudioUrlMemoryCache.set(message.clientMessageId, audioSrc);
+      }
       final audioBubble = AudioBubble(
         // Temp → server message, or a later event with the URL: a new key
         // gives a fresh bubble, so the player loads the new source.
@@ -3212,7 +3232,18 @@ class GroupChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "audio") {
       // Server audio location first (socket payloads), else content.
-      final audioSrc = _audioFullUrl(message.audioUrl ?? message.content);
+      final audioSrc = _audioFullUrl(
+        message.audioUrl ??
+            (ChatScreenRules.looksLikeMediaUrl(message.content ?? '')
+                ? message.content
+                : null),
+        message.id,
+        message.clientMessageId,
+      );
+      if (audioSrc.isNotEmpty) {
+        AudioUrlMemoryCache.set(message.id, audioSrc);
+        AudioUrlMemoryCache.set(message.clientMessageId, audioSrc);
+      }
       final audioBubble = AudioBubble(
         // Temp → server message, or a later event with the URL: a new key
         // gives a fresh bubble, so the player loads the new source.

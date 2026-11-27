@@ -418,6 +418,14 @@ class ChatScreenRules {
     if (captionCandidate == null && rawContent == null) return false;
 
     if (isAtt) {
+      final t = msg.messageType?.toString().toLowerCase().trim() ?? '';
+      if (t == 'audio' || t == 'voice') {
+        if (msg.audioUrl == null &&
+            msg.content != null &&
+            _looksLikeMediaUrl(msg.content!)) {
+          msg.audioUrl = msg.content;
+        }
+      }
       if (captionCandidate != null &&
           !_looksLikeMediaUrl(captionCandidate.toString())) {
         msg.caption = captionCandidate.toString();
@@ -430,6 +438,9 @@ class ChatScreenRules {
           (_looksLikeMediaUrl(rawContent.toString()) ||
               rawContent.toString().contains('||'))) {
         msg.content = rawContent.toString();
+        if (t == 'audio' || t == 'voice') {
+          msg.audioUrl = rawContent.toString();
+        }
       }
     } else {
       final newContent = rawContent ?? captionCandidate;

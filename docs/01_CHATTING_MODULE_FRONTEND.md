@@ -182,8 +182,8 @@ This is the **frontend half** of the chat contract. The backend guide says what 
   - Emits `typing` / `stop_typing {userId, receiverId, chatId}`, throttled 2.5 s; stops after 2.5 s idle.
   - Listens to `typing` / `stop_typing` and shows a **typing bubble**; auto-clears after 4 s.
 - **Edit:**
-  - Emits `editMessage`.
-  - Listens to **both** `messageEdited` and `message_edited`, keyed by `messageId` or `id`; text is updated in place (ticks kept).
+  - Emits `editMessage`: for attachments (`audio`, `voice`, `image`, `video`, `document`, `file`), preserves the media URL in `content` and `mediaUrl` while placing the edited text in `caption`. For text messages, updates `content`.
+  - Listens to **both** `messageEdited` and `message_edited`, keyed by `messageId` or `id`; text/caption is updated in place, while `audioUrl` and media content remain protected (ticks kept).
 - **Delete:**
   - Emits `delete_message {messageId, userId, deleteType: "for_me|for_everyone", otherUserId}`.
   - `message_deleted` with `for_me` removes the bubble **only if `userId` is me**.

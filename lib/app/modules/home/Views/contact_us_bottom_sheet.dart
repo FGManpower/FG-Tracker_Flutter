@@ -25,6 +25,7 @@ class ContactUsBottomSheet extends StatelessWidget {
   const ContactUsBottomSheet({super.key});
 
   static const String companyPhone = '+91 93727 23727';
+  static const String companyPhoneHours = '9:00 AM - 6:00 PM';
   static const String companyEmail = 'fgtracker@fgmanpower.com';
   static const String companyWhatsApp = '919372723727';
   static const String companyAddress =
@@ -142,7 +143,7 @@ class ContactUsBottomSheet extends StatelessWidget {
                 context,
                 icon: Icons.call_outlined,
                 title: context.l10n.call_phone,
-                subtitle: companyPhone,
+                subtitle: '$companyPhone ($companyPhoneHours)',
                 onTap: () {
                   Navigator.pop(context);
                   _launchUrl(context, 'tel:+919372723727');

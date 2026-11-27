@@ -1323,6 +1323,11 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     final currentUserAvatar =
         Global.storageServices.get(PrefConst.profileImage)?.toString();
 
+    final isAudio = messageType == 'audio' || messageType == 'voice';
+    if (isAudio && content.isNotEmpty) {
+      AudioUrlMemoryCache.set(clientMessageId, content);
+    }
+
     final msg = MessageData(
       clientMessageId: clientMessageId,
       senderId: currentUserId,
@@ -1330,6 +1335,7 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
       receiverId: groupId,
       messageType: messageType,
       content: content,
+      audioUrl: isAudio ? content : null,
       caption: caption,
       images: images,
       videos: videos?.map((v) => MessageVideo.fromJson(v)).toList(),
@@ -2708,8 +2714,22 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
 
     final isAttachment =
         ChatScreenRules.isAttachment(targetMsg.messageType, targetMsg);
+    final originalMedia = targetMsg.audioUrl ??
+        (ChatScreenRules.looksLikeMediaUrl(targetMsg.content ?? '')
+            ? targetMsg.content?.toString()
+            : (AudioUrlMemoryCache.get(targetMsg.id) ??
+                AudioUrlMemoryCache.get(targetMsg.clientMessageId)));
+
     if (isAttachment) {
       targetMsg.caption = text;
+      final msgType = targetMsg.messageType?.toString().toLowerCase().trim() ?? '';
+      if (msgType == 'audio' || msgType == 'voice') {
+        targetMsg.audioUrl ??= originalMedia;
+        if (originalMedia != null) {
+          AudioUrlMemoryCache.set(targetMsg.id, originalMedia);
+          AudioUrlMemoryCache.set(targetMsg.clientMessageId, originalMedia);
+        }
+      }
     } else {
       targetMsg.content = text;
     }
@@ -2724,14 +2744,12 @@ class GroupMessageController extends GetxController with WidgetsBindingObserver 
     );
 
     // 2. Emit socket event to notify group members
-    final originalMedia = targetMsg.content?.toString();
-    final isDoc = targetMsg.messageType == 'document' ||
-        targetMsg.messageType == 'file' ||
-        (originalMedia != null && originalMedia.contains('||'));
+    final isMediaAttachment = isAttachment &&
+        (targetMsg.messageType != 'text' && targetMsg.messageType != 'text_message');
 
     socketService.editMessage(
       messageId: message.id!,
-      content: isDoc ? (originalMedia ?? text) : text,
+      content: isMediaAttachment ? (originalMedia ?? text) : text,
       caption: text,
       mediaUrl: originalMedia,
       messageType: targetMsg.messageType?.toString(),
