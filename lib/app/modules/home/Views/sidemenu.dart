@@ -23,6 +23,7 @@ import 'package:fgtracker/app/modules/auth/Controller/logout_controller.dart';
 import 'package:fgtracker/app/modules/auth/Controller/account_deletion_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
+import 'package:fgtracker/app/modules/banners/Views/my_banners_screen.dart';
 import 'package:fgtracker/app/modules/home/Views/contact_us_bottom_sheet.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
@@ -466,6 +467,17 @@ class Sidemenu extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               showContactUsBottomSheet(context);
+            },
+          ),
+          _buildDivider(),
+          // Paid Banner Ads
+          _buildDrawerItem(
+            icon: Icons.campaign_rounded,
+            title: "Banner Ads",
+            subtitle: "Book & manage paid banner ads",
+            onTap: () {
+              Navigator.pop(context);
+              Get.to(() => const MyBannersScreen());
             },
           ),
           _buildDivider(),

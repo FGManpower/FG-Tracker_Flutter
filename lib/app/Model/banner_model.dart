@@ -31,21 +31,41 @@ class bannermodel {
 
 class BannerData {
   int? id;
+  int? slotNumber;
   String? title;
   String? description;
+  String? targetUrl;
+  String? ctaText;
   String? imageUrl;
+  String? startsAt;
+  String? expiresAt;
 
-  BannerData({this.id, this.title, this.description, this.imageUrl});
+  BannerData({
+    this.id,
+    this.slotNumber,
+    this.title,
+    this.description,
+    this.targetUrl,
+    this.ctaText,
+    this.imageUrl,
+    this.startsAt,
+    this.expiresAt,
+  });
 
   BannerData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
+    slotNumber = json['slotNumber'];
     title = json['title'];
     description = json['description'];
+    targetUrl = json['targetUrl']?.toString();
+    ctaText = json['ctaText']?.toString();
     imageUrl = (json['imageUrl'] ??
             json['image'] ??
             json['image_url'] ??
             json['banner_image'])
         ?.toString();
+    startsAt = json['startsAt']?.toString();
+    expiresAt = json['expiresAt']?.toString();
   }
 
   /// Resolves the banner image URL to a full network URL if relative.

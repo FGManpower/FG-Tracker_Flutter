@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Data/Repositories/banner_Repo.dart';
 import 'package:fgtracker/app/Data/Services/local_banner_service.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:get/get.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../Model/banner_model.dart';
 
 class BannerUi extends StatelessWidget {
@@ -83,6 +85,7 @@ class _BannerSliderState extends State<BannerSlider> {
 
   File? _localBannerFile;
   bool _isLoadingLocal = true;
+  final Set<int> _trackedImpressions = <int>{};
 
   /// Width / height of one banner card (set in build from the real layout).
   /// The crop after picking a photo is locked to this shape.
@@ -259,14 +262,32 @@ class _BannerSliderState extends State<BannerSlider> {
 
   /// Renders server-fetched API promotional banners
   Widget _buildApiBanner(BannerData banner) {
+    if (banner.id != null && !_trackedImpressions.contains(banner.id)) {
+      _trackedImpressions.add(banner.id!);
+      BannerRepo.trackEvent(banner.id!, 'impression');
+    }
+
     final String resolvedUrl = banner.resolvedImageUrl.isNotEmpty
         ? banner.resolvedImageUrl
         : (Utility.isNullEmptyOrFalse(banner.imageUrl)
             ? MyAppTheme.notFoundImg
             : banner.imageUrl.toString());
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4.w),
+    return GestureDetector(
+      onTap: () async {
+        if (banner.id != null) {
+          BannerRepo.trackEvent(banner.id!, 'click');
+        }
+        final target = banner.targetUrl?.trim();
+        if (target != null && target.isNotEmpty) {
+          final uri = Uri.tryParse(target);
+          if (uri != null) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+        }
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
@@ -307,6 +328,7 @@ class _BannerSliderState extends State<BannerSlider> {
           },
         ),
       ),
+    ),
     );
   }
 

@@ -26,6 +26,24 @@ class Urls {
       '${ConstRes.aBaseUrl}v2/otp-charge/my-rate';
   static const String updateProfile = '${ConstRes.aBaseUrl}updateProfile';
   static const String banner = '${ConstRes.aBaseUrl}banners';
+  static const String bannerPlans = '${ConstRes.aBaseUrl}banners/plans';
+  static const String bannerSlotsAvailability =
+      '${ConstRes.aBaseUrl}banners/slots/availability';
+  static const String bannerDraft = '${ConstRes.aBaseUrl}banners/draft';
+  static const String bannerCreateOrder =
+      '${ConstRes.aBaseUrl}banners/payment/create-order';
+  static const String bannerVerifyPayment =
+      '${ConstRes.aBaseUrl}banners/payment/verify';
+  static const String myBanners = '${ConstRes.aBaseUrl}banners/my-banners';
+  static String bannerResubmit(int id) =>
+      '${ConstRes.aBaseUrl}banners/my-banners/$id/resubmit';
+  static String bannerRefund(int id) =>
+      '${ConstRes.aBaseUrl}banners/my-banners/$id/refund';
+  static String bannerRenew(int id) =>
+      '${ConstRes.aBaseUrl}banners/my-banners/$id/renew';
+  static String bannerDeleteDraft(int id) =>
+      '${ConstRes.aBaseUrl}banners/my-banners/$id';
+  static String bannerTrack(int id) => '${ConstRes.aBaseUrl}banners/$id/track';
   static const String getAllGroup = '${ConstRes.aBaseUrl}get-all-group';
   static const String recentCallHistory = '${ConstRes.aBaseUrl}history'
       '';
