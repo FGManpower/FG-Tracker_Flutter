@@ -58,6 +58,11 @@ private let candidateTokenPrefKeys = [
     private var pendingRecentsCallback: [String: Any]?
     private var deferredRouteCheck: DispatchWorkItem?
     private var nativeCallKitProvider: CXProvider?
+    private var shareIntakeChannel: FlutterMethodChannel?
+    private var shareIntakeEventSink: FlutterEventSink?
+    private var pendingSharePayload: [String: Any]?
+    private let shareAppGroupId = "group.com.fg.fgtracker"
+    private let shareDefaultsKey = "pending_share_payload"
 
     override func application(
         _ application: UIApplication,
@@ -83,6 +88,7 @@ private let candidateTokenPrefKeys = [
         let launched = super.application(application, didFinishLaunchingWithOptions: launchOptions)
         setupAudioRouteChannelIfNeeded()
         setupActiveChatChannel()
+        setupShareIntakeChannelsIfNeeded()
         if let vc = window?.rootViewController as? FlutterViewController {
             WalkieLiveActivityManager.shared.setup(binaryMessenger: vc.binaryMessenger)
         }
@@ -93,6 +99,8 @@ private let candidateTokenPrefKeys = [
         hasLaunchedIntoForeground = true
         enteredBackgroundAt = nil
         setupAudioRouteChannelIfNeeded()
+        setupShareIntakeChannelsIfNeeded()
+        deliverAppGroupShareIfPresent()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
             self?.flushRecentsCallback()
         }
@@ -228,6 +236,10 @@ private let candidateTokenPrefKeys = [
                 binaryMessenger: vc.binaryMessenger
             )
             channel.invokeMethod("handleDeepLink", arguments: url.absoluteString)
+
+            if url.scheme == "fgtracker", url.host == "share-intake" {
+                deliverAppGroupShareIfPresent()
+            }
 
             if url.scheme == "fgtracker", url.host == "walkie" {
                 var queryItems: [String: String] = [:]
@@ -1919,6 +1931,96 @@ private let candidateTokenPrefKeys = [
                 return String(intVal)
             }
         }
+        return nil
+    }
+
+    private func setupShareIntakeChannelsIfNeeded() {
+        guard shareIntakeChannel == nil,
+              let vc = window?.rootViewController as? FlutterViewController else {
+            return
+        }
+
+        let methodChannel = FlutterMethodChannel(
+            name: "com.fgtracker/share_intake",
+            binaryMessenger: vc.binaryMessenger
+        )
+        methodChannel.setMethodCallHandler { [weak self] call, result in
+            guard let self = self else {
+                result(nil)
+                return
+            }
+            if call.method == "getInitialSharedPayload" {
+                if let pending = self.pendingSharePayload {
+                    self.pendingSharePayload = nil
+                    result(pending)
+                } else {
+                    result(self.popAppGroupSharePayload())
+                }
+            } else {
+                result(FlutterMethodNotImplemented)
+            }
+        }
+        shareIntakeChannel = methodChannel
+
+        let eventChannel = FlutterEventChannel(
+            name: "com.fgtracker/share_intake_events",
+            binaryMessenger: vc.binaryMessenger
+        )
+        eventChannel.setStreamHandler(ShareIntakeStreamHandler(delegate: self))
+    }
+
+    fileprivate func setShareEventSink(_ sink: FlutterEventSink?) {
+        shareIntakeEventSink = sink
+        if let sink = sink {
+            if let pending = pendingSharePayload {
+                pendingSharePayload = nil
+                sink(pending)
+            } else if let payload = popAppGroupSharePayload() {
+                sink(payload)
+            }
+        }
+    }
+
+    private func deliverAppGroupShareIfPresent() {
+        guard let payload = popAppGroupSharePayload() else { return }
+        if let sink = shareIntakeEventSink {
+            sink(payload)
+        } else {
+            pendingSharePayload = payload
+        }
+    }
+
+    private func popAppGroupSharePayload() -> [String: Any]? {
+        guard let defaults = UserDefaults(suiteName: shareAppGroupId),
+              let raw = defaults.string(forKey: shareDefaultsKey),
+              !raw.isEmpty else {
+            return nil
+        }
+        defaults.removeObject(forKey: shareDefaultsKey)
+        defaults.synchronize()
+
+        guard let data = raw.data(using: .utf8),
+              let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+        return dict
+    }
+}
+
+private class ShareIntakeStreamHandler: NSObject, FlutterStreamHandler {
+    weak var delegate: AppDelegate?
+
+    init(delegate: AppDelegate) {
+        self.delegate = delegate
+    }
+
+    func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        delegate?.setShareEventSink(events)
+        return nil
+    }
+
+    func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        delegate?.setShareEventSink(nil)
         return nil
     }
 }

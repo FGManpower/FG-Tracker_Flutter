@@ -8405,4 +8405,57 @@ class AppLocalizationsOr extends AppLocalizations {
 
   @override
   String get widget_userFallback => 'ଉପଯୋଗକର୍ତ୍ତା |';
+
+  @override
+  String share_appMessage(String playStoreUrl, String appStoreUrl) {
+    return 'FG Tracker ରେ ଆପଣଙ୍କ ଟିମ୍ ଟ୍ରାକ୍ କରନ୍ତୁ ଏବଂ ଯୋଡ଼ି ହୋଇ ରୁହନ୍ତୁ!\n\nAndroid ପାଇଁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ: $playStoreUrl\n\niOS ପାଇଁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ: $appStoreUrl';
+  }
+
+  @override
+  String get share_appSubtitle =>
+      'ଯେକୌଣସି ଆପ୍ ମାଧ୍ୟମରେ ବନ୍ଧୁ ଓ ଟିମ୍ କୁ ନିମନ୍ତ୍ରଣ କରନ୍ତୁ';
+
+  @override
+  String get share_appTitle => 'FG Tracker ସେୟାର୍ କରନ୍ତୁ';
+
+  @override
+  String get share_failed =>
+      'ଏବେ ସେୟାର୍ କରିପାରୁନାହୁଁ। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।';
+
+  @override
+  String get share_fileNotAvailable =>
+      'ବଛାଯାଇଥିବା ଫାଇଲ୍ ଉପଲବ୍ଧ ନାହିଁ କିମ୍ବା ପଢ଼ିହେଲା ନାହିଁ।';
+
+  @override
+  String share_fileTooLarge(String fileName, String limitMb) {
+    return '$fileName $limitMb MB ସାଇଜ୍ ସୀମାରୁ ଅଧିକ।';
+  }
+
+  @override
+  String get share_locationNotReady =>
+      'ବର୍ତ୍ତମାନର ସ୍ଥାନ ଅଣାଯାଉଛି, ଦୟାକରି କିଛି ସମୟ ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।';
+
+  @override
+  String get share_loginRequiredToComplete =>
+      'ସେୟାର୍ ସମ୍ପୂର୍ଣ୍ଣ କରିବାକୁ ଦୟାକରି ଲଗ୍ ଇନ୍ କରନ୍ତୁ।';
+
+  @override
+  String get share_noInternet =>
+      'ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ। ଦୟାକରି ସଂଯୋଗ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।';
+
+  @override
+  String get share_nothingToShare => 'ସେୟାର୍ କରିବାକୁ କିଛି ଉପଲବ୍ଧ ନାହିଁ।';
+
+  @override
+  String get share_permissionDenied =>
+      'ସେୟାର୍ ହୋଇଥିବା ଫାଇଲ୍ ଆକ୍ସେସ୍ କରିବାକୁ ଅନୁମତି ମିଳିଲା ନାହିଁ।';
+
+  @override
+  String get share_sentSuccess => 'ସଫଳତାର ସହ ସେୟାର୍ ହେଲା';
+
+  @override
+  String get share_toTitle => 'ସେୟାର୍ କରନ୍ତୁ';
+
+  @override
+  String get share_viaApps => 'ଆପ୍ ମାଧ୍ୟମରେ ସେୟାର୍ କରନ୍ତୁ';
 }

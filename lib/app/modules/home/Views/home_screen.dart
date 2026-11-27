@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGuard.dart';
+import 'package:fgtracker/app/Data/Services/Share/app_share_service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/global_widget/crown_icon.dart';
@@ -113,6 +114,8 @@ class _HomeScreenState extends State<HomeScreen>
     await SocketService.instance.init(ConstRes.socketUrl);
 
     trackingController.initializeLocation();
+
+    await AppShareService.instance.consumePendingOnHomeReady();
   }
 
   @override

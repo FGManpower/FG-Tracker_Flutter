@@ -333,6 +333,7 @@ class ChatScreenRules {
       if (text) MessageMenuOption.copy,
       // Attendance cards are tied to their group's poll: never forwarded.
       if (!isAttendance(messageType)) MessageMenuOption.forward,
+      if (!isAttendance(messageType)) MessageMenuOption.share,
       if (isSentByMe && editable && !isDeleted) MessageMenuOption.edit,
       MessageMenuOption.pin,
       if (isSentByMe) MessageMenuOption.info,
@@ -661,6 +662,7 @@ enum MessageMenuOption {
   reply,
   copy,
   forward,
+  share,
   edit,
   pin,
   info,

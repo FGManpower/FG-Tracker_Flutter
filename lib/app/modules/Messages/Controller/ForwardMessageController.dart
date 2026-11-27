@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../Data/Repositories/GetMessageRepo.dart';
+import '../../../Data/Services/Share/app_share_service.dart';
+import '../../../Data/Services/Share/share_payload.dart';
+import '../../../Data/Services/Share/share_validation_service.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Model/GetMessage.dart';
 import '../../../Model/ForwardMessageModel.dart';
@@ -17,6 +20,9 @@ import 'package:fgtracker/app/Core/util/app_log.dart';
 import 'package:flutter/foundation.dart' show kDebugMode; // TODO(fwd-diagnostics)
 class ForwardMessageController extends GetxController {
   late MessageData message;
+  SharePayload? sharePayload;
+
+  bool get isShareMode => sharePayload != null;
 
   final TextEditingController searchController = TextEditingController();
 
@@ -52,7 +58,25 @@ class ForwardMessageController extends GetxController {
 
     final arguments = Get.arguments;
 
-    if (arguments == null || arguments["message"] == null) {
+    if (arguments == null) {
+      Get.back();
+      return;
+    }
+
+    if (arguments["sharePayload"] is SharePayload) {
+      if (!ShareValidationService.isUserAuthenticated()) {
+        AppShareService.instance
+            .savePendingShare(arguments["sharePayload"] as SharePayload);
+        Get.back();
+        return;
+      }
+      sharePayload = arguments["sharePayload"] as SharePayload;
+      sourceType = arguments["sourceType"]?.toString() ?? sharePayload!.source;
+      loadForwardList();
+      return;
+    }
+
+    if (arguments["message"] == null) {
       Get.back();
       return;
     }
@@ -328,6 +352,30 @@ class ForwardMessageController extends GetxController {
       return;
     }
 
+    if (isShareMode) {
+      try {
+        isForwarding.value = true;
+        final selected = List<ForwardDestination>.from(selectedDestinations);
+        final ok = await AppShareService.instance.dispatchShareToDestinations(
+          payload: sharePayload!,
+          destinations: selected,
+        );
+        if (!ok) return;
+
+        Utils().fluttertoast(appL10n.share_sentSuccess);
+        _navigateAfterForward(selected);
+      } catch (e) {
+        Get.snackbar(
+          appL10n.common_error,
+          appL10n.share_failed,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } finally {
+        isForwarding.value = false;
+      }
+      return;
+    }
+
     if (message.id == null) {
       Get.snackbar(
         appL10n.common_error,
@@ -404,37 +452,7 @@ class ForwardMessageController extends GetxController {
 
       Utils().fluttertoast(appL10n.chatList_messageForwarded);
 
-      final bool isSingle = selected.length == 1;
-
-      if (isSingle) {
-        final target = selected.first;
-        Get.back();
-
-        // ChatNavigation: forwarding from inside a chat to another chat of
-        // the same type used to be ignored (duplicate route).
-        if (target.isGroup) {
-          ChatNavigation.openGroupChat({
-            "groupId": target.targetId,
-            "groupName": target.displayName,
-            "groupProfile": target.displayImage,
-            "groupImage": target.displayImage,
-          });
-        } else {
-          final userData = MemberData(
-            userId: target.targetId!,
-            name: target.displayName,
-            profileImage: target.displayImage,
-            groupId: 0,
-          );
-          ChatNavigation.openPrivateChat({
-            "userData": userData,
-            "type": "chatScreen",
-            "chatType": "private",
-          });
-        }
-      } else {
-        Get.back();
-      }
+      _navigateAfterForward(selected);
     } catch (e) {
       Get.snackbar(
         appL10n.common_error,
@@ -443,6 +461,40 @@ class ForwardMessageController extends GetxController {
       );
     } finally {
       isForwarding.value = false;
+    }
+  }
+
+  void _navigateAfterForward(List<ForwardDestination> selected) {
+    final bool isSingle = selected.length == 1;
+
+    if (isSingle) {
+      final target = selected.first;
+      Get.back();
+
+      // ChatNavigation: forwarding from inside a chat to another chat of
+      // the same type used to be ignored (duplicate route).
+      if (target.isGroup) {
+        ChatNavigation.openGroupChat({
+          "groupId": target.targetId,
+          "groupName": target.displayName,
+          "groupProfile": target.displayImage,
+          "groupImage": target.displayImage,
+        });
+      } else {
+        final userData = MemberData(
+          userId: target.targetId!,
+          name: target.displayName,
+          profileImage: target.displayImage,
+          groupId: 0,
+        );
+        ChatNavigation.openPrivateChat({
+          "userData": userData,
+          "type": "chatScreen",
+          "chatType": "private",
+        });
+      }
+    } else {
+      Get.back();
     }
   }
 

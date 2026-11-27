@@ -2296,5 +2296,19 @@
   "widget_seenCount": "({count})",
   "widget_seenCountOfTotal": "({count} de {total})",
   "widget_somethingWentWrongTitle": "Algo deu errado",
-  "widget_userFallback": "Usuário"
+  "widget_userFallback": "Usuário",
+  "share_appMessage": "Acompanhe sua equipe e fique conectado no FG Tracker!\n\nBaixar no Android: {playStoreUrl}\n\nBaixar no iOS: {appStoreUrl}",
+  "share_appSubtitle": "Convide amigos e equipe por qualquer app",
+  "share_appTitle": "Compartilhar FG Tracker",
+  "share_failed": "Não foi possível compartilhar agora. Tente novamente.",
+  "share_fileNotAvailable": "O arquivo selecionado está indisponível ou não pôde ser lido.",
+  "share_fileTooLarge": "{fileName} excede o limite de {limitMb} MB.",
+  "share_locationNotReady": "Obtendo localização atual, tente novamente em instantes.",
+  "share_loginRequiredToComplete": "Faça login para concluir o compartilhamento.",
+  "share_noInternet": "Sem conexão com a internet. Conecte-se e tente novamente.",
+  "share_nothingToShare": "Nada disponível para compartilhar.",
+  "share_permissionDenied": "Permissão negada ao acessar o arquivo compartilhado.",
+  "share_sentSuccess": "Compartilhado com sucesso",
+  "share_toTitle": "Compartilhar com",
+  "share_viaApps": "Compartilhar via apps"
 }

@@ -1,6 +1,6 @@
 # FG Tracker Language Module: Flutter (Frontend) Implementation Guide
 
-> **Document version:** `L-1.2.0` (whole app in 20 languages; new features translated: Legal, Group admin + Add Members, group system messages, Message Info, Custom Banner, Delete Account) · **Date:** 2026-11-16 · **Branch:** `46Solution` (language work started on `multi-language`)
+> **Document version:** `L-1.2.1` (whole app in 20 languages; share strings `share_*` × 14 in `share.json`) · **Date:** 2026-11-27 · **Branch:** `46Solution` (language work started on `multi-language`)
 > **Backend:** none. No backend changes; the language is stored only on the phone.
 > **Scope:** language selection after OTP, side menu → Language, whole-app translation (20 languages), platform strings.
 > **Owner:** Flutter team. **Readers:** Flutter developers, QA.
@@ -507,6 +507,7 @@ None.
 ## 9. Change log
 | Version | Date | Change |
 |---|---|---|
+| L-1.2.1 | 2026-11-27 | **Share strings added across all 20 languages:** Added `share_*` × 14 keys covering Share App, Tracker Share, validation errors, and Forward reuse across all 20 `lib/l10n/app_<code>.arb` files and regenerated `app_localizations*.dart` via `flutter gen-l10n`. |
 | L-1.2.0 | 2026-11-16 | **New features translated into all 20 languages** (§4.7 re-audit): Custom Banner (`banner_` × 13), Delete Account (`account_` × 14; reasons stay English ids for the server), Group admin + Add Members (`groupAdmin_` × 30), group system messages / unread divider / Call back / Message Info (`chatSys_` × 46). New fragments `chat_system.json`, `group_account.json`. **Legal keys back-filled:** the 17 `legal_*` keys were only in the ARB files and would have been deleted by the next merge; now in `legal.json`. Total 2,259 keys × 20. Doc corrected from "10 languages" to the 20 working languages (§3, §4.1, §5), audit tool noted as missing (§7, #21). Manual cases L-26…L-33. |
 | L-1.1.2 | 2026-11-16 | **Side menu Language row and screen match the rest of the app** (§2): row = "Language" + "Change app language" (new `LanguageOption.menuSubtitle`, translated for the 20 app languages), one line each, selected-language name removed, ScreenUtil sizes via `LanguageRowSizes`. Language screen from the menu gets the standard app bar (`reusableAppbar` look, title "Language"); in-body header hidden (`showHeader: false`). Tests updated in `test/language_selection_test.dart` (42 pass). |
 | L-1.1.1 | 2026-11-12 | **One "last seen" format everywhere** (§4.5.1): new `last_seen_formatter.dart` (`formatLastSeen` / `formatLastSeenWith`), keys `common_lastSeen` + `common_todayAt` × 10; 11 places switched (only the text expression), the frozen group-map list left for approval (#18). Tests: `last_seen_formatter_test.dart` (12). Manual cases LS-01…LS-15. |

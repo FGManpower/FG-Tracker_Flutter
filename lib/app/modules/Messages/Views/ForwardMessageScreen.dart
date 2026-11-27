@@ -172,7 +172,9 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              appL10n.chatList_forwardTo,
+              controller.isShareMode
+                  ? appL10n.share_toTitle
+                  : appL10n.chatList_forwardTo,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(

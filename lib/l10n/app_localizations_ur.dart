@@ -8345,4 +8345,57 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get widget_userFallback => 'صارف';
+
+  @override
+  String share_appMessage(String playStoreUrl, String appStoreUrl) {
+    return 'FG Tracker پر اپنی ٹیم کو ٹریک کریں اور جڑے رہیں!\n\nAndroid پر ڈاؤن لوڈ کریں: $playStoreUrl\n\niOS پر ڈاؤن لوڈ کریں: $appStoreUrl';
+  }
+
+  @override
+  String get share_appSubtitle =>
+      'کسی بھی ایپ کے ذریعے دوستوں اور ٹیم کو مدعو کریں';
+
+  @override
+  String get share_appTitle => 'FG Tracker شیئر کریں';
+
+  @override
+  String get share_failed =>
+      'اس وقت شیئر نہیں ہو سکا۔ براہ کرم دوبارہ کوشش کریں۔';
+
+  @override
+  String get share_fileNotAvailable =>
+      'منتخب کردہ فائل دستیاب نہیں ہے یا پڑھی نہیں جا سکی۔';
+
+  @override
+  String share_fileTooLarge(String fileName, String limitMb) {
+    return '$fileName، $limitMb MB سائز کی حد سے زیادہ ہے۔';
+  }
+
+  @override
+  String get share_locationNotReady =>
+      'موجودہ مقام حاصل کیا جا رہا ہے، براہ کرم تھوڑی دیر میں دوبارہ کوشش کریں۔';
+
+  @override
+  String get share_loginRequiredToComplete =>
+      'شیئر مکمل کرنے کے لیے براہ کرم لاگ ان کریں۔';
+
+  @override
+  String get share_noInternet =>
+      'انٹرنیٹ کنکشن نہیں ہے۔ براہ کرم کنیکٹ کریں اور دوبارہ کوشش کریں۔';
+
+  @override
+  String get share_nothingToShare => 'شیئر کرنے کے لیے کچھ دستیاب نہیں ہے۔';
+
+  @override
+  String get share_permissionDenied =>
+      'شیئر کردہ فائل تک رسائی کی اجازت مسترد کر دی گئی۔';
+
+  @override
+  String get share_sentSuccess => 'کامیابی سے شیئر ہو گیا';
+
+  @override
+  String get share_toTitle => 'شیئر کریں';
+
+  @override
+  String get share_viaApps => 'ایپس کے ذریعے شیئر کریں';
 }

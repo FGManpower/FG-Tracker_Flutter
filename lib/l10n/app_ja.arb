@@ -2296,5 +2296,19 @@
   "widget_seenCount": "({count})",
   "widget_seenCountOfTotal": "({count} / {total})",
   "widget_somethingWentWrongTitle": "問題が発生しました",
-  "widget_userFallback": "ユーザー"
+  "widget_userFallback": "ユーザー",
+  "share_appMessage": "FG Trackerでチームを追跡し、つながりましょう！\n\nAndroidでダウンロード: {playStoreUrl}\n\niOSでダウンロード: {appStoreUrl}",
+  "share_appSubtitle": "任意のアプリで友達やチームを招待",
+  "share_appTitle": "FG Trackerを共有",
+  "share_failed": "現在共有できません。もう一度お試しください。",
+  "share_fileNotAvailable": "選択したファイルは利用できないか、読み取れませんでした。",
+  "share_fileTooLarge": "{fileName} は {limitMb} MB の上限を超えています。",
+  "share_locationNotReady": "現在地を取得中です。しばらくしてからもう一度お試しください。",
+  "share_loginRequiredToComplete": "共有を完了するにはログインしてください。",
+  "share_noInternet": "インターネット接続がありません。接続してからもう一度お試しください。",
+  "share_nothingToShare": "共有できるものがありません。",
+  "share_permissionDenied": "共有ファイルへのアクセス権限が拒否されました。",
+  "share_sentSuccess": "共有しました",
+  "share_toTitle": "共有先",
+  "share_viaApps": "アプリで共有"
 }

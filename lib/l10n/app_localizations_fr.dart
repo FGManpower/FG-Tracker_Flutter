@@ -8417,4 +8417,57 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get widget_userFallback => 'Utilisateur';
+
+  @override
+  String share_appMessage(String playStoreUrl, String appStoreUrl) {
+    return 'Suivez votre équipe et restez connecté sur FG Tracker !\n\nTélécharger sur Android : $playStoreUrl\n\nTélécharger sur iOS : $appStoreUrl';
+  }
+
+  @override
+  String get share_appSubtitle =>
+      'Invitez vos amis et votre équipe via toute app';
+
+  @override
+  String get share_appTitle => 'Partager FG Tracker';
+
+  @override
+  String get share_failed =>
+      'Impossible de partager pour le moment. Veuillez réessayer.';
+
+  @override
+  String get share_fileNotAvailable =>
+      'Le fichier sélectionné est indisponible ou illisible.';
+
+  @override
+  String share_fileTooLarge(String fileName, String limitMb) {
+    return '$fileName dépasse la limite de $limitMb Mo.';
+  }
+
+  @override
+  String get share_locationNotReady =>
+      'Récupération de la position actuelle, veuillez réessayer dans un instant.';
+
+  @override
+  String get share_loginRequiredToComplete =>
+      'Veuillez vous connecter pour finaliser le partage.';
+
+  @override
+  String get share_noInternet =>
+      'Aucune connexion Internet. Connectez-vous et réessayez.';
+
+  @override
+  String get share_nothingToShare => 'Rien n\'est disponible à partager.';
+
+  @override
+  String get share_permissionDenied =>
+      'Autorisation refusée lors de l\'accès au fichier partagé.';
+
+  @override
+  String get share_sentSuccess => 'Partagé avec succès';
+
+  @override
+  String get share_toTitle => 'Partager avec';
+
+  @override
+  String get share_viaApps => 'Partager via des apps';
 }

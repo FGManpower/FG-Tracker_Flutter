@@ -7777,6 +7777,52 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get widget_userFallback => '用户';
+
+  @override
+  String share_appMessage(String playStoreUrl, String appStoreUrl) {
+    return '在 FG Tracker 上追踪您的团队并保持联系！\n\nAndroid 下载：$playStoreUrl\n\niOS 下载：$appStoreUrl';
+  }
+
+  @override
+  String get share_appSubtitle => '通过任意应用邀请好友和团队';
+
+  @override
+  String get share_appTitle => '分享 FG Tracker';
+
+  @override
+  String get share_failed => '暂时无法分享，请重试。';
+
+  @override
+  String get share_fileNotAvailable => '所选文件不可用或无法读取。';
+
+  @override
+  String share_fileTooLarge(String fileName, String limitMb) {
+    return '$fileName 超过了 $limitMb MB 大小限制。';
+  }
+
+  @override
+  String get share_locationNotReady => '正在获取当前位置，请稍后再试。';
+
+  @override
+  String get share_loginRequiredToComplete => '请先登录以完成分享。';
+
+  @override
+  String get share_noInternet => '无网络连接。请连接后重试。';
+
+  @override
+  String get share_nothingToShare => '没有可分享的内容。';
+
+  @override
+  String get share_permissionDenied => '访问共享文件时权限被拒绝。';
+
+  @override
+  String get share_sentSuccess => '分享成功';
+
+  @override
+  String get share_toTitle => '分享给';
+
+  @override
+  String get share_viaApps => '通过应用分享';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -15709,4 +15755,50 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get widget_userFallback => '使用者';
+
+  @override
+  String share_appMessage(String playStoreUrl, String appStoreUrl) {
+    return '在 FG Tracker 上追蹤您的團隊並保持聯繫！\n\nAndroid 下載：$playStoreUrl\n\niOS 下載：$appStoreUrl';
+  }
+
+  @override
+  String get share_appSubtitle => '透過任何應用程式邀請好友和團隊';
+
+  @override
+  String get share_appTitle => '分享 FG Tracker';
+
+  @override
+  String get share_failed => '暫時無法分享，請重試。';
+
+  @override
+  String get share_fileNotAvailable => '所選檔案無法使用或無法讀取。';
+
+  @override
+  String share_fileTooLarge(String fileName, String limitMb) {
+    return '$fileName 超過 $limitMb MB 大小限制。';
+  }
+
+  @override
+  String get share_locationNotReady => '正在取得目前位置，請稍後再試。';
+
+  @override
+  String get share_loginRequiredToComplete => '請先登入以完成分享。';
+
+  @override
+  String get share_noInternet => '無網路連線。請連線後重試。';
+
+  @override
+  String get share_nothingToShare => '沒有可分享的內容。';
+
+  @override
+  String get share_permissionDenied => '存取分享檔案時權限遭拒。';
+
+  @override
+  String get share_sentSuccess => '分享成功';
+
+  @override
+  String get share_toTitle => '分享給';
+
+  @override
+  String get share_viaApps => '透過應用程式分享';
 }

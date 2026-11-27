@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		120CB0B13066A333006553E5 /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120CB0B03066A333006553E5 /* ReplayKit.framework */; };
+		1254A0013095A10000A7B96A /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1254A0033095A10000A7B96A /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		126607E12FF2778C0022AD4B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 126607E02FF2778C0022AD4B /* GoogleService-Info.plist */; };
 		126607E32FF2778C0022AD4B /* walkie-talkie-ringtone.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 126607E22FF2778C0022AD4B /* walkie-talkie-ringtone.mp3 */; };
 		126607E52FF2778C0022AD4B /* walkie-talkie-ringtone.caf in Resources */ = {isa = PBXBuildFile; fileRef = 126607E42FF2778C0022AD4B /* walkie-talkie-ringtone.caf */; };
@@ -33,6 +34,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1254A0023095A10000A7B96A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1254A0063095A10000A7B96A;
+			remoteInfo = ShareExtension;
+		};
 		128DF9CA3067E216004E76B2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
@@ -80,6 +88,7 @@
 				12F4688A3094A62200A7B96A /* ScreenShare.appex in Embed Foundation Extensions */,
 				12E8B08A3094A62200A7B96A /* WalkieNotificationExtension.appex in Embed Foundation Extensions */,
 				12AA00113094A62200A7B96A /* WalkieLiveActivity.appex in Embed Foundation Extensions */,
+				1254A0013095A10000A7B96A /* ShareExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -100,6 +109,7 @@
 		0325E107AC5BC3603A53D888 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		120CB0AF3066A333006553E5 /* BroadcastExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BroadcastExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		120CB0B03066A333006553E5 /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
+		1254A0033095A10000A7B96A /* ShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1258CB3F300E20B100C4D9AB /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		126607E02FF2778C0022AD4B /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		126607E22FF2778C0022AD4B /* walkie-talkie-ringtone.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "walkie-talkie-ringtone.mp3"; sourceTree = "<group>"; };
@@ -175,6 +185,13 @@
 			);
 			target = 12AA00203094A62200A7B96A /* WalkieLiveActivity */;
 		};
+		1254A0043095A10000A7B96A /* Exceptions for "ShareExtension" folder in "ShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 1254A0063095A10000A7B96A /* ShareExtension */;
+		};
 		12E8B0BF3066A333006553E5 /* Exceptions for "WalkieNotificationExtension" folder in "WalkieNotificationExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -229,6 +246,18 @@
 			path = WalkieNotificationExtension;
 			sourceTree = "<group>";
 		};
+		1254A0053095A10000A7B96A /* ShareExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1254A0043095A10000A7B96A /* Exceptions for "ShareExtension" folder in "ShareExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = ShareExtension;
+			sourceTree = "<group>";
+		};
 		12F468843094A62200A7B96A /* ScreenShare */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -253,6 +282,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		12AA00413094A62200A7B96A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1254A0093095A10000A7B96A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -323,6 +359,7 @@
 				12E8B0B23066A333006553E5 /* WalkieNotificationExtension */,
 				12AA00313094A62200A7B96A /* WalkieLiveActivity */,
 				12F468843094A62200A7B96A /* ScreenShare */,
+				1254A0053095A10000A7B96A /* ShareExtension */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				F51337694602EE0DCADEBEEE /* Pods */,
@@ -339,6 +376,7 @@
 				12E8B0AF3066A333006553E5 /* WalkieNotificationExtension.appex */,
 				12AA00103094A62200A7B96A /* WalkieLiveActivity.appex */,
 				12F468823094A62200A7B96A /* ScreenShare.appex */,
+				1254A0033095A10000A7B96A /* ShareExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -436,6 +474,26 @@
 			productReference = 12AA00103094A62200A7B96A /* WalkieLiveActivity.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		1254A0063095A10000A7B96A /* ShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1254A00F3095A10000A7B96A /* Build configuration list for PBXNativeTarget "ShareExtension" */;
+			buildPhases = (
+				1254A0083095A10000A7B96A /* Sources */,
+				1254A0093095A10000A7B96A /* Frameworks */,
+				1254A00A3095A10000A7B96A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				1254A0053095A10000A7B96A /* ShareExtension */,
+			);
+			name = ShareExtension;
+			productName = ShareExtension;
+			productReference = 1254A0033095A10000A7B96A /* ShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		12E8B0AE3066A333006553E5 /* WalkieNotificationExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 12E8B0BE3066A333006553E5 /* Build configuration list for PBXNativeTarget "WalkieNotificationExtension" */;
@@ -509,6 +567,7 @@
 				128DF9DF3067ED1A004E76B2 /* Embed Broadcast Extension Script */,
 				12E8B0DF3067ED1A004E76B2 /* Embed Walkie Notification Extension Script */,
 				12AA00603094A62200A7B96A /* Embed Walkie Live Activity Extension Script */,
+				1254A0073095A10000A7B96A /* Embed Share Extension Script */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				22BA94AB4C646D65DD03C69E /* [CP] Embed Pods Frameworks */,
@@ -521,6 +580,7 @@
 				12E8B0CB3067E216004E76B2 /* PBXTargetDependency */,
 				12AA00223094A62200A7B96A /* PBXTargetDependency */,
 				12F468893094A62200A7B96A /* PBXTargetDependency */,
+				1254A00B3095A10000A7B96A /* PBXTargetDependency */,
 			);
 			name = Runner;
 			productName = Runner;
@@ -539,6 +599,9 @@
 				ORGANIZATIONNAME = "";
 				TargetAttributes = {
 					120CB0AE3066A333006553E5 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					1254A0063095A10000A7B96A = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
 					12AA00203094A62200A7B96A = {
@@ -591,11 +654,19 @@
 				12E8B0AE3066A333006553E5 /* WalkieNotificationExtension */,
 				12AA00203094A62200A7B96A /* WalkieLiveActivity */,
 				12F468813094A62200A7B96A /* ScreenShare */,
+				1254A0063095A10000A7B96A /* ShareExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		1254A00A3095A10000A7B96A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		12AA00423094A62200A7B96A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -680,6 +751,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "#!/bin/sh\nset -e\n\nAPPEX_NAME=\"WalkieNotificationExtension.appex\"\nPLUGINS_DIR=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/PlugIns\"\n\nmkdir -p \"${PLUGINS_DIR}\"\nrm -rf \"${PLUGINS_DIR}/${APPEX_NAME}\"\n\nSRC_PATH=\"\"\n\nfor CANDIDATE in \\\n  \"${BUILT_PRODUCTS_DIR}/${APPEX_NAME}\" \\\n  \"${CONFIGURATION_BUILD_DIR}/${APPEX_NAME}\" \\\n  \"${TARGET_BUILD_DIR}/${APPEX_NAME}\" \\\n  \"${OBJROOT}/UninstalledProducts/${PLATFORM_NAME}/${APPEX_NAME}\" \\\n  \"${OBJROOT}/ArchiveIntermediates/Runner/BuildProductsPath/Release-iphoneos/${APPEX_NAME}\" \\\n  \"${OBJROOT}/ArchiveIntermediates/Runner/UninstalledProducts/iphoneos/${APPEX_NAME}\"\ndo\n  if [ -e \"${CANDIDATE}\" ]; then\n    SRC_PATH=\"${CANDIDATE}\"\n    break\n  fi\ndone\n\nif [ -z \"${SRC_PATH}\" ]; then\n  SRC_PATH=$(find \"${OBJROOT}\" \"${BUILD_DIR}\" -name \"${APPEX_NAME}\" 2>/dev/null | head -n 1)\nfi\n\nif [ -z \"${SRC_PATH}\" ] || [ ! -e \"${SRC_PATH}\" ]; then\n  echo \"error: Could not find ${APPEX_NAME}\"\n  exit 1\nfi\n\nREAL_SRC=\"$(cd \"$(dirname \"${SRC_PATH}\")\" && pwd -P)/$(basename \"${SRC_PATH}\")\"\nif [ -L \"${SRC_PATH}\" ]; then\n  REAL_SRC=\"$(cd \"${SRC_PATH}\" && pwd -P)\"\nelif [ -d \"${SRC_PATH}\" ]; then\n  REAL_SRC=\"$(cd \"${SRC_PATH}\" && pwd -P)\"\nfi\n\n# ditto dereferences symlinks into real directories\nditto \"${REAL_SRC}\" \"${PLUGINS_DIR}/${APPEX_NAME}\"\n\nif [ -n \"${EXPANDED_CODE_SIGN_IDENTITY}\" ] && [ \"${EXPANDED_CODE_SIGN_IDENTITY}\" != \"-\" ]; then\n  codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n    --preserve-metadata=identifier,entitlements,flags \\\n    \"${PLUGINS_DIR}/${APPEX_NAME}\"\nfi\n";
+		};
+		1254A0073095A10000A7B96A /* Embed Share Extension Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Share Extension Script";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\nset -e\n\nAPPEX_NAME=\"ShareExtension.appex\"\nPLUGINS_DIR=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/PlugIns\"\n\nmkdir -p \"${PLUGINS_DIR}\"\nrm -rf \"${PLUGINS_DIR}/${APPEX_NAME}\"\n\nSRC_PATH=\"\"\n\nfor CANDIDATE in \\\n  \"${BUILT_PRODUCTS_DIR}/${APPEX_NAME}\" \\\n  \"${CONFIGURATION_BUILD_DIR}/${APPEX_NAME}\" \\\n  \"${TARGET_BUILD_DIR}/${APPEX_NAME}\" \\\n  \"${OBJROOT}/UninstalledProducts/${PLATFORM_NAME}/${APPEX_NAME}\" \\\n  \"${OBJROOT}/ArchiveIntermediates/Runner/BuildProductsPath/Release-iphoneos/${APPEX_NAME}\" \\\n  \"${OBJROOT}/ArchiveIntermediates/Runner/UninstalledProducts/iphoneos/${APPEX_NAME}\"\ndo\n  if [ -e \"${CANDIDATE}\" ]; then\n    SRC_PATH=\"${CANDIDATE}\"\n    break\n  fi\ndone\n\nif [ -z \"${SRC_PATH}\" ]; then\n  SRC_PATH=$(find \"${OBJROOT}\" \"${BUILD_DIR}\" -name \"${APPEX_NAME}\" 2>/dev/null | head -n 1)\nfi\n\nif [ -z \"${SRC_PATH}\" ] || [ ! -e \"${SRC_PATH}\" ]; then\n  echo \"error: Could not find ${APPEX_NAME}\"\n  exit 1\nfi\n\nREAL_SRC=\"$(cd \"$(dirname \"${SRC_PATH}\")\" && pwd -P)/$(basename \"${SRC_PATH}\")\"\nif [ -L \"${SRC_PATH}\" ]; then\n  REAL_SRC=\"$(cd \"${SRC_PATH}\" && pwd -P)\"\nelif [ -d \"${SRC_PATH}\" ]; then\n  REAL_SRC=\"$(cd \"${SRC_PATH}\" && pwd -P)\"\nfi\n\n# ditto dereferences symlinks into real directories\nditto \"${REAL_SRC}\" \"${PLUGINS_DIR}/${APPEX_NAME}\"\n\nif [ -n \"${EXPANDED_CODE_SIGN_IDENTITY}\" ] && [ \"${EXPANDED_CODE_SIGN_IDENTITY}\" != \"-\" ]; then\n  codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n    --preserve-metadata=identifier,entitlements,flags \\\n    \"${PLUGINS_DIR}/${APPEX_NAME}\"\nfi\n";
 		};
 		12AA00603094A62200A7B96A /* Embed Walkie Live Activity Extension Script */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -836,6 +926,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		1254A0083095A10000A7B96A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		120CB0AB3066A333006553E5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -887,6 +984,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		1254A00B3095A10000A7B96A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1254A0063095A10000A7B96A /* ShareExtension */;
+			targetProxy = 1254A0023095A10000A7B96A /* PBXContainerItemProxy */;
+		};
 		128DF9CB3067E216004E76B2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 120CB0AE3066A333006553E5 /* BroadcastExtension */;
@@ -1063,6 +1165,129 @@
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fg.fgtracker.broadcast;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Profile;
+		};
+		1254A00C3095A10000A7B96A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 5VH5Y7DS44;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "FG Tracker";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fg.fgtracker.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1254A00D3095A10000A7B96A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 5VH5Y7DS44;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "FG Tracker";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fg.fgtracker.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		1254A00E3095A10000A7B96A /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 5VH5Y7DS44;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "FG Tracker";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fg.fgtracker.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1747,6 +1972,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1254A00F3095A10000A7B96A /* Build configuration list for PBXNativeTarget "ShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1254A00C3095A10000A7B96A /* Debug */,
+				1254A00D3095A10000A7B96A /* Release */,
+				1254A00E3095A10000A7B96A /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		120CB0BE3066A333006553E5 /* Build configuration list for PBXNativeTarget "BroadcastExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

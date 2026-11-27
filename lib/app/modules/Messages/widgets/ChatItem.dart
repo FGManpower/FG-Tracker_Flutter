@@ -12,6 +12,7 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/DocumentService.dart';
+import 'package:fgtracker/app/Data/Services/Share/app_share_service.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/status_model.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
@@ -1938,6 +1939,18 @@ class ChatBubble extends StatelessWidget {
             });
           },
         ),
+      if (options.contains(MessageMenuOption.share))
+        MessageContextMenuAction(
+          icon: Icons.share_rounded,
+          title: appL10n.common_share,
+          iconColor: _purple,
+          onTap: () {
+            AppShareService.instance.shareChatMessageOut(
+              message,
+              context: context,
+            );
+          },
+        ),
       if (options.contains(MessageMenuOption.edit) &&
           !_isDeletedMessage &&
           isSentByMe &&
@@ -3583,6 +3596,18 @@ class GroupChatBubble extends StatelessWidget {
                 },
               );
             });
+          },
+        ),
+      if (options.contains(MessageMenuOption.share))
+        MessageContextMenuAction(
+          icon: Icons.share_rounded,
+          title: appL10n.common_share,
+          iconColor: _purple,
+          onTap: () {
+            AppShareService.instance.shareChatMessageOut(
+              message,
+              context: context,
+            );
           },
         ),
       if (options.contains(MessageMenuOption.edit) &&

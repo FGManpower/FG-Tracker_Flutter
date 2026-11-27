@@ -368,7 +368,11 @@
   "call_onAnotherCall": "On another call",
   "call_remoteMuted": "{name} muted",
   "@call_remoteMuted": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "call_videoPaused": "Video paused",
   "call_poorConnection": "Poor connection",
@@ -381,7 +385,11 @@
   "call_callAgain": "Call again",
   "call_waitingCall": "{name} is calling…",
   "@call_waitingCall": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "call_endAndAccept": "End & accept",
   "call_end": "End",
@@ -5346,5 +5354,39 @@
     }
   },
   "widget_somethingWentWrongTitle": "Something went wrong",
-  "widget_userFallback": "User"
+  "widget_userFallback": "User",
+  "share_appMessage": "Track your team and stay connected on FG Tracker!\n\nDownload on Android: {playStoreUrl}\n\nDownload on iOS: {appStoreUrl}",
+  "@share_appMessage": {
+    "placeholders": {
+      "playStoreUrl": {
+        "type": "String"
+      },
+      "appStoreUrl": {
+        "type": "String"
+      }
+    }
+  },
+  "share_appSubtitle": "Invite friends & team via any app",
+  "share_appTitle": "Share FG Tracker",
+  "share_failed": "Unable to share right now. Please try again.",
+  "share_fileNotAvailable": "Selected file is unavailable or could not be read.",
+  "share_fileTooLarge": "{fileName} exceeds the {limitMb} MB size limit.",
+  "@share_fileTooLarge": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      },
+      "limitMb": {
+        "type": "String"
+      }
+    }
+  },
+  "share_locationNotReady": "Fetching current location, please try again in a moment.",
+  "share_loginRequiredToComplete": "Please log in to complete sharing.",
+  "share_noInternet": "No internet connection. Please connect and try again.",
+  "share_nothingToShare": "Nothing available to share.",
+  "share_permissionDenied": "Permission denied while accessing the shared file.",
+  "share_sentSuccess": "Shared successfully",
+  "share_toTitle": "Share to",
+  "share_viaApps": "Share via Apps"
 }

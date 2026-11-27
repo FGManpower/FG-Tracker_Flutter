@@ -2296,5 +2296,19 @@
   "widget_seenCount": "({count})",
   "widget_seenCountOfTotal": "({total} জনের মধ্যে {count})",
   "widget_somethingWentWrongTitle": "কিছু ভুল হয়েছে",
-  "widget_userFallback": "ইউজার"
+  "widget_userFallback": "ইউজার",
+  "share_appMessage": "FG Tracker-এ আপনার টিম ট্র্যাক করুন এবং সংযুক্ত থাকুন!\n\nAndroid-এ ডাউনলোড করুন: {playStoreUrl}\n\niOS-এ ডাউনলোড করুন: {appStoreUrl}",
+  "share_appSubtitle": "যেকোনো অ্যাপের মাধ্যমে বন্ধু ও টিমকে আমন্ত্রণ জানান",
+  "share_appTitle": "FG Tracker শেয়ার করুন",
+  "share_failed": "এই মুহূর্তে শেয়ার করা যাচ্ছে না। অনুগ্রহ করে আবার চেষ্টা করুন।",
+  "share_fileNotAvailable": "নির্বাচিত ফাইলটি পাওয়া যাচ্ছে না বা পড়া যায়নি।",
+  "share_fileTooLarge": "{fileName} ফাইলটি {limitMb} MB সীমা অতিক্রম করেছে।",
+  "share_locationNotReady": "বর্তমান অবস্থান আনা হচ্ছে, অনুগ্রহ করে একটু পরে আবার চেষ্টা করুন।",
+  "share_loginRequiredToComplete": "শেয়ার সম্পন্ন করতে অনুগ্রহ করে লগ ইন করুন।",
+  "share_noInternet": "ইন্টারনেট সংযোগ নেই। অনুগ্রহ করে সংযোগ করে আবার চেষ্টা করুন।",
+  "share_nothingToShare": "শেয়ার করার মতো কিছু নেই।",
+  "share_permissionDenied": "শেয়ার করা ফাইলটি অ্যাক্সেস করার অনুমতি দেওয়া হয়নি।",
+  "share_sentSuccess": "সফলভাবে শেয়ার হয়েছে",
+  "share_toTitle": "শেয়ার করুন",
+  "share_viaApps": "অ্যাপের মাধ্যমে শেয়ার করুন"
 }

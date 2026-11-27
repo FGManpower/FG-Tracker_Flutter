@@ -14,6 +14,7 @@ AppBar buildTrackAppBar(
   void Function()? onPressRefresh,
   void Function()? onPressTheme,
   void Function()? onSearch,
+  void Function()? onShare,
 }) {
   return AppBar(
     backgroundColor: ToggleThemeData.darkPurple,
@@ -73,6 +74,16 @@ AppBar buildTrackAppBar(
             text: context.l10n.track_menuTheme,
             onTap: onPressTheme,
           ),
+          if (onShare != null) ...[
+            dividerMenuItem(),
+            popupItem(
+              context: context,
+              value: "share",
+              icon: Icons.share_rounded,
+              text: context.l10n.common_share,
+              onTap: onShare,
+            ),
+          ],
         ],
       ),
       SizedBox(width: 10.w),

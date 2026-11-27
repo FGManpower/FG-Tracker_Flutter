@@ -1,8 +1,8 @@
 # Tracking Module — Flutter Frontend Architecture & Implementation Guide
 
-**Document Version:** `v1.0.0`  
+**Document Version:** `v1.1.0`  
 **Target Audience:** Flutter Frontend Developers  
-**Covers:** Google Maps Integration, Custom Bitmap Markers, Radius Radar Overlay, Group Tracking, Background Geolocation Service, Battery Monitoring, Ghost Mode Privacy Sync  
+**Covers:** Google Maps Integration, Custom Bitmap Markers, Radius Radar Overlay, Group Tracking, Background Geolocation Service, Battery Monitoring, Ghost Mode Privacy Sync, Tracker Share  
 **Status:** In Production / Stable  
 
 ---
@@ -107,3 +107,13 @@ Located in `GroupTrackLocationScreen.dart`:
   - `LiveLocationSocketModel` parses `locationSharing` from `locationSharing`, `location_sharing`, or `isLocationSharing`.
 - **Ghost Mode & Invalid Coordinate Handling (`TrackingController.dart`):**
   - `zoomToMember` checks `locationSharing == false` (and `0` / `'0'`), `null`, or `(0.0, 0.0)` coordinates across `MemberModel`, `LocationData`, and `UsersWithinRadiusData`, showing a top snackbar (`track_memberPausedSharing`) instead of zooming to a fallback center coordinate.
+
+---
+
+## 6. Tracker Share Action (`Tracking_screen.dart`, `TrackLAppBar.dart`, `GroupTrackLocationScreen.dart`, 2026-11-27)
+
+- **Nearby / Live Tracking (`Tracking_screen.dart`):**
+  - Added an icon button (`Icons.share_rounded`) matching `_iconButton` in `_buildTopAppBar`.
+  - Tapping Share builds a `SharePayloadKind.location` (`ShareLocationData` with current lat/lng, address, and active group info) and opens `Routes.forwardMessageScreen` in share mode (supporting multi-select FG Tracker chats/groups plus an OS Share Sheet button in the AppBar).
+- **Group Tracking (`TrackLAppBar.dart`, `GroupTrackLocationScreen.dart`):**
+  - Added `Share` item to the `more_vert` popup menu (`onShare`), opening the same Forward Screen flow with current location & group metadata.

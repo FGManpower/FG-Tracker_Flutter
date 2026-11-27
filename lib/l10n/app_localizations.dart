@@ -13916,6 +13916,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'User'**
   String get widget_userFallback;
+
+  /// No description provided for @share_appMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your team and stay connected on FG Tracker!\n\nDownload on Android: {playStoreUrl}\n\nDownload on iOS: {appStoreUrl}'**
+  String share_appMessage(String playStoreUrl, String appStoreUrl);
+
+  /// No description provided for @share_appSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite friends & team via any app'**
+  String get share_appSubtitle;
+
+  /// No description provided for @share_appTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share FG Tracker'**
+  String get share_appTitle;
+
+  /// No description provided for @share_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to share right now. Please try again.'**
+  String get share_failed;
+
+  /// No description provided for @share_fileNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected file is unavailable or could not be read.'**
+  String get share_fileNotAvailable;
+
+  /// No description provided for @share_fileTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'{fileName} exceeds the {limitMb} MB size limit.'**
+  String share_fileTooLarge(String fileName, String limitMb);
+
+  /// No description provided for @share_locationNotReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching current location, please try again in a moment.'**
+  String get share_locationNotReady;
+
+  /// No description provided for @share_loginRequiredToComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in to complete sharing.'**
+  String get share_loginRequiredToComplete;
+
+  /// No description provided for @share_noInternet.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Please connect and try again.'**
+  String get share_noInternet;
+
+  /// No description provided for @share_nothingToShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing available to share.'**
+  String get share_nothingToShare;
+
+  /// No description provided for @share_permissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission denied while accessing the shared file.'**
+  String get share_permissionDenied;
+
+  /// No description provided for @share_sentSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared successfully'**
+  String get share_sentSuccess;
+
+  /// No description provided for @share_toTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share to'**
+  String get share_toTitle;
+
+  /// No description provided for @share_viaApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Share via Apps'**
+  String get share_viaApps;
 }
 
 class _AppLocalizationsDelegate

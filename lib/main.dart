@@ -16,6 +16,7 @@ import 'package:fgtracker/app/Data/Services/app_cache.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/Data/Services/Share/app_share_service.dart';
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
 import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
 import 'package:fgtracker/features/language/fallback_localizations_delegate.dart';
@@ -268,6 +269,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       CallKitService.instance.markAppReady();
+      AppShareService.instance.initIntake();
     });
   }
 

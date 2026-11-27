@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:fgtracker/app/Data/Services/Share/app_share_service.dart';
+import 'package:fgtracker/app/Data/Services/Share/share_payload.dart';
 import 'package:fgtracker/l10n/l10n.dart';
 import 'package:fgtracker/app/global_widget/app_back_button.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
@@ -61,7 +65,30 @@ class DocumentViewerScreen extends GetView<DocumentViewerController> {
             icon: Icon(Icons.download, size: 20.sp, color: Colors.white),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              final localPath = controller.localFilePath.value;
+              if (localPath.isNotEmpty && File(localPath).existsSync()) {
+                AppShareService.instance.openSystemShareSheet(
+                  SharePayload(
+                    kind: SharePayloadKind.file,
+                    source: 'document_viewer',
+                    files: [
+                      ShareFileItem(
+                        path: localPath,
+                        name: controller.documentName,
+                      ),
+                    ],
+                  ),
+                  context: context,
+                );
+              } else {
+                AppShareService.instance.shareRemoteFile(
+                  url: controller.documentUrl,
+                  fileName: controller.documentName,
+                  context: context,
+                );
+              }
+            },
             icon: Icon(Icons.share, size: 20.sp, color: Colors.white),
           ),
         ],

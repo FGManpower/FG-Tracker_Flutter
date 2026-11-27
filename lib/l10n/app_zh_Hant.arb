@@ -2296,5 +2296,19 @@
   "widget_seenCount": "({count})",
   "widget_seenCountOfTotal": " {count} {total}",
   "widget_somethingWentWrongTitle": "出了點問題",
-  "widget_userFallback": "使用者"
+  "widget_userFallback": "使用者",
+  "share_appMessage": "在 FG Tracker 上追蹤您的團隊並保持聯繫！\n\nAndroid 下載：{playStoreUrl}\n\niOS 下載：{appStoreUrl}",
+  "share_appSubtitle": "透過任何應用程式邀請好友和團隊",
+  "share_appTitle": "分享 FG Tracker",
+  "share_failed": "暫時無法分享，請重試。",
+  "share_fileNotAvailable": "所選檔案無法使用或無法讀取。",
+  "share_fileTooLarge": "{fileName} 超過 {limitMb} MB 大小限制。",
+  "share_locationNotReady": "正在取得目前位置，請稍後再試。",
+  "share_loginRequiredToComplete": "請先登入以完成分享。",
+  "share_noInternet": "無網路連線。請連線後重試。",
+  "share_nothingToShare": "沒有可分享的內容。",
+  "share_permissionDenied": "存取分享檔案時權限遭拒。",
+  "share_sentSuccess": "分享成功",
+  "share_toTitle": "分享給",
+  "share_viaApps": "透過應用程式分享"
 }

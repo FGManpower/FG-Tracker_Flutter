@@ -2296,5 +2296,19 @@
   "widget_seenCount": "({count})",
   "widget_seenCountOfTotal": "({total}-ൽ {count})",
   "widget_somethingWentWrongTitle": "എന്തോ കുഴപ്പം സംഭവിച്ചു",
-  "widget_userFallback": "ഉപയോക്താവ്"
+  "widget_userFallback": "ഉപയോക്താവ്",
+  "share_appMessage": "FG Tracker-ൽ നിങ്ങളുടെ ടീമിനെ ട്രാക്ക് ചെയ്യുക, ബന്ധം നിലനിർത്തുക!\n\nAndroid-ൽ ഡൗൺലോഡ് ചെയ്യുക: {playStoreUrl}\n\niOS-ൽ ഡൗൺലോഡ് ചെയ്യുക: {appStoreUrl}",
+  "share_appSubtitle": "ഏത് ആപ്പ് വഴിയും സുഹൃത്തുക്കളെയും ടീമിനെയും ക്ഷണിക്കുക",
+  "share_appTitle": "FG Tracker പങ്കിടുക",
+  "share_failed": "ഇപ്പോൾ പങ്കിടാനായില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക.",
+  "share_fileNotAvailable": "തിരഞ്ഞെടുത്ത ഫയൽ ലഭ്യമല്ല അല്ലെങ്കിൽ വായിക്കാൻ കഴിഞ്ഞില്ല.",
+  "share_fileTooLarge": "{fileName} {limitMb} MB പരിധി കവിയുന്നു.",
+  "share_locationNotReady": "നിലവിലെ ലൊക്കേഷൻ എടുക്കുന്നു, ദയവായി അൽപസമയത്തിന് ശേഷം വീണ്ടും ശ്രമിക്കുക.",
+  "share_loginRequiredToComplete": "പങ്കിടൽ പൂർത്തിയാക്കാൻ ദയവായി ലോഗിൻ ചെയ്യുക.",
+  "share_noInternet": "ഇന്റർനെറ്റ് കണക്ഷൻ ഇല്ല. ദയവായി കണക്റ്റ് ചെയ്ത് വീണ്ടും ശ്രമിക്കുക.",
+  "share_nothingToShare": "പങ്കിടാൻ ഒന്നും ലഭ്യമല്ല.",
+  "share_permissionDenied": "പങ്കിട്ട ഫയൽ ആക്‌സസ് ചെയ്യാൻ അനുമതി നിഷേധിച്ചു.",
+  "share_sentSuccess": "വിജയകരമായി പങ്കിട്ടു",
+  "share_toTitle": "പങ്കിടുക",
+  "share_viaApps": "ആപ്പുകൾ വഴി പങ്കിടുക"
 }

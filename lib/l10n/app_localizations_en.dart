@@ -8291,4 +8291,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widget_userFallback => 'User';
+
+  @override
+  String share_appMessage(String playStoreUrl, String appStoreUrl) {
+    return 'Track your team and stay connected on FG Tracker!\n\nDownload on Android: $playStoreUrl\n\nDownload on iOS: $appStoreUrl';
+  }
+
+  @override
+  String get share_appSubtitle => 'Invite friends & team via any app';
+
+  @override
+  String get share_appTitle => 'Share FG Tracker';
+
+  @override
+  String get share_failed => 'Unable to share right now. Please try again.';
+
+  @override
+  String get share_fileNotAvailable =>
+      'Selected file is unavailable or could not be read.';
+
+  @override
+  String share_fileTooLarge(String fileName, String limitMb) {
+    return '$fileName exceeds the $limitMb MB size limit.';
+  }
+
+  @override
+  String get share_locationNotReady =>
+      'Fetching current location, please try again in a moment.';
+
+  @override
+  String get share_loginRequiredToComplete =>
+      'Please log in to complete sharing.';
+
+  @override
+  String get share_noInternet =>
+      'No internet connection. Please connect and try again.';
+
+  @override
+  String get share_nothingToShare => 'Nothing available to share.';
+
+  @override
+  String get share_permissionDenied =>
+      'Permission denied while accessing the shared file.';
+
+  @override
+  String get share_sentSuccess => 'Shared successfully';
+
+  @override
+  String get share_toTitle => 'Share to';
+
+  @override
+  String get share_viaApps => 'Share via Apps';
 }

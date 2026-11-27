@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
+import 'package:fgtracker/app/Data/Services/Share/app_share_service.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/auth/Controller/account_deletion_controller.dart';
 import 'package:fgtracker/app/modules/auth/Controller/logout_controller.dart';
@@ -65,6 +66,16 @@ class SettingsScreen extends StatelessWidget {
               title: context.l10n.appUpdate_updateApp,
               subtitle: context.l10n.appUpdate_updateAvailable,
               onTap: () => Get.toNamed(Routes.shorebirdUpdate),
+            ),
+            _buildDivider(),
+
+            // Share App
+            _buildSettingsItem(
+              icon: Icons.share_rounded,
+              title: context.l10n.share_appTitle,
+              subtitle: context.l10n.share_appSubtitle,
+              onTap: () =>
+                  AppShareService.instance.shareAppLink(context: context),
             ),
           ],
         ),

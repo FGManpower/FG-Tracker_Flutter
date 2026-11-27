@@ -7838,4 +7838,50 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get widget_userFallback => 'ユーザー';
+
+  @override
+  String share_appMessage(String playStoreUrl, String appStoreUrl) {
+    return 'FG Trackerでチームを追跡し、つながりましょう！\n\nAndroidでダウンロード: $playStoreUrl\n\niOSでダウンロード: $appStoreUrl';
+  }
+
+  @override
+  String get share_appSubtitle => '任意のアプリで友達やチームを招待';
+
+  @override
+  String get share_appTitle => 'FG Trackerを共有';
+
+  @override
+  String get share_failed => '現在共有できません。もう一度お試しください。';
+
+  @override
+  String get share_fileNotAvailable => '選択したファイルは利用できないか、読み取れませんでした。';
+
+  @override
+  String share_fileTooLarge(String fileName, String limitMb) {
+    return '$fileName は $limitMb MB の上限を超えています。';
+  }
+
+  @override
+  String get share_locationNotReady => '現在地を取得中です。しばらくしてからもう一度お試しください。';
+
+  @override
+  String get share_loginRequiredToComplete => '共有を完了するにはログインしてください。';
+
+  @override
+  String get share_noInternet => 'インターネット接続がありません。接続してからもう一度お試しください。';
+
+  @override
+  String get share_nothingToShare => '共有できるものがありません。';
+
+  @override
+  String get share_permissionDenied => '共有ファイルへのアクセス権限が拒否されました。';
+
+  @override
+  String get share_sentSuccess => '共有しました';
+
+  @override
+  String get share_toTitle => '共有先';
+
+  @override
+  String get share_viaApps => 'アプリで共有';
 }

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
+import 'package:fgtracker/app/Data/Services/Share/app_share_service.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,18 @@ class ViewFullImage extends StatelessWidget {
           fontfamily: FontFamily.interMedium,
           fontsize: 15,
         ),
+        actions: [
+          if (pimgurl.trim().isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.share_rounded),
+              onPressed: () {
+                AppShareService.instance.shareRemoteFile(
+                  url: pimgurl,
+                  context: context,
+                );
+              },
+            ),
+        ],
       ),
       body: Center(
         child: CachedNetworkImage(

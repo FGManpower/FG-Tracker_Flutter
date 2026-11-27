@@ -5,6 +5,10 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 
+import 'package:fgtracker/l10n/l10n.dart';
+import '../../../Core/values/Utils.dart';
+import '../../../Data/Services/Share/app_share_service.dart';
+import '../../../Data/Services/Share/share_payload.dart';
 import '../../../routes/app_pages.dart';
 import '../Widget/TrackLAppBar.dart';
 
@@ -106,6 +110,28 @@ class _LocationTrackingPageState extends State<GroupLocationTrackingPage> {
               controller.searchUserAndZoom(groupId.toString(), value);
             }
           });
+        },
+        onShare: () {
+          final pos = controller.locationService.currentPosition;
+          final lat = pos?.latitude ?? 0.0;
+          final lng = pos?.longitude ?? 0.0;
+          if (lat == 0.0 && lng == 0.0) {
+            Utils().fluttertoast(context.l10n.share_locationNotReady);
+            return;
+          }
+          AppShareService.instance.openForwardForPayload(
+            SharePayload(
+              kind: SharePayloadKind.location,
+              source: 'group_tracker',
+              location: ShareLocationData(
+                latitude: lat,
+                longitude: lng,
+                locationName: groupName,
+                groupId: groupId.toString(),
+                groupName: groupName,
+              ),
+            ),
+          );
         },
       ),
       body: SafeArea(
