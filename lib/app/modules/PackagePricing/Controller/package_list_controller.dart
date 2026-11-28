@@ -40,8 +40,26 @@ class PackageListController extends GetxController {
       final res = await _load();
       final list = res.packages
           .where((p) => p.moduleKey.isNotEmpty)
-          .toList()
-        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+          .toList();
+      if (!list.any((p) => p.moduleKey == PackageModuleKey.bannerAds)) {
+        list.add(
+          const PackageItem(
+            moduleKey: PackageModuleKey.bannerAds,
+            title: 'Paid Banner Ads',
+            tagline: 'Promote your business on Home Carousel Slides 1–7',
+            themeColor: '#4F46E5',
+            badge: 'Available',
+            isAvailable: true,
+            highlights: [
+              'Fixed 7 Slides (Date & Slide Wise)',
+              'Real-Time Slot Availability',
+              'Impressions & Clicks Analytics',
+            ],
+            sortOrder: 99,
+          ),
+        );
+      }
+      list.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
       packages.assignAll(list);
     } catch (e) {
       final message = _friendly(e);
@@ -60,14 +78,7 @@ class PackageListController extends GetxController {
       ? e.userMessage
       : appL10n.common_somethingWentWrong;
 
-  /// Only Walkie-Talkie has an inner screen (its existing plan → order
-  /// summary → payment flow). Every other module is "Coming soon".
   Future<void> openPackage(PackageItem item) async {
-    if (!item.isAvailable) {
-      Utils().fluttertoast(appL10n.package_plansComingSoon(item.title));
-      return;
-    }
-
     if (item.moduleKey == PackageModuleKey.walkieTalkie) {
       await Get.toNamed(Routes.walkieTalkiePlanScreen);
       fetchPackages(silent: true);
@@ -83,6 +94,11 @@ class PackageListController extends GetxController {
     if (item.moduleKey == PackageModuleKey.attendance) {
       await Get.to(() => const AttendancePlansScreen());
       fetchPackages(silent: true);
+      return;
+    }
+
+    if (!item.isAvailable) {
+      Utils().fluttertoast(appL10n.package_plansComingSoon(item.title));
       return;
     }
 

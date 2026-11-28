@@ -12,6 +12,11 @@ class PackageCard extends StatelessWidget {
 
   const PackageCard({super.key, required this.item, this.onTap});
 
+  bool get _isEnabled =>
+      item.isAvailable ||
+      item.moduleKey == PackageModuleKey.attendance ||
+      item.moduleKey == PackageModuleKey.bannerAds;
+
   @override
   Widget build(BuildContext context) {
     final style =
@@ -19,18 +24,18 @@ class PackageCard extends StatelessWidget {
     final semanticsLabel = [
       item.title,
       if (item.tagline != null) item.tagline!,
-      item.isAvailable
+      _isEnabled
           ? context.l10n.package_viewPlans
           : context.l10n.common_comingSoon,
     ].join('. ');
 
     return Semantics(
       button: true,
-      enabled: item.isAvailable,
+      enabled: _isEnabled,
       label: semanticsLabel,
       excludeSemantics: true,
       child: Opacity(
-        opacity: item.isAvailable ? 1 : 0.6,
+        opacity: _isEnabled ? 1 : 0.6,
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -141,14 +146,14 @@ class PackageCard extends StatelessWidget {
   /// "View plans" / "Coming soon" — no price or active status on the card
   Widget _footerLabel() {
     return Text(
-      item.isAvailable
+      _isEnabled
           ? appL10n.package_viewPlans
           : appL10n.common_comingSoon,
       style: TextStyle(
         fontSize: 13.sp,
         fontFamily: FontFamily.interSemiBold,
         fontWeight: FontWeight.w600,
-        color: item.isAvailable ? PackageUi.accent : PackageUi.textSecondary,
+        color: _isEnabled ? PackageUi.accent : PackageUi.textSecondary,
       ),
     );
   }

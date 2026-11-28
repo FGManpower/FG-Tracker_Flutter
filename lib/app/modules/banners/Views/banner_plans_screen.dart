@@ -1,6 +1,7 @@
 import 'package:fgtracker/app/Data/Repositories/banner_Repo.dart';
 import 'package:fgtracker/app/Model/paid_banner_models.dart';
 import 'package:fgtracker/app/modules/banners/Views/create_banner_ad_screen.dart';
+import 'package:fgtracker/app/modules/banners/Views/my_banners_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -58,6 +59,17 @@ class _BannerPlansScreenState extends State<BannerPlansScreen> {
         backgroundColor: const Color(0xFF4F46E5),
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          if (!isRenew)
+            TextButton.icon(
+              onPressed: () => Get.to(() => const MyBannersScreen()),
+              icon: const Icon(Icons.campaign_rounded, color: Colors.white),
+              label: const Text(
+                'My Ads',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              ),
+            ),
+        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
