@@ -585,10 +585,18 @@ class GroupWalkieController extends GetxController {
     for (final newP in list) {
       final cleanId = newP.userId.trim();
       if (cleanId.isEmpty) continue;
-      final existing = map[cleanId] ??
-          map.values.firstWhereOrNull((p) =>
-              int.tryParse(p.userId) != null &&
-              int.tryParse(p.userId) == int.tryParse(cleanId));
+      WalkieParticipant? existing = map[cleanId];
+      if (existing == null) {
+        final parsedCleanId = int.tryParse(cleanId);
+        if (parsedCleanId != null) {
+          for (final p in map.values) {
+            if (int.tryParse(p.userId) == parsedCleanId) {
+              existing = p;
+              break;
+            }
+          }
+        }
+      }
 
       if (existing != null) {
         map[cleanId] = WalkieParticipant(
@@ -610,10 +618,18 @@ class GroupWalkieController extends GetxController {
     // 3. Ensure self user is always present
     if (myId != null && myId.trim().isNotEmpty) {
       final cleanMyId = myId.trim();
-      if (!map.containsKey(cleanMyId) &&
-          !map.values.any((p) =>
-              int.tryParse(p.userId) != null &&
-              int.tryParse(p.userId) == int.tryParse(cleanMyId))) {
+      final parsedMyId = int.tryParse(cleanMyId);
+      bool hasSelf = map.containsKey(cleanMyId);
+      if (!hasSelf && parsedMyId != null) {
+        for (final p in map.values) {
+          if (int.tryParse(p.userId) == parsedMyId) {
+            hasSelf = true;
+            break;
+          }
+        }
+      }
+
+      if (!hasSelf) {
         final myName =
             Global.storageServices.get(PrefConst.userName)?.toString() ?? 'You';
         final myImage =
@@ -634,8 +650,13 @@ class GroupWalkieController extends GetxController {
 
     if (activeSpeaker != null && activeSpeaker.isNotEmpty) {
       activeSpeakerId.value = activeSpeaker;
-      final speaker =
-          mergedList.firstWhereOrNull((p) => p.userId == activeSpeaker);
+      WalkieParticipant? speaker;
+      for (final p in mergedList) {
+        if (p.userId == activeSpeaker) {
+          speaker = p;
+          break;
+        }
+      }
       if (speaker != null) {
         activeSpeakerName.value = speaker.name;
         activeSpeakerImage.value = speaker.image;
