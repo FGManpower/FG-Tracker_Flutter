@@ -107,6 +107,18 @@ class RegistrationScreen extends GetView<RegistrationController> {
                               hint: "Enter Contact Number",
                               enabled: false,
                             ),
+                            SizedBox(height: 18.h),
+
+                            _buildRegLabel("Email Address"),
+                            SizedBox(height: 8.h),
+                            _buildRegTextField(
+                              controller: controller.emailController,
+                              icon: Icons.email,
+                              hint: "Enter Email Address",
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) =>
+                                  Validator.validateEmail(value),
+                            ),
                             SizedBox(height: 28.h),
 
                             _buildRegLabel("Select Gender"),
@@ -651,19 +663,15 @@ class RegistrationScreen extends GetView<RegistrationController> {
                               enabled: false,
                               keyboardType: TextInputType.phone,
                             ),
-                            Obx(() {
-                              if (!controller.hasExistingEmail.value) {
-                                return const SizedBox.shrink();
-                              }
-                              return _buildEditProfileField(
-                                label: "Email Address",
-                                controller: controller.emailController,
-                                icon: Icons.mail_outline_rounded,
-                                keyboardType: TextInputType.emailAddress,
-                                validator: (value) =>
-                                    Validator.validateEmail(value),
-                              );
-                            }),
+                            // Email is compulsory, shown even if not set yet
+                            _buildEditProfileField(
+                              label: "Email Address",
+                              controller: controller.emailController,
+                              icon: Icons.mail_outline_rounded,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) =>
+                                  Validator.validateEmail(value),
+                            ),
                             SizedBox(height: 26.h),
 
                             // Save Changes with Loading State
@@ -746,15 +754,30 @@ class RegistrationScreen extends GetView<RegistrationController> {
         controller.userData.profileImage)) {
       return CircleAvatar(
         radius: radius,
-        backgroundImage: NetworkImage(
-            "${ConstRes.aImageBaseUrl}${controller.userData.profileImage}"),
         backgroundColor: defaultBgColor,
+        child: ClipOval(
+          child: Image.network(
+            "${ConstRes.aImageBaseUrl}${controller.userData.profileImage}",
+            width: radius * 2,
+            height: radius * 2,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Icon(
+              Icons.person_rounded,
+              size: radius * 1.1,
+              color: const Color(0xFF5D47F1),
+            ),
+          ),
+        ),
       );
     } else {
       return CircleAvatar(
         radius: radius,
         backgroundColor: defaultBgColor,
-        backgroundImage: Assets.images.userAvatar.provider(),
+        child: Icon(
+          Icons.person_rounded,
+          size: radius * 1.1,
+          color: const Color(0xFF5D47F1),
+        ),
       );
     }
   }

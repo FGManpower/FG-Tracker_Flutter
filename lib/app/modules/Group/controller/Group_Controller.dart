@@ -11,6 +11,9 @@ import 'package:get/get.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../Messages/Controller/GroupChatController.dart';
+import '../../Messages/Controller/group_profile_details_controller.dart';
+
 class GroupController extends GetxController {
   GlobalKey<FormState> createGroupKey = GlobalKey<FormState>();
   final groupName = TextEditingController();
@@ -18,6 +21,8 @@ class GroupController extends GetxController {
   RxBool groupDataLoading = false.obs;
   var groupData = <GroupsResData>[].obs;
   var responseError = "".obs;
+  final Rxn<XFile> selectedGroupImage = Rxn<XFile>();
+  final ImagePicker _imagePicker = ImagePicker();
 
   Future<void> decodeQRCodeFromGallery() async {
     final picker = ImagePicker();
@@ -49,8 +54,10 @@ class GroupController extends GetxController {
         "groupName": groupName.text,
         "groupDesc": groupDesc.text,
       };
-      var result = await GroupRepo.createGroup(param);
-      if (result.status == true) {
+      final result = await GroupRepo.createGroup(
+        param,
+        imagePath: selectedGroupImage.value?.path,
+      );      if (result.status == true) {
         Loading().dismissloading();
         Utils().fluttertoast(result.message.toString());
 
@@ -69,24 +76,100 @@ class GroupController extends GetxController {
     }
   }
 
+
   Future<void> updateGroupDetail({required String groupId}) async {
+    CommonDialog.ConfirmationDialog(
+      title: "Update Group",
+      content: "Are you sure you want to update the group details?",
+      cancel: "No",
+      confirm: "Yes",
+      icon: Icons.edit_rounded,
+      onCancel: () {
+        Get.back();
+      },
+      onConfirm: () {
+        Get.back();
+        _performUpdateGroupDetail(groupId: groupId);
+      },
+    );
+  }
+
+  Future<void> _performUpdateGroupDetail({
+    required String groupId,
+  }) async {
     try {
       Loading().showloading();
-      dynamic param = {
-        "groupName": groupName.text,
+      final param = {
+        "groupName": groupName.text.trim(),
+        "groupDesc": groupDesc.text.trim(),
         "groupId": groupId,
       };
-      var result = await GroupRepo.updateGroup(param);
+
+      final result = await GroupRepo.updateGroup(
+        param,
+        imagePath: selectedGroupImage.value?.path,
+      );
+
+      Loading().dismissloading();
+
       if (result.status == true) {
-        Loading().dismissloading();
-        Get.offAllNamed(Routes.Home_Screen);
+        selectedGroupImage.value = null;
+
+        if (Get.isRegistered<GroupMessageController>()) {
+          final chatController = Get.find<GroupMessageController>();
+          chatController.groupName.value = groupName.text.trim();
+          // Keep description in sync so Group Profile shows it right away
+          chatController.groupDesc.value = groupDesc.text.trim();
+        }
+
+        Get.back();
+        Utils().fluttertoast(result.message.toString());
+
+        // Refresh Group Profile screen so new name / image show right away
+        _refreshGroupProfile(groupId);
+        // Refresh All Groups list too (no skeleton loader)
+        _refreshGroupListSilently();
       } else {
-        Loading().dismissloading();
-        CommonDialog.errorMessage(result.message);
+        Utils().fluttertoast(result.message.toString());
       }
     } catch (e) {
       Loading().dismissloading();
-      CommonDialog.errorMessage(e.toString());
+      Utils().fluttertoast(e.toString());
+    }
+  }
+
+  Future<void> _refreshGroupProfile(String groupId) async {
+    final int? gId = int.tryParse(groupId);
+    if (gId == null || !Get.isRegistered<GroupProfileDetailsController>()) {
+      return;
+    }
+    final profileController = Get.find<GroupProfileDetailsController>();
+    await profileController.fetchProfileDetails(gId, silent: true);
+
+    // Keep the open group chat header image in sync too
+    final String? newImage = profileController.profileData.value?.group?.groupProfile;
+    if (newImage != null && Get.isRegistered<GroupMessageController>()) {
+      Get.find<GroupMessageController>().groupImage = newImage;
+    }
+  }
+
+  /// Refresh All Groups list without the skeleton loader
+  Future<void> refreshGroupListSilently() => _refreshGroupListSilently();
+
+  Future<void> _refreshGroupListSilently() async {
+    try {
+      final result = await GroupRepo.getGroupData();
+      if (result.status != true || result.data?.groupData == null) return;
+      // Update the registered instance (used by All Groups screen) and this one
+      final targets = <GroupController>{this};
+      if (Get.isRegistered<GroupController>()) {
+        targets.add(Get.find<GroupController>());
+      }
+      for (final c in targets) {
+        c.groupData.value = result.data!.groupData!;
+      }
+    } catch (_) {
+      // Keep the current list if the refresh fails
     }
   }
 
@@ -201,4 +284,25 @@ class GroupController extends GetxController {
       CommonDialog.errorMessage(e.toString());
     }
   }
+
+
+  Future<void> pickGroupImage() async {
+    final image = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+
+    if (image != null) {
+      selectedGroupImage.value = image;
+    }
+  }
+
+  void removeSelectedGroupImage() {
+    selectedGroupImage.value = null;
+  }
+
+
+
+
+
 }

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
@@ -547,10 +548,10 @@ class _TotalMemberState extends State<TotalMember> {
   Widget _buildMemberCard(GroupMemberData member) {
     final bool isOnline = member.effectiveIsOnline;
 
-    final String statusText = isOnline ? "Active" : "Inactive";
+    final String statusText = isOnline ? "Active" : member.formattedLastSeen;
 
     final Color statusColor =
-        isOnline ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
+        isOnline ? const Color(0xFF10B981) : const Color(0xFF9E9E9E);
 
     return InkWell(
       onTap: () {
@@ -562,12 +563,16 @@ class _TotalMemberState extends State<TotalMember> {
           distance: 0,
           userId: member.userId,
           id: member.userId,
+          chatId: member.chatId,
           name: member.displayName,
           imageUrl: member.profileImage,
           status: isOnline,
           lastSeen: member.lastSeen,
+          phone: member.phone ?? member.mobileNo,
+          team: member.displayDepartment,
           isGroupChat: false,
           isLocationSharing: member.isLocationSharing ?? true,
+          location: member.displayLocation,
         );
       },
       borderRadius: BorderRadius.circular(16.r),
@@ -589,7 +594,17 @@ class _TotalMemberState extends State<TotalMember> {
         ),
         child: Row(
           children: [
-            Stack(
+            GestureDetector(
+              onTap: isMyUserId(member.userId)
+                  ? null
+                  : () => showUserQuickProfile(
+                        userId: member.userId,
+                        name: member.displayName,
+                        profileImage: member.resolvedImageUrl,
+                        mobileNo: member.phone ?? member.mobileNo,
+                        chatId: member.chatId,
+                      ),
+              child: Stack(
               children: [
                 Container(
                   width: 50.r,
@@ -644,6 +659,7 @@ class _TotalMemberState extends State<TotalMember> {
                 ),
               ],
             ),
+            ),
             SizedBox(width: 14.w),
             Expanded(
               child: Column(
@@ -696,29 +712,6 @@ class _TotalMemberState extends State<TotalMember> {
                   ),
                 ],
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  "Joined",
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontFamily: FontFamily.interRegular,
-                    color: Colors.grey.shade400,
-                  ),
-                ),
-                SizedBox(height: 3.h),
-                Text(
-                  member.formattedJoinedAt,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: FontFamily.interSemiBold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
             ),
           ],
         ),

@@ -1,0 +1,23 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <application>
+        <receiver
+            android:name="com.fg.walkie.WalkieActionReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.fg.walkie.ACTION_REJECT" />
+                <action android:name="com.fg.walkie.ACTION_ACCEPT" />
+                <action android:name="com.fg.walkie.TEST_NOTIFICATION" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name="com.fg.walkie.WalkieIncomingActivity"
+            android:theme="@style/Theme.Walkie.Translucent"
+            android:launchMode="singleTop"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
+    </application>
+</manifest>

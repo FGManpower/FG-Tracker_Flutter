@@ -5,11 +5,16 @@ import 'package:fgtracker/app/Model/call_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageServices {
-  late final SharedPreferences _prefs;
+  late SharedPreferences _prefs;
 
   Future<StorageServices> init() async {
     _prefs = await SharedPreferences.getInstance();
     return this;
+  }
+
+  Future<void> reload() async {
+    _prefs = await SharedPreferences.getInstance();
+    await _prefs.reload();
   }
 
   Future<bool> setBool(String key, bool value) async {
@@ -38,6 +43,18 @@ class StorageServices {
 
   Future<bool> remove(String key) {
     return _prefs.remove(key);
+  }
+
+  Future<bool> clearAllUserData() async {
+    final introDone = _prefs.getBool(PrefConst.introStatus) ?? true;
+    final isDark = _prefs.getBool(PrefConst.isDarkMode);
+    final cleared = await _prefs.clear();
+    await _prefs.setBool(PrefConst.introStatus, introDone);
+    if (isDark != null) {
+      await _prefs.setBool(PrefConst.isDarkMode, isDark);
+    }
+    await _prefs.reload();
+    return cleared;
   }
 
   String? getaccesstoken() {

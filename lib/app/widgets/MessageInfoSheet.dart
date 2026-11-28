@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../Core/constant/const_res.dart';
+import '../Core/util/profile_navigation.dart';
 import '../Model/GetMessage.dart';
 import '../Model/MemberDataRes.dart';
 import '../modules/Messages/Controller/GroupChatController.dart';
+import '../modules/Messages/Controller/chat_screen_logic.dart';
+import '../Core/constant/pref_res.dart';
+import '../Core/values/global.dart';
 
 class MessageInfoSheet extends StatelessWidget {
   final MessageData message;
@@ -95,6 +99,13 @@ class MessageInfoSheet extends StatelessWidget {
               icon: Icons.done_all,
               title: "Seen",
               count: seenCount,
+              // Group: everyone who could see it, i.e. members minus sender.
+              total: isGroup
+                  ? groupController!.groupMembers
+                      .where((m) =>
+                          m.userId?.toString() != message.senderId?.toString())
+                      .length
+                  : null,
             ),
 
             if (isGroup)
@@ -111,36 +122,26 @@ class MessageInfoSheet extends StatelessWidget {
     );
   }
 
-  int _getSeenCount() {
-    if (message.seenBy is List) {
-      final uniqueIds = (message.seenBy as List)
-          .map((id) => id.toString())
-          .toSet();
+  String? get _currentUserId =>
+      Global.storageServices.get(PrefConst.userId)?.toString();
 
-      return uniqueIds.length;
-    }
-
-    final count = message.seenCount;
-
-    if (count is int) {
-      return count;
-    }
-
-    return int.tryParse(count?.toString() ?? "0") ?? 0;
-  }
+  /// "Seen" count without me and without the sender (by user id).
+  int _getSeenCount() => ChatScreenRules.seenCount(
+        message,
+        currentUserId: _currentUserId,
+        isGroup: groupController != null,
+      );
 
   List<dynamic> _getSeenMembers() {
     if (groupController == null) {
       return [];
     }
 
-    if (message.seenBy is! List) {
-      return [];
-    }
-
-    final seenIds = (message.seenBy as List)
-        .map((id) => id.toString())
-        .toSet();
+    final seenIds = ChatScreenRules.seenByOthers(
+      message,
+      currentUserId: _currentUserId,
+    );
+    if (seenIds.isEmpty) return [];
 
     return groupController!.groupMembers.where((member) {
       return seenIds.contains(member.userId.toString());
@@ -239,6 +240,7 @@ class MessageInfoSheet extends StatelessWidget {
     required IconData icon,
     required String title,
     required int count,
+    int? total,
   }) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -262,10 +264,10 @@ class MessageInfoSheet extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
-          if (count > 0) ...[
+          if (count > 0 || (total ?? 0) > 0) ...[
             SizedBox(width: 5.w),
             Text(
-              "($count)",
+              total != null && total > 0 ? "($count of $total)" : "($count)",
               style: TextStyle(
                 fontSize: 13.sp,
                 color: Colors.grey.shade600,
@@ -285,6 +287,13 @@ class MessageInfoSheet extends StatelessWidget {
     final image = member.profileImage?.toString() ?? "";
 
     return ListTile(
+      onTap: () => showUserQuickProfile(
+        userId: member.userId,
+        name: name,
+        profileImage: image,
+        mobileNo: member.mobileNo?.toString(),
+        chatId: int.tryParse(member.chatId?.toString() ?? ''),
+      ),
       contentPadding: EdgeInsets.symmetric(
         horizontal: 20.w,
       ),
@@ -355,6 +364,13 @@ class MessageInfoSheet extends StatelessWidget {
         memberData?.profileImage?.toString() ?? "";
 
     return ListTile(
+      onTap: () => showUserQuickProfile(
+        userId: memberData?.userId,
+        name: name,
+        profileImage: image,
+        mobileNo: memberData?.mobileNo,
+        chatId: memberData?.chatId,
+      ),
       contentPadding: EdgeInsets.symmetric(
         horizontal: 20.w,
       ),

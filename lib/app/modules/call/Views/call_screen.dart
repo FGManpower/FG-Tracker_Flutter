@@ -2,6 +2,8 @@ import 'package:fgtracker/app/modules/call/Views/call_contacts_tab.dart';
 import 'package:fgtracker/app/modules/call/Views/call_groups_tab.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/app/Data/Services/notification_marker_service.dart';
+import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -24,10 +26,14 @@ class _CallScreenState extends State<CallScreen>
   @override
   void initState() {
     super.initState();
+    SocketService.instance.markCallHistoryViewed();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         controller.switchTab(_tabController.index);
+        if (_tabController.index == 0) {
+          SocketService.instance.markCallHistoryViewed();
+        }
       }
     });
     controller.loadGroups();
@@ -40,7 +46,9 @@ class _CallScreenState extends State<CallScreen>
   }
 
   void _handleBack() {
-    if (controller.isDialPadOpen.value) {
+    if (controller.isSelectionMode.value) {
+      controller.exitSelectionMode();
+    } else if (controller.isDialPadOpen.value) {
       controller.isDialPadOpen.value = false;
       controller.clearDialNumber();
     } else if (controller.searchQuery.value.isNotEmpty) {
@@ -58,7 +66,7 @@ class _CallScreenState extends State<CallScreen>
       final bool hasSearch = controller.searchQuery.value.isNotEmpty;
 
       return PopScope(
-        canPop: !isDialOpen && !hasSearch,
+        canPop: !isDialOpen && !hasSearch && !controller.isSelectionMode.value,
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) return;
           _handleBack();
@@ -78,6 +86,7 @@ class _CallScreenState extends State<CallScreen>
                     SizedBox(height: 8.h),
                     Expanded(
                       child: TabBarView(
+                        physics: const NeverScrollableScrollPhysics(),
                         controller: _tabController,
                         children: [
                           const CallRecentCallsTab(),
@@ -92,18 +101,22 @@ class _CallScreenState extends State<CallScreen>
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  child: isDialOpen ? const CallDialPad() : const SizedBox.shrink(),
+                  child: (isDialOpen && controller.selectedTab.value == 1)
+                      ? const CallDialPad()
+                      : const SizedBox.shrink(),
                 ),
               ],
             ),
           ),
-          floatingActionButton: (isDialOpen || controller.selectedTab.value != 0)
+          floatingActionButton: (isDialOpen ||
+              controller.selectedTab.value != 1 ||
+              controller.isSelectionMode.value)
               ? const SizedBox.shrink()
               : _QuickCallActionButton(
-                  onTap: () {
-                    controller.toggleDialPad();
-                  },
-                ),
+            onTap: () {
+              controller.toggleDialPad();
+            },
+          ),
           floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         ),
       );
@@ -154,7 +167,9 @@ class _CallScreenState extends State<CallScreen>
               ),
               SizedBox(height: 2.h),
               Text(
-                "Audio / Video Call",
+                controller.isSelectionMode.value && controller.selectedTab.value == 0
+                    ? "${controller.selectedCallIds.length} Selected"
+                    : "Audio / Video Call",
                 style: TextStyle(
                   fontSize: 11.5.sp,
                   fontFamily: FontFamily.interRegular,
@@ -164,6 +179,93 @@ class _CallScreenState extends State<CallScreen>
               ),
             ],
           ),
+          const Spacer(),
+          if (controller.selectedTab.value == 0) ...[
+            if (controller.isSelectionMode.value) ...[
+              GestureDetector(
+                onTap: () => controller.exitSelectionMode(),
+                child: Container(
+                  padding:
+                  EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontFamily: FontFamily.interSemiBold,
+                      color: const Color(0xFF4818F0),
+                    ),
+                  ),
+                ),
+              ),
+            ] else ...[
+              PopupMenuButton<String>(
+                icon: Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.more_vert_rounded,
+                    size: 20.sp,
+                    color: const Color(0xFF1E1B4B),
+                  ),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                color: Colors.white,
+                elevation: 4,
+                onSelected: (value) {
+                  if (value == 'select_calls') {
+                    controller.enterSelectionMode();
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem<String>(
+                    value: 'select_calls',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.delete_outline_rounded,
+                          size: 18.sp,
+                          color: Colors.red.shade600,
+                        ),
+                        SizedBox(width: 10.w),
+                        Text(
+                          "Delete Call",
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontFamily: FontFamily.interMedium,
+                            color: const Color(0xFF1E1B4B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
         ],
       ),
     );
@@ -275,10 +377,11 @@ class _CallScreenState extends State<CallScreen>
             fontFamily: FontFamily.interSemiBold,
           ),
           tabs: [
-            _buildTab(
+            Obx(() => _buildTab(
               icon: Icons.access_time_rounded,
               title: "Recent",
-            ),
+              showBadge: NotificationMarkerService.instance.hasCallingMarker.value,
+            )),
             _buildTab(
               icon: Icons.person_outline_rounded,
               title: "Contacts",
@@ -293,14 +396,37 @@ class _CallScreenState extends State<CallScreen>
     );
   }
 
-  Widget _buildTab({required String title, required IconData icon}) {
+  Widget _buildTab({
+    required String title,
+    required IconData icon,
+    bool showBadge = false,
+  }) {
     return Tab(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 16.sp),
-          SizedBox(width: 6.w),
-          Text(title),
+          SizedBox(width: 4.w),
+          Flexible(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+            ),
+          ),
+          if (showBadge) ...[
+            SizedBox(width: 4.w),
+            Container(
+              width: 7.w,
+              height: 7.w,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEF4444),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
         ],
       ),
     );

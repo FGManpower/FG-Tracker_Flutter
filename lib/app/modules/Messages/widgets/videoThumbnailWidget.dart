@@ -4,6 +4,10 @@ import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+
+import '../../../Data/Services/media_availability_service.dart';
+import 'missing_media_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
@@ -28,7 +32,40 @@ class VideoThumbnailWidget extends StatefulWidget {
 
 class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
   @override
+  void initState() {
+    super.initState();
+    MediaAvailabilityService.check(widget.videoUrl);
+  }
+
+  @override
+  void didUpdateWidget(covariant VideoThumbnailWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoUrl != widget.videoUrl) {
+      MediaAvailabilityService.check(widget.videoUrl);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (widget.videoUrl.trim().isEmpty) return _buildMissing();
+    return Obx(() => MediaAvailabilityService.isMissing(widget.videoUrl)
+        ? _buildMissing()
+        : _buildThumbnail());
+  }
+
+  /// Same footprint as the thumbnail, so grids don't jump.
+  Widget _buildMissing() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12.r),
+      child: SizedBox(
+        width: 220.w,
+        height: 180.h,
+        child: const MissingMediaTile(type: MissingMediaType.video),
+      ),
+    );
+  }
+
+  Widget _buildThumbnail() {
     return GestureDetector(
       onTap: widget.onTap,
       child: Container(
@@ -43,8 +80,21 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              CNetworkImage(imageurl: widget.thumbnail),
-              Container(
+              if (widget.thumbnail.trim().isNotEmpty &&
+                  (widget.thumbnail.startsWith('http://') ||
+                      widget.thumbnail.startsWith('https://')))
+                CNetworkImage(imageurl: widget.thumbnail)
+              else
+                Container(
+                  color: Colors.black12,
+                  child: const Center(
+                    child: Icon(
+                      Icons.videocam_rounded,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                ),              Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,

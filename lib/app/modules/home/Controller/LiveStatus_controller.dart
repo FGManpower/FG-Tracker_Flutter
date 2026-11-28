@@ -89,7 +89,6 @@ class LivesStatusController extends GetxController {
       isMyPrivateModeOn.value = (s == 'false' || s == '0');
     } else {
       isMyPrivateModeOn.value = false;
-      Global.storageServices.setBool(PrefConst.locationSharing, true);
     }
   }
 
@@ -126,6 +125,22 @@ class LivesStatusController extends GetxController {
       final List<GroupMemberData> list = allMember?.memberList ?? [];
       allMemberList.assignAll(list);
       _applyAllMembersFilter();
+
+      final myUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+      if (myUserId != null && list.isNotEmpty) {
+        try {
+          final me = list.firstWhere((m) =>
+              m.userId?.toString() == myUserId);
+          if (me.isLocationSharing != null) {
+            final bool sharing = me.isLocationSharing!;
+            isMyPrivateModeOn.value = !sharing;
+            Global.storageServices.setBool(PrefConst.locationSharing, sharing);
+            if (Get.isRegistered<GroupTrackingController>()) {
+              Get.find<GroupTrackingController>().isLocationSharing.value = sharing;
+            }
+          }
+        } catch (_) {}
+      }
 
       final pagination = result.pagination;
       if (pagination != null) {
@@ -392,6 +407,26 @@ class LivesStatusController extends GetxController {
       final List<GroupMemberData> list = result.data?.private ?? [];
       privateMemberList.assignAll(list);
       _applyPrivateFilter();
+
+      final myUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+      if (result.user?.isLocationSharing != null) {
+        final bool isSharing = result.user!.isLocationSharing!;
+        isMyPrivateModeOn.value = !isSharing;
+        Global.storageServices.setBool(PrefConst.locationSharing, isSharing);
+        if (Get.isRegistered<GroupTrackingController>()) {
+          Get.find<GroupTrackingController>().isLocationSharing.value = isSharing;
+        }
+      } else if (myUserId != null && list.isNotEmpty) {
+        final bool isMePrivate = list.any((m) =>
+            m.userId?.toString() == myUserId);
+        if (isMePrivate) {
+          isMyPrivateModeOn.value = true;
+          Global.storageServices.setBool(PrefConst.locationSharing, false);
+          if (Get.isRegistered<GroupTrackingController>()) {
+            Get.find<GroupTrackingController>().isLocationSharing.value = false;
+          }
+        }
+      }
 
       final pagination = result.pagination;
       if (pagination != null) {

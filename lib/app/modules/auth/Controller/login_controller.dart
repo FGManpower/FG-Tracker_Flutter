@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
-import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
+import 'package:fgtracker/app/Data/Repositories/otp_charge_repo.dart';
+import 'package:fgtracker/app/Model/otp_charge_model.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -14,6 +17,8 @@ class Login_Controller extends GetxController {
 
   RxBool isLoading = false.obs;
   final selectedDialCode = '+91'.obs;
+  final selectedCountryIso = 'IN'.obs;
+  final selectedCountryName = 'India'.obs;
 
   final mobileErrorText = ''.obs;
   late FocusNode phoneFocusNode;
@@ -63,23 +68,40 @@ class Login_Controller extends GetxController {
   Future<void> _performLogin() async {
     try {
       Loading().showloading();
+      final mobNo = mobNoController.text.trim();
       dynamic param = {
-        "MobileNo": mobNoController.text.trim(),
+        "MobileNo": mobNo,
         "countryCode": selectedDialCode.value,
+        "Platform": Platform.isAndroid ? "android" : "ios",
       };
 
-      var result = await AuthRepo.login(param);
-      if (result.status == true) {
-        Loading().dismissloading();
-
-        Get.toNamed(Routes.OTPScreen, arguments: {
-          "mobNo": mobNoController.text.trim(),
-          "countryCode": selectedDialCode.value,
-        });
-      } else {
-        Loading().dismissloading();
+      var result = await OtpChargeRepo.sendOtp(param);
+      Loading().dismissloading();
+      if (result.status != true) {
         CommonDialog.errorMessage(result.message);
+        return;
       }
+
+      // Non-India number, 2nd login onwards: no SMS sent yet, pay first
+      if (result.nextStep == OtpNextStep.showOtpChargeScreen &&
+          result.otpCharge?.otpChargeToken != null) {
+        Get.toNamed(Routes.OTP_CHARGES, arguments: {
+          "mobNo": mobNo,
+          "countryCode": selectedDialCode.value,
+          "countryIso": selectedCountryIso.value,
+          "countryName": selectedCountryName.value,
+          "otpCharge": result.otpCharge,
+          "loginInfo": result.loginInfo,
+          "otpResend": result.otpResend,
+        });
+        return;
+      }
+
+      Get.toNamed(Routes.OTPScreen, arguments: {
+        "mobNo": mobNo,
+        "countryCode": selectedDialCode.value,
+        "otpResend": result.otpResend,
+      });
     } catch (e) {
       Loading().dismissloading();
       CommonDialog.errorMessage(e.toString());

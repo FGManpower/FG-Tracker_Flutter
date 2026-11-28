@@ -1,17 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/global_widget/crown_icon.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../modules/home/Views/LiveStatus/components/ghost_member.dart';
@@ -80,14 +76,47 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                 child: Stack(
                   children: [
                     ClipOval(
-                      child: CachedNetworkImage(
-                        imageUrl: hasImage
-                            ? '${ConstRes.aImageBaseUrl}$profileImage'
-                            : MyAppTheme.ProfilenotFoundImg,
-                        width: 44.w,
-                        height: 44.w,
-                        fit: BoxFit.cover,
-                      ),
+                      child: hasImage
+                          ? CachedNetworkImage(
+                              imageUrl: '${ConstRes.aImageBaseUrl}$profileImage',
+                              width: 44.w,
+                              height: 44.w,
+                              memCacheWidth: 120,
+                              memCacheHeight: 120,
+                              maxWidthDiskCache: 300,
+                              maxHeightDiskCache: 300,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                width: 44.w,
+                                height: 44.w,
+                                color: const Color(0xFFEDE9FE),
+                                child: Icon(
+                                  Icons.person_rounded,
+                                  size: 24.sp,
+                                  color: const Color(0xFF5D47F1),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                width: 44.w,
+                                height: 44.w,
+                                color: const Color(0xFFEDE9FE),
+                                child: Icon(
+                                  Icons.person_rounded,
+                                  size: 24.sp,
+                                  color: const Color(0xFF5D47F1),
+                                ),
+                              ),
+                            )
+                          : Container(
+                              width: 44.w,
+                              height: 44.w,
+                              color: const Color(0xFFEDE9FE),
+                              child: Icon(
+                                Icons.person_rounded,
+                                size: 24.sp,
+                                color: const Color(0xFF5D47F1),
+                              ),
+                            ),
                     ),
                     Positioned(
                       right: 1.w,
@@ -117,34 +146,6 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
       actions: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            Get.toNamed(Routes.walkieTalkieTrialDetails);
-          },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CrownIcon(
-                width: 21.w,
-                height: 15.5.h,
-                color: const Color(0xFF5338EE),
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                'Premium',
-                style: TextStyle(
-                  fontFamily: FontFamily.interBold,
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF5338EE),
-                  height: 1.1,
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(width: 10.w),
         _LocationStatus(trackingController: trackingController),
         SizedBox(width: 8.w),
         _NotificationBell(
@@ -338,45 +339,25 @@ class _NotificationBell extends StatelessWidget {
 
             if (unread > 0)
               Positioned(
-                right: -4.w,
-                top: -4.h,
+                right: 2.w,
+                top: 2.h,
                 child: Container(
-                  constraints: BoxConstraints(
-                    minWidth: 19.w,
-                    minHeight: 19.w,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 4.w,
-                    vertical: 1.h,
-                  ),
-                  alignment: Alignment.center,
+                  width: 9.w,
+                  height: 9.w,
                   decoration: BoxDecoration(
-                    color: _Palette.purple,
-                    borderRadius: BorderRadius.circular(10.r),
+                    color: const Color(0xFFEF4444),
+                    shape: BoxShape.circle,
                     border: Border.all(
                       color: Colors.white,
                       width: 1.5.w,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: _Palette.purple.withValues(alpha: 0.3),
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.45),
                         blurRadius: 4,
-                        offset: const Offset(0, 2),
+                        offset: const Offset(0, 1),
                       ),
                     ],
-                  ),
-                  child: Text(
-                    unread > 99 ? '99+' : '$unread',
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.visible,
-                    style: TextStyle(
-                      fontFamily: FontFamily.interSemiBold,
-                      color: Colors.white,
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w700,
-                      height: 1.0,
-                    ),
                   ),
                 ),
               ),

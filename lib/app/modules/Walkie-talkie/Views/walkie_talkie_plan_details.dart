@@ -657,47 +657,47 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                 ),
               );
             }),
-            SizedBox(height: 2.h),
-            _buildTrialRemainingBanner(),
+            // SizedBox(height: 2.h),
+            // _buildTrialRemainingBanner(),
           ],
         ),
       );
     });
   }
 
-  Widget _buildTrialRemainingBanner() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F3FE),
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFFE2E7FC)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.info_outline_rounded,
-            color: _primaryPurple,
-            size: 20.sp.clamp(18.0, 22.0),
-          ),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: Text(
-              "You can still use your free trial for the remaining time.\nThe plan will activate after your trial ends.",
-              style: TextStyle(
-                fontSize: 11.5.sp.clamp(10.5, 13.0),
-                fontFamily: FontFamily.interMedium,
-                color: const Color(0xFF475569),
-                height: 1.35,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildTrialRemainingBanner() {
+  //   return Container(
+  //     margin: EdgeInsets.symmetric(horizontal: 16.w),
+  //     padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+  //     decoration: BoxDecoration(
+  //       color: const Color(0xFFF1F3FE),
+  //       borderRadius: BorderRadius.circular(14.r),
+  //       border: Border.all(color: const Color(0xFFE2E7FC)),
+  //     ),
+  //     child: Row(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Icon(
+  //           Icons.info_outline_rounded,
+  //           color: _primaryPurple,
+  //           size: 20.sp.clamp(18.0, 22.0),
+  //         ),
+  //         SizedBox(width: 10.w),
+  //         Expanded(
+  //           child: Text(
+  //             "You can still use your free trial for the remaining time.\nThe plan will activate after your trial ends.",
+  //             style: TextStyle(
+  //               fontSize: 11.5.sp.clamp(10.5, 13.0),
+  //               fontFamily: FontFamily.interMedium,
+  //               color: const Color(0xFF475569),
+  //               height: 1.35,
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   String _getSubtitleForPlan(WalkiePlanItem plan) {
     final interval = (plan.billingInterval ?? '').toLowerCase();

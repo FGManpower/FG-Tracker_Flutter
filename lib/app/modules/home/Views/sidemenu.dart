@@ -370,14 +370,16 @@ class Sidemenu extends StatelessWidget {
   }
 
   Widget _defaultAvatar(double radius) {
-    return Assets.images.userAvatar.image(
+    return Container(
       width: radius * 2,
       height: radius * 2,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => Icon(
-        Icons.person,
-        size: radius * 1.1,
-        color: const Color(0xFF5D47F1),
+      color: const Color(0xFFEDE9FE),
+      child: Center(
+        child: Icon(
+          Icons.person_rounded,
+          size: radius * 1.1,
+          color: const Color(0xFF5D47F1),
+        ),
       ),
     );
   }
@@ -429,6 +431,16 @@ class Sidemenu extends StatelessWidget {
               });
             },
           ),
+          // _buildDivider(),
+          // _buildDrawerItem(
+          //   icon: Icons.receipt_long_rounded,
+          //   title: "OTP Charges",
+          //   subtitle: "Charges for every OTP",
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     Get.toNamed(Routes.OTP_CHARGES);
+          //   },
+          // ),
           _buildDivider(),
           _buildDrawerItem(
             icon: Icons.support_agent_rounded,

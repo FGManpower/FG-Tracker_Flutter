@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
@@ -16,6 +17,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+
+import '../../../../Core/constant/const_res.dart';
+import '../../../../Core/util/profile_navigation.dart';
 
 class GroupsListScreen extends StatefulWidget {
   const GroupsListScreen({super.key});
@@ -228,31 +232,32 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
               : const SizedBox.shrink(key: ValueKey('empty_search')),
         )),
 
-        Padding(
-          padding: EdgeInsets.only(right: 20.w),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Icon(
-                Icons.notifications_none_rounded,
-                size: 28.sp,
-                color: const Color(0xff5045B9),
-              ),
-              Positioned(
-                right: 2,
-                top: 2,
-                child: Container(
-                  height: 8.h,
-                  width: 8.h,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        // Notification bell hidden here; only the Home screen shows it
+//         Padding(
+//           padding: EdgeInsets.only(right: 20.w),
+//           child: Stack(
+//             clipBehavior: Clip.none,
+//             children: [
+//               Icon(
+//                 Icons.notifications_none_rounded,
+//                 size: 28.sp,
+//                 color: const Color(0xff5045B9),
+//               ),
+//               Positioned(
+//                 right: 2,
+//                 top: 2,
+//                 child: Container(
+//                   height: 8.h,
+//                   width: 8.h,
+//                   decoration: const BoxDecoration(
+//                     color: Colors.red,
+//                     shape: BoxShape.circle,
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
       ],
     );
   }
@@ -331,6 +336,15 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
       BuildContext context, GroupsResData? data, bool isLoading) {
     final bool isActive = data?.isActive ?? false;
     final bool isCreator = data?.isCreator ?? false;
+    final String rawProfile = (data?.groupProfile ?? '').trim();
+
+    final String groupImageUrl = rawProfile.isEmpty ||
+        rawProfile.toLowerCase() == 'null'
+        ? ''
+        : rawProfile.startsWith('http://') ||
+        rawProfile.startsWith('https://')
+        ? rawProfile
+        : '${ConstRes.aImageBaseUrl.replaceFirst(RegExp(r'/+$'), '')}/${rawProfile.replaceFirst(RegExp(r'^/+'), '')}';
 
     return Skeletonizer(
       enabled: isLoading,
@@ -342,12 +356,16 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
               "groupId": data.id.toString(),
               "groupName": data.groupName ?? "",
               "groupImage": data.groupProfile ?? "",
+              "groupDesc": data.groupDesc ?? "",
               "groupCode": data.groupCode ?? "",
               "isCreator": data.isCreator?.toString() ?? "false",
               "isActive": data.isActive?.toString() ?? "false",
             })?.then((value) {
               if (value == true) {
                 groupController.getGroupData();
+              } else {
+                // Name / image may have changed inside the group → refresh quietly
+                groupController.refreshGroupListSilently();
               }
             });
           }
@@ -370,19 +388,69 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  height: 50.h,
-                  width: 50.h,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                GestureDetector(
+                  onTap: data == null ? null : () => showGroupQuickProfile(groupId: data.id, groupName: data.groupName, groupProfile: data.groupProfile, memberCount: data.memberCount),
+                  child: ClipOval(
+                  child: SizedBox(
+                    height: 50.h,
+                    width: 50.h,
+                    child: groupImageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                      imageUrl: groupImageUrl,
+                      width: 50.h,
+                      height: 50.h,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.groups_rounded,
+                          color: Colors.white,
+                          size: 28.sp,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.groups_rounded,
+                          color: Colors.white,
+                          size: 28.sp,
+                        ),
+                      ),
+                    )
+                        : Container(
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.groups_rounded,
+                        color: Colors.white,
+                        size: 28.sp,
+                      ),
                     ),
                   ),
-                  child: Icon(Icons.groups_rounded,
-                      color: Colors.white, size: 32.sp),
+                ),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(

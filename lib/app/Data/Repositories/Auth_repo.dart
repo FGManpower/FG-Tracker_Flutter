@@ -75,7 +75,7 @@ class AuthRepo {
       formMap['mobileNo'] = controller.phoneController.text.trim();
     }
 
-    if (controller.hasExistingEmail.value && controller.emailController.text.trim().isNotEmpty) {
+    if (controller.emailController.text.trim().isNotEmpty) {
       final emailVal = controller.emailController.text.trim();
       formMap['Email'] = emailVal;
       formMap['email'] = emailVal;

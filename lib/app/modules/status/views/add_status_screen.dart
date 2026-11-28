@@ -33,23 +33,37 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      resizeToAvoidBottomInset: true,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          StatusPreview(controller: controller),
-          StatusTopBar(controller: controller),
-          Obx(() {
-            if (controller.isRecording.value) {
-              return RecordingBadge(controller: controller);
-            }
-            return const SizedBox.shrink();
-          }),
-          StatusBottomControls(controller: controller),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        if (controller.capturedFile.value != null) {
+          await controller.retake();
+          return;
+        }
+
+        Get.back();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        resizeToAvoidBottomInset: true,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            StatusPreview(controller: controller),
+            StatusTopBar(controller: controller),
+            Obx(() {
+              if (controller.isRecording.value) {
+                return RecordingBadge(controller: controller);
+              }
+              return const SizedBox.shrink();
+            }),
+            StatusBottomControls(controller: controller),
+          ],
+        ),
       ),
     );
   }

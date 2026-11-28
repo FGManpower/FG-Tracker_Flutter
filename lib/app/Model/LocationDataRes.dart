@@ -120,7 +120,7 @@ class LocationData {
   dynamic location;
   dynamic team;
   dynamic battery;
-
+  dynamic chatId;
   LocationData({
     this.id,
     this.userId,
@@ -138,6 +138,7 @@ class LocationData {
     this.location,
     this.team,
     this.battery,
+    this.chatId
   });
 
   static double? _parseDouble(dynamic val) {
@@ -167,7 +168,9 @@ class LocationData {
         user?['user_id'] ??
         user?['id'];
     groupId = json['groupId'] ?? json['group_id'] ?? json['GroupId'] ?? user?['groupId'];
-
+    chatId = json['chatId'] ??
+        json['conversationId'] ??
+        json['privateChatId'];
     if (json['location'] is Map) {
       final loc = json['location'] as Map;
       latitude = _parseDouble(loc['lat'] ?? loc['latitude'] ?? loc['userLat']);
@@ -284,6 +287,7 @@ class LocationData {
     data['mobileNo'] = mobileNo;
     data['role'] = role;
     data['battery'] = battery;
+    data['chatId'] = chatId;
     return data;
   }
 }

@@ -2,6 +2,9 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
+import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
+import 'package:get/get.dart';
 
 class ProfileRepo {
   static Future<ProfileRes> getProfileData() async {
@@ -24,6 +27,21 @@ class ProfileRepo {
           profileRes.data!.mobileNo!.isNotEmpty) {
         Global.storageServices
             .setString(PrefConst.userPhone, profileRes.data!.mobileNo!);
+      }
+      if (profileRes.data!.locationSharing != null) {
+        final bool locSharing = profileRes.data!.locationSharing!;
+        await Global.storageServices.setBool(
+          PrefConst.locationSharing,
+          locSharing,
+        );
+        if (Get.isRegistered<GroupTrackingController>()) {
+          Get.find<GroupTrackingController>().isLocationSharing.value =
+              locSharing;
+        }
+        if (Get.isRegistered<LivesStatusController>()) {
+          Get.find<LivesStatusController>().isMyPrivateModeOn.value =
+              !locSharing;
+        }
       }
     }
     return profileRes;

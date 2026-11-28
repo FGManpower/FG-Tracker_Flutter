@@ -101,6 +101,7 @@ class StatusViewerModel {
   final String? profileImage;
   final String? reactionEmoji;
   final DateTime? viewedAt;
+  final int? chatId;
 
   StatusViewerModel({
     required this.viewerId,
@@ -108,6 +109,7 @@ class StatusViewerModel {
     this.profileImage,
     this.reactionEmoji,
     this.viewedAt,
+    this.chatId,
   });
 
   factory StatusViewerModel.fromJson(Map<String, dynamic> json) {
@@ -147,16 +149,23 @@ class StatusViewerModel {
         json['updatedAt'])
         ?.toString();
 
+    final int? chatId = int.tryParse((json['chatId'] ??
+        json['privateChatId'] ??
+        json['conversationId'] ??
+        userObj?['chatId'])
+        ?.toString() ??
+        '');
+
     return StatusViewerModel(
       viewerId: viewerId,
       name: name,
       profileImage: _resolveProfileUrl(rawPic),
       reactionEmoji: reaction,
       viewedAt: timeStr != null ? DateTime.tryParse(timeStr) : null,
+      chatId: chatId,
     );
   }
 }
-
 class StatusMetaModel {
   final int? statusId;
   final String type;

@@ -1,19 +1,23 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
+import 'package:fgtracker/app/Core/util/http/ApiErrorHandler.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/CommonRes.dart';
 import 'package:fgtracker/app/Model/status_model.dart';
 
+class StatusNotFoundException implements Exception {
+  final int statusId;
+  final String message;
 
-import 'dart:convert';
-import 'dart:io';
-import 'package:dio/dio.dart';
-import 'package:fgtracker/app/Core/constant/urls.dart';
-import 'package:fgtracker/app/Core/util/http/http_util.dart';
-import 'package:fgtracker/app/Model/CommonRes.dart';
-import 'package:fgtracker/app/Model/status_model.dart';
+  StatusNotFoundException(this.statusId, [this.message = 'Status not found or expired']);
+
+  @override
+  String toString() => 'StatusNotFoundException($statusId): $message';
+}
 
 class StatusRepo {
   static DioMediaType _resolveMediaType(String filePath, String statusType) {
@@ -108,15 +112,37 @@ class StatusRepo {
       int statusId, {
         String? reactionEmoji,
       }) async {
-    final Map<String, dynamic> data = {
-      if (reactionEmoji != null && reactionEmoji.isNotEmpty)
-        'reactionEmoji': reactionEmoji,
-    };
-    var response = await HttpUtil().Authpost(
-      Urls.viewStatus(statusId),
-      data: data,
-    );
-    return CommonResponse.fromJson(response);
+    try {
+      final Map<String, dynamic> data = {
+        if (reactionEmoji != null && reactionEmoji.isNotEmpty)
+          'reactionEmoji': reactionEmoji,
+      };
+      final token = Global.storageServices.getaccesstoken();
+      final response = await ConstRes().sendRequest.post(
+        Urls.viewStatus(statusId),
+        data: data,
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'authorization': 'Bearer $token',
+            'accept': 'application/json',
+          },
+        ),
+      );
+      return CommonResponse.fromJson(response.data);
+    } on DioException catch (dioErr) {
+      if (dioErr.response?.statusCode == 404) {
+        throw StatusNotFoundException(statusId, 'Status not found or expired (404)');
+      }
+      throw ApiErrorHandler.handleDioError(dioErr);
+    } catch (e) {
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('404') ||
+          msg.contains('not found') ||
+          msg.contains('expired')) {
+        throw StatusNotFoundException(statusId, e.toString());
+      }
+      rethrow;
+    }
   }
 
   static Future<CommonResponse> replyStatus(

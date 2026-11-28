@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
@@ -147,7 +148,7 @@ class _OnlineMemberState extends State<OnlineMember> {
                           controller.recentlyOnlineList.length;
 
                       return Text(
-                        "$total Members Online",
+                        "$total Members",
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontFamily: FontFamily.interRegular,
@@ -572,12 +573,16 @@ class _OnlineMemberState extends State<OnlineMember> {
           distance: 0,
           userId: member.userId,
           id: member.userId,
+          chatId: member.chatId,
           name: member.displayName,
           imageUrl: member.profileImage,
           status: isOnlineNow,
           lastSeen: member.lastSeen,
+          phone: member.phone ?? member.mobileNo,
+          team: member.displayDepartment,
           isGroupChat: false,
           isLocationSharing: member.isLocationSharing ?? true,
+          location: member.displayLocation,
         );
       },
       borderRadius: BorderRadius.circular(16.r),
@@ -599,7 +604,17 @@ class _OnlineMemberState extends State<OnlineMember> {
         ),
         child: Row(
           children: [
-            Stack(
+            GestureDetector(
+              onTap: isMyUserId(member.userId)
+                  ? null
+                  : () => showUserQuickProfile(
+                        userId: member.userId,
+                        name: member.displayName,
+                        profileImage: member.resolvedImageUrl,
+                        mobileNo: member.phone ?? member.mobileNo,
+                        chatId: member.chatId,
+                      ),
+              child: Stack(
               children: [
                 Container(
                   width: 48.r,
@@ -653,6 +668,7 @@ class _OnlineMemberState extends State<OnlineMember> {
                   ),
                 ),
               ],
+            ),
             ),
             SizedBox(width: 14.w),
             Expanded(

@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/crown_icon.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/BottomSheet/bottom_actions_bar.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
@@ -7,13 +8,13 @@ import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Data/Services/walkie_talkie_trial_service.dart';
-import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_trial_controller.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/WalkieTalkieScreen.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
@@ -24,6 +25,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../Group/controller/Group_Controller.dart';
+import 'package:fgtracker/app/Model/walkie_channel_model.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_channel_controller.dart';
 
 class AssignedMemberItem {
   final String id;
@@ -71,6 +74,8 @@ class WalkieGroupSelectScreen extends StatefulWidget {
 
 class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   final GroupController controller = Get.put(GroupController());
+  final WalkieChannelController walkieChannelController =
+      Get.put(WalkieChannelController());
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final RxString _searchQuery = ''.obs;
@@ -82,6 +87,11 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   final RxBool isIndividualPlan = false.obs;
   final RxBool hasNoPlan = false.obs;
   final RxString planTitleName = "".obs;
+
+  // Current-plan card on top of the channel list
+  final RxBool planStatusLoaded = false.obs;
+  final RxString planExpiresAt = ''.obs;
+  final RxString planBillingInterval = ''.obs;
 
   // Backend-driven Team Subscription State
   final RxBool hasTeamPlan = false.obs;
@@ -109,6 +119,9 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   final List<int> _initialAssignedMemberIds = <int>[];
 
   String get _currentGroupId {
+    if (walkieChannelController.channels.isNotEmpty) {
+      return walkieChannelController.channels.first.groupId.toString();
+    }
     if (controller.groupData.isNotEmpty &&
         controller.groupData.first.id != null) {
       return controller.groupData.first.id.toString();
@@ -116,12 +129,30 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     return "";
   }
 
-  List<GroupsResData> get _filteredGroups {
+  List<WalkieChannelItem> get _filteredChannels {
     final String query = _searchQuery.value.trim().toLowerCase();
-    if (query.isEmpty) return controller.groupData;
-    return controller.groupData.where((group) {
-      final String name = (group.groupName ?? '').toLowerCase();
-      final String code = (group.groupCode ?? '').toLowerCase();
+    final List<WalkieChannelItem> baseList =
+        walkieChannelController.channels.isNotEmpty
+            ? walkieChannelController.channels
+            : controller.groupData.map((group) {
+                return WalkieChannelItem(
+                  groupId: group.id ?? 0,
+                  groupName: group.groupName ?? "No Name Group",
+                  groupDesc: group.groupDesc ?? "",
+                  groupCode: group.groupCode ?? "",
+                  groupProfile: group.groupProfile,
+                  groupImage: group.groupProfile,
+                  memberCount: group.memberCount ?? 0,
+                  notificationsEnabled: true,
+                  isSelectedChannel: false,
+                  isOnline: true,
+                );
+              }).toList();
+
+    if (query.isEmpty) return baseList;
+    return baseList.where((channel) {
+      final String name = channel.groupName.toLowerCase();
+      final String code = (channel.groupCode ?? '').toLowerCase();
       return name.contains(query) || code.contains(query);
     }).toList();
   }
@@ -235,7 +266,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             } else if (isAssignedTeamMember) {
               planTitleName.value = "Team Seat Member";
               activeSubscriptionId.value = userSub?.subscriptionId ??
-                  (userSub?.teamSeats != null && userSub!.teamSeats!.isNotEmpty
+                  (userSub?.teamSeats?.isNotEmpty == true
                       ? userSub!.teamSeats!.first.subscriptionId
                       : null);
               maxAllowedSeats.value = 1;
@@ -261,6 +292,32 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               teamAssignedSeats.value = 0;
               teamAvailableSeats.value = 0;
             }
+
+            // 5. Current-plan card details (expiry + billing period)
+            final TeamSeatItem? seat = userSub?.teamSeats?.isNotEmpty == true
+                ? userSub!.teamSeats!.first
+                : null;
+            if (teamPlan != null) {
+              planExpiresAt.value = teamPlan.expiresAt ?? '';
+              planBillingInterval.value = teamPlan.billingInterval ?? '';
+            } else if (isAssignedTeamMember) {
+              planExpiresAt.value = seat?.expiresAt ?? userSub?.expiresAt ?? '';
+              planBillingInterval.value = userSub?.billingInterval ?? '';
+            } else if (isIndiv) {
+              planExpiresAt.value =
+                  userSub?.individual?.expiresAt ?? userSub?.expiresAt ?? '';
+              planBillingInterval.value = userSub?.individual?.billingInterval ??
+                  userSub?.billingInterval ??
+                  '';
+              final String? indivName = userSub?.individual?.planName;
+              if (indivName != null && indivName.isNotEmpty) {
+                planTitleName.value = indivName;
+              }
+            } else {
+              planExpiresAt.value = '';
+              planBillingInterval.value = '';
+            }
+            planStatusLoaded.value = true;
 
             debugPrint(
                 "🎯 [Walkie] HasTeam: ${hasTeamPlan.value} | AssignedMember: $isAssignedTeamMember | CanManage: ${canManageMembers.value} | Started: ${teamHasStarted.value} | Seats: ${teamAssignedSeats.value}/${teamPurchasedSeats.value} (Avail: ${teamAvailableSeats.value})");
@@ -550,7 +607,10 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await controller.getGroupData();
+      await Future.wait([
+        controller.getGroupData(),
+        walkieChannelController.fetchChannels(showLoading: false),
+      ]);
       fetchMembersFromApi();
     });
   }
@@ -587,20 +647,30 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             SizedBox(height: 4.h),
             Expanded(
               child: Obx(() {
-                if (controller.responseError.value.isNotEmpty) {
+                if (walkieChannelController.errorMessage.value.isNotEmpty &&
+                    walkieChannelController.channels.isEmpty &&
+                    controller.responseError.value.isNotEmpty) {
                   return LostinternetConnection(
                     retry: () {
+                      walkieChannelController.fetchChannels();
                       controller.getGroupData();
                     },
-                    messgae: controller.responseError.value.toString(),
+                    messgae: walkieChannelController.errorMessage.value.isNotEmpty
+                        ? walkieChannelController.errorMessage.value
+                        : controller.responseError.value.toString(),
                   );
                 }
-                if (controller.groupDataLoading.value) {
+                if ((walkieChannelController.isLoading.value &&
+                        walkieChannelController.channels.isEmpty) ||
+                    (controller.groupDataLoading.value &&
+                        controller.groupData.isEmpty &&
+                        walkieChannelController.channels.isEmpty)) {
                   return _buildGroupList(isLoading: true);
                 }
-                final List<GroupsResData> groups = _filteredGroups;
-                if (groups.isEmpty) {
-                  return controller.groupData.isEmpty
+                final List<WalkieChannelItem> channels = _filteredChannels;
+                if (channels.isEmpty) {
+                  return (walkieChannelController.channels.isEmpty &&
+                          controller.groupData.isEmpty)
                       ? DataEmpty_AssetsIcon(
                           assetspath: Assets.images.notFount.path)
                       : Center(
@@ -611,7 +681,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           ),
                         );
                 }
-                return _buildGroupList(data: groups, isLoading: false);
+                return _buildGroupList(data: channels, isLoading: false);
               }),
             ),
           ],
@@ -813,23 +883,32 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   }
 
   Widget _buildGroupList({
-    List<GroupsResData>? data,
+    List<WalkieChannelItem>? data,
     bool isLoading = false,
   }) {
-    final List<GroupsResData>? items = isLoading ? null : data;
+    final List<WalkieChannelItem>? items = isLoading ? null : data;
     final int itemCount = items?.length ?? 6;
     return Skeletonizer(
       enabled: items == null,
-      child: ListView.separated(
-        padding:
-            EdgeInsets.only(left: 16.w, right: 16.w, top: 4.h, bottom: 12.h),
-        itemCount: itemCount,
-        separatorBuilder: (_, __) => SizedBox(height: 12.h),
-        itemBuilder: (context, index) {
-          final List<GroupsResData>? list = items;
-          if (list == null) return const _GroupCardSkeleton();
-          return _apiGroupCard(list[index], index);
+      child: RefreshIndicator(
+        color: const Color(0xFF6B4DFF),
+        onRefresh: () async {
+          await Future.wait([
+            walkieChannelController.fetchChannels(showLoading: false),
+            controller.getGroupData(),
+          ]);
         },
+        child: ListView.separated(
+          padding:
+              EdgeInsets.only(left: 16.w, right: 16.w, top: 4.h, bottom: 12.h),
+          itemCount: itemCount,
+          separatorBuilder: (_, __) => SizedBox(height: 12.h),
+          itemBuilder: (context, index) {
+            final List<WalkieChannelItem>? list = items;
+            if (list == null) return const _GroupCardSkeleton();
+            return _apiGroupCard(list[index], index);
+          },
+        ),
       ),
     );
   }
@@ -857,160 +936,386 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     }
   }
 
-  Widget _apiGroupCard(GroupsResData group, int index) {
-    final colors = colorPool[index % colorPool.length];
-    final String groupId = group.id?.toString() ?? "unknown";
-    final bool isOnline = (index % 2 == 0);
+  bool _isPlaceholderImage(String url) {
+    final lower = url.toLowerCase().trim();
+    return lower.isEmpty ||
+        lower == 'null' ||
+        lower == 'undefined' ||
+        lower.endsWith('/null') ||
+        lower.contains('default-profile') ||
+        lower.contains('default_profile') ||
+        lower.contains('default-avatar') ||
+        lower.contains('default_avatar') ||
+        lower.contains('default-group') ||
+        lower.contains('default_group') ||
+        lower.contains('default.png') ||
+        lower.contains('default-image') ||
+        lower.contains('default_image');
+  }
 
-    return InkWell(
-      onTap: () async {
-        final canAccess = await _canAccessWalkie();
-        if (!canAccess) {
-          _showUpgradePrompt(context: context, isNoPlan: true);
-          return;
+  String _resolveGroupProfile(WalkieChannelItem channel) {
+    String profile = (channel.groupProfile ?? channel.groupImage ?? '').trim();
+    if (_isPlaceholderImage(profile)) {
+      try {
+        final match = controller.groupData
+            .firstWhereOrNull((g) => g.id == channel.groupId);
+        if (match != null &&
+            match.groupProfile != null &&
+            !_isPlaceholderImage(match.groupProfile!)) {
+          profile = match.groupProfile!.trim();
+        } else {
+          profile = '';
         }
-        Get.to(
-          () => const GroupWalkieScreen(),
-          arguments: {
-            'groupId': groupId,
-            'groupName': group.groupName ?? "Unknown Group",
-            'groupDesc': group.groupDesc ?? "",
-            'groupCode': group.groupCode ?? "",
-            'isSubscribed': !hasNoPlan.value,
-          },
-        );
-      },
-      borderRadius: BorderRadius.circular(16.r),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+      } catch (_) {
+        profile = '';
+      }
+    }
+    return _isPlaceholderImage(profile) ? '' : profile;
+  }
+
+  Widget _buildGroupAvatar(
+      WalkieChannelItem channel, Map<String, Color> colors) {
+    final String rawProfile = _resolveGroupProfile(channel);
+
+    final bool hasValidImage = rawProfile.isNotEmpty && !_isPlaceholderImage(rawProfile);
+
+    final String groupImageUrl = !hasValidImage
+        ? ''
+        : (rawProfile.startsWith('http://') ||
+                rawProfile.startsWith('https://'))
+            ? rawProfile
+            : '${ConstRes.aImageBaseUrl.replaceFirst(RegExp(r'/+$'), '')}/${rawProfile.replaceFirst(RegExp(r'^/+'), '')}';
+
+    Widget fallbackIcon() {
+      return Container(
+        width: 48.w,
+        height: 48.w,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          color: colors['bg'] ?? const Color(0xFFE8DEFF),
+          shape: BoxShape.circle,
         ),
-        child: Row(
-          children: [
-            Container(
+        child: Icon(
+          Icons.groups_rounded,
+          color: colors['icon'] ?? const Color(0xFF6B4DFF),
+          size: 26.sp,
+        ),
+      );
+    }
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 48.w,
+          height: 48.w,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: colors['bg'] ?? const Color(0xFFE8DEFF),
+            shape: BoxShape.circle,
+          ),
+          child: ClipOval(
+            child: SizedBox(
               width: 48.w,
               height: 48.w,
+              child: hasValidImage
+                  ? Image.network(
+                      groupImageUrl,
+                      width: 48.w,
+                      height: 48.w,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return fallbackIcon();
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        debugPrint(
+                            "⚠️ [WalkieGroupAvatar] Failed loading image '$groupImageUrl': $error");
+                        return fallbackIcon();
+                      },
+                    )
+                  : fallbackIcon(),
+            ),
+          ),
+        ),
+        if (!channel.notificationsEnabled)
+          Positioned(
+            right: -1,
+            bottom: -1,
+            child: Container(
+              padding: EdgeInsets.all(2.5.w),
               decoration: BoxDecoration(
-                color: colors['bg'],
+                color: const Color(0xFF53566E),
                 shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.5),
               ),
               child: Icon(
-                Icons.groups_rounded,
-                color: colors['icon'],
-                size: 24.sp,
+                Icons.notifications_off_rounded,
+                size: 9.sp,
+                color: Colors.white,
               ),
             ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  reausabletext(
-                    group.groupName ?? "No Name Group",
-                    fontsize: 15.sp,
-                    fontfamily: FontFamily.interSemiBold,
-                    color: const Color(0xFF1E1B4B),
-                  ),
-                  SizedBox(height: 6.h),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.people_alt_rounded,
-                        size: 13.sp,
-                        color: const Color(0xFF8C90A0),
-                      ),
-                      SizedBox(width: 4.w),
-                      reausabletext(
-                        "${group.memberCount ?? 0} Members",
-                        fontsize: 12.sp,
-                        color: const Color(0xFF8C90A0),
-                      ),
-                      SizedBox(width: 6.w),
-                      Container(
-                        width: 3.5.w,
-                        height: 3.5.w,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF8C90A0),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      SizedBox(width: 6.w),
-                      reausabletext(
-                        isOnline ? "Online" : "Offline",
-                        fontsize: 12.sp,
-                        fontfamily: FontFamily.interMedium,
-                        color: isOnline
-                            ? const Color(0xFF00C853)
-                            : const Color(0xFF9E9E9E),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Obx(() {
-              final bool isToggled = activeToggles[groupId] ?? false;
-              return CupertinoSwitch(
-                value: isToggled,
-                activeColor: const Color(0xFF6B4DFF),
-                onChanged: (bool value) {
-                  activeToggles[groupId] = value;
-                },
-              );
-            }),
-            SizedBox(width: 10.w),
-            GestureDetector(
-              onTap: () async {
-                final canAccess = await _canAccessWalkie();
-                if (!canAccess) {
-                  _showUpgradePrompt(context: context, isNoPlan: true);
-                  return;
-                }
-                Get.to(
-                  () => const GroupWalkieScreen(),
-                  arguments: {
-                    'groupId': groupId,
-                    'groupName': group.groupName ?? "Unknown Group",
-                    'groupDesc': group.groupDesc ?? "",
-                    'groupCode': group.groupCode ?? "",
-                    'isSubscribed': !hasNoPlan.value,
-                  },
-                );
-              },
-              child: Container(
-                width: 38.w,
-                height: 38.w,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFAFAFF),
-                  border: Border.all(
-                    color: const Color(0xFFECEBFA),
-                    width: 1.2,
-                  ),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Center(
-                  child: Image.asset(
-                    Assets.icons.walkieTalkie.path,
-                    width: 20.w,
-                    height: 20.w,
-                    color: const Color(0xFF6B4DFF),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+      ],
     );
+  }
+
+  Widget _apiGroupCard(WalkieChannelItem channel, int index) {
+    final colors = colorPool[index % colorPool.length];
+    final String groupId = channel.groupId.toString();
+    final bool isOnline = channel.isOnline;
+    final String rawProfile = _resolveGroupProfile(channel);
+
+    return Obx(() {
+      final currentChannel = walkieChannelController.channels.firstWhereOrNull(
+            (c) => c.groupId == channel.groupId,
+          ) ??
+          channel;
+
+      final bool isSelected = currentChannel.isSelectedChannel ||
+          (walkieChannelController.activeChannelId.value == currentChannel.groupId);
+      final bool isSwitching = walkieChannelController.isSwitchingChannel.value;
+      final bool isToggling =
+          walkieChannelController.isTogglingPreference[currentChannel.groupId] ?? false;
+
+      return InkWell(
+        onTap: () async {
+          final canAccess = await _canAccessWalkie();
+          if (!canAccess) {
+            if (mounted) {
+              _showUpgradePrompt(context: context, isNoPlan: true);
+            }
+            return;
+          }
+
+          // Select this channel as the active speaking channel
+          final success =
+              await walkieChannelController.selectActiveSpeakingChannel(channel);
+          if (!success) {
+            if (mounted && walkieChannelController.isSubscriptionExpired.value) {
+              _showUpgradePrompt(context: context, isNoPlan: true);
+            }
+            return;
+          }
+
+          if (!mounted) return;
+          Get.to(
+            () => const GroupWalkieScreen(),
+            arguments: {
+              'groupId': groupId,
+              'groupName': channel.groupName,
+              'groupDesc': channel.groupDesc ?? "",
+              'groupCode': channel.groupCode ?? "",
+              'groupProfile': rawProfile,
+              'isSubscribed': !hasNoPlan.value,
+            },
+          );
+        },
+        borderRadius: BorderRadius.circular(16.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            border: isSelected
+                ? Border.all(
+                    color: const Color(0xFF6B4DFF).withValues(alpha: 0.35),
+                    width: 1.4,
+                  )
+                : null,
+            boxShadow: [
+              BoxShadow(
+                color: isSelected
+                    ? const Color(0xFF6B4DFF).withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Avatar with mute badge
+              _buildGroupAvatar(currentChannel, colors),
+              SizedBox(width: 12.w),
+              // Channel Info & Speaking status
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    reausabletext(
+                      currentChannel.groupName,
+                      fontsize: 15.sp,
+                      fontfamily: FontFamily.interSemiBold,
+                      color: const Color(0xFF1E1B4B),
+                    ),
+                    SizedBox(height: 6.h),
+                    if (currentChannel.isChannelSpeaking)
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.graphic_eq_rounded,
+                            size: 14.sp,
+                            color: const Color(0xFF00C853),
+                          ),
+                          SizedBox(width: 4.w),
+                          Expanded(
+                            child: reausabletext(
+                              currentChannel.activeSpeakerName != null &&
+                                      currentChannel.activeSpeakerName!.isNotEmpty
+                                  ? "${currentChannel.activeSpeakerName} speaking..."
+                                  : "Channel speaking...",
+                              fontsize: 12.sp,
+                              fontfamily: FontFamily.interMedium,
+                              textoverflow: TextOverflow.ellipsis,
+                              maxline: 1,
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.people_alt_rounded,
+                            size: 13.sp,
+                            color: const Color(0xFF8C90A0),
+                          ),
+                          SizedBox(width: 4.w),
+                          reausabletext(
+                            "${currentChannel.memberCount} Members",
+                            fontsize: 12.sp,
+                            color: const Color(0xFF8C90A0),
+                          ),
+                          SizedBox(width: 6.w),
+                          Container(
+                            width: 3.5.w,
+                            height: 3.5.w,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF8C90A0),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          SizedBox(width: 6.w),
+                          reausabletext(
+                            isOnline ? "Online" : "Offline",
+                            fontsize: 12.sp,
+                            fontfamily: FontFamily.interMedium,
+                            color: isOnline
+                                ? const Color(0xFF00C853)
+                                : const Color(0xFF9E9E9E),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+              // Notification Toggle Switch (Independent control)
+              SizedBox(
+                height: 32.h,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: CupertinoSwitch(
+                    value: currentChannel.notificationsEnabled,
+                    activeTrackColor: const Color(0xFF6B4DFF),
+                    onChanged: isToggling
+                        ? null
+                        : (_) {
+                            walkieChannelController
+                                .toggleNotificationPreference(currentChannel);
+                          },
+                  ),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              // Walkie-Talkie Icon Button (Selected Channel Indicator & Connect)
+              GestureDetector(
+                onTap: isSwitching
+                    ? null
+                    : () async {
+                        final canAccess = await _canAccessWalkie();
+                        if (!canAccess) {
+                          if (mounted) {
+                            _showUpgradePrompt(
+                                context: context, isNoPlan: true);
+                          }
+                          return;
+                        }
+
+                        final success = await walkieChannelController
+                            .selectActiveSpeakingChannel(currentChannel);
+                        if (!success) {
+                          if (mounted &&
+                              walkieChannelController
+                                  .isSubscriptionExpired.value) {
+                            _showUpgradePrompt(
+                                context: context, isNoPlan: true);
+                          }
+                          return;
+                        }
+
+                        if (!mounted) return;
+                        Get.to(
+                          () => const GroupWalkieScreen(),
+                          arguments: {
+                            'groupId': groupId,
+                            'groupName': currentChannel.groupName,
+                            'groupDesc': currentChannel.groupDesc ?? "",
+                            'groupCode': currentChannel.groupCode ?? "",
+                            'groupProfile': rawProfile,
+                            'isSubscribed': !hasNoPlan.value,
+                          },
+                        );
+                      },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 38.w,
+                  height: 38.w,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFF6B4DFF)
+                        : const Color(0xFFFAFAFF),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF6B4DFF)
+                          : const Color(0xFFECEBFA),
+                      width: 1.2,
+                    ),
+                    borderRadius: BorderRadius.circular(12.r),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFF6B4DFF)
+                                  .withValues(alpha: 0.35),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Center(
+                    child: Image.asset(
+                      Assets.icons.walkieTalkie.path,
+                      width: 20.w,
+                      height: 20.w,
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF6B4DFF),
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                        Icons.radio_rounded,
+                        size: 20.sp,
+                        color: isSelected
+                            ? Colors.white
+                            : const Color(0xFF6B4DFF),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildPlanStatusBanner() {
@@ -1043,11 +1348,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.workspace_premium_rounded,
-                    color: Colors.white,
-                    size: 20.sp,
-                  ),
+                  child: GoldenCrownBadge(size: 20.sp),
                 ),
                 SizedBox(width: 10.w),
                 Expanded(
@@ -1073,8 +1374,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => _showUpgradePrompt(
-                      context: context, isNoPlan: true),
+                  onTap: _openChoosePlan,
                   child: Container(
                     padding: EdgeInsets.symmetric(
                         horizontal: 12.w, vertical: 6.h),
@@ -1096,58 +1396,158 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         );
       }
 
-      if (isIndividualPlan.value) {
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF7ED),
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: const Color(0xFFFFEDD5)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline_rounded,
-                    color: const Color(0xFFEA580C), size: 18.sp),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: Text(
-                    "Individual Plan (1 Member). Upgrade to Team Plan to connect more members.",
-                    style: TextStyle(
-                      fontSize: 11.5.sp,
-                      color: const Color(0xFF9A3412),
-                      fontFamily: FontFamily.interMedium,
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                GestureDetector(
-                  onTap: () => _showUpgradePrompt(
-                      context: context, isNoPlan: false),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 10.w, vertical: 5.h),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEA580C),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: reausabletext(
-                      "Upgrade",
-                      fontsize: 11.sp,
-                      fontfamily: FontFamily.interSemiBold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-
-      return const SizedBox.shrink();
+      // Subscribed → current plan card (hidden until the plan has loaded)
+      if (!planStatusLoaded.value) return const SizedBox.shrink();
+      return _buildCurrentPlanCard();
     });
+  }
+
+  /// Unsubscribed user → Walkie-Talkie "Choose a Plan" screen,
+  /// then refresh so a new purchase shows the Current Plan card.
+  Future<void> _openChoosePlan() async {
+    await Get.to(() => const WalkieTalkiePlanScreen(initialTabIndex: 0));
+    if (mounted) fetchMembersFromApi();
+  }
+
+  /// Subscribed user → Walkie-Talkie screen showing only plan / subscription
+  /// status, then refreshes the plan here in case it changed (renewal).
+  Future<void> _openPlanDetails() async {
+    await Get.toNamed(
+      Routes.walkieTalkieTrialDetails,
+      arguments: {'planDetailsOnly': true},
+    );
+    if (mounted) fetchMembersFromApi();
+  }
+
+  String _formatPlanDate(String raw) {
+    final DateTime? d = DateTime.tryParse(raw);
+    if (d == null) return '';
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    final local = d.toLocal();
+    return '${local.day.toString().padLeft(2, '0')} ${months[local.month - 1]} ${local.year}';
+  }
+
+  Widget _buildCurrentPlanCard() {
+    final String title = planTitleName.value.isNotEmpty
+        ? planTitleName.value
+        : (isIndividualPlan.value ? "Individual Plan" : "Team Plan");
+    final String interval = planBillingInterval.value.isNotEmpty
+        ? planBillingInterval.value[0].toUpperCase() +
+            planBillingInterval.value.substring(1)
+        : '';
+    final String expiry = _formatPlanDate(planExpiresAt.value);
+    final String details = [
+      if (interval.isNotEmpty) interval,
+      if (expiry.isNotEmpty) "Valid till $expiry",
+      if (isIndividualPlan.value) "1 member",
+      if (hasTeamPlan.value && teamPurchasedSeats.value > 0)
+        "${teamAssignedSeats.value}/${teamPurchasedSeats.value} seats",
+    ].join(" • ");
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: const Color(0xFFE9E5FF)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF5B4DFF).withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.r),
+              decoration: const BoxDecoration(
+                color: Color(0xFF5B4DFF),
+                shape: BoxShape.circle,
+              ),
+              child: GoldenCrownBadge(size: 20.sp),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13.5.sp,
+                            fontFamily: FontFamily.interBold,
+                            color: const Color(0xFF1E1B4B),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 6.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8FDF2),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text(
+                          "Active",
+                          style: TextStyle(
+                            fontSize: 9.5.sp,
+                            fontFamily: FontFamily.interSemiBold,
+                            color: const Color(0xFF16A34A),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (details.isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      details,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontFamily: FontFamily.interRegular,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            SizedBox(width: 8.w),
+            GestureDetector(
+              onTap: _openPlanDetails,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5B4DFF),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: reausabletext(
+                  "View Plan",
+                  fontsize: 11.5.sp,
+                  fontfamily: FontFamily.interSemiBold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showUpgradePrompt({
@@ -1186,15 +1586,13 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                       : const Color(0xFFFFF7ED),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  isNoPlan
-                      ? Icons.workspace_premium_rounded
-                      : Icons.groups_rounded,
-                  color: isNoPlan
-                      ? const Color(0xFF6366F1)
-                      : const Color(0xFFEA580C),
-                  size: 32.sp,
-                ),
+                child: isNoPlan
+                    ? Center(child: GoldenCrownBadge(size: 32.sp))
+                    : Icon(
+                        Icons.groups_rounded,
+                        color: const Color(0xFFEA580C),
+                        size: 32.sp,
+                      ),
               ),
               SizedBox(height: 16.h),
               reausabletext(
@@ -1411,9 +1809,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.workspace_premium_rounded,
-                                      size: 13.sp,
-                                      color: const Color(0xFF5B4DFF)),
+                                  GoldenCrownBadge(size: 13.sp),
                                   SizedBox(width: 4.w),
                                   reausabletext(
                                     "${assignedMembers.length}/1 (Individual)",
@@ -1525,13 +1921,13 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                                 : const Color(0xFF5B4DFF),
                             borderRadius: BorderRadius.circular(10.r),
                           ),
-                          child: Icon(
-                            (noPlan || (!hasTeam && isIndiv))
-                                ? Icons.lock_outline_rounded
-                                : Icons.workspace_premium_rounded,
-                            color: Colors.white,
-                            size: 18.sp,
-                          ),
+                          child: (noPlan || (!hasTeam && isIndiv))
+                              ? Icon(
+                                  Icons.lock_outline_rounded,
+                                  color: Colors.white,
+                                  size: 18.sp,
+                                )
+                              : Center(child: GoldenCrownBadge(size: 18.sp)),
                         ),
                         SizedBox(width: 10.w),
                         Expanded(
@@ -1905,11 +2301,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.workspace_premium_rounded,
-                                size: 20.sp,
-                                color: Colors.white,
-                              ),
+                              GoldenCrownBadge(size: 20.sp),
                               SizedBox(width: 8.w),
                               reausabletext(
                                 "Choose a Plan",

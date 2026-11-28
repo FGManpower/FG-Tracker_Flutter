@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/global_widget/crown_icon.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Model/walkie_talkie_trial_details_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_trial_controller.dart';
@@ -115,10 +116,8 @@ class WalkieIndividualPlanCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Icon(
-                    Icons.workspace_premium_rounded,
-                    color: Colors.white,
-                    size: _sp(context, 24),
+                  child: Center(
+                    child: GoldenCrownBadge(size: _sp(context, 24)),
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -356,7 +355,7 @@ class WalkieIndividualPlanCard extends StatelessWidget {
                       color: textColor,
                     ),
                     label: Text(
-                      "Change Plan",
+                      "View Plan",
                       style: TextStyle(
                         fontSize: _sp(context, 11.5),
                         fontFamily: FontFamily.interSemiBold,
@@ -444,7 +443,7 @@ class WalkieIndividualPlanCard extends StatelessWidget {
               Get.to(() => const WalkieTalkiePlanDetails(initialTabIndex: 0));
             },
             child: Text(
-              "Browse",
+              "View",
               style: TextStyle(
                 fontSize: _sp(context, 11),
                 fontFamily: FontFamily.interSemiBold,

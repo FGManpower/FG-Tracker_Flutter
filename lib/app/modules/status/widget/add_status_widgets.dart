@@ -468,12 +468,13 @@ class PostRow extends StatelessWidget {
                   color: Colors.black87,
                 ),
                 SizedBox(height: 12.h),
-                _WhoOption(
-                  controller: controller,
-                  title: 'All Contacts',
-                  privacyValue: 'ALL_CONTACTS',
-                  icon: Icons.public_rounded,
-                ),
+                // --- All Contacts option commented out ---
+                // _WhoOption(
+                //   controller: controller,
+                //   title: 'All Contacts',
+                //   privacyValue: 'ALL_CONTACTS',
+                //   icon: Icons.public_rounded,
+                // ),
                 _WhoOption(
                   controller: controller,
                   title: 'Except Selected',
@@ -499,6 +500,7 @@ class PostRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        /* --- Privacy button commented out ---
         Expanded(
           child: GestureDetector(
             onTap: _showWhoCanSeeSheet,
@@ -559,6 +561,9 @@ class PostRow extends StatelessWidget {
           ),
         ),
         SizedBox(width: 10.w),
+        */
+
+        // --- Post Status button takes full width ---
         Expanded(
           child: Obx(() {
             return GestureDetector(

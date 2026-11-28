@@ -1,4 +1,3 @@
-import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:get/get.dart';
@@ -100,7 +99,7 @@ class GroupIncomingCallController extends GetxController {
         "groupId": groupId,
       };
 
-      CallKitService.instance.declineGroupCall(data);
+      // CallKitService.instance.declineGroupCall(data);
     }
     Get.back();
   }

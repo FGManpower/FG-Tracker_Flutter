@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/profile_navigation.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/BottomSheets/userSheet_Ui.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
@@ -454,12 +455,21 @@ class MemberscreenScreen extends GetView<MemberController> {
                                 Stack(
                                   clipBehavior: Clip.none,
                                   children: [
-                                    CircleAvatar(
-                                      radius: 30.r,
-                                      backgroundImage: NetworkImage(
-                                        "${ConstRes.aImageBaseUrl}${data.profileImage ?? ""}",
+                                    GestureDetector(
+                                      onTap: () => showUserQuickProfile(
+                                        userId: data.userId,
+                                        name: data.name,
+                                        profileImage: data.profileImage,
+                                        mobileNo: data.mobileNo,
+                                        chatId: data.chatId,
                                       ),
-                                      backgroundColor: Colors.grey.shade200,
+                                      child: CircleAvatar(
+                                        radius: 30.r,
+                                        backgroundImage: NetworkImage(
+                                          "${ConstRes.aImageBaseUrl}${data.profileImage ?? ""}",
+                                        ),
+                                        backgroundColor: Colors.grey.shade200,
+                                      ),
                                     ),
                                     Positioned(
                                       right: 4.w,
@@ -720,12 +730,21 @@ class MemberscreenScreen extends GetView<MemberController> {
                               Stack(
                                 clipBehavior: Clip.none,
                                 children: [
-                                  CircleAvatar(
-                                    radius: 30.r,
-                                    backgroundImage: NetworkImage(
-                                      "${ConstRes.aImageBaseUrl}${data?.profileImage ?? ""}",
+                                  GestureDetector(
+                                    onTap: () => showUserQuickProfile(
+                                      userId: data?.userId,
+                                      name: data?.name,
+                                      profileImage: data?.profileImage,
+                                      mobileNo: data?.mobileNo,
+                                      chatId: data?.chatId,
                                     ),
-                                    backgroundColor: Colors.grey.shade200,
+                                    child: CircleAvatar(
+                                      radius: 30.r,
+                                      backgroundImage: NetworkImage(
+                                        "${ConstRes.aImageBaseUrl}${data?.profileImage ?? ""}",
+                                      ),
+                                      backgroundColor: Colors.grey.shade200,
+                                    ),
                                   ),
                                   if (true)
                                     Positioned(
