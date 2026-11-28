@@ -13,8 +13,14 @@ class BannerRepo {
     return bannermodel.fromJson(response);
   }
 
-  static Future<List<BannerPlanModel>> getPlans() async {
-    final response = await HttpUtil().get(Urls.bannerPlans);
+  static Future<List<BannerPlanModel>> getPlans({String? currency}) async {
+    final response = await HttpUtil().get(
+      Urls.bannerPlans,
+      data: {
+        if (currency != null && currency.trim().isNotEmpty)
+          'currency': currency.trim().toUpperCase(),
+      },
+    );
     final list = (response['data'] as List?) ?? const [];
     return list
         .whereType<Map<String, dynamic>>()

@@ -5,16 +5,49 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:fgtracker/app/Core/util/rt_log.dart';
 
+import '../../../Data/Repositories/attendance_subscription_repo.dart';
 import '../../../modules/Attendance/controller/attendance_controller.dart';
+import '../../../modules/Attendance/models/attendance_subscription_models.dart';
+import '../../../modules/Attendance/views/attendance_subscription_sheet.dart';
 
 Future<void> showAttendanceSheet({
   BuildContext? context,
   required int groupId,
   List<dynamic>? groupMembers,
   void Function(Map<String, dynamic> data)? onCreated,
-}) {
+}) async {
+  final ctx = context ?? Get.context!;
+  AttendanceSubscriptionStatusModel? status;
+
+  showDialog(
+    context: ctx,
+    barrierDismissible: false,
+    builder: (_) => const Center(child: CircularProgressIndicator()),
+  );
+  try {
+    status = await AttendanceSubscriptionRepo.getSubscriptionStatus(groupId);
+  } catch (_) {
+    // If status check fails, allow sheet to open; backend still enforces gate.
+  } finally {
+    if (ctx.mounted && Navigator.of(ctx, rootNavigator: true).canPop()) {
+      Navigator.of(ctx, rootNavigator: true).pop();
+    }
+  }
+
+  if (!ctx.mounted) return;
+
+  if (status != null && !status.canCreateAttendance) {
+    final activated = await showAttendanceSubscriptionSheet(
+      context: ctx,
+      groupId: groupId,
+      groupMembers: groupMembers,
+      initialStatus: status,
+    );
+    if (activated != true || !ctx.mounted) return;
+  }
+
   return showModalBottomSheet(
-    context: context ?? Get.context!,
+    context: ctx,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: 0.45),

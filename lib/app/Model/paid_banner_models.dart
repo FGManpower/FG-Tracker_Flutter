@@ -38,6 +38,8 @@ class BannerPlanPricing {
         return '€${value.toStringAsFixed(2)}';
       case 'GBP':
         return '£${value.toStringAsFixed(2)}';
+      case 'JPY':
+        return '¥${value.toStringAsFixed(0)}';
       default:
         return '$currency ${value.toStringAsFixed(2)}';
     }
@@ -50,6 +52,8 @@ class BannerPlanModel {
   final String? description;
   final int durationDays;
   final int? slotNumber;
+  final double price;
+  final String currency;
   final BannerPlanPricing pricing;
 
   BannerPlanModel({
@@ -58,19 +62,24 @@ class BannerPlanModel {
     this.description,
     required this.durationDays,
     this.slotNumber,
+    required this.price,
+    required this.currency,
     required this.pricing,
   });
 
   factory BannerPlanModel.fromJson(Map<String, dynamic> json) {
+    final pricingObj = BannerPlanPricing.fromJson(
+      (json['pricing'] as Map<String, dynamic>?) ?? const {},
+    );
     return BannerPlanModel(
       id: (json['id'] as num).toInt(),
       name: (json['name'] ?? '').toString(),
       description: json['description']?.toString(),
       durationDays: (json['durationDays'] as num?)?.toInt() ?? 7,
       slotNumber: (json['slotNumber'] as num?)?.toInt(),
-      pricing: BannerPlanPricing.fromJson(
-        (json['pricing'] as Map<String, dynamic>?) ?? const {},
-      ),
+      price: (json['price'] as num?)?.toDouble() ?? pricingObj.baseAmount,
+      currency: (json['currency'] ?? pricingObj.currency).toString().toUpperCase(),
+      pricing: pricingObj,
     );
   }
 }
