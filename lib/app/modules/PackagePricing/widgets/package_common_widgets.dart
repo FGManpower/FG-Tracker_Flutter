@@ -43,6 +43,8 @@ class PackageModuleStyle {
         const PackageModuleStyle(Icons.shield_rounded, Color(0xFFEA580C)),
       PackageModuleKey.liveTracking =>
         const PackageModuleStyle(Icons.my_location_rounded, Color(0xFF2563EB)),
+      PackageModuleKey.bannerAds =>
+        const PackageModuleStyle(Icons.campaign_rounded, Color(0xFF4F46E5)),
       _ => const PackageModuleStyle(
           Icons.workspace_premium_rounded, PackageUi.accent),
     };

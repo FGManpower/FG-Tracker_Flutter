@@ -41,6 +41,7 @@ class PackageModuleKey {
   static const String walkieTalkie = 'walkie_talkie';
   static const String safeZoneRoute = 'safe_zone_route';
   static const String liveTracking = 'live_tracking';
+  static const String bannerAds = 'banner_ads';
 }
 
 // ---------------------------------------------------------------------------

@@ -2,6 +2,8 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Repositories/package_api_error.dart';
 import 'package:fgtracker/app/Data/Repositories/package_pricing_repo.dart';
 import 'package:fgtracker/app/Model/package_pricing_model.dart';
+import 'package:fgtracker/app/modules/Attendance/views/attendance_plans_screen.dart';
+import 'package:fgtracker/app/modules/banners/Views/banner_plans_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -61,12 +63,29 @@ class PackageListController extends GetxController {
   /// Only Walkie-Talkie has an inner screen (its existing plan → order
   /// summary → payment flow). Every other module is "Coming soon".
   Future<void> openPackage(PackageItem item) async {
-    if (!item.isAvailable || item.moduleKey != PackageModuleKey.walkieTalkie) {
+    if (!item.isAvailable) {
       Utils().fluttertoast(appL10n.package_plansComingSoon(item.title));
       return;
     }
-    await Get.toNamed(Routes.walkieTalkiePlanScreen);
-    // Refresh so the card reflects a purchase made in the Walkie flow
-    fetchPackages(silent: true);
+
+    if (item.moduleKey == PackageModuleKey.walkieTalkie) {
+      await Get.toNamed(Routes.walkieTalkiePlanScreen);
+      fetchPackages(silent: true);
+      return;
+    }
+
+    if (item.moduleKey == PackageModuleKey.bannerAds) {
+      await Get.to(() => const BannerPlansScreen());
+      fetchPackages(silent: true);
+      return;
+    }
+
+    if (item.moduleKey == PackageModuleKey.attendance) {
+      await Get.to(() => const AttendancePlansScreen());
+      fetchPackages(silent: true);
+      return;
+    }
+
+    Utils().fluttertoast(appL10n.package_plansComingSoon(item.title));
   }
 }
