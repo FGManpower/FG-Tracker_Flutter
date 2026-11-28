@@ -568,14 +568,30 @@ class GroupWalkieController extends GetxController {
     List<WalkieParticipant> list, {
     String? activeSpeaker,
   }) {
-    final mergedList = list.map((newP) {
+    final myId = GroupWalkieService.instance.selfUserId ??
+        Global.storageServices.get(PrefConst.userId)?.toString();
+
+    final map = <String, WalkieParticipant>{};
+
+    // 1. Preserve existing participants (especially self user)
+    for (final p in participants) {
+      final cleanId = p.userId.trim();
+      if (cleanId.isNotEmpty) {
+        map[cleanId] = p;
+      }
+    }
+
+    // 2. Merge incoming participants from server
+    for (final newP in list) {
       final cleanId = newP.userId.trim();
-      final existing = participants.firstWhereOrNull((p) =>
-          p.userId.trim() == cleanId ||
-          (int.tryParse(p.userId) != null &&
-              int.tryParse(p.userId) == int.tryParse(cleanId)));
+      if (cleanId.isEmpty) continue;
+      final existing = map[cleanId] ??
+          map.values.firstWhereOrNull((p) =>
+              int.tryParse(p.userId) != null &&
+              int.tryParse(p.userId) == int.tryParse(cleanId));
+
       if (existing != null) {
-        return WalkieParticipant(
+        map[cleanId] = WalkieParticipant(
           userId: newP.userId,
           name: (newP.name.isNotEmpty && newP.name != 'User')
               ? newP.name
@@ -586,10 +602,33 @@ class GroupWalkieController extends GetxController {
           isSpeaking: newP.isSpeaking,
           hasExplicitMute: newP.hasExplicitMute || existing.hasExplicitMute,
         );
+      } else {
+        map[cleanId] = newP;
       }
-      return newP;
-    }).toList();
+    }
 
+    // 3. Ensure self user is always present
+    if (myId != null && myId.trim().isNotEmpty) {
+      final cleanMyId = myId.trim();
+      if (!map.containsKey(cleanMyId) &&
+          !map.values.any((p) =>
+              int.tryParse(p.userId) != null &&
+              int.tryParse(p.userId) == int.tryParse(cleanMyId))) {
+        final myName =
+            Global.storageServices.get(PrefConst.userName)?.toString() ?? 'You';
+        final myImage =
+            Global.storageServices.get(PrefConst.profileImage)?.toString() ?? '';
+        map[cleanMyId] = WalkieParticipant(
+          userId: cleanMyId,
+          name: myName,
+          image: myImage,
+          isSpeaking: false,
+          isListening: true,
+        );
+      }
+    }
+
+    final mergedList = map.values.toList();
     participants.assignAll(mergedList);
     totalParticipants.value = mergedList.length;
 

@@ -1400,6 +1400,20 @@ class GroupWalkieService {
         list,
         activeSpeaker: data['activeSpeaker']?.toString(),
       );
+
+      // WebRTC Mesh Auto-Heal: Ensure peer connections exist for all remote participants in session
+      final candidatePeerIds = <String>[];
+      for (final p in list) {
+        final id = p.userId.trim();
+        if (id.isEmpty || id == _selfUserId) continue;
+        if (!_peers.containsKey(id) && !_offeredTo.contains(id)) {
+          candidatePeerIds.add(id);
+        }
+      }
+      if (candidatePeerIds.isNotEmpty) {
+        _log('Auto-healing WebRTC connections for missing peers: $candidatePeerIds');
+        _queuePeerOffers(candidatePeerIds);
+      }
     });
 
     socket?.on('walkie_channel_locked', (data) {

@@ -347,6 +347,20 @@ class firebaseNotificationServices {
       return;
     }
 
+    final currentGid = GroupWalkieService.instance.currentGroupId ??
+        (Get.isRegistered<GroupWalkieController>()
+            ? Get.find<GroupWalkieController>().currentGroupId
+            : null);
+    final bool isUserInThisChannel = ActiveChatTracker.isViewingWalkie(groupId) ||
+        (currentGid != null && currentGid.toString() == groupId.toString() &&
+            (Get.currentRoute == Routes.groupWalkieScreen ||
+                WalkieNotificationManager.instance.isWalkieScreenActive.value));
+
+    if (isUserInThisChannel) {
+      log("🔔 [showWalkieNotification] User is actively in Walkie channel $groupId. Suppressing notification.");
+      return;
+    }
+
     bool isForeground = false;
     try {
       isForeground =
@@ -356,16 +370,6 @@ class firebaseNotificationServices {
     }
 
     if (isForeground) {
-      final currentGid = GroupWalkieService.instance.currentGroupId ??
-          (Get.isRegistered<GroupWalkieController>()
-              ? Get.find<GroupWalkieController>().currentGroupId
-              : null);
-      if (currentGid != null && currentGid.toString() == groupId.toString() &&
-          (Get.currentRoute == Routes.groupWalkieScreen ||
-              WalkieNotificationManager.instance.isWalkieScreenActive.value)) {
-        log("🔔 [showWalkieNotification] User is actively in Walkie channel $groupId. Suppressing foreground dialog & notification.");
-        return;
-      }
 
       log("🔔 [showWalkieNotification] App is in foreground, displaying WalkieInviteDialog");
       final String? notifTitle = extraData?['title']?.toString();
@@ -537,6 +541,23 @@ class firebaseNotificationServices {
     if (screenName == "group_walkie" ||
         screenName == "groupWalkie" ||
         screenName == "walkie") {
+      final targetGid = (message.data['groupId'] ??
+              message.data['group_id'] ??
+              message.data['id'] ??
+              '')
+          .toString();
+      final currentGid = GroupWalkieService.instance.currentGroupId ??
+          (Get.isRegistered<GroupWalkieController>()
+              ? Get.find<GroupWalkieController>().currentGroupId
+              : null);
+      if (ActiveChatTracker.isViewingWalkie(targetGid) ||
+          (currentGid != null && currentGid.toString() == targetGid &&
+              (Get.currentRoute == Routes.groupWalkieScreen ||
+                  WalkieNotificationManager.instance.isWalkieScreenActive.value))) {
+        log("🔔 [showNotification] User is actively in Walkie channel $targetGid. Suppressing local notification.");
+        return;
+      }
+
       final isForeground =
           WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
       if (isForeground) {
