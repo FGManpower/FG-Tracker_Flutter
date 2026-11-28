@@ -14,7 +14,6 @@ import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/Data/Services/Share/app_share_service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Model/CommonRes.dart';
@@ -477,21 +476,6 @@ class Sidemenu extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               Get.toNamed(Routes.settings);
-            },
-          ),
-          _buildDivider(),
-          // Share FG Tracker
-          _buildDrawerItem(
-            icon: Icons.share_rounded,
-            title: context.l10n.share_appTitle,
-            subtitle: context.l10n.share_appSubtitle,
-            onTap: () {
-              Navigator.pop(context);
-              Future.delayed(const Duration(milliseconds: 220), () {
-                AppShareService.instance.shareAppLink(
-                  context: ContextUtility.context ?? Get.context,
-                );
-              });
             },
           ),
           // Clear gap + visible divider separating Log Out
